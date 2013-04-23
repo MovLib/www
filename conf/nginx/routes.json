@@ -1,0 +1,20 @@
+{
+  "= /": {
+    "presenter": "Home"
+  },
+  "= /movies": {
+    "presenter": "Movies"
+  },
+  "~ /movies/([0-9]+)$": {
+    "return": "301 /movie"
+  },
+  "= /movie": {
+    "return": "301 /movies"
+  },
+  "~ /movie/([0-9]+)$": {
+    "presenter": "Movie",
+    "vars": {
+      "movie_id": "$1"
+    }
+  }
+}
