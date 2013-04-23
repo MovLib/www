@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,15 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Application;
+namespace MovLib\Tests\Console\Application;
 
-use Symfony\Component\Console\Application;
+use MovLib\Console\Application\MovDep;
+use Symfony\Component\Console\Tester\CommandTester;
 
 /**
- * Main console application for adminsitrative tasks.
- *
- * The console application is used to run several administrative tasks. The MovLib software does not have any
- * administrative backend, instead all such tasks are handled with console applications.
+ * Description of MovDep
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -31,17 +29,16 @@ use Symfony\Component\Console\Application;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovDep extends Application {
+class MovDepTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * {@inheritdoc}
+   * @test
    */
-  public function __construct() {
-    parent::__construct('MovDep', '0.0.1-dev');
-    foreach ([ 'Nginx', 'Routes' ] as $cmd) {
-      $cmd = '\\MovLib\\Console\\Command\\' . $cmd;
-      $this->add(new $cmd());
-    }
+  public function testNameIsOutput() {
+    $cmd = (new MovDep())->find('nginx');
+    $cmdTester = new CommandTester($cmd);
+    $cmdTester->execute([ 'command' => $cmd->getName() ]);
+    $this->assertRegExp('/blublu/', $cmdTester->getDisplay());
   }
 
 }

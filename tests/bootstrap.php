@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,15 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Application;
-
-use Symfony\Component\Console\Application;
 
 /**
- * Main console application for adminsitrative tasks.
- *
- * The console application is used to run several administrative tasks. The MovLib software does not have any
- * administrative backend, instead all such tasks are handled with console applications.
+ * Description of
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -31,17 +25,12 @@ use Symfony\Component\Console\Application;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovDep extends Application {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct() {
-    parent::__construct('MovDep', '0.0.1-dev');
-    foreach ([ 'Nginx', 'Routes' ] as $cmd) {
-      $cmd = '\\MovLib\\Console\\Command\\' . $cmd;
-      $this->add(new $cmd());
-    }
-  }
+// Display any errors that might occur.
+error_reporting(E_ALL | E_DEPRECATED);
 
-}
+/** Install path */
+define('IP', dirname(__DIR__));
+
+/** Require composers generated autoloader. */
+require IP . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
