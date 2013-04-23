@@ -1,0 +1,38 @@
+{
+  "name": "MovLib",
+  "description": "The free movie library software.",
+  "version": "0.0.1-dev",
+  "type": "project",
+  "homepage": "http://movlib.org/",
+  "license": "AGPL-3.0",
+  "authors": [
+    {
+      "name": "Richard Fussenegger",
+      "email": "richard@fussenegger.info",
+      "homepage": "http://richard.fussenegger.info/",
+      "role": "Developer"
+    },
+    {
+      "name": "Markus Deutschl",
+      "email": "mdeutschl.mmt-m2012@fh-salzburg.ac.at",
+      "role": "Developer"
+    },
+    {
+      "name": "Franz Torghele",
+      "email": "ftorghele.mmt-m2012@fh-salzburg.ac.at",
+      "homepage": "http://www.torghele.at/",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "webmaster@movlib.org",
+    "issues": "",
+    "source": "https://github.com/MovLib/www"
+  },
+  "require": {
+    "symfony/console": "2.3.*@dev"
+  },
+  "require-dev": {
+
+  }
+}
