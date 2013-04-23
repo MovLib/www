@@ -1,7 +1,6 @@
 {
   "name": "MovLib",
   "description": "The free movie library software.",
-  "version": "0.0.1-dev",
   "type": "project",
   "homepage": "http://movlib.org/",
   "license": "AGPL-3.0",
@@ -26,13 +25,21 @@
   ],
   "support": {
     "email": "webmaster@movlib.org",
-    "issues": "",
-    "source": "https://github.com/MovLib/www"
+    "issues": "https://github.com/MovLib/www/issues",
+    "source": "https://github.com/MovLib/www",
+    "wiki": "https://github.com/MovLib/www/wiki"
   },
   "require": {
+    "php": ">=5.4.13",
     "symfony/console": "2.3.*@dev"
   },
   "require-dev": {
-
-  }
+    "phpunit/phpunit": "3.7.19",
+    "phpunit/php-code-coverage": "1.2.9"
+  },
+  "autoload": {
+    "psr-0": { "MovLib": "src/" },
+    "files": [ "src/utility/functions.php" ]
+  },
+  "bin": [ "bin/movdep" ]
 }

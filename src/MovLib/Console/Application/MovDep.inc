@@ -15,29 +15,34 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Console\Application;
+
+use Symfony\Component\Console\Application;
 
 /**
- * Main PHP script serving all page requests within the MovLib application.
+ * Main console application for adminsitrative tasks.
+ *
+ * The console application is used to run several administrative tasks. The MovLib software does not have any
+ * administrative backend, instead all such tasks are handled with console applications.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright (c) 2013–present, MovLib
+ * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
- * @link http://movlib.org/ movlib.org
+ * @link http://movlib.org/
  * @since 0.0.1-dev
  */
+class MovDep extends Application {
 
-/** Install path */
-define('IP', __DIR__);
-
-/** Include composer autoloader. */
-require IP . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-
-/* @var $class string */
-$class = 'MovLib\\Presenter\\' . $_SERVER['PRESENTER'];
-
-// This is the most outer place to catch an exception.
-try {
-  new $class();
-} catch (Exception $e) {
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct() {
+    parent::__construct('MovDep', '0.0.1-dev');
+    foreach ([ 'Nginx', 'Routes' ] as $cmd) {
+      $cmd = 'MovLib\\Console\\Command\\' . $cmd;
+      $this->add(new $cmd());
+      $this->run();
+    }
+  }
 
 }

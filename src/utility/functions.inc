@@ -17,27 +17,18 @@
  */
 
 /**
- * Main PHP script serving all page requests within the MovLib application.
+ * Delete all directories and files within this directory.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright (c) 2013–present, MovLib
- * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
- * @link http://movlib.org/ movlib.org
+ * The behaviour of this function is equivalent to the <code>rm -rf</code> Linux command.
+ *
+ * @param string $directory
+ *   Absolute or relative path to directory.
+ * @return void
  * @since 0.0.1-dev
  */
-
-/** Install path */
-define('IP', __DIR__);
-
-/** Include composer autoloader. */
-require IP . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-
-/* @var $class string */
-$class = 'MovLib\\Presenter\\' . $_SERVER['PRESENTER'];
-
-// This is the most outer place to catch an exception.
-try {
-  new $class();
-} catch (Exception $e) {
-
+function unlink_recursive($directory) {
+  foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $path) {
+    $path->isFile() ? unlink($path->getPathname()) : rmdir($path->getPathname());
+  }
+  rmdir($directory);
 }
