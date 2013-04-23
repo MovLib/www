@@ -228,8 +228,6 @@ class Nginx extends AbstractCommand {
 
       $this->writeInfo('Downloading and extracting ' . $argument['name'] . ' ' . $argument['version'] . ' ...');
       $this->arguments[$delta]['path'] = $this->{$fn}($argument['url']);
-      $this->writeInfo($this->arguments[$delta]['path']);
-      unlink_recursive($this->arguments[$delta]['path']);
     }
     return $this;
   }
