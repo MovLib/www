@@ -14,20 +14,17 @@
  You should have received a copy of the GNU Affero General Public License along with MovLib.
  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
 -->
-<phpunit bootstrap="./bootstrap.php">
+<phpunit
+  bootstrap="./bootstrap.php"
+  colors="false"
+  convertErrorsToExceptions="true"
+  convertNoticesToExceptions="true"
+  convertWarningsToExceptions="true"
+  stopOnFailure="true"
+>
   <testsuites>
     <testsuite name="Console Tests">
-      <directory suffix="Test.php">./MovLib/Tests/Console/</directory>
+      <directory>./MovLib/Tests/Console/</directory>
     </testsuite>
   </testsuites>
-  <!--
-  <filter>
-    <whitelist>
-      <directory>./../vendor/composer/</directory>
-      <exclude>
-        <file>./../vendor/composer/ClassLoader.php</file>
-      </exclude>
-    </whitelist>
-  </filter>
-  -->
 </phpunit>

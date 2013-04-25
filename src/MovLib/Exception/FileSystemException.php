@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tests\Console\Application;
+namespace MovLib\Exception;
 
-use MovLib\Console\Application\MovDep;
-use Symfony\Component\Console\Tester\CommandTester;
+use \Exception;
 
 /**
- * Description of MovDep
+ * A <b>FileSystemException</b> might be thrown if any local filesystem action fails.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,16 +28,6 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovDepTest extends \PHPUnit_Framework_TestCase {
-
-  /**
-   * @test
-   */
-  public function testNameIsOutput() {
-    $cmd = (new MovDep())->find('nginx');
-    $cmdTester = new CommandTester($cmd);
-    $cmdTester->execute([ 'command' => $cmd->getName() ]);
-    $this->assertRegExp('/blublu/', $cmdTester->getDisplay());
-  }
+class FileSystemException extends Exception {
 
 }

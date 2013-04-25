@@ -17,7 +17,9 @@
  */
 namespace MovLib\Console\Command;
 
-use Symfony\Component\Console\Command\Command;
+use \Symfony\Component\Console\Command\Command;
+use \Symfony\Component\Console\Input\InputInterface;
+use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Abstract base class for all MovLib console command classes.
@@ -47,15 +49,37 @@ abstract class AbstractCommand extends Command {
   protected $output;
 
   /**
+   * <code>true</code> if the user requested verbose output.
+   *
+   * @var boolean
+   */
+  protected $verbose = false;
+
+  /**
    * Display error message, rollback everything and exit program.
    *
+   * @staticvar boolean $recursion
+   *   Helper variable to keep track of calls to this method. If this method is called more than once, we can not call
+   *   the rollback method of any child class again. We have to asume that something went wrong during the rollback!
    * @param string $message
    *   The message that should be displayed to the user.
+   * @param string $stackTrace
+   *   [optional] The stack trace as returned by the exception that was thrown. Will only be printed to console if the
+   *   user called the command with the verbosity flag.
    * @return void
    */
-  protected function exitOnError($message) {
-    $this->writeError([ 'ERROR!', $message . '! Rolling back any changes and exiting.' ]);
-    $this->rollback();
+  protected final function exitOnError($message, $stackTrace = '') {
+    static $recursion = false;
+    /* @var $error array */
+    $error = [ 'ERROR!', $message, 'Rolling back any changes and exiting.' ];
+    if ($this->verbose && !empty($stackTrace)) {
+      $error[] = $stackTrace;
+    }
+    $this->writeError($error);
+    if ($recursion === false) {
+      $this->rollback();
+      $recursion = true;
+    }
     exit(0);
   }
 
@@ -69,11 +93,11 @@ abstract class AbstractCommand extends Command {
    *   <a href="http://symfony.com/doc/master/components/console">official Symfony documentation</a> for more info.
    * @return \MovLib\Console\Command\AbstractCommand
    */
-  protected function write($message, $type) {
+  protected final function write($message, $type) {
     if (is_array($message)) {
       /* @var $formatter Symfony\Component\Console\Helper\FormatterHelper */
       $formatter = $this->getHelper('formatter');
-      $message = $formatter->formatBlock($message, $type, TRUE);
+      $message = $formatter->formatBlock($message, $type, true);
     } else {
       $message = '<' . $type . '>' . $message . '</' . $type . '>';
     }
@@ -88,7 +112,7 @@ abstract class AbstractCommand extends Command {
    *   The message that should be displayed to the user.
    * @return \Symfony\Component\Console\Command\Command
    */
-  protected function writeInfo($infoMessage) {
+  protected final function writeInfo($infoMessage) {
     return $this->write($infoMessage, 'info');
   }
 
@@ -99,7 +123,7 @@ abstract class AbstractCommand extends Command {
    *   The message that should be displayed to the user.
    * @return \Symfony\Component\Console\Command\Command
    */
-  protected function writeComment($commentMessage) {
+  protected final function writeComment($commentMessage) {
     return $this->write($commentMessage, 'comment');
   }
 
@@ -110,7 +134,7 @@ abstract class AbstractCommand extends Command {
    *   The message that should be displayed to the user.
    * @return \Symfony\Component\Console\Command\Command
    */
-  protected function writeQuestion($questionMessage) {
+  protected final function writeQuestion($questionMessage) {
     return $this->write($questionMessage, 'question');
   }
 
@@ -121,7 +145,7 @@ abstract class AbstractCommand extends Command {
    *   The message that should be displayed to the user.
    * @return \MovLib\Console\Command\AbstractCommand
    */
-  protected function writeError($errorMessage) {
+  protected final function writeError($errorMessage) {
     return $this->write($errorMessage, 'error');
   }
 
@@ -132,6 +156,27 @@ abstract class AbstractCommand extends Command {
    */
   protected function rollback() {
     return $this;
+  }
+
+  /**
+   * Export input object to class scope.
+   *
+   * @param \Symfony\Component\Console\Input\InputInterface $input
+   */
+  protected final function setInput(InputInterface $input) {
+    $this->input = $input;
+  }
+
+  /**
+   * Export output object to class scope.
+   *
+   * @param \Symfony\Component\Console\Output\OutputInterface $output
+   */
+  protected final function setOutput(OutputInterface $output) {
+    $this->output = $output;
+    if ($output === OutputInterface::VERBOSITY_VERBOSE) {
+      $this->verbose = true;
+    }
   }
 
 }

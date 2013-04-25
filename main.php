@@ -37,7 +37,11 @@ $class = 'MovLib\\Presenter\\' . $_SERVER['PRESENTER'];
 
 // This is the most outer place to catch an exception.
 try {
+  ob_start();
   new $class();
-} catch (Exception $e) {
-
+  ob_end_flush();
+}
+/* @var $e \Exception */
+catch (\Exception $e) {
+  echo $e->getMessage();
 }

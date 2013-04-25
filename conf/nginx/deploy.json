@@ -1,1 +1,61 @@
-["main","events","http"]
+{
+  "nginx": "http://nginx.org/download/nginx-1.3.16.tar.gz",
+  "libraries": {
+    "pcre": "http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-8.32.zip",
+    "openssl": "http://www.openssl.org/source/openssl-1.0.1e.tar.gz",
+    "zlib": "git://github.com/madler/zlib.git"
+  },
+  "modules": {
+    "nginx-upload-progress-module": "git://github.com/masterzen/nginx-upload-progress-module.git",
+    "nginx-upstream-fair": "git://github.com/gnosek/nginx-upstream-fair.git"
+  },
+  "configure": {
+    "user": "www-data",
+    "group": "www-data",
+    "paths": {
+      "prefix": "/usr/local",
+      "sbin-path": "/usr/local/sbin",
+      "conf-path": "/etc/nginx/nginx.conf",
+      "pid-path": "/var/run/nginx.pid",
+      "lock-path": "/var/lock/nginx.lock",
+      "error-log-path": "/var/log/nginx/error.log",
+      "http-log-path": "/var/log/nginx/access.log",
+      "http-client-body-temp-path": "/dev/shm/nginx/client-body/tmp",
+      "http-fastcgi-temp-path": "/dev/shm/nginx/fastcgi/tmp"
+    },
+    "withModules": [
+      "cc-opt='-O3'",
+      "ipv6",
+      "http_gzip_static_module",
+      "http_ssl_module",
+      "http_spdy_module",
+      "md5=PATH{libraries.openssl}",
+      "md5-asm",
+      "sha1=PATH{libraries.openssl}",
+      "sha1-asm",
+      "pcre-jit"
+    ],
+    "withoutModules": [
+      "http_autoindex_module",
+      "http_auth_basic_module",
+      "http_browser_module",
+      "http_geo_module",
+      "http_limit_conn_module",
+      "http_limit_req_module",
+      "http_map_module",
+      "http_memcached_module",
+      "http_proxy_module",
+      "http_referer_module",
+      "http_scgi_module",
+      "http_split_clients_module",
+      "http_ssi_module",
+      "http_upstream_ip_hash_module",
+      "http_userid_module",
+      "http_uwsgi_module",
+      "mail_pop3_module",
+      "mail_imap_module",
+      "mail_smtp_module"
+    ]
+  },
+  "conf": [ "main", "events", "http" ]
+}

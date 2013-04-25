@@ -15,7 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+
 namespace MovLib\Utility;
+
+use \ErrorException;
+use \FilesystemIterator;
+use \MovLib\Exception\FileSystemException;
+use \RecursiveDirectoryIterator;
+use \RecursiveIteratorIterator;
 
 /**
  * The <b>FileSystem</b> class provides several static utility methods to work with the local filesystem.
@@ -29,6 +36,64 @@ namespace MovLib\Utility;
 class FileSystem {
 
   /**
+   * Get the operating systems specific temporary path.
+   *
+   * The behaviour of the default PHP function <code>sys_get_temp_dir()</code> is inconsistent regarding the last
+   * character returned. This method makes sure that the path never ends with the operating systems specific directory
+   * separator.
+   *
+   * @staticvar string $tmpDir
+   *   Used to store the absolut path, to make sure the check regarding the last character does not have to be made over
+   *   and over again.
+   * @return string
+   *   The absolute path to the operating systems specific temporary path (no trailing directory separator).
+   */
+  public static function getTemporaryDirectory() {
+    static $tmpDir = '';
+    if (empty($tmpDir)) {
+      $tmpDir = sys_get_temp_dir();
+      if (substr($tmpDir, -1) === DIRECTORY_SEPARATOR) {
+        $tmpDir = substr($tmpDir, 0, -1);
+      }
+    }
+    return $tmpDir;
+  }
+
+  /**
+   * Create a temporary copy of the file.
+   *
+   * @param string $source
+   *   Absolute path or URL to the source file of which a temporary copy should be created.
+   * @param string $fileExtension
+   *   [optional] Overwrite the file extension for the temporary file, or specify one in the first place if the source
+   *   path does not have an extension. Do not prepend the string with a dot, this is added automatically.
+   * @return string
+   *   The absolute path to the temporary copy.
+   * @throws \MovLib\Exception\FileSystemException
+   *   If the copy operation fails a <em>FileSystemException</em> is thrown.
+   * @since 0.0.1-dev
+   */
+  public static function temporaryCopy($source, $fileExtension = '') {
+    // Only try to extract the files extension if it has not been overwritten by the caller.
+    if (empty($fileExtension)) {
+      $fileExtension = pathinfo($source, PATHINFO_EXTENSION);
+    }
+
+    if (!empty($fileExtension)) {
+      $fileExtension = '.' . $fileExtension;
+    }
+
+    /* @var $tmpFilePath string */
+    $tmpFilePath = FileSystem::getTemporaryDirectory() . DIRECTORY_SEPARATOR . uniqid() . $fileExtension;
+
+    if (!copy($source, $tmpFilePath)) {
+      throw new FileSystemException('Could not create a temporary copy of "' . basename($source) . '".');
+    }
+
+    return $tmpFilePath;
+  }
+
+  /**
    * Delete directory, file or symbolic link.
    *
    * The behaviour of this method is equivalent to the <tt>rm -rf</tt> Linux command.
@@ -40,36 +105,43 @@ class FileSystem {
    * If the passed path is a local symbolic link only the symbolic link will be deleted. If the symbolic link points to
    * a valid local directory or file, both will stay untouched.
    *
-   * <b>ATTENTION!</b> If the given path (or any of the containing directories, files or symbolic links) is not readable
-   * for the PHP user this method generates a
-   * {@link http://php.net/manual/en/errorfunc.constants.php <b><code>E_WARNING</code></b>} level error message. As per
-   * default implementation of the functions {@link http://php.net/manual/en/function.rmdir.php <code>rmdir</code>} and
-   * {@link http://php.net/manual/en/function.unlink.php <code>unlink</code>}.
-   *
+   * @todo Should the exception be more specific about which file could not be deleted? Or is it sufficient and the
+   *       developer has to go to the directory, file or symbolic link himself to check what the problem is?
    * @param string $path
    *   Absolute or relative path to the directory, file or symlink.
    * @return boolean
-   *   <code>TRUE</code> if all files and directories have been deleted. <code>FALSE</code> on error or if the given
+   *   <code>true</code> if all files and directories have been deleted. <code>false</code> on error or if the given
    *   path is not valid.
+   * @throws \MovLib\Exception\FileSystemException
+   *   If any of the delete actions fails (e.g. wrong permissions) a <em>FileSystemException</em> is thrown.
    * @since 0.0.1-dev
    */
-  static public function unlinkRecursive($path) {
-    // Check if a path was given at all and if the path is on our local filesystem and exists.
-    if ($path && realpath($path)) {
-      if (is_dir($path)) {
-        foreach (new \RecursiveIteratorIterator(
-          new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
-          \RecursiveIteratorIterator::CHILD_FIRST
-        ) as $path) {
-          $path->isFile() ? unlink($path->getPathname()) : rmdir($path->getPathname());
+  public static function unlinkRecursive($path) {
+    try {
+      // Check if a path was given at all and if the path is on our local filesystem and exists.
+      if ($path && realpath($path) && file_exists($path)) {
+        if (is_dir($path)) {
+          /* @var $tmpPath \DirectoryIterator */
+          foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $tmpPath) {
+            if ($tmpPath->isDir()) {
+              rmdir($tmpPath->getPathname());
+            }
+            elseif ($tmpPath->isFile() || $tmpPath->isLink()) {
+              unlink($tmpPath->getPathname());
+            }
+          }
+          return rmdir($path);
         }
-        return rmdir($path);
-      }
-      elseif (is_file($path) || is_link($path)) {
-        return unlink($path);
+        elseif (is_file($path) || is_link($path)) {
+          return unlink($path);
+        }
       }
     }
-    return FALSE;
+    /* @var $e \ErrorException */
+    catch (ErrorException $e) {
+      throw new FileSystemException('Could not delete given directory, file or symbolic link: "' . $path . '"', $e->getCode(), $e);
+    }
+    return false;
   }
 
 }

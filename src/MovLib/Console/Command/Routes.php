@@ -17,9 +17,9 @@
  */
 namespace MovLib\Console\Command;
 
-use MovLib\Console\Command\AbstractCommand;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use \MovLib\Console\Command\AbstractCommand;
+use \Symfony\Component\Console\Input\InputInterface;
+use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Main console application for adminsitrative tasks.

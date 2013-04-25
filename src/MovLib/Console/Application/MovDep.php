@@ -17,7 +17,7 @@
  */
 namespace MovLib\Console\Application;
 
-use Symfony\Component\Console\Application;
+use \Symfony\Component\Console\Application;
 
 /**
  * Main console application for adminsitrative tasks.

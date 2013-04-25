@@ -1,4 +1,5 @@
 <?php
+// @codingStandardsIgnoreFile
 
 /* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
@@ -26,11 +27,9 @@
  * @since 0.0.1-dev
  */
 
-// Display any errors that might occur.
-error_reporting(E_ALL | E_DEPRECATED);
-
 /** Install path */
 define('IP', dirname(__DIR__));
 
-/** Require composers generated autoloader. */
-require IP . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+/* @var $loader \Composer\Autoload\ClassLoader */
+$loader = require IP . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+$loader->add('MovLib\Test', __DIR__);
