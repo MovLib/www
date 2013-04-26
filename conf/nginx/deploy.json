@@ -1,5 +1,5 @@
 {
-  "nginx": "http://nginx.org/download/nginx-1.3.16.tar.gz",
+  "nginx": "http://nginx.org/download/nginx-1.4.0.tar.gz",
   "libraries": {
     "pcre": "http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-8.32.zip",
     "openssl": "http://www.openssl.org/source/openssl-1.0.1e.tar.gz",
@@ -24,7 +24,8 @@
       "http-fastcgi-temp-path": "/dev/shm/nginx/fastcgi/tmp"
     },
     "withModules": [
-      "cc-opt='-O3'",
+      "cc-opt='-O3 -m64'",
+      "ld-opt='-m64'",
       "ipv6",
       "http_gzip_static_module",
       "http_ssl_module",

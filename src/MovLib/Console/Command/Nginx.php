@@ -245,7 +245,8 @@ class Nginx extends AbstractCommand {
    *   The absolute path to the local repository.
    */
   private function repo($key, $url, $cmd) {
-    shell_exec('cd ' . FileSystem::getTemporaryDirectory() . ' && ' . $cmd . ' "' . $url . '" ' . $key);
+    chdir(FileSystem::getTemporaryDirectory());
+    system($cmd . ' "' . $url . '" ' . $key);
     return $this->addRollbackPath(FileSystem::getTemporaryDirectory() . DIRECTORY_SEPARATOR . $key);
   }
 
@@ -358,6 +359,11 @@ class Nginx extends AbstractCommand {
      * @var $path string
      */
     foreach ($this->deployConfiguration['libraries'] as $library => $path) {
+      // PCRE is a real problem. The tar.gz files have broken checksums and the configure script has the wrong
+      // permissions.
+      if ($library === 'pcre') {
+        chmod($path . DIRECTORY_SEPARATOR . 'configure', 755);
+      }
       $configureArgs[] = 'with-' . $library . '=' . $path;
     }
 
@@ -391,11 +397,15 @@ class Nginx extends AbstractCommand {
       $configureArgs[] = 'add-module=' . $path;
     }
 
-    chdir($this->deployConfiguration['nginx']);
-
-    if (system('./configure --' . implode(' --', $configureArgs) . ' && make && make install') === false) {
-      $this->exitOnError('Nginx compilation failed!');
-    }
+    $this->writeInfo('./configure --' . implode(' --', $configureArgs));
+//    chdir($this->deployConfiguration['nginx']);
+//
+//    foreach ([ './configure --' . implode(' --', $configureArgs), 'make', 'make install' ] as $delta => $cmd) {
+//      /* @var $returnCode int */
+//      if (system($cmd, $returnCode) === false || $returnCode !== 0) {
+//        $this->exitOnError('Nginx compilation failed!', $cmd);
+//      }
+//    }
 
     return $this;
   }
@@ -412,9 +422,9 @@ class Nginx extends AbstractCommand {
 
     if ($this->getHelperSet()->get('dialog')->askConfirmation($output, '<question>Continue with compiling nginx?</question> (y/n) ', false)) {
       $this
-        ->downloadAndExtract('nginx')
-        ->downloadAndExtract('libraries')
-        ->downloadAndExtract('modules')
+//        ->downloadAndExtract('nginx')
+//        ->downloadAndExtract('libraries')
+//        ->downloadAndExtract('modules')
         ->configureMakeAndInstall()
         ->writeInfo('Finished!')
 //        ->rollback()
