@@ -29,17 +29,22 @@
 /** Install path */
 define('IP', __DIR__);
 
-/** Include composer autoloader. */
-require IP . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-
-/* @var $class string */
-$class = 'MovLib\\Presenter\\' . $_SERVER['PRESENTER'];
+/**
+ * Ultra fast class autoloader.
+ *
+ * @param string $class
+ *   Fully qualified class name (automatically passed to this magic function by PHP).
+ * @return void
+ */
+function __autoload($class) {
+  require IP . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . strtr($class, '\\', DIRECTORY_SEPARATOR) . '.php';
+}
 
 // This is the most outer place to catch an exception.
 try {
-  ob_start();
-  new $class();
-  ob_end_flush();
+  /* @var $presenter string */
+  $presenter = '\\MovLib\\Presenter\\' . $_SERVER['PRESENTER'] . 'Presenter';
+  echo (new $presenter())->getOutput();
 }
 /* @var $e \Exception */
 catch (\Exception $e) {
