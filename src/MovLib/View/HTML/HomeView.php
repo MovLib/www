@@ -34,11 +34,28 @@ use \MovLib\View\HTML\AbstractView;
 class HomeView extends AbstractView {
 
   /**
-   * The home page is the only page that is using a different title scheme than the other pages.
+   * {@inheritdoc}
    */
   public function __construct() {
-    $this->title = 'MovLib, the free movie library.';
-    $this->renderedView = '<p>' . _('Hello World!') . '</p>';
+    parent::__construct(SITENAME);
+  }
+
+  /**
+   * Overwrite the default header title method.
+   *
+   * The home page is the only page that is using a different header title pattern. Therefor we overwrite the default
+   * method of the base class for each view.
+   *
+   * @return string
+   */
+  public function getHeadTitle() {
+    //# The comma is used as separator character in the header title of the home page. The header title of the home page
+    //# is built like a setence with the pattern "[sitename][separator][description]". The content of this sentence in
+    //# the first version of the software was "MovLib, the free movie library.". The trailing dot was part of the slogan
+    //# but the comma is translated as separate string (to ensure that the slogan stays re-usable). Translate the comma
+    //# to the equivalent character in your language. More information on this specific character can be found at
+    //# Wikipedia: https://en.wikipedia.org/wiki/Comma
+    return $this->title . _(', ') . SITESLOGAN;
   }
 
   /**
@@ -50,7 +67,20 @@ class HomeView extends AbstractView {
    * @return string
    */
   public function getHeaderLogo() {
-    return '<h1 id="logo">MovLib <small>the <em class="serif">free</em> movie library</small></h1>';
+    return
+      '<h1 id="logo">' .
+        SITENAME .
+        //# Do not forget to include the %s in your translation!
+        ' <small>' . sprintf(_('the %sfree%s movie library'), '<em class="serif">', '</em>') . '</small>' .
+      '</h1>'
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRenderedContent() {
+    return '<p>' . _('Hello World!') . '</p>';
   }
 
 }
