@@ -75,6 +75,9 @@ class Nginx extends AbstractCommand {
     $this->setDescription('Download and compile nginx.');
     $this->configurationPath = IP . DIRECTORY_SEPARATOR . 'conf' . DIRECTORY_SEPARATOR . 'nginx';
     $this->deployConfiguration = json_decode(file_get_contents($this->configurationPath . DIRECTORY_SEPARATOR . 'deploy.json'), true);
+    if (!file_exists($this->deployConfiguration['srcPath'])) {
+      mkdir($this->deployConfiguration['srcPath'], null, true);
+    }
   }
 
   /**
@@ -144,11 +147,6 @@ class Nginx extends AbstractCommand {
     /* @var $fileExtension string */
     $fileExtension = pathinfo($filePath, PATHINFO_EXTENSION);
 
-    // The file extension is maybe part of a query string.
-    if (empty($fileExtension)) {
-      $fileExtension = substr($filePath, -3);
-    }
-
     /* @var $fn string */
     $fn = __FUNCTION__ . ucfirst($fileExtension);
 
@@ -192,9 +190,9 @@ class Nginx extends AbstractCommand {
   private function extractTar($tarFilePath) {
     /* @var $pharData \PharData */
     $pharData = new PharData($tarFilePath);
-    $pharData->extractTo(FileSystem::getTemporaryDirectory());
+    $pharData->extractTo($this->deployConfiguration['srcPath']);
     unlink($tarFilePath);
-    return FileSystem::getTemporaryDirectory() . DIRECTORY_SEPARATOR . $pharData->getFilename();
+    return $this->deployConfiguration['srcPath'] . DIRECTORY_SEPARATOR . $pharData->getFilename();
   }
 
   /**
@@ -207,7 +205,7 @@ class Nginx extends AbstractCommand {
    */
   private function extractGz($tarGzFilePath) {
     (new PharData($tarGzFilePath))->decompress();
-    $tarFilePath = substr($tarGzFilePath, 0, -3);
+    $tarFilePath = basename($tarGzFilePath, 'gz');
     unlink($tarGzFilePath);
     return $this->extractTar($tarFilePath);
   }
@@ -215,6 +213,9 @@ class Nginx extends AbstractCommand {
   /**
    * Extracts the given ZIP archive.
    *
+   * @todo Right now this relies on the fact that the archive contains only a single folder. This works just fine for
+   *       the current sources we have, but we may have to extend this in the future. Or even better, change to Git or
+   *       SVN repositories? (At least the nginx SVN is a big mess.)
    * @param string $zipFilePath
    *   Absolute path to the compressed ZIP archive.
    * @return string
@@ -224,9 +225,9 @@ class Nginx extends AbstractCommand {
     /* @var $zipArchive \ZipArchive */
     $zipArchive = new ZipArchive();
     $zipArchive->open($zipFilePath);
-    $zipArchive->extractTo(FileSystem::getTemporaryDirectory());
+    $zipArchive->extractTo($this->deployConfiguration['srcPath']);
     /* @var $destination string */
-    $destination = FileSystem::getTemporaryDirectory() . DIRECTORY_SEPARATOR . $zipArchive->getNameIndex(0);
+    $destination = $this->deployConfiguration['srcPath'] . DIRECTORY_SEPARATOR . $zipArchive->getNameIndex(0);
     $zipArchive->close();
     unlink($zipFilePath);
     return $destination;
@@ -245,9 +246,9 @@ class Nginx extends AbstractCommand {
    *   The absolute path to the local repository.
    */
   private function repo($key, $url, $cmd) {
-    chdir(FileSystem::getTemporaryDirectory());
+    chdir($this->deployConfiguration['srcPath']);
     system($cmd . ' "' . $url . '" ' . $key);
-    return $this->addRollbackPath(FileSystem::getTemporaryDirectory() . DIRECTORY_SEPARATOR . $key);
+    return $this->addRollbackPath($this->deployConfiguration['srcPath'] . DIRECTORY_SEPARATOR . $key);
   }
 
   /**
@@ -355,19 +356,6 @@ class Nginx extends AbstractCommand {
     }
 
     /*
-     * @var $library string
-     * @var $path string
-     */
-    foreach ($this->deployConfiguration['libraries'] as $library => $path) {
-      // PCRE is a real problem. The tar.gz files have broken checksums and the configure script has the wrong
-      // permissions.
-      if ($library === 'pcre') {
-        chmod($path . DIRECTORY_SEPARATOR . 'configure', 755);
-      }
-      $configureArgs[] = 'with-' . $library . '=' . $path;
-    }
-
-    /*
      * @var $delta int
      * @var $module string
      */
@@ -397,15 +385,15 @@ class Nginx extends AbstractCommand {
       $configureArgs[] = 'add-module=' . $path;
     }
 
-    $this->writeInfo('./configure --' . implode(' --', $configureArgs));
-//    chdir($this->deployConfiguration['nginx']);
-//
-//    foreach ([ './configure --' . implode(' --', $configureArgs), 'make', 'make install' ] as $delta => $cmd) {
-//      /* @var $returnCode int */
-//      if (system($cmd, $returnCode) === false || $returnCode !== 0) {
-//        $this->exitOnError('Nginx compilation failed!', $cmd);
-//      }
-//    }
+    chdir($this->deployConfiguration['nginx']);
+
+    // @todo Stop any running nginx process before calling "make install".
+    foreach ([ './configure --' . implode(' --', $configureArgs), 'make', 'make install' ] as $delta => $cmd) {
+      /* @var $returnCode int */
+      if (system($cmd, $returnCode) === false || $returnCode !== 0) {
+        $this->exitOnError('Nginx compilation failed!', $cmd);
+      }
+    }
 
     return $this;
   }
@@ -422,12 +410,12 @@ class Nginx extends AbstractCommand {
 
     if ($this->getHelperSet()->get('dialog')->askConfirmation($output, '<question>Continue with compiling nginx?</question> (y/n) ', false)) {
       $this
-//        ->downloadAndExtract('nginx')
-//        ->downloadAndExtract('libraries')
-//        ->downloadAndExtract('modules')
+        ->downloadAndExtract('nginx')
+        ->downloadAndExtract('libraries')
+        ->downloadAndExtract('modules')
         ->configureMakeAndInstall()
         ->writeInfo('Finished!')
-//        ->rollback()
+        ->rollback()
       ;
     }
   }

@@ -113,7 +113,7 @@ class FileSystem {
    *   <code>true</code> if all files and directories have been deleted. <code>false</code> on error or if the given
    *   path is not valid.
    * @throws \MovLib\Exception\FileSystemException
-   *   If any of the delete actions fails (e.g. wrong permissions) a <em>FileSystemException</em> is thrown.
+   *   If any of the delete actions fails (e.g. wrong permissions).
    * @since 0.0.1-dev
    */
   public static function unlinkRecursive($path) {

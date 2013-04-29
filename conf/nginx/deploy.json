@@ -1,4 +1,5 @@
 {
+  "srcPath": "/usr/local/src/nginx",
   "nginx": "http://nginx.org/download/nginx-1.4.0.tar.gz",
   "libraries": {
     "pcre": "http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-8.32.zip",
@@ -24,16 +25,16 @@
       "http-fastcgi-temp-path": "/dev/shm/nginx/fastcgi/tmp"
     },
     "withModules": [
-      "cc-opt='-O3 -m64'",
-      "ld-opt='-m64'",
       "ipv6",
       "http_gzip_static_module",
       "http_ssl_module",
       "http_spdy_module",
+      "openssl=PATH{libraries.openssl}",
       "md5=PATH{libraries.openssl}",
       "md5-asm",
       "sha1=PATH{libraries.openssl}",
       "sha1-asm",
+      "pcre=PATH{libraries.pcre}",
       "pcre-jit"
     ],
     "withoutModules": [
