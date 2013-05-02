@@ -24,6 +24,59 @@
  * @since 0.0.1-dev
  */
 
+/**
+ * Color table
+ * ===========
+ * MovLib is mainly using shades of gray (similarity to book series is not intended), but there are a few colors that
+ * we support as well. Please always refer to this color table and only choose colors from here!
+ *
+ * Shades of gray
+ * ==============
+ *
+ * 01[2]34[5]67[8]9a[b]cd[e]f
+ *
+ * --- dark ---
+ * #222
+ *   #333
+ *   #3b3b3b
+ *   #484848
+ * #555
+ *   #626262
+ *   #6e6e6e
+ *   #7b7b7b
+ * #888
+ *   #959595
+ *   #a1a1a1
+ *   #aeaeae
+ * #bbb
+ *   #c8c8c8
+ *   #d4d4d4
+ * #eee
+ *   #e1e1e1
+ *   #fbfbfb
+ * -- bright --
+ *
+ * Blue (link color)
+ * =================
+ * #06c     (bright)
+ * #0059b2
+ * #00468c
+ * #00264c
+ * #001933  (dark)
+ *
+ * Purple (visited links only)
+ * ===========================
+ * #613eb0
+ *
+ * Logo colors
+ * ===========
+ * @todo Extract all colors from SVG
+ */
+
+article, aside, details, figcaption, figure, footer, header, hgroup, nav, section {
+  display: block;
+}
+
 html, input, button, select, textarea, code, pre {
   font-size: 100%;
   -webkit-text-size-adjust: 100%;
@@ -39,6 +92,29 @@ html, body {
   padding: 0;
 }
 
+a {
+  color: #06c;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #613eb0;
+}
+
+a:hover, a:focus {
+  text-decoration: underline;
+}
+
+a:focus {
+  outline: 1px dotted #333;
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+
+a:hover, a:active {
+  outline: 0;
+}
+
 h1, h2, h3, h4, h5, h6 {
   margin: 10px 0;
   font-weight: 700;
@@ -48,7 +124,7 @@ h1, h2, h3, h4, h5, h6 {
 h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
   font-weight: 400;
   line-height: 1;
-  color: #999;
+  color: #7f7f7f;
 }
 
 h1, h2, h3 {
@@ -95,32 +171,71 @@ h4 small {
   font-size: 14px;
 }
 
+img {
+  max-width: 100%;
+  width: auto\9;
+  height: auto;
+  vertical-align: middle;
+  border: 0;
+  -ms-interpolation-mode: bicubic;
+}
+
+button, html input[type='button'], input[type='reset'], input[type='submit'] {
+  -webkit-appearance: button;
+}
+
+button, label, select, input[type='button'], input[type='reset'], input[type='submit'], input[type='radio'], input[type='checkbox'] {
+  cursor: pointer;
+}
+
+input[type='search'] {
+  -moz-box-sizing: content-box;
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+  -webkit-appearance: textfield;
+}
+
+input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+sub, sup {
+  position: relative;
+  font-size: 75%;
+  line-height: 0;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
 code, pre {
   font-size: 12px;
   font-family: Monaco, Menlo, Consolas, 'Courier New', monospace;
-  border: 1px solid #eee;
+  background-color: #fbfbfb;
+  border: 1px solid;
 }
 
 code {
+  border-color: #d4d4d4;
   padding: 2px 4px;
   color: #d14;
-  background-color: #f7f7f9;
-  border-color: #e1e1e8;
   white-space: nowrap;
 }
 
 pre {
-  background-color: #f5f5f5;
+  border-color: #aeaeae;
   margin: 0 0 10px;
   padding: 9.5px;
   display: block;
   word-break: break-all;
   word-wrap: break-word;
   white-space: pre-wrap;
-  border-color: rgba(0, 0, 0, 0.15);
-  -webkit-border-radius: 4px;
-  -moz-border-radius: 4px;
-  border-radius: 4px;
 }
 
 pre.prettyprint {
@@ -132,11 +247,17 @@ pre.scrollable {
   overflow-y: hidden;
 }
 
+.row {
+  margin-left: -20px;
+}
+
 #container {
   margin: 0 auto;
   min-width: 320px;
   max-width: 1280px;
 }
+
+/* Header and logo -------------------------------------------------------------------------------------------------- */
 
 #header {
   margin: 0 0 20px;
@@ -146,9 +267,8 @@ pre.scrollable {
 #logo {
   margin: 0;
   padding: 0 0 0 80px;
+  background: url(/assets/img/logo/64.png) no-repeat;
   height: 64px;
-  background: url(/assets/img/logo.svg) no-repeat;
-  background-size: 64px;
   line-height: 50px;
 }
 
@@ -158,6 +278,94 @@ pre.scrollable {
   font-size: 14px;
 }
 
+#header .search {
+  padding-left: 4px;
+  height: 22px;
+  border: 1px solid #aeaeae;
+  background-color: #fbfbfb;
+}
+
+#header .search:focus, #header .search.focus {
+  border-color: #06c;
+}
+
+#header .input {
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  outline: 0;
+  vertical-align: top;
+}
+
+:-moz-placeholder {
+  color: #aeaeae;
+  opacity: 1;
+}
+
+::-moz-placeholder {
+  color: #aeaeae;
+  opacity: 1;
+}
+
+:-ms-input-placeholder {
+  color: #aeaeae;
+}
+
+::-webkit-input-placeholder {
+  color: #aeaeae;
+}
+
+#header .input-submit {
+  width: 22px;
+  height: 22px;
+}
+
+#header .icon-search {
+  color: #aeaeae;
+}
+
+/* Font icons ------------------------------------------------------------------------------------------------------- */
+
+[class^="icon-"] {
+  line-height: 1;
+}
+
+/* Generic classes -------------------------------------------------------------------------------------------------- */
+
+.clearfix:before, .clearfix:after {
+  display: table;
+  content: '';
+  line-height: 0;
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+.inline {
+  display: inline-block;
+}
+
+.pull-right {
+  float: right;
+}
+
+.pull-left {
+  float: left;
+}
+
 .serif {
   font-family: Georgia, 'Nimbus Roman No9 L', Norasi, Rekha, serif;
+}
+
+/* Mozilla Firefox specific styles -------------------------------------------------------------------------------------
+ * Use obscure selectors which have not been used before, otherwise Firefox will not apply the styles!
+ */
+
+@-moz-document domain(movlib.org) {
+  #header .input-submit i {
+    vertical-align: text-top;
+  }
 }
