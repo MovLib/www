@@ -17,6 +17,9 @@
  */
 namespace MovLib\View\HTML;
 
+use \MovLib\Entity\Language;
+use \MovLib\Utility\String;
+
 /**
  * The <b>AbstractView</b> is the base class for all other HTML views.
  *
@@ -32,9 +35,15 @@ abstract class AbstractView {
    * The title of the page.
    *
    * @var string
-   * @since 0.0.1-dev
    */
   protected $title = '';
+
+  /**
+   * The language object that was passed to the view by the controlling presenter.
+   *
+   * @var \MovLib\Entity\Language
+   */
+  protected $language;
 
   /**
    * Array index of the active header navigation point.
@@ -46,7 +55,6 @@ abstract class AbstractView {
    *
    * @see \MovLib\View\HTML\AbstractView::$activeHeaderUserNavigationPoint
    * @var int
-   * @since 0.0.1-dev
    */
   protected $activeHeaderNavigationPoint;
 
@@ -55,18 +63,19 @@ abstract class AbstractView {
    *
    * @see \MovLib\View\HTML\AbstractView::$activeHeaderNavigationPoint
    * @var int
-   * @since 0.0.1-dev
    */
   protected $activeHeaderUserNavigationPoint;
 
   /**
    * Initialize new view.
    *
+   * @param \MovLib\Entity\Language $language
+   *   The language object from the presenter that controls this view.
    * @param string $title
    *   The unique title of this view.
-   * @since 0.0.1-dev
    */
-  public function __construct($title) {
+  public function __construct(Language $language, $title) {
+    $this->language = $language;
     $this->title = $title;
   }
 
@@ -92,7 +101,6 @@ abstract class AbstractView {
    *   Static counter to keep track of the page's tabindex accros a single request.
    * @return int
    *   The current counter of the index.
-   * @since 0.0.1-dev
    */
   protected final function getTabindex() {
     static $tabindex = 1;
@@ -104,38 +112,230 @@ abstract class AbstractView {
    *
    * @return string
    *   The fully styled title for the HTML <code>&lt;title&gt;</code>-element.
-   * @since 0.0.1-dev
    */
   public function getHeadTitle() {
     //# The em dash is used as separator character in the header title to denoate the source of the document (like in a
     //# quote the author), this should be translated to the equivalent character in your language. More information on
     //# this specific character can be found at Wikipedia: https://en.wikipedia.org/wiki/Dash#Em_dash
-    return $this->title . p_('html head title', ' — ') . SITENAME;
+    return String::checkPlain($this->title . __(' — ', 'html head title')) . SITENAME;
+  }
+
+  /**
+   * Expand the given HTML element attributes for usage on an HTML element.
+   *
+   * @param array $attributes
+   *   [optional] The attributes that should be expanded, if array is empty, empty stirng is returned.
+   * @return string
+   *   Expanded attributes or empty string.
+   */
+  protected final function expandTagAttributes(array $attributes = []) {
+    if (empty($attributes)) {
+      return '';
+    }
+    foreach ($attributes as $attribute => $value) {
+      // Drop the title if it's empty.
+      if (empty($value) && 'title' === $attribute) {
+        unset($attributes[$attribute]);
+      }
+      else {
+        if (is_array($value)) {
+          $value = implode(' ', $value);
+        }
+        if (strcmp('href', $attribute) === 0 || strcmp('src', $attribute) === 0 || strcmp('action', $attribute) === 0) {
+          $value = String::urlEncode($value);
+        }
+        else {
+          $value = String::checkPlain($value);
+        }
+        $attributes[$attribute] = $attribute . '="' . $value . '"';
+      }
+    }
+    return ' ' . implode(' ', $attributes);
+  }
+
+  /**
+   * Helper function to add a class to a tag where you don’t know if the class array is present or not.
+   *
+   * @param string|array $class
+   *   The class or classes to add to the attributes.
+   * @param array $attributes
+   *   The attributes array.
+   * @return \MovLib\View\HTML\AbstractView
+   */
+  protected final function addClass($class, array &$attributes = []) {
+    if (!isset($attributes['class'])) {
+      $attributes['class'] = [];
+    }
+    if (is_array($class)) {
+      $attributes['class'] = array_merge($attributes['class'], $class);
+    }
+    else {
+      $attributes['class'][] = $class;
+    }
+    return $this;
+  }
+
+  /**
+   * Create HTML element, usage inspired by jQuery.
+   *
+   * @param string $tag
+   *   The tag of the HTML element.
+   * @param string $content
+   *   The content of the HTML element.
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the HTML element.
+   * @return string
+   *   The fully rendered HTML element.
+   */
+  protected final function tag($tag, $content = '', array $attributes = []) {
+    return "<$tag{$this->expandTagAttributes($attributes)}>$content</$tag>";
+  }
+
+  /**
+   * Create empty HTML element, usage inspired by jQuery.
+   *
+   * @param string $tag
+   *   The tag of the HTML element.
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the HTML element.
+   * @return string
+   *   The fully rendered empty HTML element.
+   */
+  protected final function emptyTag($tag, array $attributes = []) {
+    return "<$tag{$this->expandTagAttributes($attributes)}>";
+  }
+
+  /**
+   * Helper function to generate HTML anchor element.
+   *
+   * Usage example with an internal route:
+   * <pre>
+   * $this->link(__('example', 'route'), __('Linktext'), [
+   *   'id' => 'example-anchor-id',
+   *   'class' => [ 'example-anchor-class-1', 'example-anchor-class-2' ],
+   *   'tabindex' => $this->getTabindex(),
+   *   'data-example' => 'example data',
+   * ]);
+   * </pre>
+   *
+   * Please note that you have to translate texts that you pass to this method before passing them. This is important
+   * because <em>xgettext</em> extracts the translations via a static code analysis and can not handle
+   *
+   * @param string $href
+   *   The hyper reference of this anchor tag, can be a hash, external URL or internal route (leading slash is added
+   *   automatically, see above example on how to call this method with a route).
+   * @param string $text
+   *   The text that should appear within the anchor element: <code>&lt;a&gt;$text&lt;/a&gt;</code>
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the HTML element.
+   * @return string
+   *   The rendered HTML anchor element.
+   */
+  protected final function anchor($href, $text, array $attributes = []) {
+    // Simple and fast check if the given route is internal and needs a slash at the beginning.
+    if (strpos($href, '//') !== false || strcmp($href[0], '#') !== 0) {
+      $href = '/' . $href;
+    }
+    $attributes['href'] = $href;
+    return $this->tag('a', $text, $attributes);
+  }
+
+  /**
+   * Helper method to generate HTML image elements.
+   *
+   * @param string $src
+   *   Absolute path to the image.
+   * @param string $alt
+   *   Alternative text describing the images content.
+   * @param int $width
+   *   The width of the image.
+   * @param int $height
+   *   The height of the image.
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the HTML element.
+   * @return string
+   *   The rendered HTML image element.
+   */
+  protected final function img($src, $alt, $width, $height, array $attributes = []) {
+    $attributes['src'] = $src;
+    $attributes['alt'] = $alt;
+    $attributes['width'] = $width;
+    $attributes['height'] = $height;
+    return $this->emptyTag('img', $attributes);
+  }
+
+  /**
+   * Helper method to generate HTML form elements.
+   *
+   * @param string $action
+   *   The target URL of the form.
+   * @param string $content
+   *   The HTML content of the form.
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the HTML element.
+   * @param string $method
+   *   [optional] Change submit method of the form, by default all forms are submitted using HTTP POST.
+   * @return string
+   *   The rendered HTML form element.
+   */
+  protected final function form($action, $content, array $attributes = [], $method = 'post') {
+    // Only internal routes are allowed!
+    $attributes['action'] = "/$action";
+    $attributes['method'] = $method;
+    return $this->addClass('form', $attributes)->tag('form', $content, $attributes);
+  }
+
+  /**
+   * Helper method to generate HTML input elements.
+   *
+   * @param string $type
+   *   The input elements type.
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the HTML element.
+   * @param boolean $tabindex
+   *   [optional] Set to true to add tabindex attribute to the element.
+   * @return string
+   *   The rendered HTML input element.
+   */
+  protected final function input($type, array $attributes = [], $tabindex = false) {
+    $attributes['type'] = $type;
+    if ($tabindex) {
+      $attributes['tabindex'] = $this->getTabindex();
+    }
+    return $this->addClass("input input-$type", $attributes)->emptyTag('input', $attributes);
   }
 
   /**
    * Get the HTML head element, this includes doctype and the html root element.
    *
    * @return string
-   * @since 0.0.1-dev
    */
   public final function getHead() {
+    /* @var $icons string */
+    $icons = '';
+
+    foreach ([ '16', '24', '32', '64', '128', '256' ] as $delta => $size) {
+      $icons .= "<link rel=\"icon\" sizes=\"{$size}x{$size}\" href=\"/assets/img/logo/{$size}.png\">";
+    }
+
     return
       '<!doctype html>' .
-      '<html id="nojs">' . // @todo Add lang and dir attributes
-      '<head>' .
+      '<html id="nojs" lang="' . $this->language->getCode() . '" dir="' . $this->language->getDirection() . '">' .
+      $this->tag('head',
         // If any DNS record should be pre-fetched:
-        //'<link rel="dns-prefetch" href="">' .
-        '<title>' . $this->getHeadTitle() . '</title>' .
-        '<link rel="stylesheet" href="/assets/css/global.css">' .
-        // @todo Aggregates CSS \w cache buster.
-        '<link rel="logo" type="image/svg" href="/assets/img/logo.svg">' .
-        '<link rel="icon" type="image/svg" href="/assets/img/logo.svg">' .
-        '<link rel="copyright" href="//creativecommons.org/licenses/by-sa/3.0">' .
+        //$this->emptyTag('link', [ 'rel' => 'dns-prefetch', 'href' => '' ]) .
+        "<title>{$this->getHeadTitle()}</title>" .
+        // @todo Write own font awesome CSS!
+        $this->emptyTag('link', [ 'rel' => 'stylesheet', 'href' => '/assets/components/font-awesome-more/css/font-awesome.min.css' ]) .
+        $this->emptyTag('link', [ 'rel' => 'stylesheet', 'href' => '/assets/css/global.css' ]) .
+        $this->emptyTag('link', [ 'rel' => 'logo', 'type' => 'image/svg+xml', 'href' => '/assets/img/logo/vector.svg' ]) .
+        $this->emptyTag('link', [ 'rel' => 'icon', 'type' => 'image/svg+xml', 'href' => '/assets/img/logo/vector.svg' ]) .
+        $icons .
+        $this->emptyTag('link', [ 'rel' => 'copyright', 'href' => '//creativecommons.org/licenses/by-sa/3.0/' ])
         // @todo PNG favicons
         // @todo META tags
         // @todo Facebook tags
-      '</head>' .
+      ) .
       '<body>' .
         '<div id="container">'
     ;
@@ -146,25 +346,12 @@ abstract class AbstractView {
    *
    * @return string
    *   HTML mark-up for the logo.
-   * @since 0.0.1-dev
    */
   public function getHeaderLogo() {
-    return '<a id="logo" href="/" title="' . _('Go back to the MovLib home page.') . '">MovLib <small>the <em class="serif">free</em> movie library</small></a>';
-  }
-
-  /**
-   * Get the header search.
-   *
-   * @return string
-   * @since 0.0.1-dev
-   */
-  public final function getHeaderSearch() {
-    return
-      '<form class="search" action="/' . p_('route', 'search') . '" method="post">' .
-        '<input class="input-search" type="search" tabindex="' . $this->getTabindex() . '" placeholder="' . p_('input[type="search"]', 'Search…') . '">' .
-        '<input class="input-submit" type="submit" value="' . p_('input[type="submit"]', 'Search') . '">' .
-      '</form>'
-    ;
+    return $this->anchor('', SITENAME . ' <small>' . sprintf(__('the %sfree%s movie library'), '<em class="serif">', '</em>') . '</small>', [
+      'id' => 'logo',
+      'title' => sprintf(__('Go back to the %s home page.'), SITENAME)
+    ]);
   }
 
   /**
@@ -177,39 +364,61 @@ abstract class AbstractView {
    *   <pre>
    *   array(
    *     0 => array(
-   *       'route' => p_('route', 'example'),
-   *       'linktext' => p_('context', 'Example'),
-   *       'title' => _('This is an example for a correct navigation point link title.'),
+   *       'route' => __('example', 'route'),
+   *       'linktext' => __('Example', 'context'),
+   *       'title' => __('This is an example for a correct navigation point link title.'),
    *     )
    *   )
    *   </pre>
    * @param int $activePointIndex
    *   [optional] Index of the element within the array that should be marked active.
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the HTML nav element.
+   * @param string $glue
+   *   [optional] The string that is used to combine the various navigation points.
    * @return string
    *   Fully rendered navigation.
-   * @since 0.0.1-dev
    */
-  protected final function getNavigation($role, array $points, $activePointIndex = -1) {
-    /* @var $return string */
-    $return = '<nav class="nav ' . $role . '-nav"><ul class="menu" role="menu">';
-
-    /*
-     * @var $delta int
-     * @var $point array
-     */
+  protected final function getNavigation($role, array $points, $activePointIndex = -1, array $attributes = [], $glue = ' ') {
     foreach ($points as $delta => $point) {
-      $return .= '<li role="menuitem" class="menuitem item-' . $delta;
       if ($delta === $activePointIndex) {
-        $return .= ' active">' . $point['linktext'];
+        $points[$delta] = $this->tag('span', $point['linktext'], [
+          'class' => "menuitem item-$delta",
+          'role' => 'menuitem',
+        ]);
+      } else {
+        $points[$delta] = $this->anchor($point['route'], $point['linktext'], [
+          'class' => [ 'menuitem', 'item-' . $delta ],
+          'role' => 'menuitem',
+          'title' => !isset($point['title']) ?: $point['title'],
+        ]);
       }
-      else {
-        $point['title'] = empty($point['title']) ? '' : ' title="' . $point['title'] . '"';
-        $return .= '"><a href="/' . $point['route'] . '"' . $point['title'] . '>' . $point['linktext'] . '</a>';
-      }
-      $return .= '</li>';
     }
+    $attributes['role'] = 'menu';
+    return $this->addClass([ 'nav', "$role-nav" ], $attributes)->tag('nav', implode($glue, $points), $attributes);
+  }
 
-    return $return . '</ul></nav>';
+  /**
+   * Get the header search.
+   *
+   * @return string
+   */
+  public final function getHeaderSearch() {
+    return $this->form(
+      __('search', 'route'),
+      $this->input('search', [
+        'accesskey' => 'f',
+        'placeholder' => __('Search…', 'input[type="search"]'),
+        'title' => __('Enter the search term you wish to search for and hit enter. [alt-shift-f]'),
+        'role' => 'textbox',
+      ], true) .
+      $this->tag('button', '<i class="icon-search inline"></i>', [
+        'class' => [ 'input', 'input-submit' ],
+        'type' => 'submit',
+        'title' => __('Start searching for the entered keyword.')
+      ]),
+      [ 'class' => [ 'search', 'inline' ], 'role' => [ 'search' ] ]
+    );
   }
 
   /**
@@ -218,23 +427,22 @@ abstract class AbstractView {
    * @todo Every header nav point has to have a descriptive title.
    * @see \MovLib\View\HTML\AbstractView::getNavigation
    * @return string
-   * @since 0.0.1-dev
    */
   public final function getHeaderNavigation() {
     return $this->getNavigation('main', [
       /* 0 => */[
-        'route' => p_('route', 'movies'),
-        'linktext' => p_('header .main-nav', 'Movies'),
+        'route' => __('movies', 'route'),
+        'linktext' => __('Movies', 'header .main-nav'),
       ],
       /* 1 => */[
-        'route' => p_('route', 'persons'),
-        'linktext' => p_('header .main-nav', 'Persons'),
+        'route' => __('persons', 'route'),
+        'linktext' => __('Persons', 'header .main-nav'),
       ],
       /* 2 => */[
-        'route' => p_('route', 'marketplace'),
-        'linktext' => p_('header .main-nav', 'Marketplace'),
+        'route' => __('marketplace', 'route'),
+        'linktext' => __('Marketplace', 'header .main-nav'),
       ],
-    ], $this->activeHeaderNavigationPoint);
+    ], $this->activeHeaderNavigationPoint, [ 'class' => [ 'inline' ] ], ' / ');
   }
 
   /**
@@ -244,37 +452,35 @@ abstract class AbstractView {
    * @todo Menu has to change upon user state (signed in / out).
    * @see \MovLib\View\HTML\AbstractView::getNavigation
    * @return string
-   * @since 0.0.1-dev
    */
   public final function getHeaderUserNavigation() {
     return $this->getNavigation('user', [
       /* 0 => */[
-        'route' => p_('route', 'sign_up'),
-        'linktext' => p_('header .user-nav', 'Sign up'),
+        'route' => __('sign_up', 'route'),
+        'linktext' => __('Sign up', 'header .user-nav'),
       ],
       /* 1 => */[
-        'route' => p_('route', 'sign_in'),
-        'linktext' => p_('header .user-nav', 'Sign in'),
+        'route' => __('sign_in', 'route'),
+        'linktext' => __('Sign in', 'header .user-nav'),
       ],
       /* 2 => */[
-        'route' => p_('route', 'help'),
-        'linktext' => p_('header .user-nav', 'Help'),
+        'route' => __('help', 'route'),
+        'linktext' => __('Help', 'header .user-nav'),
       ]
-    ], $this->activeHeaderUserNavigationPoint);
+    ], $this->activeHeaderUserNavigationPoint, [ 'class' => [ 'inline' ] ]);
   }
 
   /**
    * Get the header.
    *
    * @return string
-   * @since 0.0.1-dev
    */
   public final function getHeader() {
     return
-      '<header id="header">' .
+      '<header id="header" class="clearfix">' .
         $this->getHeaderLogo() .
-        $this->getHeaderSearch() .
         $this->getHeaderNavigation() .
+        $this->getHeaderSearch() .
         $this->getHeaderUserNavigation() .
       '</header>'
     ;
@@ -284,13 +490,22 @@ abstract class AbstractView {
    * Get the footer.
    *
    * @return string
-   * @since 0.0.1-dev
    */
   public final function getFooter() {
     // Please note that a closing body or html tag is not necessary, let us save the bytes.
     return
           '<footer id="footer">' .
-            // @todo Add footer content
+            '<div class="row">' .
+
+            '</div>' .
+            '<div class="copyright">' .
+              sprintf(
+                __('Text is available under the %s; additional terms may apply. By using this site, you agree to the %s and %s.'),
+                '<a rel="license" href="//creativecommons.org/licenses/by-sa/3.0/">' . __('Creative Commons Attribution-ShareAlike License') . '</a>',
+                '<a href="' . __('terms-of-use', 'route') . '">' . __('Terms of Use') . '</a>',
+                '<a href="' . __('privacy-policy', 'route') . '">' . __('Privacy Policy') . '</a>'
+              ) .
+            '</div>' .
           '</footer>' .
         '</div>' // end #container
       // @todo Add aggregated scripts
@@ -301,7 +516,6 @@ abstract class AbstractView {
    * Get the rendered content, without HTML head, header and footer.
    *
    * @return string
-   * @since 0.0.1-dev
    */
   abstract public function getRenderedContent();
 
@@ -309,7 +523,6 @@ abstract class AbstractView {
    * Get the full rendered view, with HTML head, header and footer.
    *
    * @return string
-   * @since 0.0.1-dev
    */
   public final function getRenderedView() {
     return

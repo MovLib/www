@@ -18,7 +18,6 @@
 
 namespace MovLib\Utility;
 
-use \ErrorException;
 use \FilesystemIterator;
 use \MovLib\Exception\FileSystemException;
 use \RecursiveDirectoryIterator;
@@ -49,12 +48,9 @@ class FileSystem {
    *   The absolute path to the operating systems specific temporary path (no trailing directory separator).
    */
   public static function getTemporaryDirectory() {
-    static $tmpDir = '';
-    if (empty($tmpDir)) {
-      $tmpDir = sys_get_temp_dir();
-      if (substr($tmpDir, -1) === DIRECTORY_SEPARATOR) {
-        $tmpDir = substr($tmpDir, 0, -1);
-      }
+    static $tmpDir = null;
+    if (is_null($tmpDir)) {
+      $tmpDir = rtrim(sys_get_temp_dir(), '/');
     }
     return $tmpDir;
   }
@@ -70,15 +66,16 @@ class FileSystem {
    * @return string
    *   The absolute path to the temporary copy.
    * @throws \MovLib\Exception\FileSystemException
-   *   If the copy operation fails a <em>FileSystemException</em> is thrown.
+   *   If the copy operation fails.
    * @since 0.0.1-dev
    */
-  public static function temporaryCopy($source, $fileExtension = '') {
+  public static function temporaryCopy($source, $fileExtension = null) {
     // Only try to extract the files extension if it has not been overwritten by the caller.
-    if (empty($fileExtension)) {
+    if (is_null($fileExtension)) {
       $fileExtension = pathinfo($source, PATHINFO_EXTENSION);
     }
 
+    // Prepend dot to file extension.
     if (!empty($fileExtension)) {
       $fileExtension = '.' . $fileExtension;
     }
@@ -117,31 +114,43 @@ class FileSystem {
    * @since 0.0.1-dev
    */
   public static function unlinkRecursive($path) {
-    try {
-      // Check if a path was given at all and if the path is on our local filesystem and exists.
-      if ($path && realpath($path) && file_exists($path)) {
-        if (is_dir($path)) {
-          /* @var $tmpPath \DirectoryIterator */
-          foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $tmpPath) {
-            if ($tmpPath->isDir()) {
-              rmdir($tmpPath->getPathname());
-            }
-            elseif ($tmpPath->isFile() || $tmpPath->isLink()) {
-              unlink($tmpPath->getPathname());
-            }
+    /* @var $return boolean */
+    $return = false;
+
+    /* @var $exceptionMessage string */
+    $exceptionMessage = 'Could not delete given directory, file or symbolic link: "' . $path . '"';
+
+    // Check if a path was given at all and if the path is on our local filesystem and exists.
+    if ($path && realpath($path) && file_exists($path)) {
+      if (is_dir($path)) {
+        /* @var $tmpPath \DirectoryIterator */
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $tmpPath) {
+          if ($tmpPath->isDir()) {
+            $return = rmdir($tmpPath->getPathname());
           }
-          return rmdir($path);
+          elseif ($tmpPath->isFile() || $tmpPath->isLink()) {
+            $return = unlink($tmpPath->getPathname());
+          }
+
+          // Check each iteration if something went wrong.
+          if (!$return) {
+            throw new FileSystemException($exceptionMessage);
+          }
         }
-        elseif (is_file($path) || is_link($path)) {
-          return unlink($path);
-        }
+
+        // Above loop will not delete the directory itself, this is the last step.
+        $return = rmdir($path);
+      }
+      elseif (is_file($path) || is_link($path)) {
+        $return = unlink($path);
       }
     }
-    /* @var $e \ErrorException */
-    catch (ErrorException $e) {
-      throw new FileSystemException('Could not delete given directory, file or symbolic link: "' . $path . '"', $e->getCode(), $e);
+
+    if (!$return) {
+      throw new FileSystemException($exceptionMessage);
     }
-    return false;
+
+    return $return;
   }
 
 }

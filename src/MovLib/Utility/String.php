@@ -15,12 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter;
-
-use \MovLib\View\HTML\HomeView;
+namespace MovLib\Utility;
 
 /**
- *
+ * Description of String
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,11 +26,32 @@ use \MovLib\View\HTML\HomeView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HomePresenter extends AbstractPresenter {
+class String {
 
-  public function __construct() {
-    parent::__construct();
-    $this->output = (new HomeView($this->language))->getRenderedView();
+  /**
+   * Encodes special characters in a plain-text string for display as HTML.
+   *
+   * Also validates strings as UTF-8.
+   *
+   * @param string $text
+   *   The text to be checked or processed.
+   * @return string
+   *   HTML safe version of <code>$text</code>, or an empty string if <code>$text</code> is not valid UTF-8.
+   */
+  public static function checkPlain($text) {
+    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+  }
+
+  /**
+   * Encode URL for display in HTML anchor elements.
+   *
+   * @param string $url
+   *   The URL to be encoded.
+   * @return string
+   *   HTML safe version of <code>$url</code>.
+   */
+  public static function urlEncode($url) {
+    return htmlentities(str_replace('%2F', '/', rawurlencode($url)));
   }
 
 }

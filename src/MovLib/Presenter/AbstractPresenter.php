@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presenter;
 
+use \MovLib\Entity\Language;
+
 /**
  *
  *
@@ -34,6 +36,17 @@ abstract class AbstractPresenter {
    * @var string
    */
   protected $output = '';
+
+  /**
+   * The currently active language.
+   *
+   * @var \MovLib\Entity\Language
+   */
+  protected $language;
+
+  public function __construct() {
+    $this->language = new Language();
+  }
 
   /**
    * Get the whole output of this presenter.

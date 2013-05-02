@@ -36,8 +36,8 @@ class HomeView extends AbstractView {
   /**
    * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct(SITENAME);
+  public function __construct($language) {
+    parent::__construct($language, SITENAME);
   }
 
   /**
@@ -49,13 +49,17 @@ class HomeView extends AbstractView {
    * @return string
    */
   public function getHeadTitle() {
-    //# The comma is used as separator character in the header title of the home page. The header title of the home page
-    //# is built like a setence with the pattern "[sitename][separator][description]". The content of this sentence in
-    //# the first version of the software was "MovLib, the free movie library.". The trailing dot was part of the slogan
-    //# but the comma is translated as separate string (to ensure that the slogan stays re-usable). Translate the comma
-    //# to the equivalent character in your language. More information on this specific character can be found at
-    //# Wikipedia: https://en.wikipedia.org/wiki/Comma
-    return $this->title . _(', ') . SITESLOGAN;
+    return
+      $this->title .
+      //# The comma is used as separator character in the header title of the home page. The header title of the home
+      //# page is built like a setence with the pattern "[sitename][separator][description]". The content of this
+      //# sentence in the first version of the software was "MovLib, the free movie library.". The trailing dot was part
+      //# of the slogan but the comma is translated as separate string (to ensure that the slogan stays re-usable).
+      //# Translate the comma to the equivalent character in your language. More information on this specific character
+      //# can be found at Wikipedia: https://en.wikipedia.org/wiki/Comma
+      __(', ') .
+      __('the free movie library.')
+    ;
   }
 
   /**
@@ -68,10 +72,8 @@ class HomeView extends AbstractView {
    */
   public function getHeaderLogo() {
     return
-      '<h1 id="logo">' .
-        SITENAME .
-        //# Do not forget to include the %s in your translation!
-        ' <small>' . sprintf(_('the %sfree%s movie library'), '<em class="serif">', '</em>') . '</small>' .
+      '<h1 id="logo" class="inline">' .
+        SITENAME . ' <small>' . sprintf(__('the %sfree%s movie library'), '<em class="serif">', '</em>') . '</small>' .
       '</h1>'
     ;
   }
@@ -80,7 +82,54 @@ class HomeView extends AbstractView {
    * {@inheritdoc}
    */
   public function getRenderedContent() {
-    return '<p>' . _('Hello World!') . '</p>';
+    return
+      '<pre>01[2]34[5]67[8]9a[b]cd[e]f
+
+--- dark ---
+#222
+  #333
+  #3b3b3b
+  #484848
+#555
+  #626262
+  #6e6e6e
+  #7b7b7b
+#888
+  #959595
+  #a1a1a1
+  #aeaeae
+#bbb
+  #c8c8c8
+  #d4d4d4
+#eee
+  #e1e1e1
+  #fbfbfb
+-- bright --</pre>' .
+      '<p>Test <code>1234</code> Test</p>' .
+      '<div id="homepage-banner">' . __('Do you like movies?') . '<br>' . __('Great!') . '<br>' . __('So do we!') . '</div>' .
+      '<div class="row">' .
+        '<div class="span3">' .
+          '<h3>' . __('Movies') . '</h3>' .
+        '</div>' .
+        '<div class="span3">' .
+          '<h3>' . __('People') . '</h3>' .
+        '</div>' .
+        '<div class="span3">' .
+          '<h3>' . __('Marketplace') . '</h3>' .
+        '</div>' .
+      '</div>' .
+      '<div class="row">' .
+        '<div class="span3">' .
+          '<h3>' . __('Releases') . '</h3>' .
+        '</div>' .
+        '<div class="span3">' .
+          '<h3>' . __('My MovLib') . '</h3>' .
+        '</div>' .
+        '<div class="span3">' .
+          '<h3>' . __('API') . '</h3>' .
+        '</div>' .
+      '</div>'
+    ;
   }
 
 }
