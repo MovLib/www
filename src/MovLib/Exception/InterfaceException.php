@@ -17,18 +17,16 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\InterfaceException;
-use \RuntimeException;
-
 /**
- * A <b>FileSystemException</b> might be thrown if any local filesystem action fails.
+ * Description of InterfaceException
  *
+ * @link http://ralphschindler.com/2010/09/15/exception-best-practices-in-php-5-3
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class FileSystemException extends RuntimeException implements InterfaceException {
+interface InterfaceException {
 
 }

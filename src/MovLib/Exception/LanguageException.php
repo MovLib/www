@@ -21,7 +21,7 @@ use \MovLib\Exception\InterfaceException;
 use \RuntimeException;
 
 /**
- * A <b>FileSystemException</b> might be thrown if any local filesystem action fails.
+ * A language exception might be thrown if an error occures related to the display language.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,6 +29,6 @@ use \RuntimeException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class FileSystemException extends RuntimeException implements InterfaceException {
+class LanguageException extends RuntimeException implements InterfaceException {
 
 }
