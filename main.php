@@ -32,9 +32,6 @@
  * @since 0.0.1-dev
  */
 
-/** Install path */
-define('IP', __DIR__);
-
 /** ASCII end of transmission */
 define('PHP_EOT', chr(4));
 
@@ -49,7 +46,7 @@ define('SITENAME', 'MovLib');
  * @return void
  */
 function __autoload($class) {
-  require IP . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . strtr($class, '\\', DIRECTORY_SEPARATOR) . '.php';
+  require '/src/' . strtr($class, '\\', DIRECTORY_SEPARATOR) . '.php';
 }
 
 /**
