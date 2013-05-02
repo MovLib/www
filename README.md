@@ -2,7 +2,7 @@
 
 The free movie library that anyone can edit.
 
-Our target is to combine the power of websites like Wikipedia, IMDb, OFDb, … and alike into a single big free project.
+Our target is to combine the power of websites like Wikipedia, IMDb, OFDb, Discogs, … and alike into a single big free project.
 
 Stay tuned!
 
