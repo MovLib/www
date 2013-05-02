@@ -39,10 +39,7 @@ define('IP', __DIR__);
 define('PHP_EOT', chr(4));
 
 /** The name of the website. */
-define('SITENAME', _('MovLib'));
-
-/** The slogan of the website, with trailing dot. */
-define('SITESLOGAN', _('the free movie library.'));
+define('SITENAME', 'MovLib');
 
 /**
  * Ultra fast class autoloader.
@@ -53,30 +50,6 @@ define('SITESLOGAN', _('the free movie library.'));
  */
 function __autoload($class) {
   require IP . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . strtr($class, '\\', DIRECTORY_SEPARATOR) . '.php';
-}
-
-/**
- * Plural version of <code>gettext()</code> and alias for <code>ngettext()</code>.
- *
- * Some languages have more than one form for plural messages, this depends on the count (parameter <code>$n</code>).
- *
- * This alias is defined to keep the usage of gettext calls consistent. We always use <code>_()</code> to call the
- * standard <code>gettext()</code> function (which is standard). To call <code>ngettext()</code> developers should use
- * this alias function.
- *
- * @see ngettext
- * @param string $msgid1
- *   The message to use if the count is <em>1</em>.
- * @param string $msgid2
- *   The message to use if the count is <em>>1</em>.
- * @param int $n
- *   The count that defines the plural form to use.
- * @return string
- *   The translated string
- * @since 0.0.1-dev
- */
-function n_($msgid1, $msgid2, $n) {
-  return ngettext($msgid1, $msgid2, $n);
 }
 
 /**
@@ -92,9 +65,8 @@ function n_($msgid1, $msgid2, $n) {
  *   The message that should be translated.
  * @return string
  *   The translated message.
- * @since 0.0.1-dev
  */
-function p_($msgctxt, $msgid) {
+function pgettext($msgctxt, $msgid) {
   /* @var $msgctxtid string */
   $msgctxtid = $msgctxt . PHP_EOT . $msgid;
   /* @var $translation string */
@@ -111,7 +83,7 @@ function p_($msgctxt, $msgid) {
  * @link http://www.gnu.org/software/gettext/manual/html_node/Contexts.html
  * @link http://www.gnu.org/software/gettext/manual/html_node/Plural-forms.html
  * @see ngettext
- * @see p_
+ * @see pgettext
  * @param string $msgctxt
  *   The message's context identifier. Do not use the class name or full sentences as context. Try to use jQuery like
  *   selectors like <code>html head title</code> or <code>input[type="search"]</code> as they are very unlikely to
@@ -124,9 +96,8 @@ function p_($msgctxt, $msgid) {
  *   The count that defines the plural form to use.
  * @return string
  *   The translated message.
- * @since 0.0.1-dev
  */
-function np_($msgctxt, $msgid1, $msgid2, $num) {
+function npgettext($msgctxt, $msgid1, $msgid2, $num) {
   /* @var $msgctxtid1 string */
   $msgctxtid1 = $msgctxt . PHP_EOT . $msgid1;
   /* @var $msgctxtid2 string */
@@ -142,14 +113,99 @@ function np_($msgctxt, $msgid1, $msgid2, $num) {
   return $translation;
 }
 
-// This is the outermost place to catch an exception.
-// @todo Should we catch all PHP error messages with exceptions to catch them at least here in production?
-try {
-  /* @var $presenter string */
-  $presenter = '\\MovLib\\Presenter\\' . $_SERVER['PRESENTER'] . 'Presenter';
-  echo (new $presenter())->getOutput();
+/**
+ * Gettext with optional context support.
+ *
+ * @see gettext
+ * @see pgettext
+ * @param string $msgid
+ *   The message that should be translated.
+ * @param string $msgctxt
+ *   [optional] Context of this translation.
+ * @return string
+ *   The translated string.
+ */
+function __($msgid, $msgctxt = '') {
+  if (empty($msgctxt)) {
+    return gettext($msgid);
+  }
+  return pgettext($msgctxt, $msgid);
 }
-/* @var $e \Exception */
-catch (\Exception $e) {
-  echo $e->getMessage();
+
+/**
+ * Plural version of gettext with optional context support.
+ *
+ * @see ngettext
+ * @see npgettext
+ * @param string $msgid1
+ *   The message to use if the count is <em>1</em>.
+ * @param string $msgid2
+ *   The message to use if the count is <em>&gt;1</em>.
+ * @param int $n
+ *   The count that defines the plural form to use.
+ * @param string $msgctxt
+ *   [optional] Context of this translation.
+ * @return string
+ *   The translated string
+ */
+function n__($msgid1, $msgid2, $n, $msgctxt = '') {
+  if (empty($msgctxt)) {
+    return ngettext($msgid1, $msgid2, $n);
+  }
+  return npgettext($msgctxt, $msgid1, $msgid2, $n);
 }
+
+/**
+ * Global function to convert PHP errors to exceptions.
+ *
+ * PHP by default mostly throws errors and not exceptions (like Java or Ruby). This user-defined error handler converts
+ * these errors to exceptions and allows us to catch them and work with them. All PHP errors are runtime errors, as they
+ * only appear by <em>doing</em> something. For more info on the differenciation of various exceptions and what they
+ * mean have a look at the great article from Ralph Schindler (linked below).
+ *
+ * Please also note that this function will not convert all kinds of errors. This is due to the fact that it might not
+ * even be registered when an error is raised. For instance if something goes wrong while PHP is bootstraping to start
+ * our application, or while compiling this file. Of course such errors are more than fatal and should be observed with
+ * another software that is capable of rescuing the PHP process itself.
+ *
+ * @link http://ralphschindler.com/2010/09/15/exception-best-practices-in-php-5-3
+ * @link http://www.php.net/manual/en/function.set-error-handler.php
+ * @param int $errno
+ *   The level of error that was raised.
+ * @param string $errstr
+ *   The error message that describes what went wrong.
+ * @param string $errfile
+ *   The filename that the error was raised in.
+ * @param int $errline
+ *   The line number the error was raised at.
+ * @throws \RuntimeException
+ *   If invoked, always raises a runtime exception.
+ */
+//function error_all_handler($errno, $errstr, $errfile, $errline) {
+//  throw new \RuntimeException($errstr, 0, $errno, $errfile, $errline);
+//}
+
+// Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
+//set_error_handler('error_all_handler');
+
+/**
+ * This is the outermost place to catch any exception that might have been forgotten somewhere.
+ *
+ * To ensure that no unexpected behaviour crashes our software, any uncaught exception will be caught at this place. An
+ * error is logged to the syslog and, depending on the error, a message is displayed to the user.
+ *
+ * @link http://www.php.net/manual/en/function.set-exception-handler.php
+ * @param \Exception $e
+ *   The base exception class from PHP from which every exception derives. This ensures that we are able to catch
+ *   absolutely every exception that might arise.
+ */
+//function uncaught_exception_handler(\Exception $e) {
+//  echo $e->getMessage();
+//}
+
+// Set the default exception handler.
+//set_exception_handler('uncaught_exception_handler');
+
+/* @var $presenter string */
+$presenter = '\\MovLib\\Presenter\\' . $_SERVER['PRESENTER'] . 'Presenter';
+echo (new $presenter())->getOutput();

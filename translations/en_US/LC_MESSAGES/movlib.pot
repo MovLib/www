@@ -1,0 +1,165 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR MovLib, the free movie library.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: MovLib 0.0.1-dev\n"
+"Report-Msgid-Bugs-To: webmaster@movlib.org\n"
+"POT-Creation-Date: 2013-05-01 18:40+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: MovLib/Presenter/AbstractPresenter.php:78 MovLib/Presenter/AbstractPresenter.php:78
+msgid "This information is only available on a development server!"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:156 MovLib/View/HTML/AbstractView.php:156
+msgid "Go back to the MovLib home page."
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:166 MovLib/View/HTML/AbstractView.php:166
+msgctxt "route"
+msgid "search"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:167 MovLib/View/HTML/AbstractView.php:167
+msgctxt "input[type=\"search\"]"
+msgid "Search…"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:168 MovLib/View/HTML/AbstractView.php:168
+msgctxt "input[type=\"submit\"]"
+msgid "Search"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:274 MovLib/View/HTML/AbstractView.php:274
+msgctxt "route"
+msgid "movies"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:275 MovLib/View/HTML/AbstractView.php:275
+msgctxt "header .main-nav"
+msgid "Movies"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:278 MovLib/View/HTML/AbstractView.php:278
+msgctxt "route"
+msgid "persons"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:279 MovLib/View/HTML/AbstractView.php:279
+msgctxt "header .main-nav"
+msgid "Persons"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:282 MovLib/View/HTML/AbstractView.php:282
+msgctxt "route"
+msgid "marketplace"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:283 MovLib/View/HTML/AbstractView.php:283
+msgctxt "header .main-nav"
+msgid "Marketplace"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:299 MovLib/View/HTML/AbstractView.php:299
+msgctxt "route"
+msgid "sign_up"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:300 MovLib/View/HTML/AbstractView.php:300
+msgctxt "header .user-nav"
+msgid "Sign up"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:303 MovLib/View/HTML/AbstractView.php:303
+msgctxt "route"
+msgid "sign_in"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:304 MovLib/View/HTML/AbstractView.php:304
+msgctxt "header .user-nav"
+msgid "Sign in"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:307 MovLib/View/HTML/AbstractView.php:307
+msgctxt "route"
+msgid "help"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:308 MovLib/View/HTML/AbstractView.php:308
+msgctxt "header .user-nav"
+msgid "Help"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:343 MovLib/View/HTML/AbstractView.php:343
+#, php-format
+msgid "Text is available under the %s; additional terms may apply. By using this site, you agree to the %s and %s."
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:344 MovLib/View/HTML/AbstractView.php:344
+msgid "Creative Commons Attribution-ShareAlike License"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:345 MovLib/View/HTML/AbstractView.php:345
+msgid "Terms of Use"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:346 MovLib/View/HTML/AbstractView.php:346
+msgid "Privacy Policy"
+msgstr ""
+
+#. # The comma is used as separator character in the header title of the home page. The header title of the home page
+#. # is built like a setence with the pattern "[sitename][separator][description]". The content of this sentence in
+#. # the first version of the software was "MovLib, the free movie library.". The trailing dot was part of the slogan
+#. # but the comma is translated as separate string (to ensure that the slogan stays re-usable). Translate the comma
+#. # to the equivalent character in your language. More information on this specific character can be found at
+#. # Wikipedia: https://en.wikipedia.org/wiki/Comma
+#. # The comma is used as separator character in the header title of the home page. The header title of the home
+#. # page is built like a setence with the pattern "[sitename][separator][description]". The content of this
+#. # sentence in the first version of the software was "MovLib, the free movie library.". The trailing dot was part
+#. # of the slogan but the comma is translated as separate string (to ensure that the slogan stays re-usable).
+#. # Translate the comma to the equivalent character in your language. More information on this specific character
+#. # can be found at Wikipedia: https://en.wikipedia.org/wiki/Comma
+#: MovLib/View/HTML/HomeView.php:58 MovLib/View/HTML/HomeView.php:60
+msgid ", "
+msgstr ""
+
+#: MovLib/View/HTML/HomeView.php:73 MovLib/View/HTML/HomeView.php:77
+#, php-format
+msgid "the %sfree%s movie library"
+msgstr ""
+
+#: MovLib/View/HTML/HomeView.php:83 MovLib/View/HTML/HomeView.php:87
+msgid "Hello World!"
+msgstr ""
+
+#: MovLib/Entity/Language.php:91 MovLib/Entity/Language.php:97
+msgid "English"
+msgstr ""
+
+#: MovLib/Entity/Language.php:92 MovLib/Entity/Language.php:98
+msgid "German"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:345
+msgctxt "route"
+msgid "terms-of-use"
+msgstr ""
+
+#: MovLib/View/HTML/AbstractView.php:346
+msgctxt "route"
+msgid "privacy-policy"
+msgstr ""
+
+#: MovLib/View/HTML/HomeView.php:61
+msgid "the free movie library."
+msgstr ""
