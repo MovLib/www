@@ -1,20 +1,29 @@
-{
-  "= /": {
+[
+  {
+    "route": "= /",
     "presenter": "Home"
   },
-  "= /movies": {
+  {
+    "route": "= /main.php",
+    "return": "301 /"
+  },
+  {
+    "route": "= /__(movies)",
     "presenter": "Movies"
   },
-  "~ /movies/([0-9]+)$": {
-    "return": "301 /movie"
+  {
+    "route": "~/__(movies)/([0-9]+)$",
+    "return": "301 /__(movie)/$1"
   },
-  "= /movie": {
-    "return": "301 /movies"
+  {
+    "prefix": "= /__(movie)",
+    "return": "301 /"
   },
-  "~ /movie/([0-9]+)$": {
+  {
+    "route": "~ /__(movie)/([0-9]+)$",
     "presenter": "Movie",
     "vars": {
       "movie_id": "$1"
     }
   }
-}
+]
