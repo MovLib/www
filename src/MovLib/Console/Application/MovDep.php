@@ -38,7 +38,7 @@ class MovDep extends Application {
    */
   public function __construct() {
     parent::__construct('MovDep', '0.0.1-dev');
-    foreach ([ 'Nginx', 'Routes' ] as $cmd) {
+    foreach ([ 'Nginx', 'Routes', 'Gettext' ] as $cmd) {
       $cmd = '\\MovLib\\Console\\Command\\' . $cmd;
       $this->add(new $cmd());
     }
