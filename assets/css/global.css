@@ -82,7 +82,7 @@ html, input, button, select, textarea, code, pre {
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
-  font: 400 14px/20px Arial, Helvetica, 'Nimbus Sans L', 'Liberation Sans', FreeSans, sans-serif;
+  font: 400 14px/20px Arial, 'Helvetica Neue', Helvetica, 'Nimbus Sans L', 'Liberation Sans', FreeSans, sans-serif;
   color: #333;
   background-color: #fff;
 }
@@ -247,58 +247,6 @@ pre.scrollable {
   overflow-y: hidden;
 }
 
-.row {
-  margin-left: -20px;
-}
-
-#container {
-  margin: 0 auto;
-  min-width: 320px;
-  max-width: 1280px;
-}
-
-/* Header and logo -------------------------------------------------------------------------------------------------- */
-
-#header {
-  margin: 0 0 20px;
-  padding: 5px 0;
-}
-
-#logo {
-  margin: 0;
-  padding: 0 0 0 80px;
-  background: url(/assets/img/logo/64.png) no-repeat;
-  height: 64px;
-  line-height: 50px;
-}
-
-#logo small {
-  margin-left: 1px;
-  display: block;
-  font-size: 14px;
-}
-
-#header .search {
-  padding-left: 4px;
-  height: 22px;
-  border: 1px solid #aeaeae;
-  background-color: #fbfbfb;
-}
-
-#header .search:focus, #header .search.focus {
-  border-color: #06c;
-}
-
-#header .input {
-  height: 22px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background-color: transparent;
-  outline: 0;
-  vertical-align: top;
-}
-
 :-moz-placeholder {
   color: #aeaeae;
   opacity: 1;
@@ -317,20 +265,85 @@ pre.scrollable {
   color: #aeaeae;
 }
 
-#header .input-submit {
-  width: 22px;
-  height: 22px;
+.row {
+  margin-left: -20px;
 }
 
-#header .icon-search {
+#container {
+  margin: 0 auto;
+  min-width: 320px;
+  max-width: 1280px;
+}
+
+/* Header ----------------------------------------------------------------------------------------------------------- */
+
+#header {
+  margin: 0 0 20px;
+  padding: 5px 0;
+}
+
+#header .menuitem {
+  color: #888;
+}
+
+#header .menuitem:hover, #header .menuitem:focus {
+  color: #222;
+  text-decoration: none;
+}
+
+/* Logo ------------------------------------------------------------------------------------------------------------- */
+
+#logo {
+  margin: 0;
+  padding: 0 0 0 80px;
+  background: url(/assets/img/logo/64.png) no-repeat;
+  height: 64px;
+  line-height: 50px;
+}
+
+#logo small {
+  margin-left: 1px;
+  display: block;
+  font-size: 14px;
+}
+
+/* Main navigation -------------------------------------------------------------------------------------------------- */
+
+.main-nav {
+  font-size: 22px;
+  color: #bbb;
+}
+
+/* Search ----------------------------------------------------------------------------------------------------------- */
+
+.header-search {
+  padding-left: 4px;
+  height: 22px;
+  border: 1px solid #aeaeae;
+  background-color: #fbfbfb;
+}
+
+.header-search:focus, .header-search.focus {
+  border-color: #06c;
+}
+
+.header-search .input {
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  outline: 0;
+  vertical-align: baseline;
+}
+
+.header-search .input-submit {
+  width: 22px;
+  height: 22px;
   color: #aeaeae;
 }
 
-/* Font icons ------------------------------------------------------------------------------------------------------- */
-
-[class^="icon-"] {
-  line-height: 1;
-}
+/* User navigation -------------------------------------------------------------------------------------------------- */
 
 /* Generic classes -------------------------------------------------------------------------------------------------- */
 
@@ -357,15 +370,21 @@ pre.scrollable {
 }
 
 .serif {
-  font-family: Georgia, 'Nimbus Roman No9 L', Norasi, Rekha, serif;
+  font-family: Georgia, Times, 'Times New Roman', 'Nimbus Roman No9 L', Norasi, Rekha, serif;
+}
+
+.condensed {
+  font-family: 'Arial Narrow', Arial, 'Helvetica Neue', Helvetica, 'Nimbus Sans L', 'Liberation Sans', FreeSans, sans-serif;
+  font-weight: 300;
+  font-stretch: condensed;
 }
 
 /* Mozilla Firefox specific styles -------------------------------------------------------------------------------------
  * Use obscure selectors which have not been used before, otherwise Firefox will not apply the styles!
  */
 
-@-moz-document domain(movlib.org) {
+@-moz-document url-prefix() {
   #header .input-submit i {
-    vertical-align: text-top;
+    vertical-align: 1px;
   }
 }

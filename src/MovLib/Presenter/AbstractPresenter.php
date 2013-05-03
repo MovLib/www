@@ -63,34 +63,14 @@ abstract class AbstractPresenter {
    * @return string
    */
   public function __toString() {
-    /* @var $className string */
-    $className = get_class($this);
-
-    /* @var $content string */
-    $content = '';
-
     if (xdebug_is_enabled()) {
       ob_start();
       var_dump($this);
-      $content .= ob_get_clean();
+      return ob_get_clean();
     }
     else {
-      $content .= '<p>' . _('This information is only available on a development server!') . '</p>';
+      return '<pre>' . print_r($this, true) . '</pre>';
     }
-
-    return
-      '<!doctype html>' .
-      '<html>' .
-      '<head>' .
-        '<title>' . $className . '</title>' .
-        '<link rel="stylesheet" href="/assets/css/global.css">' .
-      '</head>' .
-      '<body>' .
-        '<div id="container">' .
-          '<h1 id="page-header">Debug information <small>' . $className . '</small></h1>' .
-          $content .
-        '</div>'
-    ;
   }
 
 }

@@ -141,8 +141,8 @@ abstract class AbstractView {
         if (is_array($value)) {
           $value = implode(' ', $value);
         }
-        if (strcmp('href', $attribute) === 0 || strcmp('src', $attribute) === 0 || strcmp('action', $attribute) === 0) {
-          $value = String::urlEncode($value);
+        if ('href' === $attribute || 'src' === $attribute || 'action' === $attribute) {
+          $value = htmlentities($value);
         }
         else {
           $value = String::checkPlain($value);
@@ -188,7 +188,7 @@ abstract class AbstractView {
    *   The fully rendered HTML element.
    */
   protected final function tag($tag, $content = '', array $attributes = []) {
-    return "<$tag{$this->expandTagAttributes($attributes)}>$content</$tag>";
+    return '<' . $tag . $this->expandTagAttributes($attributes) . '>' . $content . '</' . $tag . '>';
   }
 
   /**
@@ -202,7 +202,7 @@ abstract class AbstractView {
    *   The fully rendered empty HTML element.
    */
   protected final function emptyTag($tag, array $attributes = []) {
-    return "<$tag{$this->expandTagAttributes($attributes)}>";
+    return '<' . $tag . $this->expandTagAttributes($attributes) . '>';
   }
 
   /**
@@ -233,8 +233,8 @@ abstract class AbstractView {
    */
   protected final function anchor($href, $text, array $attributes = []) {
     // Simple and fast check if the given route is internal and needs a slash at the beginning.
-    if (strpos($href, '//') !== false || strcmp($href[0], '#') !== 0) {
-      $href = '/' . $href;
+    if (empty($href) || strpos($href, '//') !== false || $href[0] !== '#' || $href[0] !== '/') {
+      $href = "/$href";
     }
     $attributes['href'] = $href;
     return $this->tag('a', $text, $attributes);
@@ -302,40 +302,46 @@ abstract class AbstractView {
     if ($tabindex) {
       $attributes['tabindex'] = $this->getTabindex();
     }
-    return $this->addClass("input input-$type", $attributes)->emptyTag('input', $attributes);
+    return $this->addClass([ 'input', "input-$type" ], $attributes)->emptyTag('input', $attributes);
   }
 
   /**
    * Get the HTML head element, this includes doctype and the html root element.
    *
+   * @todo Add link to icon blog article (can not remember the name, but there must be a bookmark somewhere).
    * @return string
    */
   public final function getHead() {
     /* @var $icons string */
     $icons = '';
 
-    foreach ([ '16', '24', '32', '64', '128', '256' ] as $delta => $size) {
-      $icons .= "<link rel=\"icon\" sizes=\"{$size}x{$size}\" href=\"/assets/img/logo/{$size}.png\">";
+    // IMPORTANT: Go from big to small, many browsers simply use the last one, even if the need another one.
+    foreach ([ '256', '128', '64', '32', '24', '16' ] as $delta => $size) {
+      $icons .= '<link rel="icon" sizes="' . $size . 'x' . $size . '" href="/assets/img/logo/' . $size . '.png">';
     }
+
+    // @todo Add Apple touch icons.
 
     return
       '<!doctype html>' .
       '<html id="nojs" lang="' . $this->language->getCode() . '" dir="' . $this->language->getDirection() . '">' .
-      $this->tag('head',
+      '<head>' .
         // If any DNS record should be pre-fetched:
-        //$this->emptyTag('link', [ 'rel' => 'dns-prefetch', 'href' => '' ]) .
-        "<title>{$this->getHeadTitle()}</title>" .
-        // @todo Write own font awesome CSS!
-        $this->emptyTag('link', [ 'rel' => 'stylesheet', 'href' => '/assets/components/font-awesome-more/css/font-awesome.min.css' ]) .
-        $this->emptyTag('link', [ 'rel' => 'stylesheet', 'href' => '/assets/css/global.css' ]) .
-        $this->emptyTag('link', [ 'rel' => 'logo', 'type' => 'image/svg+xml', 'href' => '/assets/img/logo/vector.svg' ]) .
-        $this->emptyTag('link', [ 'rel' => 'icon', 'type' => 'image/svg+xml', 'href' => '/assets/img/logo/vector.svg' ]) .
+        //'<link rel="dns-prefetch" href="">' .
+        '<title>' . $this->getHeadTitle() . '</title>' .
+        // @todo Optimize icon css
+        // @todo Cheapo cache buster (only for development)
+        '<link rel="stylesheet" href="/assets/font/css/entypo.css?' . rand() . '">' .
+        '<link rel="stylesheet" href="/assets/css/global.css?' . rand() . '">' .
+        '<link rel="logo" href="/assets/img/logo/vector.svg">' .
+        '<link rel="icon" href="/assets/img/logo/vector.svg">' .
         $icons .
-        $this->emptyTag('link', [ 'rel' => 'copyright', 'href' => '//creativecommons.org/licenses/by-sa/3.0/' ])
+        // @todo Add Windows 8 Tile icon / color
+        '<link rel="copyright" href="//creativecommons.org/licenses/by-sa/3.0/">' .
         // @todo PNG favicons
         // @todo META tags
         // @todo Facebook tags
-      ) .
+      '</head>' .
       '<body>' .
         '<div id="container">'
     ;
@@ -348,10 +354,11 @@ abstract class AbstractView {
    *   HTML mark-up for the logo.
    */
   public function getHeaderLogo() {
-    return $this->anchor('', SITENAME . ' <small>' . sprintf(__('the %sfree%s movie library'), '<em class="serif">', '</em>') . '</small>', [
-      'id' => 'logo',
-      'title' => sprintf(__('Go back to the %s home page.'), SITENAME)
-    ]);
+    return
+      '<a id="logo" href="/" title="' . String::checkPlain(sprintf(__('Go back to the %s home page.', SITENAME))) . '">' .
+        SITENAME . ' <small>' . sprintf(__('the %sfree%s movie library', '<em class="serif">', '</em>')) . '</small>' .
+      '</a>'
+    ;
   }
 
   /**
@@ -381,17 +388,13 @@ abstract class AbstractView {
    */
   protected final function getNavigation($role, array $points, $activePointIndex = -1, array $attributes = [], $glue = ' ') {
     foreach ($points as $delta => $point) {
+      $point['attr'] = [ 'class' => [ 'menuitem', "item-$delta" ], 'role' => 'menuitem' ];
       if ($delta === $activePointIndex) {
-        $points[$delta] = $this->tag('span', $point['linktext'], [
-          'class' => "menuitem item-$delta",
-          'role' => 'menuitem',
-        ]);
-      } else {
-        $points[$delta] = $this->anchor($point['route'], $point['linktext'], [
-          'class' => [ 'menuitem', 'item-' . $delta ],
-          'role' => 'menuitem',
-          'title' => !isset($point['title']) ?: $point['title'],
-        ]);
+        $points[$delta] = $this->tag('span', $point['linktext'], $point['attr']);
+      }
+      else {
+        $point['attr']['title'] = $point['title'];
+        $points[$delta] = $this->anchor($point['route'], $point['linktext'], $point['attr']);
       }
     }
     $attributes['role'] = 'menu';
@@ -417,7 +420,7 @@ abstract class AbstractView {
         'type' => 'submit',
         'title' => __('Start searching for the entered keyword.')
       ]),
-      [ 'class' => [ 'search', 'inline' ], 'role' => [ 'search' ] ]
+      [ 'class' => [ 'search', 'header-search', 'inline' ], 'role' => [ 'search' ] ]
     );
   }
 
@@ -433,14 +436,17 @@ abstract class AbstractView {
       /* 0 => */[
         'route' => __('movies', 'route'),
         'linktext' => __('Movies', 'header .main-nav'),
+        'title' => '',
       ],
       /* 1 => */[
         'route' => __('persons', 'route'),
         'linktext' => __('Persons', 'header .main-nav'),
+        'title' => '',
       ],
       /* 2 => */[
         'route' => __('marketplace', 'route'),
         'linktext' => __('Marketplace', 'header .main-nav'),
+        'title' => '',
       ],
     ], $this->activeHeaderNavigationPoint, [ 'class' => [ 'inline' ] ], ' / ');
   }
@@ -458,14 +464,17 @@ abstract class AbstractView {
       /* 0 => */[
         'route' => __('sign_up', 'route'),
         'linktext' => __('Sign up', 'header .user-nav'),
+        'title' => '',
       ],
       /* 1 => */[
         'route' => __('sign_in', 'route'),
         'linktext' => __('Sign in', 'header .user-nav'),
+        'title' => '',
       ],
       /* 2 => */[
         'route' => __('help', 'route'),
         'linktext' => __('Help', 'header .user-nav'),
+        'title' => '',
       ]
     ], $this->activeHeaderUserNavigationPoint, [ 'class' => [ 'inline' ] ]);
   }
