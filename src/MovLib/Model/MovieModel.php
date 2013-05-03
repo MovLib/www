@@ -38,7 +38,7 @@ class MovieModel extends AbstractModel {
    * @param $languageCode
    */
   public function __construct($languageCode) {
-    parent::__construct($languageCode, 'movie');
+    parent::__construct($languageCode, 'movies');
   }
 
 }

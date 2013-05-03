@@ -6,7 +6,7 @@
       "name": "mysqld.sock"
     },
     "links": [
-      "movie", "movies"
+      "movies"
     ]
   }
 }
