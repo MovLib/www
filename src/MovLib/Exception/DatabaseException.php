@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter;
+namespace MovLib\Exception;
 
-use \MovLib\Model\MovieModel;
+use \RuntimeException;
+use \MovLib\Exception\InterfaceException;
 
 /**
- * Description of MoviePresenter
+ * A <b>DatabaseException</b> might be thrown if any database action fails.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -30,16 +30,6 @@ use \MovLib\Model\MovieModel;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviePresenter extends AbstractPresenter{
-
-  /**
-   *
-   */
-  public function __construct() {
-    parent::__construct();
-    $movieModel = new MovieModel($this->language->getCode());
-    var_dump($movieModel->insert([ 'id' ], 'i', [ 5 ]));
-    exit();
-  }
+class DatabaseException extends RuntimeException implements InterfaceException {
 
 }
