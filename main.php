@@ -46,7 +46,7 @@ define('SITENAME', 'MovLib');
  * @return void
  */
 function __autoload($class) {
-  require '/src/' . strtr($class, '\\', DIRECTORY_SEPARATOR) . '.php';
+  require $_SERVER['DOCUMENT_ROOT'] . '/src/' . strtr($class, '\\', DIRECTORY_SEPARATOR) . '.php';
 }
 
 /**
