@@ -42,16 +42,4 @@ class String {
     return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
   }
 
-  /**
-   * Encode URL for display in HTML anchor elements.
-   *
-   * @param string $url
-   *   The URL to be encoded.
-   * @return string
-   *   HTML safe version of <code>$url</code>.
-   */
-  public static function urlEncode($url) {
-    return htmlentities(str_replace('%2F', '/', rawurlencode($url)));
-  }
-
 }

@@ -50,7 +50,7 @@ class FileSystem {
   public static function getTemporaryDirectory() {
     static $tmpDir = null;
     if (is_null($tmpDir)) {
-      $tmpDir = rtrim(sys_get_temp_dir(), '/');
+      $tmpDir = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR);
     }
     return $tmpDir;
   }

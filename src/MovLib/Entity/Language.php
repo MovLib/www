@@ -108,7 +108,7 @@ class Language {
       $this->{$key} = $value;
     }
 
-    bindtextdomain(self::DOMAIN, IP . DIRECTORY_SEPARATOR . 'translations');
+    bindtextdomain(self::DOMAIN, $_SERVER['DOCUMENT_ROOT'] . '/translations');
     bind_textdomain_codeset(self::DOMAIN, self::ENCODING);
     textdomain(self::DOMAIN);
 
