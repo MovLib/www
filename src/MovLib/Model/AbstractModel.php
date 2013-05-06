@@ -82,7 +82,7 @@ abstract class AbstractModel implements ModelInterface {
       return $connectionPool[$socket];
     }
 
-    $socket = AbstractModel::SOCKET_PATH . "/$socket/" . AbstractModel::SOCKET_NAME;
+    $socket = AbstractModel::SOCKET_PATH . $socket . AbstractModel::SOCKET_NAME;
     if (file_exists($socket) === false || is_readable($socket) === false) {
       throw new DatabaseException("The desired socket ($socket) does not exist!");
     }
