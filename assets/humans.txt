@@ -1,0 +1,74 @@
+/* TEAM */
+  Chef: Richard Fussenegger, BSc
+  Contact: richard [at] fussenegger.info
+  Website: http://richard.fussenegger.info/
+  From: Wolfurt, Vorarlberg, Austria
+
+  Developer: Markus Deutschl, BSc
+  Contact: mdeutschl.mmt-m2012 [at] fh-salzburg.ac.at
+  From: ?, Styria, Austria
+
+  Developer: Franz Torghele, BSc
+  Contact: ftorghele.mmt-m2012 [at] fh-salzburg.ac.at
+  Website: http://www.torghele.at/
+  From: ?, Salzburg, Austria
+
+  Manager: Sebastian Geschke, BSc
+  Contact: sgeschke.mmt-m2012 [at] fh-salzburg.ac.at
+  From: ?, ?, Germany
+
+/* THANKS */
+  LittleSparkVT for Flatstrap
+  Website: http://littlesparkvt.com/flatstrap/
+
+  Twitter for Bootstrap
+  Website: http://twitter.github.io/bootstrap/
+
+  Nicolas Gallagher for normalize.css
+  Website: http://necolas.github.io/normalize.css/
+
+  Kemal Yılmaz for 34 Responsive Grid System
+  Website: http://34grid.com/
+
+  Daniel Bruce & Andrea Blombäck for Entypo
+  Website: http://entypo.com/
+
+  Dave Gandy for Font Awesome
+  Website: http://fortawesome.github.io/Font-Awesome/
+
+  Vitaly Puzrin for Fontello
+  Website: http://fontello.com/
+
+  Jimmy Wales & all Wikipedians for Wikipedia
+  Website: http://wikipedia.org/
+
+  Lawrence Lessig for Creative Commons
+  Website: http://creativecommons.org/
+
+  Richard Stallman for the GNU Project and the Free Software Foundation
+  Website: http://www.stallman.org/
+
+/* SITE */
+  Language: English / German
+  Doctype: HTML5
+  Standards: HTML5, CSS3, SVG
+  Components:
+    jQuery,
+    Flatstrap,
+    Bootstrap,
+    normalize.css,
+    Entypo,
+    Font Awesome
+  Software:
+    PHP,
+    nginx,
+    MariaDB,
+    Oracle NetBeans,
+    Adobe Fireworks,
+    Adobe Photoshop,
+    Adobe Illustrator,
+    Mozilla Firefox (Firebug, YSlow, Google Page Speed),
+    Google Chrome (Dev Console, Google Page Speed),
+    Opera,
+    Microsoft Internet Explorer,
+    Apple Safari

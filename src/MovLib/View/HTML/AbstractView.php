@@ -31,19 +31,9 @@ use \MovLib\Utility\String;
  */
 abstract class AbstractView {
 
-  /**
-   * The title of the page.
-   *
-   * @var string
-   */
-  protected $title = '';
 
-  /**
-   * The language object that was passed to the view by the controlling presenter.
-   *
-   * @var \MovLib\Entity\Language
-   */
-  protected $language;
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * Array index of the active header navigation point.
@@ -67,6 +57,31 @@ abstract class AbstractView {
   protected $activeHeaderUserNavigationPoint;
 
   /**
+   * Array containing all alert messages that might be set during execution.
+   *
+   * @var array
+   */
+  private $alerts = [];
+
+  /**
+   * The language object that was passed to the view by the controlling presenter.
+   *
+   * @var \MovLib\Entity\Language
+   */
+  protected $language;
+
+  /**
+   * The title of the page.
+   *
+   * @var string
+   */
+  protected $title = '';
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constructor
+
+
+  /**
    * Initialize new view.
    *
    * @param \MovLib\Entity\Language $language
@@ -79,6 +94,97 @@ abstract class AbstractView {
     $this->title = $title;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
+  /**
+   * Get the class name of the <code>body</code>-element.
+   *
+   * @return string
+   *   The class which should be applied to the <code>body</code>-element.
+   */
+  abstract public function getBodyClass();
+
+  /**
+   * Get the rendered content, without HTML head, header or footer.
+   *
+   * @return string
+   */
+  abstract public function getRenderedContent();
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
+
+
+  /**
+   * Helper function to add a class to a tag where you don’t know if the class array is present or not.
+   *
+   * @param string|array $class
+   *   The class or classes to add to the attributes.
+   * @param array $attributes
+   *   The attributes array.
+   * @return \MovLib\View\HTML\AbstractView
+   */
+  protected final function addClass($class, &$attributes = []) {
+    if (array_key_exists('class', $attributes) === false) {
+      $attributes['class'] = [];
+    }
+    if (is_array($class)) {
+      $attributes['class'] = array_merge($attributes['class'], $class);
+    }
+    else {
+      $attributes['class'][] = $class;
+    }
+    return $this;
+  }
+
+  /**
+   * Create empty HTML element, usage inspired by jQuery.
+   *
+   * @param string $tag
+   *   The tag of the HTML element.
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the HTML element.
+   * @return string
+   *   The fully rendered empty HTML element.
+   */
+  protected final function emptyTag($tag, $attributes = []) {
+    return '<' . $tag . $this->expandTagAttributes($attributes) . '>';
+  }
+
+  /**
+   * Expand the given HTML element attributes for usage on an HTML element.
+   *
+   * @param array $attributes
+   *   [optional] The attributes that should be expanded, if array is empty, empty stirng is returned.
+   * @return string
+   *   Expanded attributes or empty string.
+   */
+  protected final function expandTagAttributes($attributes = []) {
+    if (empty($attributes)) {
+      return '';
+    }
+    foreach ($attributes as $attribute => $value) {
+      // Drop the title if it's empty.
+      if ($attribute === 'title' && empty($value)) {
+        unset($attributes[$attribute]);
+      }
+      else {
+        if (is_array($value)) {
+          $value = implode(' ', $value);
+        }
+        if ($attribute === 'href' || $attribute === 'src' || $attribute === 'action') {
+          $value = htmlentities($value);
+        }
+        else {
+          $value = String::checkPlain($value);
+        }
+        $attributes[$attribute] = $attribute . '="' . $value . '"';
+      }
+    }
+    return ' ' . implode(' ', $attributes);
+  }
 
   /**
    * Get current counter of the global <code>tabindex</code>-attribute for HTML elements and increment the static
@@ -107,103 +213,9 @@ abstract class AbstractView {
     return $tabindex++;
   }
 
-  /**
-   * Get the title for the HTML <code>&lt;title&gt;</code>-element.
-   *
-   * @return string
-   *   The fully styled title for the HTML <code>&lt;title&gt;</code>-element.
-   */
-  public function getHeadTitle() {
-    //# The em dash is used as separator character in the header title to denoate the source of the document (like in a
-    //# quote the author), this should be translated to the equivalent character in your language. More information on
-    //# this specific character can be found at Wikipedia: https://en.wikipedia.org/wiki/Dash#Em_dash
-    return String::checkPlain($this->title . __(' — ', 'html head title')) . SITENAME;
-  }
 
-  /**
-   * Expand the given HTML element attributes for usage on an HTML element.
-   *
-   * @param array $attributes
-   *   [optional] The attributes that should be expanded, if array is empty, empty stirng is returned.
-   * @return string
-   *   Expanded attributes or empty string.
-   */
-  protected final function expandTagAttributes(array $attributes = []) {
-    if (empty($attributes)) {
-      return '';
-    }
-    foreach ($attributes as $attribute => $value) {
-      // Drop the title if it's empty.
-      if (empty($value) && 'title' === $attribute) {
-        unset($attributes[$attribute]);
-      }
-      else {
-        if (is_array($value)) {
-          $value = implode(' ', $value);
-        }
-        if ('href' === $attribute || 'src' === $attribute || 'action' === $attribute) {
-          $value = htmlentities($value);
-        }
-        else {
-          $value = String::checkPlain($value);
-        }
-        $attributes[$attribute] = $attribute . '="' . $value . '"';
-      }
-    }
-    return ' ' . implode(' ', $attributes);
-  }
+  // ------------------------------------------------------------------------------------------------------------------- Public Final Methods
 
-  /**
-   * Helper function to add a class to a tag where you don’t know if the class array is present or not.
-   *
-   * @param string|array $class
-   *   The class or classes to add to the attributes.
-   * @param array $attributes
-   *   The attributes array.
-   * @return \MovLib\View\HTML\AbstractView
-   */
-  protected final function addClass($class, array &$attributes = []) {
-    if (!isset($attributes['class'])) {
-      $attributes['class'] = [];
-    }
-    if (is_array($class)) {
-      $attributes['class'] = array_merge($attributes['class'], $class);
-    }
-    else {
-      $attributes['class'][] = $class;
-    }
-    return $this;
-  }
-
-  /**
-   * Create HTML element, usage inspired by jQuery.
-   *
-   * @param string $tag
-   *   The tag of the HTML element.
-   * @param string $content
-   *   The content of the HTML element.
-   * @param array $attributes
-   *   [optional] The attributes that should be applied to the HTML element.
-   * @return string
-   *   The fully rendered HTML element.
-   */
-  protected final function tag($tag, $content = '', array $attributes = []) {
-    return '<' . $tag . $this->expandTagAttributes($attributes) . '>' . $content . '</' . $tag . '>';
-  }
-
-  /**
-   * Create empty HTML element, usage inspired by jQuery.
-   *
-   * @param string $tag
-   *   The tag of the HTML element.
-   * @param array $attributes
-   *   [optional] The attributes that should be applied to the HTML element.
-   * @return string
-   *   The fully rendered empty HTML element.
-   */
-  protected final function emptyTag($tag, array $attributes = []) {
-    return '<' . $tag . $this->expandTagAttributes($attributes) . '>';
-  }
 
   /**
    * Helper function to generate HTML anchor element.
@@ -227,41 +239,80 @@ abstract class AbstractView {
    * @param string $text
    *   The text that should appear within the anchor element: <code>&lt;a&gt;$text&lt;/a&gt;</code>
    * @param array $attributes
-   *   [optional] The attributes that should be applied to the HTML element.
+   *   [optional] The attributes that should be applied to the HTML element, defaults to no attributes.
    * @return string
-   *   The rendered HTML anchor element.
+   *   The rendered anchor element ready for print.
    */
-  protected final function anchor($href, $text, array $attributes = []) {
+  public final function getAnchor($href, $text, $attributes = []) {
     // Simple and fast check if the given route is internal and needs a slash at the beginning.
     if (empty($href) || strpos($href, '//') !== false || $href[0] !== '#' || $href[0] !== '/') {
       $href = "/$href";
     }
     $attributes['href'] = $href;
-    return $this->tag('a', $text, $attributes);
+    return $this->getTag('a', $text, $attributes);
   }
 
   /**
-   * Helper method to generate HTML image elements.
+   * Get all alerts that were previously set.
    *
-   * @param string $src
-   *   Absolute path to the image.
-   * @param string $alt
-   *   Alternative text describing the images content.
-   * @param int $width
-   *   The width of the image.
-   * @param int $height
-   *   The height of the image.
-   * @param array $attributes
-   *   [optional] The attributes that should be applied to the HTML element.
+   * The surrounding HTML is always included, no matter if there are any alerts or not. This is important to ensure
+   * that the ID is present within the DOM for later alert insertion via JavaScript.
+   *
    * @return string
-   *   The rendered HTML image element.
+   *   All alerts ready for print.
    */
-  protected final function img($src, $alt, $width, $height, array $attributes = []) {
-    $attributes['src'] = $src;
-    $attributes['alt'] = $alt;
-    $attributes['width'] = $width;
-    $attributes['height'] = $height;
-    return $this->emptyTag('img', $attributes);
+  public final function getAlerts() {
+    // By default we assume that there are no alerts at all. The additional empty CSS class makes sure tha the default
+    // minimum height and margin is not applied to the spanning div element. It is important that any JavaScript that
+    // might add content to the div removes the class to reapply the minimum height and margin.
+    $content = ' empty">';
+    if (empty($this->alerts) === false) {
+      $content = '">' . implode('', $this->alerts);
+    }
+    return '<div class="row"><div id="alerts" class="span span-0' . $content . '</div></div>';
+  }
+
+  /**
+   * Get the HTML footer including all script tags.
+   *
+   * @return string
+   *   The footer ready for print.
+   */
+  public final function getFooter() {
+    return
+        '<footer id="footer">' .
+          '<div class="row footer-rows">' .
+            $this->getRow(
+              '<h3>' . SITENAME . '</h3>' .
+              $this->getLinklist([
+                [ 'href' => __('about', 'route'), 'text' => __('About'), 'title' => sprintf(__('Find out more about %s.'), SITENAME) ],
+                [ 'href' => __('blog', 'route'), 'text' => __('Blog'), 'title' => sprintf(__('Stay up to date about the latest developments around %s.'), SITENAME) ],
+                [ 'href' => __('contact', 'route'), 'text' => __('Contact'), 'title' => __('Feedback is always welcome, no matter if positive or negative.') ],
+                [ 'href' => __('resources', 'route'), 'text' => __('Logos &amp; Badges'), 'title' => __('If you want to create something awesome.') ],
+                [ 'href' => __('legal', 'route'), 'text' => __('Legal'), 'title' => sprintf(__('Collection of the various legal terms and conditions used around %s.'), SITENAME) ]
+              ], [ 'class' => 'no-list' ]),
+              '<h3>' . __('Join in') . '</h3>' .
+              $this->getLinklist([
+                [ 'href' => __('sign-up', 'route'), 'text' => __('Sign up'), 'title' => __('') ]
+              ], [ 'class' => 'no-list' ]),
+              '<h3>' . __('Get help') . '</h3>' .
+              $this->getLinklist([
+                [ 'href' => __('help', 'route'), 'text' => __('Help'), 'title' => __('') ]
+              ], [ 'class' => 'no-list' ])
+            ) .
+          '</div>' .
+          '<div class="row footer-copyright">' .
+            '<div class="span span-0"><p>' .
+              $this->getIcon('cc') . ' ' . $this->getIcon('cc-zero') . ' ' . sprintf(__('Database data is available under the %s license.'), $this->getAnchor('//creativecommons.org/publicdomain/zero/1.0/deed.' . $this->language->getCode(), __('Creative Commons — CC0 1.0 Universal'), [ 'rel' => 'license' ])) . '<br>' .
+              __('Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated.') . '<br>' .
+              sprintf(__('By using this site, you agree to the %s and %s.'), $this->getAnchor(__('terms-of-use', 'route'), __('Terms of Use')), $this->getAnchor(__('privacy-policy', 'route'), __('Privacy Policy'))) .
+            '</p></div>' .
+          '</div>' .
+        '</footer>' .
+        '<div id="footer-logo"></div>'
+      // @todo Add aggregated scripts
+    ;
+    // Please note that a closing body or html tag is not necessary!
   }
 
   /**
@@ -272,17 +323,177 @@ abstract class AbstractView {
    * @param string $content
    *   The HTML content of the form.
    * @param array $attributes
-   *   [optional] The attributes that should be applied to the HTML element.
+   *   [optional] The attributes that should be applied to the HTML element, defaults to no attributes.
    * @param string $method
-   *   [optional] Change submit method of the form, by default all forms are submitted using HTTP POST.
+   *   [optional] Change submit method of the form, defaults to HTTP POST.
    * @return string
-   *   The rendered HTML form element.
+   *   The form ready for print.
    */
-  protected final function form($action, $content, array $attributes = [], $method = 'post') {
+  public final function getForm($action, $content, $attributes = [], $method = 'post') {
     // Only internal routes are allowed!
     $attributes['action'] = "/$action";
     $attributes['method'] = $method;
-    return $this->addClass('form', $attributes)->tag('form', $content, $attributes);
+    return $this->addClass('form', $attributes)->getTag('form', $content, $attributes);
+  }
+
+  /**
+   * Get the HTML head element, this includes doctype and the html root element.
+   *
+   * @link http://www.netmagazine.com/features/create-perfect-favicon
+   * @return string
+   *   The head ready for print.
+   */
+  public final function getHead() {
+    $icons = '';
+    // IMPORTANT: Go from big to small, many browsers simply use the last one, even if the need another one.
+    foreach ([ '256', '128', '64', '32', '24', '16' ] as $delta => $size) {
+      $icons .= '<link rel="icon" sizes="' . $size . 'x' . $size . '" href="/assets/img/logo/' . $size . '.png">';
+    }
+    // @todo Add Apple touch icons.
+    return
+      '<!doctype html>' .
+      '<html id="nojs" lang="' . $this->language->getCode() . '" dir="' . $this->language->getDirection() . '">' .
+      '<head>' .
+        // If any DNS record should be pre-fetched:
+        //'<link rel="dns-prefetch" href="">' .
+        '<title>' . $this->getHeadTitle() . '</title>' .
+        // @todo Cheapo cache buster (only for development)
+        // @todo Deliver font from our server for full cache control
+        '<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic&subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic">' .
+        // @todo Optimize icon css
+        '<link rel="stylesheet" href="/assets/font/css/entypo.css?' . rand() . '">' .
+        // @todo Aggregate all css files
+        '<link rel="stylesheet" href="/assets/css/global.css?' . rand() . '">' .
+        '<link rel="logo" href="/assets/img/logo/vector.svg">' .
+        '<link rel="icon" href="/assets/img/logo/vector.svg">' .
+        $icons .
+        // @todo Add Windows 8 Tile icon / color
+        '<link rel="copyright" href="//creativecommons.org/licenses/by-sa/3.0/">' .
+        // @todo META tags
+        // @todo Facebook tags
+        '<meta name="viewport" content="width=device-width,initial-scale=1.0">' .
+        '<meta http-equiv="X-UA-Compatible" content="IE=edge">' .
+      '</head>' .
+      '<body class="' . $this->getBodyClass() . '">'
+    ;
+  }
+
+  /**
+   * Get the HTML header, this includes the logo, navigations and search box.
+   *
+   * @return string
+   *   The header ready for print.
+   */
+  public final function getHeader() {
+    return
+      '<header id="header">' .
+        $this->getRow(
+          $this->getHeaderLogo(),
+          $this->getHeaderNavigation(),
+          $this->getHeaderUserNavigation() . $this->getHeaderSearch()
+        ) .
+      '</header>'
+    ;
+  }
+
+  /**
+   * Get the HTML header main navigation.
+   *
+   * @see \MovLib\View\HTML\AbstractView::getNavigation
+   * @return string
+   *   The main navigation ready for print.
+   */
+  public final function getHeaderNavigation() {
+    return $this->getNavigation('main', [
+      /* 0 => */[
+        'route' => __('movies', 'route'),
+        'text' => __('Movies'),
+        'title' => __('Browse all movies of this world, check out the latest additions or create a new entry yourself.'),
+      ],
+      /* 1 => */[
+        'route' => __('persons', 'route'),
+        'text' => __('Persons'),
+        'title' => __('Browse all movie related persons of this world, check out the latest additions or create a new entry yourself.'),
+      ],
+      /* 2 => */[
+        'route' => __('marketplace', 'route'),
+        'text' => __('Marketplace'),
+        'title' => __('Searching for a specific release of a movie or soundtrack, this is the place to go, for free of course.'),
+      ],
+    ], $this->activeHeaderNavigationPoint, null, ' <span>/</span> ');
+  }
+
+  /**
+   * Get the HTML header search.
+   *
+   * @return string
+   *   The header search ready for print.
+   */
+  public final function getHeaderSearch() {
+    return $this->getForm(
+      __('search', 'route'),
+      $this->getInput('search', [
+        'accesskey' => 'f',
+        'placeholder' => __('Search…', 'input[type="search"]'),
+        'title' => __('Enter the search term you wish to search for and hit enter. [alt-shift-f]'),
+        'role' => 'textbox',
+      ], true) .
+      $this->getTag('button', $this->getIcon('search', [ 'class' => [ 'inline' ] ]), [
+        'class' => [ 'input', 'input-submit', 'transition' ],
+        'type' => 'submit',
+        'title' => __('Start searching for the entered keyword.')
+      ]),
+      [ 'class' => [ 'search', 'header-search', 'clear-right', 'pull-right' ], 'role' => [ 'search' ] ]
+    );
+  }
+
+  /**
+   * Get the HTML header user navigation.
+   *
+   * @todo Menu has to change upon user state (signed in / out).
+   * @see \MovLib\View\HTML\AbstractView::getNavigation
+   * @return string
+   *   The user navigation ready for print.
+   */
+  public final function getHeaderUserNavigation() {
+    return $this->getNavigation('user', [
+      /* 0 => */[
+        'route' => __('sign_up', 'route'),
+        'text' => __('Sign up'),
+        'title' => __('Click here to sign up for a new and free account.'),
+      ],
+      /* 1 => */[
+        'route' => __('sign_in', 'route'),
+        'text' => __('Sign in'),
+        'title' => __('Already have an account? Click here to sign in.'),
+      ],
+      /* 2 => */[
+        'route' => __('help', 'route'),
+        'text' => __('Help'),
+        'title' => __('If you have questions click here to find our help articles.'),
+      ]
+    ], $this->activeHeaderUserNavigationPoint, [ 'class' => [ 'pull-right' ] ]);
+  }
+
+  /**
+   * Helper method to generate HTML icon element.
+   *
+   * @param string $name
+   *   The name of the icon, please refer to our icon table: @todo Were do we put this? Github Wiki?
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the icon element, defaults to no attributes.
+   * @return string
+   *   The icon ready for print.
+   */
+  public final function getIcon($name, $attributes = []) {
+    $iconClasses = [ 'icon', "icon-$name" ];
+    if (array_key_exists('class', $attributes)) {
+      $attributes['class'] = array_merge($attributes['class'], $iconClasses);
+    }
+    else {
+      $attributes['class'] = $iconClasses;
+    }
+    return $this->getTag('i', '', $attributes);
   }
 
   /**
@@ -297,68 +508,35 @@ abstract class AbstractView {
    * @return string
    *   The rendered HTML input element.
    */
-  protected final function input($type, array $attributes = [], $tabindex = false) {
+  public final function getInput($type, $attributes = [], $tabindex = false) {
     $attributes['type'] = $type;
-    if ($tabindex) {
+    if ($tabindex === true) {
       $attributes['tabindex'] = $this->getTabindex();
     }
     return $this->addClass([ 'input', "input-$type" ], $attributes)->emptyTag('input', $attributes);
   }
 
   /**
-   * Get the HTML head element, this includes doctype and the html root element.
+   * Helper method to generate HTML image elements.
    *
-   * @todo Add link to icon blog article (can not remember the name, but there must be a bookmark somewhere).
+   * @param string $src
+   *   Absolute path to the image.
+   * @param string $alt
+   *   Alternative text describing the images content.
+   * @param int $width
+   *   The width of the image.
+   * @param int $height
+   *   The height of the image.
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the HTML element, defaults to no attributes.
    * @return string
+   *   The image ready for print.
    */
-  public final function getHead() {
-    /* @var $icons string */
-    $icons = '';
-
-    // IMPORTANT: Go from big to small, many browsers simply use the last one, even if the need another one.
-    foreach ([ '256', '128', '64', '32', '24', '16' ] as $delta => $size) {
-      $icons .= '<link rel="icon" sizes="' . $size . 'x' . $size . '" href="/assets/img/logo/' . $size . '.png">';
+  public final function getImage($src, $alt, $width, $height, $attributes = []) {
+    foreach ([ 'src', 'alt', 'width', 'height' ] as $delta => $attribute) {
+      $attributes[$attribute] = ${$attribute};
     }
-
-    // @todo Add Apple touch icons.
-
-    return
-      '<!doctype html>' .
-      '<html id="nojs" lang="' . $this->language->getCode() . '" dir="' . $this->language->getDirection() . '">' .
-      '<head>' .
-        // If any DNS record should be pre-fetched:
-        //'<link rel="dns-prefetch" href="">' .
-        '<title>' . $this->getHeadTitle() . '</title>' .
-        // @todo Optimize icon css
-        // @todo Cheapo cache buster (only for development)
-        '<link rel="stylesheet" href="/assets/font/css/entypo.css?' . rand() . '">' .
-        '<link rel="stylesheet" href="/assets/css/global.css?' . rand() . '">' .
-        '<link rel="logo" href="/assets/img/logo/vector.svg">' .
-        '<link rel="icon" href="/assets/img/logo/vector.svg">' .
-        $icons .
-        // @todo Add Windows 8 Tile icon / color
-        '<link rel="copyright" href="//creativecommons.org/licenses/by-sa/3.0/">' .
-        // @todo PNG favicons
-        // @todo META tags
-        // @todo Facebook tags
-      '</head>' .
-      '<body>' .
-        '<div id="container">'
-    ;
-  }
-
-  /**
-   * Get the logo for the <code>&lt;header&gt;</code>-element.
-   *
-   * @return string
-   *   HTML mark-up for the logo.
-   */
-  public function getHeaderLogo() {
-    return
-      '<a id="logo" href="/" title="' . String::checkPlain(sprintf(__('Go back to the %s home page.', SITENAME))) . '">' .
-        SITENAME . ' <small>' . sprintf(__('the %sfree%s movie library', '<em class="serif">', '</em>')) . '</small>' .
-      '</a>'
-    ;
+    return $this->emptyTag('img', $attributes);
   }
 
   /**
@@ -372,7 +550,7 @@ abstract class AbstractView {
    *   array(
    *     0 => array(
    *       'route' => __('example', 'route'),
-   *       'linktext' => __('Example', 'context'),
+   *       'text' => __('Example', 'context'),
    *       'title' => __('This is an example for a correct navigation point link title.'),
    *     )
    *   )
@@ -386,160 +564,194 @@ abstract class AbstractView {
    * @return string
    *   Fully rendered navigation.
    */
-  protected final function getNavigation($role, array $points, $activePointIndex = -1, array $attributes = [], $glue = ' ') {
+  public final function getNavigation($role, array $points, $activePointIndex = -1, $attributes = [], $glue = ' ') {
     foreach ($points as $delta => $point) {
-      $point['attr'] = [ 'class' => [ 'menuitem', "item-$delta" ], 'role' => 'menuitem' ];
+      $point['attributes'] = [ 'class' => [ 'menuitem', "item-$delta" ], 'role' => 'menuitem' ];
       if ($delta === $activePointIndex) {
-        $points[$delta] = $this->tag('span', $point['linktext'], $point['attr']);
+        $points[$delta] = $this->getTag('span', $point['text'], $point['attributes']);
       }
       else {
-        $point['attr']['title'] = $point['title'];
-        $points[$delta] = $this->anchor($point['route'], $point['linktext'], $point['attr']);
+        $point['attributes']['title'] = $point['title'];
+        $points[$delta] = $this->getAnchor($point['route'], $point['text'], $point['attributes']);
       }
     }
     $attributes['role'] = 'menu';
-    return $this->addClass([ 'nav', "$role-nav" ], $attributes)->tag('nav', implode($glue, $points), $attributes);
+    return $this->addClass([ 'nav', "$role-nav" ], $attributes)->getTag('nav', implode($glue, $points), $attributes);
   }
 
   /**
-   * Get the header search.
+   * Create an unordered list from the given array where each list item is a single anchor element.
    *
+   * @param array $link
+   *   The list items, associative array in the form:
+   *   <ul>
+   *     <li><b>delta</b>
+   *       <ul>
+   *         <li><b>href:</b> The target of the anchor.</li>
+   *         <li><b>text:</b> The text that should be linked.</li>
+   *         <li><b>[optional] title:</b> The title of the anchor.</li>
+   *         <li><b>[optional] attributes:</b> Attributes that should be applied to the anchor.</li>
+   *       </ul>
+   *     </ul>
+   *   </ul>
+   * @param array $attributes
+   *   [optional] Attributes that should be applied to the unordered list element, defaults to empty array.
+   * @param string $type
+   *   [optional] The list type, defaults to <code>&lt;ul&gt;</code>.
    * @return string
+   *   The fully rendered unordered list.
    */
-  public final function getHeaderSearch() {
-    return $this->form(
-      __('search', 'route'),
-      $this->input('search', [
-        'accesskey' => 'f',
-        'placeholder' => __('Search…', 'input[type="search"]'),
-        'title' => __('Enter the search term you wish to search for and hit enter. [alt-shift-f]'),
-        'role' => 'textbox',
-      ], true) .
-      $this->tag('button', '<i class="icon-search inline"></i>', [
-        'class' => [ 'input', 'input-submit' ],
-        'type' => 'submit',
-        'title' => __('Start searching for the entered keyword.')
-      ]),
-      [ 'class' => [ 'search', 'header-search', 'inline' ], 'role' => [ 'search' ] ]
-    );
+  public final function getLinklist(array $links, $attributes = [], $type = 'ul') {
+    foreach ($links as $delta => $link) {
+      if (array_key_exists('attributes', $link) === false) {
+        $link['attributes'] = [];
+      }
+      if (array_key_exists('title', $link)) {
+        $link['attributes']['title'] = $link['title'];
+      }
+      $links[$delta] = $this->getAnchor($link['href'], $link['text'], $link['attributes']);
+    }
+    return $this->getList($links, $attributes, $type);
   }
 
   /**
-   * Get the header navigation.
+   * Get HTML list with the given array elements as list items.
    *
-   * @todo Every header nav point has to have a descriptive title.
-   * @see \MovLib\View\HTML\AbstractView::getNavigation
+   * @param array $points
+   *   The list items, array containing the string representation of each point.
+   * @param array $attributes
+   *   [optional] Attributes that should be applied to the list element, defaults to no attributes.
+   * @param string $type
+   *   [optional] The list type, defaults to unordered list.
    * @return string
+   *   The list ready for print.
    */
-  public final function getHeaderNavigation() {
-    return $this->getNavigation('main', [
-      /* 0 => */[
-        'route' => __('movies', 'route'),
-        'linktext' => __('Movies', 'header .main-nav'),
-        'title' => '',
-      ],
-      /* 1 => */[
-        'route' => __('persons', 'route'),
-        'linktext' => __('Persons', 'header .main-nav'),
-        'title' => '',
-      ],
-      /* 2 => */[
-        'route' => __('marketplace', 'route'),
-        'linktext' => __('Marketplace', 'header .main-nav'),
-        'title' => '',
-      ],
-    ], $this->activeHeaderNavigationPoint, [ 'class' => [ 'inline' ] ], ' / ');
+  public final function getList(array $points, $attributes = [], $type = 'ul') {
+    foreach ($points as $delta => $point) {
+      $points[$delta] = '<li class="leaf-' . $delta . '">' . $point . '</li>';
+    }
+    return $this->getTag($type, implode('', $points), $attributes);
   }
-
-  /**
-   * Get the header user navigation.
-   *
-   * @todo Every header user nav point has to have a descriptive title.
-   * @todo Menu has to change upon user state (signed in / out).
-   * @see \MovLib\View\HTML\AbstractView::getNavigation
-   * @return string
-   */
-  public final function getHeaderUserNavigation() {
-    return $this->getNavigation('user', [
-      /* 0 => */[
-        'route' => __('sign_up', 'route'),
-        'linktext' => __('Sign up', 'header .user-nav'),
-        'title' => '',
-      ],
-      /* 1 => */[
-        'route' => __('sign_in', 'route'),
-        'linktext' => __('Sign in', 'header .user-nav'),
-        'title' => '',
-      ],
-      /* 2 => */[
-        'route' => __('help', 'route'),
-        'linktext' => __('Help', 'header .user-nav'),
-        'title' => '',
-      ]
-    ], $this->activeHeaderUserNavigationPoint, [ 'class' => [ 'inline' ] ]);
-  }
-
-  /**
-   * Get the header.
-   *
-   * @return string
-   */
-  public final function getHeader() {
-    return
-      '<header id="header" class="clearfix">' .
-        $this->getHeaderLogo() .
-        $this->getHeaderNavigation() .
-        $this->getHeaderSearch() .
-        $this->getHeaderUserNavigation() .
-      '</header>'
-    ;
-  }
-
-  /**
-   * Get the footer.
-   *
-   * @return string
-   */
-  public final function getFooter() {
-    // Please note that a closing body or html tag is not necessary, let us save the bytes.
-    return
-          '<footer id="footer">' .
-            '<div class="row">' .
-
-            '</div>' .
-            '<div class="copyright">' .
-              sprintf(
-                __('Text is available under the %s; additional terms may apply. By using this site, you agree to the %s and %s.'),
-                '<a rel="license" href="//creativecommons.org/licenses/by-sa/3.0/">' . __('Creative Commons Attribution-ShareAlike License') . '</a>',
-                '<a href="' . __('terms-of-use', 'route') . '">' . __('Terms of Use') . '</a>',
-                '<a href="' . __('privacy-policy', 'route') . '">' . __('Privacy Policy') . '</a>'
-              ) .
-            '</div>' .
-          '</footer>' .
-        '</div>' // end #container
-      // @todo Add aggregated scripts
-    ;
-  }
-
-  /**
-   * Get the rendered content, without HTML head, header and footer.
-   *
-   * @return string
-   */
-  abstract public function getRenderedContent();
 
   /**
    * Get the full rendered view, with HTML head, header and footer.
    *
    * @return string
+   *   The rendered view ready for print.
    */
   public final function getRenderedView() {
     return
       $this->getHead() .
       $this->getHeader() .
-      $this->getRenderedContent() .
+      $this->getAlerts() .
+      '<div id="content" class="' . $this->getBodyClass() . '-content">' . $this->getRenderedContent() . '</div>' .
       $this->getFooter()
     ;
+  }
+
+  /**
+   * Get a row with equally distributed spans. The amount of passed strings defines the row count.
+   *
+   * @return string
+   *   The rendered row ready for print.
+   */
+  public final function getRow() {
+    $spans = func_get_args();
+    $cols = count($spans);
+    foreach ($spans as $delta => $span) {
+      $spans[$delta] = '<div class="item-' . $delta . ' span span-' . $cols . '">' . $span . '</div>';
+    }
+    return '<div class="row">' . implode('', $spans) . '</div>';
+  }
+
+  /**
+   * Create HTML element, usage inspired by jQuery.
+   *
+   * @param string $tag
+   *   The tag of the HTML element.
+   * @param string $content
+   *   The content of the HTML element.
+   * @param array $attributes
+   *   [optional] The attributes that should be applied to the HTML element, defaults to no attributes.
+   * @return string
+   *   The element ready for print.
+   */
+  public final function getTag($tag, $content = '', $attributes = []) {
+    return '<' . $tag . $this->expandTagAttributes($attributes) . '>' . $content . '</' . $tag . '>';
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
+
+  /**
+   * Get the logo for the <code>&lt;header&gt;</code>-element.
+   *
+   * This method must stay public and not final. We have to overwrite this in the special homepage view!
+   *
+   * @see \MovLib\View\HTML\HomeView
+   * @return string
+   *   The logo ready for print.
+   */
+  public function getHeaderLogo() {
+    return
+      '<a id="logo" href="/" title="' . String::checkPlain(sprintf(__('Go back to the %s home page.', SITENAME))) . '">' .
+        SITENAME . ' <small>' . sprintf(__('the %sfree%s movie library', '<em class="serif">', '</em>')) . '</small>' .
+      '</a>'
+    ;
+  }
+
+  /**
+   * Get the title for the HTML <code>&lt;title&gt;</code>-element.
+   *
+   * This method must stay public and not final. We have to overwrite this in the special homepage view!
+   *
+   * @see \MovLib\View\HTML\HomeView
+   * @return string
+   *   The title ready for print.
+   */
+  public function getHeadTitle() {
+    //# The em dash is used as separator character in the header title to denoate the source of the document (like in a
+    //# quote the author), this should be translated to the equivalent character in your language. More information on
+    //# this specific character can be found at Wikipedia: https://en.wikipedia.org/wiki/Dash#Em_dash
+    return String::checkPlain($this->title . __(' — ', 'html head title')) . SITENAME;
+  }
+
+  /**
+   * Add new alert message to the output of the view.
+   *
+   * @param string $message
+   *   The message that should be displayed to the user.
+   * @param string $title
+   *   [optional] [recommended] Short descriptive title that summarizes the alert, defaults to no title at all.
+   * @param string $severity
+   *   [optional] The severity level of this alert, defaults to warning. Available severity levels are:
+   *   <ul>
+   *     <li>info</li>
+   *     <li>warning (default)</li>
+   *     <li>success</li>
+   *     <li>error</li>
+   *   </ul>
+   * @param boolean $block
+   *   [optional] If your message is very long, or your alert is very important, increase the padding around the message
+   *   and enclose the title in a level-4 heading instead of the bold tag.
+   * @return \MovLib\View\HTML\AbstractView
+   */
+  public final function setAlert($message, $title = '', $severity = 'warning', $block = false) {
+    if (empty($title) === false) {
+      if ($block === true) {
+        $title = "<h4>$title</h4>";
+      }
+      else {
+        $title = "<b>$title</b> ";
+      }
+    }
+    $class = "alert alert-$severity";
+    if ($block === true) {
+      $class .= ' alert-block';
+    }
+    $this->alerts[] = '<div class="' . $class . '">' . $title . $message . '</div>';
+    return $this;
   }
 
 }

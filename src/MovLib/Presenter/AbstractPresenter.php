@@ -20,7 +20,7 @@ namespace MovLib\Presenter;
 use \MovLib\Entity\Language;
 
 /**
- *
+ * Base class for any presenter.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -44,6 +44,9 @@ abstract class AbstractPresenter {
    */
   protected $language;
 
+  /**
+   * Instantiate new presenter object.
+   */
   public function __construct() {
     $this->language = new Language();
   }

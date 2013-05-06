@@ -22,8 +22,7 @@ use \MovLib\View\HTML\AbstractView;
 /**
  * The <b>Home</b> view contains the HTML layout for the MovLib home page.
  *
- * The home page should be generated without a single database call. This should simply increase the performance of the
- * home page, as it is most certainly the most viewed page.
+ * The home page should be generated without a single database call.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -38,15 +37,36 @@ class HomeView extends AbstractView {
    */
   public function __construct($language) {
     parent::__construct($language, SITENAME);
+
+//    foreach ([ 'info', 'success', 'warning', 'error' ] as $delta => $alert) {
+//      $this->setAlert('This would be my message body.', "I am the $alert alert!", $alert);
+//    }
+//
+//    foreach ([ 'info', 'success', 'warning', 'error' ] as $delta => $alert) {
+//      $this->setAlert('Perfect if you want to tell the user a lot (or something very important).', "I am the $alert block alert!", $alert, true);
+//    }
   }
 
   /**
-   * Overwrite the default header title method.
-   *
-   * The home page is the only page that is using a different header title pattern. Therefor we overwrite the default
-   * method of the base class for each view.
-   *
-   * @return string
+   * {@inheritdoc}
+   */
+  public function getBodyClass() {
+    return 'home';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getHeaderLogo() {
+    return
+      '<h1 id="logo" class="inline">' .
+        SITENAME . ' <small>' . sprintf(__('the %sfree%s movie library'), '<em class="serif">', '</em>') . '</small>' .
+      '</h1>'
+    ;
+  }
+
+  /**
+   * {@inheritdoc}
    */
   public function getHeadTitle() {
     return
@@ -63,72 +83,33 @@ class HomeView extends AbstractView {
   }
 
   /**
-   * Overwrite the default header logo method.
-   *
-   * The home page has to feature our own brand and should not link to itself. Therefor we overwrite the default method
-   * where the logo is a link to the home page. The <code>&lt;h1&gt;</code>-element has to be unique on the home page.
-   *
-   * @return string
-   */
-  public function getHeaderLogo() {
-    return
-      '<h1 id="logo" class="inline">' .
-        SITENAME . ' <small>' . sprintf(__('the %sfree%s movie library'), '<em class="serif">', '</em>') . '</small>' .
-      '</h1>'
-    ;
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function getRenderedContent() {
-    return
-      '<pre>01[2]34[5]67[8]9a[b]cd[e]f
+    $testdrive = '<p>Flatstrap may be our base, but there is a lot of room to improve their styles. Especially in terms of contrast and CSS performance (because they try to be compatible with just about anything).</p><h2>Buttons</h2>';
+    foreach ([ 'large', 'default', 'small', 'mini' ] as $delta => $size) {
+      $testdrive .= '<p>';
+      foreach ([ 'default', 'primary', 'info', 'success', 'warning', 'danger', 'inverse' ] as $delta => $state) {
+        $testdrive .= '<a class="btn btn-' . $size . ' btn-' . $state . '" href="#">' . $state . '-' . $size . '</a> ';
+      }
+      $testdrive .= '</p>';
+    }
 
---- dark ---
-#222
-  #333
-  #3b3b3b
-  #484848
-#555
-  #626262
-  #6e6e6e
-  #7b7b7b
-#888
-  #959595
-  #a1a1a1
-  #aeaeae
-#bbb
-  #c8c8c8
-  #d4d4d4
-#eee
-  #e1e1e1
-  #fbfbfb
--- bright --</pre>' .
-      '<p>Test <code>1234</code> Test</p>' .
-      '<div id="homepage-banner">' . __('Do you like movies?') . '<br>' . __('Great!') . '<br>' . __('So do we!') . '</div>' .
-      '<div class="row">' .
-        '<div class="span3">' .
-          '<h3>' . __('Movies') . '</h3>' .
-        '</div>' .
-        '<div class="span3">' .
-          '<h3>' . __('People') . '</h3>' .
-        '</div>' .
-        '<div class="span3">' .
-          '<h3>' . __('Marketplace') . '</h3>' .
-        '</div>' .
+    return
+      '<div id="home-banner"><div class="row"><div class="span0 lead hero">' . __('Do you like movies?<br>Great, so do we!') . '</div></div></div>' .
+      '<div class="centered">' .
+        $this->getRow(
+          '<h3>' . __('Movies') . '</h3><p>' . __('Discover new and old movies, find out about all related details like who was the director, when and where was it released, what releases are available, find poster and lobby card art, plus many, many more …') . '</p>',
+          '<h3>' . __('Persons') . '</h3><p>' . __('You always wanted to collect all movies of a specific director, actor or any other movie related person? This is the place for you to go. Find out all details about the person you admire, or simply add them yourself if you are an expert.') . '</p>',
+          '<h3>' . __('Marketplace') . '</h3><p>' . __('Searching for a specific release? Our marketplace is free, open, and built upon the exact release database. This makes it easy for sellers to list their inventory and buyers are able to specify the exact version they want.') . '</p>'
+        ) .
+        $this->getRow(
+          '<h3>' . __('Releases') . '</h3><p>' . __('') . '</p>',
+          '<h3>' . sprintf(__('My %s'), SITENAME) . '</h3><p></p>' . $this->getAnchor(__('sign-up', 'route'), __('Sign up for a new account'), [ 'class' => [ 'btn', 'btn-success', 'btn-large' ]]),
+          '<h3>' . __('API') . '</h3><p>' . sprintf(__('The %s API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at %s.'), SITENAME, SITENAME) . '</p>' . $this->getAnchor('//api.movlib.org', 'Read the API documentation', [ 'class' => [ 'btn', 'btn-primary', 'btn-large' ]])
+        ) .
       '</div>' .
-      '<div class="row">' .
-        '<div class="span3">' .
-          '<h3>' . __('Releases') . '</h3>' .
-        '</div>' .
-        '<div class="span3">' .
-          '<h3>' . __('My MovLib') . '</h3>' .
-        '</div>' .
-        '<div class="span3">' .
-          '<h3>' . __('API') . '</h3>' .
-        '</div>' .
-      '</div>'
+      '<div class="row"><div class="span-0">' . $testdrive . '</div></div>'
     ;
   }
 
