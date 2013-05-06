@@ -17,6 +17,13 @@
 /**
  * The global stylesheet is present on each and every HTML page of MovLib.
  *
+ * Target browsers:
+ *   - Apple Safari ??
+ *   - Microsoft Internet Explorer 9+ (support for 8 and maybe 7 via polyfills and additional stylesheets)
+ *   - Mozilla Firefox 5+
+ *   - Google Chrome 18+
+ *   - Opera Desktop 11+
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -73,23 +80,78 @@
  * @todo Extract all colors from SVG
  */
 
-article, aside, details, figcaption, figure, footer, header, hgroup, nav, section {
+/*
+  Works for all modern browsers, much more natural to work with, support:
+
+  Chrome (any)         : box-sizing
+  Firefox (any)        : -moz-box-sizing
+  Internet Explorer 8+ : box-sizing
+  Opera 8.5+           : box-sizing
+  Safari 3+            : -webkit-box-sizing
+  Safari 5.1+          : box-sizing
+
+  @link http://paulirish.com/2012/box-sizing-border-box-ftw/ Paul Irish ftw!
+  @link http://css-tricks.com/box-sizing/
+  @link https://developer.mozilla.org/en-US/docs/CSS/box-sizing
+*/
+*,
+:before,
+:after {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+nav,
+section {
   display: block;
 }
 
-html, input, button, select, textarea, code, pre {
-  font-size: 100%;
-  -webkit-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
-  -webkit-font-smoothing: antialiased;
-  font: 400 14px/20px Arial, 'Helvetica Neue', Helvetica, 'Nimbus Sans L', 'Liberation Sans', FreeSans, sans-serif;
-  color: #333;
-  background-color: #fff;
+body {
+  margin: 0;
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
+html,
+input,
+button,
+select,
+textarea,
+table {
+  -webkit-text-size-adjust: 100%;
+     -moz-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+  background-color: #fff;
+  color: #595959;
+  font: 14px/20px arial, helvetica, clean, sans-serif;
+}
+
+pre,
+code,
+kbd,
+samp,
+tt,
+var {
+  font: 12px/1 consolas, monospace, serif;
+}
+
+::-moz-selection {
+  background: #06c;
+  color: #fff;
+}
+
+::selection {
+  background: #06c;
+  color: #fff;
 }
 
 a {
@@ -97,12 +159,14 @@ a {
   text-decoration: none;
 }
 
-a:visited {
-  color: #613eb0;
+a:hover,
+a:focus {
+  border-bottom: 1px solid #06c;
 }
 
-a:hover, a:focus {
-  text-decoration: underline;
+a:visited {
+  color: #613eb0;
+  border-bottom-color: #613eb0;
 }
 
 a:focus {
@@ -111,23 +175,50 @@ a:focus {
   outline-offset: -2px;
 }
 
-a:hover, a:active {
+a:hover,
+a:active {
   outline: 0;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  margin: 10px 0;
-  font-weight: 700;
-  text-rendering: optimizelegibility;
+dfn {
+  font-style: italic;
 }
 
-h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
-  font-weight: 400;
+b,
+strong,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: bold;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 10px 0;
+  color: #333;
+}
+
+h1 small,
+h2 small,
+h3 small,
+h4 small,
+h5 small,
+h6 small {
+  font-weight: normal;
   line-height: 1;
   color: #7f7f7f;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   line-height: 40px;
 }
 
@@ -145,10 +236,6 @@ h3 {
 
 h4 {
   font-size: 17.5px;
-}
-
-h5 {
-  font-size: 14px;
 }
 
 h6 {
@@ -171,57 +258,80 @@ h4 small {
   font-size: 14px;
 }
 
-img {
-  max-width: 100%;
-  width: auto\9;
-  height: auto;
-  vertical-align: middle;
+hr {
+  display: block;
+  height: 1px;
   border: 0;
+  border-top: 1px solid #ccc;
+  margin: 14px 0;
+  padding: 0;
+}
+
+img {
+  height: auto;
   -ms-interpolation-mode: bicubic;
 }
 
-button, html input[type='button'], input[type='reset'], input[type='submit'] {
+img,
+object {
+  max-width: 100%;
+  width: auto\9;
+  vertical-align: middle;
+  border: 0;
+}
+
+button,
+html .input-button,
+.input-reset,
+.input-submit {
   -webkit-appearance: button;
 }
 
-button, label, select, input[type='button'], input[type='reset'], input[type='submit'], input[type='radio'], input[type='checkbox'] {
+button,
+label,
+select,
+.input-button,
+.input-reset,
+.input-submit,
+.input-radio,
+.input-checkbox {
   cursor: pointer;
 }
 
-input[type='search'] {
-  -moz-box-sizing: content-box;
-  -webkit-box-sizing: content-box;
-  box-sizing: content-box;
+.input-search {
   -webkit-appearance: textfield;
 }
 
-input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-search-cancel-button {
+.input-search::-webkit-search-decoration,
+.input-search::-webkit-search-cancel-button {
   -webkit-appearance: none;
 }
 
-sub, sup {
+sub,
+sup {
   position: relative;
-  font-size: 75%;
+  font-size: 10.5px;
   line-height: 0;
   vertical-align: baseline;
 }
 
 sub {
-  bottom: -0.25em;
+  bottom: -2.625px;
 }
 
 sup {
-  top: -0.5em;
+  top: -5.25px;
 }
 
-code, pre {
-  font-size: 12px;
-  font-family: Monaco, Menlo, Consolas, 'Courier New', monospace;
+code,
+pre,
+var {
   background-color: #fbfbfb;
   border: 1px solid;
 }
 
-code {
+code,
+var {
   border-color: #d4d4d4;
   padding: 2px 4px;
   color: #d14;
@@ -238,13 +348,13 @@ pre {
   white-space: pre-wrap;
 }
 
-pre.prettyprint {
+.prettyprint {
   margin-bottom: 20px;
 }
 
-pre.scrollable {
+.scrollable {
   max-height: 340px;
-  overflow-y: hidden;
+  overflow-y: scroll;
 }
 
 :-moz-placeholder {
@@ -265,30 +375,144 @@ pre.scrollable {
   color: #aeaeae;
 }
 
+/* Responsive utility classes ------------------------------------------------------------------------------------------
+
+  Our grid system is based on the "34 Responsive Grid System" from Kemal Yilmaz. Many thanks fly out to him for his hard
+  and great work on this. For more info go to {@link http://34grid.com/}.
+
+  Our maximum width is set to 1440 pixels (WXGA+).
+
+  @link http://en.wikipedia.org/wiki/Display_resolution#Computer_monitors
+*/
+
 .row {
-  margin-left: -20px;
+  margin: 0 auto;
+  max-width: 1440px;
 }
 
-#container {
-  margin: 0 auto;
-  min-width: 320px;
-  max-width: 1280px;
+.row [class*='span'] {
+  -webkit-transition: all 0.4s ease-out;
+     -moz-transition: all 0.4s ease-out;
+      -ms-transition: all 0.4s ease-out;
+       -o-transition: all 0.4s ease-out;
+          transition: all 0.4s ease-out;
+}
+
+[class*='span'] {
+  min-height: 30px;
+  margin: 0 1.25% 20px;
+  float: left;
+  display: block;
+}
+
+.span0 {
+  width: 100%;
+}
+
+.span1 {
+  width: 97.5%;
+}
+
+.span2,
+.offset2 {
+  width: 47.5%;
+}
+
+.span3 {
+  width: 30.8333333333%;
+}
+
+.span4 {
+  width: 22.5%;
+}
+
+.span5 {
+  width: 17.5%;
+}
+
+.span6 {
+  width: 14.1666666667%;
+}
+
+.span7 {
+  width: 11.7857142857%;
+}
+
+.span8 {
+  width: 10%;
+}
+
+.span9 {
+  width: 8.61111111111%;
+}
+
+.span10 {
+  width: 7.5%;
+}
+
+.span11 {
+  width: 6.59090909091%;
+}
+
+.span12 {
+  width: 5.83333333333%;
+}
+
+.offset3 {
+  width: 64.1666666667%;
+}
+
+.offset4 {
+  width: 72.5%;
+}
+
+.offset5 {
+  width: 77.5%;
+}
+
+.offset6 {
+  width: 80.8333333333%;
+}
+
+.offset7 {
+  width: 83.2142857143%;
+}
+
+.offset8 {
+  width: 85%;
+}
+
+.offset9 {
+  width: 86.3888888889%;
+}
+
+.offset10 {
+  width: 87.5%;
+}
+
+.offset11 {
+  width: 88.4090909091%;
+}
+
+.offset12 {
+  width: 89.1666666667%;
 }
 
 /* Header ----------------------------------------------------------------------------------------------------------- */
 
 #header {
-  margin: 0 0 20px;
+  margin-bottom: 20px;
   padding: 5px 0;
 }
 
 #header .menuitem {
   color: #888;
+  border-bottom: 0;
 }
 
-#header .menuitem:hover, #header .menuitem:focus {
+#header .menuitem:hover,
+#header .menuitem:focus {
   color: #222;
-  text-decoration: none;
 }
 
 /* Logo ------------------------------------------------------------------------------------------------------------- */
@@ -318,12 +542,13 @@ pre.scrollable {
 
 .header-search {
   padding-left: 4px;
-  height: 22px;
+  height: 24px;
   border: 1px solid #aeaeae;
   background-color: #fbfbfb;
 }
 
-.header-search:focus, .header-search.focus {
+.header-search:focus,
+.header-search.focus {
   border-color: #06c;
 }
 
@@ -343,18 +568,73 @@ pre.scrollable {
   color: #aeaeae;
 }
 
+.header-search .icon-search {
+  height: 22px;
+  line-height: 22px;
+}
+
 /* User navigation -------------------------------------------------------------------------------------------------- */
+
+/* Footer ----------------------------------------------------------------------------------------------------------- */
+
+#footer {
+  margin-top: 20px;
+  padding: 20px 0;
+  background-color: #efefef;
+  font-size: 12px;
+}
+
+#footer-logo {
+  margin: 16px 0 32px;
+  height: 32px;
+  background: center no-repeat url(/assets/img/logo/32.png);
+}
 
 /* Generic classes -------------------------------------------------------------------------------------------------- */
 
-.clearfix:before, .clearfix:after {
+.centered {
+  text-align: center;
+}
+
+.clearfix:before,
+.clearfix:after,
+.row:before,
+.row:after {
   display: table;
   content: '';
   line-height: 0;
 }
 
-.clearfix:after {
+.clearfix:after,
+.row:after {
   clear: both;
+}
+
+.clear-left {
+  clear: left;
+}
+
+.clear-right {
+  clear: right;
+}
+
+.hidden,
+.visible-phone,
+.visible-tablet,
+.hidden-desktop {
+  display: none;
+  visibility: hidden;
+}
+
+.hide-text {
+  font: 0/0 a;
+  color: transparent;
+  background-color: transparent;
+  border: 0;
+}
+
+.visible-desktop {
+  display: inherit;
 }
 
 .inline {
@@ -370,21 +650,200 @@ pre.scrollable {
 }
 
 .serif {
-  font-family: Georgia, Times, 'Times New Roman', 'Nimbus Roman No9 L', Norasi, Rekha, serif;
+  /* Georgia, Times, 'Times New Roman', 'Nimbus Roman No9 L', Norasi, Rekha, serif */
+  font-family: georgia, times, serif;
+  text-rendering: optimizeLegibility;
 }
 
 .condensed {
-  font-family: 'Arial Narrow', Arial, 'Helvetica Neue', Helvetica, 'Nimbus Sans L', 'Liberation Sans', FreeSans, sans-serif;
+  /* 'Arial Narrow', Arial, 'Helvetica Neue', Helvetica, 'Nimbus Sans L', 'Liberation Sans', FreeSans, sans-serif */
+  font-family: 'arial narrow', arial, helvetica, clean, sans-serif;
   font-weight: 300;
   font-stretch: condensed;
 }
 
+/*
+  Responsive videos.
+
+  @link http://www.alistapart.com/articles/creating-intrinsic-ratios-for-video/
+  @link http://webdesignerwall.com/tutorials/css-elastic-videos
+*/
+
+.video {
+  position: relative;
+  padding: 30px 0 56.25%;
+  height: 0;
+  overflow: hidden;
+  display: block;
+}
+
+.video iframe,
+.video object,
+.video embed {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Desktop, large screens */
+@media only screen and (min-width: 1200px) {
+
+}
+
+/* Desktop < 1200px */
+@media only screen and (max-width: 1200px) {
+  .span12 {
+    width: 14.1666666667%;
+  }
+
+  .offset12 {
+    width: 80.8333333333%;
+  }
+}
+
+/* iPad landscape */
+@media only screen and (max-width: 1024px) {
+  .span6,
+  .span9 {
+    width: 30.8333333333%;
+  }
+
+  .span8,
+  .span12 {
+    width: 22.5%;
+  }
+
+  .span10 {
+    width: 17.5%;
+  }
+
+  .offset6,
+  .offset9 {
+    width: 64.1666666667%;
+  }
+
+  .offset8,
+  .offset12 {
+    width: 72.5%;
+  }
+
+  .offset10 {
+    width: 77.5%;
+  }
+}
+
+/* iPad portrait */
+@media handheld, only screen and (max-width: 768px) {
+  .span4,
+  .span6,
+  .span8,
+  .span10,
+  .offset4,
+  .offset6,
+  .offset8,
+  .offset10 {
+    width: 47.5%;
+  }
+
+  .span9,
+  .offset9 {
+    width: 97.5%;
+  }
+
+  .span12 {
+    width: 30.8333333333%;
+  }
+
+  .offset12 {
+    width: 64.1666666667%;
+  }
+}
+
+/* iPhone landscape */
+@media handheld, only screen and (max-width: 480px) {
+  .span2,
+  .span3,
+  .span4,
+  .span5,
+  .span6,
+  .span7,
+  .span8,
+  .span10,
+  .span11,
+  .offset2,
+  .offset3,
+  .offset4,
+  .offset5,
+  .offset6,
+  .offset7,
+  .offset8,
+  .offset10,
+  .offset11 {
+    width: 97.5%;
+  }
+
+  .span12,
+  .offset12 {
+    width: 47.5%;
+  }
+}
+
+
+
+/* iPhone portrait */
+@media handheld, only screen and (max-width: 320px) {
+  .span1,
+  .span2,
+  .span3,
+  .span4,
+  .span5,
+  .span6,
+  .span7,
+  .span8,
+  .span9,
+  .span10,
+  .span11,
+  .span12,
+  .offset3,
+  .offset4,
+  .offset5,
+  .offset6,
+  .offset7,
+  .offset8,
+  .offset9,
+  .offset10,
+  .offset11,
+  .offset12 {
+    width: 92%;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 4%;
+    padding-right: 4%;
+  }
+}
+
+/* Very small displays */
+@media handheld, only screen and (max-width: 240px) {
+
+}
+
 /* Mozilla Firefox specific styles -------------------------------------------------------------------------------------
+ *
  * Use obscure selectors which have not been used before, otherwise Firefox will not apply the styles!
  */
 
 @-moz-document url-prefix() {
-  #header .input-submit i {
-    vertical-align: 1px;
+  .header-search .icon-search {
+    line-height: 20px !important;
   }
+}
+
+/* Microsoft Internet Explorer specific styles -------------------------------------------------------------------------
+ *
+ * These styles are for modern Internet Explorers. We use conditional stylesheets for the old ones.
+ */
+@-ms-viewport {
+  width: device-width;
 }
