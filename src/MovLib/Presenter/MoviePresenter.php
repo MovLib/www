@@ -33,13 +33,18 @@ use \MovLib\Model\MovieModel;
 class MoviePresenter extends AbstractPresenter{
 
   /**
+   * The movie model instance that is associated with the requested movie ID and this presenter.
    *
+   * @var \MovLib\Model\MovieModel
+   */
+  private $model;
+
+  /**
+   * Instantiate new movie presenter object.
    */
   public function __construct() {
     parent::__construct();
-    $movieModel = new MovieModel($this->language->getCode());
-    var_dump($movieModel->test());
-    exit();
+    $this->model = new MovieModel();
   }
 
 }

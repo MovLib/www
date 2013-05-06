@@ -18,14 +18,19 @@
 namespace MovLib\Model;
 
 /**
- * <b>ModelInterface</b> provides common configuration for all database related classes.
+ * The model interface provides common configuration for all database related classes.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
 interface ModelInterface {
+
+  /** Default database socket prefix. */
   const COMMON_DB = 'common';
+
 }

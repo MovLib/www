@@ -20,7 +20,7 @@ namespace MovLib\Presenter;
 use \MovLib\View\HTML\HomeView;
 
 /**
- *
+ * Instantiate new home presenter object.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -30,6 +30,12 @@ use \MovLib\View\HTML\HomeView;
  */
 class HomePresenter extends AbstractPresenter {
 
+  /**
+   * The construction of the home presenter directly invokes the HTML home view.
+   *
+   * @todo Return error if call was made via API.
+   * @see \MovLib\View\HTML\HomeView
+   */
   public function __construct() {
     parent::__construct();
     $this->output = (new HomeView($this->language))->getRenderedView();

@@ -20,7 +20,7 @@ namespace MovLib\Model;
 use \MovLib\Model\AbstractModel;
 
 /**
- * Description of MovieModel
+ * The movie model is responsible for all database related functionality of a single movie entry.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
@@ -32,13 +32,11 @@ use \MovLib\Model\AbstractModel;
  */
 class MovieModel extends AbstractModel {
 
-
+  /**
+   * Instantiate new movie model object.
+   */
   public function __construct() {
     parent::__construct('movies');
   }
 
-  public function test() {
-    return $this->insert([ 'id', 'title' ], 'is', [ 66, 'titten']);
-//    return $this->delete(' id = 1', 'en');
-  }
 }
