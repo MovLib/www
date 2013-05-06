@@ -83,7 +83,7 @@ abstract class AbstractModel implements ModelInterface {
     }
 
     $socket = AbstractModel::SOCKET_PATH . "/$socket/" . AbstractModel::SOCKET_NAME;
-    if (file_exists($socket) === false) {
+    if (file_exists($socket) === false || is_readable($socket) === false) {
       throw new DatabaseException("The desired socket ($socket) does not exist!");
     }
 
@@ -98,10 +98,10 @@ abstract class AbstractModel implements ModelInterface {
     );
 
     if ($connection->connect_error) {
-      throw new DatabaseException("Database connection on socket folder: $socketFolderName failed with message: {$connection->error} ({$connection->errno})");
+      throw new DatabaseException("Database connection on socket folder: $socket failed with message: {$connection->error} ({$connection->errno})");
     }
 
-    $connectionPool[$socketFolderName] = $connection;
+    $connectionPool[$socket] = $connection;
     return $connection;
   }
 
