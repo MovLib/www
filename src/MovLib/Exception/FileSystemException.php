@@ -17,7 +17,7 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\InterfaceException;
+use \MovLib\Exception\ExceptionInterface;
 use \RuntimeException;
 
 /**
@@ -29,6 +29,6 @@ use \RuntimeException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class FileSystemException extends RuntimeException implements InterfaceException {
+class FileSystemException extends RuntimeException implements ExceptionInterface {
 
 }

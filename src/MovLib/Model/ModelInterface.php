@@ -15,20 +15,17 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception;
-
-use \MovLib\Exception\ExceptionInterface;
-use \RuntimeException;
+namespace MovLib\Model;
 
 /**
- * A <b>LanguageException</b> might be thrown if an error occures related to the display language.
+ * <b>ModelInterface</b> provides common configuration for all database related classes.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class LanguageException extends RuntimeException implements ExceptionInterface {
-
+interface ModelInterface {
+  const COMMON_DB = 'common';
 }

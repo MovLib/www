@@ -18,7 +18,7 @@
 namespace MovLib\Exception;
 
 /**
- * Description of InterfaceException
+ * A <b>ExceptionInterface</b> is a base interface for all exceptions used in MovLib.
  *
  * @link http://ralphschindler.com/2010/09/15/exception-best-practices-in-php-5-3
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -27,6 +27,6 @@ namespace MovLib\Exception;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-interface InterfaceException {
+interface ExceptionInterface {
 
 }

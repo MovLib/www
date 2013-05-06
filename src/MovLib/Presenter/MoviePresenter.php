@@ -38,7 +38,7 @@ class MoviePresenter extends AbstractPresenter{
   public function __construct() {
     parent::__construct();
     $movieModel = new MovieModel($this->language->getCode());
-    var_dump($movieModel->insert([ 'id' ], 'i', [ 5 ]));
+    var_dump($movieModel->test());
     exit();
   }
 

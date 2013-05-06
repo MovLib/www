@@ -32,13 +32,13 @@ use \MovLib\Model\AbstractModel;
  */
 class MovieModel extends AbstractModel {
 
-  /**
-   *
-   *
-   * @param $languageCode
-   */
-  public function __construct($languageCode) {
-    parent::__construct($languageCode, 'movies');
+
+  public function __construct() {
+    parent::__construct('movies');
   }
 
+  public function test() {
+    return $this->insert([ 'id', 'title' ], 'is', [ 66, 'titten']);
+//    return $this->delete(' id = 1', 'en');
+  }
 }

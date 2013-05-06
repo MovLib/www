@@ -18,7 +18,7 @@
 namespace MovLib\Exception;
 
 use \RuntimeException;
-use \MovLib\Exception\InterfaceException;
+use \MovLib\Exception\ExceptionInterface;
 
 /**
  * A <b>DatabaseException</b> might be thrown if any database action fails.
@@ -30,6 +30,6 @@ use \MovLib\Exception\InterfaceException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class DatabaseException extends RuntimeException implements InterfaceException {
+class DatabaseException extends RuntimeException implements ExceptionInterface {
 
 }
