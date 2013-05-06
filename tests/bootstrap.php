@@ -1,5 +1,4 @@
 <?php
-// @codingStandardsIgnoreFile
 
 /* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
@@ -18,7 +17,7 @@
  */
 
 /**
- * Description of
+ * Setup environment for testing our software.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -27,9 +26,9 @@
  * @since 0.0.1-dev
  */
 
-/** Install path */
-define('IP', dirname(__DIR__));
-
 /* @var $loader \Composer\Autoload\ClassLoader */
-$loader = require IP . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+$loader = require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 $loader->add('MovLib\Test', __DIR__);
+
+// This variable is always available to our software and set via nginx in normal environment.
+$_SERVER['LANGUAGE_CODE'] = '';

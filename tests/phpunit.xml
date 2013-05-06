@@ -23,8 +23,20 @@
   stopOnFailure="true"
 >
   <testsuites>
-    <testsuite name="Console Tests">
-      <directory>./MovLib/Tests/Console/</directory>
+    <testsuite name="all">
+      <directory>./MovLib/Tests</directory>
+    </testsuite>
+    <testsuite name="models">
+      <directory>./MovLib/Tests/Model/</directory>
+    </testsuite>
+    <testsuite name="presenters">
+      <directory>./MovLib/Tests/Presenter/</directory>
+    </testsuite>
+    <testsuite name="utilies">
+      <directory>./MovLib/Tests/Utility</directory>
+    </testsuite>
+    <testsuite name="htmlviews">
+      <directory>./MovLib/Tests/View/HTML</directory>
     </testsuite>
   </testsuites>
 </phpunit>

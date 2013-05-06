@@ -73,12 +73,20 @@ abstract class AbstractModel implements ModelInterface {
    */
   protected function getConnection(&$database, &$table) {
     static $connectionPool = [];
+
     $database = $database ?: $_SERVER['LANGUAGE_CODE'];
     $table = $table ?: $this->defaultTable;
-    $socketFolderName = $database . '_' . $table;
-    if (array_key_exists($socketFolderName, $connectionPool)) {
-      return $connectionPool[$socketFolderName];
+
+    $socket = $database . '_' . $table;
+    if (array_key_exists($socket, $connectionPool)) {
+      return $connectionPool[$socket];
     }
+
+    $socket = AbstractModel::SOCKET_PATH . "/$socket/" . AbstractModel::SOCKET_NAME;
+    if (file_exists($socket) === false) {
+      throw new DatabaseException("The desired socket ($socket) does not exist!");
+    }
+
     // Use default values from PHP configuration for now. Can be dynamically changed if needed.
     $connection = new mysqli(
       ini_get('mysqli.default_host'),
@@ -86,11 +94,13 @@ abstract class AbstractModel implements ModelInterface {
       ini_get('mysqli.default_pw'),
       $database,
       ini_get('mysqli.default_port'),
-      $_SERVER['DB_SOCKET_PATH'] . "/$socketFolderName/" . $_SERVER['DB_SOCKET_NAME']
+      $socket
     );
+
     if ($connection->connect_error) {
       throw new DatabaseException("Database connection on socket folder: $socketFolderName failed with message: {$connection->error} ({$connection->errno})");
     }
+
     $connectionPool[$socketFolderName] = $connection;
     return $connection;
   }

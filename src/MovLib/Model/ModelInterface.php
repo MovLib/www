@@ -33,4 +33,10 @@ interface ModelInterface {
   /** Default database socket prefix. */
   const COMMON_DB = 'common';
 
+  /** Default socket path. */
+  const SOCKET_PATH = '/var/run/mysqld/';
+
+  /** Default socket name. */
+  const SOCKET_NAME = '/mysqld.sock';
+
 }
