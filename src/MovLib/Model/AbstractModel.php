@@ -120,7 +120,7 @@ abstract class AbstractModel implements ModelInterface {
     for ($i = 0; $i < count($values); $i++) {
       $values[$i] = &$values[$i];
     }
-    if (is_callable([ $this->stmt, 'bind_param' ]) && call_user_func_array([ $this->stmt, 'bind_param' ], $values) === false) {
+    if (is_callable([ $this->stmt, 'bind_param' ]) === false || call_user_func_array([ $this->stmt, 'bind_param' ], $values) === false) {
       throw new DatabaseException('Bind param failed.');
     }
     return $this;
@@ -173,7 +173,7 @@ abstract class AbstractModel implements ModelInterface {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function execute() {
-    if (is_callable([ $this->stmt, 'execute' ]) && $this->stmt->execute() === false) {
+    if (is_callable([ $this->stmt, 'execute' ]) === false || $this->stmt->execute() === false) {
       throw new DatabaseException("Execution of statement failed with error message: {$this->stmt->error} ({$this->stmt->errno})");
     }
     return $this;
@@ -189,7 +189,7 @@ abstract class AbstractModel implements ModelInterface {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function getStmtResult(&$result) {
-    if (is_callable([ $this->stmt, 'get_result' ]) && ($queryResult = $this->stmt->get_result()) === false) {
+    if (is_callable([ $this->stmt, 'get_result' ]) === false || ($queryResult = $this->stmt->get_result()) === false) {
       throw new DatabaseException('Get statement result failed.');
     }
     if ($queryResult->num_rows === 1) {
@@ -213,7 +213,7 @@ abstract class AbstractModel implements ModelInterface {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function closeStmt() {
-    if (is_callable([ $this->stmt, 'close' ]) && $this->stmt->close() === false) {
+    if (is_callable([ $this->stmt, 'close' ]) === false || $this->stmt->close() === false) {
       throw new DatabaseException('Closing of statement failed.');
     }
     unset($this->stmt);
