@@ -34,6 +34,10 @@ use \mysqli;
  */
 abstract class AbstractModel implements ModelInterface {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The default table to be used by the model.
    *
@@ -48,6 +52,10 @@ abstract class AbstractModel implements ModelInterface {
    */
   protected $stmt;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constructor
+
+
   /**
    * Initialize new model base instance.
    *
@@ -57,6 +65,10 @@ abstract class AbstractModel implements ModelInterface {
   public function __construct($defaultTable) {
     $this->defaultTable = $defaultTable;
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
+
 
   /**
    * Retrieve a database connection for the specified parameters.
@@ -71,7 +83,7 @@ abstract class AbstractModel implements ModelInterface {
    *   The requested MySQLi connection.
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function getConnection(&$database, &$table) {
+  protected final function getConnection(&$database, &$table) {
     static $connectionPool = [];
 
     $database = $database ?: $_SERVER['LANGUAGE_CODE'];
@@ -106,27 +118,6 @@ abstract class AbstractModel implements ModelInterface {
   }
 
   /**
-   * Binds the parameters to a prepared MySQLi statement object.
-   *
-   * @param string $types
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $values
-   *   The parameters to be bound.
-   * @return \MovLib\Model\AbstractModel
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  private function bindParam($types, array $values) {
-    array_unshift($values, $types);
-    for ($i = 0; $i < count($values); $i++) {
-      $values[$i] = &$values[$i];
-    }
-    if (is_callable([ $this->stmt, 'bind_param' ]) === false || call_user_func_array([ $this->stmt, 'bind_param' ], $values) === false) {
-      throw new DatabaseException('Bind param failed.');
-    }
-    return $this;
-  }
-
-  /**
    * Prepare a statement.
    *
    * @param string $query
@@ -138,7 +129,7 @@ abstract class AbstractModel implements ModelInterface {
    * @return \MovLib\Model\AbstractModel
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function prepare($query, $database = false, $table = false) {
+  protected final function prepare($query, $database = false, $table = false) {
     if (($this->stmt = $this->getConnection($database, $table)->prepare(str_replace('{table}', $table, $query))) === false) {
       throw new DatabaseException('Preparation of statement failed.');
     }
@@ -161,8 +152,24 @@ abstract class AbstractModel implements ModelInterface {
    * @return \MovLib\Model\AbstractModel
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function prepareAndBind($query, $types, array $values, $database = false, $table = false) {
-    return $this->prepare($query, $database, $table)->bindParam($types, $values);
+  protected final function prepareAndBind($query, $types, array $values, $database = false, $table = false) {
+    $typeCount = strlen($types);
+    $valueCount = count($values);
+    if ($typeCount !== $valueCount) {
+      throw new DatabaseException("Wrong parameter count, expected $typeCount but received $valueCount.");
+    }
+    $this->prepare($query, $database, $table);
+    array_unshift($values, $types);
+    for ($i = 0; $i < $valueCount; ++$i) {
+      $values[$i] = &$values[$i];
+    }
+    if (is_callable([ $this->stmt, 'bind_param' ]) === false) {
+      throw new DatabaseException('No valid prepared statement instance.');
+    }
+    if (call_user_func_array([ $this->stmt, 'bind_param' ], $values) === false) {
+      throw new DatabaseException('Bind param failed.');
+    }
+    return $this;
   }
 
   /**
@@ -172,15 +179,18 @@ abstract class AbstractModel implements ModelInterface {
    * @return \MovLib\Model\AbstractModel
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function execute() {
-    if (is_callable([ $this->stmt, 'execute' ]) === false || $this->stmt->execute() === false) {
+  protected final function execute() {
+    if (is_callable([ $this->stmt, 'execute' ]) === false) {
+      throw new DatabaseException('No valid prepared statement instance.');
+    }
+    if ($this->stmt->execute() === false) {
       throw new DatabaseException("Execution of statement failed with error message: {$this->stmt->error} ({$this->stmt->errno})");
     }
     return $this;
   }
 
   /**
-   * Get the statement result as an associative array.
+   * Get the statement result as associative array.
    *
    * @param array|null $result
    *   The query result as associative array or <code>null</code> if empty result. If the result consists of only one
@@ -188,8 +198,11 @@ abstract class AbstractModel implements ModelInterface {
    * @return \MovLib\Model\AbstractModel
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function getStmtResult(&$result) {
-    if (is_callable([ $this->stmt, 'get_result' ]) === false || ($queryResult = $this->stmt->get_result()) === false) {
+  protected final function fetchAssoc(&$result) {
+    if (is_callable([ $this->stmt, 'get_result' ]) === false) {
+      throw new DatabaseException('No valid prepared statement instance.');
+    }
+    if (($queryResult = $this->stmt->get_result()) === false) {
       throw new DatabaseException('Get statement result failed.');
     }
     if ($queryResult->num_rows === 1) {
@@ -206,19 +219,26 @@ abstract class AbstractModel implements ModelInterface {
   }
 
   /**
-   * Closes the statement.
+   * Closes the prepared statement.
    *
    * @see \MovLib\Model\AbstractModel::stmt
    * @return \MovLib\Model\AbstractModel
    * @throws \MovLib\Exception\DatabaseException
+   *   Only raises the exception if closing of a valid prepared statement instance failed. If the prepared statement is
+   *   not a valid instance any reference will be unset and this method simply returns.
    */
-  protected function closeStmt() {
-    if (is_callable([ $this->stmt, 'close' ]) === false || $this->stmt->close() === false) {
-      throw new DatabaseException('Closing of statement failed.');
+  protected final function close() {
+    // Check if we can call close and if we can, call it.
+    if (is_callable([ $this->stmt, 'close' ]) && $this->stmt->close() === false) {
+      throw new DatabaseException('Closing prepared statement failed.');
     }
     unset($this->stmt);
     return $this;
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
 
   /**
    * A basic delete query.
@@ -232,8 +252,12 @@ abstract class AbstractModel implements ModelInterface {
    * @return \MovLib\Model\AbstractModel
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function delete($where, $database = false, $table = false) {
-    return $this->prepare(sprintf('DELETE FROM {table} WHERE %s', $where), $database, $table)->execute()->closeStmt();
+  public final function delete($where, $database = false, $table = false) {
+    return $this
+      ->prepare(sprintf('DELETE FROM {table} WHERE %s', $where), $database, $table)
+      ->execute()
+      ->close()
+    ;
   }
 
   /**
@@ -252,11 +276,15 @@ abstract class AbstractModel implements ModelInterface {
    * @return \MovLib\Model\AbstractModel
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function insert(array $columnNames, $types, array $values, $database = false, $table = false) {
-    return $this->prepareAndBind(
-      sprintf('INSERT INTO {table} (%s) VALUES (%s)', implode(',', $columnNames), implode(',', array_fill(0, count($values), '?'))),
-      $types, $values, $database, $table
-    )->execute()->closeStmt();
+  public final function insert(array $columnNames, $types, array $values, $database = false, $table = false) {
+    return $this
+      ->prepareAndBind(
+        sprintf('INSERT INTO {table} (%s) VALUES (%s)', implode(',', $columnNames), implode(',', array_fill(0, count($values), '?'))),
+        $types, $values, $database, $table
+      )
+      ->execute()
+      ->close()
+    ;
   }
 
   /**
@@ -272,8 +300,13 @@ abstract class AbstractModel implements ModelInterface {
    *   The query result as associative array.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function queryAll($query, $database = false, $table = false) {
-    $this->prepare($query, $database, $table)->execute()->getStmtResult($result)->closeStmt();
+  public final function queryAll($query, $database = false, $table = false) {
+    $this
+      ->prepare($query, $database, $table)
+      ->execute()
+      ->fetchAssoc($result)
+      ->close()
+    ;
     return $result;
   }
 
@@ -294,8 +327,13 @@ abstract class AbstractModel implements ModelInterface {
    *   The query result as associative array.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function query($query, $types, array $args, $database = false, $table = false) {
-    $this->prepareAndBind($query, $types, $args, $database, $table)->execute()->getStmtResult($result)->closeStmt();
+  public final function query($query, $types, array $args, $database = false, $table = false) {
+    $this
+      ->prepareAndBind($query, $types, $args, $database, $table)
+      ->execute()
+      ->fetchAssoc($result)
+      ->close()
+    ;
     return $result;
   }
 
@@ -317,11 +355,15 @@ abstract class AbstractModel implements ModelInterface {
    * @return \MovLib\Model\AbstractModel
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function update(array $columns, $types, array $values, $where, $database = false, $table = false) {
-    return $this->prepareAndBind(
-      sprintf('UPDATE {table} SET %s = ? WHERE %s', implode(' = ?,', $columns), $where),
-      $types, $values, $database, $table
-    )->execute()->closeStmt();
+  public final function update(array $columns, $types, array $values, $where, $database = false, $table = false) {
+    return $this
+      ->prepareAndBind(
+        sprintf('UPDATE {table} SET %s = ? WHERE %s', implode(' = ?,', $columns), $where),
+        $types, $values, $database, $table
+      )
+      ->execute()
+      ->close()
+    ;
   }
 
 }
