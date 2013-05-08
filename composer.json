@@ -31,12 +31,9 @@
   },
   "require": {
     "php": "~5.4",
-    "pecl_http": "~1.7",
     "symfony/console": "2.3.*@dev"
   },
   "require-dev": {
-    "symfony/finder": "2.3.*@dev",
-    "symfony/framework-bundle": "2.3.*@dev"
   },
   "autoload": {
     "psr-0": { "MovLib": "src/" }
