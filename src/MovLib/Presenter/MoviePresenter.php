@@ -40,10 +40,9 @@ class MoviePresenter extends AbstractPresenter{
   private $model;
 
   /**
-   * Instantiate new movie presenter object.
+   * {@inheritdoc}
    */
-  public function __construct() {
-    parent::__construct();
+  protected function init() {
     $this->model = new MovieModel();
   }
 

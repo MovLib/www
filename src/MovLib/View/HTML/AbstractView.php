@@ -695,8 +695,8 @@ abstract class AbstractView {
    */
   public function getHeaderLogo() {
     return
-      '<a id="logo" href="/" title="' . String::checkPlain(sprintf(__('Go back to the %s home page.', SITENAME))) . '">' .
-        SITENAME . ' <small>' . sprintf(__('the %sfree%s movie library', '<em class="serif">', '</em>')) . '</small>' .
+      '<a id="logo" class="inline" href="/" title="' . String::checkPlain(sprintf(__('Go back to the %s home page.'), SITENAME)) . '">' .
+        SITENAME . ' <small>' . sprintf(__('the %sfree%s movie library'), '<em class="serif">', '</em>') . '</small>' .
       '</a>'
     ;
   }

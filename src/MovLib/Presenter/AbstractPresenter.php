@@ -48,8 +48,21 @@ abstract class AbstractPresenter {
    * Instantiate new presenter object.
    */
   public function __construct() {
-    $this->language = new Language();
+    try {
+      $this->language = new Language();
+      $this->init();
+    } catch (LanguageException $e) {
+      $_SERVER['LANGUAGE_CODE'] = 'en';
+      $this->output = new ErrorView(new Language(), $e);
+    } catch (Exception $e) {
+      $this->output = new ErrorView($this->language, $e);
+    }
   }
+
+  /**
+   * Initialize the presenter and set the output.
+   */
+  protected abstract function init();
 
   /**
    * Get the whole output of this presenter.
