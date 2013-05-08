@@ -32,11 +32,9 @@ use \MovLib\Model\AbstractModel;
  */
 class MovieModel extends AbstractModel {
 
-  /**
-   * Instantiate new movie model object.
-   */
   public function __construct() {
-    parent::__construct('movies');
+    parent::__construct();
+    $this->insert('movies', [ 'id' ], 'i', [ 969 ]);
   }
 
 }
