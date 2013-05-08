@@ -115,6 +115,11 @@ section {
   display: block;
 }
 
+/* Always display vertical scrollbar, avoids different screen width upon page changes. */
+html {
+  overflow-y: scroll;
+}
+
 body {
   margin: 0;
 }
@@ -216,6 +221,7 @@ dfn {
 
 b,
 strong,
+#logo,
 h1,
 h2,
 h3,
@@ -225,6 +231,7 @@ h6 {
   font-weight: bold;
 }
 
+#logo,
 h1,
 h2,
 h3,
@@ -235,6 +242,7 @@ h6 {
   color: #333;
 }
 
+#logo small,
 h1 small,
 h2 small,
 h3 small,
@@ -246,12 +254,14 @@ h6 small {
   color: #555;
 }
 
+#logo,
 h1,
 h2,
 h3 {
   line-height: 40px;
 }
 
+#logo,
 h1 {
   font-size: 38.5px;
 }
@@ -550,6 +560,7 @@ var {
   background: url(/assets/img/logo/64.png) no-repeat;
   height: 64px;
   line-height: 50px;
+  border-bottom: 0;
 }
 
 #logo small {
@@ -883,6 +894,14 @@ var {
 .btn,
 .centered {
   text-align: center;
+}
+
+.flush-right {
+  text-align: right;
+}
+
+.justification {
+  text-align: justify;
 }
 
 .clearfix:before,
