@@ -17,11 +17,10 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\ExceptionInterface;
-use \RuntimeException;
+use \MovLib\Exception\AbstractException;
 
 /**
- * A <b>FileSystemException</b> might be thrown if any local filesystem action fails.
+ * A file system exception might be thrown if any local filesystem action fails.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,6 +28,6 @@ use \RuntimeException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class FileSystemException extends RuntimeException implements ExceptionInterface {
+class FileSystemException extends AbstractException {
 
 }

@@ -17,11 +17,10 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\ExceptionInterface;
-use \RuntimeException;
+use \MovLib\Exception\AbstractException;
 
 /**
- * A <b>LanguageException</b> might be thrown if an error occures related to the display language.
+ * A language exception might be thrown if an error occures related to the display language.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,6 +28,6 @@ use \RuntimeException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class LanguageException extends RuntimeException implements ExceptionInterface {
+class LanguageException extends AbstractException {
 
 }

@@ -17,16 +17,17 @@
  */
 namespace MovLib\Exception;
 
+use \MovLib\Exception\AbstractException;
+
 /**
- * A <b>ExceptionInterface</b> is a base interface for all exceptions used in MovLib.
+ * An error exception might be thrown if there is any PHP error that was not handled properly.
  *
- * @link http://ralphschindler.com/2010/09/15/exception-best-practices-in-php-5-3
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-interface ExceptionInterface {
+class ErrorException extends AbstractException {
 
 }

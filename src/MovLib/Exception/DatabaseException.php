@@ -17,11 +17,10 @@
  */
 namespace MovLib\Exception;
 
-use \RuntimeException;
-use \MovLib\Exception\ExceptionInterface;
+use \MovLib\Exception\AbstractException;
 
 /**
- * A <b>DatabaseException</b> might be thrown if any database action fails.
+ * A database exception might be thrown if any database action fails.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -30,6 +29,6 @@ use \MovLib\Exception\ExceptionInterface;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class DatabaseException extends RuntimeException implements ExceptionInterface {
+class DatabaseException extends AbstractException {
 
 }

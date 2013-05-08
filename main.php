@@ -178,12 +178,12 @@ function n__($msgid1, $msgid2, $n, $msgctxt = '') {
  * @throws \RuntimeException
  *   If invoked, always raises a runtime exception.
  */
-//function error_all_handler($errno, $errstr, $errfile, $errline) {
-//  throw new \RuntimeException($errstr, 0, $errno, $errfile, $errline);
-//}
+function error_all_handler($errno, $errstr, $errfile, $errline) {
+  throw (new \MovLib\Exception\ErrorException($errstr, $errno))->setFile($errfile)->setLine($errline);
+}
 
 // Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
-//set_error_handler('error_all_handler');
+set_error_handler('error_all_handler');
 
 /**
  * This is the outermost place to catch any exception that might have been forgotten somewhere.
@@ -196,12 +196,12 @@ function n__($msgid1, $msgid2, $n, $msgctxt = '') {
  *   The base exception class from PHP from which every exception derives. This ensures that we are able to catch
  *   absolutely every exception that might arise.
  */
-//function uncaught_exception_handler(\Exception $e) {
-//  echo $e->getMessage();
-//}
+function uncaught_exception_handler(\Exception $e) {
+  echo (new \MovLib\Presenter\ErrorPresenter($e))->getOutput();
+}
 
 // Set the default exception handler.
-//set_exception_handler('uncaught_exception_handler');
+set_exception_handler('uncaught_exception_handler');
 
 /* @var $presenter string */
 $presenter = '\\MovLib\\Presenter\\' . $_SERVER['PRESENTER'] . 'Presenter';
