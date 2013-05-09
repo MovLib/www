@@ -398,6 +398,15 @@ var {
   color: #d14;
 }
 
+var[title] {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-bottom: 1px dotted #d14;
+  cursor: pointer;
+}
+
 .prettyprint {
   margin-bottom: 20px;
 }

@@ -153,6 +153,24 @@ function n__($msgid1, $msgid2, $n, $msgctxt = '') {
 }
 
 /**
+ * This is the outermost place to catch any exception that might have been forgotten somewhere.
+ *
+ * To ensure that no unexpected behaviour crashes our software, any uncaught exception will be caught at this place. An
+ * error is logged to the syslog and, depending on the error, a message is displayed to the user.
+ *
+ * @link http://www.php.net/manual/en/function.set-exception-handler.php
+ * @param \Exception $e
+ *   The base exception class from PHP from which every exception derives. This ensures that we are able to catch
+ *   absolutely every exception that might arise.
+ */
+function uncaught_exception_handler(\Exception $e) {
+  exit((new \MovLib\Presenter\ErrorPresenter($e))->getOutput());
+}
+
+// Set the default exception handler.
+set_exception_handler('uncaught_exception_handler');
+
+/**
  * Global function to convert PHP errors to exceptions.
  *
  * PHP by default mostly throws errors and not exceptions (like Java or Ruby). This user-defined error handler converts
@@ -179,29 +197,15 @@ function n__($msgid1, $msgid2, $n, $msgctxt = '') {
  *   If invoked, always raises a runtime exception.
  */
 function error_all_handler($errno, $errstr, $errfile, $errline) {
-  throw (new \MovLib\Exception\ErrorException($errstr, $errno))->setFile($errfile)->setLine($errline);
+  uncaught_exception_handler(
+    (new \MovLib\Exception\ErrorException($errstr, $errno))
+      ->setFile($errfile)
+      ->setLine($errline)
+  );
 }
 
 // Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
 set_error_handler('error_all_handler');
-
-/**
- * This is the outermost place to catch any exception that might have been forgotten somewhere.
- *
- * To ensure that no unexpected behaviour crashes our software, any uncaught exception will be caught at this place. An
- * error is logged to the syslog and, depending on the error, a message is displayed to the user.
- *
- * @link http://www.php.net/manual/en/function.set-exception-handler.php
- * @param \Exception $e
- *   The base exception class from PHP from which every exception derives. This ensures that we are able to catch
- *   absolutely every exception that might arise.
- */
-function uncaught_exception_handler(\Exception $e) {
-  echo (new \MovLib\Presenter\ErrorPresenter($e))->getOutput();
-}
-
-// Set the default exception handler.
-set_exception_handler('uncaught_exception_handler');
 
 /* @var $presenter string */
 $presenter = '\\MovLib\\Presenter\\' . $_SERVER['PRESENTER'] . 'Presenter';

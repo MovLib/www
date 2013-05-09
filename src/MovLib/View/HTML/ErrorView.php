@@ -19,6 +19,7 @@ namespace MovLib\View\HTML;
 
 use \Exception;
 use \MovLib\Entity\Language;
+use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -56,7 +57,7 @@ class ErrorView extends AbstractView {
           '<div style="padding:5px 10px;height:33px;background-color:#eaeaea;background-image:linear-gradient(#fafafa,#eaeaea);border-bottom:1px solid #d8d8d8;color:#555;text-shadow:0 1px 0 #fff;line-height:25px">' .
             '<i class="icon icon-attention"></i> ' . $exception->getMessage() .
           '</div>' .
-          '<table style="margin:0;padding:0;width:100%;background:#fff;border-collapse:collapse;font:12px/18px consolas,monospace;color:#000">' .
+          '<table style="margin:0;padding:0;width:100%;background:#fff;border-collapse:collapse;font:12px/24px consolas,monospace;color:#000">' .
             $this->formatStacktrace($exception->getTrace()) .
           '</table>' .
         '</div>' .
@@ -102,16 +103,29 @@ class ErrorView extends AbstractView {
       elseif ($i === $count) {
         $style .= ';padding-bottom:5px';
       }
+      foreach ($stacktrace[$i]['args'] as $delta => $arg) {
+        $suffix = '';
+        if (is_array($arg)) {
+          $suffix = '(' . count($arg) . ')';
+        }
+        $stacktrace[$i]['args'][$delta] = '<var title="' . String::checkPlain(print_r($arg, true)) . '">' . gettype($arg) . $suffix . '</var>';
+      }
       $output .= sprintf(
-        '<tr><td class="flush-right" style="%s">%s</td><td style="%s"><div style="padding-left:10px%s">\%s%s<em>%s</em>(%s)</div></td></tr>',
+        '<tr>' .
+          '<td class="flush-right" style="%s">%s</td>' .
+          '<td style="%s">' .
+            '<div style="padding:0 10px%s">%s%s<span style="color:#00f">%s</span>(%s)<span class="pull-right" style="color:rgba(0,0,0,0.3)">%s</span></div>' .
+          '</td>' .
+        '</tr>',
         'padding:0 8px;width:1%;border-right:1px solid #e5e5e5;color:rgba(0,0,0,0.3)' . $style,
-        $stacktrace[$i]['line'],
+        $stacktrace[$i]['line'] ?: '-',
         'padding:0' . $style,
         $highlight,
-        $stacktrace[$i]['class'],
-        $stacktrace[$i]['type'],
-        $stacktrace[$i]['function'],
-        implode(', ', $stacktrace[$i]['args'])
+        $stacktrace[$i]['class'] ?: '',
+        $stacktrace[$i]['type'] ?: '',
+        $stacktrace[$i]['function'] ?: '',
+        implode(', ', $stacktrace[$i]['args']),
+        str_replace($_SERVER['DOCUMENT_ROOT'], '', $stacktrace[$i]['file'] ?: '')
       );
       $highlight = '';
     }

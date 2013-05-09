@@ -134,7 +134,7 @@ abstract class AbstractModel {
    * <b>Usage example:</b>
    * <pre>$this->delete(
    *   'user',                        // Table name
-   *   'id = ? AND name = ? LIMIT 1', // Where clause
+   *   '`id` = ? AND `name` = ? LIMIT 1', // Where clause
    *   'is',                          // Where types
    *   [ 1, 'Foobar' ]                // Where values
    * );</pre>
@@ -152,7 +152,7 @@ abstract class AbstractModel {
    */
   protected final function delete($table, $whereClause, $whereTypes, array $whereValues) {
     return $this
-      ->prepareAndBind(sprintf('DELETE FROM %s WHERE %s', $table, $whereClause), $whereTypes, $whereValues)
+      ->prepareAndBind(sprintf('DELETE FROM `%s` WHERE %s', $table, $whereClause), $whereTypes, $whereValues)
       ->execute()
       ->close()
     ;
@@ -266,9 +266,9 @@ abstract class AbstractModel {
     return $this
       ->prepareAndBind(
         sprintf(
-          'INSERT INTO %s (%s) VALUES (%s)',
+          'INSERT INTO `%s` (`%s`) VALUES (%s)',
           $table,
-          implode(',', $columns),
+          implode('`,`', $columns),
           implode(',', array_fill(0, count($values), '?'))
         ),
         $types,
@@ -313,11 +313,11 @@ abstract class AbstractModel {
         throw new DatabaseException("Wrong parameter count, expected $typeCount but received $valueCount.");
       }
       $this->prepare($query);
-      foreach ($values as $delta => $value) {
-        $values[$delta] = &$value;
+      $referencedParameters = [ $types ];
+      for ($i = 0; $i < $valueCount; ++$i) {
+        $referencedParameters[$i + 1] = &$values[$i];
       }
-      array_unshift($values, $types);
-      if (call_user_func_array([ $this->stmt, 'bind_param' ], $values) === false) {
+      if (call_user_func_array([ $this->stmt, 'bind_param' ], $referencedParameters) === false) {
         throw new DatabaseException('Binding parameters to prepared statement failed.');
       }
     } catch (Exception $e) {
@@ -376,7 +376,7 @@ abstract class AbstractModel {
    *   'user',                 // Table name
    *   'is',                   // Set types
    *   [ 42, 'Foo' ],          // Set values
-   *   'id = ? AND name = ?',  // Where clause
+   *   '`id` = ? AND `name` = ?',  // Where clause
    *   'is',                   // Where types
    *   [ 1, 'Bar' ]            // Where values
    * );</pre>
@@ -400,9 +400,9 @@ abstract class AbstractModel {
     return $this
       ->prepareAndBind(
         sprintf(
-          'UPDATE %s SET %s = ? WHERE %s',
+          'UPDATE `%s` SET `%s` = ? WHERE %s',
           $table,
-          implode(' = ?,', $setValues),
+          implode('` = ?,`', $setValues),
           $whereClause
         ),
         $setTypes . $whereTypes,
