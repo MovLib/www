@@ -70,6 +70,8 @@ abstract class AbstractModel {
   /**
    * Initialize new model base instance and connect to default database.
    *
+   * @see \MovLib\Model\AbstractModel::connect()
+   * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
   public function __construct() {
@@ -78,9 +80,18 @@ abstract class AbstractModel {
 
   /**
    * Correctly close the database connection.
+   *
+   * @see \MovLib\Model\AbstractModel::disconnect()
    */
   public function __destruct() {
-    $this->disconnect();
+    try {
+      $this->disconnect();
+    } catch (Exception $e) {
+      // Do nothing at this point. If everything worked fine till this point there is no reason to exit the execution of
+      // the request.
+      //
+      // @todo Log this exception!
+    }
   }
 
 
@@ -90,15 +101,15 @@ abstract class AbstractModel {
   /**
    * Closes the prepared statement.
    *
-   * @return \MovLib\Model\AbstractModel
+   * @return $this
    * @throws \MovLib\Exception\DatabaseException
    *   Only raises the exception if closing of a valid prepared statement instance failed. If the prepared statement is
    *   not a valid instance any reference will be unset and this method simply returns.
    */
   protected final function close() {
     // Check if we can call close and if we can, call it.
-    if (is_callable([ $this->stmt, 'close' ]) && $this->stmt->close() === false) {
-      throw new DatabaseException('Closing prepared statement failed.');
+    if (is_callable([ $this->stmt, "close" ]) && $this->stmt->close() === false) {
+      throw new DatabaseException("Closing prepared statement failed.");
     }
     unset($this->stmt);
     return $this;
@@ -107,23 +118,22 @@ abstract class AbstractModel {
   /**
    * Connect to default database.
    *
-   * @return \MovLib\Model\AbstractModel
+   * @return $this
+   * @throws \Exception
+   *   Might throw a generic exception if (for instance) the socket does not exist.
    * @throws \MovLib\Exception\DatabaseException
+   *   If connecting to the database or selecting the database fails.
    */
   protected final function connect() {
-    try {
-      $this->mysqli = new mysqli();
-      if ($this->mysqli->real_connect() === false) {
-        throw new DatabaseException('Could not connect to default database server.');
-      }
-      if ($this->mysqli->connect_error) {
-        throw new DatabaseException("Database connect error with message: {$this->mysqli->error} ({$this->mysqli->errno})");
-      }
-      if ($this->mysqli->select_db(self::DEFAULT_DB) === false) {
-        throw new DatabaseException('Could not use default database: ' . self::DEFAULT_DB);
-      }
-    } catch (Exception $e) {
-      throw new DatabaseException($e->getMessage(), $e->getCode(), $e);
+    $this->mysqli = new mysqli();
+    if ($this->mysqli->real_connect() === false) {
+      throw new DatabaseException('Could not connect to default database server.');
+    }
+    if ($this->mysqli->connect_error) {
+      throw new DatabaseException("Database connect error with message: {$this->mysqli->error} ({$this->mysqli->errno})");
+    }
+    if ($this->mysqli->select_db(self::DEFAULT_DB) === false) {
+      throw new DatabaseException("Could not use default database: " . self::DEFAULT_DB);
     }
     return $this;
   }
@@ -132,27 +142,30 @@ abstract class AbstractModel {
    * Generic delete query.
    *
    * <b>Usage example:</b>
-   * <pre>$this->delete(
-   *   'user',                        // Table name
-   *   '`id` = ? AND `name` = ? LIMIT 1', // Where clause
-   *   'is',                          // Where types
-   *   [ 1, 'Foobar' ]                // Where values
-   * );</pre>
+   * <pre>$this->delete("users", "is", [ "id" => 42, "name" => "Smith" ]);</pre>
    *
+   * <b>Resulting SQL query:</b>
+   * <pre>DELETE FROM `users` WHERE `id` = 42 AND `name` = "Smith";</pre>
+   *
+   * @see \MovLib\Model\AbstractModel::prepareAndBind()
+   * @see \MovLib\Model\AbstractModel::execute()
+   * @see \MovLib\Model\AbstractModel::close()
    * @param string $table
    *   The name of the table where a record should be deleted.
-   * @param string $whereClause
-   *   The identifying string that precedes the SQL WHERE clause.
-   * @param array $setValues
+   * @param string $types
    *   The type string for where in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $whereValues
-   *   The values that identify the row.
-   * @return \MovLib\Model\AbstractModel
+   * @param array $where
+   *   Associative array containing column names and values for where.
+   * @return $this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected final function delete($table, $whereClause, $whereTypes, array $whereValues) {
+  protected final function delete($table, $types, $where) {
     return $this
-      ->prepareAndBind(sprintf('DELETE FROM `%s` WHERE %s', $table, $whereClause), $whereTypes, $whereValues)
+      ->prepareAndBind(
+        "DELETE FROM `$table` WHERE `" . implode("` = ? AND `", array_keys($where)) . "` = ?",
+        $types,
+        array_values($where)
+      )
       ->execute()
       ->close()
     ;
@@ -161,12 +174,10 @@ abstract class AbstractModel {
   /**
    * Disconnect from database.
    *
-   * @return \MovLib\Model\AbstractModel
+   * @return $this
    */
   protected final function disconnect() {
-    if (is_callable([ $this->mysqli, 'close' ])) {
-      $this->mysqli->close();
-    }
+    $this->mysqli->close();
     unset($this->mysqli);
     return $this;
   }
@@ -174,23 +185,18 @@ abstract class AbstractModel {
   /**
    * Executes the previously prepared statement.
    *
-   * @return \MovLib\Model\AbstractModel
+   * @return $this
+   * @throws \Exception
+   *   Might throw a generic exception if (for instance) the prepared statement is not a valid object.
    * @throws \MovLib\Exception\DatabaseException
+   *   If the execution fails (returns <code>false</code>).
    */
   protected final function execute() {
-    try {
-      if (is_callable([ $this->stmt, 'execute' ]) === false) {
-        $this->close();
-        throw new DatabaseException('No valid prepared statement instance.');
-      }
-      if ($this->stmt->execute() === false) {
-        $error = $this->stmt->error;
-        $errno = $this->stmt->errno;
-        $this->close();
-        throw new DatabaseException("Execution of statement failed with error message: $error ($errno)");
-      }
-    } catch (Exception $e) {
-      throw new DatabaseException($e->getMessage(), $e->getCode(), $e);
+    if ($this->stmt->execute() === false) {
+      $error = $this->stmt->error;
+      $errno = $this->stmt->errno;
+      $this->close();
+      throw new DatabaseException("Execution of statement failed with error message: $error ($errno)");
     }
     return $this;
   }
@@ -201,32 +207,27 @@ abstract class AbstractModel {
    * @param array|null $result
    *   The query result as associative array or <code>null</code> if empty result. If the result consists of only one
    *   row, then only a single array representing this row is returned.
-   * @return \MovLib\Model\AbstractModel
+   * @return $this
+   * @throws \Exception
+   *   Might throw a generic exception if (for instance) the prepared statement is not a valid object.
    * @throws \MovLib\Exception\DatabaseException
+   *   If the fetching the result failed.
    */
   protected final function fetchAssoc(&$result) {
-    try {
-      if (is_callable([ $this->stmt, 'get_result' ]) === false) {
-        $this->close();
-        throw new DatabaseException('No valid prepared statement instance.');
-      }
-      if (($queryResult = $this->stmt->get_result()) === false) {
-        $this->close();
-        throw new DatabaseException('Get statement result failed.');
-      }
-      if ($queryResult->num_rows === 1) {
-        $result = $queryResult->fetch_assoc();
-      }
-      else {
-        $result = [];
-        while ($row = $queryResult->fetch_assoc()) {
-          $result[] = $row;
-        }
-      }
-      $queryResult->free();
-    } catch (Exception $e) {
-      throw new DatabaseException($e->getMessage(), $e->getCode(), $e);
+    if (($queryResult = $this->stmt->get_result()) === false) {
+      $this->close();
+      throw new DatabaseException("Get statement result failed.");
     }
+    if ($queryResult->num_rows === 1) {
+      $result = $queryResult->fetch_assoc();
+    }
+    else {
+      $result = [];
+      while ($row = $queryResult->fetch_assoc()) {
+        $result[] = $row;
+      }
+    }
+    $queryResult->free();
     return $this;
   }
 
@@ -251,6 +252,15 @@ abstract class AbstractModel {
   /**
    * Generic insert method.
    *
+   * <b>Usage example:</b>
+   * <pre>$this->insert("users", [ "name", "mail" ], "ss", [ "Foobar", "foobar@example.com" ]);</pre>
+   *
+   * <b>Resulting SQL query:</b>
+   * <pre>INSERT INTO `users` (`name`, `mail`) VALUES ("Foobar", "foobar@example.com");</pre>
+   *
+   * @see \MovLib\Model\AbstractModel::prepareAndBind()
+   * @see \MovLib\Model\AbstractModel::execute()
+   * @see \MovLib\Model\AbstractModel::close()
    * @param string $table
    *   Name of the table where we should insert new data.
    * @param array $columns
@@ -259,17 +269,17 @@ abstract class AbstractModel {
    *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
    * @param array $values
    *   The values that should be inserted.
-   * @return \MovLib\Model\AbstractModel
+   * @return $this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected final function insert($table, array $columns, $types, array $values) {
+  protected final function insert($table, $columns, $types, $values) {
     return $this
       ->prepareAndBind(
         sprintf(
-          'INSERT INTO `%s` (`%s`) VALUES (%s)',
+          "INSERT INTO `%s` (`%s`) VALUES (%s)",
           $table,
-          implode('`,`', $columns),
-          implode(',', array_fill(0, count($values), '?'))
+          implode("`, `", $columns),
+          implode(", ", array_fill(0, count($values), "?"))
         ),
         $types,
         $values
@@ -284,7 +294,7 @@ abstract class AbstractModel {
    *
    * @param string $query
    *   The query to be prepared.
-   * @return \MovLib\Model\AbstractModel
+   * @return $this
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function prepare($query) {
@@ -298,30 +308,29 @@ abstract class AbstractModel {
   /**
    * Prepare a statement for execution and bind parameters to it.
    *
+   * @see \MovLib\Model\AbstractModel::prepare()
    * @param string $query
    *   The query to be prepared.
    * @param string $types
    *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
    * @param array $values
    *   The values to be substituted.
-   * @return \MovLib\Model\AbstractModel
+   * @return $this
+   * @throws \Exception
+   *   Might throw a generic exception if a PHP error occures. For instance if values is not an array or the type count
+   *   is not equal to the given values count.
    * @throws \MovLib\Exception\DatabaseException
+   *   If binding the parameters to the prepared statement fails.
    */
-  protected final function prepareAndBind($query, $types, array $values) {
-    try {
-      if (($typeCount = strlen($types)) !== ($valueCount = count($values))) {
-        throw new DatabaseException("Wrong parameter count, expected $typeCount but received $valueCount.");
-      }
-      $this->prepare($query);
-      $referencedParameters = [ $types ];
-      for ($i = 0; $i < $valueCount; ++$i) {
-        $referencedParameters[$i + 1] = &$values[$i];
-      }
-      if (call_user_func_array([ $this->stmt, 'bind_param' ], $referencedParameters) === false) {
-        throw new DatabaseException('Binding parameters to prepared statement failed.');
-      }
-    } catch (Exception $e) {
-      throw new DatabaseException($e->getMessage(), $e->getCode(), $e);
+  protected final function prepareAndBind($query, $types, $values) {
+    $this->prepare($query);
+    $valueCount = count($values);
+    $referencedParameters = [ $types ];
+    for ($i = 0; $i < $valueCount; ++$i) {
+      $referencedParameters[$i + 1] = &$values[$i];
+    }
+    if (call_user_func_array([ $this->stmt, "bind_param" ], $referencedParameters) === false) {
+      throw new DatabaseException("Binding parameters to prepared statement failed.");
     }
     return $this;
   }
@@ -329,6 +338,13 @@ abstract class AbstractModel {
   /**
    * Generic query with constraints.
    *
+   * <b>Usage example:</b>
+   * <pre>$this->query('SELECT * FROM `users` WHERE `id` = ?', 'i', [ 42 ]);</pre>
+   *
+   * @see \MovLib\Model\AbstractModel::prepareAndBind()
+   * @see \MovLib\Model\AbstractModel::execute()
+   * @see \MovLib\Model\AbstractModel::fetchAssoc()
+   * @see \MovLib\Model\AbstractModel::close()
    * @param string $query
    *   The query to be executed.
    * @param string $types
@@ -339,7 +355,7 @@ abstract class AbstractModel {
    *   The query result as associative array.
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected final function query($query, $types, array $values) {
+  protected final function query($query, $types, $values) {
     $this
       ->prepareAndBind($query, $types, $values)
       ->execute()
@@ -352,6 +368,15 @@ abstract class AbstractModel {
   /**
    * Generic query without constraints.
    *
+   * <b>Important:</b> If you have to bind parameters to the query, use the generic query method.
+   *
+   * <b>Usage Example:</b>
+   * <pre>$this->queryAll("SELECT * FROM `users`");</pre>
+   *
+   * @see \MovLib\Model\AbstractModel::prepare()
+   * @see \MovLib\Model\AbstractModel::execute()
+   * @see \MovLib\Model\AbstractModel::fetchAssoc()
+   * @see \MovLib\Model\AbstractModel::close()
    * @param string $query
    *   The query to be executed.
    * @return array
@@ -371,42 +396,45 @@ abstract class AbstractModel {
   /**
    * Generic update query.
    *
+   * <b>Important:</b> All where column/value pairs are concatenated with <code>AND</code>. If you have a more complex
+   * query, please use the generic query method.
+   *
    * <b>Usage example:</b>
    * <pre>$this->update(
-   *   'user',                 // Table name
-   *   'is',                   // Set types
-   *   [ 42, 'Foo' ],          // Set values
-   *   '`id` = ? AND `name` = ?',  // Where clause
-   *   'is',                   // Where types
-   *   [ 1, 'Bar' ]            // Where values
+   *   "user",
+   *   "isi",
+   *   [ "id" => 42, "name" => "foobar", "age" => 99 ],
+   *   [ "id" => 1, "name" => "barfoo" ]
    * );</pre>
    *
+   * <b>Resulting SQL query:</b>
+   * <pre>UPDATE `user` SET `id` = 42, `name` = "foobar", `age` = 99 WHERE `id` = 1 AND `name` = "barfoo";</pre>
+   *
+   * @see \MovLib\Model\AbstractModel::prepareAndBind()
+   * @see \MovLib\Model\AbstractModel::execute()
+   * @see \MovLib\Model\AbstractModel::close()
    * @param string $table
    *   Name of the database table to update.
-   * @param string $setTypes
-   *   The type string for set in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $setValues
-   *   The values that should be set.
-   * @param string $whereClause
-   *   The identifying string that precedes the SQL WHERE clause.
-   * @param array $setValues
-   *   The type string for where in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $whereValues
-   *   The values that identify the row.
-   * @return \MovLib\Model\AbstractModel
+   * @param string $types
+   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
+   * @param array $set
+   *   Associative array containing column names and values for set.
+   * @param array $where
+   *   Associative array containing column names and values for where.
+   * @return $this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected final function update($table, $setTypes, array $setValues, $whereClause, $whereTypes, array $whereValues) {
+  protected final function update($table, $types, $set, $where) {
     return $this
       ->prepareAndBind(
         sprintf(
-          'UPDATE `%s` SET `%s` = ? WHERE %s',
+          "UPDATE `%s` SET `%s` = ? WHERE `%s` = ?",
           $table,
-          implode('` = ?,`', $setValues),
-          $whereClause
+          implode("` = ?, `", array_keys($set)),
+          implode("` = ? AND `", array_keys($where))
         ),
-        $setTypes . $whereTypes,
-        array_merge($setValues, $whereValues)
+        $types,
+        array_merge(array_values($set), array_values($where))
       )
       ->execute()
       ->close()
