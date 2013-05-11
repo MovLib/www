@@ -39,7 +39,7 @@ class String {
    *   HTML safe version of <code>$text</code>, or an empty string if <code>$text</code> is not valid UTF-8.
    */
   public static function checkPlain($text) {
-    return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars($text, ENT_QUOTES, "UTF-8");
   }
 
 }

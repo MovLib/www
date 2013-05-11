@@ -100,8 +100,7 @@ class ErrorView extends AbstractView {
       $style = "";
       if ($i === 0) {
         $style .= ";padding-top:5px";
-      }
-      elseif ($i === $count) {
+      } elseif ($i === $count) {
         $style .= ";padding-bottom:5px";
       }
       if (isset($stacktrace[$i]["args"]) === true || empty($stacktrace[$i]["args"]) === false) {
@@ -115,8 +114,7 @@ class ErrorView extends AbstractView {
           $stacktrace[$i]["args"][$delta] = "<var title='{$title}'>{$type}{$suffix}</var>";
         }
         $stacktrace[$i]["args"] = "(" . implode(", ", $stacktrace[$i]["args"]) . ")";
-      }
-      else {
+      } else {
         $stacktrace[$i]["args"] = "";
       }
       foreach ([ "line", "class", "type", "function", "file" ] as $s) {

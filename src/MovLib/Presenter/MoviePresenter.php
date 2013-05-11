@@ -44,7 +44,7 @@ class MoviePresenter extends AbstractPresenter{
    */
   protected function init() {
     $this->model = new MovieModel();
-    $this->output = 'MoviePresenter';
+    $this->output = "MoviePresenter";
   }
 
 }

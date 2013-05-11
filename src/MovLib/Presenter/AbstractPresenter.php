@@ -35,7 +35,7 @@ abstract class AbstractPresenter {
    *
    * @var string
    */
-  protected $output = '';
+  protected $output = "";
 
   /**
    * The currently active language.
@@ -52,7 +52,7 @@ abstract class AbstractPresenter {
       $this->language = new Language();
       $this->init();
     } catch (LanguageException $e) {
-      $_SERVER['LANGUAGE_CODE'] = 'en';
+      $_SERVER["LANGUAGE_CODE"] = "en";
       $this->output = new ErrorView(new Language(), $e);
     } catch (Exception $e) {
       $this->output = new ErrorView($this->language, $e);
@@ -83,9 +83,8 @@ abstract class AbstractPresenter {
       ob_start();
       var_dump($this);
       return ob_get_clean();
-    }
-    else {
-      return '<pre>' . print_r($this, true) . '</pre>';
+    } else {
+      return "<pre>" . print_r($this, true) . "</pre>";
     }
   }
 

@@ -77,7 +77,8 @@ class FileSystem {
     }
     $tmpFilePath = FileSystem::getTemporaryDirectory() . DIRECTORY_SEPARATOR . uniqid() . $fileExtension;
     if (copy($source, $tmpFilePath) === false) {
-      throw new FileSystemException('Could not create a temporary copy of "' . basename($source) . '".');
+      $source = basename($source);
+      throw new FileSystemException("Could not create a temporary copy of '{$source}'.");
     }
     return $tmpFilePath;
   }
@@ -107,7 +108,7 @@ class FileSystem {
    */
   public static function unlinkRecursive($path) {
     $return = false;
-    $exceptionMessage = 'Could not delete given directory, file or symbolic link: "' . $path . '"';
+    $exceptionMessage = "Could not delete given directory, file or symbolic link: '{$path}'";
     // Check if a path was given at all and if the path is on our local filesystem and exists.
     if (empty($path) === false && realpath($path) === true && file_exists($path) === true) {
       if (is_dir($path) === true) {

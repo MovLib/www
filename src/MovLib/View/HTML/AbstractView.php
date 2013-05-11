@@ -174,7 +174,13 @@ abstract class AbstractView {
       return "#";
     }
     // Simple and fast check if the given route is external and does not need a slash at the beginning.
-    if (empty($url) === false || strpos($url, "//") === false || $url[0] === "#" || $url[0] === "/") {
+    if (
+      empty($url) === false             // No URL means link to home page (because this method returns /)
+      || strpos($url, "http") === false // Anything starting with http(s) is of course external; @todo Other protocols?
+      || strpos($url, "//") === false   // Protocol relative link
+      || $url[0] === "#"                // Anchor link
+      || $url[0] === "/"                // Not protocol relative, but already absolute
+    ) {
       return $url;
     }
     return "/$url";
