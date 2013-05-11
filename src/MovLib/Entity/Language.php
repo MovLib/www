@@ -30,11 +30,27 @@ use \MovLib\Exception\LanguageException;
  */
 class Language {
 
-  /** The default gettext domain. */
-  const DOMAIN = 'movlib';
 
-  /** The default gettext encoding. */
-  const ENCODING = 'utf-8';
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The default gettext domain.
+   *
+   * @var string
+   */
+  const DOMAIN = "movlib";
+
+  /**
+   * The default gettext encoding.
+   *
+   * @var string
+   */
+  const ENCODING = "utf-8";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * List of all available locales.
@@ -86,6 +102,10 @@ class Language {
    */
   private $translatedName;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
+
   /**
    * Initialize the locale environment.
    *
@@ -94,30 +114,29 @@ class Language {
    */
   public function __construct() {
     $this->locales = [
-      'en' => [ 'name' => 'English', 'translatedName' => _('English'), 'locale' => 'en_US.UTF-8', 'dir' => 'ltr' ],
-      'de' => [ 'name' => 'Deutsch', 'translatedName' => _('German'), 'locale' => 'de_DE.UTF-8', 'dir' => 'ltr' ],
+      "en" => [ "name" => "English", "translatedName" => _("English"), "locale" => "en_US.UTF-8", "dir" => "ltr" ],
+      "de" => [ "name" => "Deutsch", "translatedName" => _("German"), "locale" => "de_DE.UTF-8", "dir" => "ltr" ],
     ];
 
-    $this->code = !empty($_SERVER['LANGUAGE_CODE']) ? $_SERVER['LANGUAGE_CODE'] : 'en';
+    $this->code = !empty($_SERVER["LANGUAGE_CODE"]) ? $_SERVER["LANGUAGE_CODE"] : "en";
 
-    if (!isset($this->locales[$this->code])) {
-      throw new LanguageException('Desired language code "' . $this->code . '" is not defined.');
+    if (isset($this->locales[$this->code]) === false) {
+      throw new LanguageException("Desired language code '{$this->code}' is not defined.");
     }
 
     foreach ($this->locales[$this->code] as $key => $value) {
       $this->{$key} = $value;
     }
 
-    bindtextdomain(self::DOMAIN, $_SERVER['DOCUMENT_ROOT'] . '/translations');
+    bindtextdomain(self::DOMAIN, $_SERVER["DOCUMENT_ROOT"] . "/translations");
     bind_textdomain_codeset(self::DOMAIN, self::ENCODING);
     textdomain(self::DOMAIN);
-
-    foreach ([ 'LANG', 'LC_ALL', 'LANGUAGE' ] as $delta => $env) {
-      putenv($env . '=' . $this->locale);
-    }
+    putenv("LANG={$this->locale}");
+    putenv("LC_ALL={$this->locale}");
+    putenv("LANGUAGE={$this->locale}");
 
     if (setlocale(LC_ALL, $this->locale) === false) {
-      throw new LanguageException('Desired locale "' . $this->locale . '" is not installed on this system.');
+      throw new LanguageException("Desired locale '{$this->locale}' is not installed on this system.");
     }
   }
 
