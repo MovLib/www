@@ -43,7 +43,7 @@ abstract class AbstractModel {
    *
    * @var string
    */
-  const DEFAULT_DB = 'movlib';
+  const DEFAULT_DB = "movlib";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -102,13 +102,13 @@ abstract class AbstractModel {
    * Closes the prepared statement.
    *
    * @return $this
+   * @throws \Exception
+   *   Might throw a generic excepiton if the prepared statement is not a valid object.
    * @throws \MovLib\Exception\DatabaseException
-   *   Only raises the exception if closing of a valid prepared statement instance failed. If the prepared statement is
-   *   not a valid instance any reference will be unset and this method simply returns.
+   *   If closing the prepared statement fails.
    */
   protected final function close() {
-    // Check if we can call close and if we can, call it.
-    if (is_callable([ $this->stmt, "close" ]) && $this->stmt->close() === false) {
+    if ($this->stmt->close() === false) {
       throw new DatabaseException("Closing prepared statement failed.");
     }
     unset($this->stmt);
@@ -127,7 +127,7 @@ abstract class AbstractModel {
   protected final function connect() {
     $this->mysqli = new mysqli();
     if ($this->mysqli->real_connect() === false) {
-      throw new DatabaseException('Could not connect to default database server.');
+      throw new DatabaseException("Could not connect to default database server.");
     }
     if ($this->mysqli->connect_error) {
       throw new DatabaseException("Database connect error with message: {$this->mysqli->error} ({$this->mysqli->errno})");
@@ -160,15 +160,15 @@ abstract class AbstractModel {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function delete($table, $types, $where) {
-    return $this
-      ->prepareAndBind(
-        "DELETE FROM `$table` WHERE `" . implode("` = ? AND `", array_keys($where)) . "` = ?",
-        $types,
-        array_values($where)
-      )
-      ->execute()
-      ->close()
-    ;
+    $query = "DELETE FROM `{$table}` WHERE ";
+    $helper = "";
+    $values = [];
+    foreach ($where as $column => $value) {
+      $query .= "{$helper}`{$column}` = ?";
+      $values[] = $value;
+      $helper = " AND ";
+    }
+    return $this->prepareAndBind($query, $types, $values)->execute()->close();
   }
 
   /**
@@ -220,8 +220,7 @@ abstract class AbstractModel {
     }
     if ($queryResult->num_rows === 1) {
       $result = $queryResult->fetch_assoc();
-    }
-    else {
+    } else {
       $result = [];
       while ($row = $queryResult->fetch_assoc()) {
         $result[] = $row;
@@ -253,7 +252,7 @@ abstract class AbstractModel {
    * Generic insert method.
    *
    * <b>Usage example:</b>
-   * <pre>$this->insert("users", [ "name", "mail" ], "ss", [ "Foobar", "foobar@example.com" ]);</pre>
+   * <pre>$this->insert("users", "ss", [ "name" => "Foobar", "mail" => "foobar@example.com" ]);</pre>
    *
    * <b>Resulting SQL query:</b>
    * <pre>INSERT INTO `users` (`name`, `mail`) VALUES ("Foobar", "foobar@example.com");</pre>
@@ -263,27 +262,24 @@ abstract class AbstractModel {
    * @see \MovLib\Model\AbstractModel::close()
    * @param string $table
    *   Name of the table where we should insert new data.
-   * @param array $columns
-   *   Names of the columns where we should insert new data.
    * @param string $types
    *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $values
-   *   The values that should be inserted.
+   * @param array $data
+   *   Associative array containing column names and values for insert.
    * @return $this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected final function insert($table, $columns, $types, $values) {
+  protected final function insert($table, $types, $data) {
+    $columns = $valueStr = $helper = "";
+    $values = [];
+    foreach ($data as $column => $value) {
+      $columns .= "{$helper}`{$column}`";
+      $valueStr .= "{$helper}?";
+      $values[] = $value;
+      $helper = ", ";
+    }
     return $this
-      ->prepareAndBind(
-        sprintf(
-          "INSERT INTO `%s` (`%s`) VALUES (%s)",
-          $table,
-          implode("`, `", $columns),
-          implode(", ", array_fill(0, count($values), "?"))
-        ),
-        $types,
-        $values
-      )
+      ->prepareAndBind("INSERT INTO `{$table}` ({$columns}) VALUES ({$valueStr})", $types, $values)
       ->execute()
       ->close()
     ;
@@ -327,7 +323,7 @@ abstract class AbstractModel {
     $i = -1;
     $k = count($values);
     $referencedParameters = [ $types ];
-    while (++$i < $k) {
+    while (++$i <= $k) {
       $referencedParameters[$i + 1] = &$values[$i];
     }
     if (call_user_func_array([ $this->stmt, "bind_param" ], $referencedParameters) === false) {
@@ -357,12 +353,7 @@ abstract class AbstractModel {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function query($query, $types, $values) {
-    $this
-      ->prepareAndBind($query, $types, $values)
-      ->execute()
-      ->fetchAssoc($result)
-      ->close()
-    ;
+    $this->prepareAndBind($query, $types, $values)->execute()->fetchAssoc($result)->close();
     return $result;
   }
 
@@ -385,12 +376,7 @@ abstract class AbstractModel {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function queryAll($query) {
-    $this
-      ->prepare($query)
-      ->execute()
-      ->fetchAssoc($result)
-      ->close()
-    ;
+    $this->prepare($query)->execute()->fetchAssoc($result)->close();
     return $result;
   }
 
@@ -426,20 +412,22 @@ abstract class AbstractModel {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function update($table, $types, $set, $where) {
-    return $this
-      ->prepareAndBind(
-        sprintf(
-          "UPDATE `%s` SET `%s` = ? WHERE `%s` = ?",
-          $table,
-          implode("` = ?, `", array_keys($set)),
-          implode("` = ? AND `", array_keys($where))
-        ),
-        $types,
-        array_merge(array_values($set), array_values($where))
-      )
-      ->execute()
-      ->close()
-    ;
+    $query = "UPDATE `{$table}` SET ";
+    $helper = "";
+    $values = [];
+    foreach ($set as $column => $value) {
+      $query .= "{$helper}`{$column}` = ?";
+      $values[] = $value;
+      $helper = ", ";
+    }
+    $query .= " WHERE ";
+    $helper = "";
+    foreach ($where as $column => $value) {
+      $query .= "{$helper}`{$column}` = ?";
+      $values[] = $value;
+      $helper = " AND ";
+    }
+    return $this->prepareAndBind($query, $types, $values)->execute()->close();
   }
 
 }
