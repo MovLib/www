@@ -324,9 +324,10 @@ abstract class AbstractModel {
    */
   protected final function prepareAndBind($query, $types, $values) {
     $this->prepare($query);
-    $valueCount = count($values);
+    $i = -1;
+    $k = count($values);
     $referencedParameters = [ $types ];
-    for ($i = 0; $i < $valueCount; ++$i) {
+    while (++$i < $k) {
       $referencedParameters[$i + 1] = &$values[$i];
     }
     if (call_user_func_array([ $this->stmt, "bind_param" ], $referencedParameters) === false) {

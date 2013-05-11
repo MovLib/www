@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
 namespace MovLib\Utility;
 
 use \FilesystemIterator;
@@ -48,8 +47,8 @@ class FileSystem {
    *   The absolute path to the operating systems specific temporary path (no trailing directory separator).
    */
   public static function getTemporaryDirectory() {
-    static $tmpDir = null;
-    if (is_null($tmpDir)) {
+    static $tmpDir = false;
+    if ($tmpDir === false) {
       $tmpDir = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR);
     }
     return $tmpDir;
@@ -69,24 +68,17 @@ class FileSystem {
    *   If the copy operation fails.
    * @since 0.0.1-dev
    */
-  public static function temporaryCopy($source, $fileExtension = null) {
-    // Only try to extract the files extension if it has not been overwritten by the caller.
-    if (is_null($fileExtension)) {
+  public static function temporaryCopy($source, $fileExtension = false) {
+    if ($fileExtension !== false) {
       $fileExtension = pathinfo($source, PATHINFO_EXTENSION);
     }
-
-    // Prepend dot to file extension.
-    if (!empty($fileExtension)) {
+    if (empty($fileExtension) === false) {
       $fileExtension = '.' . $fileExtension;
     }
-
-    /* @var $tmpFilePath string */
     $tmpFilePath = FileSystem::getTemporaryDirectory() . DIRECTORY_SEPARATOR . uniqid() . $fileExtension;
-
-    if (!copy($source, $tmpFilePath)) {
+    if (copy($source, $tmpFilePath) === false) {
       throw new FileSystemException('Could not create a temporary copy of "' . basename($source) . '".');
     }
-
     return $tmpFilePath;
   }
 
@@ -114,42 +106,34 @@ class FileSystem {
    * @since 0.0.1-dev
    */
   public static function unlinkRecursive($path) {
-    /* @var $return boolean */
     $return = false;
-
-    /* @var $exceptionMessage string */
     $exceptionMessage = 'Could not delete given directory, file or symbolic link: "' . $path . '"';
-
     // Check if a path was given at all and if the path is on our local filesystem and exists.
-    if ($path && realpath($path) && file_exists($path)) {
-      if (is_dir($path)) {
+    if (empty($path) === false && realpath($path) === true && file_exists($path) === true) {
+      if (is_dir($path) === true) {
         /* @var $tmpPath \DirectoryIterator */
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $tmpPath) {
-          if ($tmpPath->isDir()) {
+          if ($tmpPath->isDir() === true) {
             $return = rmdir($tmpPath->getPathname());
           }
-          elseif ($tmpPath->isFile() || $tmpPath->isLink()) {
+          elseif ($tmpPath->isFile() === true || $tmpPath->isLink() === true) {
             $return = unlink($tmpPath->getPathname());
           }
-
           // Check each iteration if something went wrong.
-          if (!$return) {
+          if ($return === false) {
             throw new FileSystemException($exceptionMessage);
           }
         }
-
         // Above loop will not delete the directory itself, this is the last step.
         $return = rmdir($path);
       }
-      elseif (is_file($path) || is_link($path)) {
+      elseif (is_file($path) === true || is_link($path) === true) {
         $return = unlink($path);
       }
     }
-
-    if (!$return) {
+    if ($return === false) {
       throw new FileSystemException($exceptionMessage);
     }
-
     return $return;
   }
 

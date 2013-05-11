@@ -33,10 +33,10 @@
  */
 
 /** ASCII end of transmission */
-define('PHP_EOT', chr(4));
+define("PHP_EOT", chr(4));
 
 /** The name of the website. */
-define('SITENAME', 'MovLib');
+define("SITENAME", "MovLib");
 
 /**
  * Ultra fast class autoloader.
@@ -46,7 +46,7 @@ define('SITENAME', 'MovLib');
  * @return void
  */
 function __autoload($class) {
-  require $_SERVER['DOCUMENT_ROOT'] . '/src/' . strtr($class, '\\', DIRECTORY_SEPARATOR) . '.php';
+  require $_SERVER["DOCUMENT_ROOT"] . "/src/" . strtr($class, "\\", DIRECTORY_SEPARATOR) . ".php";
 }
 
 /**
@@ -55,7 +55,7 @@ function __autoload($class) {
  * @link http://www.gnu.org/software/gettext/manual/html_node/Contexts.html
  * @see gettext
  * @param string $msgctxt
- *   The message's context identifier. Do not use the class name or full sentences as context. Try to use jQuery like
+ *   The message"s context identifier. Do not use the class name or full sentences as context. Try to use jQuery like
  *   selectors like <code>html head title</code> or <code>input[type="search"]</code> as they are very unlikely to
  *   change. Another good example of a context which is used very often is <code>route</code> for URLs.
  * @param string $msgid
@@ -82,7 +82,7 @@ function pgettext($msgctxt, $msgid) {
  * @see ngettext
  * @see pgettext
  * @param string $msgctxt
- *   The message's context identifier. Do not use the class name or full sentences as context. Try to use jQuery like
+ *   The message"s context identifier. Do not use the class name or full sentences as context. Try to use jQuery like
  *   selectors like <code>html head title</code> or <code>input[type="search"]</code> as they are very unlikely to
  *   change. Another good example of a context which is used very often is <code>route</code> for URLs.
  * @param string $msgid1
@@ -122,7 +122,7 @@ function npgettext($msgctxt, $msgid1, $msgid2, $num) {
  * @return string
  *   The translated string.
  */
-function __($msgid, $msgctxt = '') {
+function __($msgid, $msgctxt = "") {
   if (empty($msgctxt)) {
     return gettext($msgid);
   }
@@ -145,7 +145,7 @@ function __($msgid, $msgctxt = '') {
  * @return string
  *   The translated string
  */
-function n__($msgid1, $msgid2, $n, $msgctxt = '') {
+function n__($msgid1, $msgid2, $n, $msgctxt = "") {
   if (empty($msgctxt)) {
     return ngettext($msgid1, $msgid2, $n);
   }
@@ -163,12 +163,12 @@ function n__($msgid1, $msgid2, $n, $msgctxt = '') {
  *   The base exception class from PHP from which every exception derives. This ensures that we are able to catch
  *   absolutely every exception that might arise.
  */
-function uncaught_exception_handler(\Exception $e) {
+function uncaught_exception_handler($e) {
   exit((new \MovLib\Presenter\ErrorPresenter($e))->getOutput());
 }
 
 // Set the default exception handler.
-set_exception_handler('uncaught_exception_handler');
+set_exception_handler("uncaught_exception_handler");
 
 /**
  * Global function to convert PHP errors to exceptions.
@@ -205,8 +205,11 @@ function error_all_handler($errno, $errstr, $errfile, $errline) {
 }
 
 // Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
-set_error_handler('error_all_handler');
+set_error_handler("error_all_handler");
 
-/* @var $presenter string */
-$presenter = '\\MovLib\\Presenter\\' . $_SERVER['PRESENTER'] . 'Presenter';
+$t = microtime(true);
+$presenter = "\\MovLib\\Presenter\\" . $_SERVER["PRESENTER"] . "Presenter";
 echo (new $presenter())->getOutput();
+$t = microtime(true) - $t;
+$t = sprintf("%.6f", $t - intval($t));
+echo "<p class='centered'><small>Generated in {$t}&nbsp;ms</small></p>";
