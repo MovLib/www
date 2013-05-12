@@ -31,8 +31,35 @@ $loader = require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_
 $loader->add('MovLib\Test', __DIR__);
 
 // This variable is always available to our software and set via nginx in normal environment.
-$_SERVER['LANGUAGE_CODE'] = '';
+$_SERVER['LANGUAGE_CODE'] = 'en';
 
+// @todo The sitename constant shouldn't be used from here, instead the one from main.php should be used for realistic
+//       tests. The problem is, that main.php is directly invoking the construction of the presenter. Solution?
+// @todo We should ensure that gettext is really working instead of using fake function.
+
+/**
+ * The name of the website.
+ *
+ * @var string
+ */
+define("SITENAME", "MovLib");
+
+/**
+ * Fake gettext function.
+ */
+function __($str) {
+  return $str;
+}
+
+/**
+ * Fake plural gettext function.
+ */
+function n__($str1, $str2, $n) {
+  if ($n > 1) {
+    return $str2;
+  }
+  return $str1;
+}
 
 /**
  * Get a <em>protected</em> or <em>private</em> method of a class as reflection function.

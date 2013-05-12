@@ -17,6 +17,8 @@
  */
 namespace MovLib\Test\View\HTML;
 
+use \MovLib\Entity\Language;
+use \MovLib\View\HTML\HomeView;
 use \PHPUnit_Framework_TestCase;
 
 /**
@@ -29,5 +31,43 @@ use \PHPUnit_Framework_TestCase;
  * @since 0.0.1-dev
  */
 class HomeViewTest extends PHPUnit_Framework_TestCase {
+
+  /**
+   * Instance of HomeView.
+   *
+   * @var \MovLib\View\HTML\HomeView
+   */
+  private $homeView;
+
+  /**
+   * Fixture before any test is executed.
+   */
+  public function setUp() {
+    $this->homeView = new HomeView(new Language());
+  }
+
+  /**
+   * Test if the correct body class is returned.
+   */
+  public function testBodyClass() {
+    $this->assertEquals("home", $this->homeView->getBodyClass());
+  }
+
+  /**
+   * The home view is the only page with a special logo mark-up.
+   */
+  public function testHeaderLogo() {
+    $this->assertEquals(
+      "<h1 id='logo' class='inline'>MovLib <small>the <em>free</em> movie library</small></h1>",
+      $this->homeView->getHeaderLogo()
+    );
+  }
+
+  /**
+   * The home view is the only page with a special head title pattern.
+   */
+  public function testHeadTitle() {
+    $this->assertEquals("MovLib, the free movie library.", $this->homeView->getHeadTitle());
+  }
 
 }

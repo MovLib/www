@@ -434,7 +434,7 @@ abstract class AbstractView {
     $menu = "";
     $k = count($points) - 1;
     $attr = [ "class" => "menuitem", "role" => "menuitem" ];
-    for ($i = 0; $i < $k; ++$i) {
+    for ($i = 0; $i <= $k; ++$i) {
       if ($i === 0) {
         $attr["class"] .= " item-first";
       } elseif ($i === $k) {
