@@ -432,10 +432,9 @@ abstract class AbstractView {
    */
   public final function getNavigation($role, $points, $activePointIndex, $glue, $attributes = []) {
     $menu = "";
-    $i = -1;
     $k = count($points) - 1;
     $attr = [ "class" => "menuitem", "role" => "menuitem" ];
-    while (++$i <= $k) {
+    for ($i = 0; $i < $k; ++$i) {
       if ($i === 0) {
         $attr["class"] .= " item-first";
       } elseif ($i === $k) {

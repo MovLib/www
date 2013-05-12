@@ -123,9 +123,8 @@ class AbstractModelTest extends PHPUnit_Framework_TestCase {
   public function testInsert() {
     $this->assertSame($this->mock, getReflectionFunction(self::FQ_CLASS_NAME, "insert")->invokeArgs($this->mock, [
       self::TABLE_NAME,
-      [ self::FIELD_NUMBER, self::FIELD_STRING ],
       "is",
-      [ 42, "foobar" ]
+      [ self::FIELD_NUMBER => 42, self::FIELD_STRING => "foobar" ]
     ]));
   }
 
