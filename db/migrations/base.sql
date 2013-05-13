@@ -10,11 +10,34 @@ USE `movlib` ;
 -- Table `movlib`.`languages`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`languages` (
-  `language_id` INT UNSIGNED NOT NULL ,
-  `iso_alpha_2` CHAR(2) NOT NULL ,
-  `iso_alpha_3` CHAR(3) NOT NULL ,
+  `language_id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `iso_639-1` CHAR(2) NOT NULL ,
+  `name_bg` VARCHAR(255) NULL ,
+  `name_cs` VARCHAR(255) NULL ,
+  `name_da` VARCHAR(255) NULL ,
+  `name_de` VARCHAR(255) NULL ,
+  `name_el` VARCHAR(255) NULL ,
   `name_en` VARCHAR(255) NOT NULL ,
-  `name_de` VARCHAR(255) NOT NULL ,
+  `name_es` VARCHAR(255) NULL ,
+  `name_et` VARCHAR(255) NULL ,
+  `name_fi` VARCHAR(255) NULL ,
+  `name_fr` VARCHAR(255) NULL ,
+  `name_hr` VARCHAR(255) NULL ,
+  `name_hu` VARCHAR(255) NULL ,
+  `name_is` VARCHAR(255) NULL ,
+  `name_it` VARCHAR(255) NULL ,
+  `name_lt` VARCHAR(255) NULL ,
+  `name_lv` VARCHAR(255) NULL ,
+  `name_mt` VARCHAR(255) NULL ,
+  `name_nl` VARCHAR(255) NULL ,
+  `name_no` VARCHAR(255) NULL ,
+  `name_pl` VARCHAR(255) NULL ,
+  `name_pt` VARCHAR(255) NULL ,
+  `name_ro` VARCHAR(255) NULL ,
+  `name_sk` VARCHAR(255) NULL ,
+  `name_sl` VARCHAR(255) NULL ,
+  `name_sv` VARCHAR(255) NULL ,
+  `name_tr` VARCHAR(255) NULL ,
   PRIMARY KEY (`language_id`) )
 ENGINE = InnoDB;
 

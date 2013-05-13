@@ -17,7 +17,9 @@
  */
 namespace MovLib\Presenter;
 
+use \MovLib\Exception\DatabaseException;
 use \MovLib\Model\MovieModel;
+use \MovLib\View\HTML\Movie\ShowView;
 
 /**
  * Description of MoviePresenter
@@ -44,7 +46,14 @@ class MoviePresenter extends AbstractPresenter{
    */
   protected function init() {
     $this->model = new MovieModel();
-    $this->output = "MoviePresenter";
+    $view = "";
+    try {
+      $movie = $this->model->getMovieById($_SERVER["MOVIE_ID"]);
+      $view = new ShowView($this->language, $movie);
+    } catch (DatabaseException $e) {
+      $view = new \MovLib\View\HTML\ErrorView($this->language, $e);
+    }
+    $this->output = $view->getRenderedView();
   }
 
 }
