@@ -44,6 +44,7 @@ class ErrorView extends AbstractView {
    */
   public function __construct(Language $language, Exception $exception) {
     parent::__construct($language, "Error");
+    $this->addStylesheet("/assets/css/modules/stacktrace.css");
     $this->setAlert(
       "<p>" . __("This shouldn’t have happened, but it did, an error occured while trying to handle your request.") . "</p>" .
       "<p>" . __("The error was logged and reported to the system administrators, it should be fixed in no time.") . "</p>" .
@@ -54,15 +55,11 @@ class ErrorView extends AbstractView {
     );
     if (error_reporting() !== 0) {
       $this->setAlert(
-        "<div style='margin:20px 0 0;padding:3px;background:#d8d8d8;border-radius:3px;font:12px/18px consolas,monospace'>" .
-          "<div style='padding:5px 10px;height:33px;background-color:#eaeaea;background-image:linear-gradient(#fafafa,#eaeaea);border-bottom:1px solid #d8d8d8;color:#555;text-shadow:0 1px 0 #fff;line-height:25px'>" .
-            "<i class='icon icon-attention'></i> {$exception->getMessage()}" .
-          "</div>" .
-          "<table style='margin:0;padding:0;width:100%;background:#fff;border-collapse:collapse;font:12px/24px consolas,monospace;color:#000'>" .
-            $this->formatStacktrace($exception->getTrace()) .
-          "</table>" .
+        "<div class='stacktrace'>" .
+          "<div class='stacktrace__title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
+          "<table class='stacktrace__table'>{$this->formatStacktrace($exception->getTrace())}</table>" .
         "</div>" .
-        "<p class='centered'><small>Debug information is only available if error reporting is turned on!</small></p>",
+        "<p class='text-center'><small>Debug information is only available if error reporting is turned on!</small></p>",
         "Stacktrace",
         "info",
         true
@@ -73,7 +70,7 @@ class ErrorView extends AbstractView {
   /**
    * {@inheritdoc}
    */
-  public function getBodyClass() {
+  public function getShortName() {
     return "error";
   }
 
@@ -94,24 +91,18 @@ class ErrorView extends AbstractView {
    */
   private function formatStacktrace(array $stacktrace) {
     $output = "";
-    $count = count($stacktrace) - 1;
-    $highlight = ";background-color:#ffc";
-    for ($i = 0; $i <= $count; ++$i) {
-      $style = "";
-      if ($i === 0) {
-        $style .= ";padding-top:5px";
-      } elseif ($i === $count) {
-        $style .= ";padding-bottom:5px";
-      }
+    $stacktraceCount = count($stacktrace);
+    for ($i = 0; $i < $stacktraceCount; ++$i) {
       if (isset($stacktrace[$i]["args"]) === true || empty($stacktrace[$i]["args"]) === false) {
-        foreach ($stacktrace[$i]["args"] as $delta => $arg) {
+        $argCount = count($stacktrace[$i]["args"]);
+        for ($j = 0; $j < $argCount; ++$j) {
           $suffix = "";
-          if (is_array($arg)) {
-            $suffix = "(" . count($arg) . ")";
+          if (is_array($stacktrace[$i]["args"][$j])) {
+            $suffix = "(" . count($stacktrace[$i]["args"][$j]) . ")";
           }
-          $title = String::checkPlain(print_r($arg, true));
-          $type = gettype($arg);
-          $stacktrace[$i]["args"][$delta] = "<var title='{$title}'>{$type}{$suffix}</var>";
+          $title = String::checkPlain(print_r($stacktrace[$i]["args"][$j], true));
+          $type = gettype($stacktrace[$i]["args"][$j]);
+          $stacktrace[$i]["args"][$j] = "<var class='stacktrace_var' title='{$title}'>{$type}{$suffix}</var>";
         }
         $stacktrace[$i]["args"] = "(" . implode(", ", $stacktrace[$i]["args"]) . ")";
       } else {
@@ -122,25 +113,19 @@ class ErrorView extends AbstractView {
           $stacktrace[$i][$s] = "";
         }
       }
+      $stacktrace[$i]["file"] = str_replace($_SERVER["DOCUMENT_ROOT"], "", $stacktrace[$i]["file"]);
       $output .=
-        "<tr>" .
-          "<td class='flush-right' style='padding:0 8px;width:1%;border-right:1px solid #e5e5e5;color:rgba(0,0,0,0.3){$style}'>" .
-            $stacktrace[$i]["line"] .
-          "</td>" .
-          "<td style='padding:0{$style}'>" .
-            "<div style='padding:0 10px{$highlight}'>" .
-              $stacktrace[$i]["class"] .
-              $stacktrace[$i]["type"] .
-              "<span style='color:#00f'>{$stacktrace[$i]["function"]}</span>" .
+        "<tr class='stacktrace__tr'>" .
+          "<td class='stacktrace__td stacktrace__line-number'>{$stacktrace[$i]["line"]}</td>" .
+          "<td class='stacktrace__td'>" .
+            "<div class='stacktrace__line-container'>{$stacktrace[$i]["class"]}{$stacktrace[$i]["type"]}" .
+              "<span class='stacktrace__function'>{$stacktrace[$i]["function"]}</span>" .
               $stacktrace[$i]["args"] .
-              "<span class='pull-right' style='color:rgba(0,0,0,0.3)'>" .
-                str_replace($_SERVER["DOCUMENT_ROOT"], "", $stacktrace[$i]["file"]) .
-              "</span>" .
+              "<span class='stacktrace__file'>{$stacktrace[$i]["file"]}</span>" .
             "</div>" .
           "</td>" .
         "</tr>"
       ;
-      $highlight = "";
     }
     return $output;
   }

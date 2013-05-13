@@ -37,13 +37,7 @@ class HomeView extends AbstractView {
    */
   public function __construct($language) {
     parent::__construct($language, SITENAME);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getBodyClass() {
-    return "home";
+    $this->addStylesheet("/assets/css/modules/home.css");
   }
 
   /**
@@ -77,37 +71,37 @@ class HomeView extends AbstractView {
     return
       "<div id='home-banner'>" .
         "<div class='row'>" .
-          "<div class='span span-1 lead hero'>" . __('Do you like movies?<br>Great, so do we!') . "</div>" .
+          "<div class='span span--1 lead hero'>" . __('Do you like movies?<br>Great, so do we!') . "</div>" .
         "</div>" .
       "</div>" .
-      "<div class='row'>" .
-        "<div class='span span-3'>" .
-          "<h3>" . __("Movies") . "</h3>" .
+      "<div class='row row--home'>" .
+        "<div class='span span--3 span--home text-justify'>" .
+          "<h3 class='text-center'>" . __("Movies") . "</h3>" .
           "<p>" . __("Discover new and old movies, find out about all related details like who was the director, when and where was it released, what releases are available, find poster and lobby card art, plus many, many more …") . "</p>" .
         "</div>" .
-        "<div class='span span-3'>" .
-          "<h3>" . __("Persons") . "</h3>" .
+        "<div class='span span--3 span--home text-justify'>" .
+          "<h3 class='text-center'>" . __("Persons") . "</h3>" .
           "<p>" . __("You always wanted to collect all movies of a specific director, actor or any other movie related person? This is the place for you to go. Find out all details about the person you admire, or simply add them yourself if you are an expert.") . "</p>" .
         "</div>" .
-        "<div class='span span-3'>" .
-          "<h3>" . __("Marketplace") . "</h3>" .
+        "<div class='span span--3 span--home text-justify'>" .
+          "<h3 class='text-center'>" . __("Marketplace") . "</h3>" .
           "<p>" . __("Searching for a specific release? Our marketplace is free, open, and built upon the exact release database. This makes it easy for sellers to list their inventory and buyers are able to specify the exact version they want.") . "</p>" .
         "</div>" .
       "</div>" .
-      "<div class='row'>" .
-        "<div class='span span-3'>" .
-          "<h3>" . __("Releases") . "</h3>" .
+      "<div class='row row--home'>" .
+        "<div class='span span--3 span--home text-justify'>" .
+          "<h3 class='text-center'>" . __("Releases") . "</h3>" .
           "<p>" . __("") . "</p>" .
         "</div>" .
-        "<div class='span span-3'>" .
-          "<h3>" . sprintf(__("My %s"), SITENAME) . "</h3>" .
+        "<div class='span span--3 span--home text-justify'>" .
+          "<h3 class='text-center'>" . sprintf(__("My %s"), SITENAME) . "</h3>" .
           "<p></p>" .
-          $this->a4(__("sign-up", "route"), __("Sign up for a new account"), [ "class" => "btn btn-success btn-large" ]) .
+          "<p class='text-center'>{$this->a(__("sign-up", "route"), __("Sign up for a new account"), [ "class" => "button button--success button--large" ])}</p>" .
         "</div>" .
-        "<div class='span span-3'>" .
-          "<h3>" . __("API") . "</h3>" .
+        "<div class='span span--3 span--home text-justify'>" .
+          "<h3 class='text-center'>" . __("API") . "</h3>" .
           "<p>" . sprintf(__("The %s API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at %s."), SITENAME, SITENAME) . "</p>" .
-          $this->a4("//api.movlib.org", __("Read the API documentation"), [ "class" => "btn btn-primary btn-large" ]) .
+          "<p class='text-center'>{$this->a("//api.movlib.org", __("Read the API documentation"), [ "class" => "button button--primary button--large" ])}</p>" .
         "</div>" .
       "</div>"
     ;

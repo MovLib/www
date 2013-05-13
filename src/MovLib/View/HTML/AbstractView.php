@@ -19,6 +19,7 @@ namespace MovLib\View\HTML;
 
 use \MovLib\Entity\Language;
 use \MovLib\Utility\String;
+use \ReflectionClass;
 
 /**
  * The <b>AbstractView</b> is the base class for all other HTML views.
@@ -71,6 +72,13 @@ abstract class AbstractView {
   protected $language;
 
   /**
+   * Array that contains all stylesheet for the view.
+   *
+   * @var array
+   */
+  protected $stylesheets = [];
+
+  /**
    * The title of the page.
    *
    * @var string
@@ -92,19 +100,20 @@ abstract class AbstractView {
   public function __construct(Language $language, $title) {
     $this->language = $language;
     $this->title = $title;
+    $this->addStylesheet([
+      "//fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic&amp;subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic",
+      "/assets/css/modules/entypo.css",
+      "/assets/css/base.css",
+      "/assets/css/layout.css",
+      "/assets/css/layout-responsive.css",
+      "/assets/css/modules/alert.css",
+      "/assets/css/modules/button.css",
+    ]);
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
-
-  /**
-   * Get the class name of the <code>body</code>-element.
-   *
-   * @return string
-   *   The class which should be applied to the <code>body</code>-element.
-   */
-  abstract public function getBodyClass();
 
   /**
    * Get the rendered content, without HTML head, header or footer.
@@ -116,6 +125,28 @@ abstract class AbstractView {
 
   // ------------------------------------------------------------------------------------------------------------------- Protected Methods
 
+
+  /**
+   * Add a stylesheet to the view.
+   *
+   * @todo Aggregate, minify and compress for production. What we have here is only ment for development, so it's easy
+   *       to add stylesheets to a specific view. In production we only want to deliver a single stylesheet and the
+   *       system will change.
+   * @param string|array $stylesheets
+   *   The absolute path to a single (string) stylesheet or multiple (array) stylesheets (can be external URL as well).
+   * @return $this
+   */
+  protected final function addStylesheet($stylesheets) {
+    if (is_array($stylesheets) === false) {
+      $stylesheets = [ $stylesheets ];
+    }
+    // No need to check if this stylesheet is already in our array. This is only for development and if a dev includes
+    // the same stylesheet twice, shame on him or her. :P
+    foreach ($stylesheets as $stylesheet) {
+      $this->stylesheets[] = $stylesheet;
+    }
+    return $this;
+  }
 
   /**
    * Expand the given HTML element attributes for usage on an HTML element.
@@ -198,22 +229,36 @@ abstract class AbstractView {
   // ------------------------------------------------------------------------------------------------------------------- Public Final Methods
 
 
-  public final function a1($href, $text) {
-    return "<a href='{$this->href($href)}'>{$text}</a>";
+  public final function a($href, $text, $titleOrAttributes = false) {
+    if ($titleOrAttributes !== false) {
+      if (is_array($titleOrAttributes) === true) {
+        $titleOrAttributes = $this->expandTagAttributes($titleOrAttributes);
+      } else {
+        $titleOrAttributes = String::checkPlain($titleOrAttributes);
+      }
+    }
+    return "<a href='{$this->href($href)}'{$titleOrAttributes}>{$text}</a>";
   }
 
-  public final function a2($href, $text, $title) {
-    $title = String::checkPlain($title);
-    return "<a href='{$this->href($href)}' title='{$title}'>{$text}</a>";
-  }
-
-  public final function a3($href, $text, $title, $attributes) {
-    $title = String::checkPlain($title);
-    return "<a href='{$this->href($href)}' title='{$title}'{$this->expandTagAttributes($attributes)}>{$text}</a>";
-  }
-
-  public final function a4($href, $text, $attributes) {
-    return "<a href='{$this->href($href)}'{$this->expandTagAttributes($attributes)}>{$text}</a>";
+  /**
+   * Get the views short class name (e.g. <em>abstract</em> for <em>AbstractView</em>).
+   *
+   * The short name is the name of the current instance of this class without the namespace only in lower case letters.
+   * This is used to mark various HTML elements for easy CSS and JavaScript access. For instance the
+   * <code>&lt;body&gt;</code>-element has this class applied, or the <code>&lt;div&gt;</code> that wraps the pages
+   * content in full view (with <tt>-content</tt> suffix).
+   *
+   * @staticvar boolean|string $shortName
+   * @return string
+   *   The short name of the class (lowercased).
+   */
+  public function getShortName() {
+    static $shortName = false;
+    if ($shortName === false) {
+      // Always remove the "view" suffix from the name, this is redundant and not needed in the frontend.
+      $shortName = substr(strtolower((new ReflectionClass($this))->getShortName()), 0, -4);
+    }
+    return $shortName;
   }
 
   /**
@@ -229,11 +274,11 @@ abstract class AbstractView {
     // By default we assume that there are no alerts at all. The additional empty CSS class makes sure tha the default
     // minimum height and margin is not applied to the spanning div element. It is important that any JavaScript that
     // might add content to the div removes the class to reapply the minimum height and margin.
-    $content = " empty'>";
+    $content = " span--empty'>";
     if (empty($this->alerts) === false) {
       $content = "'>" . implode("", $this->alerts);
     }
-    return "<div class='row'><div id='alerts' class='span span-0{$content}</div></div>";
+    return "<div class='row'><div id='alerts' class='span span--1{$content}</div></div>";
   }
 
   /**
@@ -243,41 +288,43 @@ abstract class AbstractView {
    *   The footer ready for print.
    */
   public final function getFooter() {
-    $cc0Link = $this->a4("//creativecommons.org/publicdomain/zero/1.0/deed.{$this->language->getCode()}", __("Creative Commons — CC0 1.0 Universal"), [ "rel" => "license" ]);
-    $termsOfUseLink = $this->a1(__("terms-of-use", "route"), __("Terms of Use"));
-    $privacyPolicyLink = $this->a1(__("privacy-policy", "route"), __("Privacy Policy"));
+    $cc0Link = $this->a("//creativecommons.org/publicdomain/zero/1.0/deed.{$this->language->getCode()}", __("Creative Commons — CC0 1.0 Universal"), [ "rel" => "license" ]);
+    $termsOfUseLink = $this->a(__("terms-of-use", "route"), __("Terms of Use"));
+    $privacyPolicyLink = $this->a(__("privacy-policy", "route"), __("Privacy Policy"));
 
     return
       "<footer id='footer'>" .
-        "<div class='row footer-rows'>" .
-          "<div class='span span-4'>" .
+        "<div id='footer-rows' class='row'>" .
+          "<div class='span span--4'>" .
             "<h3>" . SITENAME . "</h3>" .
             "<ul class='no-list'>" .
-              "<li class='item-first'>{$this->a2(__("about", "route"), __("About"), sprintf(__("Find out more about %s."), SITENAME))}</li>" .
-              "<li>{$this->a2(__("blog", "route"), __("Blog"), sprintf(__("Stay up to date about the latest developments around %s."), SITENAME))}</li>" .
-              "<li>{$this->a2(__("contact", "route"), __("Contact"), __("Feedback is always welcome, no matter if positive or negative."))}</li>" .
-              "<li>{$this->a2(__("resources", "route"), __("Logos and Badges"), __("If you want to create something awesome."))}</li>" .
-              "<li class='item-last'>{$this->a2(__("legal", "route"), __("Legal"), sprintf(__("Collection of the various legal terms and conditions used around %s."), SITENAME))}</li>" .
+              "<li class='item-first'>{$this->a(__("about", "route"), __("About"), sprintf(__("Find out more about %s."), SITENAME))}</li>" .
+              "<li>{$this->a(__("blog", "route"), __("Blog"), sprintf(__("Stay up to date about the latest developments around %s."), SITENAME))}</li>" .
+              "<li>{$this->a(__("contact", "route"), __("Contact"), __("Feedback is always welcome, no matter if positive or negative."))}</li>" .
+              "<li>{$this->a(__("resources", "route"), __("Logos and Badges"), __("If you want to create something awesome."))}</li>" .
+              "<li class='item-last'>{$this->a(__("legal", "route"), __("Legal"), sprintf(__("Collection of the various legal terms and conditions used around %s."), SITENAME))}</li>" .
             "</ul>" .
           "</div>" .
-          "<div class='span span-4'>" .
+          "<div class='span span--4'>" .
             "<h3>" . __("Join in") . "</h3>" .
             "<ul class='no-list'>" .
-              "<li class='item-first item-last'>{$this->a2(__("sign-up", "route"), __("Sign up"), __(""))}</li>" .
+              "<li class='item-first item-last'>{$this->a(__("sign-up", "route"), __("Sign up"), __(""))}</li>" .
             "</ul>" .
           "</div>" .
-          "<div class='span span-4'></div>" .
-          "<div class='span span-4'>" .
+          "<div class='span span--4'></div>" .
+          "<div class='span span--4'>" .
             "<h3>" . __("Get help") . "</h3>" .
             "<ul class='no-list'>" .
-              "<li class='item-first item-last'>{$this->a2(__("help", "route"), __("Help"), __(""))}</li>" .
+              "<li class='item-first item-last'>{$this->a(__("help", "route"), __("Help"), __(""))}</li>" .
             "</ul>" .
           "</div>" .
         "</div>" .
-        "<div class='row footer-copyright'>" .
-          "<i class='icon icon-cc'></i> <i class='icon icon-cc-zero'></i> " . sprintf(__("Database data is available under the %s license."), $cc0Link) . "<br>" .
-          __("Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated.") . "<br>" .
-          sprintf(__("By using this site, you agree to the %s and %s."), $termsOfUseLink, $privacyPolicyLink) .
+        "<div id='footer-copyright' class='row'>" .
+          "<div class='span span--1'>" .
+            "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> " . sprintf(__("Database data is available under the %s license."), $cc0Link) . "<br>" .
+            __("Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated.") . "<br>" .
+            sprintf(__("By using this site, you agree to the %s and %s."), $termsOfUseLink, $privacyPolicyLink) .
+          "</div>" .
         "</div>" .
       "</footer>" .
       "<div id='footer-logo'></div>"
@@ -294,15 +341,25 @@ abstract class AbstractView {
    *   The head ready for print.
    */
   public final function getHead() {
-    $cheapoBuster = rand();
+    $cacheBuster = $stylesheets = "";
+    foreach ($this->stylesheets as $stylesheet) {
+      if (($realpath = realpath($_SERVER["DOCUMENT_ROOT"] . $stylesheet)) !== false) {
+        $cacheBuster = "?" . md5_file($realpath);
+      }
+      $stylesheets .= "<link rel='stylesheet' href='{$stylesheet}{$cacheBuster}'>";
+      $realpath = false;
+      $cacheBuster = "";
+    }
+    $ariaRole = "document";
+    if (strpos($this->getShortName(), "edit") !== false) {
+      $ariaRole = "application";
+    }
     return
       "<!doctype html>" .
       "<html id='nojs' lang='{$this->language->getCode()}' dir='{$this->language->getDirection()}'>" .
       "<head>" .
         "<title>{$this->getHeadTitle()}</title>" .
-        "<link rel='stylesheet' href='//fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic&amp;subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic'>" .
-        "<link rel='stylesheet' href='/assets/font/css/entypo.css?{$cheapoBuster}'>" .
-        "<link rel='stylesheet' href='/assets/css/global.css?{$cheapoBuster}'>" .
+        $stylesheets .
         "<link rel='logo' href='/assets/img/logo/vector.svg'>" .
         "<link rel='icon' href='/assets/img/logo/vector.svg'>" .
         "<link rel='icon' sizes='256x256' href='/assets/img/logo/256.png'>" .
@@ -314,7 +371,7 @@ abstract class AbstractView {
         "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
         "<meta http-equiv='X-UA-Compatible' content='IE=edge'>" .
       "</head>" .
-      "<body class='{$this->getBodyClass()}'>"
+      "<body class='{$this->getShortName()}' role='{$ariaRole}'>"
     ;
   }
 
@@ -327,9 +384,9 @@ abstract class AbstractView {
   public final function getHeader() {
     return
       "<header id='header' class='row'>" .
-        "<div class='span span-3'>{$this->getHeaderLogo()}</div>" .
-        "<div class='span span-3'>{$this->getHeaderNavigation()}</div>" .
-        "<div class='span span-3'>{$this->getHeaderUserNavigation()}{$this->getHeaderSearch()}</div>" .
+        "<div class='span span--3'>{$this->getHeaderLogo()}</div>" .
+        "<div class='span span--3'>{$this->getHeaderSearch()}{$this->getHeaderNavigation()}</div>" .
+        "<div class='span span--3'>{$this->getHeaderUserNavigation()}</div>" .
       "</header>"
     ;
   }
@@ -349,11 +406,16 @@ abstract class AbstractView {
         "title" => __("Browse all movies of this world, check out the latest additions or create a new entry yourself."),
       ],
       /* 1 => */[
+        "href" => __("series", "route"),
+        "text" => __("Series"),
+        "title" => __("Browse all series of this world, check out the latest additions or create a new entry yourself."),
+      ],
+      /* 2 => */[
         "href" => __("persons", "route"),
         "text" => __("Persons"),
         "title" => __("Browse all movie related persons of this world, check out the latest additions or create a new entry yourself."),
       ],
-      /* 2 => */[
+      /* 3 => */[
         "href" => __("marketplace", "route"),
         "text" => __("Marketplace"),
         "title" => __("Searching for a specific release of a movie or soundtrack, this is the place to go, for free of course."),
@@ -368,15 +430,17 @@ abstract class AbstractView {
    *   The header search ready for print.
    */
   public final function getHeaderSearch() {
-    $action = __("search", "route");
-    $placeholder = __("Search…");
-    $title1 = __("Enter the search term you wish to search for and hit enter. [alt-shift-f]");
-    $title2 = __("Start searching for the entered keyword.");
+    $formAction = __("search", "route");
+    $inputSearchPlaceholder = __("Search…");
+    $inputSearchTitle = __("Enter the search term you wish to search for and hit enter. [alt-shift-f]");
+    $inputSubmitTitle = __("Start searching for the entered keyword.");
 
     return
-      "<form action='/$action' class='clear-right pull-right search search-header' method='post' role='search'>" .
-        "<input accesskey='f' class='input input-search' placeholder='$placeholder' role='textbox' title='$title1' type='search'>" .
-        "<button class='input input-submit transition' title='$title2' type='submit'><i class='icon icon-search inline'></i></button>" .
+      "<form action='/{$formAction}' class='search search-header' method='post' role='search'>" .
+        "<input accesskey='f' class='input input-search search-header__input-search' placeholder='{$inputSearchPlaceholder}' role='textbox' tabindex='{$this->getTabindex()}' title='{$inputSearchTitle}' type='search'>" .
+        "<button class='input input-submit search-header__input-submit' title='{$inputSubmitTitle}' type='submit'>" .
+          "<i class='icon icon--search search-header__icon--search inline transition'></i>" .
+        "</button>" .
       "</form>"
     ;
   }
@@ -432,27 +496,21 @@ abstract class AbstractView {
    */
   public final function getNavigation($role, $points, $activePointIndex, $glue, $attributes = []) {
     $menu = "";
-    $k = count($points) - 1;
-    $attr = [ "class" => "menuitem", "role" => "menuitem" ];
-    for ($i = 0; $i <= $k; ++$i) {
-      if ($i === 0) {
-        $attr["class"] .= " item-first";
-      } elseif ($i === $k) {
-        $attr["class"] .= " item-last";
-        $glue = "";
-      }
+    $k = count($points);
+    $attr = [ "class" => "menuitem {$role}-nav__menuitem", "role" => "menuitem" ];
+    for ($i = 0; $i < $k; ++$i) {
       if (isset($points[$i]["attributes"]) === false) {
         $points[$i]["attributes"] = [];
       }
       $this->addClass($attr["class"], $points[$i]["attributes"]);
+      if ($i !== 0) {
+        $menu .= $glue;
+      }
       if ($i === $activePointIndex) {
         $points[$i]["attributes"]["class"] .= " active";
-        $menu .= "<span{$this->expandTagAttributes($points[$i]["attributes"])}>{$points[$i]["text"]}</span>";
-      } else {
-        $menu .= $this->a3($points[$i]["href"], $points[$i]["text"], $points[$i]["title"], $points[$i]["attributes"]);
       }
-
-      $menu .= $glue;
+      $points[$i]["attributes"]["title"] = $points[$i]["title"];
+      $menu .= $this->a($points[$i]["href"], $points[$i]["text"], $points[$i]["attributes"]);
     }
     $this->addClass("nav {$role}-nav", $attributes);
     $attributes["role"] = $role;
@@ -470,7 +528,7 @@ abstract class AbstractView {
       $this->getHead() .
       $this->getHeader() .
       $this->getAlerts() .
-      "<div id='content' class='{$this->getBodyClass()}-content'>{$this->getRenderedContent()}</div>" .
+      "<div id='content' class='{$this->getShortName()}-content' role='main'>{$this->getRenderedContent()}</div>" .
       $this->getFooter()
     ;
   }
@@ -489,11 +547,10 @@ abstract class AbstractView {
    *   The logo ready for print.
    */
   public function getHeaderLogo() {
-    return $this->a3(
+    return $this->a(
       "",
       SITENAME . " <small>" . __("the <em>free</em> movie library") . "</small>",
-      sprintf(__("Go back to the %s home page."), SITENAME),
-      [ "id" => "logo", "class" => "inline" ]
+      [ "id" => "logo", "class" => "inline", "title" => sprintf(__("Go back to the %s home page."), SITENAME) ]
     );
   }
 
@@ -516,6 +573,8 @@ abstract class AbstractView {
   /**
    * Add new alert message to the output of the view.
    *
+   * @link http://www.w3.org/TR/wai-aria/roles#alert
+   * @link http://www.w3.org/TR/wai-aria/states_and_properties#aria-live
    * @param string $message
    *   The message that should be displayed to the user.
    * @param string $title
@@ -535,13 +594,14 @@ abstract class AbstractView {
    */
   public final function setAlert($message, $title = "", $severity = "warning", $block = false) {
     if (empty($title) === false) {
-      $title = ($block === true) ? "<h4>$title</h4> " : "<b>$title</b> ";
+      $class = " class='alert__title'";
+      $title = ($block === true) ? "<h4{$class}>{$title}</h4> " : "<b{$class}>{$title}</b> ";
     }
-    $class = "alert alert-$severity";
+    $class = "";
     if ($block === true) {
-      $class .= " alert-block";
+      $class .= " alert--block";
     }
-    $this->alerts[] = "<div class='$class'>$title$message</div>";
+    $this->alerts[] = "<div class='alert alert--{$severity}{$class}' role='alert'>{$title}{$message}</div>";
     return $this;
   }
 

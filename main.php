@@ -212,4 +212,4 @@ $presenter = "\\MovLib\\Presenter\\" . $_SERVER["PRESENTER"] . "Presenter";
 echo (new $presenter())->getOutput();
 $t = microtime(true) - $t;
 $t = sprintf("%.6f", $t - intval($t));
-echo "<p class='centered'><small>Generated in {$t}&nbsp;ms</small></p>";
+echo "<p class='text-center'><small>Generated in {$t}&nbsp;ms</small></p>";

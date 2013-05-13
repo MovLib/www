@@ -295,7 +295,6 @@ abstract class AbstractModel {
    */
   protected final function prepare($query) {
     if (($this->stmt = $this->mysqli->prepare($query)) === false) {
-      $this->close();
       throw new DatabaseException("Preparation of statement failed: {$this->mysqli->error} ({$this->mysqli->errno})");
     }
     return $this;
