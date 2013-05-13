@@ -1,0 +1,158 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Button module/component.
+ *
+ * @link http://littlesparkvt.com/flatstrap/base-css.html#buttons
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link http://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+.button {
+  background-color: #efefef;
+  /* Overwrite default link border color once, prevent color changes upon state changes. */
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid;
+  color: #555;
+  margin-bottom: 0;
+  padding: 4px 12px;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+  vertical-align: middle;
+}
+
+.button:hover,
+.button:focus,
+.button:active,
+.button.active,
+.button.disabled {
+  background-color: #cfcfcf;
+}
+
+.button.disabled {
+  background-image: none;
+  cursor: default;
+  opacity: 0.65;
+}
+
+.button--large {
+  font-size: 17.5px;
+  padding: 11px 19px;
+}
+
+.button--small {
+  padding: 2px 10px;
+}
+
+.button--mini {
+  padding: 0 6px;
+}
+
+.button--primary.active,
+.button--warning.active,
+.button--danger.active,
+.button--success.active,
+.button--info.active,
+.button--inverse.active {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.button--primary,
+.button--info,
+.button--success,
+.button--warning,
+.button--danger,
+.button--inverse {
+  /* Overwrite link default color once, prevent color changes upon state changes. */
+  color: #fff !important;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.button--primary {
+  background-color: #3498db;
+}
+
+.button--primary:hover,
+.button--primary:focus,
+.button--primary:active,
+.button--primary.active,
+.button--primary.disabled {
+  background-color: #256c9b;
+}
+
+.button--info {
+  background-color: #49afcd;
+}
+
+.button--info:hover,
+.button--info:focus,
+.button--info:active,
+.button--info.active,
+.button--info.disabled {
+  background-color: #32788d;
+}
+
+.button--success {
+  background-color: #5bb75b;
+}
+
+.button--success:hover,
+.button--success:focus,
+.button--success:active,
+.button--success.active,
+.button--success.disabled {
+  background-color: #3b773b;
+}
+
+.button--warning {
+  background-color: #faa732;
+}
+
+.button--warning:hover,
+.button--warning:focus,
+.button--warning:active,
+.button--warning.active,
+.button--warning.disabled {
+  background-color: #cc8829;
+}
+
+.button--danger {
+  background-color: #da4f49;
+}
+
+.button--danger:hover,
+.button--danger:focus,
+.button--danger:active,
+.button--danger.active,
+.button--danger.disabled {
+  background-color: #9a3834;
+}
+
+.button--inverse {
+  background-color: #555;
+}
+
+.button--inverse:hover,
+.button--inverse:focus,
+.button--inverse:active,
+.button--inverse.active,
+.button--inverse.disabled {
+  background-color: #000;
+}

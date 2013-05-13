@@ -1,0 +1,432 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Base consists of reset rules and element defaults.
+ *
+ * Target browsers:
+ *   - Apple Safari ??
+ *   - Microsoft Internet Explorer 9+ (support for 8 and maybe 7 via polyfills and additional stylesheets)
+ *   - Mozilla Firefox 5+
+ *   - Google Chrome 18+
+ *   - Opera Desktop 11+
+ *
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link http://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+/**
+ * Color table
+ * ===========
+ * MovLib is mainly using shades of gray (similarity to book series is not intended), but there are a few colors that
+ * we support as well. Please always refer to this color table and only choose colors from here (this is not true for
+ * gray; you may alter the shade to fit the need)!
+ *
+ * Shades of gray
+ * ==============
+ *
+ * 01[2]34[5]67[8]9a[b]cd[e]f
+ *
+ * --- dark ---
+ * #222
+ *   #333
+ *   #3b3b3b
+ *   #484848
+ * #555
+ *   #626262
+ *   #6e6e6e
+ *   #7b7b7b
+ * #888
+ *   #959595
+ *   #a1a1a1
+ *   #aeaeae
+ * #bbb
+ *   #c8c8c8
+ *   #d4d4d4
+ * #eee
+ *   #e1e1e1
+ *   #fbfbfb
+ * -- bright --
+ *
+ * Blue (link color)
+ * =================
+ * #06c     (bright)
+ * #0059b2
+ * #00468c
+ * #00264c
+ * #001933  (dark)
+ *
+ * Purple (visited links only)
+ * ===========================
+ * #613eb0
+ *
+ * Logo colors
+ * ===========
+ * @todo Extract all colors from SVG
+ */
+
+/*
+  Works for all modern browsers, much more natural to work with, support:
+
+  Chrome (any)         : box-sizing
+  Firefox (any)        : -moz-box-sizing
+  Internet Explorer 8+ : box-sizing
+  Opera 8.5+           : box-sizing
+  Safari 3+            : -webkit-box-sizing
+  Safari 5.1+          : box-sizing
+
+  @link http://paulirish.com/2012/box-sizing-border-box-ftw/ Paul Irish ftw!
+  @link http://css-tricks.com/box-sizing/
+  @link https://developer.mozilla.org/en-US/docs/CSS/box-sizing
+*/
+*,
+:before,
+:after {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+nav,
+section {
+  display: block;
+}
+
+/* Always display vertical scrollbar, avoids different screen width upon page changes. */
+html {
+  overflow-y: scroll;
+}
+
+body {
+  margin: 0;
+}
+
+html,
+input,
+button,
+select,
+textarea,
+table {
+  -webkit-text-size-adjust: 100%;
+     -moz-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  background-color: #fff;
+  color: #555;
+  text-rendering: geometricPrecision;
+/*
+  About the MovLib font stack
+  Our main goal is it to ensure users of Microsoft and Apple computers have the best viewing pleasure. Why not Linux you
+  may ask. The reason is pretty easy, Linux users are most of the time very advanced users who 1) set up their fonts as
+  they like it 2) do not care about the font that is used at all. In general, Linux users do not find a font stack that
+  suits their needs on any popular website. The problem is, that there is no common ground to include fonts. Most users
+  will have Arial installed if they are using a desktop Linux system or a browser that is capable of downloading a font
+  that is specified via the @font-face rule.
+
+  - Open Sans: The default font at MovLib. It is free and open source and deserves our support. We use the complete
+    character set that is available along with Open Sans, to ensure that most text will be rendered with it.
+  - Arial: Main fallback font for browsers who do not support the @font-face rule. Should be installed on nearly every
+    system on this planet.
+  - Meiryo: Very beautiful Japanese font that was released along Windows Vista and Office Mac 2008. More info can be
+    found here: http://en.wikipedia.org/wiki/Meiryo
+  - Microsoft YaHei: Beautiful Chinese font that was release along Windows Vista and is available as update for Windows
+    XP systems. More info can be found here: http://en.wikipedia.org/wiki/Microsoft_YaHei
+  - sans-serif: Fallback if everything else fails.
+*/
+  font: 14px/20px 'open sans', arial, meiryo, 'microsoft yahei', 'ms yahei', yahei, sans-serif;
+}
+
+/* Ensure Chinese strings are displayed with the correct font choice. */
+[lang="zh"] {
+  font-family: 'open sans', arial, 'microsoft yahei', 'ms yahei', yahei, meiryo, sans-serif;
+}
+
+pre,
+code,
+kbd,
+samp,
+tt,
+var {
+  font: 12px/1 consolas, monospace, serif;
+}
+
+::-moz-selection {
+  background: #06c;
+  color: #fff;
+}
+
+::selection {
+  background: #06c;
+  color: #fff;
+}
+
+a {
+  border-bottom: 1px solid transparent;
+  color: #06c;
+  text-decoration: none;
+}
+
+a:hover,
+a:focus {
+  border-bottom-color: #06c;
+}
+
+a:visited {
+  color: #613eb0;
+}
+
+/* https://bugzilla.mozilla.org/show_bug.cgi?id=868975 */
+a:visited:hover,
+a:visited:focus {
+  border-bottom-color: #613eb0;
+}
+
+a:focus,
+.button:focus {
+  outline-offset: -2px;
+  outline: 1px dotted #555;
+  outline: 5px auto -webkit-focus-ring-color;
+}
+
+a:hover,
+a:active {
+  outline: 0;
+}
+
+dfn {
+  font-style: italic;
+}
+
+b,
+strong,
+#logo,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: bold;
+}
+
+#logo,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #333;
+  margin: 10px 0;
+}
+
+#logo small,
+h1 small,
+h2 small,
+h3 small,
+h4 small,
+h5 small,
+h6 small {
+  color: #555;
+  font-weight: normal;
+  line-height: 1;
+}
+
+#logo,
+h1,
+h2,
+h3 {
+  line-height: 40px;
+}
+
+#logo,
+h1 {
+  font-size: 38.5px;
+}
+
+h2 {
+  font-size: 31.5px;
+}
+
+h3 {
+  font-size: 24.5px;
+}
+
+h4 {
+  font-size: 17.5px;
+}
+
+.button--small,
+h6 {
+  font-size: 11.9px;
+}
+
+h1 small {
+  font-size: 24.5px;
+}
+
+h2 small {
+  font-size: 17.5px;
+}
+
+h3 small {
+  font-size: 14px;
+}
+
+h4 small {
+  font-size: 14px;
+}
+
+p {
+  margin: 14px 0;
+}
+
+hr {
+  border-top: 1px solid #ccc;
+  border: 0;
+  display: block;
+  height: 1px;
+  margin: 14px 0;
+  padding: 0;
+}
+
+img {
+  -ms-interpolation-mode: bicubic;
+  height: auto;
+}
+
+img,
+object {
+  border: 0;
+  max-width: 100%;
+  vertical-align: middle;
+  width: auto\9;
+}
+
+button,
+html .input-button,
+.input-reset,
+.input-submit {
+  -webkit-appearance: button;
+}
+
+.button,
+button,
+label,
+select,
+.input-button,
+.input-reset,
+.input-submit,
+.input-radio,
+.input-checkbox {
+  cursor: pointer;
+}
+
+.input-search {
+  -webkit-appearance: textfield;
+}
+
+.input-search::-webkit-search-decoration,
+.input-search::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+.button--mini,
+sub,
+sup {
+  font-size: 10.5px;
+}
+
+sub,
+sup {
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -2.625px;
+}
+
+sup {
+  top: -5.25px;
+}
+
+code,
+pre,
+var {
+  background-color: #fbfbfb;
+  border: 1px solid;
+}
+
+code,
+var {
+  border-color: #d4d4d4;
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+
+pre {
+  border-color: #aeaeae;
+  display: block;
+  margin: 0 0 10px;
+  padding: 9.5px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+var {
+  color: #d14;
+}
+
+:-moz-placeholder {
+  color: #aeaeae;
+  opacity: 1;
+}
+
+::-moz-placeholder {
+  color: #aeaeae;
+  opacity: 1;
+}
+
+:-ms-input-placeholder {
+  color: #aeaeae;
+}
+
+::-webkit-input-placeholder {
+  color: #aeaeae;
+}
+
+/* Microsoft Internet Explorer specific styles -------------------------------------------------------------------------
+ *
+ * These styles are for modern Internet Explorers. We use conditional stylesheets for the old ones.
+ */
+@-ms-viewport {
+  width: device-width;
+}

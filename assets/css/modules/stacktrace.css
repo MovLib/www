@@ -1,0 +1,108 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Styles exclusive to the stacktrace/error page.
+ *
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link http://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+.stacktrace {
+  margin: 20px 0 0;
+  padding: 3px;
+  background: #d8d8d8;
+  border-radius: 3px;
+  font: 12px/18px consolas, monospace;
+}
+
+.stacktrace__title {
+  padding: 5px 10px;
+  height: 33px;
+  background-color: #eaeaea;
+  background-image: -webkit-linear-gradient(#fafafa, #eaeaea);
+  background-image:    -moz-linear-gradient(#fafafa, #eaeaea);
+  background-image:     -ms-linear-gradient(#fafafa, #eaeaea);
+  background-image:      -o-linear-gradient(#fafafa, #eaeaea);
+  background-image:         linear-gradient(#fafafa, #eaeaea);
+  border-bottom: 1px solid #d8d8d8;
+  color: #555;
+  text-shadow: 0 1px 0 #fff;
+  line-height: 25px;
+}
+
+.stacktrace__table {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background: #fff;
+  border-collapse: collapse;
+  font: 12px/24px consolas, monospace;
+  color: #000;
+}
+
+.stacktrace__td {
+  padding: 0;
+}
+
+.stacktrace__tr:first-child .stacktrace__td {
+  padding-top: 5px;
+}
+
+.stacktrace__tr:last-child .stacktrace__td {
+  padding-bottom: 5px;
+}
+
+.stacktrace__line-number,
+.stacktrace__file {
+  color: rgba(0, 0, 0, 0.3);
+  text-align: right;
+}
+
+.stacktrace__line-number {
+  padding: 0 8px;
+  width: 1%;
+  border-right: 1px solid #e5e5e5;
+}
+
+.stacktrace__table .stacktrace__line-container {
+  padding: 0 10px;
+}
+
+.stacktrace__table tr:first-child .stacktrace__line-container {
+  background-color: #ffc;
+}
+
+.stacktrace__function {
+  color: #00f;
+}
+
+.stacktrace__var {
+  background: transparent;
+  border-bottom: 1px dotted #d14;
+  border: 0;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.stacktrace__file {
+  float: right;
+}

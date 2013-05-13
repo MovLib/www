@@ -1,0 +1,95 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Alert module/component.
+ *
+ * @link http://littlesparkvt.com/flatstrap/components.html#alerts
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link http://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+.alert {
+  background-color: #fcf8e3;
+  border: 1px solid #fbeed5;
+  margin-bottom: 20px;
+  padding: 8px 35px 8px 14px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.alert,
+.alert__title {
+  color: #c09853;
+}
+
+.alert__title {
+  margin: 0;
+}
+
+.alert__close {
+  line-height: 20px;
+  position: relative;
+  right: -21px;
+  top: -2px;
+}
+
+.alert--info {
+  background-color: #d9edf7;
+  border-color: #bce8f1;
+  color: #3a87ad;
+}
+
+.alert--info .alert__title {
+  color: #3a87ad;
+}
+
+.alert--success {
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+  color: #468847;
+}
+
+.alert--success .alert__title {
+  color: #468847;
+}
+
+.alert--error {
+  background-color: #f2dede;
+  border-color: #eed3d7;
+  color: #b94a48;
+}
+
+.alert--error .alert__title {
+  color: #b94a48;
+}
+
+.alert--block {
+  padding-bottom: 14px;
+  padding-top: 14px;
+}
+
+.alert--block > p,
+.alert--block > ul {
+  margin-bottom: 0;
+}
+
+.alert--block p + p {
+  margin-top: 5px;
+}
