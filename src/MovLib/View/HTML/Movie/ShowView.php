@@ -15,15 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Model;
+namespace MovLib\View\HTML\Movie;
 
-use \MovLib\Exception\DatabaseException;
-use \MovLib\Model\AbstractModel;
+use \MovLib\Entity\Language;
+use \MovLib\View\HTML\AbstractView;
 
 /**
- * The movie model is responsible for all database related functionality of a single movie entry.
+ * Description of MovieView
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -31,13 +30,24 @@ use \MovLib\Model\AbstractModel;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieModel extends AbstractModel {
+class ShowView extends AbstractView {
 
-  public function getMovieById($id) {
-    $movie = $this->query("SELECT * FROM `movies` WHERE `movie_id` = ?", "i", [ $id ]);
-    if (empty($movie)) {
-      throw new DatabaseException("Movie with id $id does not exist.");
-    }
-    return $movie;
+  private $movie;
+  /**
+   *
+   */
+  public function __construct(Language $language, $movie) {
+    parent::__construct($language, SITENAME);
+    $this->title = $movie["title"] . $movie["year"] == "0000" ? "" : "({$movie["year"]})";
   }
+
+  public function getBodyClass() {
+    return "movie";
+  }
+
+  public function getRenderedContent() {
+    return
+    "";
+  }
+
 }
