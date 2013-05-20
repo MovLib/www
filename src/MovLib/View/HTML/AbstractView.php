@@ -97,7 +97,7 @@ abstract class AbstractView {
    * @param string $title
    *   The unique title of this view.
    */
-  public function __construct(Language $language, $title) {
+  public function __construct($language, $title) {
     $this->language = $language;
     $this->title = $title;
     $this->addStylesheet([
@@ -129,7 +129,7 @@ abstract class AbstractView {
   /**
    * Add a stylesheet to the view.
    *
-   * @todo Aggregate, minify and compress for production. What we have here is only ment for development, so it's easy
+   * @todo Aggregate, minify and compress for production. What we have here is only meant for development, so it's easy
    *       to add stylesheets to a specific view. In production we only want to deliver a single stylesheet and the
    *       system will change.
    * @param string|array $stylesheets
@@ -167,7 +167,7 @@ abstract class AbstractView {
       } else {
         $value = String::checkPlain($value);
       }
-      $return .= " $attribute='$value'";
+      $return .= " {$attribute}='{$value}'";
     }
     return $return;
   }
@@ -199,6 +199,11 @@ abstract class AbstractView {
     return ++$tabindex;
   }
 
+  /**
+   * @todo Document
+   * @param type $url
+   * @return string
+   */
   protected final function href($url) {
     // Never create a link to the current page, http://www.nngroup.com/articles/avoid-within-page-links/
     if ($url === $_SERVER["REQUEST_URI"]) {
@@ -217,6 +222,11 @@ abstract class AbstractView {
     return "/$url";
   }
 
+  /**
+   * @todo Document
+   * @param type $class
+   * @param type $attributes
+   */
   protected final function addClass($class, &$attributes) {
     if (isset($attributes["class"]) === true) {
       $attributes["class"] .= " {$class}";
@@ -229,12 +239,19 @@ abstract class AbstractView {
   // ------------------------------------------------------------------------------------------------------------------- Public Final Methods
 
 
+  /**
+   * @todo Document
+   * @param type $href
+   * @param type $text
+   * @param type $titleOrAttributes
+   * @return type
+   */
   public final function a($href, $text, $titleOrAttributes = false) {
     if ($titleOrAttributes !== false) {
       if (is_array($titleOrAttributes) === true) {
         $titleOrAttributes = $this->expandTagAttributes($titleOrAttributes);
       } else {
-        $titleOrAttributes = String::checkPlain($titleOrAttributes);
+        $titleOrAttributes = " title='" . String::checkPlain($titleOrAttributes) . "'";
       }
     }
     return "<a href='{$this->href($href)}'{$titleOrAttributes}>{$text}</a>";
@@ -507,7 +524,7 @@ abstract class AbstractView {
         $menu .= $glue;
       }
       if ($i === $activePointIndex) {
-        $points[$i]["attributes"]["class"] .= " active";
+        $this->addClass("active", $points[$i]["attributes"]);
       }
       $points[$i]["attributes"]["title"] = $points[$i]["title"];
       $menu .= $this->a($points[$i]["href"], $points[$i]["text"], $points[$i]["attributes"]);
@@ -594,14 +611,14 @@ abstract class AbstractView {
    */
   public final function setAlert($message, $title = "", $severity = "warning", $block = false) {
     if (empty($title) === false) {
-      $class = " class='alert__title'";
-      $title = ($block === true) ? "<h4{$class}>{$title}</h4> " : "<b{$class}>{$title}</b> ";
+      $tag = ($block === true) ? "h4" : "b";
+      $title = "<{$tag} class='alert_title'>{$title}</{$tag}>";
     }
     $class = "";
     if ($block === true) {
       $class .= " alert--block";
     }
-    $this->alerts[] = "<div class='alert alert--{$severity}{$class}' role='alert'>{$title}{$message}</div>";
+    $this->alerts[] = "<div class='alert alert--{$severity}{$class}' role='alert'>{$title} {$message}</div>";
     return $this;
   }
 

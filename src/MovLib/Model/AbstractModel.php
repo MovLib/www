@@ -141,6 +141,9 @@ abstract class AbstractModel {
   /**
    * Generic delete query.
    *
+   * <b>Important:</b> All where column/value pairs are concatenated with <code>AND</code>. If you have a more complex
+   * query, please use the generic query method.
+   *
    * <b>Usage example:</b>
    * <pre>$this->delete("users", "is", [ "id" => 42, "name" => "Smith" ]);</pre>
    *
@@ -153,10 +156,11 @@ abstract class AbstractModel {
    * @param string $table
    *   The name of the table where a record should be deleted.
    * @param string $types
-   *   The type string for where in <code>\mysqli_stmt::bind_param</code> syntax.
+   *   The type string for the <tt>WHERE</tt> clause in <code>\mysqli_stmt::bind_param</code> syntax.
    * @param array $where
    *   Associative array containing column names and values for where.
    * @return $this
+   * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function delete($table, $types, $where) {
@@ -175,6 +179,8 @@ abstract class AbstractModel {
    * Disconnect from database.
    *
    * @return $this
+   * @throws \Exception
+   *   Might throw a generic exception if the mysqli variable does not contain a valid object.
    */
   protected final function disconnect() {
     $this->mysqli->close();
@@ -196,7 +202,7 @@ abstract class AbstractModel {
       $error = $this->stmt->error;
       $errno = $this->stmt->errno;
       $this->close();
-      throw new DatabaseException("Execution of statement failed with error message: $error ($errno)");
+      throw new DatabaseException("Execution of statement failed with error message: {$error} ({$errno})");
     }
     return $this;
   }
@@ -205,13 +211,13 @@ abstract class AbstractModel {
    * Get the statement result as associative array.
    *
    * @param array|null $result
-   *   The query result as associative array or <code>null</code> if empty result. If the result consists of only one
-   *   row, then only a single array representing this row is returned.
+   *   The query result as associative array. If the result consists of only one row, then only a single array
+   *   representing this row is returned.
    * @return $this
    * @throws \Exception
    *   Might throw a generic exception if (for instance) the prepared statement is not a valid object.
    * @throws \MovLib\Exception\DatabaseException
-   *   If the fetching the result failed.
+   *   If fetching the result failed.
    */
   protected final function fetchAssoc(&$result) {
     if (($queryResult = $this->stmt->get_result()) === false) {
@@ -267,6 +273,7 @@ abstract class AbstractModel {
    * @param array $data
    *   Associative array containing column names and values for insert.
    * @return $this
+   * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function insert($table, $types, $data) {
@@ -291,6 +298,7 @@ abstract class AbstractModel {
    * @param string $query
    *   The query to be prepared.
    * @return $this
+   * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function prepare($query) {
@@ -312,8 +320,8 @@ abstract class AbstractModel {
    *   The values to be substituted.
    * @return $this
    * @throws \Exception
-   *   Might throw a generic exception if a PHP error occures. For instance if values is not an array or the type count
-   *   is not equal to the given values count.
+   *   Might throw a generic exception if a PHP error occures. For instance if <var>$values</var> is not an array or the
+   *   type count is not equal to the given values count.
    * @throws \MovLib\Exception\DatabaseException
    *   If binding the parameters to the prepared statement fails.
    */
@@ -348,6 +356,7 @@ abstract class AbstractModel {
    *   The values that should be inserted.
    * @return array
    *   The query result as associative array.
+   * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function query($query, $types, $values) {
@@ -387,7 +396,7 @@ abstract class AbstractModel {
    * <b>Usage example:</b>
    * <pre>$this->update(
    *   "user",
-   *   "isi",
+   *   "isiis",
    *   [ "id" => 42, "name" => "foobar", "age" => 99 ],
    *   [ "id" => 1, "name" => "barfoo" ]
    * );</pre>
@@ -403,10 +412,11 @@ abstract class AbstractModel {
    * @param string $types
    *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
    * @param array $set
-   *   Associative array containing column names and values for set.
+   *   Associative array containing column names and values for <tt>SET</tt>.
    * @param array $where
-   *   Associative array containing column names and values for where.
+   *   Associative array containing column names and values for <tt>WHERE</tt>.
    * @return $this
+   * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function update($table, $types, $set, $where) {

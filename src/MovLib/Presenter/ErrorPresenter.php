@@ -17,12 +17,11 @@
  */
 namespace MovLib\Presenter;
 
-use \Exception;
 use \MovLib\Entity\Language;
 use \MovLib\View\HTML\ErrorView;
 
 /**
- * The error presenter is used to display an error if something unknown goes wrong.
+ * The error presenter is used to display an error if something goes wrong.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -37,7 +36,7 @@ class ErrorPresenter {
    *
    * @var string
    */
-  protected $output = '';
+  protected $output = "";
 
   /**
    * Present an error to the user.
@@ -45,11 +44,11 @@ class ErrorPresenter {
    * @param \Exception $exception
    *   The exception that caused the error.
    */
-  public function __construct(Exception $exception) {
+  public function __construct($exception) {
     try {
       $this->init($exception);
     } catch (LanguageException $e) {
-      $_SERVER['LANGUAGE_CODE'] = 'en';
+      $_SERVER["LANGUAGE_CODE"] = "en";
       $this->init($e);
     }
   }
@@ -59,10 +58,10 @@ class ErrorPresenter {
    *
    * @param \Exception $exception
    *   The exception that caused the error.
-   * @return \MovLib\Presenter\ErrorPresenter
+   * @return $this
    * @throws \MovLib\Exception\LanguageException
    */
-  private function init(Exception $exception) {
+  private function init($exception) {
     $this->output = (new ErrorView(new Language(), $exception))->getRenderedView();
     return $this;
   }

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presenter;
 
+use \MovLib\View\HTML\ErrorView;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Model\MovieModel;
 use \MovLib\View\HTML\Movie\ShowView;
@@ -39,19 +40,22 @@ class MoviePresenter extends AbstractPresenter{
    *
    * @var \MovLib\Model\MovieModel
    */
-  private $model;
+  private $movieModel;
 
   /**
    * {@inheritdoc}
    */
   protected function init() {
-    $this->model = new MovieModel();
-    $view = "";
-    try {
-      $movie = $this->model->getMovieById($_SERVER["MOVIE_ID"]);
-      $view = new ShowView($this->language, $movie);
-    } catch (DatabaseException $e) {
-      $view = new \MovLib\View\HTML\ErrorView($this->language, $e);
+    $this->movieModel = new MovieModel($_SERVER["MOVIE_ID"]);
+    switch ($_SERVER["REQUEST_METHOD"]) {
+      case "DELETE":
+        break;
+      case "POST":
+        break;
+      case "PUT":
+        break;
+      default:
+        $view = new ShowView($this->language, $this->movieModel->getAssocMovie());
     }
     $this->output = $view->getRenderedView();
   }

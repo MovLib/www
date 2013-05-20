@@ -17,13 +17,11 @@
  */
 namespace MovLib\Model;
 
-use \MovLib\Exception\DatabaseException;
 use \MovLib\Model\AbstractModel;
 
 /**
  * The movie model is responsible for all database related functionality of a single movie entry.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -33,11 +31,22 @@ use \MovLib\Model\AbstractModel;
  */
 class MovieModel extends AbstractModel {
 
-  public function getMovieById($id) {
-    $movie = $this->query("SELECT * FROM `movies` WHERE `movie_id` = ?", "i", [ $id ]);
-    if (empty($movie)) {
-      throw new DatabaseException("Movie with id $id does not exist.");
+  private $movieId = false;
+
+  public function __construct($id = false) {
+    parent::__construct();
+    if ($id !== false) {
+      $result = $this->query("SELECT * FROM `movies` WHERE `movie_id` = ?", "i", [ $id ]);
+      $this->movieId = $result["movie_id"];
     }
-    return $movie;
   }
+
+  public function create() {
+    if ($this->movieId !== false) {
+      throw new Exception();
+    }
+    // create movie entry
+    //$this->movieId = last_insert_id_from_mysql
+  }
+
 }
