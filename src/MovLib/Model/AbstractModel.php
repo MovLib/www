@@ -208,11 +208,10 @@ abstract class AbstractModel {
   }
 
   /**
-   * Get the statement result as associative array.
+   * Get the statement result as array.
    *
    * @param array|null $result
-   *   The query result as associative array. If the result consists of only one row, then only a single array
-   *   representing this row is returned.
+   *   The query result as keyed array containg each resulting row as associative array.
    * @return $this
    * @throws \Exception
    *   Might throw a generic exception if (for instance) the prepared statement is not a valid object.
@@ -224,13 +223,9 @@ abstract class AbstractModel {
       $this->close();
       throw new DatabaseException("Get statement result failed.");
     }
-    if ($queryResult->num_rows === 1) {
-      $result = $queryResult->fetch_assoc();
-    } else {
-      $result = [];
-      while ($row = $queryResult->fetch_assoc()) {
-        $result[] = $row;
-      }
+    $result = [];
+    while ($row = $queryResult->fetch_assoc()) {
+      $result[] = $row;
     }
     $queryResult->free();
     return $this;
