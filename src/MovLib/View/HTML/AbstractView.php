@@ -17,7 +17,6 @@
  */
 namespace MovLib\View\HTML;
 
-use \MovLib\Entity\Language;
 use \MovLib\Utility\String;
 use \ReflectionClass;
 
@@ -473,12 +472,12 @@ abstract class AbstractView {
   public final function getHeaderUserNavigation() {
     return $this->getNavigation("user", [
       /* 0 => */[
-        "href" => __("sign_up", "route"),
+        "href" => __("user/sign_up", "route"),
         "text"  => __("Sign up"),
         "title" => __("Click here to sign up for a new and free account."),
       ],
       /* 1 => */[
-        "href" => __("sign_in", "route"),
+        "href" => __("user/sign_in", "route"),
         "text"  => __("Sign in"),
         "title" => __("Already have an account? Click here to sign in."),
       ],
