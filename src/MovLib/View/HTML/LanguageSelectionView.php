@@ -52,7 +52,7 @@ class LanguageSelectionView extends AbstractView {
     $points = [];
     foreach ($this->language->getLocales() as $code => $locale) {
       $points[] = [
-        "href" => "//{$code}.alpha.movlib.org",
+        "href" => "//{$code}.{$_SERVER["SERVER_NAME"]}",
         "text" => $locale["name"],
         "attributes" => [ "lang" => $code ],
       ];
