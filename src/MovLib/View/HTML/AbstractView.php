@@ -525,11 +525,14 @@ abstract class AbstractView {
       if ($i === $activePointIndex) {
         $this->addClass("active", $points[$i]["attributes"]);
       }
-      $points[$i]["attributes"]["title"] = $points[$i]["title"];
+      if (isset($points[$i]["title"]) === true) {
+        $points[$i]["attributes"]["title"] = $points[$i]["title"];
+      }
+      $points[$i]["attributes"]["role"] = "menuitem";
       $menu .= $this->a($points[$i]["href"], $points[$i]["text"], $points[$i]["attributes"]);
     }
     $this->addClass("nav {$role}-nav", $attributes);
-    $attributes["role"] = $role;
+    $attributes["role"] = "navigation";
     return "<nav{$this->expandTagAttributes($attributes)}>{$menu}</nav>";
   }
 
@@ -539,7 +542,7 @@ abstract class AbstractView {
    * @return string
    *   The rendered view ready for print.
    */
-  public final function getRenderedView() {
+  public function getRenderedView() {
     return
       $this->getHead() .
       $this->getHeader() .

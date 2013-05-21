@@ -48,6 +48,13 @@ class Language {
    */
   const ENCODING = "utf-8";
 
+  /**
+   * The default language code to use if it's missing from the server variables.
+   *
+   * @var string
+   */
+  const DEFAULT_CODE = "en";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -114,11 +121,15 @@ class Language {
    */
   public function __construct() {
     $this->locales = [
-      "en" => [ "name" => "English", "translatedName" => _("English"), "locale" => "en_US.UTF-8", "dir" => "ltr" ],
-      "de" => [ "name" => "Deutsch", "translatedName" => _("German"), "locale" => "de_DE.UTF-8", "dir" => "ltr" ],
+      "en" => [ "name" => "English", "translatedName" => __("English"), "locale" => "en_US.UTF-8", "dir" => "ltr" ],
+      "de" => [ "name" => "Deutsch", "translatedName" => __("German"), "locale" => "de_DE.UTF-8", "dir" => "ltr" ],
     ];
 
-    $this->code = !empty($_SERVER["LANGUAGE_CODE"]) ? $_SERVER["LANGUAGE_CODE"] : "en";
+    if (empty($_SERVER["LANGUAGE_CODE"]) === true) {
+      $this->code = self::DEFAULT_CODE;
+    } else {
+      $this->code = $_SERVER["LANGUAGE_CODE"];
+    }
 
     if (isset($this->locales[$this->code]) === false) {
       throw new LanguageException("Desired language code '{$this->code}' is not defined.");
