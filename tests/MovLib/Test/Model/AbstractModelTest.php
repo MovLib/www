@@ -132,15 +132,26 @@ class AbstractModelTest extends PHPUnit_Framework_TestCase {
    * Test generic query method with parameters.
    */
   public function testQuery() {
-    $this->assertEquals([
+    $this->assertEquals([[
         self::FIELD_NUMBER => 42,
         self::FIELD_STRING => "foobar"
-      ],
+      ]],
       getReflectionFunction(self::FQ_CLASS_NAME, "query")->invokeArgs($this->mock, [
         "SELECT * FROM `" . self::TABLE_NAME . "` WHERE `" . self::FIELD_NUMBER . "` = ? LIMIT 1",
         "i", [ 42 ]
       ])
     );
+  }
+
+  /**
+   * Test invalid SQL.
+   * @expectedException \MovLib\Exception\DatabaseException
+   */
+  public function testInvalidSql() {
+    getReflectionFunction(self::FQ_CLASS_NAME, "query")->invokeArgs($this->mock, [
+      "SELECT ******** FROM `" . self::TABLE_NAME . "` WHERE `" . self::FIELD_NUMBER . "` = ? LIMIT 1",
+      "i", [ 42 ]
+    ]);
   }
 
   /**
@@ -159,10 +170,10 @@ class AbstractModelTest extends PHPUnit_Framework_TestCase {
    * Test generic query all method without parameters.
    */
   public function testQueryAll() {
-    $this->assertEquals([
+    $this->assertEquals([[
         self::FIELD_NUMBER => 1234,
         self::FIELD_STRING => "barfoo"
-      ],
+      ]],
       getReflectionFunction(self::FQ_CLASS_NAME, "queryAll")->invokeArgs($this->mock, [
         "SELECT * FROM `" . self::TABLE_NAME . "`"
       ])

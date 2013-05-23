@@ -17,6 +17,7 @@
  */
 namespace MovLib\Model;
 
+use \MovLib\Exception\DatabaseException;
 use \MovLib\Model\AbstractModel;
 
 /**
@@ -31,22 +32,145 @@ use \MovLib\Model\AbstractModel;
  */
 class MovieModel extends AbstractModel {
 
+  /**
+   * The language code for the movie queries in ISO 639-1:2002 format.
+   *
+   * @var string
+   */
+  private $languageCode;
+
+  /**
+   * The movie id corresponding to the current movie.
+   *
+   * @var int
+   */
   private $movieId = false;
 
-  public function __construct($id = false) {
+  /**
+   * The current movie as associative array.
+   *
+   * @var array
+   */
+  private $movie = [];
+
+  public function __construct($languageCode) {
     parent::__construct();
-    if ($id !== false) {
-      $result = $this->query("SELECT * FROM `movies` WHERE `movie_id` = ?", "i", [ $id ]);
-      $this->movieId = $result["movie_id"];
-    }
+    $this->languageCode = $languageCode;
   }
 
   public function create() {
     if ($this->movieId !== false) {
-      throw new Exception();
+      throw new DatabaseException("The movie with id {$this->movieId} already exists.");
     }
-    // create movie entry
+    // @todo create movie entry
     //$this->movieId = last_insert_id_from_mysql
+    return $this;
+  }
+
+  /**
+   * Retrieve basic movie information as associative array.
+   *
+   * @param int $id
+   *  The movie's id.
+   * @return array
+   *  The basic movie information as associative array.
+   * @throws DatabaseException
+   *  If the movie id does not exist.
+   */
+  public function getMovieBasic($id) {
+    if (empty($this->movie) === false) {
+      return $this->movie;
+    }
+
+    $query = "SELECT * FROM movies m LEFT JOIN movies_{$this->languageCode} ml ON m.movie_id = ml.movies_movie_id WHERE m.movie_id = ?";
+
+    $queryResult = $this->query($query, "i", [ $id ]);
+
+    if ( empty( $queryResult ) ) {
+      throw new DatabaseException("Movie with ID: {$id} does not exist.");
+    }
+  
+    $this->movie = $queryResult[0];
+
+    $query = "SELECT t.`title_id`, t.`title`, t.`is_original_title`, t.`languages_language_id` FROM movies m INNER JOIN movie_titles t ON m.movie_id = t.movies_movie_id WHERE m.movie_id = ?";
+    $this->movie["titles"] = $this->query($query, "i", [ $id ]);
+
+    $this->movie["display"] = (boolean) $this->movie["display"];
+
+    $titlesCount = count($this->movie["titles"]);
+    for ($i = 0; $i < $titlesCount; ++$i) {
+      $this->movie["titles"][$i]["is_original_title"] = (boolean) $this->movie["titles"][$i]["is_original_title"];
+      if ($this->movie["titles"][$i]["is_original_title"] === true) {
+        $this->movie["original_title_id"] = $this->movie["titles"][$i]["title_id"];
+        $this->movie["original_title"] = $this->movie["titles"][$i]["title"];
+        if ($this->movie["display_title_id"] === null) {
+          $this->movie["display_title_id"] = &$this->movie["original_title_id"];
+          $this->movie["display_title"] = &$this->movie["original_title"];
+          break;
+        }
+      }
+      if ($this->movie["titles"][$i]["title_id"] === $this->movie["display_title_id"]) {
+        $this->movie["display_title_id"] = $this->movie["titles"][$i]["title_id"];
+        $this->movie["display_title"] = $this->movie["titles"][$i]["title"];
+      }
+    }
+
+    $this->movieId = $this->movie["movie_id"];
+    return $this->movie;
+  }
+
+  public function getMovieFull($id) {
+    $this->getMovieBasic($id);
+    $this->retrieveMovieLanguages();
+    $this->retrieveMovieCountries();
+    $this->retrieveGenres();
+    $this->retrieveStyles();
+
+    return $this->movie;
+  }
+
+  private function retrieveMovieLanguages() {
+    $this->movie["languages"] = $this->query("SELECT l.`language_id`, l.`name_en`, l.`iso_639-1`, l.`name_{$this->languageCode}`
+      FROM `movies_has_languages` mhl INNER JOIN `languages` l
+      ON mhl.`languages_language_id` = l.`language_id`
+      WHERE mhl.`movies_movie_id` = ?
+      ORDER BY l.`name_{$this->languageCode}` ASC",
+      "i",
+      [ $this->movieId ]
+    );
+  }
+
+  private function retrieveMovieCountries() {
+    $this->movie["countries"] = $this->query("SELECT c.`country_id`, c.`iso_alpha_2`, c.`iso_alpha_3`, c.`name_en`, c.`name_{$this->languageCode}`
+      FROM `movies_has_countries` mhc INNER JOIN `countries` c
+      ON mhc.`countries_country_id` = c.`country_id`
+      WHERE mhc.`movies_movie_id` = ?
+      ORDER BY c.`name_{$this->languageCode}` ASC",
+      "i",
+      [ $this->movieId ]
+    );
+  }
+
+  private function retrieveGenres() {
+    $this->movie["genres"] = $this->query("SELECT g.`genre_id`, g.`name_en`, g.`name_{$this->languageCode}`
+      FROM `movies_has_genres` `mhg` INNER JOIN `genres` `g`
+      ON `mhg`.`genres_genre_id` = `g`.`genre_id`
+      WHERE `mhg`.`movies_movie_id` = ?
+      ORDER BY g.`name_{$this->languageCode}` ASC",
+      "i",
+      [ $this->movieId ]
+    );
+  }
+
+  private function retrieveStyles() {
+    $this->movie["styles"] = $this->query("SELECT s.`style_id`, s.`name_en`, s.`name_{$this->languageCode}`
+      FROM `movies_has_styles` `mhs` INNER JOIN `styles` s
+      ON `mhs`.`styles_style_id` = `s`.`style_id`
+      WHERE `mhs`.`movies_movie_id` = ?
+      ORDER BY s.`name_{$this->languageCode}` ASC",
+      "i",
+      [ $this->movieId ]
+    );
   }
 
 }

@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,18 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter;
+namespace MovLib\Test\Model;
 
-use \MovLib\View\HTML\ErrorView;
-use \MovLib\Exception\DatabaseException;
-use \MovLib\Model\MovieModel;
+use \MovLib\Entity\Language;
+use \PHPUnit_Framework_TestCase;
 use \MovLib\Model\ReleasesModel;
-use \MovLib\View\HTML\Movie\ShowView;
 
 /**
- * Description of MoviePresenter
+ * Description of ReleasesModelTest
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -34,45 +31,26 @@ use \MovLib\View\HTML\Movie\ShowView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviePresenter extends AbstractPresenter{
+class ReleasesModelTest extends PHPUnit_Framework_TestCase {
 
   /**
-   * The movie model instance that is associated with the requested movie ID and this presenter.
-   *
-   * @var \MovLib\Model\MovieModel
-   */
-  private $movieModel;
-
-  /**
-   *
+   * The releases model instance.
    *
    * @var \MovLib\Model\ReleasesModel
    */
   private $releasesModel;
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function init() {
-    try {
-      $this->movieModel = new MovieModel($this->language->getCode());
-      $this->releasesModel = new ReleasesModel($this->language->getCode());
-//    switch ($_SERVER["REQUEST_METHOD"]) {
-//      case "DELETE":
-//        break;
-//      case "POST":
-//        break;
-//      case "PUT":
-//        break;
-//      default:
-//        $view = new ShowView($this->language, $this->movieModel->getAssocMovie());
-//    }
-//    $this->output = $view->getRenderedView();
-      var_dump([$this->movieModel->getMovieFull($_SERVER["MOVIE_ID"]), $this->releasesModel->getReleasesForMovie($_SERVER["MOVIE_ID"])]);
-    } catch (Exception $e) {
-      var_dump($e);
-    }
+  public function setUp() {
+    $this->releasesModel = new ReleasesModel((new Language())->getCode());
+  }
 
+  /**
+   * Test retrieval of movie releases
+   */
+  public function testGetReleasesForMovie() {
+    $releases = $this->releasesModel->getReleasesForMovie(1);
+
+    $this->assertGreaterThanOrEqual( 1, count($releases) );
   }
 
 }

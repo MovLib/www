@@ -2,9 +2,23 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
+DROP SCHEMA IF EXISTS `movlib` ;
 CREATE SCHEMA IF NOT EXISTS `movlib` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 SHOW WARNINGS;
 USE `movlib` ;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
+  `movie_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `year` INT(4) NOT NULL DEFAULT 0000 ,
+  `rating` FLOAT NOT NULL DEFAULT 0.0 ,
+  `display` TINYINT(1) NOT NULL DEFAULT true ,
+  PRIMARY KEY (`movie_id`) )
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
 
 -- -----------------------------------------------------
 -- Table `movlib`.`languages`
@@ -47,28 +61,24 @@ SHOW WARNINGS;
 -- Table `movlib`.`movie_titles`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`movie_titles` (
-  `title_id` BIGINT UNSIGNED NOT NULL ,
+  `title_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `title` TEXT NOT NULL ,
-  `language_id` INT UNSIGNED NOT NULL ,
-  `movie_id` BIGINT UNSIGNED NOT NULL ,
+  `is_original_title` TINYINT(1) NOT NULL DEFAULT FALSE ,
+  `languages_language_id` INT UNSIGNED NOT NULL ,
+  `movies_movie_id` BIGINT UNSIGNED NOT NULL ,
   PRIMARY KEY (`title_id`) ,
-  INDEX `fk_titles_languages1_idx` (`language_id` ASC) ,
-  INDEX `fk_titles_movies1_idx` (`movie_id` ASC) );
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`movies`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
-  `movie_id` BIGINT UNSIGNED NOT NULL ,
-  `year` INT(4) NOT NULL DEFAULT 0000 ,
-  `rating` FLOAT NOT NULL DEFAULT 0.0 ,
-  `original_title_id` BIGINT UNSIGNED NOT NULL ,
-  `display` TINYINT(1) NOT NULL DEFAULT true ,
-  PRIMARY KEY (`movie_id`) ,
-  INDEX `fk_movies_titles1_idx` (`original_title_id` ASC) )
-ENGINE = InnoDB;
+  INDEX `fk_titles_languages1_idx` (`languages_language_id` ASC) ,
+  INDEX `fk_titles_movies1_idx` (`movies_movie_id` ASC) ,
+  CONSTRAINT `fk_titles_languages1`
+    FOREIGN KEY (`languages_language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_titles_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
 
 SHOW WARNINGS;
 
@@ -76,11 +86,16 @@ SHOW WARNINGS;
 -- Table `movlib`.`countries`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`countries` (
-  `country_id` INT UNSIGNED NOT NULL ,
+  `country_id` INT(3) UNSIGNED NOT NULL ,
   `iso_alpha_2` CHAR(2) NOT NULL ,
   `iso_alpha_3` CHAR(3) NOT NULL ,
   `name_en` VARCHAR(255) NOT NULL ,
-  `name_de` VARCHAR(255) NOT NULL ,
+  `name_de` VARCHAR(255) NULL ,
+  `name_fr` VARCHAR(255) NULL ,
+  `name_cs` VARCHAR(255) NULL ,
+  `name_nl` VARCHAR(255) NULL ,
+  `name_es` VARCHAR(255) NULL ,
+  `name_it` VARCHAR(255) NULL ,
   PRIMARY KEY (`country_id`) )
 ENGINE = InnoDB;
 
@@ -94,7 +109,17 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_has_countries` (
   `countries_country_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`movies_movie_id`, `countries_country_id`) ,
   INDEX `fk_countries_has_movies_movies1_idx` (`movies_movie_id` ASC) ,
-  INDEX `fk_countries_has_movies_countries_idx` (`countries_country_id` ASC) )
+  INDEX `fk_countries_has_movies_countries_idx` (`countries_country_id` ASC) ,
+  CONSTRAINT `fk_countries_has_movies_countries`
+    FOREIGN KEY (`countries_country_id` )
+    REFERENCES `movlib`.`countries` (`country_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_countries_has_movies_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -107,7 +132,17 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_has_languages` (
   `languages_language_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`movies_movie_id`, `languages_language_id`) ,
   INDEX `fk_movies_has_languages_languages1_idx` (`languages_language_id` ASC) ,
-  INDEX `fk_movies_has_languages_movies1_idx` (`movies_movie_id` ASC) )
+  INDEX `fk_movies_has_languages_movies1_idx` (`movies_movie_id` ASC) ,
+  CONSTRAINT `fk_movies_has_languages_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_has_languages_languages1`
+    FOREIGN KEY (`languages_language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -116,12 +151,22 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_en`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`movies_en` (
-  `movie_id` BIGINT UNSIGNED NOT NULL ,
+  `movies_movie_id` BIGINT UNSIGNED NOT NULL ,
   `display_title_id` BIGINT UNSIGNED NULL ,
   `synopsis` TEXT NULL ,
-  PRIMARY KEY (`movie_id`) ,
-  INDEX `fk_movies_en_movies1_idx` (`movie_id` ASC) ,
-  INDEX `fk_movies_en_titles1_idx` (`display_title_id` ASC) )
+  PRIMARY KEY (`movies_movie_id`) ,
+  INDEX `fk_movies_en_movies1_idx` (`movies_movie_id` ASC) ,
+  INDEX `fk_movies_en_titles1_idx` (`display_title_id` ASC) ,
+  CONSTRAINT `fk_movies_en_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_en_titles1`
+    FOREIGN KEY (`display_title_id` )
+    REFERENCES `movlib`.`movie_titles` (`title_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -130,7 +175,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`genres`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`genres` (
-  `genre_id` INT UNSIGNED NOT NULL ,
+  `genre_id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name_en` VARCHAR(255) NOT NULL ,
   `name_de` VARCHAR(255) NULL ,
   PRIMARY KEY (`genre_id`) )
@@ -146,7 +191,17 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_has_genres` (
   `genres_genre_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`movies_movie_id`, `genres_genre_id`) ,
   INDEX `fk_movies_has_genres_genres1_idx` (`genres_genre_id` ASC) ,
-  INDEX `fk_movies_has_genres_movies1_idx` (`movies_movie_id` ASC) )
+  INDEX `fk_movies_has_genres_movies1_idx` (`movies_movie_id` ASC) ,
+  CONSTRAINT `fk_movies_has_genres_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_has_genres_genres1`
+    FOREIGN KEY (`genres_genre_id` )
+    REFERENCES `movlib`.`genres` (`genre_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -155,7 +210,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`styles`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`styles` (
-  `style_id` INT UNSIGNED NOT NULL ,
+  `style_id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name_en` VARCHAR(255) NOT NULL ,
   `name_de` VARCHAR(255) NULL ,
   PRIMARY KEY (`style_id`) )
@@ -171,7 +226,17 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_has_styles` (
   `styles_style_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`movies_movie_id`, `styles_style_id`) ,
   INDEX `fk_movies_has_styles_styles1_idx` (`styles_style_id` ASC) ,
-  INDEX `fk_movies_has_styles_movies1_idx` (`movies_movie_id` ASC) )
+  INDEX `fk_movies_has_styles_movies1_idx` (`movies_movie_id` ASC) ,
+  CONSTRAINT `fk_movies_has_styles_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_has_styles_styles1`
+    FOREIGN KEY (`styles_style_id` )
+    REFERENCES `movlib`.`styles` (`style_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -180,11 +245,21 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_de`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`movies_de` (
-  `movie_id` BIGINT UNSIGNED NOT NULL ,
+  `movies_movie_id` BIGINT UNSIGNED NOT NULL ,
   `display_title_id` BIGINT UNSIGNED NULL ,
   `synopsis` TEXT NULL ,
-  PRIMARY KEY (`movie_id`) ,
-  INDEX `fk_movies_de_titles1_idx` (`display_title_id` ASC) )
+  PRIMARY KEY (`movies_movie_id`) ,
+  INDEX `fk_movies_de_titles1_idx` (`display_title_id` ASC) ,
+  CONSTRAINT `fk_movies_de_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_de_titles1`
+    FOREIGN KEY (`display_title_id` )
+    REFERENCES `movlib`.`movie_titles` (`title_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -193,7 +268,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`users`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
-  `user_id` BIGINT UNSIGNED NOT NULL ,
+  `user_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `username` VARCHAR(20) NOT NULL ,
   `email` VARCHAR(255) NOT NULL ,
   `pass` VARCHAR(60) NOT NULL ,
@@ -213,7 +288,17 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`ratings` (
   `rating` INT(1) NOT NULL ,
   PRIMARY KEY (`movies_movie_id`, `users_user_id`) ,
   INDEX `fk_ratings_movies1_idx` (`movies_movie_id` ASC) ,
-  INDEX `fk_ratings_users1_idx` (`users_user_id` ASC) )
+  INDEX `fk_ratings_users1_idx` (`users_user_id` ASC) ,
+  CONSTRAINT `fk_ratings_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ratings_users1`
+    FOREIGN KEY (`users_user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -231,7 +316,22 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movie_revisions` (
   PRIMARY KEY (`movies_movie_id`, `users_user_id`) ,
   INDEX `fk_rev_movies_movies1_idx` (`movies_movie_id` ASC) ,
   INDEX `fk_rev_movies_users1_idx` (`users_user_id` ASC) ,
-  INDEX `fk_movie_revisions_languages1_idx` (`languages_language_id` ASC) )
+  INDEX `fk_movie_revisions_languages1_idx` (`languages_language_id` ASC) ,
+  CONSTRAINT `fk_rev_movies_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_rev_movies_users1`
+    FOREIGN KEY (`users_user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movie_revisions_languages1`
+    FOREIGN KEY (`languages_language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -249,7 +349,12 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons` (
   `countries_country_id` INT UNSIGNED NULL ,
   `display` TINYINT(1) NOT NULL DEFAULT true ,
   PRIMARY KEY (`person_id`) ,
-  INDEX `fk_persons_countries1_idx` (`countries_country_id` ASC) )
+  INDEX `fk_persons_countries1_idx` (`countries_country_id` ASC) ,
+  CONSTRAINT `fk_persons_countries1`
+    FOREIGN KEY (`countries_country_id` )
+    REFERENCES `movlib`.`countries` (`country_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -261,7 +366,12 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons_en` (
   `persons_person_id` BIGINT UNSIGNED NOT NULL ,
   `biography` TEXT NULL ,
   `birthplace` VARCHAR(255) NULL ,
-  PRIMARY KEY (`persons_person_id`) )
+  PRIMARY KEY (`persons_person_id`) ,
+  CONSTRAINT `fk_persons_en_persons1`
+    FOREIGN KEY (`persons_person_id` )
+    REFERENCES `movlib`.`persons` (`person_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -273,7 +383,12 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons_de` (
   `persons_person_id` BIGINT UNSIGNED NOT NULL ,
   `biography` TEXT NULL ,
   `birthplace` VARCHAR(255) NULL ,
-  PRIMARY KEY (`persons_person_id`) )
+  PRIMARY KEY (`persons_person_id`) ,
+  CONSTRAINT `fk_persons_en_persons10`
+    FOREIGN KEY (`persons_person_id` )
+    REFERENCES `movlib`.`persons` (`person_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -300,7 +415,22 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_has_persons` (
   PRIMARY KEY (`movies_movie_id`, `persons_person_id`, `roles_role_id`) ,
   INDEX `fk_movies_has_persons_persons1_idx` (`persons_person_id` ASC) ,
   INDEX `fk_movies_has_persons_movies1_idx` (`movies_movie_id` ASC) ,
-  INDEX `fk_movies_has_persons_movie_roles1_idx` (`roles_role_id` ASC) )
+  INDEX `fk_movies_has_persons_movie_roles1_idx` (`roles_role_id` ASC) ,
+  CONSTRAINT `fk_movies_has_persons_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_has_persons_persons1`
+    FOREIGN KEY (`persons_person_id` )
+    REFERENCES `movlib`.`persons` (`person_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_has_persons_movie_roles1`
+    FOREIGN KEY (`roles_role_id` )
+    REFERENCES `movlib`.`movie_roles` (`role_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -318,7 +448,22 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons_revisions` (
   PRIMARY KEY (`persons_person_id`, `users_user_id`) ,
   INDEX `fk_rev_movies_users1_idx` (`users_user_id` ASC) ,
   INDEX `fk_movie_revisions_languages1_idx` (`languages_language_id` ASC) ,
-  INDEX `fk_persons_revisions_persons1_idx` (`persons_person_id` ASC) )
+  INDEX `fk_persons_revisions_persons1_idx` (`persons_person_id` ASC) ,
+  CONSTRAINT `fk_rev_movies_users10`
+    FOREIGN KEY (`users_user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movie_revisions_languages10`
+    FOREIGN KEY (`languages_language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_revisions_persons1`
+    FOREIGN KEY (`persons_person_id` )
+    REFERENCES `movlib`.`persons` (`person_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -341,8 +486,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`releases` (
   `release_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `release_title` VARCHAR(255) NULL DEFAULT 'unknown' ,
   `release_date` DATE NULL ,
-  `releasescol` VARCHAR(45) NULL ,
   `countries_country_id` INT UNSIGNED NOT NULL ,
   `runtime_credits` TIME NULL ,
   `runtime` TIME NULL ,
@@ -352,7 +497,17 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`releases` (
   `aspect_ratio` VARCHAR(45) NULL ,
   PRIMARY KEY (`release_id`) ,
   INDEX `fk_releases_countries1_idx` (`countries_country_id` ASC) ,
-  INDEX `fk_releases_labels1_idx` (`labels_label_id` ASC) )
+  INDEX `fk_releases_labels1_idx` (`labels_label_id` ASC) ,
+  CONSTRAINT `fk_releases_countries1`
+    FOREIGN KEY (`countries_country_id` )
+    REFERENCES `movlib`.`countries` (`country_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_releases_labels1`
+    FOREIGN KEY (`labels_label_id` )
+    REFERENCES `movlib`.`labels` (`label_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -363,7 +518,12 @@ SHOW WARNINGS;
 CREATE  TABLE IF NOT EXISTS `movlib`.`persons_alias` (
   `persons_person_id` BIGINT UNSIGNED NOT NULL ,
   `name` VARCHAR(255) NOT NULL ,
-  PRIMARY KEY (`persons_person_id`) )
+  PRIMARY KEY (`persons_person_id`) ,
+  CONSTRAINT `fk_persons_alias_persons1`
+    FOREIGN KEY (`persons_person_id` )
+    REFERENCES `movlib`.`persons` (`person_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -376,7 +536,12 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`releases_dvd` (
   `region_code` VARCHAR(10) NOT NULL ,
   `dvd_format` VARCHAR(5) NULL ,
   `tv_standard` VARCHAR(4) NULL ,
-  PRIMARY KEY (`releases_release_id`) )
+  PRIMARY KEY (`releases_release_id`) ,
+  CONSTRAINT `fk_releases_dvd_releases1`
+    FOREIGN KEY (`releases_release_id` )
+    REFERENCES `movlib`.`releases` (`release_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -402,7 +567,22 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`release_audio_formats` (
   `languages_language_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`audio_formats_audio_format_id`, `releases_release_id`, `languages_language_id`) ,
   INDEX `fk_release_audio_formats_releases1_idx` (`releases_release_id` ASC) ,
-  INDEX `fk_release_audio_formats_languages1_idx` (`languages_language_id` ASC) )
+  INDEX `fk_release_audio_formats_languages1_idx` (`languages_language_id` ASC) ,
+  CONSTRAINT `fk_release_audio_formats_audio_formats1`
+    FOREIGN KEY (`audio_formats_audio_format_id` )
+    REFERENCES `movlib`.`audio_formats` (`audio_format_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_release_audio_formats_releases1`
+    FOREIGN KEY (`releases_release_id` )
+    REFERENCES `movlib`.`releases` (`release_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_release_audio_formats_languages1`
+    FOREIGN KEY (`languages_language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -415,7 +595,17 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`release_subtitles` (
   `languages_language_id` INT UNSIGNED NOT NULL ,
   `hearing_impaired` TINYINT(1) NOT NULL DEFAULT false ,
   PRIMARY KEY (`releases_release_id`, `languages_language_id`) ,
-  INDEX `fk_release_subtitles_releases1_idx` (`releases_release_id` ASC) )
+  INDEX `fk_release_subtitles_releases1_idx` (`releases_release_id` ASC) ,
+  CONSTRAINT `fk_release_subtitles_languages1`
+    FOREIGN KEY (`languages_language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_release_subtitles_releases1`
+    FOREIGN KEY (`releases_release_id` )
+    REFERENCES `movlib`.`releases` (`release_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -427,7 +617,12 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`releases_bluray` (
   `releases_release_id` BIGINT UNSIGNED NOT NULL ,
   `region_code` VARCHAR(10) NULL ,
   `blu_ray_format` VARCHAR(45) NULL ,
-  PRIMARY KEY (`releases_release_id`) )
+  PRIMARY KEY (`releases_release_id`) ,
+  CONSTRAINT `fk_releases_bluray_releases1`
+    FOREIGN KEY (`releases_release_id` )
+    REFERENCES `movlib`.`releases` (`release_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -445,7 +640,45 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`releases_revisions` (
   PRIMARY KEY (`releases_release_id`, `users_user_id`) ,
   INDEX `fk_rev_movies_users1_idx` (`users_user_id` ASC) ,
   INDEX `fk_movie_revisions_languages1_idx` (`languages_language_id` ASC) ,
-  INDEX `fk_releases_revisions_releases1_idx` (`releases_release_id` ASC) )
+  INDEX `fk_releases_revisions_releases1_idx` (`releases_release_id` ASC) ,
+  CONSTRAINT `fk_rev_movies_users100`
+    FOREIGN KEY (`users_user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movie_revisions_languages100`
+    FOREIGN KEY (`languages_language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_releases_revisions_releases1`
+    FOREIGN KEY (`releases_release_id` )
+    REFERENCES `movlib`.`releases` (`release_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_has_releases`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movies_has_releases` (
+  `movies_movie_id` BIGINT UNSIGNED NOT NULL ,
+  `releases_release_id` BIGINT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`movies_movie_id`, `releases_release_id`) ,
+  INDEX `fk_movies_has_releases_releases1_idx` (`releases_release_id` ASC) ,
+  INDEX `fk_movies_has_releases_movies1_idx` (`movies_movie_id` ASC) ,
+  CONSTRAINT `fk_movies_has_releases_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_has_releases_releases1`
+    FOREIGN KEY (`releases_release_id` )
+    REFERENCES `movlib`.`releases` (`release_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
