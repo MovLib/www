@@ -21,7 +21,7 @@ use \MovLib\View\HTML\ErrorView;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Model\MovieModel;
 use \MovLib\Model\ReleasesModel;
-use \MovLib\View\HTML\Movie\ShowView;
+use \MovLib\View\HTML\Movie\MovieShowView;
 
 /**
  * Description of MoviePresenter

@@ -89,7 +89,7 @@ class MovieModel extends AbstractModel {
     if ( empty( $queryResult ) ) {
       throw new DatabaseException("Movie with ID: {$id} does not exist.");
     }
-  
+
     $this->movie = $queryResult[0];
 
     $query = "SELECT t.`title_id`, t.`title`, t.`is_original_title`, t.`languages_language_id` FROM movies m INNER JOIN movie_titles t ON m.movie_id = t.movies_movie_id WHERE m.movie_id = ?";
@@ -119,12 +119,20 @@ class MovieModel extends AbstractModel {
     return $this->movie;
   }
 
+  /**
+   * Retrieve full movie information e.g. for the movie show view.
+   * @param int $id
+   *  The movie's id.
+   * @return array
+   *  The movie information as an associative array.
+   */
   public function getMovieFull($id) {
     $this->getMovieBasic($id);
     $this->retrieveMovieLanguages();
     $this->retrieveMovieCountries();
     $this->retrieveGenres();
     $this->retrieveStyles();
+    $this->retrievePosters();
 
     return $this->movie;
   }
@@ -171,6 +179,22 @@ class MovieModel extends AbstractModel {
       "i",
       [ $this->movieId ]
     );
+  }
+
+  private function retrievePosters() {
+    $this->movie["poster"] = null;
+    $result = $this->query("SELECT i.`file_id`, i.`file_name`, i.`extension`, l.`iso_639-1` AS `language_code` FROM `images` i
+      INNER JOIN `posters` p ON i.`file_id` = p.`images_file_id`
+      INNER JOIN `languages` l
+      ON p.`languages_language_id` = l.`language_id`
+      WHERE p.`movies_movie_id` = ?
+      ORDER BY p.`rating` DESC, i.`file_id` ASC LIMIT 1",
+      "i",
+      [ $this->movieId ]
+    );
+    if (count($result) > 0) {
+      $this->movie["poster"] = $result[0];
+    }
   }
 
 }

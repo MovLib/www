@@ -30,15 +30,20 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ShowView extends AbstractView {
+class MovieShowView extends AbstractView {
 
   private $movie;
   /**
+   * The Constructor for the movie show view.
    *
+   * @param Language $language
+   *  The language to be displayed.
+   * @param array $movie
+   *  The movie to be displayed.
    */
-  public function __construct(Language $language, $movie) {
+  public function __construct($language, $movie) {
     parent::__construct($language, SITENAME);
-    $this->title = $movie["title"] . $movie["year"] == "0000" ? "" : "({$movie["year"]})";
+    $this->title = $movie["display_title"] . $movie["year"] == "0000" ? "" : "({$movie["year"]})";
   }
 
   public function getBodyClass() {

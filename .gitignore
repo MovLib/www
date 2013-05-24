@@ -167,3 +167,7 @@ pip-log.txt
 !/bin/
 /conf/global.json
 /assets/components/
+/uploads/avatars/**
+/uploads/lobby-cards/**
+/uploads/persons/**
+/uploads/posters/**

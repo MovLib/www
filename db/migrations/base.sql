@@ -472,7 +472,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`labels`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`labels` (
-  `label_id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `label_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(255) NOT NULL ,
   `description_en` TEXT NULL ,
   `description_de` TEXT NULL ,
@@ -493,7 +493,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`releases` (
   `runtime` TIME NULL ,
   `description` TEXT NULL ,
   `bonus` TEXT NULL ,
-  `labels_label_id` INT UNSIGNED NOT NULL ,
+  `labels_label_id` BIGINT UNSIGNED NOT NULL ,
   `aspect_ratio` VARCHAR(45) NULL ,
   PRIMARY KEY (`release_id`) ,
   INDEX `fk_releases_countries1_idx` (`countries_country_id` ASC) ,
@@ -677,6 +677,208 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_has_releases` (
   CONSTRAINT `fk_movies_has_releases_releases1`
     FOREIGN KEY (`releases_release_id` )
     REFERENCES `movlib`.`releases` (`release_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`images`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`images` (
+  `file_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `file_name` VARCHAR(255) NOT NULL ,
+  `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+  `users_user_id` BIGINT UNSIGNED NOT NULL ,
+  `width` TINYINT NOT NULL ,
+  `height` TINYINT NOT NULL ,
+  `extension` VARCHAR(5) NOT NULL ,
+  PRIMARY KEY (`file_id`) ,
+  INDEX `fk_files_users1_idx` (`users_user_id` ASC) ,
+  CONSTRAINT `fk_files_users1`
+    FOREIGN KEY (`users_user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`posters`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`posters` (
+  `images_file_id` BIGINT UNSIGNED NOT NULL ,
+  `movies_movie_id` BIGINT UNSIGNED NOT NULL ,
+  `languages_language_id` INT UNSIGNED NOT NULL ,
+  `rating` BIGINT UNSIGNED NOT NULL DEFAULT 0 ,
+  PRIMARY KEY (`images_file_id`) ,
+  INDEX `fk_posters_movies1_idx` (`movies_movie_id` ASC) ,
+  INDEX `fk_posters_languages1_idx` (`languages_language_id` ASC) ,
+  CONSTRAINT `fk_posters_files1`
+    FOREIGN KEY (`images_file_id` )
+    REFERENCES `movlib`.`images` (`file_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_posters_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_posters_languages1`
+    FOREIGN KEY (`languages_language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`avatars`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`avatars` (
+  `images_file_id` BIGINT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`images_file_id`) ,
+  CONSTRAINT `fk_avatars_files1`
+    FOREIGN KEY (`images_file_id` )
+    REFERENCES `movlib`.`images` (`file_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`lobby_cards`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`lobby_cards` (
+  `files_file_id` BIGINT UNSIGNED NOT NULL ,
+  `movies_movie_id` BIGINT UNSIGNED NOT NULL ,
+  `languages_language_id` INT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`files_file_id`) ,
+  INDEX `fk_table1_movies1_idx` (`movies_movie_id` ASC) ,
+  INDEX `fk_lobby_cards_languages1_idx` (`languages_language_id` ASC) ,
+  CONSTRAINT `fk_table1_files1`
+    FOREIGN KEY (`files_file_id` )
+    REFERENCES `movlib`.`images` (`file_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_table1_movies1`
+    FOREIGN KEY (`movies_movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_lobby_cards_languages1`
+    FOREIGN KEY (`languages_language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`persons_images`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`persons_images` (
+  `images_file_id` BIGINT UNSIGNED NOT NULL ,
+  `persons_person_id` BIGINT UNSIGNED NOT NULL ,
+  `rating` BIGINT NOT NULL DEFAULT 0 ,
+  PRIMARY KEY (`images_file_id`) ,
+  INDEX `fk_persons_images_persons1_idx` (`persons_person_id` ASC) ,
+  CONSTRAINT `fk_persons_images_files1`
+    FOREIGN KEY (`images_file_id` )
+    REFERENCES `movlib`.`images` (`file_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_images_persons1`
+    FOREIGN KEY (`persons_person_id` )
+    REFERENCES `movlib`.`persons` (`person_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`labels_logos`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`labels_logos` (
+  `images_file_id` BIGINT UNSIGNED NOT NULL ,
+  `labels_label_id` BIGINT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`images_file_id`) ,
+  INDEX `fk_labels_logos_labels1_idx` (`labels_label_id` ASC) ,
+  CONSTRAINT `fk_table1_images1`
+    FOREIGN KEY (`images_file_id` )
+    REFERENCES `movlib`.`images` (`file_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_labels_logos_labels1`
+    FOREIGN KEY (`labels_label_id` )
+    REFERENCES `movlib`.`labels` (`label_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`images_descriptions`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`images_descriptions` (
+  `images_file_id` BIGINT UNSIGNED NOT NULL ,
+  `description_en` TEXT NULL ,
+  `description_de` TEXT NULL ,
+  PRIMARY KEY (`images_file_id`) ,
+  CONSTRAINT `fk_table1_images2`
+    FOREIGN KEY (`images_file_id` )
+    REFERENCES `movlib`.`images` (`file_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`posters_ratings`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`posters_ratings` (
+  `posters_files_file_id` BIGINT UNSIGNED NOT NULL ,
+  `users_user_id` BIGINT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`posters_files_file_id`, `users_user_id`) ,
+  INDEX `fk_posters_ratings_users1_idx` (`users_user_id` ASC) ,
+  CONSTRAINT `fk_posters_ratings_posters1`
+    FOREIGN KEY (`posters_files_file_id` )
+    REFERENCES `movlib`.`posters` (`images_file_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_posters_ratings_users1`
+    FOREIGN KEY (`users_user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`persons_images_ratings`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`persons_images_ratings` (
+  `persons_images_files_file_id` BIGINT UNSIGNED NOT NULL ,
+  `users_user_id` BIGINT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`persons_images_files_file_id`, `users_user_id`) ,
+  INDEX `fk_persons_images_ratings_users1_idx` (`users_user_id` ASC) ,
+  CONSTRAINT `fk_persons_images_ratings_persons_images1`
+    FOREIGN KEY (`persons_images_files_file_id` )
+    REFERENCES `movlib`.`persons_images` (`images_file_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_images_ratings_users1`
+    FOREIGN KEY (`users_user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
