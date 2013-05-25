@@ -206,16 +206,20 @@ a:visited:focus {
   border-bottom-color: #613eb0;
 }
 
-a:focus,
-.button:focus {
+a:focus {
   outline-offset: -2px;
   outline: 1px dotted #555;
   outline: 5px auto -webkit-focus-ring-color;
 }
 
 a:hover,
-a:active {
+a:active,
+a.active {
   outline: 0;
+}
+
+a.active[href="#"] {
+  cursor: default;
 }
 
 dfn {
@@ -335,6 +339,12 @@ html .input-button,
   -webkit-appearance: button;
 }
 
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
 .button,
 button,
 label,
@@ -347,6 +357,17 @@ select,
   cursor: pointer;
 }
 
+label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.input-checkbox,
+.input-radio {
+  margin: 4px 0 0;
+  line-height: normal;
+}
+
 .input-search {
   -webkit-appearance: textfield;
 }
@@ -356,7 +377,44 @@ select,
   -webkit-appearance: none;
 }
 
-.button--mini,
+.input-text {
+  -webkit-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
+     -moz-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
+          box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
+  -webkit-transition: border 0.2s linear, box-shadow 0.2s linear;
+     -moz-transition: border 0.2s linear, box-shadow 0.2s linear;
+       -o-transition: border 0.2s linear, box-shadow 0.2s linear;
+          transition: border 0.2s linear, box-shadow 0.2s linear;
+  border: 1px solid #ccc;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.input-text:focus {
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+     -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+          box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+  border-color: #52a8ec;
+  border-color: rgba(82, 168, 236, 0.8);
+  outline: 0;
+}
+
+.input-text:invalid:not(:empty),
+.input-text.invalid {
+  border-color: #ee5f5b;
+  outline: 0;
+}
+
+.input-text:focus:invalid:focus:not(:empty),
+.input-text.invalid:focus {
+  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
+     -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
+          box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
+  border-color: #e9322d;
+  border-color: rgba(233, 50, 45, 0.8);
+  outline: 0;
+}
+
 sub,
 sup {
   font-size: 10.5px;
@@ -406,21 +464,37 @@ var {
 }
 
 :-moz-placeholder {
-  color: #aeaeae;
+  color: #888;
   opacity: 1;
+}
+
+.input-text:focus:-moz-placeholder {
+  color: #ccc;
 }
 
 ::-moz-placeholder {
-  color: #aeaeae;
+  color: #888;
   opacity: 1;
 }
 
+.input-text:focus::-moz-placeholder {
+  color: #ccc;
+}
+
 :-ms-input-placeholder {
-  color: #aeaeae;
+  color: #888;
+}
+
+.input-text:focus:-ms-input-placeholder {
+  color: #ccc;
 }
 
 ::-webkit-input-placeholder {
-  color: #aeaeae;
+  color: #888;
+}
+
+.input-text:focus::-webkit-input-placeholder {
+  color: #ccc;
 }
 
 /* Microsoft Internet Explorer specific styles -------------------------------------------------------------------------

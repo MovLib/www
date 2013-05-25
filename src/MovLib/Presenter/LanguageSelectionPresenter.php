@@ -18,7 +18,6 @@
 namespace MovLib\Presenter;
 
 use \MovLib\Presenter\AbstractPresenter;
-use \MovLib\View\HTML\LanguageSelectionView;
 
 /**
  * The language selection presenter presents the language selection if our webstie is accessed without subdomain.
@@ -35,7 +34,7 @@ class LanguageSelectionPresenter extends AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->output = (new LanguageSelectionView($this->language))->getRenderedView();
+    return $this->setOutput($this->getShortName());
   }
 
 }

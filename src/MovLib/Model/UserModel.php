@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter;
+namespace MovLib\Model;
+
+use \MovLib\Model\AbstractModel;
 
 /**
- * Present the home view.
+ * Retrieve user specific data from the database.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,13 +28,18 @@ namespace MovLib\Presenter;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HomePresenter extends AbstractPresenter {
+class UserModel extends AbstractModel {
 
   /**
-   * {@inheritdoc}
+   * Check if the given email address exists in our database.
+   *
+   * @param string $email
+   *   Email address to check.
+   * @return boolean
+   *   <tt>TRUE</tt> if the email exists, otherwise <tt>FALSE</tt>.
    */
-  public function init() {
-    $this->setOutput($this->getShortName());
+  public function emailExists($email) {
+    return (boolean) count($this->query("SELECT `email` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]));
   }
 
 }

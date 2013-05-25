@@ -33,8 +33,8 @@ class LanguageSelectionView extends AbstractView {
   /**
    * {@inheritdoc}
    */
-  public function __construct($language) {
-    parent::__construct($language, SITENAME);
+  public function __construct($presenter) {
+    parent::__construct($presenter, SITENAME);
     $this->addStylesheet("/assets/css/modules/language-selection.css");
   }
 
@@ -50,7 +50,7 @@ class LanguageSelectionView extends AbstractView {
    */
   public function getRenderedContent() {
     $points = [];
-    foreach ($this->language->getLocales() as $code => $locale) {
+    foreach ($this->presenter->getLanguage()->getLocales() as $code => $locale) {
       $points[] = [
         "href" => "//{$code}.{$_SERVER["SERVER_NAME"]}",
         "text" => $locale["name"],
@@ -61,7 +61,7 @@ class LanguageSelectionView extends AbstractView {
       "<div id='content' class='{$this->getShortName()}-content row' role='main'><div class='span span--1 text-center'>" .
         "<h1 class='inline text-left'>" . SITENAME . " <small>the <em>free</em> movie library</small></h1>" .
         "<p>Please select your preferred language from the list below.</p>" .
-        $this->getNavigation($this->getShortName(), $points, -1, " / ", [ "class" => "well well--large" ]) .
+        $this->getNavigation(__("Language links"), $this->getShortName(), $points, -1, " / ", [ "class" => "well well--large" ]) .
         "<p>Is your language missing from our list? Help us translate " . SITENAME . " to your language. More info can be found at <a href='//locale.movlib.lorg'>our translation portal</a>.</p>" .
       "</div></div>"
     ;

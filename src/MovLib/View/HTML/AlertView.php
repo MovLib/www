@@ -15,13 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter;
+namespace MovLib\View\HTML;
 
-use \MovLib\Entity\Language;
-use \MovLib\View\HTML\ErrorView;
+use \MovLib\View\HTML\AbstractView;
 
 /**
- * The error presenter is used to display an error if something goes wrong.
+ * Special view without any content (by default) for displaying alert messages.
+ *
+ * A presenter insert HTML mark-up in the content of such a view by utilizing the <code>AlertView::setContent()</code>
+ * method.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,50 +31,32 @@ use \MovLib\View\HTML\ErrorView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorPresenter {
+class AlertView extends AbstractView {
 
   /**
-   * String buffer used to concatenate all the output and send the whole shebang at once.
+   * Additional content to display.
    *
    * @var string
    */
-  protected $output = "";
+  private $content;
 
   /**
-   * Present an error to the user.
-   *
-   * @param \Exception $exception
-   *   The exception that caused the error.
+   * {@inheritdoc}
    */
-  public function __construct($exception) {
-    try {
-      $this->init($exception);
-    } catch (LanguageException $e) {
-      $_SERVER["LANGUAGE_CODE"] = "en";
-      $this->init($e);
-    }
+  public function getRenderedContent() {
+    return $this->content;
   }
 
   /**
-   * Initialize the error view and export the output.
+   * Additional content to display that is not wrapped in an alert box.
    *
-   * @param \Exception $exception
-   *   The exception that caused the error.
+   * @param string $content
+   *   HTML mark-up.
    * @return $this
-   * @throws \MovLib\Exception\LanguageException
    */
-  private function init($exception) {
-    $this->output = (new ErrorView(new Language(), $exception))->getRenderedView();
+  public function setContent($content) {
+    $this->content = $content;
     return $this;
-  }
-
-  /**
-   * Get the whole output of this presenter.
-   *
-   * @return string
-   */
-  public final function getOutput() {
-    return $this->output;
   }
 
 }

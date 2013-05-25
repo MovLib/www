@@ -32,10 +32,18 @@
  * @since 0.0.1-dev
  */
 
-/** ASCII end of transmission */
+/**
+ * ASCII end of transmission
+ *
+ * @var string
+ */
 define("PHP_EOT", chr(4));
 
-/** The name of the website. */
+/**
+ * The name of the website.
+ *
+ * @var string
+ */
 define("SITENAME", "MovLib");
 
 /**
@@ -164,7 +172,7 @@ function n__($msgid1, $msgid2, $n, $msgctxt = "") {
  *   absolutely every exception that might arise.
  */
 function uncaught_exception_handler($e) {
-  exit((new \MovLib\Presenter\ErrorPresenter($e))->getOutput());
+  exit((new \MovLib\Presenter\ExceptionPresenter($e))->getOutput());
 }
 
 // Set the default exception handler.
@@ -193,23 +201,69 @@ set_exception_handler("uncaught_exception_handler");
  *   The filename that the error was raised in.
  * @param int $errline
  *   The line number the error was raised at.
- * @throws \RuntimeException
- *   If invoked, always raises a runtime exception.
  */
 function error_all_handler($errno, $errstr, $errfile, $errline) {
   uncaught_exception_handler(
-    (new \MovLib\Exception\ErrorException($errstr, $errno))
-      ->setFile($errfile)
-      ->setLine($errline)
+    (new \MovLib\Exception\ErrorException($errstr, $errno))->setFile($errfile)->setLine($errline)
   );
 }
 
 // Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
 set_error_handler("error_all_handler");
 
+/**
+ * Transform PHP fatal errors to exceptions.
+ *
+ * This function is not meant to recover after a fatal error occurred. The purpose of this is to ensure that a nice
+ * error view is displayed to the user.
+ *
+ * @link http://stackoverflow.com/a/2146171/1251219
+ */
+function error_fatal_handler() {
+  if (($err = error_get_last()) !== null) {
+    $exception = new \Exception($err["message"], $err["type"]);
+
+    $reflectionClass = new \ReflectionClass("Exception");
+
+    $trace = $reflectionClass->getProperty("trace");
+    $trace->setAccessible(true);
+    $trace->setValue($exception, [
+      [ "function" => __FUNCTION__, "line" => __LINE__, "file" => __FILE__ ],
+      [ "function" => "<em>unknown</em>", "line" => $err["line"], "file" => $err["file"] ],
+    ]);
+
+    $file = $reflectionClass->getProperty("file");
+    $file->setAccessible(true);
+    $file->setValue($exception, $err["file"]);
+
+    $line = $reflectionClass->getProperty("line");
+    $line->setAccessible(true);
+    $line->setValue($exception, $err["line"]);
+
+    uncaught_exception_handler($exception);
+  }
+}
+
+// Check for possible fatal errors that are not catchable otherwise.
+register_shutdown_function("error_fatal_handler");
+
+/*DEBUG{{{*/
 $t = microtime(true);
+/*}}}DEBUG*/
 $presenter = "\\MovLib\\Presenter\\" . $_SERVER["PRESENTER"] . "Presenter";
 echo (new $presenter())->getOutput();
+/*DEBUG{{{*/
 $t = microtime(true) - $t;
 $t = sprintf("%.6f", $t - intval($t));
-echo "<!-- {$t}&nbsp;ms -->";
+echo
+  "<p class='text-center'><code>{ generated in {$t}&nbsp;s | loaded in <span id='js-pageload'>0.000</span>&nbsp;s }" .
+  "<script>
+    window.onload = function () {
+      if (window.performance == null) {
+        return;
+      }
+      document.getElementById('js-pageload').innerHTML = ((window.performance.timing.domContentLoadedEventEnd - window.performance.timing.navigationStart) / 1000) % 60;
+    };
+  </script>"
+;
+/*}}}DEBUG*/

@@ -15,12 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML;
+namespace MovLib\View\HTML\Error;
 
-use \Exception;
-use \MovLib\Entity\Language;
 use \MovLib\Utility\String;
-use \MovLib\View\HTML\AbstractView;
+use \MovLib\View\HTML\AlertView;
 
 /**
  * The error view is presented to the user if something terrible happens.
@@ -32,18 +30,18 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorView extends AbstractView {
+class ExceptionView extends AlertView {
 
   /**
    * An error view expects the complete exception object to be passed along.
    *
-   * @param \MovLib\Entity\Language
-   *   The currently active language entity instance.
+   * @param \MovLib\Presenter\AbstractPresenter $presenter
+   *   The presenter that created the view instance.
    * @param \Exception $exception
    *   The exception that caused the error.
    */
-  public function __construct(Language $language, Exception $exception) {
-    parent::__construct($language, "Error");
+  public function __construct($presenter, $exception) {
+    parent::__construct($presenter, "Error");
     $this->addStylesheet("/assets/css/modules/stacktrace.css");
     $this->setAlert(
       "<p>" . __("This shouldn’t have happened, but it did, an error occured while trying to handle your request.") . "</p>" .
@@ -53,32 +51,18 @@ class ErrorView extends AbstractView {
       "error",
       true
     );
-    if (error_reporting() !== 0) {
-      $this->setAlert(
-        "<div class='stacktrace'>" .
-          "<div class='stacktrace__title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
-          "<table class='stacktrace__table'>{$this->formatStacktrace($exception->getTrace())}</table>" .
-        "</div>" .
-        "<p class='text-center'><small>Debug information is only available if error reporting is turned on!</small></p>",
-        "Stacktrace",
-        "info",
-        true
-      );
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getShortName() {
-    return "error";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRenderedContent() {
-    return "";
+    /*DEBUG{{{*/
+    $this->setAlert(
+      "<div class='stacktrace'>" .
+        "<div class='stacktrace__title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
+        "<table class='stacktrace__table'>{$this->formatStacktrace($exception->getTrace())}</table>" .
+      "</div>" .
+      "<p class='text-center'><small>Debug information is only available if debugging is activated during bootstrap phase!</small></p>",
+      "Stacktrace",
+      "info",
+      true
+    );
+    /*}}}DEBUG*/
   }
 
   /**
@@ -104,7 +88,7 @@ class ErrorView extends AbstractView {
           $type = gettype($stacktrace[$i]["args"][$j]);
           $stacktrace[$i]["args"][$j] = "<var class='stacktrace_var' title='{$title}'>{$type}{$suffix}</var>";
         }
-        $stacktrace[$i]["args"] = "(" . implode(", ", $stacktrace[$i]["args"]) . ")";
+        $stacktrace[$i]["args"] = implode(", ", $stacktrace[$i]["args"]);
       } else {
         $stacktrace[$i]["args"] = "";
       }
@@ -119,8 +103,7 @@ class ErrorView extends AbstractView {
           "<td class='stacktrace__td stacktrace__line-number'>{$stacktrace[$i]["line"]}</td>" .
           "<td class='stacktrace__td'>" .
             "<div class='stacktrace__line-container'>{$stacktrace[$i]["class"]}{$stacktrace[$i]["type"]}" .
-              "<span class='stacktrace__function'>{$stacktrace[$i]["function"]}</span>" .
-              $stacktrace[$i]["args"] .
+              "<span class='stacktrace__function'>{$stacktrace[$i]["function"]}</span>({$stacktrace[$i]["args"]})" .
               "<span class='stacktrace__file'>{$stacktrace[$i]["file"]}</span>" .
             "</div>" .
           "</td>" .

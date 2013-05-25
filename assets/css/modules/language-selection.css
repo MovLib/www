@@ -25,7 +25,7 @@
  * @since 0.0.1-dev
  */
 
-.languageselection h1 {
+.languageselection-body h1 {
   background: no-repeat url(/assets/img/logo/256.png);
   font-size: 80px;
   height: 256px;
@@ -34,19 +34,19 @@
   padding: 65px 0 0 288px;
 }
 
-.languageselection small {
+.languageselection-body small {
   display: block;
   font-size: 28px;
   line-height: 1;
   text-indent: 8px;
 }
 
-.languageselection .menuitem {
-  margin: 0 10px;
+.languageselection-body .menuitem {
+  margin: 0 25px;
   color: #333;
 }
 
-.languageselection .menuitem:hover,
-.languageselection .menuitem:focus {
+.languageselection-body .menuitem:hover,
+.languageselection-body .menuitem:focus {
   border-bottom-color: #333;
 }

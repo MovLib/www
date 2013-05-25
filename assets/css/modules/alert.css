@@ -26,6 +26,10 @@
  * @since 0.0.1-dev
  */
 
+#alerts .alert:last-child {
+  margin-bottom: 0;
+}
+
 .alert {
   background-color: #fcf8e3;
   border: 1px solid #fbeed5;
@@ -92,4 +96,8 @@
 
 .alert--block p + p {
   margin-top: 5px;
+}
+
+.span--alerts {
+  margin-top: 20px;
 }

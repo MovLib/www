@@ -46,6 +46,8 @@
   color: #555;
   text-shadow: 0 1px 0 #fff;
   line-height: 25px;
+  font-family: consolas, monospace;
+  overflow: hidden;
 }
 
 .stacktrace__table {

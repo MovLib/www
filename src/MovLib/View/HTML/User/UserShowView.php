@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter;
+namespace MovLib\View\HTML\User;
+
+use \MovLib\View\HTML\AbstractView;
 
 /**
- * Present the home view.
+ * Description of UserShowView
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,13 +28,20 @@ namespace MovLib\Presenter;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HomePresenter extends AbstractPresenter {
+class UserShowView extends AbstractView {
+
+  /**
+   *
+   */
+  public function __construct() {
+
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    $this->setOutput($this->getShortName());
+  public function getRenderedContent() {
+
   }
 
 }

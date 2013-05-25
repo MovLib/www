@@ -17,7 +17,6 @@
  */
 namespace MovLib\Model;
 
-use \Exception;
 use \MovLib\Exception\DatabaseException;
 use \mysqli;
 
@@ -76,6 +75,22 @@ abstract class AbstractModel {
    */
   public function __construct() {
     $this->connect();
+  }
+
+  /**
+   * Correctly close the database connection.
+   *
+   * @see \MovLib\Model\AbstractModel::disconnect()
+   */
+  public function __destruct() {
+    try {
+      $this->disconnect();
+    } catch (Exception $e) {
+      // Do nothing at this point. If everything worked fine till this point there is no reason to exit the execution of
+      // the request.
+      //
+      // @todo Log this exception!
+    }
   }
 
 
@@ -157,6 +172,19 @@ abstract class AbstractModel {
       $helper = " AND ";
     }
     return $this->prepareAndBind($query, $types, $values)->execute()->close();
+  }
+
+  /**
+   * Disconnect from database.
+   *
+   * @return $this
+   * @throws \Exception
+   *   Might throw a generic exception if the mysqli variable does not contain a valid object.
+   */
+  protected final function disconnect() {
+    $this->mysqli->close();
+    unset($this->mysqli);
+    return $this;
   }
 
   /**

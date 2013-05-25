@@ -17,8 +17,13 @@
  */
 namespace MovLib\Presenter;
 
+use \MovLib\Entity\Language;
+use \MovLib\Entity\User;
+use \MovLib\Presenter\AbstractPresenter;
+use \MovLib\View\HTML\Error\ExceptionView;
+
 /**
- * Present the home view.
+ * The error presenter is used to tell the user about an unknown error.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,13 +31,33 @@ namespace MovLib\Presenter;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HomePresenter extends AbstractPresenter {
+class ExceptionPresenter extends AbstractPresenter {
+
+  /**
+   * The exception that was thrown.
+   *
+   * @var \Exception
+   */
+  private $exception;
+
+  /**
+   * Present unknown error view.
+   *
+   * @param \Exception $exception
+   *   The exception that was thrown.
+   */
+  public function __construct($exception) {
+    $this->exception = $exception;
+    $this->language = new Language();
+    $this->user = new User();
+    $this->output = (new ExceptionView($this, $this->exception))->getRenderedView();
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    $this->setOutput($this->getShortName());
+  protected function init() {
+    // Nothing to do here!
   }
 
 }

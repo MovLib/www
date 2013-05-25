@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter;
+namespace MovLib\View\HTML\Error;
+
+use \MovLib\View\HTML\AlertView;
 
 /**
- * Present the home view.
+ * Description of ForbiddenView
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,13 +28,27 @@ namespace MovLib\Presenter;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HomePresenter extends AbstractPresenter {
+class ForbiddenView extends AlertView {
 
   /**
-   * {@inheritdoc}
+   * Create a <em>403 Forbidden</em> error page.
+   *
+   * @param \MovLib\Presenter\AbstractPresenter $presenter
+   *   The presenter object controlling this view.
    */
-  public function init() {
-    $this->setOutput($this->getShortName());
+  public function __construct($presenter) {
+    parent::__construct($presenter, __("Access forbidden"));
+    http_response_code(403);
+    $this->setAlert(
+      "<p>" . __("We are sorry, but you can not access this page.") . "</p>" .
+      "<p>" . sprintf(
+        __("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please %s."),
+        $this->a(__("contact", "route"), __("contact us"))
+      ) . "</p>",
+      __("Access forbidden"),
+      "error",
+      true
+    );
   }
 
 }

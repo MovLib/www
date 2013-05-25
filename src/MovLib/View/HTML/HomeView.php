@@ -43,6 +43,13 @@ class HomeView extends AbstractView {
   /**
    * {@inheritdoc}
    */
+  public function getBreadcrumb() {
+    return "";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getHeaderLogo() {
     return "<h1 id='logo' class='inline'>" . SITENAME . " <small>" . __("the <em>free</em> movie library") . "</small></h1>";
   }
@@ -75,34 +82,34 @@ class HomeView extends AbstractView {
         "</div>" .
       "</div>" .
       "<div class='row row--home'>" .
-        "<div class='span span--3 span--home text-justify'>" .
-          "<h3 class='text-center'>" . __("Movies") . "</h3>" .
+        "<article class='span span--3 span--home text-justify'>" .
+          "<h2 class='text-center'>" . __("Movies") . "</h2>" .
           "<p>" . __("Discover new and old movies, find out about all related details like who was the director, when and where was it released, what releases are available, find poster and lobby card art, plus many, many more …") . "</p>" .
-        "</div>" .
-        "<div class='span span--3 span--home text-justify'>" .
-          "<h3 class='text-center'>" . __("Persons") . "</h3>" .
+        "</article>" .
+        "<article class='span span--3 span--home text-justify'>" .
+          "<h2 class='text-center'>" . __("Persons") . "</h2>" .
           "<p>" . __("You always wanted to collect all movies of a specific director, actor or any other movie related person? This is the place for you to go. Find out all details about the person you admire, or simply add them yourself if you are an expert.") . "</p>" .
-        "</div>" .
-        "<div class='span span--3 span--home text-justify'>" .
-          "<h3 class='text-center'>" . __("Marketplace") . "</h3>" .
+        "</article>" .
+        "<article class='span span--3 span--home text-justify'>" .
+          "<h2 class='text-center'>" . __("Marketplace") . "</h2>" .
           "<p>" . __("Searching for a specific release? Our marketplace is free, open, and built upon the exact release database. This makes it easy for sellers to list their inventory and buyers are able to specify the exact version they want.") . "</p>" .
-        "</div>" .
+        "</article>" .
       "</div>" .
       "<div class='row row--home'>" .
-        "<div class='span span--3 span--home text-justify'>" .
-          "<h3 class='text-center'>" . __("Releases") . "</h3>" .
+        "<article class='span span--3 span--home text-justify'>" .
+          "<h2 class='text-center'>" . __("Releases") . "</h2>" .
           "<p>" . __("") . "</p>" .
-        "</div>" .
-        "<div class='span span--3 span--home text-justify'>" .
-          "<h3 class='text-center'>" . sprintf(__("My %s"), SITENAME) . "</h3>" .
+        "</article>" .
+        "<article class='span span--3 span--home text-justify'>" .
+          "<h2 class='text-center'>" . sprintf(__("My %s"), SITENAME) . "</h2>" .
           "<p></p>" .
           "<p class='text-center'>{$this->a(__("sign-up", "route"), __("Sign up for a new account"), [ "class" => "button button--success button--large" ])}</p>" .
-        "</div>" .
-        "<div class='span span--3 span--home text-justify'>" .
-          "<h3 class='text-center'>" . __("API") . "</h3>" .
+        "</article>" .
+        "<article class='span span--3 span--home text-justify'>" .
+          "<h2 class='text-center'>" . __("API") . "</h2>" .
           "<p>" . sprintf(__("The %s API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at %s."), SITENAME, SITENAME) . "</p>" .
           "<p class='text-center'>{$this->a("//api.movlib.org", __("Read the API documentation"), [ "class" => "button button--primary button--large" ])}</p>" .
-        "</div>" .
+        "</article>" .
       "</div>"
     ;
   }
