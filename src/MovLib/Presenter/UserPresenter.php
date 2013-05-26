@@ -18,6 +18,7 @@
 namespace MovLib\Presenter;
 
 use \MovLib\Presenter\AbstractPresenter;
+use \MovLib\Utility\AsyncMailer;
 
 /**
  *
@@ -46,15 +47,16 @@ class UserPresenter extends AbstractPresenter {
     }
     /* @var $userResetPasswordView \MovLib\View\HTML\User\UserResetPasswordView */
     $userResetPasswordView = $this->getView("User\\UserResetPassword");
-    if (isset($_POST[$_SERVER['REQUEST_URI']]) === true) {
-      if (isset($_POST["email"]) === false && filter_var($_POST["email"], FILTER_VALIDATE_EMAIL) === false) {
-        $userResetPasswordView->setAlert(__("The email address you provided is not in a valid format."), null, "error");
+    if (filter_has_var(INPUT_POST, $_SERVER["REQUEST_URI"]) === true) {
+      $email = filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL);
+      if ($email === null || $email === false) {
+        $userResetPasswordView->setAlert(__("The supplied email address is not valid."), null, "error");
         return $this;
       }
-      // @todo Send email if user exists.
+      AsyncMailer::resetPassword($email);
       $this->showSingleAlertAlertView(
-        "Successfully requested password reset",
-        "<p>An email with further instructions has been sent to <b>{$_POST["email"]}</b>.</p>",
+        $userResetPasswordView->getTitle(),
+        "<p>" . __("A password reset email has been sent to <b>{$email}</b>.") . "</p>",
         "success",
         true
       );

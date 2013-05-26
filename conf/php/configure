@@ -1,5 +1,4 @@
 ./configure
-  --disable-all
   --disable-short-tags
   --enable-fpm
   --enable-intl

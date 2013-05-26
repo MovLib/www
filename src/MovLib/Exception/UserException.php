@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Model;
+namespace MovLib\Exception;
 
-use \MovLib\Exception\DatabaseException;
-use \MovLib\Model\AbstractModel;
+use \MovLib\Exception\AbstractException;
 
 /**
- * Retrieve user specific data from the database.
+ * A user exception might be thrown if an error occures related to a user entity.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,15 +28,6 @@ use \MovLib\Model\AbstractModel;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserModel extends AbstractModel {
-
-  // @todo Rename username to name in schema!
-  public function getUserFromEmail($email) {
-    $result = $this->query("SELECT `user_id`, `username` AS `name`, `email` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]);
-    if (empty($result) === true) {
-      throw new DatabaseException("Could not find user with email '{$email}'.");
-    }
-    return $result[0];
-  }
+class UserException extends AbstractException {
 
 }

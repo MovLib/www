@@ -267,3 +267,8 @@ echo
   </script>"
 ;
 /*}}}DEBUG*/
+
+// This makes sure that the output that was generated until this point will be returned to nginx for delivery. If
+// any of our async methods is still working, they can finish their work in the background and the client does not have
+// to wait for them to finish their work.
+fastcgi_finish_request();

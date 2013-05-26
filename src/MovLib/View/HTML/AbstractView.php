@@ -203,6 +203,16 @@ abstract class AbstractView {
   }
 
   /**
+   * Get the title of this view.
+   *
+   * @return string
+   *   The title of this view.
+   */
+  public final function getTitle() {
+    return $this->title;
+  }
+
+  /**
    * Add a CSS class to an existing attributes array.
    *
    * @param string $class

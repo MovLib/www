@@ -17,6 +17,10 @@
  */
 namespace MovLib\Entity;
 
+use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\UserException;
+use \MovLib\Model\UserModel;
+
 /**
  *
  *
@@ -29,6 +33,27 @@ namespace MovLib\Entity;
 class User {
 
   /**
+   * The unique ID of this user.
+   *
+   * @var int
+   */
+  private $id;
+
+  /**
+   * The unique name of this user.
+   *
+   * @var string
+   */
+  private $name;
+
+  /**
+   * The unique email of this user.
+   *
+   * @var string
+   */
+  private $email;
+
+  /**
    * The CSRF token for this user's session.
    *
    * @var string
@@ -37,6 +62,18 @@ class User {
 
   public function __construct() {
     $this->csrfToken = $this->sessionGet("csrf_token");
+  }
+
+  public function constructUserFromId($id) {
+
+  }
+
+  public function constructUserFromEmail($email) {
+    try {
+      return $this->setUserData((new UserModel())->getUserFromEmail($email));
+    } catch (DatabaseException $e) {
+      throw new UserException("No user exists with email address '{$email}'!");
+    }
   }
 
   /**
@@ -104,6 +141,13 @@ class User {
   private function sessionStore($key, $value) {
     $this->sessionStart();
     $_SESSION[$key] = $value;
+    return $this;
+  }
+
+  private function setUserData($data) {
+    foreach ($data as $property => $value) {
+      $this->{$property} = $value;
+    }
     return $this;
   }
 
