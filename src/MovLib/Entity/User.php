@@ -282,7 +282,7 @@ class User {
    *   The value identified by key if present else value from <var>$default</var>.
    */
   private function sessionGet($key, $default = false) {
-    if (isset($_SESSION[$key]) === true) {
+    if (isset($_SESSION[$key])) {
       return $_SESSION[$key];
     }
     return $default;
@@ -326,7 +326,7 @@ class User {
    */
   private function setUserData($data) {
     foreach ($data as $property => $value) {
-      if (property_exists($this, $property) === true) {
+      if (property_exists($this, $property)) {
         $this->{$property} = $value;
       }
     }

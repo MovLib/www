@@ -31,6 +31,13 @@ use \MovLib\View\HTML\AbstractFormView;
 class UserResetPasswordView extends AbstractFormView {
 
   /**
+   * The user presenter controlling this view.
+   *
+   * @var \MovLib\Presenter\UserPresenter
+   */
+  protected $presenter;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct($presenter) {

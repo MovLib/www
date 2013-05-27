@@ -104,6 +104,27 @@ abstract class AbstractPresenter {
   }
 
   /**
+   * Associative array containing the breadcrumb trail for this presenter.
+   *
+   * The returned array must have the following format (the following is an example for the route
+   * <tt>/movie/1234/release/1234/discussion/1234):
+   * <pre>return [
+   *   [
+   *     "href" => route("movie/%u", [ $movieId ]),
+   *     "title" => __("Go to “%s” "),
+   *     "text" => $movieTitle,
+   *   ],
+   *   [
+   *     "href" => route("movie/%u/release/%u", [ $movieId, $releaseId ]);
+   *     "title" =>
+   * ]</pre>
+   *
+   * @return array
+   *   Array containing the breadcrumb trail for this presenter.
+   */
+  abstract public function getBreadcrumb();
+
+  /**
    * Get the current language object.
    *
    * @return \MovLib\Entity\Language

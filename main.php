@@ -63,7 +63,7 @@ function __autoload($class) {
  * @link http://www.gnu.org/software/gettext/manual/html_node/Contexts.html
  * @see gettext
  * @param string $msgctxt
- *   The message"s context identifier. Do not use the class name or full sentences as context. Try to use jQuery like
+ *   The message's context identifier. Do not use the class name or full sentences as context. Try to use jQuery like
  *   selectors like <code>html head title</code> or <code>input[type="search"]</code> as they are very unlikely to
  *   change. Another good example of a context which is used very often is <code>route</code> for URLs.
  * @param string $msgid
@@ -130,11 +130,15 @@ function npgettext($msgctxt, $msgid1, $msgid2, $num) {
  * @return string
  *   The translated string.
  */
-function __($msgid, $msgctxt = "") {
+function __($msgid, $args = [], $msgctxt = "") {
   if (empty($msgctxt)) {
-    return gettext($msgid);
+    $msgid = gettext($msgid);
   }
-  return pgettext($msgctxt, $msgid);
+  $msgid = pgettext($msgctxt, $msgid);
+  if (empty($args)) {
+    return $msgid;
+  }
+  return \MovLib\Utility\String::format($msgctxt, $args);
 }
 
 /**
@@ -158,6 +162,10 @@ function n__($msgid1, $msgid2, $n, $msgctxt = "") {
     return ngettext($msgid1, $msgid2, $n);
   }
   return npgettext($msgctxt, $msgid1, $msgid2, $n);
+}
+
+function route($path, $args = []) {
+  return vprintf(__($path, null, "route"), $args);
 }
 
 /**

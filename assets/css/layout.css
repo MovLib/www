@@ -218,15 +218,15 @@
   display: inline-block;
 }
 
-.lead {
-  font-size: 21px;
-  line-height: 26.25px;
-}
-
 .hero {
   font-size: 38.5px;
   font-weight: bold;
   line-height: 77px;
+}
+
+.lead {
+  font-size: 21px;
+  line-height: 26.25px;
 }
 
 .lead,
@@ -235,6 +235,12 @@
 .lead h3 {
   color: #fff;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+
+.menuitem:active,
+.menuitem.active {
+  color: #555;
+  border-bottom: 0;
 }
 
 .no-list {
@@ -475,6 +481,19 @@ a,
 
 .user-nav__menuitem {
   margin-left: 10px;
+}
+
+/* Breadcrumb ------------------------------------------------------------------------------------------------------- */
+
+.breadcrumb-nav {
+  margin: 10px auto;
+}
+
+#breadcrumb-nav__title {
+  display: inline-block;
+  margin: 0 10px 0 1.25%;
+  font-size: 14px;
+  line-height: 20px;
 }
 
 /* Content ---------------------------------------------------------------------------------------------------------- */

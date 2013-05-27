@@ -31,6 +31,13 @@ use \MovLib\View\HTML\AbstractView;
 class UserShowView extends AbstractView {
 
   /**
+   * The user presenter controlling this view.
+   *
+   * @var \MovLib\Presenter\UserPresenter
+   */
+  protected $presenter;
+
+  /**
    *
    */
   public function __construct() {
