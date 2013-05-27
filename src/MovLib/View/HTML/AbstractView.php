@@ -327,7 +327,7 @@ abstract class AbstractView {
       [ "href" => "/", "text" => __("Home") ],
       [ "href" => $_SERVER["REQUEST_URI"], "text" => $this->title ],
     ];
-    return "<div id='breadcrumb'>{$this->getNavigation("You are here:", "breadcrumb", $points, -1, " › ", [ "class" => "row span--0" ], false)}</div>";
+    return "<div id='breadcrumb'>{$this->getNavigation("You are here: ", "breadcrumb", $points, -1, " › ", [ "class" => "row span--0" ], false)}</div>";
   }
 
   /**
