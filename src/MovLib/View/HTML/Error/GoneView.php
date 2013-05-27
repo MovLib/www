@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML\User;
+namespace MovLib\View\HTML\Error;
 
-use \MovLib\View\HTML\AbstractView;
+use \MovLib\View\HTML\AlertView;
 
 /**
- * Description of UserShowView
+ * Display a <em>410 Gone</em> error page (with correct HTTP headers) to the user.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,44 +28,24 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserShowView extends AbstractView {
+class GoneView extends AlertView {
 
   /**
-   * The user presenter controlling this view.
+   * Create a <em>404 Not Found</em> error page.
    *
-   * @var \MovLib\Presenter\UserPresenter
-   */
-  protected $presenter;
-
-  /**
-   * Get user profile view.
-   *
-   * @param \MovLib\Presenter\UserPresenter $presenter
-   *   The user presenter controlling this view.
+   * @param \MovLib\Presenter\AbstractPresenter $presenter
+   *   The presenter object controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, $presenter->getUsername());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRenderedContent() {
-    $profile = $this->presenter->getProfile();
-    return
-      "<article>" .
-        "<header class='row'>" .
-          "<div class='span span--1'>" .
-            "<div class='page-header'><h1>{$profile->getName()}</h1></div>" .
-          "</div>" .
-        "</header>" .
-        "<div class='row'>" .
-          "<div class='span span--1'>" .
-            "<pre>" . print_r($profile, true) . "</pre>" .
-          "</div>" .
-        "</div>" .
-      "</article>"
-    ;
+    parent::__construct($presenter, __("Gone"));
+    http_response_code(410);
+    $this->setAlert(
+      "<p>" . __("We are sorry, but the page you are looking for is no longer available.") . "</p>" .
+      "<p>" . __("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please !contactLink.", [ "!contactLink" => $this->a(route("contact"), __("contact us")) ]) . "</p>",
+      __("Gone"),
+      self::ALERT_SEVERITY_ERROR,
+      true
+    );
   }
 
 }

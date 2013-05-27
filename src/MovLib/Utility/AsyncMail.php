@@ -33,7 +33,7 @@ use \Stackable;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class AsyncMailer extends AsyncAbstractWorker {
+class AsyncMail extends AsyncAbstractWorker {
 
   /**
    * Get additional email headers.
@@ -68,7 +68,7 @@ class AsyncMailer extends AsyncAbstractWorker {
    * @throws \MovLib\Exception\MailException
    */
   public static function sendMail($to, $subject, $message) {
-    /* @var $instance AsyncMailer */
+    /* @var $instance AsyncMail */
     $instance = self::getInstance();
     $instance->stack(new AsyncSendMail($to, $subject, $message));
     return $instance;
@@ -83,7 +83,7 @@ class AsyncMailer extends AsyncAbstractWorker {
    * @throws \MovLib\Exception\MailException
    */
   public static function resetPassword($userEmail) {
-    /* @var $instance AsyncMailer */
+    /* @var $instance AsyncMail */
     $instance = self::getInstance();
     try {
       /* @var $user \MovLib\Entity\User */
@@ -101,12 +101,30 @@ You may now log in by clicking this link or copying and pasting it to your brows
 
 This link can only be used once to log in and will lead you to a page where you can set your password. If you have not requested this password reset simply ignore this email.
 
-— %s"), $user->getName(), $user->getResetPasswordHash(), SITENAME)
+— %s"), $user->getName(), "https://alpha.movlib.org/", SITENAME)
       ));
     } catch (UserException $e) {
       AsyncLogger::logException($e, AsyncLogger::LEVEL_INFO);
     }
     return $instance;
+  }
+
+  /**
+   * Validate the given email address.
+   *
+   * @link http://api.drupal.org/api/drupal/core!modules!user!user.module/function/user_validate_name/8
+   * @param string $email
+   *   The email address to validate.
+   * @return null|string
+   *   <tt>NULL</tt> if the email address is valid. If invalid a translated error message describing the problem.
+   */
+  public static function validateEmail($email) {
+    if (empty($email)) {
+      return __("You must enter a email address.");
+    }
+    if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+      return __("The email address is not valid.");
+    }
   }
 
 }
@@ -178,7 +196,7 @@ class AsyncMailerStack extends Stackable {
    * @throws \MovLib\Exception\MailException
    */
   protected function setMessage($message) {
-    if (empty($message) === true) {
+    if (empty($message)) {
       throw new MailException("The email body can not be empty!");
     }
     $this->message = $message;
@@ -196,7 +214,7 @@ class AsyncMailerStack extends Stackable {
   protected function setSubject($subject) {
     // Checking empty after calling checkPlain is important, because the subject might be empty after the check!
     $subject = String::checkPlain($subject);
-    if (empty($subject) === true) {
+    if (empty($subject)) {
       throw new MailException("The supplied subject is not valid.");
     }
     $this->subject = $subject;
@@ -212,38 +230,20 @@ class AsyncMailerStack extends Stackable {
    * @throws \MovLib\Exception\MailException
    */
   protected function setTo($to) {
-    if (is_array($to) === true) {
+    if (is_array($to)) {
       $receiverCount = count($to);
       for ($i = 0; $i < $receiverCount; ++$i) {
-        $this->validateEmail($to[$i]);
+        if ($error = AsyncMail::validateEmail($to[$i])) {
+          throw new MailException($error);
+        }
       }
       $to = implode(",", $to);
     }
-    else {
-      $this->validateEmail($to);
+    elseif ($error = AsyncMail::validateEmail($to)) {
+      throw new MailException($error);
     }
     $this->to = $to;
     return $this;
-  }
-
-  /**
-   * Validate the given email address.
-   *
-   * @param string $email
-   *   The email address to validate.
-   * @return string
-   *   The email address.
-   * @throws MailException
-   *   If the supplied email address is not set, empty or invalid.
-   */
-  protected function validateEmail($email) {
-    if (empty($email) === true) {
-      throw new MailException("Email address can not be empty!");
-    }
-    if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-      throw new MailException("The supplied email address is not valid!");
-    }
-    return $email;
   }
 
 }

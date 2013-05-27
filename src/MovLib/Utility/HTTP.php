@@ -44,8 +44,7 @@ class HTTP {
     if (headers_sent()) {
       return false;
     }
-    $secure = empty($_SERVER["HTTPS"]) ? "" : "s";
-    $route = "http{$secure}://{$_SERVER["SERVER_NAME"]}/{$route}";
+    $route = "https://{$_SERVER["SERVER_NAME"]}/{$route}";
     header("Location: {$route}", true, $status);
     if ($_SERVER["REQUEST_METHOD"] !== "HEAD") {
       $title = [

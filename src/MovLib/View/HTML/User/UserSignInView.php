@@ -77,7 +77,7 @@ class UserSignInView extends AbstractFormView {
       "<p><label for='email'>{$emailLabel}</label><input autofocus class='input input-text input--block-level' id='email' name='email' placeholder='{$emailPlaceholder}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$emailTitle}' type='email' value='{$emailValue}'></p>" .
       "<p><small>{$resetPasswordLink}</small><label for='password'>{$passwordLabel}</label><input class='input input-text input--block-level' id='password' name='password' placeholder='{$passwordPlaceholder}' role='password' tabindex='{$this->getTabindex()}' title='{$passwordTitle}' type='password'></p>" .
       "<p><label class='checkbox' for='remember' title='{$rememberTitle}'><input class='input input-checkbox' id='remember' name='remember' tabindex='{$this->getTabindex()}' type='checkbox' value='remember'> {$remember}</label></p>" .
-      "<p><button class='button button--success button--large input input-submit' name='{$_SERVER["REQUEST_URI"]}' tabindex='{$this->getTabindex()}' title='{$submitTitle}' type='submit'>{$submit}</button></p>"
+      "<p><button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$submitTitle}' type='submit'>{$submit}</button></p>"
     ;
   }
 

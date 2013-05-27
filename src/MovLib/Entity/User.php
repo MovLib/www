@@ -42,7 +42,7 @@ class User {
    *
    * @var int
    */
-  const USERNAME_MAX_LENGTH = 255;
+  const USERNAME_MAX_LENGTH = 40;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -83,6 +83,19 @@ class User {
    */
   private $name = "";
 
+  /**
+   * The status of the user.
+   *
+   * Use <code>User::getStatus()</code> if you want to receive this value as boolean!
+   * <ul>
+   *   <li><b>0</b> = disabled</li>
+   *   <li><b>1</b> = enabled</li>
+   * </ul>
+   *
+   * @var int
+   */
+  private $status = 0;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic methods
 
@@ -93,20 +106,37 @@ class User {
 
 
   /**
+   * Fill user object with data stored in database identified by <var>$field</var>.
+   *
+   * @param string $field
+   *   The field which is used to identify the user.
+   * @param string $type
+   *   Type string in <code>mysqli_prepare()</code>-syntax (note that the <tt>BIGINT</tt> data type must be <em>d</em>).
+   * @param mixed $value
+   *   The value of <var>$field</var> in the database.
+   * @return $this
+   * @throws \MovLib\Exception\UserException
+   *   If no active user could be found.
+   */
+  protected function constructFrom($field, $type, $value) {
+    try {
+      return $this->setUserData((new UserModel())->getUserFrom($field, $type, $value));
+    } catch (DatabaseException $e) {
+      throw new UserException($e->getMessage());
+    }
+  }
+
+  /**
    * Construct new user object from given ID.
    *
    * @param int $id
    *   The ID from which a user object should be created.
    * @return $this
-   * @throws UserException
+   * @throws \MovLib\Exception\UserException
    *   If there is no user with the given ID.
    */
   public function constructFromId($id) {
-    try {
-      return $this->setUserData((new UserModel())->getUserFromId($id));
-    } catch (DatabaseException $e) {
-      throw new UserException("No user exists with ID '{$id}'!");
-    }
+    return $this->constructFrom("user_id", "d", $id);
   }
 
   /**
@@ -115,15 +145,11 @@ class User {
    * @param string $email
    *   The email address from which a user object should be created.
    * @return $this
-   * @throws UserException
+   * @throws \MovLib\Exception\UserException
    *   If there is no user with the given email address.
    */
   public function constructFromEmail($email) {
-    try {
-      return $this->setUserData((new UserModel())->getUserFromEmail($email));
-    } catch (DatabaseException $e) {
-      throw new UserException("No user exists with email address '{$email}'!");
-    }
+    return $this->constructFrom("email", "s", $email);
   }
 
   /**
@@ -132,15 +158,11 @@ class User {
    * @param string $name
    *   The name from which a user object should be created.
    * @return $this
-   * @throws UserException
+   * @throws \MovLib\Exception\UserException
    *   If there is no user with the given name.
    */
   public function constructFromName($name) {
-    try {
-      return $this->setUserData((new UserModel())->getUserFromName($name));
-    } catch (DatabaseException $e) {
-      throw new UserException("No user exists with name '{$name}'!");
-    }
+    return $this->constructFrom("name", "s", $name);
   }
 
   /**
@@ -195,6 +217,32 @@ class User {
   }
 
   /**
+   * Get the route to this user's profile page.
+   *
+   * @staticvar null|string $profileUrl
+   *   Cache the route.
+   * @return string
+   *   The route to this user's profile page.
+   */
+  public function getProfileRoute() {
+    static $profileUrl = null;
+    if ($profileUrl === null) {
+      $profileUrl = route("user/%s", mb_strtolower($this->name));
+    }
+    return $profileUrl;
+  }
+
+  /**
+   * Get the status of this user.
+   *
+   * @return boolean
+   *   <tt>TRUE</tt> if the user is enabled, <tt>FALSE</tt> if the profile is disabled.
+   */
+  public function getStatus() {
+    return (boolean) $this->status;
+  }
+
+  /**
    * Check if user is logged in.
    *
    * @return boolean
@@ -228,24 +276,22 @@ class User {
    *   The username to validate.
    * @return string
    *   The username if it is valid.
-   * @throws UserException
-   *   Exception with descriptive error message that can be displayed to the user.
    */
   public static function validateName($name) {
-    if (!$name) {
-      throw new UserException(__("You must enter a username."));
+    if (empty($name)) {
+      return __("You must enter a username.");
     }
     if (substr($name, 0, 1) === " ") {
-      throw new UserException(__("The username cannot begin with a space."));
+      return __("The username cannot begin with a space.");
     }
     if (substr($name, -1) === " ") {
-      throw new UserException(__("The username cannot end with a space."));
+      return __("The username cannot end with a space.");
     }
     if (strpos($name, "  ") !== false) {
-      throw new UserException(__("The username cannot contain multiple spaces in a row."));
+      return __("The username cannot contain multiple spaces in a row.");
     }
     if (preg_match("/[^\x{80}-\x{F7} a-z0-9@_.\'-]/i", $name) === 1) {
-      throw new UserException(__("The username contains an illegal character."));
+      return __("The username contains an illegal character.");
     }
     if (preg_match(
       "/[\x{80}-\x{A0}" .   // Non-printable ISO-8859-1 + NBSP
@@ -259,12 +305,11 @@ class User {
       "\x{0}-\x{1F}]/u",    // NULL byte and control characters
       $name
     ) === 1) {
-      throw new UserException(__("The username contains an illegal character."));
+      return __("The username contains an illegal character.");
     }
     if (mb_strlen($name) > self::USERNAME_MAX_LENGTH) {
-      throw new UserException(sprintf(__("The username %s is too long: it must be %i characters or less."), $name, self::USERNAME_MAX_LENGTH));
+      return __("The username %name is too long: it must be %max characters or less.", [ "%name" => $name, "%max" => self::USERNAME_MAX_LENGTH ]);
     }
-    return $name;
   }
 
 

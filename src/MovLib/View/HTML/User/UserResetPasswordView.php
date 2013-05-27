@@ -61,7 +61,7 @@ class UserResetPasswordView extends AbstractFormView {
     return
       "<div class='page-header--no-border'><h1>{$this->title}</h1></div>" .
       "<p><label for='email'>{$emailLabel}</label><input autofocus class='input input-text input--block-level' id='email' name='email' placeholder='{$emailPlaceholder}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$emailTitle}' type='email' value='{$emailValue}'></p>" .
-      "<p><button class='button button--success button--large input input-submit' name='{$_SERVER["REQUEST_URI"]}' tabindex='{$this->getTabindex()}' title='{$submitTitle}' type='submit'>{$submit}</button></p>"
+      "<p><button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$submitTitle}' type='submit'>{$submit}</button></p>"
     ;
   }
 

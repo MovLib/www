@@ -20,7 +20,7 @@ namespace MovLib\View\HTML\Error;
 use \MovLib\View\HTML\AlertView;
 
 /**
- * Description of ForbiddenView
+ * Display a <em>403 Forbidden</em> error page (with correct HTTP headers) to the user.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -41,12 +41,9 @@ class ForbiddenView extends AlertView {
     http_response_code(403);
     $this->setAlert(
       "<p>" . __("We are sorry, but you can not access this page.") . "</p>" .
-      "<p>" . sprintf(
-        __("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please %s."),
-        $this->a(__("contact", "route"), __("contact us"))
-      ) . "</p>",
+      "<p>" . __("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please !contactLink.", [ "!contactLink" => $this->a(route("contact"), __("contact us")) ]) . "</p>",
       __("Access forbidden"),
-      "error",
+      self::ALERT_SEVERITY_ERROR,
       true
     );
   }

@@ -67,8 +67,8 @@ class UserSignUpView extends AbstractFormView {
     return
       "<div class='page-header--no-border'><h1>{$this->title}</h1></div>" .
       "<p><label for='email'>{$emailLabel}</label><input autofocus class='input input-text input--block-level' id='email' name='email' placeholder='{$emailPlaceholder}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$emailTitle}' type='email' value='{$emailValue}'></p>" .
-      "<p><label for='username'>{$usernameLabel}</label><input class='input input-text input--block-level' id='username' name='username' placeholder='{$usernamePlaceholder}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$usernameTitle}' type='text' value='{$usernameValue}'></p>" .
-      "<p><button class='button button--success button--large input input-submit' name='{$_SERVER["REQUEST_URI"]}' tabindex='{$this->getTabindex()}' title='{$submitTitle}' type='submit'>{$submit}</button></p>"
+      "<p><label for='username'>{$usernameLabel}</label><input class='input input-text input--block-level' id='username' maxlength='40' name='username' placeholder='{$usernamePlaceholder}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$usernameTitle}' type='text' value='{$usernameValue}'></p>" .
+      "<p><button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$submitTitle}' type='submit'>{$submit}</button></p>"
     ;
   }
 

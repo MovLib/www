@@ -19,6 +19,7 @@ namespace MovLib\Presenter;
 
 use \MovLib\Entity\Language;
 use \MovLib\Entity\User;
+use \MovLib\Utility\HTTP;
 use \MovLib\View\HTML\AlertView;
 use \ReflectionClass;
 
@@ -32,6 +33,10 @@ use \ReflectionClass;
  * @since 0.0.1-dev
  */
 abstract class AbstractPresenter {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * String buffer used to concatenate all the output and send the whole shebang at once.
@@ -61,6 +66,10 @@ abstract class AbstractPresenter {
    */
   protected $view;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic methods
+
+
   /**
    * Instantiate new presenter object.
    */
@@ -75,9 +84,68 @@ abstract class AbstractPresenter {
   }
 
   /**
+   * Magic function that is automatically called if somebody tries to echo the object itself.
+   *
+   * @return string
+   */
+  public function __toString() {
+    if (xdebug_is_enabled()) {
+      ob_start();
+      var_dump($this);
+      return ob_get_clean();
+    }
+    else {
+      return "<pre>" . print_r($this, true) . "</pre>";
+    }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract methods
+
+
+  /**
+   * Associative array containing the breadcrumb trail for this presenter.
+   *
+   * The array will be passed to <code>AbstractView::getBreadcrumb()</code> which calls
+   * <code>AbstractView::getNavigation()</code>, the returned array must be in the correct format for the last method.
+   * Do not include the home nor the current page link, they are included automatically. Only specify the intermediate
+   * points.
+   *
+   * <b>Example Usage:</b>
+   * The following example is for the route <tt>/movie/1234/release-1234/discussion-1234</tt>:
+   * <pre>return [
+   *   // Home link is included automatically!
+   *   [
+   *     "href" => route("movies"),
+   *     "text" => __("Movies"),
+   *     "title" => __("Go to movies overview page."),
+   *   ],
+   *   [
+   *     "href" => route("movie/%u", $movieId),
+   *     "text" => $movieTitle,
+   *     "title" => __("Go to “@movieTitle” movie page.", [ "@movieTitle" => $movieTitle ]),
+   *   ],
+   *   [
+   *     "href" => route("movie/%u/release-%u", [ $movidId, $releaseId ]),
+   *     "text" => $releaseTitle,
+   *     "title" => __("Got to “@releaseTitle” release page.", [ "@releaseTitle" => $releaseTitle ]),
+   *   ],
+   *   // Link to current page is included automatically!
+   * ]</pre>
+   *
+   * @return array
+   *   Array containing the breadcrumb trail for this presenter.
+   */
+  abstract public function getBreadcrumb();
+
+  /**
    * Initialize the presenter and set the output.
    */
   protected abstract function init();
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public final methods
+
 
   /**
    * Get the <var>$_SERVER["ACTION"]</var> als string to initialize object.
@@ -102,41 +170,6 @@ abstract class AbstractPresenter {
     }
     return $defaultAction;
   }
-
-  /**
-   * Associative array containing the breadcrumb trail for this presenter.
-   *
-   * The array will be passed to <code>AbstractView::getBreadcrumb()</code> which calls
-   * <code>AbstractView::getNavigation()</code>, the returned array must be in the correct format for the last method.
-   * Do not include the home nor the current page link, they are included automatically. Only specify the intermediate
-   * points.
-   *
-   * <b>Example Usage:</b>
-   * The following example is for the route <tt>/movie/1234/release-1234/discussion-1234</tt>:
-   * <pre>return [
-   *   // Home link is included automatically!
-   *   [
-   *     "href" => route("movies"),
-   *     "text" => __("Movies"),
-   *     "title" => __("Go to movies overview page."),
-   *   ],
-   *   [
-   *     "href" => route("movie/%u", [ $movieId ]),
-   *     "text" => $movieTitle,
-   *     "title" => __("Go to “@s” movie page.", [ $movieTitle ]),
-   *   ],
-   *   [
-   *     "href" => route("movie/%u/release-%u", [ $movidId, $releaseId ]),
-   *     "text" => $releaseTitle,
-   *     "title" => __("Got to “@s” release page.", [ $releaseTitle ]),
-   *   ],
-   *   // Link to current page is included automatically!
-   * ]</pre>
-   *
-   * @return array
-   *   Array containing the breadcrumb trail for this presenter.
-   */
-  abstract public function getBreadcrumb();
 
   /**
    * Get the current language object.
@@ -176,6 +209,19 @@ abstract class AbstractPresenter {
   }
 
   /**
+   * Get the current user object.
+   *
+   * @return \MovLib\Entity\User
+   */
+  public final function getUser() {
+    return $this->user;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public methods
+
+
+  /**
    * Get the presenter's short class name (e.g. <em>Abstract</em> for <em>AbstractPresenter</em>).
    *
    * The short name is the name of the current instance of this class without the namespace and the presenter suffix.
@@ -193,14 +239,9 @@ abstract class AbstractPresenter {
     return $shortName;
   }
 
-  /**
-   * Get the current user object.
-   *
-   * @return \MovLib\Entity\User
-   */
-  public final function getUser() {
-    return $this->user;
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Protected final methods
+
 
   /**
    * Get (and set) the current view.
@@ -255,6 +296,10 @@ abstract class AbstractPresenter {
     return $this;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Protected methods
+
+
   /**
    * Display the alert view to the user with a single alert message and no additional content.
    *
@@ -283,22 +328,6 @@ abstract class AbstractPresenter {
   protected function showSingleAlertAlertView($title, $message, $severity = "warning", $block = false) {
     $this->view = (new AlertView($this, $title))->setAlert($message, $title, $severity, $block);
     return $this;
-  }
-
-  /**
-   * Magic function that is automatically called if somebody tries to echo the object itself.
-   *
-   * @return string
-   */
-  public function __toString() {
-    if (xdebug_is_enabled()) {
-      ob_start();
-      var_dump($this);
-      return ob_get_clean();
-    }
-    else {
-      return "<pre>" . print_r($this, true) . "</pre>";
-    }
   }
 
 }

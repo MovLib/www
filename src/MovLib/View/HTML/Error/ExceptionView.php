@@ -48,7 +48,7 @@ class ExceptionView extends AlertView {
       "<p>" . __("The error was logged and reported to the system administrators, it should be fixed in no time.") . "</p>" .
       "<p>" . __("Please try again in a few minutes.") . "</p>",
       __("We’re sorry but something went terribly wrong!"),
-      "error",
+      self::ALERT_SEVERITY_ERROR,
       true
     );
     /*DEBUG{{{*/
@@ -59,7 +59,7 @@ class ExceptionView extends AlertView {
       "</div>" .
       "<p class='text-center'><small>Debug information is only available if debugging is activated during bootstrap phase!</small></p>",
       "Stacktrace",
-      "info",
+      self::ALERT_SEVERITY_INFO,
       true
     );
     /*}}}DEBUG*/

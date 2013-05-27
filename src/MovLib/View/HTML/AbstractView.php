@@ -32,6 +32,38 @@ use \ReflectionClass;
 abstract class AbstractView {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Severity level <em>error</em> for alert message (color <em>red</em>).
+   *
+   * @var string
+   */
+  const ALERT_SEVERITY_ERROR = "error";
+
+  /**
+   * Severity level <em>info</em> for alert message (color <em>blue</em>).
+   *
+   * @var string
+   */
+  const ALERT_SEVERITY_INFO = "info";
+
+  /**
+   * Severity level <em>success</em> for alert message (color <em>green</em>).
+   *
+   * @var string
+   */
+  const ALERT_SEVERITY_SUCCESS = "success";
+
+  /**
+   * Severity level <em>warning</em> (default) for alert message (color <em>yellow</em>).
+   *
+   * @var string
+   */
+  const ALERT_SEVERITY_WARNING = "warning";
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -259,8 +291,10 @@ abstract class AbstractView {
   public final function a($route, $text, $titleOrAttributes = false) {
     $isArray = is_array($titleOrAttributes);
     // Check if given route needs a slash at the beginning.
-    if ($route[0] !== "#" || $route[0] !== "/") {
-      $route = "/{$route}";
+    if (!empty($route)) {
+      if ($route[0] !== "#" && $route[0] !== "/") {
+        $route = "/{$route}";
+      }
     }
     // Never create a link to the current page, http://www.nngroup.com/articles/avoid-within-page-links/
     if (empty($route) || $route === $_SERVER["REQUEST_URI"]) {
@@ -333,7 +367,7 @@ abstract class AbstractView {
    *   The breadcrumb ready for print.
    */
   public function getBreadcrumb() {
-    $points = [[ "href" => "/", "text" => __("Home") ]];
+    $points = [[ "href" => "/", "text" => __("Home"), "title" => __("Go back to the home page.") ]];
     $trail = $this->presenter->getBreadcrumb();
     $trailCount = count($trail);
     if ($trailCount !== 0) {
@@ -704,19 +738,13 @@ abstract class AbstractView {
    * @param string $title
    *   [optional] [recommended] Short descriptive title that summarizes the alert, defaults to no title at all.
    * @param string $severity
-   *   [optional] The severity level of this alert, defaults to warning. Available severity levels are:
-   *   <ul>
-   *     <li>info</li>
-   *     <li>warning (default)</li>
-   *     <li>success</li>
-   *     <li>error</li>
-   *   </ul>
+   *   [optional] The severity level of this alert, defaults to <var>AbstractView::ALERT_SEVERITY_WARNING</var>.
    * @param boolean $block
    *   [optional] If your message is very long, or your alert is very important, increase the padding around the message
    *   and enclose the title in a level-4 heading instead of the bold tag.
    * @return \MovLib\View\HTML\AbstractView
    */
-  public final function setAlert($message, $title = "", $severity = "warning", $block = false) {
+  public final function setAlert($message, $title = "", $severity = self::ALERT_SEVERITY_WARNING, $block = false) {
     if (empty($title) === false) {
       $tag = ($block === true) ? "h4" : "b";
       $title = "<{$tag} class='alert__title'>{$title}</{$tag}>";

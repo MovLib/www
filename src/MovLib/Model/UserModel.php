@@ -31,11 +31,45 @@ use \MovLib\Model\AbstractModel;
  */
 class UserModel extends AbstractModel {
 
-  // @todo Rename username to name in schema!
-  public function getUserFromEmail($email) {
-    $result = $this->query("SELECT `user_id`, `username` AS `name`, `email` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]);
-    if (empty($result) === true) {
-      throw new DatabaseException("Could not find user with email '{$email}'.");
+  /**
+   * Contains the <tt>SELECT</tt> string of columns that should be loaded on any user data load.
+   *
+   * Have a look at the constructor to see which columns will be loaded.
+   *
+   * @var string
+   */
+  private $userDataColumns;
+
+  public function __construct() {
+    parent::__construct();
+    $this->userDataColumns = "`" . implode("`, `", [
+      "user_id` AS `id",
+      "name",
+      "email",
+      "created",
+      "access",
+      "login",
+      "status",
+      "timezone",
+      "language",
+      "avatar_file_id",
+    ]) . "`";
+  }
+
+  /**
+   * Get all data for a user identified by email address.
+   *
+   * @param string $email
+   *   Email address to identify the user.
+   * @return array
+   *   Associative array containing all related user data.
+   * @throws \MovLib\Exception\DatabaseException
+   *   If no user exists with the given email address.
+   */
+  public function getUserFrom($from, $type, $where) {
+    $result = $this->query("SELECT {$this->userDataColumns} FROM `users` WHERE `{$from}` = ? LIMIT 1", $type, [ $where ]);
+    if (empty($result)) {
+      throw new DatabaseException("Could not find user with {$from} '{$where}'.");
     }
     return $result[0];
   }
