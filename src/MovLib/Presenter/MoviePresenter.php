@@ -17,8 +17,13 @@
  */
 namespace MovLib\Presenter;
 
+use \MovLib\Entity\Language;
+use \MovLib\View\HTML\ErrorView;
+use \MovLib\Exception\DatabaseException;
 use \MovLib\Model\MovieModel;
 use \MovLib\Model\ReleasesModel;
+use \MovLib\View\HTML\Movie\MovieShowView;
+
 
 /**
  * Description of MoviePresenter
@@ -31,7 +36,20 @@ use \MovLib\Model\ReleasesModel;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviePresenter extends AbstractPresenter{
+class MoviePresenter extends AbstractPresenter {
+  
+  /**
+   * An array containing the full movie information.
+   * @var array 
+   */
+  private $movie;
+  
+  /**
+   * An array containing all releases of a movie.
+   * @var array 
+   */
+  private $movieReleases;
+  
 
   /**
    * The movie model instance that is associated with the requested movie ID and this presenter.
@@ -41,7 +59,7 @@ class MoviePresenter extends AbstractPresenter{
   private $movieModel;
 
   /**
-   *
+   * The releases model instance that is associated with the requested movie ID and this presenter.
    *
    * @var \MovLib\Model\ReleasesModel
    */
@@ -52,24 +70,36 @@ class MoviePresenter extends AbstractPresenter{
    */
   protected function init() {
     try {
-      $this->movieModel = new MovieModel($this->language->getCode());
-      $this->releasesModel = new ReleasesModel($this->language->getCode());
-//    switch ($_SERVER["REQUEST_METHOD"]) {
-//      case "DELETE":
-//        break;
-//      case "POST":
-//        break;
-//      case "PUT":
-//        break;
-//      default:
-//        $view = new ShowView($this->language, $this->movieModel->getAssocMovie());
-//    }
-//    $this->output = $view->getRenderedView();
-      var_dump([$this->movieModel->getMovieFull($_SERVER["MOVIE_ID"]), $this->releasesModel->getReleasesForMovie($_SERVER["MOVIE_ID"])]);
+      switch ($_SERVER["REQUEST_METHOD"]) {
+        case "DELETE":
+          break;
+        case "POST":
+          break;
+        case "PUT":
+          break;
+        default:
+          
+          $this->movieModel = new MovieModel($this->language->getCode());
+          $this->releasesModel = new ReleasesModel($this->language->getCode());
+          
+          $this->movie = $this->movieModel->getMovieFull($_SERVER["MOVIE_ID"]);
+          $this->movieReleases = $this->releasesModel->getReleasesForMovie($_SERVER["MOVIE_ID"]);
+      
+          $this->output = (new MovieShowView($this))->getRenderedView();
+          return $this;        
+      }
+      
     } catch (Exception $e) {
       var_dump($e);
     }
-
+  }
+  
+  public function getTitle() {
+    return $this->movie["display_title"];
+  }
+  
+  public function getYear() {
+    return $this->movie["year"];
   }
 
 }
