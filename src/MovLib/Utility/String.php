@@ -64,6 +64,11 @@ class String {
    * page (especially text that may have come from untrusted users, since in that case it prevents cross-site scripting
    * and other security problems).
    *
+   * <b>Usage example:</b>
+   * <pre>String::format("Hello @world! Hello %world! Hello !world!", [ "@world" => "W<>orld", "%world" => "W<>orld", "!world" => "W<>orld" ]);</pre>
+   * Output:
+   * <pre>Hello W&amp;lt;&amp;gt;ld! Hello <em class='placeholder'>W&amp;lt;&amp;gt;rld</em>! Hello W<>orld!</pre>
+   *
    * @link http://api.drupal.org/api/drupal/core!lib!Drupal!Component!Utility!String.php/function/String%3A%3Aformat/8
    * @see \MovLib\Utility\String::checkPlain()
    * @see \MovLib\Utility\String::placeholder()

@@ -103,7 +103,7 @@ class HomeView extends AbstractView {
         "<article class='span span--3 span--home text-justify'>" .
           "<h2 class='text-center'>" . __("My !sitename", [ "!sitename" => SITENAME ]) . "</h2>" .
           "<p></p>" .
-          "<p class='text-center'>{$this->a(route("sign-up"), __("Sign up for a new account"), [ "class" => "button button--success button--large" ])}</p>" .
+          "<p class='text-center'>{$this->a(route("user/sign-up"), __("Sign up for a new account"), [ "class" => "button button--success button--large" ])}</p>" .
         "</article>" .
         "<article class='span span--3 span--home text-justify'>" .
           "<h2 class='text-center'>" . __("API") . "</h2>" .

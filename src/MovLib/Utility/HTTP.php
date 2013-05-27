@@ -33,6 +33,9 @@ class HTTP {
   /**
    * RFC 2616 compliant redirect.
    *
+   * <b>Usage example:</b>
+   * <pre>HTTP::redirect(route("movie/%u/release-%u/discussion", [ $movieId, $releaseId ]));</pre>
+   *
    * @param string $route
    *   The route to which the client should be redirected.
    * @param int $status
