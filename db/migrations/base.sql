@@ -265,17 +265,69 @@ ENGINE = InnoDB;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
+-- Table `movlib`.`images`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`images` (
+  `file_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `file_name` VARCHAR(255) NOT NULL ,
+  `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+  `users_user_id` BIGINT UNSIGNED NOT NULL ,
+  `width` TINYINT NOT NULL ,
+  `height` TINYINT NOT NULL ,
+  `extension` VARCHAR(5) NOT NULL ,
+  PRIMARY KEY (`file_id`) ,
+  INDEX `fk_files_users1_idx` (`users_user_id` ASC) ,
+  CONSTRAINT `fk_files_users1`
+    FOREIGN KEY (`users_user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`avatars`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`avatars` (
+  `images_file_id` BIGINT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`images_file_id`) ,
+  CONSTRAINT `fk_avatars_files1`
+    FOREIGN KEY (`images_file_id` )
+    REFERENCES `movlib`.`images` (`file_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
 -- Table `movlib`.`users`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
-  `user_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `username` VARCHAR(20) NOT NULL ,
-  `email` VARCHAR(255) NOT NULL ,
-  `pass` VARCHAR(60) NOT NULL ,
+  `user_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Unique user’s ID.' ,
+  `name` VARCHAR(40) NOT NULL COMMENT 'Unique user’s name.' ,
+  `email` VARCHAR(255) NOT NULL COMMENT 'Unique user’s email address.' ,
+  `pass` VARCHAR(60) NOT NULL COMMENT 'User’s password (hashed).' ,
+  `created` TIMESTAMP NOT NULL DEFAULT NOW() COMMENT 'Timestamp for when user was created.' ,
+  `access` TIMESTAMP NOT NULL DEFAULT NOW() COMMENT 'Timestamp for previous time user accessed the site.' ,
+  `login` TIMESTAMP NOT NULL DEFAULT NOW() COMMENT 'Timestamp for user’s last login.' ,
+  `status` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Whether the user is active (1) or blocked (0).' ,
+  `timezone` VARCHAR(32) NULL DEFAULT NULL COMMENT 'User’s time zone.' ,
+  `language` VARCHAR(2) NULL COMMENT 'User’s default language.' ,
+  `init` VARCHAR(255) NULL COMMENT 'Email address used for initial account creation.' ,
+  `avatar_file_id` BIGINT UNSIGNED NULL DEFAULT NULL COMMENT 'File ID of the user’s avatar image.' ,
+  `dynamic_data` BLOB NULL DEFAULT NULL COMMENT 'Dynamic column for storing temporary data related to this user.' ,
   PRIMARY KEY (`user_id`) ,
-  UNIQUE INDEX `username_UNIQUE` (`username` ASC) ,
-  UNIQUE INDEX `email_UNIQUE` (`email` ASC) )
-ENGINE = InnoDB;
+  UNIQUE INDEX `name_UNIQUE` (`name` ASC) ,
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) ,
+  INDEX `fk_users_avatars1_idx` (`avatar_file_id` ASC) ,
+  INDEX `password_idx` (`pass` ASC) ,
+  CONSTRAINT `fk_users_avatars1`
+    FOREIGN KEY (`avatar_file_id` )
+    REFERENCES `movlib`.`avatars` (`images_file_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
 
 SHOW WARNINGS;
 
@@ -684,28 +736,6 @@ ENGINE = InnoDB;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`images`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`images` (
-  `file_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `file_name` VARCHAR(255) NOT NULL ,
-  `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
-  `users_user_id` BIGINT UNSIGNED NOT NULL ,
-  `width` TINYINT NOT NULL ,
-  `height` TINYINT NOT NULL ,
-  `extension` VARCHAR(5) NOT NULL ,
-  PRIMARY KEY (`file_id`) ,
-  INDEX `fk_files_users1_idx` (`users_user_id` ASC) ,
-  CONSTRAINT `fk_files_users1`
-    FOREIGN KEY (`users_user_id` )
-    REFERENCES `movlib`.`users` (`user_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`posters`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`posters` (
@@ -729,21 +759,6 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`posters` (
   CONSTRAINT `fk_posters_languages1`
     FOREIGN KEY (`languages_language_id` )
     REFERENCES `movlib`.`languages` (`language_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`avatars`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`avatars` (
-  `images_file_id` BIGINT UNSIGNED NOT NULL ,
-  PRIMARY KEY (`images_file_id`) ,
-  CONSTRAINT `fk_avatars_files1`
-    FOREIGN KEY (`images_file_id` )
-    REFERENCES `movlib`.`images` (`file_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
