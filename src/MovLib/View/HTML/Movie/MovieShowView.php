@@ -17,7 +17,6 @@
  */
 namespace MovLib\View\HTML\Movie;
 
-use \MovLib\Entity\Language;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -31,7 +30,7 @@ use \MovLib\View\HTML\AbstractView;
  * @since 0.0.1-dev
  */
 class MovieShowView extends AbstractView {
-  
+
   /**
    * The Constructor for the movie show view.
    *
@@ -45,10 +44,35 @@ class MovieShowView extends AbstractView {
     $this->addStylesheet("/assets/css/modules/movie.css");
   }
 
-  
+
   public function getRenderedContent() {
+    $posterFilePath = "/assets/img/poster_w300_default.jpg";
+    $posterAlt = __("No poster available.");
+    $posterFileName = $this->presenter->getDisplayPosterFileName();
+
+    if ($posterFileName !== false) {
+      $posterFilePath = "/uploads/posters/{$this->presenter->getId()}/w300/{$posterFileName}";
+      $posterAlt = sprintf(__("%s poster."), $this->title);
+    }
+
     return
-    "";
+      "<div class='row'>" .
+      "<div class='page-header span span--0'><h1>{$this->title}</h1></div>" .
+        "<figure id='movie-poster-box' class='pull-left span span--4 text-center'>" .
+          $this->a("#", "<img src='{$posterFilePath}' alt='{$posterAlt}'>" ) .
+          "<ul id='movie-poster-box__more-posters'>" .
+            "<li class='more-posters__thumbnail pull-left'></li>" .
+            "<li class='more-posters__thumbnail pull-left'></li>" .
+            "<li class='more-posters__thumbnail pull-left'></li>" .
+            "<li class='more-posters__thumbnail pull-left'></li>" .
+            "<li class='more-posters__thumbnail pull-left'></li>" .
+          "</ul>" .
+        "</figure>" .
+        "<div class='span span--4c'>" .
+
+        "</div>" .
+      "</div>"
+    ;
   }
 
 }

@@ -24,3 +24,25 @@
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
+
+#movie-poster-box {
+  background-color: #f2f2f2;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 11px;
+}
+
+#movie-poster-box__more-posters {
+  background-color: #f2f2f2;
+  border: 1px solid #ccc;
+  margin-top: 11px;
+  padding: 0px;
+}
+
+.more-posters__thumbnail {
+  background-color: #ccc;
+  width: 50px;
+  height: 50px;
+  margin: 5px;
+  list-style: none;
+}

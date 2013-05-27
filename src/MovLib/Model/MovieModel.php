@@ -132,7 +132,7 @@ class MovieModel extends AbstractModel {
     $this->retrieveMovieCountries();
     $this->retrieveGenres();
     $this->retrieveStyles();
-    $this->retrievePosters();
+    $this->retrievePoster();
 
     return $this->movie;
   }
@@ -181,16 +181,16 @@ class MovieModel extends AbstractModel {
     );
   }
 
-  private function retrievePosters() {
+  private function retrievePoster() {
     $this->movie["poster"] = null;
     $result = $this->query("SELECT i.`file_id`, i.`file_name`, i.`extension`, l.`iso_639-1` AS `language_code` FROM `images` i
       INNER JOIN `posters` p ON i.`file_id` = p.`images_file_id`
       INNER JOIN `languages` l
       ON p.`languages_language_id` = l.`language_id`
-      WHERE p.`movies_movie_id` = ?
+      WHERE p.`movies_movie_id` = ? AND l.`iso_639-1` = ?
       ORDER BY p.`rating` DESC, i.`file_id` ASC LIMIT 1",
-      "i",
-      [ $this->movieId ]
+      "is",
+      [ $this->movieId, $this->languageCode ]
     );
     if (count($result) > 0) {
       $this->movie["poster"] = $result[0];
