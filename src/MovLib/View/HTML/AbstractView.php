@@ -136,7 +136,7 @@ abstract class AbstractView {
    * @return $this
    */
   protected final function addStylesheet($stylesheets) {
-    if (is_array($stylesheets) === false) {
+    if (!is_array($stylesheets)) {
       $this->stylesheets[] = $stylesheets;
     }
     // No need to check if this stylesheet is already in our array. This is only for development and if a dev includes
@@ -160,15 +160,19 @@ abstract class AbstractView {
    */
   protected final function expandTagAttributes($attributes = []) {
     $expandedAttributes = "";
-    if (empty($attributes) === true) {
+    if (empty($attributes)) {
       return $expandedAttributes;
     }
     foreach ($attributes as $attribute => $value) {
-      if ($attribute === "href" || $attribute === "src" || $attribute === "action") {
-        $value = htmlentities($value);
-      }
-      else {
-        $value = String::checkPlain($value);
+      switch ($attribute) {
+        case "href":
+        case "src":
+        case "action":
+          $value = String::checkUrl($value);
+          break;
+
+        default:
+          $value = String::checkPlain($value);
       }
       $expandedAttributes .= " {$attribute}='{$value}'";
     }
@@ -221,7 +225,10 @@ abstract class AbstractView {
    *   The array containing the previously set attributes for the elment.
    */
   protected final function addClass($class, &$attributes) {
-    if (isset($attributes["class"]) === true) {
+    if (!is_array($attributes)) {
+      $attributes = [];
+    }
+    if (isset($attributes["class"])) {
       $attributes["class"] .= " {$class}";
     }
     else {
@@ -237,10 +244,10 @@ abstract class AbstractView {
    * Create HTML anchor element.
    *
    * <b>IMPORTANT:</b> Always use this method to generate crosslinks! This method ensures that no links within the
-   * document does not point to the currently displayed document itself; as per W3C recommendation.
+   * document point to the currently displayed document itself; as per W3C recommendation.
    *
-   * @param string $href
-   *   The URL to which we should link (can be external, but no need to use this method for external links).
+   * @param string $route
+   *   The URL to which we should link (only internal routes).
    * @param string $text
    *   The text that should be displayed as anchor.
    * @param string|array $titleOrAttributes
@@ -249,36 +256,30 @@ abstract class AbstractView {
    * @return string
    *   The anchor element ready for print.
    */
-  public final function a($href, $text, $titleOrAttributes = false) {
-    // Check if given route needs a slash at the beginning.
-    if (empty($href) === true || (strpos($href, "http") === false && strpos($href, "//") === false && $href[0] !== "#" && $href[0] !== "/")) {
-      $href = "/{$href}";
-    }
+  public final function a($route, $text, $titleOrAttributes = false) {
     $isArray = is_array($titleOrAttributes);
+    // Check if given route needs a slash at the beginning.
+    if ($route[0] !== "#" || $route[0] !== "/") {
+      $route = "/{$route}";
+    }
     // Never create a link to the current page, http://www.nngroup.com/articles/avoid-within-page-links/
-    if ($href === $_SERVER["REQUEST_URI"] || empty($href) === true) {
-      $href = "#";
-      if ($isArray === false) {
-        $titleOrAttributes = [ "class" => "active" ];
+    if (empty($route) || $route === $_SERVER["REQUEST_URI"]) {
+      // A hash keeps the anchor element itself but removes the link to the current page—perfect!
+      $route = "#";
+      // Remove the title if we have one in the attributes array.
+      if ($isArray === true && isset($titleOrAttributes["title"])) {
+        unset($titleOrAttributes["title"]);
       }
-      else {
-        if (isset($titleOrAttributes["title"]) === true) {
-          unset($titleOrAttributes["title"]);
-        }
-        $this->addClass("active", $titleOrAttributes);
-      }
+      // Mark this anchor-element to be active, this will also remove the title if the variable contained a string.
+      $this->addClass("active", $titleOrAttributes);
+      // Now we are dealing with an array for sure.
       $isArray = true;
     }
     // Check if we are dealing with a simple title or multiple attributes.
     if ($titleOrAttributes !== false) {
-      if ($isArray === true) {
-        $titleOrAttributes = $this->expandTagAttributes($titleOrAttributes);
-      }
-      else {
-        $titleOrAttributes = " title='" . String::checkPlain($titleOrAttributes) . "'";
-      }
+      $titleOrAttributes = $isArray === true ? $this->expandTagAttributes($titleOrAttributes) : " title='" . String::checkPlain($titleOrAttributes) . "'";
     }
-    return "<a href='{$href}'{$titleOrAttributes}>{$text}</a>";
+    return "<a href='{$route}'{$titleOrAttributes}>{$text}</a>";
   }
 
   /**
@@ -290,6 +291,7 @@ abstract class AbstractView {
    * content in full view (with <tt>-content</tt> suffix).
    *
    * @staticvar boolean|string $shortName
+   *   Used to cache the short name of this instance.
    * @return string
    *   The short name of the class (lowercased).
    */
@@ -316,17 +318,31 @@ abstract class AbstractView {
     // minimum height and margin is not applied to the spanning div element. It is important that any JavaScript that
     // might add content to the div removes the class to reapply the minimum height and margin.
     $content = " span--empty'>";
-    if (empty($this->alerts) === false) {
+    if (!empty($this->alerts)) {
       $content = "'>" . implode("", $this->alerts);
     }
     return "<div class='row'><div id='alerts' class='span span--1 span--alerts{$content}</div></div>";
   }
 
+  /**
+   * Get the breadcrumb navigation.
+   *
+   * @see \MovLib\Presenter\AbstractPresenter::getBreadcrumb()
+   * @see \MovLib\View\HTML\AbstractView::getNavigation()
+   * @return string
+   *   The breadcrumb ready for print.
+   */
   public function getBreadcrumb() {
-    $points = [
-      [ "href" => "/", "text" => __("Home") ],
-      [ "href" => $_SERVER["REQUEST_URI"], "text" => $this->title ],
-    ];
+    $points = [[ "href" => "/", "text" => __("Home") ]];
+    $trail = $this->presenter->getBreadcrumb();
+    $trailCount = count($trail);
+    if ($trailCount !== 0) {
+      for ($i = 0; $i < $trailCount; ++$i) {
+        $trail[$i]["text"] = String::shorten($trail[$i]["text"], 25, __("…"));
+        $points[] = $trail[$i];
+      }
+    }
+    $points[] = [ "href" => $_SERVER["REQUEST_URI"], "text" => $this->title ];
     return "<div id='breadcrumb'>{$this->getNavigation("You are here: ", "breadcrumb", $points, -1, " › ", [ "class" => "row span--0" ], false)}</div>";
   }
 
@@ -337,41 +353,41 @@ abstract class AbstractView {
    *   The footer ready for print.
    */
   public final function getFooter() {
-    $cc0Link = "<a href='//creativecommons.org/publicdomain/zero/1.0/deed.{$this->presenter->getLanguage()->getCode()}' rel='license'>" . __("Creative Commons — CC0 1.0 Universal") . "</a>";
-    $termsOfUseLink = $this->a(__("terms-of-use", "route"), __("Terms of Use"));
-    $privacyPolicyLink = $this->a(__("privacy-policy", "route"), __("Privacy Policy"));
+    $cc0Link = "<a href='http://creativecommons.org/publicdomain/zero/1.0/deed.{$this->presenter->getLanguage()->getCode()}' rel='license'>" . __("Creative Commons — CC0 1.0 Universal") . "</a>";
+    $termsOfUseLink = $this->a(route("terms-of-use"), __("Terms of Use"));
+    $privacyPolicyLink = $this->a(route("privacy-policy"), __("Privacy Policy"));
     return
       "<footer id='footer'>" .
         "<div id='footer-rows' class='row'>" .
           "<nav class='span span--4'>" .
             "<h3>" . SITENAME . "</h3>" .
             "<ul class='no-list'>" .
-              "<li class='item-first'>{$this->a(__("about", "route"), __("About"), sprintf(__("Find out more about %s."), SITENAME))}</li>" .
-              "<li>{$this->a(__("blog", "route"), __("Blog"), sprintf(__("Stay up to date about the latest developments around %s."), SITENAME))}</li>" .
-              "<li>{$this->a(__("contact", "route"), __("Contact"), __("Feedback is always welcome, no matter if positive or negative."))}</li>" .
-              "<li>{$this->a(__("resources", "route"), __("Logos and Badges"), __("If you want to create something awesome."))}</li>" .
-              "<li class='item-last'>{$this->a(__("legal", "route"), __("Legal"), sprintf(__("Collection of the various legal terms and conditions used around %s."), SITENAME))}</li>" .
+              "<li class='item-first'>{$this->a(route("about"), __("About"), __("Find out more about !sitename", [ "!sitename" => SITENAME ]))}</li>" .
+              "<li>{$this->a(route("blog"), __("Blog"), __("Stay up to date about the latest developments around !sitename.", [ "!sitename" => SITENAME ]))}</li>" .
+              "<li>{$this->a(route("contact"), __("Contact"), __("Feedback is always welcome, no matter if positive or negative."))}</li>" .
+              "<li>{$this->a(route("resources"), __("Logos and Badges"), __("If you want to create something awesome."))}</li>" .
+              "<li class='item-last'>{$this->a(route("legal"), __("Legal"), __("Collection of the various legal terms and conditions used around !sitename.", [ "!sitename" => SITENAME ]))}</li>" .
             "</ul>" .
           "</nav>" .
           "<nav class='span span--4'>" .
             "<h3>" . __("Join in") . "</h3>" .
             "<ul class='no-list'>" .
-              "<li class='item-first item-last'>{$this->a(__("sign-up", "route"), __("Sign up"), sprintf(__("Become a member of %s and help building the biggest free movie library in this world."), SITENAME))}</li>" .
+              "<li class='item-first item-last'>{$this->a(route("user/sign-up"), __("Sign up"), __("Become a member of !sitename and help building the biggest free movie library in this world.", [ "!sitename" => SITENAME ]))}</li>" .
             "</ul>" .
           "</nav>" .
           "<div class='span span--4'></div>" .
           "<nav class='span span--4'>" .
             "<h3>" . __("Get help") . "</h3>" .
             "<ul class='no-list'>" .
-              "<li class='item-first item-last'>{$this->a(__("help", "route"), __("Help"), __("If you have questions click here to find our help articles."))}</li>" .
+              "<li class='item-first item-last'>{$this->a(route("help"), __("Help"), __("If you have questions click here to find our help articles."))}</li>" .
             "</ul>" .
           "</nav>" .
         "</div>" .
         "<div id='footer-copyright' class='row'>" .
           "<div class='span span--1'>" .
-            "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> " . sprintf(__("Database data is available under the %s license."), $cc0Link) . "<br>" .
+            "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> " . __("Database data is available under the !creativeCommonsLink license.", [ "!creativeCommonsLink" => $cc0Link ]) . "<br>" .
             __("Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated.") . "<br>" .
-            sprintf(__("By using this site, you agree to the %s and %s."), $termsOfUseLink, $privacyPolicyLink) .
+            __("By using this site, you agree to the !termsOfUseLink and !privacyPoliyLink.", [ "!termsOfUseLink" => $termsOfUseLink, "!privacyPoliyLink" => $privacyPolicyLink ]) .
           "</div>" .
         "</div>" .
       "</footer>" .
@@ -447,22 +463,22 @@ abstract class AbstractView {
   public final function getHeaderNavigation() {
     return $this->getNavigation(__("Primary navigation"), "main", [
       /* 0 => */[
-        "href" => __("movies", "route"),
+        "href" => route("movies"),
         "text" => __("Movies"),
         "title" => __("Browse all movies of this world, check out the latest additions or create a new entry yourself."),
       ],
       /* 1 => */[
-        "href" => __("series", "route"),
+        "href" => route("series"),
         "text" => __("Series"),
         "title" => __("Browse all series of this world, check out the latest additions or create a new entry yourself."),
       ],
       /* 2 => */[
-        "href" => __("persons", "route"),
+        "href" => route("persons"),
         "text" => __("Persons"),
         "title" => __("Browse all movie related persons of this world, check out the latest additions or create a new entry yourself."),
       ],
       /* 3 => */[
-        "href" => __("marketplace", "route"),
+        "href" => route("marketplace"),
         "text" => __("Marketplace"),
         "title" => __("Searching for a specific release of a movie or soundtrack, this is the place to go, for free of course."),
       ],
@@ -476,7 +492,7 @@ abstract class AbstractView {
    *   The header search ready for print.
    */
   public final function getHeaderSearch() {
-    $formAction = __("search", "route");
+    $formAction = route("search");
     $inputSearchPlaceholder = __("Search…");
     $inputSearchTitle = __("Enter the search term you wish to search for and hit enter. [alt-shift-f]");
     $inputSubmitTitle = __("Start searching for the entered keyword.");
@@ -501,17 +517,17 @@ abstract class AbstractView {
   public final function getHeaderUserNavigation() {
     return $this->getNavigation(__("User navigation"), "user", [
       /* 0 => */[
-        "href" => __("user/sign_up", "route"),
+        "href" => route("user/sign-up"),
         "text"  => __("Sign up"),
         "title" => __("Click here to sign up for a new and free account."),
       ],
       /* 1 => */[
-        "href" => __("user/sign_in", "route"),
+        "href" => route("user/sign-in"),
         "text"  => __("Sign in"),
         "title" => __("Already have an account? Click here to sign in."),
       ],
       /* 2 => */[
-        "href" => __("help", "route"),
+        "href" => route("help"),
         "text"  => __("Help"),
         "title" => __("If you have questions click here to find our help articles."),
       ]
@@ -528,7 +544,7 @@ abstract class AbstractView {
    * @param array $points
    *   Keyed array containing the navigation points in the form:
    *   <pre>[[
-   *   "href" => __("example", "route"),
+   *   "href" => route("example"),
    *   "text" => __("Example"),
    *   "title" => __("This is the example title."),
    *   ]]</pre>
@@ -548,7 +564,7 @@ abstract class AbstractView {
     $k = count($points);
     $attr = [ "class" => "menuitem {$role}-nav__menuitem", "role" => "menuitem" ];
     for ($i = 0; $i < $k; ++$i) {
-      if (isset($points[$i]["attributes"]) === false) {
+      if (!isset($points[$i]["attributes"])) {
         $points[$i]["attributes"] = [];
       }
       $this->addClass($attr["class"], $points[$i]["attributes"]);
@@ -558,7 +574,7 @@ abstract class AbstractView {
       if ($i === $activePointIndex) {
         $this->addClass("active", $points[$i]["attributes"]);
       }
-      if (isset($points[$i]["title"]) === true) {
+      if (isset($points[$i]["title"])) {
         $points[$i]["attributes"]["title"] = $points[$i]["title"];
       }
       $points[$i]["attributes"]["role"] = "menuitem";
@@ -617,18 +633,20 @@ abstract class AbstractView {
    */
   public final function getStickyHeader() {
     $logo = $this->a("/", SITENAME, [ "class" => "logo-small inline" ]);
-    $formAction = __("search", "route");
-    $inputSearchPlaceholder = __("Search…");
-    $inputSearchTitle = __("Enter the search term you wish to search for and hit enter.");
-    $inputSubmitTitle = __("Start searching for the entered keyword.");
+
+    $searchPlaceholder = __("Search…");
+    $searchTitle = __("Enter the search term you wish to search for and hit enter.");
+
+    $submitTitle = __("Start searching for the entered keyword.");
+
     return
       "<header id='sticky-header'>" .
         "<div class='row'>" .
           "<div class='span span--3 sticky-header__span'>{$logo}</div>" .
           "<div class='span span--3 sticky-header__span'>" .
-            "<form action='/{$formAction}' class='search search-sticky-header' method='post' role='search'>" .
-              "<input class='input input-text input-search search-sticky-header__input-search' placeholder='{$inputSearchPlaceholder}' role='textbox' title='{$inputSearchTitle}' type='search'>" .
-              "<button class='button input input-submit search-sticky-header__input-submit' title='{$inputSubmitTitle}' type='submit'>" .
+            "<form action='/" . route("search") . "' class='search search-sticky-header' method='post' role='search'>" .
+              "<input class='input input-text input-search search-sticky-header__input-search' placeholder='{$searchPlaceholder}' role='textbox' title='{$searchTitle}' type='search'>" .
+              "<button class='button input input-submit search-sticky-header__input-submit' title='{$submitTitle}' type='submit'>" .
                 "<i class='icon icon--search search-sticky-header__icon--search inline transition'></i>" .
               "</button>" .
             "</form>" .
@@ -654,8 +672,9 @@ abstract class AbstractView {
   public function getHeaderLogo() {
     return $this->a(
       "/",
-      SITENAME . " <small>" . __("the <em>free</em> movie library") . "</small>",
-      [ "id" => "logo", "class" => "inline", "title" => sprintf(__("Go back to the %s home page."), SITENAME) ]
+      //# The logo text that is displayed in the global page header.
+      __("!sitename <small>the <em>free</em> movie library</small>", [ "!sitename" => SITENAME ]),
+      [ "id" => "logo", "class" => "inline", "title" => __("Go back to the home page.") ]
     );
   }
 
@@ -672,7 +691,7 @@ abstract class AbstractView {
     //# The em dash is used as separator character in the header title to denoate the source of the document (like in a
     //# quote the author), this should be translated to the equivalent character in your language. More information on
     //# this specific character can be found at Wikipedia: https://en.wikipedia.org/wiki/Dash#Em_dash
-    return String::checkPlain($this->title . __(" — ", "html head title")) . SITENAME;
+    return String::checkPlain($this->title) . __(" — ") . SITENAME;
   }
 
   /**

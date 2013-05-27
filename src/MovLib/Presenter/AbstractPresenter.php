@@ -97,8 +97,8 @@ abstract class AbstractPresenter {
    *   CamelCase representation of the action if set, otherwise <tt>Show</tt> is returned.
    */
   public final function getAction($defaultAction = "Show") {
-    if (isset($_SERVER["ACTION"]) === true) {
-      return str_replace(" ", "", ucwords(strtr($_SERVER["ACTION"], "_", " ")));
+    if (isset($_SERVER["ACTION"])) {
+      return $_SERVER["ACTION"];
     }
     return $defaultAction;
   }
@@ -106,17 +106,31 @@ abstract class AbstractPresenter {
   /**
    * Associative array containing the breadcrumb trail for this presenter.
    *
-   * The returned array must have the following format (the following is an example for the route
-   * <tt>/movie/1234/release/1234/discussion/1234):
+   * The array will be passed to <code>AbstractView::getBreadcrumb()</code> which calls
+   * <code>AbstractView::getNavigation()</code>, the returned array must be in the correct format for the last method.
+   * Do not include the home nor the current page link, they are included automatically. Only specify the intermediate
+   * points.
+   *
+   * <b>Example Usage:</b>
+   * The following example is for the route <tt>/movie/1234/release-1234/discussion-1234</tt>:
    * <pre>return [
+   *   // Home link is included automatically!
    *   [
-   *     "href" => route("movie/%u", [ $movieId ]),
-   *     "title" => __("Go to “%s” "),
-   *     "text" => $movieTitle,
+   *     "href" => route("movies"),
+   *     "text" => __("Movies"),
+   *     "title" => __("Go to movies overview page."),
    *   ],
    *   [
-   *     "href" => route("movie/%u/release/%u", [ $movieId, $releaseId ]);
-   *     "title" =>
+   *     "href" => route("movie/%u", [ $movieId ]),
+   *     "text" => $movieTitle,
+   *     "title" => __("Go to “@s” movie page.", [ $movieTitle ]),
+   *   ],
+   *   [
+   *     "href" => route("movie/%u/release-%u", [ $movidId, $releaseId ]),
+   *     "text" => $releaseTitle,
+   *     "title" => __("Got to “@s” release page.", [ $releaseTitle ]),
+   *   ],
+   *   // Link to current page is included automatically!
    * ]</pre>
    *
    * @return array
@@ -155,7 +169,7 @@ abstract class AbstractPresenter {
    *   The desired value if present or value of <var>$defaultValue</var>.
    */
   public final function getPostValue($key, $defaultValue = "") {
-    if (isset($_POST[$key]) === true) {
+    if (isset($_POST[$key])) {
       return $_POST[$key];
     }
     return $defaultValue;

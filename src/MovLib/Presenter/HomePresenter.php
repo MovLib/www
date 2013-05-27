@@ -35,4 +35,11 @@ class HomePresenter extends AbstractPresenter {
     $this->setOutput($this->getShortName());
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getBreadcrumb() {
+    return [];
+  }
+
 }

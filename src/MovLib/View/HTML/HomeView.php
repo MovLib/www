@@ -101,14 +101,14 @@ class HomeView extends AbstractView {
           "<p>" . __("") . "</p>" .
         "</article>" .
         "<article class='span span--3 span--home text-justify'>" .
-          "<h2 class='text-center'>" . sprintf(__("My %s"), SITENAME) . "</h2>" .
+          "<h2 class='text-center'>" . __("My !sitename", [ "!sitename" => SITENAME ]) . "</h2>" .
           "<p></p>" .
-          "<p class='text-center'>{$this->a(__("sign-up", "route"), __("Sign up for a new account"), [ "class" => "button button--success button--large" ])}</p>" .
+          "<p class='text-center'>{$this->a(route("sign-up"), __("Sign up for a new account"), [ "class" => "button button--success button--large" ])}</p>" .
         "</article>" .
         "<article class='span span--3 span--home text-justify'>" .
           "<h2 class='text-center'>" . __("API") . "</h2>" .
-          "<p>" . sprintf(__("The %s API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at %s."), SITENAME, SITENAME) . "</p>" .
-          "<p class='text-center'>{$this->a("//api.movlib.org", __("Read the API documentation"), [ "class" => "button button--primary button--large" ])}</p>" .
+          "<p>" . __("The !sitename API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at !sitename.", [ "!sitename" => SITENAME ]) . "</p>" .
+          "<p class='text-center'><a class='button button--primary button--large' href='https://api.movlib.org'>" . __("Read the API documentation") . "</a></p>" .
         "</article>" .
       "</div>"
     ;

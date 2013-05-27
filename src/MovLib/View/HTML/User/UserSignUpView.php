@@ -62,7 +62,7 @@ class UserSignUpView extends AbstractFormView {
     $usernameValue = $this->presenter->getPostValue("username");
 
     $submit = __("Sign up");
-    $submitTitle = sprintf(__("Click this button to create a new %s account"), SITENAME);
+    $submitTitle = __("Click this button to create a new !sitename account", [ "!sitename" => SITENAME ]);
 
     return
       "<div class='page-header--no-border'><h1>{$this->title}</h1></div>" .

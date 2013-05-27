@@ -60,4 +60,11 @@ class ExceptionPresenter extends AbstractPresenter {
     // Nothing to do here!
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getBreadcrumb() {
+    return [];
+  }
+
 }

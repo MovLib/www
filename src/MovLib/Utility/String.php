@@ -36,10 +36,24 @@ class String {
    * @param string $text
    *   The text to be checked or processed.
    * @return string
-   *   HTML safe version of <code>$text</code>, or an empty string if <code>$text</code> is not valid UTF-8.
+   *   HTML safe version of <var>$text</var>, or an empty string if <var>$text</var> is not valid UTF-8.
    */
   public static function checkPlain($text) {
     return htmlspecialchars($text, ENT_QUOTES, "UTF-8");
+  }
+
+  /**
+   * Encodes special characters in a URL for display as HTML.
+   *
+   * Also validates strings as UTF-8.
+   *
+   * @param string $url
+   *   The URL to be checked or processed.
+   * @return string
+   *   HTML safe version of <var>$url</var>, or an empty string if <var>$url</var> is not valid UTF-8.
+   */
+  public static function checkUrl($url) {
+    return htmlentities($url, ENT_QUOTES, "UTF-8");
   }
 
   /**
@@ -103,6 +117,30 @@ class String {
   public static function placeholder($string) {
     $string = self::checkPlain($string);
     return "<em class='placeholder'>{$string}</em>";
+  }
+
+  /**
+   * Shorten given string to given length and optionally append a string.
+   *
+   * <b>Usage example:</b>
+   * The following will return “<em>extre…</em>”:
+   * <pre>String::shorten("extremely long string", 5, __("…"));</pre>
+   *
+   * @param string $string
+   *   The strong to shorten.
+   * @param int $length
+   *   The length the string shall not exceed.
+   * @param string $append
+   *   String to append if the string exceeds <var>$length</var>.
+   * @return string
+   *   The string as is if it does not exceed <var>$length</var>, otherwise the shortened string with <var>$append</var>
+   *   appended to the end of the string.
+   */
+  public static function shorten($string, $length, $append = "") {
+    if (mb_strlen($string) > $length) {
+      return mb_substr($string, 0, $length) . $append;
+    }
+    return $string;
   }
 
 }

@@ -218,15 +218,15 @@
   display: inline-block;
 }
 
+.lead {
+  font-size: 21px;
+  line-height: 26.25px;
+}
+
 .hero {
   font-size: 38.5px;
   font-weight: bold;
   line-height: 77px;
-}
-
-.lead {
-  font-size: 21px;
-  line-height: 26.25px;
 }
 
 .lead,

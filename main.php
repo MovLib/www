@@ -123,22 +123,22 @@ function npgettext($msgctxt, $msgid1, $msgid2, $num) {
  *
  * @see gettext
  * @see pgettext
- * @param string $msgid
+ * @param string $string
  *   The message that should be translated.
- * @param string $msgctxt
+ * @param string $context
  *   [optional] Context of this translation.
  * @return string
  *   The translated string.
  */
-function __($msgid, $args = [], $msgctxt = "") {
-  if (empty($msgctxt)) {
-    $msgid = gettext($msgid);
+function __($string, $args = [], $context = "") {
+  if (empty($context)) {
+    $string = gettext($string);
   }
-  $msgid = pgettext($msgctxt, $msgid);
+  $string = pgettext($context, $string);
   if (empty($args)) {
-    return $msgid;
+    return $string;
   }
-  return \MovLib\Utility\String::format($msgctxt, $args);
+  return \MovLib\Utility\String::format($string, $args);
 }
 
 /**
@@ -165,7 +165,11 @@ function n__($msgid1, $msgid2, $n, $msgctxt = "") {
 }
 
 function route($path, $args = []) {
-  return vprintf(__($path, null, "route"), $args);
+  $path = __($path, null, "route");
+  if (empty($args)) {
+    return $path;
+  }
+  return svprintf($path, $args);
 }
 
 /**

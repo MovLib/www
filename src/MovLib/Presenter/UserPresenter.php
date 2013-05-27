@@ -34,6 +34,19 @@ class UserPresenter extends AbstractPresenter {
   /**
    * {@inheritdoc}
    */
+  public function getBreadcrumb() {
+    if (method_exists($this, __FUNCTION__ . $this->getAction())) {
+      return $this->{__FUNCTION__ . $this->getAction()}();
+    }
+    if ($this->user->loggedIn() === true) {
+      return [[ "href" => route("user"), "text" => __("Profile"), "title" => __("Your user profile.") ]];
+    }
+    return [[ "href" => route("users"), "text" => __("Users"), "title" => __("Have a look at our user statistics.") ]];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function init() {
     return $this
       ->{__FUNCTION__ . $this->getAction()}()

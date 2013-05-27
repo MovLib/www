@@ -58,7 +58,7 @@ class UserSignInView extends AbstractFormView {
 
     $passwordLabel = __("Password");
     $passwordPlaceholder = __("Enter your password");
-    $passwordTitle = sprintf(__("Please enter your secret %s password in this field."), SITENAME);
+    $passwordTitle = __("Please enter your secret !sitename password in this field.", [ "!sitename" => SITENAME ]);
 
     $remember = __("Keep me signed in (for up to 30 days)");
     $rememberTitle = __("Check this box to stay signed in for the next 30 days.");
@@ -67,7 +67,7 @@ class UserSignInView extends AbstractFormView {
     $submitTitle = __("Click here after you have filled out all fields.");
 
     $resetPasswordLink = $this->a(
-      __("user/reset_password", "route"),
+      route("user/reset-password"),
       __("Reset your password"),
       [ "class" => "pull-right", "title" => __("Click this linke if you forgot your password.") ]
     );
