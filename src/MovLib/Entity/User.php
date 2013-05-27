@@ -20,6 +20,7 @@ namespace MovLib\Entity;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\UserModel;
+use \MovLib\Utility\Crypt;
 
 /**
  *
@@ -32,48 +33,123 @@ use \MovLib\Model\UserModel;
  */
 class User {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   /**
-   * The unique ID of this user.
+   * Maximum length a username can have.
    *
    * @var int
    */
-  private $id;
+  const USERNAME_MAX_LENGTH = 255;
 
-  /**
-   * The unique name of this user.
-   *
-   * @var string
-   */
-  private $name;
 
-  /**
-   * The unique email of this user.
-   *
-   * @var string
-   */
-  private $email;
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The CSRF token for this user's session.
    *
    * @var string
    */
-  private $csrfToken;
+  private $csrfToken = false;
 
-  public function __construct() {
-    $this->csrfToken = $this->sessionGet("csrf_token");
+  /**
+   * The unique email of this user.
+   *
+   * @var string
+   */
+  private $email = "";
+
+  /**
+   * The unique ID of this user.
+   *
+   * @var int
+   */
+  private $id = 0;
+
+  /**
+   * Login status of this user.
+   *
+   * @var boolean
+   */
+  private $loggedIn = false;
+
+  /**
+   * The unique name of this user.
+   *
+   * @var string
+   */
+  private $name = "";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic methods
+
+
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public methods
+
+
+  /**
+   * Construct new user object from given ID.
+   *
+   * @param int $id
+   *   The ID from which a user object should be created.
+   * @return $this
+   * @throws UserException
+   *   If there is no user with the given ID.
+   */
+  public function constructFromId($id) {
+    try {
+      return $this->setUserData((new UserModel())->getUserFromId($id));
+    } catch (DatabaseException $e) {
+      throw new UserException("No user exists with ID '{$id}'!");
+    }
   }
 
-  public function constructUserFromId($id) {
-
-  }
-
-  public function constructUserFromEmail($email) {
+  /**
+   * Construct new user object from given email address.
+   *
+   * @param string $email
+   *   The email address from which a user object should be created.
+   * @return $this
+   * @throws UserException
+   *   If there is no user with the given email address.
+   */
+  public function constructFromEmail($email) {
     try {
       return $this->setUserData((new UserModel())->getUserFromEmail($email));
     } catch (DatabaseException $e) {
       throw new UserException("No user exists with email address '{$email}'!");
     }
+  }
+
+  /**
+   * Construct new user object from given name.
+   *
+   * @param string $name
+   *   The name from which a user object should be created.
+   * @return $this
+   * @throws UserException
+   *   If there is no user with the given name.
+   */
+  public function constructFromName($name) {
+    try {
+      return $this->setUserData((new UserModel())->getUserFromName($name));
+    } catch (DatabaseException $e) {
+      throw new UserException("No user exists with name '{$name}'!");
+    }
+  }
+
+  /**
+   * Construct new user object from session.
+   *
+   * @return $this
+   */
+  public function constructFromSession() {
+
   }
 
   /**
@@ -89,12 +165,111 @@ class User {
   }
 
   /**
+   * Get the user email.
+   *
+   * @return string
+   *   The email address of the current user object.
+   */
+  public function getEmail() {
+    return $this->email;
+  }
+
+  /**
+   * Get the user ID.
+   *
+   * @return int
+   *   The ID of the current user object.
+   */
+  public function getId() {
+    return $this->id;
+  }
+
+  /**
+   * Get the username.
+   *
+   * @return string
+   *   The username of the current user object.
+   */
+  public function getName() {
+    return $this->name;
+  }
+
+  /**
+   * Check if user is logged in.
+   *
    * @return boolean
    *   <tt>TRUE</tt> if the current user is logged in, otherwise <tt>FALSE</tt>.
    */
   public function loggedIn() {
-    return false;
+    return $this->loggedIn;
   }
+
+  public function resetPassword() {
+
+  }
+
+  /**
+   * Validate a user submitted CSRF token against the token present in the user's session.
+   *
+   * @param string $submittedToken
+   *   The user submitted CSRF token.
+   * @return boolean
+   *   <tt>TRUE</tt> if the token matches, <tt>FALSE</tt> if no token is present in the session or they are not equal.
+   */
+  public function validateCsrfToken($submittedToken) {
+    return $this->csrfToken === $submittedToken;
+  }
+
+  /**
+   * Validate the given username.
+   *
+   * @link http://api.drupal.org/api/drupal/core!modules!user!user.module/function/user_validate_name/8
+   * @param string $name
+   *   The username to validate.
+   * @return string
+   *   The username if it is valid.
+   * @throws UserException
+   *   Exception with descriptive error message that can be displayed to the user.
+   */
+  public static function validateName($name) {
+    if (!$name) {
+      throw new UserException(__("You must enter a username."));
+    }
+    if (substr($name, 0, 1) === " ") {
+      throw new UserException(__("The username cannot begin with a space."));
+    }
+    if (substr($name, -1) === " ") {
+      throw new UserException(__("The username cannot end with a space."));
+    }
+    if (strpos($name, "  ") !== false) {
+      throw new UserException(__("The username cannot contain multiple spaces in a row."));
+    }
+    if (preg_match("/[^\x{80}-\x{F7} a-z0-9@_.\'-]/i", $name) === 1) {
+      throw new UserException(__("The username contains an illegal character."));
+    }
+    if (preg_match(
+      "/[\x{80}-\x{A0}" .   // Non-printable ISO-8859-1 + NBSP
+      "\x{AD}" .            // Soft-hyphen
+      "\x{2000}-\x{200F}" . // Various space characters
+      "\x{2028}-\x{202F}" . // Bidirectional text overrides
+      "\x{205F}-\x{206F}" . // Various text hinting characters
+      "\x{FEFF}" .          // Byte order mark
+      "\x{FF01}-\x{FF60}" . // Full-width latin
+      "\x{FFF9}-\x{FFFD}" . // Replacement characters
+      "\x{0}-\x{1F}]/u",    // NULL byte and control characters
+      $name
+    ) === 1) {
+      throw new UserException(__("The username contains an illegal character."));
+    }
+    if (mb_strlen($name) > self::USERNAME_MAX_LENGTH) {
+      throw new UserException(sprintf(__("The username %s is too long: it must be %i characters or less."), $name, self::USERNAME_MAX_LENGTH));
+    }
+    return $name;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Private methods
+
 
   /**
    * Retrieve value identified by key from session.
@@ -120,10 +295,8 @@ class User {
    */
   private function sessionStart() {
     if (session_status() === PHP_SESSION_NONE) {
-      // IMPORTANT! There is nothing to set up at this point, use the PHP configuration of your VPS to do so and check
-      //            the /conf/php folder for the configuration that is used by MovLib.
       session_start();
-      $this->csrfToken = hash("sha512", mt_rand(0, mt_getrandmax()));
+      $this->csrfToken = Crypt::getHash();
       $this->sessionStore("csrf_token", $this->csrfToken);
     }
     return $this;
@@ -144,23 +317,20 @@ class User {
     return $this;
   }
 
+  /**
+   * Export user data to class scope (e.g. from database query).
+   *
+   * @param array $data
+   *   Associative array containing the user's data.
+   * @return $this
+   */
   private function setUserData($data) {
     foreach ($data as $property => $value) {
-      $this->{$property} = $value;
+      if (property_exists($this, $property) === true) {
+        $this->{$property} = $value;
+      }
     }
     return $this;
-  }
-
-  /**
-   * Validate a user submitted CSRF token against the token present in the user's session.
-   *
-   * @param string $submittedToken
-   *   The user submitted CSRF token.
-   * @return boolean
-   *   <tt>TRUE</tt> if the token matches, <tt>FALSE</tt> if no token is present in the session or they are not equal.
-   */
-  public function validateCsrfToken($submittedToken) {
-    return $this->csrfToken === $submittedToken;
   }
 
 }
