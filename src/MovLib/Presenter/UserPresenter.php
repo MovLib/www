@@ -41,6 +41,11 @@ class UserPresenter extends AbstractPresenter {
     ;
   }
 
+  /**
+   * Render the reset password page.
+   *
+   * @return $this
+   */
   private function initResetPassword() {
     if ($this->user->loggedIn() === true) {
       return $this->setOutput("Error\\Forbidden");
@@ -56,7 +61,7 @@ class UserPresenter extends AbstractPresenter {
       AsyncMailer::resetPassword($email);
       $this->showSingleAlertAlertView(
         $userResetPasswordView->getTitle(),
-        "<p>" . __("A password reset email has been sent to <b>{$email}</b>.") . "</p>",
+        "<p>" . __("An email with further instructions has been sent to <b>{$email}</b>.") . "</p>",
         "success",
         true
       );

@@ -19,6 +19,7 @@ namespace MovLib\Utility;
 
 use \MovLib\Entity\User;
 use \MovLib\Utility\AsyncAbstractWorker;
+use \MovLib\Utility\AsyncLogger;
 use \MovLib\Exception\MailException;
 use \MovLib\Exception\UserException;
 use \Stackable;
@@ -87,21 +88,39 @@ class AsyncMailer extends AsyncAbstractWorker {
     try {
       /* @var $user \MovLib\Entity\User */
       $user = (new User())->constructFromEmail($userEmail);
-      $instance->stack(new AsyncMail(
+      $instance->stack(new AsyncMailerStack(
         $user->getEmail(),
         __("Password reset request"),
-        "<p>" . sprintf(__("Hello %s!"), $user->getName()) . "</p>" .
-        "<p>" . __("You (or someone else)") . "</p>"
+        sprintf(__("Hello %s!
+
+You (or someone else) has requested to reset the password for your account.
+
+You may now log in by clicking this link or copying and pasting it to your browser.
+
+%s
+
+This link can only be used once to log in and will lead you to a page where you can set your password. If you have not requested this password reset simply ignore this email.
+
+— %s"), $user->getName(), $user->getResetPasswordHash(), SITENAME)
       ));
     } catch (UserException $e) {
-      // @todo No need to do anything but logging.
+      AsyncLogger::logException($e, AsyncLogger::LEVEL_INFO);
     }
     return $instance;
   }
 
 }
 
-class AsyncMail extends Stackable {
+/**
+ * A single mail entry within our asynchronous mailing system.
+ *
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link http://movlib.org/
+ * @since 0.0.1-dev
+ */
+class AsyncMailerStack extends Stackable {
 
   /**
    * Message to be sent.
