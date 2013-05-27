@@ -37,19 +37,19 @@ use \MovLib\View\HTML\Movie\MovieShowView;
  * @since 0.0.1-dev
  */
 class MoviePresenter extends AbstractPresenter {
-  
+
   /**
    * An array containing the full movie information.
-   * @var array 
+   * @var array
    */
   private $movie;
-  
+
   /**
    * An array containing all releases of a movie.
-   * @var array 
+   * @var array
    */
   private $movieReleases;
-  
+
 
   /**
    * The movie model instance that is associated with the requested movie ID and this presenter.
@@ -78,28 +78,54 @@ class MoviePresenter extends AbstractPresenter {
         case "PUT":
           break;
         default:
-          
+
           $this->movieModel = new MovieModel($this->language->getCode());
           $this->releasesModel = new ReleasesModel($this->language->getCode());
-          
+
           $this->movie = $this->movieModel->getMovieFull($_SERVER["MOVIE_ID"]);
           $this->movieReleases = $this->releasesModel->getReleasesForMovie($_SERVER["MOVIE_ID"]);
-      
+
           $this->output = (new MovieShowView($this))->getRenderedView();
-          return $this;        
+          return $this;
       }
-      
+
     } catch (Exception $e) {
       var_dump($e);
     }
   }
-  
+
+  public function getBreadcrumb() {
+    return [[ "href" => route("movies"), "text" => __("Movies") ]];
+  }
+
   public function getTitle() {
     return $this->movie["display_title"];
   }
-  
+
   public function getYear() {
     return $this->movie["year"];
   }
+
+  public function getId() {
+    return $this->movie["movie_id"];
+  }
+
+  public function getDisplayPosterFileName() {
+    if (empty($this->movie["poster"])) {
+      return false;
+    }
+
+    return
+      strtr($this->movie["display_title"], " ", "-") .
+      "." .
+      $this->movie["poster"]["file_id"] .
+      "." .
+      $this->movie["poster"]["language_code"] .
+      "." .
+      $this->movie["poster"]["extension"]
+    ;
+  }
+
+
 
 }
