@@ -322,7 +322,6 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   UNIQUE INDEX `name_UNIQUE` (`name` ASC) ,
   UNIQUE INDEX `email_UNIQUE` (`email` ASC) ,
   INDEX `fk_users_avatars1_idx` (`avatar_file_id` ASC) ,
-  INDEX `password_idx` (`pass` ASC) ,
   CONSTRAINT `fk_users_avatars1`
     FOREIGN KEY (`avatar_file_id` )
     REFERENCES `movlib`.`avatars` (`images_file_id` )
