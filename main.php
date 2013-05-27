@@ -130,12 +130,12 @@ function npgettext($msgctxt, $msgid1, $msgid2, $num) {
  * @return string
  *   The translated string.
  */
-function __($string, $args = [], $context = "") {
+function __($string, $args = null, $context = "") {
   if (empty($context)) {
     $string = gettext($string);
   }
   $string = pgettext($context, $string);
-  if (empty($args)) {
+  if ($args === null) {
     return $string;
   }
   return \MovLib\Utility\String::format($string, $args);
@@ -164,12 +164,15 @@ function n__($msgid1, $msgid2, $n, $msgctxt = "") {
   return npgettext($msgctxt, $msgid1, $msgid2, $n);
 }
 
-function route($path, $args = []) {
+function route($path, $args = null) {
   $path = __($path, null, "route");
-  if (empty($args)) {
+  if ($args === null) {
     return $path;
   }
-  return svprintf($path, $args);
+  if (!is_array($args)) {
+    $args = [ $args ];
+  }
+  return vsprintf($path, $args);
 }
 
 /**
