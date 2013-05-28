@@ -32,6 +32,11 @@ use \MovLib\View\HTML\AbstractView;
 class MovieShowView extends AbstractView {
 
   /**
+   * @var \MovLib\Presenter\MoviePresenter
+   */
+  protected $presenter;
+
+  /**
    * The Constructor for the movie show view.
    *
    * @param \MovLib\Presenter\MoviePresenter $presenter
@@ -39,8 +44,8 @@ class MovieShowView extends AbstractView {
    */
   public function __construct($presenter) {
     parent::__construct($presenter, SITENAME);
-    $this->title = $presenter->getTitle();
-    $this->title .= $presenter->getYear() == "0000" ? "" : " ({$presenter->getYear()})";
+    $this->title = $presenter->getMovieTitle();
+    $this->title .= $presenter->getMovieYear() == "0000" ? "" : " ({$presenter->getMovieYear()})";
     $this->addStylesheet("/assets/css/modules/movie.css");
   }
 
@@ -51,7 +56,7 @@ class MovieShowView extends AbstractView {
     $posterFileName = $this->presenter->getDisplayPosterFileName();
 
     if ($posterFileName !== false) {
-      $posterFilePath = "/uploads/posters/{$this->presenter->getId()}/w300/{$posterFileName}";
+      $posterFilePath = "/uploads/posters/{$this->presenter->geMovietId()}/w300/{$posterFileName}";
       $posterAlt = sprintf(__("%s poster."), $this->title);
     }
 
@@ -69,7 +74,7 @@ class MovieShowView extends AbstractView {
           "</ul>" .
         "</figure>" .
         "<div class='span span--4c'>" .
-
+        (empty($this->presenter->getMovieSynopsis()) ? __("No synopsis has been added yet. Please click Edit to do so.") : $this->presenter->getMovieSynopsis()) .
         "</div>" .
       "</div>"
     ;

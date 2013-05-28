@@ -98,15 +98,19 @@ class MoviePresenter extends AbstractPresenter {
     return [[ "href" => route("movies"), "text" => __("Movies") ]];
   }
 
-  public function getTitle() {
+  public function getMovieSynopsis() {
+    return $this->movie["synopsis"];
+  }
+
+    public function getMovieTitle() {
     return $this->movie["display_title"];
   }
 
-  public function getYear() {
+  public function getMovieYear() {
     return $this->movie["year"];
   }
 
-  public function getId() {
+  public function geMovietId() {
     return $this->movie["movie_id"];
   }
 
