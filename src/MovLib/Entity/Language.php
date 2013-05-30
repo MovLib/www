@@ -160,6 +160,17 @@ class Language {
     return $this->locales;
   }
 
+  public function getIntlLocales() {
+    return [
+      "en" => "en_US", // https://ssl.icu-project.org/icu-bin/locexp?_=en_US
+      "de" => "de_DE", // https://ssl.icu-project.org/icu-bin/locexp?_=de_DE
+      "fr" => "fr_FR", // https://ssl.icu-project.org/icu-bin/locexp?_=fr_FR
+      "hi" => "hi_IN", // https://ssl.icu-project.org/icu-bin/locexp?_=hi_IN
+      "ja" => "ja_JP", // https://ssl.icu-project.org/icu-bin/locexp?_=ja_JP
+      "ru" => "ru_RU", // https://ssl.icu-project.org/icu-bin/locexp?_=ru_RU
+    ];
+  }
+
   /**
    * Get the ISO 639-1:2002 two letter code of the language.
    *

@@ -37,4 +37,9 @@ class LanguageSelectionPresenter extends AbstractPresenter {
     return $this->setOutput($this->getShortName());
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getBreadcrumb() {}
+
 }
