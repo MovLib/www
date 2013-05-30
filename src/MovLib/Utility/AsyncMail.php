@@ -197,7 +197,7 @@ class AsyncMailerStack extends Stackable {
    */
   protected function setMessage($message) {
     if (empty($message)) {
-      throw new MailException("The email body can not be empty!");
+      throw new MailException("The email body cannot be empty!");
     }
     $this->message = $message;
     return $this;
