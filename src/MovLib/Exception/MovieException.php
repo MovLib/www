@@ -20,15 +20,15 @@ namespace MovLib\Exception;
 use \MovLib\Exception\AbstractException;
 
 /**
- * A user exception might be thrown if an error occures related to a user entity.
+ * A movie exception might be thrown if an error occures related to movies.
  *
- * @see \MovLib\Entity\User
+ * @see \MovLib\Model\MovieModel
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserException extends AbstractException {
+class MovieException extends AbstractException {
 
 }
