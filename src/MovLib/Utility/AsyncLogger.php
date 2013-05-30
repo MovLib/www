@@ -18,6 +18,8 @@
 namespace MovLib\Utility;
 
 use \MovLib\Utility\AsyncAbstractWorker;
+use \MovLib\Utility\AsyncMail;
+use \MovLib\Utility\String;
 use \Stackable;
 
 /**
@@ -166,11 +168,19 @@ class AsyncLoggerStackable extends Stackable {
   }
 
   /**
-   * Write log entry.
+   * Write log entry and send email to devs if appropriate.
    */
   public function run() {
     // We have no access to the $_SERVER variable in this thread.
     file_put_contents("/var/www/logs/{$this->level}.log", date("Y-m-d H:i:s") . $this->message . PHP_EOL, FILE_APPEND);
+    // Send email to developers upon logging of entries of level fatal or error.
+    if ($this->level === AsyncLogger::LEVEL_FATAL || $this->level === AsyncLogger::LEVEL_ERROR) {
+      AsyncMail::sendMail(
+        "movdev@movlib.org",
+        "IMPORTANT! A {$this->level} message was just logged.",
+        "<p>Here is the message that was logged:</p><pre>" . String::checkPlain($this->message) . "</pre>"
+      );
+    }
   }
 
 }
