@@ -158,12 +158,12 @@ table {
     XP systems. More info can be found here: http://en.wikipedia.org/wiki/Microsoft_YaHei
   - sans-serif: Fallback if everything else fails.
 */
-  font: 14px/20px 'open sans', arial, meiryo, 'microsoft yahei', 'ms yahei', yahei, sans-serif;
+  font: 300 14px/20px 'open sans light', 'open sans', arial, meiryo, 'microsoft yahei', 'ms yahei', yahei, sans-serif;
 }
 
 /* Ensure Chinese strings are displayed with the correct font choice. */
 [lang="zh"] {
-  font-family: 'open sans', arial, 'microsoft yahei', 'ms yahei', yahei, meiryo, sans-serif;
+  font-family: 'open sans light', 'open sans', arial, 'microsoft yahei', 'ms yahei', yahei, meiryo, sans-serif;
 }
 
 pre,
@@ -172,7 +172,7 @@ kbd,
 samp,
 tt,
 var {
-  font: 12px/1 consolas, monospace, serif;
+  font: normal 12px/1 consolas, monospace, serif;
 }
 
 ::-moz-selection {
@@ -227,18 +227,19 @@ dfn {
 }
 
 b,
-strong,
-#logo,
+strong {
+  font-weight: 700;
+}
+
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-weight: bold;
+  font-weight: 300;
 }
 
-#logo,
 h1,
 h2,
 h3,
@@ -249,7 +250,6 @@ h6 {
   margin: 10px 0;
 }
 
-#logo small,
 h1 small,
 h2 small,
 h3 small,
@@ -257,18 +257,15 @@ h4 small,
 h5 small,
 h6 small {
   color: #555;
-  font-weight: normal;
   line-height: 1;
 }
 
-#logo,
 h1,
 h2,
 h3 {
   line-height: 40px;
 }
 
-#logo,
 h1 {
   font-size: 38.5px;
 }

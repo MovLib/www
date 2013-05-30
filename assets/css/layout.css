@@ -364,17 +364,24 @@ a,
 /* Logo ------------------------------------------------------------------------------------------------------------- */
 
 #logo {
-  background: url(/assets/img/logo/64.png) no-repeat;
-  border-bottom: 0;
-  height: 64px;
-  line-height: 50px;
-  margin: 0;
   padding: 0 0 0 80px;
+  margin: 0;
+  line-height: 50px;
+  height: 64px;
+  font-weight: 700;
+  font-size: 38.5px;
+  color: #333;
+  border-bottom: 0;
+  background: url(/assets/img/logo/64.png) no-repeat;
 }
 
 #logo small {
+  color: #555;
   display: block;
   font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 0.3px;
+  line-height: 1;
   margin-left: 1px;
 }
 
