@@ -40,7 +40,7 @@ class ForbiddenView extends AlertView {
     parent::__construct($presenter, __("Access forbidden"));
     http_response_code(403);
     $this->setAlert(
-      "<p>" . __("We are sorry, but you can not access this page.") . "</p>" .
+      "<p>" . __("We are sorry, but you cannot access this page.") . "</p>" .
       "<p>" . __("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please !contactLink.", [ "!contactLink" => $this->a(route("contact"), __("contact us")) ]) . "</p>",
       __("Access forbidden"),
       self::ALERT_SEVERITY_ERROR,

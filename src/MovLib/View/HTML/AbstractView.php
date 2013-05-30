@@ -132,7 +132,7 @@ abstract class AbstractView {
     $this->presenter = $presenter;
     $this->title = $title;
     $this->addStylesheet([
-      "//fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic&amp;subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic",
+      "//fonts.googleapis.com/css?family=Open+Sans:300,300italic,700,700italic&amp;subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic",
       "/assets/css/modules/entypo.css",
       "/assets/css/base.css",
       "/assets/css/layout.css",

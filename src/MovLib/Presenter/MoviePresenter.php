@@ -17,12 +17,9 @@
  */
 namespace MovLib\Presenter;
 
-use \MovLib\Entity\Language;
-use \MovLib\View\HTML\ErrorView;
-use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\MovieException;
 use \MovLib\Model\MovieModel;
 use \MovLib\Model\ReleasesModel;
-use \MovLib\View\HTML\Movie\MovieShowView;
 
 
 /**
@@ -39,97 +36,72 @@ use \MovLib\View\HTML\Movie\MovieShowView;
 class MoviePresenter extends AbstractPresenter {
 
   /**
-   * An array containing the full movie information.
+   * Associative array containing the complete data of this movie.
+   *
    * @var array
    */
   private $movie;
 
   /**
-   * An array containing all releases of a movie.
-   * @var array
+   * {@inheritdoc}
    */
-  private $movieReleases;
-
-
-  /**
-   * The movie model instance that is associated with the requested movie ID and this presenter.
-   *
-   * @var \MovLib\Model\MovieModel
-   */
-  private $movieModel;
+  protected function init() {
+    return $this
+      ->{__FUNCTION__ . $this->getMethod()}()
+      ->setOutput()
+    ;
+  }
 
   /**
-   * The releases model instance that is associated with the requested movie ID and this presenter.
+   * Render the movie's page.
    *
-   * @var \MovLib\Model\ReleasesModel
+   * @return $this
    */
-  private $releasesModel;
+  protected function initGet() {
+    $languageCode = $this->language->getCode();
+    try {
+      $this->movie = (new MovieModel($languageCode))->getMovieFull($_SERVER["MOVIE_ID"]);
+      if ($this->movie["display"] === false) {
+        return $this->setOutput("Error\\GoneMovie");
+      }
+      $this->movie["releases"] = (new ReleasesModel($languageCode))->getReleasesForMovie($_SERVER["MOVIE_ID"]);
+      return $this->setOutput("Movie\\MovieShow");
+    } catch (MovieException $e) {
+      return $this->setOutput("Error\\NotFound");
+    }
+  }
 
   /**
    * {@inheritdoc}
    */
-  protected function init() {
-    try {
-      switch ($_SERVER["REQUEST_METHOD"]) {
-        case "DELETE":
-          break;
-        case "POST":
-          break;
-        case "PUT":
-          break;
-        default:
-
-          $this->movieModel = new MovieModel($this->language->getCode());
-          $this->releasesModel = new ReleasesModel($this->language->getCode());
-
-          $this->movie = $this->movieModel->getMovieFull($_SERVER["MOVIE_ID"]);
-          $this->movieReleases = $this->releasesModel->getReleasesForMovie($_SERVER["MOVIE_ID"]);
-
-          $this->output = (new MovieShowView($this))->getRenderedView();
-          return $this;
-      }
-
-    } catch (Exception $e) {
-      var_dump($e);
-    }
-  }
-
   public function getBreadcrumb() {
     return [[ "href" => route("movies"), "text" => __("Movies") ]];
   }
 
-  public function getMovieSynopsis() {
-    return $this->movie["synopsis"];
-  }
-
-    public function getMovieTitle() {
+  /**
+   * Get the display title and year appended in brackets (if the movie has a year).
+   *
+   * @return string
+   */
+  public function getMovieDisplayTitleAndYear() {
+    if ($this->movie["year"] !== "0000") {
+      return "{$this->movie["display_title"]} ({$this->movie["year"]})";
+    }
     return $this->movie["display_title"];
   }
 
-  public function getMovieYear() {
-    return $this->movie["year"];
-  }
-
-  public function geMovietId() {
-    return $this->movie["movie_id"];
-  }
-
-  public function getDisplayPosterFileName() {
-    if (empty($this->movie["poster"])) {
-      return false;
+  /**
+   * Get the full path to the poster art.
+   *
+   * @param string $style
+   *   The desired image style.
+   * @return string
+   *   Absolute path to the poster art for the desired image style.
+   */
+  public function getMoviePoster($style) {
+    if ($this->movie["poster"]) {
+      return "/uploads/poster/{$this->movie["id"]}/{$style}/{$this->movie["poster"]["file_name"]}.{$this->movie["poster"]["file_id"]}.{$this->movie["poster"]["extension"]}";
     }
-
-    return
-      strtr($this->movie["display_title"], " ", "-") .
-      "." .
-      $this->movie["poster"]["file_id"] .
-      "." .
-      $this->movie["poster"]["language_code"] .
-      "." .
-      $this->movie["poster"]["extension"]
-    ;
   }
-
-
 
 }

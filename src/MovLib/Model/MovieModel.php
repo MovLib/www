@@ -18,11 +18,14 @@
 namespace MovLib\Model;
 
 use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\ErrorException;
 use \MovLib\Model\AbstractModel;
+use \MovLib\Utility\AsyncLogger;
 
 /**
  * The movie model is responsible for all database related functionality of a single movie entry.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -40,82 +43,116 @@ class MovieModel extends AbstractModel {
   private $languageCode;
 
   /**
-   * The movie id corresponding to the current movie.
+   * The unique movie's ID.
    *
-   * @var int
+   * @var boolean|int
    */
-  private $movieId = false;
+  private $movieId;
 
   /**
    * The current movie as associative array.
    *
    * @var array
    */
-  private $movie = [];
+  private $movie;
 
-  public function __construct($languageCode) {
+  /**
+   * Keyed array containing all posters sorted by rating.
+   *
+   * @var array
+   */
+  private $posters;
+
+  /**
+   * Construct new (empty) movie model.
+   *
+   * @param string $languageCode
+   *   The language code for the movie queries in ISO 639-1:2002 format.
+   * @param int $movieId
+   *   [Optional] The unique movie ID of the movie that should be loaded from the database.
+   */
+  public function __construct($languageCode, $movieId = false) {
     parent::__construct();
     $this->languageCode = $languageCode;
-  }
-
-  public function create() {
-    if ($this->movieId !== false) {
-      throw new DatabaseException("The movie with id {$this->movieId} already exists.");
-    }
-    // @todo create movie entry
-    //$this->movieId = last_insert_id_from_mysql
-    return $this;
+    $this->movieId = $movieId;
   }
 
   /**
-   * Retrieve basic movie information as associative array.
+   * Retrieve basic movie data.
+   *
+   * <b>Basic</b> in this context refers to the data that is stored in the <tt>movies</tt>, <tt>movies_[lang]</tt> and
+   * <tt>movie_titles</tt> database tables.
    *
    * @param int $id
-   *  The movie's id.
+   *   The movie's unique ID.
    * @return array
-   *  The basic movie information as associative array.
-   * @throws DatabaseException
-   *  If the movie id does not exist.
+   *   Associative array containing the basic movie data.
+   * @throws \MovLib\Exception\MovieException
+   *   If no movie exists with this ID.
+   * @throws \MovLib\Exception\DatabaseException
+   *   If <tt>movie_titles</tt> table contains no data.
    */
   public function getMovieBasic($id) {
-    if (empty($this->movie) === false) {
+    // If we already have a movie, return it.
+    if ($this->movie) {
       return $this->movie;
     }
 
-    $query = "SELECT * FROM movies m LEFT JOIN movies_{$this->languageCode} ml ON m.movie_id = ml.movies_movie_id WHERE m.movie_id = ?";
-
-    $queryResult = $this->query($query, "i", [ $id ]);
-
-    if ( empty( $queryResult ) ) {
-      throw new DatabaseException("Movie with ID: {$id} does not exist.");
+    // Try to get the movie and localized movie data from the database.
+    try {
+      $movie = $this->query(
+        "SELECT *
+        FROM `movies` `m`
+        LEFT JOIN `movies_{$this->languageCode}` `ml`
+          ON `m`.`movie_id` = `ml`.`movies_movie_id`
+        WHERE `m`.`movie_id` = ?
+        LIMIT 1", "i", [ $id ]
+      )[0];
+    } catch (ErrorException $e) {
+      throw new MovieException("Could not find movie with ID '{$id}'!");
     }
 
-    $this->movie = $queryResult[0];
+    // Try to get the titles from the database.
+    $titles = $this->query("SELECT * FROM `movie_titles` WHERE `movies_movie_id` = ?", "i", [ $id ]);
+    if (empty($titles)) {
+      // If the above query returns zero results, something is terribly wrong.
+      $e = new DatabaseException("Could not fetch title for movie with ID '{$id}'!");
+      AsyncLogger::logException($e, AsyncLogger::LEVEL_FATAL);
 
-    $query = "SELECT t.`title_id`, t.`title`, t.`is_original_title`, t.`languages_language_id` FROM movies m INNER JOIN movie_titles t ON m.movie_id = t.movies_movie_id WHERE m.movie_id = ?";
-    $this->movie["titles"] = $this->query($query, "i", [ $id ]);
+      throw $e;
+    }
 
-    $this->movie["display"] = (boolean) $this->movie["display"];
-
-    $titlesCount = count($this->movie["titles"]);
+    // Set original and display titles.
+    $titlesCount = count($titles);
     for ($i = 0; $i < $titlesCount; ++$i) {
-      $this->movie["titles"][$i]["is_original_title"] = (boolean) $this->movie["titles"][$i]["is_original_title"];
-      if ($this->movie["titles"][$i]["is_original_title"] === true) {
-        $this->movie["original_title_id"] = $this->movie["titles"][$i]["title_id"];
-        $this->movie["original_title"] = $this->movie["titles"][$i]["title"];
-        if ($this->movie["display_title_id"] === null) {
-          $this->movie["display_title_id"] = &$this->movie["original_title_id"];
-          $this->movie["display_title"] = &$this->movie["original_title"];
+      settype($titles[$i]["is_original_title"], "boolean");
+
+      // Check if this is the original title.
+      if ($titles[$i]["is_original_title"] === true) {
+        $movie["original_title_id"] = &$titles[$i]["title_id"];
+        $movie["original_title"] = &$titles[$i]["title"];
+
+        // Check if the display title might be the original title as well.
+        if ($movie["display_title_id"] === null) {
+          $movie["display_title_id"] = &$movie["original_title_id"];
+          $movie["display_title"] = &$movie["original_title"];
           break;
         }
       }
-      if ($this->movie["titles"][$i]["title_id"] === $this->movie["display_title_id"]) {
-        $this->movie["display_title_id"] = $this->movie["titles"][$i]["title_id"];
-        $this->movie["display_title"] = $this->movie["titles"][$i]["title"];
+
+      // Check if this is the display title.
+      if ($titles[$i]["title_id"] === $movie["display_title_id"]) {
+        $movie["display_title_id"] = &$titles[$i]["title_id"];
+        $movie["display_title"] = &$titles[$i]["title"];
       }
     }
 
-    $this->movieId = $this->movie["movie_id"];
+    settype($movie["display"], "boolean");
+
+    $this->movie = $movie;
+    $this->movie["titles"] = $titles;
+    $this->movieId = $movie["movie_id"];
+
     return $this->movie;
   }
 
@@ -195,6 +232,57 @@ class MovieModel extends AbstractModel {
     if (count($result) > 0) {
       $this->movie["poster"] = $result[0];
     }
+  }
+
+  /**
+   * Get the primary poster data for the current movie.
+   *
+   * @todo Which poster should we use as primary poster if none has an upvote?
+   * @return array
+   *   Associative array containing every bit of data from the poster.
+   */
+  public function getPrimaryPoster() {
+    if ($this->posters) {
+      return $this->posters[0];
+    }
+    try {
+      $poster = $this->query(
+        "SELECT *
+        FROM `posters` `p`
+        INNER JOIN `images` `i`
+          ON `p`.`id` = `i`.`id`
+        WHERE `p`.`movie_id` = ?
+        ORDER BY `p`.`rating` DESC
+        LIMIT 1",
+        "i", $this->movieId
+      )[0];
+      $this->posters = [ $poster ];
+      return $this->posters;
+    } catch (ErrorException $e) {
+      // If accessing offset 0 of the array fails. Do nothing!
+    }
+  }
+
+  /**
+   * Get all posters data for the current movie.
+   *
+   * @return array
+   *   Keyed array containing every poster's data.
+   */
+  public function getPosters() {
+    if ($this->posters) {
+      return $this->posters;
+    }
+    $this->posters = $this->query(
+      "SELECT *
+      FROM `posters` `p`
+      INNER JOIN `images` `i`
+        ON `p`.`id` = `i`.`id`
+      WHERE `p`.`movie_id` = ?
+      ORDER BY `p`.`rating` DESC",
+      "i", $this->movieId
+    );
+    return $this->posters;
   }
 
 }

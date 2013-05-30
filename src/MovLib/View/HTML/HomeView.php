@@ -98,7 +98,7 @@ class HomeView extends AbstractView {
       "<div class='row row--home'>" .
         "<article class='span span--3 span--home text-justify'>" .
           "<h2 class='text-center'>" . __("Releases") . "</h2>" .
-          "<p>" . __("") . "</p>" .
+          "<p></p>" .
         "</article>" .
         "<article class='span span--3 span--home text-justify'>" .
           "<h2 class='text-center'>" . __("My !sitename", [ "!sitename" => SITENAME ]) . "</h2>" .

@@ -44,7 +44,7 @@ class ExceptionView extends AlertView {
     parent::__construct($presenter, "Error");
     $this->addStylesheet("/assets/css/modules/stacktrace.css");
     $this->setAlert(
-      "<p>" . __("This shouldn’t have happened, but it did, an error occured while trying to handle your request.") . "</p>" .
+      "<p>" . __("This shouldn’t have happened, but it did, an error occurred while trying to handle your request.") . "</p>" .
       "<p>" . __("The error was logged and reported to the system administrators, it should be fixed in no time.") . "</p>" .
       "<p>" . __("Please try again in a few minutes.") . "</p>",
       __("We’re sorry but something went terribly wrong!"),

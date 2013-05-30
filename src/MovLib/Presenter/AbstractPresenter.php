@@ -19,7 +19,6 @@ namespace MovLib\Presenter;
 
 use \MovLib\Entity\Language;
 use \MovLib\Entity\User;
-use \MovLib\Utility\HTTP;
 use \MovLib\View\HTML\AlertView;
 use \ReflectionClass;
 
@@ -80,22 +79,6 @@ abstract class AbstractPresenter {
       $this->init();
     } catch (Exception $e) {
       $this->output = new ErrorView($this->language, $e);
-    }
-  }
-
-  /**
-   * Magic function that is automatically called if somebody tries to echo the object itself.
-   *
-   * @return string
-   */
-  public function __toString() {
-    if (xdebug_is_enabled()) {
-      ob_start();
-      var_dump($this);
-      return ob_get_clean();
-    }
-    else {
-      return "<pre>" . print_r($this, true) . "</pre>";
     }
   }
 
@@ -178,6 +161,15 @@ abstract class AbstractPresenter {
    */
   public final function getLanguage() {
     return $this->language;
+  }
+
+  /**
+   * Get the current server request method as CamelCase string.
+   *
+   * @return string
+   */
+  public final function getMethod() {
+    return ucfirst(strtolower($_SERVER["REQUEST_METHOD"]));
   }
 
   /**
