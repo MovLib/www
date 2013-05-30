@@ -131,10 +131,10 @@ function npgettext($msgctxt, $msgid1, $msgid2, $num) {
  *   The translated string.
  */
 function __($string, $args = null, $context = "") {
-  if (empty($context)) {
+//  if (empty($context)) {
     $string = gettext($string);
-  }
-  $string = pgettext($context, $string);
+//  }
+//  $string = pgettext($context, $string);
   if ($args === null) {
     return $string;
   }
@@ -165,7 +165,8 @@ function n__($msgid1, $msgid2, $n, $msgctxt = "") {
 }
 
 function route($path, $args = null) {
-  $path = __($path, null, "route");
+//  $path = __($path, null, "route");
+  $path = gettext($path);
   if ($args === null) {
     return $path;
   }
@@ -218,9 +219,7 @@ set_exception_handler("uncaught_exception_handler");
  *   The line number the error was raised at.
  */
 function error_all_handler($errno, $errstr, $errfile, $errline) {
-  uncaught_exception_handler(
-    (new \MovLib\Exception\ErrorException($errstr, $errno))->setFile($errfile)->setLine($errline)
-  );
+  throw (new \MovLib\Exception\ErrorException($errstr, $errno))->setFile($errfile)->setLine($errline);
 }
 
 // Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
