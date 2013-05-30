@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML;
 
+use \Locale;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -50,10 +51,10 @@ class LanguageSelectionView extends AbstractView {
    */
   public function getRenderedContent() {
     $points = [];
-    foreach ($this->presenter->getLanguage()->getLocales() as $code => $locale) {
+    foreach ($this->presenter->getLanguage()->getIntlLocales() as $code => $locale) {
       $points[] = [
         "href" => "//{$code}.{$_SERVER["SERVER_NAME"]}",
-        "text" => $locale["name"],
+        "text" => Locale::getDisplayLanguage($locale, $locale),
         "attributes" => [ "lang" => $code ],
       ];
     }
