@@ -71,12 +71,17 @@ class TranslationExtractor {
   /**
    * @todo Documentation
    */
+  private $patterns = [ "viewA", "i18nR", "i18nT" ];
+
+  /**
+   * @todo Documentation
+   */
   private $viewApattern = '$this->a(';
 
   /**
    * @todo Documentation
    */
-  private $viewApos = false;
+  private $viewAposition = false;
 
   /**
    * @todo Documentation
@@ -86,7 +91,7 @@ class TranslationExtractor {
   /**
    * @todo Documentation
    */
-  private $i18nRpos = false;
+  private $i18nRposition = false;
 
   /**
    * @todo Documentation
@@ -96,7 +101,7 @@ class TranslationExtractor {
   /**
    * @todo Documentation
    */
-  private $i18nTpos = false;
+  private $i18nTposition = false;
 
   /**
    * @todo Documentation
@@ -109,111 +114,121 @@ class TranslationExtractor {
   public function __construct() {
     foreach (rglob("*.php", dirname(__DIR__) . "/src") as $file) {
       $this->fileContent = str_replace([ '$i18n->r(', '$i18n->t(' ], [ '$this->r(', '$this->t(' ], file_get_contents($file));
-      $this->testTruncateAndCall();
+      do {
+        $continue = false;
+        foreach ($this->patterns as $pattern) {
+          if (($this->{"{$pattern}position"} = strpos($this->fileContent, $this->{"{$pattern}pattern"})) !== false) {
+            $this->extractAndCall($pattern, $this->{"{$pattern}position"});
+            $this->{"{$pattern}position"} = false;
+            $continue = true;
+            break;
+          }
+        }
+      } while ($continue);
     }
   }
 
   /**
    * @todo Documentation
    */
-  private function testTruncateAndCall() {
-    // Test all available patterns.
-    foreach ([ "viewA", "i18nR", "i18nT" ] as $test) {
-      // If this patterns matches, extract the call and call it.
-      if (($this->{"{$test}pos"} = strpos($this->fileContent, $this->{"{$test}pattern"})) !== false) {
-        // Save the position of the call and reset the property.
-        $callPosition = $this->{"{$test}pos"};
-        $this->{"{$test}pos"} = false;
-        // Truncate the file's content.
-        $this->fileContent = mb_substr($this->fileContent, $callPosition);
-        // Count the remaining characters.
-        $contentLength = mb_strlen($this->fileContent);
-        // We have one opening bracket.
-        $openingBrackets = 1;
-        // And no closing brackets.
-        $closingBrackets = 0;
-        // Iterate over the files content; character by character.
-        for ($i = 0; $i < $contentLength; ++$i) {
-          // Do not parse the method call itself again.
-          if ($i > 9) {
-            // Increase counters if we encounter any of their characters.
-            $this->fileContent[$i] === "(" && ++$openingBrackets;
-            $this->fileContent[$i] === ")" && ++$closingBrackets;
-            // We are done parsing this call as soon as opening and closing brackets are equal.
-            if ($openingBrackets === $closingBrackets) {
-              // Add one to the current position within the files content, this is for the last closing bracket.
-              $callPosition = $i + 1;
-              // Extract the call from the file.
-              $call = mb_substr($this->fileContent, 0, $callPosition);
-              // Remove the args array from the i18n calls.
-              if ($test !== $this->viewApattern && ($argsStart = strpos($this->fileContent, "[")) !== false) {
-                // We have one opening square bracket.
-                $openingSquareBrackets = 1;
-                // We have no closing square bracket.
-                $closingSquareBrackets = 0;
-                // Count the call characters.
-                $callLength = mb_strlen($call);
-                // Iterate over the call and collect all square brackets.
-                for ($j = 0; $j < $callLength; ++$j) {
-                  $call[$j] === "[" && ++$openingSquareBrackets;
-                  $call[$j] === "]" && ++$closingSquareBrackets;
-                  if ($openingSquareBrackets === $closingSquareBrackets) {
-                    break;
-                  }
-                }
-                $argsStart -= mb_strrpos(mb_substr($call, 0, $argsStart), ",");
-                echo mb_substr($call, 0, $argsStart) . mb_substr($call, $j, $callLength) . PHP_EOL;
-//                $call = mb_substr($call, 0, $argsStart) . mb_substr($call, $j, $callLength);
-//                echo "{$call};\n";
-              }
-              if ($this->fileContent[10] !== "$") {
-//                eval("{$call};");
-//                echo "{$call};\n";
-              }
-              break;
-            }
-          }
+  private function extractAndCall($pattern, $position) {
+    // Truncate the file's content.
+    $this->fileContent = mb_substr($this->fileContent, $position);
+    // Count the remaining characters.
+    $contentLength = mb_strlen($this->fileContent);
+    // We have one opening bracket.
+    $openingBrackets = 1;
+    // And no closing brackets.
+    $closingBrackets = 0;
+    // Skip the method pattern in the upcoming loop. No need for multi-byte function.
+    $i = strlen($pattern);
+    // Iterate over the files content; character by character.
+    for (; $i < $contentLength; ++$i) {
+      // Increase counters if we encounter any of their characters.
+      $this->fileContent[$i] === "(" && ++$openingBrackets;
+      $this->fileContent[$i] === ")" && ++$closingBrackets;
+      // We are done parsing this call as soon as opening and closing brackets are equal.
+      if ($openingBrackets === $closingBrackets) {
+        // Add one to the current position within the files content, this is for the last closing bracket.
+        $position = $i + 1;
+        // Extract the call from the file.
+        $call = mb_substr($this->fileContent, 0, $position);
+        // Remove the args array from the i18n calls.
+        if ($pattern !== $this->viewApattern && ($argsStart = strpos($this->fileContent, "[")) !== false) {
+          $this->removeArgs($call, $argsStart);
         }
-        // Truncate the file's content again and remove the call we just handled.
-        $this->fileContent = mb_substr($this->fileContent, $callPosition);
-        // Go and test the rest of the file.
-        $this->testTruncateAndCall();
+        // @todo Remove args arrays from calls to the view method arrays.
+        else {
+
+        }
+        if ($this->fileContent[10] !== "$") {
+//          eval("{$call};");
+          echo "{$call};\n";
+        }
+        break;
       }
     }
+    // Truncate the file's content again and remove the call we just handled.
+    $this->fileContent = mb_substr($this->fileContent, $position);
+    // Go and test the rest of the file.
+    $this->testTruncateAndCall();
+  }
+
+  /**
+   * @todo Documentation
+   * @todo This is not working yet!
+   */
+  private function removeArgs(&$call, $start) {
+      // We have one opening square bracket.
+      $openingSquareBrackets = 1;
+      // We have no closing square bracket.
+      $closingSquareBrackets = 0;
+      // Count the call characters.
+      $callLength = mb_strlen($call);
+      // Iterate over the call and collect all square brackets.
+      for ($j = 0; $j < $callLength; ++$j) {
+        $call[$j] === "[" && ++$openingSquareBrackets;
+        $call[$j] === "]" && ++$closingSquareBrackets;
+        if ($openingSquareBrackets === $closingSquareBrackets) {
+          break;
+        }
+      }
+      $start -= mb_strrpos(mb_substr($call, 0, $start), ",");
+      echo mb_substr($call, 0, $start) . mb_substr($call, $j, $callLength) . PHP_EOL;
+//      $call = mb_substr($call, 0, $argsStart) . mb_substr($call, $j, $callLength);
+//      echo "{$call};\n";
   }
 
   /**
    * @todo Documentation
    */
   private function a($route, $text) {
-//    echo "Calling a()\n";
-//    var_dump($route);
-//    var_dump($text);
-//    echo "\n";
+    echo "Calling a()\n";
+    var_dump($route);
+    var_dump($text);
+    echo "\n";
   }
 
   /**
    * @todo Documentation
    */
-  public function r($route, $comment = null, $oldRoute = null) {
-//    echo "Calling r()\n";
-//    var_dump($route);
-//    var_dump($args);
-//    var_dump($comment);
-//    var_dump($oldRoute);
-//    echo "\n";
+  private function r($route, $comment = null, $oldRoute = null) {
+    echo "Calling r()\n";
+    var_dump($route);
+    var_dump($comment);
+    var_dump($oldRoute);
+    echo "\n";
   }
 
   /**
    * @todo Documentation
    */
-  public function t($message, $comment = null, $oldMessage = null) {
-//    echo "Calling t()\n";
-//    var_dump($message);
-//    var_dump($args);
-//    var_dump($comment);
-//    var_dump($oldMessage);
-//    echo "\n";
+  private function t($message, $comment = null, $oldMessage = null) {
+    echo "Calling t()\n";
+    var_dump($message);
+    var_dump($comment);
+    var_dump($oldMessage);
+    echo "\n";
   }
 
 }
