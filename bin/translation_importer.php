@@ -71,7 +71,7 @@ class TranslationExtractor {
   /**
    * @todo Documentation
    */
-  private $patterns = [ "viewA", "i18nR", "i18nT" ];
+  private $patterns = [ "viewApattern", "i18nRpattern", "i18nTpattern" ];
 
   /**
    * @todo Documentation
@@ -81,27 +81,12 @@ class TranslationExtractor {
   /**
    * @todo Documentation
    */
-  private $viewAposition = false;
-
-  /**
-   * @todo Documentation
-   */
   private $i18nRpattern = '$this->r(';
 
   /**
    * @todo Documentation
    */
-  private $i18nRposition = false;
-
-  /**
-   * @todo Documentation
-   */
   private $i18nTpattern = '$this->t(';
-
-  /**
-   * @todo Documentation
-   */
-  private $i18nTposition = false;
 
   /**
    * @todo Documentation
@@ -117,10 +102,9 @@ class TranslationExtractor {
       $patternsCount = count($this->patterns) - 1;
       while (true) {
         for ($i = 0; $i < $patternsCount; ++$i) {
-          if (($this->{"{$this->patterns[$i]}position"} = strpos($this->fileContent, $this->{"{$this->patterns[$i]}pattern"})) !== false) {
-            $this->extractAndCall($this->patterns[$i], $this->{"{$this->patterns[$i]}position"});
-            $this->{"{$this->patterns[$i]}position"} = false;
-            break;
+          if (($position = strpos($this->fileContent, $this->{$this->patterns[$i]})) !== false) {
+            $this->extractAndCall($this->patterns[$i], $position);
+            break 1; // Break out of the for loop.
           } elseif ($i === $patternsCount) {
             break 2; // No pattern matched, break out of the while and the for loop.
           }
