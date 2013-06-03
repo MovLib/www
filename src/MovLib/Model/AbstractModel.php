@@ -53,7 +53,14 @@ abstract class AbstractModel {
    *
    * @var \mysqli
    */
-  private $mysqli;
+  private static $mysqli;
+
+  /**
+   * Total count of connections for this request.
+   *
+   * @var int
+   */
+  private static $connectionCounter = 0;
 
   /**
    * The MySQLi statement object for all queries.
@@ -124,17 +131,20 @@ abstract class AbstractModel {
    *   If connecting to the database or selecting the database fails.
    */
   protected final function connect() {
-    $this->mysqli = new mysqli();
-    if ($this->mysqli->real_connect() === false) {
-      throw new DatabaseException("Could not connect to default database server.");
+    self::$connectionCounter++;
+    if (!self::$mysqli) {
+      self::$mysqli = new mysqli();
+      if (self::$mysqli->real_connect() === false) {
+        throw new DatabaseException("Could not connect to default database server.");
+      }
+      if (self::$mysqli->connect_error) {
+        throw new DatabaseException("Database connect error with message: {self::$mysqli->error} ({self::$mysqli->errno})");
+      }
+      if (self::$mysqli->select_db(self::DEFAULT_DB) === false) {
+        throw new DatabaseException("Could not use default database: " . self::DEFAULT_DB);
+      }
     }
-    if ($this->mysqli->connect_error) {
-      throw new DatabaseException("Database connect error with message: {$this->mysqli->error} ({$this->mysqli->errno})");
-    }
-    if ($this->mysqli->select_db(self::DEFAULT_DB) === false) {
-      throw new DatabaseException("Could not use default database: " . self::DEFAULT_DB);
-    }
-    return $this;
+    return self::$mysqli;
   }
 
   /**
@@ -182,8 +192,11 @@ abstract class AbstractModel {
    *   Might throw a generic exception if the mysqli variable does not contain a valid object.
    */
   protected final function disconnect() {
-    $this->mysqli->close();
-    unset($this->mysqli);
+    self::$connectionCounter--;
+    if (self::$connectionCounter === 0) {
+      self::$mysqli->close();
+      unset(self::$mysqli);
+    }
     return $this;
   }
 
@@ -236,7 +249,7 @@ abstract class AbstractModel {
    * @return null|\mysqli
    */
   protected final function getMySQLi() {
-    return $this->mysqli;
+    return self::$mysqli;
   }
 
   /**
@@ -296,8 +309,8 @@ abstract class AbstractModel {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function prepare($query) {
-    if (($this->stmt = $this->mysqli->prepare($query)) === false) {
-      throw new DatabaseException("Preparation of statement failed: {$this->mysqli->error} ({$this->mysqli->errno})");
+    if (($this->stmt = self::$mysqli->prepare($query)) === false) {
+      throw new DatabaseException("Preparation of statement failed: {self::$mysqli->error} ({self::$mysqli->errno})");
     }
     return $this;
   }

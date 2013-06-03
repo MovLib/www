@@ -49,7 +49,7 @@ class FileSystem {
   public static function getTemporaryDirectory() {
     static $tmpDir = false;
     if ($tmpDir === false) {
-      $tmpDir = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR);
+      $tmpDir = rtrim(sys_get_temp_dir(), "/");
     }
     return $tmpDir;
   }
@@ -73,9 +73,9 @@ class FileSystem {
       $fileExtension = pathinfo($source, PATHINFO_EXTENSION);
     }
     if (empty($fileExtension) === false) {
-      $fileExtension = '.' . $fileExtension;
+      $fileExtension = ".{$fileExtension}";
     }
-    $tmpFilePath = FileSystem::getTemporaryDirectory() . DIRECTORY_SEPARATOR . uniqid() . $fileExtension;
+    $tmpFilePath = FileSystem::getTemporaryDirectory() . "/" . uniqid() . $fileExtension;
     if (copy($source, $tmpFilePath) === false) {
       $source = basename($source);
       throw new FileSystemException("Could not create a temporary copy of '{$source}'.");

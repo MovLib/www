@@ -40,26 +40,26 @@ abstract class AbstractFormView extends AbstractView {
   protected $attributes = [];
 
   /**
-   * {@inheritdoc}
+   * Get the rendered content, without HTML head, header or footer.
+   *
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
+   * @return string
    */
   public function getRenderedContent() {
+    global $user;
     $csrf = "";
-    if (($token = $this->presenter->getUser()->getCsrfToken()) !== false) {
+    if ($token = $user->getCsrfToken()) {
       $csrf = "<input name='csrf_token' type='hidden' value='{$token}'>";
     }
-    if (isset($this->attributes["action"]) === false) {
+    if (isset($this->attributes["action"])) {
       $this->attributes["action"] = $_SERVER["REQUEST_URI"];
     }
-    if (isset($this->attributes["method"]) === false) {
+    if (isset($this->attributes["method"])) {
       $this->attributes["method"] = "post";
     }
     $this->addClass("form form-{$this->getShortName()}", $this->attributes);
-    return
-      "<form {$this->expandTagAttributes($this->attributes)}>" .
-        $csrf .
-        $this->getRenderedFormContent() .
-      "</form>"
-    ;
+    return "<form {$this->expandTagAttributes($this->attributes)}>{$csrf}{$this->getRenderedFormContent()}</form>";
   }
 
   /**

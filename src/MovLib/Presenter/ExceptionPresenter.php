@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presenter;
 
-use \MovLib\Entity\Language;
 use \MovLib\Entity\User;
 use \MovLib\Presenter\AbstractPresenter;
 use \MovLib\View\HTML\Error\ExceptionView;
@@ -48,9 +47,7 @@ class ExceptionPresenter extends AbstractPresenter {
    */
   public function __construct($exception) {
     $this->exception = $exception;
-    $this->language = new Language();
-    $this->user = new User();
-    $this->output = (new ExceptionView($this, $this->exception))->getRenderedView();
+    $this->presentation = (new ExceptionView($this, $this->exception))->getRenderedView();
   }
 
   /**

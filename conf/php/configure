@@ -20,6 +20,7 @@
   --with-fpm-user=www-data
   --with-gd
   --with-gettext
+  --with-icu-dir=/usr/local
   --with-mcrypt
   --with-mysql-sock=/run/mysqld/mysqld.sock
   --with-mysqli

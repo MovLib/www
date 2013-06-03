@@ -17,10 +17,11 @@
  */
 namespace MovLib\Presenter;
 
-use \MovLib\Entity\User;
 use \MovLib\Exception\UserException;
+use \MovLib\Model\UserModel;
 use \MovLib\Presenter\AbstractPresenter;
 use \MovLib\Utility\AsyncMail;
+use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -39,9 +40,9 @@ class UserPresenter extends AbstractPresenter {
 
 
   /**
-   * User object of the profile that we are currently displaying.
+   * User model of the profile that we are currently displaying.
    *
-   * @var \MovLib\Entity\User
+   * @var \MovLib\Model\UserModel
    */
   private $profile;
 
@@ -50,41 +51,31 @@ class UserPresenter extends AbstractPresenter {
 
 
   /**
-   * {@inheritdoc}
+   * Associative array containing the breadcrumb trail for this presenter.
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
+   * @return array
    */
   public function getBreadcrumb() {
+    global $i18n, $user;
     if (method_exists($this, __FUNCTION__ . $this->getAction())) {
       return $this->{__FUNCTION__ . $this->getAction()}();
     }
-    if ($this->user->loggedIn() === true) {
-      return [[ "href" => route("user"), "text" => __("Profile"), "title" => __("Your user profile.") ]];
+    if ($user->isLoggedIn() === true) {
+      return [[
+        "href" => $i18n->r("/user"),
+        "text" => $i18n->t("Porfile"),
+        "title" => $i18n->t("Go to your user profile.")
+      ]];
     }
-    return [[ "href" => route("users"), "text" => __("Users"), "title" => __("Have a look at our user statistics.") ]];
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Public getters
-
-
-  /**
-   * Get the user object for the user profile that we are currently displaying.
-   *
-   * @return \MovLib\Entity\User
-   */
-  public function getProfile() {
-    return $this->profile;
-  }
-
-  /**
-   * Get the username of the user object that we are currently displaying.
-   *
-   * @return string
-   */
-  public function getUsername() {
-    if ($this->profile instanceof User) {
-      return $this->profile->getName();
-    }
-    return $this->user->getName();
+    return [[
+      "href" => $i18n->r("/users"),
+      "text" => $i18n->t("Users"),
+      "title" => $i18n->t("Have a look at our user statistics.")
+    ]];
   }
 
 
@@ -97,18 +88,23 @@ class UserPresenter extends AbstractPresenter {
   public function init() {
     return $this
       ->{__FUNCTION__ . $this->getAction()}()
-      ->setOutput()
+      ->setPresentation()
     ;
   }
 
   /**
    * Render the reset password page.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
    * @return $this
    */
   private function initResetPassword() {
-    if ($this->user->loggedIn() === true) {
-      return $this->setOutput("Error\\Forbidden");
+    global $i18n, $user;
+    if ($user->isLoggedIn() === true) {
+      return $this->setPresentation("Error\\Forbidden");
     }
     /* @var $userResetPasswordView \MovLib\View\HTML\User\UserResetPasswordView */
     $userResetPasswordView = $this->getView("User\\UserResetPassword");
@@ -120,7 +116,7 @@ class UserPresenter extends AbstractPresenter {
         AsyncMail::resetPassword($_POST["email"]);
         $this->showSingleAlertAlertView(
           $userResetPasswordView->getTitle(),
-          "<p>" . __("An email with further instructions has been sent to %emailAddress.", [ "%emailAddress" => $_POST["email"] ]) . "</p>",
+          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["email"]) ])}</p>",
           AbstractView::ALERT_SEVERITY_SUCCESS,
           true
         );
@@ -138,47 +134,54 @@ class UserPresenter extends AbstractPresenter {
     try {
       // Try to load the user's data from the database.
       if (isset($_SERVER["USER_ID"])) {
-        $this->profile = (new User())->constructFromId($_SERVER["USER_ID"]);
+        $this->profile = (new UserModel())->constructFromId($_SERVER["USER_ID"]);
       }
       elseif (isset($_SERVER["USER_NAME"])) {
-        $this->profile = (new User())->constructFromName($_SERVER["USER_NAME"]);
+        $this->profile = (new UserModel())->constructFromName($_SERVER["USER_NAME"]);
       }
       // If this user's account is disabled, tell the client about it and exit (no need to redirect).
-      if ($this->profile->getStatus() === false) {
-        return $this->setOutput("Error\\Gone");
+      if ($this->profile->getDeleted() === true) {
+        return $this->setPresentation("Error\\Gone");
       }
       // Check if the requested URI is a perfect match to what we want to have.
-      $profileRoute = $this->profile->getProfileRoute();
-      if ($_SERVER["REQUEST_URI"] !== "/{$profileRoute}") {
+      if (($profileRoute = $this->profile->getProfileRoute()) && $_SERVER["REQUEST_URI"] !== $profileRoute) {
         HTTP::redirect($profileRoute);
       }
       // Everything looks good, render the profile.
-      return $this->setOutput("User\\UserShow");
+      return $this->setPresentation("User\\UserShow");
     } catch (UserException $e) {
-      return $this->setOutput("Error\\NotFound");
+      return $this->setPresentation("Error\\NotFound");
     }
   }
 
   /**
    * Render the sign in form.
    *
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
    * @return $this
    */
   private function initSignIn() {
-    if ($this->user->loggedIn() === true) {
-      return $this->setOutput("Error\\Forbidden");
+    global $user;
+    if ($user->isLoggedIn() === true) {
+      return $this->setPresentation("Error\\Forbidden");
     }
-    return $this->setOutput("User\\UserSignIn");
+    return $this->setPresentation("User\\UserSignIn");
   }
 
   /**
    * Render the sign up form.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
    * @return $this
    */
   private function initSignUp() {
-    if ($this->user->loggedIn() === true) {
-      return $this->setOutput("Error\\Forbidden");
+    global $i18n, $user;
+    if ($user->isLoggedIn() === true) {
+      return $this->setPresentation("Error\\Forbidden");
     }
     /* @var $userSignUpView \MovLib\View\HTML\User\UserSignUpView */
     $userSignUpView = $this->getView("User\\UserSignUp");
@@ -186,19 +189,19 @@ class UserPresenter extends AbstractPresenter {
       if (isset($_POST["email"]) && ($error = AsyncMail::validateEmail($_POST["email"]))) {
         $userSignUpView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
       }
-      if (isset($_POST["name"]) && ($error = User::validateName($_POST["name"]))) {
+      if (isset($_POST["username"]) && ($error = User::validateName($_POST["username"]))) {
         $userSignUpView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
       }
       if (!$error) {
         $this->showSingleAlertAlertView(
           $userSignUpView->getTitle(),
-          "<p>" . __("An email with further instructions has been sent to %emailAddress.", [ "%emailAddress" => $_POST["email"] ]) . "</p>",
+          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["email"]) ])}</p>",
           AbstractView::ALERT_SEVERITY_SUCCESS,
           true
         );
       }
     }
-    return $this->setOutput("User\\UserSignUp");
+    return $this->setPresentation("User\\UserSignUp");
   }
 
 }

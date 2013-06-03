@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\Error;
 
+use \MovLib\Utility\AsyncLogger;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AlertView;
 
@@ -35,19 +36,22 @@ class ExceptionView extends AlertView {
   /**
    * An error view expects the complete exception object to be passed along.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @param \MovLib\Presenter\AbstractPresenter $presenter
    *   The presenter that created the view instance.
    * @param \Exception $exception
    *   The exception that caused the error.
    */
   public function __construct($presenter, $exception) {
-    parent::__construct($presenter, "Error");
+    global $i18n;
+    parent::__construct($presenter, $i18n->t("Internal Server Error"));
+    http_response_code(500);
     $this->addStylesheet("/assets/css/modules/stacktrace.css");
     $this->setAlert(
-      "<p>" . __("This shouldn’t have happened, but it did, an error occurred while trying to handle your request.") . "</p>" .
-      "<p>" . __("The error was logged and reported to the system administrators, it should be fixed in no time.") . "</p>" .
-      "<p>" . __("Please try again in a few minutes.") . "</p>",
-      __("We’re sorry but something went terribly wrong!"),
+      "<p>{$i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered.")}</p>" .
+      "<p>{$i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes.")}</p>",
+      $i18n->t("Internal Server Error"),
       self::ALERT_SEVERITY_ERROR,
       true
     );
@@ -63,6 +67,7 @@ class ExceptionView extends AlertView {
       true
     );
     /*}}}DEBUG*/
+    AsyncLogger::logException($exception, AsyncLogger::LEVEL_FATAL);
   }
 
   /**
@@ -77,7 +82,7 @@ class ExceptionView extends AlertView {
     $output = "";
     $stacktraceCount = count($stacktrace);
     for ($i = 0; $i < $stacktraceCount; ++$i) {
-      if (isset($stacktrace[$i]["args"]) === true || empty($stacktrace[$i]["args"]) === false) {
+      if (isset($stacktrace[$i]["args"]) || !empty($stacktrace[$i]["args"])) {
         $argCount = count($stacktrace[$i]["args"]);
         for ($j = 0; $j < $argCount; ++$j) {
           $suffix = "";
@@ -93,7 +98,7 @@ class ExceptionView extends AlertView {
         $stacktrace[$i]["args"] = "";
       }
       foreach ([ "line", "class", "type", "function", "file" ] as $s) {
-        if (isset($stacktrace[$i][$s]) === false) {
+        if (isset($stacktrace[$i][$s])) {
           $stacktrace[$i][$s] = "";
         }
       }

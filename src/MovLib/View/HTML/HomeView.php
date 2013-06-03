@@ -36,12 +36,14 @@ class HomeView extends AbstractView {
    * {@inheritdoc}
    */
   public function __construct($language) {
-    parent::__construct($language, SITENAME);
+    parent::__construct($language, "MovLib");
     $this->addStylesheet("/assets/css/modules/home.css");
   }
 
   /**
-   * {@inheritdoc}
+   * The home view has no breadcrumb.
+   *
+   * @return string
    */
   public function getBreadcrumb() {
     return "";
@@ -51,23 +53,19 @@ class HomeView extends AbstractView {
    * {@inheritdoc}
    */
   public function getHeaderLogo() {
-    return "<h1 id='logo' class='inline'>" . SITENAME . " <small>" . __("the <em>free</em> movie library") . "</small></h1>";
+    global $i18n;
+    return "<h1 id='logo' class='inline'>{$i18n->t("MovLib <small>the <em>free</em> movie library.</small>")}</h1>";
   }
 
   /**
    * {@inheritdoc}
    */
   public function getHeadTitle() {
+    global $i18n;
     return
       $this->title .
-      //# The comma is used as separator character in the header title of the home page. The header title of the home
-      //# page is built like a setence with the pattern "[sitename][separator][description]". The content of this
-      //# sentence in the first version of the software was "MovLib, the free movie library.". The trailing dot was part
-      //# of the slogan but the comma is translated as separate string (to ensure that the slogan stays re-usable).
-      //# Translate the comma to the equivalent character in your language. More information on this specific character
-      //# can be found at Wikipedia: https://en.wikipedia.org/wiki/Comma
-      __(", ") .
-      __("the free movie library.")
+      $i18n->t(", ", null, "The comma is used as separator character in the header title of the home page. The header title of the home page is built like a setence with the pattern '[sitename][separator][description]'. The content of this sentence in the first version of the software was 'MovLib, the free movie library.'. The trailing dot was part of the slogan but the comma is translated as separate string (to ensure that the slogan stays re-usable). Translate the comma to the equivalent character in your language. More information on this specific character can be found at <a href='//en.wikipedia.org/wiki/Comma'>Wikipedia.</a>") .
+      $i18n->t("the free movie library.")
     ;
   }
 
@@ -75,40 +73,41 @@ class HomeView extends AbstractView {
    * {@inheritdoc}
    */
   public function getRenderedContent() {
+    global $i18n;
     return
       "<div id='home-banner'>" .
         "<div class='row'>" .
-          "<div class='span span--1 lead hero'>" . __('Do you like movies?<br>Great, so do we!') . "</div>" .
+          "<div class='span span--1 lead hero'>{$i18n->t("Do you like movies?<br>Great, so do we!")}</div>" .
         "</div>" .
       "</div>" .
       "<div class='row row--home'>" .
         "<article class='span span--3 span--home text-justify'>" .
-          "<h2 class='text-center'>" . __("Movies") . "</h2>" .
-          "<p>" . __("Discover new and old movies, find out about all related details like who was the director, when and where was it released, what releases are available, find poster and lobby card art, plus many, many more …") . "</p>" .
+          "<h2 class='text-center'>{$i18n->t("Movies")}</h2>" .
+          "<p>{$i18n->t("Discover new and old movies, find out about all related details like who was the director, when and where was it released, what releases are available, find poster and lobby card art, plus many, many more …")}</p>" .
         "</article>" .
         "<article class='span span--3 span--home text-justify'>" .
-          "<h2 class='text-center'>" . __("Persons") . "</h2>" .
-          "<p>" . __("You always wanted to collect all movies of a specific director, actor or any other movie related person? This is the place for you to go. Find out all details about the person you admire, or simply add them yourself if you are an expert.") . "</p>" .
+          "<h2 class='text-center'>{$i18n->t("Persons")}</h2>" .
+          "<p>{$i18n->t("You always wanted to collect all movies of a specific director, actor or any other movie related person? This is the place for you to go. Find out all details about the person you admire, or simply add them yourself if you are an expert.")}</p>" .
         "</article>" .
         "<article class='span span--3 span--home text-justify'>" .
-          "<h2 class='text-center'>" . __("Marketplace") . "</h2>" .
-          "<p>" . __("Searching for a specific release? Our marketplace is free, open, and built upon the exact release database. This makes it easy for sellers to list their inventory and buyers are able to specify the exact version they want.") . "</p>" .
+          "<h2 class='text-center'>{$i18n->t("Marketplace")}</h2>" .
+          "<p>{$i18n->t("Searching for a specific release? Our marketplace is free, open, and built upon the exact release database. This makes it easy for sellers to list their inventory and buyers are able to specify the exact version they want.")}</p>" .
         "</article>" .
       "</div>" .
       "<div class='row row--home'>" .
         "<article class='span span--3 span--home text-justify'>" .
-          "<h2 class='text-center'>" . __("Releases") . "</h2>" .
+          "<h2 class='text-center'>{$i18n->t("Releases")}</h2>" .
           "<p></p>" .
         "</article>" .
         "<article class='span span--3 span--home text-justify'>" .
-          "<h2 class='text-center'>" . __("My !sitename", [ "!sitename" => SITENAME ]) . "</h2>" .
+          "<h2 class='text-center'>{$i18n->t("My MovLib")}</h2>" .
           "<p></p>" .
-          "<p class='text-center'>{$this->a(route("user/sign-up"), __("Sign up for a new account"), [ "class" => "button button--success button--large" ])}</p>" .
+          "<p class='text-center'>{$this->a("/user/sign-up", "Sign up for a new account", [ "class" => "button button--success button--large" ])}</p>" .
         "</article>" .
         "<article class='span span--3 span--home text-justify'>" .
-          "<h2 class='text-center'>" . __("API") . "</h2>" .
-          "<p>" . __("The !sitename API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at !sitename.", [ "!sitename" => SITENAME ]) . "</p>" .
-          "<p class='text-center'><a class='button button--primary button--large' href='https://api.movlib.org'>" . __("Read the API documentation") . "</a></p>" .
+          "<h2 class='text-center'>{$i18n->t("<abbr title='Application Programming Interface'>API</abbr>")}</h2>" .
+          "<p>{$i18n->t("The MovLib API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at MovLib.")}</p>" .
+          "<p class='text-center'><a class='button button--primary button--large' href='//api.movlib.org'>{$i18n->t("Read the API documentation")}</a></p>" .
         "</article>" .
       "</div>"
     ;

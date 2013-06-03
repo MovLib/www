@@ -34,12 +34,14 @@ class LanguageSelectionPresenter extends AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    return $this->setOutput($this->getShortName());
+    return $this->setPresentation($this->getShortName());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getBreadcrumb() {}
+  public function getBreadcrumb() {
+    // The language selection page has no breadcrumb!
+  }
 
 }

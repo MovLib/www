@@ -48,26 +48,27 @@ class MoviePresenter extends AbstractPresenter {
   protected function init() {
     return $this
       ->{__FUNCTION__ . $this->getMethod()}()
-      ->setOutput()
+      ->setPresentation()
     ;
   }
 
   /**
    * Render the movie's page.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @return $this
    */
   protected function initGet() {
-    $languageCode = $this->language->getCode();
     try {
-      $this->movie = (new MovieModel($languageCode))->getMovieFull($_SERVER["MOVIE_ID"]);
-      if ($this->movie["display"] === false) {
-        return $this->setOutput("Error\\GoneMovie");
+      $this->movie = (new MovieModel())->getMovieFull($_SERVER["MOVIE_ID"]);
+      if ($this->movie["deleted"] === true) {
+        return $this->setPresentation("Error\\GoneMovie");
       }
-      $this->movie["releases"] = (new ReleasesModel($languageCode))->getReleasesForMovie($_SERVER["MOVIE_ID"]);
-      return $this->setOutput("Movie\\MovieShow");
+      $this->movie["releases"] = (new ReleasesModel())->getReleasesForMovie($_SERVER["MOVIE_ID"]);
+      return $this->setPresentation("Movie\\MovieShow");
     } catch (MovieException $e) {
-      return $this->setOutput("Error\\NotFound");
+      return $this->setPresentation("Error\\NotFound");
     }
   }
 
@@ -75,7 +76,8 @@ class MoviePresenter extends AbstractPresenter {
    * {@inheritdoc}
    */
   public function getBreadcrumb() {
-    return [[ "href" => route("movies"), "text" => __("Movies") ]];
+    global $i18n;
+    return [[ "href" => $i18n->t("/movies"), "text" => $i18n->t("Movies") ]];
   }
 
   /**

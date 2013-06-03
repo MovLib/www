@@ -33,16 +33,19 @@ class ForbiddenView extends AlertView {
   /**
    * Create a <em>403 Forbidden</em> error page.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @param \MovLib\Presenter\AbstractPresenter $presenter
    *   The presenter object controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, __("Access forbidden"));
+    global $i18n;
+    parent::__construct($presenter, $i18n->t("Forbidden"));
     http_response_code(403);
     $this->setAlert(
-      "<p>" . __("We are sorry, but you cannot access this page.") . "</p>" .
-      "<p>" . __("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please !contactLink.", [ "!contactLink" => $this->a(route("contact"), __("contact us")) ]) . "</p>",
-      __("Access forbidden"),
+      "<p>{$i18n->t("Access to the requested page is forbidden.")}</p>" .
+      "<p>{$i18n->T("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a("/contact", "contact us") ])}</p>",
+      $i18n->t("Forbidden"),
       self::ALERT_SEVERITY_ERROR,
       true
     );

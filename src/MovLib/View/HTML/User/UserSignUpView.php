@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\User;
 
+use \MovLib\Model\UserModel;
 use \MovLib\View\HTML\AbstractFormView;
 
 /**
@@ -42,7 +43,8 @@ class UserSignUpView extends AbstractFormView {
    * {@inheritdoc}
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, __("Sign up"));
+    global $i18n;
+    parent::__construct($presenter, $i18n->t("Sign up"));
     $this->addStylesheet("/assets/css/modules/user.css");
     $this->attributes = [ "class" => "span span--0" ];
   }
@@ -51,24 +53,20 @@ class UserSignUpView extends AbstractFormView {
    * {@inheritdoc}
    */
   public function getRenderedFormContent() {
-    $emailLabel = __("Email address");
-    $emailPlaceholder = __("Enter your email address");
-    $emailTitle = __("Plase enter your preferred email address.");
-    $emailValue = $this->presenter->getPostValue("email");
-
-    $usernameLabel = __("Username");
-    $usernamePlaceholder = __("Enter your username");
-    $usernameTitle = __("Please enter your desired username.");
-    $usernameValue = $this->presenter->getPostValue("username");
-
-    $submit = __("Sign up");
-    $submitTitle = __("Click this button to create a new !sitename account", [ "!sitename" => SITENAME ]);
-
+    global $i18n;
     return
       "<div class='page-header--no-border'><h1>{$this->title}</h1></div>" .
-      "<p><label for='email'>{$emailLabel}</label><input autofocus class='input input-text input--block-level' id='email' name='email' placeholder='{$emailPlaceholder}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$emailTitle}' type='email' value='{$emailValue}'></p>" .
-      "<p><label for='username'>{$usernameLabel}</label><input class='input input-text input--block-level' id='username' maxlength='40' name='username' placeholder='{$usernamePlaceholder}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$usernameTitle}' type='text' value='{$usernameValue}'></p>" .
-      "<p><button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$submitTitle}' type='submit'>{$submit}</button></p>"
+      "<p>" .
+        "<label for='mail'>{$i18n->t("Email address")}</label>" .
+        "<input autofocus class='input input-text input--block-level' id='mail' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='mail' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter your preferred email address.")}' type='email' value='{$this->presenter->getPostValue("mail")}'>" .
+        "</p>" .
+      "<p>" .
+        "<label for='name'>{$i18n->t("Username")}</label>" .
+        "<input class='input input-text input--block-level' id='name' maxlength='" . UserModel::NAME_MAX_LENGTH . "' name='name' placeholder='{$i18n->t("Enter your username")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Please enter your desired username.")}' type='text' value='{$this->presenter->getPostValue("name")}'>" .
+      "</p>" .
+      "<p>" .
+        "<button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t("Click this button after you’ve filled out all fields to create a new account.")}' type='submit'>{$i18n->t("Sign up")}</button>" .
+      "</p>"
     ;
   }
 

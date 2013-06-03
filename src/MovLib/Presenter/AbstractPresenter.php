@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presenter;
 
-use \MovLib\Entity\Language;
-use \MovLib\Entity\User;
 use \MovLib\View\HTML\AlertView;
 use \ReflectionClass;
 
@@ -42,26 +40,12 @@ abstract class AbstractPresenter {
    *
    * @var string
    */
-  protected $output = "";
-
-  /**
-   * The currently active language.
-   *
-   * @var \MovLib\Entity\Language
-   */
-  protected $language;
-
-  /**
-   * The current user.
-   *
-   * @var \MovLib\Entity\User
-   */
-  protected $user;
+  protected $presentation = "";
 
   /**
    * The current view.
    *
-   * @var mixed
+   * @var \MovLib\View\HTML\AbstractView
    */
   protected $view;
 
@@ -73,12 +57,10 @@ abstract class AbstractPresenter {
    * Instantiate new presenter object.
    */
   public function __construct() {
-    $this->language = new Language();
-    $this->user = new User();
     try {
       $this->init();
     } catch (Exception $e) {
-      $this->output = new ErrorView($this->language, $e);
+      $this->presentation = new ErrorView($e);
     }
   }
 
@@ -99,19 +81,19 @@ abstract class AbstractPresenter {
    * <pre>return [
    *   // Home link is included automatically!
    *   [
-   *     "href" => route("movies"),
-   *     "text" => __("Movies"),
-   *     "title" => __("Go to movies overview page."),
+   *     "href" => $i18n->r("movies"),
+   *     "text" => $i18n->t("Movies"),
+   *     "title" => $i18n->t("Go to movies overview page."),
    *   ],
    *   [
-   *     "href" => route("movie/%u", $movieId),
+   *     "href" => $i18n->r("/movie/{0,number,integer}", [ $movieId ]),
    *     "text" => $movieTitle,
-   *     "title" => __("Go to “@movieTitle” movie page.", [ "@movieTitle" => $movieTitle ]),
+   *     "title" => $i18n->t("Go to “{0}” movie page.", [ $movieTitle ]),
    *   ],
    *   [
-   *     "href" => route("movie/%u/release-%u", [ $movidId, $releaseId ]),
+   *     "href" => $i18n->r("/movie/{0,number,integer}/release-{1,number,integer}", [ $movidId, $releaseId ]),
    *     "text" => $releaseTitle,
-   *     "title" => __("Got to “@releaseTitle” release page.", [ "@releaseTitle" => $releaseTitle ]),
+   *     "title" => $i18n->t("Got to “{0}” release page.", [ $releaseTitle ]),
    *   ],
    *   // Link to current page is included automatically!
    * ]</pre>
@@ -131,7 +113,7 @@ abstract class AbstractPresenter {
 
 
   /**
-   * Get the <var>$_SERVER["ACTION"]</var> als string to initialize object.
+   * Get the <var>$_SERVER["ACTION"]</var> as string to initialize object.
    *
    * This can be used to retrieve the value of <var>$_SERVER["ACTION"]</var> in CamelCase and therefor use it to
    * instanciate a class. The value itself is extracted via nginx from the requested URL and passed along as FastCGI
@@ -140,7 +122,7 @@ abstract class AbstractPresenter {
    *
    * <b>Usage example:</b>
    * <pre>$class = "\\MovLib\\View\\HTML\\User\\User{$this->getAction()}View";
-   * $this->output = (new $class($this->language))->getRenderedView();</pre>
+   * $this->output = (new $class())->getRenderedView();</pre>
    *
    * @param string $defaultAction
    *   [Optional] The default action value to use if <var>$_SERVER["ACTION"]</var> is empty. Defaults to <tt>Show</tt>.
@@ -152,15 +134,6 @@ abstract class AbstractPresenter {
       return $_SERVER["ACTION"];
     }
     return $defaultAction;
-  }
-
-  /**
-   * Get the current language object.
-   *
-   * @return \MovLib\Entity\Language
-   */
-  public final function getLanguage() {
-    return $this->language;
   }
 
   /**
@@ -177,8 +150,8 @@ abstract class AbstractPresenter {
    *
    * @return string
    */
-  public final function getOutput() {
-    return $this->output;
+  public final function getPresentation() {
+    return $this->presentation;
   }
 
   /**
@@ -198,15 +171,6 @@ abstract class AbstractPresenter {
       return $_POST[$key];
     }
     return $defaultValue;
-  }
-
-  /**
-   * Get the current user object.
-   *
-   * @return \MovLib\Entity\User
-   */
-  public final function getUser() {
-    return $this->user;
   }
 
 
@@ -264,11 +228,11 @@ abstract class AbstractPresenter {
    *   [Optional] The name of the method that should be called to set the output. Defaults to <tt>getRenderedView</tt>.
    * @return $this
    */
-  protected final function setOutput($viewName = null, $viewType = "HTML", $method = "getRenderedView") {
+  protected final function setPresentation($viewName = null, $viewType = "HTML", $method = "getRenderedView") {
     if ($viewName !== null) {
       $this->setView($viewName, $viewType);
     }
-    $this->output = $this->view->{$method}();
+    $this->presentation = $this->view->{$method}();
     return $this;
   }
 

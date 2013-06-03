@@ -19,6 +19,7 @@ namespace MovLib\Model;
 
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\ErrorException;
+use \MovLib\Exception\MovieException;
 use \MovLib\Model\AbstractModel;
 use \MovLib\Utility\AsyncLogger;
 
@@ -34,13 +35,6 @@ use \MovLib\Utility\AsyncLogger;
  * @since 0.0.1-dev
  */
 class MovieModel extends AbstractModel {
-
-  /**
-   * The language code for the movie queries in ISO 639-1:2002 format.
-   *
-   * @var string
-   */
-  private $languageCode;
 
   /**
    * The unique movie's ID.
@@ -71,9 +65,8 @@ class MovieModel extends AbstractModel {
    * @param int $movieId
    *   [Optional] The unique movie ID of the movie that should be loaded from the database.
    */
-  public function __construct($languageCode, $movieId = false) {
+  public function __construct($movieId = false) {
     parent::__construct();
-    $this->languageCode = $languageCode;
     $this->movieId = $movieId;
   }
 
@@ -83,6 +76,8 @@ class MovieModel extends AbstractModel {
    * <b>Basic</b> in this context refers to the data that is stored in the <tt>movies</tt>, <tt>movies_[lang]</tt> and
    * <tt>movie_titles</tt> database tables.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @param int $id
    *   The movie's unique ID.
    * @return array
@@ -93,6 +88,8 @@ class MovieModel extends AbstractModel {
    *   If <tt>movie_titles</tt> table contains no data.
    */
   public function getMovieBasic($id) {
+    global $i18n;
+
     // If we already have a movie, return it.
     if ($this->movie) {
       return $this->movie;
@@ -103,7 +100,7 @@ class MovieModel extends AbstractModel {
       $movie = $this->query(
         "SELECT *
         FROM `movies` `m`
-        LEFT JOIN `movies_{$this->languageCode}` `ml`
+        LEFT JOIN `movies_{$i18n->getLanguageCode()}` `ml`
           ON `m`.`movie_id` = `ml`.`movies_movie_id`
         WHERE `m`.`movie_id` = ?
         LIMIT 1", "i", [ $id ]
@@ -174,8 +171,15 @@ class MovieModel extends AbstractModel {
     return $this->movie;
   }
 
+  /**
+   *
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   */
   private function retrieveMovieLanguages() {
-    $this->movie["languages"] = $this->query("SELECT l.`language_id`, l.`name_en`, l.`iso_639-1`, l.`name_{$this->languageCode}`
+    global $i18n;
+    $this->movie["languages"] = $this->query("SELECT l.`language_id`, l.`name_en`, l.`iso_639-1`, l.`name_{$i18n->getLanguageCode()}`
       FROM `movies_has_languages` mhl INNER JOIN `languages` l
       ON mhl.`languages_language_id` = l.`language_id`
       WHERE mhl.`movies_movie_id` = ?
@@ -185,8 +189,15 @@ class MovieModel extends AbstractModel {
     );
   }
 
+  /**
+   *
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   */
   private function retrieveMovieCountries() {
-    $this->movie["countries"] = $this->query("SELECT c.`country_id`, c.`iso_alpha_2`, c.`iso_alpha_3`, c.`name_en`, c.`name_{$this->languageCode}`
+    global $i18n;
+    $this->movie["countries"] = $this->query("SELECT c.`country_id`, c.`iso_alpha_2`, c.`iso_alpha_3`, c.`name_en`, c.`name_{$i18n->getLanguageCode()}`
       FROM `movies_has_countries` mhc INNER JOIN `countries` c
       ON mhc.`countries_country_id` = c.`country_id`
       WHERE mhc.`movies_movie_id` = ?
@@ -196,29 +207,50 @@ class MovieModel extends AbstractModel {
     );
   }
 
+  /**
+   *
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   */
   private function retrieveGenres() {
-    $this->movie["genres"] = $this->query("SELECT g.`genre_id`, g.`name_en`, g.`name_{$this->languageCode}`
+    global $i18n;
+    $this->movie["genres"] = $this->query("SELECT g.`genre_id`, g.`name_en`, g.`name_{$i18n->getLanguageCode()}`
       FROM `movies_has_genres` `mhg` INNER JOIN `genres` `g`
       ON `mhg`.`genres_genre_id` = `g`.`genre_id`
       WHERE `mhg`.`movies_movie_id` = ?
-      ORDER BY g.`name_{$this->languageCode}` ASC",
+      ORDER BY g.`name_{$i18n->getLanguageCode()}` ASC",
       "i",
       [ $this->movieId ]
     );
   }
 
+  /**
+   *
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   */
   private function retrieveStyles() {
-    $this->movie["styles"] = $this->query("SELECT s.`style_id`, s.`name_en`, s.`name_{$this->languageCode}`
+    global $i18n;
+    $this->movie["styles"] = $this->query("SELECT s.`style_id`, s.`name_en`, s.`name_{$i18n->getLanguageCode()}`
       FROM `movies_has_styles` `mhs` INNER JOIN `styles` s
       ON `mhs`.`styles_style_id` = `s`.`style_id`
       WHERE `mhs`.`movies_movie_id` = ?
-      ORDER BY s.`name_{$this->languageCode}` ASC",
+      ORDER BY s.`name_{$i18n->getLanguageCode()}` ASC",
       "i",
       [ $this->movieId ]
     );
   }
 
+  /**
+   *
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   */
   private function retrievePoster() {
+    global $i18n;
     $this->movie["poster"] = null;
     $result = $this->query("SELECT i.`file_id`, i.`file_name`, i.`extension`, l.`iso_639-1` AS `language_code` FROM `images` i
       INNER JOIN `posters` p ON i.`file_id` = p.`images_file_id`
@@ -227,7 +259,7 @@ class MovieModel extends AbstractModel {
       WHERE p.`movies_movie_id` = ? AND l.`iso_639-1` = ?
       ORDER BY p.`rating` DESC, i.`file_id` ASC LIMIT 1",
       "is",
-      [ $this->movieId, $this->languageCode ]
+      [ $this->movieId, $i18n->getLanguageCode() ]
     );
     if (count($result) > 0) {
       $this->movie["poster"] = $result[0];

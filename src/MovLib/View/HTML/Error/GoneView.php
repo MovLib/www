@@ -33,16 +33,19 @@ class GoneView extends AlertView {
   /**
    * Create a <em>404 Not Found</em> error page.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @param \MovLib\Presenter\AbstractPresenter $presenter
    *   The presenter object controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, __("Gone"));
+    global $i18n;
+    parent::__construct($presenter, $i18n->t("Gone"));
     http_response_code(410);
     $this->setAlert(
-      "<p>" . __("We are sorry, but the page you are looking for is no longer available.") . "</p>" .
-      "<p>" . __("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please !contactLink.", [ "!contactLink" => $this->a(route("contact"), __("contact us")) ]) . "</p>",
-      __("Gone"),
+      "<p>{$i18n->t("The requested page is no longer available.")}</p>" .
+      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a("/contact", "contact us") ])}</p>",
+      $i18n->t("Gone"),
       self::ALERT_SEVERITY_ERROR,
       true
     );

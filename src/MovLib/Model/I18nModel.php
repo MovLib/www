@@ -18,13 +18,15 @@
 
 namespace MovLib\Model;
 
-use \MovLib\Exception\DatabaseException;
+use \Locale;
+use \MovLib\Exception\ErrorException;
 use \MovLib\Model\AbstractModel;
 use \MovLib\Utility\AsyncLogger;
 
 /**
  * Description of I18nModel
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m:2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -34,98 +36,114 @@ use \MovLib\Utility\AsyncLogger;
 class I18nModel extends AbstractModel {
 
   /**
-   *  Construct new I18n Model.
-   */
-  public function __construct() {
-    parent::__construct();    
-  }
-  
-  /**
    * Get a translated message from the database.
-   * 
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @param string $message
-   *  The message which acts as key.
+   *   The message which acts as key.
    * @param string $languageCode
-   *  The language in which the message should be returned.
+   *   The ISO 639-1 alpha-2 language code in which the message should be returned.
    * @return string
-   *  Message in desired language or english if translation does not exist.
+   *   Message in desired language or <var>$message</var> if no translation exist.
    */
-  public function getMessage($message, $languageCode = "en") {
-    if ($languageCode === "en") {
+  public function getMessage($message, $languageCode) {
+    global $i18n;
+    if ($languageCode === $i18n->getDefaultLanguageCode()) {
       return $message;
     }
-    
-    $result = $this->query("SELECT COLUMN_GET(dyn_translations, '{$languageCode}' as BINARY) AS translation
-      FROM messages WHERE message = `?` LIMIT 1", "s", [ $message ]);
-      
-    if (empty($result)) {
-      // If the above query returns no result, return message in english.
-      AsyncLogger::log("Could not find translation ({$languageCode}) of message: '{$message}'", AsyncLogger::LEVEL_INFO);
-      return $message;
+    try {
+      return $this->query(
+        "SELECT
+          COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation`
+        FROM `messages`
+          WHERE `message` = ?
+        LIMIT 1", "s", [ $message ]
+      )[0]["translation"];
+    } catch (ErrorException $e) {
+      $language = Locale::getDisplayName($languageCode, $i18n->getDefaultLanguageCode());
+      AsyncLogger::log("Could not find {$language} translation for message: '{$message}'", AsyncLogger::LEVEL_INFO);
     }
-    return $result[0]["translation"];
+    return $message;
   }
-  
+
   /**
    * Get a translated route from the database.
-   * 
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @param string $route
-   *  The route which acts as key.
+   *   The route which acts as key.
    * @param type $languageCode
-   *  The language in wihch the route should be returned.
+   *   The ISO 639-1 alpha-2 language code in which the message should be returned.
    * @return string
-   *  Route in desired language or english if translation does not exist.
+   *   Route in desired language or <var>$route</var> if no translation exist.
    */
   public function getRoute($route, $languageCode = "en") {
-    if ($languageCode === "en") {
+    global $i18n;
+    if ($languageCode === $i18n->getDefaultLanguageCode()) {
       return $route;
     }
-    
-    $result = $this->query("SELECT COLUMN_GET(dyn_translations, '{$languageCode}' as BINARY) AS translation
-      FROM routes WHERE route = `?` LIMIT 1", "s", [ $route ]);
-    
-    if(empty($result)) {
-      // If the above query returns no result, return route in english
-      AsyncLogger::log("Could not find translation ({$languageCode}) of route: '{$route}'", AsyncLogger::LEVEL_INFO);
-      return $route;
+    try {
+      return $this->query(
+        "SELECT
+          COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation`
+        FROM `routes`
+          WHERE `route` = ?
+        LIMIT 1", "s", [ $route ]
+      )[0]["translation"];
+    } catch (ErrorException $e) {
+      $language = Locale::getDisplayName($languageCode, $i18n->getDefaultLanguageCode());
+      AsyncLogger::log("Could not find {$language} translation for route: '{$route}'", AsyncLogger::LEVEL_INFO);
     }
-    return $result[0]["translation"];
   }
-  
+
   /**
-   * Set or update a message/translation.
-   * 
+   * Set or update a message's translation(s).
+   *
    * @param string $message
-   *  The message which acts as key.
-   * @param string $comment
-   *  A Comment describing the Message.
+   *   The message which acts as key.
    * @param array $translations
    *  An array with translations of the message.
+   * @param string $comment
+   *   [Optional] Comment for translators to help them translating the message.
+   * @param string $oldMessage
+   *   [Optional] The old message of this translation if updating from old branch to new branch.
+   * @return $this
    */
-  public function setMessage($message, $comment, array $translations) {
-    $result = $this->query("SELECT id FROM messages WHERE message = `?` LIMIT 1", "s", [ $message ]);
-    if (empty($result)) {
-      // @todo insert
-    } else {
-      // @todo update
+  public function setMessage($message, $translations, $comment = null, $oldMessage = null) {
+    // @todo Wouldn't it be better to have sepearte methods? insertMessage(), insertMessages(), updateMessage(), updateMessages()
+    try {
+      $messageId = $this->query("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", [ $message ])[0]["message_id"];
+      // @todo Record exists: UPDATE
+    } catch (ErrorException $e) {
+      // @todo No record exists: INSERT
     }
+    return $this;
   }
-  
+
   /**
-   * Set or update a route/translation.
-   * 
+   * Set or update a route's translation(s).
+   *
    * @param string $route
-   *  The route which acts as key.
+   *   The route which acts as key.
    * @param array $translations
    *  An array with translations of the route.
+   * @param string $comment
+   *   [Optional] Comment for translators to help them translating the route.
+   * @param string $oldRoute
+   *   [Optional] The old route of this translation if updating from old branch to new branch.
+   * @return $this
    */
-  public function setRoute($route, array $translations) {
-    $result = $this->query("SELECT id FROM routes WHERE route = `?`LIMIT 1", "s", [ $route ]);
-    if (empty($result)) {
-      // @todo insert
-    } else {
-      // @todo update
+  public function setRoute($route, $translations, $comment = null, $oldRoute = null) {
+    // @todo Wouldn't it be better to have sepearte methods? insertRoute(), insertRoute(), updateRoute(), updateRoute()
+    try {
+      $routeId = $this->query("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])[0]["route_id"];
+      // @todo Record exists: UPDATE
+    } catch (ErrorException $e) {
+      // @todo No record exists: INSERT
     }
+    return $this;
   }
 
 }

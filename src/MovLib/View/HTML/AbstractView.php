@@ -278,6 +278,8 @@ abstract class AbstractView {
    * <b>IMPORTANT:</b> Always use this method to generate crosslinks! This method ensures that no links within the
    * document point to the currently displayed document itself; as per W3C recommendation.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @param string $route
    *   The URL to which we should link (only internal routes).
    * @param string $text
@@ -289,7 +291,10 @@ abstract class AbstractView {
    *   The anchor element ready for print.
    */
   public final function a($route, $text, $titleOrAttributes = false) {
+    global $i18n;
     $isArray = is_array($titleOrAttributes);
+    $route = is_array($route) ? $i18n->r($route[0], $route[1]) : $i18n->r($route);
+    $text = is_array($text) ? $i18n->t($text[0], $text[1]) : $i18n->t($text);
     // Check if given route needs a slash at the beginning.
     if (!empty($route)) {
       if ($route[0] !== "#" && $route[0] !== "/") {
@@ -363,65 +368,77 @@ abstract class AbstractView {
    *
    * @see \MovLib\Presenter\AbstractPresenter::getBreadcrumb()
    * @see \MovLib\View\HTML\AbstractView::getNavigation()
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @return string
    *   The breadcrumb ready for print.
    */
   public function getBreadcrumb() {
-    $points = [[ "href" => "/", "text" => __("Home"), "title" => __("Go back to the home page.") ]];
+    global $i18n;
+    $points = [[ "href" => "/", "text" => $i18n->t("Home"), "title" => $i18n->t("Go back to the home page.") ]];
     $trail = $this->presenter->getBreadcrumb();
     $trailCount = count($trail);
     if ($trailCount !== 0) {
       for ($i = 0; $i < $trailCount; ++$i) {
-        $trail[$i]["text"] = String::shorten($trail[$i]["text"], 25, __("…"));
+        $trail[$i]["text"] = String::shorten($trail[$i]["text"], 25, $i18n->t("…"));
         $points[] = $trail[$i];
       }
     }
     $points[] = [ "href" => $_SERVER["REQUEST_URI"], "text" => $this->title ];
-    return "<div id='breadcrumb'>{$this->getNavigation("You are here: ", "breadcrumb", $points, -1, " › ", [ "class" => "row span--0" ], false)}</div>";
+    return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, -1, " › ", [ "class" => "row span--0" ], false)}</div>";
   }
 
   /**
    * Get the HTML footer including all script tags.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @return string
    *   The footer ready for print.
    */
   public final function getFooter() {
-    $cc0Link = "<a href='http://creativecommons.org/publicdomain/zero/1.0/deed.{$this->presenter->getLanguage()->getCode()}' rel='license'>" . __("Creative Commons — CC0 1.0 Universal") . "</a>";
-    $termsOfUseLink = $this->a(route("terms-of-use"), __("Terms of Use"));
-    $privacyPolicyLink = $this->a(route("privacy-policy"), __("Privacy Policy"));
+    global $i18n;
     return
       "<footer id='footer'>" .
         "<div id='footer-rows' class='row'>" .
           "<nav class='span span--4'>" .
-            "<h3>" . SITENAME . "</h3>" .
+            "<h3>MovLib</h3>" .
             "<ul class='no-list'>" .
-              "<li class='item-first'>{$this->a(route("about"), __("About"), __("Find out more about !sitename", [ "!sitename" => SITENAME ]))}</li>" .
-              "<li>{$this->a(route("blog"), __("Blog"), __("Stay up to date about the latest developments around !sitename.", [ "!sitename" => SITENAME ]))}</li>" .
-              "<li>{$this->a(route("contact"), __("Contact"), __("Feedback is always welcome, no matter if positive or negative."))}</li>" .
-              "<li>{$this->a(route("resources"), __("Logos and Badges"), __("If you want to create something awesome."))}</li>" .
-              "<li class='item-last'>{$this->a(route("legal"), __("Legal"), __("Collection of the various legal terms and conditions used around !sitename.", [ "!sitename" => SITENAME ]))}</li>" .
+              "<li class='item-first'>{$this->a("/about", "About", $i18n->t("Find out more about us."))}</li>" .
+              "<li>{$this->a("/blog", "Blog", $i18n->t("Stay up to date about the latest developments."))}</li>" .
+              "<li>{$this->a("/contact", "Contact", $i18n->t("Feedback is always welcome, no matter if positive or negative."))}</li>" .
+              "<li>{$this->a("/resources", "Logos and Badges", $i18n->t("If you want to create something awesome."))}</li>" .
+              "<li class='item-last'>{$this->a("/legal", "Legal", $i18n->t("Collection of the various legal terms and conditions."))}</li>" .
             "</ul>" .
           "</nav>" .
           "<nav class='span span--4'>" .
-            "<h3>" . __("Join in") . "</h3>" .
+            "<h3>{$i18n->t("Join in")}</h3>" .
             "<ul class='no-list'>" .
-              "<li class='item-first item-last'>{$this->a(route("user/sign-up"), __("Sign up"), __("Become a member of !sitename and help building the biggest free movie library in this world.", [ "!sitename" => SITENAME ]))}</li>" .
+              "<li class='item-first item-last'>{$this->a("/user/sign-up", "Sign up", $i18n->t("Become a member and help building the biggest free movie library in this world."))}</li>" .
             "</ul>" .
           "</nav>" .
           "<div class='span span--4'></div>" .
           "<nav class='span span--4'>" .
-            "<h3>" . __("Get help") . "</h3>" .
+            "<h3>{$i18n->t("Get help")}</h3>" .
             "<ul class='no-list'>" .
-              "<li class='item-first item-last'>{$this->a(route("help"), __("Help"), __("If you have questions click here to find our help articles."))}</li>" .
+              "<li class='item-first item-last'>{$this->a("/help", "Help", $i18n->t("If you have questions click here to find our help articles."))}</li>" .
             "</ul>" .
           "</nav>" .
         "</div>" .
         "<div id='footer-copyright' class='row'>" .
           "<div class='span span--1'>" .
-            "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> " . __("Database data is available under the !creativeCommonsLink license.", [ "!creativeCommonsLink" => $cc0Link ]) . "<br>" .
-            __("Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated.") . "<br>" .
-            __("By using this site, you agree to the !termsOfUseLink and !privacyPoliyLink.", [ "!termsOfUseLink" => $termsOfUseLink, "!privacyPoliyLink" => $privacyPolicyLink ]) .
+            "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
+              "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
+              [ "<a href='http://creativecommons.org/publicdomain/zero/1.0/deed.{$i18n->getLanguageCode()}' rel='license'>", "</a>" ]
+            )}<br>" .
+            "{$i18n->t(
+              "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
+            )}<br>" .
+            $i18n->t(
+              "By using this site, you agree to the {0} and {1}.",
+              [ $this->a("/terms-of-use", "Terms of Use"), $this->a("/privacy-policy", "Privacy Policy") ],
+              "<tt>{0}</tt> is <em>Terms of Use</em> and <tt>{1}</tt> is <em>Privacy Policy</em>."
+            ) .
           "</div>" .
         "</div>" .
       "</footer>" .
@@ -435,15 +452,23 @@ abstract class AbstractView {
    * Get the HTML head element, this includes doctype and the html root element.
    *
    * @link http://www.netmagazine.com/features/create-perfect-favicon
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
    * @return string
    *   The head ready for print.
    */
   public final function getHead() {
-    $language = $this->presenter->getLanguage();
+    global $i18n, $user;
     $stylesheets = "";
     $stylesheetCount = count($this->stylesheets);
     for ($i = 0; $i < $stylesheetCount; ++$i) {
       $stylesheets .= "<link rel='stylesheet' href='{$this->stylesheets[$i]}'>";
+    }
+    $bodyClass = "{$this->getShortName()}-body";
+    if ($user->isLoggedIn() === true) {
+      $bodyClass .= " logged-in";
     }
     $ariaRole = "document";
     if (strpos($this->getShortName(), "edit") !== false) {
@@ -451,7 +476,7 @@ abstract class AbstractView {
     }
     return
       "<!doctype html>" .
-      "<html id='nojs' lang='{$language->getCode()}' dir='{$language->getDirection()}'>" .
+      "<html id='nojs' lang='{$i18n->getLanguageCode()}' dir='{$i18n->getDirection()}'>" .
       "<head>" .
         "<title>{$this->getHeadTitle()}</title>" .
         $stylesheets .
@@ -464,19 +489,22 @@ abstract class AbstractView {
         "<link rel='icon' type='image/png' sizes='16x16' href='/assets/img/logo/16.png'>" .
         "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
       "</head>" .
-      "<body class='{$this->getShortName()}-body' role='{$ariaRole}'>"
+      "<body class='{$bodyClass}' role='{$ariaRole}'>"
     ;
   }
 
   /**
    * Get the HTML header, this includes the logo, navigations and search box.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @return string
    *   The header ready for print.
    */
   public final function getHeader() {
+    global $i18n;
     return
-      "<a class='visuallyhidden' href='#content'>" . __("Skip to content") . "</a>" .
+      "<a class='visuallyhidden' href='#content'>{$i18n->t("Skip to content")}</a>" .
       "<header id='header'>" .
         "<div class='row'>" .
           "<div class='span span--3'>{$this->getHeaderLogo()}</div>" .
@@ -491,30 +519,33 @@ abstract class AbstractView {
    * Get the HTML header main navigation.
    *
    * @see \MovLib\View\HTML\AbstractView::getNavigation
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @return string
    *   The main navigation ready for print.
    */
   public final function getHeaderNavigation() {
-    return $this->getNavigation(__("Primary navigation"), "main", [
+    global $i18n;
+    return $this->getNavigation($i18n->t("Primary navigation"), "main", [
       /* 0 => */[
-        "href" => route("movies"),
-        "text" => __("Movies"),
-        "title" => __("Browse all movies of this world, check out the latest additions or create a new entry yourself."),
+        "href" => $i18n->r("/movies"),
+        "text" => $i18n->t("Movies"),
+        "title" => $i18n->t("Browse all movies of this world, check out the latest additions or create a new entry yourself.")
       ],
       /* 1 => */[
-        "href" => route("series"),
-        "text" => __("Series"),
-        "title" => __("Browse all series of this world, check out the latest additions or create a new entry yourself."),
+        "href" => $i18n->r("/series"),
+        "text" => $i18n->t("Series"),
+        "title" => $i18n->t("Browse all series of this world, check out the latest additions or create a new entry yourself.")
       ],
       /* 2 => */[
-        "href" => route("persons"),
-        "text" => __("Persons"),
-        "title" => __("Browse all movie related persons of this world, check out the latest additions or create a new entry yourself."),
+        "href" => $i18n->r("/persons"),
+        "text" => $i18n->t("Persons"),
+        "title" => $i18n->t("Browse all movie related persons of this world, check out the latest additions or create a new entry yourself.")
       ],
       /* 3 => */[
-        "href" => route("marketplace"),
-        "text" => __("Marketplace"),
-        "title" => __("Searching for a specific release of a movie or soundtrack, this is the place to go, for free of course."),
+        "href" => $i18n->r("/marketplace"),
+        "text" => $i18n->t("Marketplace"),
+        "title" => $i18n->t("Searching for a specific release of a movie or soundtrack, this is the place to go, for free of course.")
       ],
     ], $this->activeHeaderNavigationPoint, " <span role='presentation'>/</span> ");
   }
@@ -522,18 +553,17 @@ abstract class AbstractView {
   /**
    * Get the HTML header search.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @return string
    *   The header search ready for print.
    */
   public final function getHeaderSearch() {
-    $formAction = route("search");
-    $inputSearchPlaceholder = __("Search…");
-    $inputSearchTitle = __("Enter the search term you wish to search for and hit enter. [alt-shift-f]");
-    $inputSubmitTitle = __("Start searching for the entered keyword.");
+    global $i18n;
     return
-      "<form action='/{$formAction}' class='search search-header' method='post' role='search'>" .
-        "<input accesskey='f' class='input input-text input-search search-header__input-search' placeholder='{$inputSearchPlaceholder}' role='textbox' tabindex='{$this->getTabindex()}' title='{$inputSearchTitle}' type='search'>" .
-        "<button class='input input-submit search-header__input-submit' title='{$inputSubmitTitle}' type='submit'>" .
+      "<form action='{$i18n->r("/search")}' class='search search-header' method='post' role='search'>" .
+        "<input accesskey='f' class='input input-text input-search search-header__input-search' placeholder='{$i18n->t("Search…")}' role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Enter the search term you wish to search for and hit enter. [alt-shift-f]")}' type='search'>" .
+        "<button class='input input-submit search-header__input-submit' title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
           "<i class='icon icon--search search-header__icon--search inline transition'></i>" .
         "</button>" .
       "</form>"
@@ -543,28 +573,35 @@ abstract class AbstractView {
   /**
    * Get the HTML header user navigation.
    *
-   * @todo Menu has to change upon user state (signed in / out).
    * @see \MovLib\View\HTML\AbstractView::getNavigation
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
    * @return string
    *   The user navigation ready for print.
    */
   public final function getHeaderUserNavigation() {
-    return $this->getNavigation(__("User navigation"), "user", [
+    global $i18n, $user;
+    if ($user->isLoggedIn() === true) {
+      // @todo Implement logged in user navigation.
+    }
+    return $this->getNavigation($i18n->t("User navigation"), "user", [
       /* 0 => */[
-        "href" => route("user/sign-up"),
-        "text"  => __("Sign up"),
-        "title" => __("Click here to sign up for a new and free account."),
+        "href" => $i18n->r("/user/sign-up"),
+        "text" => $i18n->t("Sign up"),
+        "title" => $i18n->t("Click here to sign up for a new and free account."),
       ],
       /* 1 => */[
-        "href" => route("user/sign-in"),
-        "text"  => __("Sign in"),
-        "title" => __("Already have an account? Click here to sign in."),
+        "href" => $i18n->r("/user/sign-in"),
+        "text" => $i18n->t("Sign in"),
+        "title" => $i18n->t("Already have an account? Click here to sign in."),
       ],
       /* 2 => */[
-        "href" => route("help"),
-        "text"  => __("Help"),
-        "title" => __("If you have questions click here to find our help articles."),
-      ]
+        "href" => $i18n->r("/help"),
+        "text" => $i18n->t("Help"),
+        "title" => $i18n->t("If you have questions click here to find our help articles."),
+      ],
     ], $this->activeHeaderUserNavigationPoint, " ", [ "class" => "pull-right" ]);
   }
 
@@ -576,12 +613,7 @@ abstract class AbstractView {
    * @param string $role
    *   The logic role of this navigation menu (e.g. <em>main</em>, <em>footer</em>, ...).
    * @param array $points
-   *   Keyed array containing the navigation points in the form:
-   *   <pre>[[
-   *   "href" => route("example"),
-   *   "text" => __("Example"),
-   *   "title" => __("This is the example title."),
-   *   ]]</pre>
+   *   Keyed array containing the navigation points.
    * @param int $activePointIndex
    *   Index of the element within the array that should be marked active.
    * @param string $glue
@@ -662,25 +694,21 @@ abstract class AbstractView {
    * Get the (pure CSS) sticky header.
    *
    * @link http://uxdesign.smashingmagazine.com/2012/09/11/sticky-menus-are-quicker-to-navigate/
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @return string
    *   Sticky header ready for print.
    */
   public final function getStickyHeader() {
-    $logo = $this->a("/", SITENAME, [ "class" => "logo-small inline" ]);
-
-    $searchPlaceholder = __("Search…");
-    $searchTitle = __("Enter the search term you wish to search for and hit enter.");
-
-    $submitTitle = __("Start searching for the entered keyword.");
-
+    global $i18n;
     return
       "<header id='sticky-header'>" .
         "<div class='row'>" .
-          "<div class='span span--3 sticky-header__span'>{$logo}</div>" .
+          "<div class='span span--3 sticky-header__span'>{$this->a("/", "MovLib", [ "class" => "logo-small inline" ])}</div>" .
           "<div class='span span--3 sticky-header__span'>" .
-            "<form action='/" . route("search") . "' class='search search-sticky-header' method='post' role='search'>" .
-              "<input class='input input-text input-search search-sticky-header__input-search' placeholder='{$searchPlaceholder}' role='textbox' title='{$searchTitle}' type='search'>" .
-              "<button class='button input input-submit search-sticky-header__input-submit' title='{$submitTitle}' type='submit'>" .
+            "<form action='{$i18n->r("/search")}' class='search search-sticky-header' method='post' role='search'>" .
+              "<input class='input input-text input-search search-sticky-header__input-search' placeholder='{$i18n->t("Search…")}' role='textbox' title='{$i18n->t("Enter the search term you wish to search for and hit enter.")}' type='search'>" .
+              "<button class='button input input-submit search-sticky-header__input-submit' title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
                 "<i class='icon icon--search search-sticky-header__icon--search inline transition'></i>" .
               "</button>" .
             "</form>" .
@@ -700,16 +728,18 @@ abstract class AbstractView {
    * This method must stay public and not final. We have to overwrite this in the special homepage view!
    *
    * @see \MovLib\View\HTML\HomeView
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @return string
    *   The logo ready for print.
    */
   public function getHeaderLogo() {
-    return $this->a(
-      "/",
-      //# The logo text that is displayed in the global page header.
-      __("!sitename <small>the <em>free</em> movie library</small>", [ "!sitename" => SITENAME ]),
-      [ "id" => "logo", "class" => "inline", "title" => __("Go back to the home page.") ]
-    );
+    global $i18n;
+    return $this->a("/", "MovLib <small>the <em>free</em> movie library</small>", [
+      "id" => "logo",
+      "class" => "inline",
+      "title" => $i18n->t("Go back to the home page.")
+    ]);
   }
 
   /**
@@ -718,14 +748,18 @@ abstract class AbstractView {
    * This method must stay public and not final. We have to overwrite this in the special homepage view!
    *
    * @see \MovLib\View\HTML\HomeView
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @return string
    *   The title ready for print.
    */
   public function getHeadTitle() {
-    //# The em dash is used as separator character in the header title to denoate the source of the document (like in a
-    //# quote the author), this should be translated to the equivalent character in your language. More information on
-    //# this specific character can be found at Wikipedia: https://en.wikipedia.org/wiki/Dash#Em_dash
-    return String::checkPlain($this->title) . __(" — ") . SITENAME;
+    global $i18n;
+    return
+      String::checkPlain($this->title) .
+      $i18n->t(" — ", null, "The em dash is used as separator character in the header title to denoate the source of the document (like in a quote the author), this should be translated to the equivalent character in your language. More information on this specific character can be found at <a href='//en.wikipedia.org/wiki/Dash#Em_dash'>Wikipedia</a>.") .
+      "MovLib"
+    ;
   }
 
   /**

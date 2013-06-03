@@ -40,15 +40,21 @@ class HTTP {
    *   The route to which the client should be redirected.
    * @param int $status
    *   [Optional] The HTTP response code (301, 302 or 303). Defaults to 301.
+   * @param string $domain
+   *   [Optional] Overwrite the current domain, defaults to <var>$_SERVER["SERVER_NAME"]</var>.
    * @return boolean
    *   Returns <tt>FALSE</tt> if HTTP headers were already sent, otherwise this method will exit any further execution.
    */
-  public static function redirect($route, $status = 301) {
+  public static function redirect($route, $status = 301, $domain = null) {
     if (headers_sent()) {
       return false;
     }
-    $route = "https://{$_SERVER["SERVER_NAME"]}/{$route}";
+    if ($domain === null) {
+      $domain = $_SERVER["SERVER_NAME"];
+    }
+    $route = "https://{$domain}/{$route}";
     header("Location: {$route}", true, $status);
+    http_response_code($status); // Ensure status is set correctly
     if ($_SERVER["REQUEST_METHOD"] !== "HEAD") {
       $title = [
         301 => "Moved Permanently",

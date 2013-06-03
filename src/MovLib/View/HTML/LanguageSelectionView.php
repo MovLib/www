@@ -18,6 +18,7 @@
 namespace MovLib\View\HTML;
 
 use \Locale;
+use \MovLib\Utility\I18n;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -35,7 +36,7 @@ class LanguageSelectionView extends AbstractView {
    * {@inheritdoc}
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, SITENAME);
+    parent::__construct($presenter, "MovLib");
     $this->addStylesheet("/assets/css/modules/language-selection.css");
   }
 
@@ -43,27 +44,33 @@ class LanguageSelectionView extends AbstractView {
    * {@inheritdoc}
    */
   public function getHeadTitle() {
-    return SITENAME;
+    return "MovLib";
   }
 
   /**
-   * {@inheritdoc}
+   * Get the rendered content, without HTML head, header or footer.
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   * @return string
    */
   public function getRenderedContent() {
+    global $i18n;
+    $languageCode = $i18n->getLanguageCode();
     $points = [];
-    foreach ($this->presenter->getLanguage()->getIntlLocales() as $code => $locale) {
+    foreach (I18n::getSupportedLanguageCodes() as $code) {
       $points[] = [
         "href" => "//{$code}.{$_SERVER["SERVER_NAME"]}",
-        "text" => Locale::getDisplayLanguage($locale, $locale),
-        "attributes" => [ "lang" => $code ],
+        "text" => Locale::getDisplayLanguage($code, $code),
+        [ "lang" => $code ]
       ];
     }
     return
       "<div id='content' class='{$this->getShortName()}-content row' role='main'><div class='span span--1 text-center'>" .
-        "<h1 class='inline text-left'>" . SITENAME . " <small>the <em>free</em> movie library</small></h1>" .
-        "<p>Please select your preferred language from the list below.</p>" .
-        $this->getNavigation(__("Language links"), $this->getShortName(), $points, -1, " / ", [ "class" => "well well--large" ]) .
-        "<p>Is your language missing from our list? Help us translate " . SITENAME . " to your language. More info can be found at <a href='//locale.movlib.lorg'>our translation portal</a>.</p>" .
+        "<h1 lang='{$languageCode}' class='inline text-left'>{$i18n->t("MovLib <small>the <em>free</em> movie library.</small>")}</h1>" .
+        "<p lang='{$languageCode}'>{$i18n->t("Please select your preferred language from the list below.")}</p>" .
+        $this->getNavigation($i18n->t("Language links"), $this->getShortName(), $points, -1, " / ", [ "class" => "well well--large" ]) .
+        "<p lang='{$languageCode}'>{$i18n->t("Is your language missing from our list? Help us translate MovLib to your language. More info can be found at {0}our translation portal{1}.", [ "<a href='//localize.movlib.org'>", "</a>" ])}</p>" .
       "</div></div>"
     ;
   }

@@ -1,5 +1,8 @@
 <?php
 
+error_reporting(-1);
+ini_set("display_errors", 1);
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -32,10 +35,6 @@
  * @since 0.0.1-dev
  */
 
-
-// --------------------------------------------------------------------------------------------------------------------- Autoloader
-
-
 /**
  * Ultra fast class autoloader.
  *
@@ -44,14 +43,32 @@
  * @return void
  */
 function __autoload($class) {
-  // It is save to use the server variable at this point, the autoload function is only used if main.php is invoked,
-  // which only happens if our application is called via nginx.
-  require $_SERVER["DOCUMENT_ROOT"] . "/src/" . strtr($class, "\\", DIRECTORY_SEPARATOR) . ".php";
+  require $_SERVER["DOCUMENT_ROOT"] . "/src/" . strtr($class, "\\", "/") . ".php";
 }
 
+/*DEBUG{{{*/
+$t = microtime(true);
+/*}}}DEBUG*/
 
-// --------------------------------------------------------------------------------------------------------------------- Error Handlers
+/**
+ * Create new global instance of user for the current user who is requesting the page.
+ *
+ * @var \MovLib\Model\UserModel
+ */
+global $user;
 
+/* @var $user \MovLib\Model\UserModel */
+$user = (new \MovLib\Model\UserModel())->constructFromSession();
+
+/**
+ * Create new global instance of I18n for the locale of the user who is requesting the page.
+ *
+ * @var \MovLib\Utility\I18n
+ */
+global $i18n;
+
+/* @var $i18n \MovLib\Utility\I18n */
+$i18n = new \MovLib\Utility\I18n();
 
 /**
  * This is the outermost place to catch any exception that might have been forgotten somewhere.
@@ -65,8 +82,11 @@ function __autoload($class) {
  *   absolutely every exception that might arise.
  */
 function uncaught_exception_handler($e) {
-  exit((new \MovLib\Presenter\ExceptionPresenter($e))->getOutput());
+  exit((new \MovLib\Presenter\ExceptionPresenter($e))->getPresentation());
 }
+
+// Set the default exception handler.
+set_exception_handler("uncaught_exception_handler");
 
 /**
  * Global function to convert PHP errors to exceptions.
@@ -95,6 +115,9 @@ function uncaught_exception_handler($e) {
 function error_all_handler($errno, $errstr, $errfile, $errline) {
   throw (new \MovLib\Exception\ErrorException($errstr, $errno))->setFile($errfile)->setLine($errline);
 }
+
+// Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
+set_error_handler("error_all_handler");
 
 /**
  * Transform PHP fatal errors to exceptions.
@@ -129,30 +152,8 @@ function error_fatal_handler() {
   }
 }
 
-// Set the default exception handler.
-set_exception_handler("uncaught_exception_handler");
-
-// Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
-set_error_handler("error_all_handler");
-
 // Check for possible fatal errors that are not catchable otherwise.
 register_shutdown_function("error_fatal_handler");
-
-
-// --------------------------------------------------------------------------------------------------------------------- Business Logic
-
-
-/*DEBUG{{{*/
-$t = microtime(true);
-/*}}}DEBUG*/
-
-// Create new global instance of user for the current user who is requesting the page.
-global $user;
-$user = (new \MovLib\Model\UserModel())->constructFromSession();
-
-// Create new global instance of I18n for the locale of the user who is requesting the page.
-global $i18n;
-$i18n = new \MovLib\Utility\I18n($user->getLocale());
 
 // Start the rendering process.
 $presenter = "\\MovLib\\Presenter\\" . $_SERVER["PRESENTER"] . "Presenter";

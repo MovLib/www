@@ -32,14 +32,14 @@ class HomePresenter extends AbstractPresenter {
    * {@inheritdoc}
    */
   public function init() {
-    $this->setOutput($this->getShortName());
+    $this->setPresentation($this->getShortName());
   }
 
   /**
    * {@inheritdoc}
    */
   public function getBreadcrumb() {
-    return [];
+    // The home page has no breadcrumb!
   }
 
 }

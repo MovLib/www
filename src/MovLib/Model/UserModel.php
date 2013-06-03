@@ -18,6 +18,7 @@
 namespace MovLib\Model;
 
 use \MovLib\Exception\ErrorException;
+use \MovLib\Exception\UserException;
 use \MovLib\Model\AbstractModel;
 
 /**
@@ -143,7 +144,7 @@ class UserModel extends AbstractModel {
   }
 
   public function constructFromSession() {
-
+    return $this;
   }
 
 
@@ -156,8 +157,18 @@ class UserModel extends AbstractModel {
    * @return boolean
    *   <tt>TRUE</tt> if the user is logged in, otherwise <tt>FALSE</tt>.
    */
-  public function loggedIn() {
+  public function isLoggedIn() {
     return $this->loggedIn;
+  }
+
+  /**
+   * The user's CSRF token.
+   *
+   * @return null|string
+   *   The CSRF token or <tt>NULL</tt> if there is no valid session.
+   */
+  public function getCsrfToken() {
+    return $this->csrfToken;
   }
 
   /**
@@ -186,6 +197,13 @@ class UserModel extends AbstractModel {
    */
   public function getDeleted() {
     return $this->user["deleted"];
+  }
+
+  /**
+   * @todo Fetch language code and country from database for this user.
+   */
+  public function getLocale() {
+
   }
 
   /**

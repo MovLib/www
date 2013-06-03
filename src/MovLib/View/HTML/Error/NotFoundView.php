@@ -33,16 +33,19 @@ class NotFoundView extends AlertView {
   /**
    * Create a <em>404 Not Found</em> error page.
    *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
    * @param \MovLib\Presenter\AbstractPresenter $presenter
    *   The presenter object controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, __("Not Found"));
+    global $i18n;
+    parent::__construct($presenter, $i18n->t("Not Found"));
     http_response_code(404);
     $this->setAlert(
-      "<p>" . __("We are sorry, but we could not find the page you are looking for.") . "</p>" .
-      "<p>" . __("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please !contactLink.", [ "!contactLink" => $this->a(route("contact"), __("contact us")) ]) . "</p>",
-      __("Not Found"),
+      "<p>{$i18n->t("The requested page could not be found.")}</p>" .
+      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a("/contact", "contact us") ])}</p>",
+      $i18n->t("Not Found"),
       self::ALERT_SEVERITY_ERROR,
       true
     );
