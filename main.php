@@ -32,19 +32,9 @@
  * @since 0.0.1-dev
  */
 
-/**
- * ASCII end of transmission
- *
- * @var string
- */
-define("PHP_EOT", chr(4));
 
-/**
- * The name of the website.
- *
- * @var string
- */
-define("SITENAME", "MovLib");
+// --------------------------------------------------------------------------------------------------------------------- Autoloader
+
 
 /**
  * Ultra fast class autoloader.
@@ -54,127 +44,14 @@ define("SITENAME", "MovLib");
  * @return void
  */
 function __autoload($class) {
+  // It is save to use the server variable at this point, the autoload function is only used if main.php is invoked,
+  // which only happens if our application is called via nginx.
   require $_SERVER["DOCUMENT_ROOT"] . "/src/" . strtr($class, "\\", DIRECTORY_SEPARATOR) . ".php";
 }
 
-/**
- * Particular gettext function for a message within a specific context.
- *
- * @link http://www.gnu.org/software/gettext/manual/html_node/Contexts.html
- * @see gettext
- * @param string $msgctxt
- *   The message's context identifier. Do not use the class name or full sentences as context. Try to use jQuery like
- *   selectors like <code>html head title</code> or <code>input[type="search"]</code> as they are very unlikely to
- *   change. Another good example of a context which is used very often is <code>route</code> for URLs.
- * @param string $msgid
- *   The message that should be translated.
- * @return string
- *   The translated message.
- */
-function pgettext($msgctxt, $msgid) {
-  /* @var $msgctxtid string */
-  $msgctxtid = $msgctxt . PHP_EOT . $msgid;
-  /* @var $translation string */
-  $translation = _($msgctxtid);
-  if (strcmp($translation, $msgctxtid) === 0) {
-    return $msgid;
-  }
-  return $translation;
-}
 
-/**
- * Plural particular gettext function for a message within a specific context.
- *
- * @link http://www.gnu.org/software/gettext/manual/html_node/Contexts.html
- * @link http://www.gnu.org/software/gettext/manual/html_node/Plural-forms.html
- * @see ngettext
- * @see pgettext
- * @param string $msgctxt
- *   The message"s context identifier. Do not use the class name or full sentences as context. Try to use jQuery like
- *   selectors like <code>html head title</code> or <code>input[type="search"]</code> as they are very unlikely to
- *   change. Another good example of a context which is used very often is <code>route</code> for URLs.
- * @param string $msgid1
- *   The message to use if the count is <em>1</em>.
- * @param string $msgid2
- *   The message to use if the count is <em>>1</em>.
- * @param int $num
- *   The count that defines the plural form to use.
- * @return string
- *   The translated message.
- */
-function npgettext($msgctxt, $msgid1, $msgid2, $num) {
-  /* @var $msgctxtid1 string */
-  $msgctxtid1 = $msgctxt . PHP_EOT . $msgid1;
-  /* @var $msgctxtid2 string */
-  $msgctxtid2 = $msgctxt . PHP_EOT . $msgid2;
-  /* @var $translation string */
-  $translation = n_($msgctxtid1, $msgctxtid2, $num);
-  if (strcmp($translation, $msgctxtid1) === 0) {
-    return $msgid1;
-  }
-  if (strcmp($translation, $msgctxtid2) === 0) {
-    return $msgid2;
-  }
-  return $translation;
-}
+// --------------------------------------------------------------------------------------------------------------------- Error Handlers
 
-/**
- * Gettext with optional context support.
- *
- * @see gettext
- * @see pgettext
- * @param string $string
- *   The message that should be translated.
- * @param string $context
- *   [optional] Context of this translation.
- * @return string
- *   The translated string.
- */
-function __($string, $args = null, $context = "") {
-//  if (empty($context)) {
-    $string = gettext($string);
-//  }
-//  $string = pgettext($context, $string);
-  if ($args === null) {
-    return $string;
-  }
-  return \MovLib\Utility\String::format($string, $args);
-}
-
-/**
- * Plural version of gettext with optional context support.
- *
- * @see ngettext
- * @see npgettext
- * @param string $msgid1
- *   The message to use if the count is <em>1</em>.
- * @param string $msgid2
- *   The message to use if the count is <em>&gt;1</em>.
- * @param int $n
- *   The count that defines the plural form to use.
- * @param string $msgctxt
- *   [optional] Context of this translation.
- * @return string
- *   The translated string
- */
-function n__($msgid1, $msgid2, $n, $msgctxt = "") {
-  if (empty($msgctxt)) {
-    return ngettext($msgid1, $msgid2, $n);
-  }
-  return npgettext($msgctxt, $msgid1, $msgid2, $n);
-}
-
-function route($path, $args = null) {
-//  $path = __($path, null, "route");
-  $path = gettext($path);
-  if ($args === null) {
-    return $path;
-  }
-  if (!is_array($args)) {
-    $args = [ $args ];
-  }
-  return vsprintf($path, $args);
-}
 
 /**
  * This is the outermost place to catch any exception that might have been forgotten somewhere.
@@ -190,9 +67,6 @@ function route($path, $args = null) {
 function uncaught_exception_handler($e) {
   exit((new \MovLib\Presenter\ExceptionPresenter($e))->getOutput());
 }
-
-// Set the default exception handler.
-set_exception_handler("uncaught_exception_handler");
 
 /**
  * Global function to convert PHP errors to exceptions.
@@ -221,9 +95,6 @@ set_exception_handler("uncaught_exception_handler");
 function error_all_handler($errno, $errstr, $errfile, $errline) {
   throw (new \MovLib\Exception\ErrorException($errstr, $errno))->setFile($errfile)->setLine($errline);
 }
-
-// Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
-set_error_handler("error_all_handler");
 
 /**
  * Transform PHP fatal errors to exceptions.
@@ -258,14 +129,35 @@ function error_fatal_handler() {
   }
 }
 
+// Set the default exception handler.
+set_exception_handler("uncaught_exception_handler");
+
+// Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
+set_error_handler("error_all_handler");
+
 // Check for possible fatal errors that are not catchable otherwise.
 register_shutdown_function("error_fatal_handler");
+
+
+// --------------------------------------------------------------------------------------------------------------------- Business Logic
+
 
 /*DEBUG{{{*/
 $t = microtime(true);
 /*}}}DEBUG*/
+
+// Create new global instance of user for the current user who is requesting the page.
+global $user;
+$user = (new \MovLib\Model\UserModel())->constructFromSession();
+
+// Create new global instance of I18n for the locale of the user who is requesting the page.
+global $i18n;
+$i18n = new \MovLib\Utility\I18n($user->getLocale());
+
+// Start the rendering process.
 $presenter = "\\MovLib\\Presenter\\" . $_SERVER["PRESENTER"] . "Presenter";
-echo (new $presenter())->getOutput();
+echo (new $presenter())->getPresentation();
+
 /*DEBUG{{{*/
 $t = microtime(true) - $t;
 $t = sprintf("%.6f", $t - intval($t));
