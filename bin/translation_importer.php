@@ -114,17 +114,18 @@ class TranslationExtractor {
   public function __construct() {
     foreach (rglob("*.php", dirname(__DIR__) . "/src") as $file) {
       $this->fileContent = str_replace([ '$i18n->r(', '$i18n->t(' ], [ '$this->r(', '$this->t(' ], file_get_contents($file));
-      do {
-        $continue = false;
-        foreach ($this->patterns as $pattern) {
-          if (($this->{"{$pattern}position"} = strpos($this->fileContent, $this->{"{$pattern}pattern"})) !== false) {
-            $this->extractAndCall($pattern, $this->{"{$pattern}position"});
-            $this->{"{$pattern}position"} = false;
-            $continue = true;
+      $patternsCount = count($this->patterns) - 1;
+      while (true) {
+        for ($i = 0; $i < $patternsCount; ++$i) {
+          if (($this->{"{$this->patterns[$i]}position"} = strpos($this->fileContent, $this->{"{$this->patterns[$i]}pattern"})) !== false) {
+            $this->extractAndCall($this->patterns[$i], $this->{"{$this->patterns[$i]}position"});
+            $this->{"{$this->patterns[$i]}position"} = false;
             break;
+          } elseif ($i === $patternsCount) {
+            break 2; // No pattern matched, break out of the while and the for loop.
           }
         }
-      } while ($continue);
+      }
     }
   }
 
