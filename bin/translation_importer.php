@@ -104,7 +104,6 @@ class TranslationExtractor {
         for ($i = 0; $i < $patternsCount; ++$i) {
           if (($position = strpos($this->fileContent, $this->{$this->patterns[$i]})) !== false) {
             $this->extractAndCall($this->patterns[$i], $position);
-            break 1; // Break out of the for loop.
           } elseif ($i === $patternsCount) {
             break 2; // No pattern matched, break out of the while and the for loop.
           }
