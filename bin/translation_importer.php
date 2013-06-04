@@ -97,16 +97,32 @@ class TranslationExtractor {
    * @todo Documentation
    */
   public function __construct() {
+    // Go through all source files.
     foreach (rglob("*.php", dirname(__DIR__) . "/src") as $file) {
-      $this->fileContent = str_replace([ '$i18n->r(', '$i18n->t(' ], [ '$this->r(', '$this->t(' ], file_get_contents($file));
-      $patternsCount = count($this->patterns) - 1;
+      // Get the content of this file without comments and unnecessary whitespaces.
+      $this->fileContent = php_strip_whitespace($file);
+      // Replace the i18n calls with calls to our own class. This has the nice sideffect hat calls within the i18n to
+      // itself are also catched.
+      $this->fileContent = str_replace([ '$i18n->r(', '$i18n->t(' ], [ '$this->r(', '$this->t(' ], $this->fileContent);
+      // We use a break to end this loop.
       while (true) {
-        for ($i = 0; $i < $patternsCount; ++$i) {
-          if (($position = strpos($this->fileContent, $this->{$this->patterns[$i]})) !== false) {
-            $this->extractAndCall($this->patterns[$i], $position);
-          } elseif ($i === $patternsCount) {
-            break 2; // No pattern matched, break out of the while and the for loop.
+        // Initially we have no pattern an invalid position.
+        $pattern = null;
+        $position = PHP_INT_MAX;
+        // Iterate over all patterns we have.
+        foreach ($this->patterns as $tmpPattern) {
+          // Check if this pattern occurres somewhere within this files content and store its position if it does.
+          if (($tmpPosition = strpos($this->fileContent, $this->{$tmpPattern})) !== false && $tmpPosition < $position) {
+            $position = $tmpPosition;
+            $pattern = $tmpPattern;
           }
+        }
+        if ($position < PHP_INT_MAX) {
+          // If we have a valid position extract it and start over again with the remaining file content.
+          $this->extractAndCall($pattern, $position);
+        } else {
+          // If we have no position after checking all patterns, break out of the while loop.
+          break;
         }
       }
     }
@@ -126,6 +142,9 @@ class TranslationExtractor {
     $closingBrackets = 0;
     // Skip the method pattern in the upcoming loop. No need for multi-byte function.
     $i = strlen($pattern);
+    // We need this to find out if this method was called with a variable at the end of the upcoming loop. We only want
+    // to calculate this once.
+    $variablePatternPosition = $i + 1;
     // Iterate over the files content; character by character.
     for (; $i < $contentLength; ++$i) {
       // Increase counters if we encounter any of their characters.
@@ -138,49 +157,43 @@ class TranslationExtractor {
         // Extract the call from the file.
         $call = mb_substr($this->fileContent, 0, $position);
         // Remove the args array from the i18n calls.
-        if ($pattern !== $this->viewApattern && ($argsStart = strpos($this->fileContent, "[")) !== false) {
-          $this->removeArgs($call, $argsStart);
-        }
-        // @todo Remove args arrays from calls to the view method arrays.
-        else {
+        switch ($pattern) {
+          case "viewApattern":
+            // @todo Remove args arrays from parameters.
+            break;
 
+          case "i18nRpattern":
+          case "i18nTpattern":
+            // If we have any arguments, remove them from the method call.
+            if (strpos($this->fileContent, "[") !== false) {
+              $this->removeArgs($this->{$pattern}, $call);
+              echo "{$call}\n";
+            }
+            break;
         }
-        if ($this->fileContent[10] !== "$") {
+        if ($call[$variablePatternPosition] !== "$") {
 //          eval("{$call};");
-          echo "{$call};\n";
         }
+        // Truncate the file's content again and remove the call we just handled.
+        $this->fileContent = mb_substr($this->fileContent, $position);
+        // This call was handled, break and return to search for the next pattern.
         break;
       }
     }
-    // Truncate the file's content again and remove the call we just handled.
-    $this->fileContent = mb_substr($this->fileContent, $position);
-    // Go and test the rest of the file.
-    $this->testTruncateAndCall();
   }
 
   /**
    * @todo Documentation
    * @todo This is not working yet!
    */
-  private function removeArgs(&$call, $start) {
-      // We have one opening square bracket.
-      $openingSquareBrackets = 1;
-      // We have no closing square bracket.
-      $closingSquareBrackets = 0;
-      // Count the call characters.
-      $callLength = mb_strlen($call);
-      // Iterate over the call and collect all square brackets.
-      for ($j = 0; $j < $callLength; ++$j) {
-        $call[$j] === "[" && ++$openingSquareBrackets;
-        $call[$j] === "]" && ++$closingSquareBrackets;
-        if ($openingSquareBrackets === $closingSquareBrackets) {
-          break;
-        }
+  private function removeArgs($pattern, &$call) {
+    $args = [];
+    foreach (token_get_all("<?php {$call}; ?>") as $token) {
+      if (is_array($token) && $token[0] === T_CONSTANT_ENCAPSED_STRING) {
+        $args[] = $token[1];
       }
-      $start -= mb_strrpos(mb_substr($call, 0, $start), ",");
-      echo mb_substr($call, 0, $start) . mb_substr($call, $j, $callLength) . PHP_EOL;
-//      $call = mb_substr($call, 0, $argsStart) . mb_substr($call, $j, $callLength);
-//      echo "{$call};\n";
+    }
+    $call = $pattern . implode(",", $args) . ");";
   }
 
   /**
