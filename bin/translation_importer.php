@@ -141,10 +141,9 @@ class TranslationExtractor {
     // And no closing brackets.
     $closingBrackets = 0;
     // Skip the method pattern in the upcoming loop. No need for multi-byte function.
-    $i = strlen($pattern);
-    // We need this to find out if this method was called with a variable at the end of the upcoming loop. We only want
-    // to calculate this once.
-    $variablePatternPosition = $i + 1;
+    $i = strlen($this->{$pattern});
+    // The minimum method call is the pattern plus two brackets.
+    $callMinLength = $i + 2;
     // Iterate over the files content; character by character.
     for (; $i < $contentLength; ++$i) {
       // Increase counters if we encounter any of their characters.
@@ -160,19 +159,26 @@ class TranslationExtractor {
         switch ($pattern) {
           case "viewApattern":
             // @todo Remove args arrays from parameters.
+            // $this->a([ "/user/{0,number,integer}", [ $userId ], "comment", "oldRoute" ], [ "Hello {0}", [ $userName ], "comment", "oldMessage" ], $anchorArgs);
             break;
 
           case "i18nRpattern":
           case "i18nTpattern":
             // If we have any arguments, remove them from the method call.
-            if (strpos($this->fileContent, "[") !== false) {
-              $this->removeArgs($this->{$pattern}, $call);
-              echo "{$call}\n";
+            // @todo What if the [ is in the comment?
+            if (( $argsStart = strpos($call, "[")) !== false) {
+              $tmpCall = mb_substr($call, 0, $argsStart);
+              $tmpCall = mb_substr($tmpCall, 0, mb_strrpos($tmpCall, ","));
+              $call = $tmpCall . mb_substr($call, mb_strrpos($call, "]") + 1);
+            }
+            // Is there any method left to call?
+            if (mb_strlen($call) > $callMinLength) {
+              $tokens = token_get_all("<?php {$call}");
+              if (count($tokens) > 5 && is_array($tokens[5]) && $tokens[5][0] === T_CONSTANT_ENCAPSED_STRING) {
+                eval("{$call};");
+              }
             }
             break;
-        }
-        if ($call[$variablePatternPosition] !== "$") {
-//          eval("{$call};");
         }
         // Truncate the file's content again and remove the call we just handled.
         $this->fileContent = mb_substr($this->fileContent, $position);
@@ -180,20 +186,6 @@ class TranslationExtractor {
         break;
       }
     }
-  }
-
-  /**
-   * @todo Documentation
-   * @todo This is not working yet!
-   */
-  private function removeArgs($pattern, &$call) {
-    $args = [];
-    foreach (token_get_all("<?php {$call}; ?>") as $token) {
-      if (is_array($token) && $token[0] === T_CONSTANT_ENCAPSED_STRING) {
-        $args[] = $token[1];
-      }
-    }
-    $call = $pattern . implode(",", $args) . ");";
   }
 
   /**
