@@ -33,8 +33,8 @@ class LanguageSelectionPresenter extends AbstractPresenter {
   /**
    * {@inheritdoc}
    */
-  public function init() {
-    return $this->setPresentation($this->getShortName());
+  public function __construct() {
+    $this->setPresentation($this->getShortName());
   }
 
   /**

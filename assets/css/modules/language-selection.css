@@ -25,6 +25,10 @@
  * @since 0.0.1-dev
  */
 
+.languageselection-body #content {
+  min-height: 50%;
+}
+
 .languageselection-body h1 {
   background: no-repeat url(/assets/img/logo/256.png);
   font-size: 80px;
