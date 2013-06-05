@@ -17,10 +17,8 @@
  */
 namespace MovLib\Utility;
 
-use \Worker;
-
 /**
- * Asynchronous worker base class providing base functionality for any asynchronous class.
+ * Abstract asynchronous class providing base functionality for any asynchronous class.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,7 +26,7 @@ use \Worker;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AsyncAbstractWorker extends Worker {
+abstract class AbstractDelayed {
 
   /**
    * Current instance of the called class. Keeping this private makes sure that nobody will mess with our instance.
@@ -38,37 +36,35 @@ abstract class AsyncAbstractWorker extends Worker {
   private static $instance = null;
 
   /**
-   * The constructor is kept private because this is a Singleton!
-   *
-   * Start the thread and make sure our own shutdown method is called upon shutdown of the main PHP thread controlling
-   * this asynchronous class instance. The shutdown method is part of our parent Worker class (have a look at the
-   * pthreads documentation for more information).
+   * Singleton!
    */
-  private function __construct() {
-    $this->start();
-  }
+  private function __construct();
 
   /**
-   * There is only one instance of a Singleton, cloning is therefor not permitted.
+   * Singleton!
    */
-  private function __clone() {}
+  private function __clone();
 
   /**
    * Get instance of the called class.
    *
+   * @global array $delayed
+   *   Global array to collect delayed objects for execusion after response was sent to the user.
    * @return $this
    */
   public static function getInstance() {
+    global $delayed;
     if (self::$instance === null) {
       $class = get_called_class();
       self::$instance = new $class();
+      $delayed[] = self::$instance;
     }
     return self::$instance;
   }
 
   /**
-   * Most workers will not need a run method, implement an empty one so we don't have to repeat this all the time.
+   * Every asynchronous class has to implement a run method.
    */
-  public function run() {}
+  abstract public function run();
 
 }

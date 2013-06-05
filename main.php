@@ -40,27 +40,28 @@
  * @return void
  */
 function __autoload($class) {
-  require $_SERVER["DOCUMENT_ROOT"] . "/src/" . strtr($class, "\\", "/") . ".php";
+  require "{$_SERVER["DOCUMENT_ROOT"]}/src/" . strtr($class, "\\", "/") . ".php";
 }
+
+/**
+ * Global array to collect objects which will be executed after the response was sent to the user.
+ *
+ * @var array
+ */
+$delayed = [];
 
 /**
  * Create new global instance of user for the current user who is requesting the page.
  *
  * @var \MovLib\Model\UserModel
  */
-global $user;
-
-/* @var $user \MovLib\Model\UserModel */
-$user = (new \MovLib\Model\UserModel())->constructFromSession();
+$user = (new \MovLib\Model\UserModel())->__constructFromSession();
 
 /**
  * Create new global instance of I18n for the locale of the user who is requesting the page.
  *
  * @var \MovLib\Utility\I18n
  */
-global $i18n;
-
-/* @var $i18n \MovLib\Utility\I18n */
 $i18n = new \MovLib\Utility\I18n();
 
 /**
@@ -75,7 +76,10 @@ $i18n = new \MovLib\Utility\I18n();
  *   absolutely every exception that might arise.
  */
 function uncaught_exception_handler($e) {
-  exit((new \MovLib\Presenter\ExceptionPresenter($e))->getPresentation());
+  \MovLib\Utility\Log::logException($e, $e->getCode());
+  $presenter = new \MovLib\Presenter\ExceptionPresenter();
+  $presenter->setException($e);
+  exit($presenter->presentation);
 }
 
 // Set the default exception handler.
@@ -121,7 +125,7 @@ set_error_handler("error_all_handler");
  * @link http://stackoverflow.com/a/2146171/1251219
  */
 function error_fatal_handler() {
-  if (($err = error_get_last()) !== null) {
+  if (($err = error_get_last())) {
     $exception = new \Exception($err["message"], $err["type"]);
 
     $reflectionClass = new \ReflectionClass("Exception");
@@ -150,9 +154,12 @@ register_shutdown_function("error_fatal_handler");
 
 // Start the rendering process.
 $presenter = "\\MovLib\\Presenter\\" . $_SERVER["PRESENTER"] . "Presenter";
-echo (new $presenter())->getPresentation();
+echo (new $presenter())->presentation;
 
-// This makes sure that the output that was generated until this point will be returned to nginx for delivery. If
-// any of our async methods is still working, they can finish their work in the background and the client does not have
-// to wait for them to finish their work.
+// This makes sure that the output that was generated until this point will be returned to nginx for delivery.
 fastcgi_finish_request();
+
+// Execute each delayed object after sending the generated output to the user.
+foreach ($delayed as $delayedObject) {
+  $delayedObject->run();
+}
