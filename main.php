@@ -1,8 +1,5 @@
 <?php
 
-error_reporting(-1);
-ini_set("display_errors", 1);
-
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -45,10 +42,6 @@ ini_set("display_errors", 1);
 function __autoload($class) {
   require $_SERVER["DOCUMENT_ROOT"] . "/src/" . strtr($class, "\\", "/") . ".php";
 }
-
-/*DEBUG{{{*/
-$t = microtime(true);
-/*}}}DEBUG*/
 
 /**
  * Create new global instance of user for the current user who is requesting the page.
@@ -158,22 +151,6 @@ register_shutdown_function("error_fatal_handler");
 // Start the rendering process.
 $presenter = "\\MovLib\\Presenter\\" . $_SERVER["PRESENTER"] . "Presenter";
 echo (new $presenter())->getPresentation();
-
-/*DEBUG{{{*/
-$t = microtime(true) - $t;
-$t = sprintf("%.6f", $t - intval($t));
-echo
-  "<p class='text-center'><code>{ generated in {$t}&nbsp;s | loaded in <span id='js-pageload'>0.000</span>&nbsp;s }" .
-  "<script>
-    window.onload = function () {
-      if (window.performance == null) {
-        return;
-      }
-      document.getElementById('js-pageload').innerHTML = ((window.performance.timing.domContentLoadedEventEnd - window.performance.timing.navigationStart) / 1000) % 60;
-    };
-  </script>"
-;
-/*}}}DEBUG*/
 
 // This makes sure that the output that was generated until this point will be returned to nginx for delivery. If
 // any of our async methods is still working, they can finish their work in the background and the client does not have
