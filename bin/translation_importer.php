@@ -34,19 +34,78 @@ error_reporting(-1);
 ini_set("display_errors", 1);
 /*}}}DEBUG*/
 
+// Include the global I18n class.
 require dirname(__DIR__) . "/src/MovLib/Utility/I18n.php";
 
-$country_codes = [ "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW" ];
-$language_codes = [ "ab", "aa", "af", "ak", "sq", "am", "ar", "an", "hy", "as", "av", "ae", "ay", "az", "bm", "ba", "eu", "be", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "ch", "ce", "ny", "zh", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "gl", "ka", "de", "el", "gn", "gu", "ht", "ha", "he", "hz", "hi", "ho", "hu", "ia", "id", "ie", "ga", "ig", "ik", "io", "is", "it", "iu", "ja", "jv", "kl", "kn", "kr", "ks", "kk", "km", "ki", "rw", "ky", "kv", "kg", "ko", "ku", "kj", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "gv", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mh", "mn", "na", "nv", "nb", "nd", "ne", "ng", "nn", "no", "ii", "nr", "oc", "oj", "cu", "om", "or", "os", "pa", "pi", "fa", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "sa", "sc", "sd", "se", "sm", "sg", "sr", "gd", "sn", "si", "sk", "sl", "so", "st", "es", "su", "sw", "ss", "sv", "ta", "te", "tg", "th", "ti", "bo", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "cy", "wo", "fy", "xh", "yi", "yo", "za", "zu" ];
+/**
+ * Contains all country and basic language codes that our application shall know about.
+ *
+ * @var array
+ */
+$codes = [
+  "countries" => [ "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW" ],
+  "languages" => [ "ab", "aa", "af", "ak", "sq", "am", "ar", "an", "hy", "as", "av", "ae", "ay", "az", "bm", "ba", "eu", "be", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "ch", "ce", "ny", "zh", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "gl", "ka", "de", "el", "gn", "gu", "ht", "ha", "he", "hz", "hi", "ho", "hu", "ia", "id", "ie", "ga", "ig", "ik", "io", "is", "it", "iu", "ja", "jv", "kl", "kn", "kr", "ks", "kk", "km", "ki", "rw", "ky", "kv", "kg", "ko", "ku", "kj", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "gv", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mh", "mn", "na", "nv", "nb", "nd", "ne", "ng", "nn", "no", "ii", "nr", "oc", "oj", "cu", "om", "or", "os", "pa", "pi", "fa", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "sa", "sc", "sd", "se", "sm", "sg", "sr", "gd", "sn", "si", "sk", "sl", "so", "st", "es", "su", "sw", "ss", "sv", "ta", "te", "tg", "th", "ti", "bo", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "cy", "wo", "fy", "xh", "yi", "yo", "za", "zu" ]
+];
 
-$supported_languages = \MovLib\Utility\I18n::getSupportedLanguageCodes();
+/**
+ * Contains all language codes that our application supports.
+ *
+ * @var array
+ */
+$supported_language_codes = \MovLib\Utility\I18n::getSupportedLanguageCodes();
+
+/**
+ * Contains the default locale from <tt>php.ini</tt>.
+ *
+ * @var string
+ */
 $default_locale = \Locale::getDefault();
+
+// We have to make this global because we need it in the countries helper function.
+global $default_locale;
+
+/**
+ * Contains the default ISO 639-1 alpha-2 language code.
+ *
+ * @var string
+ */
 $default_language_code = $default_locale[0] . $default_locale[1];
 
-// Get rid of our default language in the supported languages array.
-foreach ($supported_languages as $delta => $language_code) {
+/**
+ * Helper function to translate country names.
+ *
+ * @global string $default_language_code
+ * @param string $country_code
+ *   The ISO 3166-1 alpha-2 country code.
+ * @param string $locale
+ *   The desired locale or ISO 639-1 alpha-2 language code.
+ * @return string
+ *   The country's name translated to the desired locale.
+ */
+function translate_countries($country_code, $locale) {
+  global $default_language_code;
+  return \Locale::getDisplayRegion("{$default_language_code}-{$country_code}", $locale);
+}
+
+/**
+ * Helper function to translate language names.
+ *
+ * @param string $language_code
+ *   The ISO 639-1 alpha-2 language code.
+ * @param string $locale
+ *   The desired locale or ISO 639-1 alpha-2 language code.
+ * @return string
+ *   The language's name translated to the desired locale.
+ */
+function translate_languages($language_code, $locale) {
+  return \Locale::getDisplayLanguage($language_code, $locale);
+}
+
+// Get rid of the default language code in the supported language codes array.
+foreach ($supported_language_codes as $delta => $language_code) {
   if ($language_code === $default_language_code) {
-    unset($supported_languages[$delta]);
+    unset($supported_language_codes[$delta]); // Remove the default language code.
+    $supported_language_codes = array_values($supported_language_codes); // Re-index array
     break;
   }
 }
@@ -55,39 +114,48 @@ foreach ($supported_languages as $delta => $language_code) {
 $mysqli = new \mysqli();
 $mysqli->real_connect();
 $mysqli->select_db("movlib");
-$mysqli->autocommit(false);
 
-// Insert or update country data.
-foreach ($country_codes as $code) {
-  $locale_code = "{$default_language_code}-{$code}";
-  $country_name = \Locale::getDisplayRegion($locale_code, $default_language_code);
-  $query = "INSERT INTO `countries` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ('{$code}', '{$country_name}', COLUMN_CREATE(";
-  $comma = "";
-  // Translate the given country code into all supported languages.
-  foreach ($supported_languages as $supported_language) {
-    $query .= "{$comma}'{$supported_language}', '" . \Locale::getDisplayRegion($locale_code, $supported_language) . "'";
-    $comma = ", ";
+// Insert data into database.
+foreach ($codes as $table => $data) {
+  $data_count = count($data) - 1;
+  $query = "";
+  $bind_param_args = [ "" ];
+  $names = [];
+  for ($i = 0; $i <= $data_count; ++$i) {
+    $names[$i]["_"] = call_user_func("translate_{$table}", $data[$i], $default_locale);
+    $query .= "(?, ?, COLUMN_CREATE(";
+    $bind_param_args[0] .= "ss";
+    $bind_param_args[] = &$data[$i];
+    $bind_param_args[] = &$names[$i]["_"];
+    $comma = "";
+    $supported_language_codes_count = count($supported_language_codes);
+    for ($j = 0; $j < $supported_language_codes_count; ++$j) {
+      $names[$i][$j] = call_user_func("translate_{$table}", $data[$i], $supported_language_codes[$j]);
+      $query .= "{$comma}?, ?";
+      $bind_param_args[0] .= "ss";
+      $bind_param_args[] = &$supported_language_codes[$j];
+      $bind_param_args[] = &$names[$i][$j];
+      $comma = ", ";
+    }
+    $query .= "))";
+    if ($i < $data_count) {
+      $query .= ", ";
+    }
   }
-  $query .= ")) ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)";
-  $mysqli->query($query);
+  if (($stmt = $mysqli->prepare(
+    "INSERT
+      INTO `{$table}` (`iso_alpha-2`, `name`, `dyn_translations`)
+      VALUES {$query}
+      ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)
+    "
+  )) === false) {
+    $error = $mysqli->error;
+    $mysqli->close();
+    exit($error . PHP_EOL);
+  }
+  call_user_func_array([ $stmt, "bind_param" ], $bind_param_args);
+  $stmt->execute();
+  $stmt->close();
 }
 
-$mysqli->commit();
-
-// Insert or update the language data.
-foreach ($language_codes as $code) {
-  $language_name = \Locale::getDisplayLanguage($code, $default_language_code);
-  $query = "INSERT INTO `languages` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ('{$code}', '{$language_name}', COLUMN_CREATE(";
-  $comma = "";
-  // Translate the given language code into all supported languages.
-  foreach ($supported_languages as $supported_language) {
-    $query .= "{$comma}'{$supported_language}', '" . \Locale::getDisplayLanguage($code, $supported_language) . "'";
-    $comma = ", ";
-  }
-  $query .= ")) ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)";
-  $mysqli->query($query);
-}
-
-$mysqli->commit();
-$mysqli->autocommit(true);
 $mysqli->close();
