@@ -21,6 +21,7 @@ namespace MovLib\Model;
 use \Locale;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Model\AbstractModel;
+use \MovLib\Model\DelayedModel;
 use \MovLib\Utility\DelayedLogger;
 
 /**
@@ -42,29 +43,73 @@ class I18nModel extends AbstractModel {
    *   The global i18n instance.
    * @param string $message
    *   The message which acts as key.
-   * @param string $languageCode
-   *   The ISO 639-1 alpha-2 language code in which the message should be returned.
+   * @param array $options
+   *   [Optional] Associative array to overwrite the default options used in this method in the form:
+   *   <ul>
+   *     <li><tt>language_code</tt>: default is to use the current display language code.</li>
+   *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
+   *     <li><tt>old_message</tt>: default is <tt>NULL</tt>.</li>
+   *   </ul>
    * @return string
    *   Message in desired language or <var>$message</var> if no translation exist.
    */
-  public function getMessage($message, $languageCode) {
+  public function getMessage($message, $options = []) {
     global $i18n;
+
+    // Allow the caller to overwrite the defaults.
+    $languageCode = isset($options["language_code"]) ? $options["language_code"] : $i18n->languageCode;
+    $comment = isset($options["comment"]) ? $options["comment"] : null;
+    $oldMessage = isset($options["old_message"]) ? $options["old_message"] : null;
+
+    // If this is our default language, return because the message is already translated.
     if ($languageCode === $i18n->getDefaultLanguageCode()) {
       return $message;
     }
+
+    // Try to get the translation for the desired language from the database.
     try {
-      return $this->query(
-        "SELECT
-          COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation`
-        FROM `messages`
-          WHERE `message` = ?
-        LIMIT 1", "s", [ $message ]
-      )[0]["translation"];
+      return
+        $this->query(
+          "SELECT
+            COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation`
+          FROM `messages`
+            WHERE `message` = ?
+          LIMIT 1", "s", [ $message ]
+        )[0]["translation"]
+      ;
     } catch (ErrorException $e) {
-      $language = Locale::getDisplayName($languageCode, $i18n->getDefaultLanguageCode());
-      DelayedLogger::log("Could not find {$language} translation for message: '{$message}'", DelayedLogger::LEVEL_INFO);
+      // Get rid of the exception and log the problem.
+      unset($e);
+      DelayedLogger::log("Could not find {$languageCode} translation for message: '{$message}'", E_NOTICE);
+
+      if ($oldMessage) {
+        // If we have an old message, try to update it, but keep every action delayed.
+        DelayedModel::delayedQuery("UPDATE `messages` SET `message` = ?, `comment` = ? WHERE `message` = ? LIMIT 1", "sss", [ $message, $comment, $oldMessage ],
+          /**
+           * Callback for the delayed query to check if the update was successful.
+           *
+           * @param \MovLib\Model\DelayedModel $delayedModel
+           *   Instance of the delayed model.
+           */
+          function ($delayedModel) use ($message, $comment) {
+            try {
+              // Check if the new message is in the database.
+              $delayedModel->query("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", $message)[0]["message_id"];
+            } catch (ErrorException $e) {
+              unset($e);
+              // Seems like the old message wasn't in the database as well. Insert the new message.
+              $delayedModel->insert("messages", "ss", [ $message, $comment ]);
+              // @todo This should be logged! Implement non delayed logger.
+            }
+          }
+        );
+      } else {
+        // If we have no old message and already know, that this message doesn't exist in our database, insert it.
+        DelayedModel::delayedQuery("INSERT INTO `messages` (`message`, `comment`) VALUES (?, ?)", "ss", [ $message, $comment ]);
+      }
+
+      return $message;
     }
-    return $message;
   }
 
   /**
@@ -94,7 +139,7 @@ class I18nModel extends AbstractModel {
       )[0]["translation"];
     } catch (ErrorException $e) {
       $language = Locale::getDisplayName($languageCode, $i18n->getDefaultLanguageCode());
-      DelayedLogger::log("Could not find {$language} translation for route: '{$route}'", DelayedLogger::LEVEL_INFO);
+      DelayedLogger::log("Could not find {$language} translation for route: '{$route}'", E_NOTICE);
     }
   }
 

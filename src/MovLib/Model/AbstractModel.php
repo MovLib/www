@@ -70,7 +70,7 @@ abstract class AbstractModel {
   private $stmt;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
@@ -101,7 +101,186 @@ abstract class AbstractModel {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
+  // ------------------------------------------------------------------------------------------------------------------- Public Final Methods
+
+
+  /**
+   * Generic delete query.
+   *
+   * <b>Important:</b> All where column/value pairs are concatenated with <code>AND</code>. If you have a more complex
+   * query, please use the generic query method.
+   *
+   * <b>Usage example:</b>
+   * <pre>$this->delete("users", "is", [ "id" => 42, "name" => "Smith" ]);</pre>
+   *
+   * <b>Resulting SQL query:</b>
+   * <pre>DELETE FROM `users` WHERE `id` = 42 AND `name` = "Smith";</pre>
+   *
+   * @see \MovLib\Model\AbstractModel::prepareAndBind()
+   * @see \MovLib\Model\AbstractModel::execute()
+   * @see \MovLib\Model\AbstractModel::close()
+   * @param string $table
+   *   The name of the table where a record should be deleted.
+   * @param string $types
+   *   The type string for the <tt>WHERE</tt> clause in <code>\mysqli_stmt::bind_param</code> syntax.
+   * @param array $where
+   *   Associative array containing column names and values for where.
+   * @return $this
+   * @throws \Exception
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public final function delete($table, $types, $where) {
+    $query = "DELETE FROM `{$table}` WHERE ";
+    $helper = "";
+    $values = [];
+    foreach ($where as $column => $value) {
+      $query .= "{$helper}`{$column}` = ?";
+      $values[] = $value;
+      $helper = " AND ";
+    }
+    return $this->prepareAndBind($query, $types, $values)->execute()->close();
+  }
+
+  /**
+   * Generic insert method.
+   *
+   * <b>Usage example:</b>
+   * <pre>$this->insert("users", "ss", [ "name" => "Foobar", "mail" => "foobar@example.com" ]);</pre>
+   *
+   * <b>Resulting SQL query:</b>
+   * <pre>INSERT INTO `users` (`name`, `mail`) VALUES ("Foobar", "foobar@example.com");</pre>
+   *
+   * @see \MovLib\Model\AbstractModel::prepareAndBind()
+   * @see \MovLib\Model\AbstractModel::execute()
+   * @see \MovLib\Model\AbstractModel::close()
+   * @param string $table
+   *   Name of the table where we should insert new data.
+   * @param string $types
+   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
+   * @param array $data
+   *   Associative array containing column names and values for insert.
+   * @return $this
+   * @throws \Exception
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public final function insert($table, $types, $data) {
+    $columns = $valueStr = $helper = "";
+    $values = [];
+    foreach ($data as $column => $value) {
+      $columns .= "{$helper}`{$column}`";
+      $valueStr .= "{$helper}?";
+      $values[] = $value;
+      $helper = ", ";
+    }
+    return $this
+      ->prepareAndBind("INSERT INTO `{$table}` ({$columns}) VALUES ({$valueStr})", $types, $values)
+      ->execute()
+      ->close()
+    ;
+  }
+
+  /**
+   * Generic query with constraints.
+   *
+   * <b>Usage example:</b>
+   * <pre>$this->query('SELECT * FROM `users` WHERE `id` = ?', 'i', [ 42 ]);</pre>
+   *
+   * @see \MovLib\Model\AbstractModel::prepareAndBind()
+   * @see \MovLib\Model\AbstractModel::execute()
+   * @see \MovLib\Model\AbstractModel::fetchAssoc()
+   * @see \MovLib\Model\AbstractModel::close()
+   * @param string $query
+   *   The query to be executed.
+   * @param string $types
+   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
+   * @param array $values
+   *   The values that should be inserted.
+   * @return array
+   *   The query result as associative array.
+   * @throws \Exception
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public final function query($query, $types, $values) {
+    $this->prepareAndBind($query, $types, $values)->execute()->fetchAssoc($result)->close();
+    return $result;
+  }
+
+  /**
+   * Generic query without constraints.
+   *
+   * <b>Important:</b> If you have to bind parameters to the query, use the generic query method.
+   *
+   * <b>Usage Example:</b>
+   * <pre>$this->queryAll("SELECT * FROM `users`");</pre>
+   *
+   * @see \MovLib\Model\AbstractModel::prepare()
+   * @see \MovLib\Model\AbstractModel::execute()
+   * @see \MovLib\Model\AbstractModel::fetchAssoc()
+   * @see \MovLib\Model\AbstractModel::close()
+   * @param string $query
+   *   The query to be executed.
+   * @return array
+   *   The query result as associative array.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public final function queryAll($query) {
+    $this->prepare($query)->execute()->fetchAssoc($result)->close();
+    return $result;
+  }
+
+  /**
+   * Generic update query.
+   *
+   * <b>Important:</b> All where column/value pairs are concatenated with <code>AND</code>. If you have a more complex
+   * query, please use the generic query method.
+   *
+   * <b>Usage example:</b>
+   * <pre>$this->update(
+   *   "user",
+   *   "isiis",
+   *   [ "id" => 42, "name" => "foobar", "age" => 99 ],
+   *   [ "id" => 1, "name" => "barfoo" ]
+   * );</pre>
+   *
+   * <b>Resulting SQL query:</b>
+   * <pre>UPDATE `user` SET `id` = 42, `name` = "foobar", `age` = 99 WHERE `id` = 1 AND `name` = "barfoo";</pre>
+   *
+   * @see \MovLib\Model\AbstractModel::prepareAndBind()
+   * @see \MovLib\Model\AbstractModel::execute()
+   * @see \MovLib\Model\AbstractModel::close()
+   * @param string $table
+   *   Name of the database table to update.
+   * @param string $types
+   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
+   * @param array $set
+   *   Associative array containing column names and values for <tt>SET</tt>.
+   * @param array $where
+   *   Associative array containing column names and values for <tt>WHERE</tt>.
+   * @return $this
+   * @throws \Exception
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public final function update($table, $types, $set, $where) {
+    $query = "UPDATE `{$table}` SET ";
+    $comma = "";
+    $values = [];
+    foreach ($set as $column => $value) {
+      $query .= "{$comma}`{$column}` = ?";
+      $values[] = $value;
+      $comma = ", ";
+    }
+    $query .= " WHERE ";
+    $and = "";
+    foreach ($where as $column => $value) {
+      $query .= "{$and}`{$column}` = ?";
+      $values[] = $value;
+      $and = " AND ";
+    }
+    return $this->prepareAndBind($query, $types, $values)->execute()->close();
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Protected Final Methods
 
 
   /**
@@ -145,43 +324,6 @@ abstract class AbstractModel {
       }
     }
     return self::$mysqli;
-  }
-
-  /**
-   * Generic delete query.
-   *
-   * <b>Important:</b> All where column/value pairs are concatenated with <code>AND</code>. If you have a more complex
-   * query, please use the generic query method.
-   *
-   * <b>Usage example:</b>
-   * <pre>$this->delete("users", "is", [ "id" => 42, "name" => "Smith" ]);</pre>
-   *
-   * <b>Resulting SQL query:</b>
-   * <pre>DELETE FROM `users` WHERE `id` = 42 AND `name` = "Smith";</pre>
-   *
-   * @see \MovLib\Model\AbstractModel::prepareAndBind()
-   * @see \MovLib\Model\AbstractModel::execute()
-   * @see \MovLib\Model\AbstractModel::close()
-   * @param string $table
-   *   The name of the table where a record should be deleted.
-   * @param string $types
-   *   The type string for the <tt>WHERE</tt> clause in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $where
-   *   Associative array containing column names and values for where.
-   * @return $this
-   * @throws \Exception
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected final function delete($table, $types, $where) {
-    $query = "DELETE FROM `{$table}` WHERE ";
-    $helper = "";
-    $values = [];
-    foreach ($where as $column => $value) {
-      $query .= "{$helper}`{$column}` = ?";
-      $values[] = $value;
-      $helper = " AND ";
-    }
-    return $this->prepareAndBind($query, $types, $values)->execute()->close();
   }
 
   /**
@@ -244,62 +386,6 @@ abstract class AbstractModel {
   }
 
   /**
-   * Get the current MySQLi instance.
-   *
-   * @return null|\mysqli
-   */
-  protected final function getMySQLi() {
-    return self::$mysqli;
-  }
-
-  /**
-   * Get the current prepared statement instance.
-   *
-   * @return null|\mysqli_stmt
-   */
-  protected final function getStmt() {
-    return $this->stmt;
-  }
-
-  /**
-   * Generic insert method.
-   *
-   * <b>Usage example:</b>
-   * <pre>$this->insert("users", "ss", [ "name" => "Foobar", "mail" => "foobar@example.com" ]);</pre>
-   *
-   * <b>Resulting SQL query:</b>
-   * <pre>INSERT INTO `users` (`name`, `mail`) VALUES ("Foobar", "foobar@example.com");</pre>
-   *
-   * @see \MovLib\Model\AbstractModel::prepareAndBind()
-   * @see \MovLib\Model\AbstractModel::execute()
-   * @see \MovLib\Model\AbstractModel::close()
-   * @param string $table
-   *   Name of the table where we should insert new data.
-   * @param string $types
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $data
-   *   Associative array containing column names and values for insert.
-   * @return $this
-   * @throws \Exception
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected final function insert($table, $types, $data) {
-    $columns = $valueStr = $helper = "";
-    $values = [];
-    foreach ($data as $column => $value) {
-      $columns .= "{$helper}`{$column}`";
-      $valueStr .= "{$helper}?";
-      $values[] = $value;
-      $helper = ", ";
-    }
-    return $this
-      ->prepareAndBind("INSERT INTO `{$table}` ({$columns}) VALUES ({$valueStr})", $types, $values)
-      ->execute()
-      ->close()
-    ;
-  }
-
-  /**
    * Prepare a statement for execution.
    *
    * @param string $query
@@ -343,106 +429,6 @@ abstract class AbstractModel {
       throw new DatabaseException("Binding parameters to prepared statement failed.");
     }
     return $this;
-  }
-
-  /**
-   * Generic query with constraints.
-   *
-   * <b>Usage example:</b>
-   * <pre>$this->query('SELECT * FROM `users` WHERE `id` = ?', 'i', [ 42 ]);</pre>
-   *
-   * @see \MovLib\Model\AbstractModel::prepareAndBind()
-   * @see \MovLib\Model\AbstractModel::execute()
-   * @see \MovLib\Model\AbstractModel::fetchAssoc()
-   * @see \MovLib\Model\AbstractModel::close()
-   * @param string $query
-   *   The query to be executed.
-   * @param string $types
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $values
-   *   The values that should be inserted.
-   * @return array
-   *   The query result as associative array.
-   * @throws \Exception
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected final function query($query, $types, $values) {
-    $this->prepareAndBind($query, $types, $values)->execute()->fetchAssoc($result)->close();
-    return $result;
-  }
-
-  /**
-   * Generic query without constraints.
-   *
-   * <b>Important:</b> If you have to bind parameters to the query, use the generic query method.
-   *
-   * <b>Usage Example:</b>
-   * <pre>$this->queryAll("SELECT * FROM `users`");</pre>
-   *
-   * @see \MovLib\Model\AbstractModel::prepare()
-   * @see \MovLib\Model\AbstractModel::execute()
-   * @see \MovLib\Model\AbstractModel::fetchAssoc()
-   * @see \MovLib\Model\AbstractModel::close()
-   * @param string $query
-   *   The query to be executed.
-   * @return array
-   *   The query result as associative array.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected final function queryAll($query) {
-    $this->prepare($query)->execute()->fetchAssoc($result)->close();
-    return $result;
-  }
-
-  /**
-   * Generic update query.
-   *
-   * <b>Important:</b> All where column/value pairs are concatenated with <code>AND</code>. If you have a more complex
-   * query, please use the generic query method.
-   *
-   * <b>Usage example:</b>
-   * <pre>$this->update(
-   *   "user",
-   *   "isiis",
-   *   [ "id" => 42, "name" => "foobar", "age" => 99 ],
-   *   [ "id" => 1, "name" => "barfoo" ]
-   * );</pre>
-   *
-   * <b>Resulting SQL query:</b>
-   * <pre>UPDATE `user` SET `id` = 42, `name` = "foobar", `age` = 99 WHERE `id` = 1 AND `name` = "barfoo";</pre>
-   *
-   * @see \MovLib\Model\AbstractModel::prepareAndBind()
-   * @see \MovLib\Model\AbstractModel::execute()
-   * @see \MovLib\Model\AbstractModel::close()
-   * @param string $table
-   *   Name of the database table to update.
-   * @param string $types
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $set
-   *   Associative array containing column names and values for <tt>SET</tt>.
-   * @param array $where
-   *   Associative array containing column names and values for <tt>WHERE</tt>.
-   * @return $this
-   * @throws \Exception
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected final function update($table, $types, $set, $where) {
-    $query = "UPDATE `{$table}` SET ";
-    $helper = "";
-    $values = [];
-    foreach ($set as $column => $value) {
-      $query .= "{$helper}`{$column}` = ?";
-      $values[] = $value;
-      $helper = ", ";
-    }
-    $query .= " WHERE ";
-    $helper = "";
-    foreach ($where as $column => $value) {
-      $query .= "{$helper}`{$column}` = ?";
-      $values[] = $value;
-      $helper = " AND ";
-    }
-    return $this->prepareAndBind($query, $types, $values)->execute()->close();
   }
 
 }

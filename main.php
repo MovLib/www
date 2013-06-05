@@ -26,7 +26,7 @@
  * (like a static class that is automatically loaded if a script needs a method from it).
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright (c) 2013–present, MovLib
+ * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/ movlib.org
  * @since 0.0.1-dev
