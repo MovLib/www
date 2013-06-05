@@ -28,7 +28,7 @@ use \MovLib\Utility\AbstractDelayed;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Log extends AbstractDelayed {
+class DelayedLogger extends AbstractDelayed {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -106,7 +106,7 @@ class Log extends AbstractDelayed {
             "movdev@movlib.org",
             "IMPORTANT! A {$this->level} message was just logged.",
             "<p>Here is the message that was logged:</p><pre>" . String::checkPlain($this->message) . "</pre>",
-            Mail::HTML_HEADER_NOREPLY
+            DelayedMailer::HTML_HEADER_NOREPLY
           );
           break;
 

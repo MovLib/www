@@ -20,7 +20,7 @@ namespace MovLib\Presenter;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\UserModel;
 use \MovLib\Presenter\AbstractPresenter;
-use \MovLib\Utility\Mail;
+use \MovLib\Utility\DelayedMailer;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 
@@ -77,11 +77,11 @@ class UserPresenter extends AbstractPresenter {
     /* @var $userResetPasswordView \MovLib\View\HTML\User\UserResetPasswordView */
     $userResetPasswordView = $this->getView("User\\UserResetPassword");
     if (isset($_POST["submitted"])) {
-      if (isset($_POST["email"]) && ($error = Mail::validateEmail($_POST["email"]))) {
+      if (isset($_POST["email"]) && ($error = DelayedMailer::validateEmail($_POST["email"]))) {
         $userResetPasswordView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
       }
       if (!$error) {
-        Mail::sendPasswordReset($_POST["email"]);
+        DelayedMailer::sendPasswordReset($_POST["email"]);
         $this->showSingleAlertAlertView(
           $userResetPasswordView->getTitle(),
           "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["email"]) ])}</p>",
@@ -154,7 +154,7 @@ class UserPresenter extends AbstractPresenter {
     /* @var $userSignUpView \MovLib\View\HTML\User\UserSignUpView */
     $userSignUpView = $this->getView("User\\UserSignUp");
     if (isset($_POST["submitted"])) {
-      if (isset($_POST["email"]) && ($error = Mail::validateEmail($_POST["email"]))) {
+      if (isset($_POST["email"]) && ($error = DelayedMailer::validateEmail($_POST["email"]))) {
         $userSignUpView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
       }
       if (isset($_POST["username"]) && ($error = User::validateName($_POST["username"]))) {

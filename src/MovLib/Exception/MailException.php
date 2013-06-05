@@ -22,7 +22,7 @@ use \MovLib\Exception\AbstractException;
 /**
  * A mail exception might be thrown if an error occures related to sending of mails.
  *
- * @see \MovLib\Utility\Mail
+ * @see \MovLib\Utility\DelayedMailer
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

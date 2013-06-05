@@ -48,16 +48,16 @@ abstract class AbstractDelayed {
   /**
    * Get instance of the called class.
    *
-   * @global array $delayed
+   * @global array $delayedObjects
    *   Global array to collect delayed objects for execusion after response was sent to the user.
    * @return $this
    */
   public static function getInstance() {
-    global $delayed;
+    global $delayedObjects;
     if (self::$instance === null) {
       $class = get_called_class();
       self::$instance = new $class();
-      $delayed[] = self::$instance;
+      $delayedObjects[] = self::$instance;
     }
     return self::$instance;
   }

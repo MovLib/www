@@ -21,7 +21,7 @@ use \Collator;
 use \IntlException;
 use \Locale;
 use \MovLib\Exception\I18nException;
-use \MovLib\Utility\Log;
+use \MovLib\Utility\DelayedLogger;
 use \ResourceBundle;
 
 /**
@@ -352,7 +352,7 @@ class I18n {
         // Loading the bundle sometimes fails for no reason. Try again if the file exists.
         if (!file_exists($bundle . $ext)) {
           $e = new I18nException("Loading of resource bundle '{$this->languageCode}{$ext}' failed!", 0, $e);
-          Log::logException($e, Log::LEVEL_FATAL);
+          DelayedLogger::logException($e, DelayedLogger::LEVEL_FATAL);
           throw $e;
         }
         $rb = $this->getResourceBundle();

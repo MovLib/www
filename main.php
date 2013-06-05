@@ -40,7 +40,8 @@
  * @return void
  */
 function __autoload($class) {
-  require "{$_SERVER["DOCUMENT_ROOT"]}/src/" . strtr($class, "\\", "/") . ".php";
+  $class = strtr($class, "\\", "/");
+  require "{$_SERVER["DOCUMENT_ROOT"]}/src/{$class}.php";
 }
 
 /**
@@ -48,17 +49,17 @@ function __autoload($class) {
  *
  * @var array
  */
-$delayed = [];
+$delayedObjects = [];
 
 /**
- * Create new global instance of user for the current user who is requesting the page.
+ * Create new global <em>UserModel</em> instance for the current user who is requesting the page.
  *
  * @var \MovLib\Model\UserModel
  */
 $user = (new \MovLib\Model\UserModel())->__constructFromSession();
 
 /**
- * Create new global instance of I18n for the locale of the user who is requesting the page.
+ * Create new global <em>I18n</em> instance for the locale of the user who is requesting the page.
  *
  * @var \MovLib\Utility\I18n
  */
@@ -67,18 +68,17 @@ $i18n = new \MovLib\Utility\I18n();
 /**
  * This is the outermost place to catch any exception that might have been forgotten somewhere.
  *
- * To ensure that no unexpected behaviour crashes our software, any uncaught exception will be caught at this place. An
- * error is logged to the syslog and, depending on the error, a message is displayed to the user.
+ * To ensure that no unexpected behaviour crashes our software any uncaught exception will be caught at this place. An
+ * error is logged and, depending on the error, a message is displayed to the user.
  *
  * @link http://www.php.net/manual/en/function.set-exception-handler.php
- * @param \Exception $e
- *   The base exception class from PHP from which every exception derives. This ensures that we are able to catch
- *   absolutely every exception that might arise.
+ * @param \Exception $exception
+ *   The uncaught exception.
  */
-function uncaught_exception_handler($e) {
-  \MovLib\Utility\Log::logException($e, $e->getCode());
+function uncaught_exception_handler($exception) {
+  \MovLib\Utility\DelayedLogger::logException($exception, $exception->getCode());
   $presenter = new \MovLib\Presenter\ExceptionPresenter();
-  $presenter->setException($e);
+  $presenter->setException($exception);
   exit($presenter->presentation);
 }
 
@@ -100,17 +100,19 @@ set_exception_handler("uncaught_exception_handler");
  *
  * @link http://ralphschindler.com/2010/09/15/exception-best-practices-in-php-5-3
  * @link http://www.php.net/manual/en/function.set-error-handler.php
- * @param int $errno
- *   The level of error that was raised.
- * @param string $errstr
- *   The error message that describes what went wrong.
- * @param string $errfile
- *   The filename that the error was raised in.
- * @param int $errline
- *   The line number the error was raised at.
+ * @param int $type
+ *   The error's type, one of the PHP predefined <var>E_*</var> constants.
+ * @param string $message
+ *   The error's message.
+ * @param string $file
+ *   The absolute path to the file where the error was raised.
+ * @param int $line
+ *   The line number within the file.
  */
-function error_all_handler($errno, $errstr, $errfile, $errline) {
-  throw (new \MovLib\Exception\ErrorException($errstr, $errno))->setFile($errfile)->setLine($errline);
+function error_all_handler($type, $message, $file, $line) {
+  $exception = new \MovLib\Exception\ErrorException($message, $type);
+  $exception->setFile($file)->setLine($line);
+  throw $exception;
 }
 
 // Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
@@ -125,25 +127,25 @@ set_error_handler("error_all_handler");
  * @link http://stackoverflow.com/a/2146171/1251219
  */
 function error_fatal_handler() {
-  if (($err = error_get_last())) {
-    $exception = new \Exception($err["message"], $err["type"]);
+  if (($error = error_get_last())) {
+    $exception = new \Exception($error["message"], $error["type"]);
 
-    $reflectionClass = new \ReflectionClass("Exception");
+    $reflection = new \ReflectionClass("Exception");
 
-    $trace = $reflectionClass->getProperty("trace");
+    $trace = $reflection->getProperty("trace");
     $trace->setAccessible(true);
     $trace->setValue($exception, [
       [ "function" => __FUNCTION__, "line" => __LINE__, "file" => __FILE__ ],
-      [ "function" => "<em>unknown</em>", "line" => $err["line"], "file" => $err["file"] ],
+      [ "function" => "<em>unknown</em>", "line" => $error["line"], "file" => $error["file"] ],
     ]);
 
-    $file = $reflectionClass->getProperty("file");
+    $file = $reflection->getProperty("file");
     $file->setAccessible(true);
-    $file->setValue($exception, $err["file"]);
+    $file->setValue($exception, $error["file"]);
 
-    $line = $reflectionClass->getProperty("line");
+    $line = $reflection->getProperty("line");
     $line->setAccessible(true);
-    $line->setValue($exception, $err["line"]);
+    $line->setValue($exception, $error["line"]);
 
     uncaught_exception_handler($exception);
   }
@@ -160,6 +162,6 @@ echo (new $presenter())->presentation;
 fastcgi_finish_request();
 
 // Execute each delayed object after sending the generated output to the user.
-foreach ($delayed as $delayedObject) {
+foreach ($delayedObjects as $delayedObject) {
   $delayedObject->run();
 }

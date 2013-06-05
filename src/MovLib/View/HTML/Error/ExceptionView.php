@@ -17,7 +17,7 @@
  */
 namespace MovLib\View\HTML\Error;
 
-use \MovLib\Utility\Log;
+use \MovLib\Utility\DelayedLogger;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AlertView;
 
@@ -67,7 +67,7 @@ class ExceptionView extends AlertView {
       true
     );
     /*}}}DEBUG*/
-    Log::logException($exception, Log::LEVEL_FATAL);
+    DelayedLogger::logException($exception, DelayedLogger::LEVEL_FATAL);
   }
 
   /**

@@ -29,7 +29,7 @@ use \MovLib\Utility\AbstractDelayed;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Mail extends AbstractDelayed {
+class DelayedMailer extends AbstractDelayed {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -85,7 +85,7 @@ class Mail extends AbstractDelayed {
    * @throws \MovLib\Exception\MailException
    */
   public static function sendMail($to, $subject, $message) {
-    /* @var $instance Mail */
+    /* @var $instance DelayedMailer */
     $instance = self::getInstance();
     $instance->stack[] = [ "to" => $to, "subject" => $subject, "message" => $message ];
     return $instance;
@@ -101,7 +101,7 @@ class Mail extends AbstractDelayed {
    */
   public static function sendPasswordReset($userEmail) {
     global $i18n;
-    /* @var $instance Mail */
+    /* @var $instance DelayedMailer */
     $instance = self::getInstance();
     /* @var $user \MovLib\Entity\User */
     $user = (new User())->__constructFromEmail($userEmail);
