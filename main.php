@@ -155,7 +155,7 @@ function error_fatal_handler() {
 register_shutdown_function("error_fatal_handler");
 
 // Start the rendering process.
-$presenter = "\\MovLib\\Presenter\\" . $_SERVER["PRESENTER"] . "Presenter";
+$presenter = "\\MovLib\\Presenter\\{$_SERVER["PRESENTER"]}Presenter";
 echo (new $presenter())->presentation;
 
 // This makes sure that the output that was generated until this point will be returned to nginx for delivery.
