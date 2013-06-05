@@ -92,11 +92,8 @@ class I18nModel extends AbstractModel {
            *   Instance of the delayed model.
            */
           function ($delayedModel) use ($message, $comment) {
-            try {
-              // Check if the new message is in the database.
-              $delayedModel->query("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", $message)[0]["message_id"];
-            } catch (ErrorException $e) {
-              unset($e);
+            // Check if the new message is in the database.
+            if (empty($delayedModel->query("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", $message)) {
               // Seems like the old message wasn't in the database as well. Insert the new message.
               $delayedModel->insert("messages", "ss", [ $message, $comment ]);
               // @todo This should be logged! Implement non delayed logger.
