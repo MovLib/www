@@ -49,7 +49,7 @@ abstract class AbstractFormView extends AbstractView {
   public function getContent() {
     global $user;
     $csrf = "";
-    if (($token = $user->getCsrfToken())) {
+    if (($token = $user->csrfToken)) {
       $csrf = "<input name='csrf_token' type='hidden' value='{$token}'>";
     }
     if (isset($this->attributes["action"])) {

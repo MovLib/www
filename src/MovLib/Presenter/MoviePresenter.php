@@ -35,17 +35,25 @@ use \MovLib\Model\ReleasesModel;
  */
 class MoviePresenter extends AbstractPresenter {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * Associative array containing the complete data of this movie.
    *
-   * @var array
+   * @var \MovLib\Model\MovieModel
    */
-  private $movie;
+  public $movieModel;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * {@inheritdoc}
    */
-  protected function init() {
+  public function __construct() {
     return $this
       ->{__FUNCTION__ . $this->getMethod()}()
       ->setPresentation()
@@ -59,18 +67,22 @@ class MoviePresenter extends AbstractPresenter {
    *   The global i18n instance.
    * @return $this
    */
-  protected function initGet() {
+  protected function __constructGet() {
     try {
-      $this->movie = (new MovieModel())->getMovieFull($_SERVER["MOVIE_ID"]);
-      if ($this->movie["deleted"] === true) {
+      $this->movieModel = (new MovieModel())->__constructFromId($_SERVER["MOVIE_ID"]);
+      if ($this->movieModel->deleted === true) {
         return $this->setPresentation("Error\\GoneMovie");
       }
-      $this->movie["releases"] = (new ReleasesModel())->getReleasesForMovie($_SERVER["MOVIE_ID"]);
+      $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
       return $this->setPresentation("Movie\\MovieShow");
     } catch (MovieException $e) {
       return $this->setPresentation("Error\\NotFound");
     }
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
 
   /**
    * {@inheritdoc}
@@ -78,18 +90,6 @@ class MoviePresenter extends AbstractPresenter {
   public function getBreadcrumb() {
     global $i18n;
     return [[ "href" => $i18n->r("/movies"), "text" => $i18n->t("Movies") ]];
-  }
-
-  /**
-   * Get the display title and year appended in brackets (if the movie has a year).
-   *
-   * @return string
-   */
-  public function getMovieDisplayTitleAndYear() {
-    if ($this->movie["year"] !== "0000") {
-      return "{$this->movie["display_title"]} ({$this->movie["year"]})";
-    }
-    return $this->movie["display_title"];
   }
 
   /**
@@ -101,8 +101,8 @@ class MoviePresenter extends AbstractPresenter {
    *   Absolute path to the poster art for the desired image style.
    */
   public function getMoviePoster($style) {
-    if ($this->movie["poster"]) {
-      return "/uploads/poster/{$this->movie["id"]}/{$style}/{$this->movie["poster"]["file_name"]}.{$this->movie["poster"]["file_id"]}.{$this->movie["poster"]["extension"]}";
+    if ($this->movieModel["poster"]) {
+      return "/uploads/poster/{$this->movieModel["id"]}/{$style}/{$this->movieModel["poster"]["file_name"]}.{$this->movieModel["poster"]["file_id"]}.{$this->movieModel["poster"]["extension"]}";
     }
   }
 

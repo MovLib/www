@@ -20,7 +20,7 @@ namespace MovLib\Presenter;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\UserModel;
 use \MovLib\Presenter\AbstractPresenter;
-use \MovLib\Utility\AsyncMail;
+use \MovLib\Utility\Mail;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 
@@ -44,48 +44,16 @@ class UserPresenter extends AbstractPresenter {
    *
    * @var \MovLib\Model\UserModel
    */
-  private $profile;
+  public $profile;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Breadcrumb methods
-
-
-  /**
-   * Associative array containing the breadcrumb trail for this presenter.
-   *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
-   * @return array
-   */
-  public function getBreadcrumb() {
-    global $i18n, $user;
-    if (method_exists($this, __FUNCTION__ . $this->getAction())) {
-      return $this->{__FUNCTION__ . $this->getAction()}();
-    }
-    if ($user->isLoggedIn() === true) {
-      return [[
-        "href" => $i18n->r("/user"),
-        "text" => $i18n->t("Porfile"),
-        "title" => $i18n->t("Go to your user profile.")
-      ]];
-    }
-    return [[
-      "href" => $i18n->r("/users"),
-      "text" => $i18n->t("Users"),
-      "title" => $i18n->t("Have a look at our user statistics.")
-    ]];
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Init (rendering) methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function __construct() {
     return $this
       ->{__FUNCTION__ . $this->getAction()}()
       ->setPresentation()
@@ -101,19 +69,19 @@ class UserPresenter extends AbstractPresenter {
    *   The global user model instance.
    * @return $this
    */
-  private function initResetPassword() {
+  private function __constructResetPassword() {
     global $i18n, $user;
-    if ($user->isLoggedIn() === true) {
+    if ($user->isLoggedIn === true) {
       return $this->setPresentation("Error\\Forbidden");
     }
     /* @var $userResetPasswordView \MovLib\View\HTML\User\UserResetPasswordView */
     $userResetPasswordView = $this->getView("User\\UserResetPassword");
     if (isset($_POST["submitted"])) {
-      if (isset($_POST["email"]) && ($error = AsyncMail::validateEmail($_POST["email"]))) {
+      if (isset($_POST["email"]) && ($error = Mail::validateEmail($_POST["email"]))) {
         $userResetPasswordView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
       }
       if (!$error) {
-        AsyncMail::resetPassword($_POST["email"]);
+        Mail::sendPasswordReset($_POST["email"]);
         $this->showSingleAlertAlertView(
           $userResetPasswordView->getTitle(),
           "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["email"]) ])}</p>",
@@ -130,17 +98,17 @@ class UserPresenter extends AbstractPresenter {
    *
    * @return $this
    */
-  private function initShow() {
+  private function __constructShow() {
     try {
       // Try to load the user's data from the database.
       if (isset($_SERVER["USER_ID"])) {
-        $this->profile = (new UserModel())->constructFromId($_SERVER["USER_ID"]);
+        $this->profile = (new UserModel())->__constructFromId($_SERVER["USER_ID"]);
       }
       elseif (isset($_SERVER["USER_NAME"])) {
-        $this->profile = (new UserModel())->constructFromName($_SERVER["USER_NAME"]);
+        $this->profile = (new UserModel())->__constructFromName($_SERVER["USER_NAME"]);
       }
       // If this user's account is disabled, tell the client about it and exit (no need to redirect).
-      if ($this->profile->getDeleted() === true) {
+      if ($this->profile->deleted === true) {
         return $this->setPresentation("Error\\Gone");
       }
       // Check if the requested URI is a perfect match to what we want to have.
@@ -161,9 +129,9 @@ class UserPresenter extends AbstractPresenter {
    *   The global user model instance.
    * @return $this
    */
-  private function initSignIn() {
+  private function __constructSignIn() {
     global $user;
-    if ($user->isLoggedIn() === true) {
+    if ($user->isLoggedIn === true) {
       return $this->setPresentation("Error\\Forbidden");
     }
     return $this->setPresentation("User\\UserSignIn");
@@ -178,15 +146,15 @@ class UserPresenter extends AbstractPresenter {
    *   The global user model instance.
    * @return $this
    */
-  private function initSignUp() {
+  private function __constructSignUp() {
     global $i18n, $user;
-    if ($user->isLoggedIn() === true) {
+    if ($user->isLoggedIn === true) {
       return $this->setPresentation("Error\\Forbidden");
     }
     /* @var $userSignUpView \MovLib\View\HTML\User\UserSignUpView */
     $userSignUpView = $this->getView("User\\UserSignUp");
     if (isset($_POST["submitted"])) {
-      if (isset($_POST["email"]) && ($error = AsyncMail::validateEmail($_POST["email"]))) {
+      if (isset($_POST["email"]) && ($error = Mail::validateEmail($_POST["email"]))) {
         $userSignUpView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
       }
       if (isset($_POST["username"]) && ($error = User::validateName($_POST["username"]))) {
@@ -202,6 +170,38 @@ class UserPresenter extends AbstractPresenter {
       }
     }
     return $this->setPresentation("User\\UserSignUp");
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
+
+  /**
+   * Associative array containing the breadcrumb trail for this presenter.
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
+   * @return array
+   */
+  public function getBreadcrumb() {
+    global $i18n, $user;
+    if (method_exists($this, __FUNCTION__ . $this->getAction())) {
+      return $this->{__FUNCTION__ . $this->getAction()}();
+    }
+    if ($user->isLoggedIn === true) {
+      return [[
+        "href" => $i18n->r("/user"),
+        "text" => $i18n->t("Profile"),
+        "title" => $i18n->t("Go to your user profile.")
+      ]];
+    }
+    return [[
+      "href" => $i18n->r("/users"),
+      "text" => $i18n->t("Users"),
+      "title" => $i18n->t("Have a look at our user statistics.")
+    ]];
   }
 
 }

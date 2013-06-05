@@ -21,7 +21,7 @@ use \Collator;
 use \IntlException;
 use \Locale;
 use \MovLib\Exception\I18nException;
-use \MovLib\Utility\AsyncLogger;
+use \MovLib\Utility\Log;
 use \ResourceBundle;
 
 /**
@@ -40,18 +40,12 @@ class I18n {
 
 
   /**
-   * ISO 639-1 alpha-2 language code of the the default language extracted from global PHP locale configuration.
+   * The languages direction.
    *
+   * @todo Implement right-to-left language detection.
    * @var string
    */
-  private $defaultLanguageCode;
-
-  /**
-   * The default locale (e.g. <em>en-US</em>).
-   *
-   * @var string
-   */
-  private $defaultLocale;
+  public $direction = "ltr";
 
   /**
    * ISO 639-1 alpha-2 language code. Supported language codes are defined via nginx configuration.
@@ -59,14 +53,25 @@ class I18n {
    * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
    * @var string
    */
-  private $languageCode;
+  public $languageCode;
 
   /**
    * Locale for the current language code, used for Intl ICU related classes and functions (e.g. collators).
    *
    * @var string
    */
-  private $locale;
+  public $locale;
+
+  /**
+   * Numeric array containing all supported ISO 639-1 alpha-2 language codes.
+   *
+   * The supported language codes are directly related to the nginx configuration. If this array contains a language
+   * code the deployment script will generate a server (in Apache httpd terms <tt>virtual host</tt>) with routes for
+   * this code.
+   *
+   * @var array
+   */
+  public static $supportedLanguageCodes = [ "en", "de" ];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -79,7 +84,7 @@ class I18n {
    * @global \MovLib\Model\UserModel $user
    *   The global user model instance.
    * @param $locale
-   *   [Optional] The desired locale, if no loale is passed the following procedure is executed:
+   *   [Optional] The desired locale, if no locale is passed the following procedure is executed:
    *   <ol>
    *     <li>Check if the user is logged in and has a preferred locale, if so redirect to dashboard.</li>
    *     <li>Check if the server sent a language code.</li>
@@ -90,16 +95,16 @@ class I18n {
   public function __construct($locale = null) {
     global $user;
     if ($locale === null) {
-      // If the user is logged in and has a preferred locale redirect to dashboard.
-      if (!isset($_SERVER["LANGUAGE_CODE"]) && $user->isLoggedIn() && ($locale = $user->getLocale())) {
-        HTTP::redirect("/", 302, "{$locale[0]}{$locale[1]}.{$_SERVER["SERVER_NAME"]}");
+      // If the user is logged in and has a preferred locale redirect to home.
+      if (!isset($_SERVER["LANGUAGE_CODE"]) && $user->isLoggedIn && ($locale = $user->getLanguageCode())) {
+        HTTP::redirect("/", 302, "{$locale}.{$_SERVER["SERVER_NAME"]}");
       }
       // If this is a subdomain, use that language code.
       if (isset($_SERVER["LANGUAGE_CODE"])) {
         $locale = $_SERVER["LANGUAGE_CODE"];
       }
       // If the user sent info on his preferred language via the appropriate HTTP header, use that language.
-      elseif (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($tmpLocale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && in_array($tmpLocale[0] . $tmpLocale[1], self::getSupportedLanguageCodes())) {
+      elseif (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($tmpLocale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && in_array($tmpLocale[0] . $tmpLocale[1], self::$supportedLanguageCodes)) {
         $locale = $tmpLocale;
       }
       // If no selection was possible, use the default locale.
@@ -111,6 +116,39 @@ class I18n {
     $this->languageCode = $locale[0] . $locale[1];
     $this->defaultLocale = Locale::getDefault();
     $this->defaultLanguageCode = $this->defaultLocale[0] . $this->defaultLocale[1];
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
+
+
+  /**
+   * Get the default ISO 639-1 alpha-2 language code extracted from <tt>php.ini</tt>.
+   *
+   * @return string
+   *   The default ISO 639-1 alpha-2 language code.
+   */
+  public static function getDefaultLanguageCode() {
+    static $defaultLanguageCode = null;
+    if ($defaultLanguageCode === null) {
+      $defaultLanguageCode = self::getDefaultLocale();
+      $defaultLanguageCode = $defaultLanguageCode[0] . $defaultLanguageCode[1];
+    }
+    return $defaultLanguageCode;
+  }
+
+  /**
+   * Get the default locale (e.g. <em>en-US</em>).
+   *
+   * @return string
+   *   The default locale.
+   */
+  public static function getDefaultLocale() {
+    static $defaultLocale = null;
+    if ($defaultLocale === null) {
+      $defaultLocale = Locale::getDefault();
+    }
+    return $defaultLocale;
   }
 
 
@@ -233,34 +271,6 @@ class I18n {
   }
 
   /**
-   * Get the default ISO 639-1 alpha-2 language code.
-   *
-   * @return string
-   */
-  public function getDefaultLanguageCode() {
-    return $this->defaultLanguageCode;
-  }
-
-  /**
-   * Get the default locale (e.g. <em>en-US</em>).
-   *
-   * @return string
-   */
-  public function getDefaultLocale() {
-    return $this->defaultLocale;
-  }
-
-  /**
-   * Get the direction of the current locale.
-   *
-   * @todo Implement languages with different directions.
-   * @return string
-   */
-  public function getDirection() {
-    return "ltr";
-  }
-
-  /**
    * Get all Intl ICU supported languages.
    *
    * <b>IMPORTANT!</b> The languages are sorted by their translated name for the current locale, not by code!
@@ -284,29 +294,6 @@ class I18n {
       $this->getCollator()->asort($languages);
     }
     return $languages;
-  }
-
-  /**
-   * Get the ISO 639-1 alpha-2 language code for the current locale.
-   *
-   * @return string
-   */
-  public function getLanguageCode() {
-    return $this->languageCode;
-  }
-
-  /**
-   * Get all supported ISO 639-1 alpha-2 language codes.
-   *
-   * The supported language codes are directly related to the nginx configuration. If this array returns a language code
-   * the deployment script will generate a server (in Apache httpd terms <tt>virtual host</tt>) with routes for this
-   * code.
-   *
-   * @return array
-   *   Keyed array containing all supported ISO 639-1 alpha-2 language codes.
-   */
-  public static function getSupportedLanguageCodes() {
-    return [ "en", "de" ];
   }
 
 
@@ -365,7 +352,7 @@ class I18n {
         // Loading the bundle sometimes fails for no reason. Try again if the file exists.
         if (!file_exists($bundle . $ext)) {
           $e = new I18nException("Loading of resource bundle '{$this->languageCode}{$ext}' failed!", 0, $e);
-          AsyncLogger::logException($e, AsyncLogger::LEVEL_FATAL);
+          Log::logException($e, Log::LEVEL_FATAL);
           throw $e;
         }
         $rb = $this->getResourceBundle();

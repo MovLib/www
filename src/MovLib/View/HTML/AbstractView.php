@@ -340,7 +340,7 @@ abstract class AbstractView {
    * @return string
    *   The short name of the class (lowercased).
    */
-  public function getShortName() {
+  public final function getShortName() {
     static $shortName = null;
     if ($shortName === null) {
       // Always remove the "view" suffix from the name, this is redundant and not needed in the frontend.
@@ -363,92 +363,6 @@ abstract class AbstractView {
   }
 
   /**
-   * Get the breadcrumb navigation.
-   *
-   * @see \MovLib\Presenter\AbstractPresenter::getBreadcrumb()
-   * @see \MovLib\View\HTML\AbstractView::getNavigation()
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
-   * @return string
-   *   The breadcrumb ready for print.
-   */
-  public function getBreadcrumb() {
-    global $i18n;
-    $points = [[ "href" => "/", "text" => $i18n->t("Home"), "title" => $i18n->t("Go back to the home page.") ]];
-    $trail = $this->presenter->getBreadcrumb();
-    $trailCount = count($trail);
-    if ($trailCount !== 0) {
-      for ($i = 0; $i < $trailCount; ++$i) {
-        $trail[$i]["text"] = String::shorten($trail[$i]["text"], 25, $i18n->t("…"));
-        $points[] = $trail[$i];
-      }
-    }
-    $points[] = [ "href" => $_SERVER["REQUEST_URI"], "text" => $this->title ];
-    return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, -1, " › ", [ "class" => "container text-right" ])}</div>";
-  }
-
-  /**
-   * Get the HTML footer including all script tags.
-   *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
-   * @return string
-   *   The footer ready for print.
-   */
-  public final function getFooter() {
-    global $i18n;
-    return
-      "<footer id='footer'>" .
-        "<div id='footer-links' class='container'>" .
-          "<div id='footer-rows' class='row'>" .
-            "<div class='span span--3'>" .
-              "<h3>MovLib</h3>" .
-              "<ul class='no-list'>" .
-                "<li class='item-first'>{$this->a("/about", "About", $i18n->t("Find out more about us."))}</li>" .
-                "<li>{$this->a("/blog", "Blog", $i18n->t("Stay up to date about the latest developments."))}</li>" .
-                "<li>{$this->a("/contact", "Contact", $i18n->t("Feedback is always welcome, no matter if positive or negative."))}</li>" .
-                "<li>{$this->a("/resources", "Logos and Badges", $i18n->t("If you want to create something awesome."))}</li>" .
-                "<li class='item-last'>{$this->a("/legal", "Legal", $i18n->t("Collection of the various legal terms and conditions."))}</li>" .
-              "</ul>" .
-            "</div>" .
-            "<div class='span span--3'>" .
-              "<h3>{$i18n->t("Join in")}</h3>" .
-              "<ul class='no-list'>" .
-                "<li class='item-first item-last'>{$this->a("/user/sign-up", "Sign up", $i18n->t("Become a member and help building the biggest free movie library in this world."))}</li>" .
-              "</ul>" .
-            "</div>" .
-            "<div class='span span--3'></div>" .
-            "<div class='span span--3'>" .
-              "<h3>{$i18n->t("Get help")}</h3>" .
-              "<ul class='no-list'>" .
-                "<li class='item-first item-last'>{$this->a("/help", "Help", $i18n->t("If you have questions click here to find our help articles."))}</li>" .
-              "</ul>" .
-            "</div>" .
-          "</div>" .
-        "</div>" .
-        "<div id='footer-copyright'>" .
-          "<div class='container'>" .
-            "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
-              "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
-              [ "<a href='http://creativecommons.org/publicdomain/zero/1.0/deed.{$i18n->getLanguageCode()}' rel='license'>", "</a>" ]
-            )}<br>" .
-            "{$i18n->t(
-              "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
-            )}<br>" .
-            $i18n->t(
-              "By using this site, you agree to the {0} and {1}.",
-              [ $this->a("/terms-of-use", "Terms of Use"), $this->a("/privacy-policy", "Privacy Policy") ],
-              "<tt>{0}</tt> is <em>Terms of Use</em> and <tt>{1}</tt> is <em>Privacy Policy</em>."
-            ) .
-          "</div>" .
-        "</div>" .
-      "</footer>"
-      // @todo Add aggregated scripts
-    ;
-    // Please note that a closing body or html tag is not necessary!
-  }
-
-  /**
    * Get the HTML head element, this includes doctype and the html root element.
    *
    * @link http://www.netmagazine.com/features/create-perfect-favicon
@@ -467,7 +381,7 @@ abstract class AbstractView {
       $stylesheets .= "<link rel='stylesheet' href='{$this->stylesheets[$i]}'>";
     }
     $bodyClass = "{$this->getShortName()}-body";
-    if ($user->isLoggedIn() === true) {
+    if ($user->isLoggedIn === true) {
       $bodyClass .= " logged-in";
     }
     $ariaRole = "document";
@@ -476,7 +390,7 @@ abstract class AbstractView {
     }
     return
       "<!doctype html>" .
-      "<html id='nojs' lang='{$i18n->getLanguageCode()}' dir='{$i18n->getDirection()}'>" .
+      "<html id='nojs' lang='{$i18n->languageCode}' dir='{$i18n->direction}'>" .
       "<head>" .
         "<title>{$this->getHeadTitle()}</title>" .
         $stylesheets .
@@ -585,7 +499,7 @@ abstract class AbstractView {
    */
   public final function getHeaderUserNavigation() {
     global $i18n, $user;
-    if ($user->isLoggedIn() === true) {
+    if ($user->isLoggedIn === true) {
       // @todo Implement logged in user navigation.
     }
     return $this->getNavigation($i18n->t("User navigation"), "user", [
@@ -615,7 +529,7 @@ abstract class AbstractView {
    * @param string $role
    *   The logic role of this navigation menu (e.g. <em>main</em>, <em>footer</em>, ...).
    * @param array $points
-   *   Keyed array containing the navigation points.
+   *   Numeric array containing the navigation points.
    * @param int $activePointIndex
    *   Index of the element within the array that should be marked active.
    * @param string $glue
@@ -664,43 +578,6 @@ abstract class AbstractView {
   }
 
   /**
-   * Get the content wrapped in the outter content <tt>div</tt>.
-   *
-   * @return string
-   *   The rendered content ready for print.
-   */
-  public function getRenderedContent() {
-    return
-      "<div id='content' class='{$this->getShortName()}-content' role='main'>" .
-        "<div id='content__header'>" .
-          "<div class='container'>" .
-            "<h1 id='content__header__title'>{$this->title}</h1>" .
-          "</div>" .
-        "</div>" .
-        $this->getAlerts() .
-        $this->getContent() .
-      "</div>"
-    ;
-  }
-
-  /**
-   * Get the full rendered view.
-   *
-   * @return string
-   *   The rendered view ready for print.
-   */
-  public function getRenderedView() {
-    return
-      $this->getHead() .
-      $this->getHeader() .
-      $this->getStickyHeader() .
-      $this->getBreadcrumb() .
-      $this->getRenderedContent() .
-      $this->getFooter()
-    ;
-  }
-
-  /**
    * Get the (pure CSS) sticky header.
    *
    * @link http://uxdesign.smashingmagazine.com/2012/09/11/sticky-menus-are-quicker-to-navigate/
@@ -728,9 +605,124 @@ abstract class AbstractView {
     ;
   }
 
+  /**
+   * Add new alert message to the output of the view.
+   *
+   * @link http://www.w3.org/TR/wai-aria/roles#alert
+   * @link http://www.w3.org/TR/wai-aria/states_and_properties#aria-live
+   * @param string $message
+   *   The message that should be displayed to the user.
+   * @param string $title
+   *   [optional] [recommended] Short descriptive title that summarizes the alert, defaults to no title at all.
+   * @param string $severity
+   *   [optional] The severity level of this alert, defaults to <var>AbstractView::ALERT_SEVERITY_WARNING</var>.
+   * @param boolean $block
+   *   [optional] If your message is very long, or your alert is very important, increase the padding around the message
+   *   and enclose the title in a level-4 heading instead of the bold tag.
+   * @return \MovLib\View\HTML\AbstractView
+   */
+  public final function setAlert($message, $title = "", $severity = self::ALERT_SEVERITY_WARNING, $block = false) {
+    if (empty($title) === false) {
+      $tag = ($block === true) ? "h4" : "b";
+      $title = "<{$tag} class='alert__title'>{$title}</{$tag}>";
+    }
+    $class = "";
+    if ($block === true) {
+      $class .= " alert--block";
+    }
+    $this->alerts[] = "<div class='alert alert--{$severity}{$class}' role='alert'>{$title} {$message}</div>";
+    return $this;
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
+
+  /**
+   * Get the breadcrumb navigation.
+   *
+   * @see \MovLib\Presenter\AbstractPresenter::getBreadcrumb()
+   * @see \MovLib\View\HTML\AbstractView::getNavigation()
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   * @return string
+   *   The breadcrumb ready for print.
+   */
+  public function getBreadcrumb() {
+    global $i18n;
+    $points = [[ "href" => "/", "text" => $i18n->t("Home"), "title" => $i18n->t("Go back to the home page.") ]];
+    $trail = $this->presenter->getBreadcrumb();
+    $trailCount = count($trail);
+    if ($trailCount !== 0) {
+      for ($i = 0; $i < $trailCount; ++$i) {
+        $trail[$i]["text"] = String::shorten($trail[$i]["text"], 25, $i18n->t("…"));
+        $points[] = $trail[$i];
+      }
+    }
+    $points[] = [ "href" => $_SERVER["REQUEST_URI"], "text" => $this->title ];
+    return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, -1, " › ", [ "class" => "container text-right" ])}</div>";
+  }
+
+  /**
+   * Get the HTML footer including all script tags.
+   *
+   * @global \MovLib\Utility\I18n $i18n
+   *   The global i18n instance.
+   * @return string
+   *   The footer ready for print.
+   */
+  public function getFooter() {
+    global $i18n;
+    return
+      "<footer id='footer'>" .
+        "<div id='footer-links' class='container'>" .
+          "<div id='footer-rows' class='row'>" .
+            "<div class='span span--3'>" .
+              "<h3>MovLib</h3>" .
+              "<ul class='no-list'>" .
+                "<li class='item-first'>{$this->a("/about", "About", $i18n->t("Find out more about us."))}</li>" .
+                "<li>{$this->a("/blog", "Blog", $i18n->t("Stay up to date about the latest developments."))}</li>" .
+                "<li>{$this->a("/contact", "Contact", $i18n->t("Feedback is always welcome, no matter if positive or negative."))}</li>" .
+                "<li>{$this->a("/resources", "Logos and Badges", $i18n->t("If you want to create something awesome."))}</li>" .
+                "<li class='item-last'>{$this->a("/legal", "Legal", $i18n->t("Collection of the various legal terms and conditions."))}</li>" .
+              "</ul>" .
+            "</div>" .
+            "<div class='span span--3'>" .
+              "<h3>{$i18n->t("Join in")}</h3>" .
+              "<ul class='no-list'>" .
+                "<li class='item-first item-last'>{$this->a("/user/sign-up", "Sign up", $i18n->t("Become a member and help building the biggest free movie library in this world."))}</li>" .
+              "</ul>" .
+            "</div>" .
+            "<div class='span span--3'></div>" .
+            "<div class='span span--3'>" .
+              "<h3>{$i18n->t("Get help")}</h3>" .
+              "<ul class='no-list'>" .
+                "<li class='item-first item-last'>{$this->a("/help", "Help", $i18n->t("If you have questions click here to find our help articles."))}</li>" .
+              "</ul>" .
+            "</div>" .
+          "</div>" .
+        "</div>" .
+        "<div id='footer-copyright'>" .
+          "<div class='container'>" .
+            "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
+              "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
+              [ "<a href='http://creativecommons.org/publicdomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
+            )}<br>" .
+            "{$i18n->t(
+              "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
+            )}<br>" .
+            $i18n->t(
+              "By using this site, you agree to the {0} and {1}.",
+              [ $this->a("/terms-of-use", "Terms of Use"), $this->a("/privacy-policy", "Privacy Policy") ],
+              "<tt>{0}</tt> is <em>Terms of Use</em> and <tt>{1}</tt> is <em>Privacy Policy</em>."
+            ) .
+          "</div>" .
+        "</div>" .
+      "</footer>"
+      // @todo Add aggregated scripts
+    ;
+    // Please note that a closing body or html tag is not necessary!
+  }
 
   /**
    * Get the logo for the <code>&lt;header&gt;</code>-element.
@@ -773,32 +765,40 @@ abstract class AbstractView {
   }
 
   /**
-   * Add new alert message to the output of the view.
+   * Get the content wrapped in the outter content <tt>div</tt>.
    *
-   * @link http://www.w3.org/TR/wai-aria/roles#alert
-   * @link http://www.w3.org/TR/wai-aria/states_and_properties#aria-live
-   * @param string $message
-   *   The message that should be displayed to the user.
-   * @param string $title
-   *   [optional] [recommended] Short descriptive title that summarizes the alert, defaults to no title at all.
-   * @param string $severity
-   *   [optional] The severity level of this alert, defaults to <var>AbstractView::ALERT_SEVERITY_WARNING</var>.
-   * @param boolean $block
-   *   [optional] If your message is very long, or your alert is very important, increase the padding around the message
-   *   and enclose the title in a level-4 heading instead of the bold tag.
-   * @return \MovLib\View\HTML\AbstractView
+   * @return string
+   *   The rendered content ready for print.
    */
-  public final function setAlert($message, $title = "", $severity = self::ALERT_SEVERITY_WARNING, $block = false) {
-    if (empty($title) === false) {
-      $tag = ($block === true) ? "h4" : "b";
-      $title = "<{$tag} class='alert__title'>{$title}</{$tag}>";
-    }
-    $class = "";
-    if ($block === true) {
-      $class .= " alert--block";
-    }
-    $this->alerts[] = "<div class='alert alert--{$severity}{$class}' role='alert'>{$title} {$message}</div>";
-    return $this;
+  public function getRenderedContent() {
+    return
+      "<div id='content' class='{$this->getShortName()}-content' role='main'>" .
+        "<div id='content__header'>" .
+          "<div class='container'>" .
+            "<h1 id='content__header__title'>{$this->title}</h1>" .
+          "</div>" .
+        "</div>" .
+        $this->getAlerts() .
+        $this->getContent() .
+      "</div>"
+    ;
+  }
+
+  /**
+   * Get the full rendered view.
+   *
+   * @return string
+   *   The rendered view ready for print.
+   */
+  public function getRenderedView() {
+    return
+      $this->getHead() .
+      $this->getHeader() .
+      $this->getStickyHeader() .
+      $this->getBreadcrumb() .
+      $this->getRenderedContent() .
+      $this->getFooter()
+    ;
   }
 
 }

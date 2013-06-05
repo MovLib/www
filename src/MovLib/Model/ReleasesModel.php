@@ -17,7 +17,6 @@
  */
 namespace MovLib\Model;
 
-use \MovLib\Exception\DatabaseException;
 use \MovLib\Model\AbstractModel;
 
 /**
@@ -32,36 +31,8 @@ use \MovLib\Model\AbstractModel;
  */
 class ReleasesModel extends AbstractModel {
 
-  /**
-   * The language code for the movie queries in ISO 639-1:2002 format.
-   *
-   * @var string
-   */
-  private $languageCode;
+  public function __constructFromMovieId($movieId) {
 
-  public function __construct($languageCode) {
-    parent::__construct();
-    $this->languageCode = $languageCode;
-  }
-
-  public function getReleasesForMovie($movie_id) {
-    $query = <<<EOD
-SELECT r.`release_id`, r.`release_title`, r.`release_date`,
-c.`name_en` AS `country_name_en`, c.`name_{$this->languageCode}` AS `country_name_{$this->languageCode}`, c.`iso_alpha_2`, c.`iso_alpha_3`
-FROM `releases` r
-
-INNER JOIN `movies_has_releases` mhr
-ON mhr.`releases_release_id` = r.`release_id`
-
-INNER JOIN `countries` c
-ON r.`countries_country_id` = c.`country_id`
-
-WHERE mhr.`movies_movie_id` = ?
-ORDER BY r.`release_date` ASC
-EOD;
-
-    $result = $this->query($query, "i", [ $movie_id ]);
-    return $result;
   }
 
 }

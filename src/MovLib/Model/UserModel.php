@@ -65,40 +65,52 @@ class UserModel extends AbstractModel {
   /**
    * The CSRF token for this user's session.
    *
-   * @var string
+   * @var null|string
    */
-  private $csrfToken;
+  public $csrfToken;
 
   /**
-   * The user's unique ID.
+   * The user's unique ID,
    *
    * @var int
    */
-  private $id;
+  public $id;
 
   /**
    * The user's unique name if logged in, otherwise the user's IP address will be used as name.
    *
    * @var string
    */
-  private $name;
+  public $name;
 
   /**
    * The user's login status.
    *
+   * <tt>TRUE</tt> if the user is logged in, otherwise <tt>FALSE</tt>.
+   *
    * @var boolean
    */
-  private $loggedIn = false;
+  public $isLoggedIn = false;
 
-  /**
-   * The user's data as associative array.
-   *
-   * @var array
-   */
-  private $user;
+  public $timestampCreated;
 
+  public $timestampLastAccess;
 
-  // ------------------------------------------------------------------------------------------------------------------- Constructors
+  public $timestampLastLogin;
+
+  public $deleted;
+
+  public $timezone;
+
+  public $avatarId;
+
+  public $realName;
+
+  public $countryId;
+
+  public $languageId;
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
@@ -111,7 +123,7 @@ class UserModel extends AbstractModel {
    * @throws \MovLib\Exception\UserException
    *   If no user exists with the given ID.
    */
-  public function constructFromId($id) {
+  public function __constructFromId($id) {
     return $this->constructFrom("user_id", "d", $id);
   }
 
@@ -125,7 +137,7 @@ class UserModel extends AbstractModel {
    * @throws \MovLib\Exception\UserException
    *   If no user exists with the given mail.
    */
-  public function constructFromMail($mail) {
+  public function __constructFromMail($mail) {
     return $this->constructFrom("mail", "s", $mail);
   }
 
@@ -139,11 +151,11 @@ class UserModel extends AbstractModel {
    * @throws \MovLib\Exception\UserException
    *   If no user exists with the given name.
    */
-  public function constructFromName($name) {
+  public function __constructFromName($name) {
     return $this->constructFrom("name", "s", $name);
   }
 
-  public function constructFromSession() {
+  public function __constructFromSession() {
     return $this;
   }
 
@@ -152,72 +164,23 @@ class UserModel extends AbstractModel {
 
 
   /**
-   * The user's login status.
+   * Get the user's preferred ISO 639-1 alpha-2 language code.
    *
-   * @return boolean
-   *   <tt>TRUE</tt> if the user is logged in, otherwise <tt>FALSE</tt>.
-   */
-  public function isLoggedIn() {
-    return $this->loggedIn;
-  }
-
-  /**
-   * The user's CSRF token.
-   *
+   * @staticvar string $languageCode
+   *   Used to cache the lookup.
    * @return null|string
-   *   The CSRF token or <tt>NULL</tt> if there is no valid session.
+   *   The user's language code or <tt>NULL</tt> if the user has none.
    */
-  public function getCsrfToken() {
-    return $this->csrfToken;
-  }
-
-  /**
-   * The user's unique ID.
-   *
-   * @return int
-   */
-  public function getId() {
-    return $this->id;
-  }
-
-  /**
-   * The user's unique name.
-   *
-   * @return string
-   */
-  public function getName() {
-    return $this->name;
-  }
-
-  /**
-   * The user's deletion status.
-   *
-   * @return boolean
-   *   <tt>TRUE</tt> if the user was deleted, otherwise <tt>FALSE</tt>.
-   */
-  public function getDeleted() {
-    return $this->user["deleted"];
-  }
-
-  /**
-   * @todo Fetch language code and country from database for this user.
-   */
-  public function getLocale() {
-
-  }
-
-  /**
-   * The user's basic data.
-   *
-   * <em>Basic</em> in this context refers to all the data that was loaded from the database up to the point this
-   * method is called, but it will at least contain all publicly available data from the users database table. Refer
-   * to the construction methods or the database scheme to see what data this is.
-   *
-   * @return array
-   *   Associative array containing the user's basic data.
-   */
-  public function getUser() {
-    return $this->user;
+  public function getLanguageCode() {
+    static $languageCode = null;
+    try {
+      if ($languageCode === null) {
+        $languageCode = $this->query("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", $this->languageId)[0]["iso_alpha-2"];
+      }
+      return $languageCode;
+    } catch (ErrorException $e) {
+      return null;
+    }
   }
 
   /**
@@ -230,10 +193,11 @@ class UserModel extends AbstractModel {
    */
   public function getProfileRoute() {
     global $i18n;
-    if (!$this->user["route"]) {
-      $this->user["route"] = $i18n->r("/user/{0}", [ $this->id ]);
+    static $profileRoute = null;
+    if ($profileRoute === null) {
+      $profileRoute = $i18n->r("/user/{0,number,integer}", [ $this->id ]);
     }
-    return $this->user["route"];
+    return $profileRoute;
   }
 
   public function resetPassword() {
@@ -276,18 +240,6 @@ class UserModel extends AbstractModel {
     }
     $_SESSION[$key] = $value;
     return $this;
-  }
-
-  /**
-   * Validate the user submitted CSRF token against the user's session CSRF token.
-   *
-   * @param string $submittedCsrfToken
-   *   The user submitted CSRF token.
-   * @return boolean
-   *   <tt>TRUE</tt> if the tokens match, otherwise <tt>FALSE</tt>.
-   */
-  public function validateCsrfToken($submittedCsrfToken) {
-    return $this->csrfToken === $submittedCsrfToken;
   }
 
   /**
@@ -362,27 +314,30 @@ class UserModel extends AbstractModel {
    *   If no user could be found for the given value.
    */
   private function constructFrom($column, $type, $value) {
+    if ($this->id) {
+      return $this;
+    }
     try {
-      $this->user = $this->query(
+      foreach ($this->query(
         "SELECT
           `user_id` AS `id`,
           `name`,
-          `created`,
-          `access`,
-          `login`,
+          `created` AS `timestampCreated`,
+          `access` AS `timestampLastAccess`,
+          `login` AS `timestampLastLogin`,
           `deleted`,
           `timezone`,
-          `image_id`,
-          `real_name`,
-          `country_id`,
-          `language_id`
+          `image_id` AS `imageId`,
+          `real_name` AS `realName`,
+          `country_id` AS `countryId`,
+          `language_id` AS `languageId`
         FROM `users`
         WHERE `{$column}` = ?
         LIMIT 1", $type, [ $value ]
-      )[0];
-      $this->id = $this->user["id"];
-      $this->name = $this->user["name"];
-      settype($this->user["deleted"], "boolean");
+      )[0] as $propertyName => $propertyValue) {
+        $this->{$propertyName} = $this->{$propertyValue};
+      }
+      settype($this->deleted, "boolean");
     } catch (ErrorException $e) {
       throw new UserException("Could not find user for <em>{$column}</em> '{$value}'!", 0, $e);
     }

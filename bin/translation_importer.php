@@ -52,24 +52,17 @@ $codes = [
  *
  * @var array
  */
-$supported_language_codes = \MovLib\Utility\I18n::getSupportedLanguageCodes();
-
-/**
- * Contains the default locale from <tt>php.ini</tt>.
- *
- * @var string
- */
-$default_locale = \Locale::getDefault();
-
-// We have to make this global because we need it in the countries helper function.
-global $default_locale;
+$supported_language_codes = \MovLib\Utility\I18n::$supportedLanguageCodes;
 
 /**
  * Contains the default ISO 639-1 alpha-2 language code.
  *
  * @var string
  */
-$default_language_code = $default_locale[0] . $default_locale[1];
+$default_language_code = \MovLib\Utility\I18n::getDefaultLanguageCode();
+
+// We have to make this global because we need it in the countries helper function too.
+global $default_language_code;
 
 /**
  * Helper function to translate country names.
@@ -122,7 +115,7 @@ foreach ($codes as $table => $data) {
   $bind_param_args = [ "" ];
   $names = [];
   for ($i = 0; $i <= $data_count; ++$i) {
-    $names[$i]["_"] = call_user_func("translate_{$table}", $data[$i], $default_locale);
+    $names[$i]["_"] = call_user_func("translate_{$table}", $data[$i], $default_language_code);
     $query .= "(?, ?, COLUMN_CREATE(";
     $bind_param_args[0] .= "ss";
     $bind_param_args[] = &$data[$i];

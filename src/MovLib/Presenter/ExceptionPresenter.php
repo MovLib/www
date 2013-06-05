@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presenter;
 
-use \MovLib\Entity\User;
 use \MovLib\Presenter\AbstractPresenter;
 use \MovLib\View\HTML\Error\ExceptionView;
 
@@ -33,32 +32,21 @@ use \MovLib\View\HTML\Error\ExceptionView;
 class ExceptionPresenter extends AbstractPresenter {
 
   /**
-   * The exception that was thrown.
-   *
-   * @var \Exception
+   * You <strong>have to</strong> call <code>ExceptionPresenter->setException()</code> to set the output with this
+   * presenter!
    */
-  private $exception;
+  public function __construct() {
+    // Nothing to do!
+  }
 
-  /**
-   * Present unknown error view.
-   *
-   * @param \Exception $exception
-   *   The exception that was thrown.
-   */
-  public function __construct($exception) {
-    $this->exception = $exception;
-    $this->presentation = (new ExceptionView($this, $this->exception))->getRenderedView();
+  public function setException($exception) {
+    $this->presentation = (new ExceptionView($this, $exception))->getRenderedView();
   }
 
   /**
-   * {@inheritdoc}
-   */
-  protected function init() {
-    // Nothing to do here!
-  }
-
-  /**
-   * {@inheritdoc}
+   * The exception presenter has no path.
+   *
+   * @return array
    */
   public function getBreadcrumb() {
     return [];

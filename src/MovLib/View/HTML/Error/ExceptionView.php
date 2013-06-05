@@ -17,7 +17,7 @@
  */
 namespace MovLib\View\HTML\Error;
 
-use \MovLib\Utility\AsyncLogger;
+use \MovLib\Utility\Log;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AlertView;
 
@@ -51,7 +51,7 @@ class ExceptionView extends AlertView {
     $this->setAlert(
       "<p>{$i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered.")}</p>" .
       "<p>{$i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes.")}</p>",
-      $i18n->t("Internal Server Error"),
+      "",
       self::ALERT_SEVERITY_ERROR,
       true
     );
@@ -67,7 +67,7 @@ class ExceptionView extends AlertView {
       true
     );
     /*}}}DEBUG*/
-    AsyncLogger::logException($exception, AsyncLogger::LEVEL_FATAL);
+    Log::logException($exception, Log::LEVEL_FATAL);
   }
 
   /**
@@ -98,7 +98,7 @@ class ExceptionView extends AlertView {
         $stacktrace[$i]["args"] = "";
       }
       foreach ([ "line", "class", "type", "function", "file" ] as $s) {
-        if (isset($stacktrace[$i][$s])) {
+        if (!isset($stacktrace[$i][$s])) {
           $stacktrace[$i][$s] = "";
         }
       }

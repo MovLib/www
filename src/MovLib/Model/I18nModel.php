@@ -21,7 +21,7 @@ namespace MovLib\Model;
 use \Locale;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Model\AbstractModel;
-use \MovLib\Utility\AsyncLogger;
+use \MovLib\Utility\Log;
 
 /**
  * Description of I18nModel
@@ -62,7 +62,7 @@ class I18nModel extends AbstractModel {
       )[0]["translation"];
     } catch (ErrorException $e) {
       $language = Locale::getDisplayName($languageCode, $i18n->getDefaultLanguageCode());
-      AsyncLogger::log("Could not find {$language} translation for message: '{$message}'", AsyncLogger::LEVEL_INFO);
+      Log::log("Could not find {$language} translation for message: '{$message}'", Log::LEVEL_INFO);
     }
     return $message;
   }
@@ -94,7 +94,7 @@ class I18nModel extends AbstractModel {
       )[0]["translation"];
     } catch (ErrorException $e) {
       $language = Locale::getDisplayName($languageCode, $i18n->getDefaultLanguageCode());
-      AsyncLogger::log("Could not find {$language} translation for route: '{$route}'", AsyncLogger::LEVEL_INFO);
+      Log::log("Could not find {$language} translation for route: '{$route}'", Log::LEVEL_INFO);
     }
   }
 

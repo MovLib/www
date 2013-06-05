@@ -44,24 +44,23 @@ class UserShowView extends AbstractView {
    *   The user presenter controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, $presenter->getUsername());
+    parent::__construct($presenter, $presenter->profile->name);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    $profile = $this->presenter->getProfile();
     return
       "<article>" .
         "<header class='row'>" .
           "<div class='span span--1'>" .
-            "<div class='page-header'><h1>{$profile->getName()}</h1></div>" .
+            "<div class='page-header'><h1>{$this->presenter->profile->name}</h1></div>" .
           "</div>" .
         "</header>" .
         "<div class='row'>" .
           "<div class='span span--1'>" .
-            "<pre>" . print_r($profile, true) . "</pre>" .
+            "<pre>" . print_r($this->presenter->profile, true) . "</pre>" .
           "</div>" .
         "</div>" .
       "</article>"

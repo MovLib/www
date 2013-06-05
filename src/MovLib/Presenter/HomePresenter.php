@@ -31,7 +31,7 @@ class HomePresenter extends AbstractPresenter {
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function __construct() {
     $this->setPresentation($this->getShortName());
   }
 

@@ -223,7 +223,7 @@ abstract class AbstractModel {
    * Get the statement result as array.
    *
    * @param array|null $result
-   *   The query result as keyed array containg each resulting row as associative array.
+   *   The query result as numeric array containg each resulting row as associative array.
    * @return $this
    * @throws \Exception
    *   Might throw a generic exception if (for instance) the prepared statement is not a valid object.

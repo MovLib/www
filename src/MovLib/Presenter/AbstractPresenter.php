@@ -40,33 +40,24 @@ abstract class AbstractPresenter {
    *
    * @var string
    */
-  protected $presentation = "";
+  public $presentation = "";
 
   /**
    * The current view.
    *
    * @var \MovLib\View\HTML\AbstractView
    */
-  protected $view;
+  public $view;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic methods
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract methods
 
 
   /**
    * Instantiate new presenter object.
    */
-  public function __construct() {
-    try {
-      $this->init();
-    } catch (Exception $e) {
-      $this->presentation = new ErrorView($e);
-    }
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Abstract methods
-
+  public abstract function __construct();
 
   /**
    * Associative array containing the breadcrumb trail for this presenter.
@@ -103,11 +94,6 @@ abstract class AbstractPresenter {
    */
   abstract public function getBreadcrumb();
 
-  /**
-   * Initialize the presenter and set the output.
-   */
-  protected abstract function init();
-
 
   // ------------------------------------------------------------------------------------------------------------------- Public final methods
 
@@ -143,15 +129,6 @@ abstract class AbstractPresenter {
    */
   public final function getMethod() {
     return ucfirst(strtolower($_SERVER["REQUEST_METHOD"]));
-  }
-
-  /**
-   * Get the output.
-   *
-   * @return string
-   */
-  public final function getPresentation() {
-    return $this->presentation;
   }
 
   /**
