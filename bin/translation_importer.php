@@ -18,16 +18,7 @@
  */
 
 /**
- * Translation extractor and importer console application.
- *
- * The Intl ICU software family is missing a program like xgettext for extracting translations from source code.
- * Evaluations have shown that we are not able to use xgettext to extract the strings from our sources because the
- * parser is not flexible enough to understand all kinds of nestings that are possible with PHP code. Therefor we've
- * decided to write our own parser.
- *
- * <b>IMPORTANT!</b> All calls to translatable methods must be made by using a variable that is called <var>$i18n</var>,
- * otherwise the extractor will not be able to find the calls in the source code (there are exceptions, have a look at
- * this file).
+ * Inserts and updates country and language translations in the database.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
@@ -43,184 +34,60 @@ error_reporting(-1);
 ini_set("display_errors", 1);
 /*}}}DEBUG*/
 
-/**
- * Extend the PHP platform with a recursive glob function.
- *
- * @see glob()
- * @link http://www.php.net/manual/en/function.glob.php#87221
- * @param string $pattern
- *   The pattern. No tilde expansion or parameter substitution is done.
- * @param string $path
- *   Absolute path to the directory in which should be searched for files that match the given pattern.
- * @return array
- *   Returns an array containing the matched files/directories, an empty array if no file matched or <tt>FALSE</tt> on error.
- */
-function rglob($pattern, $path) {
-  $files = glob($path . $pattern);
-  foreach (glob("{$path}*", GLOB_MARK|GLOB_ONLYDIR|GLOB_NOSORT) as $p) {
-    $files = array_merge($files, rglob($pattern, $p));
+require dirname(__DIR__) . "/src/MovLib/Utility/I18n.php";
+
+$country_codes = [ "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW" ];
+$language_codes = [ "ab", "aa", "af", "ak", "sq", "am", "ar", "an", "hy", "as", "av", "ae", "ay", "az", "bm", "ba", "eu", "be", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "ch", "ce", "ny", "zh", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "gl", "ka", "de", "el", "gn", "gu", "ht", "ha", "he", "hz", "hi", "ho", "hu", "ia", "id", "ie", "ga", "ig", "ik", "io", "is", "it", "iu", "ja", "jv", "kl", "kn", "kr", "ks", "kk", "km", "ki", "rw", "ky", "kv", "kg", "ko", "ku", "kj", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "gv", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mh", "mn", "na", "nv", "nb", "nd", "ne", "ng", "nn", "no", "ii", "nr", "oc", "oj", "cu", "om", "or", "os", "pa", "pi", "fa", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "sa", "sc", "sd", "se", "sm", "sg", "sr", "gd", "sn", "si", "sk", "sl", "so", "st", "es", "su", "sw", "ss", "sv", "ta", "te", "tg", "th", "ti", "bo", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "cy", "wo", "fy", "xh", "yi", "yo", "za", "zu" ];
+
+$supported_languages = \MovLib\Utility\I18n::getSupportedLanguageCodes();
+$default_locale = \Locale::getDefault();
+$default_language_code = $default_locale[0] . $default_locale[1];
+
+// Get rid of our default language in the supported languages array.
+foreach ($supported_languages as $delta => $language_code) {
+  if ($language_code === $default_language_code) {
+    unset($supported_languages[$delta]);
+    break;
   }
-  return $files;
 }
 
-/**
- * @todo Documentation
- */
-class TranslationExtractor {
+// Connect to the database.
+$mysqli = new \mysqli();
+$mysqli->real_connect();
+$mysqli->select_db("movlib");
+$mysqli->autocommit(false);
 
-  /**
-   * @todo Documentation
-   */
-  private $patterns = [ "viewApattern", "i18nRpattern", "i18nTpattern" ];
-
-  /**
-   * @todo Documentation
-   */
-  private $viewApattern = '$this->a(';
-
-  /**
-   * @todo Documentation
-   */
-  private $i18nRpattern = '$this->r(';
-
-  /**
-   * @todo Documentation
-   */
-  private $i18nTpattern = '$this->t(';
-
-  /**
-   * @todo Documentation
-   */
-  private $fileContent;
-
-  /**
-   * @todo Documentation
-   */
-  public function __construct() {
-    // Go through all source files.
-    foreach (rglob("*.php", dirname(__DIR__) . "/src") as $file) {
-      // Get the content of this file without comments and unnecessary whitespaces.
-      $this->fileContent = php_strip_whitespace($file);
-      // Replace the i18n calls with calls to our own class. This has the nice sideffect hat calls within the i18n to
-      // itself are also catched.
-      $this->fileContent = str_replace([ '$i18n->r(', '$i18n->t(' ], [ '$this->r(', '$this->t(' ], $this->fileContent);
-      // We use a break to end this loop.
-      while (true) {
-        // Initially we have no pattern an invalid position.
-        $pattern = null;
-        $position = PHP_INT_MAX;
-        // Iterate over all patterns we have.
-        foreach ($this->patterns as $tmpPattern) {
-          // Check if this pattern occurres somewhere within this files content and store its position if it does.
-          if (($tmpPosition = strpos($this->fileContent, $this->{$tmpPattern})) !== false && $tmpPosition < $position) {
-            $position = $tmpPosition;
-            $pattern = $tmpPattern;
-          }
-        }
-        if ($position < PHP_INT_MAX) {
-          // If we have a valid position extract it and start over again with the remaining file content.
-          $this->extractAndCall($pattern, $position);
-        } else {
-          // If we have no position after checking all patterns, break out of the while loop.
-          break;
-        }
-      }
-    }
+// Insert or update country data.
+foreach ($country_codes as $code) {
+  $locale_code = "{$default_language_code}-{$code}";
+  $country_name = \Locale::getDisplayRegion($locale_code, $default_language_code);
+  $query = "INSERT INTO `countries` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ('{$code}', '{$country_name}', COLUMN_CREATE(";
+  $comma = "";
+  // Translate the given country code into all supported languages.
+  foreach ($supported_languages as $supported_language) {
+    $query .= "{$comma}'{$supported_language}', '" . \Locale::getDisplayRegion($locale_code, $supported_language) . "'";
+    $comma = ", ";
   }
-
-  /**
-   * @todo Documentation
-   */
-  private function extractAndCall($pattern, $position) {
-    // Truncate the file's content.
-    $this->fileContent = mb_substr($this->fileContent, $position);
-    // Count the remaining characters.
-    $contentLength = mb_strlen($this->fileContent);
-    // We have one opening bracket.
-    $openingBrackets = 1;
-    // And no closing brackets.
-    $closingBrackets = 0;
-    // Skip the method pattern in the upcoming loop. No need for multi-byte function.
-    $i = strlen($this->{$pattern});
-    // The minimum method call is the pattern plus two brackets.
-    $callMinLength = $i + 2;
-    // Iterate over the files content; character by character.
-    for (; $i < $contentLength; ++$i) {
-      // Increase counters if we encounter any of their characters.
-      $this->fileContent[$i] === "(" && ++$openingBrackets;
-      $this->fileContent[$i] === ")" && ++$closingBrackets;
-      // We are done parsing this call as soon as opening and closing brackets are equal.
-      if ($openingBrackets === $closingBrackets) {
-        // Add one to the current position within the files content, this is for the last closing bracket.
-        $position = $i + 1;
-        // Extract the call from the file.
-        $call = mb_substr($this->fileContent, 0, $position);
-        // Remove the args array from the i18n calls.
-        switch ($pattern) {
-          case "viewApattern":
-            // @todo Remove args arrays from parameters.
-            // $this->a([ "/user/{0,number,integer}", [ $userId ], "comment", "oldRoute" ], [ "Hello {0}", [ $userName ], "comment", "oldMessage" ], $anchorArgs);
-            break;
-
-          case "i18nRpattern":
-          case "i18nTpattern":
-            // If we have any arguments, remove them from the method call.
-            // @todo What if the [ is in the comment?
-            if (( $argsStart = strpos($call, "[")) !== false) {
-              $tmpCall = mb_substr($call, 0, $argsStart);
-              $tmpCall = mb_substr($tmpCall, 0, mb_strrpos($tmpCall, ","));
-              $call = $tmpCall . mb_substr($call, mb_strrpos($call, "]") + 1);
-            }
-            // Is there any method left to call?
-            if (mb_strlen($call) > $callMinLength) {
-              $tokens = token_get_all("<?php {$call}");
-              if (count($tokens) > 5 && is_array($tokens[5]) && $tokens[5][0] === T_CONSTANT_ENCAPSED_STRING) {
-                eval("{$call};");
-              }
-            }
-            break;
-        }
-        // Truncate the file's content again and remove the call we just handled.
-        $this->fileContent = mb_substr($this->fileContent, $position);
-        // This call was handled, break and return to search for the next pattern.
-        break;
-      }
-    }
-  }
-
-  /**
-   * @todo Documentation
-   */
-  private function a($route, $text) {
-    echo "Calling a()\n";
-    var_dump($route);
-    var_dump($text);
-    echo "\n";
-  }
-
-  /**
-   * @todo Documentation
-   */
-  private function r($route, $comment = null, $oldRoute = null) {
-    echo "Calling r()\n";
-    var_dump($route);
-    var_dump($comment);
-    var_dump($oldRoute);
-    echo "\n";
-  }
-
-  /**
-   * @todo Documentation
-   */
-  private function t($message, $comment = null, $oldMessage = null) {
-    echo "Calling t()\n";
-    var_dump($message);
-    var_dump($comment);
-    var_dump($oldMessage);
-    echo "\n";
-  }
-
+  $query .= ")) ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)";
+  $mysqli->query($query);
 }
 
-// Start the application.
-new TranslationExtractor();
+$mysqli->commit();
+
+// Insert or update the language data.
+foreach ($language_codes as $code) {
+  $language_name = \Locale::getDisplayLanguage($code, $default_language_code);
+  $query = "INSERT INTO `languages` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ('{$code}', '{$language_name}', COLUMN_CREATE(";
+  $comma = "";
+  // Translate the given language code into all supported languages.
+  foreach ($supported_languages as $supported_language) {
+    $query .= "{$comma}'{$supported_language}', '" . \Locale::getDisplayLanguage($code, $supported_language) . "'";
+    $comma = ", ";
+  }
+  $query .= ")) ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)";
+  $mysqli->query($query);
+}
+
+$mysqli->commit();
+$mysqli->autocommit(true);
+$mysqli->close();

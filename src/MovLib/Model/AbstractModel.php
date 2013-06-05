@@ -195,7 +195,7 @@ abstract class AbstractModel {
     self::$connectionCounter--;
     if (self::$connectionCounter === 0) {
       self::$mysqli->close();
-      unset(self::$mysqli);
+      self::$mysqli = null;
     }
     return $this;
   }

@@ -55,6 +55,26 @@ class FileSystem {
   }
 
   /**
+    * Extends the PHP platform with a recursive glob function.
+    *
+    * @see glob()
+    * @link http://www.php.net/manual/en/function.glob.php#87221
+    * @param string $pattern
+    *   The pattern. No tilde expansion or parameter substitution is done.
+    * @param string $path
+    *   Absolute path to the directory in which should be searched for files that match the given pattern.
+    * @return array
+    *   Returns an array containing the matched files/directories, an empty array if no file matched or <tt>FALSE</tt> on error.
+    */
+   public static function rglob($pattern, $path) {
+     $files = glob($path . $pattern);
+     foreach (glob("{$path}*", GLOB_MARK|GLOB_ONLYDIR|GLOB_NOSORT) as $p) {
+       $files = array_merge($files, rglob($pattern, $p));
+     }
+     return $files;
+   }
+
+  /**
    * Create a temporary copy of the file.
    *
    * @param string $source
