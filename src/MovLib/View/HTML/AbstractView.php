@@ -96,6 +96,13 @@ abstract class AbstractView {
   private $alerts = [];
 
   /**
+   * The HTML elements tag that is used to wrap the content, defaults to <tt>div</tt>.
+   *
+   * @var string
+   */
+  protected $contentHtmlElement = "div";
+
+  /**
    * The presenter that created the view instance.
    *
    * @var \MovLib\Presenter\AbstractPresenter
@@ -132,7 +139,7 @@ abstract class AbstractView {
     $this->presenter = $presenter;
     $this->title = $title;
     $this->addStylesheet([
-      "//fonts.googleapis.com/css?family=Open+Sans:300,300italic,700,700italic&amp;subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic",
+      "//fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic,700,700italic,800,800italic&amp;subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic",
       "/assets/css/modules/entypo.css",
       "/assets/css/base.css",
       "/assets/css/layout.css",
@@ -151,7 +158,7 @@ abstract class AbstractView {
    *
    * @return string
    */
-  abstract public function getRenderedContent();
+  abstract public function getContent();
 
 
   // ------------------------------------------------------------------------------------------------------------------- Protected Methods
@@ -235,7 +242,7 @@ abstract class AbstractView {
    */
   protected final function getTabindex() {
     static $tabindex = 1;
-    return ++$tabindex;
+    return $tabindex++;
   }
 
   /**
@@ -262,8 +269,7 @@ abstract class AbstractView {
     }
     if (isset($attributes["class"])) {
       $attributes["class"] .= " {$class}";
-    }
-    else {
+    } else {
       $attributes["class"] = $class;
     }
   }
@@ -329,14 +335,14 @@ abstract class AbstractView {
    * <code>&lt;body&gt;</code>-element has this class applied, or the <code>&lt;div&gt;</code> that wraps the pages
    * content in full view (with <tt>-content</tt> suffix).
    *
-   * @staticvar boolean|string $shortName
+   * @staticvar string $shortName
    *   Used to cache the short name of this instance.
    * @return string
    *   The short name of the class (lowercased).
    */
   public function getShortName() {
-    static $shortName = false;
-    if ($shortName === false) {
+    static $shortName = null;
+    if ($shortName === null) {
       // Always remove the "view" suffix from the name, this is redundant and not needed in the frontend.
       $shortName = substr(strtolower((new ReflectionClass($this))->getShortName()), 0, -4);
     }
@@ -353,14 +359,7 @@ abstract class AbstractView {
    *   All alerts ready for print.
    */
   public final function getAlerts() {
-    // By default we assume that there are no alerts at all. The additional empty CSS class makes sure tha the default
-    // minimum height and margin is not applied to the spanning div element. It is important that any JavaScript that
-    // might add content to the div removes the class to reapply the minimum height and margin.
-    $content = " span--empty'>";
-    if (!empty($this->alerts)) {
-      $content = "'>" . implode("", $this->alerts);
-    }
-    return "<div class='row'><div id='alerts' class='span span--1 span--alerts{$content}</div></div>";
+    return "<div id='alerts' class='container'>" . implode("", $this->alerts) . "</div>";
   }
 
   /**
@@ -385,7 +384,7 @@ abstract class AbstractView {
       }
     }
     $points[] = [ "href" => $_SERVER["REQUEST_URI"], "text" => $this->title ];
-    return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, -1, " › ", [ "class" => "row span--0" ], false)}</div>";
+    return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, -1, " › ", [ "class" => "container text-right" ])}</div>";
   }
 
   /**
@@ -400,33 +399,35 @@ abstract class AbstractView {
     global $i18n;
     return
       "<footer id='footer'>" .
-        "<div id='footer-rows' class='row'>" .
-          "<nav class='span span--4'>" .
-            "<h3>MovLib</h3>" .
-            "<ul class='no-list'>" .
-              "<li class='item-first'>{$this->a("/about", "About", $i18n->t("Find out more about us."))}</li>" .
-              "<li>{$this->a("/blog", "Blog", $i18n->t("Stay up to date about the latest developments."))}</li>" .
-              "<li>{$this->a("/contact", "Contact", $i18n->t("Feedback is always welcome, no matter if positive or negative."))}</li>" .
-              "<li>{$this->a("/resources", "Logos and Badges", $i18n->t("If you want to create something awesome."))}</li>" .
-              "<li class='item-last'>{$this->a("/legal", "Legal", $i18n->t("Collection of the various legal terms and conditions."))}</li>" .
-            "</ul>" .
-          "</nav>" .
-          "<nav class='span span--4'>" .
-            "<h3>{$i18n->t("Join in")}</h3>" .
-            "<ul class='no-list'>" .
-              "<li class='item-first item-last'>{$this->a("/user/sign-up", "Sign up", $i18n->t("Become a member and help building the biggest free movie library in this world."))}</li>" .
-            "</ul>" .
-          "</nav>" .
-          "<div class='span span--4'></div>" .
-          "<nav class='span span--4'>" .
-            "<h3>{$i18n->t("Get help")}</h3>" .
-            "<ul class='no-list'>" .
-              "<li class='item-first item-last'>{$this->a("/help", "Help", $i18n->t("If you have questions click here to find our help articles."))}</li>" .
-            "</ul>" .
-          "</nav>" .
+        "<div id='footer-links' class='container'>" .
+          "<div id='footer-rows' class='row'>" .
+            "<div class='span span--3'>" .
+              "<h3>MovLib</h3>" .
+              "<ul class='no-list'>" .
+                "<li class='item-first'>{$this->a("/about", "About", $i18n->t("Find out more about us."))}</li>" .
+                "<li>{$this->a("/blog", "Blog", $i18n->t("Stay up to date about the latest developments."))}</li>" .
+                "<li>{$this->a("/contact", "Contact", $i18n->t("Feedback is always welcome, no matter if positive or negative."))}</li>" .
+                "<li>{$this->a("/resources", "Logos and Badges", $i18n->t("If you want to create something awesome."))}</li>" .
+                "<li class='item-last'>{$this->a("/legal", "Legal", $i18n->t("Collection of the various legal terms and conditions."))}</li>" .
+              "</ul>" .
+            "</div>" .
+            "<div class='span span--3'>" .
+              "<h3>{$i18n->t("Join in")}</h3>" .
+              "<ul class='no-list'>" .
+                "<li class='item-first item-last'>{$this->a("/user/sign-up", "Sign up", $i18n->t("Become a member and help building the biggest free movie library in this world."))}</li>" .
+              "</ul>" .
+            "</div>" .
+            "<div class='span span--3'></div>" .
+            "<div class='span span--3'>" .
+              "<h3>{$i18n->t("Get help")}</h3>" .
+              "<ul class='no-list'>" .
+                "<li class='item-first item-last'>{$this->a("/help", "Help", $i18n->t("If you have questions click here to find our help articles."))}</li>" .
+              "</ul>" .
+            "</div>" .
+          "</div>" .
         "</div>" .
-        "<div id='footer-copyright' class='row'>" .
-          "<div class='span span--1'>" .
+        "<div id='footer-copyright'>" .
+          "<div class='container'>" .
             "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
               "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
               [ "<a href='http://creativecommons.org/publicdomain/zero/1.0/deed.{$i18n->getLanguageCode()}' rel='license'>", "</a>" ]
@@ -441,8 +442,7 @@ abstract class AbstractView {
             ) .
           "</div>" .
         "</div>" .
-      "</footer>" .
-      "<div id='footer-logo'></div>"
+      "</footer>"
       // @todo Add aggregated scripts
     ;
     // Please note that a closing body or html tag is not necessary!
@@ -506,10 +506,12 @@ abstract class AbstractView {
     return
       "<a class='visuallyhidden' href='#content'>{$i18n->t("Skip to content")}</a>" .
       "<header id='header'>" .
-        "<div class='row'>" .
-          "<div class='span span--3'>{$this->getHeaderLogo()}</div>" .
-          "<div class='span span--3'>{$this->getHeaderSearch()}{$this->getHeaderNavigation()}</div>" .
-          "<div class='span span--3'>{$this->getHeaderUserNavigation()}</div>" .
+        "<div class='container'>" .
+          "<div class='row'>" .
+            "<div class='span span--4'>{$this->getHeaderLogo()}</div>" .
+            "<div class='span span--4'>{$this->getHeaderSearch()}{$this->getHeaderNavigation()}</div>" .
+            "<div class='span span--4'>{$this->getHeaderUserNavigation()}</div>" .
+          "</div>" .
         "</div>" .
       "</header>"
     ;
@@ -662,31 +664,39 @@ abstract class AbstractView {
   }
 
   /**
-   * Get the full rendered view, with HTML head, header and footer.
+   * Get the content wrapped in the outter content <tt>div</tt>.
+   *
+   * @return string
+   *   The rendered content ready for print.
+   */
+  public function getRenderedContent() {
+    return
+      "<div id='content' class='{$this->getShortName()}-content' role='main'>" .
+        "<div id='content__header'>" .
+          "<div class='container'>" .
+            "<h1 id='content__header__title'>{$this->title}</h1>" .
+          "</div>" .
+        "</div>" .
+        $this->getAlerts() .
+        $this->getContent() .
+      "</div>"
+    ;
+  }
+
+  /**
+   * Get the full rendered view.
    *
    * @return string
    *   The rendered view ready for print.
    */
   public function getRenderedView() {
-    return $this->getRenderedViewWithoutFooter() . $this->getFooter();
-  }
-
-  /**
-   * Get the full rendered view without the footer.
-   *
-   * @param string $contentClasses
-   *   Additional CSS classes that should be added to the content element.
-   * @return string
-   *   The rendered view ready for print.
-   */
-  public function getRenderedViewWithoutFooter($contentClasses = "") {
     return
       $this->getHead() .
       $this->getHeader() .
-      $this->getBreadcrumb() .
       $this->getStickyHeader() .
-      $this->getAlerts() .
-      "<div id='content' class='{$this->getShortName()}-content {$contentClasses}' role='main'>{$this->getRenderedContent()}</div>"
+      $this->getBreadcrumb() .
+      $this->getRenderedContent() .
+      $this->getFooter()
     ;
   }
 

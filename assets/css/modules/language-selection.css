@@ -28,6 +28,7 @@
 .languageselection-body h1 {
   background: no-repeat url(/assets/img/logo/256.png);
   font-size: 80px;
+  font-weight: 600;
   height: 256px;
   line-height: 1.1;
   margin: 10% 0 0;
@@ -36,17 +37,22 @@
 
 .languageselection-body small {
   display: block;
-  font-size: 28px;
+  font-size: 28.5px;
+  font-weight: 300;
   line-height: 1;
   text-indent: 8px;
 }
 
-.languageselection-body .menuitem {
-  margin: 0 25px;
-  color: #333;
+.languageselection-nav {
+  font-size: 16px;
 }
 
-.languageselection-body .menuitem:hover,
-.languageselection-body .menuitem:focus {
-  border-bottom-color: #333;
+.languageselection-nav .menuitem {
+  margin: 0 25px;
+  color: #353535;
+}
+
+.languageselection-nav .menuitem:hover,
+.languageselection-nav .menuitem:focus {
+  border-bottom-color: #353535;
 }

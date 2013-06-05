@@ -53,7 +53,7 @@ class MovieShowView extends AbstractView {
   /**
    * {@inheritdoc}
    */
-  public function getRenderedContent() {
+  public function getContent() {
 //    if ($movie["poster"]) {
 //      $posterFilePath = $this->presenter->getMoviePoster();
 //      $posterAlt = __("@movieTitle poster.", [ "@movieTitle" => $this->title ]);

@@ -54,7 +54,7 @@ class LanguageSelectionView extends AbstractView {
    *   The global i18n instance.
    * @return string
    */
-  public function getRenderedContent() {
+  public function getContent() {
     global $i18n;
     $languageCode = $i18n->getLanguageCode();
     $points = [];
@@ -79,7 +79,7 @@ class LanguageSelectionView extends AbstractView {
    * {@inheritdoc}
    */
   public function getRenderedView() {
-    return $this->getHead() . $this->getRenderedContent();
+    return $this->getHead() . $this->getContent();
   }
 
 }

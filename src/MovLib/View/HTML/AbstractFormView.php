@@ -37,7 +37,7 @@ abstract class AbstractFormView extends AbstractView {
    *
    * @var array
    */
-  protected $attributes = [];
+  protected $attributes = [ "class" => "container" ];
 
   /**
    * Get the rendered content, without HTML head, header or footer.
@@ -46,10 +46,10 @@ abstract class AbstractFormView extends AbstractView {
    *   The global user model instance.
    * @return string
    */
-  public function getRenderedContent() {
+  public function getContent() {
     global $user;
     $csrf = "";
-    if ($token = $user->getCsrfToken()) {
+    if (($token = $user->getCsrfToken())) {
       $csrf = "<input name='csrf_token' type='hidden' value='{$token}'>";
     }
     if (isset($this->attributes["action"])) {
@@ -59,7 +59,7 @@ abstract class AbstractFormView extends AbstractView {
       $this->attributes["method"] = "post";
     }
     $this->addClass("form form-{$this->getShortName()}", $this->attributes);
-    return "<form {$this->expandTagAttributes($this->attributes)}>{$csrf}{$this->getRenderedFormContent()}</form>";
+    return "<form {$this->expandTagAttributes($this->attributes)}>{$csrf}{$this->getFormContent()}</form>";
   }
 
   /**
@@ -70,6 +70,6 @@ abstract class AbstractFormView extends AbstractView {
    * @return string
    *   The HTML content of the <code>&lt;form&gt;</code>-element.
    */
-  abstract public function getRenderedFormContent();
+  abstract public function getFormContent();
 
 }

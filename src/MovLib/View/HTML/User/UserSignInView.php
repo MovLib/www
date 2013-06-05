@@ -46,37 +46,36 @@ class UserSignInView extends AbstractFormView {
     global $i18n;
     parent::__construct($presenter, $i18n->t("Sign in"));
     $this->addStylesheet("/assets/css/modules/user.css");
-    $this->attributes = [ "class" => "span span--0" ];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRenderedFormContent() {
+  public function getFormContent() {
     global $i18n;
     return
-      "<div class='page-header--no-border'><h1>{$this->title}</h1></div>" .
-      "<p>" .
-        "<label for='email'>{$i18n->t("Email address")}</label>" .
-        "<input autofocus class='input input-text input--block-level' id='email' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='email' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter the email address you used to register.")}' type='email' value='{$this->presenter->getPostValue("email")}'>" .
-      "</p>" .
-      "<p>" .
-        "<small>{$this->a("/user/reset-password", "Reset your password", [ "class" => "pull-right", "title" => $i18n->t("Click this link if you forgot your password."), ])}</small>" .
-        "<label for='password'>{$i18n->t("Password")}</label>" .
-        "<input class='input input-text input--block-level' id='password' name='password' placeholder='{$i18n->t("Enter your password")}' role='password' tabindex='{$this->getTabindex()}' title='{$i18n->t("Please enter your secret password in this field.")}' type='password'>" .
-      "</p>" .
-      "<p><label class='checkbox' for='remember' title='{$i18n->t("Check this box to stay signed in for the next 30 days.")}'>" .
-        "<input class='input input-checkbox' id='remember' name='remember' tabindex='{$this->getTabindex()}' type='checkbox' value='remember'>" .
-      " {$i18n->t("Keep me signed in (for up to 30 days)")}</label></p>" .
-      "<p><button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t("Click here after you have filled out all fields.")}' type='submit'>{$i18n->t("Sign in")}</button></p>"
+      "<div class='row'>" .
+        "<div class='span span--6 offset--3'>" .
+          "<p>" .
+            "<label for='email'>{$i18n->t("Email address")}</label>" .
+            "<input autofocus class='input input-text input--block-level' id='email' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='email' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter the email address you used to register.")}' type='email' value='{$this->presenter->getPostValue("email")}'>" .
+          "</p>" .
+          "<p>" .
+            "<small>{$this->a("/user/reset-password", "Reset your password", [ "class" => "pull-right", "title" => $i18n->t("Click this link if you forgot your password."), ])}</small>" .
+            "<label for='password'>{$i18n->t("Password")}</label>" .
+            "<input class='input input-text input--block-level' id='password' name='password' placeholder='{$i18n->t("Enter your password")}' role='password' tabindex='{$this->getTabindex()}' title='{$i18n->t("Please enter your secret password in this field.")}' type='password'>" .
+          "</p>" .
+          "<p>" .
+            "<label class='checkbox' for='remember' title='{$i18n->t("Check this box to stay signed in for the next 30 days.")}'>" .
+            "<input class='input input-checkbox' id='remember' name='remember' tabindex='{$this->getTabindex()}' type='checkbox' value='remember'>" .
+            " {$i18n->t("Keep me signed in (for up to 30 days)")}</label>" .
+          "</p>" .
+          "<p>" .
+            "<button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t("Click here after you have filled out all fields.")}' type='submit'>{$i18n->t("Sign in")}</button>" .
+          "</p>" .
+        "</div>" .
+      "</div>"
     ;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRenderedView() {
-    return $this->getRenderedViewWithoutFooter("row span--3");
   }
 
 }

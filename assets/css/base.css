@@ -65,17 +65,13 @@
  *   #fbfbfb
  * -- bright --
  *
- * Blue (link color)
- * =================
- * #06c     (bright)
- * #0059b2
- * #00468c
- * #00264c
- * #001933  (dark)
- *
- * Purple (visited links only)
- * ===========================
- * #613eb0
+ * Colors are lent from the Android color code: https://developer.android.com/design/style/color.html
+ * ==================================================================================================
+ * Blue   : #09c (dark) : #33b5e5 (bright)
+ * Purple : #93c (dark) : #a6c (bright)
+ * Green  : #690 (dark) : #9c0 (bright)
+ * Yellow : #f80 (dark) : #fb3 (bright)
+ * Red    : #c00 (dark) : #f44 (bright)
  *
  * Logo colors
  * ===========
@@ -137,8 +133,7 @@ table {
       -ms-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   background-color: #fff;
-  color: #555;
-  text-rendering: geometricPrecision;
+  color: #656565;
 /*
   About the MovLib font stack
   Our main goal is it to ensure users of Microsoft and Apple computers have the best viewing pleasure. Why not Linux you
@@ -158,12 +153,18 @@ table {
     XP systems. More info can be found here: http://en.wikipedia.org/wiki/Microsoft_YaHei
   - sans-serif: Fallback if everything else fails.
 */
-  font: 300 14px/20px 'open sans light', 'open sans', arial, meiryo, 'microsoft yahei', 'ms yahei', yahei, sans-serif;
+  font: 400 14px/22.4px 'open sans light', 'open sans', arial, meiryo, 'microsoft yahei', 'ms yahei', yahei, sans-serif;
 }
 
 /* Ensure Chinese strings are displayed with the correct font choice. */
 [lang="zh"] {
   font-family: 'open sans light', 'open sans', arial, 'microsoft yahei', 'ms yahei', yahei, meiryo, sans-serif;
+}
+
+html,
+body {
+  background-color: #252525;
+  min-height: 100%;
 }
 
 pre,
@@ -176,39 +177,29 @@ var {
 }
 
 ::-moz-selection {
-  background: #06c;
+  background: #09c;
   color: #fff;
 }
 
 ::selection {
-  background: #06c;
+  background: #09c;
   color: #fff;
 }
 
 a {
   border-bottom: 1px solid transparent;
-  color: #06c;
+  color: #09c;
   text-decoration: none;
 }
 
 a:hover,
 a:focus {
-  border-bottom-color: #06c;
-}
-
-a:visited {
-  color: #613eb0;
-}
-
-/* https://bugzilla.mozilla.org/show_bug.cgi?id=868975 */
-a:visited:hover,
-a:visited:focus {
-  border-bottom-color: #613eb0;
+  border-bottom-color: #09c;
 }
 
 a:focus {
   outline-offset: -2px;
-  outline: 1px dotted #555;
+  outline: 1px dotted #656565;
   outline: 5px auto -webkit-focus-ring-color;
 }
 
@@ -220,6 +211,11 @@ a.active {
 
 a.active[href="#"] {
   cursor: default;
+}
+
+abbr[title] {
+  cursor: help;
+  border-bottom: 1px dotted #656565;
 }
 
 dfn {
@@ -246,7 +242,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: #333;
+  color: #353535;
   margin: 10px 0;
 }
 
@@ -256,7 +252,7 @@ h3 small,
 h4 small,
 h5 small,
 h6 small {
-  color: #555;
+  color: #656565;
   line-height: 1;
 }
 
@@ -308,7 +304,7 @@ p {
 }
 
 hr {
-  border-top: 1px solid #ccc;
+  border-top: 1px solid #353535;
   border: 0;
   display: block;
   height: 1px;
@@ -462,6 +458,7 @@ var {
 
 :-moz-placeholder {
   color: #888;
+  font-weight: 300;
   opacity: 1;
 }
 
@@ -471,6 +468,7 @@ var {
 
 ::-moz-placeholder {
   color: #888;
+  font-weight: 300;
   opacity: 1;
 }
 
@@ -480,6 +478,7 @@ var {
 
 :-ms-input-placeholder {
   color: #888;
+  font-weight: 300;
 }
 
 .input-text:focus:-ms-input-placeholder {
@@ -488,6 +487,7 @@ var {
 
 ::-webkit-input-placeholder {
   color: #888;
+  font-weight: 300;
 }
 
 .input-text:focus::-webkit-input-placeholder {

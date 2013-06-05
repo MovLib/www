@@ -43,7 +43,7 @@ class AlertView extends AbstractView {
   /**
    * {@inheritdoc}
    */
-  public function getRenderedContent() {
+  public function getContent() {
     return $this->content;
   }
 

@@ -45,29 +45,26 @@ class UserResetPasswordView extends AbstractFormView {
     global $i18n;
     parent::__construct($presenter, $i18n->t("Reset password"));
     $this->addStylesheet("/assets/css/modules/user.css");
-    $this->attributes = [ "class" => "span span--0" ];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRenderedFormContent() {
+  public function getFormContent() {
     global $i18n;
     return
-      "<div class='page-header--no-border'><h1>{$this->title}</h1></div>" .
-      "<p>" .
-        "<label for='email'>{$i18n->t("Email address")}</label>" .
-        "<input autofocus class='input input-text input--block-level' id='email' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='email' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter the email address with which you registered your account.")}' type='email' value='{$this->presenter->getPostValue("email")}'>" .
-      "</p>" .
-      "<p><button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t("Fill in the email address you registered with and we will generate a new secure password for you.")}' type='submit'>{$i18n->t("Reset password")}</button></p>"
+      "<div class='row'>" .
+        "<div class='span span--6 offset--3'>" .
+          "<p>" .
+            "<label for='email'>{$i18n->t("Email address")}</label>" .
+            "<input autofocus class='input input-text input--block-level' id='email' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='email' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter the email address with which you registered your account.")}' type='email' value='{$this->presenter->getPostValue("email")}'>" .
+          "</p>" .
+          "<p>" .
+            "<button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t("Fill in the email address you registered with and we will generate a new secure password for you.")}' type='submit'>{$i18n->t("Reset password")}</button>" .
+          "</p>" .
+        "</div>" .
+      "</div>"
     ;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRenderedView() {
-    return $this->getRenderedViewWithoutFooter("row span--3");
   }
 
 }

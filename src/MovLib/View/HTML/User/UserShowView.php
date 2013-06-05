@@ -50,7 +50,7 @@ class UserShowView extends AbstractView {
   /**
    * {@inheritdoc}
    */
-  public function getRenderedContent() {
+  public function getContent() {
     $profile = $this->presenter->getProfile();
     return
       "<article>" .
