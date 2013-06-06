@@ -67,7 +67,7 @@ class ExceptionView extends AlertView {
       true
     );
     /*}}}DEBUG*/
-    DelayedLogger::logException($exception, DelayedLogger::LEVEL_FATAL);
+    DelayedLogger::logException($exception, E_RECOVERABLE_ERROR);
   }
 
   /**

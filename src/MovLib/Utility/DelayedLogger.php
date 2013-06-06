@@ -56,17 +56,6 @@ class DelayedLogger extends AbstractDelayed {
   const MAX_LOG_SIZE = 67108864;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The stack contains all unformatted log entries that were collected throughout the request.
-   *
-   * @var string
-   */
-  public $stack = [];
-
-
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
@@ -79,6 +68,7 @@ class DelayedLogger extends AbstractDelayed {
     $logEntries = [];
     // Generate log entries from stack (unpacking of nested arrays is only available in PHP 5.5+).
     foreach ($this->stack as list($type, $date, $logEntry, $level)) {
+      $logEntries[$level] = "";
       switch ($type) {
         case self::LOGTYPE_EXCEPTION:
           $logEntries[$level] .= "{$date} [{$logEntry->getFile()}:{$logEntry->getLine()}]: {$logEntry->getMessage()}\n";
@@ -121,8 +111,10 @@ class DelayedLogger extends AbstractDelayed {
           $logFile = "notice";
           break;
       }
-      file_put_contents("{$_SERVER["DOCUMENT_ROOT"]}/logs/{$logFile}.log", $logEntry, filesize($logFile) < self::MAX_LOG_SIZE ? 0 : FILE_APPEND);
+      $logFile = "{$_SERVER["DOCUMENT_ROOT"]}/logs/{$logFile}.log";
+      file_put_contents($logFile, $logEntry, filesize($logFile) < self::MAX_LOG_SIZE ? 0 : FILE_APPEND);
     }
+    $this->__destruct();
   }
 
   /**

@@ -110,7 +110,7 @@ set_exception_handler("uncaught_exception_handler");
  *   The line number within the file.
  */
 function error_all_handler($type, $message, $file, $line) {
-  $exception = new \MovLib\Exception\ErrorException($message, $type);
+  $exception = new \MovLib\Exception\ErrorException($message, null, $type);
   $exception->setFile($file)->setLine($line);
   throw $exception;
 }

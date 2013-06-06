@@ -43,17 +43,6 @@ class DelayedMailer extends AbstractDelayed {
   const HTML_HEADER_NOREPLY = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\nFrom: \"MovLib, the free movie library.\" <noreply@movlib.org>";
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The stack contains all unformatted email message that were collected throughout the request.
-   *
-   * @var string
-   */
-  public $stack = [];
-
-
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
@@ -66,6 +55,7 @@ class DelayedMailer extends AbstractDelayed {
     foreach ($this->stack as $mail) {
       mail($mail["to"], $mail["subject"], $mail["message"], $mail["headers"]);
     }
+    $this->__destruct();
   }
 
 

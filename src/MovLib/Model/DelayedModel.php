@@ -23,7 +23,6 @@ use \MovLib\Model\AbstractModel;
  * The delayed model is a special model to execute any query after the response was sent to the user.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Franz Torghele <ftorghele.mmt-m:2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
@@ -43,27 +42,39 @@ class DelayedModel extends AbstractModel {
   private static $instance = null;
 
   /**
-   * The stack contains all queries that were collected throughout the execution.
+   * This stack contains callable methods.
    *
-   * @var string
+   * @var array
    */
-  private $stack = [];
+  private $stackCallback = [];
+
+  /**
+   * This stack contains queries.
+   *
+   * @var array
+   */
+  private $stackQuery = [];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
+  /**
+   * Singleton!
+   */
+  private function __construct(){}
 
   /**
    * Singleton!
    */
-  private function __construct() {
-    parent::__construct();
+  private function __clone(){}
+
+  /**
+   * Destruct current instance.
+   */
+  public function __destruct() {
+    parent::__destruct();
+    self::$instance = null;
   }
-
-  /**
-   * Singleton!
-   */
-  private function __clone();
 
 
   // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
@@ -87,6 +98,19 @@ class DelayedModel extends AbstractModel {
   }
 
   /**
+   * Add a callback to the stack.
+   *
+   * @param callable $callback
+   *   The callback to call on run.
+   * @return $this
+   */
+  public static function stackCallback($callback) {
+    $instance = self::getInstance();
+    $instance->{__FUNCTION__}[] = $callback;
+    return $instance;
+  }
+
+  /**
    * Add a delayed query to the stack.
    *
    * @param string $query
@@ -95,14 +119,14 @@ class DelayedModel extends AbstractModel {
    *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
    * @param array $values
    *   The values that should be inserted.
-   * @param function $callback
+   * @param callable $callback
    *   [Optional] Execute a function after the query was executed. The instance of this class and the values will be
    *   passed to the callback (in this order).
    * @return $this
    */
-  public static function delayedQuery($query, $types, $values, $callback = null) {
+  public static function stackQuery($query, $types, $values, $callback = null) {
     $instance = self::getInstance();
-    $instance->stack[] = [ $query, $types, $values, $callback ];
+    $instance->{__FUNCTION__}[] = [ $query, $types, $values, $callback ];
     return $instance;
   }
 
@@ -117,12 +141,16 @@ class DelayedModel extends AbstractModel {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function run() {
-    foreach ($this->stack as list($query, $types, $values, $callback)) {
+    foreach ($this->stackCallback as $callback) {
+      $callback($this);
+    }
+    foreach ($this->stackQuery as list($query, $types, $values, $callback)) {
       $this->query($query, $types, $values);
       if ($callback) {
         $callback($this, $values);
       }
     }
+    self::$instance = null;
   }
 
 }

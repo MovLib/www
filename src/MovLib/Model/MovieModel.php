@@ -39,7 +39,7 @@ class MovieModel extends AbstractModel {
    * @param int $id
    */
   public function __constructFromId($id) {
-    throw new MovieException();
+    throw new MovieException("Could not find movie with ID '{$id}'!");
     return $this;
   }
 

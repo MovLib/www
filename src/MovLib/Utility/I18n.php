@@ -18,11 +18,8 @@
 namespace MovLib\Utility;
 
 use \Collator;
-use \IntlException;
 use \Locale;
-use \MovLib\Exception\I18nException;
-use \MovLib\Utility\DelayedLogger;
-use \ResourceBundle;
+use \MovLib\Model\I18nModel;
 
 /**
  * Translation (i18n) related methods.
@@ -165,29 +162,20 @@ class I18n {
    *   <a href="http://userguide.icu-project.org/formatparse/messages">Formatting Messages</a>
    * @param array $args
    *   [Optional] Array of values to insert.
-   * @param string $comment
-   *   [Optional] A comment to include along with the pattern for translators.
-   *
-   *   <b>IMPORTANT!</b> This variable is unused in this class and only used during translation extraction. The reason
-   *   why the declaration includes the parameter is easy, code completion and for new developers who might miss this
-   *   feature if it would be undocumented at this place.
-   * @param string $oldRoute
-   *   [Optional] The old pattern of this translation if updating from old branch to new branch.
-   *
-   *   <b>IMPORTANT!</b> This variable is unused in this class and only used during translation extraction. The reason
-   *   why the declaration includes the parameter is easy, code completion and for new developers who might miss this
-   *   feature if it would be undocumented at this place.
+   * @param string $options
+   *   [Optional] Associative array to overwrite the default options used in this method in the form:
+   *   <ul>
+   *     <li><tt>language_code</tt>: default is to use the current display language code.</li>
+   *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
+   *     <li><tt>old_message</tt>: default is <tt>NULL</tt>.</li>
+   *   </ul>
    * @return string
    *   The translated and formatted message.
-   * @throws \IntlException
-   *   If fetching the translations and/or pattern from the current resource bundle failed.
-   * @throws \MovLib\Exception\ErrorException
+   * @throws \MovLib\Exception\IntlException
    *   If formatting the message with the given <var>$args</var> fails (only if any were passed).
-   * @throws \MovLib\Exception\I18nException
-   *   If the desired resource bundle does not exist. This will also add a log entry to the fatal log.
    */
-  public function r($route, $args = null, $comment = null, $oldRoute = null) {
-    return $this->formatMessage("Routes", $route, $args);
+  public function r($route, $args = null, $options = null) {
+    return $this->formatMessage("Route", $route, $args, $options);
   }
 
   /**
@@ -200,29 +188,20 @@ class I18n {
    *   <a href="http://userguide.icu-project.org/formatparse/messages">Formatting Messages</a>
    * @param array $args
    *   [Optional] Array of values to insert.
-   * @param string $comment
-   *   [Optional] A comment to include along with the pattern for translators.
-   *
-   *   <b>IMPORTANT!</b> This variable is unused in this class and only used during translation extraction. The reason
-   *   why the declaration includes the parameter is easy, code completion and for new developers who might miss this
-   *   feature if it would be undocumented at this place.
-   * @param string $oldMessage
-   *   [Optional] The old pattern of this translation if updating from old branch to new branch.
-   *
-   *   <b>IMPORTANT!</b> This variable is unused in this class and only used during translation extraction. The reason
-   *   why the declaration includes the parameter is easy, code completion and for new developers who might miss this
-   *   feature if it would be undocumented at this place.
+   * @param string $options
+   *   [Optional] Associative array to overwrite the default options used in this method in the form:
+   *   <ul>
+   *     <li><tt>language_code</tt>: default is to use the current display language code.</li>
+   *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
+   *     <li><tt>old_message</tt>: default is <tt>NULL</tt>.</li>
+   *   </ul>
    * @return string
    *   The translated and formatted message.
-   * @throws \IntlException
-   *   If fetching the translations and/or pattern from the current resource bundle failed.
-   * @throws \MovLib\Exception\ErrorException
+   * @throws \MovLib\Exception\IntlException
    *   If formatting the message with the given <var>$args</var> fails (only if any were passed).
-   * @throws \MovLib\Exception\I18nException
-   *   If the desired resource bundle does not exist. This will also add a log entry to the fatal log.
    */
-  public function t($message, $args = null, $comment = null, $oldMessage = null) {
-    return $this->formatMessage("Translations", $message, $args);
+  public function t($message, $args = null, $options = null) {
+    return $this->formatMessage("Message", $message, $args, $options);
   }
 
   /**
@@ -260,13 +239,16 @@ class I18n {
    */
   public function getCountries() {
     static $countries = null;
-    if ($countries === null) {
-      $countries = [];
-      foreach ($this->getResourceBundle()->get("Countries") as $code => $country) {
-        $countries[$code] = $country;
-      }
-      $this->getCollator()->asort($countries);
-    }
+    //
+    // @todo Implement with database!
+    //
+//    if ($countries === null) {
+//      $countries = [];
+//      foreach ($this->getResourceBundle()->get("Countries") as $code => $country) {
+//        $countries[$code] = $country;
+//      }
+//      $this->getCollator()->asort($countries);
+//    }
     return $countries;
   }
 
@@ -286,13 +268,16 @@ class I18n {
    */
   public function getLanguages() {
     static $languages = null;
-    if ($languages === null) {
-      $languages = [];
-      foreach ($this->getResourceBundle()->get("Languages") as $code => $language) {
-        $languages[$code] = $language;
-      }
-      $this->getCollator()->asort($languages);
-    }
+    //
+    // @todo Implement with database!
+    //
+//    if ($languages === null) {
+//      $languages = [];
+//      foreach ($this->getResourceBundle()->get("Languages") as $code => $language) {
+//        $languages[$code] = $language;
+//      }
+//      $this->getCollator()->asort($languages);
+//    }
     return $languages;
   }
 
@@ -301,64 +286,60 @@ class I18n {
 
 
   /**
+   * Translate and format the given ICU message pattern within the given context and replace all arguments within the
+   * ICU pattern with the passed numeric <var>$args</var> array. Optionally overwrite the default settings with the
+   * associative <var>$options</var> array.
    *
+   * @link http://userguide.icu-project.org/formatparse/messages
+   * @see \MovLib\Model\I18nModel::getMessage()
+   * @see \MovLib\Model\I18nModel::getRoute()
    * @param string $context
-   *   The context is the offset within the Intl ICU data file where the translations are situated for this language.
-   *
+   *   The context is the name of the <code>I18nModel::get{$context}()</code> method we are going to call to retrieve
+   *   the translation from the database.
    * @param string $pattern
    *   A simple string that should be translated or an advanced Intl ICU pattern. Read the official Intl ICU
    *   documentation for more information on how to create translation patterns.
-   *
-   *   <a href="http://userguide.icu-project.org/formatparse/messages">Formatting Messages</a>
    * @param array $args
-   *   [Optional] Array of values to insert.
+   *   Numeric array of values to replace in the pattern.
+   * @param string $options
+   *   Associative array to overwrite the default options used in this method in the form:
+   *   <ul>
+   *     <li><tt>language_code</tt>: default is to use the current display language code.</li>
+   *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
+   *     <li><tt>old_message</tt>: default is <tt>NULL</tt>.</li>
+   *   </ul>
    * @return string
    *   The translated and formatted message.
-   * @throws \IntlException
-   *   If fetching the translations and/or pattern from the current resource bundle failed.
    * @throws \MovLib\Exception\ErrorException
+   *   If the given context doesn't exist.
+   * @throws \MovLib\Exception\IntlException
    *   If formatting the message with the given <var>$args</var> fails (only if any were passed).
-   * @throws \MovLib\Exception\I18nException
-   *   If the desired resource bundle does not exist. This will also add a log entry to the fatal log.
    */
-  private function formatMessage($context, $pattern, $args) {
-    // Only load the resource bundle if the current locale differs from our default locale.
-    $message = $this->languageCode === $this->defaultLanguageCode ? $pattern : $this->getResourceBundle()->get($context)->get($pattern);
-    // Only call the formatting function if there is something to replace within the pattern.
-    if ($args) {
-      return msgfmt_format_message($this->languageCode, $message, $args);
+  private function formatMessage($context, $pattern, $args, $options) {
+    $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
+    if ($languageCode !== self::getDefaultLanguageCode()) {
+      $pattern = $this->getI18nModel()->{"get{$context}"}($pattern, $languageCode, $options);
     }
-    return $message;
+    if ($args) {
+      return msgfmt_format_message($this->languageCode, $pattern, $args);
+    }
+    return $pattern;
   }
 
   /**
-   * Get the ICU resource bundle for the current language.
+   * Get instance of i18n model to retrieve, store and update translation messages and routes.
    *
-   * @staticvar \ResourceBundle $rb
-   *   Used to cache the loaded resource bundle. We do not export the bundle to class scope because loading of the
-   *   bundle happens on demand and not directly upon instantiation of the class itself.
-   * @return \ResourceBundle
-   * @throws \MovLib\Exception\I18nException
-   *   If the desired resource bundle does not exist. This will also add a log entry to the fatal log.
+   * @staticvar null|\MovLib\Model\I18nModel $i18nModel
+   *   Used to cache the i18n model's instance.
+   * @return \MovLib\Model\I18nModel
+   *   I18n model instance.
    */
-  private function getResourceBundle() {
-    static $rb = null;
-    if ($rb === null) {
-      $bundle = $_SERVER["DOCUMENT_ROOT"] . "/translations/{$this->languageCode}";
-      $ext = ".dat";
-      try {
-        $rb = new ResourceBundle($this->languageCode, $bundle);
-      } catch (IntlException $e) {
-        // Loading the bundle sometimes fails for no reason. Try again if the file exists.
-        if (!file_exists($bundle . $ext)) {
-          $e = new I18nException("Loading of resource bundle '{$this->languageCode}{$ext}' failed!", 0, $e);
-          DelayedLogger::logException($e, DelayedLogger::LEVEL_FATAL);
-          throw $e;
-        }
-        $rb = $this->getResourceBundle();
-      }
+  private function getI18nModel() {
+    static $i18nModel = null;
+    if ($i18nModel === null) {
+      $i18nModel = new I18nModel();
     }
-    return $rb;
+    return $i18nModel;
   }
 
 }

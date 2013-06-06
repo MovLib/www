@@ -339,7 +339,7 @@ class UserModel extends AbstractModel {
       }
       settype($this->deleted, "boolean");
     } catch (ErrorException $e) {
-      throw new UserException("Could not find user for <em>{$column}</em> '{$value}'!", 0, $e);
+      throw new UserException("Could not find user for {$column} '{$value}'!", $e);
     }
     return $this;
   }

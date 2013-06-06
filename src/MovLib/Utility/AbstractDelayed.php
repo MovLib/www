@@ -28,29 +28,55 @@ namespace MovLib\Utility;
  */
 abstract class AbstractDelayed {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * Current instance of the called class. Keeping this private makes sure that nobody will mess with our instance.
    *
-   * @var null|$this
+   * @var null|\MovLib\Utility\DelayedLogger
    */
   private static $instance = null;
 
   /**
-   * Singleton!
+   * The stack contains all unformatted email message that were collected throughout the request.
+   *
+   * @var string
    */
-  private function __construct();
+  public $stack = [];
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Singleton!
    */
-  private function __clone();
+  private function __construct(){}
+
+  /**
+   * Singleton!
+   */
+  private function __clone(){}
+
+  /**
+   * Destroy current instance.
+   */
+  public function __destruct() {
+    self::$instance = null;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
+
 
   /**
    * Get instance of the called class.
    *
    * @global array $delayedObjects
    *   Global array to collect delayed objects for execusion after response was sent to the user.
-   * @return $this
+   * @return \MovLib\Utility\DelayedLogger
    */
   public static function getInstance() {
     global $delayedObjects;
@@ -61,6 +87,10 @@ abstract class AbstractDelayed {
     }
     return self::$instance;
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
 
   /**
    * Every asynchronous class has to implement a run method.

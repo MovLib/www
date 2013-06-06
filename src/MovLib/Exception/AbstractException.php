@@ -34,6 +34,22 @@ use \RuntimeException;
 class AbstractException extends RuntimeException {
 
   /**
+   * Construct the exception.
+   *
+   * We re-order the exception parameter and make the message mandatory.
+   *
+   * @param string $message
+   *   The exception message to throw.
+   * @param string $previous
+   *   [Optional] The previous exception used for the exception chaining.
+   * @param string $code
+   *   [Optional] The exception code, default to <var>E_RECOVERABLE_ERROR</var>.
+   */
+  public function __construct($message, $previous = null, $code = E_RECOVERABLE_ERROR) {
+    parent::__construct($message, $code, $previous);
+  }
+
+  /**
    * The file where the error/exception originated from (this overrides the default <var>__FILE__</var> that is used by
    * exceptions).
    *

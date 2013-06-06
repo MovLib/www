@@ -49,13 +49,6 @@ abstract class AbstractModel {
 
 
   /**
-   * The MySQLi connection object for all queries.
-   *
-   * @var \mysqli
-   */
-  private static $mysqli;
-
-  /**
    * Total count of connections for this request.
    *
    * @var int
@@ -63,26 +56,22 @@ abstract class AbstractModel {
   private static $connectionCounter = 0;
 
   /**
+   * The MySQLi connection object for all queries.
+   *
+   * @var \mysqli
+   */
+  protected static $mysqli;
+
+  /**
    * The MySQLi statement object for all queries.
    *
    * @var \mysqli_stmt
    */
-  private $stmt;
+  protected $stmt;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
-
-  /**
-   * Initialize new model base instance and connect to default database.
-   *
-   * @see \MovLib\Model\AbstractModel::connect()
-   * @throws \Exception
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function __construct() {
-    $this->connect();
-  }
 
   /**
    * Correctly close the database connection.
@@ -139,6 +128,24 @@ abstract class AbstractModel {
       $helper = " AND ";
     }
     return $this->prepareAndBind($query, $types, $values)->execute()->close();
+  }
+
+  /**
+   * Get the current MySQLi instance.
+   *
+   * @return null|\mysqli
+   */
+  public final function getMySQLi() {
+    return self::$mysqli;
+  }
+
+  /**
+   * Get the current prepared statement instance.
+   *
+   * @return null|\mysqli_stmt
+   */
+  public final function getStmt() {
+    return $this->stmt;
   }
 
   /**
@@ -314,16 +321,16 @@ abstract class AbstractModel {
     if (!self::$mysqli) {
       self::$mysqli = new mysqli();
       if (self::$mysqli->real_connect() === false) {
-        throw new DatabaseException("Could not connect to default database server.");
+        throw new DatabaseException("Could not connect to database server.");
       }
       if (self::$mysqli->connect_error) {
-        throw new DatabaseException("Database connect error with message: {self::$mysqli->error} ({self::$mysqli->errno})");
+        throw new DatabaseException(self::$mysqli->error);
       }
       if (self::$mysqli->select_db(self::DEFAULT_DB) === false) {
-        throw new DatabaseException("Could not use default database: " . self::DEFAULT_DB);
+        throw new DatabaseException(self::$mysqli->error);
       }
     }
-    return self::$mysqli;
+    return $this;
   }
 
   /**
@@ -395,6 +402,9 @@ abstract class AbstractModel {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected final function prepare($query) {
+    if (!self::$mysqli) {
+      $this->connect();
+    }
     if (($this->stmt = self::$mysqli->prepare($query)) === false) {
       throw new DatabaseException("Preparation of statement failed: {self::$mysqli->error} ({self::$mysqli->errno})");
     }
