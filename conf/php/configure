@@ -4,7 +4,6 @@
   --enable-intl
   --enable-libgcc
   --enable-libxml
-  --enable-maintainer-zts
   --enable-mbstring
   --enable-mysqlnd
   --enable-opcache
@@ -29,3 +28,4 @@
   --with-pear
   --with-zend-vm=GOTO
   --with-zlib
+  --enable-bcmath

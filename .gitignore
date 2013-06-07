@@ -175,3 +175,4 @@ pip-log.txt
 /uploads/persons/**
 /uploads/posters/**
 /experimental/
+/conf/nginx/sites/test.conf
