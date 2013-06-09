@@ -63,8 +63,8 @@ class UserPresenter extends AbstractPresenter {
   /**
    * Render the reset password page.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @global \MovLib\Model\UserModel $user
    *   The global user model instance.
    * @return $this
@@ -140,8 +140,8 @@ class UserPresenter extends AbstractPresenter {
   /**
    * Render the sign up form.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @global \MovLib\Model\UserModel $user
    *   The global user model instance.
    * @return $this
@@ -179,8 +179,8 @@ class UserPresenter extends AbstractPresenter {
   /**
    * Associative array containing the breadcrumb trail for this presenter.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @global \MovLib\Model\UserModel $user
    *   The global user model instance.
    * @return array

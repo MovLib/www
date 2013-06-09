@@ -18,7 +18,7 @@
 namespace MovLib\View\HTML;
 
 use \Locale;
-use \MovLib\Utility\I18n;
+use \MovLib\Model\I18nModel;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -50,14 +50,14 @@ class LanguageSelectionView extends AbstractView {
   /**
    * Get the rendered content, without HTML head, header or footer.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return string
    */
   public function getContent() {
     global $i18n;
     $points = [];
-    foreach (I18n::$supportedLanguageCodes as $code) {
+    foreach (I18nModel::$supportedLanguageCodes as $code) {
       $points[] = [
         "href" => "//{$code}.{$_SERVER["SERVER_NAME"]}",
         "text" => Locale::getDisplayLanguage($code, $code),

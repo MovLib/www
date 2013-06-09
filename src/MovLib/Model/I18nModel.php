@@ -17,6 +17,8 @@
  */
 namespace MovLib\Model;
 
+use \Locale;
+use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Model\AbstractModel;
 use \MovLib\Utility\DelayedLogger;
@@ -34,83 +36,299 @@ use \MovLib\Utility\DelayedMethodCalls;
  */
 class I18nModel extends AbstractModel {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
-   * Get a translated message from the database.
+   * The languages direction.
    *
-   * @param string $message
-   *   The message which acts as key.
-   * @param string $languageCode
-   *   ISO 639-1 alpha-2 language code for which the translations should be fetched.
-   * @param array $options
-   *   Associative array to overwrite the default options used in this method. Possible keys are:
-   *   <ul>
-   *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
-   *     <li><tt>old_message</tt>: default is <tt>NULL</tt>.</li>
-   *   </ul>
-   * @return string
-   *   Message in desired language or <var>$message</var> if no translation exist.
+   * @todo Implement right-to-left language detection.
+   * @var string
    */
-  public function getMessage($message, $languageCode, $options) {
-    try {
-      // We have to select the ID as well, otherwise we wouldn't know if the exception happened because of the message
-      // being not present in the database or if we're simply missing the translation for it.
-      return $this->query(
-        "SELECT
-          `message_id`,
-          COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation`
-        FROM `messages`
-          WHERE `message` = ?
-          LIMIT 1",
-        "s",
-        [ $message ]
-      )[0]["translation"];
-    } catch (ErrorException $e) {
-      DelayedLogger::log("Could not find {$languageCode} translation for message: '{$message}'", E_NOTICE);
-      DelayedMethodCalls::stack($this, "insertMessage", [ $message, $options ]);
-      return $message;
+  public $direction = "ltr";
+
+  /**
+   * ISO 639-1 alpha-2 language code. Supported language codes are defined via nginx configuration.
+   *
+   * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+   * @var string
+   */
+  public $languageCode;
+
+  /**
+   * Locale for the current language code, used for Intl ICU related classes and functions (e.g. collators).
+   *
+   * @var string
+   */
+  public $locale;
+
+  /**
+   * Numeric array containing all supported ISO 639-1 alpha-2 language codes.
+   *
+   * The supported language codes are directly related to the nginx configuration. If this array contains a language
+   * code the deployment script will generate a server (in Apache httpd terms <tt>virtual host</tt>) with routes for
+   * this code.
+   *
+   * @var array
+   */
+  public static $supportedLanguageCodes = [ "en", "de" ];
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Create new i18n model instance.
+   *
+   * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
+   * @param $locale
+   *   [Optional] The desired locale, if no locale is passed the following procedure is executed:
+   *   <ol>
+   *     <li>Check if the user is logged in and has a preferred locale, if so redirect to dashboard.</li>
+   *     <li>Check if the server sent a language code.</li>
+   *     <li>Check if the user has provided an <tt>HTTP_ACCEPT_LANGUAGE</tt> header.</li>
+   *     <li>Use default locale.</li>
+   *   </ol>
+   */
+  public function __construct($locale = null) {
+    global $user;
+    if ($locale === null) {
+      // If the user is logged in and has a preferred locale redirect to home.
+      if (!isset($_SERVER["LANGUAGE_CODE"]) && $user->isLoggedIn && ($locale = $user->getLanguageCode())) {
+        HTTP::redirect("/", 302, "{$locale}.{$_SERVER["SERVER_NAME"]}");
+      }
+      // If this is a subdomain, use that language code.
+      if (isset($_SERVER["LANGUAGE_CODE"])) {
+        $locale = $_SERVER["LANGUAGE_CODE"];
+      }
+      // If the user sent info on his preferred language via the appropriate HTTP header, use that language.
+      elseif (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($tmpLocale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && in_array($tmpLocale[0] . $tmpLocale[1], self::$supportedLanguageCodes)) {
+        $locale = $tmpLocale;
+      }
+      // If no selection was possible, use the default locale.
+      else {
+        $locale = self::getDefaultLocale();
+      }
     }
+    $this->locale = $locale;
+    $this->languageCode = $locale[0] . $locale[1];
+    $this->defaultLocale = Locale::getDefault();
+    $this->defaultLanguageCode = $this->defaultLocale[0] . $this->defaultLocale[1];
   }
 
-  public function getRoute($route, $languageCode, $options) {
-    //
-    // @todo Create generic translation method based on the code from aboves getMessage() method and call that generic
-    // method from here and the above one. Think DRY, generic, performant, and smart!
-    //
-    //return $this->method($route, $languageCode, $options);
-    return $route;
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
+
+
+  /**
+   * Get the default ISO 639-1 alpha-2 language code extracted from <tt>php.ini</tt>.
+   *
+   * @return string
+   *   The default ISO 639-1 alpha-2 language code.
+   */
+  public static function getDefaultLanguageCode() {
+    static $defaultLanguageCode = null;
+    if ($defaultLanguageCode === null) {
+      $defaultLanguageCode = self::getDefaultLocale();
+      $defaultLanguageCode = $defaultLanguageCode[0] . $defaultLanguageCode[1];
+    }
+    return $defaultLanguageCode;
   }
 
   /**
-   * Insert a message for translation into the messages database table.
+   * Get the default locale (e.g. <em>en-US</em>).
    *
-   * @param string $message
-   *   The message to insert.
+   * @return string
+   *   The default locale.
+   */
+  public static function getDefaultLocale() {
+    static $defaultLocale = null;
+    if ($defaultLocale === null) {
+      $defaultLocale = Locale::getDefault();
+    }
+    return $defaultLocale;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
+
+  public function formatMessage($context, $pattern, $args, $options) {
+    $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
+    if ($languageCode !== $this->getDefaultLanguageCode()) {
+      try {
+        $result = $this->select(
+          "SELECT
+            COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation`
+          FROM `{$context}s`
+            WHERE `{$context}` = ?
+            LIMIT 1",
+          "s",
+          [ $pattern ]
+        )[0];
+        if ($result["translation"] !== null) {
+          $pattern = $result["translation"];
+        }
+      } catch (ErrorException $e) {
+        unset($e);
+        DelayedLogger::log("Could not find {$languageCode} translation for {$context}: '{$pattern}'", E_NOTICE);
+        DelayedMethodCalls::stack($this, "insertPattern", [ $context, $pattern, $options ]);
+      }
+    }
+    if ($args) {
+      return msgfmt_format_message($this->languageCode, $pattern, $args);
+    }
+    return $pattern;
+  }
+
+  /**
+   * Get collator for the current language.
+   *
+   * @staticvar \Collator $collator
+   *   Used to cache the collator.
+   * @return \Collator
+   * @throws \IntlException
+   *   If instantiating of the collator failed (e.g. non supported locale).
+   */
+  public function getCollator() {
+    static $collator = null;
+    if ($collator === null) {
+      $collator = new Collator($this->locale);
+    }
+    return $collator;
+  }
+
+  /**
+   * Insert a pattern for translation into the database table identified by context.
+   *
+   * @param string $context
+   *   The context of this translation, either <em>message</em> or <em>route</em>.
+   * @param string $pattern
+   *   The pattern to insert.
    * @param array $options
    *   Associative array to overwrite the default options used in this method. Possible keys are:
    *   <ul>
    *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
-   *     <li><tt>old_message</tt>: default is <tt>NULL</tt>.</li>
+   *     <li><tt>old_pattern</tt>: default is <tt>NULL</tt>.</li>
    *   </ul>
    * @return \MovLib\Model\I18nModel
    */
-  public function insertMessage($message, $options) {
+  public function insertPattern($context, $pattern, $options) {
     $issetComment = isset($options["comment"]);
-    self::$mysqli->affected_rows = 0;
-    if (isset($options["old_message"])) {
+    $this->affectedRows = 0;
+    if (isset($options["old_pattern"])) {
       if ($issetComment) {
-        $this->query("UPDATE `messages` SET `message` = ?, `comment` = ? WHERE `message` = ? LIMIT 1", "s", $options["old_message"]);
+        $this->update("{$context}s", "sss", [ $context => $pattern, "comment" => $options["comment"] ], [ "old_pattern" => $options["old_pattern"] ]);
       } else {
-        $this->query("UPDATE `messages` SET `message` = ? WHERE `message` = ? LIMIT 1", "s", $options["old_message"]);
+        $this->update("{$context}s", "ss", [ $context => $pattern ], [ "old_pattern" => $options["old_pattern"] ]);
       }
     }
-    if (self::$mysqli->affected_rows === 0) {
-      if ($issetComment) {
-        $this->query("INSERT INTO `messages` (`message`, `comment`) VALUES (?, ?)", "ss", [ $message, $options["comment"] ]);
-      } else {
-        $this->query("INSERT INTO `message` (`message`) VALUES (?)", "s", $message);
+    if ($this->affectedRows === 0) {
+      try {
+        // Maybe we already inserted this translation by a prior call to this method. This can happen if the same new
+        // pattern occurres more than once on the same page.
+        $this->select("SELECT `{$context}_id` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ])[0];
+      } catch (ErrorException $e) {
+        unset($e);
+        if ($issetComment) {
+          $this->insert("{$context}s", "ss", [ $context => $pattern, "comment" => $options["comment"] ]);
+        } else {
+          $this->insert("{$context}s", "s", [ $context => $pattern ]);
+        }
       }
+    }
+    unset($this->affectedRows);
+    return $this;
+  }
+
+  /**
+   * Insert a translation of pattern into the database table identified by context.
+   *
+   * @param string $context
+   *   The context of this translation, either <em>message</em> or <em>route</em>.
+   * @param int $id
+   *   The unique ID of the pattern for which we should insert a translation.
+   * @param string $languageCode
+   *   The ISO 639-1 alpha-2 language code that identifies the translation's language.
+   * @param string $translation
+   *   The translated pattern.
+   * @return $this
+   * @throws \MovLib\Exception\DatabaseException
+   *   If inserting or updating failed.
+   */
+  public function insertOrUpdateTranslation($context, $id, $languageCode, $translation) {
+    $this
+      ->prepareAndBind(
+        "UPDATE `{$context}s`
+        SET `dyn_translations` = COLUMN_ADD(COLUMN_CREATE(?, ?), ?, ?)
+        WHERE `{$context}_id` = ?",
+        "ssssd", [ $languageCode, $translation, $languageCode, $translation, $id ]
+      )
+      ->execute()
+      ->close()
+    ;
+    // If affected rows is zero the translation was already present and exactly the same as was asked to update.
+    if ($this->affectedRows < 0) {
+      $exception = new DatabaseException("Could not insert nor update {$languageCode} translation for {$context} with ID '{$id}'");
+      DelayedLogger::logException($exception);
+      throw $exception;
     }
     return $this;
+  }
+
+  /**
+   * Translate the given pattern.
+   *
+   * @param string $route
+   *   A simple string that should be translated or an advanced Intl ICU pattern. Read the official Intl ICU
+   *   documentation for more information on how to create translation patterns.
+   *
+   *   <a href="http://userguide.icu-project.org/formatparse/messages">Formatting Messages</a>
+   * @param array $args
+   *   [Optional] Array of values to insert.
+   * @param string $options
+   *   [Optional] Associative array to overwrite the default options used in this method in the form:
+   *   <ul>
+   *     <li><tt>language_code</tt>: default is to use the current display language code.</li>
+   *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
+   *     <li><tt>old_pattern</tt>: default is <tt>NULL</tt>.</li>
+   *   </ul>
+   * @return string
+   *   The translated and formatted message.
+   * @throws \MovLib\Exception\IntlException
+   *   If formatting the message with the given <var>$args</var> fails (only if any were passed).
+   */
+  public function r($route, $args = null, $options = null) {
+    return $this->formatMessage("route", $route, $args, $options);
+  }
+
+  /**
+   * Translate the given pattern.
+   *
+   * @param string $message
+   *   A simple string that should be translated or an advanced Intl ICU pattern. Read the official Intl ICU
+   *   documentation for more information on how to create translation patterns.
+   *
+   *   <a href="http://userguide.icu-project.org/formatparse/messages">Formatting Messages</a>
+   * @param array $args
+   *   [Optional] Array of values to insert.
+   * @param string $options
+   *   [Optional] Associative array to overwrite the default options used in this method in the form:
+   *   <ul>
+   *     <li><tt>language_code</tt>: default is to use the current display language code.</li>
+   *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
+   *     <li><tt>old_pattern</tt>: default is <tt>NULL</tt>.</li>
+   *   </ul>
+   * @return string
+   *   The translated and formatted message.
+   * @throws \MovLib\Exception\IntlException
+   *   If formatting the message with the given <var>$args</var> fails (only if any were passed).
+   */
+  public function t($message, $args = null, $options = null) {
+    return $this->formatMessage("message", $message, $args, $options);
   }
 
 }

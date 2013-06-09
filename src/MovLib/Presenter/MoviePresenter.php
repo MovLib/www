@@ -63,8 +63,8 @@ class MoviePresenter extends AbstractPresenter {
   /**
    * Render the movie's page.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return $this
    */
   protected function __constructGet() {

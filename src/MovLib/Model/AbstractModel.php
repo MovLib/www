@@ -63,6 +63,13 @@ abstract class AbstractModel {
   protected static $mysqli;
 
   /**
+   * Total number of rows changed, deleted, or inserted by the last executed statement.
+   *
+   * @var int
+   */
+  public $affectedRows;
+
+  /**
    * The MySQLi statement object for all queries.
    *
    * @var \mysqli_stmt
@@ -207,7 +214,7 @@ abstract class AbstractModel {
    * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
-  public final function query($query, $types, $values) {
+  public final function select($query, $types, $values) {
     $this->prepareAndBind($query, $types, $values)->execute()->fetchAssoc($result)->close();
     return $result;
   }
@@ -230,7 +237,7 @@ abstract class AbstractModel {
    *   The query result as associative array.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public final function queryAll($query) {
+  public final function selectAll($query) {
     $this->prepare($query)->execute()->fetchAssoc($result)->close();
     return $result;
   }
@@ -359,12 +366,14 @@ abstract class AbstractModel {
    *   If the execution fails (returns <code>false</code>).
    */
   protected final function execute() {
+    unset($this->affectedRows);
     if ($this->stmt->execute() === false) {
       $error = $this->stmt->error;
       $errno = $this->stmt->errno;
       $this->close();
       throw new DatabaseException("Execution of statement failed with error message: {$error} ({$errno})");
     }
+    $this->affectedRows = $this->stmt->affected_rows;
     return $this;
   }
 
@@ -406,7 +415,7 @@ abstract class AbstractModel {
       $this->connect();
     }
     if (($this->stmt = self::$mysqli->prepare($query)) === false) {
-      throw new DatabaseException("Preparation of statement failed: {self::$mysqli->error} ({self::$mysqli->errno})");
+      throw new DatabaseException("Preparation of statement failed: " . self::$mysqli->error . " (" . self::$mysqli->errno . ")");
     }
     return $this;
   }

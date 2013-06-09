@@ -45,11 +45,11 @@ function __autoload($class) {
 }
 
 /**
- * Global array to collect objects which will be executed after the response was sent to the user.
+ * Global array to collect class names and function names which will be executed after the response was sent to the user.
  *
  * @var array
  */
-$delayedObjects = [];
+$delayed = [];
 
 /**
  * Create new global <em>UserModel</em> instance for the current user who is requesting the page.
@@ -63,7 +63,7 @@ $user = (new \MovLib\Model\UserModel())->__constructFromSession();
  *
  * @var \MovLib\Utility\I18n
  */
-$i18n = new \MovLib\Utility\I18n();
+$i18n = new \MovLib\Model\I18nModel();
 
 /**
  * This is the outermost place to catch any exception that might have been forgotten somewhere.
@@ -159,9 +159,9 @@ $presenter = "\\MovLib\\Presenter\\{$_SERVER["PRESENTER"]}Presenter";
 echo (new $presenter())->presentation;
 
 // This makes sure that the output that was generated until this point will be returned to nginx for delivery.
-fastcgi_finish_request();
+//fastcgi_finish_request();
 
-// Execute each delayed object after sending the generated output to the user.
-foreach ($delayedObjects as $delayedObject) {
-  $delayedObject->run();
+// Execute each delayed run method after sending the generated output to the user.
+foreach ($delayed as $delayedClassName => $delayedMethodName) {
+  $delayedClassName::{$delayedMethodName}();
 }

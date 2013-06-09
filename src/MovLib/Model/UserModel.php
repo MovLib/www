@@ -175,7 +175,7 @@ class UserModel extends AbstractModel {
     static $languageCode = null;
     try {
       if ($languageCode === null) {
-        $languageCode = $this->query("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", $this->languageId)[0]["iso_alpha-2"];
+        $languageCode = $this->select("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", $this->languageId)[0]["iso_alpha-2"];
       }
       return $languageCode;
     } catch (ErrorException $e) {
@@ -186,8 +186,8 @@ class UserModel extends AbstractModel {
   /**
    * Get the route to the user's public profile.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global I18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return string
    *   The route to the user's public profile.
    */
@@ -251,8 +251,8 @@ class UserModel extends AbstractModel {
    * }</pre>
    *
    * @link http://api.drupal.org/api/drupal/core!modules!user!user.module/function/user_validate_name/8
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global I18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @param string $name
    *   The username to validate.
    * @return null|string
@@ -318,7 +318,7 @@ class UserModel extends AbstractModel {
       return $this;
     }
     try {
-      foreach ($this->query(
+      foreach ($this->select(
         "SELECT
           `user_id` AS `id`,
           `name`,

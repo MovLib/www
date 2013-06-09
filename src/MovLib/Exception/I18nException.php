@@ -22,7 +22,7 @@ use \MovLib\Exception\AbstractException;
 /**
  * A I18n exception might be thrown if an error occures related to translating contents.
  *
- * @see \MovLib\Utility\I18n
+ * @see \MovLib\Model\I18nModel
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

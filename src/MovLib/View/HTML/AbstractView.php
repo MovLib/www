@@ -284,8 +284,8 @@ abstract class AbstractView {
    * <b>IMPORTANT:</b> Always use this method to generate crosslinks! This method ensures that no links within the
    * document point to the currently displayed document itself; as per W3C recommendation.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @param string $route
    *   The URL to which we should link (only internal routes).
    * @param string $text
@@ -366,8 +366,8 @@ abstract class AbstractView {
    * Get the HTML head element, this includes doctype and the html root element.
    *
    * @link http://www.netmagazine.com/features/create-perfect-favicon
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @global \MovLib\Model\UserModel $user
    *   The global user model instance.
    * @return string
@@ -410,8 +410,8 @@ abstract class AbstractView {
   /**
    * Get the HTML header, this includes the logo, navigations and search box.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return string
    *   The header ready for print.
    */
@@ -435,8 +435,8 @@ abstract class AbstractView {
    * Get the HTML header main navigation.
    *
    * @see \MovLib\View\HTML\AbstractView::getNavigation
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return string
    *   The main navigation ready for print.
    */
@@ -469,8 +469,8 @@ abstract class AbstractView {
   /**
    * Get the HTML header search.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return string
    *   The header search ready for print.
    */
@@ -490,8 +490,8 @@ abstract class AbstractView {
    * Get the HTML header user navigation.
    *
    * @see \MovLib\View\HTML\AbstractView::getNavigation
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @global \MovLib\Model\UserModel $user
    *   The global user model instance.
    * @return string
@@ -581,8 +581,8 @@ abstract class AbstractView {
    * Get the (pure CSS) sticky header.
    *
    * @link http://uxdesign.smashingmagazine.com/2012/09/11/sticky-menus-are-quicker-to-navigate/
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return string
    *   Sticky header ready for print.
    */
@@ -643,8 +643,8 @@ abstract class AbstractView {
    *
    * @see \MovLib\Presenter\AbstractPresenter::getBreadcrumb()
    * @see \MovLib\View\HTML\AbstractView::getNavigation()
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return string
    *   The breadcrumb ready for print.
    */
@@ -666,8 +666,8 @@ abstract class AbstractView {
   /**
    * Get the HTML footer including all script tags.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return string
    *   The footer ready for print.
    */
@@ -730,8 +730,8 @@ abstract class AbstractView {
    * This method must stay public and not final. We have to overwrite this in the special homepage view!
    *
    * @see \MovLib\View\HTML\HomeView
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return string
    *   The logo ready for print.
    */
@@ -750,8 +750,8 @@ abstract class AbstractView {
    * This method must stay public and not final. We have to overwrite this in the special homepage view!
    *
    * @see \MovLib\View\HTML\HomeView
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @return string
    *   The title ready for print.
    */

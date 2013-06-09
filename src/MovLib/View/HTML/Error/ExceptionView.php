@@ -36,8 +36,8 @@ class ExceptionView extends AlertView {
   /**
    * An error view expects the complete exception object to be passed along.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @param \MovLib\Presenter\AbstractPresenter $presenter
    *   The presenter that created the view instance.
    * @param \Exception $exception

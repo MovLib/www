@@ -33,8 +33,8 @@ class ForbiddenView extends AlertView {
   /**
    * Create a <em>403 Forbidden</em> error page.
    *
-   * @global \MovLib\Utility\I18n $i18n
-   *   The global i18n instance.
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @param \MovLib\Presenter\AbstractPresenter $presenter
    *   The presenter object controlling this view.
    */
