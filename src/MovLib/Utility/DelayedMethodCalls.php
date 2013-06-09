@@ -17,8 +17,6 @@
  */
 namespace MovLib\Utility;
 
-use \MovLib\Utility\AbstractDelayed;
-
 /**
  * Special object to execute method calls after the response was sent to the user.
  *
@@ -28,18 +26,43 @@ use \MovLib\Utility\AbstractDelayed;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class DelayedMethodCalls extends AbstractDelayed {
+class DelayedMethodCalls {
 
-  public function run() {
-    foreach ($this->stack as list($callable, $params)) {
+
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+
+
+  private static $stack = [];
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
+
+
+  /**
+   * Execute each delayed method.
+   */
+  public static function run() {
+    foreach (self::$stack as list($callable, $params)) {
       call_user_func_array($callable, $params);
     }
   }
 
+  /**
+   * Add a delayed method call to the stack.
+   *
+   * @global array $delayed
+   *   The array to collect delayed class names and method names.
+   * @param object $obj
+   *   The object that contains the method which will be executed after the response was sent to the user.
+   * @param string $method
+   *   The name of the method to call.
+   * @param array $params
+   *   The parameters for the method call.
+   */
   public static function stack($obj, $method, $params) {
-    $instance = self::getInstance();
-    $instance->stack[] = [[ $obj, $method ], $params];
-    return $instance;
+    global $delayed;
+    $delayed[__CLASS__] = "run";
+    self::$stack[] = [[ $obj, $method ], $params];
   }
 
 }

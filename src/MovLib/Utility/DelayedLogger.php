@@ -17,8 +17,6 @@
  */
 namespace MovLib\Utility;
 
-use \MovLib\Utility\AbstractDelayed;
-
 /**
  * Delayed log facility.
  *
@@ -28,7 +26,7 @@ use \MovLib\Utility\AbstractDelayed;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class DelayedLogger extends AbstractDelayed {
+class DelayedLogger {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -56,18 +54,27 @@ class DelayedLogger extends AbstractDelayed {
   const MAX_LOG_SIZE = 67108864;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
 
 
   /**
-   * Execute the asynchronous logger.
+   * Array used to collect all log entries.
    *
+   * @var array
+   */
+  private static $logEntries = [];
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
+
+
+  /**
    * Writes all log entries from the stack to the appropriate log file on the filesystem.
    */
-  public function run() {
+  public static function writeLogEntries() {
     $logEntries = [];
     // Generate log entries from stack (unpacking of nested arrays is only available in PHP 5.5+).
-    foreach ($this->stack as list($type, $date, $logEntry, $level)) {
+    foreach (self::$logEntries as list($type, $date, $logEntry, $level)) {
       $logEntries[$level] = "";
       switch ($type) {
         case self::LOGTYPE_EXCEPTION:
@@ -94,8 +101,8 @@ class DelayedLogger extends AbstractDelayed {
           // Send email to developers upon logging of entries with high levels, there must be something that needs a fix.
           mail(
             "movdev@movlib.org",
-            "IMPORTANT! A {$this->level} message was just logged.",
-            "<p>Here is the message that was logged:</p><pre>" . String::checkPlain($this->message) . "</pre>",
+            "IMPORTANT! A {$level} message was just logged.",
+            "<p>Here is the message that was logged:</p><pre>" . String::checkPlain($logEntry) . "</pre>",
             DelayedMailer::HTML_HEADER_NOREPLY
           );
           break;
@@ -114,12 +121,45 @@ class DelayedLogger extends AbstractDelayed {
       $logFile = "{$_SERVER["DOCUMENT_ROOT"]}/logs/{$logFile}.log";
       file_put_contents($logFile, $logEntry, filesize($logFile) < self::MAX_LOG_SIZE ? 0 : FILE_APPEND);
     }
-    $this->__destruct();
   }
+
+  /**
+   * Log a simple message.
+   *
+   * @see \MovLib\Utility\DelayedLogger::stack()
+   * @param string $message
+   *   The message to log.
+   * @param string $level
+   *   The log level, defaults to <var>E_WARNING</var>.
+   * @return $this
+   */
+  public static function log($message, $level = E_WARNING) {
+    self::stack($message, $level);
+  }
+
+  /**
+   * Log an exception.
+   *
+   * @see \MovLib\Utility\DelayedLogger::stack()
+   * @param \Exception $exception
+   *   The exception to log.
+   * @param string $level
+   *   The log level, defaults to <var>E_WARNING</var>.
+   * @return $this
+   */
+  public static function logException($exception, $level = E_WARNING) {
+    self::stack($exception, $level, self::LOGTYPE_EXCEPTION);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Private Static Methods
+
 
   /**
    * Add log entry to stack.
    *
+   * @global array $delayed
+   *   The array to collect delayed class names and method names.
    * @param mixed $message
    *   The log entry's message or object containing the message.
    * @param string $level
@@ -128,43 +168,10 @@ class DelayedLogger extends AbstractDelayed {
    *   [Optional] The log entry's type, defaults to <var>AsyncLogger::LOGTYPE_DEFAULT</var>.
    * @return $this
    */
-  public function stack($message, $level, $type = self::LOGTYPE_DEFAULT) {
-    $this->stack[] = [ $type, date("Y-m-d H:i:s"), $message, $level ];
-    return $this;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
-
-
-  /**
-   * Log a simple message.
-   *
-   * @param string $message
-   *   The message to log.
-   * @param string $level
-   *   The log level, defaults to <var>E_WARNING</var>.
-   * @return $this
-   */
-  public static function log($message, $level = E_WARNING) {
-    $instance = self::getInstance();
-    $instance->stack($message, $level);
-    return $instance;
-  }
-
-  /**
-   * Log an exception.
-   *
-   * @param \Exception $exception
-   *   The exception to log.
-   * @param string $level
-   *   The log level, defaults to <var>E_WARNING</var>.
-   * @return $this
-   */
-  public static function logException($exception, $level = E_WARNING) {
-    $instance = self::getInstance();
-    $instance->stack($exception, $level, self::LOGTYPE_EXCEPTION);
-    return $instance;
+  private static function stack($message, $level, $type = self::LOGTYPE_DEFAULT) {
+    global $delayed;
+    $delayed[__CLASS__] = "writeLogEntries";
+    self::$logEntries[] = [ $type, date("Y-m-d H:i:s"), $message, $level ];
   }
 
 }

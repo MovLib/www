@@ -18,7 +18,6 @@
 namespace MovLib\Utility;
 
 use \MovLib\Entity\User;
-use \MovLib\Utility\AbstractDelayed;
 
 /**
  * Delayed mail system.
@@ -29,21 +28,21 @@ use \MovLib\Utility\AbstractDelayed;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class DelayedMailer extends AbstractDelayed {
+class DelayedMailer {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
+  // ------------------------------------------------------------------------------------------------------------------- Static Properties
 
 
   /**
-   * HTML header with noreply movlib address.
+   * Array used to collect all mails that should be sent.
    *
-   * @var string
+   * @var array
    */
-  const HTML_HEADER_NOREPLY = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\nFrom: \"MovLib, the free movie library.\" <noreply@movlib.org>";
+  private static $mails = [];
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
 
 
   /**
@@ -51,51 +50,40 @@ class DelayedMailer extends AbstractDelayed {
    *
    * @todo Send plain text and HTML mail with the MovLib logo as attachment.
    */
-  public function run() {
-    foreach ($this->stack as $mail) {
-      mail($mail["to"], $mail["subject"], $mail["message"], $mail["headers"]);
+  public static function sendMails() {
+    foreach (self::$mails as list($to, $subject, $message)) {
+      mail($to, $subject, $message, "MIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\nFrom: \"MovLib, the free movie library.\" <noreply@movlib.org>");
     }
-    $this->__destruct();
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
-
-
   /**
-   * Send email.
+   * Send mail.
    *
+   * @see \MovLib\Utility\DelayedMailer::stack()
    * @param string $to
    *   Receiver of the mail, must comply with RFC 2822.
    * @param string $subject
    *   Subject of the email to be sent, must comply with RFC 2047.
    * @param string $message
    *   Message to be sent.
-   * @return $this
-   * @throws \MovLib\Exception\MailException
    */
   public static function sendMail($to, $subject, $message) {
-    /* @var $instance DelayedMailer */
-    $instance = self::getInstance();
-    $instance->stack[] = [ "to" => $to, "subject" => $subject, "message" => $message ];
-    return $instance;
+    self::stack($to, $subject, $message);
   }
 
   /**
    * Send password reset email.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n instance.
    * @param string $userEmail
    *   Email address of the user that requested the password reset.
-   * @return $this
-   * @throws \MovLib\Exception\MailException
    */
   public static function sendPasswordReset($userEmail) {
     global $i18n;
-    /* @var $instance DelayedMailer */
-    $instance = self::getInstance();
     /* @var $user \MovLib\Entity\User */
     $user = (new User())->__constructFromEmail($userEmail);
-    $instance->stack[] = [
+    self::stack([
       "to" => $user->getEmail(),
       "subject" => $i18n->t("Password reset request"),
       "message" => $i18n->t("Hello {0}!
@@ -108,9 +96,8 @@ You may now log in by clicking this link or copying and pasting it to your brows
 
 This link can only be used once to log in and will lead you to a page where you can set your password. If you have not requested this password reset simply ignore this email.
 
-— {2}", [ $user->name , "https://alpha.movlib.org/", $i18n->t("MovLib, the free movie library.") ])
-    ];
-    return $instance;
+— {2}", [ $user->name , "https://{$_SERVER["SERVER_NAME"]}/", $i18n->t("MovLib, the free movie library.") ])
+    ]);
   }
 
   /**
@@ -121,6 +108,8 @@ This link can only be used once to log in and will lead you to a page where you 
    * passed to the async mailer should already be valid.
    *
    * @link http://api.drupal.org/api/drupal/core!modules!user!user.module/function/user_validate_name/8
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n instance.
    * @param string $email
    *   The email address to validate.
    * @return null|string
@@ -134,6 +123,28 @@ This link can only be used once to log in and will lead you to a page where you 
     if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
       return $i18n->t("The email address is not valid.");
     }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Private Static Methods
+
+
+  /**
+   * Add new mail message to send after the response was sent to the user to the stack.
+   *
+   * @global array $delayed
+   *   The array to collect delayed class names and method names.
+   * @param string $to
+   *   Receiver of the mail, must comply with RFC 2822.
+   * @param string $subject
+   *   Subject of the email to be sent, must comply with RFC 2047.
+   * @param string $message
+   *   Message to be sent.
+   */
+  private static function stack($to, $subject, $message) {
+    global $delayed;
+    $delayed[__CLASS__] = "sendMails";
+    self::$mails[] = [ "to" => $to, "subject" => $subject, "message" => $message ];
   }
 
 }
