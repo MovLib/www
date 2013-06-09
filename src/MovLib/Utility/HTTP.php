@@ -52,8 +52,7 @@ class HTTP {
     if ($domain === null) {
       $domain = $_SERVER["SERVER_NAME"];
     }
-    $route = "https://{$domain}/{$route}";
-    header("Location: {$route}", true, $status);
+    header("Location: {$_SERVER["REQUEST_SCHEME"]}://{$domain}{$route}", true, $status);
     http_response_code($status); // Ensure status is set correctly
     if ($_SERVER["REQUEST_METHOD"] !== "HEAD") {
       $title = [
@@ -62,7 +61,7 @@ class HTTP {
         303 => "See Other",
       ];
       // Entity is required per RFC 2616. Our entity is identical to the one that nginx would return.
-      echo "<html><head><title>{$status} {$title[$status]}</title></head><body bgcolor=\"white\"><center><h1>{$status} {$title[$status]}</h1></center><hr><center>nginx/{$_SERVER["VERSION"]}</center></body></html>";
+      echo "<html><head><title>{$status} {$title[$status]}</title></head><body bgcolor=\"white\"><center><h1>{$status} {$title[$status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
     }
     exit();
   }
