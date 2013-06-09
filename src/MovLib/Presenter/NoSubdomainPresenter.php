@@ -18,9 +18,15 @@
 namespace MovLib\Presenter;
 
 use \MovLib\Presenter\AbstractPresenter;
+use \MovLib\Utility\HTTP;
 
 /**
- * Present the home view.
+ * The no subdomain presenter is called from nginx if a URI is accessed without any subdomain.
+ *
+ * All MovLib content is available via subdomains. They mainly identify the display language, some subdomains are used
+ * for special pages (e.g. the API or the localization site). This presenter simply redirects the user to a subdomain
+ * based on the user's preferred language set in his account, the HTTP accept language header, or if none of these
+ * values are present to the default language's subdomain.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,17 +34,21 @@ use \MovLib\Presenter\AbstractPresenter;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HomePresenter extends AbstractPresenter {
+class NoSubdomainPresenter extends AbstractPresenter {
 
   /**
-   * {@inheritdoc}
+   * Redirect the user to the best matching subdomain that might contain the requested content.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    */
   public function __construct() {
-    $this->setPresentation($this->getShortName());
+    global $i18n;
+    HTTP::redirect($_SERVER["REQUEST_URI"], 302, "$i18n->languageCode.{$_SERVER["SERVER_NAME"]}");
   }
 
   /**
-   * The home page has no breadcrumb!
+   * No need for a breadcrumb.
    */
   public function getBreadcrumb() {}
 

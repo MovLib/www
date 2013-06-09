@@ -159,7 +159,7 @@ $presenter = "\\MovLib\\Presenter\\{$_SERVER["PRESENTER"]}Presenter";
 echo (new $presenter())->presentation;
 
 // This makes sure that the output that was generated until this point will be returned to nginx for delivery.
-//fastcgi_finish_request();
+fastcgi_finish_request();
 
 // Execute each delayed run method after sending the generated output to the user.
 foreach ($delayed as $delayedClassName => $delayedMethodName) {

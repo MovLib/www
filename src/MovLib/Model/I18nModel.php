@@ -87,8 +87,8 @@ class I18nModel extends AbstractModel {
    * @param $locale
    *   [Optional] The desired locale, if no locale is passed the following procedure is executed:
    *   <ol>
-   *     <li>Check if the user is logged in and has a preferred locale, if so redirect to dashboard.</li>
    *     <li>Check if the server sent a language code.</li>
+   *     <li>Check if the user is logged in and has a preferred language.</li>
    *     <li>Check if the user has provided an <tt>HTTP_ACCEPT_LANGUAGE</tt> header.</li>
    *     <li>Use default locale.</li>
    *   </ol>
@@ -96,22 +96,10 @@ class I18nModel extends AbstractModel {
   public function __construct($locale = null) {
     global $user;
     if ($locale === null) {
-      // If the user is logged in and has a preferred locale redirect to home.
-      if (!isset($_SERVER["LANGUAGE_CODE"]) && $user->isLoggedIn && ($locale = $user->getLanguageCode())) {
-        HTTP::redirect("/", 302, "{$locale}.{$_SERVER["SERVER_NAME"]}");
-      }
-      // If this is a subdomain, use that language code.
-      if (isset($_SERVER["LANGUAGE_CODE"])) {
-        $locale = $_SERVER["LANGUAGE_CODE"];
-      }
-      // If the user sent info on his preferred language via the appropriate HTTP header, use that language.
-      elseif (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($tmpLocale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && in_array($tmpLocale[0] . $tmpLocale[1], self::$supportedLanguageCodes)) {
-        $locale = $tmpLocale;
-      }
-      // If no selection was possible, use the default locale.
-      else {
-        $locale = self::getDefaultLocale();
-      }
+      (isset($_SERVER["LANGUAGE_CODE"]) && $locale = $_SERVER["LANGUAGE_CODE"])
+      || ($user->isLoggedIn && $locale = $user->getLanguageCode())
+      || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($tmpLocale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && in_array($tmpLocale[0] . $tmpLocale[1], self::$supportedLanguageCodes) && $locale = $tmpLocale)
+      || ($locale = self::getDefaultLocale());
     }
     $this->locale = $locale;
     $this->languageCode = $locale[0] . $locale[1];

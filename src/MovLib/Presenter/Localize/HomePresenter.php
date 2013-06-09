@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter;
+namespace MovLib\Presenter\Localize;
 
 use \MovLib\Presenter\AbstractPresenter;
 
 /**
- * Present the home view.
+ * Home presenter for the localize site.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
