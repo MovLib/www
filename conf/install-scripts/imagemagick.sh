@@ -26,11 +26,16 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 cd /usr/local/src
-git clone git://github.com/trevor/ImageMagick.git
+wget http://www.imagemagick.org/download/ImageMagick-6.8.5-10.tar.gz
+tar xzf ImageMagick-6.8.5-10.tar.gz
+mv ImageMagick-6.8.5-10 ImageMagick
+rm -f ImageMagick-6.8.5-10.tar.gz
 cd ImageMagick
-./configure
-  CFLAGS="-O3"
+./configure --help
+./configure CFLAGS="-O3"
 make
 make test
 make install
 rm -rf /usr/local/src/ImageMagick
+ldconfig
+exit 0

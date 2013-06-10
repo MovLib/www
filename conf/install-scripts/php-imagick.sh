@@ -17,8 +17,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# "igbinary" installation script.
+# "PHP imagick" installation script.
 #
+# LINK: http://pecl.php.net/package/imagick
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -26,12 +27,16 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 cd /usr/local/src
-git clone git://github.com/phadej/igbinary.git
-cd igbinary
+wget http://pecl.php.net/get/imagick-3.1.0RC2.tgz
+tar xzf imagick-3.1.0RC2.tgz
+mv imagick-3.1.0RC2 imagick
+rm -f imagick-3.1.0RC2.tgz
+cd imagick
+patch < /var/www/conf/install-scripts/php-imagick.patch
 phpize
-./configure CFLAGS="-O3" --enable-igbinary
+./configure CFLAGS="-O3"
 make
 make test
 make install
-rm -rf /usr/local/src/igbinary
+rm -rf /usr/local/src/imagick /usr/local/src/package.xml
 exit 0

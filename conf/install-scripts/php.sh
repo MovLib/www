@@ -31,42 +31,42 @@ tar xzf php-5.5.0RC3.tar.gz
 mv php-5.5.0RC3.tar.gz php
 rm -f php-5.5.0RC3.tar.gz
 cd php
-./configure
-  CFLAGS="-O3"
-  --disable-flatfile
-  --disable-inifile
-  --disable-pdo
-  --disable-short-tags
-  --enable-bcmath
-  --enable-fpm
-  --enable-intl
-  --enable-libgcc
-  --enable-libxml
-  --enable-mbstring
-  --enable-mysqlnd
-  --enable-opcache
-  --enable-re2c-cgoto
-  --enable-xml
-  --enable-zend-signals
-  --enable-zip
-  --sysconfdir=/etc/php-fpm
-  --with-bz2
-  --with-config-file-path=/etc/php-fpm
-  --with-curl
-  --with-fpm-group=www-data
-  --with-fpm-user=www-data
-  --with-gd
-  --with-gettext
-  --with-icu-dir=/usr/local
-  --with-mcrypt
-  --with-mysql-sock=/run/mysqld/mysqld.sock
-  --with-mysqli
-  --with-openssl
-  --with-pcre-regex
-  --with-pear
-  --with-zend-vm=GOTO
+./configure \
+  CFLAGS="-O3" \
+  --disable-flatfile \
+  --disable-inifile \
+  --disable-pdo \
+  --disable-short-tags \
+  --disable-sqlite3 \
+  --enable-bcmath \
+  --enable-fpm \
+  --enable-intl \
+  --enable-libgcc \
+  --enable-libxml \
+  --enable-mbstring \
+  --enable-mysqlnd \
+  --enable-opcache \
+  --enable-re2c-cgoto \
+  --enable-xml \
+  --enable-zend-signals \
+  --enable-zip \
+  --sysconfdir=/etc/php-fpm \
+  --with-bz2 \
+  --with-config-file-path=/etc/php-fpm \
+  --with-curl \
+  --with-fpm-group=www-data \
+  --with-fpm-user=www-data \
+  --with-icu-dir=/usr/local \
+  --with-mcrypt \
+  --with-mysql-sock=/run/mysqld/mysqld.sock \
+  --with-mysqli \
+  --with-openssl \
+  --with-pcre-regex \
+  --with-pear \
+  --with-zend-vm=GOTO \
   --with-zlib
 make
 make test
 make install
 rm -rf /usr/local/src/php
+exit 0

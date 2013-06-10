@@ -25,16 +25,21 @@
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
+aptitude -y install libevent-dev
 cd /usr/local/src
-git clone git://github.com/memcached/memcached.git
+wget http://memcached.googlecode.com/files/memcached-1.4.15.tar.gz
+tar xzf memcached-1.4.15.tar.gz
+mv memcached-1.4.15 memcached
+rm -f memcached-1.4.15.tar.gz
 cd memcached
-./configure
-  CFLAGS="-O3"
-  --sysconfdir=/etc/memcached
-  --disable-coverage
-  --enable-64bit
+./configure \
+  CFLAGS="-O3" \
+  --sysconfdir=/etc/memcached \
+  --disable-coverage \
+  --enable-64bit \
   --disable-docs
 make
 make test
 make install
 rm -rf /usr/local/src/memcached
+exit 0

@@ -17,8 +17,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# "igbinary" installation script.
+# "snappy" installation script.
 #
+# LINK: https://code.google.com/p/snappy/
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -26,12 +27,14 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 cd /usr/local/src
-git clone git://github.com/phadej/igbinary.git
-cd igbinary
-phpize
-./configure CFLAGS="-O3" --enable-igbinary
+wget https://snappy.googlecode.com/files/snappy-1.1.0.tar.gz
+tar xzf snappy-1.1.0.tar.gz
+mv snappy-1.1.0 snappy
+rm -f snappy-1.1.0.tar.gz
+cd snappy
+./configure CFLAGS="-O3"
 make
 make test
 make install
-rm -rf /usr/local/src/igbinary
+rm -rf /usr/local/src/snappy
 exit 0

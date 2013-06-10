@@ -19,6 +19,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # PHP memcached extension installation script.
 #
+# LINK: https://github.com/php-memcached-dev/php-memcached/
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -29,13 +30,14 @@ cd /usr/local/src
 git clone git://github.com/php-memcached-dev/php-memcached.git
 cd php-memcached
 phpize
-./configure
-  CFLAGS="-O3"
-  --disable-memcached-sasl
-  --enable-memcached
-  --enable-memcached-igbinary
+./configure \
+  CFLAGS="-O3" \
+  --disable-memcached-sasl \
+  --enable-memcached \
+  --enable-memcached-igbinary \
   --enable-memcached-json
 make
 make test
 make install
 rm -rf /usr/local/src/php-memcached
+exit 0

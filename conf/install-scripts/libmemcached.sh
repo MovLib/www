@@ -33,9 +33,9 @@ tar xzf libmemcached-1.0.16.tar.gz
 mv libmemcached-1.0.16 libmemcached
 rm -f libmemcached-1.0.16.tar.gz
 cd libmemcached
-./configure
-  CFLAGS="-O3"
+./configure CFLAGS="-O3"
 make
 make test
 make install
 rm -rf /usr/local/src/libmemcached
+exit 0

@@ -17,8 +17,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# "igbinary" installation script.
+# "PHP Snappy" installation script.
 #
+# LINK: https://github.com/goatherd/php-snappy
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -26,12 +27,14 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 cd /usr/local/src
-git clone git://github.com/phadej/igbinary.git
-cd igbinary
+git clone git://github.com/goatherd/php-snappy.git
+cd php-snappy
 phpize
-./configure CFLAGS="-O3" --enable-igbinary
+./configure \
+  CFLAGS="-O3" \
+  --with-snappy
 make
 make test
 make install
-rm -rf /usr/local/src/igbinary
+rm -rf /usr/local/src/php-snappy
 exit 0
