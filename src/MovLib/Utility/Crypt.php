@@ -29,12 +29,12 @@ namespace MovLib\Utility;
 class Crypt {
 
   /**
-   * Get randomly generated hash (uses SHA512).
+   * Get randomly generated hash (uses SHA256).
    *
    * @return string
    */
   public static function getHash() {
-    return hash("sha512", mt_rand(0, mt_getrandmax()));
+    return hash("sha256", mt_rand(0, mt_getrandmax()));
   }
 
 }
