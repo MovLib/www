@@ -4,6 +4,9 @@ configuration options. Check out the `my.conf` in this folder to see our current
 file ends with `conf` to enable syntax highlighting in most editors which do not understand `cnf`. The symbolic link
 which we created ends with `cnf` (of course).
 
+## Installation
+Please use the MariaDB repository generation tool: https://downloads.mariadb.org/mariadb/repositories/
+
 ## Available options
 You can get this output from your MariaDB (or MySQL) database by issuing the command `$ mysqld --verbose --help`:
 
