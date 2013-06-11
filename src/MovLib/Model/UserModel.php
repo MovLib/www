@@ -20,7 +20,6 @@ namespace MovLib\Model;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\AbstractModel;
-use \MovLib\Utility\Crypt;
 
 /**
  * Retrieve user specific data from the database.
@@ -38,17 +37,6 @@ class UserModel extends AbstractModel {
 
 
   /**
-   * Maximum length a username can have.
-   *
-   * This length must be the same as it is defined in the database table. We redefine this here in order to validate the
-   * length of the chosen username before attempting to insert it into our database. Be sure to count the strings length
-   * with <code>mb_strlen()</code> because the length is defined per character and not per byte.
-   *
-   * @var int
-   */
-  const NAME_MAX_LENGTH = 40;
-
-  /**
    * Maximum length an email address can have.
    *
    * This length must be the same as it is defined in the database table. We redefine this here in order to validate the
@@ -58,6 +46,17 @@ class UserModel extends AbstractModel {
    * @var int
    */
   const MAIL_MAX_LENGTH = 254;
+
+  /**
+   * Maximum length a username can have.
+   *
+   * This length must be the same as it is defined in the database table. We redefine this here in order to validate the
+   * length of the chosen username before attempting to insert it into our database. Be sure to count the strings length
+   * with <code>mb_strlen()</code> because the length is defined per character and not per byte.
+   *
+   * @var int
+   */
+  const NAME_MAX_LENGTH = 40;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -115,58 +114,86 @@ class UserModel extends AbstractModel {
 
 
   /**
-   * Create new user model from unique user's ID.
+   * Instantiate new user model object.
    *
-   * @param int $id
-   *   The user's unique ID.
-   * @return $this
-   *   The user model that was created from the user's data found in the database via his unique ID.
+   * @param string $from
+   *   [Optional] Defines how the object should be filled with data. Possible <var>$from</var> values are:
+   *   <ul>
+   *     <li><em>session</em>: Try to load the user data from the session (cookie).</li>
+   *     <li><em>user_id</em>: Load the user from the given unique user ID in <var>$value</var>.</li>
+   *     <li><em>name</em>: Load the user from the given unique username in <var>$value</var>.</li>
+   *     <li><em>mail</em>: Load the user from the given unique email address in <var>$value</var>.</li>
+   *   </ul>
+   * @param mixed $value
+   *   [Optional] Should contain the data to identify the user upon loading, see description of <var>$from</var>.
+   * @throws \MovLib\Exception\ErrorException
+   * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Exception\UserException
-   *   If no user exists with the given ID.
+   *   If no user could be found for the given <var>$value</var> (if <var>$value</var> is not <tt>NULL</tt>).
    */
-  public function __constructFromId($id) {
-    return $this->constructFrom("user_id", "d", $id);
-  }
+  public function __construct($from = null, $value = null) {
+    switch ($from) {
+      case "session":
+        $this->sessionLoad();
+        return 2;
 
-  /**
-   * Create new user model from unique user's mail.
-   *
-   * @param string $mail
-   *   The user's unique mail.
-   * @return $this
-   *   The user model that was created from the user's data found in the database via his unique mail.
-   * @throws \MovLib\Exception\UserException
-   *   If no user exists with the given mail.
-   */
-  public function __constructFromMail($mail) {
-    return $this->constructFrom("mail", "s", $mail);
-  }
+      case "user_id":
+        $type = "d";
+        break;
 
-  /**
-   * Create new user model from unique user's name.
-   *
-   * @param string $name
-   *   The user's unique name.
-   * @return $this
-   *   The user model that was created from the user's data found in the database via his unique name.
-   * @throws \MovLib\Exception\UserException
-   *   If no user exists with the given name.
-   */
-  public function __constructFromName($name) {
-    return $this->constructFrom("name", "s", $name);
-  }
-
-  /**
-   * @todo Implement.
-   * @return \MovLib\Model\UserModel
-   */
-  public function __constructFromSession() {
-    return $this;
+      case "name":
+      case "mail":
+        $type = "s";
+        break;
+    }
+    if (isset($type) && $value !== null) {
+      try {
+        foreach ($this->select(
+          "SELECT
+            `user_id` AS `id`,
+            `name`,
+            `created` AS `timestampCreated`,
+            `access` AS `timestampLastAccess`,
+            `login` AS `timestampLastLogin`,
+            `deleted`,
+            `timezone`,
+            `image_id` AS `imageId`,
+            `real_name` AS `realName`,
+            `country_id` AS `countryId`,
+            `language_id` AS `languageId`
+          FROM `users`
+          WHERE `{$from}` = ?
+          LIMIT 1", $type, [ $value ]
+        )[0] as $propertyName => $propertyValue) {
+          $this->{$propertyName} = $this->{$propertyValue};
+        }
+        settype($this->deleted, "boolean");
+      } catch (ErrorException $e) {
+        throw new UserException("Could not find user for {$from} '{$value}'!", $e);
+      }
+    }
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
+
+  public function activate($hash) {
+    try {
+      $registrationData = $this->select(
+        "SELECT
+          COLUMN_GET(`dyn_data`, 'name' AS CHAR(" . self::NAME_MAX_LENGTH . ")) AS `name`,
+          COLUMN_GET(`dyn_data`, 'mail' AS CHAR(" . self::MAIL_MAX_LENGTH . ")) AS `mail`,
+          COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED)) AS `created`
+        FROM `tmp`
+          WHERE `key` = ?
+        LIMIT 1",
+        "s", [ $hash ]
+      )[0];
+    } catch (ErrorException $e) {
+      // @todo Could not find hash
+    }
+  }
 
   /**
    * Get the user's preferred ISO 639-1 alpha-2 language code.
@@ -206,29 +233,42 @@ class UserModel extends AbstractModel {
   }
 
   /**
-   * Check if a user exists with the given mail.
+   * Check if a user with the given value exists.
    *
-   * @see \MovLib\Model\UserModel::exists()
-   * @param string $mail
-   *   The mail to check.
+   * @param string $column
+   *   The column name against which the value should be checked.
+   * @param mixed $value
+   *   The user attribute to check.
+   * @param string $type
+   *   [Optional] The datatype of the column in the database, defaults to string.
    * @return boolean
-   *   <tt>TRUE</tt> if a user exists with the given mail, otherwise <tt>FALSE</tt>.
+   *   <tt>TRUE</tt> if a user exists with the given value, otherwise <tt>FALSE</tt>.
    */
-  public function mailExists($mail) {
-    return $this->exists("mail", "s", $mail);
+  public function exists($column, $value, $type = "s") {
+    return !empty($this->select("SELECT `user_id` FROM `users` WHERE `{$column}` = ? LIMIT 1", $type, [ $value ]));
   }
 
   /**
-   * Check if a user exists with the given name.
+   * Register new user for activation in our temporary database table.
    *
-   * @see \MovLib\Model\UserModel::exists()
+   * @param string $hash
+   *   The activation hash used in the activation link for identification.
    * @param string $name
-   *   The name to check.
-   * @return boolean
-   *   <tt>TRUE</tt> if a user exists with the given name, otherwise <tt>FALSE</tt>.
+   *   The valid name of the new user.
+   * @param string $mail
+   *   The valid mail of the new user.
    */
-  public function nameExists($name) {
-    return $this->exists("name", "s", $name);
+  public function register($hash, $name, $mail) {
+    // @todo Catch exceptions, log and maybe even send a mail to the user?
+    $this
+      ->prepareAndBind(
+        "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'mail', ?, 'time', NOW() + 0))",
+        "sss",
+        [ $hash, $name, $mail ]
+      )
+      ->execute()
+      ->close()
+    ;
   }
 
   /**
@@ -253,6 +293,13 @@ class UserModel extends AbstractModel {
       return $_SESSION[$key];
     }
     return $default;
+  }
+
+  /**
+   * @todo Implement
+   */
+  public function sessionLoad() {
+
   }
 
   /**
@@ -349,72 +396,6 @@ class UserModel extends AbstractModel {
     if (mb_strlen($name) > self::NAME_MAX_LENGTH) {
       return $i18n->t("The username {0} is too long: it must be {1,number,integer} characters or less.", [ $name, self::NAME_MAX_LENGTH ]);
     }
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Private Methods
-
-
-  /**
-   * Helper method for the various constructors.
-   *
-   * @param string $column
-   *   The table's column for which we search.
-   * @param string $type
-   *   The column's data type in <code>mysqli_stmt::bind_param()</code> syntax.
-   * @param mixed $value
-   *   The value for which we search.
-   * @return $this
-   * @throws \MovLib\Exception\ErrorException
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Exception\UserException
-   *   If no user could be found for the given value.
-   */
-  private function constructFrom($column, $type, $value) {
-    if ($this->id) {
-      return $this;
-    }
-    try {
-      foreach ($this->select(
-        "SELECT
-          `user_id` AS `id`,
-          `name`,
-          `created` AS `timestampCreated`,
-          `access` AS `timestampLastAccess`,
-          `login` AS `timestampLastLogin`,
-          `deleted`,
-          `timezone`,
-          `image_id` AS `imageId`,
-          `real_name` AS `realName`,
-          `country_id` AS `countryId`,
-          `language_id` AS `languageId`
-        FROM `users`
-        WHERE `{$column}` = ?
-        LIMIT 1", $type, [ $value ]
-      )[0] as $propertyName => $propertyValue) {
-        $this->{$propertyName} = $this->{$propertyValue};
-      }
-      settype($this->deleted, "boolean");
-    } catch (ErrorException $e) {
-      throw new UserException("Could not find user for {$column} '{$value}'!", $e);
-    }
-    return $this;
-  }
-
-  /**
-   * Check if a user records exists for the given value.
-   *
-   * @param string $column
-   *   The table's column for which we search.
-   * @param string $type
-   *   The column's data type in <code>mysqli_stmt::bind_param()</code> syntax.
-   * @param mixed $value
-   *   The value for which we search.
-   * @return boolean
-   *   <tt>TRUE</tt> if a record exists, otherwise <tt>FALSE</tt>.
-   */
-  private function exists($column, $type, $value) {
-    return isset($this->select("SELECT `user_id` FROM `users` WHERE `{$column}` = ? LIMIT 1", $type, [ $value ])[0]);
   }
 
 }

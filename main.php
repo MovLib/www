@@ -56,7 +56,7 @@ $delayed = [];
  *
  * @var \MovLib\Model\UserModel
  */
-$user = (new \MovLib\Model\UserModel())->__constructFromSession();
+$user = new \MovLib\Model\UserModel("session");
 
 /**
  * Create new global <em>I18n</em> instance for the locale of the user who is requesting the page.
