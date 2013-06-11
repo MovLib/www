@@ -279,7 +279,9 @@ abstract class AbstractView {
 
 
   /**
-   * Create HTML anchor element.
+   * Create HTML anchor element for MovLib internal links.
+   *
+   * <b>IMPORTANT:</b> Do not use this method to generate anchor elements for external links!
    *
    * <b>IMPORTANT:</b> Always use this method to generate crosslinks! This method ensures that no links within the
    * document point to the currently displayed document itself; as per W3C recommendation.
@@ -301,14 +303,8 @@ abstract class AbstractView {
     $isArray = is_array($titleOrAttributes);
     $route = is_array($route) ? $i18n->r($route[0], $route[1]) : $i18n->r($route);
     $text = is_array($text) ? $i18n->t($text[0], $text[1]) : $i18n->t($text);
-    // Check if given route needs a slash at the beginning.
-    if (!empty($route)) {
-      if ($route[0] !== "#" && $route[0] !== "/") {
-        $route = "/{$route}";
-      }
-    }
     // Never create a link to the current page, http://www.nngroup.com/articles/avoid-within-page-links/
-    if (empty($route) || $route === $_SERVER["REQUEST_URI"]) {
+    if ($route === $_SERVER["REQUEST_URI"]) {
       // A hash keeps the anchor element itself but removes the link to the current page—perfect!
       $route = "#";
       // Remove the title if we have one in the attributes array.
