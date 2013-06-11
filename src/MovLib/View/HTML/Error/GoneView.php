@@ -44,7 +44,7 @@ class GoneView extends AlertView {
     http_response_code(410);
     $this->setAlert(
       "<p>{$i18n->t("The requested page is no longer available.")}</p>" .
-      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a("/contact", "contact us") ])}</p>",
+      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a($i18n->r("/contact"), $i18n->t("contact us")) ])}</p>",
       $i18n->t("Gone"),
       self::ALERT_SEVERITY_ERROR,
       true

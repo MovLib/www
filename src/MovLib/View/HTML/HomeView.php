@@ -102,12 +102,12 @@ class HomeView extends AbstractView {
           "<article class='span span--4 span--home text-justify'>" .
             "<h2 class='text-center'>{$i18n->t("My MovLib")}</h2>" .
             "<p></p>" .
-            "<p class='text-center'>{$this->a("/user/sign-up", "Sign up for a new account", [ "class" => "button button--success button--large" ])}</p>" .
+            "<p class='text-center'>{$this->a($i18n->r("/user/register"), $i18n->t("Sign up for a new account"), [ "class" => "button button--success button--large" ])}</p>" .
           "</article>" .
           "<article class='span span--4 span--home text-justify'>" .
             "<h2 class='text-center'>{$i18n->t("<abbr title='Application Programming Interface'>API</abbr>")}</h2>" .
             "<p>{$i18n->t("The MovLib API is a REST interface to access the free movie library. Specifically designed for all developers out there. We want to keep the barrier as low as possible and ensure that everybody can use the data we all collect here at MovLib.")}</p>" .
-            "<p class='text-center'><a class='button button--primary button--large' href='//api.movlib.org'>{$i18n->t("Read the API documentation")}</a></p>" .
+            "<p class='text-center'><a class='button button--primary button--large' href='https://api.movlib.org/'>{$i18n->t("Read the API documentation")}</a></p>" .
           "</article>" .
         "</div>" .
       "</div>"

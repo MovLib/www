@@ -44,7 +44,7 @@ class NotFoundView extends AlertView {
     http_response_code(404);
     $this->setAlert(
       "<p>{$i18n->t("The requested page could not be found.")}</p>" .
-      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a("/contact", "contact us") ])}</p>",
+      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a($i18n->r("/contact"), $i18n->t("contact us")) ])}</p>",
       $i18n->t("Not Found"),
       self::ALERT_SEVERITY_ERROR,
       true

@@ -89,7 +89,7 @@ class MoviePresenter extends AbstractPresenter {
    */
   public function getBreadcrumb() {
     global $i18n;
-    return [[ "href" => $i18n->r("/movies"), "text" => $i18n->t("Movies") ]];
+    return [[ $i18n->r("/movies"), $i18n->t("Movies") ]];
   }
 
   /**

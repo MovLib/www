@@ -59,8 +59,8 @@ class LanguageSelectionView extends AbstractView {
     $points = [];
     foreach (I18nModel::$supportedLanguageCodes as $code) {
       $points[] = [
-        "href" => "//{$code}.{$_SERVER["SERVER_NAME"]}",
-        "text" => Locale::getDisplayLanguage($code, $code),
+        "https://{$code}.{$_SERVER["SERVER_NAME"]}/",
+        Locale::getDisplayLanguage($code, $code),
         [ "lang" => $code, "rel" => "prefetch" ]
       ];
     }
@@ -83,7 +83,10 @@ class LanguageSelectionView extends AbstractView {
     return
       "<footer id='footer'>" .
         "<div class='container text-center'>" .
-          "<p>{$i18n->t("Is your language missing from our list? Help us translate MovLib to your language. More info can be found at {0}our translation portal{1}.", [ "<a href='//localize.movlib.org'>", "</a>" ])}</p>" .
+          "<p>{$i18n->t(
+            "Is your language missing from our list? Help us translate MovLib to your language. More info can be found at {0}our translation portal{1}.",
+            [ "<a href='https://localize.{$_SERVER["SERVER_NAME"]}/'>", "</a>" ]
+          )}</p>" .
         "</div>" .
       "</footer>"
     ;

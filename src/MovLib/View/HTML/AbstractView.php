@@ -585,16 +585,16 @@ abstract class AbstractView {
    */
   public function getBreadcrumb() {
     global $i18n;
-    $points = [[ "href" => "/", "text" => $i18n->t("Home"), "title" => $i18n->t("Go back to the home page.") ]];
+    $points = [[ $i18n->r("/"), $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ]]];
     $trail = $this->presenter->getBreadcrumb();
     $trailCount = count($trail);
     if ($trailCount !== 0) {
       for ($i = 0; $i < $trailCount; ++$i) {
-        $trail[$i]["text"] = String::shorten($trail[$i]["text"], 25, $i18n->t("…"));
+        $trail[$i][1] = String::shorten($trail[$i][1], 25, $i18n->t("…"));
         $points[] = $trail[$i];
       }
     }
-    $points[] = [ "href" => $_SERVER["REQUEST_URI"], "text" => $this->title ];
+    $points[] = [ $_SERVER["REQUEST_URI"], $this->title ];
     return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, -1, " › ", [ "class" => "container text-right" ])}</div>";
   }
 

@@ -20,7 +20,9 @@ namespace MovLib\Presenter;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\UserModel;
 use \MovLib\Presenter\AbstractPresenter;
+use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMailer;
+use \MovLib\Utility\DelayedMethodCalls;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 
@@ -100,12 +102,11 @@ class UserPresenter extends AbstractPresenter {
    */
   private function __constructShow() {
     try {
-      // Try to load the user's data from the database.
       if (isset($_SERVER["USER_ID"])) {
-        $this->profile = (new UserModel())->__constructFromId($_SERVER["USER_ID"]);
+        $this->profile = new UserModel("user_id", $_SERVER["USER_ID"]);
       }
       elseif (isset($_SERVER["USER_NAME"])) {
-        $this->profile = (new UserModel())->__constructFromName($_SERVER["USER_NAME"]);
+        $this->profile = new UserModel("name", $_SERVER["USER_NAME"]);
       }
       // If this user's account is disabled, tell the client about it and exit (no need to redirect).
       if ($this->profile->deleted === true) {
@@ -133,12 +134,12 @@ class UserPresenter extends AbstractPresenter {
    *   The global user model instance.
    * @return $this
    */
-  private function __constructSignIn() {
+  private function __constructLogin() {
     global $user;
     if ($user->isLoggedIn === true) {
       return $this->setPresentation("Error\\Forbidden");
     }
-    return $this->setPresentation("User\\UserSignIn");
+    return $this->setPresentation("User\\UserLogin");
   }
 
   /**
@@ -150,42 +151,77 @@ class UserPresenter extends AbstractPresenter {
    *   The global user model instance.
    * @return $this
    */
-  private function __constructSignUp() {
+  private function __constructRegister() {
     global $i18n, $user;
     if ($user->isLoggedIn === true) {
       return $this->setPresentation("Error\\Forbidden");
     }
-    /* @var $userSignUpView \MovLib\View\HTML\User\UserSignUpView */
-    $userSignUpView = $this->getView("User\\UserSignUp");
+    /* @var $userRegisterView \MovLib\View\HTML\User\UserRegisterView */
+    $userRegisterView = $this->getView("User\\UserRegister");
     if (isset($_POST["submitted"])) {
+      // Validate email address and check if it is still available.
       if (isset($_POST["mail"])) {
         if (($error = DelayedMailer::validateEmail($_POST["mail"]))) {
-          $userSignUpView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
-        } elseif ($user->mailExists($_POST["mail"])) {
-          $userSignUpView->setAlert(
+          $userRegisterView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
+        }
+        elseif ($user->exists("mail", $_POST["mail"])) {
+          $userRegisterView->setAlert(
             $i18n->t("The email address {0} is already registered.", [ "<em>{$_POST["mail"]}</em>" ]) .
             " " .
-            $userSignUpView->a("/user/reset-password", "Have you forgotten your password?")
+            $userRegisterView->a("/user/reset-password", "Have you forgotten your password?")
           );
         }
       }
+      // Validate username and check if it is still available.
       if (isset($_POST["name"])) {
         if (($error = UserModel::validateName($_POST["name"]))) {
-          $userSignUpView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
-        } elseif ($user->nameExists($_POST["name"])) {
-          $userSignUpView->setAlert($i18n->t("The name {0} is already taken.", [ "<em>{$_POST["name"]}</em>" ]));
+          $userRegisterView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
+        }
+        elseif ($user->exists("name", $_POST["name"])) {
+          $userRegisterView->setAlert($i18n->t("The name {0} is already taken.", [ "<em>{$_POST["name"]}</em>" ]));
         }
       }
+      // If we did not find any error, send the activation link via mail to the user and tell him to check his inbox.
       if (!isset($error)) {
+        // The collision probability of SHA256 is extremely, extremely low. There is absolutely no need to generate some
+        // special hash based on the registration values or anything else. It's impossible to guess the hash and nearly
+        // impossible that our ID collides with another temporary registration waiting for activation. Also keep in mind
+        // that a temporary registration is only valid for 24 hours! If you still have concerns, read the following:
+        // {@link http://stackoverflow.com/a/4014407/1251219}
+        $activationHash = Crypt::getRandomSHA256();
+        // Delay the insert, the mail will have a much longer roundtrip than our delayed insert.
+        DelayedMethodCalls::stack($user, "register", [ $activationHash, $_POST["name"], $_POST["mail"] ]);
+        // Delay the sending of the mail as well, this is a valid registration and we want to deliver the response asap.
+        DelayedMailer::sendMail(
+          $_POST["mail"],
+          $i18n->t("Welcome to MovLib!"),
+          $i18n->t(
+"Hi {0}!
+
+Thank you for registering at MovLib. You may now log in by clicking this link or copying and pasting it to your browser:
+
+{1}
+
+This link can only be used once to log in and will lead you to a page where you can set your password.
+
+After setting your password, you will be able to log in at MovLib in the future using:
+
+email address: {2}
+password: Your password
+
+— MovLib team",
+            [ $_POST["name"], $i18n->r("/user/activate-{0}", [ $activationHash ]), $_POST["mail"] ]
+          )
+        );
         return $this->showSingleAlertAlertView(
-          $userSignUpView->getTitle(),
+          $userRegisterView->getTitle(),
           "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["mail"]) ])}</p>",
           AbstractView::ALERT_SEVERITY_SUCCESS,
           true
         );
       }
     }
-    return $this->setPresentation("User\\UserSignUp");
+    return $this->setPresentation("User\\UserRegister");
   }
 
 
@@ -207,17 +243,9 @@ class UserPresenter extends AbstractPresenter {
       return $this->{__FUNCTION__ . $this->getAction()}();
     }
     if ($user->isLoggedIn === true) {
-      return [[
-        "href" => $i18n->r("/user"),
-        "text" => $i18n->t("Profile"),
-        "title" => $i18n->t("Go to your user profile.")
-      ]];
+      return [[ $i18n->r("/user"), $i18n->t("Profile"), [ "title" => $i18n->t("Go to your user profile.") ]]];
     }
-    return [[
-      "href" => $i18n->r("/users"),
-      "text" => $i18n->t("Users"),
-      "title" => $i18n->t("Have a look at our user statistics.")
-    ]];
+    return [[ $i18n->r("/users"), $i18n->t("Users"), [ "title" => $i18n->t("Have a look at our user statistics.") ]]];
   }
 
 }
