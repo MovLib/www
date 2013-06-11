@@ -298,7 +298,10 @@ class I18nModel extends AbstractModel {
    *   If formatting the message with the given <var>$args</var> fails (only if any were passed).
    */
   public function r($route, $args = null, $options = null) {
-    return "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$this->formatMessage("route", $route, $args, $options)}";
+    if ($route !== "/") {
+      $route = $this->formatMessage("route", $route, $args, $options);
+    }
+    return "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$route}";
   }
 
   /**
