@@ -29,12 +29,27 @@ namespace MovLib\Utility;
 class Crypt {
 
   /**
-   * Get randomly generated SHA256 hash.
+   * Get randomly generated hash.
    *
+   * The collision probability of SHA1 is extremely, extremely low. There is absolutely no need to generate some special
+   * hash based on environment values or anything else. It's impossible to guess the hash and nearly impossible that the
+   * hash collides with another hash. If you still have concerns, read the following:
+   * {@link http://stackoverflow.com/a/4014407/1251219}
+   *
+   * SHA1 collision probability = (10^9)^2 / 2^(160+1) = 4.32 * 10^-31
+   *
+   * @see uniqid()
+   * @see mt_rand()
+   * @see mt_getrandmax()
+   * @see hash_algos()
+   * @param string $algo
+   *   [Optional] The algorithm that should be used to generate the random hash, defaults to SHA256. To retrieve a list
+   *   of available hashing algorithms call <code>hash_algos()</code>.
    * @return string
+   *   A randomly generated hash string.
    */
-  public static function getRandomSHA256() {
-    return hash("sha256", mt_rand(0, mt_getrandmax()));
+  public static function getRandomHash($algo = "sha1") {
+    return hash($algo, uniqid() . mt_rand(0, mt_getrandmax()));
   }
 
 }
