@@ -61,9 +61,6 @@ $supported_language_codes = \MovLib\Utility\I18n::$supportedLanguageCodes;
  */
 $default_language_code = \MovLib\Utility\I18n::getDefaultLanguageCode();
 
-// We have to make this global because we need it in the countries helper function too.
-global $default_language_code;
-
 /**
  * Helper function to translate country names.
  *
