@@ -109,7 +109,11 @@ class UserPresenter extends AbstractPresenter {
       }
       // If this user's account is disabled, tell the client about it and exit (no need to redirect).
       if ($this->profile->deleted === true) {
-        return $this->setPresentation("Error\\Gone");
+        $this->setView("Error\\Gone");
+        // @todo Display text to recreate account
+        // @todo Check if account was deleted forever
+        $this->view->setContent("Hello there!");
+        return $this->setPresentation();
       }
       // Check if the requested URI is a perfect match to what we want to have.
       if (($profileRoute = $this->profile->getProfileRoute()) && $_SERVER["REQUEST_URI"] !== $profileRoute) {
