@@ -97,6 +97,7 @@ class MoviePresenter extends AbstractPresenter {
    *
    * @param string $style
    *   The desired image style.
+   *   @todo Examples
    * @return string
    *   Absolute path to the poster art for the desired image style.
    */
