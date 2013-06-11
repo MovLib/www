@@ -51,8 +51,9 @@ class DelayedMailer {
    * @todo Send plain text and HTML mail with the MovLib logo as attachment.
    */
   public static function sendMails() {
-    foreach (self::$mails as list($to, $subject, $message)) {
-      mail($to, $subject, $message, "MIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\nFrom: \"MovLib, the free movie library.\" <noreply@movlib.org>");
+    $mailCount = count(self::$mails);
+    for ($i = 0; $i < $mailCount; ++$i) {
+      mail(self::$mails[$i][0], self::$mails[$i][1], self::$mails[$i][2]);
     }
   }
 
