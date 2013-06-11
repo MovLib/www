@@ -119,7 +119,10 @@ class DelayedLogger {
           break;
       }
       $logFile = "{$_SERVER["DOCUMENT_ROOT"]}/logs/{$logFile}.log";
-      file_put_contents($logFile, $logEntry, filesize($logFile) < self::MAX_LOG_SIZE ? 0 : FILE_APPEND);
+      if (filesize($logFile) < self::MAX_LOG_SIZE) {
+        exec("tail -n 100 {$logFile} > {$logFile}");
+      }
+      file_put_contents($logFile, $logEntry, FILE_APPEND);
     }
   }
 
