@@ -293,7 +293,7 @@ class I18nModel extends AbstractModel {
    *     <li><tt>old_pattern</tt>: default is <tt>NULL</tt>.</li>
    *   </ul>
    * @return string
-   *   The translated and formatted message.
+   *   URI: The absolute translated route.
    * @throws \MovLib\Exception\IntlException
    *   If formatting the message with the given <var>$args</var> fails (only if any were passed).
    */
@@ -301,7 +301,7 @@ class I18nModel extends AbstractModel {
     if ($route !== "/") {
       $route = $this->formatMessage("route", $route, $args, $options);
     }
-    return "{$_SERVER["REQUEST_SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$route}";
+    return "https://{$_SERVER["SERVER_NAME"]}{$route}";
   }
 
   /**
