@@ -52,7 +52,7 @@ class HTTP {
     if ($domain === null) {
       $domain = $_SERVER["SERVER_NAME"];
     }
-    header("Location: {$_SERVER["REQUEST_SCHEME"]}://{$domain}{$route}", true, $status);
+    header("Location: https://{$domain}{$route}", true, $status);
     http_response_code($status); // Ensure status is set correctly
     if ($_SERVER["REQUEST_METHOD"] !== "HEAD") {
       $title = [
