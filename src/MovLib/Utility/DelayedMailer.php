@@ -144,7 +144,7 @@ This link can only be used once to log in and will lead you to a page where you 
   private static function stack($to, $subject, $message) {
     global $delayed;
     $delayed[__CLASS__] = "sendMails";
-    self::$mails[] = [ "to" => $to, "subject" => $subject, "message" => $message ];
+    self::$mails[] = [ $to, $subject, $message ];
   }
 
 }
