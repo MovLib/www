@@ -56,8 +56,8 @@ class UserResetPasswordView extends AbstractFormView {
       "<div class='row'>" .
         "<div class='span span--6 offset--3'>" .
           "<p>" .
-            "<label for='email'>{$i18n->t("Email address")}</label>" .
-            "<input autofocus class='input input-text input--block-level' id='email' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='email' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter the email address with which you registered your account.")}' type='email' value='{$this->presenter->getPostValue("email")}'>" .
+            "<label for='mail'>{$i18n->t("Email address")}</label>" .
+            "<input autofocus class='input input-text input--block-level' id='mail' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='mail' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter the email address with which you registered your account.")}' type='email' value='{$this->presenter->getPostValue("mail")}'>" .
           "</p>" .
           "<p>" .
             "<button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t("Fill in the email address you registered with and we will generate a new secure password for you.")}' type='submit'>{$i18n->t("Reset password")}</button>" .

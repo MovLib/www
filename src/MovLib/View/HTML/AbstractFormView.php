@@ -52,10 +52,10 @@ abstract class AbstractFormView extends AbstractView {
     if (($token = $user->csrfToken)) {
       $csrf = "<input name='csrf_token' type='hidden' value='{$token}'>";
     }
-    if (isset($this->attributes["action"])) {
+    if (!isset($this->attributes["action"])) {
       $this->attributes["action"] = $_SERVER["REQUEST_URI"];
     }
-    if (isset($this->attributes["method"])) {
+    if (!isset($this->attributes["method"])) {
       $this->attributes["method"] = "post";
     }
     $this->addClass("form form-{$this->getShortName()}", $this->attributes);

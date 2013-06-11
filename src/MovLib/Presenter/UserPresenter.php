@@ -77,14 +77,14 @@ class UserPresenter extends AbstractPresenter {
     /* @var $userResetPasswordView \MovLib\View\HTML\User\UserResetPasswordView */
     $userResetPasswordView = $this->getView("User\\UserResetPassword");
     if (isset($_POST["submitted"])) {
-      if (isset($_POST["email"]) && ($error = DelayedMailer::validateEmail($_POST["email"]))) {
+      if (isset($_POST["mail"]) && ($error = DelayedMailer::validateEmail($_POST["mail"]))) {
         $userResetPasswordView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
       }
       if (!$error) {
-        DelayedMailer::sendPasswordReset($_POST["email"]);
+        DelayedMailer::sendPasswordReset($_POST["mail"]);
         $this->showSingleAlertAlertView(
           $userResetPasswordView->getTitle(),
-          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["email"]) ])}</p>",
+          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["mail"]) ])}</p>",
           AbstractView::ALERT_SEVERITY_SUCCESS,
           true
         );
@@ -154,16 +154,28 @@ class UserPresenter extends AbstractPresenter {
     /* @var $userSignUpView \MovLib\View\HTML\User\UserSignUpView */
     $userSignUpView = $this->getView("User\\UserSignUp");
     if (isset($_POST["submitted"])) {
-      if (isset($_POST["email"]) && ($error = DelayedMailer::validateEmail($_POST["email"]))) {
-        $userSignUpView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
+      if (isset($_POST["mail"])) {
+        if (($error = DelayedMailer::validateEmail($_POST["mail"]))) {
+          $userSignUpView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
+        } elseif ($user->mailExists($_POST["mail"])) {
+          $userSignUpView->setAlert(
+            $i18n->t("The email address {0} is already registered.", [ "<em>{$_POST["mail"]}</em>" ]) .
+            " " .
+            $userSignUpView->a("/user/reset-password", "Have you forgotten your password?")
+          );
+        }
       }
-      if (isset($_POST["username"]) && ($error = User::validateName($_POST["username"]))) {
-        $userSignUpView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
+      if (isset($_POST["name"])) {
+        if (($error = UserModel::validateName($_POST["name"]))) {
+          $userSignUpView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
+        } elseif ($user->nameExists($_POST["name"])) {
+          $userSignUpView->setAlert($i18n->t("The name {0} is already taken.", [ "<em>{$_POST["name"]}</em>" ]));
+        }
       }
-      if (!$error) {
-        $this->showSingleAlertAlertView(
+      if (!isset($error)) {
+        return $this->showSingleAlertAlertView(
           $userSignUpView->getTitle(),
-          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["email"]) ])}</p>",
+          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["mail"]) ])}</p>",
           AbstractView::ALERT_SEVERITY_SUCCESS,
           true
         );

@@ -201,6 +201,32 @@ class UserModel extends AbstractModel {
     return $profileRoute;
   }
 
+  /**
+   * Check if a user exists with the given mail.
+   *
+   * @see \MovLib\Model\UserModel::exists()
+   * @param string $mail
+   *   The mail to check.
+   * @return boolean
+   *   <tt>TRUE</tt> if a user exists with the given mail, otherwise <tt>FALSE</tt>.
+   */
+  public function mailExists($mail) {
+    return $this->exists("mail", "s", $mail);
+  }
+
+  /**
+   * Check if a user exists with the given name.
+   *
+   * @see \MovLib\Model\UserModel::exists()
+   * @param string $name
+   *   The name to check.
+   * @return boolean
+   *   <tt>TRUE</tt> if a user exists with the given name, otherwise <tt>FALSE</tt>.
+   */
+  public function nameExists($name) {
+    return $this->exists("name", "s", $name);
+  }
+
   public function resetPassword() {
 
   }
@@ -366,6 +392,25 @@ class UserModel extends AbstractModel {
       throw new UserException("Could not find user for {$column} '{$value}'!", $e);
     }
     return $this;
+  }
+
+  /**
+   * Check if a user records exists for the given value.
+   *
+   * @param string $column
+   *   The table's column for which we search.
+   * @param string $type
+   *   The column's data type in <code>mysqli_stmt::bind_param()</code> syntax.
+   * @param mixed $value
+   *   The value for which we search.
+   * @return boolean
+   *   <tt>TRUE</tt> if a record exists, otherwise <tt>FALSE</tt>.
+   */
+  private function exists($column, $type, $value) {
+    if ($this->id) {
+      return true;
+    }
+    return isset($this->select("SELECT `user_id` FROM `users` WHERE `{$column}` = ? LIMIT 1", $type, [ $value ])[0]);
   }
 
 }

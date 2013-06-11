@@ -57,8 +57,8 @@ class UserSignInView extends AbstractFormView {
       "<div class='row'>" .
         "<div class='span span--6 offset--3'>" .
           "<p>" .
-            "<label for='email'>{$i18n->t("Email address")}</label>" .
-            "<input autofocus class='input input-text input--block-level' id='email' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='email' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter the email address you used to register.")}' type='email' value='{$this->presenter->getPostValue("email")}'>" .
+            "<label for='mail'>{$i18n->t("Email address")}</label>" .
+            "<input autofocus class='input input-text input--block-level' id='mail' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='mail' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter the email address you used to register.")}' type='email' value='{$this->presenter->getPostValue("mail")}'>" .
           "</p>" .
           "<p>" .
             "<small>{$this->a("/user/reset-password", "Reset your password", [ "class" => "pull-right", "title" => $i18n->t("Click this link if you forgot your password."), ])}</small>" .
