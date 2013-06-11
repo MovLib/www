@@ -193,27 +193,26 @@ abstract class AbstractView {
    * Expand the given HTML element attributes for usage on an HTML element.
    *
    * @param array $attributes
-   *   [optional] The attributes that should be expanded, if array is empty, empty stirng is returned.
+   *   [Optional] The attributes that should be expanded, if array is empty, empty stirng is returned.
    * @return string
    *   Expanded attributes or empty string.
    */
   protected final function expandTagAttributes($attributes = []) {
     $expandedAttributes = "";
-    if (empty($attributes)) {
-      return $expandedAttributes;
-    }
-    foreach ($attributes as $attribute => $value) {
-      switch ($attribute) {
-        case "href":
-        case "src":
-        case "action":
-          $value = String::checkUrl($value);
-          break;
+    if (!empty($attributes)) {
+      foreach ($attributes as $attribute => $value) {
+        switch ($attribute) {
+          case "href":
+          case "src":
+          case "action":
+            $value = String::checkUrl($value);
+            break;
 
-        default:
-          $value = String::checkPlain($value);
+          default:
+            $value = String::checkPlain($value);
+        }
+        $expandedAttributes .= " {$attribute}='{$value}'";
       }
-      $expandedAttributes .= " {$attribute}='{$value}'";
     }
     return $expandedAttributes;
   }
@@ -260,18 +259,15 @@ abstract class AbstractView {
    *
    * @param string $class
    *   String of CSS classes that should be added to <var>$attributes</var>.
-   * @param array $attributes
-   *   The array containing the previously set attributes for the elment.
+   * @param null|array $attributes
+   *   The array containing the previously set attributes for the elment. If the passed variable is <tt>NULL</tt> an
+   *   array will be created.
+   * @return $this
    */
   protected final function addClass($class, &$attributes) {
-    if (!is_array($attributes)) {
-      $attributes = [];
-    }
-    if (isset($attributes["class"])) {
-      $attributes["class"] .= " {$class}";
-    } else {
-      $attributes["class"] = $class;
-    }
+    $attributes = $attributes ?: [];
+    $attributes["class"] = isset($attributes["class"]) ? "{$attributes["class"]} {$class}" : $class;
+    return $this;
   }
 
 
@@ -289,38 +285,26 @@ abstract class AbstractView {
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
    * @param string $route
-   *   The URL to which we should link (only internal routes).
+   *   The expanded URL to which we should link (only internal routes).
    * @param string $text
-   *   The text that should be displayed as anchor.
-   * @param string|array $titleOrAttributes
-   *   [Optional] If you pass along a string it is simply used as the <code>title</code>-attribute of the anchor and if
-   *   you pass along an array it will be expanded.
+   *   The already translated text that should be displayed as anchor.
+   * @param array $attributes
+   *   [Optional] Array with attributes for the anchor element (e.g. title).
    * @return string
    *   The anchor element ready for print.
    */
-  public final function a($route, $text, $titleOrAttributes = false) {
-    global $i18n;
-    $isArray = is_array($titleOrAttributes);
-    $route = is_array($route) ? $i18n->r($route[0], $route[1]) : $i18n->r($route);
-    $text = is_array($text) ? $i18n->t($text[0], $text[1]) : $i18n->t($text);
+  public final function a($route, $text, $attributes = null) {
     // Never create a link to the current page, http://www.nngroup.com/articles/avoid-within-page-links/
     if ($route === $_SERVER["REQUEST_URI"]) {
-      // A hash keeps the anchor element itself but removes the link to the current page—perfect!
+      // A hash keeps the anchor element itself valid but removes the link to the current page—perfect!
       $route = "#";
       // Remove the title if we have one in the attributes array.
-      if ($isArray === true && isset($titleOrAttributes["title"])) {
-        unset($titleOrAttributes["title"]);
+      if (isset($attributes["title"])) {
+        unset($attributes["title"]);
       }
-      // Mark this anchor-element to be active, this will also remove the title if the variable contained a string.
-      $this->addClass("active", $titleOrAttributes);
-      // Now we are dealing with an array for sure.
-      $isArray = true;
+      $this->addClass("active", $attributes);
     }
-    // Check if we are dealing with a simple title or multiple attributes.
-    if ($titleOrAttributes !== false) {
-      $titleOrAttributes = $isArray === true ? $this->expandTagAttributes($titleOrAttributes) : " title='" . String::checkPlain($titleOrAttributes) . "'";
-    }
-    return "<a href='{$route}'{$titleOrAttributes}>{$text}</a>";
+    return "<a href='{$route}'{$this->expandTagAttributes($attributes)}>{$text}</a>";
   }
 
   /**
@@ -440,26 +424,10 @@ abstract class AbstractView {
   public final function getHeaderNavigation() {
     global $i18n;
     return $this->getNavigation($i18n->t("Primary navigation"), "main", [
-      /* 0 => */[
-        "href" => $i18n->r("/movies"),
-        "text" => $i18n->t("Movies"),
-        "title" => $i18n->t("Browse all movies of this world, check out the latest additions or create a new entry yourself.")
-      ],
-      /* 1 => */[
-        "href" => $i18n->r("/series"),
-        "text" => $i18n->t("Series"),
-        "title" => $i18n->t("Browse all series of this world, check out the latest additions or create a new entry yourself.")
-      ],
-      /* 2 => */[
-        "href" => $i18n->r("/persons"),
-        "text" => $i18n->t("Persons"),
-        "title" => $i18n->t("Browse all movie related persons of this world, check out the latest additions or create a new entry yourself.")
-      ],
-      /* 3 => */[
-        "href" => $i18n->r("/marketplace"),
-        "text" => $i18n->t("Marketplace"),
-        "title" => $i18n->t("Searching for a specific release of a movie or soundtrack, this is the place to go, for free of course.")
-      ],
+      /*0*/[ $i18n->r("/movies"), $i18n->t("Movies"), [ "title" => $i18n->t("Browse all movies of this world, check out the latest additions or create a new entry yourself.") ]],
+      /*1*/[ $i18n->r("/series"), $i18n->t("Series"), [ "title" => $i18n->t("Browse all series of this world, check out the latest additions or create a new entry yourself.") ]],
+      /*2*/[ $i18n->r("/persons"), $i18n->t("Persons"), [ "title" => $i18n->t("Browse all movie related persons of this world, check out the latest additions or create a new entry yourself.") ]],
+      /*3*/[ $i18n->r("/marketplace"), $i18n->t("Marketplace"), [ "title" => $i18n->t("Searching for a specific release of a movie or soundtrack, this is the place to go, for free of course.") ]],
     ], $this->activeHeaderNavigationPoint, " <span role='presentation'>/</span> ");
   }
 
@@ -500,22 +468,9 @@ abstract class AbstractView {
       // @todo Implement logged in user navigation.
     }
     return $this->getNavigation($i18n->t("User navigation"), "user", [
-      /* 0 => */[
-        "href" => $i18n->r("/user/sign-up"),
-        "text" => $i18n->t("Sign up"),
-        "title" => $i18n->t("Click here to sign up for a new and free account."),
-      ],
-      /* 1 => */[
-        "href" => $i18n->r("/user/sign-in"),
-        "text" => $i18n->t("Sign in"),
-        "title" => $i18n->t("Already have an account? Click here to sign in."),
-      ],
-      /* 2 => */[
-        "href" => $i18n->r("/help"),
-        "text" => $i18n->t("Help"),
-        "title" => $i18n->t("If you have questions click here to find our help articles."),
-        "attributes" => [ "rel" => "help" ],
-      ],
+      /*0*/[ $i18n->r("/user/register"), $i18n->t("Register"), [ "title" => $i18n->t("Click here to create a new account.") ]],
+      /*1*/[ $i18n->r("/user/login"), $i18n->t("Login"), [ "title" => $i18n->t("Click here to log in to your account.") ]],
+      /*2*/[ $i18n->r("/help"), $i18n->t("Help"), [ "rel" => "help", "title" => $i18n->t("Click here to find our help articles.") ]],
     ], $this->activeHeaderUserNavigationPoint, " ", [ "class" => "pull-right" ]);
   }
 
@@ -527,7 +482,9 @@ abstract class AbstractView {
    * @param string $role
    *   The logic role of this navigation menu (e.g. <em>main</em>, <em>footer</em>, ...).
    * @param array $points
-   *   Numeric array containing the navigation points.
+   *   Numeric array containing the navigation points in the format:
+   *   <pre>[ 0 => route, 1 => text, 2 => attributes ]</pre>
+   *   All array offsets are mandatory; the attributes have to have an already translated title!
    * @param int $activePointIndex
    *   Index of the element within the array that should be marked active.
    * @param string $glue
@@ -540,39 +497,19 @@ abstract class AbstractView {
    *   Fully rendered navigation.
    */
   public final function getNavigation($title, $role, $points, $activePointIndex, $glue, $attributes = [], $hideTitle = true) {
+    $pointClasses = "menuitem {$role}-nav__menuitem";
     $menu = "";
     $k = count($points);
-    $attr = [ "class" => "menuitem {$role}-nav__menuitem", "role" => "menuitem" ];
     for ($i = 0; $i < $k; ++$i) {
-      if (!isset($points[$i]["attributes"])) {
-        $points[$i]["attributes"] = [];
-      }
-      $this->addClass($attr["class"], $points[$i]["attributes"]);
-      if ($i !== 0) {
-        $menu .= $glue;
-      }
-      if ($i === $activePointIndex) {
-        $this->addClass("active", $points[$i]["attributes"]);
-      }
-      if (isset($points[$i]["title"])) {
-        $points[$i]["attributes"]["title"] = $points[$i]["title"];
-      }
-      $points[$i]["attributes"]["role"] = "menuitem";
-      $menu .= $this->a($points[$i]["href"], $points[$i]["text"], $points[$i]["attributes"]);
+      $this->addClass($i === $activePointIndex ? "{$pointClasses} active" : $pointClasses, $points[$i][2]);
+      $points[$i][2]["role"] = "menuitem";
+      $menu .= ($i !== 0 ? $glue : "") . $this->a($points[$i][0], $points[$i][1], $points[$i][2]);
     }
     $this->addClass("nav {$role}-nav", $attributes);
     $attributes["role"] = "menu";
     $attributes["aria-labelledby"] = "{$role}-nav__title";
-    $titleClass = "";
-    if ($hideTitle === true) {
-      $titleClass = " class='visuallyhidden'";
-    }
-    return
-      "<nav{$this->expandTagAttributes($attributes)}>" .
-        "<h2 id='{$role}-nav__title'{$titleClass} role='presentation'>{$title}</h2>" .
-        $menu .
-      "</nav>"
-    ;
+    $hideTitle = $hideTitle === true ? " class='visuallyhidden'" : "";
+    return "<nav{$this->expandTagAttributes($attributes)}><h2 id='{$role}-nav__title'{$hideTitle} role='presentation'>{$title}</h2>{$menu}</nav>";
   }
 
   /**
@@ -589,7 +526,7 @@ abstract class AbstractView {
     return
       "<header id='sticky-header'>" .
         "<div class='row'>" .
-          "<div class='span span--3 sticky-header__span'>{$this->a("/", "MovLib", [ "class" => "logo-small inline" ])}</div>" .
+          "<div class='span span--3 sticky-header__span'>{$this->a($i18n->r("/"), "MovLib", [ "class" => "logo-small inline" ])}</div>" .
           "<div class='span span--3 sticky-header__span'>" .
             "<form action='{$i18n->r("/search")}' class='search search-sticky-header' method='post' role='search'>" .
               "<input class='input input-text input-search search-sticky-header__input-search' placeholder='{$i18n->t("Search…")}' role='textbox' title='{$i18n->t("Enter the search term you wish to search for and hit enter.")}' type='search'>" .
@@ -678,24 +615,24 @@ abstract class AbstractView {
             "<div class='span span--3'>" .
               "<h3>MovLib</h3>" .
               "<ul class='no-list'>" .
-                "<li class='item-first'>{$this->a("/about", "About", $i18n->t("Find out more about us."))}</li>" .
-                "<li>{$this->a("/blog", "Blog", $i18n->t("Stay up to date about the latest developments."))}</li>" .
-                "<li>{$this->a("/contact", "Contact", $i18n->t("Feedback is always welcome, no matter if positive or negative."))}</li>" .
-                "<li>{$this->a("/resources", "Logos and Badges", $i18n->t("If you want to create something awesome."))}</li>" .
-                "<li class='item-last'>{$this->a("/legal", "Legal", $i18n->t("Collection of the various legal terms and conditions."))}</li>" .
+                "<li class='item-first'>{$this->a($i18n->r("/about"), $i18n->t("About"), [ "title" => $i18n->t("Find out more about us.") ])}</li>" .
+                "<li>{$this->a($i18n->r("/blog"), $i18n->t("Blog"), [ "title" => $i18n->t("Stay up to date about the latest developments.") ])}</li>" .
+                "<li>{$this->a($i18n->r("/contact"), $i18n->t("Contact"), [ "title" => $i18n->t("Feedback is always welcome, no matter if positive or negative.") ])}</li>" .
+                "<li>{$this->a($i18n->r("/resources"), $i18n->t("Logos and Badges"), [ "title" => $i18n->t("If you want to create something awesome.") ])}</li>" .
+                "<li class='item-last'>{$this->a($i18n->r("/legal"), $i18n->t("Legal"), [ "title" => $i18n->t("Collection of the various legal terms and conditions.") ])}</li>" .
               "</ul>" .
             "</div>" .
             "<div class='span span--3'>" .
               "<h3>{$i18n->t("Join in")}</h3>" .
               "<ul class='no-list'>" .
-                "<li class='item-first item-last'>{$this->a("/user/sign-up", "Sign up", $i18n->t("Become a member and help building the biggest free movie library in this world."))}</li>" .
+                "<li class='item-first item-last'>{$this->a($i18n->r("/user/register"), $i18n->t("Register"), [ "title" => $i18n->t("Click here to create a new account.") ])}</li>" .
               "</ul>" .
             "</div>" .
             "<div class='span span--3'></div>" .
             "<div class='span span--3'>" .
               "<h3>{$i18n->t("Get help")}</h3>" .
               "<ul class='no-list'>" .
-                "<li class='item-first item-last'>{$this->a("/help", "Help", $i18n->t("If you have questions click here to find our help articles."))}</li>" .
+                "<li class='item-first item-last'>{$this->a($i18n->r("/help"), $i18n->t("Help"), [ "title" => $i18n->t("Click here to find our help articles.") ])}</li>" .
               "</ul>" .
             "</div>" .
           "</div>" .
@@ -711,7 +648,7 @@ abstract class AbstractView {
             )}<br>" .
             $i18n->t(
               "By using this site, you agree to the {0} and {1}.",
-              [ $this->a("/terms-of-use", "Terms of Use"), $this->a("/privacy-policy", "Privacy Policy") ],
+              [ $this->a($i18n->r("/terms-of-use"), $i18n->t("Terms of Use")), $this->a($i18n->r("/privacy-policy"), $i18n->t("Privacy Policy")) ],
               "<tt>{0}</tt> is <em>Terms of Use</em> and <tt>{1}</tt> is <em>Privacy Policy</em>."
             ) .
           "</div>" .
@@ -735,11 +672,11 @@ abstract class AbstractView {
    */
   public function getHeaderLogo() {
     global $i18n;
-    return $this->a("/", "MovLib <small>the <em>free</em> movie library</small>", [
-      "id" => "logo",
-      "class" => "inline",
-      "title" => $i18n->t("Go back to the home page.")
-    ]);
+    return $this->a(
+      $i18n->r("/"),
+      $i18n->t("MovLib <small>the <em>free</em> movie library</small>"),
+      [ "id" => "logo", "class" => "inline", "title" => $i18n->t("Go back to the home page.") ]
+    );
   }
 
   /**
