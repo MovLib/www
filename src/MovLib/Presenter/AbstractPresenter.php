@@ -259,7 +259,7 @@ abstract class AbstractPresenter {
    * @return $this
    */
   protected function showSingleAlertAlertView($title, $message, $severity = "warning", $block = false) {
-    $this->view = (new AlertView($this, $title))->setAlert($message, $title, $severity, $block);
+    $this->view = (new AlertView($this, $title))->setAlert($message, "", $severity, $block);
     return $this;
   }
 

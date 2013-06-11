@@ -20,6 +20,7 @@ namespace MovLib\Model;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\AbstractModel;
+use \MovLib\Utility\Crypt;
 
 /**
  * Retrieve user specific data from the database.
@@ -310,12 +311,7 @@ class UserModel extends AbstractModel {
   public function sessionStart() {
     if (session_status() === PHP_SESSION_NONE) {
       session_start();
-      // The SSL session ID is already a unique string, plus the CSRF token is only valid in combination with the user's
-      // session. Using only the first 128 characters ensures that the CSRF token doesn't use a lot of space within our
-      // Memcached session database. Using a simple sub-string instead of hashing makes this method fast.
-      //
-      // @link http://security.stackexchange.com/questions/37243
-      $this->csrfToken = substr($_SERVER["SSL_SESSION_ID"], 0, 128);
+      $this->csrfToken = Crypt::getRandomHash();
       $this->sessionStore("csrf_token", $this->csrfToken);
     }
     return $this;

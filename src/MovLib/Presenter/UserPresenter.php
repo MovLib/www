@@ -183,12 +183,7 @@ class UserPresenter extends AbstractPresenter {
       }
       // If we did not find any error, send the activation link via mail to the user and tell him to check his inbox.
       if (!isset($error)) {
-        // The collision probability of SHA256 is extremely, extremely low. There is absolutely no need to generate some
-        // special hash based on the registration values or anything else. It's impossible to guess the hash and nearly
-        // impossible that our ID collides with another temporary registration waiting for activation. Also keep in mind
-        // that a temporary registration is only valid for 24 hours! If you still have concerns, read the following:
-        // {@link http://stackoverflow.com/a/4014407/1251219}
-        $activationHash = Crypt::getRandomSHA256();
+        $activationHash = Crypt::getRandomHash();
         // Delay the insert, the mail will have a much longer roundtrip than our delayed insert.
         DelayedMethodCalls::stack($user, "register", [ $activationHash, $_POST["name"], $_POST["mail"] ]);
         // Delay the sending of the mail as well, this is a valid registration and we want to deliver the response asap.
