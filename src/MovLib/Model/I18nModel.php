@@ -25,7 +25,7 @@ use \MovLib\Utility\DelayedLogger;
 use \MovLib\Utility\DelayedMethodCalls;
 
 /**
- * Description of I18nModel
+ * @todo Description of I18nModel
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m:2012@fh-salzburg.ac.at>
@@ -144,6 +144,14 @@ class I18nModel extends AbstractModel {
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
+  /**
+   * @todo Documentation
+   * @param type $context
+   * @param type $pattern
+   * @param type $args
+   * @param type $options
+   * @return type
+   */
   public function formatMessage($context, $pattern, $args, $options) {
     $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
     if ($languageCode !== $this->getDefaultLanguageCode()) {
@@ -259,7 +267,7 @@ class I18nModel extends AbstractModel {
       ->close()
     ;
     // If affected rows is zero the translation was already present and exactly the same as was asked to update.
-    if ($this->affectedRows < 0) {
+    if ($this->affectedRows === -1) {
       $exception = new DatabaseException("Could not insert nor update {$languageCode} translation for {$context} with ID '{$id}'");
       DelayedLogger::logException($exception);
       throw $exception;
@@ -268,7 +276,7 @@ class I18nModel extends AbstractModel {
   }
 
   /**
-   * Translate the given pattern.
+   * Translate the given route.
    *
    * @param string $route
    *   A simple string that should be translated or an advanced Intl ICU pattern. Read the official Intl ICU
@@ -294,7 +302,7 @@ class I18nModel extends AbstractModel {
   }
 
   /**
-   * Translate the given pattern.
+   * Translate the given message.
    *
    * @param string $message
    *   A simple string that should be translated or an advanced Intl ICU pattern. Read the official Intl ICU

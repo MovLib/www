@@ -108,12 +108,12 @@ $mysqli->select_db("movlib");
 // Insert data into database.
 foreach ($codes as $table => $data) {
   $data_count = count($data) - 1;
-  $query = "";
+  $values = "";
   $bind_param_args = [ "" ];
   $names = [];
   for ($i = 0; $i <= $data_count; ++$i) {
     $names[$i]["_"] = call_user_func("translate_{$table}", $data[$i], $default_language_code);
-    $query .= "(?, ?, COLUMN_CREATE(";
+    $values .= "(?, ?, COLUMN_CREATE(";
     $bind_param_args[0] .= "ss";
     $bind_param_args[] = &$data[$i];
     $bind_param_args[] = &$names[$i]["_"];
@@ -121,29 +121,34 @@ foreach ($codes as $table => $data) {
     $supported_language_codes_count = count($supported_language_codes);
     for ($j = 0; $j < $supported_language_codes_count; ++$j) {
       $names[$i][$j] = call_user_func("translate_{$table}", $data[$i], $supported_language_codes[$j]);
-      $query .= "{$comma}?, ?";
+      $values .= "{$comma}?, ?";
       $bind_param_args[0] .= "ss";
       $bind_param_args[] = &$supported_language_codes[$j];
       $bind_param_args[] = &$names[$i][$j];
       $comma = ", ";
     }
-    $query .= "))";
+    $values .= "))";
     if ($i < $data_count) {
-      $query .= ", ";
+      $values .= ", ";
     }
   }
   if (($stmt = $mysqli->prepare(
     "INSERT
       INTO `{$table}` (`iso_alpha-2`, `name`, `dyn_translations`)
-      VALUES {$query}
+      VALUES {$values}
       ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)
     "
   )) === false) {
-    $error = $mysqli->error;
+    $error = "{$mysqli->error} ({$mysqli->errno})";
     $mysqli->close();
     exit($error . PHP_EOL);
   }
-  call_user_func_array([ $stmt, "bind_param" ], $bind_param_args);
+  if (call_user_func_array([ $stmt, "bind_param" ], $bind_param_args) === false) {
+    $error = "{$stmt->error} ({$stmt->errno})";
+    $stmt->close();
+    $mysqli->close();
+    exit($error . PHP_EOL);
+  }
   $stmt->execute();
   $stmt->close();
 }

@@ -101,7 +101,7 @@ abstract class AbstractPresenter {
   /**
    * Get the <var>$_SERVER["ACTION"]</var> as string to initialize object.
    *
-   * This can be used to retrieve the value of <var>$_SERVER["ACTION"]</var> in CamelCase and therefor use it to
+   * This can be used to retrieve the value of <var>$_SERVER["ACTION"]</var> in CamelCase and therefore use it to
    * instanciate a class. The value itself is extracted via nginx from the requested URL and passed along as FastCGI
    * parameter. So for instead you might have a requested URL like <tt>/user/sign_up</tt>, <tt>sign_up</tt> will be the
    * action and this method will return <tt>SignUp</tt> so one can simply concatenate it.

@@ -767,7 +767,7 @@ abstract class AbstractView {
   }
 
   /**
-   * Get the content wrapped in the outter content <tt>div</tt>.
+   * Get the content wrapped in the outer content <tt>div</tt>.
    *
    * @return string
    *   The rendered content ready for print.

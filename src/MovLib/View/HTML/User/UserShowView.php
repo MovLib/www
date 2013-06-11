@@ -20,7 +20,7 @@ namespace MovLib\View\HTML\User;
 use \MovLib\View\HTML\AbstractView;
 
 /**
- * Description of UserShowView
+ * @todo Description of UserShowView
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib

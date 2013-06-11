@@ -208,7 +208,7 @@ abstract class AbstractModel {
    * @param string $types
    *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
    * @param array $values
-   *   The values that should be inserted.
+   *   The values that should be bound to the <tt>WHERE</tt> parameters.
    * @return array
    *   The query result as associative array.
    * @throws \Exception

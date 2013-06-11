@@ -25,7 +25,7 @@ use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 
 /**
- *
+ * @todo Description.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib

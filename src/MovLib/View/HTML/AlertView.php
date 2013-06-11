@@ -22,7 +22,7 @@ use \MovLib\View\HTML\AbstractView;
 /**
  * Special view without any content (by default) for displaying alert messages.
  *
- * A presenter insert HTML mark-up in the content of such a view by utilizing the <code>AlertView::setContent()</code>
+ * A presenter inserts HTML mark-up in the content of such a view by utilizing the <code>AlertView::setContent()</code>
  * method.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>

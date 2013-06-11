@@ -41,7 +41,7 @@ class FileSystem {
    * separator.
    *
    * @staticvar string $tmpDir
-   *   Used to store the absolut path, to make sure the check regarding the last character does not have to be made over
+   *   Used to store the absolute path, to make sure the check regarding the last character does not have to be made over
    *   and over again.
    * @return string
    *   The absolute path to the operating systems specific temporary path (no trailing directory separator).
@@ -75,7 +75,7 @@ class FileSystem {
    }
 
   /**
-   * Create a temporary copy of the file.
+   * Create a temporary copy of a file.
    *
    * @param string $source
    *   Absolute path or URL to the source file of which a temporary copy should be created.

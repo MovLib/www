@@ -6,12 +6,12 @@
 
   Developer: Markus Deutschl, BSc
   Contact: mdeutschl.mmt-m2012 [at] fh-salzburg.ac.at
-  From: ?, Styria, Austria
+  From: Afling, Styria, Austria
 
   Developer: Franz Torghele, BSc
   Contact: ftorghele.mmt-m2012 [at] fh-salzburg.ac.at
   Website: http://www.torghele.at/
-  From: ?, Salzburg, Austria
+  From: Piesendorf, Salzburg, Austria
 
   Manager: Sebastian Geschke, BSc
   Contact: sgeschke.mmt-m2012 [at] fh-salzburg.ac.at

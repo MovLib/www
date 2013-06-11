@@ -18,7 +18,7 @@
 namespace MovLib\Utility;
 
 /**
- * Description of String
+ * @todo Description of String
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -132,11 +132,11 @@ class String {
    * <pre>String::shorten("extremely long string", 5, __("…"));</pre>
    *
    * @param string $string
-   *   The strong to shorten.
+   *   The string to shorten.
    * @param int $length
    *   The length the string shall not exceed.
    * @param string $append
-   *   String to append if the string exceeds <var>$length</var>.
+   *   [Optional] String to append if the string exceeds <var>$length</var>. Defaults to an empty string.
    * @return string
    *   The string as is if it does not exceed <var>$length</var>, otherwise the shortened string with <var>$append</var>
    *   appended to the end of the string.

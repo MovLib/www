@@ -156,6 +156,10 @@ class UserModel extends AbstractModel {
     return $this->constructFrom("name", "s", $name);
   }
 
+  /**
+   * @todo Implement.
+   * @return \MovLib\Model\UserModel
+   */
   public function __constructFromSession() {
     return $this;
   }
@@ -227,6 +231,9 @@ class UserModel extends AbstractModel {
     return $this->exists("name", "s", $name);
   }
 
+  /**
+   * @todo Implement.
+   */
   public function resetPassword() {
 
   }
@@ -275,7 +282,7 @@ class UserModel extends AbstractModel {
    * @param mixed $key
    *   Unique key for identification.
    * @param mixed $value
-   *   The value to store under key.
+   *   The value to store under the key.
    * @return $this
    * @throws \MovLib\Exception\UserException
    *   If the session is not active.
@@ -407,9 +414,6 @@ class UserModel extends AbstractModel {
    *   <tt>TRUE</tt> if a record exists, otherwise <tt>FALSE</tt>.
    */
   private function exists($column, $type, $value) {
-    if ($this->id) {
-      return true;
-    }
     return isset($this->select("SELECT `user_id` FROM `users` WHERE `{$column}` = ? LIMIT 1", $type, [ $value ])[0]);
   }
 

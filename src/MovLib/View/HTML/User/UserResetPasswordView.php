@@ -21,7 +21,7 @@ use \MovLib\Model\UserModel;
 use \MovLib\View\HTML\AbstractFormView;
 
 /**
- * Description of UserResetPasswordView
+ * @todo Description of UserResetPasswordView
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
