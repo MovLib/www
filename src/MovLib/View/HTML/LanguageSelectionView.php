@@ -61,14 +61,14 @@ class LanguageSelectionView extends AbstractView {
       $points[] = [
         "href" => "//{$code}.{$_SERVER["SERVER_NAME"]}",
         "text" => Locale::getDisplayLanguage($code, $code),
-        [ "lang" => $code ]
+        [ "lang" => $code, "rel" => "prefetch" ]
       ];
     }
     return
       "<div id='content' class='{$this->getShortName()}-content' role='main'>" .
         "<div class='container text-center'>" .
-          "<h1 lang='{$i18n->languageCode}' class='inline text-left'>{$i18n->t("MovLib <small>the <em>free</em> movie library.</small>")}</h1>" .
-          "<p lang='{$i18n->languageCode}'>{$i18n->t("Please select your preferred language from the list below.")}</p>" .
+          "<h1 class='inline text-left'>{$i18n->t("MovLib <small>the <em>free</em> movie library.</small>")}</h1>" .
+          "<p>{$i18n->t("Please select your preferred language from the list below.")}</p>" .
           $this->getNavigation($i18n->t("Language links"), $this->getShortName(), $points, -1, " / ", [ "class" => "well well--large" ]) .
         "</div>" .
       "</div>"
@@ -83,7 +83,7 @@ class LanguageSelectionView extends AbstractView {
     return
       "<footer id='footer'>" .
         "<div class='container text-center'>" .
-          "<p lang='{$i18n->languageCode}'>{$i18n->t("Is your language missing from our list? Help us translate MovLib to your language. More info can be found at {0}our translation portal{1}.", [ "<a href='//localize.movlib.org'>", "</a>" ])}</p>" .
+          "<p>{$i18n->t("Is your language missing from our list? Help us translate MovLib to your language. More info can be found at {0}our translation portal{1}.", [ "<a href='//localize.movlib.org'>", "</a>" ])}</p>" .
         "</div>" .
       "</footer>"
     ;
