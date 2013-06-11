@@ -401,6 +401,7 @@ abstract class AbstractView {
         "<link rel='icon' type='image/png' sizes='32x32' href='/assets/img/logo/32.png'>" .
         "<link rel='icon' type='image/png' sizes='24x24' href='/assets/img/logo/24.png'>" .
         "<link rel='icon' type='image/png' sizes='16x16' href='/assets/img/logo/16.png'>" .
+        // @todo Add opensearch tag (rel="search").
         "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
       "</head>" .
       "<body class='{$bodyClass}' role='{$ariaRole}'>"
@@ -517,6 +518,7 @@ abstract class AbstractView {
         "href" => $i18n->r("/help"),
         "text" => $i18n->t("Help"),
         "title" => $i18n->t("If you have questions click here to find our help articles."),
+        "attributes" => [ "rel" => "help" ],
       ],
     ], $this->activeHeaderUserNavigationPoint, " ", [ "class" => "pull-right" ]);
   }
