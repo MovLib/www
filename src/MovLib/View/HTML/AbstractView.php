@@ -121,7 +121,7 @@ abstract class AbstractView {
    *
    * @var string
    */
-  protected $title = "";
+  public $title = "";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constructor
@@ -242,16 +242,6 @@ abstract class AbstractView {
   protected final function getTabindex() {
     static $tabindex = 1;
     return $tabindex++;
-  }
-
-  /**
-   * Get the title of this view.
-   *
-   * @return string
-   *   The title of this view.
-   */
-  public final function getTitle() {
-    return $this->title;
   }
 
   /**
@@ -545,27 +535,31 @@ abstract class AbstractView {
    *
    * @link http://www.w3.org/TR/wai-aria/roles#alert
    * @link http://www.w3.org/TR/wai-aria/states_and_properties#aria-live
-   * @param string $message
-   *   The message that should be displayed to the user.
-   * @param string $title
-   *   [optional] [recommended] Short descriptive title that summarizes the alert, defaults to no title at all.
+   * @param string|array $message
+   *   The message that should be displayed to the user. If you want a title for this alert message (recommended if
+   *   displaying block messages) pass an associative array with <em>message</em> and <em>title</em> keys.
    * @param string $severity
-   *   [optional] The severity level of this alert, defaults to <var>AbstractView::ALERT_SEVERITY_WARNING</var>.
+   *   [Optional] The severity level of this alert, defaults to <var>AbstractView::ALERT_SEVERITY_WARNING</var>.
    * @param boolean $block
-   *   [optional] If your message is very long, or your alert is very important, increase the padding around the message
+   *   [Optional] If your message is very long, or your alert is very important, increase the padding around the message
    *   and enclose the title in a level-4 heading instead of the bold tag.
    * @return \MovLib\View\HTML\AbstractView
    */
-  public final function setAlert($message, $title = "", $severity = self::ALERT_SEVERITY_WARNING, $block = false) {
-    if (empty($title) === false) {
+  public final function setAlert($message, $severity = self::ALERT_SEVERITY_WARNING, $block = false) {
+    $title = "";
+    if (is_array($message)) {
+      $title = $message["title"];
+      $message = $message["message"];
+    }
+    if (!empty($title)) {
       $tag = ($block === true) ? "h4" : "b";
-      $title = "<{$tag} class='alert__title'>{$title}</{$tag}>";
+      $title = "<{$tag} class='alert__title'>{$title}</{$tag}> ";
     }
     $class = "";
     if ($block === true) {
       $class .= " alert--block";
     }
-    $this->alerts[] = "<div class='alert alert--{$severity}{$class}' role='alert'>{$title} {$message}</div>";
+    $this->alerts[] = "<div class='alert alert--{$severity}{$class}' role='alert'>{$title}{$message}</div>";
     return $this;
   }
 

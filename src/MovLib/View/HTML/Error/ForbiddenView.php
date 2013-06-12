@@ -45,7 +45,6 @@ class ForbiddenView extends AlertView {
     $this->setAlert(
       "<p>{$i18n->t("Access to the requested page is forbidden.")}</p>" .
       "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a($i18n->r("/contact"), $i18n->t("contact us")) ])}</p>",
-      $i18n->t("Forbidden"),
       self::ALERT_SEVERITY_ERROR,
       true
     );

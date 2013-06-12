@@ -51,18 +51,20 @@ class ExceptionView extends AlertView {
     $this->setAlert(
       "<p>{$i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered.")}</p>" .
       "<p>{$i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes.")}</p>",
-      "",
       self::ALERT_SEVERITY_ERROR,
       true
     );
     /*DEBUG{{{*/
     $this->setAlert(
-      "<div class='stacktrace'>" .
-        "<div class='stacktrace__title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
-        "<table class='stacktrace__table'>{$this->formatStacktrace($exception->getTrace())}</table>" .
-      "</div>" .
-      "<p class='text-center'><small>Debug information is only available if debugging is activated during bootstrap phase!</small></p>",
-      "Stacktrace",
+      [
+        "title" => "Stacktrace",
+        "message" =>
+          "<div class='stacktrace'>" .
+            "<div class='stacktrace__title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
+            "<table class='stacktrace__table'>{$this->formatStacktrace($exception->getTrace())}</table>" .
+          "</div>" .
+          "<p class='text-center'><small>Debug information is only available if debugging is activated during bootstrap phase!</small></p>"
+      ],
       self::ALERT_SEVERITY_INFO,
       true
     );
