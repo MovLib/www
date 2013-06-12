@@ -17,8 +17,6 @@
  */
 namespace MovLib\Utility;
 
-use \MovLib\Entity\User;
-
 /**
  * Delayed mail system.
  *
@@ -50,55 +48,35 @@ class DelayedMailer {
    *
    * @todo Send plain text and HTML mail with the MovLib logo as attachment.
    */
-  public static function sendMails() {
+  public static function run() {
+    global $i18n;
+    $headers = implode("\r\n", [
+      "MIME-Version: 1.0",
+      "Content-Type: text/plain; charset=utf-8"
+    ]);
+    $signature = "\n\n— {$i18n->t("MovLib, the free movie library.")}";
     $mailCount = count(self::$mails);
     for ($i = 0; $i < $mailCount; ++$i) {
-      mail(self::$mails[$i][0], self::$mails[$i][1], self::$mails[$i][2]);
+      mail(self::$mails[$i][0], self::$mails[$i][1], self::$mails[$i][2] . $signature, $headers);
     }
   }
 
   /**
    * Send mail.
    *
-   * @see \MovLib\Utility\DelayedMailer::stack()
+   * @global array $delayed
+   *   Global array to collect delayed classes.
    * @param string $to
    *   Receiver of the mail, must comply with RFC 2822.
    * @param string $subject
-   *   Subject of the email to be sent, must comply with RFC 2047.
+   *   Subject of the mail to be sent, must comply with RFC 2047.
    * @param string $message
    *   Message to be sent.
    */
-  public static function sendMail($to, $subject, $message) {
-    self::stack($to, $subject, $message);
-  }
-
-  /**
-   * Send password reset email.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n instance.
-   * @param string $userEmail
-   *   Email address of the user that requested the password reset.
-   */
-  public static function sendPasswordReset($userEmail) {
-    global $i18n;
-    /* @var $user \MovLib\Entity\User */
-    $user = (new User())->__constructFromEmail($userEmail);
-    self::stack([
-      "to" => $user->getEmail(),
-      "subject" => $i18n->t("Password reset request"),
-      "message" => $i18n->t("Hello {0}!
-
-You (or someone else) has requested to reset the password for your account.
-
-You may now log in by clicking this link or copying and pasting it to your browser.
-
-{1}
-
-This link can only be used once to log in and will lead you to a page where you can set your password. If you have not requested this password reset simply ignore this email.
-
-— {2}", [ $user->name , "https://{$_SERVER["SERVER_NAME"]}/", $i18n->t("MovLib, the free movie library.") ])
-    ]);
+  public static function stack($to, $subject, $message) {
+    global $delayed;
+    $delayed[__CLASS__] = "run";
+    self::$mails[] = [ $to, $subject, $message ];
   }
 
   /**
@@ -124,28 +102,6 @@ This link can only be used once to log in and will lead you to a page where you 
     if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
       return $i18n->t("The email address is not valid.");
     }
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Private Static Methods
-
-
-  /**
-   * Add new mail message to send after the response was sent to the user to the stack.
-   *
-   * @global array $delayed
-   *   The array to collect delayed class names and method names.
-   * @param string $to
-   *   Receiver of the mail, must comply with RFC 2822.
-   * @param string $subject
-   *   Subject of the email to be sent, must comply with RFC 2047.
-   * @param string $message
-   *   Message to be sent.
-   */
-  private static function stack($to, $subject, $message) {
-    global $delayed;
-    $delayed[__CLASS__] = "sendMails";
-    self::$mails[] = [ $to, $subject, $message ];
   }
 
 }
