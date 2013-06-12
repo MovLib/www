@@ -71,7 +71,7 @@ class DelayedLogger {
   /**
    * Writes all log entries from the stack to the appropriate log file on the filesystem.
    */
-  public static function writeLogEntries() {
+  public static function run() {
     $logEntries = [];
     // Generate log entries from stack (unpacking of nested arrays is only available in PHP 5.5+).
     foreach (self::$logEntries as list($type, $date, $logEntry, $level)) {
@@ -103,7 +103,7 @@ class DelayedLogger {
             "movdev@movlib.org",
             "IMPORTANT! A {$level} message was just logged.",
             "<p>Here is the message that was logged:</p><pre>" . String::checkPlain($logEntry) . "</pre>",
-            DelayedMailer::HTML_HEADER_NOREPLY
+            "MIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n"
           );
           break;
 
@@ -119,7 +119,7 @@ class DelayedLogger {
           break;
       }
       $logFile = "{$_SERVER["DOCUMENT_ROOT"]}/logs/{$logFile}.log";
-      if (filesize($logFile) < self::MAX_LOG_SIZE) {
+      if (filesize($logFile) >= self::MAX_LOG_SIZE) {
         exec("tail -n 100 {$logFile} > {$logFile}");
       }
       file_put_contents($logFile, $logEntry, FILE_APPEND);
@@ -161,8 +161,6 @@ class DelayedLogger {
   /**
    * Add log entry to stack.
    *
-   * @global array $delayed
-   *   The array to collect delayed class names and method names.
    * @param mixed $message
    *   The log entry's message or object containing the message.
    * @param string $level
@@ -172,8 +170,6 @@ class DelayedLogger {
    * @return $this
    */
   private static function stack($message, $level, $type = self::LOGTYPE_DEFAULT) {
-    global $delayed;
-    $delayed[__CLASS__] = "writeLogEntries";
     self::$logEntries[] = [ $type, date("Y-m-d H:i:s"), $message, $level ];
   }
 
