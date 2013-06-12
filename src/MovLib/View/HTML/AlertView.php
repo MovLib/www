@@ -38,25 +38,13 @@ class AlertView extends AbstractView {
    *
    * @var string
    */
-  private $content;
+  public $content;
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
     return $this->content;
-  }
-
-  /**
-   * Additional content to display that is not wrapped in an alert box.
-   *
-   * @param string $content
-   *   HTML mark-up.
-   * @return $this
-   */
-  public function setContent($content) {
-    $this->content = $content;
-    return $this;
   }
 
 }
