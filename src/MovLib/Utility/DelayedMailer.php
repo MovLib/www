@@ -17,6 +17,9 @@
  */
 namespace MovLib\Utility;
 
+use \MovLib\Exception\UserException;
+use \MovLib\Model\UserModel;
+
 /**
  * Delayed mail system.
  *
@@ -39,6 +42,13 @@ class DelayedMailer {
    */
   private static $mails = [];
 
+  /**
+   * Array used to collect all mailer methods that should be called before sending a mail
+   *
+   * @var array
+   */
+  private static $methods = [];
+
 
   // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
 
@@ -50,22 +60,22 @@ class DelayedMailer {
    */
   public static function run() {
     global $i18n;
+    foreach (self::$methods as list($method, $params)) {
+      call_user_func_array("self::{$method}", $params);
+    }
     $headers = implode("\r\n", [
       "MIME-Version: 1.0",
       "Content-Type: text/plain; charset=utf-8"
     ]);
     $signature = "\n\n— {$i18n->t("MovLib, the free movie library.")}";
-    $mailCount = count(self::$mails);
-    for ($i = 0; $i < $mailCount; ++$i) {
-      mail(self::$mails[$i][0], self::$mails[$i][1], self::$mails[$i][2] . $signature, $headers);
+    foreach (self::$mails as list($to, $subject, $message)) {
+      mail($to, $subject, $message . $signature, $headers);
     }
   }
 
   /**
-   * Send mail.
+   * Add a mail to the stack.
    *
-   * @global array $delayed
-   *   Global array to collect delayed classes.
    * @param string $to
    *   Receiver of the mail, must comply with RFC 2822.
    * @param string $subject
@@ -73,10 +83,123 @@ class DelayedMailer {
    * @param string $message
    *   Message to be sent.
    */
-  public static function stack($to, $subject, $message) {
-    global $delayed;
-    $delayed[__CLASS__] = "run";
+  public static function stackMail($to, $subject, $message) {
+    delayed_register(__CLASS__, 0);
     self::$mails[] = [ $to, $subject, $message ];
+  }
+
+  /**
+   * Add a mail method to the stack that should be called before sending the mail.
+   *
+   * @param string $method
+   *   The name of the method within the delayed mailer class that should be called before sending the mail.
+   * @param array $params
+   *   Array containing the parameters that should be passed to the method.
+   */
+  public static function stackMethod($method, $params = []) {
+    delayed_register(__CLASS__, 0);
+    self::$methods[] = [ $method, $params ];
+  }
+
+  /**
+   * Set the activation mail.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   Global i18n model instance.
+   * @param string $hash
+   *   The activation hash of the user.
+   * @param string $name
+   *   The valid name of the user.
+   * @param string $to
+   *   The valid mail of the user.
+   */
+  public static function setActivationMail($hash, $name, $to) {
+    global $i18n;
+    self::$mails[] = [
+      $to,
+      $i18n->t("Welcome to MovLib!"),
+      $i18n->t(
+"Hi {0}!
+
+Thank you for registering at MovLib. You may now log in by clicking this link or copying and pasting it to your browser:
+
+{1}
+
+This link can only be used once to log in and will lead you to a page where you can set your password.
+
+After setting your password, you will be able to log in at MovLib in the future using:
+
+Email address:  {2}
+Password:       Your password",
+        [ $name, $i18n->r("/user/activate-{0}", [ $hash ]) , $to ]
+      )
+    ];
+  }
+
+  /**
+   * Set the mail that should be sent if somebody requests a new account for a mail that is already registered.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @param string $mail
+   *   The already registered valid mail.
+   */
+  public static function setActivationMailExists($mail) {
+    global $i18n;
+    try {
+      $user = new UserModel("mail", $mail);
+      DelayedMailer::stackMail(
+        $mail,
+        $i18n->t("Forgot your password?"),
+        $i18n->t(
+"Hi {0}!
+
+You (or someone else) requested a new account with this email address. If you forgot your password visit the “reset password” page:
+
+{1}
+
+If it wasn’t you who requested a new account ignore this message.",
+          [ $user->name, $i18n->r("/user/reset-password") ]
+        )
+      );
+    } catch (UserException $e) {
+      DelayedLogger::logException($e);
+    }
+  }
+
+  /**
+   * Set the mail that should be sent if somebody requests a new password.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @param string $hash
+   *   The reset hash.
+   * @param string $mail
+   *   The valid mail.
+   */
+  public static function setPasswordReset($hash, $mail) {
+    global $i18n;
+    try {
+      $user = new UserModel("mail", $mail);
+      DelayedMailer::stackMail(
+        $mail,
+        $i18n->t("Password reset request"),
+        $i18n->t(
+"Hi {0}!
+
+You (or someone else) requested a password reset for your account. You may now reset your password by clicking this link or copying and pasting it to your browser:
+
+{1}
+
+This link can only be used once to log in and will lead you to a page where you can set your password.
+
+If it wasn’t you who requested a new password ignore this message.",
+          [ $user->name, $i18n->r("/user/reset-password-{0}", [ $hash ]) ]
+        )
+      );
+    } catch (UserException $e) {
+      DelayedLogger::logException($e);
+    }
   }
 
   /**

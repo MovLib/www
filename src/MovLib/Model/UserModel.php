@@ -179,23 +179,6 @@ class UserModel extends AbstractModel {
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
-  public function activate($hash) {
-    try {
-      $registrationData = $this->select(
-        "SELECT
-          COLUMN_GET(`dyn_data`, 'name' AS CHAR(" . self::NAME_MAX_LENGTH . ")) AS `name`,
-          COLUMN_GET(`dyn_data`, 'mail' AS CHAR(" . self::MAIL_MAX_LENGTH . ")) AS `mail`,
-          COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED)) AS `created`
-        FROM `tmp`
-          WHERE `key` = ?
-        LIMIT 1",
-        "s", [ $hash ]
-      )[0];
-    } catch (ErrorException $e) {
-      // @todo Could not find hash
-    }
-  }
-
   /**
    * Get the user's preferred ISO 639-1 alpha-2 language code.
    *
@@ -259,24 +242,79 @@ class UserModel extends AbstractModel {
    * @param string $mail
    *   The valid mail of the new user.
    */
-  public function register($hash, $name, $mail) {
+  public function insertRegistrationData($hash, $name, $mail) {
     // @todo Catch exceptions, log and maybe even send a mail to the user?
     $this
-      ->prepareAndBind(
-        "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'mail', ?, 'time', NOW() + 0))",
-        "sss",
-        [ $hash, $name, $mail ]
-      )
+      ->prepareAndBind("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'mail', ?, 'time', NOW() + 0))", "sss", [ $hash, $name, $mail ])
       ->execute()
       ->close()
     ;
   }
 
   /**
-   * @todo Implement.
+   * Add reset password request to our temporary database table.
+   *
+   * @param string $hash
+   *   The password reset hash used in the password reset link for identification.
+   * @param string $mail
+   *   The valid mail of the user.
    */
-  public function resetPassword() {
+  public function insertResetPasswordData($hash, $mail) {
+    // @todo Catch exceptions, log and maybe even send a mail to the user?
+    $this
+      ->prepareAndBind("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('mail', ?, 'time', NOW() + 0))", "ss", [ $hash, $mail ])
+      ->execute()
+      ->close()
+    ;
+  }
 
+  /**
+   * Select the data that was previously stored for this account registration from the temporary database.
+   *
+   * @param string $hash
+   *   The user submitted hash to identify the registration.
+   * @return null|array
+   *   <tt>NULL</tt> if no record was found for the hash, otherwise an associative array with the following keys:
+   *   <em>name</em>, <em>mail</em>, and <em>time</em>.
+   */
+  public function selectRegistrationData($hash) {
+    try {
+      return $this->select(
+        "SELECT
+          COLUMN_GET(`dyn_data`, 'name' AS CHAR(" . self::NAME_MAX_LENGTH . ")) AS `name`,
+          COLUMN_GET(`dyn_data`, 'mail' AS CHAR(" . self::MAIL_MAX_LENGTH . ")) AS `mail`,
+          COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
+        FROM `tmp`
+          WHERE `key` = ?
+        LIMIT 1", "s", [ $hash ]
+      )[0];
+    } catch (ErrorException $e) {
+      return null;
+    }
+  }
+
+  /**
+   * Select the data that was previously stored for this reset password request from the temporary database.
+   *
+   * @param string $hash
+   *   The user submitted hash to identify the reset password request.
+   * @return null|array
+   *   <tt>NULL</tt> if no record was found for the hash, otherwise an associative array with the following keys:
+   *   <em>mail</em>, and <em>time</em>.
+   */
+  public function selectResetPasswordData($hash) {
+    try {
+      return $this->select(
+        "SELECT
+          COLUMN_GET(`dyn_data`, 'mail' AS CHAR(" . self::MAIL_MAX_LENGTH . ")) AS `mail`,
+          COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
+        FROM `tmp`
+          WHERE `key` = ?
+        LIMIT 1", "s", [ $hash ]
+      )[0];
+    } catch (ErrorException $e) {
+      return null;
+    }
   }
 
   /**

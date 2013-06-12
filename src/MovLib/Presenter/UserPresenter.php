@@ -23,8 +23,12 @@ use \MovLib\Presenter\AbstractPresenter;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMailer;
 use \MovLib\Utility\DelayedMethodCalls;
+use \MovLib\Utility\HTTP;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
+use \MovLib\View\HTML\AlertView;
+use \MovLib\View\HTML\User\UserSettingsView;
+use \MovLib\View\HTML\User\UserRegisterView;
 
 /**
  * @todo Description.
@@ -63,71 +67,6 @@ class UserPresenter extends AbstractPresenter {
   }
 
   /**
-   * Render the reset password page.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
-   * @return $this
-   */
-  private function __constructResetPassword() {
-    global $i18n, $user;
-    if ($user->isLoggedIn === true) {
-      return $this->setPresentation("Error\\Forbidden");
-    }
-    /* @var $userResetPasswordView \MovLib\View\HTML\User\UserResetPasswordView */
-    $userResetPasswordView = $this->getView("User\\UserResetPassword");
-    if (isset($_POST["submitted"])) {
-      if (isset($_POST["mail"]) && ($error = DelayedMailer::validateEmail($_POST["mail"]))) {
-        $userResetPasswordView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
-      }
-      if (!$error) {
-        DelayedMailer::sendPasswordReset($_POST["mail"]);
-        $this->showSingleAlertAlertView(
-          $userResetPasswordView->getTitle(),
-          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["mail"]) ])}</p>",
-          AbstractView::ALERT_SEVERITY_SUCCESS,
-          true
-        );
-      }
-    }
-    return $this;
-  }
-
-  /**
-   * Render a user's profile.
-   *
-   * @return $this
-   */
-  private function __constructShow() {
-    try {
-      if (isset($_SERVER["USER_ID"])) {
-        $this->profile = new UserModel("user_id", $_SERVER["USER_ID"]);
-      }
-      elseif (isset($_SERVER["USER_NAME"])) {
-        $this->profile = new UserModel("name", $_SERVER["USER_NAME"]);
-      }
-      // If this user's account is disabled, tell the client about it and exit (no need to redirect).
-      if ($this->profile->deleted === true) {
-        $this->setView("Error\\Gone");
-        // @todo Display text to recreate account
-        // @todo Check if account was deleted forever
-        $this->view->setContent("Hello there!");
-        return $this;
-      }
-      // Check if the requested URI is a perfect match to what we want to have.
-      if (($profileRoute = $this->profile->getProfileRoute()) && $_SERVER["REQUEST_URI"] !== $profileRoute) {
-        HTTP::redirect($profileRoute);
-      }
-      // Everything looks good, render the profile.
-      return $this->setPresentation("User\\UserShow");
-    } catch (UserException $e) {
-      return $this->setPresentation("Error\\NotFound");
-    }
-  }
-
-  /**
    * Render the sign in form.
    *
    * @global \MovLib\Model\UserModel $user
@@ -140,6 +79,38 @@ class UserPresenter extends AbstractPresenter {
       return $this->setPresentation("Error\\Forbidden");
     }
     return $this->setPresentation("User\\UserLogin");
+  }
+
+  /**
+   * Render the public profile page of the user identified by ID or name.
+   *
+   * @return $this
+   */
+  private function __constructProfile() {
+    try {
+      if (isset($_SERVER["USER_ID"])) {
+        $this->profile = new UserModel("user_id", $_SERVER["USER_ID"]);
+      }
+      elseif (isset($_SERVER["USER_NAME"])) {
+        $this->profile = new UserModel("name", $_SERVER["USER_NAME"]);
+      }
+      // If this user's account is disabled, tell the client about it and exit (no need to redirect).
+      if ($this->profile->deleted === true) {
+        $this->view = new GoneView($this);
+        // @todo Display text to recreate account
+        // @todo Check if account was deleted forever
+        $this->view->content = "";
+        return $this;
+      }
+      // Check if the requested URI is a perfect match to what we want to have.
+      if (($profileRoute = $this->profile->getProfileRoute()) && $_SERVER["REQUEST_URI"] !== $profileRoute) {
+        HTTP::redirect($profileRoute);
+      }
+      // Everything looks good, render the profile.
+      return $this->setPresentation("User\\UserShow");
+    } catch (UserException $e) {
+      return $this->setPresentation("Error\\NotFound");
+    }
   }
 
   /**
@@ -156,83 +127,120 @@ class UserPresenter extends AbstractPresenter {
     if ($user->isLoggedIn === true) {
       return $this->setPresentation("Error\\Forbidden");
     }
-    /* @var $userRegisterView \MovLib\View\HTML\User\UserRegisterView */
-    $userRegisterView = $this->getView("User\\UserRegister");
     if (isset($_POST["submitted"])) {
-      // Validate email address.
-      if (isset($_POST["mail"])) {
-        if (($error = DelayedMailer::validateEmail($_POST["mail"]))) {
-          $userRegisterView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
-        }
+      $view = new UserRegisterView($this);
+      // Validate the submitted mail.
+      $mail = $this->getPostValue("mail");
+      if (($error = DelayedMailer::validateEmail($mail))) {
+        $view->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
       }
-      // Validate username and check if it is still available.
-      if (isset($_POST["name"])) {
-        if (($error = UserModel::validateName($_POST["name"]))) {
-          $userRegisterView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
-        }
-        elseif ($user->exists("name", $_POST["name"])) {
-          $userRegisterView->setAlert($i18n->t("The name {0} is already taken.", [ "<em>{$_POST["name"]}</em>" ]));
-        }
+      // Validate the submitted name.
+      $name = $this->getPostValue("name");
+      if (($error = UserModel::validateName($name))) {
+        $view->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
+      }
+      elseif ($user->exists("name", $name)) {
+        $view->setAlert($i18n->t("The name {0} is already taken.", [ String::placeholder($name) ]));
       }
       // If we did not find any error, send the activation link via mail to the user and tell him to check his inbox.
       if (!isset($error)) {
         // Do not tell the user that we already have this mail, otherwise it would be possible for an attacker to find
-        // out which mails we have in our system. Instead we send a message to the user.
-        if ($user->exists("mail", $_POST["mail"])) {
-          $existingUser = new UserModel("mail", $_POST["mail"]);
-          DelayedMailer::sendMail(
-            $_POST["mail"],
-            $i18n->t("Forgot your password?"),
-            $i18n->t(
-"Hi {0}!
-
-You (or someone else) just tried to register a new account with this email address. If you forgot your password visit the “reset password” page:
-
-{1}
-
-If it wasn’t you who requested a new account simply ignore this message.
-
-— MovLib team",
-              [ $existingUser->name, $i18n->r("/user/reset-password") ]
-            )
-          );
+        // out which mails we have in our system. Instead we send a message to the user this mail belongs to.
+        if ($user->exists("mail", $mail)) {
+          DelayedMailer::stackMethod("setActivationMailExists", [ $mail ]);
         }
+        // If this is a valid new registration generate a unique activation link and insert the user's data into our
+        // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what
+        // he has to do.
         else {
-          $activationHash = Crypt::getRandomHash();
-          // Delay the insert, the mail will have a much longer roundtrip than our delayed insert.
-          DelayedMethodCalls::stack($user, "register", [ $activationHash, $_POST["name"], $_POST["mail"] ]);
-          // Delay the sending of the mail as well, this is a valid registration and we want to deliver the response asap.
-          DelayedMailer::sendMail(
-            $_POST["mail"],
-            $i18n->t("Welcome to MovLib!"),
-            $i18n->t(
-"Hi {0}!
-
-Thank you for registering at MovLib. You may now log in by clicking this link or copying and pasting it to your browser:
-
-{1}
-
-This link can only be used once to log in and will lead you to a page where you can set your password.
-
-After setting your password, you will be able to log in at MovLib in the future using:
-
-email address: {2}
-password: Your password
-
-— MovLib team",
-              [ $_POST["name"], $i18n->r("/user/activate-{0}", [ $activationHash ]), $_POST["mail"] ]
-            )
-          );
-          return $this->showSingleAlertAlertView(
-            $userRegisterView->getTitle(),
-            "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["mail"]) ])}</p>",
-            AbstractView::ALERT_SEVERITY_SUCCESS,
-            true
-          );
+          $params = [ Crypt::getRandomHash(), $name, $mail ];
+          DelayedMethodCalls::stack($user, "register", $params);
+          DelayedMailer::stackMethod("setActivationMail", $params);
         }
+        $view = new AlertView($this, $view->title);
+        $view->setAlert(
+          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ])}</p>",
+          AbstractView::ALERT_SEVERITY_SUCCESS
+        );
+        $view->content =
+          "<div class='container'><p class='text-center text-small'>{$i18n->t(
+            "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
+            [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
+          )}</p></div>";
       }
     }
-    return $this->setPresentation("User\\UserRegister");
+    elseif (isset($_SERVER["USER_HASH"])) {
+      $view = new UserSettingsView($this);
+      $view->tab = "Password";
+    }
+    else {
+      $view = new UserRegisterView($this);
+    }
+    $this->view = $view;
+    return $this;
+  }
+
+  /**
+   * Render the reset password page.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
+   * @return $this
+   */
+  private function __constructResetPassword() {
+    global $i18n, $user;
+    if ($user->isLoggedIn === true) {
+      return $this->setPresentation("Error\\Forbidden");
+    }
+    $view = new UserResetPasswordView($this);
+    if (isset($_POST["submitted"])) {
+      $mail = $this->getPostValue("mail");
+      if (($error = DelayedMailer::validateEmail($mail))) {
+        $view->setAlert($error, AbstractView::ALERT_SEVERITY_ERROR, true);
+      }
+      if (!$error) {
+        if ($user->exists("mail", $mail) === true) {
+          $params = [ Crypt::getRandomHash(), $mail ];
+          DelayedMethodCalls::stack($user, "resetPassword", $params);
+          DelayedMailer::stackMethod("setPasswordReset", $params);
+        }
+        $view = new AlertView($this, $view->title);
+        $view->setAlert(
+          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ])}</p>",
+          AbstractView::ALERT_SEVERITY_SUCCESS
+        );
+        $view->content =
+          "<div class='container'><p class='text-center text-small'>{$i18n->t(
+            "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
+            [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
+          )}</p></div>";
+      }
+    }
+    elseif (isset($_SERVER["USER_HASH"])) {
+      // @todo Implement reset password checks and view.
+    }
+    $this->view = $view;
+    return $this;
+  }
+
+  /**
+   * Render the currently logged in user's profile.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
+   * @return $this
+   */
+  private function __constructShow() {
+    global $i18n, $user;
+    if ($user->isLoggedIn === false) {
+      // @todo Should we display an error site? Or maybe ask the user if he'd like to register a new account?
+      HTTP::redirect($i18n->r("/users"), 302);
+    }
+    return $this;
   }
 
 
@@ -250,13 +258,15 @@ password: Your password
    */
   public function getBreadcrumb() {
     global $i18n, $user;
-    if (method_exists($this, __FUNCTION__ . $this->getAction())) {
-      return $this->{__FUNCTION__ . $this->getAction()}();
+    $breadcrumb = [ $user->isLoggedIn === true
+      ? [ $i18n->r("/user"), $i18n->t("Profile"), [ "title" => $i18n->t("Go to your user profile.") ] ]
+      : [ $i18n->r("/users"), $i18n->t("Users"), [ "title" => $i18n->t("Have a look at our user statistics.") ] ]
+    ];
+    $additionalBreadcrumbsMethod = __FUNCTION__ . $this->getAction();
+    if (method_exists($this, $additionalBreadcrumbsMethod)) {
+      return $this->{$additionalBreadcrumbsMethod}($breadcrumb);
     }
-    if ($user->isLoggedIn === true) {
-      return [[ $i18n->r("/user"), $i18n->t("Profile"), [ "title" => $i18n->t("Go to your user profile.") ]]];
-    }
-    return [[ $i18n->r("/users"), $i18n->t("Users"), [ "title" => $i18n->t("Have a look at our user statistics.") ]]];
+    return $breadcrumb;
   }
 
 }

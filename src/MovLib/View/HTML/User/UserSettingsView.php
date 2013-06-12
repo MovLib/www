@@ -21,7 +21,7 @@ use \MovLib\Model\UserModel;
 use \MovLib\View\HTML\AbstractFormView;
 
 /**
- * @todo Description of UserResetPasswordView
+ * Render the user's control center where she/he can change all account settings.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,7 +29,7 @@ use \MovLib\View\HTML\AbstractFormView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserResetPasswordView extends AbstractFormView {
+class UserSettingsView extends AbstractFormView {
 
   /**
    * The user presenter controlling this view.
@@ -39,11 +39,18 @@ class UserResetPasswordView extends AbstractFormView {
   protected $presenter;
 
   /**
+   * The name of the settings tab that should be rendered.
+   *
+   * @var string
+   */
+  public $tab = "Account";
+
+  /**
    * {@inheritdoc}
    */
   public function __construct($presenter) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Reset password"));
+    parent::__construct($presenter, $i18n->t("Settings"));
     $this->addStylesheet("/assets/css/modules/user.css");
   }
 
@@ -52,19 +59,17 @@ class UserResetPasswordView extends AbstractFormView {
    */
   public function getFormContent() {
     global $i18n;
-    return
-      "<div class='row'>" .
-        "<div class='span span--6 offset--3'>" .
-          "<p>" .
-            "<label for='mail'>{$i18n->t("Email address")}</label>" .
-            "<input autofocus class='input input-text input--block-level' id='mail' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='mail' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter the email address with which you registered your account.")}' type='email' value='{$this->presenter->getPostValue("mail")}'>" .
-          "</p>" .
-          "<p>" .
-            "<button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t("Fill in the email address you registered with and we will generate a new secure password for you.")}' type='submit'>{$i18n->t("Reset password")}</button>" .
-          "</p>" .
-        "</div>" .
-      "</div>"
-    ;
+    return "";
+  }
+
+  private function getAccountTab() {
+    global $i18n;
+    return "";
+  }
+
+  private function getPasswordTab() {
+    global $i18n;
+    return "";
   }
 
 }

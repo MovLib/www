@@ -20,7 +20,7 @@ namespace MovLib\View\HTML\Error;
 use \MovLib\View\HTML\AlertView;
 
 /**
- * Display a <em>403 Forbidden</em> error page (with correct HTTP headers) to the user.
+ * Display a <em>400 Bad Request</em> error page (with correct HTTP headers) to the user.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,7 +28,7 @@ use \MovLib\View\HTML\AlertView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ForbiddenView extends AlertView {
+class BadRequestView extends AlertView {
 
   /**
    * Create a <em>403 Forbidden</em> error page.
@@ -40,10 +40,10 @@ class ForbiddenView extends AlertView {
    */
   public function __construct($presenter) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Forbidden"));
-    http_response_code(403);
+    parent::__construct($presenter, $i18n->t("Bad Request"));
+    http_response_code(400);
     $this->setAlert(
-      "<p>{$i18n->t("Access to the requested page is forbidden.")}</p>" .
+      "<p>{$i18n->t("Your browser sent a request that we could not understand.")}</p>" .
       "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a($i18n->r("/contact"), $i18n->t("contact us")) ])}</p>",
       self::ALERT_SEVERITY_ERROR,
       true

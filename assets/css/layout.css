@@ -179,6 +179,10 @@
   font: 0/0 a;
 }
 
+.text-small {
+  font-size: 0.82em;
+}
+
 .clear-fix:before,
 .clear-fix:after,
 .row:before,
