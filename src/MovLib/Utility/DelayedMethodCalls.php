@@ -28,15 +28,12 @@ namespace MovLib\Utility;
  */
 class DelayedMethodCalls {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Static Properties
-
-
+  /**
+   * Numeric array to collect the delayed method calls.
+   *
+   * @var array
+   */
   private static $stack = [];
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
-
 
   /**
    * Execute each delayed method.
@@ -50,8 +47,6 @@ class DelayedMethodCalls {
   /**
    * Add a delayed method call to the stack.
    *
-   * @global array $delayed
-   *   The array to collect delayed class names and method names.
    * @param object $obj
    *   The object that contains the method which will be executed after the response was sent to the user.
    * @param string $method
@@ -60,8 +55,7 @@ class DelayedMethodCalls {
    *   The parameters for the method call.
    */
   public static function stack($obj, $method, $params) {
-    global $delayed;
-    $delayed[__CLASS__] = "run";
+    delayed_register(__CLASS__);
     self::$stack[] = [[ $obj, $method ], $params];
   }
 
