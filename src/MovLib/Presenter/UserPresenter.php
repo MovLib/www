@@ -114,7 +114,7 @@ class UserPresenter extends AbstractPresenter {
         // @todo Display text to recreate account
         // @todo Check if account was deleted forever
         $this->view->setContent("Hello there!");
-        return $this->setPresentation();
+        return $this;
       }
       // Check if the requested URI is a perfect match to what we want to have.
       if (($profileRoute = $this->profile->getProfileRoute()) && $_SERVER["REQUEST_URI"] !== $profileRoute) {
@@ -159,17 +159,10 @@ class UserPresenter extends AbstractPresenter {
     /* @var $userRegisterView \MovLib\View\HTML\User\UserRegisterView */
     $userRegisterView = $this->getView("User\\UserRegister");
     if (isset($_POST["submitted"])) {
-      // Validate email address and check if it is still available.
+      // Validate email address.
       if (isset($_POST["mail"])) {
         if (($error = DelayedMailer::validateEmail($_POST["mail"]))) {
           $userRegisterView->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
-        }
-        elseif ($user->exists("mail", $_POST["mail"])) {
-          $userRegisterView->setAlert(
-            $i18n->t("The email address {0} is already registered.", [ "<em>{$_POST["mail"]}</em>" ]) .
-            " " .
-            $userRegisterView->a("/user/reset-password", "Have you forgotten your password?")
-          );
         }
       }
       // Validate username and check if it is still available.
@@ -183,14 +176,36 @@ class UserPresenter extends AbstractPresenter {
       }
       // If we did not find any error, send the activation link via mail to the user and tell him to check his inbox.
       if (!isset($error)) {
-        $activationHash = Crypt::getRandomHash();
-        // Delay the insert, the mail will have a much longer roundtrip than our delayed insert.
-        DelayedMethodCalls::stack($user, "register", [ $activationHash, $_POST["name"], $_POST["mail"] ]);
-        // Delay the sending of the mail as well, this is a valid registration and we want to deliver the response asap.
-        DelayedMailer::sendMail(
-          $_POST["mail"],
-          $i18n->t("Welcome to MovLib!"),
-          $i18n->t(
+        // Do not tell the user that we already have this mail, otherwise it would be possible for an attacker to find
+        // out which mails we have in our system. Instead we send a message to the user.
+        if ($user->exists("mail", $_POST["mail"])) {
+          $existingUser = new UserModel("mail", $_POST["mail"]);
+          DelayedMailer::sendMail(
+            $_POST["mail"],
+            $i18n->t("Forgot your password?"),
+            $i18n->t(
+"Hi {0}!
+
+You (or someone else) just tried to register a new account with this email address. If you forgot your password visit the “reset password” page:
+
+{1}
+
+If it wasn’t you who requested a new account simply ignore this message.
+
+— MovLib team",
+              [ $existingUser->name, $i18n->r("/user/reset-password") ]
+            )
+          );
+        }
+        else {
+          $activationHash = Crypt::getRandomHash();
+          // Delay the insert, the mail will have a much longer roundtrip than our delayed insert.
+          DelayedMethodCalls::stack($user, "register", [ $activationHash, $_POST["name"], $_POST["mail"] ]);
+          // Delay the sending of the mail as well, this is a valid registration and we want to deliver the response asap.
+          DelayedMailer::sendMail(
+            $_POST["mail"],
+            $i18n->t("Welcome to MovLib!"),
+            $i18n->t(
 "Hi {0}!
 
 Thank you for registering at MovLib. You may now log in by clicking this link or copying and pasting it to your browser:
@@ -205,15 +220,16 @@ email address: {2}
 password: Your password
 
 — MovLib team",
-            [ $_POST["name"], $i18n->r("/user/activate-{0}", [ $activationHash ]), $_POST["mail"] ]
-          )
-        );
-        return $this->showSingleAlertAlertView(
-          $userRegisterView->getTitle(),
-          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["mail"]) ])}</p>",
-          AbstractView::ALERT_SEVERITY_SUCCESS,
-          true
-        );
+              [ $_POST["name"], $i18n->r("/user/activate-{0}", [ $activationHash ]), $_POST["mail"] ]
+            )
+          );
+          return $this->showSingleAlertAlertView(
+            $userRegisterView->getTitle(),
+            "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::checkPlain($_POST["mail"]) ])}</p>",
+            AbstractView::ALERT_SEVERITY_SUCCESS,
+            true
+          );
+        }
       }
     }
     return $this->setPresentation("User\\UserRegister");
