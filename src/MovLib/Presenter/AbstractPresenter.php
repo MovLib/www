@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presenter;
 
-use \MovLib\View\HTML\AlertView;
+use \MovLib\Exception\ErrorException;
 use \ReflectionClass;
 
 /**
@@ -177,21 +177,6 @@ abstract class AbstractPresenter {
 
 
   /**
-   * Get (and set) the current view.
-   *
-   * @param string $viewName
-   *   The name of the view without the <tt>View</tt> suffix. You have to include names of folders if your view is in a
-   *   subdirectory within the view folder (e.g. <tt>User\\UserShow</tt>).
-   * @param string $viewType
-   *   [Optional] The foldername within the view directory. Defaults to <tt>HTML</tt>.
-   * @return $this
-   */
-  protected final function getView($viewName, $viewType = "HTML") {
-    $this->setView($viewName, $viewType);
-    return $this->view;
-  }
-
-  /**
    * Set output for this presenter.
    *
    * @param string $viewName
@@ -207,59 +192,13 @@ abstract class AbstractPresenter {
    */
   protected final function setPresentation($viewName = null, $viewType = "HTML", $method = "getRenderedView") {
     if ($viewName !== null) {
-      $this->setView($viewName, $viewType);
+      $view = "\\MovLib\\View\\{$viewType}\\{$viewName}View";
+      $this->view = new $view($this);
+    }
+    if (!isset($this->view)) {
+      throw new ErrorException("No view was set to render the requested page.");
     }
     $this->presentation = $this->view->{$method}();
-    return $this;
-  }
-
-  /**
-   * Set the current view.
-   *
-   * @param string $viewName
-   *   The name of the view without the <tt>View</tt> suffix. You have to include names of folders if your view is in a
-   *   subdirectory within the view folder (e.g. <tt>User\\UserShow</tt>).
-   * @param string $viewType
-   *   [Optional] The foldername within the view directory. Defaults to <tt>HTML</tt>.
-   * @return $this
-   */
-  protected final function setView($viewName, $viewType = "HTML") {
-    $view = "\\MovLib\\View\\{$viewType}\\{$viewName}View";
-    $this->view = new $view($this);
-    return $this;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Protected methods
-
-
-  /**
-   * Display the alert view to the user with a single alert message and no additional content.
-   *
-   * <b>IMPORTANT!</b> This will overwrite your current view but not your output! Call
-   *                   <code>AbstractPresenter::setOutput()</code> without any arguments to set the output.
-   *
-   * @see \MovLib\View\HTML\AlertView
-   * @see \MovLib\View\HTML\AbstractView::setAlert()
-   * @param string $title
-   *   Short descriptive title that summarizes the alert, also used as page title!
-   * @param string $message
-   *   The message that should be displayed to the user.
-   * @param string $severity
-   *   [optional] The severity level of this alert, defaults to warning. Available severity levels are:
-   *   <ul>
-   *     <li>info</li>
-   *     <li>warning (default)</li>
-   *     <li>success</li>
-   *     <li>error</li>
-   *   </ul>
-   * @param boolean $block
-   *   [optional] If your message is very long, or your alert is very important, increase the padding around the message
-   *   and enclose the title in a level-4 heading instead of the bold tag.
-   * @return $this
-   */
-  protected function showSingleAlertAlertView($title, $message, $severity = "warning", $block = false) {
-    $this->view = (new AlertView($this, $title))->setAlert($message, "", $severity, $block);
     return $this;
   }
 
