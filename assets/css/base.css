@@ -152,8 +152,12 @@ table {
   - Microsoft YaHei: Beautiful Chinese font that was release along Windows Vista and is available as update for Windows
     XP systems. More info can be found here: http://en.wikipedia.org/wiki/Microsoft_YaHei
   - sans-serif: Fallback if everything else fails.
+
+  More interesting links:
+  - http://www.markboulton.co.uk/journal/five-simple-steps-to-better-typography-part-4
+  - http://www.smashingmagazine.com/2013/05/17/typographic-design-patterns-practices-case-study-2013/
 */
-  font: 400 14px/22.4px 'open sans light', 'open sans', arial, meiryo, 'microsoft yahei', 'ms yahei', yahei, sans-serif;
+  font: 400 14px/1.46 'open sans light', 'open sans', arial, meiryo, 'microsoft yahei', 'ms yahei', yahei, sans-serif;
 }
 
 /* Ensure Chinese strings are displayed with the correct font choice. */
@@ -300,7 +304,7 @@ h4 small {
 }
 
 p {
-  margin: 14px 0;
+  margin: 1.39em 0;
 }
 
 hr {
@@ -308,7 +312,7 @@ hr {
   border: 0;
   display: block;
   height: 1px;
-  margin: 14px 0;
+  margin: 1.39em 0;
   padding: 0;
 }
 
