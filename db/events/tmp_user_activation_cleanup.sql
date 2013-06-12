@@ -30,6 +30,6 @@ DO
     FROM `tmp`
   WHERE DATEDIFF(
     SYSDATE(),
-    COLUMN_GET(`dyn_data`, 'time' AS DATE)
-  ) > 1
+    COLUMN_GET(`dyn_data`, 'time' AS DATETIME)
+  ) > 0
 ;

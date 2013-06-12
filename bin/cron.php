@@ -35,6 +35,6 @@ if ($mysqli->real_connect() === false) {
 }
 
 // User activation link garbage collection
-if ($mysqli->query("DELETE FROM `tmp` WHERE COLUMN_EXISTS(`dyn_data`, 'time') = 1 AND DATEDIFF(NOW(), COLUMN_GET(`dyn_data`, 'time' AS DATE)) > 1") === false) {
+if ($mysqli->query("DELETE FROM `tmp` WHERE COLUMN_EXISTS(`dyn_data`, 'time') = 1 AND DATEDIFF(NOW(), COLUMN_GET(`dyn_data`, 'time' AS DATETIME)) > 0") === false) {
   exit("{$mysqli->error} ({$mysqli->errno})\n");
 }
