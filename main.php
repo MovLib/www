@@ -52,6 +52,24 @@ function __autoload($class) {
 $delayed = [];
 
 /**
+ * Register new delayed class to be called after the response has been sent to the user.
+ *
+ * @global array $delayed
+ *   Global array to collect the delayed classes.
+ * @param string $class
+ *   Absolute class name (use the magic <var>__CLASS__</var> constant).
+ * @param int $weight
+ *   [Optional] Defines when this class should be called. This is important if your class relys on other delayed
+ *   classes. The weight must not be negative! Defaults to 50, the lower the earlier the execution.
+ * @param string $method
+ *   [Optional] The name of the method that should be called, defaults to <em>run</em>.
+ */
+function delayed_register($class, $weight = 50, $method = "run") {
+  global $delayed;
+  $delayed[$weight][$class] = $method;
+}
+
+/**
  * Create new global <em>UserModel</em> instance for the current user who is requesting the page.
  *
  * @var \MovLib\Model\UserModel
@@ -79,7 +97,10 @@ function uncaught_exception_handler($exception) {
   \MovLib\Utility\DelayedLogger::logException($exception, $exception->getCode());
   $presenter = new \MovLib\Presenter\ExceptionPresenter();
   $presenter->setException($exception);
-  exit($presenter->presentation);
+  echo $presenter->presentation;
+  fastcgi_finish_request();
+  // Log this error and send a mail if necessary.
+  \MovLib\Utility\DelayedLogger::run();
 }
 
 // Set the default exception handler.
@@ -162,6 +183,11 @@ echo (new $presenter())->presentation;
 fastcgi_finish_request();
 
 // Execute each delayed run method after sending the generated output to the user.
-foreach ($delayed as $delayedClassName => $delayedMethodName) {
-  $delayedClassName::{$delayedMethodName}();
+foreach ($delayed as $classes) {
+  foreach ($classes as $class => $method) {
+    $class::{$method}();
+  }
 }
+
+// The logger is always executed at last!
+\MovLib\Utility\DelayedLogger::run();
