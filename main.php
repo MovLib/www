@@ -41,7 +41,7 @@
  */
 function __autoload($class) {
   $class = strtr($class, "\\", "/");
-  require "{$_SERVER["DOCUMENT_ROOT"]}/src/{$class}.php";
+  require "{$_SERVER["HOME"]}/src/{$class}.php";
 }
 
 /**
