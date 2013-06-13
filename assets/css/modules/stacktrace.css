@@ -34,8 +34,6 @@
 }
 
 .stacktrace__title {
-  padding: 5px 10px;
-  height: 33px;
   background-color: #eaeaea;
   background-image: -webkit-linear-gradient(#fafafa, #eaeaea);
   background-image:    -moz-linear-gradient(#fafafa, #eaeaea);
@@ -44,10 +42,11 @@
   background-image:         linear-gradient(#fafafa, #eaeaea);
   border-bottom: 1px solid #d8d8d8;
   color: #555;
-  text-shadow: 0 1px 0 #fff;
-  line-height: 25px;
   font-family: consolas, monospace;
-  overflow: hidden;
+  line-height: 25px;
+  min-height: 33px;
+  padding: 5px 10px;
+  text-shadow: 0 1px 0 #fff;
 }
 
 .stacktrace__table {
