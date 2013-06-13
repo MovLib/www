@@ -16,7 +16,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.' ,
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s vote count.' ,
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this movie was deleted, default is FALSE (0).' ,
-  `year` YEAR NULL COMMENT 'The movie’s initial release year.' ,
+  `year` SMALLINT NULL COMMENT 'The movie’s initial release year.' ,
   `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime.' ,
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.' ,
   `dyn_titles` BLOB NULL COMMENT 'The movie’s titles (dynamic column).' ,
@@ -318,9 +318,11 @@ SHOW WARNINGS;
 CREATE  TABLE IF NOT EXISTS `movlib`.`posters` (
   `image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The poster’s unique ID.' ,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.' ,
+  `country_id` INT UNSIGNED NULL ,
   PRIMARY KEY (`image_id`, `movie_id`) ,
   INDEX `fk_posters_movies` (`movie_id` ASC) ,
   INDEX `fk_posters_images` (`image_id` ASC) ,
+  INDEX `fk_posters_countries1_idx` (`country_id` ASC) ,
   CONSTRAINT `fk_posters_images`
     FOREIGN KEY (`image_id` )
     REFERENCES `movlib`.`images` (`image_id` )
@@ -329,6 +331,11 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`posters` (
   CONSTRAINT `fk_posters_movies`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_posters_countries1`
+    FOREIGN KEY (`country_id` )
+    REFERENCES `movlib`.`countries` (`country_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'Extends images table with unique movie’s ID.'
@@ -479,7 +486,7 @@ SHOW WARNINGS;
 CREATE  TABLE IF NOT EXISTS `movlib`.`routes` (
   `route_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The route’s unique ID.' ,
   `route` VARCHAR(254) NOT NULL COMMENT 'The route’s unique English pattern.' ,
-  `dyn_translation` BLOB NULL COMMENT 'The route’s translations.' ,
+  `dyn_translations` BLOB NULL COMMENT 'The route’s translations.' ,
   PRIMARY KEY (`route_id`) ,
   UNIQUE INDEX `uq_routes_route` (`route` ASC) )
 COMMENT = 'Contains all routes (relative URIs).'
@@ -555,6 +562,18 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_directors` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'A movie has many directors, a director has many movies.'
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`tmp`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`tmp` (
+  `key` VARCHAR(255) NOT NULL COMMENT 'The entry’s unique key.' ,
+  `dyn_data` BLOB NOT NULL COMMENT 'The entry’s dynamic data.' ,
+  PRIMARY KEY (`key`) )
+COMMENT = 'Used to store temporary data.'
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;

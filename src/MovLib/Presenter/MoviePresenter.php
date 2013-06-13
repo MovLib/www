@@ -69,7 +69,7 @@ class MoviePresenter extends AbstractPresenter {
    */
   protected function __constructGet() {
     try {
-      $this->movieModel = (new MovieModel())->__constructFromId($_SERVER["MOVIE_ID"]);
+      $this->movieModel = (new MovieModel())->__constructFromId($_SERVER["MOVIE_ID"], $_SERVER["LANGUAGE_CODE"]);
       if ($this->movieModel->deleted === true) {
         return $this->setPresentation("Error\\GoneMovie");
       }

@@ -35,7 +35,8 @@ ini_set("display_errors", 1);
 /*}}}DEBUG*/
 
 // Include the global I18n class.
-require dirname(__DIR__) . "/src/MovLib/Utility/I18n.php";
+require dirname(__DIR__) . "/src/MovLib/Model/AbstractModel.php";
+require dirname(__DIR__) . "/src/MovLib/Model/I18nModel.php";
 
 /**
  * Contains all country and basic language codes that our application shall know about.
@@ -52,14 +53,14 @@ $codes = [
  *
  * @var array
  */
-$supported_language_codes = \MovLib\Utility\I18n::$supportedLanguageCodes;
+$supported_language_codes = \MovLib\Model\I18nModel::$supportedLanguageCodes;
 
 /**
  * Contains the default ISO 639-1 alpha-2 language code.
  *
  * @var string
  */
-$default_language_code = \MovLib\Utility\I18n::getDefaultLanguageCode();
+$default_language_code = \MovLib\Model\I18nModel::getDefaultLanguageCode();
 
 /**
  * Helper function to translate country names.
@@ -152,5 +153,18 @@ foreach ($codes as $table => $data) {
   $stmt->execute();
   $stmt->close();
 }
-
+// Insert the "Silent" language, because it is not present in the language list of Intl.
+if (($stmt = $mysqli->prepare(
+  "INSERT
+    INTO `languages` (`iso_alpha-2`, `name`, `dyn_translations`)
+    VALUES ('xx', 'Silent', COLUMN_CREATE('de', 'Stumm'))
+    ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)
+  "
+)) === false) {
+  $error = "{$mysqli->error} ({$mysqli->errno})";
+  $mysqli->close();
+  exit($error . PHP_EOL);
+}
+$stmt->execute();
+$stmt->close();
 $mysqli->close();
