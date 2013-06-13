@@ -118,7 +118,7 @@ class DelayedLogger {
           $logFile = "notice";
           break;
       }
-      $logFile = "{$_SERVER["DOCUMENT_ROOT"]}/logs/{$logFile}.log";
+      $logFile = "{$_SERVER["HOME"]}/logs/{$logFile}.log";
       if (filesize($logFile) >= self::MAX_LOG_SIZE) {
         exec("tail -n 100 {$logFile} > {$logFile}");
       }

@@ -104,7 +104,7 @@ class ExceptionView extends AlertView {
           $stacktrace[$i][$s] = "";
         }
       }
-      $stacktrace[$i]["file"] = str_replace($_SERVER["DOCUMENT_ROOT"], "", $stacktrace[$i]["file"]);
+      $stacktrace[$i]["file"] = str_replace($_SERVER["HOME"], "", $stacktrace[$i]["file"]);
       $output .=
         "<tr class='stacktrace__tr'>" .
           "<td class='stacktrace__td stacktrace__line-number'>{$stacktrace[$i]["line"]}</td>" .
