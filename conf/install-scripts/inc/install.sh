@@ -17,23 +17,16 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# PHP memcached extension installation script.
+# Helper script to make, make install and clean-up.
 #
-# LINK: https://github.com/$NAME-dev/$NAME/
-# LINK: http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
+# LINK: http://www.legroom.net/2010/06/18/display-colored-output-shell-scripts
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-source $(pwd)/inc/conf.sh
-NAME="php-memcached"
-source ${ID}git.sh "${NAME}-dev" ${NAME}
-phpize
-./configure ${DEFAULT_FLAGS} \
-  --disable-memcached-sasl \
-  --enable-memcached \
-  --enable-memcached-igbinary \
-  --enable-memcached-json
-source ${ID}install.sh
+make && make install && make clean && ldconfig
+LINE=$(msgline)
+msgsuccess "${LINE}\nSuccessfully installed ${NAME}\n${LINE}"
+exit 0

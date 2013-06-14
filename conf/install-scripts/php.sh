@@ -19,20 +19,28 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # "PHP" installation script.
 #
+# LINK: http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-cd /usr/local/src
-wget http://downloads.php.net/dsp/php-5.5.0RC3.tar.gz
-tar xzf php-5.5.0RC3.tar.gz
-mv php-5.5.0RC3.tar.gz php
-rm -f php-5.5.0RC3.tar.gz
-cd php
+source $(pwd)/inc/conf.sh
+
+if [ ${#} == 1 ]; then
+  VERSION=${1}
+else
+  VERSION="5.5.0RC3"
+  msginfo "No version string supplied as argument, using default version ${VERSION}!"
+fi
+
+NAME="php-${VERSION}"
+source ${ID}wget.sh "http://downloads.php.net/dsp/" ${NAME} ".tar.gz"
 ./configure \
-  CFLAGS="-O3" \
+  CFLAGS="-O3 -m64" \
+  CXXFLAGS="-O3 -m64" \
+  LDFLAGS="-O3 -m64" \
   --disable-flatfile \
   --disable-inifile \
   --disable-pdo \
@@ -50,23 +58,19 @@ cd php
   --enable-xml \
   --enable-zend-signals \
   --enable-zip \
-  --sysconfdir=/etc/php-fpm \
+  --sysconfdir="/etc/php-fpm" \
   --with-bz2 \
-  --with-config-file-path=/etc/php-fpm \
+  --with-config-file-path="/etc/php-fpm" \
   --with-curl \
-  --with-fpm-group=www-data \
-  --with-fpm-user=www-data \
-  --with-icu-dir=/usr/local \
-  --with-mcrypt \
-  --with-mysql-sock=/run/mysqld/mysqld.sock \
+  --with-fpm-group="www-data" \
+  --with-fpm-user="www-data" \
+  --with-icu-dir="/usr/local" \
+  --with-mcrypt="/usr/lib/libmcrypt" \
+  --with-mysql-sock="/run/mysqld/mysqld.sock" \
   --with-mysqli \
   --with-openssl \
   --with-pcre-regex \
   --with-pear \
-  --with-zend-vm=GOTO \
+  --with-zend-vm="GOTO" \
   --with-zlib
-make
-make test
-make install
-rm -rf /usr/local/src/php
-exit 0
+source ${ID}install.sh

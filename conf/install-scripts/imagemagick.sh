@@ -19,23 +19,59 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # "ImageMagick" installation script.
 #
+# LINK: http://www.imagemagick.org/script/advanced-unix-installation.php
+# LINK: http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-cd /usr/local/src
-wget http://www.imagemagick.org/download/ImageMagick-6.8.5-10.tar.gz
-tar xzf ImageMagick-6.8.5-10.tar.gz
-mv ImageMagick-6.8.5-10 ImageMagick
-rm -f ImageMagick-6.8.5-10.tar.gz
-cd ImageMagick
-./configure --help
-./configure CFLAGS="-O3"
-make
-make test
-make install
-rm -rf /usr/local/src/ImageMagick
-ldconfig
-exit 0
+source $(pwd)/inc/conf.sh
+
+if [ ${#} == 1 ]; then
+  VERSION=${1}
+else
+  VERSION="6.8.5-10"
+  msginfo "No version string supplied as argument, using default version ${VERSION}!"
+fi
+
+NAME="ImageMagick-${VERSION}"
+source ${ID}wget.sh "http://www.imagemagick.org/download/" ${NAME} ".tar.gz"
+./configure \
+  CFLAGS="-O3 -m64 -pthread" \
+  CPPFLAGS="-I/usr/local/include/ImageMagick" \
+  CXXFLAGS="-O3 -m64 -pthread" \
+  LDFLAGS="-O3 -m64" \
+  --disable-static \
+  --enable-shared \
+  --with-jpeg \
+  --with-png \
+  --with-quantum-depth=8 \
+  --with-webp \
+  --without-bzlib \
+  --without-djvu \
+  --without-dps \
+  --without-fftw \
+  --without-fontconfig \
+  --without-freetype \
+  --without-gvc \
+  --without-jbig \
+  --without-jp2 \
+  --without-lcms \
+  --without-lcms2 \
+  --without-lqr \
+  --without-lzma \
+  --without-magick-plus-plus \
+  --without-openexr \
+  --without-pango \
+  --without-perl \
+  --without-tiff \
+  --without-wmf \
+  --without-x \
+  --without-xml \
+  --without-zlib
+
+# ImageMagick seems to ignore the CPPFLAGS!?!
+ln -s /usr/local/include/ImageMagick-6 /usr/local/include/ImageMagick
+source ${ID}install.sh

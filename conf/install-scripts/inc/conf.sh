@@ -17,7 +17,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# "igbinary" installation script.
+# Helper script containing global configuration for all installer scripts.
 #
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
@@ -25,13 +25,36 @@
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-cd /usr/local/src
-git clone git://github.com/phadej/igbinary.git
-cd igbinary
-phpize
-./configure CFLAGS="-O3" --enable-igbinary
-make
-make test
-make install
-rm -rf /usr/local/src/igbinary
-exit 0
+function msgline() {
+  for i in {1..80}; do
+    echo -n "-"
+  done
+}
+
+function msgerror() {
+  local COLOR="\033[01;31m" # red
+  local RESET="\033[00;00m" # white
+  echo -e "${COLOR}${1}${RESET}"
+}
+
+function msginfo() {
+  local COLOR="\033[01;34m" # blue
+  local RESET="\033[00;00m" # white
+  echo -e "${COLOR}${1}${RESET}"
+}
+
+function msgsuccess() {
+  local COLOR="\033[01;32m" # green
+  local RESET="\033[00;00m" # white
+  echo -e "${COLOR}${1}${RESET}"
+}
+
+if [ "$(whoami)" != "root" ]; then
+  msgerror "You are using a non-privileged account, exiting!"
+  exit 1
+fi
+
+WD="$(pwd)/"          # Work directory
+ID="${WD}/inc/"       # Include directory
+SD="/usr/local/src/"  # Source directory
+cd ${SD}

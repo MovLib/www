@@ -17,23 +17,22 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# PHP memcached extension installation script.
+# Helper script to clone from GitHub.
 #
-# LINK: https://github.com/$NAME-dev/$NAME/
-# LINK: http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-source $(pwd)/inc/conf.sh
-NAME="php-memcached"
-source ${ID}git.sh "${NAME}-dev" ${NAME}
-phpize
-./configure ${DEFAULT_FLAGS} \
-  --disable-memcached-sasl \
-  --enable-memcached \
-  --enable-memcached-igbinary \
-  --enable-memcached-json
-source ${ID}install.sh
+if [ ! ${#} == 2 ]; then
+  msgerror "Missing arguments: GitHub user [1] and project [2] name!"
+  exit 1
+fi
+
+if [ ! -d ${2} ]; then
+  git clone git://github.com/${1}/${2}.git
+fi
+
+msginfo "Changing to directory: ${SD}${2}"
+cd ${2}

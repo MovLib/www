@@ -26,15 +26,16 @@
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-cd /usr/local/src
-wget https://snappy.googlecode.com/files/snappy-1.1.0.tar.gz
-tar xzf snappy-1.1.0.tar.gz
-mv snappy-1.1.0 snappy
-rm -f snappy-1.1.0.tar.gz
-cd snappy
-./configure CFLAGS="-O3"
-make
-make test
-make install
-rm -rf /usr/local/src/snappy
-exit 0
+source $(pwd)/inc/conf.sh
+
+if [ ${#} == 1 ]; then
+  VERSION=${1}
+else
+  VERSION="1.1.0"
+  msginfo "No version string supplied as argument, using default version ${VERSION}!"
+fi
+
+NAME="snappy-${VERSION}"
+source ${ID}wget.sh "https://snappy.googlecode.com/files/" ${NAME} ".tar.gz"
+./configure CFLAGS="-O3 -m64" CXXFLAGS="-O3 -m64" LDFLAGS="-O3 -m64"
+source ${ID}install.sh

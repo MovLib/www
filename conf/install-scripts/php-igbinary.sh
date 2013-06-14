@@ -17,10 +17,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# PHP memcached extension installation script.
+# "igbinary" installation script.
 #
-# LINK: https://github.com/$NAME-dev/$NAME/
-# LINK: http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -28,12 +26,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 source $(pwd)/inc/conf.sh
-NAME="php-memcached"
-source ${ID}git.sh "${NAME}-dev" ${NAME}
+NAME="igbinary"
+source ${ID}git.sh "phadej" ${NAME}
 phpize
-./configure ${DEFAULT_FLAGS} \
-  --disable-memcached-sasl \
-  --enable-memcached \
-  --enable-memcached-igbinary \
-  --enable-memcached-json
+./configure CFLAGS='-O3 -m64' LDFLAGS='-O3 -m64' --enable-igbinary
 source ${ID}install.sh

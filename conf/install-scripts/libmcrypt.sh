@@ -17,10 +17,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# PHP memcached extension installation script.
+# "libmcrypt" installation script.
 #
-# LINK: https://github.com/$NAME-dev/$NAME/
-# LINK: http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -28,12 +26,16 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 source $(pwd)/inc/conf.sh
-NAME="php-memcached"
-source ${ID}git.sh "${NAME}-dev" ${NAME}
-phpize
-./configure ${DEFAULT_FLAGS} \
-  --disable-memcached-sasl \
-  --enable-memcached \
-  --enable-memcached-igbinary \
-  --enable-memcached-json
+
+if [ ${#} == 1 ]; then
+  VERSION=${1}
+else
+  VERSION="2.5.8"
+  msginfo "No version string supplied as argument, using default version ${VERSION}!"
+fi
+
+aptitude -y install libltdl-dev
+NAME="libmcrypt-${VERSION}"
+source ${ID}wget.sh "http://softlayer.dl.sourceforge.net/sourceforge/mcrypt/" ${NAME} ".tar.gz"
+./configure --disable-posix-threads --enable-dynamic-loading
 source ${ID}install.sh

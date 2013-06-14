@@ -20,23 +20,25 @@
 # "PHP imagick" installation script.
 #
 # LINK: http://pecl.php.net/package/imagick
+# LINK: http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-cd /usr/local/src
-wget http://pecl.php.net/get/imagick-3.1.0RC2.tgz
-tar xzf imagick-3.1.0RC2.tgz
-mv imagick-3.1.0RC2 imagick
-rm -f imagick-3.1.0RC2.tgz
-cd imagick
-patch < /var/www/conf/install-scripts/php-imagick.patch
+source $(pwd)/inc/conf.sh
+
+if [ ${#} == 1 ]; then
+  VERSION=${1}
+else
+  VERSION="3.1.0RC2"
+  msginfo "No version string supplied as argument, using default version ${VERSION}!"
+fi
+
+NAME="imagick-${VERSION}"
+source ${ID}wget.sh "http://pecl.php.net/get/" ${NAME} ".tgz"
+rm -f ../package.xml
 phpize
-./configure CFLAGS="-O3"
-make
-make test
-make install
-rm -rf /usr/local/src/imagick /usr/local/src/package.xml
-exit 0
+./configure ${DEFAULT_FLAGS}
+source ${ID}install.sh

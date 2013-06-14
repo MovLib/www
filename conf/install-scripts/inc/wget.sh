@@ -17,23 +17,27 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# PHP memcached extension installation script.
+# Helper script to download a gzipped tarball, extract and delete it.
 #
-# LINK: https://github.com/$NAME-dev/$NAME/
-# LINK: http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-source $(pwd)/inc/conf.sh
-NAME="php-memcached"
-source ${ID}git.sh "${NAME}-dev" ${NAME}
-phpize
-./configure ${DEFAULT_FLAGS} \
-  --disable-memcached-sasl \
-  --enable-memcached \
-  --enable-memcached-igbinary \
-  --enable-memcached-json
-source ${ID}install.sh
+if [ ! ${#} == 3 ]; then
+  msgerror "Missing arguments: download URL [1], name [2] and extension [3]!"
+  exit 1
+fi
+
+if [ ! -f ${2}${3} ] && [ ! -d ${2} ]; then
+  wget --no-check-certificate ${1}${2}${3}
+  tar xzf ${2}${3}
+fi
+
+if [ -f ${2}${3} ]; then
+  rm -f ${2}${3}
+fi
+
+msginfo "Changing to directory: ${SD}${2}"
+cd ${2}

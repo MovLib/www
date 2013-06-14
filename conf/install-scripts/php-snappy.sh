@@ -20,21 +20,16 @@
 # "PHP Snappy" installation script.
 #
 # LINK: https://github.com/goatherd/php-snappy
+# LINK: http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-cd /usr/local/src
-git clone git://github.com/goatherd/php-snappy.git
-cd php-snappy
+source $(pwd)/inc/conf.sh
+NAME="php-snappy"
+source ${ID}git.sh "goatherd" ${NAME}
 phpize
-./configure \
-  CFLAGS="-O3" \
-  --with-snappy
-make
-make test
-make install
-rm -rf /usr/local/src/php-snappy
-exit 0
+./configure ${DEFAULT_FLAGS} --with-snappy
+source ${ID}install.sh

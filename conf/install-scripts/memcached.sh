@@ -25,21 +25,23 @@
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-aptitude -y install libevent-dev
-cd /usr/local/src
-wget http://memcached.googlecode.com/files/memcached-1.4.15.tar.gz
-tar xzf memcached-1.4.15.tar.gz
-mv memcached-1.4.15 memcached
-rm -f memcached-1.4.15.tar.gz
-cd memcached
+source $(pwd)/inc/conf.sh
+
+if [ ${#} == 1 ]; then
+  VERSION=${1}
+else
+  VERSION="1.4.15"
+  msginfo "No version string supplied as argument, using default version ${VERSION}!"
+fi
+
+aptitude update && aptitude -y install libevent-dev
+NAME="memcached-${VERSION}"
+source ${ID}wget.sh "http://memcached.googlecode.com/files/" ${NAME} ".tar.gz"
 ./configure \
-  CFLAGS="-O3" \
-  --sysconfdir=/etc/memcached \
+  CFLAGS="-O3 -m64" \
+  LDFLAGS="-O3 -m64" \
+  --sysconfdir="/etc/memcached" \
   --disable-coverage \
   --enable-64bit \
   --disable-docs
-make
-make test
-make install
-rm -rf /usr/local/src/memcached
-exit 0
+source ${ID}install.sh

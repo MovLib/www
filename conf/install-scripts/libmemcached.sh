@@ -19,23 +19,24 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # "libmemcached" installation script.
 #
+# LINK: https://github.com/trondn/libmemcached
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-cd /usr/local/src
-# 1.0.17 is broken in combination with the memcached PHP extension.
-#git clone git://github.com/trondn/libmemcached.git
-wget https://launchpad.net/libmemcached/1.0/1.0.16/+download/libmemcached-1.0.16.tar.gz
-tar xzf libmemcached-1.0.16.tar.gz
-mv libmemcached-1.0.16 libmemcached
-rm -f libmemcached-1.0.16.tar.gz
-cd libmemcached
-./configure CFLAGS="-O3"
-make
-make test
-make install
-rm -rf /usr/local/src/libmemcached
-exit 0
+source $(pwd)/inc/conf.sh
+
+if [ ${#} == 1 ]; then
+  VERSION=${1}
+else
+  VERSION="1.0.16"
+  msginfo "No version string supplied as argument, using default version ${VERSION}!"
+  msginfo "1.0.17 is broken in combination with the memcached PHP extension. Otherwise we could use GitHub and snatch the latest version!"
+fi
+
+NAME="libmemcached-${VERSION}"
+source ${ID}wget.sh "https://launchpad.net/libmemcached/1.0/1.0.16/+download/" ${NAME} ".tar.gz"
+./configure CFLAGS="-O3 -m64" CXXFLAGS="-O3 -m64" LDFLAGS="-O3 -m64"
+source ${ID}install.sh
