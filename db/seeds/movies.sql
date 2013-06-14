@@ -1,10 +1,10 @@
 USE `movlib`;
 BEGIN;
-INSERT INTO `movies` (`year`, `runtime`, `dyn_titles`, `dyn_synopses`) VALUES (
+INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`) VALUES (
   '1888',
   1,
-  COLUMN_CREATE('original', 'Roundhay Garden Scene'),
-  COLUMN_CREATE('en', 'This is the first movie ever')
+  'Roundhay Garden Scene',
+  COLUMN_CREATE('en', 'This is the first movie ever.')
 );
 INSERT INTO `movies_languages` (`movie_id`, `language_id`) VALUES (1, 185);
 INSERT INTO `movies_genres` (`movie_id`, `genre_id`) VALUES (1, 7), (1, 18), (1, 19);

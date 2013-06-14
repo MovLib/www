@@ -21,6 +21,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
   `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime.' ,
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.' ,
   `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.' ,
+  `bin_relationships` BLOB NULL ,
   PRIMARY KEY (`movie_id`) ,
   UNIQUE INDEX `uq_movies_rank` (`rank` ASC) )
 COMMENT = 'Contains all movie’s data.'
@@ -187,7 +188,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `twitter` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s Twitter data.' ,
   `real_name` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.' ,
   `country_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.' ,
-  `language_id` INT UNSIGNED NOT NULL DEFAULT NULL COMMENT 'The user’s language.' ,
+  `language_id` INT UNSIGNED NOT NULL COMMENT 'The user’s language.' ,
   PRIMARY KEY (`user_id`) ,
   INDEX `fk_users_images` (`image_id` ASC) ,
   INDEX `fk_users_countries` (`country_id` ASC) ,
@@ -621,8 +622,9 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this title is in.' ,
   `title` BLOB NOT NULL COMMENT 'The movie\'s title.' ,
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.' ,
-  PRIMARY KEY (`movie_id`) ,
+  `is_display_title` TINYINT(1) NOT NULL DEFAULT false ,
   INDEX `fk_movies_titles_languages1_idx` (`language_id` ASC) ,
+  INDEX `fk_movies_titles_movies` (`movie_id` ASC) ,
   CONSTRAINT `fk_movies_titles_movies`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )
@@ -644,8 +646,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.' ,
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this tagline is in.' ,
   `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.' ,
-  PRIMARY KEY (`movie_id`) ,
   INDEX `fk_movies_taglines_languages1_idx` (`language_id` ASC) ,
+  INDEX `fk_movies_taglines_movies` (`movie_id` ASC) ,
   CONSTRAINT `fk_movies_taglines_movies`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )
@@ -676,35 +678,6 @@ ROW_FORMAT = COMPRESSED;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`movie_relationships`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`movie_relationships` (
-  `movie_id_left` BIGINT UNSIGNED NOT NULL COMMENT 'The left movie\'s unique ID of the relationship.' ,
-  `movie_id_right` BIGINT UNSIGNED NOT NULL COMMENT 'The right movie\'s unique ID of the relationship.' ,
-  `relationship_type_id` BIGINT NOT NULL COMMENT 'The relationship type\' unique ID.' ,
-  PRIMARY KEY (`movie_id_left`, `movie_id_right`, `relationship_type_id`) ,
-  INDEX `fk_movie_relationships_movies2_idx` (`movie_id_right` ASC) ,
-  INDEX `fk_movie_relationships_movie_relationship_types1_idx` (`relationship_type_id` ASC) ,
-  CONSTRAINT `fk_movie_relationships_movies_left`
-    FOREIGN KEY (`movie_id_left` )
-    REFERENCES `movlib`.`movies` (`movie_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movie_relationships_movies_right`
-    FOREIGN KEY (`movie_id_right` )
-    REFERENCES `movlib`.`movies` (`movie_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movie_relationships_movie_relationship_types`
-    FOREIGN KEY (`relationship_type_id` )
-    REFERENCES `movlib`.`relationship_types` (`relationship_type_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`movies_links`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`movies_links` (
@@ -713,8 +686,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_links` (
   `title` VARCHAR(100) NULL COMMENT 'The link\'s title attribute.' ,
   `text` VARCHAR(100) NOT NULL COMMENT 'The link\'s display text.' ,
   `url` VARCHAR(255) NOT NULL COMMENT 'The link\'s URL target' ,
-  PRIMARY KEY (`movie_id`) ,
   INDEX `fk_movies_links_languages1_idx` (`language_id` ASC) ,
+  INDEX `fk_movies_links_movies` (`movie_id` ASC) ,
   CONSTRAINT `fk_movies_links_movies`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )

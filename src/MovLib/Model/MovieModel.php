@@ -33,14 +33,477 @@ use \MovLib\Model\AbstractModel;
  */
 class MovieModel extends AbstractModel {
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
   /**
-   * Construct new movie model from given ID.
+   * The movie's id.
+   * @var int
+   */
+  public $id;
+  /**
+   * The movie's original release title.
+   *
+   * @var string
+   */
+  public $originalTitle;
+  /**
+   * The movie's Bayesian rating.
+   * @var float
+   */
+  public $rating;
+  /**
+   * The movie's statistical average rating.
+   *
+   * @var float
+   */
+  public $meanRating;
+  /**
+   * The movie's count of votes.
+   *
+   * @var int
+   */
+  public $votes;
+  /**
+   * The movie's deleted status.
+   *
+   * @var boolean
+   */
+  public $deleted;
+  /**
+   * The movie's release year.
+   *
+   * @var int
+   */
+  public $year;
+  /**
+   * The movie's approximate runtime in minutes.
+   *
+   * @var int
+   */
+  public $runtime;
+  /**
+   * The movie's global rank.
+   *
+   * @var int
+   */
+  public $rank;
+  /**
+   * The movie's localized synopsis.
+   *
+   * @var string
+   */
+  public $synopsis;
+  /**
+   * The movie's relationships to other movies (from the binary column).
+   * @var array
+   */
+  private $relationships;
+  /**
+   * The language code to display the movie in.
+   * @var string
+   */
+  public $languageCode;
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+  /**
+   * Construct new movie model from given ID and gather all movie information available in the movies table.
    *
    * @param int $id
    */
-  public function __constructFromId($id) {
-    throw new MovieException("Could not find movie with ID '{$id}'!");
+  public function __constructFromId($id, $languageCode = "en") {
+    $this->languageCode = $languageCode;
+    $result = $this->select(
+      "SELECT
+        `movie_id` AS `id`,
+        `original_title` AS `originalTitle`,
+        `rating` AS `rating`,
+        `mean_rating` AS `meanRating`,
+        `votes`,
+        `deleted`,
+        `year`,
+        `runtime`,
+        `rank`,
+        COLUMN_GET(`dyn_synopses`, '{$languageCode}' AS BINARY) AS `synopsis`,
+        `bin_relationships` AS `relationships`
+        FROM `movies`
+        WHERE `movie_id` = ?
+        LIMIT 1",
+      "d",
+      [ $id ]
+    );
+    if (isset($result[0]) === null) {
+      throw new MovieException("Could not find movie with ID '{$id}'!");
+    }
+    foreach ($result[0] as $fieldName => $fieldValue) {
+      $this->{$fieldName} = $fieldValue;
+    }
+    settype($this->deleted, "boolean");
+    $this->relationships = igbinary_unserialize($this->relationships);
     return $this;
+  }
+
+  /**
+   * Retrieve the movie's awards from the database.
+   *
+   * @staticvar array $awards
+   * @return array
+   *  A keyed array containing the award information in an associative array.
+   */
+  public function getAwards() {
+    static $awards = null;
+    if ($awards === null) {
+      $awards = $this->select(
+        "SELECT
+          a.`award_id` AS `id`,
+          a.`name` AS `name`,
+          COLUMN_GET(a.`dyn_names`, '{$this->languageCode}' AS BINARY) AS `nameLocalized`,
+          ma.`year` AS `year`
+          FROM `movies_awards` ma
+          INNER JOIN `awards` a
+          ON ma.`award_id` = a.`award_id`
+          WHERE ma.`movie_id` = ?
+          ORDER BY `nameLocalized` ASC, `name` ASC",
+        "d",
+        [ $this->id ]
+      );
+    }
+    return $awards;
+  }
+
+  /**
+   * Retrieve the movie's cast from the database.
+   *
+   * @staticvar array $cast
+   * @return array
+   *  A keyed array containing the cast information in an associative array.
+   */
+  public function getCast() {
+    static $cast = null;
+    if ($cast === null) {
+      $cast = $this->select(
+        "SELECT
+          p.`person_id` AS `id`,
+          p.`name` AS `name`,
+          p.`deleted` AS `deleted`,
+          mc.`roles`
+          FROM `movies_cast` mc
+          INNER JOIN `persons` p
+          ON mc.`person_id` = p.`person_id`
+          WHERE mc.`movie_id` = ?
+          ORDER BY `name` ASC",
+        "d",
+        [ $this->id ]
+      );
+      settype($cast["deleted"], "boolean");
+    }
+    return $cast;
+  }
+
+  /**
+   * Retrieve the movie's crew from the database.
+   *
+   * @staticvar array $crew
+   * @return array
+   *  A keyed array containing the crew information in an associative array.
+   */
+  public function getCrew() {
+    static $crew = null;
+    if ($crew === null) {
+      $crew = $this->select(
+        "SELECT
+          mc.`crew_id` AS `crewId`,
+          p.`person_id` AS `personId`,
+          p.`name` AS `personName`,
+          p.`deleted` AS `personDeleted`,
+          c.`company_id` AS `companyId`,
+          c.`name` AS `companyName`,
+          c.`deleted` AS `companyDeleted`,
+          j.`job_id` AS `jobId`,
+          j.`title` AS `jobTitle`,
+          COLUMN_GET(j.`dyn_titles`, '{$this->languageCode}' AS BINARY) AS `jobTitleLocalized`
+          FROM `movies_crew` mc
+          INNER JOIN `jobs` j
+            ON mc.`job_id` = j.`job_id`
+          LEFT JOIN `persons` p
+            ON mc.`person_id` = p.`person_id`
+          LEFT JOIN `companies` c
+            ON mc.`company_id` = c.`company_id`
+          WHERE mc.`movie_id` = ?
+          ORDER BY `personName` ASC, `companyName` ASC",
+        "d",
+        [ $this->id ]
+      );
+      settype($crew["personDeleted"], "deleted");
+      settype($crew["companyDeleted"], "deleted");
+    }
+    return $crew;
+  }
+
+  /**
+   * Retrieve the movie's production countries from the database.
+   *
+   * @staticvar array $countries
+   * @return array
+   *  A keyed array containing the country information in an associative array.
+   */
+  public function getCountries() {
+    static $countries = null;
+    if ($countries === null) {
+      $countries = $this->select(
+        "SELECT
+          c.`country_id` AS `id`,
+          c.`iso_alpha-2` AS `isoCode`,
+          c.`name` AS `name`,
+          COLUMN_GET(c.`dyn_translations`, '{$this->languageCode}' AS BINARY) AS `nameLocalized`
+          FROM `movies_countries` mc
+          INNER JOIN `countries` c
+          ON mc.`country_id` = c.`country_id`
+          WHERE mc.`movie_id` = ?
+          ORDER BY `nameLocalized` ASC, `name` ASC",
+        "d",
+        [ $this->id ]
+      );
+    }
+    return $countries;
+  }
+
+  /**
+   * Retrieve the movie's directors from the database.
+   *
+   * @staticvar array $directors
+   * @return array
+   *  A keyed array containing the director information in an associative array.
+   */
+  public function getDirectors() {
+    static $directors = null;
+    if ($directors === null) {
+      $directors = $this->select(
+        "SELECT
+          p.`person_id` AS `id`,
+          p.`name` AS `name`,
+          p.`deleted` AS `deleted`
+          FROM `movies_directors` md
+          INNER JOIN `persons` p
+          ON md.`person_id` = p.`person_id`
+          WHERE md.`movie_id` = ?
+          ORDER BY `name` ASC",
+        "d",
+        [$this->id]
+      );
+      settype($directors["deleted"], "boolean");
+    }
+    return $directors;
+  }
+
+  /**
+   * Retrieve the movie's genres from the database.
+   *
+   * @staticvar array $genres
+   * @return array
+   *  A keyed array containing the genre information in an associative array.
+   */
+  public function getGenres() {
+    static $genres = null;
+    if ($genres === null) {
+      $genres = $this->select(
+        "SELECT
+          g.`genre_id` AS `id`,
+          g.`name` AS `name`,
+          COLUMN_GET(g.`dyn_names`, '{$this->languageCode}' AS BINARY) AS `nameLocalized`
+          FROM `movies_genres` mg
+          INNER JOIN `genres` g
+          ON mg.`genre_id` = g.`genre_id`
+          WHERE mg.`movie_id` = ?
+          ORDER BY `nameLocalized` ASC, `name` ASC",
+        "d",
+        [ $this->id ]
+      );
+    }
+    return $genres;
+  }
+
+  /**
+   * Retrieve the movie's languages from the database.
+   *
+   * @staticvar array $languages
+   * @return array
+   *  A keyed array containing the language information in an associative array.
+   */
+  public function getLanguages() {
+    static $languages = null;
+    if ($languages === null) {
+      $languages = $this->select(
+        "SELECT
+          l.`language_id` AS `id`,
+          l.`iso_alpha-2` AS `isoCode`,
+          l.`name` AS `name`,
+          COLUMN_GET(l.`dyn_translations`, '{$this->languageCode}' AS BINARY) AS `nameLocalized`
+          FROM `movies_languages` ml
+          INNER JOIN `languages` l
+          ON ml.`language_id` = l.`language_id`
+          WHERE ml.`movie_id` = ?
+          ORDER BY `nameLocalized` ASC, `name` ASC",
+        "d",
+        [ $this->id ]
+      );
+    }
+    return $languages;
+  }
+
+  /**
+   * Retrieve the movie's external links from the database.
+   *
+   * @staticvar array $links
+   * @return array
+   *  A keyed array containing the link information in an associative array.
+   */
+  public function getLinks () {
+    static $links = null;
+    if ($links === null) {
+      $links = $this->select(
+        "SELECT
+          ml.`title` AS `title`,
+          ml.`text` AS `text`,
+          ml.`url` AS `URL`,
+          l.`language_id` AS `languageId`,
+          l.`iso_alpha-2` AS `languageIsoCode`,
+          l.`name` AS `languageName`
+          FROM `movies_links` ml
+          INNER JOIN `languages` l
+          ON ml.`language_id` = l.`language_id`
+          WHERE ml.`movie_id` = ?",
+        "d",
+        [ $this->id ]);
+    }
+    return $links;
+  }
+
+  /**
+   * Retrieve the movie's relationships to other movies.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   * @staticvar array $relationships
+   * @return array
+   *  A keyed array containing the relationship information to other movies in an associative array.
+   */
+  public function getRelationships() {
+    global $i18n;
+    static $relationships = null;
+    if ($relationships === null) {
+      $movieIds = [];
+      foreach ($this->relationships as $rel) {
+        if (isset($rel["movie_id"])) {
+          $movieIds[] = $rel["movie_id"];
+        }
+      }
+      foreach ($i18n->languages as $id => $code) {
+        if ($code === $this->languageCode) {
+          $languageId = $id;
+          break;
+        }
+      }
+      $relationships = $this->select(
+        "SELECT
+          m.`original_title` AS `originalTitle`,
+          m.`year` AS `year`,
+          mt.`title`
+          FROM `movies_titles` mt
+          INNER JOIN `movies` m
+          ON mt.`movie_id` = m.`movie_id`
+          WHERE m.`movie_id` IN (" . implode(",", $movieIds). ")
+            AND mt.`is_display_title` = 1
+            AND mt.`language_id` = ?",
+        "dd",
+        [ $languageId ]
+      );
+
+    }
+    return $relationships;
+  }
+
+  /**
+   * Retrieve the movie's styles from the database.
+   *
+   * @staticvar array $styles
+   * @return array
+   *  A keyed array containing the style information in an associative array.
+   */
+  public function getStyles() {
+    static $styles = null;
+    if ($styles === null) {
+      $styles = $this->select(
+        "SELECT
+          s.`style_id` AS `id`,
+          s.`name` AS `name`,
+          COLUMN_GET(s.`dyn_names`, '{$this->languageCode}' AS BINARY) AS `nameLocalized`
+          FROM `movies_styles` ms
+          INNER JOIN `styles` s
+          ON ms.`style_id` = s.`style_id`
+          WHERE ms.`movie_id` = ?
+          ORDER BY `nameLocalized` ASC, `name` ASC",
+        "d",
+        [ $this->id ]
+      );
+    }
+    return $styles;
+  }
+
+  /**
+   * Retrieve the movie's taglines from the database.
+   *
+   * @staticvar array $tagLines
+   * @return array
+   *  A keyed array containing the tagline information in an associative array.
+   */
+  public function getTagLines() {
+    static $tagLines = null;
+    if ($tagLines === null) {
+      $tagLines = $this->select(
+        "SELECT
+          mt.`tagline` AS `tagline`,
+          l.`language_id` AS `languageId`,
+          l.`iso_alpha-2` AS `languageIsoCode`,
+          l.`name` AS `languageName`,
+          COLUMN_GET(l.`dyn_translations`, '{$this->languageCode}' AS BINARY) AS `languageNameLocalized`
+          FROM `movies_taglines` mt
+          INNER JOIN `languages` l
+          ON mt.`language_id` = l.`language_id`
+          WHERE mt.`movie_id` = ?",
+          "d",
+          [$this->id]
+      );
+    }
+    return $tagLines;
+  }
+
+  /**
+   * Retrieve the movie's titles from the database.
+   *
+   * @staticvar array $titles
+   * @return array
+   *  A keyed array containing the title information in an associative array.
+   */
+  public function getTitles() {
+    static $titles = null;
+    if ($titles === null) {
+      $titles = $this->select(
+        "SELECT mt.`title` AS `title`,
+          COLUMN_GET(`dyn_comments`, 'en' AS BINARY) AS `comment`,
+          COLUMN_GET(`dyn_comments`, '{$this->languageCode}' AS BINARY) AS `commentLocalized`,
+          l.`language_id` AS `languageId`,
+          l.`iso_alpha-2` AS `languageIsoCode`,
+          l.`name` AS `languageName`,
+          COLUMN_GET(l.`dyn_translations`, '{$this->languageCode}' AS BINARY) AS `languageNameLocalized`
+          FROM `movies_titles` mt
+          INNER JOIN `languages` l
+          ON mt.`language_id` = l.`language_id`
+          WHERE mt.`movie_id` = ?
+          ORDER BY `title` ASC",
+        "d",
+        [ $this->id ]
+      );
+    }
+    return $titles;
   }
 
 }
