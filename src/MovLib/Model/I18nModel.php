@@ -181,6 +181,27 @@ class I18nModel extends AbstractModel {
   }
 
   /**
+   * Get numeric array containing all languages, direct mapped to the database table. The unique languages ID is the key.
+   *
+   * <em>NOTE:</em> The translations for the languages cannot be empty, we get them from Intl ICU.
+   *
+   * @staticvar array $languages
+   *   Used to cache the array.
+   * @return array
+   *   Array containing all languages.
+   */
+  public function getLanguages() {
+    static $languages = null;
+    if ($languages === null) {
+      $n = $this->languageCode === $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
+      foreach ($this->selectAll("SELECT `language_id`, `iso_alpha-2`, {$n}`name` FROM `languages`") as $l) {
+        $languages[$l["language_id"]] = [ "code" => $l["iso_alpha-2"], "name" => $l["name"] ];
+      }
+    }
+    return $languages;
+  }
+
+  /**
    * Get collator for the current language.
    *
    * @staticvar \Collator $collator
@@ -195,6 +216,27 @@ class I18nModel extends AbstractModel {
       $collator = new Collator($this->locale);
     }
     return $collator;
+  }
+
+  /**
+   * Get numeric array containing all countries, direct mapped to the database table. The unique country ID is the key.
+   *
+   * <em>NOTE:</em> The translations for the countries cannot be empty, we get them from Intl ICU.
+   *
+   * @staticvar array $countries
+   *   Used to cache the array.
+   * @return array
+   *   Array containing all countries.
+   */
+  public function getCountries() {
+    static $countries = null;
+    if ($countries === null) {
+      $n = $this->languageCode === $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
+      foreach ($this->selectAll("SELECT `country_id`, `iso_alpha-2`, {$n}`name` FROM `countries`") as $c) {
+        $countries[$c["country_id"]] = [ "code" => $c["iso_alpha-"], "name" => $c["name"] ];
+      }
+    }
+    return $countries;
   }
 
   /**
