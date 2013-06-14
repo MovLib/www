@@ -131,25 +131,6 @@ abstract class AbstractPresenter {
     return ucfirst(strtolower($_SERVER["REQUEST_METHOD"]));
   }
 
-  /**
-   * Get value identified by key from global post array without triggering an error if array or offset (key) does not
-   * exist.
-   *
-   * @param mixed $key
-   *   The key (offset in the array) to identify the desired value within the global post array.
-   * @param mixed $defaultValue
-   *   [Optional] The value that should be returned if global post array or the key within the global post array is not
-   *   present. Defaults to an empty string.
-   * @return mixed
-   *   The desired value if present or value of <var>$defaultValue</var>.
-   */
-  public final function getPostValue($key, $defaultValue = "") {
-    if (isset($_POST[$key])) {
-      return $_POST[$key];
-    }
-    return $defaultValue;
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Public methods
 
