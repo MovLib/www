@@ -27,6 +27,7 @@ use \MovLib\Utility\HTTP;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 use \MovLib\View\HTML\AlertView;
+use \MovLib\View\HTML\User\UserLoginView;
 use \MovLib\View\HTML\User\UserRegisterView;
 use \MovLib\View\HTML\User\UserResetPasswordView;
 use \MovLib\View\HTML\User\UserSettingsView;
@@ -70,16 +71,48 @@ class UserPresenter extends AbstractPresenter {
   /**
    * Render the sign in form.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @global \MovLib\Model\UserModel $user
    *   The global user model instance.
    * @return $this
    */
   private function __constructLogin() {
-    global $user;
+    global $i18n, $user;
     if ($user->isLoggedIn === true) {
-      return $this->setPresentation("Error\\Forbidden");
+      HTTP::redirect("/", 302);
     }
-    return $this->setPresentation("User\\UserLogin");
+    // Ensure we are using the correct route (this method is called from other constructors in this presenter as well).
+    $_SERVER["REQUEST_URI"] = $i18n->r("/user/login");
+    $view = new UserLoginView($this);
+    if (isset($_POST["submitted"])) {
+      $mail = filter_input(INPUT_POST, "mail", FILTER_SANITIZE_EMAIL);
+      if (($error = DelayedMailer::validateEmail($mail))) {
+        $view->setAlert($error, AbstractView::ALERT_SEVERITY_ERROR);
+        $view->formInvalid["mail"] = true;
+      }
+      elseif (!($pass = filter_input(INPUT_POST, "pass", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)) || empty($pass)) {
+        $view->setAlert($i18n->t("The password field is mandatory."), AbstractView::ALERT_SEVERITY_ERROR);
+        $view->formInvalid["pass"] = true;
+      }
+      else {
+        try {
+          $user->login($mail, $pass);
+        } catch (UserException $e) {
+          $view->setAlert([
+            "title" => $i18n->t("Login Error"),
+            "message" =>
+              "<p>{$i18n->t("We either don’t know this email address or the password you entered contains errors.")}</p>" .
+              "<p>{$i18n->t("Please try again, or visit the {0} to create a new account.", [
+                $view->a($i18n->r("/user/register"), $i18n->t("registration page"))
+              ])}</p>"
+          ], AbstractView::ALERT_SEVERITY_ERROR, true);
+          $view->formInvalid["mail"] = $view->formInvalid["pass"] = true;
+        }
+      }
+    }
+    $this->view = $view;
+    return $this;
   }
 
   /**
@@ -126,7 +159,7 @@ class UserPresenter extends AbstractPresenter {
   private function __constructRegister() {
     global $i18n, $user;
     if ($user->isLoggedIn === true) {
-      return $this->setPresentation("Error\\Forbidden");
+      HTTP::redirect("/", 302);
     }
     if (isset($_POST["submitted"])) {
       $view = new UserRegisterView($this);
@@ -194,9 +227,6 @@ class UserPresenter extends AbstractPresenter {
    */
   private function __constructResetPassword() {
     global $i18n, $user;
-    if ($user->isLoggedIn === true) {
-      return $this->setPresentation("Error\\Forbidden");
-    }
     $view = new UserResetPasswordView($this);
     if (isset($_POST["submitted"])) {
       $mail = filter_input(INPUT_POST, "mail", FILTER_SANITIZE_EMAIL);
@@ -240,7 +270,12 @@ class UserPresenter extends AbstractPresenter {
   private function __constructSettings() {
     global $i18n, $user;
     if ($user->isLoggedIn === false) {
-      return $this->setPresentation("Error\\Forbidden");
+      $this->__constructLogin();
+      $this->view->setAlert([
+        "title" => $i18n->t("Authentication Required"),
+        "message" => $i18n->t("You have to log in before you can access your settings page.")
+      ], AbstractView::ALERT_SEVERITY_INFO);
+      return $this;
     }
     $view = new UserSettingsView($this, $_SERVER["TAB"]);
     $this->view = $view;

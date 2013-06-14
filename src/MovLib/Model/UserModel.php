@@ -73,7 +73,7 @@ class UserModel extends AbstractModel {
   public $csrfToken;
 
   /**
-   * The user's unique ID,
+   * The user's unique ID, defaults to zero (anonymous user).
    *
    * @var int
    */
@@ -137,7 +137,7 @@ class UserModel extends AbstractModel {
   public function __construct($from = null, $value = null) {
     switch ($from) {
       case "session":
-//        list($from, $value) = $this->sessionStart(true);
+        $this->sessionInitialize();
         break;
 
       case "user_id":
@@ -167,13 +167,21 @@ class UserModel extends AbstractModel {
           FROM `users`
             WHERE `{$from}` = ?
           LIMIT 1", $type, [ $value ]
-        )[0] as $propertyName => $propertyValue) {
-          $this->{$propertyName} = $this->{$propertyValue};
+        )[0] as $name => $value) {
+          $this->{$name} = $value;
         }
         settype($this->deleted, "boolean");
       } catch (ErrorException $e) {
         throw new UserException("Could not find user for {$from} '{$value}'!", $e);
       }
+    }
+    // If we have no ID until this point, create anon user.
+    if (!$this->id) {
+      $this->id = 0;
+      // @todo It is important to configure our servers that they will always submit this key with the user's IP address
+      //       especially if we start using proxies. It's no problem to alter the submitted FastCGI parameters (something
+      //       we are doing heavily already).
+      $this->name = $_SERVER["REMOTE_ADDR"];
     }
   }
 
@@ -233,6 +241,22 @@ class UserModel extends AbstractModel {
   }
 
   /**
+   * Check if a user with the given value exists.
+   *
+   * @param string $column
+   *   The column name against which the value should be checked.
+   * @param mixed $value
+   *   The user attribute to check.
+   * @param string $type
+   *   [Optional] The datatype of the column in the database, defaults to string.
+   * @return boolean
+   *   <tt>TRUE</tt> if a user exists with the given value, otherwise <tt>FALSE</tt>.
+   */
+  public function exists($column, $value, $type = "s") {
+    return !empty($this->select("SELECT `user_id` FROM `users` WHERE `{$column}` = ? LIMIT 1", $type, [ $value ]));
+  }
+
+  /**
    * Get the user's preferred ISO 639-1 alpha-2 language code.
    *
    * @staticvar string $languageCode
@@ -267,22 +291,6 @@ class UserModel extends AbstractModel {
       $profileRoute = $i18n->r("/user/{0,number,integer}", [ $this->id ]);
     }
     return $profileRoute;
-  }
-
-  /**
-   * Check if a user with the given value exists.
-   *
-   * @param string $column
-   *   The column name against which the value should be checked.
-   * @param mixed $value
-   *   The user attribute to check.
-   * @param string $type
-   *   [Optional] The datatype of the column in the database, defaults to string.
-   * @return boolean
-   *   <tt>TRUE</tt> if a user exists with the given value, otherwise <tt>FALSE</tt>.
-   */
-  public function exists($column, $value, $type = "s") {
-    return !empty($this->select("SELECT `user_id` FROM `users` WHERE `{$column}` = ? LIMIT 1", $type, [ $value ]));
   }
 
   /**
@@ -321,6 +329,35 @@ class UserModel extends AbstractModel {
     ;
   }
 
+
+  public function login($mail, $pass) {
+    try {
+      foreach ($this->select(
+        "SELECT
+          `user_id` AS `id`,
+          `name`,
+          `created` AS `timestampCreated`,
+          `access` AS `timestampLastAccess`,
+          `login` AS `timestampLastLogin`,
+          `deleted`,
+          `timezone`,
+          `image_id` AS `imageId`,
+          `real_name` AS `realName`,
+          `country_id` AS `countryId`,
+          `language_id` AS `languageId`
+        FROM `users`
+          WHERE `mail` = ?
+          AND `pass` = ?
+        LIMIT 1", "ss", [ $mail, password_hash($pass, PASSWORD_DEFAULT) ]
+      )[0] as $name => $value) {
+        $this->{$name} = $value;
+      }
+      settype($this->deleted, "boolean");
+    } catch (ErrorException $e) {
+      throw new UserException("Could not find a user with the given mail/password combination.", $e);
+    }
+  }
+
   /**
    * Select the data that was previously stored from the temporary database.
    *
@@ -348,14 +385,34 @@ class UserModel extends AbstractModel {
   }
 
   /**
-   * Start session if none is active. This will also generate the CSRF token for this user's session.
+   * Initializes the session and starts a session if needed.
+   *
+   * @return $this
+   */
+  public function sessionInitialize() {
+    // Empty session IDs are not valid.
+    if (!empty($_COOKIE["MOVSID"])) {
+
+    }
+  }
+
+  /**
+   * Starts a session forcefully, preserving already set session data. A new CSRF token will be generated for the user.
    *
    * @return $this
    */
   public function sessionStart() {
-    if (session_status() === PHP_SESSION_NONE && session_start() === true) {
+    if (session_status() === PHP_SESSION_NONE) {
+      // Save current session before starting it, as PHP will destroy it.
+      $sessionData = isset($_SESSION) ? $_SESSION : null;
+      session_start();
       $this->csrfToken = $_SESSION["TOKEN"] = Crypt::randomHashBase64();
       $this->isLoggedIn = true;
+      $_SESSION["HTTP_USER_AGENT"] = $_SERVER["HTTP_USER_AGENT"];
+      // Restore session data.
+      if ($sessionData !== null) {
+        $_SESSION += $sessionData;
+      }
     }
     return $this;
   }
