@@ -157,12 +157,12 @@ table {
   - http://www.markboulton.co.uk/journal/five-simple-steps-to-better-typography-part-4
   - http://www.smashingmagazine.com/2013/05/17/typographic-design-patterns-practices-case-study-2013/
 */
-  font: 400 14px/1.46 'open sans light', 'open sans', arial, meiryo, 'microsoft yahei', 'ms yahei', yahei, sans-serif;
+  font: 400 14px/1.46 "open sans light", "open sans", arial, meiryo, "microsoft yahei", "ms yahei", yahei, sans-serif;
 }
 
 /* Ensure Chinese strings are displayed with the correct font choice. */
 [lang="zh"] {
-  font-family: 'open sans light', 'open sans', arial, 'microsoft yahei', 'ms yahei', yahei, meiryo, sans-serif;
+  font-family: "open sans light", "open sans", arial, "microsoft yahei", "ms yahei", yahei, meiryo, sans-serif;
 }
 
 html,
@@ -194,6 +194,10 @@ a {
   border-bottom: 1px solid transparent;
   color: #09c;
   text-decoration: none;
+  -webkit-transition: color, border-color 0.4s ease-out;
+     -moz-transition: color, border-color 0.4s ease-out;
+       -o-transition: color, border-color 0.4s ease-out;
+          transition: color, border-color 0.4s ease-out;
 }
 
 a:hover,
@@ -282,7 +286,6 @@ h4 {
   font-size: 17.5px;
 }
 
-.button--small,
 h6 {
   font-size: 11.9px;
 }
@@ -330,9 +333,9 @@ object {
 }
 
 button,
-html .input-button,
-.input-reset,
-.input-submit {
+html button,
+input[type="reset"],
+input[type="submit"] {
   -webkit-appearance: button;
 }
 
@@ -342,15 +345,14 @@ input::-moz-focus-inner {
   padding: 0;
 }
 
-.button,
 button,
 label,
 select,
-.input-button,
-.input-reset,
-.input-submit,
-.input-radio,
-.input-checkbox {
+input[type="button"],
+input[type="reset"],
+input[type="submit"],
+input[type="radio"],
+input[type="checkbox"] {
   cursor: pointer;
 }
 
@@ -359,22 +361,22 @@ label {
   margin-bottom: 5px;
 }
 
-.input-checkbox,
-.input-radio {
+input[type="checkbox"],
+input[type="ratio"] {
   margin: 4px 0 0;
   line-height: normal;
 }
 
-.input-search {
+input[type="search"] {
   -webkit-appearance: textfield;
 }
 
-.input-search::-webkit-search-decoration,
-.input-search::-webkit-search-cancel-button {
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
 }
 
-.input-text {
+input {
   -webkit-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
      -moz-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
           box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
@@ -387,7 +389,7 @@ label {
   vertical-align: middle;
 }
 
-.input-text:focus {
+input:focus {
   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
      -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
           box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
@@ -396,20 +398,30 @@ label {
   outline: 0;
 }
 
-.input-text:invalid:not(:empty),
-.input-text.invalid {
+input:invalid:not(:empty),
+input[aria-invalid] {
   border-color: #ee5f5b;
   outline: 0;
 }
 
-.input-text:focus:invalid:focus:not(:empty),
-.input-text.invalid:focus {
+input:focus:invalid:focus:not(:empty),
+input[aria-invalid]:focus {
   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
      -moz-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
           box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
   border-color: #e9322d;
   border-color: rgba(233, 50, 45, 0.8);
   outline: 0;
+}
+
+input[disabled],
+select[disabled],
+textarea[disabled],
+input[readonly],
+select[readonly],
+textarea[readonly] {
+  cursor: not-allowed;
+  background: #eee;
 }
 
 sub,
@@ -466,7 +478,7 @@ var {
   opacity: 1;
 }
 
-.input-text:focus:-moz-placeholder {
+input:focus:-moz-placeholder {
   color: #ccc;
 }
 
@@ -476,7 +488,7 @@ var {
   opacity: 1;
 }
 
-.input-text:focus::-moz-placeholder {
+input:focus::-moz-placeholder {
   color: #ccc;
 }
 
@@ -485,7 +497,7 @@ var {
   font-weight: 300;
 }
 
-.input-text:focus:-ms-input-placeholder {
+input:focus:-ms-input-placeholder {
   color: #ccc;
 }
 
@@ -494,7 +506,7 @@ var {
   font-weight: 300;
 }
 
-.input-text:focus::-webkit-input-placeholder {
+input:focus::-webkit-input-placeholder {
   color: #ccc;
 }
 

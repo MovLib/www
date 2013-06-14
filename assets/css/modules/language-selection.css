@@ -47,16 +47,16 @@
   text-indent: 8px;
 }
 
-.languageselection-nav {
+#nav-languageselection {
   font-size: 16px;
 }
 
-.languageselection-nav .menuitem {
+#nav-languageselection a {
   margin: 0 25px;
   color: #353535;
 }
 
-.languageselection-nav .menuitem:hover,
-.languageselection-nav .menuitem:focus {
+#nav-languageselection a:hover,
+#nav-languageselection a:focus {
   border-bottom-color: #353535;
 }

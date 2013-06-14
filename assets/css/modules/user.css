@@ -26,9 +26,3 @@
  * @since 0.0.1-dev
  */
 
-.form-userlogin .input-text,
-.form-userregister .input-text,
-.form-userresetpassword .input-text {
-  margin-bottom: 15px;
-  padding: 7px 9px;
-}

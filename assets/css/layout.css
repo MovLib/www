@@ -144,15 +144,17 @@
   padding-left: 20px;
 }
 
-.checkbox .input-checkbox,
-.radio .input-radio {
+.checkbox input[type="checkbox"],
+.radio input[type="radio"] {
   float: left;
   margin-left: -20px;
 }
 
 .input--block-level {
   display: block;
+  margin-bottom: 15px;
   min-height: 30px;
+  padding: 7px 9px;
   width: 100%;
 }
 
@@ -187,7 +189,7 @@
 .clear-fix:after,
 .row:before,
 .row:after {
-  content: '';
+  content: "";
   display: table;
   line-height: 0;
 }
@@ -264,7 +266,6 @@
   text-rendering: optimizeLegibility;
 }
 
-a,
 .transition {
   -webkit-transition: all 0.4s ease-out;
      -moz-transition: all 0.4s ease-out;
@@ -279,30 +280,6 @@ a,
 .scrollable {
   max-height: 340px;
   overflow-y: scroll;
-}
-
-/**
- * Responsive videos.
- *
- * @link http://www.alistapart.com/articles/creating-intrinsic-ratios-for-video/
- * @link http://webdesignerwall.com/tutorials/css-elastic-videos
- */
-.video {
-  display: block;
-  height: 0;
-  overflow: hidden;
-  padding: 30px 0 56.25%;
-  position: relative;
-}
-
-.video iframe,
-.video object,
-.video embed {
-  height: 100%;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 100%;
 }
 
 .visuallyhidden {
@@ -405,7 +382,8 @@ a,
   position: relative;
 }
 
-.search-header .input {
+.search-header input,
+.search-header button {
   font-size: 20px;
   line-height: 38px;
   height: 36px;
@@ -415,13 +393,13 @@ a,
   vertical-align: baseline;
 }
 
-.search-header .input-search {
+.search-header input {
   background-color: #fbfbfb;
   padding-left: 8px;
   width: 100%;
 }
 
-.search-header .input-submit {
+.search-header button {
   background: none;
   border: 0;
   color: #aeaeae;
@@ -431,17 +409,18 @@ a,
   right: 0;
 }
 
-.search-header .input-submit:hover,
-.search-header .input-submit:focus {
+.search-header button:hover,
+.search-header button:focus {
   color: #333;
 }
 
-.search-sticky-header .input {
+.search-sticky-header input,
+.search-sticky-header button {
   height: 30px;
   margin: 0;
 }
 
-.search-sticky-header__input-search {
+.search-sticky-header input {
   border-right-color: transparent;
   max-width: 400px;
   padding: 1px 5px;
@@ -450,7 +429,7 @@ a,
 
 /* Firefox specific styling: Ensure icon is placed at the same position as in all other browsers. */
 @-moz-document url-prefix() {
-  .search-header__icon--search {
+  .search-header input[type="search"] {
     position: relative;
     top: -2px;
   }
@@ -458,36 +437,82 @@ a,
 
 /* Main + User navigation ------------------------------------------------------------------------------------------- */
 
-.main-nav {
+#nav-main {
   color: #c8c8c8;
   margin-top: 7px;
 }
 
-.main-nav__menuitem,
-.main-nav__menuitem:visited,
-.user-nav__menuitem,
-.user-nav__menuitem:visited {
+#nav-main a,
+#nav-main a:visited,
+#nav-user a,
+#nav-user a:visited {
   border-bottom: 0;
   color: #888;
 }
 
-.main-nav__menuitem:hover,
-.main-nav__menuitem:focus,
-.main-nav__menuitem:active,
-.main-nav__menuitem.active,
-.user-nav__menuitem:hover,
-.user-nav__menuitem:focus,
-.user-nav__menuitem:active,
-.user-nav__menuitem.active {
+#nav-main a:hover,
+#nav-main a:focus,
+#nav-main a:active,
+#nav-main a.active,
+#nav-user a:hover,
+#nav-user a:focus,
+#nav-user a:active,
+#nav-user a.active {
   color: #333;
 }
 
-.main-nav span {
+#nav-main span {
   margin: 0 5px;
 }
 
-.user-nav__menuitem {
+#nav-user a {
   margin-left: 10px;
+}
+
+/* Secondary navigation --------------------------------------------------------------------------------------------- */
+
+.nav--secondary {
+  margin-top: 30px;
+}
+
+.nav--secondary .icon,
+.nav--secondary a {
+  -webkit-transition: color, background-color 0.4s ease-out;
+     -moz-transition: color, background-color 0.4s ease-out;
+       -o-transition: color, background-color 0.4s ease-out;
+          transition: color, background-color 0.4s ease-out;
+}
+
+.nav--secondary .icon {
+  color: #ccc;
+  float: right;
+  margin-right: -6px;
+  margin-top: 2px;
+}
+
+.nav--secondary a {
+  border: 1px solid #e5e5e5;
+  display: block;
+  margin-bottom: -1px;
+  padding: 9px 15px;
+}
+
+.nav--secondary a:focus,
+.nav--secondary a:hover {
+  background-color: #f5f5f5;
+}
+
+.nav--secondary a:focus .icon,
+.nav--secondary a:hover .icon {
+  color: #949494;
+}
+
+.nav--secondary a.active,
+.nav--secondary a:active,
+.nav--secondary a.active .icon,
+.nav--secondary a:active .icon {
+  background-color: #09c;
+  color: #fff;
 }
 
 /* Breadcrumb ------------------------------------------------------------------------------------------------------- */
