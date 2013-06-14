@@ -12,6 +12,7 @@ USE `movlib` ;
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
   `movie_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie’s unique ID.' ,
+  `original_title` VARCHAR(255) NOT NULL COMMENT 'The movie\'s original title.' ,
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of this movie.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.' ,
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.' ,
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s vote count.' ,
@@ -19,13 +20,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
   `year` SMALLINT NULL COMMENT 'The movie’s initial release year.' ,
   `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime.' ,
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.' ,
-  `dyn_titles` BLOB NULL COMMENT 'The movie’s titles (dynamic column).' ,
-  `dyn_synopses` BLOB NULL COMMENT 'The movie’s translatable synopses.' ,
-  `dyn_related` BLOB NULL COMMENT 'The movie’s relation to other movies (e.g. sequel).' ,
-  `dyn_links` BLOB NULL COMMENT 'The movie’s external links.' ,
-  `dyn_awards` BLOB NULL COMMENT 'The movie’s awards.' ,
-  `dyn_taglines` BLOB NULL COMMENT 'The movie’s taglines.' ,
-  `dyn_trailers` BLOB NULL COMMENT 'The movie’s trailers.' ,
+  `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.' ,
   PRIMARY KEY (`movie_id`) ,
   UNIQUE INDEX `uq_movies_rank` (`rank` ASC) )
 COMMENT = 'Contains all movie’s data.'
@@ -40,8 +35,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`genres` (
   `genre_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique ID.' ,
   `name` VARCHAR(100) NOT NULL COMMENT 'The genre’s unique English name.' ,
   `description` BLOB NOT NULL COMMENT 'The genre’s English description.' ,
-  `dyn_names` BLOB NULL COMMENT 'The genre name’s translations.' ,
-  `dyn_descriptions` BLOB NULL COMMENT 'The genre description’s translations.' ,
+  `dyn_names` BLOB NOT NULL COMMENT 'The genre name’s translations.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre description’s translations.' ,
   PRIMARY KEY (`genre_id`) ,
   UNIQUE INDEX `uq_genres_name` (`name` ASC) )
 COMMENT = 'Contains all movie genres.'
@@ -80,8 +75,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`styles` (
   `style_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The style’s unique ID.' ,
   `name` VARCHAR(100) NOT NULL COMMENT 'Unique style’s English name.' ,
   `description` BLOB NOT NULL COMMENT 'The style’s English description.' ,
-  `dyn_names` BLOB NULL COMMENT 'The style name’s translations.' ,
-  `dyn_descriptions` BLOB NULL COMMENT 'The style description’s translations.' ,
+  `dyn_names` BLOB NOT NULL COMMENT 'The style name’s translations.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The style description’s translations.' ,
   PRIMARY KEY (`style_id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
 COMMENT = 'Contains all movie styles.'
@@ -127,7 +122,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`images` (
   `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The last time this image was updated.' ,
   `created` TIMESTAMP NOT NULL COMMENT 'The image’s creation time.' ,
   `rating` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The image’s upvotes.' ,
-  `dyn_descriptions` BLOB NULL COMMENT 'The image’s translatable descriptions.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The image’s translatable descriptions.' ,
   PRIMARY KEY (`image_id`) ,
   INDEX `fk_images_users` (`user_id` ASC) ,
   CONSTRAINT `fk_images_users`
@@ -147,7 +142,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`countries` (
   `country_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The country’s unique ID.' ,
   `iso_alpha-2` CHAR(2) NOT NULL COMMENT 'The country’s ISO 3166-1 alpha-2 code.' ,
   `name` TINYTEXT NOT NULL COMMENT 'The country’s unique English name.' ,
-  `dyn_translations` BLOB NULL COMMENT 'The country’s translated name.' ,
+  `dyn_translations` BLOB NOT NULL COMMENT 'The country’s translated name.' ,
   PRIMARY KEY (`country_id`) ,
   UNIQUE INDEX `uq_countries_iso_alpha-2` (`iso_alpha-2` ASC) )
 COMMENT = 'Contains all ISO 3166-1 alpha-2 countries.'
@@ -162,7 +157,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`languages` (
   `language_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The language’s unique ID.' ,
   `iso_alpha-2` CHAR(2) NOT NULL COMMENT 'The language’s ISO 639-1 alpha-2 code.' ,
   `name` TINYTEXT NOT NULL COMMENT 'The language’s unique English name.' ,
-  `dyn_translations` BLOB NULL COMMENT 'The language’s translated name.' ,
+  `dyn_translations` BLOB NOT NULL COMMENT 'The language’s translated name.' ,
   PRIMARY KEY (`language_id`) ,
   UNIQUE INDEX `unique_languages_iso_alpha-2` (`iso_alpha-2` ASC) )
 COMMENT = 'Contains all ISO 639-1 alpha-2 languages.'
@@ -181,10 +176,10 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `created` TIMESTAMP NOT NULL COMMENT 'Timestamp for when user was created.' ,
   `access` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for previous time user accessed the site.' ,
   `login` TIMESTAMP NOT NULL COMMENT 'Timestamp for user’s last login.' ,
-  `deleted` TINYINT(1) NOT NULL DEFAULT true COMMENT 'TRUE (1) if this account was deleted (or blocked), default is TRUE (1).' ,
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this account was deleted (or blocked), default is TRUE (1).' ,
   `timezone` TINYTEXT NOT NULL COMMENT 'User’s time zone: http://php.net/manual/en/timezones.php' ,
   `init` VARCHAR(254) NOT NULL COMMENT 'Email address used for initial account creation.' ,
-  `dyn_data` BLOB NULL COMMENT 'Temporary data related to this user (e.g. hash for reseting the password).' ,
+  `dyn_data` BLOB NOT NULL COMMENT 'Temporary data related to this user (e.g. hash for reseting the password).' ,
   `image_id` BIGINT UNSIGNED NULL DEFAULT NULL COMMENT 'The unique image ID of the user’s avatar.' ,
   `profile` BLOB NULL DEFAULT NULL COMMENT 'The user’s profile text.' ,
   `website` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s website URL.' ,
@@ -192,7 +187,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `twitter` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s Twitter data.' ,
   `real_name` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.' ,
   `country_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.' ,
-  `language_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s language.' ,
+  `language_id` INT UNSIGNED NOT NULL DEFAULT NULL COMMENT 'The user’s language.' ,
   PRIMARY KEY (`user_id`) ,
   INDEX `fk_users_images` (`image_id` ASC) ,
   INDEX `fk_users_countries` (`country_id` ASC) ,
@@ -233,9 +228,9 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons` (
   `city` TINYBLOB NULL COMMENT 'The person’s birth city.' ,
   `region` TINYBLOB NULL COMMENT 'The person’s birth region.' ,
   `gender` VARCHAR(6) NULL COMMENT 'The person’s gender (female or male).' ,
-  `dyn_aliases` BLOB NULL COMMENT 'The person’s aliases.' ,
-  `dyn_biographies` BLOB NULL COMMENT 'The person’s translatable biographies.' ,
-  `dyn_links` BLOB NULL COMMENT 'The person’s external weblinks.' ,
+  `dyn_aliases` BLOB NOT NULL COMMENT 'The person’s aliases.' ,
+  `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s translatable biographies.' ,
+  `dyn_links` BLOB NOT NULL COMMENT 'The person’s external weblinks.' ,
   PRIMARY KEY (`person_id`) )
 COMMENT = 'Contains all person related data.'
 ROW_FORMAT = COMPRESSED;
@@ -249,8 +244,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`jobs` (
   `job_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The job’s unique ID.' ,
   `title` VARCHAR(100) NOT NULL COMMENT 'The job’s unique English title.' ,
   `description` BLOB NOT NULL COMMENT 'The job’s English description.' ,
-  `dyn_titles` BLOB NULL COMMENT 'The job title’s translations.' ,
-  `dyn_descriptions` BLOB NULL COMMENT 'The job description’s translations.' ,
+  `dyn_titles` BLOB NOT NULL COMMENT 'The job title’s translations.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The job description’s translations.' ,
   PRIMARY KEY (`job_id`) ,
   UNIQUE INDEX `uq_jobs_title` (`title` ASC) )
 COMMENT = 'Contains all job related data.'
@@ -265,8 +260,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`companies` (
   `company_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The company’s unique ID.' ,
   `name` BLOB NOT NULL COMMENT 'The company’s unique name.' ,
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this company was deleted, default is FALSE (0).' ,
-  `dyn_descriptions` BLOB NULL COMMENT 'The company’s translatable descriptions.' ,
-  `dyn_links` BLOB NULL COMMENT 'The company’s external links.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translatable descriptions.' ,
+  `dyn_links` BLOB NOT NULL COMMENT 'The company’s external links.' ,
   PRIMARY KEY (`company_id`) )
 COMMENT = 'Contains all company related data.'
 ROW_FORMAT = COMPRESSED;
@@ -473,7 +468,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`messages` (
   `message_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The message’s unique ID.' ,
   `message` TEXT NOT NULL COMMENT 'The message’s unique English pattern.' ,
   `comment` BLOB NULL COMMENT 'The message’s optional comment for translators.' ,
-  `dyn_translations` BLOB NULL COMMENT 'The message’s translations.' ,
+  `dyn_translations` BLOB NOT NULL COMMENT 'The message’s translations.' ,
   PRIMARY KEY (`message_id`) )
 COMMENT = 'Contains all translatable system messages.'
 ROW_FORMAT = COMPRESSED;
@@ -486,7 +481,7 @@ SHOW WARNINGS;
 CREATE  TABLE IF NOT EXISTS `movlib`.`routes` (
   `route_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The route’s unique ID.' ,
   `route` VARCHAR(254) NOT NULL COMMENT 'The route’s unique English pattern.' ,
-  `dyn_translations` BLOB NULL COMMENT 'The route’s translations.' ,
+  `dyn_translations` BLOB NOT NULL COMMENT 'The route’s translations.' ,
   PRIMARY KEY (`route_id`) ,
   UNIQUE INDEX `uq_routes_route` (`route` ASC) )
 COMMENT = 'Contains all routes (relative URIs).'
@@ -574,6 +569,177 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`tmp` (
   `dyn_data` BLOB NOT NULL COMMENT 'The entry’s dynamic data.' ,
   PRIMARY KEY (`key`) )
 COMMENT = 'Used to store temporary data.'
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`awards`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`awards` (
+  `award_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.' ,
+  `name` VARCHAR(100) NOT NULL COMMENT 'The awards unique English name.' ,
+  `description` BLOB NULL COMMENT 'The award’s English description.' ,
+  `dyn_names` BLOB NOT NULL COMMENT 'The award’s title translations.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description translations.' ,
+  PRIMARY KEY (`award_id`) ,
+  UNIQUE INDEX `uq_jobs_title` (`name` ASC) )
+COMMENT = 'Contains all job related data.'
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_awards`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movies_awards` (
+  `award_id` INT UNSIGNED NOT NULL COMMENT 'The award\'s unique ID.' ,
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID.' ,
+  `year` SMALLINT UNSIGNED NOT NULL COMMENT 'The year the award has been given to the movie.' ,
+  PRIMARY KEY (`award_id`, `movie_id`) ,
+  INDEX `fk_awards_movies_movies1_idx` (`movie_id` ASC) ,
+  INDEX `fk_awards_movies_awards1_idx` (`award_id` ASC) ,
+  CONSTRAINT `fk_movies_awards_awards`
+    FOREIGN KEY (`award_id` )
+    REFERENCES `movlib`.`awards` (`award_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_awards_movies`
+    FOREIGN KEY (`movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_titles`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movies_titles` (
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this title relates to.' ,
+  `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this title is in.' ,
+  `title` BLOB NOT NULL COMMENT 'The movie\'s title.' ,
+  `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.' ,
+  PRIMARY KEY (`movie_id`) ,
+  INDEX `fk_movies_titles_languages1_idx` (`language_id` ASC) ,
+  CONSTRAINT `fk_movies_titles_movies`
+    FOREIGN KEY (`movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_titles_languages`
+    FOREIGN KEY (`language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_taglines`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.' ,
+  `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this tagline is in.' ,
+  `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.' ,
+  PRIMARY KEY (`movie_id`) ,
+  INDEX `fk_movies_taglines_languages1_idx` (`language_id` ASC) ,
+  CONSTRAINT `fk_movies_taglines_movies`
+    FOREIGN KEY (`movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_taglines_languages`
+    FOREIGN KEY (`language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`relationship_types`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`relationship_types` (
+  `relationship_type_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'The relationship type\'s unique ID.' ,
+  `name` VARCHAR(100) NOT NULL COMMENT 'The relationship type\'s unique English name.' ,
+  `description` BLOB NULL COMMENT 'The relationship type\'s English description.' ,
+  `dyn_names` BLOB NOT NULL COMMENT 'The relationship type\'s name translations.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The relationship type\'s description translations.' ,
+  PRIMARY KEY (`relationship_type_id`) ,
+  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movie_relationships`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movie_relationships` (
+  `movie_id_left` BIGINT UNSIGNED NOT NULL COMMENT 'The left movie\'s unique ID of the relationship.' ,
+  `movie_id_right` BIGINT UNSIGNED NOT NULL COMMENT 'The right movie\'s unique ID of the relationship.' ,
+  `relationship_type_id` BIGINT NOT NULL COMMENT 'The relationship type\' unique ID.' ,
+  PRIMARY KEY (`movie_id_left`, `movie_id_right`, `relationship_type_id`) ,
+  INDEX `fk_movie_relationships_movies2_idx` (`movie_id_right` ASC) ,
+  INDEX `fk_movie_relationships_movie_relationship_types1_idx` (`relationship_type_id` ASC) ,
+  CONSTRAINT `fk_movie_relationships_movies_left`
+    FOREIGN KEY (`movie_id_left` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movie_relationships_movies_right`
+    FOREIGN KEY (`movie_id_right` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movie_relationships_movie_relationship_types`
+    FOREIGN KEY (`relationship_type_id` )
+    REFERENCES `movlib`.`relationship_types` (`relationship_type_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_links`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movies_links` (
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID.' ,
+  `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID.' ,
+  `title` VARCHAR(100) NULL COMMENT 'The link\'s title attribute.' ,
+  `text` VARCHAR(100) NOT NULL COMMENT 'The link\'s display text.' ,
+  `url` VARCHAR(255) NOT NULL COMMENT 'The link\'s URL target' ,
+  PRIMARY KEY (`movie_id`) ,
+  INDEX `fk_movies_links_languages1_idx` (`language_id` ASC) ,
+  CONSTRAINT `fk_movies_links_movies`
+    FOREIGN KEY (`movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_links_languages`
+    FOREIGN KEY (`language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_trailers`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movies\'s unique ID.' ,
+  PRIMARY KEY (`movie_id`) ,
+  CONSTRAINT `fk_movies_trailers_movies`
+    FOREIGN KEY (`movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
