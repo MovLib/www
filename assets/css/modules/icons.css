@@ -1,0 +1,76 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * We are using a custom font created with Fontello that only contains the icons we really use. Please have a look at
+ * the LICENSE.txt file in the assets/font directory for more information.
+ *
+ * @author Daniel Bruce
+ * @copyright © 2013–present, Daniel Bruce
+ * @license http://creativecommons.org/licenses/by-sa/3.0/ CC BY 3.0
+ * @link http://www.entypo.com/
+ *
+ * @link http://fontello.com/
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link http://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+@font-face {
+  font-family: MovLib;
+  src:
+    url(/assets/font/movlib.eot?#iefix) format("embedded-opentype"),
+    url(/assets/font/movlib.woff) format("woff"),
+    url(/assets/font/movlib.ttf) format("truetype"),
+    url(/assets/font/movlib.svg#movlib) format("svg")
+  ;
+  font-weight: normal;
+  font-style: normal;
+}
+
+.icon:before,
+.icon:before {
+  font-style: normal;
+  font-variant: normal;
+  font-weight: normal;
+  line-height: 1;
+  font-family: MovLib;
+  speak: none;
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  text-align: center;
+  text-transform: none;
+  vertical-align: baseline;
+}
+
+.icon--right-open:before {
+  content: "\e801";
+}
+
+.icon--cc:before {
+  content: "\e802";
+}
+
+.icon--cc-zero:before {
+  content: "\e803";
+}
+
+.icon--search:before {
+  content: "\e800";
+}
