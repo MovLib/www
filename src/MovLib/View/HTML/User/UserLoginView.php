@@ -68,7 +68,7 @@ class UserLoginView extends AbstractFormView {
           "<p><small>{$this->a("/user/reset-password", "Reset your password", [
             "class" => "pull-right",
             "title" => $i18n->t("Click this link if you forgot your password."),
-          ])}</small><label for='password'>{$i18n->t("Password")}</label>{$this->getInputElement("pasword", [
+          ])}</small><label for='pass'>{$i18n->t("Password")}</label>{$this->getInputElement("pass", [
             "class"       => "input--block-level",
             "placeholder" => $i18n->t("Enter your password"),
             "required",
