@@ -131,7 +131,7 @@ After setting your password, you will be able to log in at MovLib in the future 
 
 Email address:  {2}
 Password:       Your password",
-        [ $name, $i18n->r("/user/activate-{0}", [ $hash ]) , $to ]
+        [ $name, $i18n->r("/user/register={0}", [ $hash ]) , $to ]
       )
     ];
   }
@@ -194,7 +194,7 @@ You (or someone else) requested a password reset for your account. You may now r
 This link can only be used once to log in and will lead you to a page where you can set your password.
 
 If it wasn’t you who requested a new password ignore this message.",
-          [ $user->name, $i18n->r("/user/reset-password-{0}", [ $hash ]) ]
+          [ $user->name, $i18n->r("/user/reset-password={0}", [ $hash ]) ]
         )
       );
     } catch (UserException $e) {
