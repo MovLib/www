@@ -73,6 +73,7 @@ class MoviePresenter extends AbstractPresenter {
       if ($this->movieModel->deleted === true) {
         return $this->setPresentation("Error\\GoneMovie");
       }
+//      echo var_dump($this->movieModel->getRelationships());
       $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
       return $this->setPresentation("Movie\\MovieShow");
     } catch (MovieException $e) {
