@@ -21,6 +21,8 @@ use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\AbstractModel;
 use \MovLib\Utility\Crypt;
+use \MovLib\Utility\DelayedLogger;
+use \MovLib\Utility\String;
 
 /**
  * Retrieve user specific data from the database.
@@ -135,8 +137,8 @@ class UserModel extends AbstractModel {
   public function __construct($from = null, $value = null) {
     switch ($from) {
       case "session":
-        $this->sessionLoad();
-        return 2;
+//        list($from, $value) = $this->sessionStart(true);
+        break;
 
       case "user_id":
         $type = "d";
@@ -163,7 +165,7 @@ class UserModel extends AbstractModel {
             `country_id` AS `countryId`,
             `language_id` AS `languageId`
           FROM `users`
-          WHERE `{$from}` = ?
+            WHERE `{$from}` = ?
           LIMIT 1", $type, [ $value ]
         )[0] as $propertyName => $propertyValue) {
           $this->{$propertyName} = $this->{$propertyValue};
@@ -178,6 +180,57 @@ class UserModel extends AbstractModel {
 
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
+
+  /**
+   * Create new user account.
+   *
+   * @param string $name
+   *   The desired user's unique name.
+   * @param string $mail
+   *   The user's unique valid mail.
+   * @return string
+   *   The randomly generated password for this user.
+   * @throws \MovLib\Exception\DatabaseException
+   *   If creating the new user failed.
+   * @throws \MovLib\Exception\UserException
+   *   If the name or mail is already in use, the exception message will be translated and can be used for displaying
+   *   to the user.
+   */
+  public function createAccount($name, $mail, $password) {
+    global $i18n;
+    if ($this->exists("name", $name) === true) {
+      throw new UserException($i18n->t("The {0} {1} is already in use.", [ $i18n->t("username"), String::placeholder($name) ]));
+    }
+    if ($this->exists("mail", $mail) === true) {
+      throw new UserException($i18n->t("The {0} {1} is already in use.", [ $i18n->t("email address"), String::placeholder($mail) ]));
+    }
+    try {
+      $this
+        ->prepareAndBind(
+          "INSERT INTO `users`
+          (`name`, `mail`, `pass`, `created`, `access`, `login`, `deleted`, `timezone`, `init`, `dyn_data`, `language_id`)
+          VALUES
+          (?, ?, ?, NOW() + 0, NOW() + 0, NOW() + 0, FALSE, 'UTC', ?, '', ?)",
+          "ssssi",
+          [
+            $name,
+            $mail,
+            password_hash($password, PASSWORD_DEFAULT),
+            $mail,
+            $this->select("SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = ? LIMIT 1", "s", [ $i18n->languageCode ])[0]["language_id"]
+          ]
+        )
+        ->execute()
+        ->close()
+      ;
+    } catch (ErrorException $e) {
+      // If we cannot fetch the ID for a server supported language, we really have a problem.
+      $e = new DatabaseException("Could not fetch ID for language '{$i18n->languageCode}'!", $e);
+      DelayedLogger::logException($e, E_ERROR);
+      throw $e;
+    }
+    return $this;
+  }
 
   /**
    * Get the user's preferred ISO 639-1 alpha-2 language code.
@@ -269,15 +322,16 @@ class UserModel extends AbstractModel {
   }
 
   /**
-   * Select the data that was previously stored for this account registration from the temporary database.
+   * Select the data that was previously stored from the temporary database.
    *
    * @param string $hash
-   *   The user submitted hash to identify the registration.
+   *   The user submitted hash to identify the reset password request.
    * @return null|array
    *   <tt>NULL</tt> if no record was found for the hash, otherwise an associative array with the following keys:
-   *   <em>name</em>, <em>mail</em>, and <em>time</em>.
+   *   <em>name</em>, <em>mail</em>, and <em>time</em>. The name might be <tt>NULL</tt>, depending on the data that
+   *   was stored previously (e.g. reset password requests do not have the name).
    */
-  public function selectRegistrationData($hash) {
+  public function selectTmpData($hash) {
     try {
       return $this->select(
         "SELECT
@@ -294,85 +348,15 @@ class UserModel extends AbstractModel {
   }
 
   /**
-   * Select the data that was previously stored for this reset password request from the temporary database.
-   *
-   * @param string $hash
-   *   The user submitted hash to identify the reset password request.
-   * @return null|array
-   *   <tt>NULL</tt> if no record was found for the hash, otherwise an associative array with the following keys:
-   *   <em>mail</em>, and <em>time</em>.
-   */
-  public function selectResetPasswordData($hash) {
-    try {
-      return $this->select(
-        "SELECT
-          COLUMN_GET(`dyn_data`, 'mail' AS CHAR(" . self::MAIL_MAX_LENGTH . ")) AS `mail`,
-          COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
-        FROM `tmp`
-          WHERE `key` = ?
-        LIMIT 1", "s", [ $hash ]
-      )[0];
-    } catch (ErrorException $e) {
-      return null;
-    }
-  }
-
-  /**
-   * Get value identified by key from session.
-   *
-   * @param string $key
-   *   The key for identifying the value in the associative session array.
-   * @param mixed $default
-   *   [Optional] The content of this variable is returned if the session does not contain the desired <var>$key</var>.
-   * @return mixed
-   *   The desired value's content or <var>$default</var> if the <var>$key</var> does not exist.
-   */
-  public function sessionGet($key, $default = false) {
-    if (isset($_SESSION[$key])) {
-      return $_SESSION[$key];
-    }
-    return $default;
-  }
-
-  /**
-   * @todo Implement
-   */
-  public function sessionLoad() {
-
-  }
-
-  /**
    * Start session if none is active. This will also generate the CSRF token for this user's session.
    *
    * @return $this
    */
   public function sessionStart() {
-    if (session_status() === PHP_SESSION_NONE) {
-      session_start();
-      $this->csrfToken = Crypt::getRandomHash();
-      $this->sessionStore("csrf_token", $this->csrfToken);
+    if (session_status() === PHP_SESSION_NONE && session_start() === true) {
+      $this->csrfToken = $_SESSION["TOKEN"] = Crypt::randomHashBase64();
+      $this->isLoggedIn = true;
     }
-    return $this;
-  }
-
-  /**
-   * Store value identified by key in user's session.
-   *
-   * <b>IMPORTANT!</b> This method will silently overwrite the key's value if it already exists.
-   *
-   * @param mixed $key
-   *   Unique key for identification.
-   * @param mixed $value
-   *   The value to store under the key.
-   * @return $this
-   * @throws \MovLib\Exception\UserException
-   *   If the session is not active.
-   */
-  public function sessionStore($key, $value) {
-    if (session_status() !== PHP_SESSION_ACTIVE) {
-      throw new UserException("No active session for storage!");
-    }
-    $_SESSION[$key] = $value;
     return $this;
   }
 

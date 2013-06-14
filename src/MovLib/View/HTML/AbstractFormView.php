@@ -40,6 +40,33 @@ abstract class AbstractFormView extends AbstractView {
   protected $attributes = [ "class" => "container" ];
 
   /**
+   * Array that can be used by the presenter to set errors for certain input elements.
+   *
+   * The array should be in the form: <code>[ form-elements-name => true ]</code>
+   *
+   * @var array
+   */
+  public $formInvalid;
+
+  /**
+   * Array that can be used by the presenter to disable certain input elements.
+   *
+   * The array should be in the form: <code>[ form-elements-name => true ]</code>
+   *
+   * @var array
+   */
+  public $formDisabled;
+
+  /**
+   * Array that can be used by the presenter to set the value of any input element.
+   *
+   * The array should be in the form: <code>[ input-elements-name => value ]</code>
+   *
+   * @var array
+   */
+  public $inputValues;
+
+  /**
    * Get the rendered content, without HTML head, header or footer.
    *
    * @global \MovLib\Model\UserModel $user
@@ -50,7 +77,7 @@ abstract class AbstractFormView extends AbstractView {
     global $user;
     $csrf = "";
     if (($token = $user->csrfToken)) {
-      $csrf = "<input name='csrf_token' type='hidden' value='{$token}'>";
+      $csrf = "<input aria-hidden='true' hidden name='csrf_token' type='hidden' value='{$token}'>";
     }
     if (!isset($this->attributes["action"])) {
       $this->attributes["action"] = $_SERVER["REQUEST_URI"];
@@ -71,5 +98,101 @@ abstract class AbstractFormView extends AbstractView {
    *   The HTML content of the <code>&lt;form&gt;</code>-element.
    */
   abstract public function getFormContent();
+
+  /**
+   * Render an HTML input element.
+   *
+   * Always use this method to create your input elements of forms. This method ensures that all necessary ARIA
+   * attributes are applied to the element. Also all necessary attributes will be set correctly. The value of the
+   * element will be automatically filled with POST data—if available—and correctly sanitized.
+   *
+   * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html
+   * @link https://developer.mozilla.org/en-US/docs/Accessibility/ARIA/ARIA_Techniques
+   * @param string $name
+   *   The <em>name</em> of the input element. This value is used for the <em>id</em> and <em>name</em> attribute of
+   *   the input element.
+   * @param array $attributes
+   *   [Optional] Array containing attributes that should be applied to the element or to overwrite the defaults. Any
+   *   attribute that is valid for an input element can be passed. The following attributes can be overwritten:
+   *   <ul>
+   *     <li><em>type</em>: Default type is <em>text</em>.</li>
+   *     <li><em>value</em>: Default value is taken from POST and sanitized, if you overwrite this be sure to sanitize
+   *     it correctly by issuing the <code>filter_input()</code> function.</li>
+   *   </ul>
+   *   The following attributes are always applied and cannot be overwritten:
+   *   <ul>
+   *     <li><em>role</em>: The ARIA role.</li>
+   *     <li><em>id</em>: Is always set to the value of <var>$name</var>.</li>
+   *     <li><em>name</em>: Is always set to the value of <var>$name</var>.</li>
+   *   </ul>
+   * @param string $tag
+   *   [Optional] The elements tag, defaults to <em>input</em>.
+   * @param string $content
+   *   [Optional] If you create an element that can hold content (e.g. <em>button</em>, <em>select</em>,
+   *   <em>textarea</em>) pass it here.
+   * @return string
+   *   The input element ready for print.
+   */
+  protected function getInputElement($name, $attributes = [], $tag = "input", $content = "") {
+    if (!isset($attributes["type"])) {
+      $attributes["type"] = "text";
+    }
+    switch ($attributes["type"]) {
+      case "email":
+        $attributes["role"] = "textbox";
+        if (empty($attributes["value"])) {
+          $attributes["value"] = isset($this->inputValues[$name])
+            ? $this->inputValues[$name]
+            : filter_input(INPUT_POST, $name, FILTER_SANITIZE_EMAIL)
+          ;
+        }
+        break;
+
+      case "password":
+        $attributes["role"] = "textbox";
+        // Only the presenter or view is allowed to insert a value into a password field. Never ever use a password
+        // value that was submitted via the user.
+        if (empty($attributes["value"]) && isset($this->inputValues[$name])) {
+          $attributes["value"] = $this->inputValues[$name];
+        }
+        break;
+
+      case "text":
+        $attributes["role"] = "textbox";
+        if (empty($attributes["value"])) {
+          $attributes["value"] = isset($this->inputValues[$name])
+            ? $this->inputValues[$name]
+            : filter_input(INPUT_POST, $name, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_FLAG_ENCODE_AMP)
+          ;
+        }
+        break;
+    }
+    foreach ([ "hidden", "required", "readonly" ] as $attribute) {
+      if (isset($attributes[$attribute])) {
+        $attributes["aria-{$attribute}"] = "true";
+      }
+    }
+    if (isset($this->formInvalid[$name])) {
+      $attributes["aria-invalid"] = "true";
+    }
+    if (isset($this->formDisabled[$name])) {
+      $attributes["aria-disabled"] = "true";
+      $attributes[] = "disabled";
+    }
+    $attributes["id"] = $attributes["name"] = $name;
+    switch ($tag) {
+      case "button":
+      case "select":
+        return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}</{$tag}>";
+
+      case "textarea":
+        $attributes["aria-multiline"] = "true";
+        unset($attributes["type"]);
+        return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}</{$tag}>";
+
+      default:
+        return "<{$tag}{$this->expandTagAttributes($attributes)}>";
+    }
+  }
 
 }

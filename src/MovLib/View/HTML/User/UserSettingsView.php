@@ -17,7 +17,6 @@
  */
 namespace MovLib\View\HTML\User;
 
-use \MovLib\Model\UserModel;
 use \MovLib\View\HTML\AbstractFormView;
 
 /**
@@ -31,6 +30,10 @@ use \MovLib\View\HTML\AbstractFormView;
  */
 class UserSettingsView extends AbstractFormView {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The user presenter controlling this view.
    *
@@ -43,23 +46,46 @@ class UserSettingsView extends AbstractFormView {
    *
    * @var string
    */
-  public $tab = "Account";
+  public $tab;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
-   * {@inheritdoc}
+   * Instantiate new user settings view.
+   *
+   * @param \MovLib\Presenter\UserPresenter $presenter
+   *   The presenter controlling this view.
+   * @param string $tab
+   *   The name of the tab that should be rendered. Have a look at the <code>get*Tab</code> methods in this class.
    */
-  public function __construct($presenter) {
+  public function __construct($presenter, $tab) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Settings"));
-    $this->addStylesheet("/assets/css/modules/user.css");
+    parent::__construct($presenter, "{$i18n->t($tab)} {$i18n->t("Settings")}", [ "/assets/css/modules/user.css" ]);
+    $this->tab = $tab;
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
 
   /**
    * {@inheritdoc}
    */
   public function getFormContent() {
     global $i18n;
-    return "";
+    return
+      "<pre>" . print_r($_COOKIE, true) . "</pre>" .
+      "<pre>" . print_r($_SESSION, true) . "</pre>" .
+      "<div class='row'>" .
+        "<aside class='span span--3'>{$this->getSecondaryNavigation($i18n->t("Settings navigation"), [
+          [ $i18n->r("/user/settings"), $i18n->t("Account"), [ "title" => $i18n->t("Manage your basic account settings.") ]],
+          [ $i18n->r("/user/settings/password"), $i18n->t("Password"), [ "title" => $i18n->t("Change your password.") ]],
+        ])}</aside>" .
+        "<div class='span span--9'>{$this->{"get{$this->tab}Tab"}()}</div>" .
+      "</div>"
+    ;
   }
 
   private function getAccountTab() {
@@ -69,7 +95,39 @@ class UserSettingsView extends AbstractFormView {
 
   private function getPasswordTab() {
     global $i18n;
-    return "";
+    return
+      "<p><small>{$this->a($i18n->r("/user/reset-password"), $i18n->t("Forgotten your current password?"), [
+        "class" => "pull-right",
+        "title" => $i18n->t("Click this link if you forgot your password."),
+      ])}</small><label for='current-password'>{$i18n->t("Current password")}</label>{$this->getInputElement("current-password", [
+        "autofocus",
+        "class"       => "input--block-level",
+        "placeholder" => $i18n->t("Enter your current password"),
+        "required",
+        "tabindex"    => $this->getTabindex(),
+        "title"       => $i18n->t("Please enter your current password in this field."),
+        "type"        => "password",
+      ])}</p>" .
+      "<p><label for='new-password'>{$i18n->t("New password")}</label>{$this->getInputElement("new-password", [
+        "class"       => "input--block-level",
+        "placeholder" => $i18n->t("Enter your new password"),
+        "required",
+        "tabindex"    => $this->getTabindex(),
+        "title"       => $i18n->t("Please enter your new password in this field."),
+        "type"        => "password",
+      ])}</p>" .
+      "<p><label for='confirm-password'>{$i18n->t("Confirm password")}</label>{$this->getInputElement("confirm-password", [
+        "class"       => "input--block-level",
+        "placeholder" => $i18n->t("Enter your new password again"),
+        "required",
+        "tabindex"    => $this->getTabindex(),
+        "title"       => $i18n->t("Please enter your new password again in this field, we want to make sure that you don’t mistype this."),
+        "type"        => "password",
+      ])}</p>" .
+      "<p><button class='button button--success button--large' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t(
+        "Click here after you’ve filled out all fields."
+      )}' type='submit'>{$i18n->t("Change password")}</button></p>"
+    ;
   }
 
 }

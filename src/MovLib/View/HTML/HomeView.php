@@ -36,8 +36,7 @@ class HomeView extends AbstractView {
    * {@inheritdoc}
    */
   public function __construct($language) {
-    parent::__construct($language, "MovLib");
-    $this->addStylesheet("/assets/css/modules/home.css");
+    parent::__construct($language, "MovLib", [ "/assets/css/modules/home.css" ]);
   }
 
   /**

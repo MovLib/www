@@ -110,11 +110,11 @@ abstract class AbstractView {
   protected $presenter;
 
   /**
-   * Array that contains all stylesheet for the view.
+   * String containing all stylsheets of this view.
    *
-   * @var array
+   * @var string
    */
-  protected $stylesheets = [];
+  private $stylesheets;
 
   /**
    * The title of the page.
@@ -134,19 +134,26 @@ abstract class AbstractView {
    *   The presenter that created the view instance.
    * @param string $title
    *   The unique title of this view.
+   * @param array $stylesheets
+   *   [Optional] Additional stylesheets that should be added to the page.
    */
-  public function __construct($presenter, $title) {
+  public function __construct($presenter, $title, $stylesheets = []) {
+    global $i18n, $user;
     $this->presenter = $presenter;
     $this->title = $title;
-    $this->addStylesheet([
+    $stylesheets = array_merge($stylesheets, [
       "//fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic,700,700italic,800,800italic&amp;subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic",
-      "/assets/css/modules/entypo.css",
       "/assets/css/base.css",
       "/assets/css/layout.css",
-      "/assets/css/layout-responsive.css",
+      "/assets/css/modules/icons.css",
       "/assets/css/modules/alert.css",
       "/assets/css/modules/button.css",
     ]);
+    $stylesheetCount = count($stylesheets);
+    for ($i = 0; $i < $stylesheetCount; ++$i) {
+      $stylesheets[$i] = "<link rel='stylesheet' href='{$stylesheets[$i]}'>";
+    }
+    $this->stylesheets = implode("", $stylesheets);
   }
 
 
@@ -162,32 +169,6 @@ abstract class AbstractView {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Protected Methods
-
-
-  /**
-   * Add a stylesheet to the view.
-   *
-   * @todo Aggregate, minify and compress for production. What we have here is only meant for development, so it's easy
-   *       to add stylesheets to a specific view. In production we only want to deliver a single stylesheet and the
-   *       system will change.
-   * @param string|array $stylesheets
-   *   The absolute path to a single (string) stylesheet or multiple (array) stylesheets (can be external URL as well).
-   * @return $this
-   */
-  protected final function addStylesheet($stylesheets) {
-    if (!is_array($stylesheets)) {
-      $this->stylesheets[] = $stylesheets;
-    }
-    // No need to check if this stylesheet is already in our array. This is only for development and if a dev includes
-    // the same stylesheet twice, shame on him or her. :P
-    else {
-      $stylesheetCount = count($stylesheets);
-      for ($i = 0; $i < $stylesheetCount; ++$i) {
-        $this->stylesheets[] = $stylesheets[$i];
-      }
-    }
-    return $this;
-  }
 
   /**
    * Expand the given HTML element attributes for usage on an HTML element.
@@ -211,7 +192,7 @@ abstract class AbstractView {
           default:
             $value = String::checkPlain($value);
         }
-        $expandedAttributes .= " {$attribute}='{$value}'";
+        $expandedAttributes .= is_numeric($attribute) ? " {$value}" : " {$attribute}='{$value}'";
       }
     }
     return $expandedAttributes;
@@ -345,11 +326,6 @@ abstract class AbstractView {
    */
   public final function getHead() {
     global $i18n, $user;
-    $stylesheets = "";
-    $stylesheetCount = count($this->stylesheets);
-    for ($i = 0; $i < $stylesheetCount; ++$i) {
-      $stylesheets .= "<link rel='stylesheet' href='{$this->stylesheets[$i]}'>";
-    }
     $bodyClass = "{$this->getShortName()}-body";
     if ($user->isLoggedIn === true) {
       $bodyClass .= " logged-in";
@@ -359,11 +335,9 @@ abstract class AbstractView {
       $ariaRole = "application";
     }
     return
-      "<!doctype html>" .
-      "<html id='nojs' lang='{$i18n->languageCode}' dir='{$i18n->direction}'>" .
-      "<head>" .
+      "<!doctype html><html id='nojs' lang='{$i18n->languageCode}' dir='{$i18n->direction}'><head>" .
         "<title>{$this->getHeadTitle()}</title>" .
-        $stylesheets .
+        $this->stylesheets .
         "<link rel='icon' type='image/svg+xml' href='/assets/img/logo/vector.svg'>" .
         "<link rel='icon' type='image/png' sizes='256x256' href='/assets/img/logo/256.png'>" .
         "<link rel='icon' type='image/png' sizes='128x128' href='/assets/img/logo/128.png'>" .
@@ -373,9 +347,7 @@ abstract class AbstractView {
         "<link rel='icon' type='image/png' sizes='16x16' href='/assets/img/logo/16.png'>" .
         // @todo Add opensearch tag (rel="search").
         "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
-      "</head>" .
-      "<body class='{$bodyClass}' role='{$ariaRole}'>"
-    ;
+      "</head><body class='{$bodyClass}' role='{$ariaRole}'>";
   }
 
   /**
@@ -432,10 +404,12 @@ abstract class AbstractView {
   public final function getHeaderSearch() {
     global $i18n;
     return
-      "<form action='{$i18n->r("/search")}' class='search search-header' method='post' role='search'>" .
-        "<input accesskey='f' class='input input-text input-search search-header__input-search' placeholder='{$i18n->t("Search…")}' role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Enter the search term you wish to search for and hit enter. [alt-shift-f]")}' type='search'>" .
-        "<button class='input input-submit search-header__input-submit' title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
-          "<i class='icon icon--search search-header__icon--search inline transition'></i>" .
+      "<form action='{$i18n->r("/search")}' class='search-header' method='post' role='search'>" .
+        "<input accesskey='f' placeholder='{$i18n->t("Search…")}' role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t(
+          "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
+        )}' type='search'>" .
+        "<button title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
+          "<i class='icon icon--search inline transition'></i>" .
         "</button>" .
       "</form>"
     ;
@@ -480,26 +454,61 @@ abstract class AbstractView {
    * @param string $glue
    *   The string that is used to combine the various navigation points.
    * @param array $attributes
-   *   [optional] The attributes that should be applied to the HTML nav element.
+   *   [Optional] The attributes that should be applied to the HTML nav element.
    * @param boolean $hideTitle
-   *   [optional] Defines if the title should be hidden or not, default is to hide the title on navigation elements.
+   *   [Optional] Defines if the title should be hidden or not, default is to hide the title on navigation elements.
    * @return string
    *   Fully rendered navigation.
    */
   public final function getNavigation($title, $role, $points, $activePointIndex, $glue, $attributes = [], $hideTitle = true) {
-    $pointClasses = "menuitem {$role}-nav__menuitem";
-    $menu = "";
     $k = count($points);
     for ($i = 0; $i < $k; ++$i) {
-      $this->addClass($i === $activePointIndex ? "{$pointClasses} active" : $pointClasses, $points[$i][2]);
+      // Check against current URI to prevent adding the active class twice.
+      if ($i === $activePointIndex && $_SERVER["REQUEST_URI"] !== $points[$i][0]) {
+        $this->addClass("active", $points[$i][2]);
+      }
       $points[$i][2]["role"] = "menuitem";
-      $menu .= ($i !== 0 ? $glue : "") . $this->a($points[$i][0], $points[$i][1], $points[$i][2]);
+      $points[$i] = $this->a($points[$i][0], $points[$i][1], $points[$i][2]);
     }
-    $this->addClass("nav {$role}-nav", $attributes);
+    $points = implode($glue, $points);
+    $attributes["id"] = "nav-{$role}";
     $attributes["role"] = "menu";
-    $attributes["aria-labelledby"] = "{$role}-nav__title";
+    $attributes["aria-labelledby"] = "nav-{$role}__title";
     $hideTitle = $hideTitle === true ? " class='visuallyhidden'" : "";
-    return "<nav{$this->expandTagAttributes($attributes)}><h2 id='{$role}-nav__title'{$hideTitle} role='presentation'>{$title}</h2>{$menu}</nav>";
+    return "<nav{$this->expandTagAttributes($attributes)}><h2 id='nav-{$role}__title'{$hideTitle} role='presentation'>{$title}</h2>{$points}</nav>";
+  }
+
+  /**
+   * Helper method to generate a secondary navigation.
+   *
+   * @param string $title
+   *   The title of the section, this will be wrapped in a <code>&lt;h2&gt;</code>.
+   * @param array $points
+   *   Numeric array containing the navigation points in the format:
+   *   <pre>[ 0 => route, 1 => text, 2 => attributes ]</pre>
+   *   All array offsets are mandatory; the attributes have to have an already translated title!
+   * @param array $attributes
+   *   [Optional] The attributes that should be applied to the HTML nav element.
+   * @param string $role
+   *   [Optional] The logic role of this navigation menu (e.g. <em>main</em>, <em>footer</em>, ...).
+   * @param boolean $hideTitle
+   *   [Optional] Defines if the title should be hidden or not, default is to hide the title on navigation elements.
+   * @return string
+   *   Fully rendered navigation.
+   */
+  public final function getSecondaryNavigation($title, $points, $attributes = [], $role = "secondary", $hideTitle = true) {
+    $k = count($points);
+    for ($i = 0; $i < $k; ++$i) {
+      $points[$i][2]["role"] = "menuitem";
+      $points[$i] = "<li>{$this->a($points[$i][0], $points[$i][1], $points[$i][2])}</li>";
+    }
+    $points = implode("", $points);
+    $this->addClass("nav--secondary", $attributes);
+    $attributes["id"] = "nav-{$role}";
+    $attributes["role"] = "menu";
+    $attributes["aria-labelledby"] = "nav-{$role}__title";
+    $hideTitle = $hideTitle === true ? " class='visuallyhidden'" : "";
+    return "<nav{$this->expandTagAttributes($attributes)}><h2 id='nav-{$role}__title'{$hideTitle} role='presentation'>{$title}</h2><ul class='no-list'>{$points}</ul></nav>";
   }
 
   /**
@@ -650,7 +659,6 @@ abstract class AbstractView {
       "</footer>"
       // @todo Add aggregated scripts
     ;
-    // Please note that a closing body or html tag is not necessary!
   }
 
   /**
@@ -716,6 +724,10 @@ abstract class AbstractView {
   /**
    * Get the full rendered view.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   Global i18n model instance.
+   * @global \MovLib\Model\UserModel $user
+   *   Global user model instance.
    * @return string
    *   The rendered view ready for print.
    */

@@ -27,8 +27,9 @@ use \MovLib\Utility\HTTP;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 use \MovLib\View\HTML\AlertView;
-use \MovLib\View\HTML\User\UserSettingsView;
 use \MovLib\View\HTML\User\UserRegisterView;
+use \MovLib\View\HTML\User\UserResetPasswordView;
+use \MovLib\View\HTML\User\UserSettingsView;
 
 /**
  * @todo Description.
@@ -89,10 +90,10 @@ class UserPresenter extends AbstractPresenter {
   private function __constructProfile() {
     try {
       if (isset($_SERVER["USER_ID"])) {
-        $this->profile = new UserModel("user_id", $_SERVER["USER_ID"]);
+        $this->profile = new UserModel("user_id", filter_input(INPUT_SERVER, "USER_ID", FILTER_SANITIZE_NUMBER_INT));
       }
       elseif (isset($_SERVER["USER_NAME"])) {
-        $this->profile = new UserModel("name", $_SERVER["USER_NAME"]);
+        $this->profile = new UserModel("name", filter_input(INPUT_SERVER, "USER_NAME", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW));
       }
       // If this user's account is disabled, tell the client about it and exit (no need to redirect).
       if ($this->profile->deleted === true) {
@@ -130,17 +131,20 @@ class UserPresenter extends AbstractPresenter {
     if (isset($_POST["submitted"])) {
       $view = new UserRegisterView($this);
       // Validate the submitted mail.
-      $mail = $this->getPostValue("mail");
+      $mail = filter_input(INPUT_POST, "mail", FILTER_SANITIZE_EMAIL);
       if (($error = DelayedMailer::validateEmail($mail))) {
         $view->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
+        $view->formInvalid["mail"] = true;
       }
       // Validate the submitted name.
-      $name = $this->getPostValue("name");
+      $name = filter_input(INPUT_POST, "name", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
       if (($error = UserModel::validateName($name))) {
         $view->setAlert($error, null, AbstractView::ALERT_SEVERITY_ERROR);
+        $view->formInvalid["name"] = true;
       }
       elseif ($user->exists("name", $name)) {
         $view->setAlert($i18n->t("The name {0} is already taken.", [ String::placeholder($name) ]));
+        $view->formInvalid["name"] = true;
       }
       // If we did not find any error, send the activation link via mail to the user and tell him to check his inbox.
       if (!isset($error)) {
@@ -153,8 +157,8 @@ class UserPresenter extends AbstractPresenter {
         // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what
         // he has to do.
         else {
-          $params = [ Crypt::getRandomHash(), $name, $mail ];
-          DelayedMethodCalls::stack($user, "register", $params);
+          $params = [ Crypt::encrypt("[{$name},{$mail}]"), $name, $mail ];
+          DelayedMethodCalls::stack($user, "insertRegistrationData", $params);
           DelayedMailer::stackMethod("setActivationMail", $params);
         }
         $view = new AlertView($this, $view->title);
@@ -169,9 +173,8 @@ class UserPresenter extends AbstractPresenter {
           )}</p></div>";
       }
     }
-    elseif (isset($_SERVER["USER_HASH"])) {
-      $view = new UserSettingsView($this);
-      $view->tab = "Password";
+    elseif (isset($_SERVER["TOKEN"])) {
+      $view = $this->activateOrResetPassword($i18n->r("/user/register"), $i18n->t("registration page"));
     }
     else {
       $view = new UserRegisterView($this);
@@ -196,14 +199,14 @@ class UserPresenter extends AbstractPresenter {
     }
     $view = new UserResetPasswordView($this);
     if (isset($_POST["submitted"])) {
-      $mail = $this->getPostValue("mail");
+      $mail = filter_input(INPUT_POST, "mail", FILTER_SANITIZE_EMAIL);
       if (($error = DelayedMailer::validateEmail($mail))) {
         $view->setAlert($error, AbstractView::ALERT_SEVERITY_ERROR, true);
       }
       if (!$error) {
         if ($user->exists("mail", $mail) === true) {
-          $params = [ Crypt::getRandomHash(), $mail ];
-          DelayedMethodCalls::stack($user, "resetPassword", $params);
+          $params = [ Crypt::randomHash(), $mail ];
+          DelayedMethodCalls::stack($user, "insertResetPasswordData", $params);
           DelayedMailer::stackMethod("setPasswordReset", $params);
         }
         $view = new AlertView($this, $view->title);
@@ -218,9 +221,28 @@ class UserPresenter extends AbstractPresenter {
           )}</p></div>";
       }
     }
-    elseif (isset($_SERVER["USER_HASH"])) {
-      // @todo Implement reset password checks and view.
+    elseif (isset($_SERVER["TOKEN"])) {
+      $view = $this->activateOrResetPassword($i18n->r("/user/reset-password"), $i18n->t("reset password page"));
     }
+    $this->view = $view;
+    return $this;
+  }
+
+  /**
+   * Render the settings page.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
+   * @return $this
+   */
+  private function __constructSettings() {
+    global $i18n, $user;
+    if ($user->isLoggedIn === false) {
+      return $this->setPresentation("Error\\Forbidden");
+    }
+    $view = new UserSettingsView($this, $_SERVER["TAB"]);
     $this->view = $view;
     return $this;
   }
@@ -241,6 +263,86 @@ class UserPresenter extends AbstractPresenter {
       HTTP::redirect($i18n->r("/users"), 302);
     }
     return $this;
+  }
+
+  /**
+   * Helper method to render the user settings page where the user can set his password after registration or a reset
+   * password request.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
+   * @param string $expiredTokenRoute
+   *   The route to the page where the user should go if the token has expired.
+   * @param string $expiredTokenRouteText
+   *   The text that should be linked.
+   * @return mixed
+   *   The view to render.
+   */
+  private function activateOrResetPassword($expiredTokenRoute, $expiredTokenRouteText) {
+    global $i18n, $user;
+    $_SERVER["REQUEST_URI"] = $i18n->r("/user/settings/password");
+    $view = new UserSettingsView($this, "Password");
+    if (empty($_SERVER["TOKEN"])) {
+      $view = new AlertView($this, $view->title);
+      $view->setAlert(
+        "<p>{$i18n->t("Your link is missing the authentication token, please go back to the mail we’ve sent you and copy the whole link.")}</p>",
+        AbstractView::ALERT_SEVERITY_ERROR,
+        true
+      );
+    }
+    elseif (
+      ($data = $user->selectTmpData(filter_input(INPUT_SERVER, "TOKEN", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)))
+      && (time() - $data["time"]) <= 86400
+    ) {
+      // Generate a new user friendly password for the user.
+      $password = Crypt::randomUserPassword();
+      if (empty($data["name"]) && $user->isLoggedIn === false) {
+        $user = new UserModel("mail", $data["mail"]);
+        $user->sessionStart();
+      }
+      else {
+        if ($user->isLoggedIn === true) {
+          return $this->setPresentation("Error\\Forbidden");
+        }
+        try {
+//          $user = $user->createAccount($data["name"], $data["mail"], $password);
+          $user = new UserModel("mail", "richard@fussenegger.info");
+          $user->sessionStart();
+        } catch (UserException $e) {
+          $view = new AlertView($this, $view->title);
+          $view->setAlert(
+            "<p>{$e->getMessage()}</p>" .
+            "<p>{$i18n->t("Seems like somebody was faster than you and has registered an account with your desired data.")}<br>" .
+            "{$i18n->t("Please go to the {0} and create a new account.", [ $view->a($expiredTokenRoute, $expiredTokenRouteText) ])}</p>",
+            AbstractView::ALERT_SEVERITY_ERROR
+          );
+          return $view;
+        }
+      }
+      $view->setAlert(
+        [ "title" => $i18n->t("Create a password for your account"), "message" =>
+          "<p>{$i18n->t("You can now create a password for your account via the following form. Please choose a strong password that is hard to guess.")}</p>" .
+          "<p>{$i18n->t("We created the following random password for you:")} <code>{$password}</code></p>" .
+          "<p>{$i18n->t("If you like it, write it down and leave this page.")}</p>"
+        ],
+        AbstractView::ALERT_SEVERITY_INFO,
+        true
+      );
+      $view->formDisabled["current-password"] = true;
+      $view->inputValues["current-password"] = $password;
+    }
+    else {
+      $view = new AlertView($this, $view->title);
+      $view->setAlert(
+        "<p>{$i18n->t("The authentication token has expired.")}</p>" .
+        "<p>{$i18n->t("Please go back to the {0} to get a new valid token.", [ $view->a($expiredTokenRoute, $expiredTokenRouteText) ])}</p>",
+        AbstractView::ALERT_SEVERITY_WARNING,
+        true
+      );
+    }
+    return $view;
   }
 
 

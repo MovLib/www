@@ -44,8 +44,7 @@ class UserLoginView extends AbstractFormView {
    */
   public function __construct($presenter) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Login"));
-    $this->addStylesheet("/assets/css/modules/user.css");
+    parent::__construct($presenter, $i18n->t("Login"), [ "/assets/css/modules/user.css" ]);
   }
 
   /**
@@ -56,18 +55,30 @@ class UserLoginView extends AbstractFormView {
     return
       "<div class='row'>" .
         "<div class='span span--6 offset--3'>" .
-          "<p>" .
-            "<label for='mail'>{$i18n->t("Email address")}</label>" .
-            "<input autofocus class='input input-text input--block-level' id='mail' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='mail' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter the email address you used to register.")}' type='email' value='{$this->presenter->getPostValue("mail")}'>" .
-          "</p>" .
-          "<p>" .
-            "<small>{$this->a("/user/reset-password", "Reset your password", [ "class" => "pull-right", "title" => $i18n->t("Click this link if you forgot your password."), ])}</small>" .
-            "<label for='password'>{$i18n->t("Password")}</label>" .
-            "<input class='input input-text input--block-level' id='password' name='password' placeholder='{$i18n->t("Enter your password")}' role='password' tabindex='{$this->getTabindex()}' title='{$i18n->t("Please enter your secret password in this field.")}' type='password'>" .
-          "</p>" .
-          "<p>" .
-            "<button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t("Click here after you have filled out all fields.")}' type='submit'>{$i18n->t("Sign in")}</button>" .
-          "</p>" .
+          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->getInputElement("mail", [
+            "autofocus",
+            "class"       => "input--block-level",
+            "maxlength"   => UserModel::MAIL_MAX_LENGTH,
+            "placeholder" => $i18n->t("Enter your email address"),
+            "required",
+            "tabindex"    => $this->getTabindex(),
+            "title"       => $i18n->t("Plase enter the email address you used to register."),
+            "type"        => "email",
+          ])}</p>" .
+          "<p><small>{$this->a("/user/reset-password", "Reset your password", [
+            "class" => "pull-right",
+            "title" => $i18n->t("Click this link if you forgot your password."),
+          ])}</small><label for='password'>{$i18n->t("Password")}</label>{$this->getInputElement("pasword", [
+            "class"       => "input--block-level",
+            "placeholder" => $i18n->t("Enter your password"),
+            "required",
+            "tabindex"    => $this->getTabindex(),
+            "title"       => $i18n->t("Please enter your secret password in this field."),
+            "type"        => "password",
+          ])}</p>" .
+          "<p><button class='button button--success button--large' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t(
+            "Click here after you’ve filled out all fields."
+          )}' type='submit'>{$i18n->t("Sign in")}</button></p>" .
         "</div>" .
       "</div>"
     ;

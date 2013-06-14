@@ -44,7 +44,7 @@ class UserShowView extends AbstractView {
    *   The user presenter controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, $presenter->profile->name);
+    parent::__construct($presenter, $presenter->profile->name, [ "/assets/css/modules/user.css" ]);
   }
 
   /**

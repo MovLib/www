@@ -44,8 +44,7 @@ class UserRegisterView extends AbstractFormView {
    */
   public function __construct($presenter) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Register"));
-    $this->addStylesheet("/assets/css/modules/user.css");
+    parent::__construct($presenter, $i18n->t("Register"), [ "/assets/css/modules/user.css" ]);
   }
 
   /**
@@ -56,17 +55,27 @@ class UserRegisterView extends AbstractFormView {
     return
       "<div class='row'>" .
         "<div class='span span--6 offset--3'>" .
-          "<p>" .
-            "<label for='mail'>{$i18n->t("Email address")}</label>" .
-            "<input autofocus class='input input-text input--block-level' id='mail' maxlength='" . UserModel::MAIL_MAX_LENGTH . "' name='mail' placeholder='{$i18n->t("Enter your email address")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Plase enter your preferred email address.")}' type='email' value='{$this->presenter->getPostValue("mail")}'>" .
-          "</p>" .
-          "<p>" .
-            "<label for='name'>{$i18n->t("Username")}</label>" .
-            "<input class='input input-text input--block-level' id='name' maxlength='" . UserModel::NAME_MAX_LENGTH . "' name='name' placeholder='{$i18n->t("Enter your username")}' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t("Please enter your desired username.")}' type='text' value='{$this->presenter->getPostValue("name")}'>" .
-          "</p>" .
-          "<p>" .
-            "<button class='button button--success button--large input input-submit' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t("Click this button after you’ve filled out all fields to create a new account.")}' type='submit'>{$i18n->t("Sign up")}</button>" .
-          "</p>" .
+          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->getInputElement("mail", [
+            "autofocus",
+            "class"       => "input--block-level",
+            "maxlength"   => UserModel::MAIL_MAX_LENGTH,
+            "placeholder" => $i18n->t("Enter your email address"),
+            "required",
+            "tabindex"    => $this->getTabindex(),
+            "title"       => $i18n->t("Plase enter your preferred email address."),
+            "type"        => "email",
+          ])}</p>" .
+          "<p><label for='name'>{$i18n->t("Username")}</label>{$this->getInputElement("name", [
+            "class"       => "input--block-level",
+            "maxlength"   => UserModel::NAME_MAX_LENGTH,
+            "placeholder" => $i18n->t("Enter your username"),
+            "required",
+            "tabindex"    => $this->getTabindex(),
+            "title"       => $i18n->t("Please enter your desired username."),
+          ])}</p>" .
+          "<p><button class='button button--success button--large' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t(
+            "Click this button after you’ve filled out all fields to create a new account."
+          )}' type='submit'>{$i18n->t("Sign up")}</button></p>" .
         "</div>" .
       "</div>"
     ;

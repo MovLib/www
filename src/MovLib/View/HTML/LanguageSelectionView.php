@@ -36,15 +36,8 @@ class LanguageSelectionView extends AbstractView {
    * {@inheritdoc}
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, "MovLib");
-    $this->addStylesheet("/assets/css/modules/language-selection.css");
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getHeadTitle() {
-    return "MovLib";
+    global $i18n;
+    parent::__construct($presenter, $i18n->t("Language Selection"), [ "/assets/css/modules/language-selection.css" ]);
   }
 
   /**
