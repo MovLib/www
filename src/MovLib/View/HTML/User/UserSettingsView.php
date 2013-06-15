@@ -76,8 +76,6 @@ class UserSettingsView extends AbstractFormView {
   public function getFormContent() {
     global $i18n;
     return
-      "<pre>" . print_r($_COOKIE, true) . "</pre>" .
-      "<pre>" . print_r($_SESSION, true) . "</pre>" .
       "<div class='row'>" .
         "<aside class='span span--3'>{$this->getSecondaryNavigation($i18n->t("Settings navigation"), [
           [ $i18n->r("/user/settings"), $i18n->t("Account"), [ "title" => $i18n->t("Manage your basic account settings.") ]],

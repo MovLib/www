@@ -242,10 +242,10 @@
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
 }
 
-.menuitem:active,
-.menuitem.active {
+nav a:active,
+nav a.active {
   color: #555;
-  border-bottom: 0;
+  border-bottom-color: transparent;
 }
 
 .no-list {
@@ -471,47 +471,44 @@
 
 /* Secondary navigation --------------------------------------------------------------------------------------------- */
 
-.nav--secondary {
-  margin-top: 30px;
-}
-
-.nav--secondary .icon,
-.nav--secondary a {
+#nav-secondary .icon,
+#nav-secondary a {
   -webkit-transition: color, background-color 0.4s ease-out;
      -moz-transition: color, background-color 0.4s ease-out;
        -o-transition: color, background-color 0.4s ease-out;
           transition: color, background-color 0.4s ease-out;
 }
 
-.nav--secondary .icon {
+#nav-secondary .icon {
   color: #ccc;
   float: right;
   margin-right: -6px;
   margin-top: 2px;
 }
 
-.nav--secondary a {
+#nav-secondary a {
   border: 1px solid #e5e5e5;
   display: block;
   margin-bottom: -1px;
   padding: 9px 15px;
 }
 
-.nav--secondary a:focus,
-.nav--secondary a:hover {
+#nav-secondary a:focus,
+#nav-secondary a:hover {
   background-color: #f5f5f5;
 }
 
-.nav--secondary a:focus .icon,
-.nav--secondary a:hover .icon {
+#nav-secondary a:focus .icon,
+#nav-secondary a:hover .icon {
   color: #949494;
 }
 
-.nav--secondary a.active,
-.nav--secondary a:active,
-.nav--secondary a.active .icon,
-.nav--secondary a:active .icon {
+#nav-secondary a.active {
   background-color: #09c;
+}
+
+#nav-secondary a.active,
+#nav-secondary a.active .icon {
   color: #fff;
 }
 

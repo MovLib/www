@@ -500,7 +500,7 @@ abstract class AbstractView {
     $k = count($points);
     for ($i = 0; $i < $k; ++$i) {
       $points[$i][2]["role"] = "menuitem";
-      $points[$i] = "<li>{$this->a($points[$i][0], $points[$i][1], $points[$i][2])}</li>";
+      $points[$i] = "<li>{$this->a($points[$i][0], "{$points[$i][1]} <i class='icon icon--right-open'></i>", $points[$i][2])}</li>";
     }
     $points = implode("", $points);
     $this->addClass("nav--secondary", $attributes);

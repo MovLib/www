@@ -270,6 +270,7 @@ class UserPresenter extends AbstractPresenter {
   private function __constructSettings() {
     global $i18n, $user;
     if ($user->isLoggedIn === false) {
+      http_response_code(401);
       $this->__constructLogin();
       $this->view->setAlert([
         "title" => $i18n->t("Authentication Required"),
@@ -401,9 +402,26 @@ class UserPresenter extends AbstractPresenter {
     ];
     $additionalBreadcrumbsMethod = __FUNCTION__ . $this->getAction();
     if (method_exists($this, $additionalBreadcrumbsMethod)) {
-      return $this->{$additionalBreadcrumbsMethod}($breadcrumb);
+      $this->{$additionalBreadcrumbsMethod}($breadcrumb);
     }
     return $breadcrumb;
+  }
+
+  /**
+   * Extend the breadcrumb array if we are visiting a sub-page of the settings.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @param array $breadcrumb
+   *   Numeric array containing the previously set breadcrumb trails.
+   * @return $this
+   */
+  public function getBreadcrumbSettings(&$breadcrumb) {
+    global $i18n;
+    if ($_SERVER["TAB"] !== "Account") {
+      $breadcrumb[] = [ $i18n->r("/user/settings"), $i18n->t("Settings") ];
+    }
+    return $this;
   }
 
 }
