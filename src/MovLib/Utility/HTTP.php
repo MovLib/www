@@ -31,35 +31,24 @@ namespace MovLib\Utility;
 class HTTP {
 
   /**
-   * RFC 2616 compliant redirect.
+   * RFC 2616 compliant redirect, this will end the current response.
    *
    * <b>Usage example:</b>
-   * <pre>HTTP::redirect(route("movie/%u/release-%u/discussion", [ $movieId, $releaseId ]));</pre>
+   * <pre>HTTP::redirect($i18n->r("/movie/{0}/release-{1}/discussion", [ $movieId, $releaseId ]));</pre>
    *
    * @param string $route
    *   The route to which the client should be redirected.
    * @param int $status
-   *   [Optional] The HTTP response code (301, 302 or 303). Defaults to 301.
+   *   [Optional] The HTTP response code (301, 302, or 303), defaults to 301.
    * @param string $domain
    *   [Optional] Overwrite the current domain, defaults to <var>$_SERVER["SERVER_NAME"]</var>.
-   * @return boolean
-   *   Returns <tt>FALSE</tt> if HTTP headers were already sent, otherwise this method will exit any further execution.
    */
   public static function redirect($route, $status = 301, $domain = null) {
-    if (headers_sent()) {
-      return false;
-    }
-    if ($domain === null) {
-      $domain = $_SERVER["SERVER_NAME"];
-    }
+    $domain || $domain = $_SERVER["SERVER_NAME"];
     header("Location: https://{$domain}{$route}", true, $status);
     http_response_code($status); // Ensure status is set correctly
     if ($_SERVER["REQUEST_METHOD"] !== "HEAD") {
-      $title = [
-        301 => "Moved Permanently",
-        302 => "Moved Temporarily",
-        303 => "See Other",
-      ];
+      $title = [ 301 => "Moved Permanently", 302 => "Moved Temporarily", 303 => "See Other" ];
       // Entity is required per RFC 2616. Our entity is identical to the one that nginx would return.
       echo "<html><head><title>{$status} {$title[$status]}</title></head><body bgcolor=\"white\"><center><h1>{$status} {$title[$status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
     }
