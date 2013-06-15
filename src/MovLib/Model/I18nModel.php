@@ -181,6 +181,17 @@ class I18nModel extends AbstractModel {
   }
 
   /**
+   * Get the unique ID of the current language.
+   *
+   * @see \MovLib\Model\I18nModel::getLanguages()
+   * @return int
+   *   The unique ID of the current language.
+   */
+  public function getLanguageId() {
+    return $this->getLanguages()["code"][$this->languageCode]["id"];
+  }
+
+  /**
    * Get array containing all languages.
    *
    * The names are translated to the current language of this i18n model instance.
