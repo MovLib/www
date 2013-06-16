@@ -194,7 +194,28 @@ abstract class AbstractModel {
   }
 
   /**
-   * Generic query with constraints.
+   * Generic query method that directly executes.
+   *
+   * <b>IMPORTANT!</b> This method does not close the prepared statement!
+   *
+   * @param string $query
+   *   The query to be executed.
+   * @param string $types
+   *   The type string in <code>\mysqli_stmt::bind_param()</code> syntax.
+   * @param array $params
+   *   The parameters to bind.
+   * @return $this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public final function query($query, $types = null, $params = null) {
+    return ($types && $params)
+      ? $this->prepareAndBind($query, $types, $params)->execute()
+      : $this->prepare($query)->execute()
+    ;
+  }
+
+  /**
+   * Generic select query with constraints.
    *
    * <b>Usage example:</b>
    * <pre>$this->query('SELECT * FROM `users` WHERE `id` = ?', 'i', [ 42 ]);</pre>
@@ -220,7 +241,7 @@ abstract class AbstractModel {
   }
 
   /**
-   * Generic query without constraints.
+   * Generic select query without constraints.
    *
    * <b>Important:</b> If you have to bind parameters to the query, use the generic query method.
    *
@@ -378,7 +399,7 @@ abstract class AbstractModel {
   }
 
   /**
-   * Get the statement result as array.
+   * Get the statement's result as array.
    *
    * @param array|null $result
    *   The query result as numeric array containg each resulting row as associative array.
@@ -399,6 +420,23 @@ abstract class AbstractModel {
     }
     $queryResult->free();
     return $this;
+  }
+
+  /**
+   * Get a single field from the last executed statement and close it.
+   *
+   * @param string $name
+   *   The name of the field to fetch.
+   * @return mixed
+   *   The content of the field.
+   * @throws \MovLib\Exception\ErrorException
+   *   If the result was not a valid array, or something unknown.
+   * @throws \MovLib\Exception\DatabaseException
+   *   If fetching the result failed.
+   */
+  protected final function fetchField($name) {
+    $this->fetchAssoc($result)->close();
+    return $result[0][$name];
   }
 
   /**
