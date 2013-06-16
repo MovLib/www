@@ -138,7 +138,6 @@ abstract class AbstractView {
    *   [Optional] Additional stylesheets that should be added to the page.
    */
   public function __construct($presenter, $title, $stylesheets = []) {
-    global $i18n, $user;
     $this->presenter = $presenter;
     $this->title = $title;
     $stylesheets = array_merge($stylesheets, [

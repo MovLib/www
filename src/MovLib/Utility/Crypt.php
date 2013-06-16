@@ -29,7 +29,7 @@ namespace MovLib\Utility;
 class Crypt {
 
   /**
-   * Calculates a Base64 encoded, URL-safe SHA-256 hash from a highly randomized bytes (full 8-bit range).
+   * Calculates URL-safe SHA-512 hash from highly randomized bytes (full 8-bit range).
    *
    * We do not utilize <em>/dev/urandom</em> to generate our random bytes. While it is a perfect source for pseudo
    * random bytes, the <code>openssl_random_pseudo_bytes()</code> function is a magnitude faster (benchmarks have shown
@@ -40,16 +40,18 @@ class Crypt {
    * <code>\Drupal\Component\Utility\Crypt::randomBytes()</code> is not true, simply check the C implementation:
    * {@link https://github.com/php/php-src/blob/master/main/streams/streams.c#L703}
    *
-   * The collision probability of SHA1 is extremely, extremely low. There is absolutely no need to generate some special
-   * hash based on environment values or anything else. It's impossible to guess the hash and nearly impossible that the
-   * hash collides with another hash. If you still have concerns, read the following:
+   * The collision probability of SHA-512 is extremely, extremely low. There is absolutely no need to generate some
+   * special hash based on environment values or anything else. It's impossible to guess the hash and nearly impossible
+   * that the hash collides with another hash. If you still have concerns, read the following:
    * {@link http://stackoverflow.com/a/4014407/1251219}
    *
+   * SHA-512 is extremely fast on a 64-bit machine, most of the time close to MD5 and SHA-1.
+   *
    * @return string
-   *   Base64 encoded random SHA-256 hash, with + replaced with -, / with _ and any = padding characters removed.
+   *   Random SHA-512 hash.
    */
-  public static function randomHashBase64() {
-    return strtr(base64_encode(hash("sha256", openssl_random_pseudo_bytes(1024), true)), [ "+" => "-", "/" => "_", "=", "" ]);
+  public static function randomHash() {
+    return hash("sha512", openssl_random_pseudo_bytes(1024));
   }
 
   /**
@@ -307,7 +309,7 @@ class Crypt {
       "year", "yellow", "yes", "yesterday", "yet", "you", "young", "younger",
       "your", "yourself", "youth", "zero", "zoo"
     ];
-    $wordCount = count($wordlist);
+    $wordCount = count($wordlist) - 1;
     $password = [];
     for ($i = 0; $i < 4; ++$i) {
       $password[] = $wordlist[mt_rand(0, $wordCount)];

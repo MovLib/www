@@ -58,12 +58,13 @@ class UserSettingsView extends AbstractFormView {
    * @param \MovLib\Presenter\UserPresenter $presenter
    *   The presenter controlling this view.
    * @param string $tab
-   *   The name of the tab that should be rendered. Have a look at the <code>get*Tab</code> methods in this class.
+   *   The name of the tab that should be rendered. Have a look at the <code>get*Tab</code> methods in this class. If
+   *   no value is passed along the value submitted by the server will be used.
    */
-  public function __construct($presenter, $tab) {
+  public function __construct($presenter, $tab = null) {
     global $i18n;
     parent::__construct($presenter, "{$i18n->t($tab)} {$i18n->t("Settings")}", [ "/assets/css/modules/user.css" ]);
-    $this->tab = $tab;
+    $this->tab = $tab || $_SERVER["TAB"];
   }
 
 

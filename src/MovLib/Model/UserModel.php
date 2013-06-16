@@ -17,6 +17,7 @@
  */
 namespace MovLib\Model;
 
+use \Memcached;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\AbstractModel;
@@ -137,8 +138,11 @@ class UserModel extends AbstractModel {
   public function __construct($from = null, $value = null) {
     switch ($from) {
       case "session":
-        $this->sessionInitialize();
+        if (($value = $this->sessionLoad())) {
+          $from = "user_id";
+        }
         break;
+
 
       case "user_id":
         $type = "d";
@@ -223,7 +227,7 @@ class UserModel extends AbstractModel {
           [
             $name,
             $mail,
-            password_hash($password, PASSWORD_DEFAULT),
+            password_hash($password, PASSWORD_BCRYPT),
             $mail,
             $this->select("SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = ? LIMIT 1", "s", [ $i18n->languageCode ])[0]["language_id"]
           ]
@@ -294,7 +298,10 @@ class UserModel extends AbstractModel {
   }
 
   /**
-   * Register new user for activation in our temporary database table.
+   * Pre-register a new user account.
+   *
+   * The pre-registration step is to put the provided information into our temporary database where we can pull it out
+   * after the user clicked the link in the mail we've sent him.
    *
    * @param string $hash
    *   The activation hash used in the activation link for identification.
@@ -303,13 +310,50 @@ class UserModel extends AbstractModel {
    * @param string $mail
    *   The valid mail of the new user.
    */
-  public function insertRegistrationData($hash, $name, $mail) {
+  public function preRegister($hash, $name, $mail) {
     // @todo Catch exceptions, log and maybe even send a mail to the user?
     $this
       ->prepareAndBind("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'mail', ?, 'time', NOW() + 0))", "sss", [ $hash, $name, $mail ])
       ->execute()
       ->close()
     ;
+  }
+
+  /**
+   * Register a new user account.
+   *
+   * After the user clicked the activation link for the account we finally are able to creat an account for her/him. The
+   * validation process is something the model does not care about, this is handled by the presenter, who's also
+   * responsible to display the correct error messages. This method simply inserts the new data. Note that the object
+   * this method is called on will automatically became the user that was just registered. Think of it like passing
+   * the variable by reference. So if you call this on the global user object, the formerly anonymous global user is
+   * now the registered new user. This is the desired behavior during our registration process because we directly
+   * want to display the password settings page within the user's account.
+   *
+   * @param string $name
+   *   The valid unique user's name.
+   * @param string $mail
+   *   The valid unique user's mail.
+   * @param string $pass
+   *   The unhashed user's password.
+   * @return $this
+   * @throws \MovLib\Exception\DatabaseException
+   *   If inserting the data into our database failed.
+   */
+  public function register($name, $mail, $pass) {
+    global $i18n;
+    $this->name = $name;
+    $this->deleted = false;
+    $this->timestampCreated = $this->timestampLastAccess = $this->timestampLastLogin = time();
+    $this->prepareAndBind(
+      "INSERT INTO `users`
+        (`name`, `mail`, `pass`, `created`, `login`, `timezone`, `init`, `dyn_data`, `language_id`)
+      VALUES
+        (?, ?, ?, NOW(), NOW(), 'UTC', ?, '', {$i18n->getLanguageId()})",
+      "ssss", [ $name, $mail, password_hash($pass, PASSWORD_BCRYPT), $mail ]
+    )->execute();
+    $this->id = $this->stmt->insert_id;
+    return $this->close();
   }
 
   /**
@@ -327,35 +371,6 @@ class UserModel extends AbstractModel {
       ->execute()
       ->close()
     ;
-  }
-
-
-  public function login($mail, $pass) {
-    try {
-      foreach ($this->select(
-        "SELECT
-          `user_id` AS `id`,
-          `name`,
-          `created` AS `timestampCreated`,
-          `access` AS `timestampLastAccess`,
-          `login` AS `timestampLastLogin`,
-          `deleted`,
-          `timezone`,
-          `image_id` AS `imageId`,
-          `real_name` AS `realName`,
-          `country_id` AS `countryId`,
-          `language_id` AS `languageId`
-        FROM `users`
-          WHERE `mail` = ?
-          AND `pass` = ?
-        LIMIT 1", "ss", [ $mail, password_hash($pass, PASSWORD_DEFAULT) ]
-      )[0] as $name => $value) {
-        $this->{$name} = $value;
-      }
-      settype($this->deleted, "boolean");
-    } catch (ErrorException $e) {
-      throw new UserException("Could not find a user with the given mail/password combination.", $e);
-    }
   }
 
   /**
@@ -385,35 +400,88 @@ class UserModel extends AbstractModel {
   }
 
   /**
-   * Initializes the session and starts a session if needed.
+   * Destroy the current session completely and log the user out.
    *
    * @return $this
    */
-  public function sessionInitialize() {
-    // Empty session IDs are not valid.
-    if (!empty($_COOKIE["MOVSID"])) {
+  public function sessionDestroy() {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+      // Remove the cookie.
+      $cookieParams = session_get_cookie_params();
+      setcookie(session_name(), "", time() - 42000, $cookieParams["path"], $cookieParams["domain"], $cookieParams["secure"], $cookieParams["httponly"]);
+      // Invalidate the old session ID, this effectively removes the ID from our system and makes it unusable.
+      session_regenerate_id(true);
+      // Destroy any session related data from our system.
+      session_destroy();
+    }
+    return $this;
+  }
 
+  /**
+   * Initializes the session and starts a session if needed.
+   *
+   * @return null|int
+   *   Returns the user ID stored in the session or <tt>NULL</tt> if no valid session was found.
+   * @throws \MovLib\Exception\ErrorException
+   *   If starting the session failed. This should not be catched, this failure is related to Memcached being
+   *   unavailable or full. Something that we cannot recover at runtime.
+   */
+  public function sessionLoad() {
+    // Empty session IDs are not valid and only continue if no session is active and starting a new session succeeds.
+    if (!empty($_COOKIE["MOVSID"]) && session_status() === PHP_SESSION_NONE && session_start() === true) {
+      if (!empty($_SESSION["UID"])) {
+        return $_SESSION["UID"];
+      }
+      // Not good, we don't know who this is, invalidate!
+      $this->sessionDestroy();
     }
   }
 
   /**
-   * Starts a session forcefully, preserving already set session data. A new CSRF token will be generated for the user.
+   * Forcefully starts a new session for a logged in user, invalidating any previously set data and regenerating the
+   * session ID. This should be called after a user has successfully logged in.
    *
    * @return $this
+   * @throws \MovLib\Exception\ErrorException
+   *   If starting the session failed. This should not be catched, this failure is related to Memcached being
+   *   unavailable or full. Something that we cannot recover at runtime.
    */
   public function sessionStart() {
-    if (session_status() === PHP_SESSION_NONE) {
-      // Save current session before starting it, as PHP will destroy it.
-      $sessionData = isset($_SESSION) ? $_SESSION : null;
-      session_start();
-      $this->csrfToken = $_SESSION["TOKEN"] = Crypt::randomHashBase64();
-      $this->isLoggedIn = true;
-      $_SESSION["HTTP_USER_AGENT"] = $_SERVER["HTTP_USER_AGENT"];
-      // Restore session data.
-      if ($sessionData !== null) {
-        $_SESSION += $sessionData;
-      }
+    $sessionStatus = session_status();
+    // If we have an active session, completely destroy and invalidate it.
+    if ($sessionStatus === PHP_SESSION_ACTIVE) {
+      $this->sessionDestroy();
     }
+    // Only continue if this user is really logged and starting a new session succeeds (Memcached gone away / full?).
+    if ($this->isLoggedIn === true && session_start() === true) {
+      session_regenerate_id(true);
+      $_SESSION["CSRF"] = $this->csrfToken = Crypt::randomHash();
+      $_SESSION["TTL"] = time() + ini_get("session.gc_maxlifetime");
+      $_SESSION["UID"] = $this->id;
+    }
+    else {
+      new ErrorException("Could not start session.");
+    }
+    return $this;
+  }
+
+  /**
+   * Validate the user submitted password against the stored hash. If the password is valid, the user's logged in state
+   * is changed to <tt>TRUE</tt>.
+   *
+   * @param string $pass
+   *   The un-hashed password.
+   * @return $this
+   * @throws \MovLib\Exception\ErrorException
+   *   If the query failed to retrieve the password from the database for the current user.
+   * @throws \MovLib\Exception\UserException
+   *   If the password is invalid.
+   */
+  public function validatePassword($pass) {
+    if (password_verify($pass, $this->query("SELECT `pass` FROM `users` WHERE `user_id` = {$this->id} LIMIT 1")->fetchField("pass")) === false) {
+      throw new UserException("Submitted password is invalid.");
+    }
+    $this->isLoggedIn = true;
     return $this;
   }
 

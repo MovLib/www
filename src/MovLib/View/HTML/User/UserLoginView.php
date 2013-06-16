@@ -53,6 +53,7 @@ class UserLoginView extends AbstractFormView {
   public function getFormContent() {
     global $i18n;
     return
+      "<pre>" . (isset($_SESSION) ? print_r($_SESSION, true) : "no active session") . "</pre>" .
       "<div class='row'>" .
         "<div class='span span--6 offset--3'>" .
           "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->getInputElement("mail", [
@@ -82,6 +83,11 @@ class UserLoginView extends AbstractFormView {
         "</div>" .
       "</div>"
     ;
+  }
+
+  public static function getTitle() {
+    global $i18n;
+    return $i18n->t("Login");
   }
 
 }

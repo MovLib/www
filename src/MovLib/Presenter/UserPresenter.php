@@ -80,39 +80,48 @@ class UserPresenter extends AbstractPresenter {
   private function __constructLogin() {
     global $i18n, $user;
     if ($user->isLoggedIn === true) {
-      HTTP::redirect("/", 302);
+      HTTP::redirect($i18n->r("/user"), 302);
     }
     // Ensure we are using the correct route (this method is called from other constructors in this presenter as well).
     $_SERVER["REQUEST_URI"] = $i18n->r("/user/login");
-    $view = new UserLoginView($this);
-    if (isset($_POST["submitted"])) {
-      $mail = filter_input(INPUT_POST, "mail", FILTER_SANITIZE_EMAIL);
-      if (($error = DelayedMailer::validateEmail($mail))) {
-        $view->setAlert($error, AbstractView::ALERT_SEVERITY_ERROR);
-        $view->formInvalid["mail"] = true;
-      }
-      elseif (!($pass = filter_input(INPUT_POST, "pass", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)) || empty($pass)) {
-        $view->setAlert($i18n->t("The password field is mandatory."), AbstractView::ALERT_SEVERITY_ERROR);
-        $view->formInvalid["pass"] = true;
-      }
-      else {
-        try {
-          $user->login($mail, $pass);
-        } catch (UserException $e) {
-          $view->setAlert([
-            "title" => $i18n->t("Login Error"),
-            "message" =>
-              "<p>{$i18n->t("We either don’t know this email address or the password you entered contains errors.")}</p>" .
-              "<p>{$i18n->t("Please try again, or visit the {0} to create a new account.", [
-                $view->a($i18n->r("/user/register"), $i18n->t("registration page"))
-              ])}</p>"
-          ], AbstractView::ALERT_SEVERITY_ERROR, true);
-          $view->formInvalid["mail"] = $view->formInvalid["pass"] = true;
-        }
-      }
+    // If the user requested the simple form, just render it.
+    if ($_SERVER["REQUEST_METHOD"] === "GET") {
+      return $this->setPresentation("User\\UserLogin");
     }
-    $this->view = $view;
-    return $this;
+    // Okay the user didn't, time for some work.
+    $view = new UserLoginView($this);
+    // Sanitize and validate the submitted email address.
+    $mail = filter_input(INPUT_POST, "mail", FILTER_SANITIZE_EMAIL);
+    if (($error = DelayedMailer::validateEmail($mail))) {
+      $view->setAlert($error, AbstractView::ALERT_SEVERITY_ERROR);
+      $view->formInvalid["mail"] = true;
+    }
+    // Sanitize and validate the submitted password.
+    if (!($pass = filter_input(INPUT_POST, "pass", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)) || empty($pass)) {
+      $view->setAlert($i18n->t("The password field is mandatory."), AbstractView::ALERT_SEVERITY_ERROR);
+      $view->formInvalid["pass"] = true;
+      // We've checked everything that the user could do wrong, tell him about the problems and return.
+      $this->view = $view;
+      return $this;
+    }
+    // No problems with the provided data so far. Try to log the user in.
+    try {
+      $user = new UserModel("mail", $mail);
+      $user->validatePassword($pass)->sessionStart();
+    } catch (UserException $e) {
+      $view->setAlert([
+        "title" => $i18n->t("Login Error"),
+        "message" =>
+          "<p>{$i18n->t("We either don’t know this email address or the password you entered contains errors.")}</p>" .
+          "<p>{$i18n->t("Please try again, or visit the {0} to create a new account.", [
+            $view->a($i18n->r("/user/register"), $i18n->t("registration page"))
+          ])}</p>"
+      ], AbstractView::ALERT_SEVERITY_ERROR, true);
+      $view->formInvalid["mail"] = $view->formInvalid["pass"] = true;
+      return $this;
+    }
+    $_SESSION["alerts"][] = [ "an alert that we should display" ];
+    HTTP::redirect("/user", 302);
   }
 
   /**
@@ -121,30 +130,28 @@ class UserPresenter extends AbstractPresenter {
    * @return $this
    */
   private function __constructProfile() {
+    if (!($name = filter_input(INPUT_SERVER, "USER_NAME", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW))) {
+      // @todo Variable was empty or invalid!
+    }
+    // Try to find the user in our database.
     try {
-      if (isset($_SERVER["USER_ID"])) {
-        $this->profile = new UserModel("user_id", filter_input(INPUT_SERVER, "USER_ID", FILTER_SANITIZE_NUMBER_INT));
-      }
-      elseif (isset($_SERVER["USER_NAME"])) {
-        $this->profile = new UserModel("name", filter_input(INPUT_SERVER, "USER_NAME", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW));
-      }
-      // If this user's account is disabled, tell the client about it and exit (no need to redirect).
-      if ($this->profile->deleted === true) {
-        $this->view = new GoneView($this);
-        // @todo Display text to recreate account
-        // @todo Check if account was deleted forever
-        $this->view->content = "";
-        return $this;
-      }
-      // Check if the requested URI is a perfect match to what we want to have.
-      if (($profileRoute = $this->profile->getProfileRoute()) && $_SERVER["REQUEST_URI"] !== $profileRoute) {
-        HTTP::redirect($profileRoute);
-      }
-      // Everything looks good, render the profile.
-      return $this->setPresentation("User\\UserShow");
+      $this->profile = new UserModel("name", $name);
     } catch (UserException $e) {
       return $this->setPresentation("Error\\NotFound");
     }
+    // If this user's account is disabled, tell the client about it and exit (no need to redirect).
+    if ($this->profile->deleted === true) {
+      $this->view = new GoneView($this);
+      // @todo Display text to recreate account
+      // @todo Check if account was deleted forever
+      $this->view->content = "";
+      return $this;
+    }
+    // Check if the requested URI is a perfect match to what we want to have.
+    if (($profileRoute = $this->profile->getProfileRoute()) && $_SERVER["REQUEST_URI"] !== $profileRoute) {
+      HTTP::redirect($profileRoute);
+    }
+    return $this->setPresentation("User\\UserShow");
   }
 
   /**
@@ -190,8 +197,8 @@ class UserPresenter extends AbstractPresenter {
         // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what
         // he has to do.
         else {
-          $params = [ Crypt::encrypt("[{$name},{$mail}]"), $name, $mail ];
-          DelayedMethodCalls::stack($user, "insertRegistrationData", $params);
+          $params = [ $name, $mail ];
+          DelayedMethodCalls::stack($user, "preRegister", $params);
           DelayedMailer::stackMethod("setActivationMail", $params);
         }
         $view = new AlertView($this, $view->title);
@@ -274,13 +281,11 @@ class UserPresenter extends AbstractPresenter {
       $this->__constructLogin();
       $this->view->setAlert([
         "title" => $i18n->t("Authentication Required"),
-        "message" => $i18n->t("You have to log in before you can access your settings page.")
+        "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your settings page") ])
       ], AbstractView::ALERT_SEVERITY_INFO);
       return $this;
     }
-    $view = new UserSettingsView($this, $_SERVER["TAB"]);
-    $this->view = $view;
-    return $this;
+    return $this->setPresentation("User\\UserSettingsView");
   }
 
   /**
@@ -295,10 +300,15 @@ class UserPresenter extends AbstractPresenter {
   private function __constructShow() {
     global $i18n, $user;
     if ($user->isLoggedIn === false) {
-      // @todo Should we display an error site? Or maybe ask the user if he'd like to register a new account?
-      HTTP::redirect($i18n->r("/users"), 302);
+      http_response_code(401);
+      $this->__constructLogin();
+      $this->view->setAlert([
+        "title" => $i18n->t("Authentication Required"),
+        "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your profile page") ])
+      ], AbstractView::ALERT_SEVERITY_INFO);
+      return $this;
     }
-    return $this;
+    return $this->setPresentation("User\\UserShow");
   }
 
   /**
