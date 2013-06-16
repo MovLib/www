@@ -40,13 +40,9 @@ class HTTP {
    *   The route to which the client should be redirected.
    * @param int $status
    *   [Optional] The HTTP response code (301, 302, or 303), defaults to 301.
-   * @param string $domain
-   *   [Optional] Overwrite the current domain, defaults to <var>$_SERVER["SERVER_NAME"]</var>.
    */
-  public static function redirect($route, $status = 301, $domain = null) {
-    $domain || $domain = $_SERVER["SERVER_NAME"];
-    header("Location: https://{$domain}{$route}", true, $status);
-    http_response_code($status); // Ensure status is set correctly
+  public static function redirect($route, $status = 301) {
+    header("Location: {$route}", true, $status);
     if ($_SERVER["REQUEST_METHOD"] !== "HEAD") {
       $title = [ 301 => "Moved Permanently", 302 => "Moved Temporarily", 303 => "See Other" ];
       // Entity is required per RFC 2616. Our entity is identical to the one that nginx would return.
