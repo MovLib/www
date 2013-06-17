@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presenter;
 
-use \MovLib\Exception\ErrorException;
 use \ReflectionClass;
 
 /**
@@ -175,9 +174,6 @@ abstract class AbstractPresenter {
     if ($viewName !== null) {
       $view = "\\MovLib\\View\\{$viewType}\\{$viewName}View";
       $this->view = new $view($this);
-    }
-    if (!isset($this->view)) {
-      throw new ErrorException("No view was set to render the requested page.");
     }
     $this->presentation = $this->view->{$method}();
     return $this;
