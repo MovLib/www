@@ -33,57 +33,6 @@
  */
 
 /**
- * Ultra fast class autoloader.
- *
- * @param string $class
- *   Fully qualified class name (automatically passed to this magic function by PHP).
- * @return void
- */
-function __autoload($class) {
-  $class = strtr($class, "\\", "/");
-  require "{$_SERVER["HOME"]}/src/{$class}.php";
-}
-
-/**
- * Global array to collect class names and function names which will be executed after the response was sent to the user.
- *
- * @var array
- */
-$delayed = [];
-
-/**
- * Register new delayed class to be called after the response has been sent to the user.
- *
- * @global array $delayed
- *   Global array to collect the delayed classes.
- * @param string $class
- *   Absolute class name (use the magic <var>__CLASS__</var> constant).
- * @param int $weight
- *   [Optional] Defines when this class should be called. This is important if your class relys on other delayed
- *   classes. The weight must not be negative! Defaults to 50, the lower the earlier the execution.
- * @param string $method
- *   [Optional] The name of the method that should be called, defaults to <em>run</em>.
- */
-function delayed_register($class, $weight = 50, $method = "run") {
-  global $delayed;
-  $delayed[$weight][$class] = $method;
-}
-
-/**
- * Create new global <em>UserModel</em> instance for the current user who is requesting the page.
- *
- * @var \MovLib\Model\UserModel
- */
-$user = new \MovLib\Model\UserModel("session");
-
-/**
- * Create new global <em>I18n</em> instance for the locale of the user who is requesting the page.
- *
- * @var \MovLib\Utility\I18n
- */
-$i18n = new \MovLib\Model\I18nModel();
-
-/**
  * This is the outermost place to catch any exception that might have been forgotten somewhere.
  *
  * To ensure that no unexpected behaviour crashes our software any uncaught exception will be caught at this place. An
@@ -174,6 +123,57 @@ function error_fatal_handler() {
 
 // Check for possible fatal errors that are not catchable otherwise.
 register_shutdown_function("error_fatal_handler");
+
+/**
+ * Ultra fast class autoloader.
+ *
+ * @param string $class
+ *   Fully qualified class name (automatically passed to this magic function by PHP).
+ * @return void
+ */
+function __autoload($class) {
+  $class = strtr($class, "\\", "/");
+  require "{$_SERVER["HOME"]}/src/{$class}.php";
+}
+
+/**
+ * Global array to collect class names and function names which will be executed after the response was sent to the user.
+ *
+ * @var array
+ */
+$delayed = [];
+
+/**
+ * Register new delayed class to be called after the response has been sent to the user.
+ *
+ * @global array $delayed
+ *   Global array to collect the delayed classes.
+ * @param string $class
+ *   Absolute class name (use the magic <var>__CLASS__</var> constant).
+ * @param int $weight
+ *   [Optional] Defines when this class should be called. This is important if your class relys on other delayed
+ *   classes. The weight must not be negative! Defaults to 50, the lower the earlier the execution.
+ * @param string $method
+ *   [Optional] The name of the method that should be called, defaults to <em>run</em>.
+ */
+function delayed_register($class, $weight = 50, $method = "run") {
+  global $delayed;
+  $delayed[$weight][$class] = $method;
+}
+
+/**
+ * Create new global <em>UserModel</em> instance for the current user who is requesting the page.
+ *
+ * @var \MovLib\Model\UserModel
+ */
+$user = new \MovLib\Model\UserModel("session");
+
+/**
+ * Create new global <em>I18n</em> instance for the locale of the user who is requesting the page.
+ *
+ * @var \MovLib\Utility\I18n
+ */
+$i18n = new \MovLib\Model\I18nModel();
 
 // Start the rendering process.
 $presenter = "\\MovLib\\Presenter\\{$_SERVER["PRESENTER"]}Presenter";
