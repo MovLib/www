@@ -39,10 +39,16 @@
  * error is logged and, depending on the error, a message is displayed to the user.
  *
  * @link http://www.php.net/manual/en/function.set-exception-handler.php
+ * @global \MovLib\Model\I18nModel $i18n
+ *   The global i18n model instance.
  * @param \Exception $exception
  *   The uncaught exception.
  */
 function uncaught_exception_handler($exception) {
+  global $i18n;
+  if (!isset($i18n)) {
+    $i18n = new \MovLib\Model\I18nModel();
+  }
   \MovLib\Utility\DelayedLogger::logException($exception, $exception->getCode());
   $presenter = new \MovLib\Presenter\ExceptionPresenter();
   $presenter->setException($exception);

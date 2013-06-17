@@ -89,39 +89,63 @@ class UserPresenter extends AbstractPresenter {
       return $this->setPresentation("User\\UserLogin");
     }
     // Okay the user didn't, time for some work.
-    $view = new UserLoginView($this);
+    $this->view = new UserLoginView($this);
     // Sanitize and validate the submitted email address.
     $mail = filter_input(INPUT_POST, "mail", FILTER_SANITIZE_EMAIL);
     if (($error = DelayedMailer::validateEmail($mail))) {
-      $view->setAlert($error, AbstractView::ALERT_SEVERITY_ERROR);
-      $view->formInvalid["mail"] = true;
+      $this->view->setAlert($error, AbstractView::ALERT_SEVERITY_ERROR);
+      $this->view->formInvalid["mail"] = true;
     }
     // Sanitize and validate the submitted password.
     if (!($pass = filter_input(INPUT_POST, "pass", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)) || empty($pass)) {
-      $view->setAlert($i18n->t("The password field is mandatory."), AbstractView::ALERT_SEVERITY_ERROR);
-      $view->formInvalid["pass"] = true;
-      // We've checked everything that the user could do wrong, tell him about the problems and return.
-      $this->view = $view;
+      $this->view->setAlert($i18n->t("The password field is mandatory."), AbstractView::ALERT_SEVERITY_ERROR);
+      $this->view->formInvalid["pass"] = true;
       return $this;
     }
     // No problems with the provided data so far. Try to log the user in.
     try {
-      $user = new UserModel("mail", $mail);
-      $user->validatePassword($pass)->sessionStart();
+      $user = new UserModel(UserModel::FROM_MAIL, $mail);
+      $user->validatePasswordAndLogIn($pass);
     } catch (UserException $e) {
-      $view->setAlert([
+      $this->view->setAlert([
         "title" => $i18n->t("Login Error"),
         "message" =>
           "<p>{$i18n->t("We either don’t know this email address or the password you entered contains errors.")}</p>" .
           "<p>{$i18n->t("Please try again, or visit the {0} to create a new account.", [
-            $view->a($i18n->r("/user/register"), $i18n->t("registration page"))
+            $this->view->a($i18n->r("/user/register"), $i18n->t("registration page"))
           ])}</p>"
       ], AbstractView::ALERT_SEVERITY_ERROR, true);
-      $view->formInvalid["mail"] = $view->formInvalid["pass"] = true;
+      $this->view->formInvalid["mail"] = $this->view->formInvalid["pass"] = true;
       return $this;
     }
-    $_SESSION["alerts"][] = [ "an alert that we should display" ];
-    HTTP::redirect("/user", 302);
+    $_SESSION["ALERTS"][] = [
+      $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$user->name}</b>" ]),
+      AbstractView::ALERT_SEVERITY_SUCCESS
+    ];
+    HTTP::redirect($i18n->r("/user"), 302);
+  }
+
+  /**
+   * Log the user out from the current session.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
+   * @return $this
+   */
+  private function __constructLogout() {
+    global $i18n, $user;
+    if ($user->isLoggedIn === true) {
+      $user->sessionDestroy();
+      $this->view = new AlertView($this, $i18n->t("Logout"));
+      $this->view->setAlert([
+        "title" => $i18n->t("You’ve been logged out successfully."),
+        "message" => $i18n->t("We hope to see you again soon.")
+      ], AbstractView::ALERT_SEVERITY_SUCCESS, true);
+      return $this;
+    }
+    HTTP::redirect($i18n->r("/user/login"), 302);
   }
 
   /**
@@ -135,7 +159,7 @@ class UserPresenter extends AbstractPresenter {
     }
     // Try to find the user in our database.
     try {
-      $this->profile = new UserModel("name", $name);
+      $this->profile = new UserModel(UserModel::FROM_NAME, $name);
     } catch (UserException $e) {
       return $this->setPresentation("Error\\NotFound");
     }
@@ -243,8 +267,8 @@ class UserPresenter extends AbstractPresenter {
       if (!$error) {
         if ($user->exists("mail", $mail) === true) {
           $params = [ Crypt::randomHash(), $mail ];
-          DelayedMethodCalls::stack($user, "insertResetPasswordData", $params);
-          DelayedMailer::stackMethod("setPasswordReset", $params);
+          DelayedMethodCalls::stack($user, "preResetPassword", $params);
+          DelayedMailer::stackMethod("stackPasswordReset", $params);
         }
         $view = new AlertView($this, $view->title);
         $view->setAlert(
@@ -285,7 +309,7 @@ class UserPresenter extends AbstractPresenter {
       ], AbstractView::ALERT_SEVERITY_INFO);
       return $this;
     }
-    return $this->setPresentation("User\\UserSettingsView");
+    return $this->setPresentation("User\\UserSettings");
   }
 
   /**
@@ -345,7 +369,7 @@ class UserPresenter extends AbstractPresenter {
       // Generate a new user friendly password for the user.
       $password = Crypt::randomUserPassword();
       if (empty($data["name"]) && $user->isLoggedIn === false) {
-        $user = new UserModel("mail", $data["mail"]);
+        $user = new UserModel(UserModel::FROM_MAIL, $data["mail"]);
         $user->sessionStart();
       }
       else {
@@ -354,7 +378,7 @@ class UserPresenter extends AbstractPresenter {
         }
         try {
 //          $user = $user->createAccount($data["name"], $data["mail"], $password);
-          $user = new UserModel("mail", "richard@fussenegger.info");
+          $user = new UserModel(UserModel::FROM_MAIL, "richard@fussenegger.info");
           $user->sessionStart();
         } catch (UserException $e) {
           $view = new AlertView($this, $view->title);
@@ -406,32 +430,44 @@ class UserPresenter extends AbstractPresenter {
    */
   public function getBreadcrumb() {
     global $i18n, $user;
+    if ($this->getAction() === "Show") {
+      return [];
+    }
     $breadcrumb = [ $user->isLoggedIn === true
-      ? [ $i18n->r("/user"), $i18n->t("Profile"), [ "title" => $i18n->t("Go to your user profile.") ] ]
+      ? [ $i18n->r("/user"), $i18n->t("Profile"), [ "title" => $i18n->t("Go to your profile page.") ] ]
       : [ $i18n->r("/users"), $i18n->t("Users"), [ "title" => $i18n->t("Have a look at our user statistics.") ] ]
     ];
     $additionalBreadcrumbsMethod = __FUNCTION__ . $this->getAction();
     if (method_exists($this, $additionalBreadcrumbsMethod)) {
-      $this->{$additionalBreadcrumbsMethod}($breadcrumb);
+      return $this->{$additionalBreadcrumbsMethod}($breadcrumb);
     }
     return $breadcrumb;
   }
 
   /**
-   * Extend the breadcrumb array if we are visiting a sub-page of the settings.
+   * Get title and points for secondary settings navigation of the user.
    *
+   * This must reside in the presenter, because the navigation is shared among views.
+   *
+   * @see \MovLib\View\HTML\AbstractView::getSecondaryNavigation()
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @param array $breadcrumb
-   *   Numeric array containing the previously set breadcrumb trails.
-   * @return $this
+   * @return array
+   *   Associative array with the keys <em>title</em> and <em>points</em>.
    */
-  public function getBreadcrumbSettings(&$breadcrumb) {
+  public function getSecondarySettingsNavigation() {
     global $i18n;
-    if ($_SERVER["TAB"] !== "Account") {
-      $breadcrumb[] = [ $i18n->r("/user/settings"), $i18n->t("Settings") ];
-    }
-    return $this;
+    return [
+      "title" => $i18n->t("Settings navigation"),
+      "points" => [
+        [ $i18n->r("/user"), $i18n->t("Profile"), [ "title" => "Go to your profile page." ]],
+        [ $i18n->r("/user/account-settings"), $i18n->t("Account"), [ "title" => $i18n->t("Manage your basic account settings.") ]],
+        [ $i18n->r("/user/notification-settings"), $i18n->t("Notifications"), [ "title" => $i18n->t("Manage your notification settings.") ]],
+        [ $i18n->r("/user/mail-settings"), $i18n->t("Mail"), [ "title" => $i18n->t("Change your email address.") ]],
+        [ $i18n->r("/user/password-settings"), $i18n->t("Password"), [ "title" => $i18n->t("Change your password.") ]],
+        [ $i18n->r("/user/dangerzone-settings"), $i18n->t("Dangerzone"), [ "class" => "menuitem--delete", "title" => $i18n->t("Deactivate or delete your account.") ]],
+      ],
+    ];
   }
 
 }

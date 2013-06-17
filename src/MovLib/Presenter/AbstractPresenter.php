@@ -109,25 +109,35 @@ abstract class AbstractPresenter {
    * <pre>$class = "\\MovLib\\View\\HTML\\User\\User{$this->getAction()}View";
    * $this->output = (new $class())->getRenderedView();</pre>
    *
+   * @staticvar string $action
+   *   Used to cache the construction.
    * @param string $defaultAction
    *   [Optional] The default action value to use if <var>$_SERVER["ACTION"]</var> is empty. Defaults to <tt>Show</tt>.
    * @return string
    *   CamelCase representation of the action if set, otherwise <tt>Show</tt> is returned.
    */
   public final function getAction($defaultAction = "Show") {
-    if (isset($_SERVER["ACTION"])) {
-      return $_SERVER["ACTION"];
+    static $action = null;
+    if ($action === null) {
+      $action = isset($_SERVER["ACTION"]) ? $_SERVER["ACTION"] : $defaultAction;
     }
-    return $defaultAction;
+    return $action;
   }
 
   /**
    * Get the current server request method as CamelCase string.
    *
+   * @staticvar string $method
+   *   Used to cache the construction.
    * @return string
+   *   The request method as CamelCase string.
    */
   public final function getMethod() {
-    return ucfirst(strtolower($_SERVER["REQUEST_METHOD"]));
+    static $method = null;
+    if ($method === null) {
+      $method = ucfirst(strtolower($_REQUEST["REQUEST_METHOD"]));
+    }
+    return $method;
   }
 
 

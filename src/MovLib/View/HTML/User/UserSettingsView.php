@@ -63,8 +63,10 @@ class UserSettingsView extends AbstractFormView {
    */
   public function __construct($presenter, $tab = null) {
     global $i18n;
-    parent::__construct($presenter, "{$i18n->t($tab)} {$i18n->t("Settings")}", [ "/assets/css/modules/user.css" ]);
-    $this->tab = $tab || $_SERVER["TAB"];
+    parent::__construct($presenter, "{$i18n->t(($this->tab = $tab ?: ucfirst($_SERVER["TAB"])))} {$i18n->t("Settings")}", [
+      "/assets/css/modules/user.css"
+    ]);
+    $this->activeHeaderUserNavigationPoint = 0;
   }
 
 
@@ -75,19 +77,26 @@ class UserSettingsView extends AbstractFormView {
    * {@inheritdoc}
    */
   public function getFormContent() {
-    global $i18n;
+    $nav = $this->presenter->getSecondarySettingsNavigation();
     return
       "<div class='row'>" .
-        "<aside class='span span--3'>{$this->getSecondaryNavigation($i18n->t("Settings navigation"), [
-          [ $i18n->r("/user/settings"), $i18n->t("Account"), [ "title" => $i18n->t("Manage your basic account settings.") ]],
-          [ $i18n->r("/user/settings/password"), $i18n->t("Password"), [ "title" => $i18n->t("Change your password.") ]],
-        ])}</aside>" .
+        "<aside class='span span--3'>{$this->getSecondaryNavigation($nav["title"], $nav["points"])}</aside>" .
         "<div class='span span--9'>{$this->{"get{$this->tab}Tab"}()}</div>" .
       "</div>"
     ;
   }
 
   private function getAccountTab() {
+    global $i18n;
+    return "";
+  }
+
+  private function getNotificationTab() {
+    global $i18n;
+    return "";
+  }
+
+  private function getMailTab() {
     global $i18n;
     return "";
   }
@@ -127,6 +136,11 @@ class UserSettingsView extends AbstractFormView {
         "Click here after you’ve filled out all fields."
       )}' type='submit'>{$i18n->t("Change password")}</button></p>"
     ;
+  }
+
+  private function getDangerzoneTab() {
+    global $i18n;
+    return "";
   }
 
 }

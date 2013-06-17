@@ -20,9 +20,11 @@ namespace MovLib\Model;
 use \Memcached;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\UserException;
+use \MovLib\Exception\SessionException;
 use \MovLib\Model\AbstractModel;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedLogger;
+use \MovLib\Utility\DelayedMethodCalls;
 use \MovLib\Utility\String;
 
 /**
@@ -39,6 +41,34 @@ class UserModel extends AbstractModel {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
+
+  /**
+   * Load the user from session.
+   *
+   * @var int
+   */
+  const FROM_SESSION = 0;
+
+  /**
+   * Load the user from ID.
+   *
+   * @var int
+   */
+  const FROM_ID = 1;
+
+  /**
+   * Load the user from name.
+   *
+   * @var int
+   */
+  const FROM_NAME = 2;
+
+  /**
+   * Load the user from mail.
+   *
+   * @var int
+   */
+  const FROM_MAIL = 3;
 
   /**
    * Maximum length an email address can have.
@@ -121,13 +151,8 @@ class UserModel extends AbstractModel {
    * Instantiate new user model object.
    *
    * @param string $from
-   *   [Optional] Defines how the object should be filled with data. Possible <var>$from</var> values are:
-   *   <ul>
-   *     <li><em>session</em>: Try to load the user data from the session (cookie).</li>
-   *     <li><em>user_id</em>: Load the user from the given unique user ID in <var>$value</var>.</li>
-   *     <li><em>name</em>: Load the user from the given unique username in <var>$value</var>.</li>
-   *     <li><em>mail</em>: Load the user from the given unique email address in <var>$value</var>.</li>
-   *   </ul>
+   *   [Optional] Defines how the object should be filled with data. Possible <var>$from</var> values are defined as
+   *   class constants, see <var>FROM_*</var>.
    * @param mixed $value
    *   [Optional] Should contain the data to identify the user upon loading, see description of <var>$from</var>.
    * @throws \MovLib\Exception\ErrorException
@@ -137,31 +162,36 @@ class UserModel extends AbstractModel {
    */
   public function __construct($from = null, $value = null) {
     switch ($from) {
-      case "session":
-        if (($value = $this->sessionLoad())) {
-          $from = "user_id";
+      case self::FROM_SESSION:
+        if (!($value = $this->sessionLoad())) {
+          break;
         }
-        break;
 
-
-      case "user_id":
+      case self::FROM_ID:
+        $from = "user_id";
         $type = "d";
         break;
 
-      case "name":
-      case "mail":
+      case self::FROM_MAIL:
+        $from = "mail";
+        $type = "s";
+        break;
+
+      case self::FROM_NAME:
+        $from = "name";
         $type = "s";
         break;
     }
     if (isset($type) && $value !== null) {
+      // @todo How about anon IP users?
       try {
         foreach ($this->select(
           "SELECT
             `user_id` AS `id`,
             `name`,
-            `created` AS `timestampCreated`,
-            `access` AS `timestampLastAccess`,
-            `login` AS `timestampLastLogin`,
+            UNIX_TIMESTAMP(`created`) AS `timestampCreated`,
+            UNIX_TIMESTAMP(`access`) AS `timestampLastAccess`,
+            UNIX_TIMESTAMP(`login`) AS `timestampLastLogin`,
             `deleted`,
             `timezone`,
             `image_id` AS `imageId`,
@@ -180,7 +210,7 @@ class UserModel extends AbstractModel {
       }
     }
     // If we have no ID until this point, create anon user.
-    if (!$this->id) {
+    if (!isset($this->id)) {
       $this->id = 0;
       // @todo It is important to configure our servers that they will always submit this key with the user's IP address
       //       especially if we start using proxies. It's no problem to alter the submitted FastCGI parameters (something
@@ -364,7 +394,7 @@ class UserModel extends AbstractModel {
    * @param string $mail
    *   The valid mail of the user.
    */
-  public function insertResetPasswordData($hash, $mail) {
+  public function preResetPassword($hash, $mail) {
     // @todo Catch exceptions, log and maybe even send a mail to the user?
     $this
       ->prepareAndBind("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('mail', ?, 'time', NOW() + 0))", "ss", [ $hash, $mail ])
@@ -400,6 +430,31 @@ class UserModel extends AbstractModel {
   }
 
   /**
+   * Removes the given session ID from our session database.
+   *
+   * @param string $sessionId
+   *   The session ID that should be removed.
+   * @return $this
+   */
+  public function sessionDelete($sessionId) {
+    // Fetch all configured Memcached servers from the global configuration and split them by the delimiter.
+    $servers = explode(",", ini_get("session.save_path"));
+    // Build the array as expected by Memcached::addServers().
+    $c = count($servers);
+    for ($i = 0; $i < $c; ++$i) {
+      $servers[$i] = explode(":", $servers[$i]);
+      // The port is mandatory!
+      if (!isset($servers[$i][1])) {
+        $servers[$i][1] = 0;
+      }
+    }
+    $memcached = new Memcached();
+    $memcached->addServers($servers);
+    $memcached->delete(ini_get("memcached.sess_prefix") . $sessionId);
+    return $this;
+  }
+
+  /**
    * Destroy the current session completely and log the user out.
    *
    * @return $this
@@ -409,10 +464,12 @@ class UserModel extends AbstractModel {
       // Remove the cookie.
       $cookieParams = session_get_cookie_params();
       setcookie(session_name(), "", time() - 42000, $cookieParams["path"], $cookieParams["domain"], $cookieParams["secure"], $cookieParams["httponly"]);
-      // Invalidate the old session ID, this effectively removes the ID from our system and makes it unusable.
-      session_regenerate_id(true);
-      // Destroy any session related data from our system.
+      // Remove the session ID from our database.
+      DelayedMethodCalls::stack($this, "sessionDelete", [ session_id() ]);
+      // Remove all data associated with this session.
       session_destroy();
+      // The user is no longer logged in.
+      $this->isLoggedIn = false;
     }
     return $this;
   }
@@ -422,18 +479,20 @@ class UserModel extends AbstractModel {
    *
    * @return null|int
    *   Returns the user ID stored in the session or <tt>NULL</tt> if no valid session was found.
-   * @throws \MovLib\Exception\ErrorException
+   * @throws \MovLib\Exception\SessionException
    *   If starting the session failed. This should not be catched, this failure is related to Memcached being
    *   unavailable or full. Something that we cannot recover at runtime.
    */
   public function sessionLoad() {
-    // Empty session IDs are not valid and only continue if no session is active and starting a new session succeeds.
-    if (!empty($_COOKIE["MOVSID"]) && session_status() === PHP_SESSION_NONE && session_start() === true) {
-      if (!empty($_SESSION["UID"])) {
-        return $_SESSION["UID"];
+    if (!empty($_COOKIE["MOVSID"]) && session_status() === PHP_SESSION_NONE) {
+      if (session_start() === false) {
+        throw new SessionException("Could not start session.");
       }
-      // Not good, we don't know who this is, invalidate!
-      $this->sessionDestroy();
+      if (empty($_SESSION["UID"])) {
+        $this->sessionDestroy();
+      }
+      $this->isLoggedIn = true;
+      return $_SESSION["UID"];
     }
   }
 
@@ -442,32 +501,30 @@ class UserModel extends AbstractModel {
    * session ID. This should be called after a user has successfully logged in.
    *
    * @return $this
-   * @throws \MovLib\Exception\ErrorException
+   * @throws \MovLib\Exception\SessionException
    *   If starting the session failed. This should not be catched, this failure is related to Memcached being
    *   unavailable or full. Something that we cannot recover at runtime.
    */
   public function sessionStart() {
     $sessionStatus = session_status();
-    // If we have an active session, completely destroy and invalidate it.
     if ($sessionStatus === PHP_SESSION_ACTIVE) {
       $this->sessionDestroy();
     }
-    // Only continue if this user is really logged and starting a new session succeeds (Memcached gone away / full?).
-    if ($this->isLoggedIn === true && session_start() === true) {
+    if (session_start() === true) {
       session_regenerate_id(true);
       $_SESSION["CSRF"] = $this->csrfToken = Crypt::randomHash();
       $_SESSION["TTL"] = time() + ini_get("session.gc_maxlifetime");
       $_SESSION["UID"] = $this->id;
+      $this->isLoggedIn = true;
     }
     else {
-      new ErrorException("Could not start session.");
+      new SessionException("Could not start session.");
     }
     return $this;
   }
 
   /**
-   * Validate the user submitted password against the stored hash. If the password is valid, the user's logged in state
-   * is changed to <tt>TRUE</tt>.
+   * Validate the user submitted password against the stored hash and log the user in if it is valid.
    *
    * @param string $pass
    *   The un-hashed password.
@@ -477,11 +534,11 @@ class UserModel extends AbstractModel {
    * @throws \MovLib\Exception\UserException
    *   If the password is invalid.
    */
-  public function validatePassword($pass) {
+  public function validatePasswordAndLogIn($pass) {
     if (password_verify($pass, $this->query("SELECT `pass` FROM `users` WHERE `user_id` = {$this->id} LIMIT 1")->fetchField("pass")) === false) {
       throw new UserException("Submitted password is invalid.");
     }
-    $this->isLoggedIn = true;
+    $this->sessionStart();
     return $this;
   }
 

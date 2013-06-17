@@ -242,8 +242,12 @@
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
 }
 
-nav a:active,
-nav a.active {
+.menuitem--delete {
+  color: #c00;
+}
+
+.menuitem:active,
+.menuitem.active {
   color: #555;
   border-bottom-color: transparent;
 }
@@ -442,22 +446,22 @@ nav a.active {
   margin-top: 7px;
 }
 
-#nav-main a,
-#nav-main a:visited,
-#nav-user a,
-#nav-user a:visited {
+#nav-main .menuitem,
+#nav-main .menuitem:visited,
+#nav-user .menuitem,
+#nav-user .menuitem:visited {
   border-bottom: 0;
   color: #888;
 }
 
-#nav-main a:hover,
-#nav-main a:focus,
-#nav-main a:active,
-#nav-main a.active,
-#nav-user a:hover,
-#nav-user a:focus,
-#nav-user a:active,
-#nav-user a.active {
+#nav-main .menuitem:hover,
+#nav-main .menuitem:focus,
+#nav-main .menuitem:active,
+#nav-main .menuitem.active,
+#nav-user .menuitem:hover,
+#nav-user .menuitem:focus,
+#nav-user .menuitem:active,
+#nav-user .menuitem.active {
   color: #333;
 }
 
@@ -465,14 +469,14 @@ nav a.active {
   margin: 0 5px;
 }
 
-#nav-user a {
+#nav-user .menuitem {
   margin-left: 10px;
 }
 
 /* Secondary navigation --------------------------------------------------------------------------------------------- */
 
 #nav-secondary .icon,
-#nav-secondary a {
+#nav-secondary .menuitem {
   -webkit-transition: color, background-color 0.4s ease-out;
      -moz-transition: color, background-color 0.4s ease-out;
        -o-transition: color, background-color 0.4s ease-out;
@@ -486,29 +490,33 @@ nav a.active {
   margin-top: 2px;
 }
 
-#nav-secondary a {
+#nav-secondary .menuitem {
   border: 1px solid #e5e5e5;
   display: block;
   margin-bottom: -1px;
   padding: 9px 15px;
 }
 
-#nav-secondary a:focus,
-#nav-secondary a:hover {
+#nav-secondary .menuitem:focus,
+#nav-secondary .menuitem:hover {
   background-color: #f5f5f5;
 }
 
-#nav-secondary a:focus .icon,
-#nav-secondary a:hover .icon {
+#nav-secondary .menuitem:focus .icon,
+#nav-secondary .menuitem:hover .icon {
   color: #949494;
 }
 
-#nav-secondary a.active {
+#nav-secondary .menuitem.active {
   background-color: #09c;
 }
 
-#nav-secondary a.active,
-#nav-secondary a.active .icon {
+#nav-secondary .menuitem--delete.active {
+  background-color: #c00;
+}
+
+#nav-secondary .menuitem.active,
+#nav-secondary .menuitem.active .icon {
   color: #fff;
 }
 

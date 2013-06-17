@@ -40,31 +40,42 @@ class UserShowView extends AbstractView {
   /**
    * Get user profile view.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
    * @param \MovLib\Presenter\UserPresenter $presenter
    *   The user presenter controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, $presenter->profile->name, [ "/assets/css/modules/user.css" ]);
+    global $i18n;
+    parent::__construct($presenter, $i18n->t("Profile"), [ "/assets/css/modules/user.css" ]);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
+    global $i18n, $user;
+    $nav = $this->presenter->getSecondarySettingsNavigation();
     return
-      "<article>" .
-        "<header class='row'>" .
-          "<div class='span span--1'>" .
-            "<div class='page-header'><h1>{$this->presenter->profile->name}</h1></div>" .
-          "</div>" .
-        "</header>" .
+      "<div class='container'>" .
         "<div class='row'>" .
-          "<div class='span span--1'>" .
-            "<pre>" . print_r($this->presenter->profile, true) . "</pre>" .
+          "<aside class='span span--3'>{$this->getSecondaryNavigation($nav["title"], $nav["points"])}</aside>" .
+          "<div class='span span--9'>" .
+            "<h2>\$_SESSION</h2>" .
+            "<pre>" . print_r($_SESSION, true) . "</pre>" .
+            "<h2>\$user</h2>" .
+            "<pre>" . print_r($user, true) . "</pre>" .
           "</div>" .
         "</div>" .
-      "</article>"
+      "</div>"
     ;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRenderedContent($tag = null, $attributes = null) {
+    return parent::getRenderedContent("article");
   }
 
 }

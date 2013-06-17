@@ -33,13 +33,6 @@ use \MovLib\View\HTML\AbstractFormView;
 class UserLoginView extends AbstractFormView {
 
   /**
-   * The user presenter controlling this view.
-   *
-   * @var \MovLib\Presenter\UserPresenter
-   */
-  protected $presenter;
-
-  /**
    * {@inheritdoc}
    */
   public function __construct($presenter) {
@@ -53,7 +46,6 @@ class UserLoginView extends AbstractFormView {
   public function getFormContent() {
     global $i18n;
     return
-      "<pre>" . (isset($_SESSION) ? print_r($_SESSION, true) : "no active session") . "</pre>" .
       "<div class='row'>" .
         "<div class='span span--6 offset--3'>" .
           "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->getInputElement("mail", [
@@ -77,17 +69,12 @@ class UserLoginView extends AbstractFormView {
             "title"       => $i18n->t("Please enter your secret password in this field."),
             "type"        => "password",
           ])}</p>" .
-          "<p><button class='button button--success button--large' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t(
+          "<p><button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$i18n->t(
             "Click here after you’ve filled out all fields."
           )}' type='submit'>{$i18n->t("Sign in")}</button></p>" .
         "</div>" .
       "</div>"
     ;
-  }
-
-  public static function getTitle() {
-    global $i18n;
-    return $i18n->t("Login");
   }
 
 }

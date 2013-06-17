@@ -326,7 +326,7 @@ abstract class AbstractView {
   public final function getHead() {
     global $i18n, $user;
     $bodyClass = "{$this->getShortName()}-body";
-    if ($user->isLoggedIn === true) {
+    if (isset($user) && $user->isLoggedIn === true) {
       $bodyClass .= " logged-in";
     }
     $ariaRole = "document";
@@ -427,7 +427,7 @@ abstract class AbstractView {
    */
   public final function getHeaderUserNavigation() {
     global $i18n, $user;
-    if ($user->isLoggedIn === true) {
+    if (isset($user) && $user->isLoggedIn === true) {
       $points = [
         /*0*/[ $i18n->r("/user"), $user->name, [ "title" => $i18n->t("Go to your personal user page.") ]],
         /*1*/[ $i18n->r("/user/logout"), $i18n->t("Logout"), [ "title" => $i18n->t("Click here to log out from your current session.") ]],
@@ -468,10 +468,12 @@ abstract class AbstractView {
   public final function getNavigation($title, $role, $points, $activePointIndex, $glue, $attributes = [], $hideTitle = true) {
     $k = count($points);
     for ($i = 0; $i < $k; ++$i) {
+      $classes = "menuitem";
       // Check against current URI to prevent adding the active class twice.
       if ($i === $activePointIndex && $_SERVER["REQUEST_URI"] !== $points[$i][0]) {
-        $this->addClass("active", $points[$i][2]);
+        $classes .= " active";
       }
+      $this->addClass($classes, $points[$i][2]);
       $points[$i][2]["role"] = "menuitem";
       $points[$i] = $this->a($points[$i][0], $points[$i][1], $points[$i][2]);
     }
@@ -504,6 +506,7 @@ abstract class AbstractView {
   public final function getSecondaryNavigation($title, $points, $attributes = [], $role = "secondary", $hideTitle = true) {
     $k = count($points);
     for ($i = 0; $i < $k; ++$i) {
+      $this->addClass("menuitem", $points[$i][2]);
       $points[$i][2]["role"] = "menuitem";
       $points[$i] = "<li>{$this->a($points[$i][0], "{$points[$i][1]} <i class='icon icon--right-open'></i>", $points[$i][2])}</li>";
     }
