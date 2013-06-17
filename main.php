@@ -166,7 +166,7 @@ function delayed_register($class, $weight = 50, $method = "run") {
  *
  * @var \MovLib\Model\UserModel
  */
-$user = new \MovLib\Model\UserModel("session");
+$user = new \MovLib\Model\UserModel(\MovLib\Model\UserModel::FROM_SESSION);
 
 /**
  * Create new global <em>I18n</em> instance for the locale of the user who is requesting the page.
