@@ -96,13 +96,6 @@ abstract class AbstractView {
   private $alerts = [];
 
   /**
-   * The HTML elements tag that is used to wrap the content, defaults to <tt>div</tt>.
-   *
-   * @var string
-   */
-  protected $contentHtmlElement = "div";
-
-  /**
    * The presenter that created the view instance.
    *
    * @var \MovLib\Presenter\AbstractPresenter
@@ -153,6 +146,13 @@ abstract class AbstractView {
       $stylesheets[$i] = "<link rel='stylesheet' href='{$stylesheets[$i]}'>";
     }
     $this->stylesheets = implode("", $stylesheets);
+    if (isset($_SESSION["ALERTS"])) {
+      $c = count($_SESSION["ALERTS"]);
+      for ($i = 0; $i < $c; ++$i) {
+        call_user_func_array([ $this, "setAlert" ], $_SESSION["ALERTS"][$i]);
+      }
+      unset($_SESSION["ALERTS"]);
+    }
   }
 
 
@@ -428,13 +428,19 @@ abstract class AbstractView {
   public final function getHeaderUserNavigation() {
     global $i18n, $user;
     if ($user->isLoggedIn === true) {
-      // @todo Implement logged in user navigation.
+      $points = [
+        /*0*/[ $i18n->r("/user"), $user->name, [ "title" => $i18n->t("Go to your personal user page.") ]],
+        /*1*/[ $i18n->r("/user/logout"), $i18n->t("Logout"), [ "title" => $i18n->t("Click here to log out from your current session.") ]],
+      ];
     }
-    return $this->getNavigation($i18n->t("User navigation"), "user", [
-      /*0*/[ $i18n->r("/user/register"), $i18n->t("Register"), [ "title" => $i18n->t("Click here to create a new account.") ]],
-      /*1*/[ $i18n->r("/user/login"), $i18n->t("Login"), [ "title" => $i18n->t("Click here to log in to your account.") ]],
-      /*2*/[ $i18n->r("/help"), $i18n->t("Help"), [ "rel" => "help", "title" => $i18n->t("Click here to find our help articles.") ]],
-    ], $this->activeHeaderUserNavigationPoint, " ", [ "class" => "pull-right" ]);
+    else {
+      $points = [
+        /*0*/[ $i18n->r("/user/register"), $i18n->t("Register"), [ "title" => $i18n->t("Click here to create a new account.") ]],
+        /*1*/[ $i18n->r("/user/login"), $i18n->t("Login"), [ "title" => $i18n->t("Click here to log in to your account.") ]],
+      ];
+    }
+    /*2*/$points[] = [ $i18n->r("/help"), $i18n->t("Help"), [ "rel" => "help", "title" => $i18n->t("Click here to find our help articles.") ]];
+    return $this->getNavigation($i18n->t("User navigation"), "user", $points, $this->activeHeaderUserNavigationPoint, " ", [ "class" => "pull-right" ]);
   }
 
   /**
@@ -706,17 +712,20 @@ abstract class AbstractView {
    * @return string
    *   The rendered content ready for print.
    */
-  public function getRenderedContent() {
+  public function getRenderedContent($tag = "div", $attributes = []) {
+    $this->addClass("{$this->getShortName()}-content", $attributes);
+    $attributes["id"] = "content";
+    $attributes["role"] = "main";
     return
-      "<div id='content' class='{$this->getShortName()}-content' role='main'>" .
+      "<{$tag}{$this->expandTagAttributes($attributes)}>" .
         "<div id='content__header'>" .
           "<div class='container'>" .
-            "<h1 id='content__header__title'>{$this->title}</h1>" .
+            "<h1 id='content__header__title' class='title'>{$this->title}</h1>" .
           "</div>" .
         "</div>" .
         $this->getAlerts() .
         $this->getContent() .
-      "</div>"
+      "</{$tag}>"
     ;
   }
 

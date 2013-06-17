@@ -117,10 +117,14 @@ class HomeView extends AbstractView {
    * We already have the <tt>h1</tt>-element in the header, the content shall not have another one. Additionally the
    * home view doesn't have a breadcrumb.
    *
+   * @param null $tag
+   *   Unused but declaration must be compatible.
+   * @param null $attributes
+   *   Unused but declaration must be compatible.
    * @return string
    *   The rendered view ready for print.
    */
-  public function getRenderedContent() {
+  public function getRenderedContent($tag = null, $attributes = null) {
     return "<div id='content' class='{$this->getShortName()}-content' role='main'>{$this->getContent()}</div>";
   }
 
