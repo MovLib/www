@@ -113,7 +113,7 @@ class DelayedMailer {
    * @param string $to
    *   The valid mail of the user.
    */
-  public static function setActivationMail($hash, $name, $to) {
+  public static function stackActivationMail($hash, $name, $to) {
     global $i18n;
     self::$mails[] = [
       $to,
@@ -144,7 +144,7 @@ Password:       Your password",
    * @param string $mail
    *   The already registered valid mail.
    */
-  public static function setActivationMailExists($mail) {
+  public static function stackActivationMailExists($mail) {
     global $i18n;
     try {
       $user = new UserModel("mail", $mail);
@@ -177,7 +177,7 @@ If it wasn’t you who requested a new account ignore this message.",
    * @param string $mail
    *   The valid mail.
    */
-  public static function setPasswordReset($hash, $mail) {
+  public static function stackPasswordReset($hash, $mail) {
     global $i18n;
     try {
       $user = new UserModel("mail", $mail);
