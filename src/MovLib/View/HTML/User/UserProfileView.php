@@ -20,7 +20,7 @@ namespace MovLib\View\HTML\User;
 use \MovLib\View\HTML\AbstractView;
 
 /**
- * @todo Description of UserShowView
+ * Description of UserProfileView
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,7 +28,7 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserShowView extends AbstractView {
+class UserProfileView extends AbstractView {
 
   /**
    * The user presenter controlling this view.
@@ -38,44 +38,26 @@ class UserShowView extends AbstractView {
   protected $presenter;
 
   /**
-   * Get user profile view.
+   * Instantiate new user profile view.
    *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
    * @param \MovLib\Presenter\UserPresenter $userPresenter
    *   The user presenter controlling this view.
    */
   public function __construct($userPresenter) {
-    global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Profile"), [ "/assets/css/modules/user.css" ]);
+    parent::__construct($userPresenter, $userPresenter->profile->name, [ "/assets/css/module/user.css" ]);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
-    global $i18n, $user;
-    $nav = $this->presenter->getSecondarySettingsNavigation();
     return
       "<div class='container'>" .
-        "<div class='row'>" .
-          "<aside class='span span--3'>{$this->getSecondaryNavigation($nav["title"], $nav["points"])}</aside>" .
-          "<div class='span span--9'>" .
-            "<h2>\$_SESSION</h2>" .
-            "<pre>" . print_r($_SESSION, true) . "</pre>" .
-            "<h2>\$user</h2>" .
-            "<pre>" . print_r($user, true) . "</pre>" .
-          "</div>" .
-        "</div>" .
+        "<pre>" . print_r($_SERVER, true) . "</pre>" .
       "</div>"
     ;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getRenderedContent($tag = null, $attributes = null) {
-    return parent::getRenderedContent("article");
   }
 
 }

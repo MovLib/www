@@ -33,11 +33,14 @@ use \MovLib\View\HTML\AbstractFormView;
 class UserLoginView extends AbstractFormView {
 
   /**
-   * {@inheritdoc}
+   * Instantiate new user login view.
+   *
+   * @param \MovLib\Presenter\UserPresenter $userPresenter
+   *   The user presenter controlling this view.
    */
-  public function __construct($presenter) {
+  public function __construct($userPresenter) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Login"), [ "/assets/css/modules/user.css" ]);
+    parent::__construct($userPresenter, $i18n->t("Login"), [ "/assets/css/modules/user.css" ]);
   }
 
   /**

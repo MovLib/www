@@ -33,18 +33,14 @@ use \MovLib\View\HTML\AbstractFormView;
 class UserRegisterView extends AbstractFormView {
 
   /**
-   * The user presenter controlling this view.
+   * Instantiate new user registration view.
    *
-   * @var \MovLib\Presenter\UserPresenter
+   * @param \MovLib\Presenter\UserPresenter $userPresenter
+   *   The user presenter controlling this view.
    */
-  protected $presenter;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($presenter) {
+  public function __construct($userPresenter) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Register"), [ "/assets/css/modules/user.css" ]);
+    parent::__construct($userPresenter, $i18n->t("Register"), [ "/assets/css/modules/user.css" ]);
   }
 
   /**
@@ -73,8 +69,8 @@ class UserRegisterView extends AbstractFormView {
             "tabindex"    => $this->getTabindex(),
             "title"       => $i18n->t("Please enter your desired username."),
           ])}</p>" .
-          "<p><button class='button button--success button--large' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t(
-            "Click this button after you’ve filled out all fields to create a new account."
+          "<p><button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$i18n->t(
+            "Click here after you’ve filled out all fields."
           )}' type='submit'>{$i18n->t("Sign up")}</button></p>" .
         "</div>" .
       "</div>"

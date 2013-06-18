@@ -1,0 +1,15 @@
+[
+  "login",
+  "logout",
+  "reset-password",
+  "reset-password=",
+  "register",
+  "register=",
+  "/",
+  "account-settings",
+  "notification-settings",
+  "mail-settings",
+  "password-settings",
+  "dangerzone-settings",
+  "test",
+]

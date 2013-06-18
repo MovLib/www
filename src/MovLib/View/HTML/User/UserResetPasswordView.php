@@ -21,7 +21,7 @@ use \MovLib\Model\UserModel;
 use \MovLib\View\HTML\AbstractFormView;
 
 /**
- * @todo Description of UserResetPasswordView
+ * User reset password form.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -32,18 +32,14 @@ use \MovLib\View\HTML\AbstractFormView;
 class UserResetPasswordView extends AbstractFormView {
 
   /**
-   * The user presenter controlling this view.
+   * Instantiate new user reset password view.
    *
-   * @var \MovLib\Presenter\UserPresenter
+   * @param \MovLib\Presenter\UserPresenter $userPresenter
+   *   The user presenter controlling this view.
    */
-  protected $presenter;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct($presenter) {
+  public function __construct($userPresenter) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Reset password"), [ "/assets/css/modules/user.css" ]);
+    parent::__construct($userPresenter, $i18n->t("Reset password"), [ "/assets/css/modules/user.css" ]);
   }
 
   /**
@@ -64,8 +60,8 @@ class UserResetPasswordView extends AbstractFormView {
             "title"       => $i18n->t("Plase enter the email address with which you registered your account."),
             "type"        => "email",
           ])}</p>" .
-          "<p><button class='button button--success button--large' name='submitted' tabindex='{$this->getTabindex()}' title='{$i18n->t(
-            "Fill in the email address you registered with and we will generate a new secure password for you."
+          "<p><button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$i18n->t(
+            "Click here after you’ve filled out all fields."
           )}' type='submit'>{$i18n->t("Reset password")}</button></p>" .
         "</div>" .
       "</div>"

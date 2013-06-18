@@ -23,9 +23,7 @@ use \MovLib\Exception\UserException;
 use \MovLib\Exception\SessionException;
 use \MovLib\Model\AbstractModel;
 use \MovLib\Utility\Crypt;
-use \MovLib\Utility\DelayedLogger;
 use \MovLib\Utility\DelayedMethodCalls;
-use \MovLib\Utility\String;
 
 /**
  * Retrieve user specific data from the database.
@@ -45,30 +43,30 @@ class UserModel extends AbstractModel {
   /**
    * Load the user from session.
    *
-   * @var int
+   * @var string
    */
-  const FROM_SESSION = 0;
+  const FROM_SESSION = "session";
 
   /**
    * Load the user from ID.
    *
-   * @var int
+   * @var string
    */
-  const FROM_ID = 1;
+  const FROM_ID = "user_id";
 
   /**
    * Load the user from name.
    *
-   * @var int
+   * @var string
    */
-  const FROM_NAME = 2;
+  const FROM_NAME = "name";
 
   /**
    * Load the user from mail.
    *
-   * @var int
+   * @var string
    */
-  const FROM_MAIL = 3;
+  const FROM_MAIL = "mail";
 
   /**
    * Maximum length an email address can have.
@@ -118,6 +116,13 @@ class UserModel extends AbstractModel {
   public $name;
 
   /**
+   * The user's unique mail if logged in.
+   *
+   * @var string
+   */
+  public $mail;
+
+  /**
    * The user's login status.
    *
    * <tt>TRUE</tt> if the user is logged in, otherwise <tt>FALSE</tt>.
@@ -135,8 +140,6 @@ class UserModel extends AbstractModel {
   public $deleted;
 
   public $timezone;
-
-  public $avatarId;
 
   public $realName;
 
@@ -166,19 +169,17 @@ class UserModel extends AbstractModel {
         if (!($value = $this->sessionLoad())) {
           break;
         }
+        $from = self::FROM_ID;
 
       case self::FROM_ID:
-        $from = "user_id";
         $type = "d";
         break;
 
       case self::FROM_MAIL:
-        $from = "mail";
         $type = "s";
         break;
 
       case self::FROM_NAME:
-        $from = "name";
         $type = "s";
         break;
     }
@@ -189,12 +190,12 @@ class UserModel extends AbstractModel {
           "SELECT
             `user_id` AS `id`,
             `name`,
+            `mail`,
             UNIX_TIMESTAMP(`created`) AS `timestampCreated`,
             UNIX_TIMESTAMP(`access`) AS `timestampLastAccess`,
             UNIX_TIMESTAMP(`login`) AS `timestampLastLogin`,
             `deleted`,
             `timezone`,
-            `image_id` AS `imageId`,
             `real_name` AS `realName`,
             `country_id` AS `countryId`,
             `language_id` AS `languageId`
@@ -224,61 +225,10 @@ class UserModel extends AbstractModel {
 
 
   /**
-   * Create new user account.
-   *
-   * @param string $name
-   *   The desired user's unique name.
-   * @param string $mail
-   *   The user's unique valid mail.
-   * @return string
-   *   The randomly generated password for this user.
-   * @throws \MovLib\Exception\DatabaseException
-   *   If creating the new user failed.
-   * @throws \MovLib\Exception\UserException
-   *   If the name or mail is already in use, the exception message will be translated and can be used for displaying
-   *   to the user.
-   */
-  public function createAccount($name, $mail, $password) {
-    global $i18n;
-    if ($this->exists("name", $name) === true) {
-      throw new UserException($i18n->t("The {0} {1} is already in use.", [ $i18n->t("username"), String::placeholder($name) ]));
-    }
-    if ($this->exists("mail", $mail) === true) {
-      throw new UserException($i18n->t("The {0} {1} is already in use.", [ $i18n->t("email address"), String::placeholder($mail) ]));
-    }
-    try {
-      $this
-        ->prepareAndBind(
-          "INSERT INTO `users`
-          (`name`, `mail`, `pass`, `created`, `access`, `login`, `deleted`, `timezone`, `init`, `dyn_data`, `language_id`)
-          VALUES
-          (?, ?, ?, NOW() + 0, NOW() + 0, NOW() + 0, FALSE, 'UTC', ?, '', ?)",
-          "ssssi",
-          [
-            $name,
-            $mail,
-            password_hash($password, PASSWORD_BCRYPT),
-            $mail,
-            $this->select("SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = ? LIMIT 1", "s", [ $i18n->languageCode ])[0]["language_id"]
-          ]
-        )
-        ->execute()
-        ->close()
-      ;
-    } catch (ErrorException $e) {
-      // If we cannot fetch the ID for a server supported language, we really have a problem.
-      $e = new DatabaseException("Could not fetch ID for language '{$i18n->languageCode}'!", $e);
-      DelayedLogger::logException($e, E_ERROR);
-      throw $e;
-    }
-    return $this;
-  }
-
-  /**
    * Check if a user with the given value exists.
    *
    * @param string $column
-   *   The column name against which the value should be checked.
+   *   The column name against which the value should be checked. Use the <var>FROM_*</var> class constants.
    * @param mixed $value
    *   The user attribute to check.
    * @param string $type
@@ -302,29 +252,16 @@ class UserModel extends AbstractModel {
     static $languageCode = null;
     try {
       if ($languageCode === null) {
-        $languageCode = $this->select("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", $this->languageId)[0]["iso_alpha-2"];
+        $languageCode = $this->select(
+          "SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1",
+          "i",
+          $this->languageId
+        )[0]["iso_alpha-2"];
       }
       return $languageCode;
     } catch (ErrorException $e) {
       return null;
     }
-  }
-
-  /**
-   * Get the route to the user's public profile.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @return string
-   *   The route to the user's public profile.
-   */
-  public function getProfileRoute() {
-    global $i18n;
-    static $profileRoute = null;
-    if ($profileRoute === null) {
-      $profileRoute = $i18n->r("/user/{0,number,integer}", [ $this->id ]);
-    }
-    return $profileRoute;
   }
 
   /**
@@ -342,11 +279,11 @@ class UserModel extends AbstractModel {
    */
   public function preRegister($hash, $name, $mail) {
     // @todo Catch exceptions, log and maybe even send a mail to the user?
-    $this
-      ->prepareAndBind("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'mail', ?, 'time', NOW() + 0))", "sss", [ $hash, $name, $mail ])
-      ->execute()
-      ->close()
-    ;
+    $this->prepareAndBind(
+      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'mail', ?, 'time', NOW() + 0))",
+      "sss",
+      [ $hash, $name, $mail ]
+    )->execute()->close();
   }
 
   /**
@@ -369,10 +306,14 @@ class UserModel extends AbstractModel {
    * @return $this
    * @throws \MovLib\Exception\DatabaseException
    *   If inserting the data into our database failed.
+   * @throws \MovLib\Exception\SessionException
+   *   If starting the session failed. This should not be catched, this failure is related to Memcached being
+   *   unavailable or full. Something that we cannot recover at runtime.
    */
   public function register($name, $mail, $pass) {
     global $i18n;
     $this->name = $name;
+    $this->mail = $mail;
     $this->deleted = false;
     $this->timestampCreated = $this->timestampLastAccess = $this->timestampLastLogin = time();
     $this->prepareAndBind(
@@ -383,7 +324,7 @@ class UserModel extends AbstractModel {
       "ssss", [ $name, $mail, password_hash($pass, PASSWORD_BCRYPT), $mail ]
     )->execute();
     $this->id = $this->stmt->insert_id;
-    return $this->close();
+    return $this->close()->sessionStart();
   }
 
   /**
@@ -396,11 +337,11 @@ class UserModel extends AbstractModel {
    */
   public function preResetPassword($hash, $mail) {
     // @todo Catch exceptions, log and maybe even send a mail to the user?
-    $this
-      ->prepareAndBind("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('mail', ?, 'time', NOW() + 0))", "ss", [ $hash, $mail ])
-      ->execute()
-      ->close()
-    ;
+    $this->prepareAndBind(
+      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('mail', ?, 'time', NOW() + 0))",
+      "ss",
+      [ $hash, $mail ]
+    )->execute()->close();
   }
 
   /**
@@ -488,11 +429,11 @@ class UserModel extends AbstractModel {
       if (session_start() === false) {
         throw new SessionException("Could not start session.");
       }
-      if (empty($_SESSION["UID"])) {
-        $this->sessionDestroy();
+      if (!empty($_SESSION["UID"])) {
+        $this->isLoggedIn = true;
+        return $_SESSION["UID"];
       }
-      $this->isLoggedIn = true;
-      return $_SESSION["UID"];
+      $this->sessionDestroy();
     }
   }
 
@@ -524,22 +465,25 @@ class UserModel extends AbstractModel {
   }
 
   /**
-   * Validate the user submitted password against the stored hash and log the user in if it is valid.
+   * Validate the user submitted password against the stored hash of the current user.
    *
-   * @param string $pass
-   *   The un-hashed password.
-   * @return $this
-   * @throws \MovLib\Exception\ErrorException
-   *   If the query failed to retrieve the password from the database for the current user.
-   * @throws \MovLib\Exception\UserException
-   *   If the password is invalid.
+   * This will either log the user in if she/he isn't logged in yet or regenerate the session ID.
+   *
+   * @param string $name
+   *   Value of the name attribute of the input element from the form that was submitted.
+   * @return boolean
+   *   <tt>TRUE</tt> if the password was valid, otherwise <tt>FALSE</tt>.
+   * @throws \MovLib\Exception\SessionException
+   *   If starting the session failed. This should not be catched, this failure is related to Memcached being
+   *   unavailable or full. Something that we cannot recover at runtime.
    */
-  public function validatePasswordAndLogIn($pass) {
-    if (password_verify($pass, $this->query("SELECT `pass` FROM `users` WHERE `user_id` = {$this->id} LIMIT 1")->fetchField("pass")) === false) {
-      throw new UserException("Submitted password is invalid.");
+  public function validatePassword($name = "pass") {
+    $pass = $this->selectAll("SELECT `pass` FROM `users` WHERE `user_id` = {$this->id} LIMIT 1")[0]["pass"];
+    if (!isset($_POST[$name]) || password_verify($_POST[$name], $pass) === false) {
+      return false;
     }
-    $this->sessionStart();
-    return $this;
+    session_status() === PHP_SESSION_ACTIVE ? session_regenerate_id(true) : $this->sessionStart();
+    return true;
   }
 
 
@@ -595,6 +539,14 @@ class UserModel extends AbstractModel {
     }
     if (mb_strlen($name) > self::NAME_MAX_LENGTH) {
       return $i18n->t("The username {0} is too long: it must be {1,number,integer} characters or less.", [ $name, self::NAME_MAX_LENGTH ]);
+    }
+    // @todo The blacklist content must be translated along with the routes.
+    $blacklist = json_decode(file_get_contents(__DIR__ . "/UserModelBlacklist.json"));
+    $c = count($blacklist);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($name === $blacklist[$i]) {
+        return $i18n->t("The username contains a system reserved word, please choose another one.");
+      }
     }
   }
 
