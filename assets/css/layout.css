@@ -475,6 +475,10 @@
 
 /* Secondary navigation --------------------------------------------------------------------------------------------- */
 
+#nav-secondary .no-list {
+  margin: 20px 0;
+}
+
 #nav-secondary .icon,
 #nav-secondary .menuitem {
   -webkit-transition: color, background-color 0.4s ease-out;
@@ -518,6 +522,10 @@
 #nav-secondary .menuitem.active,
 #nav-secondary .menuitem.active .icon {
   color: #fff;
+}
+
+#nav-secondary .menuitem--separator {
+  margin-bottom: 20px;
 }
 
 /* Breadcrumb ------------------------------------------------------------------------------------------------------- */

@@ -311,11 +311,11 @@ p {
 }
 
 hr {
-  border-top: 1px solid #353535;
   border: 0;
+  border-top: 1px solid #ccc;
   display: block;
   height: 1px;
-  margin: 1.39em 0;
+  margin: 40px 0;
   padding: 0;
 }
 
