@@ -13,10 +13,10 @@ INSERT INTO `users` (
   ) VALUES (
     'test',
     'test@example.com',
-    'test',
+    '$2y$10$zxXKIGS8N9z6vk6iAPiR1u5h2Eypz7kWOQRRfa1uXZ1igkjQ1F8Ga', -- Hashed password "test"
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP,
-    'Universal',
+    'UTC',
     'test@old.com',
     '',
     41

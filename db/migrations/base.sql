@@ -21,7 +21,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
   `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime.' ,
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.' ,
   `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.' ,
-  `bin_relationships` BLOB NULL ,
+  `bin_relationships` BLOB NULL COMMENT 'The movie\'s relations to other movies, e.g sequels.\nStored in igbinary serialized format.' ,
   PRIMARY KEY (`movie_id`) ,
   UNIQUE INDEX `uq_movies_rank` (`rank` ASC) )
 COMMENT = 'Contains all movie’s data.'
@@ -110,33 +110,6 @@ ROW_FORMAT = COMPRESSED;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`images`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`images` (
-  `image_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The image’s unique ID.' ,
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this image.' ,
-  `filename` TINYBLOB NOT NULL COMMENT 'The image’s filename without extensions.' ,
-  `width` SMALLINT UNSIGNED NOT NULL COMMENT 'The image’s width.' ,
-  `height` SMALLINT UNSIGNED NOT NULL COMMENT 'The image’s height.' ,
-  `size` INT UNSIGNED NOT NULL COMMENT 'The image’s size in Bytes.' ,
-  `ext` VARCHAR(5) NOT NULL COMMENT 'The image’s extension without leading dot.' ,
-  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The last time this image was updated.' ,
-  `created` TIMESTAMP NOT NULL COMMENT 'The image’s creation time.' ,
-  `rating` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The image’s upvotes.' ,
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The image’s translatable descriptions.' ,
-  PRIMARY KEY (`image_id`) ,
-  INDEX `fk_images_users` (`user_id` ASC) ,
-  CONSTRAINT `fk_images_users`
-    FOREIGN KEY (`user_id` )
-    REFERENCES `movlib`.`users` (`user_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'Base table for all kinds of uploaded images.'
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`countries`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`countries` (
@@ -181,25 +154,22 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `timezone` TINYTEXT NOT NULL COMMENT 'User’s time zone: http://php.net/manual/en/timezones.php' ,
   `init` VARCHAR(254) NOT NULL COMMENT 'Email address used for initial account creation.' ,
   `dyn_data` BLOB NOT NULL COMMENT 'Temporary data related to this user (e.g. hash for reseting the password).' ,
-  `image_id` BIGINT UNSIGNED NULL DEFAULT NULL COMMENT 'The unique image ID of the user’s avatar.' ,
   `profile` BLOB NULL DEFAULT NULL COMMENT 'The user’s profile text.' ,
   `website` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s website URL.' ,
   `facebook` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s Facebook data.' ,
+  `google_plus` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s Facebook data.' ,
   `twitter` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s Twitter data.' ,
   `real_name` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.' ,
   `country_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.' ,
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The user’s language.' ,
+  `birthdate` DATE NULL COMMENT 'The user\'s date of birth.' ,
+  `is_private` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.' ,
+  `gender` TINYINT(1) NULL COMMENT 'The user\'s gender (0 = female, 1 = male, NULL = not supplied).' ,
   PRIMARY KEY (`user_id`) ,
-  INDEX `fk_users_images` (`image_id` ASC) ,
   INDEX `fk_users_countries` (`country_id` ASC) ,
   INDEX `fk_users_languages` (`language_id` ASC) ,
   UNIQUE INDEX `uq_users_name` (`name` ASC) ,
   UNIQUE INDEX `uq_users_mail` (`mail` ASC) ,
-  CONSTRAINT `fk_users_images`
-    FOREIGN KEY (`image_id` )
-    REFERENCES `movlib`.`images` (`image_id` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
   CONSTRAINT `fk_users_countries`
     FOREIGN KEY (`country_id` )
     REFERENCES `movlib`.`countries` (`country_id` )
@@ -312,26 +282,36 @@ SHOW WARNINGS;
 -- Table `movlib`.`posters`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`posters` (
-  `image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The poster’s unique ID.' ,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.' ,
-  `country_id` INT UNSIGNED NULL ,
-  PRIMARY KEY (`image_id`, `movie_id`) ,
+  `poster_id` BIGINT NOT NULL COMMENT 'The poster\'s unique ID.' ,
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this poster.' ,
+  `country_id` INT UNSIGNED NULL COMMENT 'Unique ID of the country the poster was released in.' ,
+  `filename` TINYBLOB NOT NULL COMMENT 'The poster’s filename without extensions.' ,
+  `width` SMALLINT NOT NULL COMMENT 'The poster’s width.' ,
+  `height` SMALLINT NOT NULL COMMENT 'The poster’s height.' ,
+  `size` INT NOT NULL COMMENT 'The poster’s size in Bytes.' ,
+  `ext` VARCHAR(5) NOT NULL COMMENT 'The image’s extension without leading dot.' ,
+  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The last time this poster was updated.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The poster’s creation time.' ,
+  `rating` BIGINT NOT NULL COMMENT 'The poster’s upvotes.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The poster’s translatable descriptions.' ,
+  PRIMARY KEY (`movie_id`, `poster_id`) ,
   INDEX `fk_posters_movies` (`movie_id` ASC) ,
-  INDEX `fk_posters_images` (`image_id` ASC) ,
-  INDEX `fk_posters_countries1_idx` (`country_id` ASC) ,
-  CONSTRAINT `fk_posters_images`
-    FOREIGN KEY (`image_id` )
-    REFERENCES `movlib`.`images` (`image_id` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
+  INDEX `fk_posters_countries` (`country_id` ASC) ,
+  INDEX `fk_posters_users` (`user_id` ASC) ,
   CONSTRAINT `fk_posters_movies`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_posters_countries1`
+  CONSTRAINT `fk_posters_countries`
     FOREIGN KEY (`country_id` )
     REFERENCES `movlib`.`countries` (`country_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_posters_users`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'Extends images table with unique movie’s ID.'
@@ -343,19 +323,30 @@ SHOW WARNINGS;
 -- Table `movlib`.`persons_photos`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`persons_photos` (
-  `image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The image’s unique ID.' ,
+  `photo_id` BIGINT UNSIGNED NOT NULL COMMENT 'The photo’s unique ID.' ,
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.' ,
-  PRIMARY KEY (`image_id`, `person_id`) ,
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this photo.' ,
+  `filename` TINYBLOB NOT NULL COMMENT 'The photo’s filename without extensions.' ,
+  `width` SMALLINT NOT NULL COMMENT 'The photo’s width.' ,
+  `height` SMALLINT NOT NULL COMMENT 'The photo’s height.' ,
+  `size` INT NOT NULL COMMENT 'The photo’s size in Bytes.' ,
+  `ext` VARCHAR(5) NOT NULL COMMENT 'The photo’s extension without leading dot.' ,
+  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The last time this photo was updated.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The photo’s creation time.' ,
+  `rating` BIGINT NOT NULL COMMENT 'The photo’s upvotes.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The photo’s translatable descriptions.' ,
+  PRIMARY KEY (`photo_id`, `person_id`) ,
   INDEX `fk_persons_photos_persons` (`person_id` ASC) ,
-  INDEX `fk_persons_photos_images` (`image_id` ASC) ,
-  CONSTRAINT `fk_persons_photos_images`
-    FOREIGN KEY (`image_id` )
-    REFERENCES `movlib`.`images` (`image_id` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
+  INDEX `fk_persons_photos_images` (`photo_id` ASC) ,
+  INDEX `fk_persons_photos_users` (`user_id` ASC) ,
   CONSTRAINT `fk_persons_photos_persons`
     FOREIGN KEY (`person_id` )
     REFERENCES `movlib`.`persons` (`person_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_photos_users`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'Extends images table with unique person’s ID.'
@@ -367,47 +358,34 @@ SHOW WARNINGS;
 -- Table `movlib`.`companies_images`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`companies_images` (
-  `image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The images’s unique ID.' ,
-  `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company’s unique ID.' ,
-  PRIMARY KEY (`image_id`, `company_id`) ,
+  `company_image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company image’s unique ID.' ,
+  `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company image’s unique ID.' ,
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this company image.' ,
+  `filename` TINYBLOB NOT NULL COMMENT 'The company image’s filename without extensions.' ,
+  `width` SMALLINT NOT NULL COMMENT 'The company image’s width.' ,
+  `height` SMALLINT NOT NULL COMMENT 'The company image’s height.' ,
+  `size` INT NOT NULL COMMENT 'company image’s size in Bytes.' ,
+  `ext` VARCHAR(5) NOT NULL COMMENT 'The company image’s extension without leading dot.' ,
+  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The last time this company image was updated.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The company image’s creation time.' ,
+  `rating` BIGINT NOT NULL COMMENT 'The company image’s upvotes.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The company image’s translatable descriptions.' ,
+  `type` VARCHAR(50) NOT NULL COMMENT 'The company image’s type (e.g. “logo”).' ,
+  PRIMARY KEY (`company_image_id`, `company_id`) ,
   INDEX `fk_companies_images_companies` (`company_id` ASC) ,
-  INDEX `fk_companies_images_images` (`image_id` ASC) ,
-  CONSTRAINT `fk_companies_images_images`
-    FOREIGN KEY (`image_id` )
-    REFERENCES `movlib`.`images` (`image_id` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
+  INDEX `fk_companies_images_images` (`company_image_id` ASC) ,
+  INDEX `fk_companies_images_users` (`user_id` ASC) ,
   CONSTRAINT `fk_companies_images_companies`
     FOREIGN KEY (`company_id` )
     REFERENCES `movlib`.`companies` (`company_id` )
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_companies_images_users`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'Extends images table with unique company’s ID.'
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`movies_images`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`movies_images` (
-  `image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image’s unique ID.' ,
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the movie this image belongs to.' ,
-  `type` VARCHAR(50) NOT NULL COMMENT 'The movie image’s type (e.g. “photo”).' ,
-  INDEX `fk_movies_images_movies` (`movie_id` ASC) ,
-  PRIMARY KEY (`image_id`, `movie_id`) ,
-  INDEX `fk_movies_images_images` (`image_id` ASC) ,
-  CONSTRAINT `fk_movies_images_movies`
-    FOREIGN KEY (`movie_id` )
-    REFERENCES `movlib`.`movies` (`movie_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_images`
-    FOREIGN KEY (`image_id` )
-    REFERENCES `movlib`.`images` (`image_id` )
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-COMMENT = 'Extends images table with unique movie’s ID and type.'
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
@@ -622,7 +600,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this title is in.' ,
   `title` BLOB NOT NULL COMMENT 'The movie\'s title.' ,
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.' ,
-  `is_display_title` TINYINT(1) NOT NULL DEFAULT false ,
+  `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determine if this title is the display title in the specified language.' ,
   INDEX `fk_movies_titles_languages1_idx` (`language_id` ASC) ,
   INDEX `fk_movies_titles_movies` (`movie_id` ASC) ,
   CONSTRAINT `fk_movies_titles_movies`
@@ -714,6 +692,197 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_images`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movies_images` (
+  `movie_image_id` BIGINT NOT NULL COMMENT 'The movie image\'s unique ID.' ,
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.' ,
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this movie image.' ,
+  `filename` TINYBLOB NOT NULL COMMENT 'The movie image’s filename without extensions.' ,
+  `width` SMALLINT NOT NULL COMMENT 'The movie image’s width.' ,
+  `height` SMALLINT NOT NULL COMMENT 'The movie image’s height.' ,
+  `size` INT NOT NULL COMMENT 'The movie image’s size in Bytes.' ,
+  `ext` VARCHAR(5) NOT NULL COMMENT 'The movie image’s extension without leading dot.' ,
+  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The last time this movie image was updated.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The movie image’s creation time.' ,
+  `rating` BIGINT NOT NULL COMMENT 'The movie image’s upvotes.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The movie image’s translatable descriptions.' ,
+  `type` VARCHAR(50) NOT NULL COMMENT 'The movie image’s type (e.g. “photo”).' ,
+  PRIMARY KEY (`movie_image_id`, `movie_id`) ,
+  INDEX `fk_posters_movies` (`movie_id` ASC) ,
+  INDEX `fk_posters_users` (`user_id` ASC) ,
+  CONSTRAINT `fk_posters_movies_movies`
+    FOREIGN KEY (`movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_posters_users`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+COMMENT = 'Extends images table with unique movie’s ID.'
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`series`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`series` (
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series` unique ID.' ,
+  `original_title` VARCHAR(255) NOT NULL COMMENT 'The series\' original title.' ,
+  `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of this series.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.' ,
+  `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ arithmetic mean rating.' ,
+  `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ vote count.' ,
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this series was deleted, default is FALSE (0).' ,
+  `start_year` SMALLINT NULL COMMENT 'The year the series was aired for the first time.' ,
+  `end_year` SMALLINT NULL COMMENT 'The year the series was cancelled.' ,
+  `rank` BIGINT UNSIGNED NULL COMMENT 'The series’ global rank.' ,
+  `dyn_synopses` BLOB NOT NULL COMMENT 'The series’ translatable synopses.' ,
+  `bin_relationships` BLOB NULL COMMENT 'The series´ relations to other series, e.g. sequel.\nStored in igbinary serialized format.' ,
+  PRIMARY KEY (`series_id`) )
+ENGINE = InnoDB
+COMMENT = 'Contains all series data.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`series_seasons`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`series_seasons` (
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series´ unique ID.' ,
+  `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season´s  number within the series.' ,
+  `start_year` SMALLINT NULL COMMENT 'The year the season started airing for the first time.' ,
+  `end_year` SMALLINT NULL COMMENT 'The year the season ended for the first time.' ,
+  PRIMARY KEY (`series_id`, `seasons_number`) ,
+  INDEX `fk_series_seasons_series1_idx` (`series_id` ASC) ,
+  CONSTRAINT `fk_series_seasons_series`
+    FOREIGN KEY (`series_id` )
+    REFERENCES `movlib`.`series` (`series_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains seasons data for a series.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`series_titles`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`series_titles` (
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series` unique ID.' ,
+  `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this title is in.' ,
+  `title` BLOB NOT NULL COMMENT 'The series´ title.' ,
+  `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.' ,
+  `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determines whether this is the title to diplay in the localized site or not.' ,
+  INDEX `fk_series_titles_series1_idx` (`series_id` ASC) ,
+  INDEX `fk_series_titles_languages_idx` (`language_id` ASC) ,
+  CONSTRAINT `fk_series_titles_series`
+    FOREIGN KEY (`series_id` )
+    REFERENCES `movlib`.`series` (`series_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_titles_languages`
+    FOREIGN KEY (`language_id` )
+    REFERENCES `movlib`.`languages` (`language_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'A series has many titles, a title belongs to one series. Con /* comment truncated */ /*tains language specific titles for series.*/';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`seasons_episodes`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`seasons_episodes` (
+  `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series´ unique ID.' ,
+  `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season´s number this episode belongs to.' ,
+  `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode´s chronological position within the season.' ,
+  `episode_number` TINYTEXT NULL COMMENT 'The episodes number within the season (e.g. 01, but also 0102 if it contains two episodes).' ,
+  `original_air_date` DATE NULL COMMENT 'The date the episode was originally aired.' ,
+  `original_title` VARCHAR(255) NOT NULL COMMENT 'The episode´s original title.' ,
+  PRIMARY KEY (`series_id`, `seasons_number`, `position`) ,
+  INDEX `fk_seasons_episodes_series_seasons1_idx1` (`series_id` ASC, `seasons_number` ASC) ,
+  CONSTRAINT `fk_seasons_episodes_series_seasons`
+    FOREIGN KEY (`series_id` , `seasons_number` )
+    REFERENCES `movlib`.`series_seasons` (`series_id` , `seasons_number` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all episode data of episodes belonging to seasons w /* comment truncated */ /*hich belong to series.*/';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`episodes_titles`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`episodes_titles` (
+  `series_id` BIGINT UNSIGNED NOT NULL ,
+  `seasons_number` SMALLINT UNSIGNED NOT NULL ,
+  `position` SMALLINT UNSIGNED NOT NULL ,
+  `title` BLOB NOT NULL COMMENT 'The episode´s title' ,
+  `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this episode title.' ,
+  `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determine if this episode title is the display title in the specified language.' ,
+  INDEX `fk_episodes_titles_seasons_episodes1_idx` (`series_id` ASC, `seasons_number` ASC, `position` ASC) ,
+  CONSTRAINT `fk_episodes_titles_seasons_episodes1`
+    FOREIGN KEY (`series_id` , `seasons_number` , `position` )
+    REFERENCES `movlib`.`seasons_episodes` (`series_id` , `seasons_number` , `position` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all episode data of episodes belonging to seasons w /* comment truncated */ /*hich belong to series.*/';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`series_genres`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`series_genres` (
+  `series_id` BIGINT UNSIGNED NOT NULL ,
+  `genre_id` INT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`series_id`, `genre_id`) ,
+  INDEX `fk_series_genres_genres1_idx` (`genre_id` ASC) ,
+  INDEX `fk_series_genres_series1_idx` (`series_id` ASC) ,
+  CONSTRAINT `fk_series_genres_series1`
+    FOREIGN KEY (`series_id` )
+    REFERENCES `movlib`.`series` (`series_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_genres_genres1`
+    FOREIGN KEY (`genre_id` )
+    REFERENCES `movlib`.`genres` (`genre_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`series_styles`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`series_styles` (
+  `series_id` BIGINT UNSIGNED NOT NULL ,
+  `style_id` INT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`series_id`, `style_id`) ,
+  INDEX `fk_series_styles_styles1_idx` (`style_id` ASC) ,
+  INDEX `fk_series_styles_series1_idx` (`series_id` ASC) ,
+  CONSTRAINT `fk_series_styles_series1`
+    FOREIGN KEY (`series_id` )
+    REFERENCES `movlib`.`series` (`series_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_styles_styles1`
+    FOREIGN KEY (`style_id` )
+    REFERENCES `movlib`.`styles` (`style_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
 SHOW WARNINGS;
 USE `movlib` ;
