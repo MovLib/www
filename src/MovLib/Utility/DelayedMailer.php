@@ -110,13 +110,13 @@ class DelayedMailer {
    *   The activation hash of the user.
    * @param string $name
    *   The valid name of the user.
-   * @param string $to
+   * @param string $mail
    *   The valid mail of the user.
    */
-  public static function stackActivationMail($hash, $name, $to) {
+  public static function stackActivationMail($hash, $name, $mail) {
     global $i18n;
     self::$mails[] = [
-      $to,
+      $mail,
       $i18n->t("Welcome to MovLib!"),
       $i18n->t(
 "Hi {0}!
@@ -131,7 +131,7 @@ After setting your password, you will be able to log in at MovLib in the future 
 
 Email address:  {2}
 Password:       Your password",
-        [ $name, $i18n->r("/user/register={0}", [ $hash ]) , $to ]
+        [ $name, $i18n->r("/user/register={0}", [ $hash ]) , $mail ]
       )
     ];
   }
@@ -203,28 +203,35 @@ If it wasn’t you who requested a new password ignore this message.",
   }
 
   /**
-   * Validate the given email address.
+   * Validate the given mail.
    *
-   * <b>IMPORTANT!</b> This method can not be used within the async mail thread, because it relies on the global i18n
-   * instance which isn't available in any other thread. Validate email addresses as early as possible. Any address
-   * passed to the async mailer should already be valid.
-   *
-   * @link http://api.drupal.org/api/drupal/core!modules!user!user.module/function/user_validate_name/8
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n instance.
-   * @param string $email
-   *   The email address to validate.
-   * @return null|string
-   *   <tt>NULL</tt> if the email address is valid. If invalid a translated error message describing the problem.
+   * @param string $mail
+   *   The mail to validate.
+   * @return string|false
+   *   The mail if it is valid, otherwise <tt>FALSE</tt>.
    */
-  public static function validateEmail($email) {
-    global $i18n;
-    if (empty($email)) {
-      return $i18n->t("You must enter a email address.");
+  public static function validate($mail) {
+    if (($mail = filter_var($mail, FILTER_VALIDATE_EMAIL)) === false || empty($mail)) {
+      return false;
     }
-    if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-      return $i18n->t("The email address is not valid.");
+    return $mail;
+  }
+
+  /**
+   * Validate the mail from the given input.
+   *
+   * @param string $name
+   *   The value of the name attribute of the input element. Defaults to <em>mail</em>.
+   * @param int $type
+   *   One of the PHP <var>INPUT_*</var> constants. Defaults to <var>INPUT_POST</var>.
+   * @return string|false
+   *   The mail if it is valid, otherwise <tt>FALSE</tt>.
+   */
+  public static function validateInput($name = "mail", $type = INPUT_POST) {
+    if (($mail = filter_input($type, $name, FILTER_VALIDATE_EMAIL)) === false || empty($mail)) {
+      return false;
     }
+    return $mail;
   }
 
 }

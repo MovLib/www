@@ -29,6 +29,28 @@ namespace MovLib\Utility;
 class String {
 
   /**
+   * Get string from user input.
+   *
+   * Always use this method to get a string that was submitted from a user via any form of submission. Basic
+   * sanitization is performed in the form that low ASCII characters are automaticall stripped from the input. This
+   * means that this method will remove any newline characters (<code>\n</code>) from the input. Empty strings are
+   * treated as errors.
+   *
+   * @param string $name
+   *   The value of the name attribute of the input element.
+   * @param int $type
+   *   One of the PHP <var>INPUT_*</var> constants. Defaults to <var>INPUT_POST</var>.
+   * @return string|boolean
+   *   The submitted string with the filter applied and not empty, if something is odd <tt>FALSE</tt> is returned.
+   */
+  public static function filterInput($name, $type = INPUT_POST) {
+    if (($string = filter_input($type, $name, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)) === false || empty($string)) {
+      return false;
+    }
+    return $string;
+  }
+
+  /**
    * Encodes special characters in a plain-text string for display as HTML.
    *
    * Also validates strings as UTF-8.
@@ -39,7 +61,7 @@ class String {
    *   HTML safe version of <var>$text</var>, or an empty string if <var>$text</var> is not valid UTF-8.
    */
   public static function checkPlain($text) {
-    return htmlspecialchars($text, ENT_QUOTES, "UTF-8");
+    return htmlspecialchars($text, ENT_QUOTES|ENT_HTML5);
   }
 
   /**
@@ -53,7 +75,22 @@ class String {
    *   HTML safe version of <var>$url</var>, or an empty string if <var>$url</var> is not valid UTF-8.
    */
   public static function checkUrl($url) {
-    return htmlentities($url, ENT_QUOTES, "UTF-8");
+    return htmlentities($url, ENT_QUOTES|ENT_HTML5);
+  }
+
+  /**
+   * Convert string of any form to a route usable string.
+   *
+   * <b>IMPORTANT!</b> This is not meant to create complete routes. If you pass a slash (<code>/</code>) as part of the
+   * string it will get encoded.
+   *
+   * @param string $string
+   *   The string that should be converted.
+   * @return string
+   *   A string that can be used within a route.
+   */
+  public static function convertToRoute($string) {
+    return self::checkUrl(str_replace(" ", "-", mb_strtolower($string)));
   }
 
   /**
