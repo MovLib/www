@@ -476,56 +476,71 @@
 /* Secondary navigation --------------------------------------------------------------------------------------------- */
 
 #nav-secondary .no-list {
-  margin: 20px 0;
+  margin: 0;
+  overflow: hidden;
+  padding: 30px 0;
+  position: relative;
 }
 
-#nav-secondary .icon,
+#nav-secondary .no-list:after {
+  bottom: 0;
+  box-shadow: 0 0 10px #dfdfdf;
+  content: "";
+  display: block;
+  position: absolute;
+  right: -100%;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
+
 #nav-secondary .menuitem {
-  -webkit-transition: color, background-color 0.4s ease-out;
-     -moz-transition: color, background-color 0.4s ease-out;
-       -o-transition: color, background-color 0.4s ease-out;
-          transition: color, background-color 0.4s ease-out;
-}
-
-#nav-secondary .icon {
-  color: #ccc;
-  float: right;
-  margin-right: -6px;
-  margin-top: 2px;
-}
-
-#nav-secondary .menuitem {
+  -webkit-transition: color, background-color, border-color 0.4s ease-out;
+     -moz-transition: color, background-color, border-color 0.4s ease-out;
+       -o-transition: color, background-color, border-color 0.4s ease-out;
+          transition: color, background-color, border-color 0.4s ease-out;
+  background-color: #fcfcfc;
   border: 1px solid #e5e5e5;
+  border-left-width: 5px;
+  border-right: 0;
+  color: #656565;
   display: block;
   margin-bottom: -1px;
   padding: 9px 15px;
+  position: relative;
 }
 
 #nav-secondary .menuitem:focus,
 #nav-secondary .menuitem:hover {
-  background-color: #f5f5f5;
-}
-
-#nav-secondary .menuitem:focus .icon,
-#nav-secondary .menuitem:hover .icon {
-  color: #949494;
+  background-color: #fff;
 }
 
 #nav-secondary .menuitem.active {
-  background-color: #09c;
+  background-color: #fff;
+  z-index: 2;
 }
 
+#nav-secondary .menuitem:focus,
+#nav-secondary .menuitem:hover,
+#nav-secondary .menuitem.active {
+  border-left-color: #09c;
+  color: #09c;
+}
+
+#nav-secondary .menuitem--delete:focus,
+#nav-secondary .menuitem--delete:hover,
 #nav-secondary .menuitem--delete.active {
-  background-color: #c00;
-}
-
-#nav-secondary .menuitem.active,
-#nav-secondary .menuitem.active .icon {
-  color: #fff;
+  border-left-color: #c00;
+  color: #c00;
 }
 
 #nav-secondary .menuitem--separator {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+#nav-secondary .icon {
+  margin-right: 10px;
+  width: 15px;
 }
 
 /* Breadcrumb ------------------------------------------------------------------------------------------------------- */
