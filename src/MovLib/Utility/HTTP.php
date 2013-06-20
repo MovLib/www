@@ -31,6 +31,14 @@ namespace MovLib\Utility;
 class HTTP {
 
   /**
+   * Server name (domain) of the shared static server. All static resources are delivered from the same domain to
+   * ensure that caching works across subdomains.
+   *
+   * @var string
+   */
+  const SERVER_NAME_STATIC = "alpha.movlib.org";
+
+  /**
    * RFC 2616 compliant redirect, this will end the current response.
    *
    * <b>Usage example:</b>
