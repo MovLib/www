@@ -45,10 +45,14 @@
 }
 
 #logo-big small {
+  display: block;
   font-size: 32.4px;
   font-weight: 300;
+  letter-spacing: -0.3px;
   margin: 0;
-  padding: 0;
+  padding: 2px 0 0;
+  text-indent: 7px;
+  white-space: pre;
 }
 
 #nav-languageselection {
