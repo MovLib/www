@@ -45,8 +45,9 @@ class ExceptionView extends AlertView {
    */
   public function __construct($presenter, $exception) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Internal Server Error"), [ "/assets/css/modules/stacktrace.css" ]);
+    parent::__construct($presenter, $i18n->t("Internal Server Error"));
     http_response_code(500);
+    $this->stylesheets[] = "modules/stacktrace.css";
     $this->setAlert(
       "<p>{$i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered.")}</p>" .
       "<p>{$i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes.")}</p>",

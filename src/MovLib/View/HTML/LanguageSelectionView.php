@@ -19,6 +19,7 @@ namespace MovLib\View\HTML;
 
 use \Locale;
 use \MovLib\Model\I18nModel;
+use \MovLib\Utility\FileSystem;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -35,9 +36,10 @@ class LanguageSelectionView extends AbstractView {
   /**
    * {@inheritdoc}
    */
-  public function __construct($presenter) {
+  public function __construct($languageSelectionPresenter) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Language Selection"), [ "/assets/css/modules/language-selection.css" ]);
+    parent::__construct($languageSelectionPresenter, $i18n->t("Language Selection"));
+    $this->stylesheets[] = "modules/language-selection.css";
   }
 
   /**
@@ -60,7 +62,10 @@ class LanguageSelectionView extends AbstractView {
     return
       "<div id='content' class='{$this->getShortName()}-content' role='main'>" .
         "<div class='container text-center'>" .
-          "<h1 class='inline text-left'>{$i18n->t("MovLib <small>the <em>free</em> movie library.</small>")}</h1>" .
+          "<h1 id='logo-big' class='clear-fix'>" .
+            "<img class='pull-left' src='" . FileSystem::asset("img/logo/vector.svg") . "' alt='{$i18n->t("MovLib, the free movie library.")}' width='192' height='192'>" .
+            "<span>{$i18n->t("MovLib <small>the <em>free</em> movie library.</small>")}</span>" .
+          "</h1>" .
           "<p>{$i18n->t("Please select your preferred language from the list below.")}</p>" .
           $this->getNavigation($i18n->t("Language links"), $this->getShortName(), $points, -1, " / ", [ "class" => "well well--large" ]) .
         "</div>" .
@@ -77,7 +82,7 @@ class LanguageSelectionView extends AbstractView {
       "<footer id='footer'>" .
         "<div class='container text-center'>" .
           "<p>{$i18n->t(
-            "Is your language missing from our list? Help us translate MovLib to your language. More info can be found at {0}our translation portal{1}.",
+            "Is your language missing from our list? Help us translate MovLib to your language. More information can be found in {0}our translation portal{1}.",
             [ "<a href='https://localize.{$_SERVER["SERVER_NAME"]}/'>", "</a>" ]
           )}</p>" .
         "</div>" .

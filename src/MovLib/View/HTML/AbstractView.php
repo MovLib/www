@@ -17,6 +17,8 @@
  */
 namespace MovLib\View\HTML;
 
+use \MovLib\Utility\FileSystem;
+use \MovLib\Utility\HTTP;
 use \MovLib\Utility\String;
 use \ReflectionClass;
 
@@ -107,7 +109,13 @@ abstract class AbstractView {
    *
    * @var string
    */
-  private $stylesheets;
+  protected $stylesheets = [
+    "base.css",
+    "layout.css",
+    "modules/icons.css",
+    "modules/alert.css",
+    "modules/button.css",
+  ];
 
   /**
    * The title of the page.
@@ -127,25 +135,10 @@ abstract class AbstractView {
    *   The presenter that created the view instance.
    * @param string $title
    *   The unique title of this view.
-   * @param array $stylesheets
-   *   [Optional] Additional stylesheets that should be added to the page.
    */
-  public function __construct($presenter, $title, $stylesheets = []) {
+  public function __construct($presenter, $title) {
     $this->presenter = $presenter;
     $this->title = $title;
-    $stylesheets = array_merge($stylesheets, [
-      "//fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic,700,700italic,800,800italic&amp;subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic",
-      "/assets/css/base.css",
-      "/assets/css/layout.css",
-      "/assets/css/modules/icons.css",
-      "/assets/css/modules/alert.css",
-      "/assets/css/modules/button.css",
-    ]);
-    $stylesheetCount = count($stylesheets);
-    for ($i = 0; $i < $stylesheetCount; ++$i) {
-      $stylesheets[$i] = "<link rel='stylesheet' href='{$stylesheets[$i]}'>";
-    }
-    $this->stylesheets = implode("", $stylesheets);
     if (isset($_SESSION["ALERTS"])) {
       $c = count($_SESSION["ALERTS"]);
       for ($i = 0; $i < $c; ++$i) {
@@ -185,7 +178,7 @@ abstract class AbstractView {
           case "href":
           case "src":
           case "action":
-            $value = String::checkUrl($value);
+            $value = strtr($value, "&", "&amp;");
             break;
 
           default:
@@ -325,6 +318,12 @@ abstract class AbstractView {
    */
   public final function getHead() {
     global $i18n, $user;
+    $c = count($this->stylesheets);
+    $d = HTTP::SERVER_NAME_STATIC;
+    $stylesheets = "";
+    for ($i = 0; $i < $c; ++$i) {
+      $stylesheets .= "<link rel='stylesheet' href='https://{$d}/assets/css/{$this->stylesheets[$i]}'>";
+    }
     $bodyClass = "{$this->getShortName()}-body";
     if (isset($user) && $user->isLoggedIn === true) {
       $bodyClass .= " logged-in";
@@ -336,7 +335,7 @@ abstract class AbstractView {
     return
       "<!doctype html><html id='nojs' lang='{$i18n->languageCode}' dir='{$i18n->direction}'><head>" .
         "<title>{$this->getHeadTitle()}</title>" .
-        $this->stylesheets .
+        $stylesheets .
         "<link rel='icon' type='image/svg+xml' href='/assets/img/logo/vector.svg'>" .
         "<link rel='icon' type='image/png' sizes='256x256' href='/assets/img/logo/256.png'>" .
         "<link rel='icon' type='image/png' sizes='128x128' href='/assets/img/logo/128.png'>" .
@@ -363,14 +362,22 @@ abstract class AbstractView {
       "<a class='visuallyhidden' href='#content'>{$i18n->t("Skip to content")}</a>" .
       "<header id='header'>" .
         "<div class='container'>" .
-          "<div class='row'>" .
-            "<div class='span span--4'>{$this->getHeaderLogo()}</div>" .
-            "<div class='span span--4'>{$this->getHeaderSearch()}{$this->getHeaderNavigation()}</div>" .
-            "<div class='span span--4'>{$this->getHeaderUserNavigation()}</div>" .
-          "</div>" .
+          "<img alt='{$i18n->t("MovLib, the free movie library.")}' id='logo' src='" . FileSystem::asset("img/logo/wordmark.svg") . "' width='51.2' height='19.2'>" .
         "</div>" .
       "</header>"
     ;
+//    return
+//      "<a class='visuallyhidden' href='#content'>{$i18n->t("Skip to content")}</a>" .
+//      "<header id='header'>" .
+//        "<div class='container'>" .
+//          "<div class='row'>" .
+//            "<div class='span span--4'>{$this->getHeaderLogo()}</div>" .
+//            "<div class='span span--4'>{$this->getHeaderSearch()}{$this->getHeaderNavigation()}</div>" .
+//            "<div class='span span--4'>{$this->getHeaderUserNavigation()}</div>" .
+//          "</div>" .
+//        "</div>" .
+//      "</header>"
+//    ;
   }
 
   /**
@@ -508,7 +515,7 @@ abstract class AbstractView {
     for ($i = 0; $i < $k; ++$i) {
       $this->addClass("menuitem", $points[$i][2]);
       $points[$i][2]["role"] = "menuitem";
-      $points[$i] = "<li>{$this->a($points[$i][0], "{$points[$i][1]} <i class='icon icon--right-open'></i>", $points[$i][2])}</li>";
+      $points[$i] = "<li>{$this->a($points[$i][0], $points[$i][1], $points[$i][2])}</li>";
     }
     $points = implode("", $points);
     $this->addClass("nav--secondary", $attributes);
