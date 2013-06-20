@@ -19,6 +19,7 @@ namespace MovLib\Utility;
 
 use \FilesystemIterator;
 use \MovLib\Exception\FileSystemException;
+use \MovLib\Utility\HTTP;
 use \RecursiveDirectoryIterator;
 use \RecursiveIteratorIterator;
 
@@ -32,6 +33,18 @@ use \RecursiveIteratorIterator;
  * @since 0.0.1-dev
  */
 class FileSystem {
+
+  /**
+   * Get absolute URI to static file from the assets.
+   *
+   * @param string $path
+   *   The path within the assets directory.
+   * @return string
+   *   Absolute URI to the file.
+   */
+  public static function asset($path) {
+    return "https://" . HTTP::SERVER_NAME_STATIC . "/assets/{$path}";
+  }
 
   /**
    * Get the operating systems specific temporary path.
