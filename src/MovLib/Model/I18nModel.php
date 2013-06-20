@@ -97,7 +97,7 @@ class I18nModel extends AbstractModel {
     global $user;
     if ($locale === null) {
       (isset($_SERVER["LANGUAGE_CODE"]) && $locale = $_SERVER["LANGUAGE_CODE"])
-      || ($user->isLoggedIn && $locale = $user->getLanguageCode())
+      || (isset($user) && $user->isLoggedIn === true && $locale = $user->getLanguageCode())
       || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($tmpLocale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && in_array($tmpLocale[0] . $tmpLocale[1], self::$supportedLanguageCodes) && $locale = $tmpLocale)
       || ($locale = self::getDefaultLocale());
     }
