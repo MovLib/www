@@ -72,37 +72,30 @@ msginfo "Changing to directory: ${SD}${NAME}"
 
 # Configure our nginx installation.
 ./configure \
-  --add-module="/usr/local/src/${NAME}/nginx-upload-progress-module" \
-  --add-module="/usr/local/src/${NAME}/nginx-upstream-fair" \
-  --conf-path="/etc/nginx/nginx.conf" \
-  --error-log-path="/var/log/nginx/error.log" \
+  --user="www-data" \
   --group="www-data" \
+  --prefix="/usr/local" \
+  --sbin-path="/usr/local/sbin" \
+  --conf-path="/etc/nginx/nginx.conf" \
+  --pid-path="/run/nginx.pid" \
+  --lock-path="/var/lock/nginx.lock" \
+  --error-log-path="/var/log/nginx/error.log" \
   --http-client-body-temp-path="/var/cache/nginx/body" \
   --http-fastcgi-temp-path="/var/cache/nginx/fastcgi" \
   --http-log-path="/var/log/nginx/access.log" \
-  --lock-path="/var/lock/nginx.lock" \
-  --pid-path="/run/nginx.pid" \
-  --prefix="/usr/local" \
-  --sbin-path="/usr/local/sbin" \
-  --user="www-data" \
-  --with-cc-opt="-O3 -m64" \
-  --with-ld-opt="-O3 -m64" \
-  --with-http_gzip_static_module \
-  --with-http_spdy_module \
-  --with-http_ssl_module \
+  --with-cc-opt="-O2 -m64" \
+  --with-ld-opt="-m64" \
   --with-ipv6 \
-  --with-libatomic="/usr/include" \
-  --with-md5-asm \
-  --with-md5="/usr/local/src/${NAME}/openssl-${OPENSSL_VERSION}" \
-  --with-openssl-opt="-O3 -m64" \
+  --with-http_gzip_static_module \
+  --with-http_ssl_module \
+  --with-http_spdy_module \
   --with-openssl="/usr/local/src/${NAME}/openssl-${OPENSSL_VERSION}" \
-  --with-pcre-jit \
-  --with-pcre-opt="-O3 -m64" \
-  --with-pcre="/usr/local/src/${NAME}/pcre" \
-  --with-sha1-asm \
-  --with-sha1-opt="-O3 -m64"
+  --with-md5="/usr/local/src/${NAME}/openssl-${OPENSSL_VERSION}" \
+  --with-md5-asm \
   --with-sha1="/usr/local/src/${NAME}/openssl-${OPENSSL_VERSION}" \
-  --with-zlib-opt="-O3 -m64" \
+  --with-sha1-asm \
+  --with-pcre="/usr/local/src/${NAME}/pcre" \
+  --with-pcre-jit \
   --with-zlib="/usr/local/src/${NAME}/zlib" \
   --without-http_access_module \
   --without-http_auth_basic_module \
@@ -120,7 +113,9 @@ msginfo "Changing to directory: ${SD}${NAME}"
   --without-http_ssi_module \
   --without-http_upstream_ip_hash_module \
   --without-http_userid_module \
-  --without-http_uwsgi_module
+  --without-http_uwsgi_module \
+  --add-module="/usr/local/src/${NAME}/nginx-upload-progress-module" \
+  --add-module="/usr/local/src/${NAME}/nginx-upstream-fair"
 
 # Create cache directories for nginx.
 mkdir -p /var/cache/nginx/body /var/cache/nginx/fastcgi
@@ -129,7 +124,6 @@ mkdir -p /var/cache/nginx/body /var/cache/nginx/fastcgi
 /etc/init.d/nginx stop
 
 make
-make test
 make install
 make clean
 
@@ -138,8 +132,14 @@ cd conf
 for f in *; do
   rm -f "/etc/nginx/${f}"
 done
+rm -f "/etc/nginx/*.default"
 
-ln -s /var/www/conf/nginx/nginx.conf /etc/nginx/nginx.conf
+# TODO: We could do this easily in a loop.
+SRC=/var/www/conf/nginx/
+TRG=/etc/nginx/
+
+ln -s ${SRC}nginx.conf ${TRG}nginx.conf
+ln -s ${SRC}conf/gzip.conf ${TRG}conf/gzip.conf
 
 ldconfig
 LINE=$(msgline)
