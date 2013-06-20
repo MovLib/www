@@ -46,7 +46,8 @@ class MovieShowView extends AbstractView {
    *  The movie presenter currently controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, $presenter->getMovieDisplayTitleAndYear(), [ "/assets/css/modules/movie.css" ]);
+    parent::__construct($presenter, $presenter->getMovieDisplayTitleAndYear());
+    $this->stylesheets[] = "modules/movie.css";
   }
 
   /**

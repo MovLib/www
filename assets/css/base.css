@@ -188,6 +188,7 @@ html {
 
 body {
   margin: 0;
+  padding-top: 51px; /* @see layout/header.css */
 }
 
 html,

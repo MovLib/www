@@ -47,7 +47,8 @@ class UserShowView extends AbstractView {
    */
   public function __construct($userPresenter) {
     global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Profile"), [ "/assets/css/modules/user.css" ]);
+    parent::__construct($userPresenter, $i18n->t("Profile"));
+    $this->stylesheets[] = "modules/user.css";
   }
 
   /**

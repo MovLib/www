@@ -527,12 +527,12 @@ class UserPresenter extends AbstractPresenter {
     return [
       "title" => $i18n->t("Profile navigation"),
       "points" => [
-        [ $i18n->r("/user"), $i18n->t("Profile"), [ "class" => "menuitem--separator", "title" => "Go to your profile page." ]],
-        [ $i18n->r("/user/account-settings"), $i18n->t("Account"), [ "title" => $i18n->t("Manage your basic account settings.") ]],
-        [ $i18n->r("/user/notification-settings"), $i18n->t("Notifications"), [ "title" => $i18n->t("Manage your notification settings.") ]],
-        [ $i18n->r("/user/mail-settings"), $i18n->t("Mail"), [ "title" => $i18n->t("Change your email address.") ]],
-        [ $i18n->r("/user/password-settings"), $i18n->t("Password"), [ "title" => $i18n->t("Change your password.") ]],
-        [ $i18n->r("/user/dangerzone-settings"), $i18n->t("Dangerzone"), [ "class" => "menuitem--delete", "title" => $i18n->t("Deactivate or delete your account.") ]],
+        [ $i18n->r("/user"), "<i class='icon icon--home'></i> {$i18n->t("Profile")}", [ "class" => "menuitem--separator", "title" => "Go to your profile page." ]],
+        [ $i18n->r("/user/account-settings"), "<i class='icon icon--user'></i> {$i18n->t("Account")}", [ "title" => $i18n->t("Manage your basic account settings.") ]],
+        [ $i18n->r("/user/notification-settings"), "<i class='icon icon--signal'></i> {$i18n->t("Notifications")}", [ "title" => $i18n->t("Manage your notification settings.") ]],
+        [ $i18n->r("/user/mail-settings"), "<i class='icon icon--mail'></i> {$i18n->t("Mail")}", [ "title" => $i18n->t("Change your email address.") ]],
+        [ $i18n->r("/user/password-settings"), "<i class='icon icon--lock'></i> {$i18n->t("Password")}", [ "title" => $i18n->t("Change your password.") ]],
+        [ $i18n->r("/user/dangerzone-settings"), "<i class='icon icon--alert'></i> {$i18n->t("Dangerzone")}", [ "class" => "menuitem--delete", "title" => $i18n->t("Deactivate or delete your account.") ]],
       ],
     ];
   }

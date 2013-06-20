@@ -40,7 +40,8 @@ class UserLoginView extends AbstractFormView {
    */
   public function __construct($userPresenter) {
     global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Login"), [ "/assets/css/modules/user.css" ]);
+    parent::__construct($userPresenter, $i18n->t("Login"));
+    $this->stylesheets[] = "modules/user.css";
   }
 
   /**
@@ -51,30 +52,26 @@ class UserLoginView extends AbstractFormView {
     return
       "<div class='row'>" .
         "<div class='span span--6 offset--3'>" .
-          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->getInputElement("mail", [
+          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->input("mail", [
             "autofocus",
             "class"       => "input--block-level",
             "maxlength"   => UserModel::MAIL_MAX_LENGTH,
             "placeholder" => $i18n->t("Enter your email address"),
             "required",
-            "tabindex"    => $this->getTabindex(),
             "title"       => $i18n->t("Plase enter the email address you used to register."),
             "type"        => "email",
           ])}</p>" .
           "<p><small>{$this->a("/user/reset-password", "Reset your password", [
             "class" => "pull-right",
             "title" => $i18n->t("Click this link if you forgot your password."),
-          ])}</small><label for='pass'>{$i18n->t("Password")}</label>{$this->getInputElement("pass", [
+          ])}</small><label for='pass'>{$i18n->t("Password")}</label>{$this->input("pass", [
             "class"       => "input--block-level",
             "placeholder" => $i18n->t("Enter your password"),
             "required",
-            "tabindex"    => $this->getTabindex(),
             "title"       => $i18n->t("Please enter your secret password in this field."),
             "type"        => "password",
           ])}</p>" .
-          "<p><button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$i18n->t(
-            "Click here after you’ve filled out all fields."
-          )}' type='submit'>{$i18n->t("Sign in")}</button></p>" .
+          "<p>{$this->submit($i18n->t("Sign in"), $i18n->t("Click here after you’ve filled out all fields."))}</p>" .
         "</div>" .
       "</div>"
     ;

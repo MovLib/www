@@ -30,14 +30,31 @@ use \MovLib\View\HTML\AbstractView;
  */
 abstract class AbstractFormView extends AbstractView {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The enctype string for <tt>octet/stream</tt> encoding (file uploads; in general differing MIME types).
+   *
+   * @var string
+   */
+  const ENCTYPE_BINARY = "multipart/form-data";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The attributes that will be applied to the <code>&lt;form&gt;</code>-element.
    *
-   * <b>IMPORTANT!</b> Default CSS classes for the element type will be included automatically!
-   *
    * @var array
    */
-  protected $attributes = [ "class" => "container" ];
+  protected $attributes = [
+    "accept-charset" => "UTF-8",
+    "class"          => "container form",
+    "method"         => "post",
+  ];
 
   /**
    * Array that can be used by the presenter to set errors for certain input elements.
@@ -66,6 +83,24 @@ abstract class AbstractFormView extends AbstractView {
    */
   public $inputValues;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Public Methods
+
+
+  /**
+   * The HTML content of the <code>&lt;form&gt;</code>-element.
+   *
+   * <b>IMPORTANT!</b> Do not include opening and closing <code>form</code>-tags!
+   *
+   * @return string
+   *   The HTML content of the <code>&lt;form&gt;</code>-element.
+   */
+  abstract public function getFormContent();
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
+
   /**
    * Get the rendered content, without HTML head, header or footer.
    *
@@ -77,27 +112,13 @@ abstract class AbstractFormView extends AbstractView {
     global $user;
     $csrf = "";
     if (($token = $user->csrfToken)) {
-      $csrf = "<input aria-hidden='true' hidden name='csrf_token' type='hidden' value='{$token}'>";
+      $csrf = "<input aria-hidden='true' hidden name='csrf' type='hidden' value='{$token}'>";
     }
     if (!isset($this->attributes["action"])) {
       $this->attributes["action"] = $_SERVER["REQUEST_URI"];
     }
-    if (!isset($this->attributes["method"])) {
-      $this->attributes["method"] = "post";
-    }
-    $this->addClass("form form-{$this->getShortName()}", $this->attributes);
-    return "<form {$this->expandTagAttributes($this->attributes)}>{$csrf}{$this->getFormContent()}</form>";
+    return "<form{$this->expandTagAttributes($this->attributes)}>{$csrf}{$this->getFormContent()}</form>";
   }
-
-  /**
-   * The HTML content of the <code>&lt;form&gt;</code>-element.
-   *
-   * <b>IMPORTANT!</b> Do not include opening and closing <code>form</code>-tags!
-   *
-   * @return string
-   *   The HTML content of the <code>&lt;form&gt;</code>-element.
-   */
-  abstract public function getFormContent();
 
   /**
    * Render an HTML input element.
@@ -124,6 +145,7 @@ abstract class AbstractFormView extends AbstractView {
    *     <li><em>role</em>: The ARIA role.</li>
    *     <li><em>id</em>: Is always set to the value of <var>$name</var>.</li>
    *     <li><em>name</em>: Is always set to the value of <var>$name</var>.</li>
+   *     <li><em>tabindex</em>: Is always set to the next by calling <code>AbstractView::getTabindex()</code>.</li>
    *   </ul>
    * @param string $tag
    *   [Optional] The elements tag, defaults to <em>input</em>.
@@ -133,43 +155,42 @@ abstract class AbstractFormView extends AbstractView {
    * @return string
    *   The input element ready for print.
    */
-  protected function getInputElement($name, $attributes = [], $tag = "input", $content = "") {
+  protected function input($name, $attributes = [], $tag = "input", $content = "") {
     if (!isset($attributes["type"])) {
-      $attributes["type"] = "text";
+      $attributes["role"] = "textbox";
+      if (empty($attributes["value"])) {
+        $attributes["value"] = isset($this->inputValues[$name])
+          ? $this->inputValues[$name]
+          : filter_input(INPUT_POST, $name, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_FLAG_ENCODE_AMP)
+        ;
+      }
     }
-    switch ($attributes["type"]) {
-      case "email":
-        $attributes["role"] = "textbox";
-        if (empty($attributes["value"])) {
-          $attributes["value"] = isset($this->inputValues[$name])
-            ? $this->inputValues[$name]
-            : filter_input(INPUT_POST, $name, FILTER_SANITIZE_EMAIL)
-          ;
-        }
-        break;
+    else {
+      switch ($attributes["type"]) {
+        case "email":
+          $attributes["role"] = "textbox";
+          if (empty($attributes["value"])) {
+            $attributes["value"] = isset($this->inputValues[$name])
+              ? $this->inputValues[$name]
+              : filter_input(INPUT_POST, $name, FILTER_SANITIZE_EMAIL)
+            ;
+          }
+          break;
 
-      case "password":
-        $attributes["role"] = "textbox";
-        // Only the presenter or view is allowed to insert a value into a password field. Never ever use a password
-        // value that was submitted via the user.
-        if (empty($attributes["value"]) && isset($this->inputValues[$name])) {
-          $attributes["value"] = $this->inputValues[$name];
-        }
-        break;
-
-      case "text":
-        $attributes["role"] = "textbox";
-        if (empty($attributes["value"])) {
-          $attributes["value"] = isset($this->inputValues[$name])
-            ? $this->inputValues[$name]
-            : filter_input(INPUT_POST, $name, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_FLAG_ENCODE_AMP)
-          ;
-        }
-        break;
+        case "password":
+          $attributes["role"] = "textbox";
+          // Only the presenter or view is allowed to insert a value into a password field. Never ever use a password
+          // value that was submitted via the user.
+          if (empty($attributes["value"]) && isset($this->inputValues[$name])) {
+            $attributes["value"] = $this->inputValues[$name];
+          }
+          break;
+      }
     }
-    foreach ([ "hidden", "required", "readonly" ] as $attribute) {
-      if (isset($attributes[$attribute])) {
-        $attributes["aria-{$attribute}"] = "true";
+    $ariaAttributes = [ "hidden", "required", "readonly" ];
+    for ($i = 0; $i < 3; ++$i) {
+      if (isset($attributes[$ariaAttributes[$i]])) {
+        $attributes["aria-{$ariaAttributes[$i]}"] = "true";
       }
     }
     if (isset($this->formInvalid[$name])) {
@@ -180,6 +201,7 @@ abstract class AbstractFormView extends AbstractView {
       $attributes[] = "disabled";
     }
     $attributes["id"] = $attributes["name"] = $name;
+    $attributes["tabindex"] = $this->getTabindex();
     switch ($tag) {
       case "button":
       case "select":
@@ -191,8 +213,99 @@ abstract class AbstractFormView extends AbstractView {
         return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}</{$tag}>";
 
       default:
-        return "<{$tag}{$this->expandTagAttributes($attributes)}>";
+        return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}";
     }
+  }
+
+  /**
+   * Get label, input and datalist element.
+   *
+   * @param string $label
+   *   The text that should appear in the label.
+   * @param array $input
+   *   {@see \MovLib\View\HTML\AbstractFormView::input()}
+   * @param array $datalist
+   *   {@see \MovLib\View\HTML\AbstractFormView::datalist()}
+   * @return string
+   *   The label, input and datalist element ready for print.
+   */
+  protected function labelInputDatalist($label, $input, $datalist) {
+    $id = $input[0];
+    $input[1]["list"] = $datalist[0];
+    $input = call_user_func_array([ $this, "input" ], $input);
+    $datalist = call_user_func_array([ $this, "datalist" ], $datalist);
+    return "<label for'{$id}'>{$label}</label>{$input}{$datalist}";
+  }
+
+  /**
+   * Get an input element with a datalist.
+   *
+   * <b>Usage example:</b>
+   * <pre>$this->inputDatalist([ name, attributes, tag, content ], [ id, options ]);</pre>
+   *
+   * @param array $input
+   *   {@see \MovLib\View\HTML\AbstractFormView::input()}
+   * @param array $datalist
+   *   {@see \MovLib\View\HTML\AbstractFormView::datalist()}
+   * @return string
+   *   The input and datalist element ready for print.
+   */
+  protected function inputDatalist($input, $datalist) {
+    $input[1]["list"] = $datalist[0];
+    $input = call_user_func_array([ $this, "input" ], $input);
+    $datalist = call_user_func_array([ $this, "datalist" ], $datalist);
+    return $input . $datalist;
+  }
+
+  /**
+   * @link https://github.com/thgreasi/datalist-polyfill
+   */
+  protected function datalist($id, $options) {
+    $datalist = "<datalist id='{$id}'><select class='hidden'>";
+    $c = count($options);
+    for ($i = 0; $i < $c; ++$i) {
+      $datalist .= "<option value='{$options[$i]}'>";
+    }
+    return "{$datalist}</select></datalist>";
+  }
+
+  /**
+   * Render an HTML select element.
+   *
+   * @see \MovLib\View\HTML\AbstractFormView::getInputElement()
+   * @param string $name
+   *   The <em>name</em> of the select element. This value is used for the <em>id</em> and <em>name</em> attribute of
+   *   the select element.
+   * @param array $options
+   *   Numerical array containing associative arrays for each option.
+   * @param array $attributes
+   *   [Optional] Array containing attributes that should be applied to the element or to overwrite the defaults.
+   * @return string
+   *   The select element ready for print.
+   */
+  protected function select($name, $options, $attributes = []) {
+    $content = "";
+    $c = count($options);
+    for ($i = 0; $i < $c; ++$i) {
+      $text = $options[$i]["text"];
+      unset($options[$i]["text"]);
+      $content .= "<option{$this->expandTagAttributes($options[$i])}>{$text}</option>";
+    }
+    return $this->input($name, $attributes, "select", $content);
+  }
+
+  /**
+   * Get default submit button.
+   *
+   * @param string $text
+   *   The text that should be displayed within the button.
+   * @param string $title
+   *   The title that should be displayed in the tooltip.
+   * @return string
+   *   The submit button ready for print.
+   */
+  protected function submit($text, $title = "") {
+    return "<button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$title}' type='submit'>{$text}</button>";
   }
 
 }

@@ -39,7 +39,8 @@ class UserResetPasswordView extends AbstractFormView {
    */
   public function __construct($userPresenter) {
     global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Reset password"), [ "/assets/css/modules/user.css" ]);
+    parent::__construct($userPresenter, $i18n->t("Reset password"));
+    $this->stylesheets[] = "modules/user.css";
   }
 
   /**
@@ -50,19 +51,16 @@ class UserResetPasswordView extends AbstractFormView {
     return
       "<div class='row'>" .
         "<div class='span span--6 offset--3'>" .
-          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->getInputElement("mail", [
+          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->input("mail", [
             "autofocus",
             "class"       => "input--block-level",
             "maxlength"   => UserModel::MAIL_MAX_LENGTH,
             "placeholder" => $i18n->t("Enter your email address"),
             "required",
-            "tabindex"    => $this->getTabindex(),
             "title"       => $i18n->t("Plase enter the email address with which you registered your account."),
             "type"        => "email",
           ])}</p>" .
-          "<p><button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$i18n->t(
-            "Click here after you’ve filled out all fields."
-          )}' type='submit'>{$i18n->t("Reset password")}</button></p>" .
+          "<p>{$this->submit($i18n->t("Reset password"), $i18n->t("Click here after you’ve filled out all fields."))}</p>" .
         "</div>" .
       "</div>"
     ;

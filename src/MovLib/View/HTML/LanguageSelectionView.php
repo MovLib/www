@@ -61,13 +61,13 @@ class LanguageSelectionView extends AbstractView {
     }
     return
       "<div id='content' class='{$this->getShortName()}-content' role='main'>" .
-        "<div class='container text-center'>" .
+        "<div class='container'>" .
           "<h1 id='logo-big' class='clear-fix'>" .
             "<img class='pull-left' src='" . FileSystem::asset("img/logo/vector.svg") . "' alt='{$i18n->t("MovLib, the free movie library.")}' width='192' height='192'>" .
             "<span>{$i18n->t("MovLib <small>the <em>free</em> movie library.</small>")}</span>" .
           "</h1>" .
           "<p>{$i18n->t("Please select your preferred language from the list below.")}</p>" .
-          $this->getNavigation($i18n->t("Language links"), $this->getShortName(), $points, -1, " / ", [ "class" => "well well--large" ]) .
+          $this->getNavigation($i18n->t("Language links"), $this->getShortName(), $points, " / ", [ "class" => "well well--large" ]) .
         "</div>" .
       "</div>"
     ;
@@ -80,7 +80,7 @@ class LanguageSelectionView extends AbstractView {
     global $i18n;
     return
       "<footer id='footer'>" .
-        "<div class='container text-center'>" .
+        "<div class='container'>" .
           "<p>{$i18n->t(
             "Is your language missing from our list? Help us translate MovLib to your language. More information can be found in {0}our translation portal{1}.",
             [ "<a href='https://localize.{$_SERVER["SERVER_NAME"]}/'>", "</a>" ]

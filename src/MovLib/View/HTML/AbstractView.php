@@ -111,10 +111,16 @@ abstract class AbstractView {
    */
   protected $stylesheets = [
     "base.css",
-    "layout.css",
-    "modules/icons.css",
-    "modules/alert.css",
-    "modules/button.css",
+    "layout/grid.css",
+    "layout/generic.css",
+    "layout/header.css",
+    "layout/breadcrumb.css",
+    "layout/content.css",
+    "layout/nav-secondary.css",
+    "layout/footer.css",
+    "layout/icons.css",
+    "layout/alert.css",
+    "layout/buttons.css",
   ];
 
   /**
@@ -353,101 +359,80 @@ abstract class AbstractView {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
    * @return string
    *   The header ready for print.
    */
   public final function getHeader() {
-    global $i18n;
-    return
-      "<a class='visuallyhidden' href='#content'>{$i18n->t("Skip to content")}</a>" .
-      "<header id='header'>" .
-        "<div class='container'>" .
-          "<img alt='{$i18n->t("MovLib, the free movie library.")}' id='logo' src='" . FileSystem::asset("img/logo/wordmark.svg") . "' width='51.2' height='19.2'>" .
-        "</div>" .
-      "</header>"
-    ;
-//    return
-//      "<a class='visuallyhidden' href='#content'>{$i18n->t("Skip to content")}</a>" .
-//      "<header id='header'>" .
-//        "<div class='container'>" .
-//          "<div class='row'>" .
-//            "<div class='span span--4'>{$this->getHeaderLogo()}</div>" .
-//            "<div class='span span--4'>{$this->getHeaderSearch()}{$this->getHeaderNavigation()}</div>" .
-//            "<div class='span span--4'>{$this->getHeaderUserNavigation()}</div>" .
-//          "</div>" .
-//        "</div>" .
-//      "</header>"
-//    ;
-  }
-
-  /**
-   * Get the HTML header main navigation.
-   *
-   * @see \MovLib\View\HTML\AbstractView::getNavigation
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @return string
-   *   The main navigation ready for print.
-   */
-  public final function getHeaderNavigation() {
-    global $i18n;
-    return $this->getNavigation($i18n->t("Primary navigation"), "main", [
-      /*0*/[ $i18n->r("/movies"), $i18n->t("Movies"), [ "title" => $i18n->t("Browse all movies of this world, check out the latest additions or create a new entry yourself.") ]],
-      /*1*/[ $i18n->r("/series"), $i18n->t("Series"), [ "title" => $i18n->t("Browse all series of this world, check out the latest additions or create a new entry yourself.") ]],
-      /*2*/[ $i18n->r("/persons"), $i18n->t("Persons"), [ "title" => $i18n->t("Browse all movie related persons of this world, check out the latest additions or create a new entry yourself.") ]],
-      /*3*/[ $i18n->r("/marketplace"), $i18n->t("Marketplace"), [ "title" => $i18n->t("Searching for a specific release of a movie or soundtrack, this is the place to go, for free of course.") ]],
-    ], $this->activeHeaderNavigationPoint, " <span role='presentation'>/</span> ");
-  }
-
-  /**
-   * Get the HTML header search.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @return string
-   *   The header search ready for print.
-   */
-  public final function getHeaderSearch() {
-    global $i18n;
-    return
-      "<form action='{$i18n->r("/search")}' class='search-header' method='post' role='search'>" .
-        "<input accesskey='f' placeholder='{$i18n->t("Search…")}' role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t(
-          "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
-        )}' type='search'>" .
-        "<button title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
-          "<i class='icon icon--search inline transition'></i>" .
-        "</button>" .
-      "</form>"
-    ;
-  }
-
-  /**
-   * Get the HTML header user navigation.
-   *
-   * @see \MovLib\View\HTML\AbstractView::getNavigation
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
-   * @return string
-   *   The user navigation ready for print.
-   */
-  public final function getHeaderUserNavigation() {
     global $i18n, $user;
     if (isset($user) && $user->isLoggedIn === true) {
       $points = [
-        /*0*/[ $i18n->r("/user"), $user->name, [ "title" => $i18n->t("Go to your personal user page.") ]],
-        /*1*/[ $i18n->r("/user/logout"), $i18n->t("Logout"), [ "title" => $i18n->t("Click here to log out from your current session.") ]],
+        [ $i18n->r("/user"), "<i class='icon icon--user'></i>", [
+          "class" => "button button--success",
+          "title" => $i18n->t("Go to your personal user page."),
+        ]],
+        [ $i18n->r("/user/watchlist"), "<i class='icon icon--signal'></i>", [
+          "class" => "button button--primary",
+          "title" => $i18n->t("Have a look at the latest changes of the content your are watching."),
+        ]],
+        [ $i18n->r("/user/logout"), "<i class='icon icon--logout'></i>", [
+          "class" => "button button--danger",
+          "title" => $i18n->t("Click here to log out from your current session."),
+        ]],
       ];
     }
     else {
       $points = [
-        /*0*/[ $i18n->r("/user/register"), $i18n->t("Register"), [ "title" => $i18n->t("Click here to create a new account.") ]],
-        /*1*/[ $i18n->r("/user/login"), $i18n->t("Login"), [ "title" => $i18n->t("Click here to log in to your account.") ]],
+        [ $i18n->r("/user/register"), $i18n->t("register"), [
+          "class" => "button button--success menuitem--register",
+          "title" => $i18n->t("Click here to create a new account."),
+        ]],
+        [ $i18n->r("/user/login"), "<i class='icon icon--login'></i>", [
+          "class" => "button button--primary",
+          "title" => $i18n->t("Click here to log in to your account."),
+        ]],
       ];
     }
-    /*2*/$points[] = [ $i18n->r("/help"), $i18n->t("Help"), [ "rel" => "help", "title" => $i18n->t("Click here to find our help articles.") ]];
-    return $this->getNavigation($i18n->t("User navigation"), "user", $points, $this->activeHeaderUserNavigationPoint, " ", [ "class" => "pull-right" ]);
+    return
+      "<a class='visuallyhidden' href='#content'>{$i18n->t("Skip to content")}</a>" .
+      "<header id='header'>" .
+        "<div id='nav-full-container'>" .
+          "<div id='nav-full'>" .
+            "<div class='container'>" .
+              "<div class='row'>" .
+                "<div class='span span--3'>{$this->getNavigation($i18n->t("Movies"), "movies", [], " ", [], false)}</div>" .
+                "<div class='span span--3'>{$this->getNavigation($i18n->t("Series"), "series", [], " ", [], false)}</div>" .
+                "<div class='span span--3'>{$this->getNavigation($i18n->t("Persons"), "persons", [], " ", [], false)}</div>" .
+                "<div class='span span--3'>{$this->getNavigation($i18n->t("Other"), "other", [], " ", [], false)}</div>" .
+              "</div>" . // .row
+            "</div>" . // .container
+          "</div>" . // #nav-full
+          // No title and nothing else for this element. Handicapped people are not interested in an element that is
+          // only here for presentational purposes.
+          "<div class='container'><span id='nav-full-switch'><span class='button button--inverse'><i class='icon icon--menu'></i></span></span></div>" .
+        "</div>" . // #nav-full-container
+        "<div class='container'>" .
+          "<div class='row'>" .
+            "<a class='span' href='{$i18n->r("/")}' id='header__logo' title='{$i18n->t("Take me back to the home page.")}'>" .
+              "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='42' id='logo' src='" . FileSystem::asset("img/logo/vector.svg") . "' width='42'> MovLib" .
+            "</a>" .
+            "<form accept-charset='utf-8' action='{$i18n->t("/search")}' class='header__search-span span' id='header__search-form' method='post' role='search'>" .
+              "<div id='header__search-wrapper'>" .
+                "<label class='visuallyhidden' for='header__search'>{$i18n->t("Search the MovLib database.")}</label>" .
+                "<input accesskey='f' id='header__search-input' name='searchterm' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t(
+                  "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
+                )}' type='search'>" .
+                "<button id='header__search-button' title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
+                  "<i class='icon icon--search'></i>" .
+                "</button>" .
+              "</div>" . // #header__search-wrapper
+            "</form>" .
+            $this->getNavigation($i18n->t("Main Navigation"), "main", $points, " ") .
+          "</div>" . // .row
+        "</div>" . // .container
+      "</header>"
+    ;
   }
 
   /**
@@ -461,8 +446,6 @@ abstract class AbstractView {
    *   Numeric array containing the navigation points in the format:
    *   <pre>[ 0 => route, 1 => text, 2 => attributes ]</pre>
    *   All array offsets are mandatory; the attributes have to have an already translated title!
-   * @param int $activePointIndex
-   *   Index of the element within the array that should be marked active.
    * @param string $glue
    *   The string that is used to combine the various navigation points.
    * @param array $attributes
@@ -472,14 +455,10 @@ abstract class AbstractView {
    * @return string
    *   Fully rendered navigation.
    */
-  public final function getNavigation($title, $role, $points, $activePointIndex, $glue, $attributes = [], $hideTitle = true) {
+  public final function getNavigation($title, $role, $points, $glue, $attributes = [], $hideTitle = true) {
     $k = count($points);
     for ($i = 0; $i < $k; ++$i) {
       $classes = "menuitem";
-      // Check against current URI to prevent adding the active class twice.
-      if ($i === $activePointIndex && $_SERVER["REQUEST_URI"] !== $points[$i][0]) {
-        $classes .= " active";
-      }
       $this->addClass($classes, $points[$i][2]);
       $points[$i][2]["role"] = "menuitem";
       $points[$i] = $this->a($points[$i][0], $points[$i][1], $points[$i][2]);
@@ -524,34 +503,6 @@ abstract class AbstractView {
     $attributes["aria-labelledby"] = "nav-{$role}__title";
     $hideTitle = $hideTitle === true ? " class='visuallyhidden'" : "";
     return "<nav{$this->expandTagAttributes($attributes)}><h2 id='nav-{$role}__title'{$hideTitle} role='presentation'>{$title}</h2><ul class='no-list'>{$points}</ul></nav>";
-  }
-
-  /**
-   * Get the (pure CSS) sticky header.
-   *
-   * @link http://uxdesign.smashingmagazine.com/2012/09/11/sticky-menus-are-quicker-to-navigate/
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @return string
-   *   Sticky header ready for print.
-   */
-  public final function getStickyHeader() {
-    global $i18n;
-    return
-      "<header id='sticky-header'>" .
-        "<div class='row'>" .
-          "<div class='span span--3 sticky-header__span'>{$this->a($i18n->r("/"), "MovLib", [ "class" => "logo-small inline" ])}</div>" .
-          "<div class='span span--3 sticky-header__span'>" .
-            "<form action='{$i18n->r("/search")}' class='search search-sticky-header' method='post' role='search'>" .
-              "<input class='input input-text input-search search-sticky-header__input-search' placeholder='{$i18n->t("Search…")}' role='textbox' title='{$i18n->t("Enter the search term you wish to search for and hit enter.")}' type='search'>" .
-              "<button class='button input input-submit search-sticky-header__input-submit' title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
-                "<i class='icon icon--search search-sticky-header__icon--search inline transition'></i>" .
-              "</button>" .
-            "</form>" .
-          "</div>" .
-        "</div>" .
-      "</header>"
-    ;
   }
 
   /**
@@ -613,7 +564,7 @@ abstract class AbstractView {
       }
     }
     $points[] = [ $_SERVER["REQUEST_URI"], $this->title ];
-    return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, -1, " › ", [ "class" => "container text-right" ])}</div>";
+    return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, " › ", [ "class" => "container" ])}</div>";
   }
 
   /**
@@ -753,7 +704,6 @@ abstract class AbstractView {
     return
       $this->getHead() .
       $this->getHeader() .
-      $this->getStickyHeader() .
       $this->getBreadcrumb() .
       $this->getRenderedContent() .
       $this->getFooter()

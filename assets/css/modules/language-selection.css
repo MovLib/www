@@ -25,6 +25,11 @@
  * @since 0.0.1-dev
  */
 
+.languageselection-body {
+  padding: 0;
+  text-align: center;
+}
+
 .languageselection-body #content {
   min-height: 50%;
 }

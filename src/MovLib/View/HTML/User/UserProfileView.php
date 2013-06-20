@@ -46,16 +46,34 @@ class UserProfileView extends AbstractView {
    *   The user presenter controlling this view.
    */
   public function __construct($userPresenter) {
-    parent::__construct($userPresenter, $userPresenter->profile->name, [ "/assets/css/module/user.css" ]);
+    parent::__construct($userPresenter, $userPresenter->profile->name);
+    $this->stylesheets[] = "modules/user.css";
   }
 
   /**
    * {@inheritdoc}
    */
   public function getContent() {
+    global $i18n;
+    ob_start();
+    var_dump($this->presenter->profile);
+    $varDump = ob_get_clean();
     return
       "<div class='container'>" .
-        "<pre>" . print_r($_SERVER, true) . "</pre>" .
+        "<div class='row'>" .
+          "<div class='span span--3'>" .
+            "<h2>Avatar</h2>" .
+            "<a href='{$this->presenter->profile->getAvatar()}'>" .
+              "<img alt='{$i18n->t("{0}’s avatar.")}' height='150' src='{$this->presenter->profile->getAvatar()}' width='150'>" .
+            "</a>" .
+            "<p>Vector FTW!</p>" .
+          "</div>" .
+          "<div class='span span--9'>" .
+            "<h2>\$this->presenter->profile</h2>" .
+            "<pre>" . print_r($this->presenter->profile, true) . "</pre>" .
+            "<pre>" . $varDump . "</pre>" .
+          "</div>" .
+        "</div>" .
       "</div>"
     ;
   }

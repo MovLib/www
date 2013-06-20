@@ -29,4 +29,9 @@
   background-color: #fff;
   font-size: 12px;
   padding: 5px 0;
+  text-align: right;
 }
+
+/* DEV {{{ */
+#breadcrumb{display:none!important}
+/* }}} DEV */

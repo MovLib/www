@@ -40,7 +40,8 @@ class UserRegisterView extends AbstractFormView {
    */
   public function __construct($userPresenter) {
     global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Register"), [ "/assets/css/modules/user.css" ]);
+    parent::__construct($userPresenter, $i18n->t("Register"));
+    $this->stylesheets[] = "modules/user.css";
   }
 
   /**
@@ -51,27 +52,23 @@ class UserRegisterView extends AbstractFormView {
     return
       "<div class='row'>" .
         "<div class='span span--6 offset--3'>" .
-          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->getInputElement("mail", [
+          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->input("mail", [
             "autofocus",
             "class"       => "input--block-level",
             "maxlength"   => UserModel::MAIL_MAX_LENGTH,
             "placeholder" => $i18n->t("Enter your email address"),
             "required",
-            "tabindex"    => $this->getTabindex(),
             "title"       => $i18n->t("Plase enter your preferred email address."),
             "type"        => "email",
           ])}</p>" .
-          "<p><label for='name'>{$i18n->t("Username")}</label>{$this->getInputElement("name", [
+          "<p><label for='name'>{$i18n->t("Username")}</label>{$this->input("name", [
             "class"       => "input--block-level",
             "maxlength"   => UserModel::NAME_MAX_LENGTH,
             "placeholder" => $i18n->t("Enter your username"),
             "required",
-            "tabindex"    => $this->getTabindex(),
             "title"       => $i18n->t("Please enter your desired username."),
           ])}</p>" .
-          "<p><button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$i18n->t(
-            "Click here after you’ve filled out all fields."
-          )}' type='submit'>{$i18n->t("Sign up")}</button></p>" .
+          "<p>{$this->submit($i18n->t("Sign up"), $i18n->t("Click here after you’ve filled out all fields."))}</p>" .
         "</div>" .
       "</div>"
     ;

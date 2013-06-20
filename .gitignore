@@ -164,15 +164,6 @@ pip-log.txt
 .DS_Store
 
 # Added via NetBeans, project specific
-/vendor/
-/mu-*.txt
-/composer.lock
 !/bin/
-/conf/global.json
-/assets/components/
-/uploads/avatars/**
-/uploads/lobby-cards/**
-/uploads/persons/**
-/uploads/posters/**
 /experimental/
 /conf/nginx/sites/test.conf

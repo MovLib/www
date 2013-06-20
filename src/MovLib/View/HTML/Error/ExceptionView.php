@@ -63,7 +63,7 @@ class ExceptionView extends AlertView {
             "<div class='stacktrace__title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
             "<table class='stacktrace__table'>{$this->formatStacktrace($exception->getTrace())}</table>" .
           "</div>" .
-          "<p class='text-center'><small>Debug information is only available if debugging is activated during bootstrap phase!</small></p>"
+          "<p><small>Debug information is only available if debugging is activated during bootstrap phase!</small></p>"
       ],
       self::ALERT_SEVERITY_INFO,
       true

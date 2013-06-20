@@ -24,6 +24,7 @@ use \MovLib\Exception\SessionException;
 use \MovLib\Model\AbstractModel;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMethodCalls;
+use \MovLib\Utility\Image;
 
 /**
  * Retrieve user specific data from the database.
@@ -131,21 +132,70 @@ class UserModel extends AbstractModel {
    */
   public $isLoggedIn = false;
 
+  /**
+   * Unix timestamp of the time when the user was created.
+   *
+   * @var int
+   */
   public $timestampCreated;
 
+  /**
+   * Unix timestamp of the time the user last accessed MovLib.
+   *
+   * @var int
+   */
   public $timestampLastAccess;
 
+  /**
+   * Unix timestamp of the time the user last logged in.
+   *
+   * @var int
+   */
   public $timestampLastLogin;
 
+  /**
+   * Flag defining if the user's personal data is private or not.
+   *
+   * @var boolean
+   */
+  public $private;
+
+  /**
+   * Flag defining if the user's profile is deactivated or deleted.
+   *
+   * @var boolean
+   */
   public $deleted;
 
+  /**
+   * PHP timezone string of the user's timezone.
+   *
+   * @see timezone_identifiers_list()
+   * @see \DateTimeZone::listIdentifiers()
+   * @var string
+   */
   public $timezone;
 
-  public $realName;
-
+  /**
+   * The user's unique country ID.
+   *
+   * @var int
+   */
   public $countryId;
 
+  /**
+   * The user's preferred system language's ID.
+   *
+   * @var int
+   */
   public $languageId;
+
+  /**
+   * The file extension of the user's uploaded avatar.
+   *
+   * @var null|string
+   */
+  public $avatarExt;
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -194,9 +244,10 @@ class UserModel extends AbstractModel {
             UNIX_TIMESTAMP(`created`) AS `timestampCreated`,
             UNIX_TIMESTAMP(`access`) AS `timestampLastAccess`,
             UNIX_TIMESTAMP(`login`) AS `timestampLastLogin`,
+            `private`,
             `deleted`,
             `timezone`,
-            `real_name` AS `realName`,
+            `avatar_ext` AS `avatarExt`,
             `country_id` AS `countryId`,
             `language_id` AS `languageId`
           FROM `users`
@@ -205,6 +256,7 @@ class UserModel extends AbstractModel {
         )[0] as $name => $value) {
           $this->{$name} = $value;
         }
+        settype($this->private, "boolean");
         settype($this->deleted, "boolean");
       } catch (ErrorException $e) {
         throw new UserException("Could not find user for {$from} '{$value}'!", $e);
@@ -238,6 +290,35 @@ class UserModel extends AbstractModel {
    */
   public function exists($column, $value, $type = "s") {
     return !empty($this->select("SELECT `user_id` FROM `users` WHERE `{$column}` = ? LIMIT 1", $type, [ $value ]));
+  }
+
+  /**
+   * Get the absolute URI to the user's avatar.
+   *
+   * <b>IMPORTANT!</b> Please note that images are not created on demand. If we'd do that we'd be open for easy DDoS
+   * attacks that would kill our servers in no time. If you need a new image style, generate all images beforehands and
+   * ensure that the user presenter creates the style directly after a new avatar was uploaded.
+   *
+   * @see \MovLib\Utility\Image::STYLE_150
+   * @param int $style
+   *   The image style, use the <var>STYLE_*</var> class constants of the image utility class.
+   * @return boolean|string
+   *   <tt>FALSE</tt> if the image doesn't exist, otherwise the absolute URI to the image is returned.
+   */
+  public function getAvatar($style = Image::STYLE_150) {
+    if ($this->avatarExt) {
+      if ($this->avatarExt === "svg" && is_file("{$_SERVER["HOME"]}/uploads/user/avatar-{$this->id}.svg")) {
+        return "https://{$_SERVER["SERVER_NAME"]}/uploads/user/avatar-{$this->id}.svg";
+      }
+      elseif (is_file("{$_SERVER["HOME"]}/uploads/user/avatar-{$this->id}.{$style}.{$this->avatarExt}")) {
+        return "https://{$_SERVER["SERVER_NAME"]}/uploads/user/avatar-{$this->id}.{$style}.{$this->avatarExt}";
+      }
+    }
+    return false;
+  }
+
+  public function getAvatarHtml($style = Image::STYLE_150, $id = null) {
+
   }
 
   /**
@@ -429,7 +510,12 @@ class UserModel extends AbstractModel {
       if (session_start() === false) {
         throw new SessionException("Could not start session.");
       }
+      if (!empty($_SESSION["TTL"]) || $_SESSION["TTL"] < time()) {
+        session_regenerate_id(true);
+        $_SESSION["TTL"] = time() + ini_get("session.gc_maxlifetime");
+      }
       if (!empty($_SESSION["UID"])) {
+        $this->csrfToken = isset($_SESSION["CSRF"]) ? $_SESSION["CSRF"] : Crypt::randomHash();
         $this->isLoggedIn = true;
         return $_SESSION["UID"];
       }

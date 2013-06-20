@@ -18,6 +18,7 @@
 namespace MovLib\View\HTML\User;
 
 use \MovLib\Utility\Crypt;
+use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractFormView;
 
 /**
@@ -64,10 +65,9 @@ class UserSettingsView extends AbstractFormView {
    */
   public function __construct($userPresenter, $tab) {
     global $i18n;
-    parent::__construct($userPresenter, "{$i18n->t(($this->tab = $tab))} {$i18n->t("Settings")}", [
-      "/assets/css/modules/user.css"
-    ]);
-    $this->activeHeaderUserNavigationPoint = 0;
+    parent::__construct($userPresenter, "{$i18n->t(($this->tab = $tab))} {$i18n->t("Settings")}");
+    $this->stylesheets[] = "modules/user.css";
+    $this->attributes["action"] = "patch";
   }
 
 
@@ -87,14 +87,87 @@ class UserSettingsView extends AbstractFormView {
     ;
   }
 
+  /**
+   * Get the HTML for the account settings page.
+   *
+   * @see \MovLib\View\HTML\User\UserSettingsView::getFormContent()
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\UserModel $user
+   *   The global user model instance.
+   * @return string
+   *   The account settings content ready for print.
+   */
   private function getAccountTab() {
-    global $i18n;
-    return "";
+    global $i18n, $user;
+    $this->attributes["enctype"] = self::ENCTYPE_BINARY;
+    if (($avatar = $user->getAvatar()) === false) {
+      $avatar = "<i class='icon icon--user avatar--150'></i>";
+    }
+    else {
+      $avatar = "<img class='avatar avatar--150' alt='{$i18n->t("{0}’s avatar.", [ String::checkPlain($user->name) ])}' height='150' src='{$avatar}' width='150'>";
+    }
+    $countryDatalist = "<datalist id='countries'>";
+    foreach ($i18n->getCountries()["id"] as $country) {
+      $countryDatalist .= "<option value='{$country["name"]}'>";
+    }
+    $countryDatalist .= "</datalist>";
+    return
+      "<div class='row'>" .
+        "<div class='span span--6'>" .
+          "<p><label for='avatar'>{$i18n->t("Avatar")}</label>{$this->input("avatar", [
+            "accept"   => "image/jpeg,image/png,image/svg+xml",
+            "type"     => "file",
+          ])}</p>" .
+        "</div>" .
+        "<div class='span span--3'>{$avatar}</div>" .
+      "</div>" .
+      "<p><label for='real_name'>{$i18n->t("Real Name")}</label>{$this->input("real_name", [
+        "class"    => "input--block-level",
+        "title"    => $i18n->t("Please enter your real name in this field."),
+      ])}</p>" .
+      "<p><label for='gender'>{$i18n->t("Gender")}</label><span title='{$i18n->t("Please select your gender.")}'>" .
+        "{$this->input("gender", [ "type" => "radio", "value" => "0" ])}<label for='male'>{$i18n->t("Male")}</label>" .
+        "{$this->input("gender", [ "type" => "radio", "value" => "1" ])}<label for='female'>{$i18n->t("Female")}</label>" .
+        "{$this->input("gender", [ "type" => "radio", "value" => "" ])}<label for='unknown'>{$i18n->t("Unknown")}</label>" .
+      "</span></p>" .
+      "<p><label for='country'>{$i18n->t("Country")}</label>{$this->inputDatalist(
+        [ "country", [ "class" => "input--block-level" ]],
+        [ "countries", array_column($i18n->getCountries()["id"], "name")]
+      )}</p>" .
+      "<p><label for='timezone'>{$i18n->t("Time Zone")}</label>{$this->inputDatalist(
+        [ "timezone", [ "class" => "input--block-level", "value" => $user->timezone ]],
+        [ "timezones", timezone_identifiers_list() ]
+      )}</p>" .
+      "<p><label for='profile'>{$i18n->t("About You")}</label>{$this->input("profile", [
+        "class"       => "input--block-level",
+        "placeholder" => $i18n->t("This text will appear on your profile page."),
+      ], "textarea")}</p>" .
+      // @todo Language selector for profile and content editable!
+      "<p><label for='birthday'>{$i18n->t("Date of Birth")}</label>{$this->input("birthday", [
+        "class" => "input--block-level",
+        "type"  => "date",
+      ])}</p>" .
+      // @todo Display help for formatting, type date works in nearly no browser! Or use multiple selects?
+      "<p><label for='website'>{$i18n->t("Website")}</label>{$this->input("website", [
+        "class" => "input--block-level",
+        "type"  => "url",
+      ])}</p>" .
+      "<p><label for='private'>{$i18n->t("Keep my data Private")}</label><small class='help pull-right'>{$i18n->t(
+        "Check the following box if you’d like to hide your private data on your profile page. Your data will only be used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data like gender and country scientiest around the world are enabled to research the human interests in movies more closely. Your real name will not be used for anything of course!"
+      )}</small>{$this->input("private", [ "type" => "checkbox" ])}</p>" .
+      "<p>{$this->submit($i18n->t("Update account settings"))}</p>"
+    ;
   }
 
   private function getNotificationTab() {
     global $i18n;
-    return "";
+    return
+      "<div class='alert alert--info' role='alert'>" .
+        "<h4 class='alert__title'>{$i18n->t("Check back later")}</h4>" .
+        "{$i18n->t("The notification system isn’t implemented yet.")}" .
+      "</div>"
+    ;
   }
 
   private function getMailTab() {
@@ -104,35 +177,33 @@ class UserSettingsView extends AbstractFormView {
         "<a href='{$i18n->r("/user/notification-settings")}'>", "</a>"
       ])}</p>" .
       "<hr>" .
-      "<p><label for='current-mail'>{$i18n->t("Current email address")}</label>{$this->getInputElement("current-mail", [
+      "<p><label for='current-mail'>{$i18n->t("Current email address")}</label>{$this->input("current-mail", [
         "autofocus",
         "class"       => "input--block-level",
         "placeholder" => $i18n->t("Enter your current email address"),
         "required",
-        "tabindex"    => $this->getTabindex(),
         "title"       => $i18n->t("Please enter your current email address in this field."),
         "type"        => "email",
       ])}</p>" .
-      "<p><label for='new-mail'>{$i18n->t("New email address")}</label>{$this->getInputElement("new-mail", [
+      "<p><label for='new-mail'>{$i18n->t("New email address")}</label>{$this->input("new-mail", [
         "class"       => "input--block-level",
         "placeholder" => $i18n->t("Enter your new email address"),
         "required",
-        "tabindex"    => $this->getTabindex(),
         "title"       => $i18n->t("Please enter your new email address in this field."),
         "type"        => "email",
       ])}</p>" .
-      "<p><label for='pass'>{$i18n->t("Password")}</label>{$this->getInputElement("pass", [
+      "<p><label for='pass'>{$i18n->t("Password")}</label>{$this->input("pass", [
         "autocomplete" => "off",
         "class"        => "input--block-level",
         "placeholder"  => $i18n->t("Enter your password"),
         "required",
-        "tabindex"     => $this->getTabindex(),
         "title"        => $i18n->t("Please enter your current password to verify this action."),
         "type"         => "password",
       ])}</p>" .
-      "<p><button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$i18n->t(
-        "Click here after you’ve filled out all fields."
-      )}' type='submit'>{$i18n->t("Change email address")}</button></p>"
+      "<p>{$this->submit(
+        $i18n->t("Change email address"),
+        $i18n->t("Click here after you’ve filled out all fields.")
+      )}</p>"
     ;
   }
 
@@ -144,7 +215,7 @@ class UserSettingsView extends AbstractFormView {
     if (!isset($this->formDisabled["pass"])) {
       $notice =
         "<p>{$i18n->t("Choose a strong password which you can easily remember. To help you, we generated a password for you from the most frequent words in American English for you:")}</p>" .
-        "<p class='text-center'><code>" . Crypt::randomUserPassword() . "</code></p>" .
+        "<p style='text-align:center'><code>" . Crypt::randomUserPassword() . "</code></p>" .
         "<hr>"
       ;
     }
@@ -153,43 +224,46 @@ class UserSettingsView extends AbstractFormView {
       "<p><small>{$this->a($i18n->r("/user/reset-password"), $i18n->t("Forgotten your current password?"), [
         "class" => "pull-right",
         "title" => $i18n->t("Click this link if you forgot your password."),
-      ])}</small><label for='current-password'>{$i18n->t("Current password")}</label>{$this->getInputElement("pass", [
+      ])}</small><label for='current-password'>{$i18n->t("Current password")}</label>{$this->input("pass", [
         "autocomplete" => "off",
         "autofocus",
         "class"        => "input--block-level",
         "placeholder"  => $i18n->t("Enter your current password"),
         "required",
-        "tabindex"     => $this->getTabindex(),
         "title"        => $i18n->t("Please enter your current password in this field."),
         "type"         => "password",
       ])}</p>" .
-      "<p><label for='new-password'>{$i18n->t("New password")}</label>{$this->getInputElement("new-pass", [
+      "<p><label for='new-password'>{$i18n->t("New password")}</label>{$this->input("new-pass", [
         "autocomplete" => "off",
         "class"        => "input--block-level",
         "placeholder"  => $i18n->t("Enter your new password"),
         "required",
-        "tabindex"     => $this->getTabindex(),
         "title"        => $i18n->t("Please enter your new password in this field."),
         "type"         => "password",
       ])}</p>" .
-      "<p><label for='confirm-password'>{$i18n->t("Confirm password")}</label>{$this->getInputElement("confirm-pass", [
+      "<p><label for='confirm-password'>{$i18n->t("Confirm password")}</label>{$this->input("confirm-pass", [
         "autocomplete" => "off",
         "class"        => "input--block-level",
         "placeholder"  => $i18n->t("Enter your new password again"),
         "required",
-        "tabindex"     => $this->getTabindex(),
         "title"        => $i18n->t("Please enter your new password again in this field, we want to make sure that you don’t mistype this."),
         "type"         => "password",
       ])}</p>" .
-      "<p><button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$i18n->t(
-        "Click here after you’ve filled out all fields."
-      )}' type='submit'>{$i18n->t("Change password")}</button></p>"
+      "<p>{$this->submit(
+        $i18n->t("Change password"),
+        $i18n->t("Click here after you’ve filled out all fields.")
+      )}</p>"
     ;
   }
 
   private function getDangerzoneTab() {
     global $i18n;
-    return "";
+    return
+      "<div class='alert alert--info' role='alert'>" .
+        "<h4 class='alert__title'>{$i18n->t("Check back later")}</h4>" .
+        "{$i18n->t("The dangerzone system isn’t implemented yet.")}" .
+      "</div>"
+    ;
   }
 
 }
