@@ -9,7 +9,8 @@ INSERT INTO `users` (
   `login`,
   `timezone`,
   `init`,
-  `dyn_data`
+  `dyn_profile`,
+  `avatar_ext`
 ) VALUES (
   41,
   'testname',
@@ -19,6 +20,7 @@ INSERT INTO `users` (
   CURRENT_TIMESTAMP,
   'UTC',
   'test@old.com',
-  ''
+  '',
+  'svg'
 );
 COMMIT;
