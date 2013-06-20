@@ -308,6 +308,10 @@ strong {
   font-weight: 700;
 }
 
+small {
+  font-size: 0.82em;
+}
+
 h1,
 h2,
 h3,

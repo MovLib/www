@@ -15,10 +15,9 @@
  */
 
 /**
- * Layout is for positioning of site-wide elements as well as generic layout helpers like grid systems.
+ * Global content styles.
  *
  * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
- * @link https://github.com/littlesparkvt/flatstrap/blob/master/assets/css/bootstrap-responsive.css
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -26,4 +25,21 @@
  * @since 0.0.1-dev
  */
 
-/* First we have to finish our design at the default width! */
+#content {
+  background-color: #fff;
+  padding-bottom: 40px;
+  min-height: 500px;
+}
+
+#content__header {
+  background-color: #252525;
+  margin-bottom: 40px;
+}
+
+#content__header__title {
+  color: #fff;
+  font-size: 42px;
+  line-height: 63px;
+  margin: 0;
+  padding: 20px 0 30px;
+}
