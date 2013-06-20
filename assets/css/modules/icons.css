@@ -33,13 +33,13 @@
 
 @font-face {
   font-family: MovLib;
-  src: url("/assets/font/movlib.eot?66386162");
-  src: url("/assets/font/movlib.eot?66386162#iefix") format("embedded-opentype"),
-       url("/assets/font/movlib.woff?66386162") format("woff"),
-       url("/assets/font/movlib.ttf?66386162") format("truetype"),
-       url("/assets/font/movlib.svg?66386162#movlib") format("svg")
+  src: url("/assets/font/movlib/movlib.eot?66386162");
+  src: url("/assets/font/movlib/movlib.eot?66386162#iefix") format("embedded-opentype"),
+       url("/assets/font/movlib/movlib.woff?66386162") format("woff"),
+       url("/assets/font/movlib/movlib.ttf?66386162") format("truetype"),
+       url("/assets/font/movlib/movlib.svg?66386162#movlib") format("svg")
   ;
-  font-weight: normal;
+  font-weight: 500;
   font-style: normal;
 }
 
@@ -47,7 +47,7 @@
 .icon:before {
   font-style: normal;
   font-variant: normal;
-  font-weight: normal;
+  font-weight: 500;
   line-height: 1;
   font-family: MovLib;
   speak: none;

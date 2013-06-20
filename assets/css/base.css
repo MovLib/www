@@ -78,6 +78,74 @@
  * @todo Extract all colors from SVG
  */
 
+@font-face {
+  font-family: "Open Sans";
+  src: url("/assets/font/open-sans/OpenSans-Light-webfont.eot");
+  src: url("/assets/font/open-sans/OpenSans-Light-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/assets/font/open-sans/OpenSans-Light-webfont.woff") format("woff"),
+       url("/assets/font/open-sans/OpenSans-Light-webfont.ttf") format("truetype"),
+       url("/assets/font/open-sans/OpenSans-Light-webfont.svg#OpenSansLight") format("svg");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/assets/font/open-sans/OpenSans-LightItalic-webfont.eot");
+  src: url("/assets/font/open-sans/OpenSans-LightItalic-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/assets/font/open-sans/OpenSans-LightItalic-webfont.woff") format("woff"),
+       url("/assets/font/open-sans/OpenSans-LightItalic-webfont.ttf") format("truetype"),
+       url("/assets/font/open-sans/OpenSans-LightItalic-webfont.svg#OpenSansLightItalic") format("svg");
+  font-weight: 300;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/assets/font/open-sans/OpenSans-Regular-webfont.eot");
+  src: url("/assets/font/open-sans/OpenSans-Regular-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/assets/font/open-sans/OpenSans-Regular-webfont.woff") format("woff"),
+       url("/assets/font/open-sans/OpenSans-Regular-webfont.ttf") format("truetype"),
+       url("/assets/font/open-sans/OpenSans-Regular-webfont.svg#OpenSansRegular") format("svg")
+  ;
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/assets/font/open-sans/OpenSans-Italic-webfont.eot");
+  src: url("/assets/font/open-sans/OpenSans-Italic-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/assets/font/open-sans/OpenSans-Italic-webfont.woff") format("woff"),
+       url("/assets/font/open-sans/OpenSans-Italic-webfont.ttf") format("truetype"),
+       url("/assets/font/open-sans/OpenSans-Italic-webfont.svg#OpenSansItalic") format("svg");
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/assets/font/open-sans/OpenSans-Bold-webfont.eot");
+  src: url("/assets/font/open-sans/OpenSans-Bold-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/assets/font/open-sans/OpenSans-Bold-webfont.woff") format("woff"),
+       url("/assets/font/open-sans/OpenSans-Bold-webfont.ttf") format("truetype"),
+       url("/assets/font/open-sans/OpenSans-Bold-webfont.svg#OpenSansRegular") format("svg")
+  ;
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/assets/font/open-sans/OpenSans-BoldItalic-webfont.eot");
+  src: url("/assets/font/open-sans/OpenSans-BoldItalic-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/assets/font/open-sans/OpenSans-BoldItalic-webfont.woff") format("woff"),
+       url("/assets/font/open-sans/OpenSans-BoldItalic-webfont.ttf") format("truetype"),
+       url("/assets/font/open-sans/OpenSans-BoldItalic-webfont.svg#OpenSansItalic") format("svg");
+  font-weight: 700;
+  font-style: italic;
+}
+
 /*
   Works for all modern browsers, much more natural to work with, support:
 
@@ -134,6 +202,7 @@ table {
   -webkit-font-smoothing: antialiased;
   background-color: #fff;
   color: #656565;
+  text-rendering: geometricPrecision;
 /*
   About the MovLib font stack
   Our main goal is it to ensure users of Microsoft and Apple computers have the best viewing pleasure. Why not Linux you
@@ -157,12 +226,12 @@ table {
   - http://www.markboulton.co.uk/journal/five-simple-steps-to-better-typography-part-4
   - http://www.smashingmagazine.com/2013/05/17/typographic-design-patterns-practices-case-study-2013/
 */
-  font: 400 14px/1.46 "open sans light", "open sans", arial, meiryo, "microsoft yahei", "ms yahei", yahei, sans-serif;
+  font: 500 14px/1.46 "Open Sans", Arial, Meiryo, "Microsoft Yahei", "MS Yahei", Yahei, sans-serif;
 }
 
 /* Ensure Chinese strings are displayed with the correct font choice. */
 [lang="zh"] {
-  font-family: "open sans light", "open sans", arial, "microsoft yahei", "ms yahei", yahei, meiryo, sans-serif;
+  font-family: "Open Sans", Arial, "Microsoft Yahei", "MS Yahei", Yahei, Meiryo, sans-serif;
 }
 
 html,
@@ -177,7 +246,7 @@ kbd,
 samp,
 tt,
 var {
-  font: normal 12px/1 consolas, monospace, serif;
+  font: normal 12px/1 Consolas, monospace, serif;
 }
 
 ::-moz-selection {
@@ -191,13 +260,17 @@ var {
 }
 
 a {
+  -webkit-transition: 0.4s ease-out;
+     -moz-transition: 0.4s ease-out;
+       -o-transition: 0.4s ease-out;
+          transition: 0.4s ease-out;
+  -webkit-transition-property: color, border-color;
+     -moz-transition-property: color, border-color;
+       -o-transition-property: color, border-color;
+          transition-property: color, border-color;
   border-bottom: 1px solid transparent;
   color: #09c;
   text-decoration: none;
-  -webkit-transition: color, border-color 0.4s ease-out;
-     -moz-transition: color, border-color 0.4s ease-out;
-       -o-transition: color, border-color 0.4s ease-out;
-          transition: color, border-color 0.4s ease-out;
 }
 
 a:hover,
@@ -242,6 +315,7 @@ h4,
 h5,
 h6 {
   font-weight: 300;
+  text-rendering: optimizeLegibility;
 }
 
 h1,
@@ -380,10 +454,14 @@ input {
   -webkit-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
      -moz-box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
           box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
-  -webkit-transition: border 0.2s linear, box-shadow 0.2s linear;
-     -moz-transition: border 0.2s linear, box-shadow 0.2s linear;
-       -o-transition: border 0.2s linear, box-shadow 0.2s linear;
-          transition: border 0.2s linear, box-shadow 0.2s linear;
+  -webkit-transition: 0.2s linear;
+     -moz-transition: 0.2s linear;
+       -o-transition: 0.2s linear;
+          transition: 0.2s linear;
+  -webkit-transition-property: border, box-shadow;
+     -moz-transition-property: border, box-shadow;
+       -o-transition-property: border, box-shadow;
+          transition-property: border, box-shadow;
   border: 1px solid #ccc;
   display: inline-block;
   vertical-align: middle;

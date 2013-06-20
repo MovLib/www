@@ -30,7 +30,7 @@
   padding: 3px;
   background: #d8d8d8;
   border-radius: 3px;
-  font: 12px/18px consolas, monospace;
+  font: 12px/18px Consolas, monospace;
 }
 
 .stacktrace__title {
@@ -42,7 +42,7 @@
   background-image:         linear-gradient(#fafafa, #eaeaea);
   border-bottom: 1px solid #d8d8d8;
   color: #555;
-  font-family: consolas, monospace;
+  font-family: Consolas, monospace;
   line-height: 25px;
   min-height: 33px;
   padding: 5px 10px;
@@ -55,7 +55,7 @@
   width: 100%;
   background: #fff;
   border-collapse: collapse;
-  font: 12px/24px consolas, monospace;
+  font: 12px/24px Consolas, monospace;
   color: #000;
 }
 

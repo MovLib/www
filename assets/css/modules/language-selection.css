@@ -29,22 +29,26 @@
   min-height: 50%;
 }
 
-.languageselection-body h1 {
-  background: no-repeat url(/assets/img/logo/256.png);
-  font-size: 80px;
-  font-weight: 600;
-  height: 256px;
-  line-height: 1.1;
-  margin: 10% 0 0;
-  padding: 65px 0 0 288px;
+#logo-big {
+  font-size: 85.6px;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0 auto;
+  padding: 10% 0 0;
+  width: 512px;
 }
 
-.languageselection-body small {
+#logo-big span {
   display: block;
-  font-size: 28.5px;
+  margin-left: 205px;
+  padding-top: 28px;
+}
+
+#logo-big small {
+  font-size: 32.4px;
   font-weight: 300;
-  line-height: 1;
-  text-indent: 8px;
+  margin: 0;
+  padding: 0;
 }
 
 #nav-languageselection {
