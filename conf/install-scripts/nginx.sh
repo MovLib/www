@@ -37,6 +37,7 @@ fi
 aptitude update && aptitude -y install libatomic-ops-dev
 
 NAME="nginx-${VERSION}"
+rm -rf ${SD}${NAME}
 source ${ID}wget.sh "http://nginx.org/download/" ${NAME} ".tar.gz"
 
 # Install OpenSSL

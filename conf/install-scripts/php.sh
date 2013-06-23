@@ -31,12 +31,12 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="5.5.0RC3"
+  VERSION="5.5.0"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
 NAME="php-${VERSION}"
-source ${ID}wget.sh "http://downloads.php.net/dsp/" ${NAME} ".tar.gz"
+source ${ID}wget.sh "http://us1.php.net/distributions/" ${NAME} ".tar.gz"
 ./configure \
   CFLAGS="-O3 -m64" \
   CXXFLAGS="-O3 -m64" \
