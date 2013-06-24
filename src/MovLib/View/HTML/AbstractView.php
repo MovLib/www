@@ -114,7 +114,6 @@ abstract class AbstractView {
     "layout/grid.css",
     "layout/generic.css",
     "layout/header.css",
-    "layout/breadcrumb.css",
     "layout/content.css",
     "layout/nav-secondary.css",
     "layout/footer.css",
@@ -328,7 +327,7 @@ abstract class AbstractView {
     $d = HTTP::SERVER_NAME_STATIC;
     $stylesheets = "";
     for ($i = 0; $i < $c; ++$i) {
-      $stylesheets .= "<link rel='stylesheet' href='https://{$d}/assets/css/{$this->stylesheets[$i]}'>";
+      $stylesheets .= "<link rel='stylesheet' href='https://{$d}/css/{$this->stylesheets[$i]}'>";
     }
     $bodyClass = "{$this->getShortName()}-body";
     if (isset($user) && $user->isLoggedIn === true) {
@@ -342,13 +341,13 @@ abstract class AbstractView {
       "<!doctype html><html id='nojs' lang='{$i18n->languageCode}' dir='{$i18n->direction}'><head>" .
         "<title>{$this->getHeadTitle()}</title>" .
         $stylesheets .
-        "<link rel='icon' type='image/svg+xml' href='/assets/img/logo/vector.svg'>" .
-        "<link rel='icon' type='image/png' sizes='256x256' href='/assets/img/logo/256.png'>" .
-        "<link rel='icon' type='image/png' sizes='128x128' href='/assets/img/logo/128.png'>" .
-        "<link rel='icon' type='image/png' sizes='64x64' href='/assets/img/logo/64.png'>" .
-        "<link rel='icon' type='image/png' sizes='32x32' href='/assets/img/logo/32.png'>" .
-        "<link rel='icon' type='image/png' sizes='24x24' href='/assets/img/logo/24.png'>" .
-        "<link rel='icon' type='image/png' sizes='16x16' href='/assets/img/logo/16.png'>" .
+        "<link rel='icon' type='image/svg+xml' href='/img/logo/vector.svg'>" .
+        "<link rel='icon' type='image/png' sizes='256x256' href='/img/logo/256.png'>" .
+        "<link rel='icon' type='image/png' sizes='128x128' href='/img/logo/128.png'>" .
+        "<link rel='icon' type='image/png' sizes='64x64' href='/img/logo/64.png'>" .
+        "<link rel='icon' type='image/png' sizes='32x32' href='/img/logo/32.png'>" .
+        "<link rel='icon' type='image/png' sizes='24x24' href='/img/logo/24.png'>" .
+        "<link rel='icon' type='image/png' sizes='16x16' href='/img/logo/16.png'>" .
         // @todo Add opensearch tag (rel="search").
         "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
       "</head><body class='{$bodyClass}' role='{$ariaRole}'>";
@@ -368,67 +367,54 @@ abstract class AbstractView {
     global $i18n, $user;
     if (isset($user) && $user->isLoggedIn === true) {
       $points = [
-        [ $i18n->r("/user"), "<i class='icon icon--user'></i>", [
-          "class" => "button button--success",
-          "title" => $i18n->t("Go to your personal user page."),
-        ]],
-        [ $i18n->r("/user/watchlist"), "<i class='icon icon--signal'></i>", [
-          "class" => "button button--primary",
-          "title" => $i18n->t("Have a look at the latest changes of the content your are watching."),
-        ]],
-        [ $i18n->r("/user/logout"), "<i class='icon icon--logout'></i>", [
-          "class" => "button button--danger",
-          "title" => $i18n->t("Click here to log out from your current session."),
-        ]],
+        [ $i18n->r("/user"), $i18n->t("Profile"), [ "title" => $i18n->t("Go to your personal user page.") ]],
+        [ $i18n->r("/user/watchlist"), $i18n->t("Watchlist"), [ "title" => $i18n->t("Have a look at the latest changes of the content your are watching.") ]],
+        [ $i18n->r("/user/logout"), $i18n->t("Logout"), [ "title" => $i18n->t("Click here to log out from your current session.") ]],
       ];
     }
     else {
       $points = [
-        [ $i18n->r("/user/register"), $i18n->t("register"), [
-          "class" => "button button--success menuitem--register",
-          "title" => $i18n->t("Click here to create a new account."),
-        ]],
-        [ $i18n->r("/user/login"), "<i class='icon icon--login'></i>", [
-          "class" => "button button--primary",
-          "title" => $i18n->t("Click here to log in to your account."),
-        ]],
+        [ $i18n->r("/user/register"), $i18n->t("Register"), [ "title" => $i18n->t("Click here to create a new account.") ]],
+        [ $i18n->r("/user/login"), $i18n->t("Login"), [ "title" => $i18n->t("Click here to log in to your account.") ]],
       ];
     }
     return
       "<a class='visuallyhidden' href='#content'>{$i18n->t("Skip to content")}</a>" .
       "<header id='header'>" .
-        "<div id='nav-full-container'>" .
-          "<div id='nav-full'>" .
+        "<div id='nav-mega-container'>" .
+          "<div id='nav-mega'>" .
             "<div class='container'>" .
+              $this->getBreadcrumb() .
               "<div class='row'>" .
-                "<div class='span span--3'>{$this->getNavigation($i18n->t("Movies"), "movies", [], " ", [], false)}</div>" .
+                "<div class='span span--3'>{$this->getNavigation($i18n->t("Movies"), "movies", [
+                  [ $i18n->r("/movies"), $i18n->t("Latest movie entries"), [ "title" => $i18n->t("Have a look at the latest movie entries at MovLib.") ]],
+                  [ $i18n->r("/movies/new"), $i18n->t("Create new movie"), [ "title" => $i18n->t("Add a new movie to the MovLib library.") ]],
+                ], " ", [], false)}</div>" .
                 "<div class='span span--3'>{$this->getNavigation($i18n->t("Series"), "series", [], " ", [], false)}</div>" .
                 "<div class='span span--3'>{$this->getNavigation($i18n->t("Persons"), "persons", [], " ", [], false)}</div>" .
                 "<div class='span span--3'>{$this->getNavigation($i18n->t("Other"), "other", [], " ", [], false)}</div>" .
               "</div>" . // .row
             "</div>" . // .container
-          "</div>" . // #nav-full
+          "</div>" . // #nav-mega
           // No title and nothing else for this element. Handicapped people are not interested in an element that is
           // only here for presentational purposes.
-          "<div class='container'><span id='nav-full-switch'><span class='button button--inverse'><i class='icon icon--menu'></i></span></span></div>" .
-        "</div>" . // #nav-full-container
+          "<div class='container'><span id='nav-mega-switch'><span class='button button--inverse'><i class='icon icon--menu'></i></span></span></div>" .
+        "</div>" . // #nav-mega-container
         "<div class='container'>" .
           "<div class='row'>" .
             "<a class='span' href='{$i18n->r("/")}' id='header__logo' title='{$i18n->t("Take me back to the home page.")}'>" .
               "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='42' id='logo' src='" . FileSystem::asset("img/logo/vector.svg") . "' width='42'> MovLib" .
             "</a>" .
-            "<form accept-charset='utf-8' action='{$i18n->t("/search")}' class='header__search-span span' id='header__search-form' method='post' role='search'>" .
-              "<div id='header__search-wrapper'>" .
-                "<label class='visuallyhidden' for='header__search'>{$i18n->t("Search the MovLib database.")}</label>" .
-                "<input accesskey='f' id='header__search-input' name='searchterm' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t(
-                  "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
-                )}' type='search'>" .
-                "<button id='header__search-button' title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
-                  "<i class='icon icon--search'></i>" .
-                "</button>" .
-              "</div>" . // #header__search-wrapper
-            "</form>" .
             $this->getNavigation($i18n->t("Main Navigation"), "main", $points, " ") .
+            "<form accept-charset='utf-8' action='{$i18n->t("/search")}' class='span' id='header__search-form' method='post' role='search'>" .
+              "<label class='visuallyhidden' for='header__search-input'>{$i18n->t("Search the MovLib database.")}</label>" .
+              "<input accesskey='f' id='header__search-input' name='searchterm' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t(
+                "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
+              )}' type='search'>" .
+              "<button id='header__search-button' title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
+                "<i class='icon icon--search'></i>" .
+              "</button>" .
+            "</form>" .
           "</div>" . // .row
         "</div>" . // .container
       "</header>"
@@ -564,7 +550,7 @@ abstract class AbstractView {
       }
     }
     $points[] = [ $_SERVER["REQUEST_URI"], $this->title ];
-    return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, " › ", [ "class" => "container" ])}</div>";
+    return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, " › ", [ "class" => "container" ], false)}</div>";
   }
 
   /**
@@ -579,35 +565,8 @@ abstract class AbstractView {
     global $i18n;
     return
       "<footer id='footer'>" .
-        "<div id='footer-links' class='container'>" .
-          "<div id='footer-rows' class='row'>" .
-            "<div class='span span--3'>" .
-              "<h3>MovLib</h3>" .
-              "<ul class='no-list'>" .
-                "<li class='item-first'>{$this->a($i18n->r("/about"), $i18n->t("About"), [ "title" => $i18n->t("Find out more about us.") ])}</li>" .
-                "<li>{$this->a($i18n->r("/blog"), $i18n->t("Blog"), [ "title" => $i18n->t("Stay up to date about the latest developments.") ])}</li>" .
-                "<li>{$this->a($i18n->r("/contact"), $i18n->t("Contact"), [ "title" => $i18n->t("Feedback is always welcome, no matter if positive or negative.") ])}</li>" .
-                "<li>{$this->a($i18n->r("/resources"), $i18n->t("Logos and Badges"), [ "title" => $i18n->t("If you want to create something awesome.") ])}</li>" .
-                "<li class='item-last'>{$this->a($i18n->r("/legal"), $i18n->t("Legal"), [ "title" => $i18n->t("Collection of the various legal terms and conditions.") ])}</li>" .
-              "</ul>" .
-            "</div>" .
-            "<div class='span span--3'>" .
-              "<h3>{$i18n->t("Join in")}</h3>" .
-              "<ul class='no-list'>" .
-                "<li class='item-first item-last'>{$this->a($i18n->r("/user/register"), $i18n->t("Register"), [ "title" => $i18n->t("Click here to create a new account.") ])}</li>" .
-              "</ul>" .
-            "</div>" .
-            "<div class='span span--3'></div>" .
-            "<div class='span span--3'>" .
-              "<h3>{$i18n->t("Get help")}</h3>" .
-              "<ul class='no-list'>" .
-                "<li class='item-first item-last'>{$this->a($i18n->r("/help"), $i18n->t("Help"), [ "title" => $i18n->t("Click here to find our help articles.") ])}</li>" .
-              "</ul>" .
-            "</div>" .
-          "</div>" .
-        "</div>" .
-        "<div id='footer-copyright'>" .
-          "<div class='container'>" .
+        "<div class='container'>" .
+          "<div class='row footer-row-copyright'>" .
             "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
               "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
               [ "<a href='http://creativecommons.org/publicdomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
@@ -620,6 +579,14 @@ abstract class AbstractView {
               [ $this->a($i18n->r("/terms-of-use"), $i18n->t("Terms of Use")), $this->a($i18n->r("/privacy-policy"), $i18n->t("Privacy Policy")) ],
               "<tt>{0}</tt> is <em>Terms of Use</em> and <tt>{1}</tt> is <em>Privacy Policy</em>."
             ) .
+          "</div>" .
+          "<div class='row footer-row-logos'>" .
+            "<a target='_blank' href='http://www.fh-salzburg.ac.at/'>" .
+              "<img src='" . FileSystem::asset("img/footer/fachhochschule-salzburg.svg") . "' alt='Fachhochschule Salzburg' height='41' width='64'>" .
+            "</a>" .
+            "<a target='_blank' href='https://github.com/MovLib'>" .
+              "<img src='" . FileSystem::asset("img/footer/github.svg") . "' alt='GitHub' height='17' width='64'>" .
+            "</a>" .
           "</div>" .
         "</div>" .
       "</footer>"
@@ -704,7 +671,6 @@ abstract class AbstractView {
     return
       $this->getHead() .
       $this->getHeader() .
-      $this->getBreadcrumb() .
       $this->getRenderedContent() .
       $this->getFooter()
     ;
