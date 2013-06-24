@@ -63,7 +63,7 @@ class LanguageSelectionView extends AbstractView {
       "<div id='content' class='{$this->getShortName()}-content' role='main'>" .
         "<div class='container'>" .
           "<h1 id='logo-big' class='clear-fix'>" .
-            "<img class='pull-left' src='" . FileSystem::asset("img/logo/vector.svg") . "' alt='{$i18n->t("MovLib, the free movie library.")}' width='192' height='192'>" .
+            "<img src='" . FileSystem::asset("img/logo/vector.svg") . "' alt='{$i18n->t("MovLib, the free movie library.")}' width='192' height='192'>" .
             "<span>{$i18n->t("MovLib <small>the <em>free</em> movie library.</small>")}</span>" .
           "</h1>" .
           "<p>{$i18n->t("Please select your preferred language from the list below.")}</p>" .
