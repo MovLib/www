@@ -148,13 +148,14 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.' ,
   `mail` VARCHAR(254) NOT NULL COMMENT 'The user’s unique email address.' ,
   `pass` TINYBLOB NOT NULL COMMENT 'The user’s unique password (hashed).' ,
-  `created` TIMESTAMP NOT NULL COMMENT 'Timestamp for when user was created.' ,
-  `access` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for previous time user accessed the site.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'Timestamp for user’s creation datetime.' ,
+  `access` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.' ,
   `login` TIMESTAMP NOT NULL COMMENT 'Timestamp for user’s last login.' ,
   `private` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.' ,
-  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this account was deleted (or blocked), default is TRUE (1).' ,
-  `timezone` TINYTEXT NOT NULL COMMENT 'User’s time zone: http://php.net/manual/en/timezones.php' ,
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE if this account was deleted or blocked, default is FALSE.' ,
+  `timezone` TINYTEXT NOT NULL COMMENT 'User’s timezone: http://php.net/manual/en/timezones.php' ,
   `init` VARCHAR(254) NOT NULL COMMENT 'Email address used for initial account creation.' ,
+  `edits` BIGINT NOT NULL DEFAULT 0 COMMENT 'The user’s edit counter.' ,
   `dyn_profile` BLOB NOT NULL COMMENT 'The user’s profile text (translatable).' ,
   `country_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.' ,
   `avatar_ext` VARCHAR(5) NULL ,
@@ -883,6 +884,28 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`series_styles` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`sessions`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`sessions` (
+  `session_id` BINARY(128) NOT NULL ,
+  `user_id` BIGINT UNSIGNED NOT NULL ,
+  `user_agent` TINYBLOB NOT NULL ,
+  `ip_address` BINARY(16) NOT NULL ,
+  `csrf_token` BINARY(128) NOT NULL ,
+  `ttl` TIMESTAMP NOT NULL ,
+  PRIMARY KEY (`session_id`, `user_id`) ,
+  INDEX `sessions_users` (`user_id` ASC) ,
+  INDEX `sessions` (`session_id` ASC) ,
+  CONSTRAINT `fk_sessions_users`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
 USE `movlib` ;
