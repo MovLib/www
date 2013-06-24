@@ -156,6 +156,21 @@ abstract class AbstractFormView extends AbstractView {
    *   The input element ready for print.
    */
   protected function input($name, $attributes = [], $tag = "input", $content = "") {
+    $ariaAttributes = [ "hidden", "required", "readonly" ];
+    for ($i = 0; $i < 3; ++$i) {
+      if (isset($attributes[$ariaAttributes[$i]])) {
+        $attributes["aria-{$ariaAttributes[$i]}"] = "true";
+      }
+    }
+    if (isset($this->formInvalid[$name])) {
+      $attributes["aria-invalid"] = "true";
+    }
+    if (isset($this->formDisabled[$name])) {
+      $attributes["aria-disabled"] = "true";
+      $attributes[] = "disabled";
+    }
+    $attributes["id"] = $attributes["name"] = $name;
+    $attributes["tabindex"] = $this->getTabindex();
     if (!isset($attributes["type"])) {
       $attributes["role"] = "textbox";
       if (empty($attributes["value"])) {
@@ -185,23 +200,12 @@ abstract class AbstractFormView extends AbstractView {
             $attributes["value"] = $this->inputValues[$name];
           }
           break;
+
+        case "radio":
+          unset($attributes["id"]);
+          break;
       }
     }
-    $ariaAttributes = [ "hidden", "required", "readonly" ];
-    for ($i = 0; $i < 3; ++$i) {
-      if (isset($attributes[$ariaAttributes[$i]])) {
-        $attributes["aria-{$ariaAttributes[$i]}"] = "true";
-      }
-    }
-    if (isset($this->formInvalid[$name])) {
-      $attributes["aria-invalid"] = "true";
-    }
-    if (isset($this->formDisabled[$name])) {
-      $attributes["aria-disabled"] = "true";
-      $attributes[] = "disabled";
-    }
-    $attributes["id"] = $attributes["name"] = $name;
-    $attributes["tabindex"] = $this->getTabindex();
     switch ($tag) {
       case "button":
       case "select":
@@ -215,26 +219,6 @@ abstract class AbstractFormView extends AbstractView {
       default:
         return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}";
     }
-  }
-
-  /**
-   * Get label, input and datalist element.
-   *
-   * @param string $label
-   *   The text that should appear in the label.
-   * @param array $input
-   *   {@see \MovLib\View\HTML\AbstractFormView::input()}
-   * @param array $datalist
-   *   {@see \MovLib\View\HTML\AbstractFormView::datalist()}
-   * @return string
-   *   The label, input and datalist element ready for print.
-   */
-  protected function labelInputDatalist($label, $input, $datalist) {
-    $id = $input[0];
-    $input[1]["list"] = $datalist[0];
-    $input = call_user_func_array([ $this, "input" ], $input);
-    $datalist = call_user_func_array([ $this, "datalist" ], $datalist);
-    return "<label for'{$id}'>{$label}</label>{$input}{$datalist}";
   }
 
   /**
@@ -306,6 +290,18 @@ abstract class AbstractFormView extends AbstractView {
    */
   protected function submit($text, $title = "") {
     return "<button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$title}' type='submit'>{$text}</button>";
+  }
+
+  /**
+   * Get mark-up for help text on a default form element.
+   *
+   * @param string $text
+   *   The already translated help text.
+   * @return string
+   *   The text wrapped in the mark-up globally used for help elements.
+   */
+  protected function help($text) {
+    return "<span class='form-help'><i class='icon icon--help-circled'></i><small class='form-help-text'>{$text}</small></span>";
   }
 
 }
