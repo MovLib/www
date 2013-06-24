@@ -16,7 +16,7 @@
 
 /**
  * We are using a custom font created with Fontello that only contains the icons we really use. Please have a look at
- * the LICENSE.txt file in the assets/font directory for more information.
+ * the LICENSE.txt file in the font directory for more information.
  *
  * @author Daniel Bruce
  * @copyright © 2013–present, Daniel Bruce
@@ -33,11 +33,11 @@
 
 @font-face {
   font-family: MovLib;
-  src: url("/assets/font/movlib/movlib.eot?39909376");
-  src: url("/assets/font/movlib/movlib.eot?39909376#iefix") format("embedded-opentype"),
-       url("/assets/font/movlib/movlib.woff?39909376") format("woff"),
-       url("/assets/font/movlib/movlib.ttf?39909376") format("truetype"),
-       url("/assets/font/movlib/movlib.svg?39909376#movlib") format("svg")
+  src: url("/font/movlib/movlib.eot?31453955");
+  src: url("/font/movlib/movlib.eot?31453955#iefix") format("embedded-opentype"),
+       url("/font/movlib/movlib.woff?31453955") format("woff"),
+       url("/font/movlib/movlib.ttf?31453955") format("truetype"),
+       url("/font/movlib/movlib.svg?31453955#movlib") format("svg")
   ;
   font-weight: 500;
   font-style: normal;
@@ -62,10 +62,9 @@
 .icon--alert:before{content:"\e807"}
 .icon--cc-zero:before{content:"\e803"}
 .icon--cc:before{content:"\e802"}
+.icon--help-circled:before{content:"\e80a"}
 .icon--home:before{content:"\e808"}
 .icon--lock:before{content:"\e806"}
-.icon--login:before{content:"\e80b"}
-.icon--logout:before{content:"\e80a"}
 .icon--mail:before{content:"\e805"}
 .icon--menu:before{content:"\e809"}
 .icon--search:before{content:"\e800"}

@@ -28,6 +28,12 @@
       "src": "entypo"
     },
     {
+      "uid": "de9a631a7d18106aea1c89ba51b1990a",
+      "css": "help-circled",
+      "code": 59402,
+      "src": "entypo"
+    },
+    {
       "uid": "513ac180ff85bd275f2b736720cbbf5e",
       "css": "home",
       "code": 59400,
@@ -43,18 +49,6 @@
       "uid": "39a5a0d7ce8342d149373b2ce219503a",
       "css": "alert",
       "code": 59399,
-      "src": "entypo"
-    },
-    {
-      "uid": "a204f0fa972408eaae5a363c444991b2",
-      "css": "login",
-      "code": 59403,
-      "src": "entypo"
-    },
-    {
-      "uid": "2d76f2c8d13be40694ecadfea7fb83c3",
-      "css": "logout",
-      "code": 59402,
       "src": "entypo"
     },
     {
