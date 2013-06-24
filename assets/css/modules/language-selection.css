@@ -43,6 +43,10 @@
   width: 512px;
 }
 
+#logo-big img {
+  float: left;
+}
+
 #logo-big span {
   display: block;
   margin-left: 205px;

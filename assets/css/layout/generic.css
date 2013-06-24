@@ -25,18 +25,19 @@
  * @since 0.0.1-dev
  */
 
-/* Generic classes -------------------------------------------------------------------------------------------------- */
+
+/* ==== FORMS ======================================================================================================= */
+
 
 .checkbox,
 .radio {
   min-height: 20px;
-  padding-left: 20px;
 }
 
-.checkbox input[type="checkbox"],
-.radio input[type="radio"] {
-  float: left;
-  margin-left: -20px;
+.checkbox label,
+.radio label {
+  display: inline;
+  margin-right: 25px;
 }
 
 .input--block-level {
@@ -46,6 +47,58 @@
   padding: 7px 9px;
   width: 100%;
 }
+
+.form-help {
+  float: right;
+  position: relative;
+}
+
+.form-help-text:before,
+.form-help-text {
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: 0.3s ease;
+  visibility: hidden;
+  z-index: 999999999; /* Even go over our sticky header! */
+}
+
+.form-help-text:before {
+  border: 6px solid transparent;
+  border-top-color: #252525;
+  content: "";
+  right: 34px;
+  bottom: -12px;
+}
+
+.form-help-text {
+  background-color: #252525;
+  bottom: 50%;
+  box-shadow: 0 4px 8px #656565;
+  color: #fff;
+  padding: 8px 10px;
+  right: -32px;
+  text-shadow: 0 -1px 0 #000;
+  width: 320px;
+}
+
+.form-help:hover .form-help-text,
+.form-help:focus .form-help-text {
+  bottom: 150%;
+}
+
+.form-help:hover .form-help-text,
+.form-help:focus .form-help-text,
+.form-help:hover .form-help-text:before,
+.form-help:focus .form-help-text:before {
+  opacity: 0.8;
+  visibility: visible;
+}
+
+
+/* ==== PAGE LAYOUT ================================================================================================= */
+
 
 .text-hide {
   background-color: transparent;
@@ -73,50 +126,9 @@
   visibility: hidden;
 }
 
-.lead {
-  font-size: 21px;
-  line-height: 26.25px;
-}
-
-.hero {
-  font-size: 38.5px;
-  font-weight: 700;
-  line-height: 77px;
-}
-
-.lead,
-.lead h1,
-.lead h2,
-.lead h3 {
-  color: #fff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
-}
-
-.menuitem--delete {
-  color: #c00;
-}
-
-.menuitem:active,
-.menuitem.active {
-  color: #555;
-  border-bottom-color: transparent;
-}
-
 .no-list {
   list-style: none;
   padding-left: 0;
-}
-
-.pull-right {
-  float: right;
-}
-
-.pull-left {
-  float: left;
-}
-
-.prettyprint {
-  margin-bottom: 20px;
 }
 
 .visuallyhidden {
@@ -144,4 +156,31 @@
 
 .well--small {
   padding: 9px;
+}
+
+
+/* ==== TYPOGRAPHY ================================================================================================== */
+
+
+.lead {
+  font-size: 21px;
+  line-height: 26.25px;
+}
+
+.hero {
+  font-size: 38.5px;
+  font-weight: 700;
+  line-height: 77px;
+}
+
+.lead,
+.lead h1,
+.lead h2,
+.lead h3 {
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+}
+
+.menuitem--delete {
+  color: #c00;
 }

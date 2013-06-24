@@ -25,6 +25,10 @@
  * @since 0.0.1-dev
  */
 
+
+/* ==== The LIST ==================================================================================================== */
+
+
 #nav-secondary .no-list {
   margin: 0;
   overflow: hidden;
@@ -43,6 +47,10 @@
   width: 100%;
   z-index: 1;
 }
+
+
+/* ==== The MENUITEMS =============================================================================================== */
+
 
 #nav-secondary .menuitem:before {
   background-color: #e5e5e5;
@@ -92,6 +100,10 @@
   margin-left: 5px;
 }
 
+
+/* ==== SPECIAL STYLES ============================================================================================== */
+
+
 #nav-secondary .menuitem--delete:focus:before,
 #nav-secondary .menuitem--delete:hover:before,
 #nav-secondary .menuitem--delete.active:before {
@@ -103,6 +115,10 @@
 #nav-secondary .menuitem--delete.active {
   color: #c00;
 }
+
+
+/* ==== The ICONS =================================================================================================== */
+
 
 #nav-secondary .menuitem--separator {
   margin-bottom: 30px;

@@ -510,11 +510,11 @@ class UserModel extends AbstractModel {
       if (session_start() === false) {
         throw new SessionException("Could not start session.");
       }
-      if (!empty($_SESSION["TTL"]) || $_SESSION["TTL"] < time()) {
+      if (!isset($_SESSION["TTL"]) || !empty($_SESSION["TTL"]) || $_SESSION["TTL"] < time()) {
         session_regenerate_id(true);
         $_SESSION["TTL"] = time() + ini_get("session.gc_maxlifetime");
       }
-      if (!empty($_SESSION["UID"])) {
+      if (isset($_SESSION["UID"]) && !empty($_SESSION["UID"])) {
         $this->csrfToken = isset($_SESSION["CSRF"]) ? $_SESSION["CSRF"] : Crypt::randomHash();
         $this->isLoggedIn = true;
         return $_SESSION["UID"];

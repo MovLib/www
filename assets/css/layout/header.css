@@ -25,9 +25,13 @@
  * @since 0.0.1-dev
  */
 
+
+/* ==== HEADER WRAPPER for ALL ====================================================================================== */
+
+
 #header {
   background-color: #fff;
-  border-bottom: 1px solid #595959;
+  border-bottom: 1px solid #252525;
   left: 0;
   position: fixed;
   right: 0;
@@ -37,7 +41,13 @@
 
 #header > .container {
   height: 50px;
+  overflow: hidden;
+  position: relative;
 }
+
+
+/* ==== LOGO ======================================================================================================== */
+
 
 #header__logo {
   border-bottom: 0;
@@ -66,21 +76,141 @@
   top: -4px;
 }
 
+
+/* ==== MAIN NAVIGATION ============================================================================================= */
+
+
+/*
+  Display as table to get rid of the spaces between the menuitems. We want those spaces because otherwise the words are
+  directly next to each other (e.g. "LoginWatchlist" instead of "Login Watchlist").
+*/
+#nav-main {
+  display: table;
+  height: 50px;
+  float: right;
+  margin: 0;
+  margin-right: 100px;
+  vertical-align: middle;
+}
+
+#nav-main .menuitem {
+  border-bottom-width: 5px;
+  color: #656565;
+  display: table-cell;
+  font-size: 12px;
+  height: 50px;
+  padding-top: 22px;
+  text-indent: 10px;
+  width: 100px;
+}
+
+#nav-main .menuitem:hover,
+#nav-main .menuitem:focus,
+#nav-main .menuitem:active,
+#nav-main .menuitem.active {
+  color: #09c;
+  border-bottom-color: #09c;
+}
+
+
+/* ==== MEGA NAVIGATION ============================================================================================= */
+
+
+#nav-mega-container .container {
+  position: relative;
+  z-index: 9999999;
+}
+
+#nav-mega {
+  background-color: #252525;
+  color: #fff;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.4s ease-in-out;
+}
+
+#nav-mega .container {
+  position: relative;
+}
+
+#nav-mega h2 {
+  color: #fff;
+}
+
+#nav-mega .menuitem {
+  display: block;
+}
+
+#nav-mega .menuitem.active {
+  color: #c7c7c7;
+  border-bottom-color: transparent;
+}
+
+#nav-mega > .container,
+#nav-mega-container:hover #nav-mega,
+#nav-mega-container:focus #nav-mega,
+#nav-mega-container:active #nav-mega {
+  height: 200px;
+}
+
+#nav-mega-switch {
+  display: table;
+  height: 50px;
+  width: 50px;
+  position: absolute;
+  right: 0;
+  bottom: -50px;
+}
+
+#nav-mega-switch .button {
+  display: table-cell;
+  vertical-align: middle;
+  font-size: 21.333333px;
+  cursor: pointer;
+}
+
+
+/* ==== BREADCRUMB ================================================================================================== */
+
+
+#breadcrumb,
+#nav-breadcrumb__title {
+  font-size: 12px;
+  margin: 1.39em 0;
+  padding: 0;
+}
+
+#nav-breadcrumb__title {
+  display: inline;
+  line-height: 1.46;
+}
+
+#nav-mega #breadcrumb {
+  bottom: 0;
+  position: absolute;
+}
+
+#nav-mega #breadcrumb .menuitem {
+  display: inline;
+}
+
+
+/* ==== SEARCH FORM ================================================================================================= */
+
+
 #header__search-form {
   overflow: hidden;
   margin: 0;
-  width: 560px;
+  position: absolute;
+  right: -610px;
+  top: 0;
+  transition: right 0.5s ease-in-out;
+  width: 710px;
 }
 
-#header__search-wrapper {
-  position: relative;
-  right: -510px; /* width \o #header__search-input */
-  transition: right 0.4s ease-in-out;
-}
-
-#header__search-form:hover #header__search-wrapper,
-#header__search-form:focus #header__search-wrapper,
-#header__search-form:active #header__search-wrapper {
+#header__search-form:hover,
+#header__search-form:focus,
+#header__search-form:active {
   right: 0;
 }
 
@@ -103,67 +233,5 @@
 
 #header__search-input {
   font-weight: 300;
-  width: 510px;
-}
-
-#nav-main {
-  display: table;
-  height: 50px;
-  margin: 0;
-  padding-right: 50px;
-  width: 200px;
-  vertical-align: middle;
-}
-
-#nav-main .menuitem {
-  display: table-cell;
-  font-size: 21.333333px;
-  font-weight: 300;
-  height: 50px;
-  text-align: center;
-  width: 50px;
-}
-
-#nav-main .menuitem--register {
-  font-size: 16px;
-  text-transform: uppercase;
-  width: 100px;
-}
-
-#nav-full-container .container {
-  position: relative;
-}
-
-#nav-full {
-  background-color: #252525;
-  color: #fff;
-  height: 0;
-  overflow: hidden;
-  transition: height 0.4s ease-in-out;
-}
-
-#nav-full h2 {
-  color: #fff;
-}
-
-#nav-full-container:hover #nav-full,
-#nav-full-container:focus #nav-full,
-#nav-full-container:active #nav-full {
-  height: 60px;
-}
-
-#nav-full-switch {
-  display: table;
-  height: 50px;
-  width: 50px;
-  position: absolute;
-  right: 0;
-  bottom: -50px;
-}
-
-#nav-full-switch .button {
-  display: table-cell;
-  vertical-align: middle;
-  font-size: 21.333333px;
-  cursor: pointer;
+  width: 660px;
 }

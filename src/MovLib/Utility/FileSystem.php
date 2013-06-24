@@ -43,7 +43,7 @@ class FileSystem {
    *   Absolute URI to the file.
    */
   public static function asset($path) {
-    return "https://" . HTTP::SERVER_NAME_STATIC . "/assets/{$path}";
+    return "https://" . HTTP::SERVER_NAME_STATIC . "/{$path}";
   }
 
   /**

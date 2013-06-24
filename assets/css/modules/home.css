@@ -30,7 +30,7 @@
  *       day.
  */
 #home-banner {
-  background: center no-repeat url(/assets/img/home/1920.jpg) #000;
+  background: center no-repeat url(/img/home/1920.jpg) #000;
   height: 200px;
   padding: 20px;
 }
@@ -39,4 +39,9 @@
 .span--home {
   margin-top: 40px;
   margin-bottom: 40px;
+  text-align: justify;
+}
+
+.span--home h2 {
+  text-align: center;
 }

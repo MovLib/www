@@ -126,17 +126,17 @@ class UserSettingsView extends AbstractFormView {
         "class"    => "input--block-level",
         "title"    => $i18n->t("Please enter your real name in this field."),
       ])}</p>" .
-      "<p><label for='gender'>{$i18n->t("Gender")}</label><span title='{$i18n->t("Please select your gender.")}'>" .
-        "{$this->input("gender", [ "type" => "radio", "value" => "0" ])}<label for='male'>{$i18n->t("Male")}</label>" .
-        "{$this->input("gender", [ "type" => "radio", "value" => "1" ])}<label for='female'>{$i18n->t("Female")}</label>" .
-        "{$this->input("gender", [ "type" => "radio", "value" => "" ])}<label for='unknown'>{$i18n->t("Unknown")}</label>" .
+      "<p><span class='label'>{$i18n->t("Gender")}</span><span class='radio' title='{$i18n->t("Please select your gender.")}'>" .
+        "<label>{$i18n->t("Male")}{$this->input("gender", [ "type" => "radio", "value" => "0" ])}</label>" .
+        "<label>{$i18n->t("Female")}{$this->input("gender", [ "type" => "radio", "value" => "1" ])}</label>" .
+        "<label>{$i18n->t("Unknown")}{$this->input("gender", [ "type" => "radio", "value" => "" ])}</label>" .
       "</span></p>" .
       "<p><label for='country'>{$i18n->t("Country")}</label>{$this->inputDatalist(
         [ "country", [ "class" => "input--block-level" ]],
         [ "countries", array_column($i18n->getCountries()["id"], "name")]
       )}</p>" .
       "<p><label for='timezone'>{$i18n->t("Time Zone")}</label>{$this->inputDatalist(
-        [ "timezone", [ "class" => "input--block-level", "value" => $user->timezone ]],
+        [ "timezone", [ "class" => "input--block-level", "placeholder" => "UTC", "value" => $user->timezone ]],
         [ "timezones", timezone_identifiers_list() ]
       )}</p>" .
       "<p><label for='profile'>{$i18n->t("About You")}</label>{$this->input("profile", [
@@ -150,12 +150,16 @@ class UserSettingsView extends AbstractFormView {
       ])}</p>" .
       // @todo Display help for formatting, type date works in nearly no browser! Or use multiple selects?
       "<p><label for='website'>{$i18n->t("Website")}</label>{$this->input("website", [
-        "class" => "input--block-level",
-        "type"  => "url",
+        "class"       => "input--block-level",
+        "placeholder" => "http://example.com/",
+        "type"        => "url",
       ])}</p>" .
-      "<p><label for='private'>{$i18n->t("Keep my data Private")}</label><small class='help pull-right'>{$i18n->t(
-        "Check the following box if you’d like to hide your private data on your profile page. Your data will only be used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data like gender and country scientiest around the world are enabled to research the human interests in movies more closely. Your real name will not be used for anything of course!"
-      )}</small>{$this->input("private", [ "type" => "checkbox" ])}</p>" .
+      "<p><label>{$i18n->t("Keep my data private!")}{$this->help($i18n->t(
+        "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
+        "used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data " .
+        "like gender and country scientiest around the world are enabled to research the human interests in movies more " .
+        "closely. Of course your real name won’t be used for anything!"
+      ))}{$this->input("private", [ "type" => "checkbox" ])}</label></p>" .
       "<p>{$this->submit($i18n->t("Update account settings"))}</p>"
     ;
   }
@@ -173,9 +177,12 @@ class UserSettingsView extends AbstractFormView {
   private function getMailTab() {
     global $i18n;
     return
-      "<p>{$i18n->t("MovLib takes your privacy seriously, that’s why your email address will never show up in public. In fact, it stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to the {0}notification settings{1}.", [
-        "<a href='{$i18n->r("/user/notification-settings")}'>", "</a>"
-      ])}</p>" .
+      "<p>{$i18n->t(
+        "MovLib takes your privacy seriously, that’s why your email address will never show up in public. In fact, it " .
+        "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to the " .
+        "{0}notification settings{1}.",
+        [ "<a href='{$i18n->r("/user/notification-settings")}'>", "</a>" ]
+      )}</p>" .
       "<hr>" .
       "<p><label for='current-mail'>{$i18n->t("Current email address")}</label>{$this->input("current-mail", [
         "autofocus",
@@ -214,15 +221,17 @@ class UserSettingsView extends AbstractFormView {
     $notice = "";
     if (!isset($this->formDisabled["pass"])) {
       $notice =
-        "<p>{$i18n->t("Choose a strong password which you can easily remember. To help you, we generated a password for you from the most frequent words in American English for you:")}</p>" .
+        "<p>{$i18n->t(
+          "Choose a strong password which you can easily remember. To help you, we generated a password for you from " .
+          "the most frequent words in American English for you:"
+        )}</p>" .
         "<p style='text-align:center'><code>" . Crypt::randomUserPassword() . "</code></p>" .
         "<hr>"
       ;
     }
     return
       $notice .
-      "<p><small>{$this->a($i18n->r("/user/reset-password"), $i18n->t("Forgotten your current password?"), [
-        "class" => "pull-right",
+      "<p><small class='form-help'>{$this->a($i18n->r("/user/reset-password"), $i18n->t("Forgotten your current password?"), [
         "title" => $i18n->t("Click this link if you forgot your password."),
       ])}</small><label for='current-password'>{$i18n->t("Current password")}</label>{$this->input("pass", [
         "autocomplete" => "off",
