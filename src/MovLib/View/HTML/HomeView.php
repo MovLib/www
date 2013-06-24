@@ -41,13 +41,16 @@ class HomeView extends AbstractView {
   }
 
   /**
-   * The home view has no breadcrumb.
+   * Home sweet home.
    *
    * @return string
    *   Empty string.
    */
   public function getBreadcrumb() {
-    return "";
+    global $i18n;
+    return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", [[
+      $i18n->r("/"), $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ]
+    ]], " › ", [ "class" => "container" ], false)}</div>";
   }
 
   /**
