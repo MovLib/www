@@ -189,4 +189,16 @@ abstract class AbstractPresenter {
     return $this;
   }
 
+  /**
+   * Exit the current script because the request method is not allowed.
+   *
+   * @param string $allowed
+   *   [Optional] Comma seperated list of allowed request methods, defaults to <code>GET</code>.
+   */
+  protected final function exitMethodNotAllowed($allowed = "GET") {
+    header("Allowed: {$allowed}");
+    http_response_code(405);
+    exit();
+  }
+
 }
