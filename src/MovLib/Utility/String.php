@@ -29,28 +29,6 @@ namespace MovLib\Utility;
 class String {
 
   /**
-   * Get string from user input.
-   *
-   * Always use this method to get a string that was submitted from a user via any form of submission. Basic
-   * sanitization is performed in the form that low ASCII characters are automaticall stripped from the input. This
-   * means that this method will remove any newline characters (<code>\n</code>) from the input. Empty strings are
-   * treated as errors.
-   *
-   * @param string $name
-   *   The value of the name attribute of the input element.
-   * @param int $type
-   *   One of the PHP <var>INPUT_*</var> constants. Defaults to <var>INPUT_POST</var>.
-   * @return string|boolean
-   *   The submitted string with the filter applied and not empty, if something is odd <tt>FALSE</tt> is returned.
-   */
-  public static function filterInput($name, $type = INPUT_POST) {
-    if (($string = filter_input($type, $name, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)) === false || empty($string)) {
-      return false;
-    }
-    return $string;
-  }
-
-  /**
    * Encodes special characters in a plain-text string for display as HTML.
    *
    * Also validates strings as UTF-8.

@@ -202,36 +202,4 @@ If it wasn’t you who requested a new password ignore this message.",
     }
   }
 
-  /**
-   * Validate the given mail.
-   *
-   * @param string $mail
-   *   The mail to validate.
-   * @return string|false
-   *   The mail if it is valid, otherwise <tt>FALSE</tt>.
-   */
-  public static function validate($mail) {
-    if (($mail = filter_var($mail, FILTER_VALIDATE_EMAIL)) === false || empty($mail)) {
-      return false;
-    }
-    return $mail;
-  }
-
-  /**
-   * Validate the mail from the given input.
-   *
-   * @param string $name
-   *   The value of the name attribute of the input element. Defaults to <em>mail</em>.
-   * @param int $type
-   *   One of the PHP <var>INPUT_*</var> constants. Defaults to <var>INPUT_POST</var>.
-   * @return string|false
-   *   The mail if it is valid, otherwise <tt>FALSE</tt>.
-   */
-  public static function validateInput($name = "mail", $type = INPUT_POST) {
-    if (($mail = filter_input($type, $name, FILTER_VALIDATE_EMAIL)) === false || empty($mail)) {
-      return false;
-    }
-    return $mail;
-  }
-
 }

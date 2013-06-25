@@ -24,8 +24,9 @@ use \MovLib\Presenter\AbstractPresenter;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMailer;
 use \MovLib\Utility\DelayedMethodCalls;
-use \MovLib\Utility\HTTP;
+use \MovLib\Utility\Network;
 use \MovLib\Utility\String;
+use \MovLib\Utility\Validation;
 use \MovLib\View\HTML\AbstractView;
 use \MovLib\View\HTML\AlertView;
 use \MovLib\View\HTML\User\UserLoginView;
@@ -81,7 +82,7 @@ class UserPresenter extends AbstractPresenter {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
+   * @global \MovLib\Model\SessionModel $user
    *   The global user model instance.
    * @return null|array
    *   Associative array containing error messages, if there are any. Otherwise <tt>NULL</tt>.
@@ -89,7 +90,8 @@ class UserPresenter extends AbstractPresenter {
   private function __constructLogin() {
     global $i18n, $user;
     if ($user->isLoggedIn === true) {
-      HTTP::redirect($i18n->r("/user"), 302);
+      Network::httpRedirect($i18n->r("/user"), 302);
+      return;
     }
     $this->view = new UserLoginView($this);
     // Ensure we are using the correct route (this method is called from other constructors in this presenter as well).
@@ -98,30 +100,32 @@ class UserPresenter extends AbstractPresenter {
     if ($_SERVER["REQUEST_METHOD"] === "GET") {
       return;
     }
-    // Sanitize and validate the submitted email address.
-    if (($mail = DelayedMailer::validateInput()) === false) {
-      $errors["mail"] = $i18n->t("The submitted email address is not valid.");
+    elseif ($_SERVER["REQUEST_METHOD"] === "POST") {
+      if (($mail = Validation::inputMail("mail")) === false) {
+        $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
+      }
+      // Try to create a user from the given mail.
+      try {
+        $userModel = new UserModel(UserModel::FROM_MAIL, $mail);
+        $userModel->validatePassword();
+      } catch (UserException $e) {
+        $errors["mail"] = $i18n->t("We either don’t know the submitted email address, or the password was wrong.");
+      }
+      // We're done if there are any errors.
+      if (isset($errors)) {
+        return $errors;
+      }
+      // Things look good, hello there!
+      $user->startSession($userModel);
+      $_SESSION["ALERTS"][] = [
+        $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$userModel->name}</b>" ]),
+        AbstractView::ALERT_SEVERITY_SUCCESS
+      ];
+      Network::httpRedirect($i18n->r("/user"), 302);
     }
-    // Try to create a user from the given mail.
-    try {
-      $user = new UserModel(UserModel::FROM_MAIL, $mail);
-    } catch (UserException $e) {
-      $errors["mail"] = $i18n->t("We either don’t know the submitted email address, or the password was wrong.");
+    else {
+      $this->exitMethodNotAllowed("GET, POST");
     }
-    // Validate the password and log the user in if it is valid.
-    if ($user->validatePassword() === false) {
-      $errors["pass"] = $i18n->t("We either don’t know the submitted email address, or the password was wrong.");
-    }
-    // We're done if there are any errors.
-    if (isset($errors)) {
-      return $errors;
-    }
-    // Things look good, hello there!
-    $_SESSION["ALERTS"][] = [
-      $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$user->name}</b>" ]),
-      AbstractView::ALERT_SEVERITY_SUCCESS
-    ];
-    HTTP::redirect($i18n->r("/user"), 302);
   }
 
   /**
@@ -129,21 +133,24 @@ class UserPresenter extends AbstractPresenter {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
    */
   private function __constructLogout() {
     global $i18n, $user;
-    if ($user->isLoggedIn === true) {
-      $user->sessionDestroy();
-      $this->__constructLogin();
-      $this->view->setAlert([
-        "title" => $i18n->t("You’ve been logged out successfully."),
-        "message" => $i18n->t("We hope to see you again soon.")
-      ], AbstractView::ALERT_SEVERITY_SUCCESS, true);
+    if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+      $this->exitMethodNotAllowed();
+    }
+    if ($user->isLoggedIn === false) {
+      Network::httpRedirect($i18n->r("/user/login", 302));
       return;
     }
-    HTTP::redirect($i18n->r("/user/login"), 302);
+    $user->destroySession();
+    $this->__constructLogin();
+    $this->view->setAlert([
+      "title"   => $i18n->t("You’ve been logged out successfully."),
+      "message" => $i18n->t("We hope to see you again soon."),
+    ], AbstractView::ALERT_SEVERITY_SUCCESS, true);
   }
 
   /**
@@ -151,19 +158,13 @@ class UserPresenter extends AbstractPresenter {
    */
   private function __constructProfile() {
     global $i18n;
-    // Let's pretend we didn't find the user if the input is invalid.
-    if (($name = String::filterInput("USER_NAME", INPUT_SERVER)) === false) {
-      $this->setPresentation("Error\\NotFound");
-      $this->view->setAlert("Input is invalid!", AbstractView::ALERT_SEVERITY_ERROR);
-      return;
+    if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+      $this->exitMethodNotAllowed();
     }
-    // Try to find the user in our database.
     try {
-      $this->profile = new UserModel(UserModel::FROM_NAME, $name);
+      $this->profile = new UserModel(UserModel::FROM_NAME, Validation::inputString("USER_NAME", INPUT_SERVER));
     } catch (UserException $e) {
       $this->setPresentation("Error\\NotFound");
-      $this->view->setAlert($e->getMessage(), AbstractView::ALERT_SEVERITY_ERROR);
-      $this->view->setAlert("<code>{$_SERVER["USER_NAME"]}</code>");
       return;
     }
     // If this user's account is disabled, tell the client about it and exit (no need to redirect).
@@ -177,7 +178,8 @@ class UserPresenter extends AbstractPresenter {
     // Check if the requested URI is a perfect match to what we want to have.
     $profileRoute = $i18n->r("/user/{0}", [ String::convertToRoute($this->profile->name) ]);
     if ($profileRoute !== $_SERVER["REQUEST_URI"]) {
-      HTTP::redirect($profileRoute);
+      Network::httpRedirect($profileRoute);
+      return;
     }
     $this->setPresentation("User\\UserProfile");
   }
@@ -187,61 +189,74 @@ class UserPresenter extends AbstractPresenter {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
+   * @global \MovLib\Model\SessionModel $user
    *   The global user model instance.
    * @return $this
    */
   private function __constructRegister() {
     global $i18n, $user;
+    // If the user visiting the registration page is already logged in, simply redirect to the home page.
     if ($user->isLoggedIn === true) {
-      HTTP::redirect("/", 302);
+      Network::httpRedirect("/", 302);
+      return;
     }
     if ($_SERVER["REQUEST_METHOD"] === "GET") {
+      // If a token is present, validate it, otherwise render the simple form.
       isset($_SERVER["TOKEN"])
         ? $this->activateOrResetPassword($i18n->r("/user/register"), $i18n->t("registration page"))
         : $this->setPresentation("User\\UserRegister")
       ;
       return;
     }
-    $this->view = new UserRegisterView($this);
-    if (($mail = DelayedMailer::validateInput()) === false) {
-      $errors["mail"] = $i18n->t("The submitted email address is not valid.");
+    elseif ($_SERVER["REQUEST_METHOD"] === "POST") {
+      $this->view = new UserRegisterView($this);
+      if (($mail = Validation::inputMail("mail")) === false) {
+        $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
+      }
+      if (($name = Validation::inputString("name")) === false) {
+        $errors["name"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("username") ]);
+      }
+      if (($error = Validation::username($name))) {
+        $errors["name"] = $error;
+      }
+      else {
+        // So far so good, we need a user model instance, because now we have to validate against the database.
+        $userModel = new UserModel();
+        if (($userModel->existsName($name)) === true) {
+          $errors["name"] = $i18n->t("The {0} {1} is already in use.", [ $i18n->t("username"), String::placeholder($name) ]);
+        }
+      }
+      if (isset($errors)) {
+        return $errors;
+      }
+      // Do not tell the user that we already have this mail, otherwise it would be possible for an attacker to find out
+      // which mails we have in our system. Instead we send a message to the user this mail belongs to.
+      if ($userModel->existsMail($mail) === true) {
+        DelayedMailer::stackMethod("stackActivationMailExists", [ $mail ]);
+      }
+      // If this is a valid new registration generate a unique activation link and insert the user's data into our
+      // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what to do.
+      else {
+        $params = [ Crypt::randomHash(), $name, $mail ];
+        DelayedMethodCalls::stack($userModel, "preRegister", $params);
+        DelayedMailer::stackMethod("stackActivationMail", $params);
+      }
+      // Tell the user that we've sent a mail with instructions, nothing more to do here, move along.
+      $this->view = new AlertView($this, $this->view->title);
+      $this->view->setAlert(
+        "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ])}</p>",
+        AbstractView::ALERT_SEVERITY_SUCCESS
+      );
+      $this->view->content =
+        "<div class='container'><small>{$i18n->t(
+          "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
+          [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
+        )}</small></div>"
+      ;
     }
-    if (($name = String::filterInput("name")) === false) {
-      $errors["name"] = $i18n->t("The submitted name is not valid.");
-    }
-    if (($error = UserModel::validateName($name))) {
-      $errors["name"] = $error;
-    }
-    elseif ($user->exists(UserModel::FROM_NAME, $name) === true) {
-      $errors["name"] = $i18n->t("The {0} {1} is already in use.", [ $i18n->t("username"), String::placeholder($name) ]);
-    }
-    if (isset($errors)) {
-      return $errors;
-    }
-    // Do not tell the user that we already have this mail, otherwise it would be possible for an attacker to find out
-    // which mails we have in our system. Instead we send a message to the user this mail belongs to.
-    if ($user->exists("mail", $mail) === true) {
-      DelayedMailer::stackMethod("stackActivationMailExists", [ $mail ]);
-    }
-    // If this is a valid new registration generate a unique activation link and insert the user's data into our
-    // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what to do.
     else {
-      $params = [ Crypt::randomHash(), $name, $mail ];
-      DelayedMethodCalls::stack($user, "preRegister", $params);
-      DelayedMailer::stackMethod("stackActivationMail", $params);
+      $this->exitMethodNotAllowed("GET, POST");
     }
-    $this->view = new AlertView($this, $this->view->title);
-    $this->view->setAlert(
-      "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ])}</p>",
-      AbstractView::ALERT_SEVERITY_SUCCESS
-    );
-    $this->view->content =
-      "<div class='container'><p class='text-center text-small'>{$i18n->t(
-        "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-        [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
-      )}</p></div>"
-    ;
   }
 
   /**
@@ -249,40 +264,46 @@ class UserPresenter extends AbstractPresenter {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
    * @return $this
    */
   private function __constructResetPassword() {
     global $i18n, $user;
-    $view = new UserResetPasswordView($this);
-    if (isset($_POST["submitted"])) {
-      $mail = filter_input(INPUT_POST, "mail", FILTER_SANITIZE_EMAIL);
-      if (($error = DelayedMailer::validate($mail))) {
-        $view->setAlert($error, AbstractView::ALERT_SEVERITY_ERROR, true);
-      }
-      if (!$error) {
-        if ($user->exists("mail", $mail) === true) {
-          $params = [ Crypt::randomHash(), $mail ];
-          DelayedMethodCalls::stack($user, "preResetPassword", $params);
-          DelayedMailer::stackMethod("stackPasswordReset", $params);
-        }
-        $view = new AlertView($this, $view->title);
-        $view->setAlert(
-          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ])}</p>",
-          AbstractView::ALERT_SEVERITY_SUCCESS
-        );
-        $view->content =
-          "<div class='container'><p class='text-center text-small'>{$i18n->t(
-            "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-            [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
-          )}</p></div>";
+    if ($_SERVER["REQUEST_METHOD"] === "GET") {
+      isset($_SERVER["TOKEN"])
+        ? $this->activateOrResetPassword($i18n->r("/user/reset-password"), $i18n->t("reset password page"))
+        : $this->setPresentation("User\\UserResetPassword")
+      ;
+      return;
+    }
+    $this->view = new UserResetPasswordView($this);
+    if (($mail = Validation::inputMail("mail")) === false) {
+      return [ "mail" => $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]) ];
+    }
+    try {
+      $userModel = new UserModel(UserModel::FROM_MAIL, $mail);
+      $params = [ Crypt::randomHash(), $mail ];
+      DelayedMethodCalls::stack($userModel, "preResetPassword", $params);
+      DelayedMailer::stackMethod("stackPasswordReset", $params);
+    } catch (UserException $e) {
+      // Only tell a logged in user that the email is wrong!
+      if ($user->isLoggedIn === true) {
+        $this->view->setAlert($i18n->t("The email address you entered is not correct, please try again."), AbstractView::ALERT_SEVERITY_ERROR);
+        return;
       }
     }
-    elseif (isset($_SERVER["TOKEN"])) {
-      $view = $this->activateOrResetPassword($i18n->r("/user/reset-password"), $i18n->t("reset password page"));
-    }
-    $this->view = $view;
+    $this->view = new AlertView($this, $this->view->title);
+    $this->view->setAlert(
+      $i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ]),
+      AbstractView::ALERT_SEVERITY_SUCCESS
+    );
+    $this->view->content =
+      "<div class='container'><small>{$i18n->t(
+        "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
+        [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
+      )}</small></div>"
+    ;
   }
 
   /**
@@ -290,8 +311,8 @@ class UserPresenter extends AbstractPresenter {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
    * @return $this
    */
   private function __constructSettings() {
@@ -300,15 +321,22 @@ class UserPresenter extends AbstractPresenter {
       http_response_code(401);
       $this->__constructLogin();
       $this->view->setAlert([
-        "title" => $i18n->t("Authentication Required"),
-        "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your settings page") ])
+        "title"   => $i18n->t("Authentication Required"),
+        "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your settings page") ]),
       ], AbstractView::ALERT_SEVERITY_INFO);
-      return $this;
+      return;
     }
     $tab = ucfirst($_SERVER["TAB"]);
+    try {
+      $this->profile = new UserModel(UserModel::FROM_ID, $user->id);
+    } catch (UserException $e) {
+      $user->destroySession();
+      Network::httpRedirect($i18n->r("/user/login"), 302);
+      return;
+    }
     $this->view = new UserSettingsView($this, $tab);
-    if ($_SERVER["REQUEST_METHOD"] === "POST" && ($errors = $this->{"validate{$tab}Settings"}())) {
-      return $errors;
+    if ($_SERVER["REQUEST_METHOD"] === "GET") {
+      return;
     }
   }
 
@@ -317,22 +345,31 @@ class UserPresenter extends AbstractPresenter {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
+   * @global \MovLib\Model\SessionModel $user
    *   The global user model instance.
    * @return $this
    */
   private function __constructShow() {
     global $i18n, $user;
+    if ($_SERVER["REQUEST_METHOD"] !== "GET") {
+      $this->exitMethodNotAllowed();
+    }
     if ($user->isLoggedIn === false) {
       http_response_code(401);
       $this->__constructLogin();
       $this->view->setAlert([
-        "title" => $i18n->t("Authentication Required"),
-        "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your profile page") ])
+        "title"   => $i18n->t("Authentication Required"),
+        "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your profile page") ]),
       ], AbstractView::ALERT_SEVERITY_INFO);
       return;
     }
-    $this->setPresentation("User\\UserShow");
+    try {
+      $this->profile = new UserModel(UserModel::FROM_ID, $user->id);
+      $this->setPresentation("User\\UserShow");
+    } catch (UserException $e) {
+      $user->destroySession();
+      Network::httpRedirect($i18n->r("/user/login"), 302);
+    }
   }
 
   /**
@@ -341,7 +378,7 @@ class UserPresenter extends AbstractPresenter {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
+   * @global \MovLib\Model\SessionModel $user
    *   The global user model instance.
    * @param string $expiredTokenRoute
    *   The route to the page where the user should go if the token has expired.
@@ -352,8 +389,9 @@ class UserPresenter extends AbstractPresenter {
    */
   private function activateOrResetPassword($expiredTokenRoute, $expiredTokenRouteText) {
     global $i18n, $user;
-    $_SERVER["REQUEST_URI"] = $i18n->r("/user/settings/password");
-    if (empty($_SERVER["TOKEN"])) {
+    // Ensure that we are internally working with the correct route.
+    $_SERVER["REQUEST_URI"] = $i18n->r("/user/password-settings");
+    if (($token = Validation::inputString("TOKEN", INPUT_SERVER)) === false) {
       $this->view = new AlertView($this, $i18n->t("Missing Authentication Token"));
       $this->view->setAlert(
         "<p>{$i18n->t("Your link is missing the authentication token, please go back to the mail we’ve sent you and copy the whole link.")}</p>",
@@ -361,7 +399,10 @@ class UserPresenter extends AbstractPresenter {
       );
       return;
     }
-    $data = $user->selectTmpData($_SERVER["TOKEN"]);
+    // Create new empty user model, time to query the database for more info on this token.
+    $userModel = new UserModel();
+    $data = $userModel->selectAndDeleteTemporaryData($token);
+    // Check if we have any data at all and if we have check if it has already expired.
     if (empty($data) || (time() - $data["time"] > 86400)) {
       $this->view = new AlertView($this, $i18n->t("Link Expired"));
       $this->view->setAlert(
@@ -373,25 +414,45 @@ class UserPresenter extends AbstractPresenter {
       );
       return;
     }
+    // The token is valid and we have data stored along with it. Generate the password settings page and a random user
+    // friendly password.
     $this->view = new UserSettingsView($this, "Password");
     $pass = Crypt::randomUserPassword();
-    // We are handling a reset password request if we only have the mail.
-    if (empty($data["name"]) && $user->isLoggedIn === false) {
-      $user = new UserModel(UserModel::FROM_MAIL, $data["mail"]);
-      $user->sessionStart();
+    // We are handling a reset password request if we only have the mail. It's absolutely okay if the user is logged in
+    // and followed a reset password link. A still logged in user might have forgotten his password and needs a new one.
+    // We don't change the currently stored hash, if the user decides not to update his password we want the old one
+    // and not the one we generated just before (that should simply act as help at this point).
+    if (empty($data["name"]) && !empty($data["mail"])) {
+      $userModel = new UserModel(UserModel::FROM_MAIL, $data["mail"]);
+      $this->view->setAlert([
+        "title"   => $i18n->t("Update your account password"),
+        "message" =>
+          "<p>{$i18n->t("You can now update your account password via the following form.")}</p>" .
+          "<p>{$i18n->t("Choose a strong password, which is easy to remember but still hard to crack. To help you, " .
+            "we generated a password from the most frequent words in American English:")}&nbsp;<code>{$pass}</code></p>" .
+          "<p>{$i18n->t("If you’ve changed your mind and want to keep your old password, simply leave this page without any further changes")}</p>"
+      ], AbstractView::ALERT_SEVERITY_INFO, true);
     }
-    // Something is odd if we aren't dealing with a password reset request and the user is logged in.
+    // We are not dealing with a password reset request, but the user is logged in. We have to assume that this is a
+    // registration activation link. Tell the user that this account was already activated.
     elseif ($user->isLoggedIn === true) {
-      $_SERVER["ALERTS"] = [[
-        "title" => $i18n->t("Already Activated"),
+      $this->view->setAlert([
+        "title"   => $i18n->t("Already Activated"),
         "message" => $i18n->t("You already verified your email address and are logged in, if you want to change your password use the form below."),
-      ], AbstractView::ALERT_SEVERITY_INFO];
-      HTTP::redirect($_SERVER["REQUEST_URI"]);
+      ], AbstractView::ALERT_SEVERITY_INFO);
+      return;
     }
     // We are handling a new registration if both, name and mail, are present.
     elseif (!empty($data["name"]) && !empty($data["mail"])) {
       try {
-        $user->register($data["name"], $data["mail"], $pass);
+        $userModel->register($data["name"], $data["mail"], $pass);
+        $this->view->setAlert([
+          "title"   => $i18n->t("Create a password for your account"),
+          "message" =>
+            "<p>{$i18n->t("You can now create a password for your account via the following form. Please choose a strong password that is hard to guess.")}</p>" .
+            "<p>{$i18n->t("We created the following random password for you:")} <code>{$pass}</code></p>" .
+            "<p>{$i18n->t("If you like it, write it down and leave this page without any further changes.")}</p>"
+        ], AbstractView::ALERT_SEVERITY_INFO, true);
       } catch (DatabaseException $e) {
         $this->view = new AlertView($this, $i18n->t("Name or Mail already registered"));
         $this->view->setAlert(
@@ -410,13 +471,7 @@ class UserPresenter extends AbstractPresenter {
     else {
       throw new UserException("Temporary database contained key for password reset or registration without any associated valid data.");
     }
-    $this->view->setAlert([
-      "title" => $i18n->t("Create a password for your account"),
-      "message" =>
-        "<p>{$i18n->t("You can now create a password for your account via the following form. Please choose a strong password that is hard to guess.")}</p>" .
-        "<p>{$i18n->t("We created the following random password for you:")} <code>{$pass}</code></p>" .
-        "<p>{$i18n->t("If you like it, write it down and leave this page without any further changes.")}</p>"
-    ], AbstractView::ALERT_SEVERITY_INFO, true);
+    $user->startSession($userModel);
     $this->view->formDisabled["pass"] = true;
     $this->view->inputValues["pass"] = $pass;
   }
@@ -491,7 +546,7 @@ class UserPresenter extends AbstractPresenter {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
+   * @global \MovLib\Model\SessionModel $user
    *   The global user model instance.
    * @return array
    */
