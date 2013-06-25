@@ -17,6 +17,8 @@
  */
 namespace MovLib\Model;
 
+use \DateTimeZone;
+use \IntlDateFormatter;
 use \Locale;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\ErrorException;
@@ -67,7 +69,7 @@ class I18nModel extends AbstractModel {
    * Numeric array containing all supported ISO 639-1 alpha-2 language codes.
    *
    * The supported language codes are directly related to the nginx configuration. If this array contains a language
-   * code the deployment script will generate a server (in Apache httpd terms <tt>virtual host</tt>) with routes for
+   * code the deployment script will generate a server (in Apache httpd terms <code>virtual host</code>) with routes for
    * this code.
    *
    * @var array
@@ -82,14 +84,14 @@ class I18nModel extends AbstractModel {
    * Create new i18n model instance.
    *
    * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
    * @param $locale
    *   [Optional] The desired locale, if no locale is passed the following procedure is executed:
    *   <ol>
    *     <li>Check if the server sent a language code.</li>
    *     <li>Check if the user is logged in and has a preferred language.</li>
-   *     <li>Check if the user has provided an <tt>HTTP_ACCEPT_LANGUAGE</tt> header.</li>
+   *     <li>Check if the user has provided an <code>HTTP_ACCEPT_LANGUAGE</code> header.</li>
    *     <li>Use default locale.</li>
    *   </ol>
    */
@@ -97,7 +99,7 @@ class I18nModel extends AbstractModel {
     global $user;
     if ($locale === null) {
       (isset($_SERVER["LANGUAGE_CODE"]) && $locale = $_SERVER["LANGUAGE_CODE"])
-      || (isset($user) && $user->isLoggedIn === true && $locale = $user->getLanguageCode())
+      || (isset($user) && $user->isLoggedIn === true && !empty($user->languageId) && $locale = $this->getLanguages()["id"][$user->languageId]["code"])
       || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($tmpLocale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && in_array($tmpLocale[0] . $tmpLocale[1], self::$supportedLanguageCodes) && $locale = $tmpLocale)
       || ($locale = self::getDefaultLocale());
     }
@@ -112,7 +114,7 @@ class I18nModel extends AbstractModel {
 
 
   /**
-   * Get the default ISO 639-1 alpha-2 language code extracted from <tt>php.ini</tt>.
+   * Get the default ISO 639-1 alpha-2 language code extracted from <code>php.ini</code>.
    *
    * @return string
    *   The default ISO 639-1 alpha-2 language code.
@@ -178,6 +180,30 @@ class I18nModel extends AbstractModel {
       return msgfmt_format_message($this->languageCode, $pattern, $args);
     }
     return $pattern;
+  }
+
+  /**
+   * Format the given timestamp for output.
+   *
+   * @link http://www.php.net/manual/en/class.intldateformatter.php#intl.intldateformatter-constants
+   * @param int $timestamp
+   *   The timestamp to format.
+   * @param null|string $timezone
+   *   One of the PHP timezone identifiers ({@link http://www.php.net/manual/en/timezones.php}). Defaults to system
+   *   default timezone from <code>php.ini</code> configuration file.
+   * @param int $datetype
+   *   One of the <code>IntlDateFormatter</code> constants.
+   * @param int $timetype
+   *   One of the <code>IntlDateFormatter</code> constants.
+   * @return string|boolean
+   *   The formatted string or, if an error occurred, <code>FALSE</code>.
+   * @throws \Exception
+   *   If the supplied timezone is not recognised as a valid timezone.
+   */
+  public function formatDate($timestamp, $timezone = null, $datetype = IntlDateFormatter::LONG, $timetype = IntlDateFormatter::LONG) {
+    $timezone = $timezone ?: ini_get("date.timezone");
+    $fmt = new IntlDateFormatter($this->locale, $datetype, $timetype, new DateTimeZone($timezone));
+    return $fmt->format($timestamp);
   }
 
   /**
@@ -274,8 +300,8 @@ class I18nModel extends AbstractModel {
    * @param array $options
    *   Associative array to overwrite the default options used in this method. Possible keys are:
    *   <ul>
-   *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
-   *     <li><tt>old_pattern</tt>: default is <tt>NULL</tt>.</li>
+   *     <li><code>comment</code>: default is <code>NULL</code>.</li>
+   *     <li><code>old_pattern</code>: default is <code>NULL</code>.</li>
    *   </ul>
    * @return \MovLib\Model\I18nModel
    */
@@ -345,19 +371,18 @@ class I18nModel extends AbstractModel {
   /**
    * Translate the given route.
    *
+   * @link http://userguide.icu-project.org/formatparse/messages
    * @param string $route
    *   A simple string that should be translated or an advanced Intl ICU pattern. Read the official Intl ICU
    *   documentation for more information on how to create translation patterns.
-   *
-   *   <a href="http://userguide.icu-project.org/formatparse/messages">Formatting Messages</a>
    * @param array $args
    *   [Optional] Array of values to insert.
    * @param string $options
    *   [Optional] Associative array to overwrite the default options used in this method in the form:
    *   <ul>
-   *     <li><tt>language_code</tt>: default is to use the current display language code.</li>
-   *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
-   *     <li><tt>old_pattern</tt>: default is <tt>NULL</tt>.</li>
+   *     <li><code>language_code</code>: default is to use the current display language code.</li>
+   *     <li><code>comment</code>: default is <code>NULL</code>.</li>
+   *     <li><code>old_pattern</code>: default is <code>NULL</code>.</li>
    *   </ul>
    * @return string
    *   URI: The absolute translated route.
@@ -365,10 +390,21 @@ class I18nModel extends AbstractModel {
    *   If formatting the message with the given <var>$args</var> fails (only if any were passed).
    */
   public function r($route, $args = null, $options = null) {
+    if (isset($options["language_code"])) {
+      if (isset($_SERVER["LANGUAGE_CODE"])) {
+        $serverName = str_replace($_SERVER["LANGUAGE_CODE"], $options["language_code"], $_SERVER["SERVER_NAME"]);
+      }
+      else {
+        $serverName = "{$options["language_code"]}.{$_SERVER["SERVER_NAME"]}";
+      }
+    }
+    else {
+      $serverName = $_SERVER["SERVER_NAME"];
+    }
     if ($route !== "/") {
       $route = $this->formatMessage("route", $route, $args, $options);
     }
-    return "https://{$_SERVER["SERVER_NAME"]}{$route}";
+    return "https://{$serverName}{$route}";
   }
 
   /**
@@ -384,9 +420,9 @@ class I18nModel extends AbstractModel {
    * @param string $options
    *   [Optional] Associative array to overwrite the default options used in this method in the form:
    *   <ul>
-   *     <li><tt>language_code</tt>: default is to use the current display language code.</li>
-   *     <li><tt>comment</tt>: default is <tt>NULL</tt>.</li>
-   *     <li><tt>old_pattern</tt>: default is <tt>NULL</tt>.</li>
+   *     <li><code>language_code</code>: default is to use the current display language code.</li>
+   *     <li><code>comment</code>: default is <code>NULL</code>.</li>
+   *     <li><code>old_pattern</code>: default is <code>NULL</code>.</li>
    *   </ul>
    * @return string
    *   The translated and formatted message.
