@@ -104,8 +104,8 @@ abstract class AbstractFormView extends AbstractView {
   /**
    * Get the rendered content, without HTML head, header or footer.
    *
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
    * @return string
    */
   public function getContent() {
@@ -174,7 +174,7 @@ abstract class AbstractFormView extends AbstractView {
     if (!isset($attributes["type"])) {
       $attributes["role"] = "textbox";
       if (empty($attributes["value"])) {
-        $attributes["value"] = isset($this->inputValues[$name])
+        $attributes["value"] = isset($this->inputValues[$name]) && !empty($this->inputValues[$name])
           ? $this->inputValues[$name]
           : filter_input(INPUT_POST, $name, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_FLAG_ENCODE_AMP)
         ;
