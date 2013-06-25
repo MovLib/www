@@ -303,10 +303,6 @@ strong {
   font-weight: 700;
 }
 
-small {
-  font-size: 0.82em;
-}
-
 h1,
 h2,
 h3,
@@ -379,18 +375,35 @@ h4 small {
   font-size: 14px;
 }
 
-p {
+
+/* ==== PARAGRAPHs ================================================================================================== */
+
+/**
+ * The hr, p, and small tags are considered paragraph elements and should be used as such. For more information have a
+ * look at {@link http://html5doctor.com/small-hr-element/}.
+ */
+
+hr {
+  background-color: #e5e5e5;
+  border: 0;
+  height: 1px;
+  padding: 0;
+}
+
+hr,
+p,
+small {
+  display: block;
   margin: 1.39em 0;
 }
 
-hr {
-  border: 0;
-  border-top: 1px solid #e5e5e5;
-  display: block;
-  height: 1px;
-  margin: 40px 0;
-  padding: 0;
+small {
+  font-size: 0.82em;
 }
+
+
+/* ==== IMAGEs And MEDIA ============================================================================================ */
+
 
 img {
   -ms-interpolation-mode: bicubic;
