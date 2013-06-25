@@ -18,7 +18,7 @@
 namespace MovLib\View\HTML;
 
 use \MovLib\Utility\FileSystem;
-use \MovLib\Utility\HTTP;
+use \MovLib\Utility\Network;
 use \MovLib\Utility\String;
 use \ReflectionClass;
 
@@ -316,15 +316,15 @@ abstract class AbstractView {
    * @link http://www.netmagazine.com/features/create-perfect-favicon
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
    * @return string
    *   The head ready for print.
    */
   public final function getHead() {
     global $i18n, $user;
     $c = count($this->stylesheets);
-    $d = HTTP::SERVER_NAME_STATIC;
+    $d = Network::SERVER_NAME_STATIC;
     $stylesheets = "";
     for ($i = 0; $i < $c; ++$i) {
       $stylesheets .= "<link rel='stylesheet' href='https://{$d}/css/{$this->stylesheets[$i]}'>";
@@ -339,6 +339,7 @@ abstract class AbstractView {
     }
     return
       "<!doctype html><html id='nojs' lang='{$i18n->languageCode}' dir='{$i18n->direction}'><head>" .
+        "<meta charset='utf-8'>" .
         "<title>{$this->getHeadTitle()}</title>" .
         $stylesheets .
         "<link rel='icon' type='image/svg+xml' href='/img/logo/vector.svg'>" .
@@ -358,8 +359,8 @@ abstract class AbstractView {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
    * @return string
    *   The header ready for print.
    */
@@ -660,10 +661,6 @@ abstract class AbstractView {
   /**
    * Get the full rendered view.
    *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   Global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
-   *   Global user model instance.
    * @return string
    *   The rendered view ready for print.
    */
