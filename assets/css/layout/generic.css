@@ -49,6 +49,7 @@
 }
 
 .form-help {
+  margin: 0;
   float: right;
   position: relative;
 }
@@ -107,9 +108,7 @@
   font: 0/0 a;
 }
 
-.clear-fix:before,
 .clear-fix:after,
-.row:before,
 .row:after {
   content: "";
   display: table;
