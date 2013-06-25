@@ -52,9 +52,9 @@ class DelayedMethodCalls {
    * @param string $method
    *   The name of the method to call.
    * @param array $params
-   *   The parameters for the method call.
+   *   [Optional] The parameters for the method call.
    */
-  public static function stack($obj, $method, $params) {
+  public static function stack($obj, $method, $params = []) {
     delayed_register(__CLASS__);
     self::$stack[] = [[ $obj, $method ], $params];
   }
