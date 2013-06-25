@@ -17,14 +17,11 @@
  */
 namespace MovLib\Model;
 
-use \Memcached;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\UserException;
-use \MovLib\Exception\SessionException;
 use \MovLib\Model\AbstractModel;
-use \MovLib\Utility\Crypt;
-use \MovLib\Utility\DelayedMethodCalls;
 use \MovLib\Utility\Image;
+use \MovLib\Utility\String;
 
 /**
  * Retrieve user specific data from the database.
@@ -40,13 +37,6 @@ class UserModel extends AbstractModel {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
-
-  /**
-   * Load the user from session.
-   *
-   * @var string
-   */
-  const FROM_SESSION = "session";
 
   /**
    * Load the user from ID.
@@ -96,11 +86,15 @@ class UserModel extends AbstractModel {
 
 
   /**
-   * The CSRF token for this user's session.
+   * The MySQLi bind param types of the columns.
    *
-   * @var null|string
+   * @var array
    */
-  public $csrfToken;
+  private $types = [
+    self::FROM_ID => "d",
+    self::FROM_MAIL => "s",
+    self::FROM_NAME => "s",
+  ];
 
   /**
    * The user's unique ID, defaults to zero (anonymous user).
@@ -108,6 +102,13 @@ class UserModel extends AbstractModel {
    * @var int
    */
   public $id;
+
+  /**
+   * The user's preferred system language's ID.
+   *
+   * @var int
+   */
+  public $languageId;
 
   /**
    * The user's unique name if logged in, otherwise the user's IP address will be used as name.
@@ -124,34 +125,32 @@ class UserModel extends AbstractModel {
   public $mail;
 
   /**
-   * The user's login status.
+   * The user's hashed password.
    *
-   * <tt>TRUE</tt> if the user is logged in, otherwise <tt>FALSE</tt>.
-   *
-   * @var boolean
+   * @var string
    */
-  public $isLoggedIn = false;
+  public $pass;
 
   /**
-   * Unix timestamp of the time when the user was created.
+   * The user's creation time (UNIX timestamp).
    *
    * @var int
    */
-  public $timestampCreated;
+  public $created;
 
   /**
-   * Unix timestamp of the time the user last accessed MovLib.
+   * The user's last access (UNIX timestamp).
    *
    * @var int
    */
-  public $timestampLastAccess;
+  public $access;
 
   /**
-   * Unix timestamp of the time the user last logged in.
+   * The user's last login (UNIX timestamp).
    *
    * @var int
    */
-  public $timestampLastLogin;
+  public $login;
 
   /**
    * Flag defining if the user's personal data is private or not.
@@ -177,18 +176,32 @@ class UserModel extends AbstractModel {
   public $timezone;
 
   /**
-   * The user's unique country ID.
+   * The mail the user originally registered the account.
    *
-   * @var int
+   * @var string
    */
-  public $countryId;
+  public $init;
 
   /**
-   * The user's preferred system language's ID.
+   * The user's edit counter.
    *
    * @var int
    */
-  public $languageId;
+  public $edits;
+
+  /**
+   * The user's profile text (in the current display language if available).
+   *
+   * @var string
+   */
+  public $profile;
+
+  /**
+   * The user's unique country ID.
+   *
+   * @var null|int
+   */
+  public $countryId;
 
   /**
    * The file extension of the user's uploaded avatar.
@@ -197,62 +210,87 @@ class UserModel extends AbstractModel {
    */
   public $avatarExt;
 
+  /**
+   * The user's real name.
+   *
+   * @var null|string
+   */
+  public $realName;
+
+  /**
+   * The user's birthday (date).
+   *
+   * @var null|int
+   */
+  public $birthday;
+
+  /**
+   * The user's gender.
+   *
+   * <ul>
+   *   <li><b><code>NULL</code>:</b> no gender</li>
+   *   <li><b><code>0</code>:</b> male</li>
+   *   <li><b><code>1</code>:</b> female</li>
+   * </ul>
+   *
+   * @var null|int
+   */
+  public $gender;
+
+  /**
+   * The user's website.
+   *
+   * @var null|string
+   */
+  public $website;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
    * Instantiate new user model object.
    *
+   * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be instanciated.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n instance.
    * @param string $from
-   *   [Optional] Defines how the object should be filled with data. Possible <var>$from</var> values are defined as
-   *   class constants, see <var>FROM_*</var>.
+   *   [Optional] Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
    * @param mixed $value
-   *   [Optional] Should contain the data to identify the user upon loading, see description of <var>$from</var>.
-   * @throws \MovLib\Exception\ErrorException
-   * @throws \MovLib\Exception\DatabaseException
+   *   [Optional] Data to identify the user, see the various <var>FROM_*</var> class constants.
    * @throws \MovLib\Exception\UserException
-   *   If no user could be found for the given <var>$value</var> (if <var>$value</var> is not <tt>NULL</tt>).
+   *   If no user could be found for the given <var>$value</var> (if <var>$value</var> is not <code>NULL</code>).
    */
   public function __construct($from = null, $value = null) {
-    switch ($from) {
-      case self::FROM_SESSION:
-        if (!($value = $this->sessionLoad())) {
-          break;
-        }
-        $from = self::FROM_ID;
-
-      case self::FROM_ID:
-        $type = "d";
-        break;
-
-      case self::FROM_MAIL:
-        $type = "s";
-        break;
-
-      case self::FROM_NAME:
-        $type = "s";
-        break;
-    }
-    if (isset($type) && $value !== null) {
-      // @todo How about anon IP users?
+    global $i18n;
+    if (isset($from) && isset($value)) {
       try {
         foreach ($this->select(
           "SELECT
             `user_id` AS `id`,
+            `language_id` AS `languageId`,
             `name`,
             `mail`,
-            UNIX_TIMESTAMP(`created`) AS `timestampCreated`,
-            UNIX_TIMESTAMP(`access`) AS `timestampLastAccess`,
-            UNIX_TIMESTAMP(`login`) AS `timestampLastLogin`,
+            `pass`,
+            UNIX_TIMESTAMP(`created`) AS `created`,
+            UNIX_TIMESTAMP(`access`) AS `access`,
+            UNIX_TIMESTAMP(`login`) AS `login`,
             `private`,
             `deleted`,
             `timezone`,
-            `avatar_ext` AS `avatarExt`,
+            `init`,
+            `edits`,
+            COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY) AS `profile`,
             `country_id` AS `countryId`,
-            `language_id` AS `languageId`
+            `avatar_ext` AS `avatarExt`,
+            `real_name` AS `realName`,
+            `birthday`,
+            `gender`,
+            `website`
           FROM `users`
             WHERE `{$from}` = ?
-          LIMIT 1", $type, [ $value ]
+          LIMIT 1", $this->types[$from], [ $value ]
         )[0] as $name => $value) {
           $this->{$name} = $value;
         }
@@ -262,14 +300,6 @@ class UserModel extends AbstractModel {
         throw new UserException("Could not find user for {$from} '{$value}'!", $e);
       }
     }
-    // If we have no ID until this point, create anon user.
-    if (!isset($this->id)) {
-      $this->id = 0;
-      // @todo It is important to configure our servers that they will always submit this key with the user's IP address
-      //       especially if we start using proxies. It's no problem to alter the submitted FastCGI parameters (something
-      //       we are doing heavily already).
-      $this->name = $_SERVER["REMOTE_ADDR"];
-    }
   }
 
 
@@ -277,19 +307,27 @@ class UserModel extends AbstractModel {
 
 
   /**
-   * Check if a user with the given value exists.
+   * Check if a user with the given mail exists.
    *
-   * @param string $column
-   *   The column name against which the value should be checked. Use the <var>FROM_*</var> class constants.
-   * @param mixed $value
-   *   The user attribute to check.
-   * @param string $type
-   *   [Optional] The datatype of the column in the database, defaults to string.
+   * @param string $mail
+   *   The mail to search for.
    * @return boolean
-   *   <tt>TRUE</tt> if a user exists with the given value, otherwise <tt>FALSE</tt>.
+   *   <code>TRUE</code> if a user exists with this mail, otherwise <code>FALSE</code>.
    */
-  public function exists($column, $value, $type = "s") {
-    return !empty($this->select("SELECT `user_id` FROM `users` WHERE `{$column}` = ? LIMIT 1", $type, [ $value ]));
+  public function existsMail($mail) {
+    return !empty($this->select("SELECT `user_id` FROM `users` WHERE `mail` = ? OR `init` = ? LIMIT 1", "ss", [ $mail, $mail ]));
+  }
+
+  /**
+   * Check if a user with the given name exists.
+   *
+   * @param string $name
+   *   The name to search for.
+   * @return boolean
+   *   <code>TRUE</code> if a user exists with this name, otherwise <code>FALSE</code>.
+   */
+  public function existsName($name) {
+    return !empty($this->select("SELECT `user_id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $name ]));
   }
 
   /**
@@ -303,9 +341,9 @@ class UserModel extends AbstractModel {
    * @param int $style
    *   The image style, use the <var>STYLE_*</var> class constants of the image utility class.
    * @return boolean|string
-   *   <tt>FALSE</tt> if the image doesn't exist, otherwise the absolute URI to the image is returned.
+   *   <code>FALSE</code> if the image doesn't exist, otherwise the absolute URI to the image is returned.
    */
-  public function getAvatar($style = Image::STYLE_150) {
+  public function getAvatarRoute($style = Image::STYLE_150) {
     if ($this->avatarExt) {
       if ($this->avatarExt === "svg" && is_file("{$_SERVER["HOME"]}/uploads/user/avatar-{$this->id}.svg")) {
         return "https://{$_SERVER["SERVER_NAME"]}/uploads/user/avatar-{$this->id}.svg";
@@ -317,8 +355,39 @@ class UserModel extends AbstractModel {
     return false;
   }
 
-  public function getAvatarHtml($style = Image::STYLE_150, $id = null) {
+  /**
+   * Get the HTML mark-up for the user's avatar.
+   *
+   * @see \MovLib\Model\UserModel::getAvatarRoute()
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n instance.
+   * @param int $style
+   *   One of the <var>Image::STYLE_*</var> constants.
+   * @return string
+   *   The HTML mark-up for the user's avatar for the desired style.
+   */
+  public function getAvatarImage($style = Image::STYLE_150) {
+    global $i18n;
+    return "<img class='avatar-image' src='{$this->getAvatarRoute($style)}' alt='{$i18n->t("{0}’s avatar.", [
+      String::checkPlain($this->name)
+    ])}' width='{$style}' height='{$style}'>";
+  }
 
+  /**
+   * Get the HTML mark-up for the user's avatar linked to the user's profile.
+   *
+   * @see \MovLib\Model\UserModel::getAvatarRoute()
+   * @see \MovLib\Model\UserModel::getAvatarImage()
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n instance.
+   * @param int $style
+   *   One of the <var>Image::STYLE_*</var> constants.
+   * @return string
+   *   The HTML mark-up for the user's avatar for the desired style.
+   */
+  public function getAvatarImageLinkedToProfile($style = Image::STYLE_150) {
+    global $i18n;
+    return "<a class='no-border' href='{$i18n->r("/user/{0}", [ String::convertToRoute($this->name) ])}'>{$this->getAvatarImage($style)}</a>";
   }
 
   /**
@@ -327,7 +396,7 @@ class UserModel extends AbstractModel {
    * @staticvar string $languageCode
    *   Used to cache the lookup.
    * @return null|string
-   *   The user's language code or <tt>NULL</tt> if the user has none.
+   *   The user's language code or <code>NULL</code> if the user has none.
    */
   public function getLanguageCode() {
     static $languageCode = null;
@@ -393,30 +462,36 @@ class UserModel extends AbstractModel {
    */
   public function register($name, $mail, $pass) {
     global $i18n;
-    $this->name = $name;
-    $this->mail = $mail;
-    $this->deleted = false;
-    $this->timestampCreated = $this->timestampLastAccess = $this->timestampLastLogin = time();
+    $this->languageId = $i18n->getLanguageId();
+    $this->name       = $name;
+    $this->mail       = $mail;
+    $this->pass       = password_hash($pass, PASSWORD_BCRYPT);
+    $this->deleted    = false;
+    $this->timezone   = ini_get("date.timezone");
     $this->prepareAndBind(
       "INSERT INTO `users`
-        (`name`, `mail`, `pass`, `created`, `login`, `timezone`, `init`, `dyn_data`, `language_id`)
+        (`language_id`, `name`, `mail`, `pass`, `created`, `login`, `timezone`, `init`, `dyn_profile`)
       VALUES
-        (?, ?, ?, NOW(), NOW(), 'UTC', ?, '', {$i18n->getLanguageId()})",
-      "ssss", [ $name, $mail, password_hash($pass, PASSWORD_BCRYPT), $mail ]
+        (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, '')",
+      "dsssss",
+      [ $this->languageId, $this->name, $this->mail, $this->pass, $this->timezone, $this->mail ]
     )->execute();
     $this->id = $this->stmt->insert_id;
-    return $this->close()->sessionStart();
+    return $this->close();
   }
 
   /**
    * Add reset password request to our temporary database table.
    *
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
    * @param string $hash
    *   The password reset hash used in the password reset link for identification.
    * @param string $mail
    *   The valid mail of the user.
    */
   public function preResetPassword($hash, $mail) {
+    global $user;
     // @todo Catch exceptions, log and maybe even send a mail to the user?
     $this->prepareAndBind(
       "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('mail', ?, 'time', NOW() + 0))",
@@ -426,18 +501,19 @@ class UserModel extends AbstractModel {
   }
 
   /**
-   * Select the data that was previously stored from the temporary database.
+   * Select the data that was previously stored and directly delete it.
    *
    * @param string $hash
    *   The user submitted hash to identify the reset password request.
    * @return null|array
-   *   <tt>NULL</tt> if no record was found for the hash, otherwise an associative array with the following keys:
-   *   <em>name</em>, <em>mail</em>, and <em>time</em>. The name might be <tt>NULL</tt>, depending on the data that
+   *   <code>NULL</code> if no record was found for the hash, otherwise an associative array with the following keys:
+   *   <i>name</i>, <i>mail</i>, and <i>time</i>. The name might be <code>NULL</code>, depending on the data that
    *   was stored previously (e.g. reset password requests do not have the name).
    */
-  public function selectTmpData($hash) {
+  public function selectAndDeleteTemporaryData($hash) {
     try {
-      return $this->select(
+      // Fetch the data from our temporary table.
+      $data = $this->select(
         "SELECT
           COLUMN_GET(`dyn_data`, 'name' AS CHAR(" . self::NAME_MAX_LENGTH . ")) AS `name`,
           COLUMN_GET(`dyn_data`, 'mail' AS CHAR(" . self::MAIL_MAX_LENGTH . ")) AS `mail`,
@@ -446,194 +522,29 @@ class UserModel extends AbstractModel {
           WHERE `key` = ?
         LIMIT 1", "s", [ $hash ]
       )[0];
+      // Now directly delete it. Any of the temporary user data is only valid for one time usage.
+      $this->delete("tmp", "s", [ "key" => $hash ]);
+      return $data;
     } catch (ErrorException $e) {
       return null;
     }
   }
 
   /**
-   * Removes the given session ID from our session database.
-   *
-   * @param string $sessionId
-   *   The session ID that should be removed.
-   * @return $this
-   */
-  public function sessionDelete($sessionId) {
-    // Fetch all configured Memcached servers from the global configuration and split them by the delimiter.
-    $servers = explode(",", ini_get("session.save_path"));
-    // Build the array as expected by Memcached::addServers().
-    $c = count($servers);
-    for ($i = 0; $i < $c; ++$i) {
-      $servers[$i] = explode(":", $servers[$i]);
-      // The port is mandatory!
-      if (!isset($servers[$i][1])) {
-        $servers[$i][1] = 0;
-      }
-    }
-    $memcached = new Memcached();
-    $memcached->addServers($servers);
-    $memcached->delete(ini_get("memcached.sess_prefix") . $sessionId);
-    return $this;
-  }
-
-  /**
-   * Destroy the current session completely and log the user out.
-   *
-   * @return $this
-   */
-  public function sessionDestroy() {
-    if (session_status() === PHP_SESSION_ACTIVE) {
-      // Remove the cookie.
-      $cookieParams = session_get_cookie_params();
-      setcookie(session_name(), "", time() - 42000, $cookieParams["path"], $cookieParams["domain"], $cookieParams["secure"], $cookieParams["httponly"]);
-      // Remove the session ID from our database.
-      DelayedMethodCalls::stack($this, "sessionDelete", [ session_id() ]);
-      // Remove all data associated with this session.
-      session_destroy();
-      // The user is no longer logged in.
-      $this->isLoggedIn = false;
-    }
-    return $this;
-  }
-
-  /**
-   * Initializes the session and starts a session if needed.
-   *
-   * @return null|int
-   *   Returns the user ID stored in the session or <tt>NULL</tt> if no valid session was found.
-   * @throws \MovLib\Exception\SessionException
-   *   If starting the session failed. This should not be catched, this failure is related to Memcached being
-   *   unavailable or full. Something that we cannot recover at runtime.
-   */
-  public function sessionLoad() {
-    if (!empty($_COOKIE["MOVSID"]) && session_status() === PHP_SESSION_NONE) {
-      if (session_start() === false) {
-        throw new SessionException("Could not start session.");
-      }
-      if (!isset($_SESSION["TTL"]) || !empty($_SESSION["TTL"]) || $_SESSION["TTL"] < time()) {
-        session_regenerate_id(true);
-        $_SESSION["TTL"] = time() + ini_get("session.gc_maxlifetime");
-      }
-      if (isset($_SESSION["UID"]) && !empty($_SESSION["UID"])) {
-        $this->csrfToken = isset($_SESSION["CSRF"]) ? $_SESSION["CSRF"] : Crypt::randomHash();
-        $this->isLoggedIn = true;
-        return $_SESSION["UID"];
-      }
-      $this->sessionDestroy();
-    }
-  }
-
-  /**
-   * Forcefully starts a new session for a logged in user, invalidating any previously set data and regenerating the
-   * session ID. This should be called after a user has successfully logged in.
-   *
-   * @return $this
-   * @throws \MovLib\Exception\SessionException
-   *   If starting the session failed. This should not be catched, this failure is related to Memcached being
-   *   unavailable or full. Something that we cannot recover at runtime.
-   */
-  public function sessionStart() {
-    $sessionStatus = session_status();
-    if ($sessionStatus === PHP_SESSION_ACTIVE) {
-      $this->sessionDestroy();
-    }
-    if (session_start() === true) {
-      session_regenerate_id(true);
-      $_SESSION["CSRF"] = $this->csrfToken = Crypt::randomHash();
-      $_SESSION["TTL"] = time() + ini_get("session.gc_maxlifetime");
-      $_SESSION["UID"] = $this->id;
-      $this->isLoggedIn = true;
-    }
-    else {
-      new SessionException("Could not start session.");
-    }
-    return $this;
-  }
-
-  /**
    * Validate the user submitted password against the stored hash of the current user.
    *
-   * This will either log the user in if she/he isn't logged in yet or regenerate the session ID.
+   * <b>IMPORTANT!</b> Only validates against a password that was submitted via <var>$_POST</var>. Additionally the
+   * key must be <code>pass</code> within the <var>$_POST</var> array.
    *
-   * @param string $name
-   *   Value of the name attribute of the input element from the form that was submitted.
-   * @return boolean
-   *   <tt>TRUE</tt> if the password was valid, otherwise <tt>FALSE</tt>.
-   * @throws \MovLib\Exception\SessionException
-   *   If starting the session failed. This should not be catched, this failure is related to Memcached being
-   *   unavailable or full. Something that we cannot recover at runtime.
+   * @return $this
+   * @throws \MovLib\Exception\UserException
+   *   If the password isn't valid.
    */
-  public function validatePassword($name = "pass") {
-    $pass = $this->selectAll("SELECT `pass` FROM `users` WHERE `user_id` = {$this->id} LIMIT 1")[0]["pass"];
-    if (!isset($_POST[$name]) || password_verify($_POST[$name], $pass) === false) {
-      return false;
+  public function validatePassword() {
+    if (!isset($_POST["pass"]) || password_verify($_POST["pass"], $this->pass) === false) {
+      throw new UserException("The submitted password is invalid or empty.");
     }
-    session_status() === PHP_SESSION_ACTIVE ? session_regenerate_id(true) : $this->sessionStart();
-    return true;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
-
-
-  /**
-   * Validate the given username.
-   *
-   * <b>Usage example:</b>
-   * <pre>if ($error = UserModel::validateName($name)) {
-   *   throw new Exception($error);
-   * }</pre>
-   *
-   * @link http://api.drupal.org/api/drupal/core!modules!user!user.module/function/user_validate_name/8
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @param string $name
-   *   The username to validate.
-   * @return null|string
-   *   A translated string containing the error message if something is wrong with the given name, otherwise <tt>NULL</tt>.
-   */
-  public static function validateName($name) {
-    global $i18n;
-    if (empty($name)) {
-      return $i18n->t("You must enter a username.");
-    }
-    if (substr($name, 0, 1) === " ") {
-      return $i18n->t("The username cannot begin with a space.");
-    }
-    if (substr($name, -1) === " ") {
-      return $i18n->t("The username cannot end with a space.");
-    }
-    if (strpos($name, "  ") !== false) {
-      return $i18n->t("The username cannot contain multiple spaces in a row.");
-    }
-    if (preg_match("/[^\x{80}-\x{F7} a-z0-9@_.\'-]/i", $name) === 1) {
-      return $i18n->t("The username contains an illegal character.");
-    }
-    if (preg_match(
-      "/[\x{80}-\x{A0}" .   // Non-printable ISO-8859-1 + NBSP
-      "\x{AD}" .            // Soft-hyphen
-      "\x{2000}-\x{200F}" . // Various space characters
-      "\x{2028}-\x{202F}" . // Bidirectional text overrides
-      "\x{205F}-\x{206F}" . // Various text hinting characters
-      "\x{FEFF}" .          // Byte order mark
-      "\x{FF01}-\x{FF60}" . // Full-width latin
-      "\x{FFF9}-\x{FFFD}" . // Replacement characters
-      "\x{0}-\x{1F}]/u",    // NULL byte and control characters
-      $name
-    ) === 1) {
-      return $i18n->t("The username contains an illegal character.");
-    }
-    if (mb_strlen($name) > self::NAME_MAX_LENGTH) {
-      return $i18n->t("The username {0} is too long: it must be {1,number,integer} characters or less.", [ $name, self::NAME_MAX_LENGTH ]);
-    }
-    // @todo The blacklist content must be translated along with the routes.
-    $blacklist = json_decode(file_get_contents(__DIR__ . "/UserModelBlacklist.json"));
-    $c = count($blacklist);
-    for ($i = 0; $i < $c; ++$i) {
-      if ($name === $blacklist[$i]) {
-        return $i18n->t("The username contains a system reserved word, please choose another one.");
-      }
-    }
+    return $this;
   }
 
 }

@@ -168,11 +168,14 @@ function delayed_register($class, $weight = 50, $method = "run") {
 }
 
 /**
- * Create new global <em>UserModel</em> instance for the current user who is requesting the page.
+ * Instantiate session for the client requesting the page.
  *
- * @var \MovLib\Model\UserModel
+ * A real session will only be generated if we know this user. By default we don't start a session, nor do we send out
+ * any cookies to the client. We wait until the client is doing anything where we really need a session.
+ *
+ * @var \MovLib\Model\SessionModel
  */
-$user = new \MovLib\Model\UserModel(\MovLib\Model\UserModel::FROM_SESSION);
+$user = new \MovLib\Model\SessionModel();
 
 /**
  * Create new global <em>I18n</em> instance for the locale of the user who is requesting the page.
@@ -187,6 +190,11 @@ echo (new $presenter())->presentation;
 
 // This makes sure that the output that was generated until this point will be returned to nginx for delivery.
 fastcgi_finish_request();
+
+// Ensure that the session gets written to our session database (encountered some odd situations where they weren't;
+// this seems to solve this, although I never found out what is really causing the problem, it apparently is tightly
+// bound to the above call to fastcgi_finish_request().
+session_write_close();
 
 // Execute each delayed run method after sending the generated output to the user.
 foreach ($delayed as $classes) {

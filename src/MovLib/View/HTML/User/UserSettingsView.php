@@ -93,25 +93,18 @@ class UserSettingsView extends AbstractFormView {
    * @see \MovLib\View\HTML\User\UserSettingsView::getFormContent()
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\UserModel $user
-   *   The global user model instance.
    * @return string
    *   The account settings content ready for print.
    */
   private function getAccountTab() {
-    global $i18n, $user;
+    global $i18n;
     $this->attributes["enctype"] = self::ENCTYPE_BINARY;
-    if (($avatar = $user->getAvatar()) === false) {
+    if (($avatar = $this->presenter->profile->getAvatarRoute()) === false) {
       $avatar = "<i class='icon icon--user avatar--150'></i>";
     }
     else {
-      $avatar = "<img class='avatar avatar--150' alt='{$i18n->t("{0}’s avatar.", [ String::checkPlain($user->name) ])}' height='150' src='{$avatar}' width='150'>";
+      $avatar = "<img class='avatar avatar--150' alt='{$i18n->t("{0}’s avatar.", [ String::checkPlain($this->presenter->profile->name) ])}' height='150' src='{$avatar}' width='150'>";
     }
-    $countryDatalist = "<datalist id='countries'>";
-    foreach ($i18n->getCountries()["id"] as $country) {
-      $countryDatalist .= "<option value='{$country["name"]}'>";
-    }
-    $countryDatalist .= "</datalist>";
     return
       "<div class='row'>" .
         "<div class='span span--6'>" .
@@ -123,8 +116,8 @@ class UserSettingsView extends AbstractFormView {
         "<div class='span span--3'>{$avatar}</div>" .
       "</div>" .
       "<p><label for='real_name'>{$i18n->t("Real Name")}</label>{$this->input("real_name", [
-        "class"    => "input--block-level",
-        "title"    => $i18n->t("Please enter your real name in this field."),
+        "class" => "input--block-level",
+        "title" => $i18n->t("Please enter your real name in this field."),
       ])}</p>" .
       "<p><span class='label'>{$i18n->t("Gender")}</span><span class='radio' title='{$i18n->t("Please select your gender.")}'>" .
         "<label>{$i18n->t("Male")}{$this->input("gender", [ "type" => "radio", "value" => "0" ])}</label>" .
@@ -133,10 +126,10 @@ class UserSettingsView extends AbstractFormView {
       "</span></p>" .
       "<p><label for='country'>{$i18n->t("Country")}</label>{$this->inputDatalist(
         [ "country", [ "class" => "input--block-level" ]],
-        [ "countries", array_column($i18n->getCountries()["id"], "name")]
+        [ "countries", array_column($i18n->getCountries()["id"], "name") ]
       )}</p>" .
       "<p><label for='timezone'>{$i18n->t("Time Zone")}</label>{$this->inputDatalist(
-        [ "timezone", [ "class" => "input--block-level", "placeholder" => "UTC", "value" => $user->timezone ]],
+        [ "timezone", [ "class" => "input--block-level", "placeholder" => "UTC", "value" => $this->presenter->profile->timezone ]],
         [ "timezones", timezone_identifiers_list() ]
       )}</p>" .
       "<p><label for='profile'>{$i18n->t("About You")}</label>{$this->input("profile", [
@@ -221,11 +214,9 @@ class UserSettingsView extends AbstractFormView {
     $notice = "";
     if (!isset($this->formDisabled["pass"])) {
       $notice =
-        "<p>{$i18n->t(
-          "Choose a strong password which you can easily remember. To help you, we generated a password for you from " .
-          "the most frequent words in American English for you:"
-        )}</p>" .
-        "<p style='text-align:center'><code>" . Crypt::randomUserPassword() . "</code></p>" .
+        "<p>{$i18n->t("Choose a strong password, which is easy to remember but still hard to crack. To help you, we " .
+          "generated a password from the most frequent words in American English:")}&nbsp;<code>" .
+          Crypt::randomUserPassword() . "</code></p>" .
         "<hr>"
       ;
     }
