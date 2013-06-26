@@ -135,7 +135,7 @@ abstract class AbstractPresenter {
   public final function getMethod() {
     static $method = null;
     if ($method === null) {
-      $method = ucfirst(strtolower($_REQUEST["REQUEST_METHOD"]));
+      $method = ucfirst(strtolower($_SERVER["REQUEST_METHOD"]));
     }
     return $method;
   }
