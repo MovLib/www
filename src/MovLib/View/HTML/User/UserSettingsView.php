@@ -67,7 +67,7 @@ class UserSettingsView extends AbstractFormView {
     global $i18n;
     parent::__construct($userPresenter, "{$i18n->t(($this->tab = $tab))} {$i18n->t("Settings")}");
     $this->stylesheets[] = "modules/user.css";
-    $this->attributes["action"] = "patch";
+    $this->attributes["method"] = "patch";
   }
 
 
