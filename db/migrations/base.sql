@@ -935,26 +935,6 @@ ROW_FORMAT = COMPRESSED;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`master_releases`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`master_releases` (
-  `master_release_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The master release´s unique ID.' ,
-  `title` BLOB NOT NULL COMMENT 'The master release´s title.' ,
-  `country_id` INT UNSIGNED NOT NULL COMMENT 'The unique ID of the master release´s country.' ,
-  `dyn_notes` BLOB NOT NULL COMMENT 'The master release´s translatable release notes.' ,
-  `release_date` DATE NULL COMMENT 'The date this master release has been published.' ,
-  PRIMARY KEY (`master_release_id`) ,
-  INDEX `fk_master_releases_countries1_idx` (`country_id` ASC) ,
-  CONSTRAINT `fk_master_releases_countries1`
-    FOREIGN KEY (`country_id` )
-    REFERENCES `movlib`.`countries` (`country_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`packaging`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`packaging` (
@@ -963,6 +943,33 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`packaging` (
   `dyn_names` BLOB NOT NULL COMMENT 'The packaging´s translatable names.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The packaging´s translatable descriptions' ,
   PRIMARY KEY (`packaging_id`) )
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`master_releases`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`master_releases` (
+  `master_release_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The master release´s unique ID.' ,
+  `title` BLOB NOT NULL COMMENT 'The master release´s title.' ,
+  `country_id` INT UNSIGNED NOT NULL COMMENT 'The unique ID of the master release´s country.' ,
+  `dyn_notes` BLOB NOT NULL COMMENT 'The master release´s translatable release notes.' ,
+  `release_date` DATE NULL COMMENT 'The date this master release has been published.' ,
+  `packaging_id` INT UNSIGNED NULL COMMENT 'The master release´s packaging (Only present if there are more than 1 releases in this master release).' ,
+  PRIMARY KEY (`master_release_id`) ,
+  INDEX `fk_master_releases_countries1_idx` (`country_id` ASC) ,
+  INDEX `fk_master_releases_packaging1_idx` (`packaging_id` ASC) ,
+  CONSTRAINT `fk_master_releases_countries1`
+    FOREIGN KEY (`country_id` )
+    REFERENCES `movlib`.`countries` (`country_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_master_releases_packaging1`
+    FOREIGN KEY (`packaging_id` )
+    REFERENCES `movlib`.`packaging` (`packaging_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
@@ -978,9 +985,12 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`releases` (
   `length` TIME NULL ,
   `length_credits` TIME NULL ,
   `length_bonus` TIME NULL ,
+  `dyn_extras` BLOB NOT NULL COMMENT 'The release´s translatable extras free text field.' ,
   `dyn_notes` BLOB NOT NULL COMMENT 'The translatable release notes (free text) field for this release, if there is more than one release in the master release.' ,
   `aspect_ratio_id` INT UNSIGNED NOT NULL COMMENT 'The unique ID of the release´s aspect ratio.' ,
   `packaging_id` INT UNSIGNED NOT NULL COMMENT 'The packaging´s unique ID this release is boxed in.' ,
+  `type` VARCHAR(20) NOT NULL COMMENT 'The release´s type in lowercase letters, e.g. dvd or bluray.' ,
+  `bin_type_data` BLOB NOT NULL COMMENT 'The release´s type specific fields in serialized igbinary format.' ,
   INDEX `fk_releases_aspect_ratios` (`aspect_ratio_id` ASC) ,
   PRIMARY KEY (`release_id`) ,
   INDEX `fk_releases_packaging1_idx` (`packaging_id` ASC) ,
@@ -1031,6 +1041,7 @@ SHOW WARNINGS;
 CREATE  TABLE IF NOT EXISTS `movlib`.`releases_labels` (
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release´s unique ID.' ,
   `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company´s unique ID of the(additional)  label this release is related to.' ,
+  `cat_no` TINYBLOB NULL COMMENT 'The release´s catalog number on this label.' ,
   PRIMARY KEY (`release_id`, `company_id`) ,
   INDEX `fk_releases_companies_companies1_idx` (`company_id` ASC) ,
   INDEX `fk_releases_companies_releases1_idx` (`release_id` ASC) ,
@@ -1147,6 +1158,7 @@ SHOW WARNINGS;
 CREATE  TABLE IF NOT EXISTS `movlib`.`master_releases_labels` (
   `master_release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The master release´s unique ID.' ,
   `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company´s unique ID of the label this (master) release is related to.' ,
+  `cat_no` TINYBLOB NULL COMMENT 'The master release´s catalog number on this label.' ,
   PRIMARY KEY (`master_release_id`, `company_id`) ,
   INDEX `fk_master_releases_companies_companies1_idx` (`company_id` ASC) ,
   INDEX `fk_master_releases_companies_master_releases1_idx` (`master_release_id` ASC) ,
@@ -1161,56 +1173,6 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`master_releases_labels` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`releases_bluray`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`releases_bluray` (
-  `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release´s unique ID.' ,
-  `region_code` VARCHAR(3) NULL ,
-  `bluray_format` TINYBLOB NULL ,
-  PRIMARY KEY (`release_id`) ,
-  CONSTRAINT `fk_releases_bluray_releases`
-    FOREIGN KEY (`release_id` )
-    REFERENCES `movlib`.`releases` (`release_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`releases_dvd`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`releases_dvd` (
-  `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release´s unique ID.' ,
-  `region_code` VARCHAR(3) NULL ,
-  `dvd_format` TINYBLOB NULL ,
-  PRIMARY KEY (`release_id`) ,
-  CONSTRAINT `fk_releases_dvd_releases`
-    FOREIGN KEY (`release_id` )
-    REFERENCES `movlib`.`releases` (`release_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`releases_video`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`releases_video` (
-  `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release´s unique ID.' ,
-  `tape_type` TINYBLOB NULL COMMENT 'The type of this video tape.' ,
-  PRIMARY KEY (`release_id`) ,
-  CONSTRAINT `fk_releases_video_releases1`
-    FOREIGN KEY (`release_id` )
-    REFERENCES `movlib`.`releases` (`release_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
 
 SHOW WARNINGS;
 USE `movlib` ;
