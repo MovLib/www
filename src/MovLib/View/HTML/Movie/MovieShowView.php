@@ -60,9 +60,23 @@ class MovieShowView extends AbstractView {
   public function getContent() {
     global $i18n;
     $secondaryNavPoints = [
-      [ $i18n->r("/movie/{0}/edit", [ $this->presenter->movieModel->id ]), $i18n->t("Edit"), [ "title" => $i18n->t("Edit this movie") ] ],
-      [ $i18n->r("/movie/{0}/history", [ $this->presenter->movieModel->id ]), $i18n->t("History"), [ "title" => $i18n->t("View the edit history of this movie") ] ],
-      [ $i18n->r("/movie/{0}/discussion", [ $this->presenter->movieModel->id ]), $i18n->t("Discussion"), [ "class" => "menuitem--separator", "title" => $i18n->t("Discuss the article and the edits of this movie") ] ],
+      [ $i18n->r("/movie/{0}", [ $this->presenter->movieModel->id ]), "<i class='icon icon--eye'></i>{$i18n->t("View")}", [
+        "accesskey" => "v",
+        "title"     => $i18n->t("View the {0}. [alt-shift-v]", [ $i18n->t("movie") ]),
+      ]],
+      [ $i18n->r("/movie/{0}/edit", [ $this->presenter->movieModel->id ]), "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [
+        "accesskey" => "e",
+        "title"     => $i18n->t("You can edit this {0}. [alt-shift-e]", [ $i18n->t("movie") ]),
+      ]],
+      [ $i18n->r("/movie/{0}/history", [ $this->presenter->movieModel->id ]), "<i class='icon icon--back-in-time'></i>{$i18n->t("History")}", [
+        "accesskey" => "h",
+        "title"     => $i18n->t("Past versions of this {0}. [alt-shift-h]", [ $i18n->t("movie") ]),
+      ]],
+      [ $i18n->r("/movie/{0}/discussion", [ $this->presenter->movieModel->id ]), "<i class='icon icon--comment'></i>{$i18n->t("Discussion")}", [
+        "accesskey" => "d",
+        "class"     => "menuitem--separator",
+        "title"     => $i18n->t("Discussion about the {0}. [alt-shift-d]", [ $i18n->t("movie") ])
+      ]],
       [ "#synopsis", $i18n->t("Synopsis"), [ "title" => $i18n->t("Go to section: {0}", [ $i18n->t("Synopsis") ]) ] ],
       [ "#releases", $i18n->t("Releases"), [ "title" => $i18n->t("Go to section: {0}", [ $i18n->t("Releases") ]) ] ]
     ];

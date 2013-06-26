@@ -38,11 +38,11 @@
 
 @font-face {
   font-family: MovLib;
-  src: url("/font/movlib/movlib.eot");
-  src: url("/font/movlib/movlib.eot#iefix") format("embedded-opentype"),
-       url("/font/movlib/movlib.woff") format("woff"),
-       url("/font/movlib/movlib.ttf") format("truetype"),
-       url("/font/movlib/movlib.svg#movlib") format("svg")
+  src: url("/font/movlib/movlib.eot?20130626");
+  src: url("/font/movlib/movlib.eot?20130626#iefix") format("embedded-opentype"),
+       url("/font/movlib/movlib.woff?20130626") format("woff"),
+       url("/font/movlib/movlib.ttf?20130626") format("truetype"),
+       url("/font/movlib/movlib.svg?20130626#movlib") format("svg")
   ;
   font-weight: 500;
   font-style: normal;
@@ -65,14 +65,18 @@
 }
 
 .icon--alert:before{content:"\e807"}
+.icon--back-in-time:before{content:"\e808"}
 .icon--bell:before{content:"\e801"}
 .icon--cc-zero:before{content:"\e803"}
 .icon--cc:before{content:"\e802"}
+.icon--comment:before{content:"\e80f"}
+.icon--eye:before{content:"\e810"}
 .icon--help-circled:before{content:"\e80a"}
 .icon--info-circled:before{content:"\e80b"}
 .icon--lock:before{content:"\e806"}
 .icon--mail:before{content:"\e805"}
 .icon--menu:before{content:"\e809"}
+.icon--pencil:before{content:"\e80c"}
 .icon--search:before{content:"\e800"}
 .icon--star-empty:before{content:"\e80e"}
 .icon--star:before{content:"\e80d"}

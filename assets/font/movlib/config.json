@@ -58,6 +58,24 @@
       "src": "entypo"
     },
     {
+      "uid": "25fc99a30fecc4021fdcae5fff5ba9ac",
+      "css": "eye",
+      "code": 59408,
+      "src": "entypo"
+    },
+    {
+      "uid": "c77fd2fd065b5fe16d6f2b41e190b266",
+      "css": "pencil",
+      "code": 59404,
+      "src": "entypo"
+    },
+    {
+      "uid": "16890362e811b4cb8de36282b071fe30",
+      "css": "comment",
+      "code": 59407,
+      "src": "entypo"
+    },
+    {
       "uid": "2c5335c6e56b876139d7a58ab2f4b2fe",
       "css": "bell",
       "code": 59393,
@@ -67,6 +85,12 @@
       "uid": "39a5a0d7ce8342d149373b2ce219503a",
       "css": "alert",
       "code": 59399,
+      "src": "entypo"
+    },
+    {
+      "uid": "89eb512cb82a1c3fe83cb16134f9876c",
+      "css": "back-in-time",
+      "code": 59400,
       "src": "entypo"
     },
     {
