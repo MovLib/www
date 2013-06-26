@@ -52,7 +52,7 @@ abstract class AbstractFormView extends AbstractView {
    */
   protected $attributes = [
     "accept-charset" => "UTF-8",
-    "class"          => "container form",
+    "class"          => "container",
     "method"         => "post",
   ];
 

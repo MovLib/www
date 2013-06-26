@@ -21,7 +21,9 @@ use \Memcached;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\NetworkException;
 use \MovLib\Exception\SessionException;
+use \MovLib\Exception\UserException;
 use \MovLib\Model\AbstractModel;
+use \MovLib\Model\I18nModel;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMethodCalls;
 use \MovLib\Utility\Network;
@@ -158,18 +160,10 @@ class SessionModel extends AbstractModel {
         throw new SessionException("Could not start session.");
       }
       try {
-        foreach ($this->selectAll(
-          "SELECT `user_id` AS `id`, `name`, `deleted`, `timezone`, `language_id` AS `languageId`
-          FROM `users`
-          WHERE `user_id` = {$_SESSION["UID"]}
-          LIMIT 1"
-        )[0] as $name => $value) {
-          $this->{$name} = $value;
-        }
-        settype($this->deleted, "boolean");
-        if ($this->deleted === true) {
-          // @todo Redirect and tell to user about possible actions.
-        }
+        $this->loadSession(
+          "SELECT `user_id` AS `id`, `name`, `deleted`, `timezone`, `language_id` AS `languageId` FROM `users` WHERE `user_id` = ? LIMIT 1",
+          "d", $_SESSION["UID"]
+        );
         $this->sessionId  = session_id();
         $this->csrfToken  = $_SESSION["CSRF"];
         $this->ttl        = $_SESSION["TTL"];
@@ -181,10 +175,63 @@ class SessionModel extends AbstractModel {
         else {
           $this->isLoggedIn = true;
         }
+      } catch (UserException $e) {
+        // @todo Account is deleted or deactivated, redirect and display help.
+        throw new SessionException("@todo Account is deleted or deactivated, redirect and display help.", $e);
       } catch (ErrorException $e) {
-        // @todo What about anon users who are editing?
-        $this->destroySession();
+        // That we are catching this exception might have several reasons. Maybe Memcached was down or reloaded and the
+        // newly generated session ID doesn't have the necessary fields UID, CSRF and TTL stored along. Let's check our
+        // persistent storage.
+        try {
+          $result = $this->loadSession(
+            "SELECT
+              `u`.`user_id` AS `id`,
+              `u`.`name` AS `name`,
+              `u`.`deleted` AS `deleted`,
+              `u`.`timezone` AS `timezone`,
+              `u`.`language_id` AS `languageId`
+            FROM `users` `u`
+              INNER JOIN `sessions` `s`
+                ON `s`.`user_id` = `u`.`user_id`
+            WHERE `s`.`session_id` = ?
+            LIMIT 1",
+            "s", $sessionId
+          );
+          // Fake an object, we don't want to load a complete user model.
+          $this->startSession((object) $result);
+        } catch (UserException $e) {
+          // @todo Account is deleted or deactivated, redirect and display help.
+          throw new SessionException("@todo Account is deleted or deactivated, redirect and display help.", $e);
+        } catch (ErrorException $e) {
+          // I18n is not available at this point.
+          $i18n = new I18nModel();
+          $this->destroySession();
+          Network::httpRedirect($i18n->r("/user/login"), 302);
+        }
       }
+    }
+  }
+
+  /**
+   * Load session data from the specified query and export values to class scope.
+   *
+   * @param string $query
+   *   The query to execute.
+   * @param string $type
+   *   The type of the value in mysqli bind param syntax.
+   * @param mixed $value
+   *   The value to search for (will be converted to array automatically).
+   * @throws \MovLib\Exception\UserException
+   *   If the account is either deleted or deactivated.
+   */
+  private function loadSession($query, $type, $value) {
+    foreach ($this->select($query, $type, [ $value ])[0] as $name => $value) {
+      $this->{$name} = $value;
+    }
+    settype($this->deleted, "boolean");
+    if ($this->deleted === true) {
+      // @todo Redirect and tell to user about possible actions.
+      throw new UserException("The user's account is either deleted or deactivated.");
     }
   }
 
@@ -253,7 +300,13 @@ class SessionModel extends AbstractModel {
    *   If no sessions could be retrieved from the database.
    */
   public function getActiveSessions() {
-    return $this->select("SELECT `session_id`, `user_agent`, `ip_address`, `csrf_token`, `ttl` FROM `sessions` WHERE `user_id` = ?", "d", $this->id);
+    $sessions = $this->select("SELECT `session_id`, `user_agent`, `ip_address`, UNIX_TIMESTAMP(`ttl`) AS `ttl` FROM `sessions` WHERE `user_id` = ?", "d", [ $this->id ]);
+    $c = count($sessions);
+    for ($i = 0; $i < $c; ++$i) {
+      // Transform each IP address into a humand readable form.
+      $sessions[$i]["ip_address"] = inet_ntop($sessions[$i]["ip_address"]);
+    }
+    return $sessions;
   }
 
   /**
@@ -263,15 +316,15 @@ class SessionModel extends AbstractModel {
    */
   public function insertSession() {
     return $this->prepareAndBind(
-      "INSERT INTO `sessions` (`session_id`, `user_id`, `user_agent`, `ip_address`, `csrf_token`, `ttl`) VALUES (?, ?, ?, ?, ?, ?)",
-      "sdsssi",
-      $this->sessionId, $this->id, $this->userAgent, $this->ipAddress, $this->csrfToken, $this->ttl
+      "INSERT INTO `sessions` (`session_id`, `user_id`, `user_agent`, `ip_address`, `ttl`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
+      "sdssi",
+      [ $this->sessionId, $this->id, $this->userAgent, inet_pton($this->ipAddress), $this->ttl ]
     )->execute()->close();
   }
 
   /**
-   * Forcefully starts a new session for the given user model, invalidating any previously set data and regenerating the
-   * session's ID. This should be called after a user has successfully logged in.
+   * Forcefully starts a new session for the given user model, regenerating the session's ID. Preserving any
+   * previously set session data. This should be called after a user has successfully logged in.
    *
    * @param \MovLib\Model\UserModel $userModel
    *   The user model for which we should start a new session.
@@ -281,13 +334,19 @@ class SessionModel extends AbstractModel {
    *   fail!
    */
   public function startSession($userModel) {
-    // If a session is active, destroy it.
+    // Create a copy of any previously set session data, the call to session_start() will empty this array.
+    $sessionData = isset($_SESSION) ? $_SESSION : null;
+    // It's important to destroy any active session, otherwise we can't start a new one.
     if (session_status() === PHP_SESSION_ACTIVE) {
-      $this->destroySession();
+      session_destroy();
     }
     // Memcached is most likely down or full if starting a new session fails.
     if (session_start() === false) {
       throw new SessionException("Could not start session.");
+    }
+    // After PHP has started the session, we can combine the arrays again.
+    if (!empty($sessionData)) {
+      $_SESSION += $sessionData;
     }
     // Always create a entirely new session ID.
     session_regenerate_id(true);
@@ -299,6 +358,7 @@ class SessionModel extends AbstractModel {
     $this->deleted    = $userModel->deleted;
     $this->name       = $userModel->name;
     $this->timezone   = $userModel->timezone;
+    $this->languageId = $userModel->languageId;
     $this->isLoggedIn = true;
     // Be sure to insert this new session into the database.
     DelayedMethodCalls::stack($this, "insertSession");

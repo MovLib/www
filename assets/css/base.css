@@ -32,51 +32,9 @@
  * @since 0.0.1-dev
  */
 
-/**
- * Color table
- * ===========
- * MovLib is mainly using shades of gray (similarity to book series is not intended), but there are a few colors that
- * we support as well. Please always refer to this color table and only choose colors from here (this is not true for
- * gray; you may alter the shade to fit the need)!
- *
- * Shades of gray
- * ==============
- *
- * 01[2]34[5]67[8]9a[b]cd[e]f
- *
- * --- dark ---
- * #222
- *   #333
- *   #3b3b3b
- *   #484848
- * #555
- *   #626262
- *   #6e6e6e
- *   #7b7b7b
- * #888
- *   #959595
- *   #a1a1a1
- *   #aeaeae
- * #bbb
- *   #c8c8c8
- *   #d4d4d4
- * #eee
- *   #e1e1e1
- *   #fbfbfb
- * -- bright --
- *
- * Colors are lent from the Android color code: https://developer.android.com/design/style/color.html
- * ==================================================================================================
- * Blue   : #09c (dark) : #33b5e5 (bright)
- * Purple : #93c (dark) : #a6c (bright)
- * Green  : #690 (dark) : #9c0 (bright)
- * Yellow : #f80 (dark) : #fb3 (bright)
- * Red    : #c00 (dark) : #f44 (bright)
- *
- * Logo colors
- * ===========
- * @todo Extract all colors from SVG
- */
+
+/* ==== WEB FONTS =================================================================================================== */
+
 
 @font-face {
   font-family: "Open Sans";
@@ -146,6 +104,10 @@
   font-style: italic;
 }
 
+
+/* ==== NORMALIZE And MORE ========================================================================================== */
+
+
 /*
   Works for all modern browsers, much more natural to work with, support:
 
@@ -192,6 +154,21 @@ body {
 }
 
 html,
+body {
+  background-color: #252525;
+  height: 100%;
+}
+
+abbr[title] {
+  cursor: help;
+  border-bottom: 1px dotted #656565;
+}
+
+
+/* ==== TYPORGRAPHY ================================================================================================= */
+
+
+html,
 input,
 button,
 select,
@@ -201,7 +178,6 @@ table {
      -moz-text-size-adjust: 100%;
       -ms-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
-  background-color: #fff;
   color: #656565;
   text-rendering: geometricPrecision;
 /*
@@ -235,12 +211,6 @@ table {
   font-family: "Open Sans", Arial, "Microsoft Yahei", "MS Yahei", Yahei, Meiryo, sans-serif;
 }
 
-html,
-body {
-  background-color: #252525;
-  height: 100%;
-}
-
 pre,
 code,
 kbd,
@@ -248,50 +218,6 @@ samp,
 tt,
 var {
   font: normal 12px/1 Consolas, monospace, serif;
-}
-
-::-moz-selection {
-  background: #09c;
-  color: #fff;
-}
-
-::selection {
-  background: #09c;
-  color: #fff;
-}
-
-a {
-  transition: 0.4s ease-out;
-  transition-property: color, border-color;
-  border-bottom: 1px solid transparent;
-  color: #09c;
-  text-decoration: none;
-}
-
-a:hover,
-a:focus {
-  border-bottom-color: #09c;
-}
-
-a:focus {
-  outline-offset: -2px;
-  outline: 1px dotted #656565;
-  outline: 5px auto -webkit-focus-ring-color;
-}
-
-a:hover,
-a:active,
-a.active {
-  outline: 0;
-}
-
-a.active[href="#"] {
-  cursor: default;
-}
-
-abbr[title] {
-  cursor: help;
-  border-bottom: 1px dotted #656565;
 }
 
 dfn {
@@ -330,7 +256,9 @@ h4 small,
 h5 small,
 h6 small {
   color: #656565;
+  display: inline;
   line-height: 1;
+  margin: 0;
 }
 
 h1,
@@ -375,10 +303,103 @@ h4 small {
   font-size: 14px;
 }
 
+sub,
+sup {
+  font-size: 10.5px;
+}
 
-/* ==== PARAGRAPHs ================================================================================================== */
+sub,
+sup {
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
 
-/**
+sub {
+  bottom: -2.625px;
+}
+
+sup {
+  top: -5.25px;
+}
+
+code,
+pre,
+var {
+  background-color: #fbfbfb;
+  border: 1px solid;
+}
+
+code,
+var {
+  border-color: #d4d4d4;
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+
+pre {
+  border-color: #aeaeae;
+  display: block;
+  margin: 0 0 10px;
+  padding: 9.5px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+var {
+  color: #d14;
+}
+
+
+/* ==== TEXT SELECTION ============================================================================================== */
+
+
+::-moz-selection {
+  background: #09c;
+  color: #fff;
+}
+
+::selection {
+  background: #09c;
+  color: #fff;
+}
+
+
+/* ==== HYPERLINKS ================================================================================================== */
+
+
+a {
+  transition: 0.4s ease-out;
+  transition-property: color, border-color;
+  border-bottom: 1px solid transparent;
+  color: #09c;
+  text-decoration: none;
+}
+
+a:hover,
+a:focus {
+  border-bottom-color: #09c;
+}
+
+a:focus {
+  outline-offset: -2px;
+  outline: 1px dotted #656565;
+  outline: 5px auto -webkit-focus-ring-color;
+}
+
+a:hover,
+a:active,
+a.active {
+  outline: 0;
+}
+
+a.active[href="#"] {
+  cursor: default;
+}
+
+
+/** ==== PARAGRAPHs ====================================================================================================
  * The hr, p, and small tags are considered paragraph elements and should be used as such. For more information have a
  * look at {@link http://html5doctor.com/small-hr-element/}.
  */
@@ -407,14 +428,13 @@ small {
 
 img {
   -ms-interpolation-mode: bicubic;
-  height: auto;
-}
-
-img,
-object {
   border: 0;
   vertical-align: middle;
 }
+
+
+/* ==== FORMs, INPUTs And BUTTONs =================================================================================== */
+
 
 button,
 html button,
@@ -440,17 +460,14 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
-label,
-.label {
+label {
   display: block;
   margin-bottom: 5px;
 }
 
 input[type="checkbox"],
 input[type="radio"] {
-  line-height: normal;
-  margin: 0 0 0 10px;
-  vertical-align: -1px;
+  margin: 4px 0 0;
 }
 
 input[type="search"] {
@@ -547,58 +564,48 @@ textarea {
   resize: vertical;
 }
 
-sub,
-sup {
-  font-size: 10.5px;
+select:focus,
+input[type="file"]:focus,
+input[type="radio"]:focus,
+input[type="checkbox"]:focus {
+  outline: thin dotted #353535;
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
 }
 
-sub,
-sup {
-  line-height: 0;
-  position: relative;
-  vertical-align: baseline;
+
+/* ==== TABLES ====================================================================================================== */
+
+table {
+  background-color: transparent;
+  border-collapse: collapse;
+  border-spacing: 0;
+  box-shadow: 0 2.5px 5px #dfdfdf;
+  margin-bottom: 20px;
+  max-width: 100%;
+  width: 100%;
 }
 
-sub {
-  bottom: -2.625px;
+caption {
+  caption-side: top;
+  text-align: left;
+  margin: 1.39em 0; /* same margin as paragraphs */
 }
 
-sup {
-  top: -5.25px;
+td {
+  border-top: 1px solid #e5e5e5;
+  padding: 8px;
+  text-align: left;
 }
 
-code,
-pre,
-var {
-  background-color: #fbfbfb;
-  border: 1px solid;
+thead {
+  background-color: #252525;
+  vertical-align: bottom;
 }
 
-code,
-var {
-  border-color: #d4d4d4;
-  padding: 2px 4px;
-  white-space: nowrap;
-}
-
-pre {
-  border-color: #aeaeae;
-  display: block;
-  margin: 0 0 10px;
-  padding: 9.5px;
-  white-space: pre-wrap;
-  word-break: break-all;
-  word-wrap: break-word;
-}
-
-var {
-  color: #d14;
-}
-
-/* Microsoft Internet Explorer specific styles -------------------------------------------------------------------------
- *
- * These styles are for modern Internet Explorers. We use conditional stylesheets for the old ones.
- */
-@-ms-viewport {
-  width: device-width;
+th {
+  color: #fff;
+  font-weight: 300;
+  text-align: center;
+  padding: 8px;
 }

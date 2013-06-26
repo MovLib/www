@@ -54,10 +54,10 @@ class UserShowView extends AbstractView {
   /**
    * {@inheritdoc}
    * @global \MovLib\Model\I18nModel $i18n
-   * @global \MovLib\Model\UserModel $user
+   * @global \MovLib\Model\SessionModel $user
    */
   public function getContent() {
-    global $i18n;
+    global $i18n, $user;
     $nav = $this->presenter->getSecondarySettingsNavigation();
     return
       "<div class='container'>" .

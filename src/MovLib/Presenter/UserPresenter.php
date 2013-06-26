@@ -93,14 +93,14 @@ class UserPresenter extends AbstractPresenter {
       Network::httpRedirect($i18n->r("/user"), 302);
       return;
     }
-    $this->view = new UserLoginView($this);
     // Ensure we are using the correct route (this method is called from other constructors in this presenter as well).
     $_SERVER["REQUEST_URI"] = $i18n->r("/user/login");
     // If the user requested the simple form, just render it.
     if ($_SERVER["REQUEST_METHOD"] === "GET") {
-      return;
+      $this->setPresentation("User\\UserLogin");
     }
-    elseif ($_SERVER["REQUEST_METHOD"] === "POST") {
+    else {
+      $this->view = new UserLoginView($this);
       if (($mail = Validation::inputMail("mail")) === false) {
         $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
       }
@@ -123,9 +123,6 @@ class UserPresenter extends AbstractPresenter {
       ];
       Network::httpRedirect($i18n->r("/user"), 302);
     }
-    else {
-      $this->exitMethodNotAllowed("GET, POST");
-    }
   }
 
   /**
@@ -138,9 +135,6 @@ class UserPresenter extends AbstractPresenter {
    */
   private function __constructLogout() {
     global $i18n, $user;
-    if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-      $this->exitMethodNotAllowed();
-    }
     if ($user->isLoggedIn === false) {
       Network::httpRedirect($i18n->r("/user/login", 302));
       return;
@@ -158,9 +152,6 @@ class UserPresenter extends AbstractPresenter {
    */
   private function __constructProfile() {
     global $i18n;
-    if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-      $this->exitMethodNotAllowed();
-    }
     try {
       $this->profile = new UserModel(UserModel::FROM_NAME, Validation::inputString("USER_NAME", INPUT_SERVER));
     } catch (UserException $e) {
@@ -208,7 +199,7 @@ class UserPresenter extends AbstractPresenter {
       ;
       return;
     }
-    elseif ($_SERVER["REQUEST_METHOD"] === "POST") {
+    else {
       $this->view = new UserRegisterView($this);
       if (($mail = Validation::inputMail("mail")) === false) {
         $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
@@ -254,9 +245,6 @@ class UserPresenter extends AbstractPresenter {
         )}</small></div>"
       ;
     }
-    else {
-      $this->exitMethodNotAllowed("GET, POST");
-    }
   }
 
   /**
@@ -275,35 +263,36 @@ class UserPresenter extends AbstractPresenter {
         ? $this->activateOrResetPassword($i18n->r("/user/reset-password"), $i18n->t("reset password page"))
         : $this->setPresentation("User\\UserResetPassword")
       ;
-      return;
     }
-    $this->view = new UserResetPasswordView($this);
-    if (($mail = Validation::inputMail("mail")) === false) {
-      return [ "mail" => $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]) ];
-    }
-    try {
-      $userModel = new UserModel(UserModel::FROM_MAIL, $mail);
-      $params = [ Crypt::randomHash(), $mail ];
-      DelayedMethodCalls::stack($userModel, "preResetPassword", $params);
-      DelayedMailer::stackMethod("stackPasswordReset", $params);
-    } catch (UserException $e) {
-      // Only tell a logged in user that the email is wrong!
-      if ($user->isLoggedIn === true) {
-        $this->view->setAlert($i18n->t("The email address you entered is not correct, please try again."), AbstractView::ALERT_SEVERITY_ERROR);
-        return;
+    else {
+      $this->view = new UserResetPasswordView($this);
+      if (($mail = Validation::inputMail("mail")) === false) {
+        return [ "mail" => $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]) ];
       }
+      try {
+        $userModel = new UserModel(UserModel::FROM_MAIL, $mail);
+        $params = [ Crypt::randomHash(), $mail ];
+        DelayedMethodCalls::stack($userModel, "preResetPassword", $params);
+        DelayedMailer::stackMethod("stackPasswordReset", $params);
+      } catch (UserException $e) {
+        // Only tell a logged in user that the email is wrong!
+        if ($user->isLoggedIn === true) {
+          $this->view->setAlert($i18n->t("The email address you entered is not correct, please try again."), AbstractView::ALERT_SEVERITY_ERROR);
+          return;
+        }
+      }
+      $this->view = new AlertView($this, $this->view->title);
+      $this->view->setAlert(
+        $i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ]),
+        AbstractView::ALERT_SEVERITY_SUCCESS
+      );
+      $this->view->content =
+        "<div class='container'><small>{$i18n->t(
+          "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
+          [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
+        )}</small></div>"
+      ;
     }
-    $this->view = new AlertView($this, $this->view->title);
-    $this->view->setAlert(
-      $i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ]),
-      AbstractView::ALERT_SEVERITY_SUCCESS
-    );
-    $this->view->content =
-      "<div class='container'><small>{$i18n->t(
-        "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-        [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
-      )}</small></div>"
-    ;
   }
 
   /**
@@ -335,8 +324,8 @@ class UserPresenter extends AbstractPresenter {
       return;
     }
     $this->view = new UserSettingsView($this, $tab);
-    if ($_SERVER["REQUEST_METHOD"] === "GET") {
-      return;
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+      return $this->{"validate{$tab}Settings"}();
     }
   }
 
@@ -351,9 +340,6 @@ class UserPresenter extends AbstractPresenter {
    */
   private function __constructShow() {
     global $i18n, $user;
-    if ($_SERVER["REQUEST_METHOD"] !== "GET") {
-      $this->exitMethodNotAllowed();
-    }
     if ($user->isLoggedIn === false) {
       http_response_code(401);
       $this->__constructLogin();
@@ -533,8 +519,41 @@ class UserPresenter extends AbstractPresenter {
     // @todo Update password.
   }
 
-  private function validateDangzeroneSettings() {
+  /**
+   * Validate the submitted settings of the dangerzone tab.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
+   * @return null|array
+   *   <code>NULL</code> if everything went well, otherwise an array containing the error alert messages.
+   */
+  private function validateDangerzoneSettings() {
+    global $i18n, $user;
+    if (($action = Validation::inputString("action")) === false) {
+      $this->setPresentation("Error\\BadRequest");
+      return;
+    }
+    switch ($action) {
+      case "user-deactivate":
+        $this->__constructLogout();
+        break;
 
+      case "user-delete":
+        $this->__constructLogout();
+        break;
+
+      case $user->sessionId:
+        $this->__constructLogout();
+        break;
+
+      default:
+        // Not only delete the requested session, also generate a new one for the current user tighten security.
+        $user->deleteSession($action);
+        $this->view->setAlert($i18n->t("The session was successfully terminated."), AbstractView::ALERT_SEVERITY_SUCCESS);
+        break;
+    }
   }
 
 
@@ -582,9 +601,9 @@ class UserPresenter extends AbstractPresenter {
     return [
       "title" => $i18n->t("Profile navigation"),
       "points" => [
-        [ $i18n->r("/user"), "<i class='icon icon--home'></i> {$i18n->t("Profile")}", [ "class" => "menuitem--separator", "title" => "Go to your profile page." ]],
+        [ $i18n->r("/user"), "<i class='icon icon--info-circled'></i> {$i18n->t("Profile")}", [ "class" => "menuitem--separator", "title" => "Go to your profile page." ]],
         [ $i18n->r("/user/account-settings"), "<i class='icon icon--user'></i> {$i18n->t("Account")}", [ "title" => $i18n->t("Manage your basic account settings.") ]],
-        [ $i18n->r("/user/notification-settings"), "<i class='icon icon--signal'></i> {$i18n->t("Notifications")}", [ "title" => $i18n->t("Manage your notification settings.") ]],
+        [ $i18n->r("/user/notification-settings"), "<i class='icon icon--bell'></i> {$i18n->t("Notifications")}", [ "title" => $i18n->t("Manage your notification settings.") ]],
         [ $i18n->r("/user/mail-settings"), "<i class='icon icon--mail'></i> {$i18n->t("Mail")}", [ "title" => $i18n->t("Change your email address.") ]],
         [ $i18n->r("/user/password-settings"), "<i class='icon icon--lock'></i> {$i18n->t("Password")}", [ "title" => $i18n->t("Change your password.") ]],
         [ $i18n->r("/user/dangerzone-settings"), "<i class='icon icon--alert'></i> {$i18n->t("Dangerzone")}", [ "class" => "menuitem--delete", "title" => $i18n->t("Deactivate or delete your account.") ]],

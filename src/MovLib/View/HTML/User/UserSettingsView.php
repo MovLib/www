@@ -67,7 +67,6 @@ class UserSettingsView extends AbstractFormView {
     global $i18n;
     parent::__construct($userPresenter, "{$i18n->t(($this->tab = $tab))} {$i18n->t("Settings")}");
     $this->stylesheets[] = "modules/user.css";
-    $this->attributes["method"] = "patch";
   }
 
 
@@ -119,10 +118,10 @@ class UserSettingsView extends AbstractFormView {
         "class" => "input--block-level",
         "title" => $i18n->t("Please enter your real name in this field."),
       ])}</p>" .
-      "<p><span class='label'>{$i18n->t("Gender")}</span><span class='radio' title='{$i18n->t("Please select your gender.")}'>" .
-        "<label>{$i18n->t("Male")}{$this->input("gender", [ "type" => "radio", "value" => "0" ])}</label>" .
-        "<label>{$i18n->t("Female")}{$this->input("gender", [ "type" => "radio", "value" => "1" ])}</label>" .
-        "<label>{$i18n->t("Unknown")}{$this->input("gender", [ "type" => "radio", "value" => "" ])}</label>" .
+      "<p><label>{$i18n->t("Gender")}</label><span title='{$i18n->t("Please select your gender.")}'>" .
+        "<label class='radio inline'>{$this->input("gender", [ "type" => "radio", "value" => "0" ])}{$i18n->t("Male")}</label>" .
+        "<label class='radio inline'>{$this->input("gender", [ "type" => "radio", "value" => "1" ])}{$i18n->t("Female")}</label>" .
+        "<label class='radio inline'>{$this->input("gender", [ "type" => "radio", "value" => "" ])}{$i18n->t("Unknown")}</label>" .
       "</span></p>" .
       "<p><label for='country'>{$i18n->t("Country")}</label>{$this->inputDatalist(
         [ "country", [ "class" => "input--block-level" ]],
@@ -138,8 +137,9 @@ class UserSettingsView extends AbstractFormView {
       ], "textarea")}</p>" .
       // @todo Language selector for profile and content editable!
       "<p><label for='birthday'>{$i18n->t("Date of Birth")}</label>{$this->input("birthday", [
-        "class" => "input--block-level",
-        "type"  => "date",
+        "class"       => "input--block-level",
+        "placeholder" => "mm/dd/yyyy",
+        "type"        => "date",
       ])}</p>" .
       // @todo Display help for formatting, type date works in nearly no browser! Or use multiple selects?
       "<p><label for='website'>{$i18n->t("Website")}</label>{$this->input("website", [
@@ -150,7 +150,7 @@ class UserSettingsView extends AbstractFormView {
       "<p><label>{$i18n->t("Keep my data private!")}{$this->help($i18n->t(
         "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
         "used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data " .
-        "like gender and country scientiest around the world are enabled to research the human interests in movies more " .
+        "like gender and country, scientists around the world are enabled to research the human interests in movies more " .
         "closely. Of course your real name won’t be used for anything!"
       ))}{$this->input("private", [ "type" => "checkbox" ])}</label></p>" .
       "<p>{$this->submit($i18n->t("Update account settings"))}</p>"
@@ -171,7 +171,7 @@ class UserSettingsView extends AbstractFormView {
     global $i18n;
     return
       "<p>{$i18n->t(
-        "MovLib takes your privacy seriously, that’s why your email address will never show up in public. In fact, it " .
+        "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
         "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to the " .
         "{0}notification settings{1}.",
         [ "<a href='{$i18n->r("/user/notification-settings")}'>", "</a>" ]
@@ -222,7 +222,7 @@ class UserSettingsView extends AbstractFormView {
     }
     return
       $notice .
-      "<p><small class='form-help'>{$this->a($i18n->r("/user/reset-password"), $i18n->t("Forgotten your current password?"), [
+      "<p><small class='form-help'>{$this->a($i18n->r("/user/reset-password"), $i18n->t("Forgot your current password?"), [
         "title" => $i18n->t("Click this link if you forgot your password."),
       ])}</small><label for='current-password'>{$i18n->t("Current password")}</label>{$this->input("pass", [
         "autocomplete" => "off",
@@ -256,12 +256,79 @@ class UserSettingsView extends AbstractFormView {
     ;
   }
 
+  /**
+   * The dangerzone tab of the user settings contains all stuff related to sessions and the account itself. The user is
+   * able to deactivate or delete the account here.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
+   * @return string
+   *   The mark-up for the dangerzone tab ready for print.
+   */
   private function getDangerzoneTab() {
-    global $i18n;
+    global $i18n, $user;
+    $buttonTitle = $i18n->t("Terminate this session by clicking on this button.");
+    $buttonText = $i18n->t("Terminate");
+    $sessions = $user->getActiveSessions();
+    $c = count($sessions);
+    $sessionsTable = "";
+    for ($i = 0; $i < $c; ++$i) {
+      if ($sessions[$i]["session_id"] === $user->sessionId) {
+        $active = " class='warning'";
+        $button = "title='{$i18n->t("If you click here, you’ll be logged out from your current session.")}'>{$i18n->t("Logout")}";
+      }
+      else {
+        $active = "";
+        $button = "title='{$buttonTitle}'>{$buttonText}";
+      }
+      $sessionsTable .=
+        "<tr{$active}>" .
+          "<td class='small'><tt>{$sessions[$i]["session_id"]}</tt></td>" .
+          "<td class='small'><tt>{$sessions[$i]["user_agent"]}</tt></td>" .
+          "<td><tt>{$sessions[$i]["ip_address"]}</tt></td>" .
+          "<td><button class='button button--danger' name='action' type='submit' tabindex='{$this->getTabindex()}' value='{$sessions[$i]["session_id"]}' {$button}</button></td>" .
+        "</tr>"
+      ;
+    }
     return
-      "<div class='alert alert--info' role='alert'>" .
-        "<h4 class='alert__title'>{$i18n->t("Check back later")}</h4>" .
-        "{$i18n->t("The dangerzone system isn’t implemented yet.")}" .
+      "<h2>{$i18n->t("Active Sessions")}</h2>" .
+      "<table id='user-sessions' class='table-hover'>" .
+        "<caption>{$i18n->t(
+          "The following table contains a listing of all your active sessions. You can terminate any session by clicking " .
+          "on the button to the right. Your current session is highlighted with a yellow background color and the button " .
+          "reads “logout” instead of “terminate”. If you have the feeling that some sessions that are listed weren’t " .
+          "initiated by you, terminate them and consider to {0}set a new password{1} to ensure that nobody else has " .
+          "access to your account.",
+          [ "<a href='{$i18n->r("/user/password-settings")}'>", "</a>" ]
+        )}</caption>" .
+        "<colgroup><col><col><col><col></colgroup>" .
+        "<thead><tr><th>{$i18n->t("Session ID")}</th><th>{$i18n->t("User Agent")}</th><th>{$i18n->t("IP address")}</th><th></th></tr></thead>" .
+        "<tbody>{$sessionsTable}</tbody>" .
+      "</table>" .
+      "<h2>{$i18n->t("Deacitvate Account")}</h2>" .
+      "<div class='alert alert--error alert--block'>" .
+        $this->help(
+          "<b>{$i18n->t("Why can’t I delete my account entirely?")}</b><br>" .
+          $i18n->t(
+            "You agreed to release all your contributions to the MovLib database along with an open and free " .
+            "license, therefore each of your edits is tightly bound to your account. To draw an analogy, you cannot " .
+            "withdraw your copyright if you create something in the European jurisdiction. The delection of your " .
+            "account would be just like that. Your personal data can of course be deleted, only your user name will " .
+            "remain visible to the public."
+          )
+        ) .
+        "<p>{$i18n->t(
+          "If you want to deactivate your account, for whatever reason, use one of the two options below. " .
+          "You can either simply deactivate, or delete all your {0}personal data{1} and deactivate.", [
+            "<a href='{$i18n->r("/user/account-settings")}'>", "</a>"
+          ]
+        )}</p>" .
+        "<p class='form-actions'>" .
+          "<button class='button button--primary' name='action' type='submit' value='user-deactivate'>{$i18n->t("Deactivate")}</button>&nbsp;" .
+          "<button class='button button--danger' name='action' type='submit' value='user-delete'>{$i18n->t("Delete and Deactivate")}</button>" .
+        "</p>" .
       "</div>"
     ;
   }
