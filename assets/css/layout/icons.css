@@ -18,6 +18,11 @@
  * We are using a custom font created with Fontello that only contains the icons we really use. Please have a look at
  * the LICENSE.txt file in the font directory for more information.
  *
+ * @author Dave Gandy
+ * @copyright © 2013–present, Dave Gandy
+ * @license http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL SIL OFL 1.1
+ * @link http://fontawesome.io/
+ *
  * @author Daniel Bruce
  * @copyright © 2013–present, Daniel Bruce
  * @license http://creativecommons.org/licenses/by-sa/3.0/ CC BY 3.0
@@ -33,11 +38,11 @@
 
 @font-face {
   font-family: MovLib;
-  src: url("/font/movlib/movlib.eot?31453955");
-  src: url("/font/movlib/movlib.eot?31453955#iefix") format("embedded-opentype"),
-       url("/font/movlib/movlib.woff?31453955") format("woff"),
-       url("/font/movlib/movlib.ttf?31453955") format("truetype"),
-       url("/font/movlib/movlib.svg?31453955#movlib") format("svg")
+  src: url("/font/movlib/movlib.eot");
+  src: url("/font/movlib/movlib.eot#iefix") format("embedded-opentype"),
+       url("/font/movlib/movlib.woff") format("woff"),
+       url("/font/movlib/movlib.ttf") format("truetype"),
+       url("/font/movlib/movlib.svg#movlib") format("svg")
   ;
   font-weight: 500;
   font-style: normal;
@@ -60,13 +65,15 @@
 }
 
 .icon--alert:before{content:"\e807"}
+.icon--bell:before{content:"\e801"}
 .icon--cc-zero:before{content:"\e803"}
 .icon--cc:before{content:"\e802"}
 .icon--help-circled:before{content:"\e80a"}
-.icon--home:before{content:"\e808"}
+.icon--info-circled:before{content:"\e80b"}
 .icon--lock:before{content:"\e806"}
 .icon--mail:before{content:"\e805"}
 .icon--menu:before{content:"\e809"}
 .icon--search:before{content:"\e800"}
-.icon--signal:before{content:"\e801"}
+.icon--star-empty:before{content:"\e80e"}
+.icon--star:before{content:"\e80d"}
 .icon--user:before{content:"\e804"}
