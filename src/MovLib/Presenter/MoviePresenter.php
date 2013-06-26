@@ -20,6 +20,7 @@ namespace MovLib\Presenter;
 use \MovLib\Exception\MovieException;
 use \MovLib\Model\MovieModel;
 use \MovLib\Model\ReleasesModel;
+use \MovLib\View\HTML\Movie\MovieShowView;
 
 
 /**
@@ -46,6 +47,12 @@ class MoviePresenter extends AbstractPresenter {
    */
   public $movieModel;
 
+  /**
+   * The display title of the movie to display.
+   * @var string
+   */
+  public $displayTitle;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -69,13 +76,23 @@ class MoviePresenter extends AbstractPresenter {
    */
   protected function __constructGet() {
     try {
-      $this->movieModel = (new MovieModel())->__constructFromId($_SERVER["MOVIE_ID"], $_SERVER["LANGUAGE_CODE"]);
+      $this->movieModel = new MovieModel($_SERVER["MOVIE_ID"]);
       if ($this->movieModel->deleted === true) {
         return $this->setPresentation("Error\\GoneMovie");
       }
-//      echo var_dump($this->movieModel->getRelationships());
       $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
-      return $this->setPresentation("Movie\\MovieShow");
+      // Construct the title of the page from the movie's display title or the original title if no display title exists.
+      $titles = $this->movieModel->getTitles();
+      $count = count($titles);
+      $this->displayTitle = $this->movieModel->originalTitle;
+      for ($i = 0; $i < $count; ++$i) {
+        if ($titles[$i]["isDisplayTitle"]) {
+          $this->displayTitle = $titles[$i];
+          break;
+        }
+      }
+      $this->view = new MovieShowView($this);
+      return $this;
     } catch (MovieException $e) {
       return $this->setPresentation("Error\\NotFound");
     }

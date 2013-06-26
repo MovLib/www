@@ -97,66 +97,72 @@ class MovieModel extends AbstractModel {
    * @var array
    */
   private $relationships;
-  /**
-   * The language code to display the movie in.
-   * @var string
-   */
-  public $languageCode;
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
   /**
    * Construct new movie model from given ID and gather all movie information available in the movies table.
+   * If no ID is supplied, an empty model will be returned.
+   * If the ID is invalid a \MovLib\Exception\MovieException will be thrown.
    *
    * @param int $id
+   *  The movie's id to construct this model from.
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
+   * @throws \MovLib\Exception\MovieException
+   *  If the movie's ID is invalid.
    */
-  public function __constructFromId($id, $languageCode = "en") {
-    $this->languageCode = $languageCode;
-    $result = $this->select(
-      "SELECT
-        `movie_id` AS `id`,
-        `original_title` AS `originalTitle`,
-        `rating` AS `rating`,
-        `mean_rating` AS `meanRating`,
-        `votes`,
-        `deleted`,
-        `year`,
-        `runtime`,
-        `rank`,
-        COLUMN_GET(`dyn_synopses`, '{$languageCode}' AS BINARY) AS `synopsis`,
-        `bin_relationships` AS `relationships`
-        FROM `movies`
-        WHERE `movie_id` = ?
-        LIMIT 1",
-      "d",
-      [ $id ]
-    );
-    if (isset($result[0]) === null) {
-      throw new MovieException("Could not find movie with ID '{$id}'!");
+  public function __construct($id = null) {
+    global $i18n;
+    if (isset($id)) {
+      $result = $this->select(
+        "SELECT
+          `movie_id` AS `id`,
+          `original_title` AS `originalTitle`,
+          `rating` AS `rating`,
+          `mean_rating` AS `meanRating`,
+          `votes`,
+          `deleted`,
+          `year`,
+          `runtime`,
+          `rank`,
+          COLUMN_GET(`dyn_synopses`, '{$i18n->languageCode}' AS BINARY) AS `synopsis`,
+          `bin_relationships` AS `relationships`
+          FROM `movies`
+          WHERE `movie_id` = ?
+          LIMIT 1",
+        "d",
+        [ $id ]
+      );
+      if (isset($result[0]) === false) {
+        throw new MovieException("Could not find movie with ID '{$id}'!");
+      }
+      foreach ($result[0] as $fieldName => $fieldValue) {
+        $this->{$fieldName} = $fieldValue;
+      }
+      settype($this->deleted, "boolean");
+      $this->relationships = igbinary_unserialize($this->relationships);
     }
-    foreach ($result[0] as $fieldName => $fieldValue) {
-      $this->{$fieldName} = $fieldValue;
-    }
-    settype($this->deleted, "boolean");
-    $this->relationships = igbinary_unserialize($this->relationships);
-    return $this;
   }
 
   /**
    * Retrieve the movie's awards from the database.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
    * @staticvar array $awards
    * @return array
    *  A keyed array containing the award information in an associative array.
    */
   public function getAwards() {
+    global $i18n;
     static $awards = null;
     if ($awards === null) {
       $awards = $this->select(
         "SELECT
           a.`award_id` AS `id`,
           a.`name` AS `name`,
-          COLUMN_GET(a.`dyn_names`, '{$this->languageCode}' AS BINARY) AS `nameLocalized`,
+          COLUMN_GET(a.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `nameLocalized`,
           ma.`year` AS `year`
           FROM `movies_awards` ma
           INNER JOIN `awards` a
@@ -202,11 +208,14 @@ class MovieModel extends AbstractModel {
   /**
    * Retrieve the movie's crew from the database.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
    * @staticvar array $crew
    * @return array
    *  A keyed array containing the crew information in an associative array.
    */
   public function getCrew() {
+    global $i18n;
     static $crew = null;
     if ($crew === null) {
       $crew = $this->select(
@@ -220,7 +229,7 @@ class MovieModel extends AbstractModel {
           c.`deleted` AS `companyDeleted`,
           j.`job_id` AS `jobId`,
           j.`title` AS `jobTitle`,
-          COLUMN_GET(j.`dyn_titles`, '{$this->languageCode}' AS BINARY) AS `jobTitleLocalized`
+          COLUMN_GET(j.`dyn_titles`, '{$i18n->languageCode}' AS BINARY) AS `jobTitleLocalized`
           FROM `movies_crew` mc
           INNER JOIN `jobs` j
             ON mc.`job_id` = j.`job_id`
@@ -242,11 +251,14 @@ class MovieModel extends AbstractModel {
   /**
    * Retrieve the movie's production countries from the database.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
    * @staticvar array $countries
    * @return array
    *  A keyed array containing the country information in an associative array.
    */
   public function getCountries() {
+    global $i18n;
     static $countries = null;
     if ($countries === null) {
       $countries = $this->select(
@@ -254,7 +266,7 @@ class MovieModel extends AbstractModel {
           c.`country_id` AS `id`,
           c.`iso_alpha-2` AS `isoCode`,
           c.`name` AS `name`,
-          COLUMN_GET(c.`dyn_translations`, '{$this->languageCode}' AS BINARY) AS `nameLocalized`
+          COLUMN_GET(c.`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS `nameLocalized`
           FROM `movies_countries` mc
           INNER JOIN `countries` c
           ON mc.`country_id` = c.`country_id`
@@ -298,18 +310,21 @@ class MovieModel extends AbstractModel {
   /**
    * Retrieve the movie's genres from the database.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
    * @staticvar array $genres
    * @return array
    *  A keyed array containing the genre information in an associative array.
    */
   public function getGenres() {
+    global $i18n;
     static $genres = null;
     if ($genres === null) {
       $genres = $this->select(
         "SELECT
           g.`genre_id` AS `id`,
           g.`name` AS `name`,
-          COLUMN_GET(g.`dyn_names`, '{$this->languageCode}' AS BINARY) AS `nameLocalized`
+          COLUMN_GET(g.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `nameLocalized`
           FROM `movies_genres` mg
           INNER JOIN `genres` g
           ON mg.`genre_id` = g.`genre_id`
@@ -325,11 +340,14 @@ class MovieModel extends AbstractModel {
   /**
    * Retrieve the movie's languages from the database.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
    * @staticvar array $languages
    * @return array
    *  A keyed array containing the language information in an associative array.
    */
   public function getLanguages() {
+    global $i18n;
     static $languages = null;
     if ($languages === null) {
       $languages = $this->select(
@@ -337,7 +355,7 @@ class MovieModel extends AbstractModel {
           l.`language_id` AS `id`,
           l.`iso_alpha-2` AS `isoCode`,
           l.`name` AS `name`,
-          COLUMN_GET(l.`dyn_translations`, '{$this->languageCode}' AS BINARY) AS `nameLocalized`
+          COLUMN_GET(l.`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS `nameLocalized`
           FROM `movies_languages` ml
           INNER JOIN `languages` l
           ON ml.`language_id` = l.`language_id`
@@ -378,10 +396,41 @@ class MovieModel extends AbstractModel {
     return $links;
   }
 
+
+  public function getPosters() {
+    global $i18n;
+    static $posters = null;
+    if ($posters === null) {
+      $posters = $this->select(
+        "SELECT
+          `poster_id` AS `posterId`,
+          `country_id` AS `country`,
+          `filename`,
+          `width`,
+          `height`,
+          `size`,
+          `ext`,
+          COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description`
+          FROM `posters`
+          WHERE `movie_id` = ?
+          ORDER BY rating DESC",
+        "d",
+        [ $this->id ]);
+      $count = count($posters);
+      for ($i = 0; $i < $count; ++$i) {
+        if (isset($posters[$i]["country"])) {
+          $posters[$i]["country"] = $i18n->getCountries()["id"][$posters[$i]["country"]]["name"];
+        }
+      }
+    }
+    return $posters;
+  }
+
   /**
    * Retrieve the movie's relationships to other movies.
    *
    * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
    * @staticvar array $relationships
    * @return array
    *  A keyed array containing the relationship information to other movies in an associative array.
@@ -396,12 +445,6 @@ class MovieModel extends AbstractModel {
           $movieIds[] = $rel["movie_id"];
         }
       }
-      foreach ($i18n->languages as $id => $code) {
-        if ($code === $this->languageCode) {
-          $languageId = $id;
-          break;
-        }
-      }
       $relationships = $this->select(
         "SELECT
           m.`original_title` AS `originalTitle`,
@@ -414,7 +457,7 @@ class MovieModel extends AbstractModel {
             AND mt.`is_display_title` = 1
             AND mt.`language_id` = ?",
         "dd",
-        [ $languageId ]
+        [ $i18n->getLanguages()["code"]["id"] ]
       );
 
     }
@@ -424,18 +467,21 @@ class MovieModel extends AbstractModel {
   /**
    * Retrieve the movie's styles from the database.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
    * @staticvar array $styles
    * @return array
    *  A keyed array containing the style information in an associative array.
    */
   public function getStyles() {
+    global $i18n;
     static $styles = null;
     if ($styles === null) {
       $styles = $this->select(
         "SELECT
           s.`style_id` AS `id`,
           s.`name` AS `name`,
-          COLUMN_GET(s.`dyn_names`, '{$this->languageCode}' AS BINARY) AS `nameLocalized`
+          COLUMN_GET(s.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `nameLocalized`
           FROM `movies_styles` ms
           INNER JOIN `styles` s
           ON ms.`style_id` = s.`style_id`
@@ -451,11 +497,14 @@ class MovieModel extends AbstractModel {
   /**
    * Retrieve the movie's taglines from the database.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
    * @staticvar array $tagLines
    * @return array
    *  A keyed array containing the tagline information in an associative array.
    */
   public function getTagLines() {
+    global $i18n;
     static $tagLines = null;
     if ($tagLines === null) {
       $tagLines = $this->select(
@@ -464,7 +513,7 @@ class MovieModel extends AbstractModel {
           l.`language_id` AS `languageId`,
           l.`iso_alpha-2` AS `languageIsoCode`,
           l.`name` AS `languageName`,
-          COLUMN_GET(l.`dyn_translations`, '{$this->languageCode}' AS BINARY) AS `languageNameLocalized`
+          COLUMN_GET(l.`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS `languageNameLocalized`
           FROM `movies_taglines` mt
           INNER JOIN `languages` l
           ON mt.`language_id` = l.`language_id`
@@ -479,21 +528,25 @@ class MovieModel extends AbstractModel {
   /**
    * Retrieve the movie's titles from the database.
    *
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
    * @staticvar array $titles
    * @return array
    *  A keyed array containing the title information in an associative array.
    */
   public function getTitles() {
+    global $i18n;
     static $titles = null;
     if ($titles === null) {
       $titles = $this->select(
         "SELECT mt.`title` AS `title`,
           COLUMN_GET(`dyn_comments`, 'en' AS BINARY) AS `comment`,
-          COLUMN_GET(`dyn_comments`, '{$this->languageCode}' AS BINARY) AS `commentLocalized`,
+          COLUMN_GET(`dyn_comments`, '{$i18n->languageCode}' AS BINARY) AS `commentLocalized`,
+          mt.`is_display_title` AS isDisplayTitle,
           l.`language_id` AS `languageId`,
           l.`iso_alpha-2` AS `languageIsoCode`,
           l.`name` AS `languageName`,
-          COLUMN_GET(l.`dyn_translations`, '{$this->languageCode}' AS BINARY) AS `languageNameLocalized`
+          COLUMN_GET(l.`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS `languageNameLocalized`
           FROM `movies_titles` mt
           INNER JOIN `languages` l
           ON mt.`language_id` = l.`language_id`
@@ -502,6 +555,10 @@ class MovieModel extends AbstractModel {
         "d",
         [ $this->id ]
       );
+      $count = count($titles);
+      for($i = 0; $i < $count; ++$i) {
+        settype($titles[$i][""], "boolean");
+      }
     }
     return $titles;
   }

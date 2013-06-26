@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\Movie;
 
+use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -46,7 +47,10 @@ class MovieShowView extends AbstractView {
    *  The movie presenter currently controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, $presenter->getMovieDisplayTitleAndYear());
+    parent::__construct($presenter, $presenter->displayTitle);
+    if (empty($presenter->movieModel->year) === false) {
+      $this->title .= " ({$this->presenter->movieModel->year})";
+    }
     $this->stylesheets[] = "modules/movie.css";
   }
 
@@ -54,36 +58,92 @@ class MovieShowView extends AbstractView {
    * {@inheritdoc}
    */
   public function getContent() {
-//    if ($movie["poster"]) {
-//      $posterFilePath = $this->presenter->getMoviePoster();
-//      $posterAlt = __("@movieTitle poster.", [ "@movieTitle" => $this->title ]);
-//    }
-//    else {
-//      $posterFilePath = "/assets/img/poster_w300_default.jpg";
-//      $posterAlt = __("No poster art available.");
-//    }
-//
-//    if (!($movie["synopsis"])) {
-//      $synopsis = __("No synopsis available, do you want to !create it?", [ "!create" => route("/movie/%s/edit/synopsis", $movie["id"]) ]);
-//    }
+    global $i18n;
+    $secondaryNavPoints = [
+      [ $i18n->r("/movie/{0}/edit", [ $this->presenter->movieModel->id ]), $i18n->t("Edit"), [ "title" => $i18n->t("Edit this movie") ] ],
+      [ $i18n->r("/movie/{0}/history", [ $this->presenter->movieModel->id ]), $i18n->t("History"), [ "title" => $i18n->t("View the edit history of this movie") ] ],
+      [ $i18n->r("/movie/{0}/discussion", [ $this->presenter->movieModel->id ]), $i18n->t("Discussion"), [ "class" => "menuitem--separator", "title" => $i18n->t("Discuss the article and the edits of this movie") ] ],
+      [ "#synopsis", $i18n->t("Synopsis"), [ "title" => $i18n->t("Go to section: {0}", [ $i18n->t("Synopsis") ]) ] ],
+      [ "#releases", $i18n->t("Releases"), [ "title" => $i18n->t("Go to section: {0}", [ $i18n->t("Releases") ]) ] ]
+    ];
 
     return
-      "<div class='row'>" .
-      "<div class='page-header span span--0'><h1>{$this->title}</h1></div>" .
-        "<figure id='movie-poster-box' class='pull-left span span--4 text-center'>" .
-//          $this->a("#", "<img src='{$posterFilePath}' alt='{$posterAlt}'>" ) .
-          "<ul id='movie-poster-box__more-posters'>" .
-            "<li class='more-posters__thumbnail pull-left'></li>" .
-            "<li class='more-posters__thumbnail pull-left'></li>" .
-            "<li class='more-posters__thumbnail pull-left'></li>" .
-            "<li class='more-posters__thumbnail pull-left'></li>" .
-            "<li class='more-posters__thumbnail pull-left'></li>" .
-          "</ul>" .
-        "</figure>" .
-        "<div class='span span--4c'>" .
-//        (empty($this->presenter->getMovieSynopsis()) ? __("No synopsis has been added yet. Please click Edit to do so.") : $this->presenter->getMovieSynopsis()) .
+      "<div class='container'>" .
+        "<div class='row'>" .
+          "<aside class='span span--3'>{$this->getSecondaryNavigation($i18n->t("Movie navigation"), $secondaryNavPoints)}</aside>" .
+          "<div class='span span--9'>" .
+            "<h2>" . $i18n->t("Synopsis") . "</h2>" . $this->presenter->movieModel->synopsis .
+          "</div>" .
         "</div>" .
       "</div>"
+    ;
+  }
+
+  /**
+   * Get the content wrapped in the outer content <tt>div</tt>.
+   * Override to provide the special movie header with the poster and basic information.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   * @return string
+   *   The rendered content ready for print.
+   */
+  public function getRenderedContent($tag = "div", $attributes = []) {
+    global $i18n;
+    $this->addClass("{$this->getShortName()}-content", $attributes);
+    $attributes["id"] = "content";
+    $attributes["role"] = "main";
+    // Build the link for the movie year
+    $yearLink = "";
+    if (isset($this->presenter->movieModel->year)) {
+      $yearLink = " <small>" . $this->a(
+        $i18n->r("/movies/year/{0}", [ $this->presenter->movieModel->year ]),
+        $this->presenter->movieModel->year,
+        [ "title" => $i18n->t("Go to movies of the year: {0}", [ $this->presenter->movieModel->year ]) ]
+      ) . "</small>";
+    }
+    // Build the genre list
+    $genres = $this->presenter->movieModel->getGenres();
+    $c = count($genres);
+    for ($i = 0; $i < $c; ++$i) {
+      $name = $genres[$i]["nameLocalized"] ?: $genres[$i]["name"];
+      $genres[$i] = $this->a(
+        $i18n->r("/genres/{0}", [ String::convertToRoute($name) ]),
+        $name,
+        [ "title" => $i18n->t("Go to genre: {0}", [ $name ]) ]
+      );
+    }
+    $genreList = implode(", ", $genres);
+    // Build the styles list
+    $styles = $this->presenter->movieModel->getStyles();
+    $c = count($styles);
+    for ($i = 0; $i < $c; ++$i) {
+      $name = $styles[$i]["nameLocalized"] ?: $styles[$i]["name"];
+      $styles[$i] = $this->a(
+        $i18n->r("/styles/{0}", [ String::convertToRoute($name) ]),
+        $name,
+        [ "title" => $i18n->t("Go to style: {0}", [ $name ]) ]
+      );
+    }
+    $styleList = implode(", ", $styles);
+
+    return
+      "<{$tag}{$this->expandTagAttributes($attributes)}>" .
+        "<div id='content__header'>" .
+          "<div id='movie__header' class='container'>" .
+            "<header class='row'>" .
+              "<div class='span span--9'>" .
+                "<h1 id='content__header__title' class='title'>{$this->presenter->displayTitle}{$yearLink}</h1>" .
+                "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $this->presenter->displayTitle ])}</p>" .
+                "<p>{$i18n->t("Genres")}: {$genreList}</p>" .
+                "<p>{$i18n->t("Styles")}: {$styleList}</p>" .
+              "</div>" .
+              "<img class='span span--3' src='/uploads/posters/1/w300/Roundhay-Garden-Scene.1.en.jpg' alt=''>" .
+            "</header>" .
+          "</div>" .
+        "</div>" .
+        $this->getAlerts() .
+        $this->getContent() .
+      "</{$tag}>"
     ;
   }
 
