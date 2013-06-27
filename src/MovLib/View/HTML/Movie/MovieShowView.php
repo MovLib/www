@@ -62,20 +62,20 @@ class MovieShowView extends AbstractView {
     $secondaryNavPoints = [
       [ $i18n->r("/movie/{0}", [ $this->presenter->movieModel->id ]), "<i class='icon icon--eye'></i>{$i18n->t("View")}", [
         "accesskey" => "v",
-        "title"     => $i18n->t("View the {0}. [alt-shift-v]", [ $i18n->t("movie") ]),
+        "title"     => $i18n->t("View the {0}.", [ $i18n->t("movie") ]),
+      ]],
+      [ $i18n->r("/movie/{0}/discussion", [ $this->presenter->movieModel->id ]), "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [
+        "accesskey" => "d",
+        "title"     => $i18n->t("Discussion about the {0}.", [ $i18n->t("movie") ])
       ]],
       [ $i18n->r("/movie/{0}/edit", [ $this->presenter->movieModel->id ]), "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [
         "accesskey" => "e",
-        "title"     => $i18n->t("You can edit this {0}. [alt-shift-e]", [ $i18n->t("movie") ]),
+        "title"     => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]),
       ]],
       [ $i18n->r("/movie/{0}/history", [ $this->presenter->movieModel->id ]), "<i class='icon icon--back-in-time'></i>{$i18n->t("History")}", [
         "accesskey" => "h",
-        "title"     => $i18n->t("Past versions of this {0}. [alt-shift-h]", [ $i18n->t("movie") ]),
-      ]],
-      [ $i18n->r("/movie/{0}/discussion", [ $this->presenter->movieModel->id ]), "<i class='icon icon--comment'></i>{$i18n->t("Discussion")}", [
-        "accesskey" => "d",
         "class"     => "menuitem--separator",
-        "title"     => $i18n->t("Discussion about the {0}. [alt-shift-d]", [ $i18n->t("movie") ])
+        "title"     => $i18n->t("Past versions of this {0}.", [ $i18n->t("movie") ]),
       ]],
       [ "#synopsis", $i18n->t("Synopsis"), [ "title" => $i18n->t("Go to section: {0}", [ $i18n->t("Synopsis") ]) ] ],
       [ "#releases", $i18n->t("Releases"), [ "title" => $i18n->t("Go to section: {0}", [ $i18n->t("Releases") ]) ] ]
@@ -106,7 +106,7 @@ class MovieShowView extends AbstractView {
     $this->addClass("{$this->getShortName()}-content", $attributes);
     $attributes["id"] = "content";
     $attributes["role"] = "main";
-    // Build the link for the movie year
+    // Build the link for the movie year.
     $yearLink = "";
     if (isset($this->presenter->movieModel->year)) {
       $yearLink = " <small>" . $this->a(
@@ -115,30 +115,42 @@ class MovieShowView extends AbstractView {
         [ "title" => $i18n->t("Go to movies of the year: {0}", [ $this->presenter->movieModel->year ]) ]
       ) . "</small>";
     }
-    // Build the genre list
+    // Build the genre list.
     $genres = $this->presenter->movieModel->getGenres();
     $c = count($genres);
-    for ($i = 0; $i < $c; ++$i) {
-      $name = $genres[$i]["nameLocalized"] ?: $genres[$i]["name"];
-      $genres[$i] = $this->a(
-        $i18n->r("/genres/{0}", [ String::convertToRoute($name) ]),
-        $name,
-        [ "title" => $i18n->t("Go to genre: {0}", [ $name ]) ]
-      );
+    if ($c > 0) {
+      for ($i = 0; $i < $c; ++$i) {
+        $name = $genres[$i]["nameLocalized"] ?: $genres[$i]["name"];
+        $genres[$i] = $this->a(
+          $i18n->r("/genres/{0}", [ String::convertToRoute($name) ]),
+          $name,
+          [ "title" => $i18n->t("Go to genre: {0}", [ $name ]) ]
+        );
+      }
+      $genreList = implode(", ", $genres);
+    } else {
+      $genreList = $i18n->t("No genres assigned yet.") . " " . $this->a("/movie/{0}/edit", $i18n->t("Add Genres"), [ "title" => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]) ]);
     }
-    $genreList = implode(", ", $genres);
-    // Build the styles list
+    // Build the styles list.
     $styles = $this->presenter->movieModel->getStyles();
     $c = count($styles);
-    for ($i = 0; $i < $c; ++$i) {
-      $name = $styles[$i]["nameLocalized"] ?: $styles[$i]["name"];
-      $styles[$i] = $this->a(
-        $i18n->r("/styles/{0}", [ String::convertToRoute($name) ]),
-        $name,
-        [ "title" => $i18n->t("Go to style: {0}", [ $name ]) ]
-      );
+    if ($c >0) {
+      for ($i = 0; $i < $c; ++$i) {
+        $name = $styles[$i]["nameLocalized"] ?: $styles[$i]["name"];
+        $styles[$i] = $this->a(
+          $i18n->r("/styles/{0}", [ String::convertToRoute($name) ]),
+          $name,
+          [ "title" => $i18n->t("Go to style: {0}", [ $name ]) ]
+        );
+      }
+
+      $styleList = implode(", ", $styles);
+    } else {
+      $styleList = $i18n->t("No styles assigned yet.") . " " . $this->a("/movie/{0}/edit", $i18n->t("Add Styles"), [ "title" => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]) ]);
     }
-    $styleList = implode(", ", $styles);
+    // Calculate the width for the rating stars in %.
+    $rating = 4.5;
+    $ratingWidth = $rating * 20 - 4 * (6 - ceil($rating));
 
     return
       "<{$tag}{$this->expandTagAttributes($attributes)}>" .
@@ -148,6 +160,11 @@ class MovieShowView extends AbstractView {
               "<div class='span span--9'>" .
                 "<h1 id='content__header__title' class='title'>{$this->presenter->displayTitle}{$yearLink}</h1>" .
                 "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $this->presenter->displayTitle ])}</p>" .
+                "<div id='movie__rating'>" .
+                  "<div><i class='icon icon--star'></i><i class='icon icon--star'></i><i class='icon icon--star'></i><i class='icon icon--star'></i><i class='icon icon--star'></i></div>" .
+                  "<div style='width: {$ratingWidth}%'><i class='icon icon--star'></i><i class='icon icon--star'></i><i class='icon icon--star'></i><i class='icon icon--star'></i><i class='icon icon--star'></i></div>" .
+                "</div>" .
+                "<p>{$i18n->t("Length")}: {$this->presenter->movieModel->runtime} {$i18n->t("min.")}</p>" .
                 "<p>{$i18n->t("Genres")}: {$genreList}</p>" .
                 "<p>{$i18n->t("Styles")}: {$styleList}</p>" .
               "</div>" .

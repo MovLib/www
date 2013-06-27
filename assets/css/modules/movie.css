@@ -39,6 +39,39 @@
   padding-bottom: 0;
 }
 
-#movie__header p:first-of-type {
-  margin-top: 0;
+#movie__header p {
+  margin: 0;
+}
+
+#movie__header p:last-of-type {
+  margin-bottom: 1em;
+}
+
+#movie__rating {
+  margin: 1em 0;
+  position: relative;
+  display: inline-block;
+  width: 125px;
+}
+
+#movie__rating,
+#movie__rating div {
+  height: 20px;
+}
+
+#movie__rating div {
+  font-size: 20px;
+  line-height: 1;
+  position: absolute;
+  top: 0;
+}
+
+#movie__rating .icon {
+  margin-right: 5px;
+}
+
+#movie__rating div:last-child {
+  overflow: hidden;
+  color: #ffbb33;
+  white-space: pre;
 }
