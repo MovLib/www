@@ -136,7 +136,7 @@ class UserPresenter extends AbstractPresenter {
   private function __constructLogout() {
     global $i18n, $user;
     if ($user->isLoggedIn === false) {
-      Network::httpRedirect($i18n->r("/user/login", 302));
+      Network::httpRedirect($i18n->r("/user/login"), 302);
       return;
     }
     $user->destroySession();

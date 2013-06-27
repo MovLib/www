@@ -67,6 +67,8 @@ class UserSettingsView extends AbstractFormView {
     global $i18n;
     parent::__construct($userPresenter, "{$i18n->t(($this->tab = $tab))} {$i18n->t("Settings")}");
     $this->stylesheets[] = "modules/user.css";
+    // We have to disable this feature on the complete form, otherwise Webkit will ignore it.
+    $this->attributes["autocomplete"] = "off";
   }
 
 
@@ -117,14 +119,15 @@ class UserSettingsView extends AbstractFormView {
       "<p><label for='real_name'>{$i18n->t("Real Name")}</label>{$this->input("real_name", [
         "class" => "input--block-level",
         "title" => $i18n->t("Please enter your real name in this field."),
+        "value" => $this->presenter->profile->realName
       ])}</p>" .
       "<p><label>{$i18n->t("Gender")}</label><span title='{$i18n->t("Please select your gender.")}'>" .
-        "<label class='radio inline'>{$this->input("gender", [ "type" => "radio", "value" => "0" ])}{$i18n->t("Male")}</label>" .
+        "<label class='radio inline'>{$this->input("gender", [ "type" => "radio", "value" => "0", "checked" ])}{$i18n->t("Male")}</label>" .
         "<label class='radio inline'>{$this->input("gender", [ "type" => "radio", "value" => "1" ])}{$i18n->t("Female")}</label>" .
         "<label class='radio inline'>{$this->input("gender", [ "type" => "radio", "value" => "" ])}{$i18n->t("Unknown")}</label>" .
       "</span></p>" .
       "<p><label for='country'>{$i18n->t("Country")}</label>{$this->inputDatalist(
-        [ "country", [ "class" => "input--block-level" ]],
+        [ "country", [ "class" => "input--block-level", "value" => "Austria" ]],
         [ "countries", array_column($i18n->getCountries()["id"], "name") ]
       )}</p>" .
       "<p><label for='timezone'>{$i18n->t("Time Zone")}</label>{$this->inputDatalist(
@@ -134,18 +137,20 @@ class UserSettingsView extends AbstractFormView {
       "<p><label for='profile'>{$i18n->t("About You")}</label>{$this->input("profile", [
         "class"       => "input--block-level",
         "placeholder" => $i18n->t("This text will appear on your profile page."),
-      ], "textarea")}</p>" .
+      ], "textarea", $this->presenter->profile->profile)}</p>" .
       // @todo Language selector for profile and content editable!
       "<p><label for='birthday'>{$i18n->t("Date of Birth")}</label>{$this->input("birthday", [
         "class"       => "input--block-level",
         "placeholder" => "mm/dd/yyyy",
         "type"        => "date",
+        "value"       => $this->presenter->profile->birthday
       ])}</p>" .
       // @todo Display help for formatting, type date works in nearly no browser! Or use multiple selects?
       "<p><label for='website'>{$i18n->t("Website")}</label>{$this->input("website", [
         "class"       => "input--block-level",
         "placeholder" => "http://example.com/",
         "type"        => "url",
+        "value"       => $this->presenter->profile->website
       ])}</p>" .
       "<p><label>{$i18n->t("Keep my data private!")}{$this->help($i18n->t(
         "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
@@ -193,7 +198,6 @@ class UserSettingsView extends AbstractFormView {
         "type"        => "email",
       ])}</p>" .
       "<p><label for='pass'>{$i18n->t("Password")}</label>{$this->input("pass", [
-        "autocomplete" => "off",
         "class"        => "input--block-level",
         "placeholder"  => $i18n->t("Enter your password"),
         "required",
@@ -225,7 +229,6 @@ class UserSettingsView extends AbstractFormView {
       "<p><small class='form-help'>{$this->a($i18n->r("/user/reset-password"), $i18n->t("Forgot your current password?"), [
         "title" => $i18n->t("Click this link if you forgot your password."),
       ])}</small><label for='current-password'>{$i18n->t("Current password")}</label>{$this->input("pass", [
-        "autocomplete" => "off",
         "autofocus",
         "class"        => "input--block-level",
         "placeholder"  => $i18n->t("Enter your current password"),
@@ -234,7 +237,6 @@ class UserSettingsView extends AbstractFormView {
         "type"         => "password",
       ])}</p>" .
       "<p><label for='new-password'>{$i18n->t("New password")}</label>{$this->input("new-pass", [
-        "autocomplete" => "off",
         "class"        => "input--block-level",
         "placeholder"  => $i18n->t("Enter your new password"),
         "required",
@@ -242,7 +244,6 @@ class UserSettingsView extends AbstractFormView {
         "type"         => "password",
       ])}</p>" .
       "<p><label for='confirm-password'>{$i18n->t("Confirm password")}</label>{$this->input("confirm-pass", [
-        "autocomplete" => "off",
         "class"        => "input--block-level",
         "placeholder"  => $i18n->t("Enter your new password again"),
         "required",

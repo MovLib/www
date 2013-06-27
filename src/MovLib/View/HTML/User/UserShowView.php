@@ -66,25 +66,28 @@ class UserShowView extends AbstractView {
           "<div class='span span--9'>" .
             "<h2>{$i18n->t("Your Account Summary")}</h2>" .
             "<div class='row'>" .
+              "<dl class='span span--6'>" .
+                "<dt class='visuallyhidden'>{$i18n->t("Username")}</dt><dd>{$this->presenter->profile->name}</dd>" .
+                "<dt>{$i18n->t("User ID")}</dt><dd>{$this->presenter->profile->id}</dd>" .
+                "<dt>{$i18n->t("Edits")}</dt><dd>{$this->presenter->profile->edits}</dd>" .
+                "<dt>{$i18n->t("Reputation")}</dt><dd><em>@todo</em> reputation counter</dd>" .
+                "<dt>{$i18n->t("Mail")}</dt><dd>{$this->presenter->profile->mail}</dd>" .
+                "<dt>{$i18n->t("Registration")}</dt><dd>{$i18n->formatDate($this->presenter->profile->created, $this->presenter->profile->timezone)}</dd>" .
+                "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->presenter->profile->access, $this->presenter->profile->timezone)}</dd>" .
+              "</dl>" .
               "<div class='span span--3'>" .
                 $this->a($i18n->r("/user/account-settings"), $this->presenter->profile->getAvatarImage(), [
-                  "class" => "change-avatar",
+                  "class" => "change-avatar no-border",
                   "title" => "Change your avatar image.",
                 ]) .
               "</div>" .
-              "<dl class='span span--6'>" .
-                "<dt class='visuallyhidden'>{$i18n->t("Username")}</dt><dd>{$this->presenter->profile->name}</dd>" .
-                "<dt>{$i18n->t("Edits")}</dt><dd>{$this->presenter->profile->edits}</dd>" .
-                "<dt>{$i18n->t("Reputation")}</dt><dd>@todo reputation counter</dd>" .
-                "<dt>{$i18n->t("Mail")}</dt><dd>{$this->presenter->profile->mail}</dd>" .
-                "<dt>{$i18n->t("Registration date")}</dt><dd>{$i18n->formatDate($this->presenter->profile->created, $this->presenter->profile->timezone)}</dd>" .
-                "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->presenter->profile->access, $this->presenter->profile->timezone)}</dd>" .
-              "</dl>" .
             "</div>" .
-            "<h2>\$_SESSION</h2>" .
-            "<pre>" . print_r($_SESSION, true) . "</pre>" .
             "<h2>\$user</h2>" .
             "<pre>" . print_r($this->presenter->profile, true) . "</pre>" .
+            "<h2>\$session</h2>" .
+            "<pre>" . print_r($user, true) . "</pre>" .
+            "<h2>\$_SESSION</h2>" .
+            "<pre>" . print_r($_SESSION, true) . "</pre>" .
             "<h2>\$_SERVER</h2>" .
             "<pre>" . print_r($_SERVER, true) . "</pre>" .
           "</div>" .
