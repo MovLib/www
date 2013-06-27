@@ -310,9 +310,9 @@ class I18nModel extends AbstractModel {
     $this->affectedRows = 0;
     if (isset($options["old_pattern"])) {
       if ($issetComment) {
-        $this->update("{$context}s", "sss", [ $context => $pattern, "comment" => $options["comment"] ], [ "old_pattern" => $options["old_pattern"] ]);
+        $this->update("{$context}s", "ssss", [ $context => $pattern, "comment" => $options["comment"] ], [ "old_pattern" => $options["old_pattern"] ]);
       } else {
-        $this->update("{$context}s", "ss", [ $context => $pattern ], [ "old_pattern" => $options["old_pattern"] ]);
+        $this->update("{$context}s", "sss", [ $context => $pattern ], [ "old_pattern" => $options["old_pattern"] ]);
       }
     }
     if ($this->affectedRows === 0) {
@@ -323,9 +323,9 @@ class I18nModel extends AbstractModel {
       } catch (ErrorException $e) {
         unset($e);
         if ($issetComment) {
-          $this->insert("{$context}s", "ss", [ $context => $pattern, "comment" => $options["comment"] ]);
+          $this->insert("{$context}s", "sss", [ $context => $pattern, "comment" => $options["comment"], "dyn_translations" => "" ]);
         } else {
-          $this->insert("{$context}s", "s", [ $context => $pattern ]);
+          $this->insert("{$context}s", "ss", [ $context => $pattern, "dyn_translations" => "" ]);
         }
       }
     }
