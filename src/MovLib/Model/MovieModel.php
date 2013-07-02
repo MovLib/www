@@ -302,7 +302,10 @@ class MovieModel extends AbstractModel {
         "d",
         [$this->id]
       );
-      settype($directors["deleted"], "boolean");
+      $count = count($directors);
+      for ($i = 0; $i < $count; ++$i) {
+        settype($directors[$i]["deleted"], "boolean");
+      }
     }
     return $directors;
   }
@@ -557,7 +560,7 @@ class MovieModel extends AbstractModel {
       );
       $count = count($titles);
       for($i = 0; $i < $count; ++$i) {
-        settype($titles[$i][""], "boolean");
+        settype($titles[$i]["isDisplayTitle"], "boolean");
       }
     }
     return $titles;
