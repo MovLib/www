@@ -17,6 +17,10 @@
  */
 namespace MovLib\Utility;
 
+use \finfo;
+use \MovLib\Exception\ImageException;
+use \MovLib\Utility\Network;
+
 /**
  * The utility class image contains methods to work with all kinds of images.
  *
@@ -39,5 +43,74 @@ class Image {
    */
   const STYLE_150 = 150;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Process an uploaded image.
+   *
+   * @param string $formElementName
+   *   The name of the file form element to process.
+   * @param string $imagePath
+   *   The desired storage path within our uploads directory.
+   * @return array
+   *   Associative array containing the following keys:
+   *   <ul>
+   *     <li><b>path:</b> Absolute path to the image on the server.</li>
+   *     <li><b>uri:</b> Absolute (static) URI to the image.</li>
+   *     <li><b>ext:</b> The image's extension.</li>
+   *     <li><b>mime:</b> The image's MIME type.</li>
+   *   </ul>
+   * @throws ImageException
+   *   If something is odd with the uploaded file.
+   */
+  public static function upload($formElementName, $imagePath) {
+    if (!isset($_FILES[$formElementName]) || empty($_FILES[$formElementName])) {
+      throw new ImageException("No image was submitted.");
+    }
+    $uploadedFile = $_FILES[$formElementName];
+    if (!is_array($uploadedFile) || empty($uploadedFile["tmp_name"]) || !is_file($uploadedFile["tmp_name"])) {
+      throw new ImageException("No valid input found.");
+    }
+    if ($uploadedFile["error"] != UPLOAD_ERR_OK) {
+      throw new ImageException("Upload error.", null, $uploadedFile["error"]);
+    }
+    $finfo = new finfo();
+    $mime = $finfo->file($uploadedFile["tmp_name"], FILEINFO_MIME_TYPE);
+    switch ($mime) {
+      case "image/jpg":
+      case "image/jpeg":
+        $extension = "jpg";
+        break;
+
+      case "image/png":
+        $extension = "png";
+        break;
+
+      case "image/svg+xml":
+        $extension = "svg";
+        break;
+
+      case "image/webp":
+        $extension = "webp";
+        break;
+
+      default:
+        throw new ImageException("No valid MIME type.");
+    }
+    try {
+      $path = "{$_SERVER["HOME"]}/uploads/{$imagePath}.{$extension}";
+      move_uploaded_file($uploadedFile["tmp_name"], $path);
+    } catch (ErrorException $e) {
+      throw new ImageException("Could not move uploaded file.", $e);
+    }
+    return [
+      "path" => $path,
+      "uri"  => "https://" . Network::SERVER_NAME_STATIC . "/uploads/{$imagePath}.{$extension}",
+      "ext"  => $extension,
+      "mime" => $mime,
+    ];
+  }
 
 }

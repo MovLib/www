@@ -18,19 +18,19 @@
 namespace MovLib\Presenter;
 
 use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\ImageException;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\UserModel;
 use \MovLib\Presenter\AbstractPresenter;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMailer;
 use \MovLib\Utility\DelayedMethodCalls;
-use \MovLib\Utility\Network;
+use \MovLib\Utility\Image;
 use \MovLib\Utility\String;
 use \MovLib\Utility\Validation;
 use \MovLib\View\HTML\AbstractView;
 use \MovLib\View\HTML\AlertView;
 use \MovLib\View\HTML\Redirect;
-use \MovLib\View\HTML\User\UserLoginView;
 use \MovLib\View\HTML\User\UserRegisterView;
 use \MovLib\View\HTML\User\UserResetPasswordView;
 use \MovLib\View\HTML\User\UserSettingsView;
@@ -85,14 +85,20 @@ class UserPresenter extends AbstractPresenter {
    *   The global i18n model instance.
    * @global \MovLib\Model\SessionModel $user
    *   The global user model instance.
+   * @param string $redirectTo
+   *   [Optional] Set to <code>TRUE</code> if the user should be redirected to the currently requested URI. Defaults to
+   *   <code>FALSE</code> and the user will be redirected to the profile page.
    * @return null|array
    *   Associative array containing error messages, if there are any. Otherwise <tt>NULL</tt>.
    */
-  private function __constructLogin() {
+  private function __constructLogin($redirect = false) {
     global $i18n, $user;
     if ($user->isLoggedIn === true) {
       $this->view = new Redirect($i18n->r("/user"), 302);
       return;
+    }
+    if ($redirect === true) {
+      $_GET["redirect_to"] = $_SERVER["REQUEST_URI"];
     }
     // Ensure we are using the correct route (this method is called from other constructors in this presenter as well).
     $_SERVER["REQUEST_URI"] = $i18n->r("/user/login");
@@ -300,8 +306,10 @@ class UserPresenter extends AbstractPresenter {
   private function __constructSettings() {
     global $i18n, $user;
     if ($user->isLoggedIn === false) {
+      // Ensure that the request method is set to GET, otherwise the login view will validate the submitted stuff.
+      $_SERVER["REQUEST_METHOD"] = "GET";
       http_response_code(401);
-      $this->__constructLogin();
+      $this->__constructLogin(true);
       $this->view->setAlert([
         "title"   => $i18n->t("Authentication Required"),
         "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your settings page") ]),
@@ -456,7 +464,21 @@ class UserPresenter extends AbstractPresenter {
   }
 
   private function validateAccountSettings() {
-
+    global $i18n, $user;
+    $errors = null;
+    try {
+      $avatar = Image::upload("avatar", "user/avatar-{$user->id}");
+      $this->profile->avatarExt = $avatar["ext"];
+      $this->view->setAlert($i18n->t("Avatar has been updated."), AbstractView::ALERT_SEVERITY_SUCCESS);
+    } catch (ImageException $e) {
+      $errors["avatar"] = $i18n->t("The submitted avatar image is not valid.");
+      $errors["msg"] = $e->getMessage();
+      $errors["cdn"] = $e->getCode();
+    }
+    if ($errors) {
+      return $errors;
+    }
+    $this->profile->commit();
   }
 
   private function validateNotificationSettings() {

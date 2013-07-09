@@ -307,6 +307,15 @@ class UserModel extends AbstractModel {
 
 
   /**
+   * Update the user model in the database with the data of the current class instance.
+   *
+   * @return $this
+   */
+  public function commit() {
+    return $this;
+  }
+
+  /**
    * Check if a user with the given mail exists.
    *
    * @param string $mail

@@ -69,6 +69,9 @@ class UserSettingsView extends AbstractFormView {
     $this->stylesheets[] = "modules/user.css";
     // We have to disable this feature on the complete form, otherwise Webkit will ignore it.
     $this->attributes["autocomplete"] = "off";
+    if ($tab === "Account") {
+      $this->attributes["enctype"] = AbstractFormView::ENCTYPE_BINARY;
+    }
   }
 
 
@@ -112,6 +115,7 @@ class UserSettingsView extends AbstractFormView {
           "<p><label for='avatar'>{$i18n->t("Avatar")}</label>{$this->input("avatar", [
             "accept"   => "image/jpeg,image/png,image/svg+xml",
             "type"     => "file",
+            "size"     => 255,
           ])}</p>" .
         "</div>" .
         "<div class='span span--3'>{$avatar}</div>" .
