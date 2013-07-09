@@ -75,6 +75,42 @@ class MoviePresenter extends AbstractPresenter {
    * @return $this
    */
   protected function __constructGet() {
+    global $i18n;
+    try {
+      $this->movieModel = new MovieModel($_SERVER["MOVIE_ID"]);
+      if ($this->movieModel->deleted === true) {
+        return $this->setPresentation("Error\\GoneMovie");
+      }
+      $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
+      // Construct the title of the page from the movie's display title or the original title if no display title exists.
+      $titles = $this->movieModel->getTitles();
+      $count = count($titles);
+      $this->displayTitle = $this->movieModel->originalTitle;
+      for ($i = 0; $i < $count; ++$i) {
+        if ($titles[$i]["isDisplayTitle"] === true && $titles[$i]["languageIsoCode"] === $i18n->languageCode) {
+          $this->displayTitle = $titles[$i]["title"];
+          break;
+        }
+      }
+//      echo var_dump($this);
+      $this->view = new MovieShowView($this);
+      return $this;
+    } catch (MovieException $e) {
+      return $this->setPresentation("Error\\NotFound");
+    }
+  }
+
+  /**
+   * Handle form submissions.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The global user model instance.
+   * @return $this
+   */
+  protected function __constructPost() {
+    global $i18n, $user;
     try {
       $this->movieModel = new MovieModel($_SERVER["MOVIE_ID"]);
       if ($this->movieModel->deleted === true) {
@@ -92,10 +128,16 @@ class MoviePresenter extends AbstractPresenter {
         }
       }
       $this->view = new MovieShowView($this);
+      if ($user->isLoggedIn) {
+        /** @todo Rate the movie for the current user. */
+      } else {
+        $this->view->setAlert($i18n->t("You have to be logged in to rate this movie."));
+      }
       return $this;
     } catch (MovieException $e) {
       return $this->setPresentation("Error\\NotFound");
     }
+    return $this;
   }
 
 

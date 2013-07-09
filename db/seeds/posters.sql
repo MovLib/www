@@ -1,5 +1,6 @@
 USE `movlib`;
 BEGIN;
+-- Roundhay Garden Scene
 INSERT INTO `posters`
   (
     `movie_id`,
@@ -13,7 +14,8 @@ INSERT INTO `posters`
     `ext`,
     `created`,
     `rating`,
-    `dyn_descriptions`
+    `dyn_descriptions`,
+    `hash`
   )
 VALUES
   (
@@ -21,14 +23,49 @@ VALUES
     1,
     1,
     77,
-    "Roundhay Garden Scene",
+    "Roundhay-Garden-Scene.1.en",
     856,
     482,
     73462,
     "jpg",
     CURRENT_TIMESTAMP,
     0,
-    ''
+    '',
+    'hash'
+  )
+;
+-- Léon
+INSERT INTO `posters`
+  (
+    `movie_id`,
+    `poster_id`,
+    `user_id`,
+    `country_id`,
+    `filename`,
+    `width`,
+    `height`,
+    `size`,
+    `ext`,
+    `created`,
+    `rating`,
+    `dyn_descriptions`,
+    `hash`
+  )
+VALUES
+  (
+    2,
+    1,
+    1,
+    233,
+    "Léon-The-Professional.1.en",
+    936,
+    1408,
+    648028,
+    "jpg",
+    CURRENT_TIMESTAMP,
+    0,
+    '',
+    'hash'
   )
 ;
 COMMIT;

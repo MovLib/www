@@ -289,20 +289,32 @@ class MovieModel extends AbstractModel {
   public function getDirectors() {
     static $directors = null;
     if ($directors === null) {
-      $directors = $this->select(
+      $directorsData = $this->select(
         "SELECT
           p.`person_id` AS `id`,
           p.`name` AS `name`,
-          p.`deleted` AS `deleted`
+          p.`deleted` AS `deleted`,
+          pp.`photo_id` AS `photo_id`,
+          pp.`filename` AS `filename`,
+          pp.`ext` AS `ext`
           FROM `movies_directors` md
-          INNER JOIN `persons` p
-          ON md.`person_id` = p.`person_id`
+            INNER JOIN `persons` p
+            ON md.`person_id` = p.`person_id`
+            LEFT JOIN `persons_photos` pp
+            ON p.`person_id` = pp.`person_id`
           WHERE md.`movie_id` = ?
-          ORDER BY `name` ASC",
+          ORDER BY `name` ASC, pp.`rating` DESC",
         "d",
         [$this->id]
       );
-      settype($directors["deleted"], "boolean");
+      $count = count($directorsData);
+      $usedIds = [];
+      for ($i = 0; $i < $count; ++$i) {
+        if (in_array($directorsData[$i]["id"], $usedIds) === false) {
+          settype($directorsData[$i]["deleted"], "boolean");
+          $directors[] = $directorsData[$i];
+        }
+      }
     }
     return $directors;
   }
@@ -396,7 +408,13 @@ class MovieModel extends AbstractModel {
     return $links;
   }
 
-
+  /**
+   * Retrieve the movie poster data for this movie
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
+   * @staticvar array $posters
+   * @return array
+   */
   public function getPosters() {
     global $i18n;
     static $posters = null;
@@ -557,7 +575,7 @@ class MovieModel extends AbstractModel {
       );
       $count = count($titles);
       for($i = 0; $i < $count; ++$i) {
-        settype($titles[$i][""], "boolean");
+        settype($titles[$i]["isDisplayTitle"], "boolean");
       }
     }
     return $titles;

@@ -51,7 +51,7 @@
   margin: 1em 0;
   position: relative;
   display: inline-block;
-  width: 125px;
+  width: 115px;
 }
 
 #movie__rating,
@@ -64,14 +64,54 @@
   line-height: 1;
   position: absolute;
   top: 0;
+  left: 0;
+  font-family: MovLib;
+  cursor: pointer;
 }
 
-#movie__rating .icon {
+#movie__rating div span, #movie__rating__form-wrapper form {
   margin-right: 5px;
 }
 
-#movie__rating div:last-child {
+#movie__rating__form-wrapper form:last-of-type {
+  margin-right: 0;
+}
+
+#movie__rating__form-wrapper {
   overflow: hidden;
   color: #ffbb33;
   white-space: pre;
+}
+
+#movie__rating__form-wrapper:hover {
+  clip: rect(0, 115px, 20px, 0)!important;
+}
+
+#movie__rating__form-wrapper form, #movie__rating__form-wrapper input, #movie__rating__form-wrapper button {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  width: 19px;
+  height: 20px;
+  font-family: MovLib;
+  font-size: 20px;
+  background-color: transparent;
+  color: inherit;
+  border: none;
+  line-height: 1;
+}
+
+#movie__rating__form-wrapper form {
+  position: relative;
+  margin-right: 5px;
+}
+
+#movie__rating__form-wrapper input {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#movie__rating__form-wrapper > form:hover ~ form {
+  color: #c7c7c7!important;
 }
