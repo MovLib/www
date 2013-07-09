@@ -26,7 +26,6 @@ use \MovLib\Model\AbstractModel;
 use \MovLib\Model\I18nModel;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMethodCalls;
-use \MovLib\Utility\Network;
 use \MovLib\Utility\Validation;
 
 /**
@@ -168,9 +167,7 @@ class SessionModel extends AbstractModel {
         $this->csrfToken  = $_SESSION["CSRF"];
         $this->ttl        = $_SESSION["TTL"];
         if ($_SESSION["TTL"] < time()) {
-          $this->destroySession();
-          // I18n isn't available at this time, this might redirect the user twice.
-          Network::httpRedirect("/user/login", 302);
+          $this->destroySessionAndRedirectToLogin();
         }
         else {
           $this->isLoggedIn = true;
@@ -179,8 +176,8 @@ class SessionModel extends AbstractModel {
         // @todo Account is deleted or deactivated, redirect and display help.
         throw new SessionException("@todo Account is deleted or deactivated, redirect and display help.", $e);
       } catch (ErrorException $e) {
-        // That we are catching this exception might have several reasons. Maybe Memcached was down or reloaded and the
-        // newly generated session ID doesn't have the necessary fields UID, CSRF and TTL stored along. Let's check our
+        // Catching this exception might have several reasons. Maybe Memcached was down or reloaded and the newly
+        // generated session ID doesn't have the necessary fields UID, CSRF and TTL stored along. Let's check our
         // persistent storage.
         try {
           $result = $this->loadSession(
@@ -203,13 +200,28 @@ class SessionModel extends AbstractModel {
           // @todo Account is deleted or deactivated, redirect and display help.
           throw new SessionException("@todo Account is deleted or deactivated, redirect and display help.", $e);
         } catch (ErrorException $e) {
-          // I18n is not available at this point.
-          $i18n = new I18nModel();
-          $this->destroySession();
-          Network::httpRedirect($i18n->r("/user/login"), 302);
+          $this->destroySessionAndRedirectToLogin();
         }
       }
     }
+  }
+
+  /**
+   * Destroy the currently active session and redirect the user to the login page.
+   *
+   * This method can be called during any bootstrap stage. If no i18n instance is active, a new one will be created.
+   * Note that this will exit the request and no deferred methods and nothing else will be executed!
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   */
+  private function destroySessionAndRedirectToLogin() {
+    global $i18n;
+    if (!isset($i18n)) {
+      $i18n = new I18nModel();
+    }
+    $this->destroySession();
+    header("Location: {$i18n->r("/user/login")}", true, 302);
+    exit("<html><head><title>302 Moved Temporarily</title></head><body bgcolor=\"white\"><center><h1>302 Moved Temporarily</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>");
   }
 
   /**
@@ -348,8 +360,6 @@ class SessionModel extends AbstractModel {
     if (!empty($sessionData)) {
       $_SESSION += $sessionData;
     }
-    // Always create a entirely new session ID.
-    session_regenerate_id(true);
     // IP address and user agent string are already set.
     $this->sessionId  = session_id();
     $this->csrfToken  = $_SESSION["CSRF"] = Crypt::randomHash();

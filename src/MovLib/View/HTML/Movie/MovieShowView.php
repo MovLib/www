@@ -218,6 +218,39 @@ class MovieShowView extends AbstractView {
     } else {
       $genreList = $i18n->t("No genres assigned yet.") . " " . $this->a($i18n->r("/movie/{0}/edit", [ $this->presenter->movieModel->id ]), $i18n->t("Add Genres"), [ "title" => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]) ]);
     }
+    // Build the countries list.
+    $countries = $this->presenter->movieModel->getCountries();
+    $c = count($countries);
+    if ($c > 0) {
+      for ($i = 0; $i < $c; ++$i) {
+        $name = $countries[$i]["isoCode"];
+        $countries[$i] = $this->a(
+          $i18n->r("/countries/{0}", [ String::convertToRoute($name) ]),
+          $name,
+          [ "title" => $i18n->t("Go to country: {0}", [ $name ]) ]
+        );
+      }
+
+      $countryList = implode(", ", $countries);
+    } else {
+      $countryList = $i18n->t("No countries assigned yet.") . " " . $this->a("/movie/{0}/edit", $i18n->t("Add Countries"), [ "title" => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]) ]);
+    }
+    // Build the directors list.
+    $directors = $this->presenter->movieModel->getDirectors();
+    $c = count($directors);
+    if ($c > 0) {
+      for ($i = 0; $i < $c; ++$i) {
+        $directors[$i] = $this->a(
+          $i18n->r("/persons/{0}", [ $directors[$i]["id"] ]),
+          $directors[$i]["name"],
+          [ "title" => $i18n->t("Go to person: {0}", [ $directors[$i]["name"] ]) ]
+        );
+      }
+
+      $directorList = implode(", ", $directors);
+    } else {
+      $directorList = $i18n->t("No directors assigned yet.") . " " . $this->a("/movie/{0}/edit", $i18n->t("Add Directors"), [ "title" => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]) ]);
+    }
     // Build the styles list.
     $styles = $this->presenter->movieModel->getStyles();
     $c = count($styles);

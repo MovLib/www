@@ -29,6 +29,7 @@ use \MovLib\Utility\String;
 use \MovLib\Utility\Validation;
 use \MovLib\View\HTML\AbstractView;
 use \MovLib\View\HTML\AlertView;
+use \MovLib\View\HTML\Redirect;
 use \MovLib\View\HTML\User\UserLoginView;
 use \MovLib\View\HTML\User\UserRegisterView;
 use \MovLib\View\HTML\User\UserResetPasswordView;
@@ -90,39 +91,34 @@ class UserPresenter extends AbstractPresenter {
   private function __constructLogin() {
     global $i18n, $user;
     if ($user->isLoggedIn === true) {
-      Network::httpRedirect($i18n->r("/user"), 302);
+      $this->view = new Redirect($i18n->r("/user"), 302);
       return;
     }
     // Ensure we are using the correct route (this method is called from other constructors in this presenter as well).
     $_SERVER["REQUEST_URI"] = $i18n->r("/user/login");
-    // If the user requested the simple form, just render it.
     if ($_SERVER["REQUEST_METHOD"] === "GET") {
       $this->setPresentation("User\\UserLogin");
+      return;
     }
-    else {
-      $this->view = new UserLoginView($this);
-      if (($mail = Validation::inputMail("mail")) === false) {
-        $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
-      }
-      // Try to create a user from the given mail.
-      try {
-        $userModel = new UserModel(UserModel::FROM_MAIL, $mail);
-        $userModel->validatePassword();
-      } catch (UserException $e) {
-        $errors["mail"] = $i18n->t("We either don’t know the submitted email address, or the password was wrong.");
-      }
-      // We're done if there are any errors.
-      if (isset($errors)) {
-        return $errors;
-      }
-      // Things look good, hello there!
-      $user->startSession($userModel);
-      $_SESSION["ALERTS"][] = [
-        $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$userModel->name}</b>" ]),
-        AbstractView::ALERT_SEVERITY_SUCCESS
-      ];
-      Network::httpRedirect($i18n->r("/user"), 302);
+    if (($mail = Validation::inputMail("mail")) === false) {
+      $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
     }
+    // Try to create a user from the given mail.
+    try {
+      $userModel = new UserModel(UserModel::FROM_MAIL, $mail);
+      $userModel->validatePassword();
+    } catch (UserException $e) {
+      $errors["mail"] = $i18n->t("We either don’t know the submitted email address, or the password was wrong.");
+    }
+    if (isset($errors)) {
+      return $errors;
+    }
+    $user->startSession($userModel);
+    $_SESSION["ALERTS"][] = [
+      $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$userModel->name}</b>" ]),
+      AbstractView::ALERT_SEVERITY_SUCCESS
+    ];
+    $this->view = new Redirect($i18n->r(isset($_GET["redirect_to"]) ? $_GET["redirect_to"] : "/user"), 302);
   }
 
   /**
@@ -136,7 +132,7 @@ class UserPresenter extends AbstractPresenter {
   private function __constructLogout() {
     global $i18n, $user;
     if ($user->isLoggedIn === false) {
-      Network::httpRedirect($i18n->r("/user/login"), 302);
+      $this->view = new Redirect($i18n->r("/user/login"), 302);
       return;
     }
     $user->destroySession();
@@ -169,7 +165,7 @@ class UserPresenter extends AbstractPresenter {
     // Check if the requested URI is a perfect match to what we want to have.
     $profileRoute = $i18n->r("/user/{0}", [ String::convertToRoute($this->profile->name) ]);
     if ($profileRoute !== $_SERVER["REQUEST_URI"]) {
-      Network::httpRedirect($profileRoute);
+      $this->view = new Redirect($profileRoute);
       return;
     }
     $this->setPresentation("User\\UserProfile");
@@ -186,9 +182,8 @@ class UserPresenter extends AbstractPresenter {
    */
   private function __constructRegister() {
     global $i18n, $user;
-    // If the user visiting the registration page is already logged in, simply redirect to the home page.
     if ($user->isLoggedIn === true) {
-      Network::httpRedirect("/", 302);
+      $this->view = new Redirect($i18n->r("/my"), 302);
       return;
     }
     if ($_SERVER["REQUEST_METHOD"] === "GET") {
@@ -199,52 +194,50 @@ class UserPresenter extends AbstractPresenter {
       ;
       return;
     }
-    else {
-      $this->view = new UserRegisterView($this);
-      if (($mail = Validation::inputMail("mail")) === false) {
-        $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
-      }
-      if (($name = Validation::inputString("name")) === false) {
-        $errors["name"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("username") ]);
-      }
-      if (($error = Validation::username($name))) {
-        $errors["name"] = $error;
-      }
-      else {
-        // So far so good, we need a user model instance, because now we have to validate against the database.
-        $userModel = new UserModel();
-        if (($userModel->existsName($name)) === true) {
-          $errors["name"] = $i18n->t("The {0} {1} is already in use.", [ $i18n->t("username"), String::placeholder($name) ]);
-        }
-      }
-      if (isset($errors)) {
-        return $errors;
-      }
-      // Do not tell the user that we already have this mail, otherwise it would be possible for an attacker to find out
-      // which mails we have in our system. Instead we send a message to the user this mail belongs to.
-      if ($userModel->existsMail($mail) === true) {
-        DelayedMailer::stackMethod("stackActivationMailExists", [ $mail ]);
-      }
-      // If this is a valid new registration generate a unique activation link and insert the user's data into our
-      // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what to do.
-      else {
-        $params = [ Crypt::randomHash(), $name, $mail ];
-        DelayedMethodCalls::stack($userModel, "preRegister", $params);
-        DelayedMailer::stackMethod("stackActivationMail", $params);
-      }
-      // Tell the user that we've sent a mail with instructions, nothing more to do here, move along.
-      $this->view = new AlertView($this, $this->view->title);
-      $this->view->setAlert(
-        "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ])}</p>",
-        AbstractView::ALERT_SEVERITY_SUCCESS
-      );
-      $this->view->content =
-        "<div class='container'><small>{$i18n->t(
-          "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-          [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
-        )}</small></div>"
-      ;
+    $this->view = new UserRegisterView($this);
+    if (($mail = Validation::inputMail("mail")) === false) {
+      $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
     }
+    if (($name = Validation::inputString("name")) === false) {
+      $errors["name"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("username") ]);
+    }
+    if (($error = Validation::username($name))) {
+      $errors["name"] = $error;
+    }
+    else {
+      // So far so good, we need a user model instance, because now we have to validate against the database.
+      $userModel = new UserModel();
+      if (($userModel->existsName($name)) === true) {
+        $errors["name"] = $i18n->t("The {0} {1} is already in use.", [ $i18n->t("username"), String::placeholder($name) ]);
+      }
+    }
+    if (isset($errors)) {
+      return $errors;
+    }
+    // Do not tell the user that we already have this mail, otherwise it would be possible for an attacker to find out
+    // which mails we have in our system. Instead we send a message to the user this mail belongs to.
+    if ($userModel->existsMail($mail) === true) {
+      DelayedMailer::stackMethod("stackActivationMailExists", [ $mail ]);
+    }
+    // If this is a valid new registration generate a unique activation link and insert the user's data into our
+    // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what to do.
+    else {
+      $params = [ Crypt::randomHash(), $name, $mail ];
+      DelayedMethodCalls::stack($userModel, "preRegister", $params);
+      DelayedMailer::stackMethod("stackActivationMail", $params);
+    }
+    // Tell the user that we've sent a mail with instructions, nothing more to do here, move along.
+    $this->view = new AlertView($this, $this->view->title);
+    $this->view->setAlert(
+      "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ])}</p>",
+      AbstractView::ALERT_SEVERITY_SUCCESS
+    );
+    $this->view->content =
+      "<div class='container'><small>{$i18n->t(
+        "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
+        [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
+      )}</small></div>"
+    ;
   }
 
   /**
@@ -320,7 +313,7 @@ class UserPresenter extends AbstractPresenter {
       $this->profile = new UserModel(UserModel::FROM_ID, $user->id);
     } catch (UserException $e) {
       $user->destroySession();
-      Network::httpRedirect($i18n->r("/user/login"), 302);
+      $this->view = new Redirect($i18n->r("/user/login"), 302);
       return;
     }
     $this->view = new UserSettingsView($this, $tab);
@@ -354,7 +347,7 @@ class UserPresenter extends AbstractPresenter {
       $this->setPresentation("User\\UserShow");
     } catch (UserException $e) {
       $user->destroySession();
-      Network::httpRedirect($i18n->r("/user/login"), 302);
+      $this->view = new Redirect($i18n->r("/user/login"), 302);
     }
   }
 

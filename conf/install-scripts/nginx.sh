@@ -30,7 +30,7 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="1.5.1"
+  VERSION="1.5.2"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
@@ -58,16 +58,6 @@ msginfo "Changing to directory: ${SD}${NAME}"
 
 # Install Zlib
 source ${ID}git.sh madler zlib
-cd ..
-msginfo "Changing to directory: ${SD}${NAME}"
-
-# Install nginx UploadProgressModule
-source ${ID}git.sh masterzen nginx-upload-progress-module
-cd ..
-msginfo "Changing to directory: ${SD}${NAME}"
-
-# Install nginx UpstreamFairModule
-source ${ID}git.sh gnosek nginx-upstream-fair
 cd ..
 msginfo "Changing to directory: ${SD}${NAME}"
 
@@ -113,9 +103,7 @@ msginfo "Changing to directory: ${SD}${NAME}"
   --without-http_ssi_module \
   --without-http_upstream_ip_hash_module \
   --without-http_userid_module \
-  --without-http_uwsgi_module \
-  --add-module="/usr/local/src/${NAME}/nginx-upload-progress-module" \
-  --add-module="/usr/local/src/${NAME}/nginx-upstream-fair"
+  --without-http_uwsgi_module
 
 # Create cache directories for nginx.
 mkdir -p /var/cache/nginx/body /var/cache/nginx/fastcgi
