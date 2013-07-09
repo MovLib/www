@@ -36,27 +36,4 @@ class Network {
    */
   const SERVER_NAME_STATIC = "alpha.movlib.org";
 
-  /**
-   * RFC 2616 compliant redirect, this will send the FastCGI response but processing will continue in order to ensure
-   * that any delayed methods will be executed. You should therefor return from your current method without any further
-   * changes to the presentation.
-   *
-   * <b>Usage example:</b>
-   * <pre>Network::httpRedirect($i18n->r("/movie/{0}/release-{1}/discussion", [ $movieId, $releaseId ]));</pre>
-   *
-   * @param string $route
-   *   The route to which the client should be redirected.
-   * @param int $status
-   *   [Optional] The HTTP response code (301, 302, or 303), defaults to 301.
-   */
-  public static function httpRedirect($route, $status = 301) {
-    header("Location: {$route}", true, $status);
-    // @todo Check if we really have to construct this, or is nginx handling this anyways?
-    if ($_SERVER["REQUEST_METHOD"] !== "HEAD") {
-      $title = [ 301 => "Moved Permanently", 302 => "Moved Temporarily", 303 => "See Other" ];
-      // Entity is required per RFC 2616. Our entity is identical to the one that nginx would return.
-      echo "<html><head><title>{$status} {$title[$status]}</title></head><body bgcolor=\"white\"><center><h1>{$status} {$title[$status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
-    }
-  }
-
 }
