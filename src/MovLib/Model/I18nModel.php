@@ -39,6 +39,37 @@ use \MovLib\Utility\DelayedMethodCalls;
 class I18nModel extends AbstractModel {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Return array sorted by ID.
+   *
+   * @see \MovLib\Model\I18nModel::getLanguages()
+   * @see \MovLib\Model\I18nModel::getCountries()
+   * @var string
+   */
+  const KEY_ID = "id";
+
+  /**
+   * Return array sorted by ISO alpha-2 code.
+   *
+   * @see \MovLib\Model\I18nModel::getLanguages()
+   * @see \MovLib\Model\I18nModel::getCountries()
+   * @var string
+   */
+  const KEY_CODE = "code";
+
+  /**
+   * Return array sorted by name.
+   *
+   * @see \MovLib\Model\I18nModel::getLanguages()
+   * @see \MovLib\Model\I18nModel::getCountries()
+   * @var string
+   */
+  const KEY_NAME = "name";
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -233,16 +264,21 @@ class I18nModel extends AbstractModel {
    *   "code" => $code => array("id" => $id, "name" => $name),
    *   )</pre>
    */
-  public function getLanguages() {
+  public function getLanguages($key = self::KEY_ID) {
     static $languages = null;
     if ($languages === null) {
       $n = $this->languageCode === $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
-      foreach ($this->selectAll("SELECT `language_id`, `iso_alpha-2`, {$n}`name` FROM `languages`") as $l) {
-        $languages["id"][$l["language_id"]] = [ "code" => $l["iso_alpha-2"], "name" => $l["name"] ];
-        $languages["code"][$l["iso_alpha-2"]] = [ "id" => $l["language_id"], "name" => $l["name"] ];
+      foreach ($this->selectAll("SELECT `language_id`, `iso_alpha-2`, {$n}`name` FROM `languages` ORDER BY `language_id`") as $l) {
+        $countries["id"] = $countries["code"] = $countries["name"] = [
+          "id"   => $c["language_id"],
+          "code" => $c["iso_alpha-2"],
+          "name" => $c["name"],
+        ];
+        asort($countries["code"]);
+        $this->getCollator()->sort($countries["name"]);
       }
     }
-    return $languages;
+    return $languages[$key];
   }
 
   /**
@@ -271,6 +307,7 @@ class I18nModel extends AbstractModel {
    *
    * @staticvar array $countries
    *   Used to cache the array.
+   * @param
    * @return array
    *   Associative array containing all countries in the form:
    *   <pre>array(
@@ -278,16 +315,21 @@ class I18nModel extends AbstractModel {
    *   "code" => $code => array("id" => $id, "name" => $name),
    *   )</pre>
    */
-  public function getCountries() {
+  public function getCountries($key = self::KEY_ID) {
     static $countries = null;
     if ($countries === null) {
       $n = $this->languageCode === $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
-      foreach ($this->selectAll("SELECT `country_id`, `iso_alpha-2`, {$n}`name` FROM `countries`") as $c) {
-        $countries["id"][$c["country_id"]] = [ "code" => $c["iso_alpha-2"], "name" => $c["name"] ];
-        $countries["code"][$c["iso_alpha-2"]] = [ "id" => $c["country_id"], "name" => $c["name"] ];
+      foreach ($this->selectAll("SELECT `country_id`, `iso_alpha-2`, {$n}`name` FROM `countries` ORDER BY `country_id`") as $c) {
+        $countries["id"] = $countries["code"] = $countries["name"] = [
+          "id"   => $c["country_id"],
+          "code" => $c["iso_alpha-2"],
+          "name" => $c["name"],
+        ];
+        asort($countries["code"]);
+        $this->getCollator()->sort($countries["name"]);
       }
     }
-    return $countries;
+    return $countries[$key];
   }
 
   /**
