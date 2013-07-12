@@ -1,5 +1,6 @@
 -- Léon
 BEGIN;
+-- id: 1
 INSERT INTO `persons` (
   `name`,
   `birthdate`,
@@ -47,6 +48,7 @@ CURRENT_TIMESTAMP,
 '',
 'hash'
 );
+-- id: 2
 INSERT INTO `persons` (
   `name`,
   `born_name`,
@@ -69,6 +71,7 @@ VALUES (
   '',
   ''
 );
+-- id: 3
 INSERT INTO `persons` (
   `name`,
   `birthdate`,
@@ -89,6 +92,7 @@ VALUES (
   '',
   ''
 );
+-- id: 4
 INSERT INTO `persons` (
   `name`,
   `birthdate`,
@@ -104,6 +108,73 @@ VALUES (
   '1958-03-21',
   'GB',
   'London',
+  'male',
+  '',
+  '',
+  ''
+);
+COMMIT;
+
+-- The Shawshank Redemption
+BEGIN;
+-- id: 5
+INSERT INTO `persons` (
+  `name`,
+  `birthdate`,
+  `country`,
+  `city`,
+  `gender`,
+  `dyn_aliases`,
+  `dyn_biographies`,
+  `dyn_links`
+)
+VALUES (
+  'Frank Darabont',
+  '1959-01-28',
+  'FR',
+  'Montbéliard',
+  'male',
+  '',
+  '',
+  ''
+);
+-- id: 6
+INSERT INTO `persons` (
+  `name`,
+  `birthdate`,
+  `country`,
+  `city`,
+  `gender`,
+  `dyn_aliases`,
+  `dyn_biographies`,
+  `dyn_links`
+)
+VALUES (
+  'Tim Robbins',
+  '1958-10-16',
+  'US',
+  'West Covina, CA',
+  'male',
+  '',
+  '',
+  ''
+);
+-- id: 7
+INSERT INTO `persons` (
+  `name`,
+  `birthdate`,
+  `country`,
+  `city`,
+  `gender`,
+  `dyn_aliases`,
+  `dyn_biographies`,
+  `dyn_links`
+)
+VALUES (
+  'Morgan Freeman',
+  '1937-06-01',
+  'US',
+  'Memphis, TN',
   'male',
   '',
   '',

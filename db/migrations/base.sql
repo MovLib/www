@@ -577,13 +577,19 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_awards`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`movies_awards` (
-  `award_id` INT UNSIGNED NOT NULL COMMENT 'The award\'s unique ID.' ,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID.' ,
+  `award_count` INT NOT NULL COMMENT 'The award\'s number for a movie.' ,
+  `award_id` INT UNSIGNED NOT NULL COMMENT 'The award\'s unique ID.' ,
+  `award_category_id` INT UNSIGNED NULL COMMENT 'The award category´s ID.' ,
+  `person_id` BIGINT UNSIGNED NULL COMMENT 'The unique ID of the person who received the award.' ,
+  `company_id` BIGINT UNSIGNED NULL COMMENT 'The unique ID of the company which received the award.' ,
   `year` SMALLINT UNSIGNED NOT NULL COMMENT 'The year the award has been given to the movie.' ,
-  `won` TINYINT(1) NOT NULL DEFAULT false ,
-  PRIMARY KEY (`award_id`, `movie_id`) ,
+  `won` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag, whether the award has been won (true), or if there was only the nomination (false).' ,
+  PRIMARY KEY (`movie_id`, `award_count`) ,
   INDEX `fk_awards_movies_movies1_idx` (`movie_id` ASC) ,
   INDEX `fk_awards_movies_awards1_idx` (`award_id` ASC) ,
+  INDEX `fk_persons_awards_persons2_idx` (`person_id` ASC) ,
+  INDEX `fk_persons_awards_companies1_idx` (`company_id` ASC) ,
   CONSTRAINT `fk_movies_awards_awards`
     FOREIGN KEY (`award_id` )
     REFERENCES `movlib`.`awards` (`award_id` )
@@ -592,6 +598,16 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   CONSTRAINT `fk_movies_awards_movies`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_awards_persons`
+    FOREIGN KEY (`person_id` )
+    REFERENCES `movlib`.`persons` (`person_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_awards_companies`
+    FOREIGN KEY (`company_id` )
+    REFERENCES `movlib`.`companies` (`company_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
@@ -1180,6 +1196,26 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`master_releases_labels` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`awards_categories`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`awards_categories` (
+  `award_id` INT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.' ,
+  `award_category_id` INT UNSIGNED NOT NULL COMMENT 'The award category’s ID.' ,
+  `name` VARCHAR(100) NOT NULL COMMENT 'The award category´s English name.' ,
+  `description` BLOB NULL COMMENT 'The award category’s English description.' ,
+  `dyn_names` BLOB NOT NULL COMMENT 'The award category’s title translations.' ,
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The award category’s description translations.' ,
+  PRIMARY KEY (`award_id`, `award_category_id`) ,
+  CONSTRAINT `fk_awards_categories_awards1`
+    FOREIGN KEY (`award_id` )
+    REFERENCES `movlib`.`awards` (`award_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
 SHOW WARNINGS;
 USE `movlib` ;
