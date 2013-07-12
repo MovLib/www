@@ -203,6 +203,10 @@ class SessionModel extends AbstractModel {
           $this->destroySessionAndRedirectToLogin();
         }
       }
+      // Validate the CSRF token if it is present in POST data.
+      if (isset($_POST["csrf_token"]) && $_POST["csrf_token"] !== $this->csrfToken) {
+        throw new SessionException("Invalid CSRF token.");
+      }
     }
   }
 
