@@ -105,9 +105,9 @@ abstract class AbstractView {
   protected $presenter;
 
   /**
-   * String containing all stylsheets of this view.
+   * Numeric array containing all stylsheets of this view.
    *
-   * @var string
+   * @var array
    */
   protected $stylesheets = [
     "base.css",
@@ -120,6 +120,15 @@ abstract class AbstractView {
     "layout/icons.css",
     "layout/alert.css",
     "layout/buttons.css",
+  ];
+
+  /**
+   * Numeric array containing all scripts of this view.
+   *
+   * @var array
+   */
+  protected $scripts = [
+    "jquery"
   ];
 
   /**
@@ -564,6 +573,12 @@ abstract class AbstractView {
    */
   public function getFooter() {
     global $i18n;
+    $c = count($this->scripts);
+    $d = Network::SERVER_NAME_STATIC;
+    $scripts = "";
+    for ($i = 0; $i < $c; ++$i) {
+      $scripts .= "<script src='https://{$d}/js/{$this->scripts[$i]}.js'></script>";
+    }
     return
       "<footer id='footer'>" .
         "<div class='container'>" .
@@ -590,8 +605,8 @@ abstract class AbstractView {
             "</a>" .
           "</div>" .
         "</div>" .
-      "</footer>"
-      // @todo Add aggregated scripts
+      "</footer>" .
+      $scripts
     ;
   }
 
