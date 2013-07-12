@@ -17,6 +17,7 @@
  */
 namespace MovLib\Model;
 
+use \Collator;
 use \DateTimeZone;
 use \IntlDateFormatter;
 use \Locale;
@@ -272,14 +273,17 @@ class I18nModel extends AbstractModel {
     if ($languages === null) {
       $n = $this->languageCode === $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
       foreach ($this->selectAll("SELECT `language_id`, `iso_alpha-2`, {$n}`name` FROM `languages` ORDER BY `language_id`") as $l) {
-        $countries["id"] = $countries["code"] = $countries["name"] = [
+        $language = [
           "id"   => $c["language_id"],
           "code" => $c["iso_alpha-2"],
           "name" => $c["name"],
         ];
-        asort($countries["code"]);
-        $this->getCollator()->sort($countries["name"]);
+        $language["id"][$c["language_id"]] = $language;
+        $language["code"][$c["iso_alpha-2"]] = $language;
+        $language["name"][$c["name"]] = $language;
       }
+      asort($languages["code"]);
+      $this->getCollator()->sort($languages["name"]);
     }
     return $languages[$key];
   }
@@ -325,14 +329,17 @@ class I18nModel extends AbstractModel {
     if ($countries === null) {
       $n = $this->languageCode === $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
       foreach ($this->selectAll("SELECT `country_id`, `iso_alpha-2`, {$n}`name` FROM `countries` ORDER BY `country_id`") as $c) {
-        $countries["id"] = $countries["code"] = $countries["name"] = [
+        $country = [
           "id"   => $c["country_id"],
           "code" => $c["iso_alpha-2"],
           "name" => $c["name"],
         ];
-        asort($countries["code"]);
-        $this->getCollator()->sort($countries["name"]);
+        $countries["id"][$c["country_id"]] = $country;
+        $countries["code"][$c["iso_alpha-2"]] = $country;
+        $countries["name"][$c["name"]] = $country;
       }
+      asort($countries["code"]);
+      $this->getCollator()->sort($countries["name"]);
     }
     return $countries[$key];
   }
