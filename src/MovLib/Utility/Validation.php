@@ -20,7 +20,7 @@ namespace MovLib\Utility;
 use \MovLib\Model\UserModel;
 
 /**
- * Description of Validation
+ * Utility class to ease validation of user input.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -30,6 +30,14 @@ use \MovLib\Model\UserModel;
  */
 class Validation {
 
+  /**
+   * Validate given IP address.
+   *
+   * @param string $ipAddress
+   *   The IP address to validate.
+   * @return boolean|string
+   *   <code>FALSE</code> if the IP address is not valid or empty, otherwise the IP address is returned.
+   */
   public static function ipAddress($ipAddress) {
     if (($ipAddress = filter_var($ipAddress, FILTER_VALIDATE_IP)) === false || empty($ipAddress)) {
       return false;
@@ -37,6 +45,16 @@ class Validation {
     return $ipAddress;
   }
 
+  /**
+   * Get IP address from user input.
+   *
+   * @param string $name
+   *   The variable name within the <var>$type</var>-array.
+   * @param int $type
+   *   [Optional] One of the PHP <var>INPUT_*</var> constants, defaults to <var>INPUT_POST</var>.
+   * @return boolean|string
+   *   <code>FALSE</code> if the IP address is not valid or empty, otherwise the IP address is returned.
+   */
   public static function inputIpAddress($name, $type = INPUT_POST) {
     if (($ipAddress = filter_input($type, $name, FILTER_VALIDATE_IP)) === false || empty($ipAddress)) {
       return false;
@@ -44,6 +62,15 @@ class Validation {
     return $ipAddress;
   }
 
+  /**
+   * Sanitize given string.
+   *
+   * @param string $string
+   *   The string to sanitize.
+   * @return boolean|string
+   *   <code>FALSE</code> if the filter failed or the string was empty after the filter was applied, otherwise the
+   *   string is returned.
+   */
   public static function string($string) {
     if (($string = filter_var($string, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)) === false || empty($string)) {
       return false;
@@ -60,12 +87,12 @@ class Validation {
    * treated as errors.
    *
    * @param string $name
-   *   The value of the name attribute of the input element.
+   *   The variable name within the <code>$type</code>-array.
    * @param int $type
    *   [Optional] One of the PHP <var>INPUT_*</var> constants, defaults to <var>INPUT_POST</var>.
-   * @return string|boolean
-   *   The submitted string with the filter applied and not empty, if the filter failed or the string is empty this
-   *   method returns <tt>FALSE</tt>.
+   * @return boolean|string
+   *   <code>FALSE</code> if the filter failed or the string was empty after the filter was applied, otherwise the
+   *   string is returned.
    */
   public static function inputString($name, $type = INPUT_POST) {
     if (($string = filter_input($type, $name, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)) === false || empty($string)) {
@@ -74,6 +101,14 @@ class Validation {
     return $string;
   }
 
+  /**
+   * Validate given mail.
+   *
+   * @param string $mail
+   *   The mail to validate.
+   * @return boolean|string
+   *   <code>FALSE</code> if the mail is not valid or empty, otherwise the mail is returned.
+   */
   public static function mail($mail) {
     if (($mail = filter_var($mail, FILTER_VALIDATE_EMAIL)) === false || empty($mail)) {
       return false;
@@ -81,11 +116,65 @@ class Validation {
     return $mail;
   }
 
+  /**
+   * Get mail from user input.
+   *
+   * @param string $name
+   *   The variable name within the <var>$type</var>-array.
+   * @param int $type
+   *   [Optional] One of the PHP <var>INPUT_*</var> constants, defaults to <var>INPUT_POST</var>.
+   * @return boolean|string
+   *   <code>FALSE</code> if the mail is not valid or empty, otherwise the mail is returned.
+   */
   public static function inputMail($name, $type = INPUT_POST) {
     if (($mail = filter_input($type, $name, FILTER_VALIDATE_EMAIL)) === false || empty($mail)) {
       return false;
     }
     return $mail;
+  }
+
+  /**
+   * Validate the given URL.
+   *
+   * This method will check if the URL is really reachable via the web.
+   *
+   * @param string $url
+   *   The URL to validate.
+   * @return boolean|string
+   *   <code>FALSE</code> if the URL is not valid or empty, otherwise the URL is returned.
+   */
+  public static function url($url) {
+    if (empty($url)) {
+      return false;
+    }
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+      CURLOPT_HEADER         => 1, // Get the header
+      CURLOPT_NOBODY         => 1, // Only get the header
+      CURLOPT_RETURNTRANSFER => 1, // Get the response as string (no echo)
+      CURLOPT_FRESH_CONNECT  => 1, // Do not use cached version
+    ]);
+    if (!curl_exec($ch)) {
+      return false;
+    }
+    return $url;
+  }
+
+  /**
+   * Get URL from user input.
+   *
+   * @param string $name
+   *   The variable name within the <var>$type</var>-array.
+   * @param int $type
+   *   [Optional] One of the PHP <var>INPUT_*</var> constants, defaults to <var>INPUT_POST</var>.
+   * @return boolean|string
+   *   <code>FALSE</code> if the URL is not valid or empty, otherwise the URL is returned.
+   */
+  public static function inputUrl($name, $type = INPUT_POST) {
+    if (($url = filter_input($type, $name, FILTER_VALIDATE_URL)) === false) {
+      return false;
+    }
+    return Validation::url($url);
   }
 
   /**
