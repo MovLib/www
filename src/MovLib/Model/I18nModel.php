@@ -257,6 +257,9 @@ class I18nModel extends AbstractModel {
    *
    * @staticvar array $countries
    *   Used to cache the array.
+   * @param string $key
+   *   [Optional] Get array of languages sorted by ID, ISO alpha-2 code, or name. Use the <var>KEY_*</var> class
+   *   constants.
    * @return array
    *   Associative array containing all languages in the form:
    *   <pre>array(
@@ -307,7 +310,9 @@ class I18nModel extends AbstractModel {
    *
    * @staticvar array $countries
    *   Used to cache the array.
-   * @param
+   * @param string $key
+   *   [Optional] Get array of countries sorted by ID, ISO alpha-2 code, or name. Use the <var>KEY_*</var> class
+   *   constants.
    * @return array
    *   Associative array containing all countries in the form:
    *   <pre>array(
