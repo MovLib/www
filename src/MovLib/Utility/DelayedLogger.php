@@ -101,7 +101,7 @@ class DelayedLogger {
           // Send email to developers upon logging of entries with high levels, there must be something that needs a fix.
           mail(
             "movdev-mailinglist@movlib.org",
-            "IMPORTANT! A {$level} message was just logged.",
+            "IMPORTANT! An error message was just logged.",
             "<p>Here is the message that was logged:</p><pre>" . String::checkPlain($logEntry) . "</pre>",
             "MIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n"
           );
