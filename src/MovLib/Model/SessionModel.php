@@ -163,9 +163,9 @@ class SessionModel extends AbstractModel {
           "SELECT `user_id` AS `id`, `name`, `deleted`, `timezone`, `language_id` AS `languageId` FROM `users` WHERE `user_id` = ? LIMIT 1",
           "d", $_SESSION["UID"]
         );
-        $this->sessionId  = session_id();
-        $this->csrfToken  = $_SESSION["CSRF"];
-        $this->ttl        = $_SESSION["TTL"];
+        $this->sessionId = session_id();
+        $this->csrfToken = $_SESSION["CSRF"];
+        $this->ttl       = $_SESSION["TTL"];
         if ($_SESSION["TTL"] < time()) {
           $this->destroySessionAndRedirectToLogin();
         }
@@ -202,10 +202,6 @@ class SessionModel extends AbstractModel {
         } catch (ErrorException $e) {
           $this->destroySessionAndRedirectToLogin();
         }
-      }
-      // Validate the CSRF token if it is present in POST data.
-      if (isset($_POST["csrf_token"]) && $_POST["csrf_token"] !== $this->csrfToken) {
-        throw new SessionException("Invalid CSRF token.");
       }
     }
   }
