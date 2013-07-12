@@ -73,8 +73,11 @@ class Image {
     if (!is_array($uploadedFile) || empty($uploadedFile["tmp_name"]) || !is_file($uploadedFile["tmp_name"])) {
       throw new ImageException("No valid input found.");
     }
+    if ($uploadedFile["error"] == UPLOAD_ERR_NO_FILE) {
+      return;
+    }
     if ($uploadedFile["error"] != UPLOAD_ERR_OK) {
-      throw new ImageException("Upload error.", null, $uploadedFile["error"]);
+      throw new ImageException("Upload error.");
     }
     $finfo = new finfo();
     $mime = $finfo->file($uploadedFile["tmp_name"], FILEINFO_MIME_TYPE);
