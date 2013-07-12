@@ -20,6 +20,7 @@ namespace MovLib\Presenter;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\UserException;
+use \MovLib\Model\I18nModel;
 use \MovLib\Model\UserModel;
 use \MovLib\Presenter\AbstractPresenter;
 use \MovLib\Utility\Crypt;
@@ -124,7 +125,7 @@ class UserPresenter extends AbstractPresenter {
       $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$userModel->name}</b>" ]),
       AbstractView::ALERT_SEVERITY_SUCCESS
     ];
-    $this->view = new Redirect($i18n->r(isset($_GET["redirect_to"]) ? $_GET["redirect_to"] : "/user"), 302);
+    $this->view = new Redirect(isset($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/user"), 302);
   }
 
   /**
@@ -325,7 +326,20 @@ class UserPresenter extends AbstractPresenter {
       return;
     }
     $this->view = new UserSettingsView($this, $tab);
+    $this->view->inputValues = [
+      "real_name" => $this->profile->realName,
+      "gender"    => $this->profile->gender,
+      "country"   => $i18n->getCountries()[$this->profile->countryId]["name"],
+      "timezone"  => $this->profile->timezone,
+      "profile"   => $this->profile->profile,
+      "birthday"  => $this->profile->birthday,
+      "website"   => $this->profile->website,
+      "private"   => $this->profile->private,
+    ];
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
+      if ($_POST["csrf"] !== $user->csrfToken) {
+        return $this->__constructLogout();
+      }
       return $this->{"validate{$tab}Settings"}();
     }
   }
@@ -463,22 +477,90 @@ class UserPresenter extends AbstractPresenter {
     $this->view->inputValues["pass"] = $pass;
   }
 
+  /**
+   * Validate the user submitted data for the account tab in the user settings.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The global session model instance.
+   * @return null|array
+   *   Returns <code>NULL</code> if no error occurred. Otherwise an array containing the alert messages is returned.
+   */
   private function validateAccountSettings() {
     global $i18n, $user;
     $errors = null;
     try {
-      $avatar = Image::upload("avatar", "user/avatar-{$user->id}");
-      $this->profile->avatarExt = $avatar["ext"];
-      $this->view->setAlert($i18n->t("Avatar has been updated."), AbstractView::ALERT_SEVERITY_SUCCESS);
+      if (($avatar = Image::upload("avatar", "user/avatar-{$user->id}"))) {
+        $this->profile->avatarExt = $avatar["ext"];
+      }
     } catch (ImageException $e) {
-      $errors["avatar"] = $i18n->t("The submitted avatar image is not valid.");
-      $errors["msg"] = $e->getMessage();
-      $errors["cdn"] = $e->getCode();
+      $errors["avatar"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Avatar") ]);
+    }
+    if (($realName = Validation::inputString("real_name")) !== false) {
+      $this->profile->realName = $realName;
+    }
+    if (($gender = Validation::inputString("gender")) !== false) {
+      settype($gender, "int");
+      if ($gender === -1) {
+        unset($this->profile->gender);
+      }
+      else {
+        if ($gender === 0 || $gender === 1) {
+          $this->profile->gender = $gender;
+        }
+        else {
+          $errors["gender"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Gender") ]);
+        }
+      }
+    }
+    if (($country = Validation::inputString("country")) !== false) {
+      $countries = $i18n->getCountries(I18nModel::COUNTRY_KEY_NAME);
+      if (in_array($country, $countries)) {
+        $this->profile->countryId = $countries[$country]["id"];
+      }
+      else {
+        $errors["country"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Country") ]);
+      }
+    }
+    if (($timezone = Validation::inputString("timezone")) !== false) {
+      if (in_array($timezone, timezone_identifiers_list())) {
+        $this->profile->timezone = $timezone;
+      }
+      else {
+        $errors["timezone"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Time Zone") ]);
+      }
+    }
+    // @todo Validate profile text
+    if (($birthday = Validation::inputString("birthday")) !== false) {
+      $birthdayTimestamp = strtotime($birthday);
+      if (checkdate(date("m", $birthdayTimestamp), date("d", $birthdayTimestamp), date("Y", $birthdayTimestamp))) {
+        $this->profile->birthday = $birthday;
+      }
+      else {
+        $errors["birthday"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Date of Birth") ]);
+      }
+    }
+    if (isset($_POST["website"]) && !empty($_POST["website"])) {
+      if (($website = Validation::inputUrl("website")) !== false) {
+        $this->profile->website = $website;
+      }
+      else {
+        $errors["website"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Website") ]);
+      }
+    }
+    if (isset($_POST["private"])) {
+      $this->profile->private = true;
     }
     if ($errors) {
       return $errors;
     }
-    $this->profile->commit();
+//    $this->profile->commit();
+    $this->view->setAlert(
+      $i18n->t("Your {0} has been updated.", [ $i18n->t("Account Settings") ]),
+      AbstractView::ALERT_SEVERITY_SUCCESS
+    );
+    $this->view->setAlert("<pre>" . print_r($_POST, true) . "</pre>");
   }
 
   private function validateNotificationSettings() {

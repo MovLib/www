@@ -219,8 +219,13 @@ class SessionModel extends AbstractModel {
     if (!isset($i18n)) {
       $i18n = new I18nModel();
     }
-    $this->destroySession();
-    header("Location: {$i18n->r("/user/login")}", true, 302);
+    $this->destroySession()->deleteSession();
+    $loginRoute = $i18n->r("/user/login");
+    $redirectTo = "";
+    if ($_SERVER["REQUEST_URI"] !== $loginRoute) {
+      $redirectTo = "?redirect_to={$_SERVER["REQUEST_URI"]}";
+    }
+    header("Location: {$loginRoute}{$redirectTo}", true, 302);
     exit("<html><head><title>302 Moved Temporarily</title></head><body bgcolor=\"white\"><center><h1>302 Moved Temporarily</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>");
   }
 
@@ -284,15 +289,15 @@ class SessionModel extends AbstractModel {
    * @return $this
    */
   public function destroySession() {
+    // The user is no longer logged in.
+    $this->isLoggedIn = false;
+    // Remove all data associated with this session.
+    session_destroy();
     // Remove the cookie.
     $cookieParams = session_get_cookie_params();
     setcookie(session_name(), "", time() - 42000, $cookieParams["path"], $cookieParams["domain"], $cookieParams["secure"], $cookieParams["httponly"]);
-    // Remove all data associated with this session.
-    session_destroy();
     // Remove the session ID from our database.
     DelayedMethodCalls::stack($this, "deleteSession");
-    // The user is no longer logged in.
-    $this->isLoggedIn = false;
     return $this;
   }
 

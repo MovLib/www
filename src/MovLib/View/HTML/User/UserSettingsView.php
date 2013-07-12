@@ -72,6 +72,7 @@ class UserSettingsView extends AbstractFormView {
     if ($tab === "Account") {
       $this->attributes["enctype"] = AbstractFormView::ENCTYPE_BINARY;
     }
+    $this->scripts[] = "modules/user";
   }
 
 
@@ -110,58 +111,110 @@ class UserSettingsView extends AbstractFormView {
       $avatar = "<img class='avatar avatar--150' alt='{$i18n->t("{0}’s avatar.", [ String::checkPlain($this->presenter->profile->name) ])}' height='150' src='{$avatar}' width='150'>";
     }
     return
+      // --------------------------------------------------------------------------------------------------------------- Avatar
+
       "<div class='row'>" .
+        "<div class='span span--3'>{$avatar}</div>" .
         "<div class='span span--6'>" .
-          "<p><label for='avatar'>{$i18n->t("Avatar")}</label>{$this->input("avatar", [
-            "accept"   => "image/jpeg,image/png,image/svg+xml",
-            "type"     => "file",
-            "size"     => 255,
+          "<p><label for='avatar'>{$i18n->t("Avatar")}{$this->help($i18n->t(
+            "The maximum file size is {0,number,integer}&thinsp;MB, allowed image extensions are JPG and PNG. The " .
+            "image will be resized automatically and you can crop it if it has no quadratic dimensions.",
+            [ ini_get("upload_max_filesize") ]
+          ))}</label>{$this->input("avatar", [
+            "accept" => "image/jpeg,image/png",
+            "type"   => "file",
           ])}</p>" .
         "</div>" .
-        "<div class='span span--3'>{$avatar}</div>" .
       "</div>" .
-      "<p><label for='real_name'>{$i18n->t("Real Name")}</label>{$this->input("real_name", [
+
+      // --------------------------------------------------------------------------------------------------------------- Real Name
+
+      "<p><label for='real_name'>{$i18n->t("Real Name")}{$this->help($i18n->t(
+        "Your {0} will be displayed on your profile page.", [ $i18n->t("real name") ]
+      ))}</label>{$this->input("real_name", [
         "class" => "input--block-level",
         "title" => $i18n->t("Please enter your real name in this field."),
-        "value" => $this->presenter->profile->realName
       ])}</p>" .
-      "<p><label>{$i18n->t("Gender")}</label><span title='{$i18n->t("Please select your gender.")}'>" .
-        "<label class='radio inline'>{$this->input("gender", [ "type" => "radio", "value" => "0", "checked" ])}{$i18n->t("Male")}</label>" .
-        "<label class='radio inline'>{$this->input("gender", [ "type" => "radio", "value" => "1" ])}{$i18n->t("Female")}</label>" .
-        "<label class='radio inline'>{$this->input("gender", [ "type" => "radio", "value" => "" ])}{$i18n->t("Unknown")}</label>" .
-      "</span></p>" .
-      "<p><label for='country'>{$i18n->t("Country")}</label>{$this->inputDatalist(
-        [ "country", [ "class" => "input--block-level", "value" => "Austria" ]],
-        [ "countries", array_column($i18n->getCountries()["id"], "name") ]
-      )}</p>" .
-      "<p><label for='timezone'>{$i18n->t("Time Zone")}</label>{$this->inputDatalist(
-        [ "timezone", [ "class" => "input--block-level", "placeholder" => "UTC", "value" => $this->presenter->profile->timezone ]],
+
+      // --------------------------------------------------------------------------------------------------------------- Gender
+
+      "<p><label>{$i18n->t("Gender")}{$this->help($i18n->t(
+        "Your {0} will be displayed on your profile page and is used to create demographic evaluations.",
+        [ $i18n->t("gender") ]
+      ))}</label><span title='{$i18n->t("Please select your gender.")}'>{$this->radioGroup("gender", [
+        1 => $i18n->t("Male"),
+        0 => $i18n->t("Female"),
+        -1 => $i18n->t("Unknown"),
+      ], -1)}</span></p>" .
+
+      // --------------------------------------------------------------------------------------------------------------- Country
+
+      "<p><label for='country'>{$i18n->t("Country")}{$this->help($i18n->t(
+        "Your {0} will be displayed on your profile page and is used to create demographic evaluations.",
+        [ $i18n->t("country") ]
+      ))}</label>{$this->input("country", [
+        "aria-autocomplete" => "list",
+        "class"             => "input--block-level",
+        "list"              => "countries",
+      ])}{$this->getCountryDatalist("countries")}</p>" .
+
+      // --------------------------------------------------------------------------------------------------------------- Timezone
+
+      "<p><label for='timezone'>{$i18n->t("Time Zone")}{$this->help($i18n->t(
+        "Enter your timezone, simply click in the field and start typing."
+      ))}</label>{$this->inputDatalist(
+        [ "timezone", [ "class" => "input--block-level", "placeholder" => "UTC" ]],
         [ "timezones", timezone_identifiers_list() ]
       )}</p>" .
-      "<p><label for='profile'>{$i18n->t("About You")}</label>{$this->input("profile", [
+
+      // --------------------------------------------------------------------------------------------------------------- Profile
+      // @todo Language selector for profile and content editable!
+
+      "<p><label for='profile'>{$i18n->t("About You")}{$this->help($i18n->t(
+        "You can enter a short profile text to tell other people who you are."
+      ))}</label>{$this->input("profile", [
         "class"       => "input--block-level",
         "placeholder" => $i18n->t("This text will appear on your profile page."),
       ], "textarea", $this->presenter->profile->profile)}</p>" .
-      // @todo Language selector for profile and content editable!
-      "<p><label for='birthday'>{$i18n->t("Date of Birth")}</label>{$this->input("birthday", [
+
+      // --------------------------------------------------------------------------------------------------------------- Birthday
+
+      "<p><label for='birthday'>{$i18n->t("Date of Birth")}{$this->help(
+        $i18n->t("Your {0} will be displayed on your profile page and is used to create demographic evaluations.", [ $i18n->t("birthday") ]) .
+        " " .
+        $i18n->t(
+          "The format for this field is <em>yyyy-mm-dd</em> where <em>yyyy</em> is the year, <em>mm</em> the month, ".
+          "and <em>dd</em> the day. Your browser might display a datepicker and automatically enter the correct format."
+        )
+      )}</label>{$this->input("birthday", [
         "class"       => "input--block-level",
-        "placeholder" => "mm/dd/yyyy",
+        "placeholder" => "yyyy-mm-dd",
         "type"        => "date",
-        "value"       => $this->presenter->profile->birthday
       ])}</p>" .
-      // @todo Display help for formatting, type date works in nearly no browser! Or use multiple selects?
-      "<p><label for='website'>{$i18n->t("Website")}</label>{$this->input("website", [
+
+      // --------------------------------------------------------------------------------------------------------------- Website
+
+      "<p><label for='website'>{$i18n->t("Website")}{$this->help($i18n->t(
+        "Your website will be displayed on your profile page."
+      ))}</label>{$this->input("website", [
         "class"       => "input--block-level",
         "placeholder" => "http://example.com/",
         "type"        => "url",
-        "value"       => $this->presenter->profile->website
       ])}</p>" .
-      "<p><label>{$i18n->t("Keep my data private!")}{$this->help($i18n->t(
+
+      // --------------------------------------------------------------------------------------------------------------- Private Flag
+
+      "<p><label class='checkbox inline'>{$i18n->t("Keep my data private!")}{$this->input("private", [
+        "type"  => "checkbox"
+      ])}</label>{$this->help($i18n->t(
         "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
         "used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data " .
         "like gender and country, scientists around the world are enabled to research the human interests in movies more " .
         "closely. Of course your real name won’t be used for anything!"
-      ))}{$this->input("private", [ "type" => "checkbox" ])}</label></p>" .
+      ))}</p>" .
+
+      // --------------------------------------------------------------------------------------------------------------- Submit
+
       "<p>{$this->submit($i18n->t("Update account settings"))}</p>"
     ;
   }

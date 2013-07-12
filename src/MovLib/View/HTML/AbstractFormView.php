@@ -17,6 +17,8 @@
  */
 namespace MovLib\View\HTML;
 
+use \MovLib\Utility\String;
+use \MovLib\Utility\Validation;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -173,22 +175,16 @@ abstract class AbstractFormView extends AbstractView {
     $attributes["tabindex"] = $this->getTabindex();
     if (!isset($attributes["type"])) {
       $attributes["role"] = "textbox";
-      if (empty($attributes["value"])) {
-        $attributes["value"] = isset($this->inputValues[$name]) && !empty($this->inputValues[$name])
-          ? $this->inputValues[$name]
-          : filter_input(INPUT_POST, $name, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_FLAG_ENCODE_AMP)
-        ;
-      }
     }
     else {
       switch ($attributes["type"]) {
         case "email":
           $attributes["role"] = "textbox";
-          if (empty($attributes["value"])) {
-            $attributes["value"] = isset($this->inputValues[$name])
-              ? $this->inputValues[$name]
-              : filter_input(INPUT_POST, $name, FILTER_SANITIZE_EMAIL)
-            ;
+          if ((!isset($attributes["value"]) || empty($attributes["value"])) && isset($this->inputValues[$name]) && !empty($this->inputValues[$name])) {
+            $attributes["value"] = $this->inputValues[$name];
+          }
+          elseif (($attributes["value"] = Validation::inputMail($name)) === false) {
+            unset($attributes["value"]);
           }
           break;
 
@@ -196,14 +192,31 @@ abstract class AbstractFormView extends AbstractView {
           $attributes["role"] = "textbox";
           // Only the presenter or view is allowed to insert a value into a password field. Never ever use a password
           // value that was submitted via the user.
-          if (empty($attributes["value"]) && isset($this->inputValues[$name])) {
+          if ((!isset($attributes["value"]) || empty($attributes["value"])) && isset($this->inputValues[$name]) && !empty($this->inputValues[$name])) {
             $attributes["value"] = $this->inputValues[$name];
           }
           break;
 
         case "radio":
           unset($attributes["id"]);
+          if (isset($this->inputValues[$name]) && isset($attributes["value"]) && $attributes["value"] == $this->inputValues[$name]) {
+            $attributes[] = "checked";
+          }
           break;
+
+        case "checkbox":
+          if (isset($this->inputValues[$name]) && !empty($this->inputValues[$name])) {
+            $attributes[] = "checked";
+          }
+          break;
+      }
+    }
+    if (!isset($attributes["value"]) || empty($attributes["value"])) {
+      if (isset($this->inputValues[$name]) && !empty($this->inputValues[$name])) {
+        $attributes["value"] = $this->inputValues[$name];
+      }
+      elseif (($attributes["value"] = Validation::inputString($name)) === false) {
+        unset($attributes["value"]);
       }
     }
     switch ($tag) {
@@ -214,6 +227,7 @@ abstract class AbstractFormView extends AbstractView {
       case "textarea":
         $attributes["aria-multiline"] = "true";
         unset($attributes["type"]);
+        unset($attributes["value"]);
         return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}</{$tag}>";
 
       default:
@@ -235,6 +249,10 @@ abstract class AbstractFormView extends AbstractView {
    *   The input and datalist element ready for print.
    */
   protected function inputDatalist($input, $datalist) {
+    if (!isset($input[1])) {
+      $input[1] = [];
+    }
+    $input[1]["aria-autocomplete"] = "list";
     $input[1]["list"] = $datalist[0];
     $input = call_user_func_array([ $this, "input" ], $input);
     $datalist = call_user_func_array([ $this, "datalist" ], $datalist);
@@ -242,7 +260,15 @@ abstract class AbstractFormView extends AbstractView {
   }
 
   /**
+   * Generate datalist for autocomplete input element.
+   *
    * @link https://github.com/thgreasi/datalist-polyfill
+   * @param string $id
+   *   The unique DOM ID of this datalist.
+   * @param array
+   *   Numeric array containing the options for this datalist.
+   * @return string
+   *   The datalist ready for print.
    */
   protected function datalist($id, $options) {
     $datalist = "<datalist id='{$id}'><select class='hidden'>";
@@ -251,6 +277,31 @@ abstract class AbstractFormView extends AbstractView {
       $datalist .= "<option value='{$options[$i]}'>";
     }
     return "{$datalist}</select></datalist>";
+  }
+
+  /**
+   * Generate datalist for countries.
+   *
+   * @todo Prioritize certain countries
+   * @todo Include common typos
+   * @link http://uxdesign.smashingmagazine.com/2011/11/10/redesigning-the-country-selector/
+   * @global \MovLib\Model\I18nModel $i18n
+   *   Global i18n model instance.
+   * @param string $id
+   *   The unique DOM ID of this datalist.
+   * @return string
+   *   The datalist ready for print.
+   */
+  public function getCountryDatalist($id) {
+    global $i18n;
+    $datalist = "<datalist id='{$id}'><select class='hidden'>";
+    foreach ($i18n->getCountries() as $id => $country) {
+      $datalist .=
+        "<option value='{$country["name"]}'></option>" .
+        "<option value='{$country["name"]}'>{$country["code"]}</option>"
+      ;
+    }
+    return "$datalist</select></datalist>";
   }
 
   /**
@@ -302,6 +353,38 @@ abstract class AbstractFormView extends AbstractView {
    */
   protected function help($text) {
     return "<span class='form-help'><i class='icon icon--help-circled'></i><small class='form-help-text'>{$text}</small></span>";
+  }
+
+  /**
+   * Create a group of radio buttons.
+   *
+   * @param string $name
+   *   The <em>name</em> of the radio elements. This value is used for the <em>name</em> attribute of the radio elements.
+   * @param array $data
+   *   Associative array containing the data for the radio elements where the key is used as content of the value-
+   *   attribute and the value as label (already translated).
+   * @param mixed $checked
+   *   [Optional] The value of the radio element that should be checked by default. Defaults to <code>NULL</code>.
+   * @param boolean $inline
+   *   [Optional] Flag to determine if the radio group should be displayed inline or stacked. Defaults to
+   *   <code>TRUE</code>.
+   * @return string
+   *   The radio group ready for print.
+   */
+  protected function radioGroup($name, $data, $checked = null, $inline = true) {
+    $radios = "";
+    $inline = $inline ? " inline" : "";
+    foreach ($data as $value => $label) {
+      $attr = [ "type" => "radio", "value" => $value, "required" ];
+      if (!isset($this->inputValues[$name]) && $value === $checked) {
+        $attr[] = "checked";
+      }
+      $radios .= "<label class='radio{$inline}'>{$this->input($name, [
+        "type" => "radio",
+        "value" => $value
+      ])}{$label}</label>";
+    }
+    return $radios;
   }
 
 }
