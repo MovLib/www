@@ -194,7 +194,9 @@ fastcgi_finish_request();
 // Ensure that the session gets written to our session database (encountered some odd situations where they weren't;
 // this seems to solve this, although I never found out what is really causing the problem, it apparently is tightly
 // bound to the above call to fastcgi_finish_request().
-session_write_close();
+if (session_status() === PHP_SESSION_ACTIVE) {
+  session_write_close();
+}
 
 // Execute each delayed run method after sending the generated output to the user.
 foreach ($delayed as $classes) {
