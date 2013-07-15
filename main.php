@@ -33,6 +33,13 @@
  */
 
 /**
+ * The full version string of this MovLib software.
+ *
+ * @var string
+ */
+define("MOVLIB_VERSION", "0.0.1-dev");
+
+/**
  * This is the outermost place to catch any exception that might have been forgotten somewhere.
  *
  * To ensure that no unexpected behaviour crashes our software any uncaught exception will be caught at this place. An
