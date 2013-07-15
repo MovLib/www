@@ -34,7 +34,7 @@ VALUES
     'hash'
   )
 ;
--- Léon
+-- The Shawshank Redemption
 INSERT INTO `posters`
   (
     `movie_id`,
@@ -54,6 +54,41 @@ INSERT INTO `posters`
 VALUES
   (
     2,
+    1,
+    1,
+    233,
+    "The-Shawshank-Redemption.1.en",
+    269,
+    395,
+    66394,
+    "jpg",
+    CURRENT_TIMESTAMP,
+    0,
+    '',
+    'hash'
+  )
+;
+COMMIT;
+-- Léon
+INSERT INTO `posters`
+  (
+    `movie_id`,
+    `poster_id`,
+    `user_id`,
+    `country_id`,
+    `filename`,
+    `width`,
+    `height`,
+    `size`,
+    `ext`,
+    `created`,
+    `rating`,
+    `dyn_descriptions`,
+    `hash`
+  )
+VALUES
+  (
+    3,
     1,
     1,
     233,

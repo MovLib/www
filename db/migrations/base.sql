@@ -950,8 +950,8 @@ SHOW WARNINGS;
 -- Table `movlib`.`aspect_ratios`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`aspect_ratios` (
-  `aspect_ratio_id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `name` TINYTEXT NOT NULL ,
+  `aspect_ratio_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The aspect ratio\'s unique ID.' ,
+  `name` TINYTEXT NOT NULL COMMENT 'The aspect ratio\'s English name.' ,
   PRIMARY KEY (`aspect_ratio_id`) )
 ROW_FORMAT = COMPRESSED;
 
@@ -1052,7 +1052,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_releases` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_releases_releases1`
     FOREIGN KEY (`release_id` )
-    REFERENCES `movlib`.`releases` (`master_release_id` )
+    REFERENCES `movlib`.`releases` (`release_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 

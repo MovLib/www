@@ -263,18 +263,17 @@ class MovieModel extends AbstractModel {
     if ($countries === null) {
       $countries = $this->select(
         "SELECT
-          c.`country_id` AS `id`,
-          c.`iso_alpha-2` AS `isoCode`,
-          c.`name` AS `name`,
-          COLUMN_GET(c.`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS `nameLocalized`
-          FROM `movies_countries` mc
-          INNER JOIN `countries` c
-          ON mc.`country_id` = c.`country_id`
-          WHERE mc.`movie_id` = ?
-          ORDER BY `nameLocalized` ASC, `name` ASC",
+          `country_id` AS `id`
+          FROM `movies_countries`
+          WHERE `movie_id` = ?",
         "d",
         [ $this->id ]
       );
+      $c = count($countries);
+      $i18nCountries = $i18n->getCountries();
+      for ($i = 0; $i < $c; ++$i) {
+        $countries[$i] = $i18nCountries[ $countries[$i]["id"] ];
+      }
     }
     return $countries;
   }
@@ -437,7 +436,7 @@ class MovieModel extends AbstractModel {
       $count = count($posters);
       for ($i = 0; $i < $count; ++$i) {
         if (isset($posters[$i]["country"])) {
-          $posters[$i]["country"] = $i18n->getCountries()["id"][$posters[$i]["country"]]["name"];
+          $posters[$i]["country"] = $i18n->getCountries()[$posters[$i]["country"]]["name"];
         }
       }
     }
@@ -557,18 +556,13 @@ class MovieModel extends AbstractModel {
     static $titles = null;
     if ($titles === null) {
       $titles = $this->select(
-        "SELECT mt.`title` AS `title`,
+        "SELECT `title` AS `title`,
           COLUMN_GET(`dyn_comments`, 'en' AS BINARY) AS `comment`,
           COLUMN_GET(`dyn_comments`, '{$i18n->languageCode}' AS BINARY) AS `commentLocalized`,
-          mt.`is_display_title` AS isDisplayTitle,
-          l.`language_id` AS `languageId`,
-          l.`iso_alpha-2` AS `languageIsoCode`,
-          l.`name` AS `languageName`,
-          COLUMN_GET(l.`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS `languageNameLocalized`
-          FROM `movies_titles` mt
-          INNER JOIN `languages` l
-          ON mt.`language_id` = l.`language_id`
-          WHERE mt.`movie_id` = ?
+          `is_display_title` AS isDisplayTitle,
+          `language_id` AS `languageId`
+          FROM `movies_titles`
+          WHERE `movie_id` = ?
           ORDER BY `title` ASC",
         "d",
         [ $this->id ]

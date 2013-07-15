@@ -138,6 +138,33 @@ VALUES (
   '',
   ''
 );
+INSERT INTO `persons_photos` (
+  `photo_id`,
+  `person_id`,
+  `user_id`,
+  `filename`,
+  `width`,
+  `height`,
+  `size`,
+  `ext`,
+  `created`,
+  `rating`,
+  `dyn_descriptions`,
+  `hash`
+) VALUES (
+1,
+5,
+1,
+'Frank-Darabont.1.en',
+348,
+394,
+109183,
+'jpg',
+CURRENT_TIMESTAMP,
+0,
+'',
+'hash'
+);
 -- id: 6
 INSERT INTO `persons` (
   `name`,
