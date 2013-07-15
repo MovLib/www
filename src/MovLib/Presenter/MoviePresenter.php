@@ -93,7 +93,6 @@ class MoviePresenter extends AbstractPresenter {
           break;
         }
       }
-//      echo var_dump($this);
       $this->view = new MovieShowView($this);
       return $this;
     } catch (MovieException $e) {
@@ -119,12 +118,13 @@ class MoviePresenter extends AbstractPresenter {
       }
       $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
       // Construct the title of the page from the movie's display title or the original title if no display title exists.
+      $languages = $i18n->getLanguages();
       $titles = $this->movieModel->getTitles();
       $count = count($titles);
       $this->displayTitle = $this->movieModel->originalTitle;
       for ($i = 0; $i < $count; ++$i) {
-        if ($titles[$i]["isDisplayTitle"]) {
-          $this->displayTitle = $titles[$i];
+        if ($titles[$i]["isDisplayTitle"] === true && $languages[ $titles[$i]["languageId"] ]["code"] === $i18n->languageCode) {
+          $this->displayTitle = $titles[$i]["title"];
           break;
         }
       }

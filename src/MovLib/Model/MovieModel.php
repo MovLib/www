@@ -263,18 +263,17 @@ class MovieModel extends AbstractModel {
     if ($countries === null) {
       $countries = $this->select(
         "SELECT
-          c.`country_id` AS `id`,
-          c.`iso_alpha-2` AS `isoCode`,
-          c.`name` AS `name`,
-          COLUMN_GET(c.`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS `nameLocalized`
-          FROM `movies_countries` mc
-          INNER JOIN `countries` c
-          ON mc.`country_id` = c.`country_id`
-          WHERE mc.`movie_id` = ?
-          ORDER BY `nameLocalized` ASC, `name` ASC",
+          `country_id` AS `id`
+          FROM `movies_countries`
+          WHERE `movie_id` = ?",
         "d",
         [ $this->id ]
       );
+      $c = count($countries);
+      $i18nCountries = $i18n->getCountries();
+      for ($i = 0; $i < $c; ++$i) {
+        $countries[$i] = $i18nCountries[ $countries[$i]["id"] ];
+      }
     }
     return $countries;
   }

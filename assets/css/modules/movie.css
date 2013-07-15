@@ -26,6 +26,10 @@
  * @since 0.0.1-dev
  */
 
+h2 small {
+  float: right;
+}
+
 #movie__header {
   color: #c7c7c7;
 }
@@ -69,29 +73,11 @@
   cursor: pointer;
 }
 
-#movie__rating div span, #movie__rating__form-wrapper form {
-  margin-right: 5px;
-}
-
-#movie__rating__form-wrapper form:last-of-type {
-  margin-right: 0;
-}
-
-#movie__rating__form-wrapper {
-  overflow: hidden;
-  color: #ffbb33;
-  white-space: pre;
-}
-
-#movie__rating__form-wrapper:hover {
-  clip: rect(0, 115px, 20px, 0)!important;
-}
-
-#movie__rating__form-wrapper form, #movie__rating__form-wrapper input, #movie__rating__form-wrapper button {
-  display: inline;
+#movie__rating__front button, #movie__rating__back button {
   margin: 0;
   padding: 0;
-  width: 19px;
+  padding-right: 5px;
+  width: 24px;
   height: 20px;
   font-family: MovLib;
   font-size: 20px;
@@ -101,17 +87,25 @@
   line-height: 1;
 }
 
-#movie__rating__form-wrapper form {
-  position: relative;
-  margin-right: 5px;
+#movie__rating__back button:last-of-type, #movie__rating__front button:last-of-type {
+  width: 19px;
+  padding-right: 0;
 }
 
-#movie__rating__form-wrapper input {
-  position: absolute;
-  top: 0;
-  left: 0;
+#movie__rating__front {
+  overflow: hidden;
+  color: #ffbb33;
+  white-space: pre;
 }
 
-#movie__rating__form-wrapper > form:hover ~ form {
+#movie__rating__front:hover {
+  clip: rect(0, 115px, 20px, 0)!important;
+}
+
+#movie__rating__back:hover {
+  color: #ffbb33;
+}
+
+#movie__rating__back > button:hover ~ button, #movie__rating__front > button:hover ~ button {
   color: #c7c7c7!important;
 }

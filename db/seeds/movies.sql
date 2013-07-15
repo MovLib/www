@@ -99,7 +99,7 @@ INSERT INTO `movies_awards` (`award_count`, `award_id`, `award_category_id`, `mo
   (36, 25, 1, 2, 5, 1995, true),      -- USC Scripter Award (Frank Darabont)
   (37, 26, 1, 2, 5, 1995, false)      -- WGA Award (Best Adapted Screenplay - Frank Darabont)
 ;
-INSERT INTO `movies_taglines` (`movie_id`, `language_id`, `tagline`, `dyn_comments`) VALUES (3, 41, 'Fear can hold you prisoner. Hope can set you free.', '');
+INSERT INTO `movies_taglines` (`movie_id`, `language_id`, `tagline`, `dyn_comments`) VALUES (2, 41, 'Fear can hold you prisoner. Hope can set you free.', '');
 INSERT INTO `movies_languages` (`movie_id`, `language_id`) VALUES (2, 41);
 COMMIT;
 
