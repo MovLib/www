@@ -123,12 +123,14 @@ abstract class AbstractView {
   ];
 
   /**
-   * Numeric array containing all scripts of this view.
+   * Associative array that will be passed to <code>window.MovLib.settings</code> in our JavaScript.
    *
    * @var array
    */
   protected $scripts = [
-    "jquery"
+    "serverNameStatic" => Network::SERVER_NAME_STATIC,
+    "modules" => [],
+    "version" => MOVLIB_VERSION,
   ];
 
   /**
@@ -573,12 +575,6 @@ abstract class AbstractView {
    */
   public function getFooter() {
     global $i18n;
-    $c = count($this->scripts);
-    $d = Network::SERVER_NAME_STATIC;
-    $scripts = "";
-    for ($i = 0; $i < $c; ++$i) {
-      $scripts .= "<script src='https://{$d}/js/{$this->scripts[$i]}.js'></script>";
-    }
     return
       "<footer id='footer'>" .
         "<div class='container'>" .
@@ -606,7 +602,10 @@ abstract class AbstractView {
           "</div>" .
         "</div>" .
       "</footer>" .
-      $scripts
+      "<script id='js-settings' type='application/json'>" . json_encode($this->scripts) . "</script>" .
+      // @todo Minify and combine!
+      "<script src='https://" . Network::SERVER_NAME_STATIC . "/js/jquery.js'></script>" .
+      "<script src='https://" . Network::SERVER_NAME_STATIC . "/js/movlib.js?" . rand() . "'></script>"
     ;
   }
 
