@@ -66,21 +66,17 @@ class Image {
    *   If something is odd with the uploaded file.
    */
   public static function upload($formElementName, $imagePath) {
-    if (!isset($_FILES[$formElementName]) || empty($_FILES[$formElementName])) {
-      throw new ImageException("No image was submitted.");
-    }
-    $uploadedFile = $_FILES[$formElementName];
-    if (!is_array($uploadedFile) || empty($uploadedFile["tmp_name"]) || !is_file($uploadedFile["tmp_name"])) {
-      throw new ImageException("No valid input found.");
-    }
-    if ($uploadedFile["error"] == UPLOAD_ERR_NO_FILE) {
+    if (isset($_FILES[$formElementName]["error"]) && $_FILES[$formElementName]["error"] == UPLOAD_ERR_NO_FILE) {
       return;
     }
-    if ($uploadedFile["error"] != UPLOAD_ERR_OK) {
+    if (!is_file($_FILES[$formElementName]["tmp_name"])) {
+      throw new ImageException("No valid input found.");
+    }
+    if ($_FILES[$formElementName]["error"] != UPLOAD_ERR_OK) {
       throw new ImageException("Upload error.");
     }
     $finfo = new finfo();
-    $mime = $finfo->file($uploadedFile["tmp_name"], FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($_FILES[$formElementName]["tmp_name"], FILEINFO_MIME_TYPE);
     switch ($mime) {
       case "image/jpg":
       case "image/jpeg":
@@ -104,7 +100,7 @@ class Image {
     }
     try {
       $path = "{$_SERVER["HOME"]}/uploads/{$imagePath}.{$extension}";
-      move_uploaded_file($uploadedFile["tmp_name"], $path);
+      move_uploaded_file($_FILES[$formElementName]["tmp_name"], $path);
     } catch (ErrorException $e) {
       throw new ImageException("Could not move uploaded file.", $e);
     }
