@@ -326,24 +326,27 @@ class UserPresenter extends AbstractPresenter {
       return;
     }
     $this->view = new UserSettingsView($this, $tab);
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+      if ($_POST["csrf"] !== $user->csrfToken) {
+        $this->__constructLogout();
+        return;
+      }
+      if (($errors = $this->{"validate{$tab}Settings"}())) {
+        return $errors;
+      }
+      $this->view->setAlert("<h2>POST</h2><pre>" . print_r($_POST, true) . "</pre>");
+    }
     $this->view->inputValues = [
       "real_name" => $this->profile->realName,
-      "gender"    => $this->profile->gender,
+      "gender"    => (string) $this->profile->gender ?: "null",
       "country"   => $i18n->getCountries()[$this->profile->countryId]["name"],
       "timezone"  => $this->profile->timezone,
+      "language"  => $i18n->getLanguages()[$this->profile->languageId]["name"],
       "profile"   => $this->profile->profile,
       "birthday"  => $this->profile->birthday,
       "website"   => $this->profile->website,
       "private"   => $this->profile->private,
     ];
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-      if ($_POST["csrf"] !== $user->csrfToken) {
-        $this->__constructLogout();
-      }
-      else {
-        return $this->{"validate{$tab}Settings"}();
-      }
-    }
   }
 
   /**
@@ -492,6 +495,9 @@ class UserPresenter extends AbstractPresenter {
   private function validateAccountSettings() {
     global $i18n, $user;
     $errors = null;
+
+    // ----------------------------------------------------------------------------------------------------------------- Avatar
+
     try {
       if (($avatar = Image::upload("avatar", "user/avatar-{$user->id}"))) {
         $this->profile->avatarExt = $avatar["ext"];
@@ -499,61 +505,114 @@ class UserPresenter extends AbstractPresenter {
     } catch (ImageException $e) {
       $errors["avatar"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Avatar") ]);
     }
+
+    // ----------------------------------------------------------------------------------------------------------------- Real Name
+
     if (($realName = Validation::inputString("real_name")) !== false) {
       $this->profile->realName = $realName;
     }
-    if (($gender = Validation::inputString("gender")) !== false) {
-      settype($gender, "int");
-      if ($gender === -1) {
-        unset($this->profile->gender);
+
+    // ----------------------------------------------------------------------------------------------------------------- Gender
+
+    if (isset($_POST["gender"])) {
+      switch ($_POST["gender"]) {
+        case "0":
+          $this->profile->gender = false;
+          break;
+
+        case "1":
+          $this->profile->gender = true;
+          break;
+
+        case "null":
+          $this->profile->gender = null;
+          break;
+
+        default:
+          $errors["gender"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Gender") ]);
+      }
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------- Country
+
+    if (isset($_POST["country"])) {
+      if (empty($_POST["country"])) {
+        $this->profile->countryId = null;
       }
       else {
-        if ($gender === 0 || $gender === 1) {
-          $this->profile->gender = $gender;
+        $countries = $i18n->getCountries(I18nModel::KEY_NAME);
+        if (array_key_exists($_POST["country"], $countries)) {
+          $this->profile->countryId = $countries[$_POST["country"]]["id"];
         }
         else {
-          $errors["gender"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Gender") ]);
+          $errors["country"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Country") ]);
         }
       }
     }
-    if (($country = Validation::inputString("country")) !== false) {
-      $countries = $i18n->getCountries(I18nModel::KEY_NAME);
-      if (array_key_exists($country, $countries)) {
-        $this->profile->countryId = $countries[$country]["id"];
+
+    // ----------------------------------------------------------------------------------------------------------------- Language
+
+    if (isset($_POST["language"])) {
+      $languages = $i18n->getLanguages(I18nModel::KEY_NAME);
+      if (array_key_exists($_POST["language"], $languages)) {
+        $this->profile->languageId = $languages[$_POST["language"]]["id"];
       }
       else {
-        $errors["country"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Country") ]);
+        $errors["language"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Language") ]);
       }
     }
-    if (($timezone = Validation::inputString("timezone")) !== false) {
-      if (in_array($timezone, timezone_identifiers_list())) {
-        $this->profile->timezone = $timezone;
+
+    // ----------------------------------------------------------------------------------------------------------------- Timezone
+
+    if (isset($_POST["timezone"])) {
+      if (in_array($_POST["timezone"], timezone_identifiers_list())) {
+        $this->profile->timezone = $_POST["timezone"];
       }
       else {
         $errors["timezone"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Time Zone") ]);
       }
     }
+
+    // ----------------------------------------------------------------------------------------------------------------- Profile
     // @todo Validate profile text
-    if (($birthday = Validation::inputString("birthday")) !== false) {
-      $birthdayTimestamp = strtotime($birthday);
-      if (checkdate(date("m", $birthdayTimestamp), date("d", $birthdayTimestamp), date("Y", $birthdayTimestamp))) {
-        $this->profile->birthday = $birthday;
+
+    // ----------------------------------------------------------------------------------------------------------------- Birthday
+
+    if (isset($_POST["birthday"])) {
+      $birthdayTimestamp = strtotime($_POST["birthday"]);
+      if (
+        // Do not allow birthdays in the future plus constraint with 6 years minimum.
+        $birthdayTimestamp < (time() - 1.893e+8)
+        // Do not allow birthdays of hilarious age, this is 120 years (oldest person in the world was 122).
+        && $birthdayTimestamp > (time() - 3.78683e9)
+        // Check if the entered date is really a valid date.
+        && checkdate(date("m", $birthdayTimestamp), date("d", $birthdayTimestamp), date("Y", $birthdayTimestamp))
+      ) {
+        $this->profile->birthday = $_POST["birthday"];
       }
       else {
         $errors["birthday"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Date of Birth") ]);
       }
     }
-    if (isset($_POST["website"]) && !empty($_POST["website"])) {
-      if (($website = Validation::inputUrl("website")) !== false) {
+
+    // ----------------------------------------------------------------------------------------------------------------- Website
+
+    if (isset($_POST["website"])) {
+      if (empty($_POST["website"])) {
+        $this->profile->website = "";
+      }
+      elseif (($website = Validation::inputUrl("website")) !== false) {
         $this->profile->website = $website;
       }
       else {
         $errors["website"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Website") ]);
       }
     }
-    if (isset($_POST["private"])) {
-      $this->profile->private = true;
-    }
+
+    // ----------------------------------------------------------------------------------------------------------------- Private
+
+    $this->profile->private = isset($_POST["private"]) && $_POST["private"] === "on" ? true : false;
+
     if ($errors) {
       return $errors;
     }
@@ -562,7 +621,6 @@ class UserPresenter extends AbstractPresenter {
       $i18n->t("Your {0} has been updated.", [ $i18n->t("Account Settings") ]),
       AbstractView::ALERT_SEVERITY_SUCCESS
     );
-    $this->view->setAlert("<pre>" . print_r($_POST, true) . "</pre>");
   }
 
   private function validateNotificationSettings() {

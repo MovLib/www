@@ -309,10 +309,36 @@ class UserModel extends AbstractModel {
   /**
    * Update the user model in the database with the data of the current class instance.
    *
+   * @todo Update profile text as well!
    * @return $this
    */
   public function commit() {
-    return $this;
+    return $this->prepareAndBind(
+      "UPDATE `users` SET
+        `language_id` = ?,
+        `private` = ?,
+        `timezone` = ?,
+        `country_id` = ?,
+        `avatar_ext` = ?,
+        `real_name` = ?,
+        `birthday` = ?,
+        `gender` = ?,
+        `website` = ?
+      WHERE `user_id` = ?",
+      "iisisssisd",
+      [
+        $this->languageId,
+        $this->private,
+        $this->timezone,
+        $this->countryId,
+        $this->avatarExt,
+        $this->realName,
+        $this->birthday,
+        $this->gender,
+        $this->website,
+        $this->id
+      ]
+    )->execute()->close();;
   }
 
   /**

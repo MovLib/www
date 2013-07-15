@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\User;
 
+use \MovLib\Model\I18nModel;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractFormView;
@@ -69,10 +70,12 @@ class UserSettingsView extends AbstractFormView {
     $this->stylesheets[] = "modules/user.css";
     // We have to disable this feature on the complete form, otherwise Webkit will ignore it.
     $this->attributes["autocomplete"] = "off";
-    if ($tab === "Account") {
-      $this->attributes["enctype"] = AbstractFormView::ENCTYPE_BINARY;
+    switch ($tab) {
+      case "Account":
+        $this->attributes["enctype"] = AbstractFormView::ENCTYPE_BINARY;
+        break;
     }
-    $this->scripts[] = "modules/user";
+    $this->scripts["modules"][] = "user";
   }
 
 
@@ -110,6 +113,10 @@ class UserSettingsView extends AbstractFormView {
     else {
       $avatar = "<img class='avatar avatar--150' alt='{$i18n->t("{0}’s avatar.", [ String::checkPlain($this->presenter->profile->name) ])}' height='150' src='{$avatar}' width='150'>";
     }
+    $systemLanguagesDatalist = [];
+    foreach (I18nModel::$supportedLanguageCodes as $code) {
+      $systemLanguagesDatalist[] = $i18n->getLanguages(I18nModel::KEY_CODE)[$code]["name"];
+    }
     return
       // --------------------------------------------------------------------------------------------------------------- Avatar
 
@@ -142,10 +149,10 @@ class UserSettingsView extends AbstractFormView {
         "Your {0} will be displayed on your profile page and is used to create demographic evaluations.",
         [ $i18n->t("gender") ]
       ))}</label><span title='{$i18n->t("Please select your gender.")}'>{$this->radioGroup("gender", [
-        1 => $i18n->t("Male"),
-        0 => $i18n->t("Female"),
-        -1 => $i18n->t("Unknown"),
-      ], -1)}</span></p>" .
+        "0" => $i18n->t("Female"),
+        "1" => $i18n->t("Male"),
+        "null" => $i18n->t("Unknown"),
+      ], "null")}</span></p>" .
 
       // --------------------------------------------------------------------------------------------------------------- Country
 
@@ -161,10 +168,19 @@ class UserSettingsView extends AbstractFormView {
       // --------------------------------------------------------------------------------------------------------------- Timezone
 
       "<p><label for='timezone'>{$i18n->t("Time Zone")}{$this->help($i18n->t(
-        "Enter your timezone, simply click in the field and start typing."
+        "Enter your {0}, simply click in the field and start typing.", [ $i18n->t("Time Zone") ]
       ))}</label>{$this->inputDatalist(
-        [ "timezone", [ "class" => "input--block-level", "placeholder" => "UTC" ]],
+        [ "timezone", [ "class" => "input--block-level", "placeholder" => "Enter your time zone", "required" ]],
         [ "timezones", timezone_identifiers_list() ]
+      )}</p>" .
+
+      // --------------------------------------------------------------------------------------------------------------- Language
+
+      "<p><label for='language'>{$i18n->t("Language")}{$this->help($i18n->t(
+        "Enter your {0}, simply click in the field and start typing.", [ $i18n->t("Language") ]
+      ))}</label>{$this->inputDatalist(
+        [ "language", [ "class" => "input--block-level", "placeholder" => $i18n->t("Enter your preferred language"), "required" ]],
+        [ "languages", $systemLanguagesDatalist ]
       )}</p>" .
 
       // --------------------------------------------------------------------------------------------------------------- Profile
@@ -183,13 +199,16 @@ class UserSettingsView extends AbstractFormView {
         $i18n->t("Your {0} will be displayed on your profile page and is used to create demographic evaluations.", [ $i18n->t("birthday") ]) .
         " " .
         $i18n->t(
-          "The format for this field is <em>yyyy-mm-dd</em> where <em>yyyy</em> is the year, <em>mm</em> the month, ".
-          "and <em>dd</em> the day. Your browser might display a datepicker and automatically enter the correct format."
+          "The format for this field is <em>yyyy-mm-dd</em> where <em>yyyy</em> is the year, <em>mm</em> the month, " .
+          "and <em>dd</em> the day. Your browser might display a datepicker and automatically enter the correct format. " .
+          "The minimum age is 6 and the maximum age is 120 years."
         )
       )}</label>{$this->input("birthday", [
         "class"       => "input--block-level",
         "placeholder" => "yyyy-mm-dd",
         "type"        => "date",
+        "min"         => date("Y-m-d", (time() - 1.893e+8)),
+        "max"         => date("Y-m-d", (time() - 3.78683e9)),
       ])}</p>" .
 
       // --------------------------------------------------------------------------------------------------------------- Website
