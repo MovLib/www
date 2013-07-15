@@ -18,8 +18,10 @@
 /* global MovLib:true, use:true */
 
 /**
- * Description of ${name}
+ * Nice select input elements that fit our flat design and extend usability.
  *
+ * @link https://github.com/harvesthq/chosen
+ * @link https://github.com/silviomoreto/bootstrap-select
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -42,19 +44,56 @@
   "use strict";
 
   /**
-   * User presentation specific jQuery logic.
+   * The name of the jQuery plugin.
+   *
+   * @type String
+   */
+  var name = "MovLibSelect";
+
+  /**
+   * Default values for this module.
+   *
+   * @type Object
+   */
+  var defaults = {
+    disableSearchThreshold: 10,
+    maxSelectOptions: Infinity,
+    allowSingleDeselect: true
+  };
+
+  function Plugin(element, options) {
+    this.element = element;
+    this.options = $.extend({}, defaults, options); // + element.data() ?
+    this.init();
+  };
+
+  Plugin.prototype = {
+    init: function() {
+
+    }
+  };
+
+  // Register the jQuery plugin and protect against multiple instantiation.
+  $.fn[name] = function (options) {
+    return this.filter("select:not(.js-select)").each(function () {
+      if (!$.data(this, name)) {
+        $.data(this, name, new Plugin(this, options));
+      }
+    });
+  };
+
+  /**
+   * Enhance all select elements within the current context.
    *
    * @param {Object} context
    *   The current context we are working with.
-   * @param {Object} settings
-   *   The MovLib settings that were passed from PHP.
    * @returns {undefined}
    */
-  MovLib.modules.user = function (context, settings) {
-    MovLib.modules.select();
+  MovLib.modules.select = function (context) {
+    // Do not call the jQuery plugin, only adds overhead we do not need at this point.
+    $("select:not(.js-select)", context).each(function () {
+      $.data(this, name, new Plugin(this));
+    });
   };
-
-  // All modules this module relys on.
-  MovLib.modules.user.dependencies = [ "select" ];
 
 })(jQuery, document, MovLib, window);
