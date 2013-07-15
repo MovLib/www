@@ -17,8 +17,6 @@
  */
 namespace MovLib\View\HTML;
 
-use \MovLib\Utility\String;
-use \MovLib\Utility\Validation;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -174,50 +172,39 @@ abstract class AbstractFormView extends AbstractView {
     $attributes["id"] = $attributes["name"] = $name;
     $attributes["tabindex"] = $this->getTabindex();
     if (!isset($attributes["type"])) {
+      $attributes["type"] = "text";
       $attributes["role"] = "textbox";
     }
-    else {
-      switch ($attributes["type"]) {
-        case "email":
-          $attributes["role"] = "textbox";
-          if ((!isset($attributes["value"]) || empty($attributes["value"])) && isset($this->inputValues[$name]) && !empty($this->inputValues[$name])) {
-            $attributes["value"] = $this->inputValues[$name];
-          }
-          elseif (($attributes["value"] = Validation::inputMail($name)) === false) {
-            unset($attributes["value"]);
-          }
-          break;
+    switch ($attributes["type"]) {
+      case "password":
+        $attributes["role"] = "textbox";
+        // Only the presenter or view is allowed to insert a value into a password field. Never ever use a password
+        // value that was submitted via the user.
+        if (isset($this->inputValues[$name])) {
+          $attributes["value"] = $this->inputValues[$name];
+        }
+        break;
 
-        case "password":
-          $attributes["role"] = "textbox";
-          // Only the presenter or view is allowed to insert a value into a password field. Never ever use a password
-          // value that was submitted via the user.
-          if ((!isset($attributes["value"]) || empty($attributes["value"])) && isset($this->inputValues[$name]) && !empty($this->inputValues[$name])) {
-            $attributes["value"] = $this->inputValues[$name];
-          }
-          break;
+      case "radio":
+        unset($attributes["id"]);
+        if ((isset($_POST[$name]) && $_POST[$name] === $attributes["value"]) || (isset($this->inputValues[$name]) && $this->inputValues[$name] === $attributes["value"])) {
+          $attributes[] = "checked";
+        }
+        break;
 
-        case "radio":
-          unset($attributes["id"]);
-          if (isset($this->inputValues[$name]) && isset($attributes["value"]) && $attributes["value"] == $this->inputValues[$name]) {
-            $attributes[] = "checked";
-          }
-          break;
+      case "checkbox":
+        if (isset($_POST[$name]) || isset($this->inputValues[$name])) {
+          $attributes[] = "checked";
+        }
+        break;
 
-        case "checkbox":
-          if (isset($this->inputValues[$name]) && !empty($this->inputValues[$name])) {
-            $attributes[] = "checked";
-          }
-          break;
-      }
-    }
-    if (!isset($attributes["value"]) || empty($attributes["value"])) {
-      if (isset($this->inputValues[$name]) && !empty($this->inputValues[$name])) {
-        $attributes["value"] = $this->inputValues[$name];
-      }
-      elseif (($attributes["value"] = Validation::inputString($name)) === false) {
-        unset($attributes["value"]);
-      }
+      default:
+        if (isset($_POST[$name])) {
+          $attributes["value"] = $_POST[$name];
+        }
+        elseif (isset($this->inputValues[$name])) {
+          $attributes["value"] = $this->inputValues[$name];
+        }
     }
     switch ($tag) {
       case "button":
@@ -363,25 +350,20 @@ abstract class AbstractFormView extends AbstractView {
    * @param array $data
    *   Associative array containing the data for the radio elements where the key is used as content of the value-
    *   attribute and the value as label (already translated).
-   * @param mixed $checked
-   *   [Optional] The value of the radio element that should be checked by default. Defaults to <code>NULL</code>.
    * @param boolean $inline
    *   [Optional] Flag to determine if the radio group should be displayed inline or stacked. Defaults to
    *   <code>TRUE</code>.
    * @return string
    *   The radio group ready for print.
    */
-  protected function radioGroup($name, $data, $checked = null, $inline = true) {
+  protected function radioGroup($name, $data, $inline = true) {
     $radios = "";
     $inline = $inline ? " inline" : "";
     foreach ($data as $value => $label) {
-      $attr = [ "type" => "radio", "value" => $value, "required" ];
-      if (!isset($this->inputValues[$name]) && $value === $checked) {
-        $attr[] = "checked";
-      }
       $radios .= "<label class='radio{$inline}'>{$this->input($name, [
+        "required",
         "type" => "radio",
-        "value" => $value
+        "value" => (string) $value,
       ])}{$label}</label>";
     }
     return $radios;
