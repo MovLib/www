@@ -264,8 +264,9 @@ class I18nModel extends AbstractModel {
    * @return array
    *   Associative array containing all languages in the form:
    *   <pre>array(
-   *   "id" => $id => array("code" => $code, "name" => $name),
-   *   "code" => $code => array("id" => $id, "name" => $name),
+   *   "id" => $id => array("id" => $id, "code" => $code, "name" => $name),
+   *   "code" => $code => array("id" => $id, "code" => $code, "name" => $name),
+   *   "name" => $name => array("id" => $id, "code" => $code, "name" => $name),
    *   )</pre>
    */
   public function getLanguages($key = self::KEY_ID) {
@@ -274,16 +275,16 @@ class I18nModel extends AbstractModel {
       $n = $this->languageCode === $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
       foreach ($this->selectAll("SELECT `language_id`, `iso_alpha-2`, {$n}`name` FROM `languages` ORDER BY `language_id`") as $l) {
         $language = [
-          "id"   => $c["language_id"],
-          "code" => $c["iso_alpha-2"],
-          "name" => $c["name"],
+          "id"   => $l["language_id"],
+          "code" => $l["iso_alpha-2"],
+          "name" => $l["name"],
         ];
-        $language["id"][$c["language_id"]] = $language;
-        $language["code"][$c["iso_alpha-2"]] = $language;
-        $language["name"][$c["name"]] = $language;
+        $languages["id"][$l["language_id"]] = $language;
+        $languages["code"][$l["iso_alpha-2"]] = $language;
+        $languages["name"][$l["name"]] = $language;
       }
-      asort($languages["code"]);
-      $this->getCollator()->sort($languages["name"]);
+      ksort($languages["code"]);
+      ksort($languages["name"]);
     }
     return $languages[$key];
   }
@@ -320,8 +321,9 @@ class I18nModel extends AbstractModel {
    * @return array
    *   Associative array containing all countries in the form:
    *   <pre>array(
-   *   "id" => $id => array("code" => $code, "name" => $name),
-   *   "code" => $code => array("id" => $id, "name" => $name),
+   *   "id" => $id => array("id" => $id, "code" => $code, "name" => $name),
+   *   "code" => $code => array("id" => $id, "code" => $code, "name" => $name),
+   *   "name" => $name => array("id" => $id, "code" => $code, "name" => $name),
    *   )</pre>
    */
   public function getCountries($key = self::KEY_ID) {
