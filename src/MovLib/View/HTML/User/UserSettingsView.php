@@ -117,8 +117,8 @@ class UserSettingsView extends AbstractFormView {
         "<div class='span span--3'>{$avatar}</div>" .
         "<div class='span span--6'>" .
           "<p><label for='avatar'>{$i18n->t("Avatar")}{$this->help($i18n->t(
-            "The maximum file size is {0,number,integer}&thinsp;MB, allowed image extensions are JPG and PNG. The " .
-            "image will be resized automatically and you can crop it if it has no quadratic dimensions.",
+            "The maximum file size is {0,number,integer}&thinsp;MB, allowed image extensions are JPG and PNG. You can " .
+            "crop the image after uploading and it will be resized automatically.",
             [ ini_get("upload_max_filesize") ]
           ))}</label>{$this->input("avatar", [
             "accept" => "image/jpeg,image/png",

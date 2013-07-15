@@ -338,9 +338,11 @@ class UserPresenter extends AbstractPresenter {
     ];
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
       if ($_POST["csrf"] !== $user->csrfToken) {
-        return $this->__constructLogout();
+        $this->__constructLogout();
       }
-      return $this->{"validate{$tab}Settings"}();
+      else {
+        return $this->{"validate{$tab}Settings"}();
+      }
     }
   }
 
@@ -515,8 +517,8 @@ class UserPresenter extends AbstractPresenter {
       }
     }
     if (($country = Validation::inputString("country")) !== false) {
-      $countries = $i18n->getCountries(I18nModel::COUNTRY_KEY_NAME);
-      if (in_array($country, $countries)) {
+      $countries = $i18n->getCountries(I18nModel::KEY_NAME);
+      if (array_key_exists($country, $countries)) {
         $this->profile->countryId = $countries[$country]["id"];
       }
       else {
@@ -555,7 +557,7 @@ class UserPresenter extends AbstractPresenter {
     if ($errors) {
       return $errors;
     }
-//    $this->profile->commit();
+    $this->profile->commit();
     $this->view->setAlert(
       $i18n->t("Your {0} has been updated.", [ $i18n->t("Account Settings") ]),
       AbstractView::ALERT_SEVERITY_SUCCESS

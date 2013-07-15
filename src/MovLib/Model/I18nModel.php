@@ -338,8 +338,8 @@ class I18nModel extends AbstractModel {
         $countries["code"][$c["iso_alpha-2"]] = $country;
         $countries["name"][$c["name"]] = $country;
       }
-      asort($countries["code"]);
-      $this->getCollator()->sort($countries["name"]);
+      ksort($countries["code"]);
+      ksort($countries["name"]);
     }
     return $countries[$key];
   }
