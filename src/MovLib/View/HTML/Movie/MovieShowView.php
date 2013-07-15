@@ -111,7 +111,7 @@ class MovieShowView extends AbstractView {
     $c = count($titles);
     if ($c > 0) {
       for ($i = 0; $i < $c; ++$i) {
-        $titles[$i] = "{$titles[$i]["title"]} ({$i18n->getLanguages()["id"][ $titles[$i]["languageId"] ]["name"]})";
+        $titles[$i] = "{$titles[$i]["title"]} ({$i18n->getLanguages()[ $titles[$i]["languageId"] ]["name"]})";
       }
 
       $titlesList = implode(", ", $titles);
@@ -123,7 +123,7 @@ class MovieShowView extends AbstractView {
     $c = count($taglines);
     if ($c > 0) {
       for ($i = 0; $i < $c; ++$i) {
-        $taglines[$i] = "{$taglines[$i]["tagline"]} ({$i18n->getLanguages()["id"][ $taglines[$i]["languageId"] ]["name"]})";
+        $taglines[$i] = "{$taglines[$i]["tagline"]} ({$i18n->getLanguages()[ $taglines[$i]["languageId"] ]["name"]})";
       }
       $taglineList = "<ul><li>" . implode("</li><li>", $taglines) . "</li></ul>";
     } else {
