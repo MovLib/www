@@ -58,15 +58,12 @@
   width: 100%;
 }
 
-.form-help {
-  cursor: help;
-  margin: 0;
-  float: right;
+.popup-container {
   position: relative;
 }
 
-.form-help-text:before,
-.form-help-text {
+.popup:before,
+.popup {
   display: block;
   opacity: 0;
   pointer-events: none;
@@ -76,36 +73,63 @@
   z-index: 999999999; /* Even go over our sticky header! */
 }
 
-.form-help-text:before {
-  border: 6px solid transparent;
+.popup:before {
   border-top-color: #252525;
-  content: "";
-  right: 34px;
+  border: 6px solid transparent;
   bottom: -12px;
+  content: "";
+  left: 50%;
+  margin-left: -6px;
 }
 
-.form-help-text {
+.popup {
   background-color: #252525;
   bottom: 0;
-  box-shadow: 0 4px 8px #656565;
   color: #fff;
-  padding: 20px;
-  right: -32px;
-  text-shadow: 0 -1px 0 #000;
-  width: 320px;
+  left: -50%;
+  padding: 1em 1.39em;
+  max-width: 320px;
 }
 
-.form-help:hover .form-help-text,
-.form-help:focus .form-help-text {
+.popup--inverse:before {
+  border-top-color: #fff;
+}
+
+.popup--inverse {
+  background-color: #fff;
+  color: #656565;
+}
+
+.popup-container:hover .popup,
+.popup-container:focus .popup {
   bottom: 50%;
 }
 
-.form-help:hover .form-help-text,
-.form-help:focus .form-help-text,
-.form-help:hover .form-help-text:before,
-.form-help:focus .form-help-text:before {
+.popup-container:hover .popup,
+.popup-container:focus .popup,
+.popup-container:hover .popup:before,
+.popup-container:focus .popup:before {
   opacity: 1;
   visibility: visible;
+}
+
+.form-help {
+  cursor: help;
+  margin: 0;
+  float: right;
+}
+
+.form-help .popup {
+  padding: 20px;
+  left: auto;
+  right: -32px;
+  width: 320px;
+}
+
+.form-help .popup:before {
+  left: auto;
+  right: 34px;
+  margin: 0;
 }
 
 .form-actions {

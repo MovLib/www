@@ -267,25 +267,38 @@ class MovieShowView extends AbstractView {
               "<div class='span span--9'>" .
                 "<h1 id='content__header__title' class='title'>{$this->presenter->displayTitle}</h1>" .
                 "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $this->presenter->movieModel->originalTitle ])}</p>" .
-                "<div id='movie__rating'>" .
+                "<form action='{$i18n->r("/movie/{0}", [ $this->presenter->movieModel->id ])}' id='movie__rating' method='post'>" .
                   "<span class='visuallyhidden'>{$i18n->t("Rating")}: </span>" .
-                  "<form method='post' action='{$i18n->r("/movie/{0}", [ $this->presenter->movieModel->id ])}'>" .
-                    "<div id='movie__rating__back'>" .
-                      "<button value='1' title='{$i18n->t("Rate this movie with {0} stars.", [ 1 ])}' type='submit'>&#xe80d;</button>" .
-                      "<button value='2' title='{$i18n->t("Rate this movie with {0} stars.", [ 2 ])}' type='submit'>&#xe80d;</button>" .
-                      "<button value='3' title='{$i18n->t("Rate this movie with {0} stars.", [ 3 ])}' type='submit'>&#xe80d;</button>" .
-                      "<button value='4' title='{$i18n->t("Rate this movie with {0} stars.", [ 4 ])}' type='submit'>&#xe80d;</button>" .
-                      "<button value='5' title='{$i18n->t("Rate this movie with {0} stars.", [ 5 ])}' type='submit'>&#xe80d;</button>" .
-                    "</div>" .
-                    "<div id='movie__rating__front' style='clip: rect(0, {$ratingWidth}px, 20px, 0)'>" .
-                      "<button value='1' title='{$i18n->t("Rate this movie with {0} stars.", [ 1 ])}' type='submit'>&#xe80d;</button>" .
-                      "<button value='2' title='{$i18n->t("Rate this movie with {0} stars.", [ 2 ])}' type='submit'>&#xe80d;</button>" .
-                      "<button value='3' title='{$i18n->t("Rate this movie with {0} stars.", [ 3 ])}' type='submit'>&#xe80d;</button>" .
-                      "<button value='4' title='{$i18n->t("Rate this movie with {0} stars.", [ 4 ])}' type='submit'>&#xe80d;</button>" .
-                      "<button value='5' title='{$i18n->t("Rate this movie with {0} stars.", [ 5 ])}' type='submit'>&#xe80d;</button>" .
-                    "</div>" .
-                  "</form>" .
-                "</div>" .
+                  "<div id='movie__rating__back' style='clip:rect(0,{$ratingWidth}px,20px,0)'>" .
+                    "<span>&#xe80d;</span>" .
+                    "<span>&#xe80d;</span>" .
+                    "<span>&#xe80d;</span>" .
+                    "<span>&#xe80d;</span>" .
+                    "<span>&#xe80d;</span>" .
+                  "</div>" .
+                  "<div id='movie__rating__front'>" .
+                    "<label class='popup-container'>" .
+                      "<small class='popup popup--inverse'>{$i18n->t("Awful")}</small>" .
+                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 1 ])}' type='submit' value='1'>&#xe80d;</button>" .
+                    "</label>" .
+                    "<label class='popup-container'>" .
+                      "<small class='popup popup--inverse'>{$i18n->t("Awful")}</small>" .
+                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 2 ])}' type='submit' value='1'>&#xe80d;</button>" .
+                    "</label>" .
+                    "<label class='popup-container'>" .
+                      "<small class='popup popup--inverse'>{$i18n->t("Awful")}</small>" .
+                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 3 ])}' type='submit' value='1'>&#xe80d;</button>" .
+                    "</label>" .
+                    "<label class='popup-container'>" .
+                      "<small class='popup popup--inverse'>{$i18n->t("Awful")}</small>" .
+                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 4 ])}' type='submit' value='1'>&#xe80d;</button>" .
+                    "</label>" .
+                    "<label class='popup-container'>" .
+                      "<small class='popup popup--inverse'>{$i18n->t("Awful")}</small>" .
+                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 5 ])}' type='submit' value='1'>&#xe80d;</button>" .
+                    "</label>" .
+                  "</div>" .
+                "</form>" .
                 "<p><span class='visuallyhidden'>{$i18n->t("Year")}: </span>{$yearLink} - <span class='visuallyhidden'>{$i18n->t("Countries")}: </span>{$countryList}</p>" .
                 "<p><span class='visuallyhidden'>{$i18n->t("Length")}:</span> {$this->presenter->movieModel->runtime} {$i18n->t("min.")} | <span class='visuallyhidden'>{$i18n->t("Genres")}: </span>{$genreList} | <span class='visuallyhidden'>{$i18n->t("Styles")}: </span>{$styleList}" .
               "</div>" .

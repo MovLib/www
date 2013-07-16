@@ -339,7 +339,7 @@ abstract class AbstractFormView extends AbstractView {
    *   The text wrapped in the mark-up globally used for help elements.
    */
   protected function help($text) {
-    return "<span class='form-help'><i class='icon icon--help-circled'></i><small class='form-help-text'>{$text}</small></span>";
+    return "<span class='form-help popup-container'><i class='icon icon--help-circled'></i><small class='popup'>{$text}</small></span>";
   }
 
   /**

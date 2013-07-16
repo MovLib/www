@@ -48,14 +48,13 @@ h2 small {
 }
 
 #movie__header p:last-of-type {
-  margin-bottom: 1em;
+  margin-bottom: 1.39em;
 }
 
 #movie__rating {
-  margin: 1em 0;
+  margin: 1.39em 0;
   position: relative;
-  display: inline-block;
-  width: 115px;
+  width: 120px;
 }
 
 #movie__rating,
@@ -64,48 +63,45 @@ h2 small {
 }
 
 #movie__rating div {
-  font-size: 20px;
-  line-height: 1;
+  left: 0;
   position: absolute;
   top: 0;
-  left: 0;
-  font-family: MovLib;
-  cursor: pointer;
 }
 
-#movie__rating__front button, #movie__rating__back button {
-  margin: 0;
-  padding: 0;
-  padding-right: 5px;
-  width: 24px;
-  height: 20px;
+#movie__rating span,
+#movie__rating label,
+#movie__rating button {
+  display: inline-block;
+}
+
+#movie__rating span,
+#movie__rating button {
+  background-color: transparent;
+  border: none;
+  color: inherit;
   font-family: MovLib;
   font-size: 20px;
-  background-color: transparent;
-  color: inherit;
-  border: none;
+  height: 20px;
+  width: 24px;
+  padding: 0 5px 0 0;
+  margin: 0;
   line-height: 1;
 }
 
-#movie__rating__back button:last-of-type, #movie__rating__front button:last-of-type {
-  width: 19px;
-  padding-right: 0;
+#movie__rating label {
+  transition: color 0.3s ease-in-out;
 }
 
-#movie__rating__front {
-  overflow: hidden;
-  color: #ffbb33;
-  white-space: pre;
+#movie__rating__back {
+  color: #fb3;
+  z-index: 1;
 }
 
-#movie__rating__front:hover {
-  clip: rect(0, 115px, 20px, 0)!important;
+#movie__rating:hover #movie__rating__front {
+  color: #fb3;
+  z-index: 2;
 }
 
-#movie__rating__back:hover {
-  color: #ffbb33;
-}
-
-#movie__rating__back > button:hover ~ button, #movie__rating__front > button:hover ~ button {
-  color: #c7c7c7!important;
+#movie__rating__front > label:hover ~ label {
+  color: #c7c7c7;
 }
