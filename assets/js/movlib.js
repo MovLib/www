@@ -106,15 +106,14 @@
    * @returns {jQuery}
    */
   $.executeModule = function (module, context, settings) {
+    var exec = function () {
+      if ($.isFunction(MovLib.modules[module])) {
+        MovLib.modules[module](context, settings);
+      }
+    };
     context = context || document;
     settings = $.extend(settings, MovLib.settings);
-    if (!MovLib.modules[module]) {
-      $.when($.getModule(module)).done(function () {
-        MovLib.modules[module](context, settings);
-      });
-    } else {
-      MovLib.modules[module](context, settings);
-    }
+    MovLib.modules[module] ? exec() : $.when($.getModule(module)).done(exec);
     return this;
   };
 
