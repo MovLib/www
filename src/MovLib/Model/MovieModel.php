@@ -249,30 +249,32 @@ class MovieModel extends AbstractModel {
   }
 
   /**
-   * Retrieve the movie's production countries from the database.
+   * Get the movie's countries
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *  The global I18n Model instance for translations.
-   * @staticvar array $countries
+   *   The global I18n Model instance for translations.
+   * @staticvar null|array $countries
+   *   Used to cache the result.
    * @return array
-   *  A keyed array containing the country information in an associative array.
+   *   Sorted numeric array containing the ID, the ISO code and localized name of the country as associative array.
    */
   public function getCountries() {
     global $i18n;
     static $countries = null;
     if ($countries === null) {
-      $countries = $this->select(
-        "SELECT
-          `country_id` AS `id`
-          FROM `movies_countries`
-          WHERE `movie_id` = ?",
-        "d",
-        [ $this->id ]
-      );
-      $c = count($countries);
-      $i18nCountries = $i18n->getCountries();
-      for ($i = 0; $i < $c; ++$i) {
-        $countries[$i] = $i18nCountries[ $countries[$i]["id"] ];
+      $countries = [];
+      $result = $this->select("SELECT `country_id` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ]);
+      $c = count($result);
+      if ($c > 0) {
+        $i18nCountries = $i18n->getCountries();
+        $tmpCountries = [];
+        for ($i = 0; $i < $c; ++$i) {
+          $tmpCountries[ $result[$i]["country_id"] ] = $i18nCountries[ $result[$i]["country_id"] ]["name"];
+        }
+        $i18n->getCollator()->asort($tmpCountries);
+        foreach ($tmpCountries as $id => $name) {
+          $countries[] = $i18nCountries[$id];
+        }
       }
     }
     return $countries;
@@ -319,31 +321,44 @@ class MovieModel extends AbstractModel {
   }
 
   /**
-   * Retrieve the movie's genres from the database.
+   * Get movie's genres.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *  The global I18n Model instance for translations.
+   *   The global I18n Model instance for translations.
    * @staticvar array $genres
+   *   Used to cache the resulting array.
    * @return array
-   *  A keyed array containing the genre information in an associative array.
+   *   Sorted numeric array containing the ID and localized name of the genre as associative array.
    */
   public function getGenres() {
     global $i18n;
     static $genres = null;
     if ($genres === null) {
-      $genres = $this->select(
+      $genres = [];
+      $result = $this->select(
         "SELECT
-          g.`genre_id` AS `id`,
-          g.`name` AS `name`,
-          COLUMN_GET(g.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `nameLocalized`
-          FROM `movies_genres` mg
-          INNER JOIN `genres` g
-          ON mg.`genre_id` = g.`genre_id`
-          WHERE mg.`movie_id` = ?
-          ORDER BY `nameLocalized` ASC, `name` ASC",
-        "d",
-        [ $this->id ]
+          `g`.`genre_id`,
+          `g`.`name`,
+          COLUMN_GET(`g`.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`
+        FROM `movies_genres` `mg`
+          INNER JOIN `genres` `g` ON `mg`.`genre_id` = `g`.`genre_id`
+        WHERE `mg`.`movie_id` = ?",
+        "d", [ $this->id ]
       );
+      $c = count($result);
+      if ($c > 0) {
+        $tmpGenres = [];
+        for ($i = 0; $i < $c; ++$i) {
+          if (!empty($result[$i]["name_localized"])) {
+            $result[$i]["name"] = $result[$i]["name_localized"];
+          }
+          $tmpGenres[$result[$i]["genre_id"]] = $result[$i]["name"];
+        }
+        $i18n->getCollator()->asort($tmpGenres);
+        foreach ($tmpGenres as $id => $name) {
+          $genres[] = [ "id" => $id, "name" => $name ];
+        }
+      }
     }
     return $genres;
   }
@@ -352,10 +367,10 @@ class MovieModel extends AbstractModel {
    * Retrieve the movie's languages from the database.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *  The global I18n Model instance for translations.
+   *   The global I18n Model instance for translations.
    * @staticvar array $languages
    * @return array
-   *  A keyed array containing the language information in an associative array.
+   *   A keyed array containing the language information in an associative array.
    */
   public function getLanguages() {
     global $i18n;
@@ -482,31 +497,46 @@ class MovieModel extends AbstractModel {
   }
 
   /**
-   * Retrieve the movie's styles from the database.
+   * Get the movie's styles.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *  The global I18n Model instance for translations.
+   *   The global I18n Model instance for translations.
    * @staticvar array $styles
+   *   Used to cache the query result.
    * @return array
-   *  A keyed array containing the style information in an associative array.
+   *   Sorted numeric array containing the ID and localized name of the genre as associative array.
    */
   public function getStyles() {
     global $i18n;
     static $styles = null;
     if ($styles === null) {
-      $styles = $this->select(
+      $styles = [];
+      $result = $this->select(
         "SELECT
-          s.`style_id` AS `id`,
-          s.`name` AS `name`,
-          COLUMN_GET(s.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `nameLocalized`
-          FROM `movies_styles` ms
-          INNER JOIN `styles` s
-          ON ms.`style_id` = s.`style_id`
-          WHERE ms.`movie_id` = ?
-          ORDER BY `nameLocalized` ASC, `name` ASC",
+          `s`.`style_id`,
+          `s`.`name`,
+          COLUMN_GET(`s`.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`
+          FROM `movies_styles` `ms`
+          INNER JOIN `styles` `s` ON `ms`.`style_id` = `s`.`style_id`
+          WHERE `ms`.`movie_id` = ?",
         "d",
         [ $this->id ]
       );
+      $c = count($result);
+      if ($c > 0) {
+        $tmpStyles = [];
+        for ($i = 0; $i < $c; ++$i) {
+          if (empty($result[$i]["name_localized"]) === false) {
+            $result[$i]["name"] = $result[$i]["name_localized"];
+          }
+          unset($result[$i]["name_localized"]);
+          $tmpStyles[ $result[$i]["style_id"] ] = $result[$i]["name"];
+        }
+        $i18n->getCollator()->asort($tmpStyles);
+        foreach ($tmpStyles as $id => $name) {
+          $styles[] = [ "id" => $id, "name" => $name];
+        }
+      }
     }
     return $styles;
   }

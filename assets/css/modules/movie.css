@@ -26,7 +26,7 @@
  * @since 0.0.1-dev
  */
 
-h2 small {
+body.movieshow-body h2 small {
   float: right;
 }
 
@@ -52,9 +52,13 @@ h2 small {
 }
 
 #movie__rating {
-  margin: 1.39em 0;
+  margin: 20px 0 5px 0;
   position: relative;
   width: 120px;
+}
+
+#movie__rating + small {
+  margin: 0 0 20px 0;
 }
 
 #movie__rating,
@@ -104,4 +108,10 @@ h2 small {
 
 #movie__rating__front > label:hover ~ label {
   color: #c7c7c7;
+}
+
+#movie__rating .popup {
+  width: 100px;
+  text-align: center;
+  left: -40.5px;
 }

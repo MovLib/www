@@ -19,6 +19,7 @@ namespace MovLib\Presenter;
 
 use \MovLib\Exception\MovieException;
 use \MovLib\Model\MovieModel;
+use \MovLib\Model\RatingModel;
 use \MovLib\Model\ReleasesModel;
 use \MovLib\View\HTML\Movie\MovieShowView;
 
@@ -41,12 +42,17 @@ class MoviePresenter extends AbstractPresenter {
 
 
   /**
-   * Associative array containing the complete data of this movie.
+   * The movie model containing all the data of this movie.
    *
    * @var \MovLib\Model\MovieModel
    */
   public $movieModel;
 
+  /**
+   * The rating model to retrieve the movie's rating data.
+   * @var \MovLib\Model\RatingModel
+   */
+  public $ratingModel;
   /**
    * The display title of the movie to display.
    * @var string
@@ -81,6 +87,7 @@ class MoviePresenter extends AbstractPresenter {
       if ($this->movieModel->deleted === true) {
         return $this->setPresentation("Error\\GoneMovie");
       }
+      $this->ratingModel = new RatingModel();
       $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
       // Construct the title of the page from the movie's display title or the original title if no display title exists.
       $languages = $i18n->getLanguages();

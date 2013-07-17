@@ -687,4 +687,57 @@ abstract class AbstractView {
     ;
   }
 
+  /**
+   * Get the HTML-code for an unordered list containing the items supplied.
+   *
+   * @param array $items
+   *   The items to be displayed in the list.
+   * @param string $ifNoItemsText
+   *   The text to display when no items are supplied.
+   * @param callable $callback
+   *   [optional]If supplied, the callback function is run over every item in the list.
+   * @param array $attributes
+   *   [optional]The HTML-attributes for the unordered list.
+   * @return string
+   *   The unordered list.
+   */
+  public function getUnorderedList($items, $ifNoItemsText, $callback = null, $attributes = null) {
+    $list = "";
+    $c = count($items);
+    if ($c > 0) {
+      for ($i = 0; $i < $c; ++$i) {
+        $list .= "<li>" . ($callback ? $callback($items[$i]) : $items[$i]) . "</li>";
+      }
+      return "<ul{$this->expandTagAttributes($attributes)}>{$list}</ul>";
+    }
+    return $ifNoItemsText;
+  }
+
+  /**
+   * Get a comma separated list containing the items supplied.
+   *
+   * @param array $items
+   *   The items to be displayed in the list.
+   * @param string $ifNoItemsText
+   *   The text to display when no items are supplied.
+   * @param callable $callback
+   *   [optional]If supplied, the callback function is run over every item in the list.
+   * @return string
+   *   The comma separated list list.
+   */
+  public function getCommaSeparatedList($items, $ifNoItemsText, $callback = null) {
+    $list = "";
+    $c = count($items);
+    if ($c > 0) {
+      for ($i = 0; $i < $c; ++$i) {
+        if ($i !== 0) {
+          $list .= ", ";
+        }
+        $list .= $callback ? $callback($items[$i]) : $items[$i];
+      }
+      return $list;
+    }
+    return $ifNoItemsText;
+  }
+
 }
