@@ -1218,6 +1218,29 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`awards_categories` (
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_ratings`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID.' ,
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user\'s unique ID.' ,
+  `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user\'s rating for this movie (1-5).' ,
+  PRIMARY KEY (`movie_id`, `user_id`) ,
+  INDEX `fk_movies_ratings_users1_idx` (`user_id` ASC) ,
+  CONSTRAINT `fk_movies_ratings_movies1`
+    FOREIGN KEY (`movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_ratings_users1`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
 USE `movlib` ;
 
 
