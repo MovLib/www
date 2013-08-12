@@ -98,6 +98,80 @@ class MovieModel extends AbstractModel {
    */
   private $relationships;
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties from other tables
+
+  /**
+   * A keyed array containing the movie's award information in an associative array.
+   * @var null|array
+   */
+  private $awards = null;
+
+  /**
+   * A keyed array containing the movie's cast information in an associative array.
+   * @var null|array
+   */
+  private $cast = null;
+
+  /**
+   * A keyed array containing the movie's crew information in an associative array.
+   * @var null|array
+   */
+  private $crew = null;
+
+  /**
+   * Sorted numeric array containing the movie's countries as associative arrays with the ID, the ISO code and localized name of the country.
+   * @var null|array
+   */
+  private $countries = null;
+
+  /**
+   * A keyed array containing the movie's director information in an associative array.
+   * @var null|array
+   */
+  private $directors = null;
+
+  /**
+   * Sorted numeric array containing the movie's genres with the ID and localized name of the genre as associative array.
+   * @var null|array
+   */
+  private $genres = null;
+
+  /**
+   * A keyed array containing the movie's language information in an associative array.
+   * @var null|array
+   */
+  private $languages = null;
+
+  /**
+   * A keyed array containing the movie's link information in an associative array.
+   * @var null|array
+   */
+  private $links = null;
+
+  /**
+   * Sorted numeric array containing the movie's poster information as an associative array.
+   * @var null|array
+   */
+  private $posters = null;
+
+  /**
+   * Sorted numeric array containing the movie's style information (ID and localized name) as associative array.
+   * @var null|array
+   */
+  private $styles = null;
+
+  /**
+   * A keyed array containing the movie's tagline information in an associative array.
+   * @var null|array
+   */
+  private $taglines = null;
+
+  /**
+   * A keyed array containing the movie's title information in an associative array.
+   * @var null|array
+   */
+  private $titles = null;
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
   /**
@@ -150,15 +224,13 @@ class MovieModel extends AbstractModel {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *  The global I18n Model instance for translations.
-   * @staticvar array $awards
    * @return array
    *  A keyed array containing the award information in an associative array.
    */
   public function getAwards() {
     global $i18n;
-    static $awards = null;
-    if ($awards === null) {
-      $awards = $this->select(
+    if ($this->awards === null) {
+      $this->awards = $this->select(
         "SELECT
           a.`award_id` AS `id`,
           a.`name` AS `name`,
@@ -173,20 +245,18 @@ class MovieModel extends AbstractModel {
         [ $this->id ]
       );
     }
-    return $awards;
+    return $this->awards;
   }
 
   /**
    * Retrieve the movie's cast from the database.
    *
-   * @staticvar array $cast
    * @return array
    *  A keyed array containing the cast information in an associative array.
    */
   public function getCast() {
-    static $cast = null;
-    if ($cast === null) {
-      $cast = $this->select(
+    if ($this->cast === null) {
+      $this->cast = $this->select(
         "SELECT
           p.`person_id` AS `id`,
           p.`name` AS `name`,
@@ -200,9 +270,12 @@ class MovieModel extends AbstractModel {
         "d",
         [ $this->id ]
       );
-      settype($cast["deleted"], "boolean");
+      $c = count($this->cast);
+      for ($i = 0; $i < $c; ++$i){
+        settype($this->cast[$i]["deleted"], "boolean");
+      }
     }
-    return $cast;
+    return $this->cast;
   }
 
   /**
@@ -210,15 +283,13 @@ class MovieModel extends AbstractModel {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *  The global I18n Model instance for translations.
-   * @staticvar array $crew
    * @return array
    *  A keyed array containing the crew information in an associative array.
    */
   public function getCrew() {
     global $i18n;
-    static $crew = null;
-    if ($crew === null) {
-      $crew = $this->select(
+    if ($this->crew === null) {
+      $this->crew = $this->select(
         "SELECT
           mc.`crew_id` AS `crewId`,
           p.`person_id` AS `personId`,
@@ -242,10 +313,13 @@ class MovieModel extends AbstractModel {
         "d",
         [ $this->id ]
       );
-      settype($crew["personDeleted"], "deleted");
-      settype($crew["companyDeleted"], "deleted");
+      $c = count($this->crew);
+      for ($i = 0; $i < $c; ++$i){
+        settype($this->crew[$i]["personDeleted"], "deleted");
+        settype($this->crew[$i]["companyDeleted"], "deleted");
+      }
     }
-    return $crew;
+    return $this->crew;
   }
 
   /**
@@ -253,16 +327,13 @@ class MovieModel extends AbstractModel {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global I18n Model instance for translations.
-   * @staticvar null|array $countries
-   *   Used to cache the result.
    * @return array
    *   Sorted numeric array containing the ID, the ISO code and localized name of the country as associative array.
    */
   public function getCountries() {
     global $i18n;
-    static $countries = null;
-    if ($countries === null) {
-      $countries = [];
+    if ($this->countries === null) {
+      $this->countries = [];
       $result = $this->select("SELECT `country_id` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ]);
       $c = count($result);
       if ($c > 0) {
@@ -273,23 +344,21 @@ class MovieModel extends AbstractModel {
         }
         $i18n->getCollator()->asort($tmpCountries);
         foreach ($tmpCountries as $id => $name) {
-          $countries[] = $i18nCountries[$id];
+          $this->countries[] = $i18nCountries[$id];
         }
       }
     }
-    return $countries;
+    return $this->countries;
   }
 
   /**
    * Retrieve the movie's directors from the database.
    *
-   * @staticvar array $directors
    * @return array
    *  A keyed array containing the director information in an associative array.
    */
   public function getDirectors() {
-    static $directors = null;
-    if ($directors === null) {
+    if ($this->directors === null) {
       $directorsData = $this->select(
         "SELECT
           p.`person_id` AS `id`,
@@ -313,11 +382,12 @@ class MovieModel extends AbstractModel {
       for ($i = 0; $i < $count; ++$i) {
         if (in_array($directorsData[$i]["id"], $usedIds) === false) {
           settype($directorsData[$i]["deleted"], "boolean");
-          $directors[] = $directorsData[$i];
+          $this->directors[] = $directorsData[$i];
+          $usedIds[] = $directorsData[$i]["id"];
         }
       }
     }
-    return $directors;
+    return $this->directors;
   }
 
   /**
@@ -325,16 +395,13 @@ class MovieModel extends AbstractModel {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global I18n Model instance for translations.
-   * @staticvar array $genres
-   *   Used to cache the resulting array.
    * @return array
    *   Sorted numeric array containing the ID and localized name of the genre as associative array.
    */
   public function getGenres() {
     global $i18n;
-    static $genres = null;
-    if ($genres === null) {
-      $genres = [];
+    if ($this->genres === null) {
+      $this->genres = [];
       $result = $this->select(
         "SELECT
           `g`.`genre_id`,
@@ -356,11 +423,11 @@ class MovieModel extends AbstractModel {
         }
         $i18n->getCollator()->asort($tmpGenres);
         foreach ($tmpGenres as $id => $name) {
-          $genres[] = [ "id" => $id, "name" => $name ];
+          $this->genres[] = [ "id" => $id, "name" => $name ];
         }
       }
     }
-    return $genres;
+    return $this->genres;
   }
 
   /**
@@ -368,15 +435,13 @@ class MovieModel extends AbstractModel {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global I18n Model instance for translations.
-   * @staticvar array $languages
    * @return array
    *   A keyed array containing the language information in an associative array.
    */
   public function getLanguages() {
     global $i18n;
-    static $languages = null;
-    if ($languages === null) {
-      $languages = $this->select(
+    if ($this->languages === null) {
+      $this->languages = $this->select(
         "SELECT
           l.`language_id` AS `id`,
           l.`iso_alpha-2` AS `isoCode`,
@@ -391,20 +456,18 @@ class MovieModel extends AbstractModel {
         [ $this->id ]
       );
     }
-    return $languages;
+    return $this->languages;
   }
 
   /**
    * Retrieve the movie's external links from the database.
    *
-   * @staticvar array $links
    * @return array
    *  A keyed array containing the link information in an associative array.
    */
   public function getLinks () {
-    static $links = null;
-    if ($links === null) {
-      $links = $this->select(
+    if ($this->links === null) {
+      $this->links = $this->select(
         "SELECT
           ml.`title` AS `title`,
           ml.`text` AS `text`,
@@ -419,21 +482,19 @@ class MovieModel extends AbstractModel {
         "d",
         [ $this->id ]);
     }
-    return $links;
+    return $this->links;
   }
 
   /**
    * Retrieve the movie poster data for this movie
    * @global \MovLib\Model\I18nModel $i18n
    *  The global I18n Model instance for translations.
-   * @staticvar array $posters
    * @return array
    */
   public function getPosters() {
     global $i18n;
-    static $posters = null;
-    if ($posters === null) {
-      $posters = $this->select(
+    if ($this->posters === null) {
+      $this->posters = $this->select(
         "SELECT
           `poster_id` AS `posterId`,
           `country_id` AS `country`,
@@ -448,14 +509,14 @@ class MovieModel extends AbstractModel {
           ORDER BY rating DESC",
         "d",
         [ $this->id ]);
-      $count = count($posters);
+      $count = count($this->posters);
       for ($i = 0; $i < $count; ++$i) {
-        if (isset($posters[$i]["country"])) {
-          $posters[$i]["country"] = $i18n->getCountries()[$posters[$i]["country"]]["name"];
+        if (isset($this->posters[$i]["country"])) {
+          $this->posters[$i]["country"] = $i18n->getCountries()[$this->posters[$i]["country"]]["name"];
         }
       }
     }
-    return $posters;
+    return $this->posters;
   }
 
   /**
@@ -463,21 +524,19 @@ class MovieModel extends AbstractModel {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *  The global I18n Model instance for translations.
-   * @staticvar array $relationships
    * @return array
    *  A keyed array containing the relationship information to other movies in an associative array.
    */
   public function getRelationships() {
     global $i18n;
-    static $relationships = null;
-    if ($relationships === null) {
+    if ($this->relationships === null) {
       $movieIds = [];
       foreach ($this->relationships as $rel) {
         if (isset($rel["movie_id"])) {
           $movieIds[] = $rel["movie_id"];
         }
       }
-      $relationships = $this->select(
+      $this->relationships = $this->select(
         "SELECT
           m.`original_title` AS `originalTitle`,
           m.`year` AS `year`,
@@ -493,7 +552,7 @@ class MovieModel extends AbstractModel {
       );
 
     }
-    return $relationships;
+    return $this->relationships;
   }
 
   /**
@@ -501,16 +560,13 @@ class MovieModel extends AbstractModel {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global I18n Model instance for translations.
-   * @staticvar array $styles
-   *   Used to cache the query result.
    * @return array
    *   Sorted numeric array containing the ID and localized name of the genre as associative array.
    */
   public function getStyles() {
     global $i18n;
-    static $styles = null;
-    if ($styles === null) {
-      $styles = [];
+    if ($this->styles === null) {
+      $this->styles = [];
       $result = $this->select(
         "SELECT
           `s`.`style_id`,
@@ -534,11 +590,11 @@ class MovieModel extends AbstractModel {
         }
         $i18n->getCollator()->asort($tmpStyles);
         foreach ($tmpStyles as $id => $name) {
-          $styles[] = [ "id" => $id, "name" => $name];
+          $this->styles[] = [ "id" => $id, "name" => $name];
         }
       }
     }
-    return $styles;
+    return $this->styles;
   }
 
   /**
@@ -546,15 +602,13 @@ class MovieModel extends AbstractModel {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *  The global I18n Model instance for translations.
-   * @staticvar array $tagLines
    * @return array
    *  A keyed array containing the tagline information in an associative array.
    */
   public function getTagLines() {
     global $i18n;
-    static $tagLines = null;
-    if ($tagLines === null) {
-      $tagLines = $this->select(
+    if ($this->taglines === null) {
+      $this->taglines = $this->select(
         "SELECT
           mt.`tagline` AS `tagline`,
           l.`language_id` AS `languageId`,
@@ -569,7 +623,7 @@ class MovieModel extends AbstractModel {
           [$this->id]
       );
     }
-    return $tagLines;
+    return $this->taglines;
   }
 
   /**
@@ -577,15 +631,18 @@ class MovieModel extends AbstractModel {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *  The global I18n Model instance for translations.
-   * @staticvar array $titles
    * @return array
    *  A keyed array containing the title information in an associative array.
    */
   public function getTitles() {
     global $i18n;
-    static $titles = null;
-    if ($titles === null) {
-      $titles = $this->select(
+    if ($this->id == 1) {
+      $this->titles = [
+        ["title" => "test", "languageId" => 42, "isDisplayTitle" => true]
+      ];
+    }
+    if ($this->titles === null) {
+      $this->titles = $this->select(
         "SELECT `title` AS `title`,
           COLUMN_GET(`dyn_comments`, 'en' AS BINARY) AS `comment`,
           COLUMN_GET(`dyn_comments`, '{$i18n->languageCode}' AS BINARY) AS `commentLocalized`,
@@ -597,12 +654,12 @@ class MovieModel extends AbstractModel {
         "d",
         [ $this->id ]
       );
-      $count = count($titles);
+      $count = count($this->titles);
       for($i = 0; $i < $count; ++$i) {
-        settype($titles[$i]["isDisplayTitle"], "boolean");
+        settype($this->titles[$i]["isDisplayTitle"], "boolean");
       }
     }
-    return $titles;
+    return $this->titles;
   }
 
 }
