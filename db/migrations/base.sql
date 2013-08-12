@@ -22,6 +22,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.' ,
   `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.' ,
   `bin_relationships` BLOB NULL COMMENT 'The movie\'s relations to other movies, e.g sequels.\nStored in igbinary serialized format.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this movie was created.' ,
   PRIMARY KEY (`movie_id`) ,
   UNIQUE INDEX `uq_movies_rank` (`rank` ASC) )
 COMMENT = 'Contains all movie’s data.'
