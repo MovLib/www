@@ -10,10 +10,10 @@ INSERT INTO `users` (
   `timezone`,
   `init`,
   `dyn_profile`,
+  `sex`,
   `country_id`,
   `real_name`,
   `birthday`,
-  `gender`,
   `website`,
   `avatar_extension`,
   `avatar_hash`
@@ -27,10 +27,10 @@ INSERT INTO `users` (
   'Europe/Vienna',
   'richard@fussenegger.info',
   COLUMN_CREATE('en', 'Richard’s English profile text.', 'de', 'Richard’s deutscher Profiltext.'),
+  1,
   (SELECT `country_id` FROM `countries` WHERE `iso_alpha-2` = 'at' LIMIT 1),
   'Richard Fussenegger',
   '1985-6-27',
-  1,
   'http://richard.fussenegger.info/',
   'jpg',
   '3696208974'
