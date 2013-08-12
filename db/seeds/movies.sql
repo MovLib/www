@@ -1,11 +1,12 @@
 USE `movlib`;
 -- Roundhay Garden Scene (The world's first movie)
 BEGIN;
-INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`) VALUES (
+INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`, `created`) VALUES (
   '1888',
   1,
   'Roundhay Garden Scene',
-  COLUMN_CREATE('en', 'This is the first movie ever.')
+  COLUMN_CREATE('en', 'This is the first movie ever.'),
+  '2013-06-01 00:00:00'
 );
 INSERT INTO `movies_countries` (`movie_id`, `country_id`) VALUES (1, 77);
 INSERT INTO `movies_genres` (`movie_id`, `genre_id`) VALUES (1, 7), (1, 18), (1, 19);
@@ -14,7 +15,7 @@ COMMIT;
 
 -- The Shawshank Redemption
 BEGIN;
-INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`) VALUES (
+INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`, `created`) VALUES (
   '1994',
   142,
   'The Shawshank Redemption',
@@ -50,7 +51,8 @@ Red befürchtet, Andy könnte wie Brooks Selbstmord begehen. Aber am nächsten M
 Der Poststempel auf einer Karte ohne Text sagt Red wenige Tage später, dass Andy über Fort Hancock, Texas, die Staaten verlassen hat. Red kommt kurze Zeit später auf Bewährung frei und erhält wie Brooks eine Stelle im Supermarkt. Er übernachtet auch im selben Zimmer der Pension, in der sich Brooks erhängte. Auch Red kommt anfangs nicht mit der neu gewonnenen Freiheit und Einsamkeit zurecht. Er denkt darüber nach, sich zu erschießen oder eine Straftat zu begehen, um so wieder ins Gefängnis zu kommen. Doch eines hält ihn immer noch am Leben: Das Versprechen, diesen bestimmten Baum in Buxton an einer Feldsteinmauer zu finden und dort nach einem schwarzen Stein zu suchen, den es sonst dort nirgends gibt. So macht sich Red per Anhalter auf den Weg, um diese Stelle aufzusuchen. Er wird unter besagtem schwarzen Stein fündig, in einer Blechdose sind Geld und ein Brief versteckt, in dem Andy ihn einlädt, ihn in Mexiko aufzusuchen und ihm dabei zu helfen, sich eine neue, gemeinsame Existenz aufzubauen. Red kehrt in sein Zimmer zurück, ritzt in den Deckenbalken, in den Brooks „BROOKS WAS HERE“ (Brooks war hier) eingeschnitzt hatte, den Zusatz „SO WAS RED“ (Red auch) und machte sich auf die Reise, in der Hoffnung, nicht sofort von der Polizei wegen Verstoßes gegen die Bewährungsauflagen gesucht zu werden.
 
 Am Ende treffen sich Andy und Red am Pazifikstrand in Mexiko.'
-  )
+  ),
+'2013-06-01 00:00:00'
 );
 INSERT INTO `movies_titles` (`movie_id`, `language_id`, `title`, `dyn_comments`, `is_display_title`) VALUES (2, 52, 'Die Verurteilten', '', true);
 INSERT INTO `movies_countries` (`movie_id`, `country_id`) VALUES (2, 233);
@@ -105,7 +107,7 @@ COMMIT;
 
 -- Léon: The Professional
 BEGIN;
-INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`) VALUES (
+INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`, `created`) VALUES (
   '1994',
   110,
   'Léon',
@@ -113,7 +115,8 @@ INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`) VALUE
     'As visually stylish as it is graphically violent, this thriller directed by Luc Besson concerns Mathilda (Natalie Portman), a 12-year-old girl living in New York City who has been exposed to the sordid side of life from an early age: her family lives in a slum and her abusive father works for drug dealers, cutting and storing dope. Mathilda doesn&apos;t care much for her parents, but she has a close bond with her four-year-old brother. One day, she returns from running an errand to discover that most of her family, including her brother, have been killed in a raid by corrupt DEA agents, led by the psychotic Stansfield (Gary Oldman). Mathilda takes refuge in the apartment of her secretive neighbor, Leon (Jean Reno), who takes her in with a certain reluctance. She discovers that Leon is a professional assassin, working for Tony (Danny Aiello), a mob kingpin based in Little Italy. Wanting to avenge the death of her brother, Mathilda makes a deal with Leon to become his protégée in exchange for work as a domestic servant, hoping to learn the hitman&apos;s trade and take out the men who took her brother&apos;s life. However, an affection develops between Leon and Mathilda that changes his outlook on his life and career. Besson&apos;s first American film boasted a strong performance from Jean Reno, a striking debut by Natalie Portman, and a love-it-or-hate-it, over-the-top turn by Gary Oldman. Léon was originally released in the U.S. in 1994 as The Professional, with 26 minutes cut in response to audience preview tests. Those 26 minutes were restored in the director&apos;s preferred cut, released in 1996 in France as Léon: Version Intégrale and in the U.S. on DVD as Léon: The Professional in 2000.',
     'de',
     'Für Léon (Jean Reno) gibt es nur seinen Job. Seit seiner Jugend arbeitet er als professioneller Auftragskiller. Er tötet ohne mit der Wimper zu zucken. Das einzig Menschliche an ihm ist seine Liebe zu einer Zimmerpflanze. Diese hegt und pflegt er nach Kräften. Die kleine Mathilda (Natalie Portman) wohnt direkt neben Leon. Das zwölfjährige Mädchen hat keine schöne Kindheit. Ihre Mutter geht auf den Strich und der Vater ist ein miefiger kleiner Drogendealer. Drogenfahnder Norman Stansfield (Gary Oldman) fühlt sich von Mathildas Vater betrogen und bringt die ganze Familie kurzerhand um. Nur Mathilda überlebt das Massaker. In ihrer Angst wendet sie sich an Léon. Der zurückgezogene Leon kann mit Menschen nicht besonders gut umgehen. Er versucht Mathilda so schnell wie möglich wieder los zu werden - bis die Kleine ihm einen Deal vorschlägt: Sie verspricht Léon den Haushalt zu führen, wenn er ihr beibringt professionell zu töten. Mathilda will sich an Stansfield rächen, der ihren kleinen Bruder kaltblütig erschossen hat. Zuerst lehnt Leon ab, doch nach und nach lockt Mathilda den wortkargen Einzelgänger aus der Reserve bis er sie schließlich in die "Kunst" eines "Cleaners" einweiht.'
-  )
+  ),
+  '2013-06-01 00:00:00'
 );
 INSERT INTO `movies_titles` (`movie_id`, `language_id`, `title`, `dyn_comments`, `is_display_title`) VALUES (3, 41, 'Léon: The Professional', '', true);
 INSERT INTO `movies_countries` (`movie_id`, `country_id`) VALUES (3, 75), (3, 233); -- France and USA
