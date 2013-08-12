@@ -1,0 +1,82 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Styles exclusive to the movies page.
+ *
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link http://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+#movies__latest, #movies__latest li, #movies__latest p {
+  margin: 0;
+  padding: 0;
+}
+
+#movies__latest {
+  list-style-type: none;
+  margin-top: 20px;
+}
+
+#movies__latest li {
+  height: 90px;
+  padding: 7.5px;
+  position: relative;
+  overflow: hidden;
+  background-color: #fff;
+  transition: background-color 0.4s ease-out;
+}
+
+#movies__latest li:hover {
+  background-color: #eee;
+}
+
+#movies__latest a {
+  background-repeat: no-repeat;
+  color: #353535;
+  display: block;
+  height: 75px;
+  padding-left: 92.5px;
+  border: 0 none;
+}
+
+#movies__latest h2 {
+  color: #09c;
+  font-size: 25px;
+  line-height: 1;
+  margin: 0;
+}
+
+.movies-list__poster {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  line-height: 85px;
+  text-align: center;
+  vertical-align: middle;
+  width: 90px;
+}
+
+.movies-list__info {
+  position: relative;
+  top: 50%;
+  margin-top: -50%;
+}
