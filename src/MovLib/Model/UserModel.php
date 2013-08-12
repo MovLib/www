@@ -19,8 +19,7 @@ namespace MovLib\Model;
 
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\UserException;
-use \MovLib\Model\AbstractModel;
-use \MovLib\Utility\Image;
+use \MovLib\Model\AbstractImageModel;
 use \MovLib\Utility\String;
 
 /**
@@ -32,7 +31,7 @@ use \MovLib\Utility\String;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserModel extends AbstractModel {
+class UserModel extends AbstractImageModel {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -80,6 +79,34 @@ class UserModel extends AbstractModel {
    * @var int
    */
   const NAME_MAX_LENGTH = 40;
+
+  /**
+   * Small image style.
+   *
+   * @var int
+   */
+  const IMAGESTYLE_SMALL = "50x50";
+
+  /**
+   * Normal image style.
+   *
+   * @var int
+   */
+  const IMAGESTYLE_NORMAL = "100x100";
+
+  /**
+   * Big image style.
+   *
+   * @var int
+   */
+  const IMAGESTYLE_BIG = "150x150";
+
+  /**
+   * Huge image style.
+   *
+   * @var int
+   */
+  const IMAGESTYLE_HUGE = "300x300";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -204,13 +231,6 @@ class UserModel extends AbstractModel {
   public $countryId;
 
   /**
-   * The file extension of the user's uploaded avatar.
-   *
-   * @var null|string
-   */
-  public $avatarExt;
-
-  /**
    * The user's real name.
    *
    * @var null|string
@@ -225,17 +245,20 @@ class UserModel extends AbstractModel {
   public $birthday;
 
   /**
-   * The user's gender.
+   * The user's sex according to ISO/IEC 5218.
    *
+   * We are only using the following three values from the standard:
    * <ul>
-   *   <li><b><code>NULL</code>:</b> no gender</li>
-   *   <li><b><code>0</code>:</b> male</li>
-   *   <li><b><code>1</code>:</b> female</li>
+   *   <li><b><code>0</code>:</b> not known</li>
+   *   <li><b><code>1</code>:</b> male</li>
+   *   <li><b><code>2</code>:</b> female</li>
    * </ul>
+   * The fourth value makes no sense in our software.
    *
-   * @var null|int
+   * @link https://en.wikipedia.org/wiki/ISO/IEC_5218
+   * @var int
    */
-  public $gender;
+  public $sex;
 
   /**
    * The user's website.
@@ -243,6 +266,25 @@ class UserModel extends AbstractModel {
    * @var null|string
    */
   public $website;
+
+  /**
+   * Name of the directory within the uploads directory on the server.
+   *
+   * @var string
+   */
+  public $imageDirectory = "user";
+
+  /**
+   * All available image styles.
+   *
+   * @var array
+   */
+  public $imageStyles = [
+    self::IMAGESTYLE_SMALL,
+    self::IMAGESTYLE_NORMAL,
+    self::IMAGESTYLE_BIG,
+    self::IMAGESTYLE_HUGE,
+  ];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -282,12 +324,13 @@ class UserModel extends AbstractModel {
             `init`,
             `edits`,
             COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY) AS `profile`,
+            `sex`,
             `country_id` AS `countryId`,
-            `avatar_ext` AS `avatarExt`,
             `real_name` AS `realName`,
             `birthday`,
-            `gender`,
-            `website`
+            `website`,
+            `avatar_extension` AS `imageExtension`,
+            `avatar_hash` AS `imageHash`
           FROM `users`
             WHERE `{$from}` = ?
           LIMIT 1", $this->types[$from], [ $value ]
@@ -296,6 +339,7 @@ class UserModel extends AbstractModel {
         }
         settype($this->private, "boolean");
         settype($this->deleted, "boolean");
+        $this->initImage(String::convertToRoute($this->name));
       } catch (ErrorException $e) {
         throw new UserException("Could not find user for {$from} '{$value}'!", $e);
       }
@@ -319,23 +363,25 @@ class UserModel extends AbstractModel {
         `private` = ?,
         `timezone` = ?,
         `country_id` = ?,
-        `avatar_ext` = ?,
         `real_name` = ?,
         `birthday` = ?,
-        `gender` = ?,
-        `website` = ?
+        `sex` = ?,
+        `website` = ?,
+        `avatar_extension` = ?,
+        `avatar_hash` = ?
       WHERE `user_id` = ?",
-      "iisisssisd",
+      "iisississsd",
       [
         $this->languageId,
         $this->private,
         $this->timezone,
         $this->countryId,
-        $this->avatarExt,
         $this->realName,
         $this->birthday,
-        $this->gender,
+        $this->sex,
         $this->website,
+        $this->imageExtension,
+        $this->imageHash,
         $this->id
       ]
     )->execute()->close();;
@@ -363,66 +409,6 @@ class UserModel extends AbstractModel {
    */
   public function existsName($name) {
     return !empty($this->select("SELECT `user_id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $name ]));
-  }
-
-  /**
-   * Get the absolute URI to the user's avatar.
-   *
-   * <b>IMPORTANT!</b> Please note that images are not created on demand. If we'd do that we'd be open for easy DDoS
-   * attacks that would kill our servers in no time. If you need a new image style, generate all images beforehands and
-   * ensure that the user presenter creates the style directly after a new avatar was uploaded.
-   *
-   * @see \MovLib\Utility\Image::STYLE_150
-   * @param int $style
-   *   The image style, use the <var>STYLE_*</var> class constants of the image utility class.
-   * @return boolean|string
-   *   <code>FALSE</code> if the image doesn't exist, otherwise the absolute URI to the image is returned.
-   */
-  public function getAvatarRoute($style = Image::STYLE_150) {
-    if ($this->avatarExt) {
-      if ($this->avatarExt === "svg" && is_file("{$_SERVER["HOME"]}/uploads/user/avatar-{$this->id}.svg")) {
-        return "https://{$_SERVER["SERVER_NAME"]}/uploads/user/avatar-{$this->id}.svg";
-      }
-      elseif (is_file("{$_SERVER["HOME"]}/uploads/user/avatar-{$this->id}.{$style}.{$this->avatarExt}")) {
-        return "https://{$_SERVER["SERVER_NAME"]}/uploads/user/avatar-{$this->id}.{$style}.{$this->avatarExt}";
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Get the HTML mark-up for the user's avatar.
-   *
-   * @see \MovLib\Model\UserModel::getAvatarRoute()
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n instance.
-   * @param int $style
-   *   One of the <var>Image::STYLE_*</var> constants.
-   * @return string
-   *   The HTML mark-up for the user's avatar for the desired style.
-   */
-  public function getAvatarImage($style = Image::STYLE_150) {
-    global $i18n;
-    return "<img class='avatar-image' src='{$this->getAvatarRoute($style)}' alt='{$i18n->t("{0}’s avatar.", [
-      String::checkPlain($this->name)
-    ])}' width='{$style}' height='{$style}'>";
-  }
-
-  /**
-   * Get the HTML mark-up for the user's avatar linked to the user's profile.
-   *
-   * @see \MovLib\Model\UserModel::getAvatarRoute()
-   * @see \MovLib\Model\UserModel::getAvatarImage()
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n instance.
-   * @param int $style
-   *   One of the <var>Image::STYLE_*</var> constants.
-   * @return string
-   *   The HTML mark-up for the user's avatar for the desired style.
-   */
-  public function getAvatarImageLinkedToProfile($style = Image::STYLE_150) {
-    global $i18n;
-    return "<a class='no-border' href='{$i18n->r("/user/{0}", [ String::convertToRoute($this->name) ])}'>{$this->getAvatarImage($style)}</a>";
   }
 
   /**
@@ -518,15 +504,12 @@ class UserModel extends AbstractModel {
   /**
    * Add reset password request to our temporary database table.
    *
-   * @global \MovLib\Model\SessionModel $user
-   *   The currently logged in user.
    * @param string $hash
    *   The password reset hash used in the password reset link for identification.
    * @param string $mail
    *   The valid mail of the user.
    */
   public function preResetPassword($hash, $mail) {
-    global $user;
     // @todo Catch exceptions, log and maybe even send a mail to the user?
     $this->prepareAndBind(
       "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('mail', ?, 'time', NOW() + 0))",
