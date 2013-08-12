@@ -32,17 +32,16 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="6.8.5-10"
+  VERSION="6.8.6-6"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
 NAME="ImageMagick-${VERSION}"
+aptitude install libjpeg-dev libpng-dev
 source ${ID}wget.sh "http://www.imagemagick.org/download/" ${NAME} ".tar.gz"
 ./configure \
   CFLAGS="-O3 -m64 -pthread" \
-  CPPFLAGS="-I/usr/local/include/ImageMagick" \
   CXXFLAGS="-O3 -m64 -pthread" \
-  LDFLAGS="-O3 -m64" \
   --disable-static \
   --enable-shared \
   --with-jpeg \
@@ -72,6 +71,9 @@ source ${ID}wget.sh "http://www.imagemagick.org/download/" ${NAME} ".tar.gz"
   --without-xml \
   --without-zlib
 
-# ImageMagick seems to ignore the CPPFLAGS!?!
+checkinstall
+
 ln -s /usr/local/include/ImageMagick-6 /usr/local/include/ImageMagick
-source ${ID}install.sh
+# source ${ID}install.sh
+
+# dpkg -r
