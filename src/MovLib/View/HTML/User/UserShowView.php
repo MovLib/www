@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\User;
 
+use \MovLib\Model\UserModel;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -67,7 +68,7 @@ class UserShowView extends AbstractView {
             "<h2>{$i18n->t("Your Account Summary")}</h2>" .
             "<div class='row'>" .
               "<dl class='span span--6'>" .
-                "<dt class='visuallyhidden'>{$i18n->t("Username")}</dt><dd>{$this->presenter->profile->name}</dd>" .
+                "<dt>{$i18n->t("Username")}</dt><dd>{$this->presenter->profile->name}</dd>" .
                 "<dt>{$i18n->t("User ID")}</dt><dd>{$this->presenter->profile->id}</dd>" .
                 "<dt>{$i18n->t("Edits")}</dt><dd>{$this->presenter->profile->edits}</dd>" .
                 "<dt>{$i18n->t("Reputation")}</dt><dd><em>@todo</em> reputation counter</dd>" .
@@ -76,7 +77,7 @@ class UserShowView extends AbstractView {
                 "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->presenter->profile->access, $this->presenter->profile->timezone)}</dd>" .
               "</dl>" .
               "<div class='span span--3'>" .
-                $this->a($i18n->r("/user/account-settings"), $this->presenter->profile->getAvatarImage(), [
+                $this->a($i18n->r("/user/account-settings"), $this->getImage($this->presenter->profile, UserModel::IMAGESTYLE_HUGE), [
                   "class" => "change-avatar no-border",
                   "title" => "Change your avatar image.",
                 ]) .

@@ -17,9 +17,9 @@
  */
 namespace MovLib\View\HTML\User;
 
+use \MovLib\Model\UserModel;
 use \MovLib\Model\I18nModel;
 use \MovLib\Utility\Crypt;
-use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractFormView;
 
 /**
@@ -106,29 +106,20 @@ class UserSettingsView extends AbstractFormView {
    */
   private function getAccountTab() {
     global $i18n;
+    // This form has a file upload!
     $this->attributes["enctype"] = self::ENCTYPE_BINARY;
-    if (($avatar = $this->presenter->profile->getAvatarRoute()) === false) {
-      $avatar = "<i class='icon icon--user avatar--150'></i>";
-    }
-    else {
-      $avatar = "<img class='avatar avatar--150' alt='{$i18n->t("{0}’s avatar.", [ String::checkPlain($this->presenter->profile->name) ])}' height='150' src='{$avatar}' width='150'>";
-    }
-    $systemLanguagesDatalist = [];
-    foreach (I18nModel::$supportedLanguageCodes as $code) {
-      $systemLanguagesDatalist[] = $i18n->getLanguages(I18nModel::KEY_CODE)[$code]["name"];
-    }
     return
+
       // --------------------------------------------------------------------------------------------------------------- Avatar
 
       "<div class='row'>" .
-        "<div class='span span--3'>{$avatar}</div>" .
+        "<div class='span span--3'>{$this->getImage($this->presenter->profile, UserModel::IMAGESTYLE_BIG)}</div>" .
         "<div class='span span--6'>" .
           "<p><label for='avatar'>{$i18n->t("Avatar")}{$this->help($i18n->t(
-            "The maximum file size is {0,number,integer}&thinsp;MB, allowed image extensions are JPG and PNG. You can " .
-            "crop the image after uploading and it will be resized automatically.",
-            [ ini_get("upload_max_filesize") ]
+            "Allowed image extensions: {0}<br>Maximum file size: {1,number}&thinsp;MB",
+            [ implode(", ", array_values($this->presenter->profile->imageSupported)), ini_get("upload_max_filesize") ]
           ))}</label>{$this->input("avatar", [
-            "accept" => "image/jpeg,image/png",
+            "accept" => implode(",", array_keys($this->presenter->profile->imageSupported)),
             "type"   => "file",
           ])}</p>" .
         "</div>" .
@@ -137,51 +128,40 @@ class UserSettingsView extends AbstractFormView {
       // --------------------------------------------------------------------------------------------------------------- Real Name
 
       "<p><label for='real_name'>{$i18n->t("Real Name")}{$this->help($i18n->t(
-        "Your {0} will be displayed on your profile page.", [ $i18n->t("real name") ]
+        "Your {0} will be displayed on your profile page.", [ $i18n->t("Real Name") ]
       ))}</label>{$this->input("real_name", [
-        "class" => "input--block-level",
-        "title" => $i18n->t("Please enter your real name in this field."),
+        "class"       => "input--block-level",
+        "placeholder" => $i18n->t("Real Name"),
+        "title"       => $i18n->t("Please enter your real name in this field."),
       ])}</p>" .
 
-      // --------------------------------------------------------------------------------------------------------------- Gender
+      // --------------------------------------------------------------------------------------------------------------- Sex
 
-      "<p><label>{$i18n->t("Gender")}{$this->help($i18n->t(
-        "Your {0} will be displayed on your profile page and is used to create demographic evaluations.",
-        [ $i18n->t("gender") ]
-      ))}</label><span title='{$i18n->t("Please select your gender.")}'>{$this->radioGroup("gender", [
-        "0" => $i18n->t("Female"),
-        "1" => $i18n->t("Male"),
-        "null" => $i18n->t("Unknown"),
-      ], "null")}</span></p>" .
+      "<p><label>{$i18n->t("Sex")}{$this->help($i18n->t(
+        "Your {0} will be displayed on your profile page and is used to create demographic evaluations.", [ $i18n->t("Sex") ]
+      ))}</label><span title='{$i18n->t("Please select your sex.")}'>{$this->radioGroup("sex", [
+        $i18n->t("Unknown"),
+        $i18n->t("Male"),
+        $i18n->t("Female"),
+      ])}</span></p>" .
 
       // --------------------------------------------------------------------------------------------------------------- Country
 
       "<p><label for='country'>{$i18n->t("Country")}{$this->help($i18n->t(
-        "Your {0} will be displayed on your profile page and is used to create demographic evaluations.",
-        [ $i18n->t("country") ]
-      ))}</label>{$this->input("country", [
-        "aria-autocomplete" => "list",
-        "class"             => "input--block-level",
-        "list"              => "countries",
-      ])}{$this->getCountryDatalist("countries")}</p>" .
+        "Your {0} will be displayed on your profile page and is used to create demographic evaluations.", [ $i18n->t("Country") ]
+      ))}</label>{$this->select("country", $this->selectGetCountries(), [ "class" => "input--block-level" ])}</p>" .
 
       // --------------------------------------------------------------------------------------------------------------- Timezone
 
       "<p><label for='timezone'>{$i18n->t("Time Zone")}{$this->help($i18n->t(
-        "Enter your {0}, simply click in the field and start typing.", [ $i18n->t("Time Zone") ]
-      ))}</label>{$this->inputDatalist(
-        [ "timezone", [ "class" => "input--block-level", "placeholder" => "Enter your time zone", "required" ]],
-        [ "timezones", timezone_identifiers_list() ]
-      )}</p>" .
+        "The {0} is used to display the correct dates and times.", [ $i18n->t("Time Zone") ]
+      ))}</label>{$this->select("timezone", timezone_identifiers_list(), [ "class" => "input--block-level" ])}</p>" .
 
       // --------------------------------------------------------------------------------------------------------------- Language
 
       "<p><label for='language'>{$i18n->t("Language")}{$this->help($i18n->t(
         "Enter your {0}, simply click in the field and start typing.", [ $i18n->t("Language") ]
-      ))}</label>{$this->inputDatalist(
-        [ "language", [ "class" => "input--block-level", "placeholder" => $i18n->t("Enter your preferred language"), "required" ]],
-        [ "languages", $systemLanguagesDatalist ]
-      )}</p>" .
+      ))}</label>{$this->select("language", $this->selectGetSystemLanguages(), [ "class" => "input--block-level" ])}</p>" .
 
       // --------------------------------------------------------------------------------------------------------------- Profile
       // @todo Language selector for profile and content editable!
@@ -228,7 +208,7 @@ class UserSettingsView extends AbstractFormView {
       ])}</label>{$this->help($i18n->t(
         "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
         "used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data " .
-        "like gender and country, scientists around the world are enabled to research the human interests in movies more " .
+        "like sex and country, scientists around the world are enabled to research the human interests in movies more " .
         "closely. Of course your real name won’t be used for anything!"
       ))}</p>" .
 

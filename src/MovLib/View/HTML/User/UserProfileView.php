@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\User;
 
+use \MovLib\Model\UserModel;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -61,10 +62,7 @@ class UserProfileView extends AbstractView {
         "<div class='row'>" .
           "<div class='span span--3'>" .
             "<h2>Avatar</h2>" .
-            "<a href='{$this->presenter->profile->getAvatarRoute()}'>" .
-              "<img alt='{$i18n->t("{0}’s avatar.")}' height='150' src='{$this->presenter->profile->getAvatarRoute()}' width='150'>" .
-            "</a>" .
-            "<p>Vector FTW!</p>" .
+            $this->getImage($this->presenter->profile, UserModel::IMAGESTYLE_BIG) .
           "</div>" .
           "<div class='span span--9'>" .
             "<h2>\$this->presenter->profile</h2>" .

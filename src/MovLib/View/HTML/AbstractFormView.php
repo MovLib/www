@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML;
 
+use \MovLib\Model\I18nModel;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -187,13 +188,13 @@ abstract class AbstractFormView extends AbstractView {
 
       case "radio":
         unset($attributes["id"]);
-        if ((isset($_POST[$name]) && $_POST[$name] === $attributes["value"]) || (isset($this->inputValues[$name]) && $this->inputValues[$name] === $attributes["value"])) {
+        if ((isset($_POST[$name]) && $_POST[$name] == $attributes["value"]) || (isset($this->inputValues[$name]) && $this->inputValues[$name] == $attributes["value"])) {
           $attributes[] = "checked";
         }
         break;
 
       case "checkbox":
-        if (isset($_POST[$name]) || isset($this->inputValues[$name])) {
+        if (isset($_POST[$name]) || isset($this->inputValues[$name]) && $this->inputValues[$name]) {
           $attributes[] = "checked";
         }
         break;
@@ -222,73 +223,47 @@ abstract class AbstractFormView extends AbstractView {
     }
   }
 
-  /**
-   * Get an input element with a datalist.
-   *
-   * <b>Usage example:</b>
-   * <pre>$this->inputDatalist([ name, attributes, tag, content ], [ id, options ]);</pre>
-   *
-   * @param array $input
-   *   {@see \MovLib\View\HTML\AbstractFormView::input()}
-   * @param array $datalist
-   *   {@see \MovLib\View\HTML\AbstractFormView::datalist()}
-   * @return string
-   *   The input and datalist element ready for print.
-   */
-  protected function inputDatalist($input, $datalist) {
-    if (!isset($input[1])) {
-      $input[1] = [];
+  public function selectGetSystemLanguages() {
+    global $i18n;
+    $systemLanguages[] = [ "disabled", "text" => $i18n->t("Select your preferred language"), "value" => "" ];
+    foreach ($i18n->getSystemLanguages() as $id => $language) {
+      $systemLanguages[] = [
+        "data-alternate-spellings" => $language["code"],
+        "text"  => $language["name"],
+        "value" => $id,
+      ];
     }
-    $input[1]["aria-autocomplete"] = "list";
-    $input[1]["list"] = $datalist[0];
-    $input = call_user_func_array([ $this, "input" ], $input);
-    $datalist = call_user_func_array([ $this, "datalist" ], $datalist);
-    return $input . $datalist;
+    return $systemLanguages;
+  }
+
+  public function selectGetLanguages() {
+    global $i18n;
   }
 
   /**
-   * Generate datalist for autocomplete input element.
-   *
-   * @link https://github.com/thgreasi/datalist-polyfill
-   * @param string $id
-   *   The unique DOM ID of this datalist.
-   * @param array
-   *   Numeric array containing the options for this datalist.
-   * @return string
-   *   The datalist ready for print.
-   */
-  protected function datalist($id, $options) {
-    $datalist = "<datalist id='{$id}'><select class='hidden'>";
-    $c = count($options);
-    for ($i = 0; $i < $c; ++$i) {
-      $datalist .= "<option value='{$options[$i]}'>";
-    }
-    return "{$datalist}</select></datalist>";
-  }
-
-  /**
-   * Generate datalist for countries.
+   * Generate array containing the countries sorted by name for usage as options in a select element.
    *
    * @todo Prioritize certain countries
    * @todo Include common typos
+   * @todo Extend alternate spellings
    * @link http://uxdesign.smashingmagazine.com/2011/11/10/redesigning-the-country-selector/
+   * @see \MovLib\View\HTML\AbstractFormView::select()
    * @global \MovLib\Model\I18nModel $i18n
    *   Global i18n model instance.
-   * @param string $id
-   *   The unique DOM ID of this datalist.
-   * @return string
-   *   The datalist ready for print.
+   * @return array
+   *   Numeric array for usage with <code>$this->select()</code>.
    */
-  public function getCountryDatalist($id) {
+  public function selectGetCountries() {
     global $i18n;
-    $datalist = "<datalist id='{$id}'><select class='hidden'>";
-    foreach ($i18n->getCountries() as $id => $country) {
-      $datalist .=
-        "<option value='{$country["name"]}'></option>" .
-        "<option value='{$country["name"]}'>{$country["code"]}</option>"
-      ;
+    $countries[] = [ "disabled", "text" => $i18n->t("Select your country"), "value" => "" ];
+    foreach ($i18n->getCountries(I18nModel::KEY_NAME) as $name => $country) {
+      $countries[] = [
+        "data-alternate-spellings" => $country["code"],
+        "text"  => $name,
+        "value" => $country["id"],
+      ];
     }
-    return "$datalist</select></datalist>";
+    return $countries;
   }
 
   /**
@@ -306,12 +281,29 @@ abstract class AbstractFormView extends AbstractView {
    *   The select element ready for print.
    */
   protected function select($name, $options, $attributes = []) {
+    $selected = "";
+    if (isset($_POST[$name])) {
+      $selected = $_POST[$name];
+    }
+    elseif (isset($this->inputValues[$name])) {
+      $selected = $this->inputValues[$name];
+    }
     $content = "";
     $c = count($options);
     for ($i = 0; $i < $c; ++$i) {
-      $text = $options[$i]["text"];
-      unset($options[$i]["text"]);
-      $content .= "<option{$this->expandTagAttributes($options[$i])}>{$text}</option>";
+      $attr = [];
+      if (is_array($options[$i])) {
+        $text = $options[$i]["text"];
+        unset($options[$i]["text"]);
+        $attr = $options[$i];
+      }
+      else {
+        $attr["value"] = $text = $options[$i];
+      }
+      if ($selected == $attr["value"]) {
+        $attr[] = "selected";
+      }
+      $content .= "<option{$this->expandTagAttributes($attr)}>{$text}</option>";
     }
     return $this->input($name, $attributes, "select", $content);
   }
@@ -360,11 +352,7 @@ abstract class AbstractFormView extends AbstractView {
     $radios = "";
     $inline = $inline ? " inline" : "";
     foreach ($data as $value => $label) {
-      $radios .= "<label class='radio{$inline}'>{$this->input($name, [
-        "required",
-        "type" => "radio",
-        "value" => (string) $value,
-      ])}{$label}</label>";
+      $radios .= "<label class='radio{$inline}'>{$this->input($name, [ "required", "type" => "radio", "value" => $value ])}{$label}</label>";
     }
     return $radios;
   }

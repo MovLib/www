@@ -688,6 +688,24 @@ abstract class AbstractView {
   }
 
   /**
+   *
+   * @param \MovLib\Model\AbstractImageModel $imageModel
+   * @param string $style
+   * @param array $attributes
+   * @return string
+   */
+  public function getImage($imageModel, $style, $attributes = null) {
+    if ($imageModel->imageExists === true) {
+      if (!isset($attributes["alt"])) {
+        $attributes["alt"] = "";
+      }
+      $attributes += $imageModel->getImageStyle($style);
+      return "<img{$this->expandTagAttributes($attributes)}>";
+    }
+    return "no image";
+  }
+
+  /**
    * Get the HTML-code for an unordered list containing the items supplied.
    *
    * @param array $items

@@ -20,13 +20,11 @@ namespace MovLib\Presenter;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\UserException;
-use \MovLib\Model\I18nModel;
 use \MovLib\Model\UserModel;
 use \MovLib\Presenter\AbstractPresenter;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMailer;
 use \MovLib\Utility\DelayedMethodCalls;
-use \MovLib\Utility\Image;
 use \MovLib\Utility\String;
 use \MovLib\Utility\Validation;
 use \MovLib\View\HTML\AbstractView;
@@ -79,6 +77,10 @@ class UserPresenter extends AbstractPresenter {
     $this->setPresentation();
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Login
+
+
   /**
    * Render the sign in form.
    *
@@ -128,6 +130,10 @@ class UserPresenter extends AbstractPresenter {
     $this->view = new Redirect(isset($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/user"), 302);
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Logout
+
+
   /**
    * Log the user out from the current session.
    *
@@ -150,33 +156,9 @@ class UserPresenter extends AbstractPresenter {
     ], AbstractView::ALERT_SEVERITY_SUCCESS, true);
   }
 
-  /**
-   * Render the public profile page of the user identified by ID or name.
-   */
-  private function __constructProfile() {
-    global $i18n;
-    try {
-      $this->profile = new UserModel(UserModel::FROM_NAME, Validation::inputString("USER_NAME", INPUT_SERVER));
-    } catch (UserException $e) {
-      $this->setPresentation("Error\\NotFound");
-      return;
-    }
-    // If this user's account is disabled, tell the client about it and exit (no need to redirect).
-    if ($this->profile->deleted === true) {
-      $this->view = new GoneView($this);
-      // @todo Display text to recreate account
-      // @todo Check if account was deleted forever
-      $this->view->content = "";
-      return;
-    }
-    // Check if the requested URI is a perfect match to what we want to have.
-    $profileRoute = $i18n->r("/user/{0}", [ String::convertToRoute($this->profile->name) ]);
-    if ($profileRoute !== $_SERVER["REQUEST_URI"]) {
-      $this->view = new Redirect($profileRoute);
-      return;
-    }
-    $this->setPresentation("User\\UserProfile");
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Registration
+
 
   /**
    * Render the sign up form.
@@ -247,6 +229,10 @@ class UserPresenter extends AbstractPresenter {
     ;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Reset Password
+
+
   /**
    * Render the reset password page.
    *
@@ -295,88 +281,9 @@ class UserPresenter extends AbstractPresenter {
     }
   }
 
-  /**
-   * Render the settings page.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @global \MovLib\Model\SessionModel $user
-   *   The currently logged in user.
-   * @return $this
-   */
-  private function __constructSettings() {
-    global $i18n, $user;
-    if ($user->isLoggedIn === false) {
-      // Ensure that the request method is set to GET, otherwise the login view will validate the submitted stuff.
-      $_SERVER["REQUEST_METHOD"] = "GET";
-      http_response_code(401);
-      $this->__constructLogin(true);
-      $this->view->setAlert([
-        "title"   => $i18n->t("Authentication Required"),
-        "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your settings page") ]),
-      ], AbstractView::ALERT_SEVERITY_INFO);
-      return;
-    }
-    $tab = ucfirst($_SERVER["TAB"]);
-    try {
-      $this->profile = new UserModel(UserModel::FROM_ID, $user->id);
-    } catch (UserException $e) {
-      $user->destroySession();
-      $this->view = new Redirect($i18n->r("/user/login"), 302);
-      return;
-    }
-    $this->view = new UserSettingsView($this, $tab);
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-      if ($_POST["csrf"] !== $user->csrfToken) {
-        $this->__constructLogout();
-        return;
-      }
-      if (($errors = $this->{"validate{$tab}Settings"}())) {
-        return $errors;
-      }
-      $this->view->setAlert("<h2>POST</h2><pre>" . print_r($_POST, true) . "</pre>");
-    }
-    $this->view->inputValues = [
-      "real_name" => $this->profile->realName,
-      "gender"    => (string) $this->profile->gender ?: "null",
-      "country"   => $i18n->getCountries()[$this->profile->countryId]["name"],
-      "timezone"  => $this->profile->timezone,
-      "language"  => $i18n->getLanguages()[$this->profile->languageId]["name"],
-      "profile"   => $this->profile->profile,
-      "birthday"  => $this->profile->birthday,
-      "website"   => $this->profile->website,
-      "private"   => $this->profile->private,
-    ];
-  }
 
-  /**
-   * Render the currently logged in user's profile.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @global \MovLib\Model\SessionModel $user
-   *   The global user model instance.
-   * @return $this
-   */
-  private function __constructShow() {
-    global $i18n, $user;
-    if ($user->isLoggedIn === false) {
-      http_response_code(401);
-      $this->__constructLogin();
-      $this->view->setAlert([
-        "title"   => $i18n->t("Authentication Required"),
-        "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your profile page") ]),
-      ], AbstractView::ALERT_SEVERITY_INFO);
-      return;
-    }
-    try {
-      $this->profile = new UserModel(UserModel::FROM_ID, $user->id);
-      $this->setPresentation("User\\UserShow");
-    } catch (UserException $e) {
-      $user->destroySession();
-      $this->view = new Redirect($i18n->r("/user/login"), 302);
-    }
-  }
+  // ------------------------------------------------------------------------------------------------------------------- Registration Acitvation or Password Reseting
+
 
   /**
    * Helper method to render the user settings page where the user can set his password after registration or a reset
@@ -482,28 +389,150 @@ class UserPresenter extends AbstractPresenter {
     $this->view->inputValues["pass"] = $pass;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Private Profile
+
+
+  /**
+   * Render the currently logged in user's profile.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The global user model instance.
+   * @return $this
+   */
+  private function __constructShow() {
+    global $i18n, $user;
+    if ($user->isLoggedIn === false) {
+      http_response_code(401);
+      $this->__constructLogin();
+      $this->view->setAlert([
+        "title"   => $i18n->t("Authentication Required"),
+        "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your profile page") ]),
+      ], AbstractView::ALERT_SEVERITY_INFO);
+      return;
+    }
+    try {
+      $this->profile = new UserModel(UserModel::FROM_ID, $user->id);
+      $this->setPresentation("User\\UserShow");
+    } catch (UserException $e) {
+      $user->destroySession();
+      $this->view = new Redirect($i18n->r("/user/login"), 302);
+    }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Profile
+
+
+  /**
+   * Render the public profile page of the user identified by ID or name.
+   */
+  private function __constructProfile() {
+    global $i18n;
+    try {
+      $this->profile = new UserModel(UserModel::FROM_NAME, Validation::inputString("USER_NAME", INPUT_SERVER));
+    } catch (UserException $e) {
+      $this->setPresentation("Error\\NotFound");
+      return;
+    }
+    // If this user's account is disabled, tell the client about it and exit (no need to redirect).
+    if ($this->profile->deleted === true) {
+      $this->view = new GoneView($this);
+      // @todo Display text to recreate account
+      // @todo Check if account was deleted forever
+      $this->view->content = "";
+      return;
+    }
+    // Check if the requested URI is a perfect match to what we want to have.
+    $profileRoute = $i18n->r("/user/{0}", [ String::convertToRoute($this->profile->name) ]);
+    if ($profileRoute !== $_SERVER["REQUEST_URI"]) {
+      $this->view = new Redirect($profileRoute);
+      return;
+    }
+    $this->setPresentation("User\\UserProfile");
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Settings
+
+
+  /**
+   * Render the settings page.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance.
+   * @global \MovLib\Model\SessionModel $user
+   *   The currently logged in user.
+   * @return $this
+   */
+  private function __constructSettings() {
+    global $i18n, $user;
+    if ($user->isLoggedIn === false) {
+      // Ensure that the request method is set to GET, otherwise the login view will validate the submitted stuff.
+      $_SERVER["REQUEST_METHOD"] = "GET";
+      http_response_code(401);
+      $this->__constructLogin(true);
+      $this->view->setAlert([
+        "title"   => $i18n->t("Authentication Required"),
+        "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your settings page") ]),
+      ], AbstractView::ALERT_SEVERITY_INFO);
+      return;
+    }
+    $tab = ucfirst($_SERVER["TAB"]);
+    try {
+      $this->profile = new UserModel(UserModel::FROM_ID, $user->id);
+    } catch (UserException $e) {
+      $user->destroySession();
+      $this->view = new Redirect($i18n->r("/user/login"), 302);
+      return;
+    }
+    $this->view = new UserSettingsView($this, $tab);
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+      if ($_POST["csrf"] !== $user->csrfToken) {
+        $this->__constructLogout();
+        return;
+      }
+      if (($errors = $this->{"validate{$tab}Settings"}())) {
+        return $errors;
+      }
+    }
+    $this->view->inputValues = [
+      "real_name" => $this->profile->realName,
+      "sex"       => $this->profile->sex,
+      "country"   => $this->profile->countryId,
+      "timezone"  => $this->profile->timezone,
+      "language"  => $this->profile->languageId,
+      "profile"   => $this->profile->profile,
+      "birthday"  => $this->profile->birthday,
+      "website"   => $this->profile->website,
+      "private"   => $this->profile->private,
+    ];
+  }
+
   /**
    * Validate the user submitted data for the account tab in the user settings.
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
-   * @global \MovLib\Model\SessionModel $user
-   *   The global session model instance.
    * @return null|array
    *   Returns <code>NULL</code> if no error occurred. Otherwise an array containing the alert messages is returned.
    */
   private function validateAccountSettings() {
-    global $i18n, $user;
+    global $i18n;
     $errors = null;
 
     // ----------------------------------------------------------------------------------------------------------------- Avatar
 
-    try {
-      if (($avatar = Image::upload("avatar", "user/avatar-{$user->id}"))) {
-        $this->profile->avatarExt = $avatar["ext"];
+    // Only validate the upload, if something was uploaded (avatar is optional).
+    if (isset($_FILES["avatar"]) && $_FILES["avatar"]["error"] !== UPLOAD_ERR_NO_FILE) {
+      try {
+        $this->profile->uploadImage("avatar");
+      } catch (ImageException $e) {
+        $errors["avatar"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Avatar") ]);
+        $errors["avatar_exception"] = "Exception message:<br>{$e->getMessage()}";
       }
-    } catch (ImageException $e) {
-      $errors["avatar"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Avatar") ]);
     }
 
     // ----------------------------------------------------------------------------------------------------------------- Real Name
@@ -512,50 +541,36 @@ class UserPresenter extends AbstractPresenter {
       $this->profile->realName = $realName;
     }
 
-    // ----------------------------------------------------------------------------------------------------------------- Gender
+    // ----------------------------------------------------------------------------------------------------------------- Sex
 
-    if (isset($_POST["gender"])) {
-      switch ($_POST["gender"]) {
-        case "0":
-          $this->profile->gender = false;
-          break;
-
-        case "1":
-          $this->profile->gender = true;
-          break;
-
-        case "null":
-          $this->profile->gender = null;
-          break;
-
-        default:
-          $errors["gender"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Gender") ]);
+    if (($sex = filter_input(INPUT_POST, "sex"))) {
+      if (is_numeric($sex) && $sex >= 0 && $sex <= 2) {
+        $this->profile->sex = (int) $sex;
+      }
+      else {
+        $errors["sex"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Sex") ]);
       }
     }
 
     // ----------------------------------------------------------------------------------------------------------------- Country
 
-    if (isset($_POST["country"])) {
-      if (empty($_POST["country"])) {
+    if (($country = filter_input(INPUT_POST, "country"))) {
+      if (empty($country)) {
         $this->profile->countryId = null;
       }
+      elseif (isset($i18n->getCountries()[$country])) {
+        $this->profile->countryId = (int) $country;
+      }
       else {
-        $countries = $i18n->getCountries(I18nModel::KEY_NAME);
-        if (array_key_exists($_POST["country"], $countries)) {
-          $this->profile->countryId = $countries[$_POST["country"]]["id"];
-        }
-        else {
-          $errors["country"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Country") ]);
-        }
+        $errors["country"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Country") ]);
       }
     }
 
     // ----------------------------------------------------------------------------------------------------------------- Language
 
-    if (isset($_POST["language"])) {
-      $languages = $i18n->getLanguages(I18nModel::KEY_NAME);
-      if (array_key_exists($_POST["language"], $languages)) {
-        $this->profile->languageId = $languages[$_POST["language"]]["id"];
+    if (($language = filter_input(INPUT_POST, "language"))) {
+      if (isset($i18n->getLanguages()[$language])) {
+        $this->profile->languageId = (int) $language;
       }
       else {
         $errors["language"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Language") ]);
@@ -564,9 +579,9 @@ class UserPresenter extends AbstractPresenter {
 
     // ----------------------------------------------------------------------------------------------------------------- Timezone
 
-    if (isset($_POST["timezone"])) {
-      if (in_array($_POST["timezone"], timezone_identifiers_list())) {
-        $this->profile->timezone = $_POST["timezone"];
+    if (($timezone = filter_input(INPUT_POST, "timezone"))) {
+      if (in_array($timezone, timezone_identifiers_list())) {
+        $this->profile->timezone = $timezone;
       }
       else {
         $errors["timezone"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Time Zone") ]);
@@ -578,8 +593,8 @@ class UserPresenter extends AbstractPresenter {
 
     // ----------------------------------------------------------------------------------------------------------------- Birthday
 
-    if (isset($_POST["birthday"])) {
-      $birthdayTimestamp = strtotime($_POST["birthday"]);
+    if (($birthday = filter_input(INPUT_POST, "birthday"))) {
+      $birthdayTimestamp = strtotime($birthday);
       if (
         // Do not allow birthdays in the future plus constraint with 6 years minimum.
         $birthdayTimestamp < (time() - 1.893e+8)
@@ -588,7 +603,7 @@ class UserPresenter extends AbstractPresenter {
         // Check if the entered date is really a valid date.
         && checkdate(date("m", $birthdayTimestamp), date("d", $birthdayTimestamp), date("Y", $birthdayTimestamp))
       ) {
-        $this->profile->birthday = $_POST["birthday"];
+        $this->profile->birthday = $birthday;
       }
       else {
         $errors["birthday"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Date of Birth") ]);
@@ -597,13 +612,16 @@ class UserPresenter extends AbstractPresenter {
 
     // ----------------------------------------------------------------------------------------------------------------- Website
 
-    if (isset($_POST["website"])) {
-      if (empty($_POST["website"])) {
+    if (($website = filter_input(INPUT_POST, "website"))) {
+      // The website can be empty.
+      if (empty($website)) {
         $this->profile->website = "";
       }
+      // If the user supplied a website, check if the URL is valid and exists.
       elseif (($website = Validation::inputUrl("website")) !== false) {
         $this->profile->website = $website;
       }
+      // The URL ist either invalid or does not exist.
       else {
         $errors["website"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("Website") ]);
       }
@@ -611,14 +629,14 @@ class UserPresenter extends AbstractPresenter {
 
     // ----------------------------------------------------------------------------------------------------------------- Private
 
-    $this->profile->private = isset($_POST["private"]) && $_POST["private"] === "on" ? true : false;
+    $this->profile->private = filter_input(INPUT_POST, "private") === "on";
 
     if ($errors) {
       return $errors;
     }
     $this->profile->commit();
     $this->view->setAlert(
-      $i18n->t("Your {0} has been updated.", [ $i18n->t("Account Settings") ]),
+      $i18n->t("Your {0} have been updated.", [ $i18n->t("Account Settings") ]),
       AbstractView::ALERT_SEVERITY_SUCCESS
     );
   }
@@ -758,12 +776,26 @@ class UserPresenter extends AbstractPresenter {
     return [
       "title" => $i18n->t("Profile navigation"),
       "points" => [
-        [ $i18n->r("/user"), "<i class='icon icon--info-circled'></i> {$i18n->t("Profile")}", [ "class" => "menuitem--separator", "title" => "Go to your profile page." ]],
-        [ $i18n->r("/user/account-settings"), "<i class='icon icon--user'></i> {$i18n->t("Account")}", [ "title" => $i18n->t("Manage your basic account settings.") ]],
-        [ $i18n->r("/user/notification-settings"), "<i class='icon icon--bell'></i> {$i18n->t("Notifications")}", [ "title" => $i18n->t("Manage your notification settings.") ]],
-        [ $i18n->r("/user/mail-settings"), "<i class='icon icon--mail'></i> {$i18n->t("Mail")}", [ "title" => $i18n->t("Change your email address.") ]],
-        [ $i18n->r("/user/password-settings"), "<i class='icon icon--lock'></i> {$i18n->t("Password")}", [ "title" => $i18n->t("Change your password.") ]],
-        [ $i18n->r("/user/dangerzone-settings"), "<i class='icon icon--alert'></i> {$i18n->t("Dangerzone")}", [ "class" => "menuitem--delete", "title" => $i18n->t("Deactivate or delete your account.") ]],
+        [ $i18n->r("/user"), "<i class='icon icon--info-circled'></i> {$i18n->t("Profile")}", [
+          "class" => "menuitem--separator",
+          "title" => "Go to your profile page.",
+        ]],
+        [ $i18n->r("/user/account-settings"), "<i class='icon icon--user'></i> {$i18n->t("Account")}", [
+          "title" => $i18n->t("Manage your basic account settings."),
+        ]],
+        [ $i18n->r("/user/notification-settings"), "<i class='icon icon--bell'></i> {$i18n->t("Notifications")}", [
+          "title" => $i18n->t("Manage your notification settings."),
+        ]],
+        [ $i18n->r("/user/mail-settings"), "<i class='icon icon--mail'></i> {$i18n->t("Mail")}", [
+          "title" => $i18n->t("Change your email address."),
+        ]],
+        [ $i18n->r("/user/password-settings"), "<i class='icon icon--lock'></i> {$i18n->t("Password")}", [
+          "title" => $i18n->t("Change your password."),
+        ]],
+        [ $i18n->r("/user/dangerzone-settings"), "<i class='icon icon--alert'></i> {$i18n->t("Dangerzone")}", [
+          "class" => "menuitem--delete",
+          "title" => $i18n->t("Deactivate or delete your account."),
+        ]],
       ],
     ];
   }
