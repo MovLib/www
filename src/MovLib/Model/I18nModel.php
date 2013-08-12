@@ -17,13 +17,13 @@
  */
 namespace MovLib\Model;
 
-use \Collator;
 use \DateTimeZone;
 use \IntlDateFormatter;
 use \Locale;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Model\AbstractModel;
+use \MovLib\Utility\CollatorExtended;
 use \MovLib\Utility\DelayedLogger;
 use \MovLib\Utility\DelayedMethodCalls;
 
@@ -71,7 +71,7 @@ class I18nModel extends AbstractModel {
   const KEY_NAME = "name";
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  // ------------------------------------------------------------------------------------------------------------------- Public Properties
 
 
   /**
@@ -107,6 +107,43 @@ class I18nModel extends AbstractModel {
    * @var array
    */
   public static $supportedLanguageCodes = [ "en", "de" ];
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Private Properties
+
+
+  /**
+   * Extended collator for locale aware sorting.
+   *
+   * @see \MovLib\Model\I18nModel::getCollator()
+   * @var \MovLib\Utility\CollatorExtended
+   */
+  private $collator;
+
+  /**
+   * Associative array that will be filled with all info on all available countries on demand.
+   *
+   * @see \MovLib\Model\I18nModel::getCountries()
+   * @var array
+   */
+  private $countries;
+
+  /**
+   * Associative array that will be filled with all info on all available languages on demand.
+   *
+   * @see \MovLib\Model\I18nModel::getLanguages()
+   * @var array
+   */
+  private $languages;
+
+  /**
+   * Associative array that will be filled with all info on supported system language on demand.
+   *
+   * @see \MovLib\Model\I18nModel::$supportedLanguageCodes
+   * @see \MovLib\Model\I18nModel::getSystemLanguages()
+   * @var array
+   */
+  private $systemLanguages;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -148,6 +185,8 @@ class I18nModel extends AbstractModel {
   /**
    * Get the default ISO 639-1 alpha-2 language code extracted from <code>php.ini</code>.
    *
+   * @static $defaultLanguageCode
+   *   Used to cache default language code among all instances.
    * @return string
    *   The default ISO 639-1 alpha-2 language code.
    */
@@ -163,6 +202,8 @@ class I18nModel extends AbstractModel {
   /**
    * Get the default locale (e.g. <em>en-US</em>).
    *
+   * @static $defaultLocale
+   *   Used to cache default locale among all instances.
    * @return string
    *   The default locale.
    */
@@ -179,7 +220,8 @@ class I18nModel extends AbstractModel {
 
 
   /**
-   * @todo Documentation
+   * Formats the given message and translates it if not displaying default locale.
+   *
    * @param type $context
    * @param type $pattern
    * @param type $args
@@ -270,40 +312,71 @@ class I18nModel extends AbstractModel {
    *   )</pre>
    */
   public function getLanguages($key = self::KEY_ID) {
-    static $languages = null;
-    if ($languages === null) {
-      $n = $this->languageCode === self::getDefaultLanguageCode() ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
-      foreach ($this->selectAll("SELECT `language_id`, `iso_alpha-2`, {$n}`name` FROM `languages` ORDER BY `language_id`") as $l) {
-        $language = [
-          "id"   => $l["language_id"],
-          "code" => $l["iso_alpha-2"],
-          "name" => $l["name"],
+    if (!$this->languages) {
+      $query = sprintf(
+        "SELECT `language_id` AS `%s`, `iso_alpha-2` AS `%s`, %s`%s` FROM `languages` ORDER BY `%s`",
+        self::KEY_ID,
+        self::KEY_CODE,
+        $this->languageCode === self::getDefaultLanguageCode() ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ",
+        self::KEY_NAME,
+        self::KEY_ID
+      );
+      foreach ($this->selectAll($query) as $l) {
+        $l = [
+          self::KEY_ID   => $l[self::KEY_ID],
+          self::KEY_CODE => $l[self::KEY_CODE],
+          self::KEY_NAME => $l[self::KEY_NAME],
         ];
-        $languages["id"][$l["language_id"]] = $language;
-        $languages["code"][$l["iso_alpha-2"]] = $language;
-        $languages["name"][$l["name"]] = $language;
+        $this->languages[self::KEY_ID][$l[self::KEY_ID]] = $l;
+        $this->languages[self::KEY_CODE][$l[self::KEY_CODE]] = $l;
+        $this->languages[self::KEY_NAME][$l[self::KEY_NAME]] = $l;
       }
-      ksort($languages["code"]);
-      ksort($languages["name"]);
+      ksort($this->languages[self::KEY_CODE]);
+      $this->getCollator()->ksort($this->languages[self::KEY_NAME]);
     }
-    return $languages[$key];
+    return $this->languages[$key];
   }
 
   /**
-   * Get collator for the current language.
+   * Get a sorted associative array of all supported system languages.
    *
-   * @staticvar \Collator $collator
-   *   Used to cache the collator.
-   * @return \Collator
+   * @param string $key
+   *   [Optional] Sort by language ID, ISO alpha-2 code, or name. Use the <var>KEY_*</var> class constants.
+   * @return array
+   *   Associative array containing all supported system languages.
+   */
+  public function getSystemLanguages($key = self::KEY_ID) {
+    if (!$this->systemLanguages) {
+      $languages = $this->getLanguages(self::KEY_CODE);
+      $c = count(self::$supportedLanguageCodes);
+      for ($i = 0; $i < $c; ++$i) {
+        $l = [
+          self::KEY_ID   => $languages[self::$supportedLanguageCodes[$i]][self::KEY_ID],
+          self::KEY_CODE => $languages[self::$supportedLanguageCodes[$i]][self::KEY_CODE],
+          self::KEY_NAME => $languages[self::$supportedLanguageCodes[$i]][self::KEY_NAME],
+        ];
+        $this->systemLanguages[self::KEY_ID][$l[self::KEY_ID]] = $l;
+        $this->systemLanguages[self::KEY_CODE][$l[self::KEY_CODE]] = $l;
+        $this->systemLanguages[self::KEY_NAME][$l[self::KEY_NAME]] = $l;
+      }
+      ksort($this->systemLanguages[self::KEY_CODE]);
+      $this->getCollator()->ksort($this->systemLanguages[self::KEY_NAME]);
+    }
+    return $this->systemLanguages[$key];
+  }
+
+  /**
+   * Get collator for the current locale.
+   *
+   * @return \MovLib\Utility\CollatorExtended
    * @throws \IntlException
    *   If instantiating of the collator failed (e.g. non supported locale).
    */
   public function getCollator() {
-    static $collator = null;
-    if ($collator === null) {
-      $collator = new Collator($this->locale);
+    if (!$this->collator) {
+      $this->collator = new CollatorExtended($this->locale);
     }
-    return $collator;
+    return $this->collator;
   }
 
   /**
@@ -327,23 +400,30 @@ class I18nModel extends AbstractModel {
    *   )</pre>
    */
   public function getCountries($key = self::KEY_ID) {
-    static $countries = null;
-    if ($countries === null) {
-      $n = $this->languageCode === self::getDefaultLanguageCode() ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
-      foreach ($this->selectAll("SELECT `country_id`, `iso_alpha-2`, {$n}`name` FROM `countries` ORDER BY `country_id`") as $c) {
-        $country = [
-          "id"   => $c["country_id"],
-          "code" => $c["iso_alpha-2"],
-          "name" => $c["name"],
+    if (!$this->countries) {
+      $query = sprintf(
+        "SELECT `country_id` AS `%s`, `iso_alpha-2` AS `%s`, %s`%s` FROM `countries` ORDER BY `%s`",
+        self::KEY_ID,
+        self::KEY_CODE,
+        $this->languageCode === self::getDefaultLanguageCode() ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ",
+        self::KEY_NAME,
+        self::KEY_ID
+      );
+      $result = $this->selectAll($query);
+      foreach ($result as $c) {
+        $c = [
+          self::KEY_ID   => $c[self::KEY_ID],
+          self::KEY_CODE => $c[self::KEY_CODE],
+          self::KEY_NAME => $c[self::KEY_NAME],
         ];
-        $countries["id"][$c["country_id"]] = $country;
-        $countries["code"][$c["iso_alpha-2"]] = $country;
-        $countries["name"][$c["name"]] = $country;
+        $this->countries[self::KEY_ID][$c[self::KEY_ID]] = $c;
+        $this->countries[self::KEY_CODE][$c[self::KEY_CODE]] = $c;
+        $this->countries[self::KEY_NAME][$c[self::KEY_NAME]] = $c;
       }
-      ksort($countries["code"]);
-      ksort($countries["name"]);
+      ksort($this->countries[self::KEY_CODE]);
+      $this->getCollator()->ksort($this->countries[self::KEY_NAME]);
     }
-    return $countries[$key];
+    return $this->countries[$key];
   }
 
   /**
