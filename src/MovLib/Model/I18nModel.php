@@ -131,14 +131,14 @@ class I18nModel extends AbstractModel {
     global $user;
     if ($locale === null) {
       (isset($_SERVER["LANGUAGE_CODE"]) && $locale = $_SERVER["LANGUAGE_CODE"])
-      || (isset($user) && $user->isLoggedIn === true && !empty($user->languageId) && $locale = $this->getLanguages()["id"][$user->languageId]["code"])
+      || (isset($user) && $user->isLoggedIn === true && !empty($user->languageId) && $locale = $this->getLanguages()[$user->languageId]["code"])
       || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($tmpLocale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && in_array($tmpLocale[0] . $tmpLocale[1], self::$supportedLanguageCodes) && $locale = $tmpLocale)
       || ($locale = self::getDefaultLocale());
     }
+    // The locale can be a two-letter code - only specifying the language - or five-letter - including the country.
     $this->locale = $locale;
+    // The language code can only be a two-letter code.
     $this->languageCode = $locale[0] . $locale[1];
-    $this->defaultLocale = Locale::getDefault();
-    $this->defaultLanguageCode = $this->defaultLocale[0] . $this->defaultLocale[1];
   }
 
 
@@ -188,7 +188,7 @@ class I18nModel extends AbstractModel {
    */
   public function formatMessage($context, $pattern, $args, $options) {
     $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
-    if ($languageCode !== $this->getDefaultLanguageCode()) {
+    if ($languageCode !== self::getDefaultLanguageCode()) {
       try {
         $result = $this->select(
           "SELECT
@@ -272,7 +272,7 @@ class I18nModel extends AbstractModel {
   public function getLanguages($key = self::KEY_ID) {
     static $languages = null;
     if ($languages === null) {
-      $n = $this->languageCode === $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
+      $n = $this->languageCode === self::getDefaultLanguageCode() ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
       foreach ($this->selectAll("SELECT `language_id`, `iso_alpha-2`, {$n}`name` FROM `languages` ORDER BY `language_id`") as $l) {
         $language = [
           "id"   => $l["language_id"],
@@ -329,7 +329,7 @@ class I18nModel extends AbstractModel {
   public function getCountries($key = self::KEY_ID) {
     static $countries = null;
     if ($countries === null) {
-      $n = $this->languageCode === $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
+      $n = $this->languageCode === self::getDefaultLanguageCode() ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ";
       foreach ($this->selectAll("SELECT `country_id`, `iso_alpha-2`, {$n}`name` FROM `countries` ORDER BY `country_id`") as $c) {
         $country = [
           "id"   => $c["country_id"],
@@ -367,7 +367,8 @@ class I18nModel extends AbstractModel {
     if (isset($options["old_pattern"])) {
       if ($issetComment) {
         $this->update("{$context}s", "ssss", [ $context => $pattern, "comment" => $options["comment"] ], [ "old_pattern" => $options["old_pattern"] ]);
-      } else {
+      }
+      else {
         $this->update("{$context}s", "sss", [ $context => $pattern ], [ "old_pattern" => $options["old_pattern"] ]);
       }
     }
@@ -380,7 +381,8 @@ class I18nModel extends AbstractModel {
         unset($e);
         if ($issetComment) {
           $this->insert("{$context}s", "sss", [ $context => $pattern, "comment" => $options["comment"], "dyn_translations" => "" ]);
-        } else {
+        }
+        else {
           $this->insert("{$context}s", "ss", [ $context => $pattern, "dyn_translations" => "" ]);
         }
       }
