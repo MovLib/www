@@ -52,7 +52,7 @@ Der Poststempel auf einer Karte ohne Text sagt Red wenige Tage später, dass And
 
 Am Ende treffen sich Andy und Red am Pazifikstrand in Mexiko.'
   ),
-'2013-06-01 00:00:00'
+'2013-06-01 00:05:00'
 );
 INSERT INTO `movies_titles` (`movie_id`, `language_id`, `title`, `dyn_comments`, `is_display_title`) VALUES (2, 52, 'Die Verurteilten', '', true);
 INSERT INTO `movies_countries` (`movie_id`, `country_id`) VALUES (2, 233);
@@ -116,7 +116,7 @@ INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`, `crea
     'de',
     'Für Léon (Jean Reno) gibt es nur seinen Job. Seit seiner Jugend arbeitet er als professioneller Auftragskiller. Er tötet ohne mit der Wimper zu zucken. Das einzig Menschliche an ihm ist seine Liebe zu einer Zimmerpflanze. Diese hegt und pflegt er nach Kräften. Die kleine Mathilda (Natalie Portman) wohnt direkt neben Leon. Das zwölfjährige Mädchen hat keine schöne Kindheit. Ihre Mutter geht auf den Strich und der Vater ist ein miefiger kleiner Drogendealer. Drogenfahnder Norman Stansfield (Gary Oldman) fühlt sich von Mathildas Vater betrogen und bringt die ganze Familie kurzerhand um. Nur Mathilda überlebt das Massaker. In ihrer Angst wendet sie sich an Léon. Der zurückgezogene Leon kann mit Menschen nicht besonders gut umgehen. Er versucht Mathilda so schnell wie möglich wieder los zu werden - bis die Kleine ihm einen Deal vorschlägt: Sie verspricht Léon den Haushalt zu führen, wenn er ihr beibringt professionell zu töten. Mathilda will sich an Stansfield rächen, der ihren kleinen Bruder kaltblütig erschossen hat. Zuerst lehnt Leon ab, doch nach und nach lockt Mathilda den wortkargen Einzelgänger aus der Reserve bis er sie schließlich in die "Kunst" eines "Cleaners" einweiht.'
   ),
-  '2013-06-01 00:00:00'
+  '2013-06-01 00:10:00'
 );
 INSERT INTO `movies_titles` (`movie_id`, `language_id`, `title`, `dyn_comments`, `is_display_title`) VALUES (3, 41, 'Léon: The Professional', '', true);
 INSERT INTO `movies_countries` (`movie_id`, `country_id`) VALUES (3, 75), (3, 233); -- France and USA

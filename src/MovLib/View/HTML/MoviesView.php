@@ -50,7 +50,19 @@ class MoviesView extends AbstractView {
    */
   public function getContent() {
     global $i18n;
-    $moviesList = "<ul id='movies__latest'>";
+    $secondaryNavPoints = [
+      [ $i18n->r("/movies"), $i18n->t("Movies"), [
+        "title" => $i18n->t("View the latest {0} additions to the database.", [ $i18n->t("movie") ])
+      ]],
+      [ $i18n->r("/persons"), $i18n->t("Persons"), [
+        "title" => $i18n->t("View the latest {0} additions to the database.", [ $i18n->t("person") ])
+      ]],
+      [ $i18n->r("/help"), $i18n->t("Help"), [
+        "title" => $i18n->t("View the latest {0} additions to the database.", [ $i18n->t("help") ])
+      ]]
+    ];
+
+    $moviesList = "<ol id='movies__latest'>";
     $movies = $this->presenter->moviesModel->getMoviesByCreated();
     $c = count($movies);
     for ($i = 0; $i < $c; ++$i) {
@@ -81,22 +93,28 @@ class MoviesView extends AbstractView {
         "<li>" .
           $this->a(
             $i18n->r("/movie/{0}", [ $movies[$i]["#movie"]->id ]),
-            "<div class='movies-list_info'>" .
-              "<h2>{$movies[$i]["#movie"]->displayTitle}{$countriesAndYear}</h2>" .
-              "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $movies[$i]["#movie"]->originalTitle ])}</p>" .
-            "</div>" .
-            "<div class='movies-list__poster'><img src='{$posterURL}' alt='{$posterAlt}'></div>"
+            "<article>" .
+              "<div class='movies-list__poster'><img src='{$posterURL}' alt='{$posterAlt}'></div>" .
+              "<div class='movies-list__info clear-fix'>" .
+                "<h2>{$movies[$i]["#movie"]->displayTitle}{$countriesAndYear}</h2>" .
+                "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $movies[$i]["#movie"]->originalTitle ])}</p>" .
+              "</div>" .
+            "</article>",
+            [ "tabindex" => $this->getTabindex() ]
           ) .
         "</li>";
     }
-    $moviesList .= "</ul>";
+    $moviesList .= "</ol>";
     return
       "<div class='container'>" .
         "<div class='row'>" .
           $i18n->t("On the {0}movies{1} page you can find the latest movies that have been added to our database.", [ "<strong>", "</strong>" ]) .
         "</div>" .
         "<div class='row'>" .
-          $moviesList .
+          "<aside class='span span--3'>{$this->getSecondaryNavigation($i18n->t("Sort the movie entries"), $secondaryNavPoints)}</aside>" .
+          "<div class='span span--9'>" .
+            $moviesList .
+          "</div>" .
         "</div>" .
       "</div>";
   }
