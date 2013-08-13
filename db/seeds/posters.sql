@@ -23,7 +23,7 @@ VALUES
     1,
     1,
     77,
-    "Roundhay-Garden-Scene.1.en",
+    "roundhay-garden-scene.1.en",
     856,
     482,
     73462,
@@ -31,7 +31,7 @@ VALUES
     CURRENT_TIMESTAMP,
     0,
     '',
-    'hash'
+    'hashhashhashhash'
   )
 ;
 -- The Shawshank Redemption
@@ -57,7 +57,7 @@ VALUES
     1,
     1,
     233,
-    "The-Shawshank-Redemption.1.en",
+    "the-shawshank-redemption.1.en",
     269,
     395,
     66394,
@@ -65,7 +65,7 @@ VALUES
     CURRENT_TIMESTAMP,
     0,
     '',
-    'hash'
+    'hashhashhashhash'
   )
 ;
 COMMIT;
@@ -92,7 +92,7 @@ VALUES
     1,
     1,
     233,
-    "Léon-The-Professional.1.en",
+    "leon-the-professional.1.en",
     936,
     1408,
     648028,
@@ -100,7 +100,7 @@ VALUES
     CURRENT_TIMESTAMP,
     0,
     '',
-    'hash'
+    'hashhashhashhash'
   )
 ;
 COMMIT;
