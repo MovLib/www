@@ -95,34 +95,22 @@ class PosterModel extends AbstractImageModel {
    * Small image style (e.g. for movie listings).
    * @var int
    */
-  const IMAGESTYLE_SMALL = "75x75\>";
+  const IMAGESTYLE_SMALL = "75x75>";
   /**
    * Large image style (e.g. for the gallery).
    * @var int
    */
-  const IMAGESTYLE_LARGE = "220x220\>";
+  const IMAGESTYLE_LARGE = "220x220>";
   /**
    * Large image style with fixed width (e.g. for movie page).
    * @var int
    */
-  const IMAGESTYLE_LARGE_FIXED_WIDTH = "220x\>";
+  const IMAGESTYLE_LARGE_FIXED_WIDTH = "220x>";
   /**
    * Huge image style with fixed width (e.g. for the poster page).
    * @var int
    */
-  const IMAGESTYLE_HUGE_FIXED_WIDTH = "700x\>";
-
-  /**
-   * All available image styles.
-   *
-   * @var array
-   */
-  public $imageStyles = [
-    self::IMAGESTYLE_SMALL,
-    self::IMAGESTYLE_LARGE,
-    self::IMAGESTYLE_LARGE_FIXED_WIDTH,
-    self::IMAGESTYLE_HUGE_FIXED_WIDTH
-  ];
+  const IMAGESTYLE_HUGE_FIXED_WIDTH = "700x>";
 
   /**
    * Construct a new poster model. If the IDs are not specified, an empty model is created.
@@ -162,13 +150,18 @@ class PosterModel extends AbstractImageModel {
           "dd",
           [ $movieId, $posterId ]
         )[0];
-        $posterResult["description"] = $posterResult["description_localized"] || $posterResult["description_en"];
+        $posterResult["description"] = $posterResult["description_localized"] ?: $posterResult["description_en"];
         unset($posterResult["description_localized"]);
         unset($posterResult["description_en"]);
         foreach ($posterResult as $property => $value) {
           $this->{$property} = $value;
         }
-        $this->initImage($this->imageName);
+        $this->initImage($this->imageName, [
+          self::IMAGESTYLE_SMALL,
+          self::IMAGESTYLE_LARGE,
+          self::IMAGESTYLE_LARGE_FIXED_WIDTH,
+          self::IMAGESTYLE_HUGE_FIXED_WIDTH
+        ]);
       } catch (ErrorException $e) {
         throw new DatabaseException("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", $e);
       }

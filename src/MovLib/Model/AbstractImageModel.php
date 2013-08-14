@@ -21,6 +21,7 @@ use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Model\AbstractModel;
 use \MovLib\Utility\Network;
+use \MovLib\Utility\Validation;
 
 /**
  * Contains methods for models that contain images.
@@ -89,18 +90,11 @@ class AbstractImageModel extends AbstractModel {
   public $imagePath;
 
   /**
-   * Array containing all image styles.
+   * Associative array containing all image styles and meta data about each image style.
    *
    * @var array
    */
-  public $imageStyles = [];
-
-  /**
-   * Absolute paths and URIs to the different styled image versions.
-   *
-   * @var array
-   */
-  private $imageStylePathsAndUris = [];
+  private $imageStyles = [];
 
   /**
    * The model's supported MIME types plus desired extensions.
@@ -135,10 +129,20 @@ class AbstractImageModel extends AbstractModel {
    *
    * @param string $imageName
    *   The name of the image.
+   * @param array $imageStyles
+   *   The available image styles.
    * @return $this
    */
-  protected function initImage($imageName) {
+  protected function initImage($imageName, $imageStyles) {
     $this->imageName = $imageName;
+    // Remove unsafe path characters from the image styles.
+    $c = count($imageStyles);
+    for ($i = 0; $i < $c; ++$i) {
+      $this->imageStyles[$imageStyles[$i]] = [
+        "style" => $imageStyles[$i],
+        "name" => Validation::fileName($imageStyles[$i]),
+      ];
+    }
     if (isset($this->imageExtension) && isset($this->imageHash)) {
       $path = "/uploads/{$this->imageDirectory}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
       $this->imagePath = $_SERVER["HOME"] . $path;
@@ -157,13 +161,10 @@ class AbstractImageModel extends AbstractModel {
    * @return $this
    */
   protected function generateImageStylePaths() {
-    $c = count($this->imageStyles);
-    for ($i = 0; $i < $c; ++$i) {
-      $path = "/uploads/{$this->imageDirectory}/{$this->imageStyles[$i]}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
-      $this->imageStylePathsAndUris[$this->imageStyles[$i]] = [
-        "path" => $_SERVER["HOME"] . $path,
-        "uri"  => "https://" . Network::SERVER_NAME_STATIC . $path,
-      ];
+    foreach ($this->imageStyles as $style => $data) {
+      $path = "/uploads/{$this->imageDirectory}/{$data["name"]}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
+      $this->imageStyles[$style]["path"] = $_SERVER["HOME"] . $path;
+      $this->imageStyles[$style]["uri"] = "https://" . Network::SERVER_NAME_STATIC . $path;
     }
     return $this;
   }
@@ -178,15 +179,14 @@ class AbstractImageModel extends AbstractModel {
    * @return $this
    */
   public function generateImageStyles() {
-    $c = count($this->imageStyles);
-    for ($i = 0; $i < $c; ++$i) {
-      $path = $this->imageStylePathsAndUris[$this->imageStyles[$i]]["path"];
-      if (!is_dir(($dir = dirname($path)))) {
+    foreach ($this->imageStyles as $style => $data) {
+      if (!is_dir(($dir = dirname($data["path"])))) {
         mkdir($dir);
       }
-      exec("convert {$this->imagePath} -filter 'Lanczos' -resize '{$this->imageStyles[$i]}' -quality 75 -strip {$path}");
-      if (filesize($path) > 10240) {
-        exec("convert {$path} -interlace 'line' {$path}");
+      exec("convert {$this->imagePath} -filter 'Lanczos' -resize '{$style}' -quality 75 -strip {$data["path"]} && chmod 777 {$data["path"]}");
+//      chmod($data["path"], 0777);
+      if (filesize($data["path"]) > 10240) {
+        exec("convert {$data["path"]} -interlace 'line' {$data["path"]}");
       }
     }
     return $this;
@@ -200,23 +200,16 @@ class AbstractImageModel extends AbstractModel {
    * @param string $style
    *   The desired image style's name.
    * @return array
-   *   Associative array in the following format:
-   *   <ul>
-   *     <li><b>width:</b> The width of the image.</li>
-   *     <li><b>height:</b> The height of the image.</li>
-   *     <li><b>src:</b> The absolute URI of the image.</li>
-   *   </ul>
+   *   Associative array containing all image information.
    */
   public function getImageStyle($style) {
-    static $styles = null;
-    if (!isset($styles[$style])) {
-      if (!is_file($this->imageStylePathsAndUris[$style]["path"])) {
+    if (!isset($this->imageStyles[$style]["width"])) {
+      if (!is_file($this->imageStyles[$style]["path"])) {
         $this->generateImageStyles();
       }
-      list($styles[$style]["width"], $styles[$style]["height"]) = getimagesize($this->imageStylePathsAndUris[$style]["path"]);
-      $styles[$style]["src"] = $this->imageStylePathsAndUris[$style]["uri"];
+      list($this->imageStyles[$style]["width"], $this->imageStyles[$style]["height"]) = getimagesize($this->imageStyles[$style]["path"]);
     }
-    return $styles[$style];
+    return $this->imageStyles[$style];
   }
 
   /**
@@ -259,9 +252,8 @@ class AbstractImageModel extends AbstractModel {
    */
   public function deleteImage() {
     unlink($this->imagePath);
-    $c = count($this->imageStyles);
-    for ($i = 0; $i < $c; ++$i) {
-      unlink($this->imageStylePathsAndUris[$this->imageStyles[$i]]["path"]);
+    foreach ($this->imageStyles as $style => $data) {
+      unlink($data["path"]);
     }
     $this->imageExists = false;
     return $this;

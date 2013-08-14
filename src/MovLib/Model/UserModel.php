@@ -274,18 +274,6 @@ class UserModel extends AbstractImageModel {
    */
   public $imageDirectory = "user";
 
-  /**
-   * All available image styles.
-   *
-   * @var array
-   */
-  public $imageStyles = [
-    self::IMAGESTYLE_SMALL,
-    self::IMAGESTYLE_NORMAL,
-    self::IMAGESTYLE_BIG,
-    self::IMAGESTYLE_HUGE,
-  ];
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -339,7 +327,12 @@ class UserModel extends AbstractImageModel {
         }
         settype($this->private, "boolean");
         settype($this->deleted, "boolean");
-        $this->initImage(String::convertToRoute($this->name));
+        $this->initImage(String::convertToRoute($this->name), [
+          self::IMAGESTYLE_SMALL,
+          self::IMAGESTYLE_NORMAL,
+          self::IMAGESTYLE_BIG,
+          self::IMAGESTYLE_HUGE,
+        ]);
       } catch (ErrorException $e) {
         throw new UserException("Could not find user for {$from} '{$value}'!", $e);
       }

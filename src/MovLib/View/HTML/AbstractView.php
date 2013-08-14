@@ -699,7 +699,10 @@ abstract class AbstractView {
       if (!isset($attributes["alt"])) {
         $attributes["alt"] = "";
       }
-      $attributes += $imageModel->getImageStyle($style);
+      $imageData = $imageModel->getImageStyle($style);
+      $attributes["width"] = $imageData["width"];
+      $attributes["height"] = $imageData["height"];
+      $attributes["src"] = $imageData["uri"];
       return "<img{$this->expandTagAttributes($attributes)}>";
     }
     return "no image";
