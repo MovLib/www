@@ -110,4 +110,52 @@ class String {
     return $string;
   }
 
+  /**
+   * Multi-byte aware implementation of PHP's wordwrap function.
+   *
+   * @see wordwrap()
+   * @param string $string
+   *   The string to wrap.
+   * @param int $width
+   *   The number of characters at which the string will be wrapped.
+   * @param string $break
+   *   [Optional] The line is broken with this string. Defaults to <var>PHP_EOL</var>.
+   * @param boolean $cut
+   *   [Optional] If set to <code>TRUE</code>, the string is always wrapped at or before the specified width. So if
+   *   you have a word that is larger than the given width, it is broken apart. Defaults to <code>FALSE</code>.
+   * @return string
+   *   The string wrapped at the specified length.
+   */
+  public static function wordwrap($string, $width, $break = PHP_EOL, $cut = false) {
+    // Always remove whitespaces at beginning and end, nobody needs them.
+    $string = trim($string);
+    // Check if we are dealing with a multi-byte string, if not use native function.
+    if (strlen($string) === mb_strlen($string)) {
+      return wordwrap($string, $width, $break, $cut);
+    }
+    // We'll use the $cut variable to access the correct regular expression in the following array.
+    settype($cut, "int");
+    // Do not create these strings in each loop.
+    $regExp = [
+      "#^(?:[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]+){{$width}}#",
+      "#^(?:[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]+){{$width},}\b#U"
+    ];
+    $words = explode(" ", $string);
+    $string = "";
+    $c = count($words);
+    for ($i = 0; $i < $c; ++$i) {
+      $stringLength = mb_strlen($words[$i]);
+      $cutLength = ceil($stringLength / $width);
+      $newWord = "";
+      for ($j = 0; $j < $cutLength; ++$j) {
+        preg_match($regExp[$cut], $words[$i], $matches);
+        $newString = $matches[0];
+        $newWord .= $newString . $break;
+        $words[$i] = mb_substr($words[$i], mb_strlen($newString));
+      }
+      $string .= " {$newWord}{$words[$i]}";
+    }
+    return $string;
+  }
+
 }
