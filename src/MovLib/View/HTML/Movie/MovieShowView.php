@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\Movie;
 
+use \MovLib\Model\PosterModel;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 
@@ -162,20 +163,6 @@ class MovieShowView extends AbstractView {
         "<div class='row'>" .
           "<aside class='span span--3'>{$this->getSecondaryNavigation($i18n->t("Movie navigation"), $secondaryNavPoints)}</aside>" .
           "<div class='span span--9'>{$content}" .
-//            "<h2 id='synopsis'>{$i18n->t("Synopsis")}" .
-//              "<small>{$this->a($i18n->r("/movie/{0}/edit-{1}", [ $this->presenter->movieModel->id, $i18n->t("synopsis") ]), $i18n->t("Edit"), [ "title" => $i18n->t("Edit Section: {0}", [ $i18n->t("Synopsis") ]) ])}</small>" .
-//            "</h2>" .
-//            "{$this->presenter->movieModel->synopsis}" .
-//            "<h2 id='directors'>{$i18n->t("Directors")}" .
-//              "<small>{$this->a($i18n->r("/movie/{0}/edit-{1}", [ $this->presenter->movieModel->id, $i18n->t("directors") ]), $i18n->t("Edit"), [ "title" => $i18n->t("Edit Section: {0}", [ $i18n->t("Directors") ]) ])}</small>" .
-//            "</h2><span>{$directorList}</span>" .
-//            "<h2 id='titles'>{$i18n->t("Titles")}" .
-//              "<small>{$this->a($i18n->r("/movie/{0}/edit-{1}", [ $this->presenter->movieModel->id, $i18n->t("titles") ]), $i18n->t("Edit"), [ "title" => $i18n->t("Edit Section: {0}", [ $i18n->t("Titles") ]) ])}</small>" .
-//            "</h2>{$titlesList}" .
-//            "<h2 id='taglines'>{$i18n->t("Taglines")}" .
-//              "<small>{$this->a($i18n->r("/movie/{0}/edit-{1}", [ $this->presenter->movieModel->id, $i18n->t("taglines") ]), $i18n->t("Edit"), [ "title" => $i18n->t("Edit Section: {0}", [ $i18n->t("Taglines") ]) ])}</small>" .
-//            "</h2>{$taglineList}" .
-//            "<span>{$i18n->t("Languages")}: {$languagesList}</span><br>" .
           "</div>" .
         "</div>" .
       "</div>"
@@ -228,14 +215,21 @@ class MovieShowView extends AbstractView {
       $userRating = $i18n->t("you haven't rated this movie yet");
     }
 
-    $posterURL = "";
-    $posterAlt = $i18n->t("No poster available.");
+    $poster = $i18n->t("No {0} available. Upload?", [ "poster" ]);
     if (empty($this->presenter->movieModel->getPosters()) === false) {
-      $poster = $this->presenter->movieModel->getPosters()[0];
-      /** @todo Remove magic number from style in the URL. */
-      $posterURL = "/uploads/posters/{$this->presenter->movieModel->id}/w220/{$poster["filename"]}.{$poster["ext"]}";
-      $posterAlt = $i18n->t("{0} movie poster.", [ $this->presenter->displayTitle ]);
+      $poster = $this->getImage(
+        $this->presenter->movieModel->getPosters()[0],
+        PosterModel::IMAGESTYLE_LARGE_FIXED_WIDTH,
+        [ "alt" => $i18n->t("{0} movie poster.", [ $this->presenter->displayTitle ]) ]
+      );
     }
+    $poster = $this->a(
+      $i18n->r("/movie/{0}/poster-gallery", [ $this->presenter->movieModel->id ]),
+      $poster,
+      [ "title" => $i18n->t("Go to poster gallery of {0}", [ $this->presenter->displayTitle ]),
+        "class" => "span span--3"
+      ]
+    );
     return
       "<{$tag}{$this->expandTagAttributes($attributes)}>" .
         "<div id='content__header'>" .
@@ -330,7 +324,7 @@ class MovieShowView extends AbstractView {
                 "</p>" .
 
               "</div>" .
-              "<img class='span span--3' src='{$posterURL}' alt=''>" .
+              $poster .
             "</header>" .
           "</div>" .
         "</div>" .

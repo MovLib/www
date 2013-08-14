@@ -79,6 +79,26 @@ class Validation {
   }
 
   /**
+   * Sanitize given folder name.
+   *
+   * @param string $path
+   *   The folder name to sanitize.
+   * @return boolean|string
+   *   <code>FALSE</code> if the sanitation failed or the the string was empty after it, otherwise
+   *   the string is returned.
+   */
+  public static function fileName($path) {
+    $illegalCharacters = [ "/", "\\", "?", "%", "*", ":", "|", '"', "<", ">", ".", " ", "(", ")", "&", ";", "#" ];
+    if (($path = self::string($path)) !== false) {
+      $path = str_replace($illegalCharacters, "", $path);
+      if (!empty($path)) {
+        return $path;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Get string from user input.
    *
    * Always use this method to get a string that was submitted from a user via any form of submission. Basic

@@ -25,58 +25,55 @@
  * @since 0.0.1-dev
  */
 
-#movies__latest, #movies__latest li, #movies__latest p {
+div.container div.row:first-of-type {
+  margin-bottom: 20px;
+}
+
+#movies__latest,
+#movies__latest li,
+#movies__latest p {
   margin: 0;
   padding: 0;
 }
 
 #movies__latest {
-  list-style-type: none;
-  margin-top: 20px;
-}
-
-#movies__latest li {
-  height: 90px;
-  padding: 7.5px;
-  position: relative;
-  overflow: hidden;
-  background-color: #fff;
-  transition: background-color 0.4s ease-out;
-}
-
-#movies__latest li:hover {
-  background-color: #eee;
+  list-style: none;
 }
 
 #movies__latest a {
-  background-repeat: no-repeat;
+  background-color: #fff;
+  border: 0 none;
   color: #353535;
   display: block;
-  height: 75px;
-  padding-left: 92.5px;
-  border: 0 none;
+  padding: 7.5px;
+  transition: background-color 0.4s ease-in-out;
+}
+
+#movies__latest a:hover,
+#movies__latest a:focus {
+  background-color: #d9edf7;
+}
+
+#movies__latest div {
+  height: 100%;
 }
 
 #movies__latest h2 {
   color: #09c;
   font-size: 25px;
-  line-height: 1;
+  line-height: 1.46;
   margin: 0;
 }
 
 .movies-list__poster {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  top: 0;
-  line-height: 85px;
+  float: left;
+  line-height: 1;
   text-align: center;
-  vertical-align: middle;
-  width: 90px;
+  width: 75px;
 }
 
 .movies-list__info {
-  position: relative;
-  top: 50%;
-  margin-top: -50%;
+  border-left: 1px solid #c7c7c7;
+  margin-left: 92.5px;
+  padding-left: 17.5px;
 }

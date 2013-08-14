@@ -486,34 +486,23 @@ class MovieModel extends AbstractModel {
   }
 
   /**
-   * Retrieve the movie poster data for this movie
-   * @global \MovLib\Model\I18nModel $i18n
-   *  The global I18n Model instance for translations.
+   * Retrieve the movie poster data for this movie.
+   *
    * @return array
    */
   public function getPosters() {
-    global $i18n;
     if ($this->posters === null) {
-      $this->posters = $this->select(
+      $posterIds = $this->select(
         "SELECT
-          `poster_id` AS `posterId`,
-          `country_id` AS `country`,
-          `filename`,
-          `width`,
-          `height`,
-          `size`,
-          `ext`,
-          COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description`
+          `poster_id` AS `id`
           FROM `posters`
           WHERE `movie_id` = ?
           ORDER BY rating DESC",
         "d",
         [ $this->id ]);
-      $count = count($this->posters);
+      $count = count($posterIds);
       for ($i = 0; $i < $count; ++$i) {
-        if (isset($this->posters[$i]["country"])) {
-          $this->posters[$i]["country"] = $i18n->getCountries()[$this->posters[$i]["country"]]["name"];
-        }
+        $this->posters[] = new PosterModel($this->id, $posterIds[$i]["id"]);
       }
     }
     return $this->posters;
