@@ -67,7 +67,7 @@ class UserShowView extends AbstractView {
           "<div class='span span--9'>" .
             "<h2>{$i18n->t("Your Account Summary")}</h2>" .
             "<div class='row'>" .
-              "<dl class='span span--6'>" .
+              "<dl class='span span--7'>" .
                 "<dt>{$i18n->t("Username")}</dt><dd>{$this->presenter->profile->name}</dd>" .
                 "<dt>{$i18n->t("User ID")}</dt><dd>{$this->presenter->profile->id}</dd>" .
                 "<dt>{$i18n->t("Edits")}</dt><dd>{$this->presenter->profile->edits}</dd>" .
@@ -76,8 +76,8 @@ class UserShowView extends AbstractView {
                 "<dt>{$i18n->t("Registration")}</dt><dd>{$i18n->formatDate($this->presenter->profile->created, $this->presenter->profile->timezone)}</dd>" .
                 "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->presenter->profile->access, $this->presenter->profile->timezone)}</dd>" .
               "</dl>" .
-              "<div class='span span--3'>" .
-                $this->a($i18n->r("/user/account-settings"), $this->getImage($this->presenter->profile, UserModel::IMAGESTYLE_HUGE), [
+              "<div class='span span--2'>" .
+                $this->a($i18n->r("/user/account-settings"), $this->getImage($this->presenter->profile, UserModel::IMAGESTYLE_BIG), [
                   "class" => "change-avatar no-border",
                   "title" => "Change your avatar image.",
                 ]) .
