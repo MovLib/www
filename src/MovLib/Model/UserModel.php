@@ -99,14 +99,7 @@ class UserModel extends AbstractImageModel {
    *
    * @var int
    */
-  const IMAGESTYLE_BIG = "150x150";
-
-  /**
-   * Huge image style.
-   *
-   * @var int
-   */
-  const IMAGESTYLE_HUGE = "300x300";
+  const IMAGESTYLE_BIG = "140x140>";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -331,7 +324,6 @@ class UserModel extends AbstractImageModel {
           self::IMAGESTYLE_SMALL,
           self::IMAGESTYLE_NORMAL,
           self::IMAGESTYLE_BIG,
-          self::IMAGESTYLE_HUGE,
         ]);
       } catch (ErrorException $e) {
         throw new UserException("Could not find user for {$from} '{$value}'!", $e);
