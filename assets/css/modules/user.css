@@ -46,3 +46,7 @@
 #user-sessions tr td:last-child {
   text-align: center;
 }
+
+.usersettings-content .form-actions {
+  text-align: center;
+}
