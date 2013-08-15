@@ -318,7 +318,7 @@ abstract class AbstractView {
    *   All alerts ready for print.
    */
   public final function getAlerts() {
-    return "<div id='alerts' class='container'>" . implode("", $this->alerts) . "</div>";
+    return "<div id='alerts'>" . implode("", $this->alerts) . "</div>";
   }
 
   /**
@@ -528,11 +528,7 @@ abstract class AbstractView {
       $tag = ($block === true) ? "h4" : "b";
       $title = "<{$tag} class='alert__title'>{$title}</{$tag}> ";
     }
-    $class = "";
-    if ($block === true) {
-      $class .= " alert--block";
-    }
-    $this->alerts[] = "<div class='alert alert--{$severity}{$class}' role='alert'>{$title}{$message}</div>";
+    $this->alerts[] = "<div class='alert alert--{$severity}' role='alert'><div class='container'>{$title}{$message}</div></div>";
     return $this;
   }
 
@@ -665,8 +661,8 @@ abstract class AbstractView {
           "<div class='container'>" .
             "<h1 id='content__header__title' class='title'>{$this->title}</h1>" .
           "</div>" .
+          $this->getAlerts() .
         "</div>" .
-        $this->getAlerts() .
         $this->getContent() .
       "</{$tag}>"
     ;

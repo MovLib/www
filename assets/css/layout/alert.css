@@ -26,17 +26,13 @@
  * @since 0.0.1-dev
  */
 
-#alerts .alert:last-child {
-  margin-bottom: 40px;
-}
-
 .alert {
   background-color: #fcf8e3;
-  border: 1px solid #fbeed5;
-  box-shadow: 0 2.5px 5px #dfdfdf;
-  margin-bottom: 20px;
   padding: 8px 35px 8px 14px;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+#alert .alert {
+  padding: 14px 0;
 }
 
 .alert > p:first-of-type {
@@ -66,7 +62,6 @@
 
 .alert--info {
   background-color: #d9edf7;
-  border-color: #bce8f1;
   color: #3a87ad;
 }
 
@@ -76,7 +71,6 @@
 
 .alert--success {
   background-color: #dff0d8;
-  border-color: #d6e9c6;
   color: #468847;
 }
 
@@ -86,21 +80,11 @@
 
 .alert--error {
   background-color: #f2dede;
-  border-color: #eed3d7;
   color: #b94a48;
 }
 
 .alert--error .alert__title {
   color: #b94a48;
-}
-
-.alert--block {
-  padding-bottom: 14px;
-  padding-top: 14px;
-}
-
-.span--alerts {
-  margin-top: 20px;
 }
 
 .alert .form-help {
