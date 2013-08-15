@@ -74,8 +74,8 @@
 }
 
 .popup:before {
-  border-top-color: #252525;
   border: 6px solid transparent;
+  border-top-color: #252525;
   bottom: -12px;
   content: "";
   left: 50%;
