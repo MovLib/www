@@ -18,6 +18,7 @@
 namespace MovLib\Utility;
 
 use \MovLib\Model\UserModel;
+use \MovLib\Utility\Network;
 
 /**
  * Utility class to ease validation of user input.
@@ -164,17 +165,7 @@ class Validation {
    *   <code>FALSE</code> if the URL is not valid or empty, otherwise the URL is returned.
    */
   public static function url($url) {
-    if (empty($url)) {
-      return false;
-    }
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-      CURLOPT_HEADER         => 1, // Get the header
-      CURLOPT_NOBODY         => 1, // Only get the header
-      CURLOPT_RETURNTRANSFER => 1, // Get the response as string (no echo)
-      CURLOPT_FRESH_CONNECT  => 1, // Do not use cached version
-    ]);
-    if (!curl_exec($ch)) {
+    if (($url = filter_var($url, FILTER_VALIDATE_URL)) || empty($url)) {
       return false;
     }
     return $url;
@@ -191,10 +182,10 @@ class Validation {
    *   <code>FALSE</code> if the URL is not valid or empty, otherwise the URL is returned.
    */
   public static function inputUrl($name, $type = INPUT_POST) {
-    if (($url = filter_input($type, $name, FILTER_VALIDATE_URL)) === false) {
+    if (($url = filter_input($type, $name, FILTER_VALIDATE_URL)) === false || empty($url)) {
       return false;
     }
-    return Validation::url($url);
+    return $url;
   }
 
   /**
