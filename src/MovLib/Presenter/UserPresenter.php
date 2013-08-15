@@ -68,10 +68,12 @@ class UserPresenter extends AbstractPresenter {
     $errors = $this->{__FUNCTION__ . $this->getAction()}();
     // If we have any errors, set them.
     if ($errors) {
-      foreach ($errors as $key => $msg) {
-        $this->view->setAlert($msg, AbstractView::ALERT_SEVERITY_ERROR);
-        $this->view->formInvalid[$key] = true;
+      $messages = "";
+      foreach ($errors as $formElementName => $message) {
+        $messages .= "{$message}<br>";
+        $this->view->formInvalid[$formElementName] = true;
       }
+      $this->view->setAlert($messages, AbstractView::ALERT_SEVERITY_ERROR);
     }
     // Make sure the rendered view is exported to class scope.
     $this->setPresentation();
@@ -617,7 +619,7 @@ class UserPresenter extends AbstractPresenter {
       if (empty($website)) {
         $this->profile->website = "";
       }
-      // If the user supplied a website, check if the URL is valid and exists.
+      // If the user supplied a website, check if the URL is valid. We don't check if the website exists!
       elseif (($website = Validation::inputUrl("website")) !== false) {
         $this->profile->website = $website;
       }
