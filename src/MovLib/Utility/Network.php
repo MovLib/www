@@ -36,4 +36,21 @@ class Network {
    */
   const SERVER_NAME_STATIC = "alpha.movlib.org";
 
+  /**
+   * Check if the given URL exists.
+   *
+   * @param string $url
+   *   The URL to check.
+   * @return boolean
+   *   <code>TRUE</code> if the URL exists, otherwise <code>FALSE</code>.
+   */
+  public static function urlExists($url) {
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_NOBODY, true);
+    curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE) / 100;
+    curl_close($ch);
+    return $code === 2 || $code === 3;
+  }
+
 }
