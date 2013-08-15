@@ -29,6 +29,6 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MailException extends AbstractException {
+class MailerException extends AbstractException {
 
 }
