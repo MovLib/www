@@ -167,3 +167,4 @@ pip-log.txt
 !/bin/
 /experimental/
 /conf/nginx/sites/test.conf
+/conf/mail/mail.ini
