@@ -28,21 +28,15 @@
 
 .button {
   background-color: #efefef;
-  /* Overwrite default link border color once, prevent color changes upon state changes. */
-  border: 1px solid;
-  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25) !important;
+  border: 0 none;
   color: #555;
   display: inline-block;
   margin-bottom: 0;
   padding: 4px 12px;
   text-align: center;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
   vertical-align: middle;
   -webkit-appearance: none;
-  -webkit-transition: background-color 0.4s ease-out, color 0.4s ease-out;
-     -moz-transition: background-color 0.4s ease-out, color 0.4s ease-out;
-       -o-transition: background-color 0.4s ease-out, color 0.4s ease-out;
-          transition: background-color 0.4s ease-out, color 0.4s ease-out;
+  transition: background-color 0.4s ease-out, color 0.4s ease-out;
 }
 
 .button:hover,
@@ -96,7 +90,6 @@
 .button--inverse {
   /* Overwrite link default color once, prevent color changes upon state changes. */
   color: #fff !important;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }
 
 .button--primary {
