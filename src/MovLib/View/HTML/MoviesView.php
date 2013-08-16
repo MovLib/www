@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML;
 
+use \MovLib\Exception\MovieException;
 use \MovLib\Model\PosterModel;
 use \MovLib\View\HTML\AbstractView;
 
@@ -67,15 +68,10 @@ class MoviesView extends AbstractView {
     $movies = $this->presenter->moviesModel->getMoviesByCreated();
     $c = count($movies);
     for ($i = 0; $i < $c; ++$i) {
-      $poster = $i18n->t("No {0} available.", [ "poster" ]);
-      if (($posters = $movies[$i]["#movie"]->getPosters()) && isset($posters[0])) {
-//      if (empty($movies[$i]["#movie"]->getPosters()) === false) {
-        $poster = $this->getImage(
-//          $movies[$i]["#movie"]->getPosters()[0],
-          $posters[0],
-          PosterModel::IMAGESTYLE_SMALL,
-          [ "alt" => $i18n->t("{0} movie poster.", [ $movies[$i]["#movie"]->displayTitle ]) ]
-        );
+      try {
+        $poster = $movies[$i]["#movie"]->getPosterDisplay();
+      } catch (MovieException $e) {
+        $poster = new PosterModel();
       }
       $countriesAndYear = [];
       if (empty($movies[$i]["#movie"]->getCountries()) === false) {
@@ -96,7 +92,11 @@ class MoviesView extends AbstractView {
           $this->a(
             $i18n->r("/movie/{0}", [ $movies[$i]["#movie"]->id ]),
             "<article>" .
-              "<div class='movies-list__poster'>{$poster}</div>" .
+              "<div class='movies-list__poster'>" .
+                $this->getImage($poster,
+                  PosterModel::IMAGESTYLE_SMALL,
+                  [ "alt" => $i18n->t("{0} movie poster.", [ $movies[$i]["#movie"]->displayTitle ]) ]) .
+              "</div>" .
               "<div class='movies-list__info clear-fix'>" .
                 "<h2>{$movies[$i]["#movie"]->displayTitle}{$countriesAndYear}</h2>" .
                 "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $movies[$i]["#movie"]->originalTitle ])}</p>" .

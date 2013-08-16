@@ -57,8 +57,8 @@ body.movieshow-body h2 small {
   width: 120px;
 }
 
-#movie__rating + small {
-  margin: 0 0 20px 0;
+#movie__header #movie__rating__description {
+  margin-bottom: 20px;
 }
 
 #movie__rating,

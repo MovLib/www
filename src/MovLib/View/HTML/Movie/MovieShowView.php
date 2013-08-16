@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\Movie;
 
+use \MovLib\Exception\MovieException;
 use \MovLib\Model\PosterModel;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
@@ -215,21 +216,11 @@ class MovieShowView extends AbstractView {
       $userRating = $i18n->t("you haven't rated this movie yet");
     }
 
-    $poster = $i18n->t("No {0} available. Upload?", [ "poster" ]);
-    if (empty($this->presenter->movieModel->getPosters()) === false) {
-      $poster = $this->getImage(
-        $this->presenter->movieModel->getPosters()[0],
-        PosterModel::IMAGESTYLE_LARGE_FIXED_WIDTH,
-        [ "alt" => $i18n->t("{0} movie poster.", [ $this->presenter->displayTitle ]) ]
-      );
+    try {
+      $poster = $this->presenter->movieModel->getPosterDisplay();
+    } catch (MovieException $e) {
+      $poster = new PosterModel();
     }
-    $poster = $this->a(
-      $i18n->r("/movie/{0}/poster-gallery", [ $this->presenter->movieModel->id ]),
-      $poster,
-      [ "title" => $i18n->t("Go to poster gallery of {0}", [ $this->presenter->displayTitle ]),
-        "class" => "span span--3"
-      ]
-    );
     return
       "<{$tag}{$this->expandTagAttributes($attributes)}>" .
         "<div id='content__header'>" .
@@ -276,7 +267,7 @@ class MovieShowView extends AbstractView {
                     "</label>" .
                   "</div>" .
                 "</form>" .
-                "<small>" .
+                "<p id='movie__rating__description' class='small'>" .
                   $i18n->t(
                     "Rated by {0}{1,number,integer} users{2} with an {3}average rating{4} of {5,number} ({6}).",
                     [
@@ -288,11 +279,11 @@ class MovieShowView extends AbstractView {
                       $this->presenter->movieModel->rating,
                       $userRating
                     ]) .
-                "</small>" .
+                "</p>" .
 
                 // ----------------------------------------------------------------------------------------------------- Year & Countries
 
-                "<p>" .
+                "<p class='small'>" .
                   "<span class='visuallyhidden'>{$i18n->t("Year")}: </span>{$yearLink} - " .
                   "<span class='visuallyhidden'>{$i18n->t("Countries")}: </span>{$this->getCommaSeparatedList(
                     $this->presenter->movieModel->getCountries(),
@@ -305,7 +296,7 @@ class MovieShowView extends AbstractView {
 
                 // ----------------------------------------------------------------------------------------------------- Runtime, Genres & Styles
 
-                "<p>" .
+                "<p class='small'>" .
                   "<span class='visuallyhidden'>{$i18n->t("Length")}:</span> {$this->presenter->movieModel->runtime} {$i18n->t("min.")}" .
                   " | <span class='visuallyhidden'>{$i18n->t("Genres")}:</span> {$this->getCommaSeparatedList(
                     $this->presenter->movieModel->getGenres(),
@@ -324,7 +315,15 @@ class MovieShowView extends AbstractView {
                 "</p>" .
 
               "</div>" .
-              $poster .
+              // ------------------------------------------------------------------------------------------------------- Poster
+              $this->a(
+                $i18n->r("/movie/{0}/{1}-gallery", [ $this->presenter->movieModel->id, $i18n->t("poster") ]),
+                $this->getImage(
+                  $poster,
+                  PosterModel::IMAGESTYLE_LARGE_FIXED_WIDTH,
+                  [ "alt" => $this->presenter->displayTitle ]),
+                [ "class" => "span span--3" ]
+              ) .
             "</header>" .
           "</div>" .
         "</div>" .

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Model;
 
+use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\MovieException;
 use \MovLib\Model\AbstractModel;
 
@@ -147,6 +148,12 @@ class MovieModel extends AbstractModel {
    * @var null|array
    */
   private $links = null;
+
+  /**
+   * Associative array containing the information of the movie's display poster.
+   * @var null|array
+   */
+  private $displayPoster = null;
 
   /**
    * Sorted numeric array containing the movie's poster information as an associative array.
@@ -485,7 +492,27 @@ class MovieModel extends AbstractModel {
     return $this->links;
   }
 
-  /**
+  public function getPosterDisplay() {
+    if ($this->displayPoster === null) {
+      try {
+        $posterId = $this->select(
+          "SELECT
+            `poster_id` AS `id`
+            FROM `posters`
+            WHERE `movie_id` = ?
+            ORDER BY rating DESC
+            LIMIT 1",
+          "d",
+          [ $this->id ])[0]["id"];
+        $this->displayPoster = new PosterModel($this->id, $posterId);
+      } catch (ErrorException $e) {
+        throw new \MovieException("No diplay poster for movie {$this->id}!", $e);
+      }
+    }
+    return $this->displayPoster;
+  }
+
+    /**
    * Retrieve the movie poster data for this movie.
    *
    * @return array
