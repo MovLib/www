@@ -89,7 +89,40 @@ class DelayedLogger {
     // Write all log entries to the appropriate log file. If the maximum log filesize is reached simply overwrite the
     // existing log file. Otherwise append the entries to the log.
     foreach ($logEntries as $level => $logEntry) {
-      //@see http://www.php.net/manual/en/errorfunc.constants.php
+      self::logNow($logEntry, $level);
+    }
+  }
+
+  /**
+   * Log a simple message.
+   *
+   * @see \MovLib\Utility\DelayedLogger::stack()
+   * @param string $message
+   *   The message to log.
+   * @param string $level
+   *   The log level, defaults to <var>E_WARNING</var>.
+   */
+  public static function log($message, $level = E_WARNING) {
+    self::stack($message, $level);
+  }
+
+  /**
+   * Log a simple message now, this means that this entry will not be written with a delay, it's in real-time!
+   *
+   * This method is used internally by this class, but can be utilized for debugging. This is also the reason why the
+   * default level is set to <var>E_NOTICE</var>.
+   *
+   * @param string $logEntry
+   *   The entry to log.
+   * @param string $level
+   *   The log level, defaults to <var>E_NOTICE</var>. <b>HINT:</b> If you pass along a string as level, you can log
+   *   to a completely different log file. This is very useful for creating dedicated debug log files. Example usage
+   *   can be found in the DelayedMailer class.
+   */
+  public static function logNow($logEntry, $level = E_NOTICE) {
+    $logFile = $level;
+    if (!is_string($level)) {
+      // @see http://www.php.net/manual/en/errorfunc.constants.php
       switch ($level) {
         case E_ERROR:
         case E_PARSE:
@@ -118,26 +151,15 @@ class DelayedLogger {
           $logFile = "notice";
           break;
       }
-      $logFile = "{$_SERVER["HOME"]}/logs/{$logFile}.log";
-      if (filesize($logFile) >= self::MAX_LOG_SIZE) {
-        exec("tail -n 100 {$logFile} > {$logFile}");
-      }
-      file_put_contents($logFile, $logEntry, FILE_APPEND);
     }
-  }
-
-  /**
-   * Log a simple message.
-   *
-   * @see \MovLib\Utility\DelayedLogger::stack()
-   * @param string $message
-   *   The message to log.
-   * @param string $level
-   *   The log level, defaults to <var>E_WARNING</var>.
-   * @return $this
-   */
-  public static function log($message, $level = E_WARNING) {
-    self::stack($message, $level);
+    $logFile = "{$_SERVER["HOME"]}/logs/{$logFile}.log";
+    if (!is_file($logFile)) {
+      touch($logFile);
+    }
+    if (filesize($logFile) >= self::MAX_LOG_SIZE) {
+      exec("tail -n 100 {$logFile} > {$logFile}");
+    }
+    file_put_contents($logFile, $logEntry, FILE_APPEND);
   }
 
   /**
@@ -148,7 +170,6 @@ class DelayedLogger {
    *   The exception to log.
    * @param string $level
    *   The log level, defaults to <var>E_WARNING</var>.
-   * @return $this
    */
   public static function logException($exception, $level = E_WARNING) {
     self::stack($exception, $level, self::LOGTYPE_EXCEPTION);
