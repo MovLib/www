@@ -31,7 +31,7 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="5.5.0"
+  VERSION="5.5.1"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
@@ -40,10 +40,10 @@ source ${ID}wget.sh "http://us1.php.net/distributions/" ${NAME} ".tar.gz"
 ./configure \
   CFLAGS="-O3 -m64" \
   CXXFLAGS="-O3 -m64" \
-  LDFLAGS="-O3 -m64" \
   --disable-flatfile \
   --disable-inifile \
-  --disable-pdo \
+# We need PDO for PHPUnit's DbUnit to work properly. We won't need it on our production server!
+#  --disable-pdo \
   --disable-short-tags \
   --disable-sqlite3 \
   --enable-bcmath \
@@ -54,12 +54,12 @@ source ${ID}wget.sh "http://us1.php.net/distributions/" ${NAME} ".tar.gz"
   --enable-mbstring \
   --enable-mysqlnd \
   --enable-opcache \
+  --enable-pcntl \
   --enable-re2c-cgoto \
   --enable-xml \
   --enable-zend-signals \
   --enable-zip \
   --sysconfdir="/etc/php-fpm" \
-  --with-bz2 \
   --with-config-file-path="/etc/php-fpm" \
   --with-curl \
   --with-fpm-group="www-data" \
