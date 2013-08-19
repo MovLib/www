@@ -29,6 +29,32 @@ namespace MovLib\Utility;
 class String {
 
   /**
+   * Encodes data with base 36.
+   *
+   * @link https://en.wikipedia.org/wiki/Base_36
+   * @param mixed $data
+   *   The data to encode.
+   * @return string
+   *   The encoded data, as a string or <code>FALSE</code> on failure.
+   */
+  public static function base36encode($data) {
+    return base_convert($data, 10, 36);
+  }
+
+  /**
+   * Decode data with base 36.
+   *
+   * @link https://en.wikipedia.org/wiki/Base_36
+   * @param string $data
+   *   The encoded data.
+   * @return mixed
+   *   Returns the original data or <code>FALSE</code> on failure.
+   */
+  public static function base36decode($data) {
+    return base_convert($data, 36, 10);
+  }
+
+  /**
    * Encodes special characters in a plain-text string for display as HTML.
    *
    * Also validates strings as UTF-8.
@@ -108,6 +134,20 @@ class String {
       return mb_substr($string, 0, $length) . $append;
     }
     return $string;
+  }
+
+  /**
+   * Remove all possible kinds of newline characters from a string.
+   *
+   * Each newline character will be replaced with a single whitespace.
+   *
+   * @param string $string
+   *   The string to remove newline characters.
+   * @return string
+   *   The string without newline characters.
+   */
+  public static function removeNewlines($string) {
+    return trim(preg_replace("/\s\s+/", " ", $string));
   }
 
   /**
