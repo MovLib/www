@@ -142,7 +142,6 @@ register_shutdown_function("error_fatal_handler");
  *
  * @param string $class
  *   Fully qualified class name (automatically passed to this magic function by PHP).
- * @return void
  */
 function __autoload($class) {
   $class = strtr($class, "\\", "/");
