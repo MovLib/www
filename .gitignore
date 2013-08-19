@@ -168,3 +168,4 @@ pip-log.txt
 /experimental/
 /conf/nginx/sites/test.conf
 /conf/mail/mail.ini
+/vendor/
