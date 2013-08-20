@@ -288,7 +288,7 @@ class I18nModel extends AbstractModel {
    *   The unique ID of the current language.
    */
   public function getLanguageId() {
-    return $this->getLanguages()["code"][$this->languageCode]["id"];
+    return $this->getLanguages(self::KEY_CODE)[$this->languageCode]["id"];
   }
 
   /**
@@ -458,7 +458,6 @@ class I18nModel extends AbstractModel {
         // pattern occurres more than once on the same page.
         $this->select("SELECT `{$context}_id` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ])[0];
       } catch (ErrorException $e) {
-        unset($e);
         if ($issetComment) {
           $this->insert("{$context}s", "sss", [ $context => $pattern, "comment" => $options["comment"], "dyn_translations" => "" ]);
         }
