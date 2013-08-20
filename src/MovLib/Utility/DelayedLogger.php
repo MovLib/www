@@ -17,6 +17,9 @@
  */
 namespace MovLib\Utility;
 
+use \MovLib\Utility\DelayedMailer;
+use \MovLib\View\Mail\MovDevMail;
+
 /**
  * Delayed log facility.
  *
@@ -132,12 +135,11 @@ class DelayedLogger {
         case E_RECOVERABLE_ERROR:
           $logFile = "error";
           // Send email to developers upon logging of entries with high levels, there must be something that needs a fix.
-          mail(
-            "movdev-mailinglist@movlib.org",
+          (new DelayedMailer())->connect()->send(new MovDevMail(
             "IMPORTANT! An error message was just logged.",
-            "<p>Here is the message that was logged:</p><pre>" . String::checkPlain($logEntry) . "</pre>",
-            "MIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n"
-          );
+            "<p>A critical error was just logged, here is the log entry:</p><pre>" . String::checkPlain($logEntry) . "</pre>",
+            "A critical error was just logged, here is the log entry:\n\n{$logEntry}"
+          ))->disconnect();
           break;
 
         case E_WARNING:
