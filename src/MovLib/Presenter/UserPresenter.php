@@ -27,6 +27,9 @@ use \MovLib\Utility\DelayedMailer;
 use \MovLib\Utility\DelayedMethodCalls;
 use \MovLib\Utility\String;
 use \MovLib\Utility\Validation;
+use \MovLib\View\Mail\User\UserActivationMail;
+use \MovLib\View\Mail\User\UserPasswordResetMail;
+use \MovLib\View\Mail\User\UserRegisterExistingMail;
 use \MovLib\View\HTML\AbstractView;
 use \MovLib\View\HTML\AlertView;
 use \MovLib\View\HTML\Redirect;
@@ -208,14 +211,14 @@ class UserPresenter extends AbstractPresenter {
     // Do not tell the user that we already have this mail, otherwise it would be possible for an attacker to find out
     // which mails we have in our system. Instead we send a message to the user this mail belongs to.
     if ($userModel->existsMail($mail) === true) {
-      DelayedMailer::stackMethod("stackActivationMailExists", [ $mail ]);
+      DelayedMailer::stack(new UserRegisterExistingMail($mail));
     }
     // If this is a valid new registration generate a unique activation link and insert the user's data into our
     // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what to do.
     else {
-      $params = [ Crypt::randomHash(), $name, $mail ];
-      DelayedMethodCalls::stack($userModel, "preRegister", $params);
-      DelayedMailer::stackMethod("stackActivationMail", $params);
+      $hash = Crypt::randomHash();
+      DelayedMethodCalls::stack($userModel, "preRegister", [ $hash, $name, $mail ]);
+      DelayedMailer::stack(new UserActivationMail($hash, $name, $mail));
     }
     // Tell the user that we've sent a mail with instructions, nothing more to do here, move along.
     $this->view = new AlertView($this, $this->view->title);
@@ -259,9 +262,9 @@ class UserPresenter extends AbstractPresenter {
       }
       try {
         $userModel = new UserModel(UserModel::FROM_MAIL, $mail);
-        $params = [ Crypt::randomHash(), $mail ];
-        DelayedMethodCalls::stack($userModel, "preResetPassword", $params);
-        DelayedMailer::stackMethod("stackPasswordReset", $params);
+        $hash = Crypt::randomHash();
+        DelayedMethodCalls::stack($userModel, "preResetPassword", [ $hash, $mail ]);
+        DelayedMailer::stack(new UserPasswordResetMail($hash, $mail));
       } catch (UserException $e) {
         // Only tell a logged in user that the email is wrong!
         if ($user->isLoggedIn === true) {
