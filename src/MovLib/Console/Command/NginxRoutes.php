@@ -18,7 +18,6 @@
 namespace MovLib\Console\Command;
 
 use \MovLib\Console\Command\AbstractCommand;
-use \MovLib\Model\I18nModel;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -51,6 +50,7 @@ class NginxRoutes extends AbstractCommand {
    * {@inheritDoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
+    global $i18n;
     $this->setIO($input, $output);
 
     // The nginx and service commands are only available as privileged user.
@@ -58,9 +58,7 @@ class NginxRoutes extends AbstractCommand {
       $this->exitOnError("This script must be executed as privileged user (root or sudo).");
     }
 
-    // Prepare i18n instance and initialize it with our default locale.
-    $locale = ini_get("intl.default_locale");
-    $i18n = new I18nModel($locale);
+    $locale = $i18n->getDefaultLanguageCode();
 
     /**
      * This closure will be used within our routes script to translate the strings.
