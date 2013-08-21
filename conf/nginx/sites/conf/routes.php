@@ -205,7 +205,7 @@ location ^~ /<?= $r("user") ?> {
     try_files $movlib_cache @user;
   }
 
-  location ~ ^/<?= $r("user") ?>/(<?= $r("account") ?>|<?= $r("notification") ?>|<?= $r("mail") ?>|<?= $r("password") ?>|<?= $r("dangerzone") ?>-<?= $r("settings") ?>$ {
+  location ~ ^/<?= $r("user") ?>/(<?= $r("account") ?>|<?= $r("notification") ?>|<?= $r("mail") ?>|<?= $r("password") ?>|<?= $r("dangerzone") ?>-<?= $r("settings") ?>)$ {
     set $movlib_action "Settings";
     set $movlib_tab $1;
     try_files $movlib_cache @user;
