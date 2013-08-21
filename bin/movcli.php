@@ -30,15 +30,5 @@
  * @since 0.0.1-dev
  */
 
-// Create absolut path to root directory.
-$_SERVER["HOME"] = dirname(__DIR__);
-
-// Include composer autoloader, this enables us to load our own stuff but also everything that we need via composer.
-$composerAutoloader = require "{$_SERVER["HOME"]}/vendor/autoload.php";
-$composerAutoloader->add("MovLib", "{$_SERVER["HOME"]}/src");
-
-// Create global configuration.
-$GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
-
-// Initialize application.
+require dirname(__DIR__) . "/bootstrap.php";
 (new \MovLib\Console\Application\MovCli())->run();

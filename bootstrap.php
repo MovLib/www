@@ -17,7 +17,7 @@
  */
 
 /**
- * Setup environment for testing our software.
+ * Bootstrap environment for CLI and PHPUnit.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,40 +26,21 @@
  * @since 0.0.1-dev
  */
 
-/* @var $loader \Composer\Autoload\ClassLoader */
-$loader = require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-$loader->add('MovLib\Test', __DIR__);
+// The following variables are always available in our environment and set via nginx. We have to create them here on
+// our own because PHPUnit will not invoke nginx.
+$_SERVER["HOME"] = __DIR__;
 
-// This variable is always available to our software and set via nginx in normal environment.
-$_SERVER['LANGUAGE_CODE'] = 'en';
+// Include composer autoloader, this enables us to load our own stuff but also everything that we need via composer.
+$composerAutoloader = require "{$_SERVER["HOME"]}/vendor/autoload.php";
+$composerAutoloader->add("MovLib", "{$_SERVER["HOME"]}/src");
+$composerAutoloader->add("MovLib\Test", "{$_SERVER["HOME"]}/tests");
 
-// @todo The sitename constant shouldn't be used from here, instead the one from main.php should be used for realistic
-//       tests. The problem is, that main.php is directly invoking the construction of the presenter. Solution?
-// @todo We should ensure that gettext is really working instead of using fake function.
+// Create global configuration.
+$GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
 
-/**
- * The name of the website.
- *
- * @var string
- */
-define("SITENAME", "MovLib");
-
-/**
- * Fake gettext function.
- */
-function __($str) {
-  return $str;
-}
-
-/**
- * Fake plural gettext function.
- */
-function n__($str1, $str2, $n) {
-  if ($n > 1) {
-    return $str2;
-  }
-  return $str1;
-}
+// Needed by various objects (e.g. DelayedLogger).
+$i18n = new \MovLib\Model\I18nModel(ini_get("intl.default_locale"));
+$_SERVER["LANGUAGE_CODE"] = $i18n->getDefaultLanguageCode();
 
 /**
  * Get a <em>protected</em> or <em>private</em> method of a class as reflection function.

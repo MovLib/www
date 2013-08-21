@@ -15,7 +15,7 @@
  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
 -->
 <phpunit
-  bootstrap="./bootstrap.php"
+  bootstrap="../bootstrap.php"
   colors="false"
   convertErrorsToExceptions="true"
   convertNoticesToExceptions="true"
