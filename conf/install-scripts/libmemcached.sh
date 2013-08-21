@@ -36,7 +36,8 @@ else
   msginfo "1.0.17 is broken in combination with the memcached PHP extension. Otherwise we could use GitHub and snatch the latest version!"
 fi
 
-NAME="libmemcached-${VERSION}"
-source ${ID}wget.sh "https://launchpad.net/libmemcached/1.0/1.0.16/+download/" ${NAME} ".tar.gz"
-./configure CFLAGS="-O3 -m64" CXXFLAGS="-O3 -m64" LDFLAGS="-O3 -m64"
+NAME="libmemcached"
+source ${ID}uninstall.sh
+source ${ID}wget.sh "https://launchpad.net/libmemcached/1.0/${VERSION}/+download/" "${NAME}-${VERSION}" ".tar.gz"
+./configure CFLAGS="-O3 -m64" CXXFLAGS="-O3 -m64"
 source ${ID}install.sh

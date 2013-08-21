@@ -29,6 +29,8 @@
 
 source $(pwd)/inc/conf.sh
 NAME="php-memcached"
+VERSION="2.1.0"
+source ${ID}uninstall.sh
 source ${ID}git.sh "${NAME}-dev" ${NAME}
 phpize
 ./configure ${DEFAULT_FLAGS} \

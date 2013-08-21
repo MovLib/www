@@ -34,8 +34,11 @@ else
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
-aptitude -y install libltdl-dev
-NAME="libmcrypt-${VERSION}"
-source ${ID}wget.sh "http://softlayer.dl.sourceforge.net/sourceforge/mcrypt/" ${NAME} ".tar.gz"
-./configure --disable-posix-threads --enable-dynamic-loading
+aptitude update && aptitude -y install libltdl-dev
+NAME="libmcrypt"
+source ${ID}uninstall.sh
+source ${ID}wget.sh "http://softlayer.dl.sourceforge.net/sourceforge/mcrypt/" "${NAME}-${VERSION}" ".tar.gz"
+./configure \
+  --disable-posix-threads \
+  --enable-dynamic-loading
 source ${ID}install.sh

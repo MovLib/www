@@ -26,7 +26,10 @@
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-make && make install && make clean && ldconfig
+make
+checkinstall make install
+make clean
+ldconfig
 LINE=$(msgline)
-msgsuccess "${LINE}\nSuccessfully installed ${NAME}\n${LINE}"
+msgsuccess "${LINE}\nSuccessfully installed ${NAME}-${VERSION}\n${LINE}"
 exit 0

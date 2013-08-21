@@ -30,15 +30,16 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="1.5.2"
+  VERSION="1.5.3"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
-aptitude update && aptitude -y install libatomic-ops-dev
+#aptitude update && aptitude -y install libatomic-ops-dev
 
-NAME="nginx-${VERSION}"
-rm -rf ${SD}${NAME}
-source ${ID}wget.sh "http://nginx.org/download/" ${NAME} ".tar.gz"
+# Uninstall old and download new nginx.
+NAME="nginx"
+source ${ID}uninstall.sh
+source ${ID}wget.sh "http://nginx.org/download/" "${NAME}-${VERSION}" ".tar.gz"
 
 # Install OpenSSL
 OPENSSL_VERSION="1.0.1e"
@@ -61,7 +62,6 @@ source ${ID}git.sh madler zlib
 cd ..
 msginfo "Changing to directory: ${SD}${NAME}"
 
-# Configure our nginx installation.
 ./configure \
   --user="www-data" \
   --group="www-data" \
@@ -80,14 +80,14 @@ msginfo "Changing to directory: ${SD}${NAME}"
   --with-http_gzip_static_module \
   --with-http_ssl_module \
   --with-http_spdy_module \
-  --with-openssl="/usr/local/src/${NAME}/openssl-${OPENSSL_VERSION}" \
-  --with-md5="/usr/local/src/${NAME}/openssl-${OPENSSL_VERSION}" \
+  --with-openssl="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
+  --with-md5="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
   --with-md5-asm \
-  --with-sha1="/usr/local/src/${NAME}/openssl-${OPENSSL_VERSION}" \
+  --with-sha1="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
   --with-sha1-asm \
-  --with-pcre="/usr/local/src/${NAME}/pcre" \
+  --with-pcre="/usr/local/src/${NAME}-${VERSION}/pcre" \
   --with-pcre-jit \
-  --with-zlib="/usr/local/src/${NAME}/zlib" \
+  --with-zlib="/usr/local/src/${NAME}-${VERSION}/zlib" \
   --without-http_access_module \
   --without-http_auth_basic_module \
   --without-http_autoindex_module \
@@ -112,22 +112,15 @@ mkdir -p /var/cache/nginx/body /var/cache/nginx/fastcgi
 /etc/init.d/nginx stop
 
 make
-make install
+checkinstall make install
 make clean
 
 # Remove the default configuration files.
 cd conf
 for f in *; do
-  rm -f "/etc/nginx/${f}"
+  rm -f /etc/nginx/${f}
 done
-rm -f "/etc/nginx/*.default"
-
-# TODO: We could do this easily in a loop.
-SRC=/var/www/conf/nginx/
-TRG=/etc/nginx/
-
-ln -s ${SRC}nginx.conf ${TRG}nginx.conf
-ln -s ${SRC}conf/gzip.conf ${TRG}conf/gzip.conf
+rm -f /etc/nginx/*.default
 
 ldconfig
 LINE=$(msgline)

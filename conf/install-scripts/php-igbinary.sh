@@ -27,7 +27,11 @@
 
 source $(pwd)/inc/conf.sh
 NAME="igbinary"
+VERSION="1.1.1"
+source ${ID}uninstall.sh
 source ${ID}git.sh "phadej" ${NAME}
 phpize
-./configure CFLAGS='-O3 -m64' LDFLAGS='-O3 -m64' --enable-igbinary
+./configure \
+  CFLAGS="-O3 -g -m64" \
+  --enable-igbinary
 source ${ID}install.sh

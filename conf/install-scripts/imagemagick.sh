@@ -32,13 +32,14 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="6.8.6-6"
+  VERSION="6.8.6-8"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
-NAME="ImageMagick-${VERSION}"
+NAME="ImageMagick"
 aptitude install libjpeg-dev libpng-dev
-source ${ID}wget.sh "http://www.imagemagick.org/download/" ${NAME} ".tar.gz"
+source ${ID}uninstall.sh
+source ${ID}wget.sh "http://www.imagemagick.org/download/" "${NAME}-${VERSION}" ".tar.gz"
 ./configure \
   CFLAGS="-O3 -m64 -pthread" \
   CXXFLAGS="-O3 -m64 -pthread" \
@@ -47,6 +48,7 @@ source ${ID}wget.sh "http://www.imagemagick.org/download/" ${NAME} ".tar.gz"
   --with-jpeg \
   --with-png \
   --with-quantum-depth=8 \
+  --with-rsvg \
   --with-webp \
   --without-bzlib \
   --without-djvu \
@@ -70,10 +72,4 @@ source ${ID}wget.sh "http://www.imagemagick.org/download/" ${NAME} ".tar.gz"
   --without-x \
   --without-xml \
   --without-zlib
-
-checkinstall
-
-ln -s /usr/local/include/ImageMagick-6 /usr/local/include/ImageMagick
-# source ${ID}install.sh
-
-# dpkg -r
+source ${ID}install.sh

@@ -35,11 +35,11 @@ else
 fi
 
 aptitude update && aptitude -y install libevent-dev
-NAME="memcached-${VERSION}"
-source ${ID}wget.sh "http://memcached.googlecode.com/files/" ${NAME} ".tar.gz"
+NAME="memcached"
+source ${ID}uninstall.sh
+source ${ID}wget.sh "http://memcached.googlecode.com/files/" "${NAME}-${VERSION}" ".tar.gz"
 ./configure \
   CFLAGS="-O3 -m64" \
-  LDFLAGS="-O3 -m64" \
   --sysconfdir="/etc/memcached" \
   --disable-coverage \
   --enable-64bit \

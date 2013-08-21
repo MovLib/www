@@ -31,21 +31,60 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="5.5.1"
+  VERSION="5.5.2"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
-NAME="php-${VERSION}"
-source ${ID}wget.sh "http://us1.php.net/distributions/" ${NAME} ".tar.gz"
+NAME="php"
+source ${ID}uninstall.sh
+source ${ID}wget.sh "http://us1.php.net/distributions/" "${NAME}-${VERSION}" ".tar.gz"
+
+# ---------------------------------------------------------------------------------------------------------------------- PRODUCTION
+#./configure \
+#  CFLAGS="-O3 -m64" \
+#  CXXFLAGS="-O3 -m64" \
+#  --disable-flatfile \
+#  --disable-inifile \
+#  --disable-pdo \
+#  --disable-short-tags \
+#  --enable-bcmath \
+#  --enable-fpm \
+#  --enable-intl \
+#  --enable-libgcc \
+#  --enable-libxml \
+#  --enable-mbstring \
+#  --enable-mysqlnd \
+#  --enable-opcache \
+#  --enable-pcntl \
+#  --enable-re2c-cgoto \
+#  --enable-xml \
+#  --enable-zend-signals \
+#  --enable-zip \
+#  --sysconfdir="/etc/php-fpm" \
+#  --with-config-file-path="/etc/php-fpm" \
+#  --with-curl \
+#  --with-fpm-group="www-data" \
+#  --with-fpm-user="www-data" \
+#  --with-icu-dir="/usr/local" \
+#  --with-mcrypt="/usr/lib/libmcrypt" \
+#  --with-mysql-sock="/run/mysqld/mysqld.sock" \
+#  --with-mysqli \
+#  --with-openssl \
+#  --with-pcre-regex \
+#  --with-pear \
+#  --with-zend-vm="GOTO" \
+#  --with-zlib \
+#  --without-sqlite3
+
+# ---------------------------------------------------------------------------------------------------------------------- DEVELOPMENT
+#
+# We need PDO for PHPUnit in our development system. Otherwise we can't run any database tests.
 ./configure \
   CFLAGS="-O3 -m64" \
   CXXFLAGS="-O3 -m64" \
   --disable-flatfile \
   --disable-inifile \
-# We need PDO for PHPUnit's DbUnit to work properly. We won't need it on our production server!
-#  --disable-pdo \
   --disable-short-tags \
-  --disable-sqlite3 \
   --enable-bcmath \
   --enable-fpm \
   --enable-intl \

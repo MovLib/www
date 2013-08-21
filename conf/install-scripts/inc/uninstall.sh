@@ -17,28 +17,17 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# "PHP imagick" installation script.
+# Helper script to uninstall old installation.
 #
-# LINK: http://pecl.php.net/package/imagick
-# LINK: http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
+# LINK: http://www.legroom.net/2010/06/18/display-colored-output-shell-scripts
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-source $(pwd)/inc/conf.sh
+msginfo "Uninstalling old ${NAME} installation."
+dpkg -r ${NAME}
 
-if [ ${#} == 1 ]; then
-  VERSION=${1}
-else
-  VERSION="3.1.0RC2"
-  msginfo "No version string supplied as argument, using default version ${VERSION}!"
-fi
-
-NAME="imagick-${VERSION}"
-source ${ID}wget.sh "http://pecl.php.net/get/" ${NAME} ".tgz"
-rm -f ../package.xml
-phpize
-./configure ${DEFAULT_FLAGS}
-source ${ID}install.sh
+msginfo "Deleting old ${NAME} source files."
+rm -rf ${SD}${NAME}-*

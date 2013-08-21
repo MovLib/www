@@ -35,7 +35,10 @@ else
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
-NAME="snappy-${VERSION}"
-source ${ID}wget.sh "https://snappy.googlecode.com/files/" ${NAME} ".tar.gz"
-./configure CFLAGS="-O3 -m64" CXXFLAGS="-O3 -m64" LDFLAGS="-O3 -m64"
+NAME="snappy"
+source ${ID}uninstall.sh
+source ${ID}wget.sh "https://snappy.googlecode.com/files/" "${NAME}-${VERSION}" ".tar.gz"
+./configure \
+  CFLAGS="-O3 -m64" \
+  CXXFLAGS="-O3 -m64"
 source ${ID}install.sh
