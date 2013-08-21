@@ -116,7 +116,7 @@ location ^~ /<?= $r("persons") ?> {
   }
 
   location = /<?= $r("persons") ?>/ {
-    return 301 /<?= $r("person") ?>;
+    return 301 /<?= $r("persons") ?>;
   }
 
   location ~ ^/<?= $r("persons") ?>/([0-9]+)$ {
