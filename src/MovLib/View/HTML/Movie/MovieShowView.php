@@ -18,7 +18,7 @@
 namespace MovLib\View\HTML\Movie;
 
 use \MovLib\Exception\MovieException;
-use \MovLib\Model\PosterModel;
+use \MovLib\Model\MoviePosterModel;
 use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 
@@ -219,7 +219,7 @@ class MovieShowView extends AbstractView {
     try {
       $poster = $this->presenter->movieModel->getPosterDisplay();
     } catch (MovieException $e) {
-      $poster = new PosterModel();
+      $poster = new MoviePosterModel();
     }
     return
       "<{$tag}{$this->expandTagAttributes($attributes)}>" .
@@ -320,7 +320,7 @@ class MovieShowView extends AbstractView {
                 $i18n->r("/movie/{0}/{1}-gallery", [ $this->presenter->movieModel->id, $i18n->t("poster") ]),
                 $this->getImage(
                   $poster,
-                  PosterModel::IMAGESTYLE_LARGE_FIXED_WIDTH,
+                  MoviePosterModel::IMAGESTYLE_LARGE_FIXED_WIDTH,
                   [ "alt" => $this->presenter->displayTitle ]),
                 [ "class" => "span span--3" ]
               ) .

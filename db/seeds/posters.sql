@@ -4,7 +4,7 @@ BEGIN;
 INSERT INTO `posters`
   (
     `movie_id`,
-    `poster_id`,
+    `section_id`,
     `user_id`,
     `country_id`,
     `filename`,
@@ -38,7 +38,7 @@ VALUES
 INSERT INTO `posters`
   (
     `movie_id`,
-    `poster_id`,
+    `section_id`,
     `user_id`,
     `country_id`,
     `filename`,
@@ -73,7 +73,7 @@ COMMIT;
 INSERT INTO `posters`
   (
     `movie_id`,
-    `poster_id`,
+    `section_id`,
     `user_id`,
     `country_id`,
     `filename`,

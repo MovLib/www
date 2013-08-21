@@ -150,13 +150,25 @@ class MovieModel extends AbstractModel {
   private $links = null;
 
   /**
-   * Associative array containing the information of the movie's display poster.
+   * Sorted numeric array containing the movie's lobby card information as \MovLib\Model\MovieImageModel objects.
    * @var null|array
+   */
+  private $lobbyCards = null;
+
+  /**
+   * \MovLib\Model\MoviePosterModel object containing the information of the movie's display poster.
+   * @var null|\MovLib\Model\MoviePosterModel
    */
   private $displayPoster = null;
 
   /**
-   * Sorted numeric array containing the movie's poster information as an associative array.
+   * Sorted numeric array containing the movie's photo information as \MovLib\Model\MovieImageModel objects.
+   * @var null|array
+   */
+  private $photos = null;
+
+  /**
+   * Sorted numeric array containing the movie's poster as \MovLib\Model\MoviePosterModel objects.
    * @var null|array
    */
   private $posters = null;
@@ -371,7 +383,7 @@ class MovieModel extends AbstractModel {
           p.`person_id` AS `id`,
           p.`name` AS `name`,
           p.`deleted` AS `deleted`,
-          pp.`photo_id` AS `photo_id`,
+          pp.`section_id` AS `section_id`,
           pp.`filename` AS `filename`,
           pp.`ext` AS `ext`
           FROM `movies_directors` md
@@ -492,19 +504,75 @@ class MovieModel extends AbstractModel {
     return $this->links;
   }
 
+  /**
+   * Retrieve the lobby card data for this movie.
+   *
+   * @return array
+   *   Numeric array containing all the movie's lobby cards in \MovLib\Model\MovieImageModel objects.
+   */
+  public function getLobbyCards() {
+    if ($this->lobbyCards === null) {
+      $lobbyCardIds = $this->select(
+        "SELECT
+          `section_id` AS `id`
+          FROM `movies_images`
+          WHERE `movie_id` = ?
+            AND `type` = 'lobby-card'
+          ORDER BY rating DESC",
+        "d",
+        [ $this->id ]);
+      $count = count($lobbyCardIds);
+      for ($i = 0; $i < $count; ++$i) {
+        $this->lobbyCards[] = new MovieImageModel($this->id, $lobbyCardIds[$i]["id"], "lobby-card");
+      }
+    }
+    return $this->lobbyCards;
+  }
+
+  /**
+   * Retrieve the photo data for this movie.
+   *
+   * @return array
+   *   Numeric array containing all the movie's photos in \MovLib\Model\MovieImageModel objects.
+   */
+  public function getPhotos() {
+    if ($this->photos === null) {
+      $photoIds = $this->select(
+        "SELECT
+          `section_id` AS `id`
+          FROM `movies_images`
+          WHERE `movie_id` = ?
+            AND `type` = 'photo'
+          ORDER BY rating DESC",
+        "d",
+        [ $this->id ]);
+      $count = count($photoIds);
+      for ($i = 0; $i < $count; ++$i) {
+        $this->photos[] = new MovieImageModel($this->id, $photoIds[$i]["id"], "photo");
+      }
+    }
+    return $this->photos;
+  }
+
+  /**
+   * Retrieve the display poster information for this movie.
+   *
+   * @return \MovLib\Model\MoviePosterModel
+   * @throws \MovieException
+   */
   public function getPosterDisplay() {
     if ($this->displayPoster === null) {
       try {
         $posterId = $this->select(
           "SELECT
-            `poster_id` AS `id`
+            `section_id` AS `id`
             FROM `posters`
             WHERE `movie_id` = ?
             ORDER BY rating DESC
             LIMIT 1",
           "d",
           [ $this->id ])[0]["id"];
-        $this->displayPoster = new PosterModel($this->id, $posterId);
+        $this->displayPoster = new MoviePosterModel($this->id, $posterId);
       } catch (ErrorException $e) {
         throw new \MovieException("No diplay poster for movie {$this->id}!", $e);
       }
@@ -516,12 +584,13 @@ class MovieModel extends AbstractModel {
    * Retrieve the movie poster data for this movie.
    *
    * @return array
+   *   Numeric array containing all the movie's posters in \MovLib\Model\MoviePosterModel objects.
    */
   public function getPosters() {
     if ($this->posters === null) {
       $posterIds = $this->select(
         "SELECT
-          `poster_id` AS `id`
+          `section_id` AS `id`
           FROM `posters`
           WHERE `movie_id` = ?
           ORDER BY rating DESC",
@@ -529,7 +598,7 @@ class MovieModel extends AbstractModel {
         [ $this->id ]);
       $count = count($posterIds);
       for ($i = 0; $i < $count; ++$i) {
-        $this->posters[] = new PosterModel($this->id, $posterIds[$i]["id"]);
+        $this->posters[] = new MoviePosterModel($this->id, $posterIds[$i]["id"]);
       }
     }
     return $this->posters;
@@ -652,11 +721,6 @@ class MovieModel extends AbstractModel {
    */
   public function getTitles() {
     global $i18n;
-    if ($this->id == 1) {
-      $this->titles = [
-        ["title" => "test", "languageId" => 42, "isDisplayTitle" => true]
-      ];
-    }
     if ($this->titles === null) {
       $this->titles = $this->select(
         "SELECT `title` AS `title`,

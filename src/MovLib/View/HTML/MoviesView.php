@@ -18,7 +18,7 @@
 namespace MovLib\View\HTML;
 
 use \MovLib\Exception\MovieException;
-use \MovLib\Model\PosterModel;
+use \MovLib\Model\MoviePosterModel;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -71,7 +71,7 @@ class MoviesView extends AbstractView {
       try {
         $poster = $movies[$i]["#movie"]->getPosterDisplay();
       } catch (MovieException $e) {
-        $poster = new PosterModel();
+        $poster = new MoviePosterModel();
       }
       $countriesAndYear = [];
       if (empty($movies[$i]["#movie"]->getCountries()) === false) {
@@ -94,7 +94,7 @@ class MoviesView extends AbstractView {
             "<article>" .
               "<div class='movies-list__poster'>" .
                 $this->getImage($poster,
-                  PosterModel::IMAGESTYLE_SMALL,
+                  MoviePosterModel::IMAGESTYLE_SMALL,
                   [ "alt" => $i18n->t("{0} movie poster.", [ $movies[$i]["#movie"]->displayTitle ]) ]) .
               "</div>" .
               "<div class='movies-list__info clear-fix'>" .

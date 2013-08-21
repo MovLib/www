@@ -6,7 +6,7 @@ INSERT INTO `persons` (
   `birthdate`,
   `country`,
   `city`,
-  `gender`,
+  `sex`,
   `dyn_aliases`,
   `dyn_biographies`,
   `dyn_links`
@@ -16,14 +16,14 @@ VALUES (
   '1959-03-18',
   'FR',
   'Paris',
-  'male',
+  1,
   '',
   '',
   ''
 );
 INSERT INTO `persons_photos` (
-  `photo_id`,
   `person_id`,
+  `section_id`,
   `user_id`,
   `filename`,
   `width`,
@@ -55,7 +55,7 @@ INSERT INTO `persons` (
   `birthdate`,
   `country`,
   `city`,
-  `gender`,
+  `sex`,
   `dyn_aliases`,
   `dyn_biographies`,
   `dyn_links`
@@ -66,7 +66,7 @@ VALUES (
   '1948-07-30',
   'MA',
   'Casablanca',
-  'male',
+  1,
   '',
   '',
   ''
@@ -77,7 +77,7 @@ INSERT INTO `persons` (
   `birthdate`,
   `country`,
   `city`,
-  `gender`,
+  `sex`,
   `dyn_aliases`,
   `dyn_biographies`,
   `dyn_links`
@@ -87,7 +87,7 @@ VALUES (
   '1981-06-09',
   'IL',
   'Jerusalem',
-  'female',
+  2,
   '',
   '',
   ''
@@ -98,7 +98,7 @@ INSERT INTO `persons` (
   `birthdate`,
   `country`,
   `city`,
-  `gender`,
+  `sex`,
   `dyn_aliases`,
   `dyn_biographies`,
   `dyn_links`
@@ -108,7 +108,7 @@ VALUES (
   '1958-03-21',
   'GB',
   'London',
-  'male',
+  1,
   '',
   '',
   ''
@@ -123,7 +123,7 @@ INSERT INTO `persons` (
   `birthdate`,
   `country`,
   `city`,
-  `gender`,
+  `sex`,
   `dyn_aliases`,
   `dyn_biographies`,
   `dyn_links`
@@ -133,14 +133,14 @@ VALUES (
   '1959-01-28',
   'FR',
   'Montbéliard',
-  'male',
+  1,
   '',
   '',
   ''
 );
 INSERT INTO `persons_photos` (
-  `photo_id`,
   `person_id`,
+  `section_id`,
   `user_id`,
   `filename`,
   `width`,
@@ -152,8 +152,8 @@ INSERT INTO `persons_photos` (
   `dyn_descriptions`,
   `hash`
 ) VALUES (
-1,
 5,
+1,
 1,
 'Frank-Darabont.1.en',
 348,
@@ -171,7 +171,7 @@ INSERT INTO `persons` (
   `birthdate`,
   `country`,
   `city`,
-  `gender`,
+  `sex`,
   `dyn_aliases`,
   `dyn_biographies`,
   `dyn_links`
@@ -181,7 +181,7 @@ VALUES (
   '1958-10-16',
   'US',
   'West Covina, CA',
-  'male',
+  1,
   '',
   '',
   ''
@@ -192,7 +192,7 @@ INSERT INTO `persons` (
   `birthdate`,
   `country`,
   `city`,
-  `gender`,
+  `sex`,
   `dyn_aliases`,
   `dyn_biographies`,
   `dyn_links`
@@ -202,7 +202,7 @@ VALUES (
   '1937-06-01',
   'US',
   'Memphis, TN',
-  'male',
+  1,
   '',
   '',
   ''

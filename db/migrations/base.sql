@@ -202,6 +202,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons` (
   `city` TINYBLOB NULL COMMENT 'The person’s birth city.' ,
   `region` TINYBLOB NULL COMMENT 'The person’s birth region.' ,
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The person\'s sex according to ISO 5218.' ,
+  `rank` BIGINT UNSIGNED NULL COMMENT 'The person\'s global rank.' ,
   `dyn_aliases` BLOB NOT NULL COMMENT 'The person’s aliases.' ,
   `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s translatable biographies.' ,
   `dyn_links` BLOB NOT NULL COMMENT 'The person’s external weblinks.' ,
@@ -236,8 +237,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`companies` (
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this company was deleted, default is FALSE (0).' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translatable descriptions.' ,
   `dyn_links` BLOB NOT NULL COMMENT 'The company’s external links.' ,
-  PRIMARY KEY (`company_id`) ,
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
+  PRIMARY KEY (`company_id`) )
 COMMENT = 'Contains all company related data.'
 ROW_FORMAT = COMPRESSED;
 
@@ -287,7 +287,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`posters` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.' ,
-  `poster_id` BIGINT UNSIGNED NOT NULL COMMENT 'The poster\'s unique ID within the movie.' ,
+  `section_id` BIGINT UNSIGNED NOT NULL COMMENT 'The poster\'s unique ID within the movie.' ,
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this poster.' ,
   `country_id` INT UNSIGNED NULL COMMENT 'Unique ID of the country the poster was released in.' ,
   `filename` TINYBLOB NOT NULL COMMENT 'The poster’s filename without extensions.' ,
@@ -300,7 +300,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`posters` (
   `rating` BIGINT UNSIGNED NOT NULL COMMENT 'The poster’s upvotes.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The poster’s translatable descriptions.' ,
   `hash` BINARY(16) NOT NULL COMMENT 'The file\'s modification timestamp (UNIX format) for cache busting.' ,
-  PRIMARY KEY (`movie_id`, `poster_id`) ,
+  PRIMARY KEY (`movie_id`, `section_id`) ,
   INDEX `fk_posters_movies` (`movie_id` ASC) ,
   INDEX `fk_posters_countries` (`country_id` ASC) ,
   INDEX `fk_posters_users` (`user_id` ASC) ,
@@ -328,8 +328,8 @@ SHOW WARNINGS;
 -- Table `movlib`.`persons_photos`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`persons_photos` (
-  `photo_id` BIGINT UNSIGNED NOT NULL COMMENT 'The photo’s unique ID within the person.' ,
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.' ,
+  `section_id` BIGINT UNSIGNED NOT NULL COMMENT 'The photo’s unique ID within the person.' ,
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this photo.' ,
   `filename` TINYBLOB NOT NULL COMMENT 'The photo’s filename without extensions.' ,
   `width` SMALLINT NOT NULL COMMENT 'The photo’s width.' ,
@@ -341,9 +341,9 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons_photos` (
   `rating` BIGINT UNSIGNED NOT NULL COMMENT 'The photo’s upvotes.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The photo’s translatable descriptions.' ,
   `hash` BINARY(16) NOT NULL COMMENT 'The file\'s modification timestamp (UNIX format) for cache busting.' ,
-  PRIMARY KEY (`photo_id`, `person_id`) ,
+  PRIMARY KEY (`person_id`, `section_id`) ,
   INDEX `fk_persons_photos_persons` (`person_id` ASC) ,
-  INDEX `fk_persons_photos_images` (`photo_id` ASC) ,
+  INDEX `fk_persons_photos_images` (`section_id` ASC) ,
   INDEX `fk_persons_photos_users` (`user_id` ASC) ,
   CONSTRAINT `fk_persons_photos_persons`
     FOREIGN KEY (`person_id` )
@@ -364,8 +364,8 @@ SHOW WARNINGS;
 -- Table `movlib`.`companies_images`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`companies_images` (
-  `company_image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company image’s unique ID within the company.' ,
   `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company image’s unique ID.' ,
+  `section_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company image’s unique ID within the company.' ,
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this company image.' ,
   `filename` TINYBLOB NOT NULL COMMENT 'The company image’s filename without extensions.' ,
   `width` SMALLINT NOT NULL COMMENT 'The company image’s width.' ,
@@ -378,9 +378,9 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`companies_images` (
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The company image’s translatable descriptions.' ,
   `type` VARCHAR(50) NOT NULL COMMENT 'The company image’s type (e.g. “logo”).' ,
   `hash` BINARY(16) NOT NULL COMMENT 'The file\'s modification timestamp (UNIX format) for cache busting.' ,
-  PRIMARY KEY (`company_image_id`, `company_id`) ,
+  PRIMARY KEY (`company_id`, `section_id`) ,
   INDEX `fk_companies_images_companies` (`company_id` ASC) ,
-  INDEX `fk_companies_images_images` (`company_image_id` ASC) ,
+  INDEX `fk_companies_images_images` (`section_id` ASC) ,
   INDEX `fk_companies_images_users` (`user_id` ASC) ,
   CONSTRAINT `fk_companies_images_companies`
     FOREIGN KEY (`company_id` )
@@ -455,8 +455,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`messages` (
   `message` TEXT NOT NULL COMMENT 'The message’s unique English pattern.' ,
   `comment` BLOB NULL COMMENT 'The message’s optional comment for translators.' ,
   `dyn_translations` BLOB NOT NULL COMMENT 'The message’s translations.' ,
-  PRIMARY KEY (`message_id`) ,
-  UNIQUE INDEX `message_UNIQUE` (`message` ASC) )
+  PRIMARY KEY (`message_id`) )
 COMMENT = 'Contains all translatable system messages.'
 ROW_FORMAT = COMPRESSED;
 
@@ -725,8 +724,8 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_images`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`movies_images` (
-  `movie_image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image\'s unique ID within the movie.' ,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.' ,
+  `section_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image\'s unique ID within the movie.' ,
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this movie image.' ,
   `filename` TINYBLOB NOT NULL COMMENT 'The movie image’s filename without extensions.' ,
   `width` SMALLINT NOT NULL COMMENT 'The movie image’s width.' ,
@@ -739,15 +738,15 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_images` (
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The movie image’s translatable descriptions.' ,
   `type` VARCHAR(50) NOT NULL COMMENT 'The movie image’s type (e.g. “photo”).' ,
   `hash` BINARY(16) NOT NULL COMMENT 'The file\'s modification timestamp (UNIX format) for cache busting.' ,
-  PRIMARY KEY (`movie_image_id`, `movie_id`) ,
+  PRIMARY KEY (`movie_id`, `section_id`) ,
   INDEX `fk_posters_movies` (`movie_id` ASC) ,
-  INDEX `fk_posters_users` (`user_id` ASC) ,
-  CONSTRAINT `fk_posters_movies_movies`
+  INDEX `fk_movies_images_users` (`user_id` ASC) ,
+  CONSTRAINT `fk_movies_images_movies`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_posters_users`
+  CONSTRAINT `fk_movies_images_users`
     FOREIGN KEY (`user_id` )
     REFERENCES `movlib`.`users` (`user_id` )
     ON DELETE NO ACTION

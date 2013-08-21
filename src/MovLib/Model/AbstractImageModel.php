@@ -120,6 +120,13 @@ class AbstractImageModel extends AbstractModel {
    */
   public $imageUri;
 
+  // ------------------------------------------------------------------------------------------------------------------- Common image styles
+
+  /**
+   * Image style for galleries.
+   * @var int
+   */
+  const IMAGESTYLE_GALLERY = "140x140>";
 
   // ------------------------------------------------------------------------------------------------------------------- Protected Methods
 
