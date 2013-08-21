@@ -130,7 +130,7 @@ abstract class AbstractView {
   protected $scripts = [
     "serverNameStatic" => Network::SERVER_NAME_STATIC,
     "modules" => [],
-    "version" => MOVLIB_VERSION,
+    "version" => "",
   ];
 
   /**
@@ -155,6 +155,7 @@ abstract class AbstractView {
   public function __construct($presenter, $title) {
     $this->presenter = $presenter;
     $this->title = $title;
+    $this->scripts["version"] = $GLOBALS["conf"]["version"];
     if (isset($_SESSION["ALERTS"])) {
       $c = count($_SESSION["ALERTS"]);
       for ($i = 0; $i < $c; ++$i) {
