@@ -26,6 +26,7 @@ use \MovLib\Model\AbstractModel;
 use \MovLib\Model\I18nModel;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMethodCalls;
+use \MovLib\Utility\String;
 use \MovLib\Utility\Validation;
 
 /**
@@ -150,7 +151,7 @@ class SessionModel extends AbstractModel {
     // simple HTTP header. We only have to ensure that this variable will still contain the correct IP address of the
     // client when we begin to use proxy servers.
     if (($this->ipAddress = Validation::inputIpAddress("REMOTE_ADDR", INPUT_SERVER)) === false) {
-      throw new NetworkException("The IP address is empty, or not a valid IPv4 nor IPv6 address.");
+      throw new NetworkException("The IP address is empty, or not a valid IPv4 nor IPv6 address. The address was: <code>" . String::checkPlain($_SERVER["REMOTE_ADDR"]) . "</code>");
     }
     // Check if a cookie is present and not empty.
     // Only attempt to start a session if no session is already active.
@@ -160,16 +161,24 @@ class SessionModel extends AbstractModel {
       }
       try {
         $this->loadSession(
-          "SELECT `user_id` AS `id`, `name`, `deleted`, `timezone`, `language_id` AS `languageId` FROM `users` WHERE `user_id` = ? LIMIT 1",
+          "SELECT
+            `user_id` AS `id`,
+            `name`,
+            `deleted`,
+            `timezone`,
+            `language_id` AS `languageId`
+          FROM `users`
+          WHERE `user_id` = ?
+          LIMIT 1",
           "d", $_SESSION["UID"]
         );
-        $this->sessionId = session_id();
-        $this->csrfToken = $_SESSION["CSRF"];
-        $this->ttl       = $_SESSION["TTL"];
         if ($_SESSION["TTL"] < time()) {
           $this->destroySessionAndRedirectToLogin();
         }
         else {
+          $this->sessionId = session_id();
+          $this->csrfToken = $_SESSION["CSRF"];
+          $this->ttl       = $_SESSION["TTL"];
           $this->isLoggedIn = true;
         }
       } catch (UserException $e) {
