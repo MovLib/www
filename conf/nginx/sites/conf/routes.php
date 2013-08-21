@@ -15,7 +15,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Routes "English"
+# The routes file that will be translated for each subdomain. Everything within this file has to be in English!
 #
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
@@ -42,7 +42,7 @@ location @movies {
   include sites/conf/fastcgi.conf;
 }
 
-location ^~ /movies {
+location ^~ /<?= $r("movies") ?> {
 
   location = /movies {
     try_files $movlib_cache @movies;
