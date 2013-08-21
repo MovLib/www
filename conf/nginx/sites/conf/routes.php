@@ -44,16 +44,16 @@ location @movies {
 
 location ^~ /<?= $r("movies") ?> {
 
-  location = /movies {
+  location = /<?= $r("movies") ?> {
     try_files $movlib_cache @movies;
   }
 
-  location = /movies/ {
-    return 301 /movies;
+  location = /<?= $r("movies") ?>/ {
+    return 301 /<?= $r("movies") ?>;
   }
 
-  location ~ ^/movies/([0-9]+)$ {
-    return 301 /movie/$1;
+  location ~ ^/<?= $r("movies") ?>/([0-9]+)$ {
+    return 301 /<?= $r("movie") ?>/$1;
   }
 
   return 404;
@@ -73,29 +73,29 @@ location @release {
   include sites/conf/fastcgi.conf;
 }
 
-location ^~ /movie {
+location ^~ /<?= $r("movie") ?> {
 
-  location = /movie {
-    return 301 /movies;
+  location = /<?= $r("movie") ?> {
+    return 301 /<?= $r("movies") ?>;
   }
 
-  location = /movie/ {
-    return 301 /movies;
+  location = /<?= $r("movie") ?>/ {
+    return 301 /<?= $r("movies") ?>;
   }
 
-  location ~ ^/movie/([0-9]+)$ {
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)$ {
     set $movlib_movie_id $1;
     try_files $movlib_cache @movie;
   }
 
-  location ~ ^/(movie)/([0-9]+)/(poster|lobby-card|image)-gallery$ {
+  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("poster") ?>|<?= $r("lobby-card") ?>|<?= $r("image") ?>)-<?= $r("gallery") ?>$ {
     set $movlib_action $1;
     set $movlib_id $2;
     set $movlib_tab $3;
     try_files $movlib_cache @gallery;
   }
 
-  location ~ ^/movie/([0-9]+)/release/([0-9]+)$ {
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("release") ?>/([0-9]+)$ {
     set $movlib_movie_id $1;
     set $movlib_release_id $2;
     try_files $movlib_cache @release;
@@ -108,19 +108,19 @@ location ^~ /movie {
 # ---------------------------------------------------------------------------------------------------------------------- persons
 
 
-location ^~ /persons {
+location ^~ /<?= $r("persons") ?> {
   set $movlib_presenter "Persons";
 
-  location = /persons {
+  location = /<?= $r("persons") ?> {
     try_files $movlib_cache @php;
   }
 
-  location = /persons/ {
-    return 301 /persons;
+  location = /<?= $r("persons") ?>/ {
+    return 301 /<?= $r("person") ?>;
   }
 
-  location ~ ^/persons/([0-9]+)$ {
-    return 301 /person/$2;
+  location ~ ^/<?= $r("persons") ?>/([0-9]+)$ {
+    return 301 /<?= $r("person") ?>/$2;
   }
 
   return 404;
@@ -135,22 +135,22 @@ location @person {
   include sites/conf/fastcgi.conf;
 }
 
-location ^~ /person {
+location ^~ /<?= $r("person") ?> {
 
-  location = /person {
-    return 301 /persons;
+  location = /<?= $r("person") ?> {
+    return 301 /<?= $r("persons") ?>;
   }
 
-  location = /person/ {
-    return 301 /persons;
+  location = /<?= $r("person") ?>/ {
+    return 301 /<?= $r("persons") ?>;
   }
 
-  location ~ ^/person/([0-9]+)$ {
+  location ~ ^/<?= $r("person") ?>/([0-9]+)$ {
     set $movlib_person_id $1;
     try_files $movlib_cache @person;
   }
 
-  location ~ ^/(person)/([0-9]+)/photo-gallery$ {
+  location ~ ^/(<?= $r("person") ?>)/([0-9]+)/<?= $r("photo-gallery") ?>$ {
     set $movlib_action $1;
     set $movlib_id $2;
     try_files $movlib_cache @gallery;
@@ -167,51 +167,51 @@ location @user {
   include sites/conf/fastcgi.conf;
 }
 
-location ^~ /user {
+location ^~ /<?= $r("user") ?> {
 
-  location = /user {
+  location = /<?= $r("user") ?> {
     try_files $movlib_cache @user;
   }
 
-  location = /user/login {
+  location = /<?= $r("user/login") ?> {
     set $movlib_action "Login";
     try_files $movlib_cache @user;
   }
 
-  location = /user/logout {
+  location = /<?= $r("user/logout") ?> {
     set $movlib_action "Logout";
     try_files $movlib_cache @user;
   }
 
-  location = /user/reset-password {
+  location = /<?= $r("user/reset-password") ?> {
     set $movlib_action "ResetPassword";
     try_files $movlib_cache @user;
   }
 
-  location = /user/register {
+  location = /<?= $r("user/register") ?> {
     set $movlib_action "Register";
     try_files $movlib_cache @user;
   }
 
-  location ~ ^/user/register=([0-9a-z]*)$ {
+  location ~ ^/<?= $r("user/register") ?>=([0-9a-z]*)$ {
     set $movlib_action "Register";
     set $movlib_token $1;
     try_files $movlib_cache @user;
   }
 
-  location ~ ^/user/reset-password=([0-9a-z]*)$ {
+  location ~ ^/<?= $r("user/reset-password") ?>=([0-9a-z]*)$ {
     set $movlib_action "ResetPassword";
     set $movlib_token $1;
     try_files $movlib_cache @user;
   }
 
-  location ~ ^/user/(account|notification|mail|password|dangerzone)-settings$ {
+  location ~ ^/<?= $r("user") ?>/(<?= $r("account") ?>|<?= $r("notification") ?>|<?= $r("mail") ?>|<?= $r("password") ?>|<?= $r("dangerzone") ?>-<?= $r("settings") ?>$ {
     set $movlib_action "Settings";
     set $movlib_tab $1;
     try_files $movlib_cache @user;
   }
 
-  location ~ ^/user/(.+)$ {
+  location ~ ^/<?= $r("user") ?>/(.+)$ {
     set $movlib_action "Profile";
     set $movlib_user_name $1;
     try_files $movlib_cache @user;
