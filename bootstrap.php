@@ -41,19 +41,3 @@ $GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
 // Needed by various objects (e.g. DelayedLogger).
 $i18n = new \MovLib\Model\I18nModel(ini_get("intl.default_locale"));
 $_SERVER["LANGUAGE_CODE"] = $i18n->getDefaultLanguageCode();
-
-/**
- * Get a <em>protected</em> or <em>private</em> method of a class as reflection function.
- *
- * @param string $fqClassName
- *   The fully qualified class name without leading backslash (this is very important, because PHPUnit will not be
- *   able to find the class if the name starts with it).
- * @param string $methodName
- *   Name of the method.
- * @return \ReflectionFunction
- */
-function getReflectionFunction($fqClassName, $methodName) {
-  $method = (new \ReflectionClass($fqClassName))->getMethod($methodName);
-  $method->setAccessible(true);
-  return $method;
-}

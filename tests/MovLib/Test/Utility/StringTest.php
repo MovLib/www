@@ -31,16 +31,56 @@ use \PHPUnit_Framework_TestCase;
  */
 class StringTest extends PHPUnit_Framework_TestCase {
 
-  /**
-   * Test shorten method.
-   */
-  public function testShorten() {
-    $this->assertEquals("Iñtërnâ…", String::shorten("Iñtërnâtiônàlizætiøn and then the quick brown fox jumped", "…"));
+  public function testBase36encode() {
+    $this->assertEquals("kf12oi", String::base36encode(1234567890));
   }
 
-  /**
-   * Test wordwrap without cutting long words.
-   */
+  public function testBase36decode() {
+    $this->assertEquals(1234567890, String::base36decode("kf12oi"));
+  }
+
+  public function testCheckPlain() {
+    $this->assertEquals(
+      "test&quot;string&quot;with&lt;html&gt;embedded&lt;script&gt;reserved&apos;&apos;tags&apos;&apos;",
+      String::checkPlain("test\"string\"with<html>embedded<script>reserved''tags''")
+    );
+  }
+
+  public function testCheckUrl() {
+    $this->assertEquals(
+      "my test&period;php&quest;name&equals;st&aring;le&amp;car&equals;aston-martin",
+      String::checkUrl("my test.php?name=ståle&car=aston-martin")
+    );
+  }
+
+  public function testConvertToRoute() {
+    $this->assertEquals(
+      "☆-my-route-teststring-with-some-unicode-★",
+      String::convertToRoute("☆ My Route TestString with some Unicode ★")
+    );
+  }
+
+  public function testPlaceholder() {
+    $this->assertEquals(
+      "<em class='placeholder'>Placeholder &lt;Test&gt;</em>",
+      String::placeholder("Placeholder <Test>")
+    );
+  }
+
+  public function testShorten() {
+    $this->assertEquals(
+      "Iñtërnâ…",
+      String::shorten("Iñtërnâtiônàlizætiøn and then the quick brown fox jumped", 10, "…")
+    );
+  }
+
+  public function testCollapseWhitspace() {
+    $this->assertEquals(
+      "This string should not have any linefeeds, tabs, nor multiple whitespaces.",
+      String::collapseWhitespace("This\nstring\rshould\r\nnot\nhave\rany\r\nlinefeeds,\ttabs,          nor multiple whitespaces.")
+    );
+  }
+
   public function testWordwrapNoCut() {
     $this->assertEquals(
       "Iñtërnâtiônàlizætiøn
@@ -61,9 +101,6 @@ she died.",
     );
   }
 
-  /**
-   * Test wordwrap with cutting long words.
-   */
   public function testWordwrapCut() {
     $this->assertEquals(
       "Iñtërnâ
@@ -82,7 +119,7 @@ the poor
 fox down
 until she
 died.",
-      String::wordwrap("Iñtërnâtiônàlizætiøn and then the quick brown fox jumped overly the lazy dog and one day the lazy dog humped the poor fox down until she died.", 10, PHP_EOL, true)
+      String::wordwrap("Iñtërnâtiônàlizætiøn_and_then_the_quick_brown_fox_jumped_overly_the_lazy_dog and one day the lazy dog humped the poor fox down until she died.", 10, PHP_EOL, true)
     );
   }
 

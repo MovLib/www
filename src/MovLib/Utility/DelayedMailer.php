@@ -263,7 +263,7 @@ class DelayedMailer {
       "Message-ID: <{$messageId}@{$_SERVER["SERVER_NAME"]}>",
       "MIME-Version: 1.0",
       "Return-Path: <{$GLOBALS["conf"]["mail"]["from"]}>",
-      "Subject: {$this->encodeHeader(String::removeNewlines($mail->subject))}",
+      "Subject: {$this->encodeHeader(String::collapseWhitespace($mail->subject))}",
       "To: {$mail->recipient}",
       "",
       "--{$messageId}",
@@ -276,7 +276,7 @@ class DelayedMailer {
       "Content-Type: text/html; charset=utf-8",
       "Content-Transfer-Encoding: 8bit",
       "",
-      String::removeNewlines($mail->getHtml()),
+      String::collapseWhitespace($mail->getHtml()),
       "",
       "--{$messageId}--",
       "",
@@ -484,7 +484,7 @@ class DelayedMailer {
    */
   private function encodeHeaderQencode($header, $position) {
     $pattern = "";
-    $encoded = String::removeNewlines($header);
+    $encoded = String::collapseWhitespace($header);
     switch ($position) {
       case self::HEADER_ENCODE_PHRASE:
         $pattern = '^A-Za-z0-9!*+\/ -';

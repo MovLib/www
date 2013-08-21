@@ -85,25 +85,27 @@ class String {
   /**
    * Convert string of any form to a route usable string.
    *
+   * <b>IMPORTANT!</b> This is for internal usage only, you can convert a string to route and look up the translation
+   * in the database. This does not sanitize or encode the generated route!
+   *
    * <b>IMPORTANT!</b> This is not meant to create complete routes. If you pass a slash (<code>/</code>) as part of the
    * string it will get encoded.
    *
    * @param string $string
    *   The string that should be converted.
    * @return string
-   *   A string that can be used within a route.
+   *   A string that can be used within the i18n route methods.
    */
   public static function convertToRoute($string) {
-    return self::checkUrl(str_replace(" ", "-", mb_strtolower($string)));
+    return str_replace(" ", "-", mb_strtolower($string));
   }
 
   /**
    * Formats text for emphasized display in a placeholder inside a sentence.
    *
-   * Used automatically by <code>String::format()</code>.
-   *
+   * @see \MovLib\Utility\String::checkPlain()
    * @param string $string
-   *   The text to format (plain-text).
+   *   The text to format (plain text).
    * @return string
    *   The formatted text (html).
    */
@@ -137,17 +139,15 @@ class String {
   }
 
   /**
-   * Remove all possible kinds of newline characters from a string.
-   *
-   * Each newline character will be replaced with a single whitespace.
+   * Collapse all kinds of whitespace characters to a single whitespace.
    *
    * @param string $string
-   *   The string to remove newline characters.
+   *   The string to collapse.
    * @return string
-   *   The string without newline characters.
+   *   The collapsed string.
    */
-  public static function removeNewlines($string) {
-    return trim(preg_replace("/\s\s+/", " ", $string));
+  public static function collapseWhitespace($string) {
+    return trim(preg_replace("/\s+/m", " ", $string));
   }
 
   /**
