@@ -18,10 +18,8 @@
 namespace MovLib\Utility;
 
 use \DateTime;
-use \MovLib\Exception\UserException;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\MailerException;
-use \MovLib\Model\UserModel;
 use \MovLib\Utility\DelayedLogger;
 use \MovLib\Utility\String;
 
@@ -83,31 +81,7 @@ class DelayedMailer {
   const READ_TIMEOUT = 30;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Properties
-
-
-  /**
-   * The email address from which this mail was sent.
-   *
-   * @var string
-   */
-  public $from;
-
-  /**
-   * The name that appears in the email client of the recipient along the from email address.
-   *
-   * @var string
-   */
-  public $fromName;
-
-  /**
-   *
-   * @var boolean
-   */
-  public $keepAlive = true;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Private Properties
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
@@ -118,32 +92,17 @@ class DelayedMailer {
   private $connection;
 
   /**
-   * The SMTP host.
    *
-   * @var string
+   * @var boolean
    */
-  private $host;
+  public $keepAlive = true;
 
   /**
-   * The SMTP port.
+   * Array used to collect all mails that should be sent.
    *
-   * @var int
+   * @var array
    */
-  private $port;
-
-  /**
-   * The SMTP user's name.
-   *
-   * @var string
-   */
-  private $username;
-
-  /**
-   * The SMTP user's password.
-   *
-   * @var string
-   */
-  private $password;
+  private static $mails = [];
 
   /**
    * The last response message from the server.
@@ -160,37 +119,8 @@ class DelayedMailer {
   private $responseCode = 0;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Static Properties
-
-
-  /**
-   * Array used to collect all mails that should be sent.
-   *
-   * @var array
-   */
-  private static $mails = [];
-
-
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
-
-  /**
-   * Create new Mailer instance.
-   *
-   * <b>IMPORTANT:</b> This will not connect to the SMTP server!
-   *
-   * @global type $i18n
-   *   The global i18n object.
-   */
-  public function __construct() {
-    global $i18n;
-    // Export all ini values to class scope.
-    foreach (parse_ini_file("{$_SERVER["HOME"]}/conf/mail/mail.ini") as $prop => $value) {
-      $this->{$prop} = $value;
-    }
-    // Translate the from name to the current display language and protect it with quotes.
-    $this->fromName = '"' . $i18n->t($this->fromName) . '"';
-  }
 
   /**
    * Disconnect gracefully from SMTP server if a connection is open upon destruction of this instance.
@@ -215,8 +145,8 @@ class DelayedMailer {
     if (!$this->connected()) {
       try {
         $this
-          ->debug("Establishing stream socket connection to SMTP host {$this->host} on port {$this->port}.")
-          ->connection = stream_socket_client("{$this->host}:{$this->port}", $errno, $errstr, self::CONNECT_TIMEOUT, STREAM_CLIENT_CONNECT, stream_context_create())
+          ->debug("Establishing stream socket connection to SMTP host {$GLOBALS["conf"]["mail"]["host"]} on port {$GLOBALS["conf"]["mail"]["port"]}.")
+          ->connection = stream_socket_client("{$GLOBALS["conf"]["mail"]["host"]}:{$GLOBALS["conf"]["mail"]["port"]}", $errno, $errstr, self::CONNECT_TIMEOUT, STREAM_CLIENT_CONNECT, stream_context_create())
         ;
       } catch (ErrorException $e) {
         throw new MailerException("Could not connect to SMTP server. SOCKET ERROR {$errno}: {$errstr}", $e);
@@ -241,8 +171,8 @@ class DelayedMailer {
         throw new MailerException("Authentication method not accepted from SMTP server. SMTP ERROR {$this->responseCode}: {$this->responseMessage}");
       }
       $challenge = base64_decode(substr($this->responseMessage, 4));
-      $password = hash_hmac("md5", $challenge, $this->password);
-      $this->clientSend(base64_encode("{$this->username} {$password}") . "\r\n");
+      $password = hash_hmac("md5", $challenge, $GLOBALS["conf"]["mail"]["password"]);
+      $this->clientSend(base64_encode("{$GLOBALS["conf"]["mail"]["username"]} {$password}") . "\r\n");
       if ($this->responseCode !== 235) {
         throw new MailerException("Credentials not accepted from SMTP server. SMTP ERROR {$this->responseCode}: {$this->responseMessage}");
       }
@@ -291,19 +221,23 @@ class DelayedMailer {
    * Send the given mail.
    *
    * @todo Digitally sign with DKIM!
+   * @global \MovLib\Model\I18nModel $i18n
+   *   Global i18n instance.
    * @param \MovLib\View\Mail\AbstractMail $mail
    *   The mail to send.
    * @return $this
    * @throws MailerException
    */
   public function send($mail) {
+    global $i18n;
+
     if (method_exists($mail, "init")) {
       $mail->init();
     }
 
-    $this->clientSend("MAIL FROM:<{$this->from}>\r\n");
+    $this->clientSend("MAIL FROM:<{$GLOBALS["conf"]["email"]}>\r\n");
     if ($this->responseCode !== 250) {
-      throw new MailerException("SMTP server refused mail from ({$this->from}). SMTP ERROR {$this->responseCode}: {$this->responseMessage}");
+      throw new MailerException("SMTP server refused mail from ({$GLOBALS["conf"]["email"]}). SMTP ERROR {$this->responseCode}: {$this->responseMessage}");
     }
 
     $this->clientSend("RCPT TO:<{$mail->recipient}>\r\n");
@@ -317,7 +251,7 @@ class DelayedMailer {
     }
 
     // Build the message ID following common best practices.
-    $messageId = String::base36encode(microtime(true)) . "." . String::base36encode(md5("{$this->from}.{$mail->recipient}"));
+    $messageId = String::base36encode(microtime(true)) . "." . String::base36encode(md5("{$GLOBALS["conf"]["mail"]["from"]}.{$mail->recipient}"));
 
     // @todo Split DATA every 1000 characters!
     $this->clientSend(implode("\r\n", [
@@ -325,10 +259,10 @@ class DelayedMailer {
       "Content-Type: multipart/alternative;",
       "\tboundary=\"{$messageId}\"",
       "Date: " . date(DateTime::RFC822),
-      "From: {$this->encodeHeader($this->fromName)} <{$this->from}>",
+      "From: {$this->encodeHeader('"' . $i18n->t($GLOBALS["conf"]["mail"]["from_name"]) . '"')} <{$GLOBALS["conf"]["mail"]["from"]}>",
       "Message-ID: <{$messageId}@{$_SERVER["SERVER_NAME"]}>",
       "MIME-Version: 1.0",
-      "Return-Path: <{$this->from}>",
+      "Return-Path: <{$GLOBALS["conf"]["mail"]["from"]}>",
       "Subject: {$this->encodeHeader(String::removeNewlines($mail->subject))}",
       "To: {$mail->recipient}",
       "",
@@ -601,7 +535,7 @@ class DelayedMailer {
    *   <code>TRUE</code> if command succeeded, otherwise <code>FALSE</code>.
    */
   private function helloSend($command) {
-    $this->clientSend("{$command} {$this->host}\r\n");
+    $this->clientSend("{$command} {$GLOBALS["conf"]["mail"]["host"]}\r\n");
     return $this->responseCode === 250;
   }
 
