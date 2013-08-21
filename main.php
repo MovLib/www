@@ -34,6 +34,7 @@
 
 // Parse global configuration and ensure it's available globally.
 $GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
+$GLOBALS["conf"]["root_path"] = __DIR__;
 
 /**
  * This is the outermost place to catch any exception that might have been forgotten somewhere.
