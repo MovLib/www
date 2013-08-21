@@ -55,7 +55,7 @@ class MovDevMail extends AbstractMail {
    *   The message in plain text format.
    */
   public function __construct($subject, $html, $text) {
-    $this->recipient = "movdev-mailinglist@movlib.org";
+    $this->recipient = $GLOBALS["conf"]["mailer"]["mailinglist"];
     $this->subject = $subject;
     $this->html = $html;
     $this->text = $text;
