@@ -18,6 +18,7 @@
 namespace MovLib\Model;
 
 use \MovLib\Exception\DatabaseException;
+use \MovLib\Utility\DelayedLogger;
 use \mysqli;
 
 /**
@@ -31,7 +32,7 @@ use \mysqli;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractModel {
+class BaseModel {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -83,16 +84,14 @@ abstract class AbstractModel {
   /**
    * Correctly close the database connection.
    *
-   * @see \MovLib\Model\AbstractModel::disconnect()
+   * @see \MovLib\Model\BaseModel::disconnect()
    */
   public function __destruct() {
     try {
       $this->disconnect();
     } catch (Exception $e) {
-      // Do nothing at this point. If everything worked fine till this point there is no reason to exit the execution of
-      // the request.
-      //
-      // @todo Log this exception!
+      // Do nothing! If everything worked fine till this point there is no reason to exit the execution of the request.
+      DelayedLogger::logException($e);
     }
   }
 
@@ -112,9 +111,9 @@ abstract class AbstractModel {
    * <b>Resulting SQL query:</b>
    * <pre>DELETE FROM `users` WHERE `id` = 42 AND `name` = "Smith";</pre>
    *
-   * @see \MovLib\Model\AbstractModel::prepareAndBind()
-   * @see \MovLib\Model\AbstractModel::execute()
-   * @see \MovLib\Model\AbstractModel::close()
+   * @see \MovLib\Model\BaseModel::prepareAndBind()
+   * @see \MovLib\Model\BaseModel::execute()
+   * @see \MovLib\Model\BaseModel::close()
    * @param string $table
    *   The name of the table where a record should be deleted.
    * @param string $types
@@ -164,9 +163,9 @@ abstract class AbstractModel {
    * <b>Resulting SQL query:</b>
    * <pre>INSERT INTO `users` (`name`, `mail`) VALUES ("Foobar", "foobar@example.com");</pre>
    *
-   * @see \MovLib\Model\AbstractModel::prepareAndBind()
-   * @see \MovLib\Model\AbstractModel::execute()
-   * @see \MovLib\Model\AbstractModel::close()
+   * @see \MovLib\Model\BaseModel::prepareAndBind()
+   * @see \MovLib\Model\BaseModel::execute()
+   * @see \MovLib\Model\BaseModel::close()
    * @param string $table
    *   Name of the table where we should insert new data.
    * @param string $types
@@ -220,10 +219,10 @@ abstract class AbstractModel {
    * <b>Usage example:</b>
    * <pre>$this->query('SELECT * FROM `users` WHERE `id` = ?', 'i', [ 42 ]);</pre>
    *
-   * @see \MovLib\Model\AbstractModel::prepareAndBind()
-   * @see \MovLib\Model\AbstractModel::execute()
-   * @see \MovLib\Model\AbstractModel::fetchAssoc()
-   * @see \MovLib\Model\AbstractModel::close()
+   * @see \MovLib\Model\BaseModel::prepareAndBind()
+   * @see \MovLib\Model\BaseModel::execute()
+   * @see \MovLib\Model\BaseModel::fetchAssoc()
+   * @see \MovLib\Model\BaseModel::close()
    * @param string $query
    *   The query to be executed.
    * @param string $types
@@ -248,10 +247,10 @@ abstract class AbstractModel {
    * <b>Usage Example:</b>
    * <pre>$this->queryAll("SELECT * FROM `users`");</pre>
    *
-   * @see \MovLib\Model\AbstractModel::prepare()
-   * @see \MovLib\Model\AbstractModel::execute()
-   * @see \MovLib\Model\AbstractModel::fetchAssoc()
-   * @see \MovLib\Model\AbstractModel::close()
+   * @see \MovLib\Model\BaseModel::prepare()
+   * @see \MovLib\Model\BaseModel::execute()
+   * @see \MovLib\Model\BaseModel::fetchAssoc()
+   * @see \MovLib\Model\BaseModel::close()
    * @param string $query
    *   The query to be executed.
    * @return array
@@ -280,9 +279,9 @@ abstract class AbstractModel {
    * <b>Resulting SQL query:</b>
    * <pre>UPDATE `user` SET `id` = 42, `name` = "foobar", `age` = 99 WHERE `id` = 1 AND `name` = "barfoo";</pre>
    *
-   * @see \MovLib\Model\AbstractModel::prepareAndBind()
-   * @see \MovLib\Model\AbstractModel::execute()
-   * @see \MovLib\Model\AbstractModel::close()
+   * @see \MovLib\Model\BaseModel::prepareAndBind()
+   * @see \MovLib\Model\BaseModel::execute()
+   * @see \MovLib\Model\BaseModel::close()
    * @param string $table
    *   Name of the database table to update.
    * @param string $types
@@ -461,7 +460,7 @@ abstract class AbstractModel {
   /**
    * Prepare a statement for execution and bind parameters to it.
    *
-   * @see \MovLib\Model\AbstractModel::prepare()
+   * @see \MovLib\Model\BaseModel::prepare()
    * @param string $query
    *   The query to be prepared.
    * @param string $types

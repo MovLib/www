@@ -17,7 +17,7 @@
  */
 namespace MovLib\Model;
 
-use \MovLib\Model\AbstractModel;
+use \MovLib\Model\BaseModel;
 
 /**
  * Description of RatingModel
@@ -28,7 +28,7 @@ use \MovLib\Model\AbstractModel;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RatingModel extends AbstractModel {
+class RatingModel extends BaseModel {
 
   /**
    * Retrieve a user's rating for a specific movie.

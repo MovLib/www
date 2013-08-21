@@ -19,7 +19,7 @@ namespace MovLib\Model;
 
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
-use \MovLib\Model\AbstractModel;
+use \MovLib\Model\BaseModel;
 use \MovLib\Utility\Network;
 use \MovLib\Utility\Validation;
 
@@ -32,7 +32,7 @@ use \MovLib\Utility\Validation;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class AbstractImageModel extends AbstractModel {
+class AbstractImageModel extends BaseModel {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

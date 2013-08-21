@@ -26,7 +26,7 @@ namespace MovLib\Model;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviesModel extends AbstractModel {
+class MoviesModel extends BaseModel {
 
   /**
    * Get a movie list ordered by entry date.

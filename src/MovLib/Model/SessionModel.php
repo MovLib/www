@@ -22,7 +22,7 @@ use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\NetworkException;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UserException;
-use \MovLib\Model\AbstractModel;
+use \MovLib\Model\BaseModel;
 use \MovLib\Model\I18nModel;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMethodCalls;
@@ -38,7 +38,7 @@ use \MovLib\Utility\Validation;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class SessionModel extends AbstractModel {
+class SessionModel extends BaseModel {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Public Properties

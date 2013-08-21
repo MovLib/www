@@ -19,7 +19,7 @@ namespace MovLib\Model;
 
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\MovieException;
-use \MovLib\Model\AbstractModel;
+use \MovLib\Model\BaseModel;
 
 /**
  * The movie model is responsible for all database related functionality of a single movie entry.
@@ -32,7 +32,7 @@ use \MovLib\Model\AbstractModel;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieModel extends AbstractModel {
+class MovieModel extends BaseModel {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
   /**

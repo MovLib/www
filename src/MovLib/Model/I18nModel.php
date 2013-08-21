@@ -22,7 +22,7 @@ use \IntlDateFormatter;
 use \Locale;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\ErrorException;
-use \MovLib\Model\AbstractModel;
+use \MovLib\Model\BaseModel;
 use \MovLib\Utility\CollatorExtended;
 use \MovLib\Utility\DelayedLogger;
 use \MovLib\Utility\DelayedMethodCalls;
@@ -37,7 +37,7 @@ use \MovLib\Utility\DelayedMethodCalls;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class I18nModel extends AbstractModel {
+class I18nModel extends BaseModel {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

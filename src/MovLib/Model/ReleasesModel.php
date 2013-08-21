@@ -17,7 +17,7 @@
  */
 namespace MovLib\Model;
 
-use \MovLib\Model\AbstractModel;
+use \MovLib\Model\BaseModel;
 
 /**
  * The releases model is responsible for all database related functionality of releases.
@@ -29,7 +29,7 @@ use \MovLib\Model\AbstractModel;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ReleasesModel extends AbstractModel {
+class ReleasesModel extends BaseModel {
 
   public function __constructFromMovieId($movieId) {
 
