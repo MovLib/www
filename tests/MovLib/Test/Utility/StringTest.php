@@ -18,6 +18,7 @@
 namespace MovLib\Test\Utility;
 
 use \MovLib\Utility\String;
+use \PHPUnit_Framework_TestCase;
 
 /**
  * Tests for the various methods of the string utility class.
