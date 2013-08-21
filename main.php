@@ -32,12 +32,8 @@
  * @since 0.0.1-dev
  */
 
-/**
- * The full version string of this MovLib software.
- *
- * @var string
- */
-define("MOVLIB_VERSION", "0.0.1-dev");
+// Parse global configuration and ensure it's available globally.
+$GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
 
 /**
  * This is the outermost place to catch any exception that might have been forgotten somewhere.
@@ -110,9 +106,8 @@ set_error_handler("error_all_handler");
  * @link http://stackoverflow.com/a/2146171/1251219
  */
 function error_fatal_handler() {
-  if (($error = error_get_last())) {
+  if ($error = error_get_last()) {
     $exception = new \Exception($error["message"], $error["type"]);
-
     $reflection = new \ReflectionClass("Exception");
 
     $trace = $reflection->getProperty("trace");
