@@ -27,15 +27,16 @@ use \MovLib\Utility\DelayedMailer;
 use \MovLib\Utility\DelayedMethodCalls;
 use \MovLib\Utility\String;
 use \MovLib\Utility\Validation;
-use \MovLib\View\Mail\User\UserActivationMail;
-use \MovLib\View\Mail\User\UserPasswordResetMail;
-use \MovLib\View\Mail\User\UserRegisterExistingMail;
 use \MovLib\View\HTML\AbstractView;
 use \MovLib\View\HTML\AlertView;
 use \MovLib\View\HTML\Redirect;
+use \MovLib\View\HTML\User\UserLoginView;
 use \MovLib\View\HTML\User\UserRegisterView;
 use \MovLib\View\HTML\User\UserResetPasswordView;
 use \MovLib\View\HTML\User\UserSettingsView;
+use \MovLib\View\Mail\User\UserActivationMail;
+use \MovLib\View\Mail\User\UserPasswordResetMail;
+use \MovLib\View\Mail\User\UserRegisterExistingMail;
 
 /**
  * @todo Description.
@@ -110,8 +111,9 @@ class UserPresenter extends AbstractPresenter {
     }
     // Ensure we are using the correct route (this method is called from other constructors in this presenter as well).
     $_SERVER["REQUEST_URI"] = $i18n->r("/user/login");
+    // If we need to set alerts on error, we need the view.
+    $this->view = new UserLoginView($this);
     if ($_SERVER["REQUEST_METHOD"] === "GET") {
-      $this->setPresentation("User\\UserLogin");
       return;
     }
     if (($mail = Validation::inputMail("mail")) === false) {
@@ -320,7 +322,7 @@ class UserPresenter extends AbstractPresenter {
     // Create new empty user model, time to query the database for more info on this token.
     $userModel = new UserModel();
     $data = $userModel->selectAndDeleteTemporaryData($token);
-    // Check if we have any data at all and if we have check if it has already expired.
+    // Check if we have any data at all and if it already expired.
     if (empty($data) || (time() - $data["time"] > 86400)) {
       $this->view = new AlertView($this, $i18n->t("Link Expired"));
       $this->view->setAlert(
@@ -685,12 +687,15 @@ class UserPresenter extends AbstractPresenter {
     }
     // Check if we have a new and a confirmation password.
     if ((!isset($_POST["new-pass"]) || empty($_POST["new-pass"])) || (!isset($_POST["confirm-pass"]) || empty($_POST["confirm-pass"]))) {
-      $errors["new-pass"] = $i18n->t("You must enter a new and a confirm password.");
+      $errors["new-pass"] = $i18n->t("You must enter a new and a confirmation password.");
+      $this->view->formInvalid["new-pass"] = true;
       $this->view->formInvalid["confirm-pass"] = true;
     }
     // Check that they are really equal.
     elseif ($_POST["new-pass"] !== $_POST["confirm-pass"]) {
       $errors["confirm-pass"] = $i18n->t("The confirmation password is not equal to your desired new password.");
+      $this->view->formInvalid["new-pass"] = true;
+      $this->view->formInvalid["confirm-pass"] = true;
     }
     // We're done if there are any errors.
     if ($errors) {
