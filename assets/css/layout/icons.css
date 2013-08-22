@@ -15,8 +15,8 @@
  */
 
 /**
- * We are using a custom font created with Fontello that only contains the icons we really use. Please have a look at
- * the LICENSE.txt file in the font directory for more information.
+ * We are using a custom font created with the IcoMoon app that only contains the icons we really use.
+ * Please have a look at the LICENSE.txt file in the font directory for more information.
  *
  * @author Dave Gandy
  * @copyright © 2013–present, Dave Gandy
@@ -28,8 +28,9 @@
  * @license http://creativecommons.org/licenses/by-sa/3.0/ CC BY 3.0
  * @link http://www.entypo.com/
  *
- * @link http://fontello.com/
+ * @link http://icomoon.io/
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
@@ -38,11 +39,11 @@
 
 @font-face {
   font-family: MovLib;
-  src: url("/font/movlib/movlib.eot?20130626");
-  src: url("/font/movlib/movlib.eot?20130626#iefix") format("embedded-opentype"),
-       url("/font/movlib/movlib.woff?20130626") format("woff"),
-       url("/font/movlib/movlib.ttf?20130626") format("truetype"),
-       url("/font/movlib/movlib.svg?20130626#movlib") format("svg")
+  src: url("/font/movlib/movlib.eot?20130822");
+  src: url("/font/movlib/movlib.eot?20130822#iefix") format("embedded-opentype"),
+       url("/font/movlib/movlib.woff?20130822") format("woff"),
+       url("/font/movlib/movlib.ttf?20130822") format("truetype"),
+       url("/font/movlib/movlib.svg?20130822#movlib") format("svg")
   ;
   font-weight: 500;
   font-style: normal;
@@ -64,20 +65,21 @@
   vertical-align: baseline;
 }
 
-.icon--alert:before{content:"\e807"}
-.icon--back-in-time:before{content:"\e808"}
-.icon--bell:before{content:"\e801"}
-.icon--cc-zero:before{content:"\e803"}
-.icon--cc:before{content:"\e802"}
-.icon--comment:before{content:"\e80f"}
-.icon--eye:before{content:"\e810"}
-.icon--help-circled:before{content:"\e80a"}
-.icon--info-circled:before{content:"\e80b"}
-.icon--lock:before{content:"\e806"}
-.icon--mail:before{content:"\e805"}
-.icon--menu:before{content:"\e809"}
-.icon--pencil:before{content:"\e80c"}
-.icon--search:before{content:"\e800"}
-.icon--star-empty:before{content:"\e80e"}
-.icon--star:before{content:"\e80d"}
-.icon--user:before{content:"\e804"}
+.icon--upload-alt:before {content: "\e000";}
+.icon--star:before {content: "\e001";}
+.icon--star-empty:before {content: "\e002";}
+.icon--search:before {content: "\e003";}
+.icon--mail:before {content: "\e004";}
+.icon--user:before {content: "\e005";}
+.icon--menu:before {content: "\e006";}
+.icon--help:before {content: "\e007";}
+.icon--info:before {content: "\e008";}
+.icon--lock:before {content: "\e009";}
+.icon--eye:before {content: "\e00a";}
+.icon--pencil:before {content: "\e00b";}
+.icon--comment:before {content: "\e00c";}
+.icon--bell:before {content: "\e00d";}
+.icon--warning:before {content: "\e00e";}
+.icon--back-in-time:before {content: "\e00f";}
+.icon--cc:before {content: "\e010";}
+.icon--cc-zero:before {content: "\e011";}
