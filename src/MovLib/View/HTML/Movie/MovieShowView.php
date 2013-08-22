@@ -74,7 +74,7 @@ class MovieShowView extends AbstractView {
         "accesskey" => "e",
         "title"     => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]),
       ]],
-      [ $i18n->r("/movie/{0}/history", [ $this->presenter->movieModel->id ]), "<i class='icon icon--back-in-time'></i>{$i18n->t("History")}", [
+      [ $i18n->r("/movie/{0}/history", [ $this->presenter->movieModel->id ]), "<i class='icon icon--history'></i>{$i18n->t("History")}", [
         "accesskey" => "h",
         "class"     => "menuitem--separator",
         "title"     => $i18n->t("Past versions of this {0}.", [ $i18n->t("movie") ]),
