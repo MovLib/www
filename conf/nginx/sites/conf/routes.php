@@ -88,7 +88,7 @@ location ^~ /<?= $r("movie") ?> {
     try_files $movlib_cache @movie;
   }
 
-  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("poster") ?>|<?= $r("lobby-card") ?>|<?= $r("image") ?>)-<?= $r("gallery") ?>$ {
+  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("poster") ?>|<?= $r("lobby-card") ?>|<?= $r("photo") ?>)-<?= $r("gallery") ?>$ {
     set $movlib_action $1;
     set $movlib_id $2;
     set $movlib_tab $3;
