@@ -36,7 +36,7 @@ class MovieImageModel extends AbstractImageModel {
    * The movie ID this image belongs to.
    * @var int
    */
-  public $movieId;
+  public $id;
 
   /**
    * The ID of the image within the movie images.
@@ -86,6 +86,12 @@ class MovieImageModel extends AbstractImageModel {
    */
   public $description;
 
+  /**
+   * The image's type (e.g. "lobby-card").
+   * @var string
+   */
+  public $type;
+
   // ------------------------------------------------------------------------------------------------------------------- Image styles
 
   /**
@@ -93,24 +99,26 @@ class MovieImageModel extends AbstractImageModel {
    */
 
   /**
-   * Construct a new movie image model. If the IDs are not specified, an empty model is created.
+   * Construct a new movie image model. If the image ID is not specified, an empty model is created.
    *
    * @global \MovLib\Model\I18nModel $i18n
    * @param int $movieId
    *   The movie ID this image belongs to.
-   * @param int $imageId
-   *   The ID of the image within the movie images.
    * @param string $type
    *   The type of the image (e.g. "lobby-card").
+   * @param int $imageId
+   *   The ID of the image within the movie images.
    */
-  public function __construct($movieId = null, $imageId = null, $type = null) {
+  public function __construct($movieId, $type, $imageId = null) {
     global $i18n;
-    if ($movieId && $imageId && $type) {
+    $this->id = $movieId;
+    $this->type = $type;
+    if ($imageId) {
       try {
         $this->imageDirectory = "movie/{$type}s/{$movieId}";
         $result = $this->select(
           "SELECT
-            `movie_id` AS `movieId`,
+            `movie_id` AS `id`,
             `section_id` AS `sectionId`,
             `user_id` AS `userId`,
             `country_id` AS `country`,
