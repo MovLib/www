@@ -82,20 +82,17 @@ class GalleryPresenter extends AbstractPresenter {
     global $i18n;
     try {
       $this->model = new MovieModel($_SERVER["ID"]);
-      $titles = $this->model->getTitles();
-      $count = count($titles);
-      $this->title = $this->model->originalTitle;
-      for ($i = 0; $i < $count; ++$i) {
-        if ($titles[$i]["isDisplayTitle"] === true && $i18n->getLanguages()[ $titles[$i]["languageId"] ]["code"] === $i18n->languageCode) {
-          $this->title = $titles[$i]["title"];
-          break;
-        }
+      if (empty($this->model->getTitleDisplay())) {
+        $this->title = $this->model->originalTitle;
+      }
+      else {
+        $this->title = $this->model->getTitleDisplay();
       }
       if (isset($this->model->year)) {
         $this->title .= " ({$this->model->year})";
       }
       $this->secondaryNavigationPoints = [
-      [ $i18n->r("/movie/{0}/{1}-gallery/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), $i18n->t("Upload"), [ "class" => "menuitem--separator" ] ],
+      [ $i18n->r("/movie/{0}/{1}-gallery/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), "<i class='icon icon--upload-alt'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
         [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("poster") ]), $i18n->t("Posters") ],
         [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("lobby-card") ]), $i18n->t("Lobby Cards") ],
         [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("photo") ]), $i18n->t("Photos") ]
