@@ -73,6 +73,12 @@ class MoviesView extends AbstractView {
       } catch (MovieException $e) {
         $poster = new MoviePosterModel();
       }
+      if (!empty($movies[$i]["#movie"]->getTitleDisplay())) {
+        $title = $movies[$i]["#movie"]->getTitleDisplay()["title"];
+      }
+      else {
+        $title = $movies[$i]["#movie"]->originalTitle;
+      }
       $countriesAndYear = [];
       if (empty($movies[$i]["#movie"]->getCountries()) === false) {
         $cc = count($movies[$i]["#movie"]->getCountries());
@@ -95,10 +101,10 @@ class MoviesView extends AbstractView {
               "<div class='movies-list__poster'>" .
                 $this->getImage($poster,
                   MoviePosterModel::IMAGESTYLE_SMALL,
-                  [ "alt" => $i18n->t("{0} movie poster.", [ $movies[$i]["#movie"]->displayTitle ]) ]) .
+                  [ "alt" => $i18n->t("{0} movie poster.", [ $title ]) ]) .
               "</div>" .
               "<div class='movies-list__info clear-fix'>" .
-                "<h2>{$movies[$i]["#movie"]->displayTitle}{$countriesAndYear}</h2>" .
+                "<h2>{$title}{$countriesAndYear}</h2>" .
                 "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $movies[$i]["#movie"]->originalTitle ])}</p>" .
               "</div>" .
             "</article>",

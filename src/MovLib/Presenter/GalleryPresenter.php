@@ -160,8 +160,8 @@ class GalleryPresenter extends AbstractPresenter {
     switch ($this->getAction()) {
       case "movie":
         $this->secondaryNavigationPoints = [
-          [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--back'></i>{$i18n->t("Back to {0}", [ $i18n->t("movie") ])}" ],
-          [ $i18n->r("/movie/{0}/{1}-gallery/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), "<i class='icon icon--upload-alt'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
+          [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--arrow-left'></i>{$i18n->t("Back to {0}", [ $i18n->t("movie") ])}" ],
+          [ $i18n->r("/movie/{0}/{1}-gallery/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), "<i class='icon icon--upload'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
           [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("poster") ]), $i18n->t("Posters") ],
           [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("lobby-card") ]), $i18n->t("Lobby Cards") ],
           [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("photo") ]), $i18n->t("Photos") ]
