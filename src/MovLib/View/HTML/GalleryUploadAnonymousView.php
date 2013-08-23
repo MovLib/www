@@ -18,7 +18,7 @@
 namespace MovLib\View\HTML;
 
 /**
- * Description of GalleryUploadView
+ * Gallery upload view for anonymous users (who are not allowed to upload images).
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -26,10 +26,10 @@ namespace MovLib\View\HTML;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class GalleryUploadView extends AbstractFormView {
+class GalleryUploadAnonymousView extends AbstractView {
 
   /**
-   * Initialize new image upload form view.
+   * Initialize new image upload view for anonymous users.
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance for translations.
@@ -40,37 +40,32 @@ class GalleryUploadView extends AbstractFormView {
     global $i18n;
     parent::__construct($presenter, "{$presenter->title} {$presenter->galleryTitle} {$i18n->t("gallery")} {$i18n->t("upload")}");
     $this->stylesheets[] = "modules/gallery.css";
-    $this->attributes["enctype"] = self::ENCTYPE_BINARY;
   }
 
   /**
-   * Get the content of the image upload page.
-   *
+   * {@inheritdoc}
    * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance for translations.
-   * @return string
-   *   The page's contents as HTML.
+   *   The global I18n Model instance for translations.
    */
-  public function getFormContent() {
+  public function getContent() {
     global $i18n;
+    $severity = self::ALERT_SEVERITY_ERROR;
     return
-    "<div class='row'>" .
-      "<aside class='span span--3'>" .
-        $this->getSecondaryNavigation(
-          $i18n->t("{0} gallery upload navigation", [ mb_convert_case($this->presenter->getAction(), MB_CASE_TITLE) ]),
-          $this->presenter->getSecondaryNavigation()
-        ) .
-      "</aside>" .
-      "<div class='span span--9'>" .
-        "<p><label for='image'>{$i18n->t("{$this->presenter->galleryTitle}")}{$this->help($i18n->t(
-          "Allowed image extensions: {0}<br>Maximum file size: {1,number}&thinsp;MB",
-          [ implode(", ", array_values($this->presenter->model->imageSupported)), ini_get("upload_max_filesize") ]
-        ))}</label>{$this->input("image", [
-          "accept" => implode(",", array_keys($this->presenter->model->imageSupported)),
-          "type"   => "file",
-        ])}</p>" .
-        "<p>{$this->submit($i18n->t("Upload"))}</p>" .
-        "<pre>" . print_r($_POST, true) . "</pre>" .
+    "<div class='container'>" .
+      "<div class='row'>" .
+        "<aside class='span span--3'>" .
+          $this->getSecondaryNavigation(
+            $i18n->t("{0} gallery upload navigation", [ mb_convert_case($this->presenter->getAction(), MB_CASE_TITLE) ]),
+            $this->presenter->getSecondaryNavigation()
+          ) .
+        "</aside>" .
+        "<div class='span span--9'>" .
+          "<div class='alert alert--{$severity}' role='alert'>" .
+            "<p><b>" . $i18n->t("The image upload feature is only available for registered users.") . "</b></p>" .
+            $i18n->t("Please {0} or {1} a new account to use all the features of MovLib. It's completely free and anonymous (if you want).",
+              [ $this->a($i18n->r("/user/login"), "log in"), $this->a("/user/register", "register") ]) .
+          "</div>" .
+        "</div>" .
       "</div>" .
     "</div>";
   }

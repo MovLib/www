@@ -32,6 +32,8 @@ use \MovLib\View\HTML\GalleryView;
  */
 class GalleryPresenter extends AbstractPresenter {
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
   /**
    * The images to display for the view.
    * Numeric array containing subclass instances of \MovLib\Model\AbstractImageModel.
@@ -62,13 +64,20 @@ class GalleryPresenter extends AbstractPresenter {
   public $title;
 
   /**
+   * The localized title of the gallery to upload to.
+   * @var type
+   */
+  public $galleryTitle;
+
+  // ------------------------------------------------------------------------------------------------------------------- Constructors and overriden methods
+
+  /**
    * Initialize a new gallery presenter.
    */
   public function __construct() {
-    $this
-      ->{__FUNCTION__ . $this->getAction()}()
-      ->setPresentation()
-    ;
+    $this->{__FUNCTION__ . $this->getAction()}();
+    $this->view = new GalleryView($this);
+    $this->setPresentation();
   }
 
   /**
@@ -81,37 +90,21 @@ class GalleryPresenter extends AbstractPresenter {
   public function __constructMovie() {
     global $i18n;
     try {
-      $this->model = new MovieModel($_SERVER["ID"]);
-      if (empty($this->model->getTitleDisplay())) {
-        $this->title = $this->model->originalTitle;
-      }
-      else {
-        $this->title = $this->model->getTitleDisplay();
-      }
-      if (isset($this->model->year)) {
-        $this->title .= " ({$this->model->year})";
-      }
-      $this->secondaryNavigationPoints = [
-      [ $i18n->r("/movie/{0}/{1}-gallery/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), "<i class='icon icon--upload-alt'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
-        [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("poster") ]), $i18n->t("Posters") ],
-        [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("lobby-card") ]), $i18n->t("Lobby Cards") ],
-        [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("photo") ]), $i18n->t("Photos") ]
-      ];
+      $this->initMovie();
       switch ($_SERVER["TAB"]) {
         case "poster":
-          $galleryTitle = "Posters";
+          $this->galleryTitle = "Poster";
           $this->images = $this->model->getPosters();
           break;
         case "lobby-card":
-          $galleryTitle = "Lobby Cards";
+          $this->galleryTitle = "Lobby Card";
           $this->images = $this->model->getLobbyCards();
           break;
         case "photo":
-          $galleryTitle = "Photos";
+          $this->galleryTitle = "Photo";
           $this->images = $this->model->getPhotos();
           break;
       }
-      $this->view = new GalleryView($this, $i18n->t("{0} {$galleryTitle}", [ $this->title ]));
     } catch (MovieException $e) {
       $this->setPresentation("Error\\NotFound");
     }
@@ -152,6 +145,54 @@ class GalleryPresenter extends AbstractPresenter {
         break;
     }
     return $breadcrumb;
+  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Utility methods
+
+  /**
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance for translations.
+   * @return type
+   */
+  public function getSecondaryNavigation() {
+    global $i18n;
+    switch ($this->getAction()) {
+      case "movie":
+        $this->secondaryNavigationPoints = [
+          [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--back'></i>{$i18n->t("Back to {0}", [ $i18n->t("movie") ])}" ],
+          [ $i18n->r("/movie/{0}/{1}-gallery/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), "<i class='icon icon--upload-alt'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
+          [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("poster") ]), $i18n->t("Posters") ],
+          [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("lobby-card") ]), $i18n->t("Lobby Cards") ],
+          [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("photo") ]), $i18n->t("Photos") ]
+        ];
+        break;
+      case "person":
+        break;
+      case "series":
+        break;
+    }
+    return $this->secondaryNavigationPoints;
+  }
+
+  /**
+   * Initializes common movie properties including the model, back link properties and the title.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *   The global i18n model instance for translations.
+   */
+  protected function initMovie() {
+    global $i18n;
+    $this->model = new MovieModel($_SERVER["ID"]);
+    $this->backRoute = $i18n->r("/movie/{0}", [ $this->model->id ]);
+    $this->backText = $i18n->t("Back to {0}", [ $i18n->t("movie") ]);
+    $this->backAttributes = [ "title" => $i18n->t("Go back to the movie's page.") ];
+    if (empty($this->model->getTitleDisplay())) {
+        $this->title = $this->model->originalTitle;
+    }
+    else {
+      $this->title = $this->model->getTitleDisplay();
+    }
   }
 
 }

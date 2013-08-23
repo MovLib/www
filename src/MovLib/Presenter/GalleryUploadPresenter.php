@@ -17,8 +17,11 @@
  */
 namespace MovLib\Presenter;
 
+use \MovLib\Exception\MovieException;
 use \MovLib\Model\MovieImageModel;
 use \MovLib\Model\MoviePosterModel;
+use \MovLib\View\HTML\GalleryUploadAnonymousView;
+use \MovLib\View\HTML\GalleryUploadView;
 
 /**
  * Generic image upload presenter for galleries.
@@ -29,32 +32,7 @@ use \MovLib\Model\MoviePosterModel;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class GalleryUploadPresenter extends AbstractPresenter {
-
-  /**
-   * The model for this gallery upload.
-   * @var \MovLib\Model\AbstractImageModel
-   */
-  public $model;
-
-  /**
-   * The secondary navigation points for the HTML views.
-   *
-   * @var array
-   */
-  public $secondaryNavigationPoints;
-
-  /**
-   * The title of the page to render (localized and without "upload" included).
-   * @var string
-   */
-  public $title;
-
-  /**
-   * The localized title of the gallery to upload to.
-   * @var type
-   */
-  public $galleryTitle;
+class GalleryUploadPresenter extends GalleryPresenter {
 
   /**
    * Initialize new GalleryUploadPresenter.
@@ -66,8 +44,22 @@ class GalleryUploadPresenter extends AbstractPresenter {
     ;
   }
 
+  /**
+   * Initialize the presenter for GET requests.
+   *
+   * @global \MovLib\Model\SessionModel $user
+   *   The global session model instance.
+   * @return $this
+   */
   public function __constructGet() {
+    global $user;
     $this->{__FUNCTION__ . $this->getAction()}();
+    if ($user->isLoggedIn) {
+      $this->view = new GalleryUploadView($this);
+    }
+    else {
+      $this->view = new GalleryUploadAnonymousView($this);
+    }
     return $this;
   }
 
@@ -80,40 +72,66 @@ class GalleryUploadPresenter extends AbstractPresenter {
    */
   public function __constructGetMovie() {
     global $i18n;
-    if (empty($this->model->getTitleDisplay())) {
-        $this->title = $this->model->originalTitle;
+    try {
+      $this->initMovie();
+      switch ($_SERVER["TAB"]) {
+        case "poster":
+          $this->model = new MoviePosterModel($_SERVER["ID"]);
+          $this->galleryTitle = $i18n->t("Poster");
+          break;
+        case "lobby-card":
+          $this->model = new MovieImageModel($_SERVER["ID"], "lobby-card");
+          $this->galleryTitle = $i18n->t("Lobby Card");
+          break;
+        case "photo":
+          $this->model = new MovieImageModel($_SERVER["ID"], "photo");
+          $this->galleryTitle = $i18n->t("Photo");
+          break;
       }
-      else {
-        $this->title = $this->model->getTitleDisplay();
-      }
-    if (isset($this->model->year)) {
-      $this->title .= " ({$this->model->year})";
-    }
-    $this->secondaryNavigationPoints = [
-      [ $i18n->r("/movie/{0}/{1}-gallery/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), "<i class='icon icon--upload-alt'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
-      [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("poster") ]), $i18n->t("Posters") ],
-      [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("lobby-card") ]), $i18n->t("Lobby Cards") ],
-      [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("photo") ]), $i18n->t("Photos") ]
-    ];
-    switch ($_SERVER["TAB"]) {
-      case "poster":
-        $this->model = new MoviePosterModel($_SERVER["ID"]);
-        $this->galleryTitle = $i18n->t("Posters");
-        break;
-      case "lobby-card":
-        $this->model = new MovieImageModel($_SERVER["ID"], "lobby-card");
-        $this->galleryTitle = $i18n->t("Lobby Cads");
-        break;
-      case "photo":
-        $this->model = new MovieImageModel($_SERVER["ID"], "photo");
-        $this->galleryTitle = $i18n->t("Photos");
-        break;
+    } catch (MovieException $e) {
+      $this->setPresentation("Error\\NotFound");
     }
     return $this;
   }
 
-  public function __costructPost() {
+  /**
+   * Initialize the presenter for POST requests.
+   *
+   * @global \MovLib\Model\SessionModel $user
+   *   The global session model instance.
+   * @return $this
+   */
+  public function __constructPost() {
+    global $user;
+    $this->{__FUNCTION__ . $this->getAction()}();
+    if ($user->isLoggedIn) {
+      $this->view = new GalleryUploadView($this);
+    }
+    else {
+      $this->view = new GalleryUploadAnonymousView($this);
+    }
     return $this;
+  }
+
+  public function __constructPostMovie() {
+    global $i18n;
+    try {
+      $this->initMovie();
+      switch ($_SERVER["TAB"]) {
+        case "poster":
+          $this->model = new MoviePosterModel($_SERVER["ID"]);
+          break;
+        case "lobby-card":
+          $this->model = new MovieImageModel($_SERVER["ID"], "lobby-card");
+          break;
+        case "photo":
+          $this->model = new MovieImageModel($_SERVER["ID"], "photo");
+          break;
+      }
+    }
+    catch (MovieException $e) {
+      $this->setPresentation("Error\\NotFound");
+    }
   }
 
   /**
@@ -121,15 +139,9 @@ class GalleryUploadPresenter extends AbstractPresenter {
    */
   public function getBreadcrumb() {
     global $i18n;
-    $breadcrumb = [];
+    $breadcrumb = parent::getBreadcrumb();
     switch ($this->getAction()) {
       case "movie":
-        $breadcrumb[] = [
-          $i18n->r("/movies"),
-          $i18n->t("Movies"),
-          [ "title" => $i18n->t("Have a look at the latest movie entries at MovLib.") ]
-        ];
-        $breadcrumb[] = [ $i18n->r("/movie/{0}", [ $this->model->id ]), $this->title ];
         $breadcrumb[] = [
           $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]),
           "{$this->title} {$this->galleryTitle}"
@@ -137,23 +149,11 @@ class GalleryUploadPresenter extends AbstractPresenter {
         break;
       case "person":
         $breadcrumb[] = [
-          $i18n->r("/persons"),
-          $i18n->t("Persons"),
-          [ "title" => $i18n->t("Have a look at the latest person entries at MovLib.") ]
-        ];
-        $breadcrumb[] = [ $i18n->r("/person/{0}", [ $this->model->id ]), $this->title ];
-        $breadcrumb[] = [
           $i18n->r("/person/{0}/{1}-gallery", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]),
           "{$this->title} {$this->galleryTitle}"
         ];
         break;
       case "series":
-        $breadcrumb[] = [
-          $i18n->r("/series"),
-          $i18n->t("Series"),
-          [ "title" => $i18n->t("Have a look at the latest series entries at MovLib.") ]
-        ];
-        $breadcrumb[] = [ $i18n->r("/series/{0}", [ $this->model->id ]), $this->title ];
         $breadcrumb[] = [
           $i18n->r("/series/{0}/{1}-gallery", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]),
           "{$this->title} {$this->galleryTitle}"

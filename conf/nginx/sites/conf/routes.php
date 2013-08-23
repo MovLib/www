@@ -34,6 +34,11 @@ location @gallery {
   include sites/conf/fastcgi.conf;
 }
 
+location @gallery_upload {
+  set $movlib_presenter "GalleryUpload";
+  include sites/conf/fastcgi.conf;
+}
+
 
 # ---------------------------------------------------------------------------------------------------------------------- movies
 
@@ -100,8 +105,7 @@ location ^~ /<?= $r("movie") ?> {
     set $movlib_action $1;
     set $movlib_id $2;
     set $movlib_tab $3;
-    set $movlib_presenter "GalleryUpload";
-    try_files $movlib_cache @php;
+    try_files $movlib_cache @gallery_upload;
   }
 
   location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("release") ?>/([0-9]+)$ {
@@ -117,11 +121,15 @@ location ^~ /<?= $r("movie") ?> {
 # ---------------------------------------------------------------------------------------------------------------------- persons
 
 
-location ^~ /<?= $r("persons") ?> {
+location @persons {
   set $movlib_presenter "Persons";
+  include sites/conf/fastcgi.conf;
+}
+
+location ^~ /<?= $r("persons") ?> {
 
   location = /<?= $r("persons") ?> {
-    try_files $movlib_cache @php;
+    try_files $movlib_cache @persons;
   }
 
   location = /<?= $r("persons") ?>/ {
