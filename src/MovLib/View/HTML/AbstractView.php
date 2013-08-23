@@ -105,6 +105,20 @@ abstract class AbstractView {
   protected $presenter;
 
   /**
+   * Content to render before the heading.
+   *
+   * @var string
+   */
+  protected $headerBefore;
+
+  /**
+   * Content to render after the heading.
+   *
+   * @var string
+   */
+  protected $headerAfter;
+
+  /**
    * Numeric array containing all stylsheets of this view.
    *
    * @var array
@@ -187,7 +201,7 @@ abstract class AbstractView {
    * @return string
    *   Expanded attributes or empty string.
    */
-  protected final function expandTagAttributes($attributes = []) {
+  public final function expandTagAttributes($attributes = []) {
     $expandedAttributes = "";
     if (!empty($attributes)) {
       foreach ($attributes as $attribute => $value) {
@@ -273,7 +287,7 @@ abstract class AbstractView {
    * @return string
    *   The anchor element ready for print.
    */
-  public final function a($route, $text, $attributes = null) {
+  protected final function a($route, $text, $attributes = null) {
     // Never create a link to the current page, http://www.nngroup.com/articles/avoid-within-page-links/
     if ($route === $_SERVER["REQUEST_URI"]) {
       // A hash keeps the anchor element itself valid but removes the link to the current page—perfect!
@@ -660,7 +674,9 @@ abstract class AbstractView {
       "<{$tag}{$this->expandTagAttributes($attributes)}>" .
         "<div id='content__header'>" .
           "<div class='container'>" .
+            $this->headerBefore .
             "<h1 id='content__header__title' class='title'>{$this->title}</h1>" .
+            $this->headerAfter .
           "</div>" .
           $this->getAlerts() .
         "</div>" .

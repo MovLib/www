@@ -186,6 +186,12 @@ class MovieModel extends BaseModel {
   private $taglines = null;
 
   /**
+   * An associative array containing the display title for this movie.
+   * @var null|array
+   */
+  private $displayTitle = null;
+
+  /**
    * A keyed array containing the movie's title information in an associative array.
    * @var null|array
    */
@@ -523,7 +529,7 @@ class MovieModel extends BaseModel {
         [ $this->id ]);
       $count = count($lobbyCardIds);
       for ($i = 0; $i < $count; ++$i) {
-        $this->lobbyCards[] = new MovieImageModel($this->id, $lobbyCardIds[$i]["id"], "lobby-card");
+        $this->lobbyCards[] = new MovieImageModel($this->id, "lobby-card", $lobbyCardIds[$i]["id"]);
       }
     }
     return $this->lobbyCards;
@@ -548,7 +554,7 @@ class MovieModel extends BaseModel {
         [ $this->id ]);
       $count = count($photoIds);
       for ($i = 0; $i < $count; ++$i) {
-        $this->photos[] = new MovieImageModel($this->id, $photoIds[$i]["id"], "photo");
+        $this->photos[] = new MovieImageModel($this->id, "photo", $photoIds[$i]["id"]);
       }
     }
     return $this->photos;
@@ -574,7 +580,7 @@ class MovieModel extends BaseModel {
           [ $this->id ])[0]["id"];
         $this->displayPoster = new MoviePosterModel($this->id, $posterId);
       } catch (ErrorException $e) {
-        throw new \MovieException("No diplay poster for movie {$this->id}!", $e);
+        $this->displayPoster = new MoviePosterModel($this->id);
       }
     }
     return $this->displayPoster;
@@ -709,6 +715,38 @@ class MovieModel extends BaseModel {
       );
     }
     return $this->taglines;
+  }
+
+  /**
+   * Retrieve the movie's display title from the database.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   *  The global I18n Model instance for translations.
+   * @return array
+   *  An associative array containing the display title information.
+   */
+  public function getTitleDisplay() {
+    global $i18n;
+    if ($this->displayTitle === null) {
+      try {
+        $this->displayTitle = $this->select(
+          "SELECT `title` AS `title`,
+            COLUMN_GET(`dyn_comments`, 'en' AS BINARY) AS `comment`,
+            COLUMN_GET(`dyn_comments`, '{$i18n->languageCode}' AS BINARY) AS `commentLocalized`,
+            `language_id` AS `languageId`
+            FROM `movies_titles`
+            WHERE `movie_id` = ?
+              AND is_display_title = 1
+              AND `language_id` = ?
+            ORDER BY `title` ASC",
+          "di",
+          [ $this->id, $i18n->getLanguages(I18nModel::KEY_CODE)[$i18n->languageCode]["id"] ]
+        )[0];
+      } catch (ErrorException $e) {
+        $this->displayTitle = [];
+      }
+        }
+    return $this->displayTitle;
   }
 
   /**

@@ -18,6 +18,7 @@
 # The routes file that will be translated for each subdomain. Everything within this file has to be in English!
 #
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
+# AUTHOR: Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
@@ -30,6 +31,11 @@
 # This gets used within movies and persons in different variants for different galleries.
 location @gallery {
   set $movlib_presenter "Gallery";
+  include sites/conf/fastcgi.conf;
+}
+
+location @gallery_upload {
+  set $movlib_presenter "GalleryUpload";
   include sites/conf/fastcgi.conf;
 }
 
@@ -95,6 +101,13 @@ location ^~ /<?= $r("movie") ?> {
     try_files $movlib_cache @gallery;
   }
 
+  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("poster") ?>|<?= $r("lobby-card") ?>|<?= $r("photo") ?>)-<?= $r("gallery") ?>/upload$ {
+    set $movlib_action $1;
+    set $movlib_id $2;
+    set $movlib_tab $3;
+    try_files $movlib_cache @gallery_upload;
+  }
+
   location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("release") ?>/([0-9]+)$ {
     set $movlib_movie_id $1;
     set $movlib_release_id $2;
@@ -108,11 +121,15 @@ location ^~ /<?= $r("movie") ?> {
 # ---------------------------------------------------------------------------------------------------------------------- persons
 
 
-location ^~ /<?= $r("persons") ?> {
+location @persons {
   set $movlib_presenter "Persons";
+  include sites/conf/fastcgi.conf;
+}
+
+location ^~ /<?= $r("persons") ?> {
 
   location = /<?= $r("persons") ?> {
-    try_files $movlib_cache @php;
+    try_files $movlib_cache @persons;
   }
 
   location = /<?= $r("persons") ?>/ {

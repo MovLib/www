@@ -57,15 +57,6 @@ class MoviesModel extends BaseModel {
       $c = count($movies);
       for ($i = 0; $i < $c; ++$i) {
         $movies[$i]["#movie"] = new MovieModel($movies[$i]["id"]);
-        $movies[$i]["#movie"]->displayTitle = $movies[$i]["#movie"]->originalTitle;
-        $titles = $movies[$i]["#movie"]->getTitles();
-        $tc = count($titles);
-        for ($j = 0; $j < $tc; ++$j) {
-          if ($titles[$j]["isDisplayTitle"] === true && $i18n->getLanguages()[ $titles[$j]["languageId"] ]["code"] === $i18n->languageCode) {
-            $movies[$i]["#movie"]->displayTitle = $titles[$j]["title"];
-            break;
-          }
-        }
       }
     }
     return $movies;
