@@ -138,7 +138,7 @@ class DelayedMailer {
   /**
    * Establish TLS encrypted and authenticated connection to SMTP server.
    *
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\MailerException
    */
   public function connect() {
@@ -203,7 +203,7 @@ class DelayedMailer {
    * Implements <code>QUIT <CRLF></code> from RFC 821.
    *
    * @link http://www.ietf.org/rfc/rfc2821.txt
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\MailerException
    */
   public function disconnect() {
@@ -225,7 +225,7 @@ class DelayedMailer {
    *   Global i18n instance.
    * @param \MovLib\View\Mail\AbstractMail $mail
    *   The mail to send.
-   * @return $this
+   * @return this
    * @throws MailerException
    */
   public function send($mail) {
@@ -340,7 +340,7 @@ class DelayedMailer {
    * @see \MovLib\View\Mail\AbstractMailer::serverResponse()
    * @param string $data
    *   The data to send.
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\MailerException
    */
   private function clientSend($data) {
@@ -353,7 +353,7 @@ class DelayedMailer {
   /**
    * Close the socket and clean up. You should always call <code>Mailer::quit()</code> before calling this method.
    *
-   * @return $this
+   * @return this
    */
   private function closeConnection() {
     if (is_resource($this->connection)) {
@@ -372,7 +372,7 @@ class DelayedMailer {
    *
    * @param string $message
    *   The message to log.
-   * @return $this
+   * @return this
    */
   private function debug($message) {
     if (self::DEBUG === true) {
@@ -513,7 +513,7 @@ class DelayedMailer {
    *
    * @link http://www.ietf.org/rfc/rfc2821.txt
    * @see \MovLib\View\Mail\AbstractMailer::helloSend()
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\MailerException
    */
   private function hello() {
@@ -542,7 +542,7 @@ class DelayedMailer {
   /**
    * Sendes the <code>RSET</code> command to abort a transaction that is currently in progress.
    *
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\MailerException
    */
   private function reset() {
@@ -562,7 +562,7 @@ class DelayedMailer {
    * Use the properties <code>Mailer::$responseMessage</code> and <code>Mailer::$responseCode</code> to access the
    * response after calling this method.
    *
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\MailerException
    */
   private function serverResponse() {

@@ -118,7 +118,7 @@ abstract class AbstractCommand extends Command {
    *   The message to display on error.
    * @param int $errorStatus
    *   [Optional] By default any returned status that is not zero (0) will be treated as error.
-   * @return $this
+   * @return this
    */
   protected final function exec($command, $errorMessage, $errorStatus = 0) {
     exec("{$command} 2>&1", $output, $status);
@@ -168,7 +168,7 @@ abstract class AbstractCommand extends Command {
    *   The message that should be displayed to the user.
    * @param string $type
    *   The message type, one of the predefined Symfony console styles (see the class constants <var>MESSAGE_TYPE_*</code>).
-   * @return $this
+   * @return this
    */
   protected final function write($message, $type = self::MESSAGE_TYPE_INFO) {
     $this->output->writeln(is_array($message)
@@ -182,7 +182,7 @@ abstract class AbstractCommand extends Command {
    * Export input object to class scope.
    *
    * @param \Symfony\Component\Console\Input\InputInterface $input
-   * @return $this
+   * @return this
    */
   protected final function setInput(InputInterface $input) {
     $this->input = $input;
@@ -196,7 +196,7 @@ abstract class AbstractCommand extends Command {
    * @see \MovLib\Console\Command\AbstractCommand::setOutput()
    * @param \Symfony\Component\Console\Input\InputInterface $input
    * @param \Symfony\Component\Console\Output\OutputInterface $output
-   * @return $this
+   * @return this
    */
   protected final function setIO(InputInterface $input, OutputInterface $output) {
     return $this->setInput($input)->setOutput($output);
@@ -206,7 +206,7 @@ abstract class AbstractCommand extends Command {
    * Export output object to class scope.
    *
    * @param \Symfony\Component\Console\Output\OutputInterface $output
-   * @return $this
+   * @return this
    */
   protected final function setOutput(OutputInterface $output) {
     $this->output = $output;

@@ -27,7 +27,7 @@ use \MovLib\Model\I18nModel;
 use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMethodCalls;
 use \MovLib\Utility\String;
-use \MovLib\Utility\Validation;
+use \MovLib\Utility\Validator;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -150,12 +150,12 @@ class SessionModel extends BaseModel {
     // Of course we validate the IP address. The source IP of the TCP connection cannot be substituted by changing a
     // simple HTTP header. We only have to ensure that this variable will still contain the correct IP address of the
     // client when we begin to use proxy servers.
-    if (($this->ipAddress = Validation::inputIpAddress("REMOTE_ADDR", INPUT_SERVER)) === false) {
+    if (($this->ipAddress = Validator::inputIpAddress("REMOTE_ADDR", INPUT_SERVER)) === false) {
       throw new NetworkException("The IP address is empty, or not a valid IPv4 nor IPv6 address. The address was: <code>" . String::checkPlain($_SERVER["REMOTE_ADDR"]) . "</code>");
     }
     // Check if a cookie is present and not empty.
     // Only attempt to start a session if no session is already active.
-    if (($sessionId = Validation::inputString("MOVSID", INPUT_COOKIE)) !== false && session_status() === PHP_SESSION_NONE) {
+    if (($sessionId = Validator::inputString("MOVSID", INPUT_COOKIE)) !== false && session_status() === PHP_SESSION_NONE) {
       if (session_start() === false) {
         throw new SessionException("Could not start session.");
       }
@@ -267,7 +267,7 @@ class SessionModel extends BaseModel {
    * @param string $sessionId
    *   [Optional] The unique session ID that should be deleted. If no ID is passed along the current session ID of this
    *   instance will be used.
-   * @return $this
+   * @return this
    */
   public function deleteSession($sessionId = null) {
     $sessionId = $sessionId ?: $this->sessionId;
@@ -295,7 +295,7 @@ class SessionModel extends BaseModel {
    *
    * Removes this session ID from our database and logs the user out.
    *
-   * @return $this
+   * @return this
    */
   public function destroySession() {
     // The user is no longer logged in.
@@ -338,7 +338,7 @@ class SessionModel extends BaseModel {
   /**
    * Insert newly created session into our persistent database.
    *
-   * @return $this
+   * @return this
    */
   public function insertSession() {
     return $this->prepareAndBind(
@@ -354,7 +354,7 @@ class SessionModel extends BaseModel {
    *
    * @param \MovLib\Model\UserModel $userModel
    *   The user model for which we should start a new session.
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\SessionException
    *   If starting a new session failed. Do not attempt to catch this exception, this is fatal and this request should
    *   fail!

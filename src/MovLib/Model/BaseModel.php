@@ -120,7 +120,7 @@ class BaseModel {
    *   The type string for the <tt>WHERE</tt> clause in <code>\mysqli_stmt::bind_param</code> syntax.
    * @param array $where
    *   Associative array containing column names and values for where.
-   * @return $this
+   * @return this
    * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -172,7 +172,7 @@ class BaseModel {
    *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
    * @param array $data
    *   Associative array containing column names and values for insert.
-   * @return $this
+   * @return this
    * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -203,7 +203,7 @@ class BaseModel {
    *   The type string in <code>\mysqli_stmt::bind_param()</code> syntax.
    * @param array $params
    *   The parameters to bind.
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public final function query($query, $types = null, $params = null) {
@@ -290,7 +290,7 @@ class BaseModel {
    *   Associative array containing column names and values for <tt>SET</tt>.
    * @param array $where
    *   Associative array containing column names and values for <tt>WHERE</tt>.
-   * @return $this
+   * @return this
    * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -320,7 +320,7 @@ class BaseModel {
   /**
    * Closes the prepared statement.
    *
-   * @return $this
+   * @return this
    * @throws \Exception
    *   Might throw a generic excepiton if the prepared statement is not a valid object.
    * @throws \MovLib\Exception\DatabaseException
@@ -337,7 +337,7 @@ class BaseModel {
   /**
    * Connect to default database.
    *
-   * @return $this
+   * @return this
    * @throws \Exception
    *   Might throw a generic exception if (for instance) the socket does not exist.
    * @throws \MovLib\Exception\DatabaseException
@@ -363,7 +363,7 @@ class BaseModel {
   /**
    * Disconnect from database.
    *
-   * @return $this
+   * @return this
    * @throws \Exception
    *   Might throw a generic exception if the mysqli variable does not contain a valid object.
    */
@@ -379,7 +379,7 @@ class BaseModel {
   /**
    * Executes the previously prepared statement.
    *
-   * @return $this
+   * @return this
    * @throws \Exception
    *   Might throw a generic exception if (for instance) the prepared statement is not a valid object.
    * @throws \MovLib\Exception\DatabaseException
@@ -402,7 +402,7 @@ class BaseModel {
    *
    * @param array|null $result
    *   The query result as numeric array containg each resulting row as associative array.
-   * @return $this
+   * @return this
    * @throws \Exception
    *   Might throw a generic exception if (for instance) the prepared statement is not a valid object.
    * @throws \MovLib\Exception\DatabaseException
@@ -443,7 +443,7 @@ class BaseModel {
    *
    * @param string $query
    *   The query to be prepared.
-   * @return $this
+   * @return this
    * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -467,7 +467,7 @@ class BaseModel {
    *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
    * @param array $values
    *   The values to be substituted.
-   * @return $this
+   * @return this
    * @throws \Exception
    *   Might throw a generic exception if a PHP error occures. For instance if <var>$values</var> is not an array or the
    *   type count is not equal to the given values count.

@@ -190,7 +190,7 @@ class DelayedLogger {
    *   The log entry's severity level.
    * @param int $type
    *   [Optional] The log entry's type, defaults to <var>AsyncLogger::LOGTYPE_DEFAULT</var>.
-   * @return $this
+   * @return this
    */
   private static function stack($message, $level, $type = self::LOGTYPE_DEFAULT) {
     self::$logEntries[] = [ $type, date("Y-m-d H:i:s"), $message, $level ];

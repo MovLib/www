@@ -26,7 +26,7 @@ use \MovLib\Utility\Crypt;
 use \MovLib\Utility\DelayedMailer;
 use \MovLib\Utility\DelayedMethodCalls;
 use \MovLib\Utility\String;
-use \MovLib\Utility\Validation;
+use \MovLib\Utility\Validator;
 use \MovLib\View\HTML\AbstractView;
 use \MovLib\View\HTML\AlertView;
 use \MovLib\View\HTML\Redirect;
@@ -116,7 +116,7 @@ class UserPresenter extends AbstractPresenter {
     if ($_SERVER["REQUEST_METHOD"] === "GET") {
       return;
     }
-    if (($mail = Validation::inputMail("mail")) === false) {
+    if (($mail = Validator::inputMail("mail")) === false) {
       $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
     }
     // Try to create a user from the given mail.
@@ -174,7 +174,7 @@ class UserPresenter extends AbstractPresenter {
    *   The global i18n model instance.
    * @global \MovLib\Model\SessionModel $user
    *   The global user model instance.
-   * @return $this
+   * @return this
    */
   private function __constructRegister() {
     global $i18n, $user;
@@ -191,13 +191,13 @@ class UserPresenter extends AbstractPresenter {
       return;
     }
     $this->view = new UserRegisterView($this);
-    if (($mail = Validation::inputMail("mail")) === false) {
+    if (($mail = Validator::inputMail("mail")) === false) {
       $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
     }
-    if (($name = Validation::inputString("name")) === false) {
+    if (($name = Validator::inputString("name")) === false) {
       $errors["name"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("username") ]);
     }
-    if (($error = Validation::username($name))) {
+    if (($error = Validator::username($name))) {
       $errors["name"] = $error;
     }
     else {
@@ -247,7 +247,7 @@ class UserPresenter extends AbstractPresenter {
    *   The global i18n model instance.
    * @global \MovLib\Model\SessionModel $user
    *   The currently logged in user.
-   * @return $this
+   * @return this
    */
   private function __constructResetPassword() {
     global $i18n, $user;
@@ -259,7 +259,7 @@ class UserPresenter extends AbstractPresenter {
     }
     else {
       $this->view = new UserResetPasswordView($this);
-      if (($mail = Validation::inputMail("mail")) === false) {
+      if (($mail = Validator::inputMail("mail")) === false) {
         return [ "mail" => $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]) ];
       }
       try {
@@ -311,7 +311,7 @@ class UserPresenter extends AbstractPresenter {
     global $i18n, $user;
     // Ensure that we are internally working with the correct route.
     $_SERVER["REQUEST_URI"] = $i18n->r("/user/password-settings");
-    if (($token = Validation::inputString("TOKEN", INPUT_SERVER)) === false) {
+    if (($token = Validator::inputString("TOKEN", INPUT_SERVER)) === false) {
       $this->view = new AlertView($this, $i18n->t("Missing Authentication Token"));
       $this->view->setAlert(
         "<p>{$i18n->t("Your link is missing the authentication token, please go back to the mail we’ve sent you and copy the whole link.")}</p>",
@@ -407,7 +407,7 @@ class UserPresenter extends AbstractPresenter {
    *   The global i18n model instance.
    * @global \MovLib\Model\SessionModel $user
    *   The global user model instance.
-   * @return $this
+   * @return this
    */
   private function __constructShow() {
     global $i18n, $user;
@@ -439,7 +439,7 @@ class UserPresenter extends AbstractPresenter {
   private function __constructProfile() {
     global $i18n;
     try {
-      $this->profile = new UserModel(UserModel::FROM_NAME, Validation::inputString("USER_NAME", INPUT_SERVER));
+      $this->profile = new UserModel(UserModel::FROM_NAME, Validator::inputString("USER_NAME", INPUT_SERVER));
     } catch (UserException $e) {
       $this->setPresentation("Error\\NotFound");
       return;
@@ -472,7 +472,7 @@ class UserPresenter extends AbstractPresenter {
    *   The global i18n model instance.
    * @global \MovLib\Model\SessionModel $user
    *   The currently logged in user.
-   * @return $this
+   * @return this
    */
   private function __constructSettings() {
     global $i18n, $user;
@@ -544,7 +544,7 @@ class UserPresenter extends AbstractPresenter {
 
     // ----------------------------------------------------------------------------------------------------------------- Real Name
 
-    if (($realName = Validation::inputString("real_name")) !== false) {
+    if (($realName = Validator::inputString("real_name")) !== false) {
       $this->profile->realName = $realName;
     }
 
@@ -625,7 +625,7 @@ class UserPresenter extends AbstractPresenter {
         $this->profile->website = "";
       }
       // If the user supplied a website, check if the URL is valid. We don't check if the website exists!
-      elseif (($website = Validation::inputUrl("website")) !== false) {
+      elseif (($website = Validator::inputUrl("website")) !== false) {
         $this->profile->website = $website;
       }
       // The URL ist either invalid or does not exist.
@@ -716,7 +716,7 @@ class UserPresenter extends AbstractPresenter {
    */
   private function validateDangerzoneSettings() {
     global $i18n, $user;
-    if (($action = Validation::inputString("action")) === false) {
+    if (($action = Validator::inputString("action")) === false) {
       $this->setPresentation("Error\\BadRequest");
       return;
     }

@@ -76,7 +76,7 @@ class MoviePresenter extends AbstractPresenter {
   /**
    * Render the movie's page.
    *
-   * @return $this
+   * @return this
    */
   protected function __constructGet() {
     try {
@@ -106,7 +106,7 @@ class MoviePresenter extends AbstractPresenter {
    *   The global i18n model instance.
    * @global \MovLib\Model\SessionModel $user
    *   The global user model instance.
-   * @return $this
+   * @return this
    */
   protected function __constructPost() {
     global $i18n, $user;

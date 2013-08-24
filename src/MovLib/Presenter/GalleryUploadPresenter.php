@@ -49,7 +49,7 @@ class GalleryUploadPresenter extends GalleryPresenter {
    *
    * @global \MovLib\Model\SessionModel $user
    *   The global session model instance.
-   * @return $this
+   * @return this
    */
   public function __constructGet() {
     global $user;
@@ -68,7 +68,7 @@ class GalleryUploadPresenter extends GalleryPresenter {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance for translations.
-   * @return $this
+   * @return this
    */
   public function __constructGetMovie() {
     global $i18n;
@@ -99,7 +99,7 @@ class GalleryUploadPresenter extends GalleryPresenter {
    *
    * @global \MovLib\Model\SessionModel $user
    *   The global session model instance.
-   * @return $this
+   * @return this
    */
   public function __constructPost() {
     global $user;

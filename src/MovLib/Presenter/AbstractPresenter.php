@@ -178,7 +178,7 @@ abstract class AbstractPresenter {
    *   [Optional] The foldername within the view directory. Defaults to <tt>HTML</tt>.
    * @param string $method
    *   [Optional] The name of the method that should be called to set the output. Defaults to <tt>getRenderedView</tt>.
-   * @return $this
+   * @return this
    */
   protected final function setPresentation($viewName = null, $viewType = "HTML", $method = "getRenderedView") {
     if ($viewName !== null) {

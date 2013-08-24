@@ -27,8 +27,8 @@ use \Symfony\Component\Console\Output\OutputInterface;
 /**
  * Cron jobs that should run on a daily basis.
  *
- * Add the following line to your crontab: <code>@daily php /var/www/bin/movcli.php cron-daily</code>
- * If you have linked the executable you could also add: <code>@daily movcli cron-daily</code>
+ * Add the following line to your crontab after creating the symbolic link to the <code>movcli.php</code> file in your
+ * local bin path: <code>@daily movcli cron-daily</code>
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib

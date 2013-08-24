@@ -481,7 +481,7 @@ class I18nModel extends BaseModel {
    *   The ISO 639-1 alpha-2 language code that identifies the translation's language.
    * @param string $translation
    *   The translated pattern.
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\DatabaseException
    *   If inserting or updating failed.
    */

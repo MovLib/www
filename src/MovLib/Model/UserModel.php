@@ -339,7 +339,7 @@ class UserModel extends AbstractImageModel {
    * Update the user model in the database with the data of the current class instance.
    *
    * @todo Update profile text as well!
-   * @return $this
+   * @return this
    */
   public function commit() {
     return $this->prepareAndBind(
@@ -459,7 +459,7 @@ class UserModel extends AbstractImageModel {
    *   The valid unique user's mail.
    * @param string $pass
    *   The unhashed user's password.
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\DatabaseException
    *   If inserting the data into our database failed.
    * @throws \MovLib\Exception\SessionException
@@ -539,7 +539,7 @@ class UserModel extends AbstractImageModel {
    * <b>IMPORTANT!</b> Only validates against a password that was submitted via <var>$_POST</var>. Additionally the
    * key must be <code>pass</code> within the <var>$_POST</var> array.
    *
-   * @return $this
+   * @return this
    * @throws \MovLib\Exception\UserException
    *   If the password isn't valid.
    */

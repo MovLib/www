@@ -21,7 +21,7 @@ use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Model\BaseModel;
 use \MovLib\Utility\Network;
-use \MovLib\Utility\Validation;
+use \MovLib\Utility\Sanitizer;
 
 /**
  * Contains methods for models that contain images.
@@ -138,7 +138,7 @@ class AbstractImageModel extends BaseModel {
    *   The name of the image.
    * @param array $imageStyles
    *   The available image styles.
-   * @return $this
+   * @return this
    */
   protected function initImage($imageName, $imageStyles) {
     $this->imageName = $imageName;
@@ -147,7 +147,7 @@ class AbstractImageModel extends BaseModel {
     for ($i = 0; $i < $c; ++$i) {
       $this->imageStyles[$imageStyles[$i]] = [
         "style" => $imageStyles[$i],
-        "name" => Validation::fileName($imageStyles[$i]),
+        "name" => Sanitizer::filename($imageStyles[$i]),
       ];
     }
     if (isset($this->imageExtension) && isset($this->imageHash)) {
@@ -165,7 +165,7 @@ class AbstractImageModel extends BaseModel {
   /**
    * Generate all paths (and URIs) to the several styles this model supports.
    *
-   * @return $this
+   * @return this
    */
   protected function generateImageStylePaths() {
     foreach ($this->imageStyles as $style => $data) {
@@ -183,7 +183,7 @@ class AbstractImageModel extends BaseModel {
   /**
    * Generate all image styles for this image.
    *
-   * @return $this
+   * @return this
    */
   public function generateImageStyles() {
     foreach ($this->imageStyles as $style => $data) {
@@ -224,7 +224,7 @@ class AbstractImageModel extends BaseModel {
    *
    * @param string $formElementName
    *   The value of the <em>name</em>-attribute of the <em>file</em>-input-element of the form.
-   * @return $this
+   * @return this
    * @throws ImageException
    *   If something is odd with the uploaded file.
    */
@@ -255,7 +255,7 @@ class AbstractImageModel extends BaseModel {
   /**
    * Deletes this image and all its styles from storage.
    *
-   * @return $this
+   * @return this
    */
   public function deleteImage() {
     unlink($this->imagePath);

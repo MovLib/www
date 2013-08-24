@@ -85,7 +85,7 @@ class GalleryPresenter extends AbstractPresenter {
    *
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance for translations.
-   * @return $this
+   * @return this
    */
   public function __constructMovie() {
     global $i18n;
