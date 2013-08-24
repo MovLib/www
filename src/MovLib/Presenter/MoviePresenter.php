@@ -76,12 +76,9 @@ class MoviePresenter extends AbstractPresenter {
   /**
    * Render the movie's page.
    *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
    * @return $this
    */
   protected function __constructGet() {
-    global $i18n;
     try {
       $this->movieModel = new MovieModel($_SERVER["MOVIE_ID"]);
       if ($this->movieModel->deleted === true) {
@@ -89,16 +86,11 @@ class MoviePresenter extends AbstractPresenter {
       }
       $this->ratingModel = new RatingModel();
       $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
-      // Construct the title of the page from the movie's display title or the original title if no display title exists.
-      $languages = $i18n->getLanguages();
-      $titles = $this->movieModel->getTitles();
-      $count = count($titles);
-      $this->displayTitle = $this->movieModel->originalTitle;
-      for ($i = 0; $i < $count; ++$i) {
-        if ($titles[$i]["isDisplayTitle"] === true && $languages[ $titles[$i]["languageId"] ]["code"] === $i18n->languageCode) {
-          $this->displayTitle = $titles[$i]["title"];
-          break;
-        }
+      if (!empty($this->movieModel->getTitleDisplay())) {
+        $this->displayTitle = $this->movieModel->getTitleDisplay()["title"];
+      }
+      else {
+        $this->displayTitle = $this->movieModel->originalTitle;
       }
       $this->view = new MovieShowView($this);
       return $this;

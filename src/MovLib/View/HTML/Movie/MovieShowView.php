@@ -43,6 +43,13 @@ class MovieShowView extends AbstractView {
   protected $presenter;
 
   /**
+   * The year suffix for the heading.
+   *
+   * @var string
+   */
+  private $yearSuffix = "";
+
+  /**
    * Construct new movie show view.
    *
    * @param \MovLib\Presenter\MoviePresenter $presenter
@@ -51,7 +58,8 @@ class MovieShowView extends AbstractView {
   public function __construct($presenter) {
     parent::__construct($presenter, $presenter->displayTitle);
     if (empty($presenter->movieModel->year) === false) {
-      $this->title .= " ({$this->presenter->movieModel->year})";
+      $this->yearSuffix = " ({$this->presenter->movieModel->year})";
+      $this->title .= $this->yearSuffix;
     }
     $this->stylesheets[] = "modules/movie.css";
   }
@@ -74,7 +82,7 @@ class MovieShowView extends AbstractView {
         "accesskey" => "e",
         "title"     => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]),
       ]],
-      [ $i18n->r("/movie/{0}/history", [ $this->presenter->movieModel->id ]), "<i class='icon icon--back-in-time'></i>{$i18n->t("History")}", [
+      [ $i18n->r("/movie/{0}/history", [ $this->presenter->movieModel->id ]), "<i class='icon icon--history'></i>{$i18n->t("History")}", [
         "accesskey" => "h",
         "class"     => "menuitem--separator",
         "title"     => $i18n->t("Past versions of this {0}.", [ $i18n->t("movie") ]),
@@ -230,7 +238,7 @@ class MovieShowView extends AbstractView {
 
                 // ----------------------------------------------------------------------------------------------------- Display title & original title
 
-                "<h1 id='content__header__title' class='title'>{$this->presenter->displayTitle}</h1>" .
+                "<h1 id='content__header__title' class='title'>{$this->presenter->displayTitle}<small>{$this->yearSuffix}</small></h1>" .
                 "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $this->presenter->movieModel->originalTitle ])}</p>" .
 
                 // ----------------------------------------------------------------------------------------------------- Rating form & explanatory text
@@ -238,32 +246,32 @@ class MovieShowView extends AbstractView {
                 "<form action='{$i18n->r("/movie/{0}", [ $this->presenter->movieModel->id ])}' id='movie__rating' method='post'>" .
                   "<span class='visuallyhidden'>{$i18n->t("Rating")}: </span>" .
                   "<div id='movie__rating__back' style='clip:rect(0,{$ratingWidth}px,20px,0)'>" .
-                    "<span>&#xe80d;</span>" .
-                    "<span>&#xe80d;</span>" .
-                    "<span>&#xe80d;</span>" .
-                    "<span>&#xe80d;</span>" .
-                    "<span>&#xe80d;</span>" .
+                    "<span>&#xe000;</span>" .
+                    "<span>&#xe000;</span>" .
+                    "<span>&#xe000;</span>" .
+                    "<span>&#xe000;</span>" .
+                    "<span>&#xe000;</span>" .
                   "</div>" .
                   "<div id='movie__rating__front'>" .
                     "<label class='popup-container'>" .
                       "<small class='popup popup--inverse'>{$i18n->t("Awful")}</small>" .
-                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 1 ])}' type='submit' value='1'>&#xe80d;</button>" .
+                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 1 ])}' type='submit' value='1'>&#xe000;</button>" .
                     "</label>" .
                     "<label class='popup-container'>" .
                       "<small class='popup popup--inverse'>{$i18n->t("Not that bad")}</small>" .
-                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 2 ])}' type='submit' value='1'>&#xe80d;</button>" .
+                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 2 ])}' type='submit' value='1'>&#xe000;</button>" .
                     "</label>" .
                     "<label class='popup-container'>" .
                       "<small class='popup popup--inverse'>{$i18n->t("Fair")}</small>" .
-                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 3 ])}' type='submit' value='1'>&#xe80d;</button>" .
+                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 3 ])}' type='submit' value='1'>&#xe000;</button>" .
                     "</label>" .
                     "<label class='popup-container'>" .
                       "<small class='popup popup--inverse'>{$i18n->t("Pretty Good")}</small>" .
-                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 4 ])}' type='submit' value='1'>&#xe80d;</button>" .
+                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 4 ])}' type='submit' value='1'>&#xe000;</button>" .
                     "</label>" .
                     "<label class='popup-container'>" .
                       "<small class='popup popup--inverse'>{$i18n->t("Great")}</small>" .
-                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 5 ])}' type='submit' value='1'>&#xe80d;</button>" .
+                      "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 5 ])}' type='submit' value='1'>&#xe000;</button>" .
                     "</label>" .
                   "</div>" .
                 "</form>" .

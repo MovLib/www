@@ -30,12 +30,6 @@ use \MovLib\Model\AbstractImageModel;
  */
 class GalleryView extends AbstractView {
 
-  /**
-   * Numeric array containing subclass objects of \MovLib\Model\AbstractImageModel.
-   *
-   * @var array
-   */
-  public $images;
 
   /**
    * Initialize new gallery view.
@@ -43,8 +37,9 @@ class GalleryView extends AbstractView {
    * @param \MovLib\Presenter\GalleryPresenter $presenter
    *   The presenter controlling this view.
    */
-  public function __construct($presenter, $title) {
-    parent::__construct($presenter, $title);
+  public function __construct($presenter) {
+    global $i18n;
+    parent::__construct($presenter, "{$presenter->title} {$presenter->galleryTitle} {$i18n->t("gallery")}");
     $this->stylesheets[] = "modules/gallery.css";
   }
 
@@ -70,14 +65,13 @@ class GalleryView extends AbstractView {
         "</li>";
     }
     $galleryList .= "</ol>";
-    //@todo display upload link/form.
     return
       "<div class='container'>" .
         "<div class='row'>" .
           "<aside class='span span--3'>" .
             $this->getSecondaryNavigation(
               $i18n->t("{0} gallery navigation", [ mb_convert_case($this->presenter->getAction(), MB_CASE_TITLE) ]),
-              $this->presenter->secondaryNavigationPoints
+              $this->presenter->getSecondaryNavigation()
             ) .
           "</aside>" .
           "<div class='span span--9'>{$galleryList}</div>" .

@@ -39,7 +39,7 @@ class MoviePosterModel extends AbstractImageModel {
    * The movie ID this poster belongs to.
    * @var int
    */
-  public $movieId;
+  public $id;
 
   /**
    * The ID of the poster within the movie posters.
@@ -108,7 +108,7 @@ class MoviePosterModel extends AbstractImageModel {
   const IMAGESTYLE_HUGE_FIXED_WIDTH = "700x>";
 
   /**
-   * Construct a new poster model. If the IDs are not specified, an empty model is created.
+   * Construct a new poster model. If the poster ID is not specified, an empty model is created.
    *
    * @global \MovLib\Model\I18nModel $i18n
    * @param int $movieId
@@ -116,14 +116,15 @@ class MoviePosterModel extends AbstractImageModel {
    * @param int $posterId
    *   The ID of the poster within the movie posters.
    */
-  public function __construct($movieId = null, $posterId = null) {
+  public function __construct($movieId, $posterId = null) {
     global $i18n;
-    if ($movieId && $posterId) {
+    $this->id = $movieId;
+    if ($posterId) {
       try {
         $this->imageDirectory = "movie/posters/{$movieId}";
         $posterResult = $this->select(
           "SELECT
-            `movie_id` AS `movieId`,
+            `movie_id` AS `id`,
             `section_id` AS `sectionId`,
             `user_id` AS `userId`,
             `country_id` AS `country`,
