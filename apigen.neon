@@ -30,7 +30,7 @@ source        :
               - "./bin"
               - "./src"
               - "./tests"
-destination   : "../docs"
+destination   : "./docs"
 extensions    : "php"
 charset       : "UTF-8"
 title         : "MovLib, the free movie library."
