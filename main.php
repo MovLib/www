@@ -41,9 +41,7 @@ $GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
  * To ensure that no unexpected behaviour crashes our software any uncaught exception will be caught at this place. An
  * error is logged and, depending on the error, a message is displayed to the user.
  *
- * @link http://www.php.net/manual/en/function.set-exception-handler.php
  * @global \MovLib\Model\I18nModel $i18n
- *   The global i18n model instance.
  * @param \Exception $exception
  *   The uncaught exception.
  */
@@ -69,8 +67,8 @@ set_exception_handler("uncaught_exception_handler");
  *
  * PHP by default mostly throws errors and not exceptions (like Java or Ruby). This user-defined error handler converts
  * these errors to exceptions and allows us to catch them and work with them. All PHP errors are runtime errors, as they
- * only appear by <em>doing</em> something. For more info on the differenciation of various exceptions and what they
- * mean have a look at the great article from Ralph Schindler (linked below).
+ * only appear by <i>doing</i> something. For more info on the differenciation of various exceptions and what they mean
+ * have a look at the great article from Ralph Schindler (linked below).
  *
  * Please also note that this function will not convert all kinds of errors. This is due to the fact that it might not
  * even be registered when an error is raised. For instance if something goes wrong while PHP is bootstraping to start
@@ -78,7 +76,7 @@ set_exception_handler("uncaught_exception_handler");
  * another software that is capable of rescuing the PHP process itself.
  *
  * @link http://ralphschindler.com/2010/09/15/exception-best-practices-in-php-5-3
- * @link http://www.php.net/manual/en/function.set-error-handler.php
+ *   Ralph Schindler: Exception best practices in PHP 5.3
  * @param int $type
  *   The error's type, one of the PHP predefined <var>E_*</var> constants.
  * @param string $message
@@ -87,6 +85,7 @@ set_exception_handler("uncaught_exception_handler");
  *   The absolute path to the file where the error was raised.
  * @param int $line
  *   The line number within the file.
+ * @throws \MovLib\Exception\ErrorException
  */
 function error_all_handler($type, $message, $file, $line) {
   $exception = new \MovLib\Exception\ErrorException($message, null, $type);
@@ -103,7 +102,7 @@ set_error_handler("error_all_handler");
  * This function is not meant to recover after a fatal error occurred. The purpose of this is to ensure that a nice
  * error view is displayed to the user.
  *
- * @link http://stackoverflow.com/a/2146171/1251219
+ * @link http://stackoverflow.com/a/2146171/1251219 How do I catch a PHP Fatal Error
  */
 function error_fatal_handler() {
   if ($error = error_get_last()) {
@@ -143,46 +142,32 @@ function __autoload($class) {
   require "{$_SERVER["HOME"]}/src/{$class}.php";
 }
 
-/**
- * Global array to collect class names and function names which will be executed after the response was sent to the user.
- *
- * @var array
- */
+// Array to collect class names and function names which will be executed after the response was sent to the user.
 $delayed = [];
 
 /**
  * Register new delayed class to be called after the response has been sent to the user.
  *
  * @global array $delayed
- *   Global array to collect the delayed classes.
  * @param string $class
  *   Absolute class name (use the magic <var>__CLASS__</var> constant).
- * @param int $weight
- *   [Optional] Defines when this class should be called. This is important if your class relys on other delayed
- *   classes. The weight must not be negative! Defaults to 50, the lower the earlier the execution.
- * @param string $method
- *   [Optional] The name of the method that should be called, defaults to <em>run</em>.
+ * @param int $weight [optional]
+ *   Defines when this class should be called. This is important if your class relys on other delayed classes. The
+ *   weight must not be negative! Defaults to 50, the lower the earlier the execution.
+ * @param string $method [optional]
+ *   The name of the method that should be called, defaults to <i>run</i>.
  */
 function delayed_register($class, $weight = 50, $method = "run") {
   global $delayed;
   $delayed[$weight][$class] = $method;
 }
 
-/**
- * Instantiate session for the client requesting the page.
- *
- * A real session will only be generated if we know this user. By default we don't start a session, nor do we send out
- * any cookies to the client. We wait until the client is doing anything where we really need a session.
- *
- * @var \MovLib\Model\SessionModel
- */
+// Instantiate session for the client requesting the page. A real session will only be generated if we know this user.
+// By default we don't start a session, nor do we send out any cookies to the client. We wait until the client is doing
+// anything where we really need a session.
 $user = new \MovLib\Model\SessionModel();
 
-/**
- * Create new global <em>I18n</em> instance for the locale of the user who is requesting the page.
- *
- * @var \MovLib\Utility\I18n
- */
+// Instantiate global i18n object with the current display language.
 $i18n = new \MovLib\Model\I18nModel();
 
 // Start the rendering process.
