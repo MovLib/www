@@ -256,7 +256,7 @@ abstract class AbstractView {
    * @param null|array $attributes
    *   The array containing the previously set attributes for the elment. If the passed variable is <tt>NULL</tt> an
    *   array will be created.
-   * @return $this
+   * @return this
    */
   protected final function addClass($class, &$attributes) {
     $attributes = $attributes ?: [];

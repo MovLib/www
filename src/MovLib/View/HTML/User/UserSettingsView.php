@@ -187,8 +187,8 @@ class UserSettingsView extends AbstractFormView {
         "class"       => "input--block-level",
         "placeholder" => "yyyy-mm-dd",
         "type"        => "date",
-        "min"         => date("Y-m-d", (time() - 1.893e+8)),
-        "max"         => date("Y-m-d", (time() - 3.78683e9)),
+        "max"         => date("Y-m-d", (time() - 1.893e+8)),
+        "min"         => date("Y-m-d", (time() - 3.78683e9)),
       ])}</p>" .
 
       // --------------------------------------------------------------------------------------------------------------- Website
