@@ -150,12 +150,12 @@ class SessionModel extends BaseModel {
     // Of course we validate the IP address. The source IP of the TCP connection cannot be substituted by changing a
     // simple HTTP header. We only have to ensure that this variable will still contain the correct IP address of the
     // client when we begin to use proxy servers.
-    if (($this->ipAddress = Validator::inputIpAddress("REMOTE_ADDR", INPUT_SERVER)) === false) {
+    if (($this->ipAddress = Validator::inputIpAddress("REMOTE_ADDR", [ "#type" => INPUT_SERVER ])) === false) {
       throw new NetworkException("The IP address is empty, or not a valid IPv4 nor IPv6 address. The address was: <code>" . String::checkPlain($_SERVER["REMOTE_ADDR"]) . "</code>");
     }
     // Check if a cookie is present and not empty.
     // Only attempt to start a session if no session is already active.
-    if (($sessionId = Validator::inputString("MOVSID", INPUT_COOKIE)) !== false && session_status() === PHP_SESSION_NONE) {
+    if (($sessionId = Validator::inputString("MOVSID", [ "#type" => INPUT_COOKIE ])) !== false && session_status() === PHP_SESSION_NONE) {
       if (session_start() === false) {
         throw new SessionException("Could not start session.");
       }
