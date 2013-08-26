@@ -67,77 +67,32 @@ class MoviePresenter extends AbstractPresenter {
    * {@inheritdoc}
    */
   public function __construct() {
-    return $this
-      ->{__FUNCTION__ . $this->getMethod()}()
-      ->setPresentation()
-    ;
-  }
-
-  /**
-   * Render the movie's page.
-   *
-   * @return this
-   */
-  protected function __constructGet() {
+    global $i18n, $user;
     try {
       $this->movieModel = new MovieModel($_SERVER["MOVIE_ID"]);
       if ($this->movieModel->deleted === true) {
-        return $this->setPresentation("Error\\GoneMovie");
+        return $this->setPresentation("Error\\Gone");
       }
-      $this->ratingModel = new RatingModel();
-      $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
       if (!empty($this->movieModel->getTitleDisplay())) {
         $this->displayTitle = $this->movieModel->getTitleDisplay()["title"];
       }
       else {
         $this->displayTitle = $this->movieModel->originalTitle;
       }
-      $this->view = new MovieShowView($this);
-      return $this;
+      $this->ratingModel = new RatingModel();
+      $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
     } catch (MovieException $e) {
       return $this->setPresentation("Error\\NotFound");
     }
-  }
-
-  /**
-   * Handle form submissions.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @global \MovLib\Model\SessionModel $user
-   *   The global user model instance.
-   * @return this
-   */
-  protected function __constructPost() {
-    global $i18n, $user;
-    try {
-      $this->movieModel = new MovieModel($_SERVER["MOVIE_ID"]);
-      if ($this->movieModel->deleted === true) {
-        return $this->setPresentation("Error\\GoneMovie");
-      }
-      $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
-      // Construct the title of the page from the movie's display title or the original title if no display title exists.
-      $languages = $i18n->getLanguages();
-      $titles = $this->movieModel->getTitles();
-      $count = count($titles);
-      $this->displayTitle = $this->movieModel->originalTitle;
-      for ($i = 0; $i < $count; ++$i) {
-        if ($titles[$i]["isDisplayTitle"] === true && $languages[ $titles[$i]["languageId"] ]["code"] === $i18n->languageCode) {
-          $this->displayTitle = $titles[$i]["title"];
-          break;
-        }
-      }
-      $this->view = new MovieShowView($this);
+    $this->view = new MovieShowView($this);
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
       if ($user->isLoggedIn) {
         /** @todo Rate the movie for the current user. */
       } else {
         $this->view->setAlert($i18n->t("You have to be logged in to rate this movie."));
       }
-      return $this;
-    } catch (MovieException $e) {
-      return $this->setPresentation("Error\\NotFound");
     }
-    return $this;
+    $this->setPresentation();
   }
 
 
@@ -153,18 +108,33 @@ class MoviePresenter extends AbstractPresenter {
   }
 
   /**
-   * Get the full path to the poster art.
+   * Get the secondary navigation array for the movie page.
    *
-   * @param string $style
-   *   The desired image style.
-   *   @todo Examples
-   * @return string
-   *   Absolute path to the poster art for the desired image style.
+   * @global \MovLib\Model\I18nModel $i18n
+   * @return array
+   *   The secondary navigation point array for the movie page.
    */
-  public function getMoviePoster($style) {
-    if ($this->movieModel["poster"]) {
-      return "/uploads/poster/{$this->movieModel["id"]}/{$style}/{$this->movieModel["poster"]["file_name"]}.{$this->movieModel["poster"]["file_id"]}.{$this->movieModel["poster"]["extension"]}";
-    }
+  public function getSecondaryNavigation() {
+    global $i18n;
+    return [
+      [ $i18n->r("/movie/{0}", [ $this->movieModel->id ]), "<i class='icon icon--eye'></i>{$i18n->t("View")}", [
+        "accesskey" => "v",
+        "title"     => $i18n->t("View the {0}.", [ $i18n->t("movie") ]),
+      ]],
+      [ $i18n->r("/movie/{0}/discussion", [ $this->movieModel->id ]), "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [
+        "accesskey" => "d",
+        "title"     => $i18n->t("Discussion about the {0}.", [ $i18n->t("movie") ])
+      ]],
+      [ $i18n->r("/movie/{0}/edit", [ $this->movieModel->id ]), "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [
+        "accesskey" => "e",
+        "title"     => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]),
+      ]],
+      [ $i18n->r("/movie/{0}/history", [ $this->movieModel->id ]), "<i class='icon icon--history'></i>{$i18n->t("History")}", [
+        "accesskey" => "h",
+        "class"     => "menuitem--separator",
+        "title"     => $i18n->t("Past versions of this {0}.", [ $i18n->t("movie") ]),
+      ]]
+    ];
   }
 
 }

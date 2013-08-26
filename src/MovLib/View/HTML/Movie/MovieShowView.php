@@ -17,9 +17,7 @@
  */
 namespace MovLib\View\HTML\Movie;
 
-use \MovLib\Exception\MovieException;
 use \MovLib\Model\MoviePosterModel;
-use \MovLib\Utility\String;
 use \MovLib\View\HTML\AbstractView;
 
 /**
@@ -58,42 +56,22 @@ class MovieShowView extends AbstractView {
   public function __construct($presenter) {
     parent::__construct($presenter, $presenter->displayTitle);
     if (empty($presenter->movieModel->year) === false) {
-      $this->yearSuffix = " ({$this->presenter->movieModel->year})";
+      $this->yearSuffix = "({$this->presenter->movieModel->year})";
       $this->title .= $this->yearSuffix;
     }
     $this->stylesheets[] = "modules/movie.css";
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
   public function getContent() {
     global $i18n;
-    $secondaryNavPoints = [
-      [ $i18n->r("/movie/{0}", [ $this->presenter->movieModel->id ]), "<i class='icon icon--eye'></i>{$i18n->t("View")}", [
-        "accesskey" => "v",
-        "title"     => $i18n->t("View the {0}.", [ $i18n->t("movie") ]),
-      ]],
-      [ $i18n->r("/movie/{0}/discussion", [ $this->presenter->movieModel->id ]), "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [
-        "accesskey" => "d",
-        "title"     => $i18n->t("Discussion about the {0}.", [ $i18n->t("movie") ])
-      ]],
-      [ $i18n->r("/movie/{0}/edit", [ $this->presenter->movieModel->id ]), "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [
-        "accesskey" => "e",
-        "title"     => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]),
-      ]],
-      [ $i18n->r("/movie/{0}/history", [ $this->presenter->movieModel->id ]), "<i class='icon icon--history'></i>{$i18n->t("History")}", [
-        "accesskey" => "h",
-        "class"     => "menuitem--separator",
-        "title"     => $i18n->t("Past versions of this {0}.", [ $i18n->t("movie") ]),
-      ]]
-    ];
-    /**
-     * @var array Numeric Array holding all the pages content points in a uniform way.
-     *   Format:
-     *     [0] => [ "id" => "first section id", "title" => "translated title", "content" ) => "section content" ]
-     *     [1] => [ "id" => "second section id", "title" => "translated title", "content" ) => "section content" ]
-     */
+    $secondaryNavPoints = $this->presenter->getSecondaryNavigation();
+    // Numeric Array holding all the pages content points in a uniform way.
+    // Format:
+    //   [0] => [ "id" => "first section id", "title" => "translated title", "content" ) => "section content" ]
+    //   [1] => [ "id" => "second section id", "title" => "translated title", "content" ) => "section content" ]
     $contents = [];
 
     // ----------------------------------------------------------------------------------------------------------------- Synopsis
@@ -129,23 +107,8 @@ class MovieShowView extends AbstractView {
       "title"   =>  $i18n->t("Taglines"),
       "content" => $this->getUnorderedList($this->presenter->movieModel->getTagLines(), "", function ($item) { return $item["tagline"]; })
     ];
-    // Build the languages list.
-    $languages = $this->presenter->movieModel->getLanguages();
-    $c = count($languages);
-    if ($c > 0) {
-      for ($i = 0; $i < $c; ++$i) {
-        $name = $languages[$i]["nameLocalized"] ?: $languages[$i]["name"];
-        $languages[$i] = $this->a(
-          $i18n->r("/languages/{0}", [ String::convertToRoute($name) ]),
-          $name,
-          [ "title" => $i18n->t("Go to language page: {0}", [ $name ]) ]
-        );
-      }
 
-      $languagesList = implode(", ", $languages);
-    } else {
-      $languagesList = $i18n->t("No languages assigned yet.") . " " . $this->a($i18n->r("/movie/{0}/edit", [ $this->presenter->movieModel->id ]), $i18n->t("Add Languages"), [ "title" => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]) ]);
-    }
+    // Construct the content from the content array.
 
     $content = "";
     $c = count($contents);
@@ -153,15 +116,14 @@ class MovieShowView extends AbstractView {
       $secondaryNavPoints[] = [ "#{$contents[$i]["id"]}", $contents[$i]["title"], [ "title" => $i18n->t("Go to section", [ $contents[$i]["title"] ]) ] ];
       if (empty($contents[$i]["content"])) {
         $contents[$i]["content"] = $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [
-              $contents[$i]["title"],
-              "<a href='{$i18n->r("/movie/{0}/edit-{1}", [ $contents[$i]["id"] ])}'>",
-              "</a>"
-          ]
-        );
+          $contents[$i]["title"],
+          "<a href='{$i18n->r("/movie/{0}/edit-{1}", [ $contents[$i]["id"] ])}'>",
+          "</a>",
+        ]);
       }
       $content .=
         "<div id='{$contents[$i]["id"]}' class='movie-section'>" .
-          "<h2>{$contents[$i]["title"]}<small>{$this->a($i18n->r("/movie/{0}/edit-{1}", [ $this->presenter->movieModel->id, $contents[$i]["id"] ]), $i18n->t("Edit"))}</small></h2>" .
+          "<h2>{$contents[$i]["title"]} <small>{$this->a($i18n->r("/movie/{0}/edit-{1}", [ $this->presenter->movieModel->id, $contents[$i]["id"] ]), $i18n->t("Edit"))}</small></h2>" .
           $contents[$i]["content"] .
         "</div>"
       ;
@@ -187,21 +149,21 @@ class MovieShowView extends AbstractView {
    * @return string
    *   The rendered content ready for print.
    */
-  public function getRenderedContent($tag = "div", $attributes = []) {
+  public function getRenderedContent($tag = "div", $attributes = null) {
     global $i18n, $user;
-    $this->addClass("{$this->getShortName()}-content", $attributes);
-    $attributes["id"] = "content";
-    $attributes["role"] = "main";
-    // Build the link for the movie year.
-    $yearLink = "";
     if (isset($this->presenter->movieModel->year)) {
       $yearLink = $this->a(
         $i18n->r("/movies/year/{0}", [ $this->presenter->movieModel->year ]),
         $this->presenter->movieModel->year,
         [ "title" => $i18n->t("Go to movies of the year ") ]
       );
-    } else {
-      $i18n->t("No year assigned yet.") . " " . $this->a($i18n->r("/movie/{0}/edit", [ $this->presenter->movieModel->id ]), $i18n->t("Add Year"), [ "title" => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]) ]);
+    }
+    else {
+      $yearLink = "{$i18n->t("No year assigned yet.")} {$this->a(
+        $i18n->r("/movie/{0}/edit", [ $this->presenter->movieModel->id ]),
+        $i18n->t("Add Year"),
+        [ "title" => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]) ]
+      )}";
     }
 
     // Calculate the width for the rating stars in px.
@@ -213,32 +175,26 @@ class MovieShowView extends AbstractView {
     if ($user->isLoggedIn === false) {
       $userRating = $i18n->t(
         "please {0}log in{1} to rate this movie",
-        [
-          "<a href='{$i18n->r("/user/login")}' title='Click here to log in to your account.'>",
-          "</a>"
-        ]
+        [ "<a href='{$i18n->r("/user/login")}' title='{$i18n->t("Click here to log in to your account.")}'>", "</a>" ]
       );
-    } elseif (($userRating = $this->presenter->ratingModel->getMovieRating($user->id, $this->presenter->movieModel->id))) {
+    }
+    elseif (($userRating = $this->presenter->ratingModel->getMovieRating($user->id, $this->presenter->movieModel->id))) {
       $userRating = $i18n->t("your rating: ", [ $userRating ]);
-    } else {
+    }
+    else {
       $userRating = $i18n->t("you haven't rated this movie yet");
     }
 
-    try {
-      $poster = $this->presenter->movieModel->getPosterDisplay();
-    } catch (MovieException $e) {
-      $poster = new MoviePosterModel();
-    }
     return
-      "<{$tag}{$this->expandTagAttributes($attributes)}>" .
+      "<div class='{$this->getShortName()}-content' id='content' role='main'>" .
         "<div id='content__header'>" .
-          "<div id='movie__header' class='container'>" .
+          "<div class='container' id='movie__header'>" .
             "<header class='row'>" .
               "<div class='span span--9'>" .
 
                 // ----------------------------------------------------------------------------------------------------- Display title & original title
 
-                "<h1 id='content__header__title' class='title'>{$this->presenter->displayTitle}<small>{$this->yearSuffix}</small></h1>" .
+                "<h1 id='content__header__title' class='title'>{$this->presenter->displayTitle} <small>{$this->yearSuffix}</small></h1>" .
                 "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $this->presenter->movieModel->originalTitle ])}</p>" .
 
                 // ----------------------------------------------------------------------------------------------------- Rating form & explanatory text
@@ -285,7 +241,7 @@ class MovieShowView extends AbstractView {
                       "<a href='{$i18n->r("/help/average-rating")}' title='{$i18n->t("Go to help page: {0}", [ "Average Rating"] )}'>",
                       "</a>",
                       $this->presenter->movieModel->rating,
-                      $userRating
+                      $userRating,
                     ]) .
                 "</p>" .
 
@@ -327,7 +283,7 @@ class MovieShowView extends AbstractView {
               $this->a(
                 $i18n->r("/movie/{0}/{1}-gallery", [ $this->presenter->movieModel->id, $i18n->t("poster") ]),
                 $this->getImage(
-                  $poster,
+                  $this->presenter->movieModel->getPosterDisplay(),
                   MoviePosterModel::IMAGESTYLE_LARGE_FIXED_WIDTH,
                   [ "alt" => $this->presenter->displayTitle ]),
                 [ "class" => "span span--3" ]
@@ -337,7 +293,7 @@ class MovieShowView extends AbstractView {
         "</div>" .
         $this->getAlerts() .
         $this->getContent() .
-      "</{$tag}>"
+      "</div>"
     ;
   }
 
