@@ -281,7 +281,7 @@ class MovieShowView extends AbstractView {
               "</div>" .
               // ------------------------------------------------------------------------------------------------------- Poster
               $this->a(
-                $i18n->r("/movie/{0}/{1}-gallery", [ $this->presenter->movieModel->id, $i18n->t("poster") ]),
+                $i18n->r("/movie/{0}/{1}", [ $this->presenter->movieModel->id, $i18n->t("posters") ]),
                 $this->getImage(
                   $this->presenter->movieModel->getPosterDisplay(),
                   MoviePosterModel::IMAGESTYLE_LARGE_FIXED_WIDTH,

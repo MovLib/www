@@ -92,15 +92,15 @@ class GalleryPresenter extends AbstractPresenter {
     try {
       $this->initMovie();
       switch ($_SERVER["TAB"]) {
-        case "poster":
+        case "posters":
           $this->galleryTitle = "Poster";
           $this->images = $this->model->getPosters();
           break;
-        case "lobby-card":
+        case "lobby-cards":
           $this->galleryTitle = "Lobby Card";
           $this->images = $this->model->getLobbyCards();
           break;
-        case "photo":
+        case "photos":
           $this->galleryTitle = "Photo";
           $this->images = $this->model->getPhotos();
           break;
@@ -161,10 +161,10 @@ class GalleryPresenter extends AbstractPresenter {
       case "movie":
         $this->secondaryNavigationPoints = [
           [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--arrow-left'></i>{$i18n->t("Back to {0}", [ $i18n->t("movie") ])}" ],
-          [ $i18n->r("/movie/{0}/{1}-gallery/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), "<i class='icon icon--upload'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
-          [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("poster") ]), $i18n->t("Posters") ],
-          [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("lobby-card") ]), $i18n->t("Lobby Cards") ],
-          [ $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t("photo") ]), $i18n->t("Photos") ]
+          [ $i18n->r("/movie/{0}/{1}/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), "<i class='icon icon--upload'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
+          [ $i18n->r("/movie/{0}/{1}", [ $this->model->id, $i18n->t("posters") ]), $i18n->t("Posters") ],
+          [ $i18n->r("/movie/{0}/{1}", [ $this->model->id, $i18n->t("lobby-cards") ]), $i18n->t("Lobby Cards") ],
+          [ $i18n->r("/movie/{0}/{1}", [ $this->model->id, $i18n->t("photos") ]), $i18n->t("Photos") ]
         ];
         break;
       case "person":
@@ -176,17 +176,11 @@ class GalleryPresenter extends AbstractPresenter {
   }
 
   /**
-   * Initializes common movie properties including the model, back link properties and the title.
+   * Initializes common movie properties including the model and the title.
    *
-   * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance for translations.
    */
   protected function initMovie() {
-    global $i18n;
     $this->model = new MovieModel($_SERVER["ID"]);
-    $this->backRoute = $i18n->r("/movie/{0}", [ $this->model->id ]);
-    $this->backText = $i18n->t("Back to {0}", [ $i18n->t("movie") ]);
-    $this->backAttributes = [ "title" => $i18n->t("Go back to the movie's page.") ];
     if (empty($this->model->getTitleDisplay())) {
         $this->title = $this->model->originalTitle;
     }

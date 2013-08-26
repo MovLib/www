@@ -39,6 +39,11 @@ location @gallery_upload {
   include sites/conf/fastcgi.conf;
 }
 
+location @image_details {
+  set $movlib_presenter "Image";
+  include sites/conf/fastcgi.conf;
+}
+
 
 # ---------------------------------------------------------------------------------------------------------------------- movies
 
@@ -94,14 +99,22 @@ location ^~ /<?= $r("movie") ?> {
     try_files $movlib_cache @movie;
   }
 
-  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("poster") ?>|<?= $r("lobby-card") ?>|<?= $r("photo") ?>)-<?= $r("gallery") ?>$ {
+  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("posters") ?>|<?= $r("lobby-cards") ?>|<?= $r("photos") ?>)$ {
     set $movlib_action $1;
     set $movlib_id $2;
     set $movlib_tab $3;
     try_files $movlib_cache @gallery;
   }
 
-  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("poster") ?>|<?= $r("lobby-card") ?>|<?= $r("photo") ?>)-<?= $r("gallery") ?>/upload$ {
+  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("poster") ?>|<?= $r("lobby-card") ?>|<?= $r("photo") ?>)/([0-9]+)$ {
+    set $movlib_action $1;
+    set $movlib_id $2;
+    set $movlib_tab $3;
+    set $movlib_image_id $4;
+    try_files $movlib_cache @image_details;
+  }
+
+  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("posters") ?>|<?= $r("lobby-cards") ?>|<?= $r("photos") ?>)/upload$ {
     set $movlib_action $1;
     set $movlib_id $2;
     set $movlib_tab $3;
@@ -167,7 +180,7 @@ location ^~ /<?= $r("person") ?> {
     try_files $movlib_cache @person;
   }
 
-  location ~ ^/(<?= $r("person") ?>)/([0-9]+)/<?= $r("photo-gallery") ?>$ {
+  location ~ ^/(<?= $r("person") ?>)/([0-9]+)/<?= $r("photos") ?>$ {
     set $movlib_action $1;
     set $movlib_id $2;
     try_files $movlib_cache @gallery;

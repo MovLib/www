@@ -75,15 +75,15 @@ class GalleryUploadPresenter extends GalleryPresenter {
     try {
       $this->initMovie();
       switch ($_SERVER["TAB"]) {
-        case "poster":
+        case "posters":
           $this->model = new MoviePosterModel($_SERVER["ID"]);
           $this->galleryTitle = $i18n->t("Poster");
           break;
-        case "lobby-card":
+        case "lobby-cards":
           $this->model = new MovieImageModel($_SERVER["ID"], "lobby-card");
           $this->galleryTitle = $i18n->t("Lobby Card");
           break;
-        case "photo":
+        case "photos":
           $this->model = new MovieImageModel($_SERVER["ID"], "photo");
           $this->galleryTitle = $i18n->t("Photo");
           break;
@@ -118,13 +118,13 @@ class GalleryUploadPresenter extends GalleryPresenter {
     try {
       $this->initMovie();
       switch ($_SERVER["TAB"]) {
-        case "poster":
+        case "posters":
           $this->model = new MoviePosterModel($_SERVER["ID"]);
           break;
-        case "lobby-card":
+        case "lobby-cards":
           $this->model = new MovieImageModel($_SERVER["ID"], "lobby-card");
           break;
-        case "photo":
+        case "photos":
           $this->model = new MovieImageModel($_SERVER["ID"], "photo");
           break;
       }
@@ -143,19 +143,19 @@ class GalleryUploadPresenter extends GalleryPresenter {
     switch ($this->getAction()) {
       case "movie":
         $breadcrumb[] = [
-          $i18n->r("/movie/{0}/{1}-gallery", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]),
+          $i18n->r("/movie/{0}/{1}", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]),
           "{$this->title} {$this->galleryTitle}"
         ];
         break;
       case "person":
         $breadcrumb[] = [
-          $i18n->r("/person/{0}/{1}-gallery", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]),
+          $i18n->r("/person/{0}/{1}", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]),
           "{$this->title} {$this->galleryTitle}"
         ];
         break;
       case "series":
         $breadcrumb[] = [
-          $i18n->r("/series/{0}/{1}-gallery", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]),
+          $i18n->r("/series/{0}/{1}", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]),
           "{$this->title} {$this->galleryTitle}"
         ];
         break;
