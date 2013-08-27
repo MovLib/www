@@ -17,7 +17,7 @@
  */
 namespace MovLib\Model;
 
-use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\ImageException;
 use \MovLib\Exception\ErrorException;
 
 /**
@@ -152,14 +152,16 @@ class MoviePosterModel extends AbstractImageModel {
         foreach ($posterResult as $property => $value) {
           $this->{$property} = $value;
         }
+        $this->country = $i18n->getCountries()[$this->country];
         $this->initImage($this->imageName, [
           self::IMAGESTYLE_SMALL,
           self::IMAGESTYLE_LARGE_FIXED_WIDTH,
           self::IMAGESTYLE_HUGE_FIXED_WIDTH,
-          AbstractImageModel::IMAGESTYLE_GALLERY
+          AbstractImageModel::IMAGESTYLE_GALLERY,
+          AbstractImageModel::IMAGESTYLE_DETAILS
         ]);
       } catch (ErrorException $e) {
-        throw new DatabaseException("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", $e);
+        throw new ImageException("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", $e);
       }
     }
   }

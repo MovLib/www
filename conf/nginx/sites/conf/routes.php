@@ -105,7 +105,7 @@ location ^~ /<?= $r("movie") ?> {
   location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("posters") ?>$ {
     set $movlib_action "movie";
     set $movlib_id $1;
-    set $movlib_tab "posters";
+    set $movlib_tab "poster";
     try_files $movlib_cache @gallery;
   }
 
@@ -120,14 +120,14 @@ location ^~ /<?= $r("movie") ?> {
   location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("posters") ?>/upload$ {
     set $movlib_action "movie";
     set $movlib_id $1;
-    set $movlib_tab "posters";
+    set $movlib_tab "poster";
     try_files $movlib_cache @gallery_upload;
   }
 
   location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("lobby-cards") ?>$ {
     set $movlib_action "movie";
     set $movlib_id $1;
-    set $movlib_tab "lobby-cards";
+    set $movlib_tab "lobby-card";
     try_files $movlib_cache @gallery;
   }
 
@@ -142,14 +142,14 @@ location ^~ /<?= $r("movie") ?> {
   location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("lobby-cards") ?>/upload$ {
     set $movlib_action "movie";
     set $movlib_id $1;
-    set $movlib_tab "lobby-cards";
+    set $movlib_tab "lobby-card";
     try_files $movlib_cache @gallery_upload;
   }
 
   location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("photos") ?>$ {
     set $movlib_action "movie";
     set $movlib_id $1;
-    set $movlib_tab "photos";
+    set $movlib_tab "photo";
     try_files $movlib_cache @gallery;
   }
 
@@ -164,7 +164,7 @@ location ^~ /<?= $r("movie") ?> {
   location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("photos") ?>/upload$ {
     set $movlib_action "movie";
     set $movlib_id $1;
-    set $movlib_tab "photos";
+    set $movlib_tab "photo";
     try_files $movlib_cache @gallery_upload;
   }
 

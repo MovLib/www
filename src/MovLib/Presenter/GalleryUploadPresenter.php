@@ -51,7 +51,7 @@ class GalleryUploadPresenter extends GalleryPresenter {
    *   The global session model instance.
    * @return this
    */
-  public function __constructGet() {
+  private function __constructGet() {
     global $user;
     $this->{__FUNCTION__ . $this->getAction()}();
     if ($user->isLoggedIn) {
@@ -70,20 +70,20 @@ class GalleryUploadPresenter extends GalleryPresenter {
    *   The global i18n model instance for translations.
    * @return this
    */
-  public function __constructGetMovie() {
+  private function __constructGetMovie() {
     global $i18n;
     try {
       $this->initMovie();
       switch ($_SERVER["TAB"]) {
-        case "posters":
+        case "poster":
           $this->model = new MoviePosterModel($_SERVER["ID"]);
           $this->galleryTitle = $i18n->t("Poster");
           break;
-        case "lobby-cards":
+        case "lobby-card":
           $this->model = new MovieImageModel($_SERVER["ID"], "lobby-card");
           $this->galleryTitle = $i18n->t("Lobby Card");
           break;
-        case "photos":
+        case "photo":
           $this->model = new MovieImageModel($_SERVER["ID"], "photo");
           $this->galleryTitle = $i18n->t("Photo");
           break;
@@ -101,7 +101,7 @@ class GalleryUploadPresenter extends GalleryPresenter {
    *   The global session model instance.
    * @return this
    */
-  public function __constructPost() {
+  private function __constructPost() {
     global $user;
     $this->{__FUNCTION__ . $this->getAction()}();
     if ($user->isLoggedIn) {
@@ -113,19 +113,17 @@ class GalleryUploadPresenter extends GalleryPresenter {
     return $this;
   }
 
-  public function __constructPostMovie() {
+  private function __constructPostMovie() {
     global $i18n;
     try {
       $this->initMovie();
       switch ($_SERVER["TAB"]) {
-        case "posters":
+        case "poster":
           $this->model = new MoviePosterModel($_SERVER["ID"]);
           break;
-        case "lobby-cards":
-          $this->model = new MovieImageModel($_SERVER["ID"], "lobby-card");
-          break;
-        case "photos":
-          $this->model = new MovieImageModel($_SERVER["ID"], "photo");
+        case "lobby-card":
+        case "photo":
+          $this->model = new MovieImageModel($_SERVER["ID"], $_SERVER["TAB"]);
           break;
       }
     }

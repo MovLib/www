@@ -128,6 +128,12 @@ class AbstractImageModel extends BaseModel {
    */
   const IMAGESTYLE_GALLERY = "140x140>";
 
+  /**
+   * Image style for the image detail view.
+   * @var int
+   */
+  const IMAGESTYLE_DETAILS = "700x700>";
+
   // ------------------------------------------------------------------------------------------------------------------- Protected Methods
 
 

@@ -38,7 +38,7 @@ class GalleryUploadView extends AbstractFormView {
    */
   public function __construct($presenter) {
     global $i18n;
-    parent::__construct($presenter, "{$presenter->title} {$presenter->galleryTitle} {$i18n->t("gallery")} {$i18n->t("upload")}");
+    parent::__construct($presenter, $i18n->t("{0} {$presenter->galleryTitle} upload", [ $presenter->title ]));
     $this->stylesheets[] = "modules/gallery.css";
     $this->attributes["enctype"] = self::ENCTYPE_BINARY;
   }

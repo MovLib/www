@@ -43,6 +43,12 @@ class GalleryPresenter extends AbstractPresenter {
   public $images;
 
   /**
+   * The image type to be used in links to the image detail page.
+   * @var string
+   */
+  public $imageType;
+
+  /**
    * The model for this gallery.
    *
    * @var \MovLib\Model\AbstractModel
@@ -87,21 +93,21 @@ class GalleryPresenter extends AbstractPresenter {
    *   The global i18n model instance for translations.
    * @return this
    */
-  public function __constructMovie() {
+  private function __constructMovie() {
     global $i18n;
     try {
       $this->initMovie();
       switch ($_SERVER["TAB"]) {
-        case "posters":
-          $this->galleryTitle = "Poster";
+        case "poster":
+          $this->galleryTitle = "Posters";
           $this->images = $this->model->getPosters();
           break;
-        case "lobby-cards":
-          $this->galleryTitle = "Lobby Card";
+        case "lobby-card":
+          $this->galleryTitle = "Lobby Cards";
           $this->images = $this->model->getLobbyCards();
           break;
-        case "photos":
-          $this->galleryTitle = "Photo";
+        case "photo":
+          $this->galleryTitle = "Photos";
           $this->images = $this->model->getPhotos();
           break;
       }
@@ -160,7 +166,7 @@ class GalleryPresenter extends AbstractPresenter {
     switch ($this->getAction()) {
       case "movie":
         $this->secondaryNavigationPoints = [
-          [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--arrow-left'></i>{$i18n->t("Back to {0}", [ $i18n->t("movie") ])}" ],
+          [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--film'></i>{$i18n->t("Back to {0}", [ $i18n->t("movie") ])}" ],
           [ $i18n->r("/movie/{0}/{1}/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), "<i class='icon icon--upload'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
           [ $i18n->r("/movie/{0}/{1}", [ $this->model->id, $i18n->t("posters") ]), $i18n->t("Posters") ],
           [ $i18n->r("/movie/{0}/{1}", [ $this->model->id, $i18n->t("lobby-cards") ]), $i18n->t("Lobby Cards") ],

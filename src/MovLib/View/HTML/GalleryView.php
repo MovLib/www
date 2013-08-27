@@ -39,7 +39,7 @@ class GalleryView extends AbstractView {
    */
   public function __construct($presenter) {
     global $i18n;
-    parent::__construct($presenter, "{$presenter->title} {$presenter->galleryTitle} {$i18n->t("gallery")}");
+    parent::__construct($presenter, $i18n->t("{0} {$presenter->galleryTitle}", [ $presenter->title ]));
     $this->stylesheets[] = "modules/gallery.css";
   }
 
@@ -57,7 +57,7 @@ class GalleryView extends AbstractView {
         "<li class='span span--2'>" .
         $this->a(
           $i18n->r(
-            "/{$i18n->t($this->presenter->getAction())}/{0}/{$i18n->t($_SERVER["TAB"])}/{1}/image-details",
+            "/{$_SERVER["ACTION"]}/{0}/{$_SERVER["TAB"]}/{1}",
             [ $this->presenter->model->id, $this->presenter->images[$i]->sectionId ]
           ),
           $this->getImage($this->presenter->images[$i], AbstractImageModel::IMAGESTYLE_GALLERY)

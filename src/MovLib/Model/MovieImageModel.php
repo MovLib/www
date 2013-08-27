@@ -17,6 +17,8 @@
  */
 namespace MovLib\Model;
 
+use \MovLib\Exception\ImageException;
+
 /**
  * Description of LobbyCardModel
  *
@@ -49,12 +51,6 @@ class MovieImageModel extends AbstractImageModel {
    * @var int
    */
   public $userId;
-
-  /**
-   * The country this image belongs to as an associative array.
-   * @var array
-   */
-  public $country;
 
   /**
    * The file size of the image in bytes.
@@ -121,7 +117,6 @@ class MovieImageModel extends AbstractImageModel {
             `movie_id` AS `id`,
             `section_id` AS `sectionId`,
             `user_id` AS `userId`,
-            `country_id` AS `country`,
             `filename` AS `imageName`,
             `width` AS `imageWidth`,
             `height` AS `imageHeight`,
@@ -147,10 +142,11 @@ class MovieImageModel extends AbstractImageModel {
           $this->{$property} = $value;
         }
         $this->initImage($this->imageName, [
-          AbstractImageModel::IMAGESTYLE_GALLERY
+          AbstractImageModel::IMAGESTYLE_GALLERY,
+          AbstractImageModel::IMAGESTYLE_DETAILS
         ]);
       } catch (ErrorException $e) {
-        throw new DatabaseException("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", $e);
+        throw new ImageException("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", $e);
       }
     }
   }
