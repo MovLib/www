@@ -1,5 +1,6 @@
 USE `movlib`;
 -- Import all seed scripts.
+source licenses.sql
 source genres.sql
 source users.sql
 source persons.sql

@@ -7,6 +7,7 @@ INSERT INTO `posters`
     `section_id`,
     `user_id`,
     `country_id`,
+    `license_id`,
     `filename`,
     `width`,
     `height`,
@@ -15,7 +16,8 @@ INSERT INTO `posters`
     `created`,
     `rating`,
     `dyn_descriptions`,
-    `hash`
+    `hash`,
+    `source`
   )
 VALUES
   (
@@ -23,6 +25,7 @@ VALUES
     1,
     1,
     77,
+    2,
     "roundhay-garden-scene.1.en",
     856,
     482,
@@ -31,7 +34,8 @@ VALUES
     CURRENT_TIMESTAMP,
     0,
     '',
-    'hashhashhashhash'
+    'hashhashhashhash',
+    'Screenshot'
   )
 ;
 -- The Shawshank Redemption
@@ -41,6 +45,7 @@ INSERT INTO `posters`
     `section_id`,
     `user_id`,
     `country_id`,
+    `license_id`,
     `filename`,
     `width`,
     `height`,
@@ -49,7 +54,8 @@ INSERT INTO `posters`
     `created`,
     `rating`,
     `dyn_descriptions`,
-    `hash`
+    `hash`,
+    `source`
   )
 VALUES
   (
@@ -57,6 +63,7 @@ VALUES
     1,
     1,
     233,
+    1,
     "the-shawshank-redemption.1.en",
     269,
     395,
@@ -65,7 +72,8 @@ VALUES
     CURRENT_TIMESTAMP,
     0,
     '',
-    'hashhashhashhash'
+    'hashhashhashhash',
+    'http://en.wikipedia.org/wiki/File:ShawshankRedemptionMoviePoster.jpg'
   )
 ;
 COMMIT;
@@ -76,6 +84,7 @@ INSERT INTO `posters`
     `section_id`,
     `user_id`,
     `country_id`,
+    `license_id`,
     `filename`,
     `width`,
     `height`,
@@ -84,7 +93,8 @@ INSERT INTO `posters`
     `created`,
     `rating`,
     `dyn_descriptions`,
-    `hash`
+    `hash`,
+    `source`
   )
 VALUES
   (
@@ -92,6 +102,7 @@ VALUES
     1,
     1,
     233,
+    1,
     "leon-the-professional.1.en",
     936,
     1408,
@@ -100,7 +111,8 @@ VALUES
     CURRENT_TIMESTAMP,
     0,
     '',
-    'hashhashhashhash'
+    'hashhashhashhash',
+    'http://www.movieposterdb.com/poster/3145139b'
   )
 ;
 COMMIT;

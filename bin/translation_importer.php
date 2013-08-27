@@ -35,7 +35,7 @@ ini_set("display_errors", 1);
 /*}}}DEBUG*/
 
 // Include the global I18n class.
-require dirname(__DIR__) . "/src/MovLib/Model/AbstractModel.php";
+require dirname(__DIR__) . "/src/MovLib/Model/BaseModel.php";
 require dirname(__DIR__) . "/src/MovLib/Model/I18nModel.php";
 
 /**

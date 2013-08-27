@@ -25,6 +25,7 @@ INSERT INTO `persons_photos` (
   `person_id`,
   `section_id`,
   `user_id`,
+  `license_id`,
   `filename`,
   `width`,
   `height`,
@@ -33,8 +34,10 @@ INSERT INTO `persons_photos` (
   `created`,
   `rating`,
   `dyn_descriptions`,
-  `hash`
+  `hash`,
+  `source`
 ) VALUES (
+1,
 1,
 1,
 1,
@@ -46,7 +49,8 @@ INSERT INTO `persons_photos` (
 CURRENT_TIMESTAMP,
 0,
 '',
-'hash'
+'hash',
+'http://commons.wikimedia.org/wiki/File:Luc-Besson-Taken.JPG'
 );
 -- id: 2
 INSERT INTO `persons` (
@@ -142,6 +146,7 @@ INSERT INTO `persons_photos` (
   `person_id`,
   `section_id`,
   `user_id`,
+  `license_id`,
   `filename`,
   `width`,
   `height`,
@@ -150,9 +155,11 @@ INSERT INTO `persons_photos` (
   `created`,
   `rating`,
   `dyn_descriptions`,
-  `hash`
+  `hash`,
+  `source`
 ) VALUES (
 5,
+1,
 1,
 1,
 'Frank-Darabont.1.en',
@@ -163,7 +170,8 @@ INSERT INTO `persons_photos` (
 CURRENT_TIMESTAMP,
 0,
 '',
-'hash'
+'hash',
+'http://commons.wikimedia.org/wiki/File:Struzan_darabont.jpg'
 );
 -- id: 6
 INSERT INTO `persons` (
