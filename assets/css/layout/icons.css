@@ -110,15 +110,18 @@
 .icon--history:before {
 	content: "\e00e";
 }
-.icon--arrow-left:before {
+.icon--film:before {
 	content: "\e00f";
 }
-.icon--upload:before {
+.icon--arrow-left:before {
 	content: "\e010";
 }
-.icon--help-circled:before {
+.icon--upload:before {
 	content: "\e011";
 }
-.icon--info-circled:before {
+.icon--help-circled:before {
 	content: "\e012";
+}
+.icon--info-circled:before {
+	content: "\f008";
 }
