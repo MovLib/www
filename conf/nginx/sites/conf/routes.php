@@ -28,7 +28,7 @@
 # ---------------------------------------------------------------------------------------------------------------------- gallery
 
 
-# This gets used within movies and persons in different variants for different galleries.
+# Generic gallery location to be used in various other locations.
 location @gallery {
   set $movlib_presenter "Gallery";
   include sites/conf/fastcgi.conf;
@@ -99,25 +99,72 @@ location ^~ /<?= $r("movie") ?> {
     try_files $movlib_cache @movie;
   }
 
-  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("posters") ?>|<?= $r("lobby-cards") ?>|<?= $r("photos") ?>)$ {
-    set $movlib_action $1;
-    set $movlib_id $2;
-    set $movlib_tab $3;
+  # Gallery, image detail page and upload routes.
+  # Hard coded for fixing translation problems in other languages and reduction RegEx complexity.
+
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("posters") ?>$ {
+    set $movlib_action "movie";
+    set $movlib_id $1;
+    set $movlib_tab "posters";
     try_files $movlib_cache @gallery;
   }
 
-  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("poster") ?>|<?= $r("lobby-card") ?>|<?= $r("photo") ?>)/([0-9]+)$ {
-    set $movlib_action $1;
-    set $movlib_id $2;
-    set $movlib_tab $3;
-    set $movlib_image_id $4;
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("poster") ?>/([0-9]+)$ {
+    set $movlib_action "movie";
+    set $movlib_id $1;
+    set $movlib_image_id $2;
+    set $movlib_tab "poster";
     try_files $movlib_cache @image_details;
   }
 
-  location ~ ^/(<?= $r("movie") ?>)/([0-9]+)/(<?= $r("posters") ?>|<?= $r("lobby-cards") ?>|<?= $r("photos") ?>)/upload$ {
-    set $movlib_action $1;
-    set $movlib_id $2;
-    set $movlib_tab $3;
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("posters") ?>/upload$ {
+    set $movlib_action "movie";
+    set $movlib_id $1;
+    set $movlib_tab "posters";
+    try_files $movlib_cache @gallery_upload;
+  }
+
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("lobby-cards") ?>$ {
+    set $movlib_action "movie";
+    set $movlib_id $1;
+    set $movlib_tab "lobby-cards";
+    try_files $movlib_cache @gallery;
+  }
+
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("lobby-card") ?>/([0-9]+)$ {
+    set $movlib_action "movie";
+    set $movlib_id $1;
+    set $movlib_image_id $2;
+    set $movlib_tab "lobby-card";
+    try_files $movlib_cache @image_details;
+  }
+
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("lobby-cards") ?>/upload$ {
+    set $movlib_action "movie";
+    set $movlib_id $1;
+    set $movlib_tab "lobby-cards";
+    try_files $movlib_cache @gallery_upload;
+  }
+
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("photos") ?>$ {
+    set $movlib_action "movie";
+    set $movlib_id $1;
+    set $movlib_tab "photos";
+    try_files $movlib_cache @gallery;
+  }
+
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("photo") ?>/([0-9]+)$ {
+    set $movlib_action "movie";
+    set $movlib_id $1;
+    set $movlib_image_id $2;
+    set $movlib_tab "photo";
+    try_files $movlib_cache @image_details;
+  }
+
+  location ~ ^/<?= $r("movie") ?>/([0-9]+)/<?= $r("photos") ?>/upload$ {
+    set $movlib_action "movie";
+    set $movlib_id $1;
+    set $movlib_tab "photos";
     try_files $movlib_cache @gallery_upload;
   }
 
@@ -150,7 +197,7 @@ location ^~ /<?= $r("persons") ?> {
   }
 
   location ~ ^/<?= $r("persons") ?>/([0-9]+)$ {
-    return 301 /<?= $r("person") ?>/$2;
+    return 301 /<?= $r("person") ?>/$1;
   }
 
   return 404;
@@ -180,9 +227,9 @@ location ^~ /<?= $r("person") ?> {
     try_files $movlib_cache @person;
   }
 
-  location ~ ^/(<?= $r("person") ?>)/([0-9]+)/<?= $r("photos") ?>$ {
-    set $movlib_action $1;
-    set $movlib_id $2;
+  location ~ ^/<?= $r("person") ?>/([0-9]+)/<?= $r("photos") ?>$ {
+    set $movlib_action "person";
+    set $movlib_id $1;
     try_files $movlib_cache @gallery;
   }
   return 404;
@@ -235,9 +282,33 @@ location ^~ /<?= $r("user") ?> {
     try_files $movlib_cache @user;
   }
 
-  location ~ ^/<?= $r("user") ?>/(<?= $r("account") ?>|<?= $r("notification") ?>|<?= $r("mail") ?>|<?= $r("password") ?>|<?= $r("dangerzone") ?>)-<?= $r("settings") ?>$ {
+  location ~ ^/<?= $r("user") ?>/<?= $r("account") ?>-<?= $r("settings") ?>$ {
     set $movlib_action "Settings";
-    set $movlib_tab $1;
+    set $movlib_tab "Account";
+    try_files $movlib_cache @user;
+  }
+
+  location ~ ^/<?= $r("user") ?>/<?= $r("notification") ?>-<?= $r("settings") ?>$ {
+    set $movlib_action "Settings";
+    set $movlib_tab "Notification";
+    try_files $movlib_cache @user;
+  }
+
+  location ~ ^/<?= $r("user") ?>/<?= $r("mail") ?>-<?= $r("settings") ?>$ {
+    set $movlib_action "Settings";
+    set $movlib_tab "Mail";
+    try_files $movlib_cache @user;
+  }
+
+  location ~ ^/<?= $r("user") ?>/<?= $r("password") ?>-<?= $r("settings") ?>$ {
+    set $movlib_action "Settings";
+    set $movlib_tab "Password";
+    try_files $movlib_cache @user;
+  }
+
+  location ~ ^/<?= $r("user") ?>/<?= $r("dangerzone") ?>-<?= $r("settings") ?>$ {
+    set $movlib_action "Settings";
+    set $movlib_tab "Dangerzone";
     try_files $movlib_cache @user;
   }
 
