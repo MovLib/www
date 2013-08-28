@@ -1,4 +1,5 @@
 [
+  "movlib",
   "login",
   "logout",
   "reset-password",

@@ -20,6 +20,7 @@ namespace MovLib\Presenter;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\UserException;
+use \MovLib\Exception\ValidatorException;
 use \MovLib\Model\UserModel;
 use \MovLib\Presenter\AbstractPresenter;
 use \MovLib\Utility\Crypt;
@@ -194,18 +195,10 @@ class UserPresenter extends AbstractPresenter {
     if (($mail = Validator::inputMail("mail")) === false) {
       $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
     }
-    if (($name = Validator::inputString("name")) === false) {
-      $errors["name"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("username") ]);
-    }
-    if (($error = Validator::username($name))) {
-      $errors["name"] = $error;
-    }
-    else {
-      // So far so good, we need a user model instance, because now we have to validate against the database.
-      $userModel = new UserModel();
-      if (($userModel->existsName($name)) === true) {
-        $errors["name"] = $i18n->t("The {0} {1} is already in use.", [ $i18n->t("username"), String::placeholder($name) ]);
-      }
+    try {
+      $name = Validator::inputUsername($name);
+    } catch (ValidatorException $e) {
+      $errors["name"] = $e->getMessage();
     }
     if (isset($errors)) {
       return $errors;
