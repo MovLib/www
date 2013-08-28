@@ -81,6 +81,15 @@ class StringTest extends PHPUnit_Framework_TestCase {
     );
   }
 
+  public function testNormalizeBreaks() {
+    foreach ([ "\n", "\r", "\r\n" ] as $data) {
+      $this->assertEquals("\n", String::normalizeLineFeeds($data));
+    }
+    foreach ([ "mov\nlib", "mov\rlib", "mov\r\nlib" ] as $data) {
+      $this->assertEquals("mov\nlib", String::normalizeLineFeeds($data));
+    }
+  }
+
   public function testWordwrapNoCut() {
     $this->assertEquals(
       "Iñtërnâtiônàlizætiøn

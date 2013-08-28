@@ -18,7 +18,7 @@
 namespace MovLib\Utility;
 
 /**
- * @todo Description of String
+ * Various string related utility methods.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -101,6 +101,22 @@ class String {
   }
 
   /**
+   * Decodes HTML entities including numerical ones to regular UTF-8 bytes.
+   *
+   * Double-escaped entities will only be decoded once (<code>"&amp;lt;"</code> becomes <code>"&lt;"</code>, not
+   * <code>"<"</code>). Be careful when using this method, as it will revert previous sanitization efforts
+   * (<code>"&lt;script&gt;"</code> will become <code>"<script>"</code>).
+   *
+   * @param string $string
+   *   The text to decode entities in.
+   * @return string
+   *   The input <var>$string</var>, with all HTML entities decoded once.
+   */
+  public static function decodeEntities($string) {
+    return html_entity_decode($string, ENT_QUOTES);
+  }
+
+  /**
    * Formats text for emphasized display in a placeholder inside a sentence.
    *
    * @see \MovLib\Utility\String::checkPlain()
@@ -148,6 +164,19 @@ class String {
    */
   public static function collapseWhitespace($string) {
     return trim(preg_replace("/\s+/m", " ", $string));
+  }
+
+  /**
+   * Normalize all linebreaks to *NIX style (<code>\n</code>).
+   *
+   * @link http://stackoverflow.com/a/7836692/1251219 How to replace different newline styles in PHP the smartest way?
+   * @param string $string
+   *   The string to normalize.
+   * @return string
+   *   The normalized string.
+   */
+  public static function normalizeLineFeeds($string) {
+    return preg_replace("/\R/u", "\n", $string);
   }
 
   /**
