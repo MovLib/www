@@ -602,7 +602,7 @@ class Validator {
     // that the UI always helps users to include it (e.g. with the placeholder attribute and placing the http:// in
     // front, plus maybe some JavaScript that adds the protocol if the user omits it).
     foreach ([ "scheme", "host" ] as $mandatoryPart) {
-      if (!isset($parts[$mandatoryPart]) || empty($parts[$mandatoryPart])) {
+      if (empty($parts[$mandatoryPart])) {
         return false;
       }
     }
@@ -613,14 +613,14 @@ class Validator {
     // If any of these is present the complete URL is invalid. Why ports? It's very unusual that a website that is
     // accessible for the public is using a non standard port. Therefor we don't allow this.
     foreach ([ "port", "user", "pass" ] as $invalidPart) {
-      if (isset($parts[$invalidPart]) && !empty($parts[$invalidPart])) {
+      if (!empty($parts[$invalidPart])) {
         return false;
       }
     }
     // We have to encode unicode characters, otherwise not only the filter fails, but we are only interested in perfect
     // valid URLs and we cannot treat an unencoded unicode character in the path as something that is invalid. The
     // transformation should be transparent for normal human beings who are used to literal characters.
-    if (isset($parts["path"]) && !empty($parts["path"])) {
+    if (!empty($parts["path"])) {
       $pathParts = explode("/", $parts["path"]);
       $c = count($pathParts);
       for ($i = 0; $i < $c; ++$i) {
@@ -632,7 +632,7 @@ class Validator {
     $filtered = "{$parts["scheme"]}://{$parts["host"]}";
     // Don't forget the allowed optional parts of the URL including their prefix.
     foreach ([ "path" => "", "query" => "?", "fragment" => "#" ] as $optionalPart => $prefix) {
-      if (isset($parts[$optionalPart]) && !empty($parts[$optionalPart])) {
+      if (!empty($parts[$optionalPart])) {
         $filtered .= $prefix . $parts[$optionalPart];
       }
     }
