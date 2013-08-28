@@ -63,6 +63,18 @@ class GalleryPresenter extends AbstractPresenter {
   public $secondaryNavigationPoints;
 
   /**
+   * The title of the entity this gallery is for (e.g. the movie title).
+   * @var string
+   */
+  public $entityTitle;
+
+  /**
+   * Pluralized version of the $_SERVER["TAB"] parameter used for breadcrumb and secondary navigation.
+   * @var string
+   */
+  public $tabPluralized;
+
+  /**
    * The title of the page to be rendered.
    *
    * @var string
@@ -82,7 +94,7 @@ class GalleryPresenter extends AbstractPresenter {
    */
   public function __construct() {
     $this->{__FUNCTION__ . $this->getAction()}();
-    $this->view = new GalleryView($this);
+    $this->view = $this->view ?: new GalleryView($this);
     $this->setPresentation();
   }
 
@@ -97,6 +109,9 @@ class GalleryPresenter extends AbstractPresenter {
     global $i18n;
     try {
       $this->initMovie();
+      if ($this->model->deleted === true) {
+        return $this->setPresentation("Error\\Gone");
+      }
       switch ($_SERVER["TAB"]) {
         case "poster":
           $this->galleryTitle = "Posters";
@@ -123,6 +138,7 @@ class GalleryPresenter extends AbstractPresenter {
    */
   public function getBreadcrumb() {
     global $i18n;
+    $this->tabPluralized = "{$_SERVER["TAB"]}s";
     $breadcrumb = [];
     switch ($this->getAction()) {
       case "movie":
@@ -131,7 +147,6 @@ class GalleryPresenter extends AbstractPresenter {
           $i18n->t("Movies"),
           [ "title" => $i18n->t("Have a look at the latest movie entries at MovLib.") ]
         ];
-        $breadcrumb[] = [ $i18n->r("/movie/{0}", [ $this->model->id ]), $this->title ];
         break;
       case "person":
         $breadcrumb[] = [
@@ -139,7 +154,6 @@ class GalleryPresenter extends AbstractPresenter {
           $i18n->t("Persons"),
           [ "title" => $i18n->t("Have a look at the latest person entries at MovLib.") ]
         ];
-        $breadcrumb[] = [ $i18n->r("/person/{0}", [ $this->model->id ]), $this->title ];
         break;
       case "series":
         $breadcrumb[] = [
@@ -147,9 +161,9 @@ class GalleryPresenter extends AbstractPresenter {
           $i18n->t("Series"),
           [ "title" => $i18n->t("Have a look at the latest series entries at MovLib.") ]
         ];
-        $breadcrumb[] = [ $i18n->r("/series/{0}", [ $this->model->id ]), $this->title ];
         break;
     }
+    $breadcrumb[] = [ $i18n->r("/{$_SERVER["ACTION"]}/{0}", [ $_SERVER["ID"] ]), $this->entityTitle ];
     return $breadcrumb;
   }
 
@@ -163,14 +177,15 @@ class GalleryPresenter extends AbstractPresenter {
    */
   public function getSecondaryNavigation() {
     global $i18n;
+    $this->tabPluralized = "{$_SERVER["TAB"]}s";
     switch ($this->getAction()) {
       case "movie":
         $this->secondaryNavigationPoints = [
-          [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--film'></i>{$i18n->t("Back to {0}", [ $i18n->t("movie") ])}" ],
-          [ $i18n->r("/movie/{0}/{1}/upload", [ $this->model->id, $i18n->t($_SERVER["TAB"]) ]), "<i class='icon icon--upload'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
-          [ $i18n->r("/movie/{0}/{1}", [ $this->model->id, $i18n->t("posters") ]), $i18n->t("Posters") ],
-          [ $i18n->r("/movie/{0}/{1}", [ $this->model->id, $i18n->t("lobby-cards") ]), $i18n->t("Lobby Cards") ],
-          [ $i18n->r("/movie/{0}/{1}", [ $this->model->id, $i18n->t("photos") ]), $i18n->t("Photos") ]
+          [ $i18n->r("/{$_SERVER["ACTION"]}/{0}", [ $_SERVER["ID"] ]), "<i class='icon icon--film'></i>{$i18n->t("Back to {0}", [ $i18n->t("movie") ])}" ],
+          [ $i18n->r("/{$_SERVER["ACTION"]}/{0}/{$this->tabPluralized}/upload", [ $_SERVER["ID"] ]), "<i class='icon icon--upload'></i>{$i18n->t("Upload")}", [ "class" => "menuitem--separator" ] ],
+          [ $i18n->r("/{$_SERVER["ACTION"]}/{0}/{$i18n->t("posters")}", [ $_SERVER["ID"] ]), $i18n->t("Posters") ],
+          [ $i18n->r("/{$_SERVER["ACTION"]}/{0}/{$i18n->t("lobby-cards")}", [ $_SERVER["ID"] ]), $i18n->t("Lobby Cards") ],
+          [ $i18n->r("/{$_SERVER["ACTION"]}/{0}/{$i18n->t("photos")}", [ $_SERVER["ID"] ]), $i18n->t("Photos") ]
         ];
         break;
       case "person":
@@ -188,10 +203,13 @@ class GalleryPresenter extends AbstractPresenter {
   protected function initMovie() {
     $this->model = new MovieModel($_SERVER["ID"]);
     if (empty($this->model->getTitleDisplay())) {
-        $this->title = $this->model->originalTitle;
+        $this->entityTitle = $this->model->originalTitle;
     }
     else {
-      $this->title = $this->model->getTitleDisplay();
+      $this->entityTitle = $this->model->getTitleDisplay()["title"];
+    }
+    if (!empty($this->model->year)) {
+      $this->entityTitle .= " ({$this->model->year})";
     }
   }
 

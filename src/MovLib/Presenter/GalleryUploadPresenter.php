@@ -55,10 +55,10 @@ class GalleryUploadPresenter extends GalleryPresenter {
     global $user;
     $this->{__FUNCTION__ . $this->getAction()}();
     if ($user->isLoggedIn) {
-      $this->view = new GalleryUploadView($this);
+      $this->view = $this->view ?: new GalleryUploadView($this);
     }
     else {
-      $this->view = new GalleryUploadAnonymousView($this);
+      $this->view = $this->view ?: new GalleryUploadAnonymousView($this);
     }
     return $this;
   }
@@ -74,6 +74,9 @@ class GalleryUploadPresenter extends GalleryPresenter {
     global $i18n;
     try {
       $this->initMovie();
+      if ($this->model->deleted === true) {
+        return $this->setPresentation("Error\\Gone");
+      }
       switch ($_SERVER["TAB"]) {
         case "poster":
           $this->model = new MoviePosterModel($_SERVER["ID"]);

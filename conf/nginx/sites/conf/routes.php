@@ -40,7 +40,7 @@ location @gallery_upload {
 }
 
 location @image_details {
-  set $movlib_presenter "Image";
+  set $movlib_presenter "ImageDetails";
   include sites/conf/fastcgi.conf;
 }
 

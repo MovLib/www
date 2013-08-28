@@ -53,6 +53,12 @@ class MovieImageModel extends AbstractImageModel {
   public $userId;
 
   /**
+   * The ID of the license this poster has.
+   * @var int
+   */
+  public $licenseId;
+
+  /**
    * The file size of the image in bytes.
    * @var int
    */
@@ -88,6 +94,12 @@ class MovieImageModel extends AbstractImageModel {
    */
   public $type;
 
+  /**
+   * The image's source.
+   * @var string
+   */
+  public $source;
+
   // ------------------------------------------------------------------------------------------------------------------- Image styles
 
   /**
@@ -117,6 +129,7 @@ class MovieImageModel extends AbstractImageModel {
             `movie_id` AS `id`,
             `section_id` AS `sectionId`,
             `user_id` AS `userId`,
+            `license_id` AS `licenseId`,
             `filename` AS `imageName`,
             `width` AS `imageWidth`,
             `height` AS `imageHeight`,

@@ -20,6 +20,7 @@ namespace MovLib\Model;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Model\BaseModel;
+use \MovLib\Model\UserModel;
 use \MovLib\Utility\Network;
 use \MovLib\Utility\Sanitizer;
 
@@ -120,6 +121,20 @@ class AbstractImageModel extends BaseModel {
    */
   public $imageUri;
 
+  /**
+   * The image's details as associative array.
+   *
+   * @var array
+   */
+  protected $details;
+
+  /**
+   * The image's license information as associative array.
+   *
+   * @var array
+   */
+  private $license = null;
+
   // ------------------------------------------------------------------------------------------------------------------- Common image styles
 
   /**
@@ -132,7 +147,7 @@ class AbstractImageModel extends BaseModel {
    * Image style for the image detail view.
    * @var int
    */
-  const IMAGESTYLE_DETAILS = "700x700>";
+  const IMAGESTYLE_DETAILS = "x540>";
 
   // ------------------------------------------------------------------------------------------------------------------- Protected Methods
 
@@ -223,6 +238,60 @@ class AbstractImageModel extends BaseModel {
       list($this->imageStyles[$style]["width"], $this->imageStyles[$style]["height"]) = getimagesize($this->imageStyles[$style]["path"]);
     }
     return $this->imageStyles[$style];
+  }
+
+
+  /**
+   * Retrieve all the relevant image details including license and user information.
+   *
+   * @return array
+   *   Associative array containing the image details.
+   */
+  public function getImageDetails() {
+    if ($this->details === null) {
+      foreach ([ "description", "imageWidth", "imageHeight", "imageSize", "created", "changed", "rating", "source" ] as $prop) {
+        $this->details[$prop] = $this->{$prop};
+      }
+      $this->details["license"] = $this->getLicense($this->licenseId);
+      $this->details["#user"] = new UserModel(UserModel::FROM_ID, $this->userId);
+    }
+    return $this->details;
+  }
+
+  /**
+   * Retrieve the license information from the database.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   * @param int $licenseId
+   *   The license's unique ID.
+   * @return array
+   *   The license information as associative array.
+   */
+  public function getLicense($licenseId) {
+    global $i18n;
+    if ($this->license === null) {
+      $this->license = $this->select(
+        "SELECT
+          `name`,
+          `description`,
+          COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`,
+          COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description_localized`,
+          `url`,
+          `abbr`,
+          `icon_extension`,
+          `icon_hash`,
+          `admin`
+          FROM `licenses`
+          WHERE `license_id` = ?
+          LIMIT 1"
+        , "i", [ $licenseId ]
+      )[0];
+      $this->license["name"] = $this->license["name_localized"] ?: $this->license["name"];
+      $this->license["description"] = $this->license["description_localized"] ?: $this->license["description"];
+      unset($this->license["name_localized"]);
+      unset($this->license["description_localized"]);
+    }
+    return $this->license;
   }
 
   /**

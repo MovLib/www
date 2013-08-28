@@ -54,16 +54,16 @@ class MoviePosterModel extends AbstractImageModel {
   public $userId;
 
   /**
+   * The ID of the license this poster has.
+   * @var int
+   */
+  public $licenseId;
+
+  /**
    * The country this poster belongs to as an associative array.
    * @var array
    */
   public $country;
-
-  /**
-   * The file size of the poster in bytes.
-   * @var int
-   */
-  public $size;
 
   /**
    * The timestamp this poster was initially uploaded.
@@ -88,6 +88,12 @@ class MoviePosterModel extends AbstractImageModel {
    * @var string
    */
   public $description;
+
+  /**
+   * The image's source.
+   * @var string
+   */
+  public $source;
 
   // ------------------------------------------------------------------------------------------------------------------- Image styles
 
@@ -127,11 +133,12 @@ class MoviePosterModel extends AbstractImageModel {
             `movie_id` AS `id`,
             `section_id` AS `sectionId`,
             `user_id` AS `userId`,
+            `license_id` AS `licenseId`,
             `country_id` AS `country`,
             `filename` AS `imageName`,
             `width` AS `imageWidth`,
             `height` AS `imageHeight`,
-            `size`,
+            `size` AS `imageSize`,
             `ext` AS `imageExtension`,
             `created`,
             `changed`,
@@ -164,6 +171,19 @@ class MoviePosterModel extends AbstractImageModel {
         throw new ImageException("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", $e);
       }
     }
+  }
+
+  /**
+   * Retrieve all the relevant image details including license and user information.
+   * Override to provide country information.
+   *
+   * @return array
+   *   Associative array containing the image details.
+   */
+  public function getImageDetails() {
+    parent::getImageDetails();
+    $this->details["country"] = $this->country;
+    return $this->details;
   }
 
 }

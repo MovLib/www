@@ -1,12 +1,13 @@
 USE `movlib`;
 -- Roundhay Garden Scene (The world's first movie)
 BEGIN;
-INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`, `created`) VALUES (
+INSERT INTO `movies` (`year`, `runtime`, `original_title`, `dyn_synopses`, `created`, `deleted`) VALUES (
   '1888',
   1,
   'Roundhay Garden Scene',
   COLUMN_CREATE('en', 'This is the first movie ever.'),
-  '2013-06-01 00:00:00'
+  '2013-06-01 00:00:00',
+  TRUE
 );
 INSERT INTO `movies_countries` (`movie_id`, `country_id`) VALUES (1, 77);
 INSERT INTO `movies_genres` (`movie_id`, `genre_id`) VALUES (1, 7), (1, 18), (1, 19);
