@@ -19,6 +19,8 @@ namespace MovLib\Model;
 
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\ErrorException;
+use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
+use \MovLib\View\ImageStyle\ResizeImageStyle;
 
 /**
  * Retrieve movie poster data from the database.
@@ -101,17 +103,17 @@ class MoviePosterModel extends AbstractImageModel {
    * Small image style (e.g. for movie listings).
    * @var int
    */
-  const IMAGESTYLE_SMALL = "75x75>";
+  const IMAGESTYLE_SMALL = "75x75";
   /**
    * Large image style with fixed width (e.g. for movie page).
    * @var int
    */
-  const IMAGESTYLE_LARGE_FIXED_WIDTH = "220x>";
+  const IMAGESTYLE_LARGE_FIXED_WIDTH = "220x";
   /**
    * Huge image style with fixed width (e.g. for the poster page).
    * @var int
    */
-  const IMAGESTYLE_HUGE_FIXED_WIDTH = "700x>";
+  const IMAGESTYLE_HUGE_FIXED_WIDTH = "700x";
 
   /**
    * Construct a new poster model. If the poster ID is not specified, an empty model is created.
@@ -140,12 +142,13 @@ class MoviePosterModel extends AbstractImageModel {
             `height` AS `imageHeight`,
             `size` AS `imageSize`,
             `ext` AS `imageExtension`,
-            `created`,
-            `changed`,
+            UNIX_TIMESTAMP(`created`) AS `created`,
+            UNIX_TIMESTAMP(`changed`) AS `changed`,
             `rating`,
             COLUMN_GET(`dyn_descriptions`, 'en' AS BINARY) AS `description_en`,
             COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description_localized`,
-            `hash` AS `imageHash`
+            `hash` AS `imageHash`,
+            `source`
           FROM `posters`
           WHERE `movie_id` = ?
             AND `section_id` = ?
@@ -161,11 +164,12 @@ class MoviePosterModel extends AbstractImageModel {
         }
         $this->country = $i18n->getCountries()[$this->country];
         $this->initImage($this->imageName, [
-          self::IMAGESTYLE_SMALL,
-          self::IMAGESTYLE_LARGE_FIXED_WIDTH,
-          self::IMAGESTYLE_HUGE_FIXED_WIDTH,
-          AbstractImageModel::IMAGESTYLE_GALLERY,
-          AbstractImageModel::IMAGESTYLE_DETAILS
+          new ResizeImageStyle(self::IMAGESTYLE_SMALL),
+          new ResizeImageStyle(self::IMAGESTYLE_LARGE_FIXED_WIDTH),
+          new ResizeImageStyle(self::IMAGESTYLE_HUGE_FIXED_WIDTH),
+          new ResizeImageStyle(AbstractImageModel::IMAGESTYLE_GALLERY),
+          new ResizeImageStyle(AbstractImageModel::IMAGESTYLE_DETAILS),
+          new ResizeCropCenterImageStyle(AbstractImageModel::IMAGESTYLE_DETAILS_STREAM)
         ]);
       } catch (ErrorException $e) {
         throw new ImageException("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", $e);
