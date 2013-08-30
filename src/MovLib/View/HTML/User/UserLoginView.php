@@ -17,8 +17,7 @@
  */
 namespace MovLib\View\HTML\User;
 
-use \MovLib\Model\UserModel;
-use \MovLib\View\HTML\AbstractFormView;
+use \MovLib\View\HTML\AbstractPageView;
 
 /**
  * User login form.
@@ -30,13 +29,22 @@ use \MovLib\View\HTML\AbstractFormView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserLoginView extends AbstractFormView {
+class UserLoginView extends AbstractPageView {
+
+  /**
+   * The login form.
+   *
+   * @var \MovLib\View\HTML\FormView
+   */
+  public $form;
 
   /**
    * Instantiate new user login view.
    *
    * @param \MovLib\Presenter\UserPresenter $userPresenter
    *   The user presenter controlling this view.
+   * @param \MovLib\View\HTML\FormView $form
+   *   The login form.
    */
   public function __construct($userPresenter) {
     global $i18n;
@@ -47,30 +55,17 @@ class UserLoginView extends AbstractFormView {
   /**
    * {@inheritdoc}
    */
-  public function getFormContent() {
-    global $i18n;
+  public function getContent() {
+    $this->addClass("input--block-level", $this->form->elements["mail"]->attributes);
+    $this->addClass("input--block-level", $this->form->elements["pass"]->attributes);
+    $this->addClass("button--large", $this->form->actions["submit"]->attributes);
     return
-      "<div class='row'>" .
-        "<div class='span span--6 offset--3'>" .
-          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->input("mail", [
-            "autofocus",
-            "class"       => "input--block-level",
-            "maxlength"   => UserModel::MAIL_MAX_LENGTH,
-            "placeholder" => $i18n->t("Enter your email address"),
-            "required",
-            "title"       => $i18n->t("Plase enter the email address you used to register."),
-            "type"        => "email",
-          ])}</p>" .
-          "<p><small class='form-help'>{$this->a("/user/reset-password", "Reset your password", [
-            "title" => $i18n->t("Click this link if you forgot your password."),
-          ])}</small><label for='pass'>{$i18n->t("Password")}</label>{$this->input("pass", [
-            "class"       => "input--block-level",
-            "placeholder" => $i18n->t("Enter your password"),
-            "required",
-            "title"       => $i18n->t("Please enter your secret password in this field."),
-            "type"        => "password",
-          ])}</p>" .
-          "<p>{$this->submit($i18n->t("Sign in"), $i18n->t("Click here after you’ve filled out all fields."))}</p>" .
+      "<div class='container'>" .
+        "<div class='row'>" .
+          $this->form->open("span span--6 offset--3") .
+            "<p>{$this->form->elements["mail"]}</p>" .
+            "<p>{$this->form->elements["pass"]}</p>" .
+          $this->form->close(false) .
         "</div>" .
       "</div>"
     ;

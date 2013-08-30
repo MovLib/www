@@ -19,7 +19,7 @@ namespace MovLib\View\HTML;
 
 use \MovLib\Exception\MovieException;
 use \MovLib\Model\MoviePosterModel;
-use \MovLib\View\HTML\AbstractView;
+use \MovLib\View\HTML\AbstractPageView;
 
 /**
  * Description of MoviesView
@@ -30,7 +30,7 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviesView extends AbstractView {
+class MoviesView extends AbstractPageView {
 
   /**
    * Initialize new MoviesView.

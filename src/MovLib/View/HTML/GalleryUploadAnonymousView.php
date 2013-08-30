@@ -26,7 +26,7 @@ namespace MovLib\View\HTML;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class GalleryUploadAnonymousView extends AbstractView {
+class GalleryUploadAnonymousView extends AbstractPageView {
 
   /**
    * Initialize new image upload view for anonymous users.

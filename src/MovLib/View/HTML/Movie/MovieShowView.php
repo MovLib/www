@@ -18,7 +18,7 @@
 namespace MovLib\View\HTML\Movie;
 
 use \MovLib\Model\MoviePosterModel;
-use \MovLib\View\HTML\AbstractView;
+use \MovLib\View\HTML\AbstractPageView;
 
 /**
  * Shows a single movie.
@@ -31,7 +31,7 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieShowView extends AbstractView {
+class MovieShowView extends AbstractPageView {
 
   /**
    * The movie presenter currently controlling this view.

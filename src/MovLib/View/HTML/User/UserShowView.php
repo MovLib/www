@@ -18,7 +18,7 @@
 namespace MovLib\View\HTML\User;
 
 use \MovLib\Model\UserModel;
-use \MovLib\View\HTML\AbstractView;
+use \MovLib\View\HTML\AbstractPageView;
 
 /**
  * @todo Description of UserShowView
@@ -29,7 +29,7 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserShowView extends AbstractView {
+class UserShowView extends AbstractPageView {
 
   /**
    * The user presenter controlling this view.

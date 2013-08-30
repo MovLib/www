@@ -17,7 +17,7 @@
  */
 namespace MovLib\View\HTML;
 
-use \MovLib\View\HTML\AbstractView;
+use \MovLib\View\HTML\AbstractPageView;
 
 /**
  * The <b>Home</b> view contains the HTML layout for the MovLib home page.
@@ -30,7 +30,7 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HomeView extends AbstractView {
+class HomeView extends AbstractPageView {
 
   /**
    * {@inheritdoc}

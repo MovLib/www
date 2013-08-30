@@ -17,7 +17,7 @@
  */
 namespace MovLib\View\HTML;
 
-use \MovLib\View\HTML\AbstractView;
+use \MovLib\View\HTML\AbstractPageView;
 
 /**
  * Special view without any content (by default) for displaying alert messages.
@@ -31,7 +31,7 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class AlertView extends AbstractView {
+class AlertView extends AbstractPageView {
 
   /**
    * Additional content to display.

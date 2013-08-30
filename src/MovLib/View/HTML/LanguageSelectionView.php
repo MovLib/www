@@ -20,7 +20,7 @@ namespace MovLib\View\HTML;
 use \Locale;
 use \MovLib\Model\I18nModel;
 use \MovLib\Utility\FileSystem;
-use \MovLib\View\HTML\AbstractView;
+use \MovLib\View\HTML\AbstractPageView;
 
 /**
  * If the user accesses our website without any subdomain ask him to choose his favorite language.
@@ -31,7 +31,7 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class LanguageSelectionView extends AbstractView {
+class LanguageSelectionView extends AbstractPageView {
 
   /**
    * {@inheritdoc}

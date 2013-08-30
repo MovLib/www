@@ -28,7 +28,7 @@ use \MovLib\Model\AbstractImageModel;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class GalleryView extends AbstractView {
+class GalleryView extends AbstractPageView {
 
 
   /**
