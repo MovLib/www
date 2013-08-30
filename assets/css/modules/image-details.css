@@ -25,6 +25,41 @@
  * @since 0.0.1-dev
  */
 
-.imagedetails-content #image-details-image {
+#image-details-image {
   text-align: center;
+  background-color: #555;
+  padding: 20px;
+  border: 1px solid #252525;
+}
+
+#image-details-stream {
+  background-color: #252525;
+  overflow: hidden;
+  padding: 20px 0;
+}
+
+#image-details-stream a {
+  border: none;
+  opacity: 0.7;
+  transition: opacity 0.4s ease-in-out;
+}
+
+#image-details-stream img {
+  margin: 0 !important;
+}
+
+#image-details-stream a:hover,
+#image-details-stream a.active {
+  opacity: 1;
+}
+
+#image-details-stream img {
+  display: inline-block;
+  margin-left: 5px;
+  float: left;
+}
+
+#image-details-details dt,
+#image-details-details dd {
+  margin-top: 1.39em;
 }
