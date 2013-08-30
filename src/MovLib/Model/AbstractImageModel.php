@@ -141,13 +141,19 @@ class AbstractImageModel extends BaseModel {
    * Image style for galleries.
    * @var int
    */
-  const IMAGESTYLE_GALLERY = "140x140>";
+  const IMAGESTYLE_GALLERY = "140x140";
 
   /**
    * Image style for the image detail view.
    * @var int
    */
-  const IMAGESTYLE_DETAILS = "x540>";
+  const IMAGESTYLE_DETAILS = "x540";
+
+  /**
+   * Image style for the image stream in the image detail view.
+   * @var int
+   */
+  const IMAGESTYLE_DETAILS_STREAM = "60x60";
 
   // ------------------------------------------------------------------------------------------------------------------- Protected Methods
 
@@ -163,18 +169,16 @@ class AbstractImageModel extends BaseModel {
    */
   protected function initImage($imageName, $imageStyles) {
     $this->imageName = $imageName;
-    // Remove unsafe path characters from the image styles.
-    $c = count($imageStyles);
-    for ($i = 0; $i < $c; ++$i) {
-      $this->imageStyles[$imageStyles[$i]] = [
-        "style" => $imageStyles[$i],
-        "name" => Sanitizer::filename($imageStyles[$i]),
-      ];
-    }
     if (isset($this->imageExtension) && isset($this->imageHash)) {
       $path = "/uploads/{$this->imageDirectory}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
       $this->imagePath = $_SERVER["HOME"] . $path;
       $this->imageUri  = "https://" . Network::SERVER_NAME_STATIC . $path;
+      $c = count($imageStyles);
+      for ($i = 0; $i < $c; ++$i) {
+        $imageStyles[$i]->sourcePath = $this->imagePath;
+        $imageStyles[$i]->imageUri = $this->imageUri;
+        $this->imageStyles[$imageStyles[$i]->dimensions] = $imageStyles[$i];
+      }
       if (is_file($this->imagePath)) {
         $this->imageExists = true;
         $this->generateImageStylePaths();
@@ -189,10 +193,10 @@ class AbstractImageModel extends BaseModel {
    * @return this
    */
   protected function generateImageStylePaths() {
-    foreach ($this->imageStyles as $style => $data) {
-      $path = "/uploads/{$this->imageDirectory}/{$data["name"]}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
-      $this->imageStyles[$style]["path"] = $_SERVER["HOME"] . $path;
-      $this->imageStyles[$style]["uri"] = "https://" . Network::SERVER_NAME_STATIC . $path;
+    foreach ($this->imageStyles as $style => $styleObj) {
+      $path = "/uploads/{$this->imageDirectory}/{$styleObj->dimensions}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
+      $this->imageStyles[$style]->path = $_SERVER["HOME"] . $path;
+      $this->imageStyles[$style]->uri = "https://" . Network::SERVER_NAME_STATIC . $path;
     }
     return $this;
   }
@@ -207,15 +211,8 @@ class AbstractImageModel extends BaseModel {
    * @return this
    */
   public function generateImageStyles() {
-    foreach ($this->imageStyles as $style => $data) {
-      if (!is_dir(($dir = dirname($data["path"])))) {
-        mkdir($dir);
-      }
-      exec("convert {$this->imagePath} -filter 'Lanczos' -resize '{$style}' -quality 75 -strip {$data["path"]} && chmod 777 {$data["path"]}");
-//      chmod($data["path"], 0777);
-      if (filesize($data["path"]) > 10240) {
-        exec("convert {$data["path"]} -interlace 'line' {$data["path"]}");
-      }
+    foreach ($this->imageStyles as $style => $styleObj) {
+      $styleObj->convert();
     }
     return $this;
   }
@@ -223,19 +220,17 @@ class AbstractImageModel extends BaseModel {
   /**
    * Get width, height and URI of specified image style.
    *
-   * @staticvar array $styles
-   *   Used to cache generated image arrays.
    * @param string $style
    *   The desired image style's name.
    * @return array
    *   Associative array containing all image information.
    */
   public function getImageStyle($style) {
-    if (!isset($this->imageStyles[$style]["width"])) {
-      if (!is_file($this->imageStyles[$style]["path"])) {
+    if (!isset($this->imageStyles[$style]->width)) {
+      if (!is_file($this->imageStyles[$style]->path)) {
         $this->generateImageStyles();
       }
-      list($this->imageStyles[$style]["width"], $this->imageStyles[$style]["height"]) = getimagesize($this->imageStyles[$style]["path"]);
+      list($this->imageStyles[$style]->width, $this->imageStyles[$style]->height) = getimagesize($this->imageStyles[$style]->path);
     }
     return $this->imageStyles[$style];
   }
@@ -334,8 +329,8 @@ class AbstractImageModel extends BaseModel {
    */
   public function deleteImage() {
     unlink($this->imagePath);
-    foreach ($this->imageStyles as $style => $data) {
-      unlink($data["path"]);
+    foreach ($this->imageStyles as $style => $styleObj) {
+      unlink($styleObj->path);
     }
     $this->imageExists = false;
     return $this;

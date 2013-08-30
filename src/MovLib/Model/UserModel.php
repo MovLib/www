@@ -21,6 +21,7 @@ use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\AbstractImageModel;
 use \MovLib\Utility\String;
+use \MovLib\View\ImageStyle\ResizeImageStyle;
 
 /**
  * Retrieve user specific data from the database.
@@ -99,7 +100,7 @@ class UserModel extends AbstractImageModel {
    *
    * @var int
    */
-  const IMAGESTYLE_BIG = "140x140>";
+  const IMAGESTYLE_BIG = "140x140";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -121,7 +122,7 @@ class UserModel extends AbstractImageModel {
    *
    * @var int
    */
-  public $id;
+  public $userId;
 
   /**
    * The user's preferred system language's ID.
@@ -291,7 +292,7 @@ class UserModel extends AbstractImageModel {
       try {
         foreach ($this->select(
           "SELECT
-            `user_id` AS `id`,
+            `user_id` AS `userId`,
             `language_id` AS `languageId`,
             `name`,
             `mail`,
@@ -315,15 +316,15 @@ class UserModel extends AbstractImageModel {
           FROM `users`
             WHERE `{$from}` = ?
           LIMIT 1", $this->types[$from], [ $value ]
-        )[0] as $name => $value) {
-          $this->{$name} = $value;
+        )[0] as $k => $v) {
+          $this->{$k} = $v;
         }
         settype($this->private, "boolean");
         settype($this->deleted, "boolean");
         $this->initImage(String::convertToRoute($this->name), [
-          self::IMAGESTYLE_SMALL,
-          self::IMAGESTYLE_NORMAL,
-          self::IMAGESTYLE_BIG,
+          new ResizeImageStyle(self::IMAGESTYLE_SMALL),
+          new ResizeImageStyle(self::IMAGESTYLE_NORMAL),
+          new ResizeImageStyle(self::IMAGESTYLE_BIG),
         ]);
       } catch (ErrorException $e) {
         throw new UserException("Could not find user for {$from} '{$value}'!", $e);
@@ -367,7 +368,7 @@ class UserModel extends AbstractImageModel {
         $this->website,
         $this->imageExtension,
         $this->imageHash,
-        $this->id
+        $this->userId
       ]
     )->execute()->close();;
   }
@@ -482,7 +483,7 @@ class UserModel extends AbstractImageModel {
       "dsssss",
       [ $this->languageId, $this->name, $this->mail, $this->pass, $this->timezone, $this->mail ]
     )->execute();
-    $this->id = $this->stmt->insert_id;
+    $this->userId = $this->stmt->insert_id;
     return $this->close();
   }
 

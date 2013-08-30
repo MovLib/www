@@ -69,7 +69,7 @@ class UserShowView extends AbstractPageView {
             "<div class='row'>" .
               "<dl class='span span--7'>" .
                 "<dt>{$i18n->t("Username")}</dt><dd>{$this->presenter->profile->name}</dd>" .
-                "<dt>{$i18n->t("User ID")}</dt><dd>{$this->presenter->profile->id}</dd>" .
+                "<dt>{$i18n->t("User ID")}</dt><dd>{$this->presenter->profile->userId}</dd>" .
                 "<dt>{$i18n->t("Edits")}</dt><dd>{$this->presenter->profile->edits}</dd>" .
                 "<dt>{$i18n->t("Reputation")}</dt><dd><em>@todo</em> reputation counter</dd>" .
                 "<dt>{$i18n->t("Mail")}</dt><dd>{$this->presenter->profile->mail}</dd>" .

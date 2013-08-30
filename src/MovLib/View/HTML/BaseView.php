@@ -61,7 +61,7 @@ class BaseView {
     return $list;
   }
 
-  /**
+   /**
    *
    * @param \MovLib\Model\AbstractImageModel $imageModel
    * @param string $style
@@ -74,9 +74,9 @@ class BaseView {
         $attributes["alt"] = "";
       }
       $imageData = $imageModel->getImageStyle($style);
-      $attributes["width"] = $imageData["width"];
-      $attributes["height"] = $imageData["height"];
-      $attributes["src"] = $imageData["uri"];
+      $attributes["width"] = $imageData->width;
+      $attributes["height"] = $imageData->height;
+      $attributes["src"] = $imageData->uri;
       return "<img{$this->expandTagAttributes($attributes)}>";
     }
     return "no image";

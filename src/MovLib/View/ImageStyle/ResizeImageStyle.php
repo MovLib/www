@@ -1,3 +1,5 @@
+<?php
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -13,53 +15,28 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\View\ImageStyle;
 
 /**
- * Styles exclusive to the image details pages.
+ * The image style for image resizes.
  *
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
+class ResizeImageStyle extends AbstractImageStyle {
 
-#image-details-image {
-  text-align: center;
-  background-color: #555;
-  padding: 20px;
-  border: 1px solid #252525;
-}
+  /**
+   * @inheritdoc
+   */
+  public function __construct($dimensions) {
+    parent::__construct($dimensions);
+  }
 
-#image-details-stream {
-  background-color: #252525;
-  overflow: hidden;
-  padding: 20px 0;
-}
+  protected function getImageMagickOptions() {
+    return "-filter 'Lanczos' -quality 75 -strip -resize '{$this->dimensions}>'";
+  }
 
-#image-details-stream a {
-  border: none;
-  opacity: 0.7;
-  transition: opacity 0.4s ease-in-out;
-}
-
-#image-details-stream img {
-  margin: 0 !important;
-}
-
-#image-details-stream a:hover,
-#image-details-stream a.active {
-  opacity: 1;
-}
-
-#image-details-stream img {
-  display: inline-block;
-  margin-left: 5px;
-  float: left;
-}
-
-#image-details-details dt,
-#image-details-details dd {
-  margin-top: 1.39em;
 }

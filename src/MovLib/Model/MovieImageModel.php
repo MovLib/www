@@ -135,12 +135,13 @@ class MovieImageModel extends AbstractImageModel {
             `height` AS `imageHeight`,
             `size`,
             `ext` AS `imageExtension`,
-            `created`,
-            `changed`,
+            UNIX_TIMESTAMP(`created`) AS `created`,
+            UNIX_TIMESTAMP(`changed`) AS `changed`,
             `rating`,
             COLUMN_GET(`dyn_descriptions`, 'en' AS BINARY) AS `description_en`,
             COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description_localized`,
-            `hash` AS `imageHash`
+            `hash` AS `imageHash`,
+            `source`
           FROM `movies_images`
           WHERE `movie_id` = ?
             AND `section_id` = ?
@@ -155,8 +156,9 @@ class MovieImageModel extends AbstractImageModel {
           $this->{$property} = $value;
         }
         $this->initImage($this->imageName, [
-          AbstractImageModel::IMAGESTYLE_GALLERY,
-          AbstractImageModel::IMAGESTYLE_DETAILS
+          new ResizeImageStyle(AbstractImageModel::IMAGESTYLE_GALLERY),
+          new ResizeImageStyle(AbstractImageModel::IMAGESTYLE_DETAILS),
+          new ResizeCropCenterImageStyle(AbstractImageModel::IMAGESTYLE_DETAILS_STREAM)
         ]);
       } catch (ErrorException $e) {
         throw new ImageException("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", $e);

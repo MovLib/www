@@ -524,7 +524,7 @@ class MovieModel extends BaseModel {
           FROM `movies_images`
           WHERE `movie_id` = ?
             AND `type` = 'lobby-card'
-          ORDER BY rating DESC",
+          ORDER BY `created` DESC",
         "d",
         [ $this->id ]);
       $count = count($lobbyCardIds);
@@ -549,7 +549,7 @@ class MovieModel extends BaseModel {
           FROM `movies_images`
           WHERE `movie_id` = ?
             AND `type` = 'photo'
-          ORDER BY rating DESC",
+          ORDER BY `created` DESC",
         "d",
         [ $this->id ]);
       $count = count($photoIds);
@@ -599,7 +599,7 @@ class MovieModel extends BaseModel {
           `section_id` AS `id`
           FROM `posters`
           WHERE `movie_id` = ?
-          ORDER BY rating DESC",
+          ORDER BY `created` DESC",
         "d",
         [ $this->id ]);
       $count = count($posterIds);

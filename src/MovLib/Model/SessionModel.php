@@ -376,7 +376,7 @@ class SessionModel extends BaseModel {
     // IP address and user agent string are already set.
     $this->sessionId  = session_id();
     $this->csrfToken  = $_SESSION["CSRF"] = Crypt::randomHash();
-    $this->id         = $_SESSION["UID"]  = $userModel->id;
+    $this->id         = $_SESSION["UID"]  = $userModel->userId;
     $this->ttl        = $_SESSION["TTL"]  = time() + ini_get("session.gc_maxlifetime");
     $this->deleted    = $userModel->deleted;
     $this->name       = $userModel->name;
