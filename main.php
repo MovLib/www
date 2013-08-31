@@ -59,10 +59,8 @@ function __autoload($class) {
 function uncaught_exception_handler($exception) {
   global $i18n;
   $i18n = $i18n ?: new \MovLib\Model\I18nModel();
-  echo (new \MovLib\Presenter\ExceptionPresenter($exception))->presentation;
-  fastcgi_finish_request();
-  \MovLib\Utility\DelayedLogger::logException($exception, $exception->getCode());
   \MovLib\Utility\DelayedLogger::run();
+  exit(new \MovLib\Presenter\ExceptionPresenter($exception));
 }
 
 // Set the default exception handler.
@@ -167,7 +165,7 @@ $i18n = new \MovLib\Model\I18nModel();
 
 // Start the rendering process.
 $presenter = "\\MovLib\\Presenter\\{$_SERVER["PRESENTER"]}Presenter";
-echo (new $presenter())->presentation;
+echo new $presenter();
 
 // This makes sure that the output that was generated until this point will be returned to nginx for delivery.
 fastcgi_finish_request();
