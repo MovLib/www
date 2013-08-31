@@ -32,19 +32,17 @@ use \MovLib\View\HTML\Error\ExceptionView;
 class ExceptionPresenter extends AbstractPresenter {
 
   /**
-   * You <strong>have to</strong> call <code>ExceptionPresenter->setException()</code> to set the output with this
-   * presenter!
+   * Instantiate new exception presenter.
+   *
+   * @param \Exception $exception
+   *   Any exception that extends PHP's base exception class.
    */
-  public function __construct() {
-    // Nothing to do!
-  }
-
-  public function setException($exception) {
+  public function __construct($exception) {
     $this->presentation = (new ExceptionView($this, $exception))->getRenderedView();
   }
 
   /**
-   * The exception presenter has no path.
+   * The exception presenter has no path and therefor no breadcrumb entries.
    *
    * @return array
    */
