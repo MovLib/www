@@ -42,8 +42,8 @@ class Redirect {
    *
    * @param string $route
    *   The route to which the client should be redirected.
-   * @param int $status
-   *   [Optional] The HTTP response code (301, 302, or 303), defaults to 301.
+   * @param int $status [optional]
+   *   The HTTP response code (301, 302, or 303), defaults to 301.
    */
   public function __construct($route, $status = 301) {
     $this->status = $status;
@@ -55,6 +55,7 @@ class Redirect {
    *
    * @todo Check if we really have to construct this, or is nginx handling this anyways?
    * @return string
+   *   Render small HTML page, as per RFC.
    */
   public function getRenderedView() {
     $title = [
@@ -62,7 +63,6 @@ class Redirect {
       302 => "Moved Temporarily",
       303 => "See Other"
     ];
-
     return "<html><head><title>{$this->status} {$title[$this->status]}</title></head><body bgcolor=\"white\"><center><h1>{$this->status} {$title[$this->status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
   }
 
