@@ -33,31 +33,25 @@ use \Symfony\Component\Console\Output\OutputInterface;
 class NginxRoutes extends AbstractCommand {
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   public function __construct() {
     parent::__construct("routes");
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   protected function configure() {
     $this->setDescription("Compile all routes and reload nginx.");
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     global $i18n;
-    $this->setIO($input, $output);
-
-    // The nginx and service commands are only available as privileged user.
-    if (posix_getuid() !== 0) {
-      $this->exitOnError("This script must be executed as privileged user (root or sudo).");
-    }
-
+    $this->setIO($input, $output)->checkPrivileges();
     $locale = $i18n->getDefaultLanguageCode();
 
     /**

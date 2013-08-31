@@ -32,11 +32,23 @@ fi
 
 if [ ! -f ${2}${3} ] && [ ! -d ${2} ]; then
   wget --no-check-certificate ${1}${2}${3}
+  if [ $? != 0 ]; then
+    msgerror "Could not download source files"
+    exit 1
+  fi
   tar xzf ${2}${3}
+  if [ $? != 0 ]; then
+    msgerror "Could not extract source files"
+    exit 1
+  fi
 fi
 
 if [ -f ${2}${3} ]; then
   rm -f ${2}${3}
+  if [ $? != 0 ]; then
+    msgerror "Could not delete source archive"
+    exit 1
+  fi
 fi
 
 msginfo "Changing to directory: ${SD}${2}"
