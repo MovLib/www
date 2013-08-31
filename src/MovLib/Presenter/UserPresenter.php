@@ -18,7 +18,6 @@
 namespace MovLib\Presenter;
 
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\UserException;
 use \MovLib\Exception\ValidatorException;
@@ -120,19 +119,21 @@ class UserPresenter extends AbstractPresenter {
     // display the form and if an error occurred after submission of the form via POST we need it to set alert messages
     // and render the form.
     try {
-      $this->view = (new UserLoginView($this))
-        ->attach((new MailInput([ "autofocus", "class" => "input--block-level" ]))->required())
-        ->attach((new PasswordInput([ "class" => "input--block-level" ]))->required())
-        ->attach(new SubmitAction([ "class" => "button--large", "value" => $i18n->t("Sign In") ]))
-      ;
+      $this->view = (new UserLoginView($this, [
+        (new MailInput([ "autofocus", "class" => "input--block-level" ]))->required(),
+        (new PasswordInput([ "class" => "input--block-level" ]))->required(),
+        new SubmitAction([ "class" => "button--large", "value" => $i18n->t("Sign In") ]),
+      ]));
     } catch (ValidatorException $e) {
       return;
     }
     // If submitted via POST and input values are valid continue the log in process.
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
       try {
-        $userModel = new UserModel(UserModel::FROM_MAIL, $this->view->form->elements["mail"]->value);
-        Validator::password($this->view->form->elements["pass"]->value, $userModel->pass);
+        $userModel = new UserModel(UserModel::FROM_MAIL, $this->view->formElements["mail"]->value);
+        if (password_verify($this->view->formElements["pass"]->value, $userModel->pass) === false) {
+          throw new ValidatorException("Password is invalid.");
+        }
         $user->startSession($userModel);
         $_SESSION["ALERTS"][] = [
           $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$userModel->name}</b>" ]),
@@ -141,7 +142,7 @@ class UserPresenter extends AbstractPresenter {
         $this->view = new Redirect(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/user"), 302);
       } catch (ErrorException $e) {
         $this->view->setAlert(
-          "We either don’t know the submitted email address, or the password was wrong.",
+          "We either don’t know the email address, or the password was wrong.",
           AbstractPageView::ALERT_SEVERITY_ERROR
         );
       }
