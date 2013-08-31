@@ -220,40 +220,40 @@ class I18nModel extends BaseModel {
 
 
   /**
-   * Formats the given message and translates it if not displaying default locale.
+   * Format the given message and translate it to the display locale.
    *
-   * @param type $context
-   * @param type $pattern
-   * @param type $args
-   * @param type $options
-   * @return type
+   * @param string $context
+   *   The context in which we should translate the message.
+   * @param string $pattern
+   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
+   * @param array $args
+   *   Numeric array of arguments that should be inserted into <var>$pattern</var>.
+   * @param array $options
+   *   Associative array of options to alter the behaviour of this method. Available options are:
+   *   <ul>
+   *     <li><var>"comment"</var> You can pass along a comment that will be stored along this pattern for translators
+   *     to help them understand how they should translate it, defaults to no comment.</li>
+   *     <li><var>"language_code"</var> Set the language code into which the message should be translated, defaults to
+   *     the current display language code.</li>
+   *   </ul>
+   * @return string
+   *   The formatted and translated (if applicable) message.
    */
-  public function formatMessage($context, $pattern, $args, $options) {
-    $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
-    if ($languageCode !== self::getDefaultLanguageCode()) {
-      try {
-        $result = $this->select(
-          "SELECT
-            COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation`
-          FROM `{$context}s`
-            WHERE `{$context}` = ?
-            LIMIT 1",
-          "s",
-          [ $pattern ]
-        )[0];
-        if ($result["translation"] !== null) {
-          $pattern = $result["translation"];
-        }
-      } catch (ErrorException $e) {
-        unset($e);
-        DelayedLogger::log("Could not find {$languageCode} translation for {$context}: '{$pattern}'", E_NOTICE);
+  public function formatMessage($context, $pattern, $args, &$options) {
+    if (empty($options["language_code"])) {
+      $options["language_code"] = $this->languageCode;
+    }
+    if ($options["language_code"] !== self::getDefaultLanguageCode()) {
+      $result = $this->select("SELECT COLUMN_GET(`dyn_translations`, '{$options["language_code"]}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ]);
+      if (empty($result[0]["translation"])) {
+        DelayedLogger::log("Could not find {$options["language_code"]} translation for {$context}: '{$pattern}'", E_NOTICE);
         DelayedMethodCalls::stack($this, "insertPattern", [ $context, $pattern, $options ]);
       }
+      else {
+        $pattern = $result["translation"];
+      }
     }
-    if ($args) {
-      return msgfmt_format_message($this->languageCode, $pattern, $args);
-    }
-    return $pattern;
+    return msgfmt_format_message($options["language_code"], $pattern, $args);
   }
 
   /**
@@ -506,28 +506,33 @@ class I18nModel extends BaseModel {
   }
 
   /**
-   * Translate the given route.
+   * Format and translate the given route.
    *
-   * @link http://userguide.icu-project.org/formatparse/messages
+   * @see \MovLib\Model\I18nModel::formatMessage()
    * @param string $route
-   *   A simple string that should be translated or an advanced Intl ICU pattern. Read the official Intl ICU
-   *   documentation for more information on how to create translation patterns.
-   * @param array $args
-   *   [Optional] Array of values to insert.
-   * @param string $options
-   *   [Optional] Associative array to overwrite the default options used in this method in the form:
+   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
+   * @param array $args [optional]
+   *   Numeric array of arguments that should be inserted into <var>$route</var>.
+   * @param array $options [optional]
+   *   Associative array of options to alter the behaviour of this method. Available options are:
    *   <ul>
-   *     <li><code>language_code</code>: default is to use the current display language code.</li>
-   *     <li><code>comment</code>: default is <code>NULL</code>.</li>
-   *     <li><code>old_pattern</code>: default is <code>NULL</code>.</li>
+   *     <li><var>"absolute"</var> If set to <code>FALSE</code> only the formatted and translated <var>$route</var>
+   *     without protocol and host will be returned, defaults to <code>TRUE</code>.</li>
+   *     <li><var>"comment"</var> You can pass along a comment that will be stored along this pattern for translators
+   *     to help them understand how they should translate it, defaults to no comment.</li>
+   *     <li><var>"language_code"</var> Set the language code into which the message should be translated, defaults to
+   *     the current display language code.</li>
    *   </ul>
    * @return string
-   *   URI: The absolute translated route.
-   * @throws \MovLib\Exception\IntlException
-   *   If formatting the message with the given <var>$args</var> fails (only if any were passed).
+   *   The formatted and translated <var>$route</var>.
+   * @throws \IntlException
    */
-  public function r($route, $args = null, $options = null) {
-    if (isset($options["language_code"])) {
+  public function r($route, $args = [], $options = []) {
+    $route = $this->formatMessage("route", $route, $args, $options);
+    if (!empty($options["absolute"]) && $options["absolute"] === false) {
+      return $route;
+    }
+    if ($options["language_code"] !== $this->languageCode) {
       if (isset($_SERVER["LANGUAGE_CODE"])) {
         $serverName = str_replace($_SERVER["LANGUAGE_CODE"], $options["language_code"], $_SERVER["SERVER_NAME"]);
       }
@@ -538,35 +543,30 @@ class I18nModel extends BaseModel {
     else {
       $serverName = $_SERVER["SERVER_NAME"];
     }
-    if ($route !== "/") {
-      $route = $this->formatMessage("route", $route, $args, $options);
-    }
     return "https://{$serverName}{$route}";
   }
 
   /**
-   * Translate the given message.
+   * Format and translate the given message.
    *
+   * @see \MovLib\Model\I18nModel::formatMessage()
    * @param string $message
-   *   A simple string that should be translated or an advanced Intl ICU pattern. Read the official Intl ICU
-   *   documentation for more information on how to create translation patterns.
-   *
-   *   <a href="http://userguide.icu-project.org/formatparse/messages">Formatting Messages</a>
-   * @param array $args
-   *   [Optional] Array of values to insert.
-   * @param string $options
-   *   [Optional] Associative array to overwrite the default options used in this method in the form:
+   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
+   * @param array $args [optional]
+   *   Numeric array of arguments that should be inserted into <var>$message</var>.
+   * @param array $options [optional]
+   *   Associative array of options to alter the behaviour of this method. Available options are:
    *   <ul>
-   *     <li><code>language_code</code>: default is to use the current display language code.</li>
-   *     <li><code>comment</code>: default is <code>NULL</code>.</li>
-   *     <li><code>old_pattern</code>: default is <code>NULL</code>.</li>
+   *     <li><var>"comment"</var> You can pass along a comment that will be stored along this pattern for translators
+   *     to help them understand how they should translate it, defaults to no comment.</li>
+   *     <li><var>"language_code"</var> Set the language code into which the message should be translated, defaults to
+   *     the current display language code.</li>
    *   </ul>
    * @return string
-   *   The translated and formatted message.
-   * @throws \MovLib\Exception\IntlException
-   *   If formatting the message with the given <var>$args</var> fails (only if any were passed).
+   *   The formatted and translated <var>$message</var>.
+   * @throws \IntlException
    */
-  public function t($message, $args = null, $options = null) {
+  public function t($message, $args = [], $options = []) {
     return $this->formatMessage("message", $message, $args, $options);
   }
 
