@@ -37,10 +37,12 @@ class UserLoginView extends AbstractFormView {
    * @global \MovLib\Model\I18nModel $i18n
    * @param \MovLib\Presenter\UserPresenter $userPresenter
    *   The user presenter controlling this view.
+   * @param array $elements
+   *   Numeric array of form elements that should be attached to this view.
    */
-  public function __construct($userPresenter) {
+  public function __construct($userPresenter, $elements) {
     global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Login"));
+    parent::__construct($userPresenter, $i18n->t("Login"), $elements);
     $this->stylesheets[] = "modules/user.css";
   }
 

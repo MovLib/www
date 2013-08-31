@@ -88,18 +88,40 @@ abstract class AbstractFormView extends AbstractPageView {
    *   The presenter controlling this view.
    * @param string $title
    *   The already translated title of this view.
+   * @param array $elements
+   *   Numeric array of form elements that should be attached to this view.
    */
-  public function __construct($presenter, $title) {
+  public function __construct($presenter, $title, $elements) {
     global $user;
     parent::__construct($presenter, $title);
+
+    // Create CSRF token if we have an active session.
     if ($token = $user->csrfToken) {
       $this->hiddenElements["csrf"] = new HiddenInput("csrf", $token);
     }
+
+    // Set default form attributes.
     $this->formAttributes = [
       "accept-charset" => "UTF-8",
       "action"         => $_SERVER["REQUEST_URI"],
       "method"         => "post",
     ];
+
+    // Export all form elements into the correct array.
+    $c = count($elements);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($elements[$i] instanceof BaseAction) {
+        $this->actionElements[$elements[$i]->id] = $elements[$i];
+      }
+      elseif ($elements[$i] instanceof HiddenInput) {
+        $this->hiddenElements[$elements[$i]->id] = $elements[$i];
+      }
+      else {
+        $this->formElements[$elements[$i]->id] = $elements[$i];
+      }
+    }
+
+    // Validate all form elements if we are receiving this form.
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
       $errors = null;
       foreach ($this->formElements as $id => $element) {
@@ -119,26 +141,6 @@ abstract class AbstractFormView extends AbstractPageView {
 
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
-
-  /**
-   * Attach a form element to this form.
-   *
-   * @param \MovLib\View\HTML\FormElement\AbstractFormElement $element
-   *   <code>AbstractFormElement</code> instance.
-   * @return this
-   */
-  public function attach($element) {
-    if ($element instanceof BaseAction) {
-      $this->actionElements[$element->id] = $element;
-    }
-    elseif ($element instanceof HiddenInput) {
-      $this->hiddenElements[$element->id] = $element;
-    }
-    else {
-      $this->formElements[$element->id] = $element;
-    }
-    return $this;
-  }
 
   /**
    * Get the opening <code><form></code>-tag, including all hidden form elements.
