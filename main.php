@@ -36,6 +36,17 @@
 $GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
 
 /**
+ * Ultra fast class autoloader.
+ *
+ * @param string $class
+ *   Fully qualified class name (automatically passed to this magic function by PHP).
+ */
+function __autoload($class) {
+  $class = strtr($class, "\\", "/");
+  require "{$_SERVER["HOME"]}/src/{$class}.php";
+}
+
+/**
  * This is the outermost place to catch any exception that might have been forgotten somewhere.
  *
  * To ensure that no unexpected behaviour crashes our software any uncaught exception will be caught at this place. An
@@ -47,15 +58,10 @@ $GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
  */
 function uncaught_exception_handler($exception) {
   global $i18n;
-  if (!isset($i18n)) {
-    $i18n = new \MovLib\Model\I18nModel();
-  }
-  \MovLib\Utility\DelayedLogger::logException($exception, $exception->getCode());
-  $presenter = new \MovLib\Presenter\ExceptionPresenter();
-  $presenter->setException($exception);
-  echo $presenter->presentation;
+  $i18n = $i18n ?: new \MovLib\Model\I18nModel();
+  echo (new \MovLib\Presenter\ExceptionPresenter($exception))->presentation;
   fastcgi_finish_request();
-  // Log this error and send a mail if necessary.
+  \MovLib\Utility\DelayedLogger::logException($exception, $exception->getCode());
   \MovLib\Utility\DelayedLogger::run();
 }
 
@@ -130,17 +136,6 @@ function error_fatal_handler() {
 
 // Check for possible fatal errors that are not catchable otherwise.
 register_shutdown_function("error_fatal_handler");
-
-/**
- * Ultra fast class autoloader.
- *
- * @param string $class
- *   Fully qualified class name (automatically passed to this magic function by PHP).
- */
-function __autoload($class) {
-  $class = strtr($class, "\\", "/");
-  require "{$_SERVER["HOME"]}/src/{$class}.php";
-}
 
 // Array to collect class names and function names which will be executed after the response was sent to the user.
 $delayed = [];
