@@ -36,6 +36,14 @@ class TextInput extends AbstractFormElement {
 
 
   /**
+   * Flag indicating if this element is disabled or not. Please note that disabled elements will not be submitted by
+   * the browser.
+   *
+   * @var boolean
+   */
+  public $disabled = false;
+
+  /**
    * The help text of this element.
    *
    * @var string
@@ -55,6 +63,13 @@ class TextInput extends AbstractFormElement {
    * @var array
    */
   public $labelAttributes;
+
+  /**
+   * Flag indicating if this element is readonly or not.
+   *
+   * @var boolean
+   */
+  public $readonly = false;
 
   /**
    * Flag indicating if this element is required or not.
@@ -128,13 +143,49 @@ class TextInput extends AbstractFormElement {
 
 
   /**
+   * Disable this form element.
+   *
+   * @return this
+   */
+  public function disable() {
+    $this->attributes["aria-disabled"] = "true";
+    $this->attributes[] = "disabled";
+    $this->disabled = true;
+    return $this;
+  }
+
+  /**
    * Get the help of this element (if any).
    *
    * @return string
    *   The help of this element or an empty string if no help text was set.
    */
   public function help() {
-    return empty($this->help) ? "" : "";
+    return empty($this->help) ? "" : "<span class='form-help popup-container'><i class='icon icon--help-circled'></i><small class='popup'>{$this->help}</small></span>";
+  }
+
+  /**
+   * Mark this form element as invalid.
+   *
+   * @return this;
+   */
+  public function invalid() {
+    $this->addClass("invalid", $this->attributes);
+    $this->attributes["aria-invalid"] = "true";
+    $this->valid = false;
+    return $this;
+  }
+
+  /**
+   * Mark this form element as read only.
+   *
+   * @return this
+   */
+  public function readyonly() {
+    $this->attributes["aria-readonly"] = "true";
+    $this->attributes[] = "readonly";
+    $this->readonly = true;
+    return $this;
   }
 
   /**

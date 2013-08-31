@@ -49,57 +49,6 @@ abstract class AbstractFormElement extends BaseView {
   public $attributes = [];
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Methods
-
-
-//
-//  /**
-//   * Disable this form element.
-//   *
-//   * @return this
-//   */
-//  public function disable() {
-//    $this->attributes["aria-disabled"] = "true";
-//    $this->attributes[] = "disabled";
-//    $this->disabled = true;
-//    return $this;
-//  }
-
-//  /**
-//   * Get mark-up for help text.
-//   *
-//   * @return string
-//   *   <var>$text</var> wrapped in the generic help mark-up.
-//   */
-//  protected function help() {
-//    return empty($this->help) ? "" : "<span class='form-help popup-container'><i class='icon icon--help-circled'></i><small class='popup'>{$this->help}</small></span>";
-//  }
-//
-//  /**
-//   * Mark this form element as read only.
-//   *
-//   * @return this
-//   */
-//  public function readyonly() {
-//    $this->attributes["aria-readonly"] = "true";
-//    $this->attributes[] = "readonly";
-//    $this->readonly = true;
-//    return $this;
-//  }
-//
-//  /**
-//   * Mark this form element as invalid.
-//   *
-//   * @return this;
-//   */
-//  public function invalid() {
-//    $this->addClass("invalid", $this->attributes);
-//    $this->attributes["aria-invalid"] = "true";
-//    $this->valid = false;
-//    return $this;
-//  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
 
