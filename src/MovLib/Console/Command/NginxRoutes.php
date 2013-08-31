@@ -52,6 +52,20 @@ class NginxRoutes extends AbstractCommand {
   protected function execute(InputInterface $input, OutputInterface $output) {
     global $i18n;
     $this->setIO($input, $output)->checkPrivileges();
+ini_set("display_errors", 1);
+    // Check that the source file is present.
+    $routesFile = "{$_SERVER["HOME"]}/conf/nginx/sites/conf/routes.php";
+    if (!is_file($routesFile)) {
+      $this->exitOnError("Routes files is missing from the file system!");
+    }
+
+    // Check that the target directory is present.
+    $routesDir = "{$_SERVER["HOME"]}/conf/nginx/sites/conf/routes/";
+    if (!is_dir($routesDir)) {
+      $this->exitOnError("Nginx routes directory is missing from the file system!");
+    }
+
+    // Get default language code.
     $locale = $i18n->getDefaultLanguageCode();
 
     /**
@@ -63,18 +77,32 @@ class NginxRoutes extends AbstractCommand {
      *   The translated route.
      */
     $r = function ($route) use ($i18n, $locale) {
-      return @$i18n->formatMessage("route", $route, null, [ "language_code" => $locale ]);
+      // Formate message fourth parameter is by reference, therefor we have to introduce a variable.
+      $options = [ "language_code" => $locale ];
+      // DO NOT call $i18n->r() in here, it would return full routes rather than a simple translation!
+      return $i18n->formatMessage("route", $route, [], $options);
     };
 
     // Go through all supported languages and generate the routes.
-    error_reporting(E_ALL ^ E_NOTICE);
     foreach ($GLOBALS["conf"]["i18n"]["supported_languages"] as $delta => $locale) {
-      ob_start();
-      require "{$_SERVER["HOME"]}/conf/nginx/sites/conf/routes.php";
-      $routes[$locale] = ob_get_clean();
-      file_put_contents("{$_SERVER["HOME"]}/conf/nginx/sites/conf/routes/{$locale}.conf", $routes[$locale]);
+      // We need output buffering to catch the output of the following require call.
+      if (ob_start() === false) {
+        $this->exitOnError("Could not start output buffering!");
+      }
+
+      // Execute the routes source file and translate all routes with the closure.
+      require $routesFile;
+
+      // Get the translated content of this run ...
+      if (($routes[$locale] = ob_get_clean()) === false) {
+        $this->exitOnError("Could not get buffered output!");
+      }
+
+      // ... and write it to the target directory.
+      if (file_put_contents("{$routesDir}{$locale}.conf", $routes[$locale]) === false) {
+        $this->exitOnError("Could not write translated routes file to nginx routes directory.");
+      }
     }
-    error_reporting(-1);
 
     // Test and reload the newly created routes.
     $this
