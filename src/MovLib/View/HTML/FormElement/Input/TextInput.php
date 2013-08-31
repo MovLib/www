@@ -36,6 +36,16 @@ class TextInput extends AbstractFormElement {
 
 
   /**
+   * The default value of this form element.
+   *
+   * Will be used if this field is not required and the user didn't submit any value (e.g. GMT if the user should choose
+   * a timezone).
+   *
+   * @var string
+   */
+  public $defaultValue;
+
+  /**
    * Flag indicating if this element is disabled or not. Please note that disabled elements will not be submitted by
    * the browser.
    *
@@ -106,9 +116,13 @@ class TextInput extends AbstractFormElement {
    *   The human readable global name of this form element.
    * @param array $attributes [optional]
    *   Array with attributes that should be applied to this element.
+   * @param string $defaultValue [optional]
+   *   The default value of this form element. This will be used if the element is not required and no value was
+   *   submitted by the user (e.g. GMT if the user should choose a timezone).
    */
-  public function __construct($name, $label, $attributes = []) {
+  public function __construct($name, $label, $attributes = [], $defaultValue = "") {
     global $i18n;
+    $this->defaultValue = $defaultValue;
     $this->id = $name;
     $this->label = ucfirst($label);
     $this->labelAttributes = [ "for" => $name ];

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presenter;
 
+use \Exception;
 use \ReflectionClass;
 
 /**
@@ -35,13 +36,6 @@ abstract class AbstractPresenter {
 
 
   /**
-   * String buffer used to concatenate all the output and send the whole shebang at once.
-   *
-   * @var string
-   */
-  public $presentation = "";
-
-  /**
    * The current view.
    *
    * @var \MovLib\View\HTML\AbstractPageView
@@ -49,8 +43,13 @@ abstract class AbstractPresenter {
   public $view;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Abstract methods
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
+
+  /**
+   * Instantiate new presenter instance.
+   */
+  abstract public function __construct();
 
   /**
    * Associative array containing the breadcrumb trail for this presenter.
@@ -88,51 +87,8 @@ abstract class AbstractPresenter {
   abstract public function getBreadcrumb();
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public methods
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
-
-  /**
-   * Get the <var>$_SERVER["ACTION"]</var> as string to initialize object.
-   *
-   * This can be used to retrieve the value of <var>$_SERVER["ACTION"]</var> in CamelCase and therefore use it to
-   * instanciate a class. The value itself is extracted via nginx from the requested URL and passed along as FastCGI
-   * parameter. So for instead you might have a requested URL like <tt>/user/sign_up</tt>, <tt>sign_up</tt> will be the
-   * action and this method will return <tt>SignUp</tt> so one can simply concatenate it.
-   *
-   * <b>Usage example:</b>
-   * <pre>$class = "\\MovLib\\View\\HTML\\User\\User{$this->getAction()}View";
-   * $this->output = (new $class())->getRenderedView();</pre>
-   *
-   * @staticvar string $action
-   *   Used to cache the construction.
-   * @param string $defaultAction
-   *   [Optional] The default action value to use if <var>$_SERVER["ACTION"]</var> is empty. Defaults to <tt>Show</tt>.
-   * @return string
-   *   CamelCase representation of the action if set, otherwise <tt>Show</tt> is returned.
-   */
-  public function getAction($defaultAction = "Show") {
-    static $action = null;
-    if ($action === null) {
-      $action = isset($_SERVER["ACTION"]) ? $_SERVER["ACTION"] : $defaultAction;
-    }
-    return $action;
-  }
-
-  /**
-   * Get the current server request method as CamelCase string.
-   *
-   * @staticvar string $method
-   *   Used to cache the construction.
-   * @return string
-   *   The request method as CamelCase string.
-   */
-  public function getMethod() {
-    static $method = null;
-    if ($method === null) {
-      $method = ucfirst(strtolower($_SERVER["REQUEST_METHOD"]));
-    }
-    return $method;
-  }
 
   /**
    * Get the presenter's short class name (e.g. <em>Abstract</em> for <em>AbstractPresenter</em>).
@@ -152,31 +108,19 @@ abstract class AbstractPresenter {
     return $shortName;
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
-
-
   /**
-   * Set output for this presenter.
+   * Get the presentation of this presenter.
    *
-   * @param string $viewName [optional]
-   *   The n ame of the view without the <code>"View"</code> suffix. You have to include names of folders if your view
-   *   is in a subdirectory within the view directory (e.g. <code>"User\\UserShow"</code>). If no value is passed, the
-   *   object in property <var>$this->view</var> is used to generate the output. You must call
-   *   <code>$this->getView()</code> before calling this method in this case.
-   * @param string $viewType [optional]
-   *   The foldername within the view directory, defaults to <code>"HTML"</code>.
-   * @param string $method [optional]
-   *   The name of the method that should be called to set the output, defaults to <code>"getRenderedView"</code>.
-   * @return this
+   * @return string
    */
-  protected function setPresentation($viewName = null, $viewType = "HTML", $method = "getRenderedView") {
-    if ($viewName !== null) {
-      $view = "\\MovLib\\View\\{$viewType}\\{$viewName}View";
-      $this->view = new $view($this);
+  public function __toString() {
+    // A __toString() method is not allowed to throw any kind of exception, therefor we catch everything and hope that
+    // our exception view is working.
+    try {
+      return $this->view->getRenderedView();
+    } catch (Exception $e) {
+      return (new ExceptionPresenter($e))->__toString();
     }
-    $this->presentation = $this->view->{$method}();
-    return $this;
   }
 
 }

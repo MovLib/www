@@ -29,14 +29,6 @@ namespace MovLib\Utility;
 class Network {
 
   /**
-   * Server name (domain) of the shared static server. All static resources are delivered from the same domain to
-   * ensure that caching works across subdomains.
-   *
-   * @var string
-   */
-  const SERVER_NAME_STATIC = "alpha.movlib.org";
-
-  /**
    * Check if the given URL exists.
    *
    * @param string $url

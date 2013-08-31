@@ -57,15 +57,17 @@ class PasswordInput extends TextInput {
   /**
    * Validate the user submitted password.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * There is absolutely nothing that we could do at this point. Passwords always need special validation and that's
+   * something the presenter should take care of. An automated approach is senseless as we have no clue about where this
+   * form element is implemented and what it's purpose is. We simply copy over the submitted password to class scope
+   * and are done with it.
+   *
+   * Note that the empty check is performed by <code>AbstractFormView</code>.
+   *
    * @return this
    * @throws \MovLib\Exception\ValidatorException
    */
   public function validate() {
-    global $i18n;
-    if ($this->required === true && empty($_POST[$this->id])) {
-      throw new ValidatorException($i18n->t("The {0} cannot be empty.", [ $this->label ]));
-    }
     $this->value = $_POST[$this->id];
     return $this;
   }

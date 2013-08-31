@@ -15,39 +15,57 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+
 namespace MovLib\Presenter;
 
-use \MovLib\Presenter\AbstractPresenter;
 use \MovLib\View\HTML\Error\ExceptionView;
 
 /**
- * The error presenter is used to tell the user about an unknown error.
+ * Present an exception to the user.
  *
+ * @todo This presenter has to be extend to work for API requestes as well.
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ExceptionPresenter extends AbstractPresenter {
+class ExceptionPresenter {
 
   /**
-   * Instantiate new exception presenter.
+   * The current view.
+   *
+   * @var \MovLibe\View\HTML\Error\ExceptionView
+   */
+  public $view;
+
+  /**
+   * Instantiate new exception presentation.
    *
    * @param \Exception $exception
    *   Any exception that extends PHP's base exception class.
    */
   public function __construct($exception) {
-    $this->presentation = (new ExceptionView($this, $exception))->getRenderedView();
+    $this->view = new ExceptionView($this, $exception);
   }
 
   /**
-   * The exception presenter has no path and therefor no breadcrumb entries.
+   * Any error view never has a breadcrumb, we need to implement this to ensure that our interface is equal to the
+   * interface of the abstract presenter, as this method is automatically called.
    *
    * @return array
    */
   public function getBreadcrumb() {
     return [];
+  }
+
+  /**
+   * Get the presentation of this presenter.
+   *
+   * @return string
+   */
+  public function __toString() {
+    return $this->view->getRenderedView();
   }
 
 }

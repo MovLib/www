@@ -17,7 +17,6 @@
  */
 namespace MovLib\View\HTML\User;
 
-use \MovLib\Model\UserModel;
 use \MovLib\View\HTML\AbstractFormView;
 
 /**
@@ -37,38 +36,27 @@ class UserRegisterView extends AbstractFormView {
    *
    * @param \MovLib\Presenter\UserPresenter $userPresenter
    *   The user presenter controlling this view.
+   * @param array $elements
+   *   Numeric array of form elements that should be attached to this view.
    */
-  public function __construct($userPresenter) {
+  public function __construct($userPresenter, $elements) {
     global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Register"));
+    parent::__construct($userPresenter, $i18n->t("Register"), $elements);
     $this->stylesheets[] = "modules/user.css";
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
-  public function getFormContent() {
+  public function getContent() {
     global $i18n;
     return
-      "<div class='row'>" .
-        "<div class='span span--6 offset--3'>" .
-          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->input("mail", [
-            "autofocus",
-            "class"       => "input--block-level",
-            "maxlength"   => UserModel::MAIL_MAX_LENGTH,
-            "placeholder" => $i18n->t("Enter your email address"),
-            "required",
-            "title"       => $i18n->t("Plase enter your preferred email address."),
-            "type"        => "email",
-          ])}</p>" .
-          "<p><label for='name'>{$i18n->t("Username")}</label>{$this->input("name", [
-            "class"       => "input--block-level",
-            "maxlength"   => UserModel::NAME_MAX_LENGTH,
-            "placeholder" => $i18n->t("Enter your username"),
-            "required",
-            "title"       => $i18n->t("Please enter your desired username."),
-          ])}</p>" .
-          "<p>{$this->submit($i18n->t("Sign up"), $i18n->t("Click here after you’ve filled out all fields."))}</p>" .
+      "<div class='container'>" .
+        "<div class='row'>" .
+          $this->formOpen("span span--6 offset--3") .
+            "<p>{$this->formElements["mail"]}</p>" .
+            "<p>{$this->formElements["name"]}</p>" .
+          $this->formClose(false) .
         "</div>" .
       "</div>"
     ;

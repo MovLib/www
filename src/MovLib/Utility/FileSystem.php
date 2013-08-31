@@ -35,18 +35,6 @@ use \RecursiveIteratorIterator;
 class FileSystem {
 
   /**
-   * Get absolute URI to static file from the assets.
-   *
-   * @param string $path
-   *   The path within the assets directory.
-   * @return string
-   *   Absolute URI to the file.
-   */
-  public static function asset($path) {
-    return "https://" . Network::SERVER_NAME_STATIC . "/{$path}";
-  }
-
-  /**
    * Get the operating systems specific temporary path.
    *
    * The behaviour of the default PHP function <code>sys_get_temp_dir()</code> is inconsistent regarding the last

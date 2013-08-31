@@ -141,11 +141,7 @@ abstract class AbstractPageView extends BaseView {
    *
    * @var array
    */
-  protected $scripts = [
-    "serverNameStatic" => Network::SERVER_NAME_STATIC,
-    "modules" => [],
-    "version" => "",
-  ];
+  protected $scripts;
 
   /**
    * The title of the page.
@@ -169,7 +165,7 @@ abstract class AbstractPageView extends BaseView {
   public function __construct($presenter, $title) {
     $this->presenter = $presenter;
     $this->title = $title;
-    $this->scripts["version"] = $GLOBALS["conf"]["version"];
+    $this->scripts = array_merge([ "modules" => [] ], $GLOBALS["conf"]);
     if (isset($_SESSION["ALERTS"])) {
       $c = count($_SESSION["ALERTS"]);
       for ($i = 0; $i < $c; ++$i) {
@@ -221,10 +217,9 @@ abstract class AbstractPageView extends BaseView {
   public final function getHead() {
     global $i18n, $user;
     $c = count($this->stylesheets);
-    $d = Network::SERVER_NAME_STATIC;
     $stylesheets = "";
     for ($i = 0; $i < $c; ++$i) {
-      $stylesheets .= "<link rel='stylesheet' href='https://{$d}/css/{$this->stylesheets[$i]}'>";
+      $stylesheets .= "<link rel='stylesheet' href='{$GLOBALS["conf"]["static_domain"]}css/{$this->stylesheets[$i]}'>";
     }
     $bodyClass = "{$this->getShortName()}-body";
     if (isset($user) && $user->isLoggedIn === true) {
@@ -301,7 +296,7 @@ abstract class AbstractPageView extends BaseView {
         "<div class='container'>" .
           "<div class='row'>" .
             "<a class='span' href='{$i18n->r("/")}' id='header__logo' title='{$i18n->t("Take me back to the home page.")}'>" .
-              "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='42' id='logo' src='" . FileSystem::asset("img/logo/vector.svg") . "' width='42'> MovLib" .
+              "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='42' id='logo' src='{$GLOBALS["conf"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib" .
             "</a>" .
             $this->getNavigation($i18n->t("Main Navigation"), "main", $points, " ") .
             "<form accept-charset='utf-8' action='{$i18n->t("/search")}' class='span' id='header__search-form' method='post' role='search'>" .
@@ -402,7 +397,7 @@ abstract class AbstractPageView extends BaseView {
    * @param boolean $block
    *   [Optional] If your message is very long, or your alert is very important, increase the padding around the message
    *   and enclose the title in a level-4 heading instead of the bold tag.
-   * @return \MovLib\View\HTML\AbstractPageView
+   * @return this
    */
   public final function setAlert($message, $severity = self::ALERT_SEVERITY_WARNING, $block = false) {
     $title = "";
@@ -475,19 +470,15 @@ abstract class AbstractPageView extends BaseView {
             ) .
           "</div>" .
           "<div class='row footer-row-logos'>" .
-            "<a target='_blank' href='http://www.fh-salzburg.ac.at/'>" .
-              "<img src='" . FileSystem::asset("img/footer/fachhochschule-salzburg.svg") . "' alt='Fachhochschule Salzburg' height='41' width='64'>" .
-            "</a>" .
-            "<a target='_blank' href='https://github.com/MovLib'>" .
-              "<img src='" . FileSystem::asset("img/footer/github.svg") . "' alt='GitHub' height='17' width='64'>" .
-            "</a>" .
+            "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='{$GLOBALS["conf"]["static_domain"]}img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
+            "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='{$GLOBALS["conf"]["static_domain"]}img/footer/github.svg' width='64'></a>" .
           "</div>" .
         "</div>" .
-      "</footer>" .
-      "<script id='js-settings' type='application/json'>" . json_encode($this->scripts) . "</script>" .
+      "</footer>"
+//      "<script id='js-settings' type='application/json'>" . json_encode($this->scripts) . "</script>"
       // @todo Minify and combine!
-      "<script src='https://" . Network::SERVER_NAME_STATIC . "/js/jquery.js'></script>" .
-      "<script src='https://" . Network::SERVER_NAME_STATIC . "/js/movlib.js?" . rand() . "'></script>"
+//      "<script src='{$GLOBALS["conf"]["static_domain"]}js/jquery.js'></script>" .
+//      "<script src='{$GLOBALS["conf"]["static_domain"]}js/movlib.js?" . rand() . "'></script>"
     ;
   }
 

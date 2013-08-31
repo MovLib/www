@@ -18,9 +18,11 @@
 namespace MovLib\Presenter;
 
 use \MovLib\Presenter\AbstractPresenter;
+use \MovLib\View\HTML\LanguageSelectionView;
+use \Locale;
 
 /**
- * The language selection presenter presents the language selection if our webstie is accessed without subdomain.
+ * The language selection presenter presents the language selection if our website is accessed without subdomain.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -31,17 +33,33 @@ use \MovLib\Presenter\AbstractPresenter;
 class LanguageSelectionPresenter extends AbstractPresenter {
 
   /**
-   * {@inheritdoc}
+   * Instantiate new language selection presenter.
    */
   public function __construct() {
-    $this->setPresentation($this->getShortName());
+    $this->view = new LanguageSelectionView($this);
   }
 
   /**
-   * {@inheritdoc}
+   * The language selection presenter has no breadcrumb!
    */
-  public function getBreadcrumb() {
-    // The language selection page has no breadcrumb!
+  public function getBreadcrumb() {}
+
+  /**
+   * Get menupoints for the language selection.
+   *
+   * @return array
+   */
+  public function getLanguageSelectionMenupoints() {
+    $points = [];
+    $c = count($GLOBALS["conf"]["i18n"]["supported_languages"]);
+    for ($i = 0; $i < $c; ++$i) {
+      $points[] = [
+        "https://{$GLOBALS["conf"]["i18n"]["supported_languages"][$i]}.{$_SERVER["SERVER_NAME"]}/",
+        Locale::getDisplayLanguage($GLOBALS["conf"]["i18n"]["supported_languages"][$i], $GLOBALS["conf"]["i18n"]["supported_languages"][$i]),
+        [ "lang" => $GLOBALS["conf"]["i18n"]["supported_languages"][$i], "rel" => "prefetch" ]
+      ];
+    }
+    return $points;
   }
 
 }

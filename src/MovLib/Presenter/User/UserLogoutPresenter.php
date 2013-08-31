@@ -15,13 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter;
+namespace MovLib\Presenter\User;
 
-use \MovLib\Presenter\AbstractPresenter;
-use \MovLib\View\HTML\HomeView;
+use \MovLib\Presenter\User\UserLoginPresenter;
+use \MovLib\View\HTML\User\UserLoginView;
 
 /**
- * Present the home view.
+ * Handles user log outs.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,20 +29,24 @@ use \MovLib\View\HTML\HomeView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HomePresenter extends AbstractPresenter {
+class UserLogoutPresenter extends UserLoginPresenter {
 
   /**
-   * Instantiate new home presenter instance.
+   * Instantiate new user logout presenter.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Model\SessionModel $user
    */
   public function __construct() {
-    $this->view = new HomeView($this);
+    global $i18n, $user;
+    $this->init();
+    if ($user->isLoggedIn === true) {
+      $user->destroySession();
+      $this->view->setAlert([
+        "title"   => $i18n->t("You’ve been logged out successfully."),
+        "message" => $i18n->t("We hope to see you again soon."),
+      ], UserLoginView::ALERT_SEVERITY_SUCCESS);
+    }
   }
-
-  /**
-   * The home view's breadcrumb is special and constructed in the view itself.
-   *
-   * @see \MovLib\View\HTML\HomeView::getBreadcrumb()
-   */
-  public function getBreadcrumb() {}
 
 }

@@ -170,9 +170,9 @@ class AbstractImageModel extends BaseModel {
   protected function initImage($imageName, $imageStyles) {
     $this->imageName = $imageName;
     if (isset($this->imageExtension) && isset($this->imageHash)) {
-      $path = "/uploads/{$this->imageDirectory}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
-      $this->imagePath = $_SERVER["HOME"] . $path;
-      $this->imageUri  = "https://" . Network::SERVER_NAME_STATIC . $path;
+      $path = "uploads/{$this->imageDirectory}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
+      $this->imagePath = "{$_SERVER["HOME"]}/{$path}";
+      $this->imageUri = "{$GLOBALS["conf"]["static_domain"]}{$path}";
       $c = count($imageStyles);
       for ($i = 0; $i < $c; ++$i) {
         $imageStyles[$i]->sourcePath = $this->imagePath;
@@ -194,9 +194,9 @@ class AbstractImageModel extends BaseModel {
    */
   protected function generateImageStylePaths() {
     foreach ($this->imageStyles as $style => $styleObj) {
-      $path = "/uploads/{$this->imageDirectory}/{$styleObj->dimensions}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
-      $this->imageStyles[$style]->path = $_SERVER["HOME"] . $path;
-      $this->imageStyles[$style]->uri = "https://" . Network::SERVER_NAME_STATIC . $path;
+      $path = "uploads/{$this->imageDirectory}/{$styleObj->dimensions}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
+      $this->imageStyles[$style]->path = "{$_SERVER["HOME"]}/{$path}";
+      $this->imageStyles[$style]->uri = "{$GLOBALS["conf"]["static_domain"]}{$path}";
     }
     return $this;
   }
@@ -318,7 +318,7 @@ class AbstractImageModel extends BaseModel {
     $this->imageHeight    = $height;
     $this->imagePath      = $path;
     $this->imageWidth     = $width;
-    $this->imageUri       = "https://" . Network::SERVER_NAME_STATIC . "/uploads/{$this->imageDirectory}/{$this->imageName}.{$hash}.{$ext}";
+    $this->imageUri       = "{$GLOBALS["conf"]["static_domain"]}uploads/{$this->imageDirectory}/{$this->imageName}.{$hash}.{$ext}";
     return $this->generateImageStylePaths()->generateImageStyles();
   }
 

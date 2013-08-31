@@ -54,7 +54,6 @@ class ExceptionView extends AlertView {
       self::ALERT_SEVERITY_ERROR,
       true
     );
-    /*DEBUG{{{*/
     $this->setAlert(
       [
         "title" => "Stacktrace",
@@ -68,7 +67,6 @@ class ExceptionView extends AlertView {
       self::ALERT_SEVERITY_INFO,
       true
     );
-    /*}}}DEBUG*/
     DelayedLogger::logException($exception, E_RECOVERABLE_ERROR);
   }
 

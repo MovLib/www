@@ -33,6 +33,7 @@ use \MovLib\View\HTML\AlertView;
 use \MovLib\View\HTML\FormElement\Action\SubmitAction;
 use \MovLib\View\HTML\FormElement\Input\MailInput;
 use \MovLib\View\HTML\FormElement\Input\PasswordInput;
+use \MovLib\View\HTML\FormElement\Input\UsernameInput;
 use \MovLib\View\HTML\Redirect;
 use \MovLib\View\HTML\User\UserLoginView;
 use \MovLib\View\HTML\User\UserRegisterView;
@@ -69,22 +70,11 @@ class UserPresenter extends AbstractPresenter {
 
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
   public function __construct() {
-    // Automaticall call the correct constructor for this action.
-    $errors = $this->{__FUNCTION__ . $this->getAction()}();
-    // If we have any errors, set them.
-    if ($errors) {
-      $messages = "";
-      foreach ($errors as $formElementName => $message) {
-        $messages .= "{$message}<br>";
-        $this->view->formInvalid[$formElementName] = true;
-      }
-      $this->view->setAlert($messages, AbstractPageView::ALERT_SEVERITY_ERROR);
-    }
-    // Make sure the rendered view is exported to class scope.
-    $this->setPresentation();
+    $this->{__FUNCTION__ . $this->getAction()}();
+    $this->presentation = $this->view->getRenderedView();
   }
 
 
@@ -124,29 +114,26 @@ class UserPresenter extends AbstractPresenter {
         (new PasswordInput([ "class" => "input--block-level" ]))->required(),
         new SubmitAction([ "class" => "button--large", "value" => $i18n->t("Sign In") ]),
       ]));
-    } catch (ValidatorException $e) {
-      return;
-    }
-    // If submitted via POST and input values are valid continue the log in process.
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-      try {
-        $userModel = new UserModel(UserModel::FROM_MAIL, $this->view->formElements["mail"]->value);
-        if (password_verify($this->view->formElements["pass"]->value, $userModel->pass) === false) {
-          throw new ValidatorException("Password is invalid.");
+      if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        try {
+          $userModel = new UserModel(UserModel::FROM_MAIL, $this->view->formElements["mail"]->value);
+          if (password_verify($this->view->formElements["pass"]->value, $userModel->pass) === false) {
+            throw new ValidatorException("Password is invalid.");
+          }
+          $user->startSession($userModel);
+          $_SESSION["ALERTS"][] = [
+            $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$userModel->name}</b>" ]),
+            AbstractPageView::ALERT_SEVERITY_SUCCESS
+          ];
+          $this->view = new Redirect(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/user"), 302);
+        } catch (ErrorException $e) {
+          $this->view->setAlert(
+            "We either don’t know the email address, or the password was wrong.",
+            AbstractPageView::ALERT_SEVERITY_ERROR
+          );
         }
-        $user->startSession($userModel);
-        $_SESSION["ALERTS"][] = [
-          $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$userModel->name}</b>" ]),
-          AbstractPageView::ALERT_SEVERITY_SUCCESS
-        ];
-        $this->view = new Redirect(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/user"), 302);
-      } catch (ErrorException $e) {
-        $this->view->setAlert(
-          "We either don’t know the email address, or the password was wrong.",
-          AbstractPageView::ALERT_SEVERITY_ERROR
-        );
       }
-    }
+    } catch (ValidatorException $e) {}
   }
 
 
@@ -194,50 +181,48 @@ class UserPresenter extends AbstractPresenter {
       $this->view = new Redirect($i18n->r("/my"), 302);
       return;
     }
-    if ($_SERVER["REQUEST_METHOD"] === "GET") {
-      // If a token is present, validate it, otherwise render the simple form.
-      isset($_SERVER["TOKEN"])
-        ? $this->activateOrResetPassword($i18n->r("/user/register"), $i18n->t("registration page"))
-        : $this->setPresentation("User\\UserRegister")
-      ;
+    if (!empty($_SERVER["TOKEN"])) {
+      $this->activateOrResetPassword($i18n->r("/user/register"), $i18n->t("registration page"));
       return;
     }
-    $this->view = new UserRegisterView($this);
-    if (($mail = Validator::inputMail("mail")) === false) {
-      $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
-    }
     try {
-      $name = Validator::inputUsername($name);
-    } catch (ValidatorException $e) {
-      $errors["name"] = $e->getMessage();
-    }
-    if (isset($errors)) {
-      return $errors;
-    }
-    // Do not tell the user that we already have this mail, otherwise it would be possible for an attacker to find out
-    // which mails we have in our system. Instead we send a message to the user this mail belongs to.
-    if ($userModel->existsMail($mail) === true) {
-      DelayedMailer::stack(new UserRegisterExistingMail($mail));
-    }
-    // If this is a valid new registration generate a unique activation link and insert the user's data into our
-    // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what to do.
-    else {
-      $hash = Crypt::randomHash();
-      DelayedMethodCalls::stack($userModel, "preRegister", [ $hash, $name, $mail ]);
-      DelayedMailer::stack(new UserActivationMail($hash, $name, $mail));
-    }
-    // Tell the user that we've sent a mail with instructions, nothing more to do here, move along.
-    $this->view = new AlertView($this, $this->view->title);
-    $this->view->setAlert(
-      "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ])}</p>",
-      AbstractPageView::ALERT_SEVERITY_SUCCESS
-    );
-    $this->view->content =
-      "<div class='container'><small>{$i18n->t(
-        "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-        [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
-      )}</small></div>"
-    ;
+      $this->view = new UserRegisterView($this, [
+        (new MailInput([ "autofocus", "class" => "input--block-level" ]))->required(),
+        (new UsernameInput([ "class" => "input--block-level" ]))->required(),
+        new SubmitAction([ "class" => "button--large", "value" => $i18n->t("Sign Up") ])
+      ]);
+      if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        $userModel = new UserModel();
+        // Don't tell the user that we already have this mail, otherwise it would be possible for an attacker to find
+        // out which mails we have in our system. Instead we send a message to the user this mail belongs to.
+        if (!empty($userModel->select("SELECT `user_id` FROM `users` WHERE `mail` = ? OR `init` = ? LIMIT 1", "ss", [
+          $this->view->formElements["mail"]->value, $this->view->formElements["mail"]->value
+        ]))) {
+          DelayedMailer::stack(new UserRegisterExistingMail($this->view->formElements["mail"]->value));
+        }
+        // If this is a valid new registration generate a unique activation link and insert the user's data into our
+        // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what
+        // to do to activate the account.
+        else {
+          $hash = Crypt::randomHash();
+          DelayedMethodCalls::stack($userModel, "preRegister", [ $hash, $this->view->formElements["name"]->value, $this->view->formElements["mail"]->value ]);
+          DelayedMailer::stack(new UserActivationMail($hash, $this->view->formElements["name"]->value, $this->view->formElements["mail"]->value));
+        }
+        // Tell the user that we've sent a mail with instructions.
+        $registerView = $this->view;
+        $this->view = new AlertView($this, $registerView->title);
+        $this->view->setAlert(
+          "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($registerView->formElements["mail"]->value) ])}</p>",
+          AbstractPageView::ALERT_SEVERITY_SUCCESS
+        );
+        $this->view->content =
+          "<div class='container'><small>{$i18n->t(
+            "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
+            [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
+          )}</small></div>"
+        ;
+      }
+    } catch (ValidatorException $e) {}
   }
 
 

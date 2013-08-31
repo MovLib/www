@@ -76,6 +76,13 @@ abstract class AbstractFormView extends AbstractPageView {
    */
   public $formElements = [];
 
+  /**
+   * Flag indicating if this form is valid or not.
+   *
+   * @var boolean
+   */
+  public $valid = true;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -83,6 +90,7 @@ abstract class AbstractFormView extends AbstractPageView {
   /**
    * Instantiate new form view.
    *
+   * @global \MovLib\Model\I18nModel $i18n
    * @global \MovLib\Model\UserModel $user
    * @param \MovLib\Presenter\AbstractPresenter $presenter
    *   The presenter controlling this view.
@@ -92,7 +100,7 @@ abstract class AbstractFormView extends AbstractPageView {
    *   Numeric array of form elements that should be attached to this view.
    */
   public function __construct($presenter, $title, $elements) {
-    global $user;
+    global $i18n, $user;
     parent::__construct($presenter, $title);
 
     // Create CSRF token if we have an active session.
@@ -125,15 +133,28 @@ abstract class AbstractFormView extends AbstractPageView {
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
       $errors = null;
       foreach ($this->formElements as $id => $element) {
-        try {
-          $element->validate();
-        } catch (ValidatorException $e) {
-          $element->invalid();
-          $errors .= "<p>{$e->getMessage()}</p>";
+        // No need to go through the complete validation process to check if the element is empty or not. Plus it's
+        // tedious to re-implement this in each validation method. Directly take care of it here.
+        if (empty($_POST[$element->id])) {
+          if ($element->required === true) {
+            $element->invalid();
+            $errors .= "<p>{$i18n->t("The {0} is mandatory and cannot be empty.", [ $element->label ])}</p>";
+          }
+          else {
+            $element->value = $element->defaultValue;
+          }
+        }
+        else {
+          try {
+            $element->validate();
+          } catch (ValidatorException $e) {
+            $element->invalid();
+            $errors .= "<p>{$e->getMessage()}</p>";
+          }
         }
       }
       if ($errors) {
-        $this->setAlert($errors, self::ALERT_SEVERITY_ERROR);
+        $this->setAlert($errors, self::ALERT_SEVERITY_ERROR)->valid = false;
       }
     }
   }

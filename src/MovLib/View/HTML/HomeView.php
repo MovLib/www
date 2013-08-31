@@ -33,18 +33,28 @@ use \MovLib\View\HTML\AbstractPageView;
 class HomeView extends AbstractPageView {
 
   /**
-   * @inheritdoc
+   * The home presenter controlling this view.
+   *
+   * @var \MovLib\Presenter\HomePresenter
    */
-  public function __construct($homePresenter) {
-    parent::__construct($homePresenter, "MovLib");
+  public $presenter;
+
+  /**
+   * Instantiate new home view instance.
+   *
+   * @param \MovLib\Presenter\HomePresenter $presenter
+   *   The home presenter controlling this view.
+   */
+  public function __construct($presenter) {
+    parent::__construct($presenter, "MovLib");
     $this->stylesheets[] = "modules/home.css";
   }
 
   /**
-   * Home sweet home.
+   * Home sweet home. Overwrite the default breadcrumb, we are already on the home page, therefor no breadcrumb trails.
    *
    * @return string
-   *   Empty string.
+   *   The breadcrumb for the home view.
    */
   public function getBreadcrumb() {
     global $i18n;
@@ -135,8 +145,7 @@ class HomeView extends AbstractPageView {
   }
 
   /**
-   * We already have the <tt>h1</tt>-element in the header, the content shall not have another one. Additionally the
-   * home view doesn't have a breadcrumb.
+   * We already have the <code><h1></code>-element in the header, the content shall not have another one.
    *
    * @param null $tag
    *   Unused but declaration must be compatible.

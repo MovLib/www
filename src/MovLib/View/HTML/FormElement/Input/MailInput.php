@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\FormElement\Input;
 
+use \MovLib\Exception\ValidatorException;
 use \MovLib\View\HTML\FormElement\Input\TextInput;
 
 /**
@@ -31,22 +32,9 @@ use \MovLib\View\HTML\FormElement\Input\TextInput;
 class MailInput extends TextInput {
 
   /**
-   * Maximum length an email address can have.
-   *
-   * This length must be the same as it is defined in the database table. We redefine this here in order to validate the
-   * length of the email address before attempting to insert it into our database. Be sure to count the strings length
-   * with <code>mb_strlen()</code> because the length is defined per character and not per byte.
-   *
-   * We limit the length of an email address because we don't want to use BLOB fields in our database to store them. Any
-   * “normal” email address should fit into this length.
-   *
-   * @var int
-   */
-  const MAIL_MAX_LENGTH = 254;
-
-  /**
    * Instantiate new email address input form element.
    *
+   * @todo Is the pattern to restrictive, or is our validate to nice?
    * @global \MovLib\Model\I18nModel $i18n
    * @param array $attributes
    *   Set additional or overwrite the defaults.
@@ -54,13 +42,17 @@ class MailInput extends TextInput {
    *   The global identifier for this instance.
    * @param string $label [optional]
    *   The already translated human readable label.
+   * @param string $defaultValue [optional]
+   *   The default value of this form element. This will be used if the element is not required and no value was
+   *   submitted by the user (e.g. GMT if the user should choose a timezone).
    */
-  public function __construct($attributes = null, $name = "mail", $label = null) {
+  public function __construct($attributes = [], $name = "mail", $label = null, $defaultValue = "") {
     global $i18n;
-    parent::__construct($name, $label ?: $i18n->t("email address"), $attributes);
-    $this->attributes["maxlength"] = self::MAIL_MAX_LENGTH;
-    $this->attributes["pattern"] = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$";
-    $this->attributes["type"] = "email";
+    parent::__construct($name, $label ?: $i18n->t("email address"), array_merge([
+      "maxlength" => $GLOBALS["conf"]["max_length_mail"],
+//      "pattern"   => "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$",
+//      "type"      => "email",
+    ], $attributes), $defaultValue);
   }
 
   /**
@@ -72,14 +64,14 @@ class MailInput extends TextInput {
    */
   public function validate() {
     global $i18n;
-    if ($this->required === true && empty($_POST[$this->id])) {
-      throw new ValidatorException($i18n->t("The {0} cannot be empty.", [ $this->label ]));
-    }
-    if (mb_strlen($_POST[$this->id]) > self::MAIL_MAX_LENGTH) {
-      throw new ValidatorException($i18n->t("The {0} is too long: it must be {1,number,integer} characters or less.", [ $this->label ]));
+    if (mb_strlen($_POST[$this->id]) > $GLOBALS["conf"]["max_length_mail"]) {
+      throw new ValidatorException($i18n->t("The {0} is too long: it must be {1,number,integer} characters or less.", [ $this->label, $GLOBALS["conf"]["max_length_mail"] ]));
     }
     $filtered = filter_var($_POST[$this->id], FILTER_VALIDATE_EMAIL);
-    if ($filtered === false || empty($filtered) || strcmp($filtered, $_POST[$this->id]) !== 0) {
+    if ($filtered === false || empty($filtered)) {
+      throw new ValidatorException($i18n->t("The {0} does not appear to be valid.", [ $this->label ]));
+    }
+    if (strcmp($filtered, $_POST[$this->id]) !== 0) {
       throw new ValidatorException($i18n->t("The {0} contains illegal characters.", [ $this->label ]));
     }
     $this->value = $filtered;

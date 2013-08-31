@@ -374,30 +374,6 @@ class UserModel extends AbstractImageModel {
   }
 
   /**
-   * Check if a user with the given mail exists.
-   *
-   * @param string $mail
-   *   The mail to search for.
-   * @return boolean
-   *   <code>TRUE</code> if a user exists with this mail, otherwise <code>FALSE</code>.
-   */
-  public function existsMail($mail) {
-    return !empty($this->select("SELECT `user_id` FROM `users` WHERE `mail` = ? OR `init` = ? LIMIT 1", "ss", [ $mail, $mail ]));
-  }
-
-  /**
-   * Check if a user with the given name exists.
-   *
-   * @param string $name
-   *   The name to search for.
-   * @return boolean
-   *   <code>TRUE</code> if a user exists with this name, otherwise <code>FALSE</code>.
-   */
-  public function existsName($name) {
-    return !empty($this->select("SELECT `user_id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $name ]));
-  }
-
-  /**
    * Get the user's preferred ISO 639-1 alpha-2 language code.
    *
    * @staticvar string $languageCode
