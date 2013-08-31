@@ -44,19 +44,13 @@ abstract class AbstractPresenter {
   /**
    * The current view.
    *
-   * @var \MovLib\View\HTML\AbstractView
+   * @var \MovLib\View\HTML\AbstractPageView
    */
   public $view;
 
 
-
   // ------------------------------------------------------------------------------------------------------------------- Abstract methods
 
-
-  /**
-   * Instantiate new presenter object.
-   */
-  public abstract function __construct();
 
   /**
    * Associative array containing the breadcrumb trail for this presenter.
@@ -94,7 +88,7 @@ abstract class AbstractPresenter {
   abstract public function getBreadcrumb();
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public final methods
+  // ------------------------------------------------------------------------------------------------------------------- Public methods
 
 
   /**
@@ -116,7 +110,7 @@ abstract class AbstractPresenter {
    * @return string
    *   CamelCase representation of the action if set, otherwise <tt>Show</tt> is returned.
    */
-  public final function getAction($defaultAction = "Show") {
+  public function getAction($defaultAction = "Show") {
     static $action = null;
     if ($action === null) {
       $action = isset($_SERVER["ACTION"]) ? $_SERVER["ACTION"] : $defaultAction;
@@ -132,17 +126,13 @@ abstract class AbstractPresenter {
    * @return string
    *   The request method as CamelCase string.
    */
-  public final function getMethod() {
+  public function getMethod() {
     static $method = null;
     if ($method === null) {
       $method = ucfirst(strtolower($_SERVER["REQUEST_METHOD"]));
     }
     return $method;
   }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Public methods
-
 
   /**
    * Get the presenter's short class name (e.g. <em>Abstract</em> for <em>AbstractPresenter</em>).
@@ -156,49 +146,37 @@ abstract class AbstractPresenter {
   public function getShortName() {
     static $shortName = false;
     if ($shortName === false) {
-      // Always remove the "presenter" suffix from the name.
+      // Always remove the "Presenter" suffix from the name.
       $shortName = substr((new ReflectionClass($this))->getShortName(), 0, -9);
     }
     return $shortName;
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Protected final methods
+  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
 
 
   /**
    * Set output for this presenter.
    *
-   * @param string $viewName
-   *   [Optional] The name of the view without the <tt>View</tt> suffix. You have to include names of folders if your
-   *   view is in a subdirectory within the view folder (e.g. <tt>User\\UserShow</tt>). If no value is passed along
-   *   the object from the property <var>AbstractPresenter::$view</var> is used to generate the output. You must call
-   *   <code>AbstractPresenter::getView()</code> before calling this method in this case.
-   * @param string $viewType
-   *   [Optional] The foldername within the view directory. Defaults to <tt>HTML</tt>.
-   * @param string $method
-   *   [Optional] The name of the method that should be called to set the output. Defaults to <tt>getRenderedView</tt>.
+   * @param string $viewName [optional]
+   *   The n ame of the view without the <code>"View"</code> suffix. You have to include names of folders if your view
+   *   is in a subdirectory within the view directory (e.g. <code>"User\\UserShow"</code>). If no value is passed, the
+   *   object in property <var>$this->view</var> is used to generate the output. You must call
+   *   <code>$this->getView()</code> before calling this method in this case.
+   * @param string $viewType [optional]
+   *   The foldername within the view directory, defaults to <code>"HTML"</code>.
+   * @param string $method [optional]
+   *   The name of the method that should be called to set the output, defaults to <code>"getRenderedView"</code>.
    * @return this
    */
-  protected final function setPresentation($viewName = null, $viewType = "HTML", $method = "getRenderedView") {
+  protected function setPresentation($viewName = null, $viewType = "HTML", $method = "getRenderedView") {
     if ($viewName !== null) {
       $view = "\\MovLib\\View\\{$viewType}\\{$viewName}View";
       $this->view = new $view($this);
     }
     $this->presentation = $this->view->{$method}();
     return $this;
-  }
-
-  /**
-   * Exit the current script because the request method is not allowed.
-   *
-   * @param string $allowed
-   *   [Optional] Comma seperated list of allowed request methods, defaults to <code>GET</code>.
-   */
-  protected final function exitMethodNotAllowed($allowed = "GET") {
-    header("Allowed: {$allowed}");
-    http_response_code(405);
-    exit();
   }
 
 }
