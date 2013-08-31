@@ -288,47 +288,47 @@ class UserModel extends AbstractImageModel {
    */
   public function __construct($from = null, $value = null) {
     global $i18n;
-    if (isset($from) && isset($value)) {
-      try {
-        foreach ($this->select(
-          "SELECT
-            `user_id` AS `userId`,
-            `language_id` AS `languageId`,
-            `name`,
-            `mail`,
-            `pass`,
-            UNIX_TIMESTAMP(`created`) AS `created`,
-            UNIX_TIMESTAMP(`access`) AS `access`,
-            UNIX_TIMESTAMP(`login`) AS `login`,
-            `private`,
-            `deleted`,
-            `timezone`,
-            `init`,
-            `edits`,
-            COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY) AS `profile`,
-            `sex`,
-            `country_id` AS `countryId`,
-            `real_name` AS `realName`,
-            `birthday`,
-            `website`,
-            `avatar_extension` AS `imageExtension`,
-            `avatar_hash` AS `imageHash`
-          FROM `users`
-            WHERE `{$from}` = ?
-          LIMIT 1", $this->types[$from], [ $value ]
-        )[0] as $k => $v) {
-          $this->{$k} = $v;
-        }
-        settype($this->private, "boolean");
-        settype($this->deleted, "boolean");
-        $this->initImage(String::convertToRoute($this->name), [
-          new ResizeImageStyle(self::IMAGESTYLE_SMALL),
-          new ResizeImageStyle(self::IMAGESTYLE_NORMAL),
-          new ResizeImageStyle(self::IMAGESTYLE_BIG),
-        ]);
-      } catch (ErrorException $e) {
-        throw new UserException("Could not find user for {$from} '{$value}'!", $e);
+    if (!empty($from) && !empty($value)) {
+      $result = $this->select(
+        "SELECT
+          `user_id` AS `userId`,
+          `language_id` AS `languageId`,
+          `name`,
+          `mail`,
+          `pass`,
+          UNIX_TIMESTAMP(`created`) AS `created`,
+          UNIX_TIMESTAMP(`access`) AS `access`,
+          UNIX_TIMESTAMP(`login`) AS `login`,
+          `private`,
+          `deleted`,
+          `timezone`,
+          `init`,
+          `edits`,
+          COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY) AS `profile`,
+          `sex`,
+          `country_id` AS `countryId`,
+          `real_name` AS `realName`,
+          `birthday`,
+          `website`,
+          `avatar_extension` AS `imageExtension`,
+          `avatar_hash` AS `imageHash`
+        FROM `users`
+          WHERE `{$from}` = ?
+        LIMIT 1", $this->types[$from], [ $value ]
+      );
+      if (empty($result[0])) {
+        throw new UserException("Could not find user for {$from} '{$value}'!");
       }
+      foreach ($result[0] as $k => $v) {
+        $this->{$k} = $v;
+      }
+      settype($this->private, "boolean");
+      settype($this->deleted, "boolean");
+      $this->initImage(String::convertToRoute($this->name), [
+        new ResizeImageStyle(self::IMAGESTYLE_SMALL),
+        new ResizeImageStyle(self::IMAGESTYLE_NORMAL),
+        new ResizeImageStyle(self::IMAGESTYLE_BIG),
+      ]);
     }
   }
 
