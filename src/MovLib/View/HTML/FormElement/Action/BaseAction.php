@@ -15,40 +15,42 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML\User;
+namespace MovLib\View\HTML\FormElement\Action;
 
-use \MovLib\View\HTML\AbstractFormView;
+use \MovLib\View\HTML\FormElement\AbstractFormElement;
 
 /**
- * User login form.
+ * Base class for all action form elements.
  *
- * @link http://uxdesign.smashingmagazine.com/2011/11/08/extensive-guide-web-form-usability/
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserLoginView extends AbstractFormView {
+class BaseAction extends AbstractFormElement {
 
   /**
-   * Instantiate new user login view.
+   * Instantiate new action form element.
    *
-   * @global \MovLib\Model\I18nModel $i18n
-   * @param \MovLib\Presenter\UserPresenter $userPresenter
-   *   The user presenter controlling this view.
+   * @param string $type
+   *   The value of the type attribute of the input element. Default is <code>"submit"</code>.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to this input element.
    */
-  public function __construct($userPresenter) {
-    global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Login"));
-    $this->stylesheets[] = "modules/user.css";
+  public function __construct($type, $attributes = null) {
+    $this->id = $type;
+    $this->attributes = array_merge([
+      "tabindex" => $this->getTabindex(),
+      "type"     => $type,
+    ], $attributes);
   }
 
   /**
    * @inheritdoc
    */
-  public function getContent() {
-    return "<div class='container'><div class='row'>{$this->formOpen("span span--6 offset--3")}<p>{$this->formElements["mail"]}</p><p>{$this->formElements["pass"]}</p>{$this->formClose(false)}</div></div>";
+  public function __toString() {
+    return "<input{$this->expandTagAttributes($this->attributes)}>";
   }
 
 }

@@ -167,18 +167,20 @@ class BaseView {
   }
 
   /**
-   * Add a CSS class to an existing attributes array.
+   * Add CSS class(es).
    *
    * @param string $class
-   *   String of CSS classes that should be added to <var>$attributes</var>.
-   * @param null|array $attributes
-   *   The array containing the previously set attributes for the elment. If the passed variable is <tt>NULL</tt> an
-   *   array will be created.
+   *   String of CSS class(es) that should be added to <var>$attributes</var>.
+   * @param mixed $attributes
+   *   The array containing the previously set attributes for the elment. An array will be automatically created if the
+   *   passed variable isn't one.
    * @return this
    */
   protected function addClass($class, &$attributes) {
-    $attributes = $attributes ?: [];
-    $attributes["class"] = isset($attributes["class"]) ? "{$attributes["class"]} {$class}" : $class;
+    if (!is_array($attributes)) {
+      $attributes = [];
+    }
+    $attributes["class"] = empty($attributes["class"]) ? $class : "{$attributes["class"]} {$class}";
     return $this;
   }
 
@@ -236,6 +238,5 @@ class BaseView {
     static $tabindex = 1;
     return $tabindex++;
   }
-
 
 }

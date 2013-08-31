@@ -471,7 +471,7 @@ abstract class AbstractPageView extends BaseView {
             $i18n->t(
               "By using this site, you agree to the {0} and {1}.",
               [ $this->a($i18n->r("/terms-of-use"), $i18n->t("Terms of Use")), $this->a($i18n->r("/privacy-policy"), $i18n->t("Privacy Policy")) ],
-              "<tt>{0}</tt> is <em>Terms of Use</em> and <tt>{1}</tt> is <em>Privacy Policy</em>."
+              [ "comment" => "<code>{0}</code> is <em>Terms of Use</em> and <code>{1}</tt> is <em>Privacy Policy</em>." ]
             ) .
           "</div>" .
           "<div class='row footer-row-logos'>" .
@@ -526,7 +526,12 @@ abstract class AbstractPageView extends BaseView {
     global $i18n;
     return
       String::checkPlain($this->title) .
-      $i18n->t(" — ", null, "The em dash is used as separator character in the header title to denoate the source of the document (like in a quote the author), this should be translated to the equivalent character in your language. More information on this specific character can be found at <a href='//en.wikipedia.org/wiki/Dash#Em_dash'>Wikipedia</a>.") .
+      $i18n->t(" — ", [], [
+        "comment" => "The em dash is used as separator character in the header title to denote the source of the "
+        . "document (like in a quote the author), this should be translated to the equivalent character in your "
+        . "language. More information on this specific character can be found at "
+        . "<a href='//en.wikipedia.org/wiki/Dash#Em_dash'>Wikipedia</a>."
+      ]) .
       "MovLib"
     ;
   }

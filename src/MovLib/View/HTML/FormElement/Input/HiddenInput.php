@@ -15,40 +15,48 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML\User;
-
-use \MovLib\View\HTML\AbstractFormView;
+namespace MovLib\View\HTML\FormElement\Input;
 
 /**
- * User login form.
+ * Represents an input form element of type hidden.
  *
- * @link http://uxdesign.smashingmagazine.com/2011/11/08/extensive-guide-web-form-usability/
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserLoginView extends AbstractFormView {
+class HiddenInput extends AbstractFormElement {
 
   /**
-   * Instantiate new user login view.
+   * Instantiate new hidden form element. Please note that hidden form elements are always readonly form elements.
    *
-   * @global \MovLib\Model\I18nModel $i18n
-   * @param \MovLib\Presenter\UserPresenter $userPresenter
-   *   The user presenter controlling this view.
+   * @param string $name
+   *   The name of this form element that will be used as global identifier.
+   * @param mixed $value
+   *   The value of the form element.
+   * @param array $attributes [optional]
+   *   Custom attributes that should be applied to the element.
    */
-  public function __construct($userPresenter) {
-    global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Login"));
-    $this->stylesheets[] = "modules/user.css";
+  public function __construct($name, $value, $attributes = []) {
+    $this->id = $name;
+    $this->attributes = array_merge([
+      "aria-hidden" => "true",
+      "hidden",
+      "id"          => $name,
+      "name"        => $name,
+      "type"        => "hidden",
+      "value"       => $value,
+    ], $attributes);
+    // Hidden form elements are always readonly!
+    $this->readyonly();
   }
 
   /**
    * @inheritdoc
    */
-  public function getContent() {
-    return "<div class='container'><div class='row'>{$this->formOpen("span span--6 offset--3")}<p>{$this->formElements["mail"]}</p><p>{$this->formElements["pass"]}</p>{$this->formClose(false)}</div></div>";
+  public function __toString() {
+    return "<input{$this->expandTagAttributes($this->attributes)}>";
   }
 
 }

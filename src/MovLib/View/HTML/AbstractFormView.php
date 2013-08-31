@@ -17,8 +17,10 @@
  */
 namespace MovLib\View\HTML;
 
-use \MovLib\Model\I18nModel;
-use \MovLib\View\HTML\AbstractView;
+use \MovLib\Exception\ValidatorException;
+use \MovLib\View\HTML\AbstractPageView;
+use \MovLib\View\HTML\FormElement\Action\BaseAction;
+use \MovLib\View\HTML\FormElement\Input\HiddenInput;
 
 /**
  * The abstract form view contains utility methods for views with forms.
@@ -29,7 +31,7 @@ use \MovLib\View\HTML\AbstractView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractFormView extends AbstractView {
+abstract class AbstractFormView extends AbstractPageView {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -47,314 +49,374 @@ abstract class AbstractFormView extends AbstractView {
 
 
   /**
-   * The attributes that will be applied to the <code>&lt;form&gt;</code>-element.
+   * Associative array containing all action form elements.
    *
    * @var array
    */
-  protected $attributes = [
-    "accept-charset" => "UTF-8",
-    "class"          => "container",
-    "method"         => "post",
-  ];
+  public $actionElements = [];
 
   /**
-   * Array that can be used by the presenter to set errors for certain input elements.
-   *
-   * The array should be in the form: <code>[ form-elements-name => true ]</code>
+   * The attributes that will be applied to the <code><form></code>-element itself.
    *
    * @var array
    */
-  public $formInvalid;
+  public $formAttributes = [];
 
   /**
-   * Array that can be used by the presenter to disable certain input elements.
-   *
-   * The array should be in the form: <code>[ form-elements-name => true ]</code>
+   * Associative array containing all hidden form elements.
    *
    * @var array
    */
-  public $formDisabled;
+  public $hiddenElements = [];
 
   /**
-   * Array that can be used by the presenter to set the value of any input element.
-   *
-   * The array should be in the form: <code>[ input-elements-name => value ]</code>
+   * Associative array containing all visible form elements.
    *
    * @var array
    */
-  public $inputValues;
+  public $formElements = [];
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Abstract Public Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * The HTML content of the <code>&lt;form&gt;</code>-element.
+   * Instantiate new form view.
    *
-   * <b>IMPORTANT!</b> Do not include opening and closing <code>form</code>-tags!
-   *
-   * @return string
-   *   The HTML content of the <code>&lt;form&gt;</code>-element.
+   * @global \MovLib\Model\UserModel $user
+   * @param \MovLib\Presenter\AbstractPresenter $presenter
+   *   The presenter controlling this view.
+   * @param string $title
+   *   The already translated title of this view.
    */
-  abstract public function getFormContent();
+  public function __construct($presenter, $title) {
+    global $user;
+    parent::__construct($presenter, $title);
+    if ($token = $user->csrfToken) {
+      $this->hiddenElements["csrf"] = new HiddenInput("csrf", $token);
+    }
+    $this->formAttributes = [
+      "accept-charset" => "UTF-8",
+      "action"         => $_SERVER["REQUEST_URI"],
+      "method"         => "post",
+    ];
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+      $errors = null;
+      foreach ($this->formElements as $id => $element) {
+        try {
+          $element->validate();
+        } catch (ValidatorException $e) {
+          $element->invalid();
+          $errors .= "<p>{$e->getMessage()}</p>";
+        }
+      }
+      if ($errors) {
+        $this->setAlert($errors, self::ALERT_SEVERITY_ERROR);
+      }
+    }
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
   /**
-   * Get the rendered content, without HTML head, header or footer.
+   * Attach a form element to this form.
    *
-   * @global \MovLib\Model\SessionModel $user
-   *   The currently logged in user.
-   * @return string
+   * @param \MovLib\View\HTML\FormElement\AbstractFormElement $element
+   *   <code>AbstractFormElement</code> instance.
+   * @return this
    */
-  public function getContent() {
-    global $user;
-    $csrf = "";
-    if (($token = $user->csrfToken)) {
-      $csrf = "<input aria-hidden='true' hidden name='csrf' type='hidden' value='{$token}'>";
+  public function attach($element) {
+    if ($element instanceof BaseAction) {
+      $this->actionElements[$element->id] = $element;
     }
-    if (!isset($this->attributes["action"])) {
-      $this->attributes["action"] = $_SERVER["REQUEST_URI"];
+    elseif ($element instanceof HiddenInput) {
+      $this->hiddenElements[$element->id] = $element;
     }
-    return "<form{$this->expandTagAttributes($this->attributes)}>{$csrf}{$this->getFormContent()}</form>";
+    else {
+      $this->formElements[$element->id] = $element;
+    }
+    return $this;
   }
 
   /**
-   * Render an HTML input element.
+   * Get the opening <code><form></code>-tag, including all hidden form elements.
    *
-   * Always use this method to create your input elements of forms. This method ensures that all necessary ARIA
-   * attributes are applied to the element. Also all necessary attributes will be set correctly. The value of the
-   * element will be automatically filled with POST data—if available—and correctly sanitized.
-   *
-   * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html
-   * @link https://developer.mozilla.org/en-US/docs/Accessibility/ARIA/ARIA_Techniques
-   * @param string $name
-   *   The <em>name</em> of the input element. This value is used for the <em>id</em> and <em>name</em> attribute of
-   *   the input element.
-   * @param array $attributes
-   *   [Optional] Array containing attributes that should be applied to the element or to overwrite the defaults. Any
-   *   attribute that is valid for an input element can be passed. The following attributes can be overwritten:
-   *   <ul>
-   *     <li><em>type</em>: Default type is <em>text</em>.</li>
-   *     <li><em>value</em>: Default value is taken from POST and sanitized, if you overwrite this be sure to sanitize
-   *     it correctly by issuing the <code>filter_input()</code> function.</li>
-   *   </ul>
-   *   The following attributes are always applied and cannot be overwritten:
-   *   <ul>
-   *     <li><em>role</em>: The ARIA role.</li>
-   *     <li><em>id</em>: Is always set to the value of <var>$name</var>.</li>
-   *     <li><em>name</em>: Is always set to the value of <var>$name</var>.</li>
-   *     <li><em>tabindex</em>: Is always set to the next by calling <code>AbstractView::getTabindex()</code>.</li>
-   *   </ul>
-   * @param string $tag
-   *   [Optional] The elements tag, defaults to <em>input</em>.
-   * @param string $content
-   *   [Optional] If you create an element that can hold content (e.g. <em>button</em>, <em>select</em>,
-   *   <em>textarea</em>) pass it here.
+   * @param string $classes [optional]
+   *   Additional CSS classes that should be applied to the <code><form></code>-tag.
    * @return string
-   *   The input element ready for print.
+   *   The opeining <code><form></code>-tag, including all hidden form elements.
    */
-  protected function input($name, $attributes = [], $tag = "input", $content = "") {
-    $ariaAttributes = [ "hidden", "required", "readonly" ];
-    for ($i = 0; $i < 3; ++$i) {
-      if (isset($attributes[$ariaAttributes[$i]])) {
-        $attributes["aria-{$ariaAttributes[$i]}"] = "true";
-      }
+  public function formOpen($classes = null) {
+    $hidden = "";
+    foreach ($this->hiddenElements as $id => $element) {
+      $hidden .= $element;
     }
-    if (isset($this->formInvalid[$name])) {
-      $attributes["aria-invalid"] = "true";
+    if ($classes) {
+      $this->addClass($classes, $this->formAttributes);
     }
-    if (isset($this->formDisabled[$name])) {
-      $attributes["aria-disabled"] = "true";
-      $attributes[] = "disabled";
-    }
-    $attributes["id"] = $attributes["name"] = $name;
-    $attributes["tabindex"] = $this->getTabindex();
-    if (!isset($attributes["type"])) {
-      $attributes["type"] = "text";
-      $attributes["role"] = "textbox";
-    }
-    switch ($attributes["type"]) {
-      case "password":
-        $attributes["role"] = "textbox";
-        // Only the presenter or view is allowed to insert a value into a password field. Never ever use a password
-        // value that was submitted via the user.
-        if (isset($this->inputValues[$name])) {
-          $attributes["value"] = $this->inputValues[$name];
-        }
-        break;
-
-      case "radio":
-        unset($attributes["id"]);
-        if ((isset($_POST[$name]) && $_POST[$name] == $attributes["value"]) || (isset($this->inputValues[$name]) && $this->inputValues[$name] == $attributes["value"])) {
-          $attributes[] = "checked";
-        }
-        break;
-
-      case "checkbox":
-        if (isset($_POST[$name]) || isset($this->inputValues[$name]) && $this->inputValues[$name]) {
-          $attributes[] = "checked";
-        }
-        break;
-
-      default:
-        if (isset($_POST[$name])) {
-          $attributes["value"] = $_POST[$name];
-        }
-        elseif (isset($this->inputValues[$name])) {
-          $attributes["value"] = $this->inputValues[$name];
-        }
-    }
-    switch ($tag) {
-      case "button":
-      case "select":
-        return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}</{$tag}>";
-
-      case "textarea":
-        $attributes["aria-multiline"] = "true";
-        unset($attributes["type"]);
-        unset($attributes["value"]);
-        return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}</{$tag}>";
-
-      default:
-        return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}";
-    }
-  }
-
-  public function selectGetSystemLanguages() {
-    global $i18n;
-    $systemLanguages[] = [ "disabled", "text" => $i18n->t("Select your preferred language"), "value" => "" ];
-    foreach ($i18n->getSystemLanguages() as $id => $language) {
-      $systemLanguages[] = [
-        "data-alternate-spellings" => $language["code"],
-        "text"  => $language["name"],
-        "value" => $id,
-      ];
-    }
-    return $systemLanguages;
-  }
-
-  public function selectGetLanguages() {
-    global $i18n;
+    return "<form{$this->expandTagAttributes($this->formAttributes)}>{$hidden}";
   }
 
   /**
-   * Generate array containing the countries sorted by name for usage as options in a select element.
+   * Get the closing <code><form></code>-tag, including all form actions.
    *
-   * @todo Prioritize certain countries
-   * @todo Include common typos
-   * @todo Extend alternate spellings
-   * @link http://uxdesign.smashingmagazine.com/2011/11/10/redesigning-the-country-selector/
-   * @see \MovLib\View\HTML\AbstractFormView::select()
-   * @global \MovLib\Model\I18nModel $i18n
-   *   Global i18n model instance.
-   * @return array
-   *   Numeric array for usage with <code>$this->select()</code>.
+   * @param boolean $wrapActions [optional]
+   *   If set to <code>FALSE</code> the form action elements won't be wrapped with the <code><div class='form-actions'/>
+   *   </code>-element, default is to wrap the form actions.
+   * @return string
+   *   The closing <code><form></code>-tag, including all form actions.
    */
-  public function selectGetCountries() {
-    global $i18n;
-    $countries[] = [ "disabled", "text" => $i18n->t("Select your country"), "value" => "" ];
-    foreach ($i18n->getCountries(I18nModel::KEY_NAME) as $name => $country) {
-      $countries[] = [
-        "data-alternate-spellings" => $country["code"],
-        "text"  => $name,
-        "value" => $country["id"],
-      ];
+  public function formClose($wrapActions = true) {
+    $actions = "";
+    foreach ($this->actionElements as $id => $element) {
+      $actions .= $element;
     }
-    return $countries;
+    if ($wrapActions === true) {
+      $actions = "<div class='form-actions'>{$actions}</div>";
+    }
+    return "{$actions}</form>";
   }
 
-  /**
-   * Render an HTML select element.
-   *
-   * @see \MovLib\View\HTML\AbstractFormView::getInputElement()
-   * @param string $name
-   *   The <em>name</em> of the select element. This value is used for the <em>id</em> and <em>name</em> attribute of
-   *   the select element.
-   * @param array $options
-   *   Numerical array containing associative arrays for each option.
-   * @param array $attributes
-   *   [Optional] Array containing attributes that should be applied to the element or to overwrite the defaults.
-   * @return string
-   *   The select element ready for print.
-   */
-  protected function select($name, $options, $attributes = []) {
-    $selected = "";
-    if (isset($_POST[$name])) {
-      $selected = $_POST[$name];
-    }
-    elseif (isset($this->inputValues[$name])) {
-      $selected = $this->inputValues[$name];
-    }
-    $content = "";
-    $c = count($options);
-    for ($i = 0; $i < $c; ++$i) {
-      $attr = [];
-      if (is_array($options[$i])) {
-        $text = $options[$i]["text"];
-        unset($options[$i]["text"]);
-        $attr = $options[$i];
-      }
-      else {
-        $attr["value"] = $text = $options[$i];
-      }
-      if ($selected == $attr["value"]) {
-        $attr[] = "selected";
-      }
-      $content .= "<option{$this->expandTagAttributes($attr)}>{$text}</option>";
-    }
-    return $this->input($name, $attributes, "select", $content);
-  }
-
-  /**
-   * Get default submit button.
-   *
-   * @param string $text
-   *   The text that should be displayed within the button.
-   * @param string $title
-   *   The title that should be displayed in the tooltip.
-   * @return string
-   *   The submit button ready for print.
-   */
-  protected function submit($text, $title = "") {
-    return "<button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$title}' type='submit'>{$text}</button>";
-  }
-
-  /**
-   * Get mark-up for help text on a default form element.
-   *
-   * @param string $text
-   *   The already translated help text.
-   * @return string
-   *   The text wrapped in the mark-up globally used for help elements.
-   */
-  protected function help($text) {
-    return "<span class='form-help popup-container'><i class='icon icon--help-circled'></i><small class='popup'>{$text}</small></span>";
-  }
-
-  /**
-   * Create a group of radio buttons.
-   *
-   * @param string $name
-   *   The <em>name</em> of the radio elements. This value is used for the <em>name</em> attribute of the radio elements.
-   * @param array $data
-   *   Associative array containing the data for the radio elements where the key is used as content of the value-
-   *   attribute and the value as label (already translated).
-   * @param boolean $inline
-   *   [Optional] Flag to determine if the radio group should be displayed inline or stacked. Defaults to
-   *   <code>TRUE</code>.
-   * @return string
-   *   The radio group ready for print.
-   */
-  protected function radioGroup($name, $data, $inline = true) {
-    $radios = "";
-    $inline = $inline ? " inline" : "";
-    foreach ($data as $value => $label) {
-      $radios .= "<label class='radio{$inline}'>{$this->input($name, [ "required", "type" => "radio", "value" => $value ])}{$label}</label>";
-    }
-    return $radios;
-  }
+//
+//  // ------------------------------------------------------------------------------------------------------------------- OLD!!!! REFACTOR!!!!
+//
+//
+//  /**
+//   * Render an HTML input element.
+//   *
+//   * Always use this method to create your input elements of forms. This method ensures that all necessary ARIA
+//   * attributes are applied to the element. Also all necessary attributes will be set correctly. The value of the
+//   * element will be automatically filled with POST data—if available—and correctly sanitized.
+//   *
+//   * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html
+//   * @link https://developer.mozilla.org/en-US/docs/Accessibility/ARIA/ARIA_Techniques
+//   * @param string $name
+//   *   The <em>name</em> of the input element. This value is used for the <em>id</em> and <em>name</em> attribute of
+//   *   the input element.
+//   * @param array $attributes
+//   *   [Optional] Array containing attributes that should be applied to the element or to overwrite the defaults. Any
+//   *   attribute that is valid for an input element can be passed. The following attributes can be overwritten:
+//   *   <ul>
+//   *     <li><em>type</em>: Default type is <em>text</em>.</li>
+//   *     <li><em>value</em>: Default value is taken from POST and sanitized, if you overwrite this be sure to sanitize
+//   *     it correctly by issuing the <code>filter_input()</code> function.</li>
+//   *   </ul>
+//   *   The following attributes are always applied and cannot be overwritten:
+//   *   <ul>
+//   *     <li><em>role</em>: The ARIA role.</li>
+//   *     <li><em>id</em>: Is always set to the value of <var>$name</var>.</li>
+//   *     <li><em>name</em>: Is always set to the value of <var>$name</var>.</li>
+//   *     <li><em>tabindex</em>: Is always set to the next by calling <code>AbstractView::getTabindex()</code>.</li>
+//   *   </ul>
+//   * @param string $tag
+//   *   [Optional] The elements tag, defaults to <em>input</em>.
+//   * @param string $content
+//   *   [Optional] If you create an element that can hold content (e.g. <em>button</em>, <em>select</em>,
+//   *   <em>textarea</em>) pass it here.
+//   * @return string
+//   *   The input element ready for print.
+//   */
+//  protected function input($name, $attributes = [], $tag = "input", $content = "") {
+//    $ariaAttributes = [ "hidden", "required", "readonly" ];
+//    for ($i = 0; $i < 3; ++$i) {
+//      if (isset($attributes[$ariaAttributes[$i]])) {
+//        $attributes["aria-{$ariaAttributes[$i]}"] = "true";
+//      }
+//    }
+//    if (isset($this->formInvalid[$name])) {
+//      $attributes["aria-invalid"] = "true";
+//    }
+//    if (isset($this->formDisabled[$name])) {
+//      $attributes["aria-disabled"] = "true";
+//      $attributes[] = "disabled";
+//    }
+//    $attributes["id"] = $attributes["name"] = $name;
+//    $attributes["tabindex"] = $this->getTabindex();
+//    if (!isset($attributes["type"])) {
+//      $attributes["type"] = "text";
+//      $attributes["role"] = "textbox";
+//    }
+//    switch ($attributes["type"]) {
+//      case "password":
+//        $attributes["role"] = "textbox";
+//        // Only the presenter or view is allowed to insert a value into a password field. Never ever use a password
+//        // value that was submitted via the user.
+//        if (isset($this->inputValues[$name])) {
+//          $attributes["value"] = $this->inputValues[$name];
+//        }
+//        break;
+//
+//      case "radio":
+//        unset($attributes["id"]);
+//        if ((isset($_POST[$name]) && $_POST[$name] == $attributes["value"]) || (isset($this->inputValues[$name]) && $this->inputValues[$name] == $attributes["value"])) {
+//          $attributes[] = "checked";
+//        }
+//        break;
+//
+//      case "checkbox":
+//        if (isset($_POST[$name]) || isset($this->inputValues[$name]) && $this->inputValues[$name]) {
+//          $attributes[] = "checked";
+//        }
+//        break;
+//
+//      default:
+//        if (isset($_POST[$name])) {
+//          $attributes["value"] = $_POST[$name];
+//        }
+//        elseif (isset($this->inputValues[$name])) {
+//          $attributes["value"] = $this->inputValues[$name];
+//        }
+//    }
+//    switch ($tag) {
+//      case "button":
+//      case "select":
+//        return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}</{$tag}>";
+//
+//      case "textarea":
+//        $attributes["aria-multiline"] = "true";
+//        unset($attributes["type"]);
+//        unset($attributes["value"]);
+//        return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}</{$tag}>";
+//
+//      default:
+//        return "<{$tag}{$this->expandTagAttributes($attributes)}>{$content}";
+//    }
+//  }
+//
+//  public function selectGetSystemLanguages() {
+//    global $i18n;
+//    $systemLanguages[] = [ "disabled", "text" => $i18n->t("Select your preferred language"), "value" => "" ];
+//    foreach ($i18n->getSystemLanguages() as $id => $language) {
+//      $systemLanguages[] = [
+//        "data-alternate-spellings" => $language["code"],
+//        "text"  => $language["name"],
+//        "value" => $id,
+//      ];
+//    }
+//    return $systemLanguages;
+//  }
+//
+//  public function selectGetLanguages() {
+//    global $i18n;
+//  }
+//
+//  /**
+//   * Generate array containing the countries sorted by name for usage as options in a select element.
+//   *
+//   * @todo Prioritize certain countries
+//   * @todo Include common typos
+//   * @todo Extend alternate spellings
+//   * @link http://uxdesign.smashingmagazine.com/2011/11/10/redesigning-the-country-selector/
+//   * @see \MovLib\View\HTML\AbstractFormView::select()
+//   * @global \MovLib\Model\I18nModel $i18n
+//   *   Global i18n model instance.
+//   * @return array
+//   *   Numeric array for usage with <code>$this->select()</code>.
+//   */
+//  public function selectGetCountries() {
+//    global $i18n;
+//    $countries[] = [ "disabled", "text" => $i18n->t("Select your country"), "value" => "" ];
+//    foreach ($i18n->getCountries(I18nModel::KEY_NAME) as $name => $country) {
+//      $countries[] = [
+//        "data-alternate-spellings" => $country["code"],
+//        "text"  => $name,
+//        "value" => $country["id"],
+//      ];
+//    }
+//    return $countries;
+//  }
+//
+//  /**
+//   * Render an HTML select element.
+//   *
+//   * @see \MovLib\View\HTML\AbstractFormView::getInputElement()
+//   * @param string $name
+//   *   The <em>name</em> of the select element. This value is used for the <em>id</em> and <em>name</em> attribute of
+//   *   the select element.
+//   * @param array $options
+//   *   Numerical array containing associative arrays for each option.
+//   * @param array $attributes
+//   *   [Optional] Array containing attributes that should be applied to the element or to overwrite the defaults.
+//   * @return string
+//   *   The select element ready for print.
+//   */
+//  protected function select($name, $options, $attributes = []) {
+//    $selected = "";
+//    if (isset($_POST[$name])) {
+//      $selected = $_POST[$name];
+//    }
+//    elseif (isset($this->inputValues[$name])) {
+//      $selected = $this->inputValues[$name];
+//    }
+//    $content = "";
+//    $c = count($options);
+//    for ($i = 0; $i < $c; ++$i) {
+//      $attr = [];
+//      if (is_array($options[$i])) {
+//        $text = $options[$i]["text"];
+//        unset($options[$i]["text"]);
+//        $attr = $options[$i];
+//      }
+//      else {
+//        $attr["value"] = $text = $options[$i];
+//      }
+//      if ($selected == $attr["value"]) {
+//        $attr[] = "selected";
+//      }
+//      $content .= "<option{$this->expandTagAttributes($attr)}>{$text}</option>";
+//    }
+//    return $this->input($name, $attributes, "select", $content);
+//  }
+//
+//  /**
+//   * Get default submit button.
+//   *
+//   * @param string $text
+//   *   The text that should be displayed within the button.
+//   * @param string $title
+//   *   The title that should be displayed in the tooltip.
+//   * @return string
+//   *   The submit button ready for print.
+//   */
+//  protected function submit($text, $title = "") {
+//    return "<button class='button button--success button--large' tabindex='{$this->getTabindex()}' title='{$title}' type='submit'>{$text}</button>";
+//  }
+//
+//  /**
+//   * Get mark-up for help text on a default form element.
+//   *
+//   * @param string $text
+//   *   The already translated help text.
+//   * @return string
+//   *   The text wrapped in the mark-up globally used for help elements.
+//   */
+//  protected function help($text) {
+//    return "<span class='form-help popup-container'><i class='icon icon--help-circled'></i><small class='popup'>{$text}</small></span>";
+//  }
+//
+//  /**
+//   * Create a group of radio buttons.
+//   *
+//   * @param string $name
+//   *   The <em>name</em> of the radio elements. This value is used for the <em>name</em> attribute of the radio elements.
+//   * @param array $data
+//   *   Associative array containing the data for the radio elements where the key is used as content of the value-
+//   *   attribute and the value as label (already translated).
+//   * @param boolean $inline
+//   *   [Optional] Flag to determine if the radio group should be displayed inline or stacked. Defaults to
+//   *   <code>TRUE</code>.
+//   * @return string
+//   *   The radio group ready for print.
+//   */
+//  protected function radioGroup($name, $data, $inline = true) {
+//    $radios = "";
+//    $inline = $inline ? " inline" : "";
+//    foreach ($data as $value => $label) {
+//      $radios .= "<label class='radio{$inline}'>{$this->input($name, [ "required", "type" => "radio", "value" => $value ])}{$label}</label>";
+//    }
+//    return $radios;
+//  }
 
 }

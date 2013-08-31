@@ -40,6 +40,35 @@ use \NumberFormatter;
 class Validator {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Maximum length an email address can have.
+   *
+   * This length must be the same as it is defined in the database table. We redefine this here in order to validate the
+   * length of the email address before attempting to insert it into our database. Be sure to count the strings length
+   * with <code>mb_strlen()</code> because the length is defined per character and not per byte.
+   *
+   * We limit the length of an email address because we don't want to use BLOB fields in our database to store them. Any
+   * “normal” email address should fit into this length.
+   *
+   * @var int
+   */
+  const MAIL_MAX_LENGTH = 254;
+
+  /**
+   * Maximum length a username can have.
+   *
+   * This length must be the same as it is defined in the database table. We redefine this here in order to validate the
+   * length of the chosen username before attempting to insert it into our database. Be sure to count the strings length
+   * with <code>mb_strlen()</code> because the length is defined per character and not per byte.
+   *
+   * @var int
+   */
+  const USERNAME_MAX_LENGTH = 40;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Helper
 
 
@@ -316,8 +345,14 @@ class Validator {
    *   this method will return a lowercased representation of the valid email address.
    */
   public static function mail($raw, $options = []) {
+    if (isset($options["#allow_empty"]) && $options["#allow_empty"] === true && empty($raw)) {
+      return "";
+    }
+    if (mb_strlen($raw) > self::MAIL_MAX_LENGTH) {
+      return false;
+    }
     $filtered = filter_var($raw, FILTER_VALIDATE_EMAIL, $options);
-    if ($filtered === false || empty($filtered)) {
+    if ($filtered === false || empty($filtered) || strcmp($filtered, $raw) !== 0 || mb_strlen($filtered) > self::MAIL_MAX_LENGTH) {
       return false;
     }
     return mb_strtolower($filtered);
@@ -699,10 +734,10 @@ class Validator {
     if (($name = self::string($name)) === false) {
       throw new ValidatorException($i18n->t("The username contains one or more illegal character."));
     }
-    if (mb_strlen($name) > UserModel::NAME_MAX_LENGTH) {
+    if (mb_strlen($name) > self::USERNAME_MAX_LENGTH) {
       throw new ValidatorException($i18n->t(
         "The username {0} is too long: it must be {1,number,integer} characters or less.",
-        [ $name, UserModel::NAME_MAX_LENGTH ]
+        [ $name, self::USERNAME_MAX_LENGTH ]
       ));
     }
     // @todo The blacklist content must be translated along with the routes.
@@ -742,5 +777,30 @@ class Validator {
   public static function inputUsername($name, $options = []) {
     return self::input("username", $name, $options);
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Username
+
+
+  /**
+   * Validate the raw password against the hashed password.
+   *
+   * This method mainly converts the <code>FALSE</code> returned by <code>password_verify()</code> to an exception. If
+   * you don't need an exception call the method directly with the same parameters.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   * @param string $raw
+   *   The raw user submitted password.
+   * @param string $hashed
+   *   The hashed user password from the database.
+   * @throws \MovLib\Exception\ValidatorException
+   */
+  public static function password($raw, $hashed) {
+    global $i18n;
+    if (password_verify($raw, $hashed) === false) {
+      throw new ValidatorException($i18n->t("The submitted password is not valid."));
+    }
+  }
+
 
 }

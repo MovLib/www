@@ -18,6 +18,7 @@
 namespace MovLib\Presenter;
 
 use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\UserException;
 use \MovLib\Exception\ValidatorException;
@@ -28,8 +29,11 @@ use \MovLib\Utility\DelayedMailer;
 use \MovLib\Utility\DelayedMethodCalls;
 use \MovLib\Utility\String;
 use \MovLib\Utility\Validator;
-use \MovLib\View\HTML\AbstractView;
+use \MovLib\View\HTML\AbstractPageView;
 use \MovLib\View\HTML\AlertView;
+use \MovLib\View\HTML\FormElement\Action\SubmitAction;
+use \MovLib\View\HTML\FormElement\Input\MailInput;
+use \MovLib\View\HTML\FormElement\Input\PasswordInput;
 use \MovLib\View\HTML\Redirect;
 use \MovLib\View\HTML\User\UserLoginView;
 use \MovLib\View\HTML\User\UserRegisterView;
@@ -78,7 +82,7 @@ class UserPresenter extends AbstractPresenter {
         $messages .= "{$message}<br>";
         $this->view->formInvalid[$formElementName] = true;
       }
-      $this->view->setAlert($messages, AbstractView::ALERT_SEVERITY_ERROR);
+      $this->view->setAlert($messages, AbstractPageView::ALERT_SEVERITY_ERROR);
     }
     // Make sure the rendered view is exported to class scope.
     $this->setPresentation();
@@ -112,30 +116,36 @@ class UserPresenter extends AbstractPresenter {
     }
     // Ensure we are using the correct route (this method is called from other constructors in this presenter as well).
     $_SERVER["REQUEST_URI"] = $i18n->r("/user/login");
-    // If we need to set alerts on error, we need the view.
-    $this->view = new UserLoginView($this);
-    if ($_SERVER["REQUEST_METHOD"] === "GET") {
+    // We always need the view, no matter which request method. If the user requested the page via GET we need it to
+    // display the form and if an error occurred after submission of the form via POST we need it to set alert messages
+    // and render the form.
+    try {
+      $this->view = (new UserLoginView($this))
+        ->attach((new MailInput([ "autofocus", "class" => "input--block-level" ]))->required())
+        ->attach((new PasswordInput([ "class" => "input--block-level" ]))->required())
+        ->attach(new SubmitAction([ "class" => "button--large", "value" => $i18n->t("Sign In") ]))
+      ;
+    } catch (ValidatorException $e) {
       return;
     }
-    if (($mail = Validator::inputMail("mail")) === false) {
-      $errors["mail"] = $i18n->t("The submitted {0} is not valid or empty.", [ $i18n->t("email address") ]);
+    // If submitted via POST and input values are valid continue the log in process.
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+      try {
+        $userModel = new UserModel(UserModel::FROM_MAIL, $this->view->form->elements["mail"]->value);
+        Validator::password($this->view->form->elements["pass"]->value, $userModel->pass);
+        $user->startSession($userModel);
+        $_SESSION["ALERTS"][] = [
+          $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$userModel->name}</b>" ]),
+          AbstractPageView::ALERT_SEVERITY_SUCCESS
+        ];
+        $this->view = new Redirect(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/user"), 302);
+      } catch (ErrorException $e) {
+        $this->view->setAlert(
+          "We either don’t know the submitted email address, or the password was wrong.",
+          AbstractPageView::ALERT_SEVERITY_ERROR
+        );
+      }
     }
-    // Try to create a user from the given mail.
-    try {
-      $userModel = new UserModel(UserModel::FROM_MAIL, $mail);
-      $userModel->validatePassword();
-    } catch (UserException $e) {
-      $errors["mail"] = $i18n->t("We either don’t know the submitted email address, or the password was wrong.");
-    }
-    if (isset($errors)) {
-      return $errors;
-    }
-    $user->startSession($userModel);
-    $_SESSION["ALERTS"][] = [
-      $i18n->t("Log in was successful, welcome back {0}!", [ "<b>{$userModel->name}</b>" ]),
-      AbstractView::ALERT_SEVERITY_SUCCESS
-    ];
-    $this->view = new Redirect(isset($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/user"), 302);
   }
 
 
@@ -161,7 +171,7 @@ class UserPresenter extends AbstractPresenter {
     $this->view->setAlert([
       "title"   => $i18n->t("You’ve been logged out successfully."),
       "message" => $i18n->t("We hope to see you again soon."),
-    ], AbstractView::ALERT_SEVERITY_SUCCESS, true);
+    ], AbstractPageView::ALERT_SEVERITY_SUCCESS, true);
   }
 
 
@@ -219,7 +229,7 @@ class UserPresenter extends AbstractPresenter {
     $this->view = new AlertView($this, $this->view->title);
     $this->view->setAlert(
       "<p>{$i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ])}</p>",
-      AbstractView::ALERT_SEVERITY_SUCCESS
+      AbstractPageView::ALERT_SEVERITY_SUCCESS
     );
     $this->view->content =
       "<div class='container'><small>{$i18n->t(
@@ -263,14 +273,14 @@ class UserPresenter extends AbstractPresenter {
       } catch (UserException $e) {
         // Only tell a logged in user that the email is wrong!
         if ($user->isLoggedIn === true) {
-          $this->view->setAlert($i18n->t("The email address you entered is not correct, please try again."), AbstractView::ALERT_SEVERITY_ERROR);
+          $this->view->setAlert($i18n->t("The email address you entered is not correct, please try again."), AbstractPageView::ALERT_SEVERITY_ERROR);
           return;
         }
       }
       $this->view = new AlertView($this, $this->view->title);
       $this->view->setAlert(
         $i18n->t("An email with further instructions has been sent to {0}.", [ String::placeholder($mail) ]),
-        AbstractView::ALERT_SEVERITY_SUCCESS
+        AbstractPageView::ALERT_SEVERITY_SUCCESS
       );
       $this->view->content =
         "<div class='container'><small>{$i18n->t(
@@ -308,7 +318,7 @@ class UserPresenter extends AbstractPresenter {
       $this->view = new AlertView($this, $i18n->t("Missing Authentication Token"));
       $this->view->setAlert(
         "<p>{$i18n->t("Your link is missing the authentication token, please go back to the mail we’ve sent you and copy the whole link.")}</p>",
-        AbstractView::ALERT_SEVERITY_ERROR
+        AbstractPageView::ALERT_SEVERITY_ERROR
       );
       return;
     }
@@ -323,7 +333,7 @@ class UserPresenter extends AbstractPresenter {
         "<p>{$i18n->t("Please go back to the {0} to get a new valid token.", [
           $this->view->a($expiredTokenRoute, $expiredTokenRouteText)
         ])}</p>",
-        AbstractView::ALERT_SEVERITY_ERROR
+        AbstractPageView::ALERT_SEVERITY_ERROR
       );
       return;
     }
@@ -344,7 +354,7 @@ class UserPresenter extends AbstractPresenter {
           "<p>{$i18n->t("Choose a strong password, which is easy to remember but still hard to crack. To help you, " .
             "we generated a password from the most frequent words in American English:")}&nbsp;<code>{$pass}</code></p>" .
           "<p>{$i18n->t("If you’ve changed your mind and want to keep your old password, simply leave this page without any further changes")}</p>"
-      ], AbstractView::ALERT_SEVERITY_INFO, true);
+      ], AbstractPageView::ALERT_SEVERITY_INFO, true);
     }
     // We are not dealing with a password reset request, but the user is logged in. We have to assume that this is a
     // registration activation link. Tell the user that this account was already activated.
@@ -352,7 +362,7 @@ class UserPresenter extends AbstractPresenter {
       $this->view->setAlert([
         "title"   => $i18n->t("Already Activated"),
         "message" => $i18n->t("You already verified your email address and are logged in, if you want to change your password use the form below."),
-      ], AbstractView::ALERT_SEVERITY_INFO);
+      ], AbstractPageView::ALERT_SEVERITY_INFO);
       return;
     }
     // We are handling a new registration if both, name and mail, are present.
@@ -365,7 +375,7 @@ class UserPresenter extends AbstractPresenter {
             "<p>{$i18n->t("You can now create a password for your account via the following form. Please choose a strong password that is hard to guess.")}</p>" .
             "<p>{$i18n->t("We created the following random password for you:")} <code>{$pass}</code></p>" .
             "<p>{$i18n->t("If you like it, write it down and leave this page without any further changes.")}</p>"
-        ], AbstractView::ALERT_SEVERITY_INFO, true);
+        ], AbstractPageView::ALERT_SEVERITY_INFO, true);
       } catch (DatabaseException $e) {
         $this->view = new AlertView($this, $i18n->t("Name or Mail already registered"));
         $this->view->setAlert(
@@ -376,7 +386,7 @@ class UserPresenter extends AbstractPresenter {
           "<p>{$i18n->t("Or go to the {0}registration page{1} to create a new account.", [
             "<a href='{$i18n->r("/user/register")}'>", "</a>"
           ])}</p>",
-          AbstractView::ALERT_SEVERITY_ERROR
+          AbstractPageView::ALERT_SEVERITY_ERROR
         );
         return;
       }
@@ -410,7 +420,7 @@ class UserPresenter extends AbstractPresenter {
       $this->view->setAlert([
         "title"   => $i18n->t("Authentication Required"),
         "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your profile page") ]),
-      ], AbstractView::ALERT_SEVERITY_INFO);
+      ], AbstractPageView::ALERT_SEVERITY_INFO);
       return;
     }
     try {
@@ -477,7 +487,7 @@ class UserPresenter extends AbstractPresenter {
       $this->view->setAlert([
         "title"   => $i18n->t("Authentication Required"),
         "message" => $i18n->t("You have to log in before you can access {0}.", [ $i18n->t("your settings page") ]),
-      ], AbstractView::ALERT_SEVERITY_INFO);
+      ], AbstractPageView::ALERT_SEVERITY_INFO);
       return;
     }
     $tab = ucfirst($_SERVER["TAB"]);
@@ -637,7 +647,7 @@ class UserPresenter extends AbstractPresenter {
     $this->profile->commit();
     $this->view->setAlert(
       $i18n->t("Your {0} have been updated.", [ $i18n->t("Account Settings") ]),
-      AbstractView::ALERT_SEVERITY_SUCCESS
+      AbstractPageView::ALERT_SEVERITY_SUCCESS
     );
   }
 
@@ -729,7 +739,7 @@ class UserPresenter extends AbstractPresenter {
       default:
         // Not only delete the requested session, also generate a new one for the current user tighten security.
         $user->deleteSession($action);
-        $this->view->setAlert($i18n->t("The session was successfully terminated."), AbstractView::ALERT_SEVERITY_SUCCESS);
+        $this->view->setAlert($i18n->t("The session was successfully terminated."), AbstractPageView::ALERT_SEVERITY_SUCCESS);
         break;
     }
   }
@@ -768,7 +778,7 @@ class UserPresenter extends AbstractPresenter {
    *
    * This must reside in the presenter, because the navigation is shared among views.
    *
-   * @see \MovLib\View\HTML\AbstractView::getSecondaryNavigation()
+   * @see \MovLib\View\HTML\AbstractPageView::getSecondaryNavigation()
    * @global \MovLib\Model\I18nModel $i18n
    *   The global i18n model instance.
    * @return array
