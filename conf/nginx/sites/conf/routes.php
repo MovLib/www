@@ -237,83 +237,81 @@ location ^~ /<?= $r("person") ?> {
 
 
 # ---------------------------------------------------------------------------------------------------------------------- user
+# Most user locations to not utilize the cache because they are only accessible for logged in users.
 
 
 location @user {
-  set $movlib_presenter "User";
   include sites/conf/fastcgi.conf;
 }
 
 location ^~ /<?= $r("user") ?> {
 
   location = /<?= $r("user") ?> {
-    try_files $movlib_cache @user;
+    set $movlib_presenter "User\\UserShow";
+    include sites/conf/fastcgi.conf;
   }
 
   location = /<?= $r("user/login") ?> {
-    set $movlib_action "Login";
+    set $movlib_presenter "User\\UserLogin";
     try_files $movlib_cache @user;
   }
 
   location = /<?= $r("user/logout") ?> {
-    set $movlib_action "Logout";
-    try_files $movlib_cache @user;
+    set $movlib_presenter "User\\UserLogout";
+    include sites/conf/fastcgi.conf;
   }
 
   location = /<?= $r("user/reset-password") ?> {
-    set $movlib_action "ResetPassword";
-    try_files $movlib_cache @user;
+    set $movlib_presenter "User\\UserResetPassword";
+    include sites/conf/fastcgi.conf;
   }
 
   location = /<?= $r("user/register") ?> {
-    set $movlib_action "Register";
+    set $movlib_presenter "User\\UserRegister";
     try_files $movlib_cache @user;
   }
 
   location ~ ^/<?= $r("user/register") ?>=([0-9a-z]*)$ {
+    set $movlib_presenter "User\\UserSetPassword";
     set $movlib_action "Register";
     set $movlib_token $1;
-    try_files $movlib_cache @user;
+    include sites/conf/fastcgi.conf;
   }
 
   location ~ ^/<?= $r("user/reset-password") ?>=([0-9a-z]*)$ {
+    set $movlib_presenter "User\\UserSetPassword";
     set $movlib_action "ResetPassword";
     set $movlib_token $1;
-    try_files $movlib_cache @user;
+    include sites/conf/fastcgi.conf;
   }
 
   location ~ ^/<?= $r("user") ?>/<?= $r("account") ?>-<?= $r("settings") ?>$ {
-    set $movlib_action "Settings";
-    set $movlib_tab "Account";
-    try_files $movlib_cache @user;
+    set $movlib_presenter "User\\UserAccountSettings";
+    include sites/conf/fastcgi.conf;
   }
 
   location ~ ^/<?= $r("user") ?>/<?= $r("notification") ?>-<?= $r("settings") ?>$ {
-    set $movlib_action "Settings";
-    set $movlib_tab "Notification";
-    try_files $movlib_cache @user;
+    set $movlib_presenter "User\\UserNotificationSettings";
+    include sites/conf/fastcgi.conf;
   }
 
   location ~ ^/<?= $r("user") ?>/<?= $r("mail") ?>-<?= $r("settings") ?>$ {
-    set $movlib_action "Settings";
-    set $movlib_tab "Mail";
-    try_files $movlib_cache @user;
+    set $movlib_presenter "User\\UserMailSettings";
+    include sites/conf/fastcgi.conf;
   }
 
   location ~ ^/<?= $r("user") ?>/<?= $r("password") ?>-<?= $r("settings") ?>$ {
-    set $movlib_action "Settings";
-    set $movlib_tab "Password";
-    try_files $movlib_cache @user;
+    set $movlib_presenter "User\\UserPasswordSettings";
+    include sites/conf/fastcgi.conf;
   }
 
   location ~ ^/<?= $r("user") ?>/<?= $r("dangerzone") ?>-<?= $r("settings") ?>$ {
-    set $movlib_action "Settings";
-    set $movlib_tab "Dangerzone";
-    try_files $movlib_cache @user;
+    set $movlib_presenter "User\\UserDangerzoneSettings";
+    include sites/conf/fastcgi.conf;
   }
 
   location ~ ^/<?= $r("user") ?>/(.+)$ {
-    set $movlib_action "Profile";
+    set $movlib_presenter "User\\UserProfile";
     set $movlib_user_name $1;
     try_files $movlib_cache @user;
   }
