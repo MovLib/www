@@ -31,25 +31,77 @@ use \MovLib\View\HTML\FormElement\AbstractFormElement;
  */
 class TextInput extends AbstractFormElement {
 
-  private $label;
 
-  public $labelAttributes;
+  // ------------------------------------------------------------------------------------------------------------------- Public Properties
 
+
+  /**
+   * The help text of this element.
+   *
+   * @var string
+   */
   public $help;
 
-  private $valid = true;
+  /**
+   * The human readable label describing this element.
+   *
+   * @var string
+   */
+  public $label;
 
-  private $required = false;
+  /**
+   * Attributes array of the label element.
+   *
+   * @var array
+   */
+  public $labelAttributes;
 
-  public function __construct($name, $label, $attributes = null) {
+  /**
+   * Flag indicating if this element is required or not.
+   *
+   * @var boolean
+   */
+  public $required = false;
+
+  /**
+   * Flag indicating if the value of this element is valid or not.
+   *
+   * @var boolean
+   */
+  public $valid = true;
+
+  /**
+   * The value of this element after it was validated. Please note that this will be null if validation failed.
+   *
+   * @var mixed
+   */
+  public $value;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new text input form element.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   * @param string $name
+   *   The global name of this form element.
+   * @param string $label
+   *   The human readable global name of this form element.
+   * @param array $attributes [optional]
+   *   Array with attributes that should be applied to this element.
+   */
+  public function __construct($name, $label, $attributes = []) {
     global $i18n;
     $this->id = $name;
     $this->label = ucfirst($label);
     $this->labelAttributes = [ "for" => $name ];
-    $this->attributes = $attributes;
-    $this->attributes["id"] = $name;
-    $this->attributes["name"] = $name;
-    $this->attributes["tabindex"] = $this->getTabindex();
+    $this->attributes = array_merge([
+      "id"       => $name,
+      "name"     => $name,
+      "tabindex" => $this->getTabindex(),
+    ], $attributes);
     if (empty($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = $i18n->t("Enter your {0}", [ $label ]);
     }
@@ -61,10 +113,26 @@ class TextInput extends AbstractFormElement {
     }
   }
 
+  /**
+   * Get string representation of this form element.
+   *
+   * @return string
+   *   The string representation of this form element.
+   */
   public function __toString() {
     return "<label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label>{$this->help()}<input{$this->expandTagAttributes($this->attributes)}>";
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
+
+  /**
+   * Get the help of this element (if any).
+   *
+   * @return string
+   *   The help of this element or an empty string if no help text was set.
+   */
   public function help() {
     return empty($this->help) ? "" : "";
   }
@@ -84,8 +152,15 @@ class TextInput extends AbstractFormElement {
     return $this;
   }
 
+  /**
+   * Validate user input after submission.
+   *
+   * @return this
+   * @throws \MovLib\Exception\ValidatorException
+   */
   public function validate() {
-
+    $this->value = $_POST[$this->attributes["name"]];
+    return $this;
   }
 
 }
