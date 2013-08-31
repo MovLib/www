@@ -99,7 +99,7 @@ abstract class AbstractFormView extends AbstractPageView {
    * @param array $elements
    *   Numeric array of form elements that should be attached to this view.
    */
-  public function __construct($presenter, $title, $elements) {
+  public function init($presenter, $title, $elements) {
     global $i18n, $user;
     parent::__construct($presenter, $title);
 

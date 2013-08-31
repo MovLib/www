@@ -162,7 +162,7 @@ abstract class AbstractPageView extends BaseView {
    * @param string $title
    *   The unique title of this view.
    */
-  public function __construct($presenter, $title) {
+  public function init($presenter, $title) {
     $this->presenter = $presenter;
     $this->title = $title;
     $this->scripts = array_merge([ "modules" => [] ], $GLOBALS["conf"]);
