@@ -17,6 +17,8 @@
  */
 namespace MovLib\View\HTML\FormElement\Input;
 
+use \MovLib\View\HTML\FormElement\AbstractFormElement;
+
 /**
  * Represents an input form element of type hidden.
  *
@@ -41,15 +43,15 @@ class HiddenInput extends AbstractFormElement {
   public function __construct($name, $value, $attributes = []) {
     $this->id = $name;
     $this->attributes = array_merge([
-      "aria-hidden" => "true",
+      "aria-hidden"   => "true",
+      "aria-readonly" => "true",
       "hidden",
-      "id"          => $name,
-      "name"        => $name,
-      "type"        => "hidden",
-      "value"       => $value,
+      "id"            => $name,
+      "name"          => $name,
+      "readonly",
+      "type"          => "hidden",
+      "value"         => $value,
     ], $attributes);
-    // Hidden form elements are always readonly!
-    $this->readyonly();
   }
 
   /**
