@@ -31,33 +31,19 @@ class MoviesModel extends BaseModel {
   /**
    * Get a movie list ordered by entry date.
    *
-   * @staticvar null|array $movies
-   *   The movies ordered by entry date.
-   * @param type $lowerBound
-   *   [Optional] The lower limit for the pagination (defaults to 0).
-   * @param type $upperBound
-   *   [Optional] The upper limit for the pagination (defaults to 20).
    * @global \MovLib\Model\I18nModel $i18n
-   * @return array Sorted numeric array containing the movie information as associative array.
+   * @param int $lowerBound [optional]
+   *   The lower limit for the pagination (defaults to 0).
+   * @param int $upperBound [optional]
+   *   The upper limit for the pagination (defaults to 100).
+   * @return array
+   *   Sorted numeric array containing the movie information as <code>\MovLib\Model\MovieModel</code> objects.
    */
   public function getMoviesByCreated($lowerBound = 0, $upperBound = 100) {
-    global $i18n;
-    static $movies = null;
-    if ($movies === null) {
-      $movies = $this->select(
-        "SELECT
-          `movie_id` AS `id`
-          FROM movies
-          WHERE `deleted` = FALSE
-          ORDER BY `created` DESC
-          LIMIT ?, ?",
-        "ii",
-        [ $lowerBound, $upperBound ]
-      );
-      $c = count($movies);
-      for ($i = 0; $i < $c; ++$i) {
-        $movies[$i]["#movie"] = new MovieModel($movies[$i]["id"]);
-      }
+    $movies = $this->select("SELECT `movie_id` AS `id` FROM `movies` WHERE `deleted` = 0 ORDER BY `created` DESC LIMIT ?, ?", "ii", [ $lowerBound, $upperBound ]);
+    $c = count($movies);
+    for ($i = 0; $i < $c; ++$i) {
+      $movies[$i] = new MovieModel($movies[$i]["id"]);
     }
     return $movies;
   }

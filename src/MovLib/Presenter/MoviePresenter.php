@@ -22,6 +22,7 @@ use \MovLib\Model\MovieModel;
 use \MovLib\Model\RatingModel;
 use \MovLib\Model\ReleasesModel;
 use \MovLib\View\HTML\Movie\MovieShowView;
+use \MovLib\View\HTML\Error\GoneView;
 
 
 /**
@@ -50,49 +51,39 @@ class MoviePresenter extends AbstractPresenter {
 
   /**
    * The rating model to retrieve the movie's rating data.
+   *
    * @var \MovLib\Model\RatingModel
    */
   public $ratingModel;
-  /**
-   * The display title of the movie to display.
-   * @var string
-   */
-  public $displayTitle;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
   public function __construct() {
     global $i18n, $user;
     try {
       $this->movieModel = new MovieModel($_SERVER["MOVIE_ID"]);
       if ($this->movieModel->deleted === true) {
-        return $this->setPresentation("Error\\Gone");
-      }
-      if (!empty($this->movieModel->getTitleDisplay())) {
-        $this->displayTitle = $this->movieModel->getTitleDisplay()["title"];
-      }
-      else {
-        $this->displayTitle = $this->movieModel->originalTitle;
+        $this->view = new GoneView($this);
+        return;
       }
       $this->ratingModel = new RatingModel();
       $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
-    } catch (MovieException $e) {
-      return $this->setPresentation("Error\\NotFound");
-    }
-    $this->view = new MovieShowView($this);
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-      if ($user->isLoggedIn) {
-        /** @todo Rate the movie for the current user. */
-      } else {
-        $this->view->setAlert($i18n->t("You have to be logged in to rate this movie."));
+      $this->view = new MovieShowView($this);
+      if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        if ($user->isLoggedIn) {
+          /** @todo Rate the movie for the current user. */
+        } else {
+          $this->view->setAlert($i18n->t("You have to be logged in to rate this movie."));
+        }
       }
+    } catch (MovieException $e) {
+      $this->view = new NotFoundView($this);
     }
-    $this->setPresentation();
   }
 
 
@@ -100,7 +91,7 @@ class MoviePresenter extends AbstractPresenter {
 
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
   public function getBreadcrumb() {
     global $i18n;
