@@ -18,7 +18,7 @@
 namespace MovLib\Model;
 
 use \MovLib\Exception\ImageException;
-use \MovLib\Exception\ErrorException;
+use \MovLib\Model\AbstractImageModel;
 use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
 use \MovLib\View\ImageStyle\ResizeImageStyle;
 
@@ -33,90 +33,114 @@ use \MovLib\View\ImageStyle\ResizeImageStyle;
  */
 class MoviePosterModel extends AbstractImageModel {
 
-  // ------------------------------------------------------------------------------------------------------------------- Table properties
-  // The following properties were inherited from AbstractImageModel:
-  // filename, width, height, ext and hash.
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Small image style (e.g. for movie listings).
+   *
+   * @var int
+   */
+  const IMAGESTYLE_SMALL = "75x75";
+
+  /**
+   * Large image style with fixed width (e.g. for movie page).
+   *
+   * @var int
+   */
+  const IMAGESTYLE_LARGE_FIXED_WIDTH = "220x";
+
+  /**
+   * Huge image style with fixed width (e.g. for the poster page).
+   *
+   * @var int
+   */
+  const IMAGESTYLE_HUGE_FIXED_WIDTH = "700x";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The movie ID this poster belongs to.
+   *
    * @var int
    */
   public $id;
 
   /**
    * The ID of the poster within the movie posters.
+   *
    * @var int
    */
   public $sectionId;
 
   /**
    * The ID of the user who has uploaded/changed the poster.
+   *
    * @var int
    */
   public $userId;
 
   /**
    * The ID of the license this poster has.
+   *
    * @var int
    */
   public $licenseId;
 
   /**
    * The country this poster belongs to as an associative array.
+   *
    * @var array
    */
   public $country;
 
   /**
    * The timestamp this poster was initially uploaded.
+   *
    * @var int
    */
   public $created;
 
   /**
    * The timestamp this poster was last modified.
+   *
    * @var int
    */
   public $changed;
 
   /**
    * The overall count of upvotes for this poster.
+   *
    * @var int
    */
   public $rating;
 
   /**
    * The poster's description.
+   *
    * @var string
    */
   public $description;
 
   /**
    * The image's source.
+   *
    * @var string
    */
   public $source;
 
-  // ------------------------------------------------------------------------------------------------------------------- Image styles
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
-   * Small image style (e.g. for movie listings).
-   * @var int
-   */
-  const IMAGESTYLE_SMALL = "75x75";
-  /**
-   * Large image style with fixed width (e.g. for movie page).
-   * @var int
-   */
-  const IMAGESTYLE_LARGE_FIXED_WIDTH = "220x";
-  /**
-   * Huge image style with fixed width (e.g. for the poster page).
-   * @var int
-   */
-  const IMAGESTYLE_HUGE_FIXED_WIDTH = "700x";
-
-  /**
-   * Construct a new poster model. If the poster ID is not specified, an empty model is created.
+   * Construct a new poster model.
+   *
+   * If the poster ID is not specified, an empty model is created.
    *
    * @global \MovLib\Model\I18nModel $i18n
    * @param int $movieId
@@ -128,58 +152,59 @@ class MoviePosterModel extends AbstractImageModel {
     global $i18n;
     $this->id = $movieId;
     if ($posterId) {
-      try {
-        $this->imageDirectory = "movie/posters/{$movieId}";
-        $posterResult = $this->select(
-          "SELECT
-            `movie_id` AS `id`,
-            `section_id` AS `sectionId`,
-            `user_id` AS `userId`,
-            `license_id` AS `licenseId`,
-            `country_id` AS `country`,
-            `filename` AS `imageName`,
-            `width` AS `imageWidth`,
-            `height` AS `imageHeight`,
-            `size` AS `imageSize`,
-            `ext` AS `imageExtension`,
-            UNIX_TIMESTAMP(`created`) AS `created`,
-            UNIX_TIMESTAMP(`changed`) AS `changed`,
-            `rating`,
-            COLUMN_GET(`dyn_descriptions`, 'en' AS BINARY) AS `description_en`,
-            COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description_localized`,
-            `hash` AS `imageHash`,
-            `source`
-          FROM `posters`
-          WHERE `movie_id` = ?
-            AND `section_id` = ?
-          LIMIT 1",
-          "dd",
-          [ $movieId, $posterId ]
-        )[0];
-        $posterResult["description"] = $posterResult["description_localized"] ?: $posterResult["description_en"];
-        unset($posterResult["description_localized"]);
-        unset($posterResult["description_en"]);
-        foreach ($posterResult as $property => $value) {
-          $this->{$property} = $value;
-        }
-        $this->country = $i18n->getCountries()[$this->country];
-        $this->initImage($this->imageName, [
-          new ResizeImageStyle(self::IMAGESTYLE_SMALL),
-          new ResizeImageStyle(self::IMAGESTYLE_LARGE_FIXED_WIDTH),
-          new ResizeImageStyle(self::IMAGESTYLE_HUGE_FIXED_WIDTH),
-          new ResizeImageStyle(AbstractImageModel::IMAGESTYLE_GALLERY),
-          new ResizeImageStyle(AbstractImageModel::IMAGESTYLE_DETAILS),
-          new ResizeCropCenterImageStyle(AbstractImageModel::IMAGESTYLE_DETAILS_STREAM)
-        ]);
-      } catch (ErrorException $e) {
+      $this->imageDirectory = "movie/posters/{$movieId}";
+      $posterResult = $this->select(
+        "SELECT
+          `movie_id` AS `id`,
+          `section_id` AS `sectionId`,
+          `user_id` AS `userId`,
+          `license_id` AS `licenseId`,
+          `country_id` AS `country`,
+          `filename` AS `imageName`,
+          `width` AS `imageWidth`,
+          `height` AS `imageHeight`,
+          `size` AS `imageSize`,
+          `ext` AS `imageExtension`,
+          UNIX_TIMESTAMP(`created`) AS `created`,
+          UNIX_TIMESTAMP(`changed`) AS `changed`,
+          `rating`,
+          COLUMN_GET(`dyn_descriptions`, 'en' AS BINARY) AS `description_en`,
+          COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description_localized`,
+          `hash` AS `imageHash`,
+          `source`
+        FROM `posters`
+        WHERE `movie_id` = ?
+          AND `section_id` = ?
+        LIMIT 1",
+        "dd",
+        [ $movieId, $posterId ]
+      );
+      if (empty($posterResult)) {
         throw new ImageException("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", $e);
       }
+      $posterResult["description"] = $posterResult["description_localized"] ?: $posterResult["description_en"];
+      unset($posterResult["description_localized"]);
+      unset($posterResult["description_en"]);
+      foreach ($posterResult as $k => $v) {
+        $this->{$k} = $v;
+      }
+      $this->country = $i18n->getCountries()[$this->country];
+      $this->initImage($this->imageName, [
+        new ResizeImageStyle(self::IMAGESTYLE_SMALL),
+        new ResizeImageStyle(self::IMAGESTYLE_LARGE_FIXED_WIDTH),
+        new ResizeImageStyle(self::IMAGESTYLE_HUGE_FIXED_WIDTH),
+        new ResizeImageStyle(self::IMAGESTYLE_GALLERY),
+        new ResizeImageStyle(self::IMAGESTYLE_DETAILS),
+        new ResizeCropCenterImageStyle(self::IMAGESTYLE_DETAILS_STREAM)
+      ]);
     }
   }
 
   /**
-   * Retrieve all the relevant image details including license and user information.
-   * Override to provide country information.
+   * Get all image details.
+   *
+   * Retrieve all the relevant image details including license and user information. Override to provide country
+   * information.
    *
    * @return array
    *   Associative array containing the image details.

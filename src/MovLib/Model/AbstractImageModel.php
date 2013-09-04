@@ -135,25 +135,31 @@ class AbstractImageModel extends BaseModel {
    */
   private $license = null;
 
+
   // ------------------------------------------------------------------------------------------------------------------- Common image styles
+
 
   /**
    * Image style for galleries.
+   *
    * @var int
    */
   const IMAGESTYLE_GALLERY = "140x140";
 
   /**
    * Image style for the image detail view.
+   *
    * @var int
    */
   const IMAGESTYLE_DETAILS = "x540";
 
   /**
    * Image style for the image stream in the image detail view.
+   *
    * @var int
    */
   const IMAGESTYLE_DETAILS_STREAM = "60x60";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Protected Methods
 
@@ -264,7 +270,7 @@ class AbstractImageModel extends BaseModel {
    */
   public function getLicense($licenseId) {
     global $i18n;
-    if ($this->license === null) {
+    if (!$this->license) {
       $this->license = $this->select(
         "SELECT
           `name`,
@@ -276,9 +282,8 @@ class AbstractImageModel extends BaseModel {
           `icon_extension`,
           `icon_hash`,
           `admin`
-          FROM `licenses`
-          WHERE `license_id` = ?
-          LIMIT 1"
+        FROM `licenses`
+        WHERE `license_id` = ? LIMIT 1"
         , "i", [ $licenseId ]
       )[0];
       $this->license["name"] = $this->license["name_localized"] ?: $this->license["name"];
@@ -293,10 +298,9 @@ class AbstractImageModel extends BaseModel {
    * Validate uploaded image and move to storage.
    *
    * @param string $formElementName
-   *   The value of the <em>name</em>-attribute of the <em>file</em>-input-element of the form.
+   *   The value of the <code>name</code>-attribute of the <code><file></code>-element of the form.
    * @return this
-   * @throws ImageException
-   *   If something is odd with the uploaded file.
+   * @throws \MovLib\Exception\ImageException
    */
   public function uploadImage($formElementName) {
     try {

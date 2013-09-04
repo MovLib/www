@@ -54,11 +54,10 @@ class MovieShowView extends AbstractPageView {
    *  The movie presenter currently controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, $presenter->displayTitle);
-    if (empty($presenter->movieModel->year) === false) {
-      $this->yearSuffix = "({$this->presenter->movieModel->year})";
-      $this->title .= $this->yearSuffix;
+    if ($presenter->movieModel->year) {
+      $this->yearSuffix = " ({$presenter->movieModel->year})";
     }
+    $this->init($presenter, "{$presenter->movieModel->getDisplayTitle()}{$this->yearSuffix}");
     $this->stylesheets[] = "modules/movie.css";
   }
 

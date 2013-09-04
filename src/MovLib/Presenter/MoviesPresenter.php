@@ -21,7 +21,7 @@ use \MovLib\Model\MoviesModel;
 use \MovLib\View\HTML\MoviesView;
 
 /**
- * Description of MoviesPresenter
+ * Present listings of movies.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -44,12 +44,34 @@ class MoviesPresenter extends AbstractPresenter {
    * @global \MovLib\Model\I18nModel $i18n
    */
   public function __construct() {
-    global $i18n;
     $this->moviesModel = new MoviesModel();
-    $this->view = new MoviesView($this, $i18n->t("Movies"));
-    return $this->setPresentation();
+    $this->view = new MoviesView($this);
   }
 
-  public function getBreadcrumb() {}
+  public function getBreadcrumb() {
+    
+  }
+
+  /**
+   * Get secondary navigation points.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   * @return array
+   *   Points for the secondary navigation.
+   */
+  public function getSecondaryNavigation() {
+    global $i18n;
+    return [
+      [ $i18n->r("/movies"), $i18n->t("Movies"), [
+        "title" => $i18n->t("View the latest {0} additions to the database.", [ $i18n->t("movie") ])
+      ]],
+      [ $i18n->r("/persons"), $i18n->t("Persons"), [
+        "title" => $i18n->t("View the latest {0} additions to the database.", [ $i18n->t("person") ])
+      ]],
+      [ $i18n->r("/help"), $i18n->t("Help"), [
+        "title" => $i18n->t("View the latest {0} additions to the database.", [ $i18n->t("help") ])
+      ]]
+    ];
+  }
 
 }
