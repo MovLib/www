@@ -169,3 +169,6 @@ pip-log.txt
 /conf/nginx/sites/test.conf
 /conf/movlib.ini
 /vendor/
+/uploads/
+/history/
+
