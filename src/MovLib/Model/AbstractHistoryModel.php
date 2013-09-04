@@ -84,7 +84,7 @@ abstract class AbstractHistoryModel extends BaseModel {
   /**
    * Abstract method which should write files
    */
-  abstract protected function writeJsonToFile();
+  abstract protected function writeFiles();
 
   /**
    * Get the model's short class name (e.g. <em>AbstractHistory</em> for <em>AbstractHistoryModel</em>).
@@ -132,20 +132,51 @@ abstract class AbstractHistoryModel extends BaseModel {
     }
   }
 
+  public function writeJsonToFile($filename, $json) {
+    try {
+      $fp = fopen("{$this->path}/{$filename}.json", 'w');
+      fwrite($fp, json_encode($json));
+      fclose($fp);
+    } catch (ErrorException $e) {
+      throw new HistoryException("Error writing json file", $e);
+    }
+  }
+
   /**
    * Checks in all changes and commits them
    *
+   * @param int $author_id
+   *  The user id of the author
    * @param string $message
    *  The commit message
    * @throws HistoryException
    *  If something went wrong during commit
    */
-  public function commit($message) {
+  public function commit($author_id, $message) {
     try {
-      exec("cd {$this->path} && git add -A && git commit -m '{$message}'");
+      exec("cd {$this->path} && git add -A && git commit --author='{$author_id} <>' -m '{$message}'");
     } catch (ErrorException $e) {
       throw new HistoryException("Error commiting changes", $e);
     }
+  }
+
+  /**
+   * Returns an array with commits
+   *
+   * @todo is subject safe?
+   * @return array
+   */
+  public function getLastCommits() {
+    $output = array();
+    $format = '{"hash":"%H","author_id":%an, "timestamp":%at, "subject":"%s"}';
+
+    exec("cd {$this->path} && git log --format='{$format}'", $output);
+
+    $mapfunction = function($value) {
+        return json_decode($value, true);
+    };
+
+    return array_map($mapfunction, $output);
   }
 
 }

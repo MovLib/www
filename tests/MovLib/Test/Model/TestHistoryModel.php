@@ -30,14 +30,7 @@ use \MovLib\Model\AbstractHistoryModel;
  */
 class TestHistoryModel extends AbstractHistoryModel {
 
-  public function writeJsonToFile() {
-    try {
-      $fp = fopen("{$this->path}/object.json", 'w');
-      fwrite($fp, json_encode($this->instance));
-      fclose($fp);
-    } catch (ErrorException $e) {
-      throw new HistoryException("Error writing json file", $e);
-    }
+  public function writeFiles() {
+    $this->writeJsonToFile("test", $this->instance);
   }
-
 }

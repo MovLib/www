@@ -30,14 +30,8 @@ use \MovLib\Model\AbstractHistoryModel;
  */
 class MovieHistoryModel extends AbstractHistoryModel {
 
-  public function writeJsonToFile($path) {
-    try {
-      $fp = fopen("{$path}/object.json", 'w');
-      fwrite($fp, $json);
-      fclose($fp);
-    } catch (ErrorException $e) {
-      throw new HistoryException("Error writing json file", $e);
-    }
+  public function writeFiles() {
+
   }
 
 }

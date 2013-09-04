@@ -80,7 +80,7 @@ class HistoryTest extends PHPUnit_Framework_TestCase {
 
     $path = "{$_SERVER["DOCUMENT_ROOT"]}/history/test";
     if(is_dir($path)) {
-      FileSystem::unlinkRecursive($path);
+      exec("rm -Rf {$path}");
     }
   }
 
@@ -110,14 +110,23 @@ class HistoryTest extends PHPUnit_Framework_TestCase {
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/test/42/.git/HEAD");
   }
 
-  public function testWriteJsonToFile() {
+  public function testWriteFiles() {
     $test = new TestHistoryModel(42);
-    $test->writeJsonToFile();
-    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/test/42/object.json");
+    $test->writeFiles();
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/test/42/test.json");
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/test/42/test.json",
+      '[{"test_id":42,"title":"foobar","body":"foo bar baz"}]');
   }
 
   public function testCommit() {
-    (new TestHistoryModel(42))->commit("initial commit");
+    (new TestHistoryModel(42))->commit(20, "initial commit");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/test/42/.git/refs/heads/master");
+  }
+
+  public function testGetLastCommits() {
+    $result = (new TestHistoryModel(42))->getLastCommits();
+    $this->assertEquals(20, $result[0]["author_id"]);
+    $this->assertEquals("initial commit", $result[0]["subject"]);
   }
 
 }
