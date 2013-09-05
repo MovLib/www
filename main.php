@@ -33,7 +33,7 @@
  */
 
 // Parse global configuration and ensure it's available globally.
-$GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
+$GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
 
 /**
  * Ultra fast class autoloader.
@@ -43,7 +43,7 @@ $GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
  */
 function __autoload($class) {
   $class = strtr($class, "\\", "/");
-  require "{$_SERVER["HOME"]}/src/{$class}.php";
+  require "{$_SERVER["DOCUMENT_ROOT"]}/src/{$class}.php";
 }
 
 /**
@@ -59,8 +59,9 @@ function __autoload($class) {
 function uncaught_exception_handler($exception) {
   global $i18n;
   $i18n = $i18n ?: new \MovLib\Model\I18nModel();
+  $presenter = new \MovLib\Presenter\ExceptionPresenter($exception);
   \MovLib\Utility\DelayedLogger::run();
-  exit(new \MovLib\Presenter\ExceptionPresenter($exception));
+  exit($presenter);
 }
 
 // Set the default exception handler.
@@ -155,17 +156,43 @@ function delayed_register($class, $weight = 50, $method = "run") {
   $delayed[$weight][$class] = $method;
 }
 
-// Instantiate session for the client requesting the page. A real session will only be generated if we know this user.
-// By default we don't start a session, nor do we send out any cookies to the client. We wait until the client is doing
-// anything where we really need a session.
-$user = new \MovLib\Model\SessionModel();
+try {
+  // Instantiate session for the client requesting the page. A real session will only be generated if we know this user.
+  // By default we don't start a session, nor do we send out any cookies to the client. We wait until the client is doing
+  // anything where we really need a session.
+  $user = new \MovLib\Model\SessionModel();
 
-// Instantiate global i18n object with the current display language.
-$i18n = new \MovLib\Model\I18nModel();
+  // Instantiate global i18n object with the current display language.
+  $i18n = new \MovLib\Model\I18nModel();
 
-// Start the rendering process.
-$presenter = "\\MovLib\\Presenter\\{$_SERVER["PRESENTER"]}Presenter";
-echo new $presenter();
+  // Start the rendering process.
+  $presenter = "\\MovLib\\Presenter\\{$_SERVER["PRESENTER"]}Presenter";
+  echo new $presenter();
+}
+// If the request requires user authentication or there was a problem during initializing the session, return
+// appropriate HTTP headers and display the login page with an alert that tells the user that this request requires
+// authentication. This is the most outter scope were we can catch and construct this, not pretty, but effective and
+// easy to use for us developers.
+catch (\MovLib\Exception\UnauthorizedException $e) {
+  // If the exception was thrown in the session model no i18n instance is present, but we need it.
+  if (!$i18n) {
+    $i18n = new \MovLib\Model\I18nModel();
+  }
+  // We have to ensure that the login page is going to render the form without any further validation, therefor we have
+  // to reset the request method to GET because we don't know (and don't want to check) the current request method.
+  $_SERVER["REQUEST_METHOD"] = "GET";
+  // The rest is straight forward, set headers, init presenter, render view ...
+  http_response_code(401);
+  // http://stackoverflow.com/a/1088127/1251219
+  header("WWW-Authenticate: MovLib location=\"{$i18n->r("/user/login")}\"");
+  $presenter = new \MovLib\Presenter\User\UserLoginPresenter();
+  $presenter->view->addAlert(new \MovLib\View\HTML\Alert($e->getMessage(), [
+    "block" => true,
+    "title" => $e->getTitle(),
+    "severity" => \MovLib\View\HTML\Alert::SEVERITY_ERROR,
+  ]));
+  echo $presenter;
+}
 
 // This makes sure that the output that was generated until this point will be returned to nginx for delivery.
 fastcgi_finish_request();
