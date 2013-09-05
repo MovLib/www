@@ -26,18 +26,22 @@
  * @since 0.0.1-dev
  */
 
+// The web application catches all errors and exceptions itself and displays the errors to the user or developer. The
+// default setting is therefor to surpress display errors. Re-activate for console and PHPUnit tests.
+ini_set("display_errors", 1);
+
 // The following variables are always available in our environment and set via nginx. We have to create them here on
 // our own because PHPUnit will not invoke nginx.
-$_SERVER["HOME"] = __DIR__;
+$_SERVER["DOCUMENT_ROOT"] = __DIR__;
 
 // Include composer autoloader, this enables us to load our own stuff but also everything that we need via composer.
-$composerAutoloader = require "{$_SERVER["HOME"]}/vendor/autoload.php";
-$composerAutoloader->add("MovLib", "{$_SERVER["HOME"]}/src");
-$composerAutoloader->add("MovLib\Test", "{$_SERVER["HOME"]}/tests");
+$composerAutoloader = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
+$composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src");
+$composerAutoloader->add("MovLib\Test", "{$_SERVER["DOCUMENT_ROOT"]}/tests");
 
 // Create global configuration.
-$GLOBALS["conf"] = parse_ini_file("{$_SERVER["HOME"]}/conf/movlib.ini", true);
+$GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
 
 // Needed by various objects (e.g. DelayedLogger).
-$i18n = new \MovLib\Model\I18nModel(ini_get("intl.default_locale"));
-$_SERVER["LANGUAGE_CODE"] = $i18n->getDefaultLanguageCode();
+$i18n = new \MovLib\Model\I18nModel();
+$_SERVER["LANGUAGE_CODE"] = $i18n->defaultLanguageCode;
