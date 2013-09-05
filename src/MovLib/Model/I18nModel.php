@@ -75,6 +75,20 @@ class I18nModel extends BaseModel {
 
 
   /**
+   * The system's default locale.
+   *
+   * @var string
+   */
+  public $defaultLocale;
+
+  /**
+   * The system's default language code.
+   *
+   * @var string
+   */
+  public $defaultLanguageCode;
+
+  /**
    * The languages direction.
    *
    * @todo Implement right-to-left language detection.
@@ -96,17 +110,6 @@ class I18nModel extends BaseModel {
    * @var string
    */
   public $locale;
-
-  /**
-   * Numeric array containing all supported ISO 639-1 alpha-2 language codes.
-   *
-   * The supported language codes are directly related to the nginx configuration. If this array contains a language
-   * code the deployment script will generate a server (in Apache httpd terms <code>virtual host</code>) with routes for
-   * this code.
-   *
-   * @var array
-   */
-  public static $supportedLanguageCodes = [ "en", "de" ];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Private Properties
@@ -139,7 +142,6 @@ class I18nModel extends BaseModel {
   /**
    * Associative array that will be filled with all info on supported system language on demand.
    *
-   * @see \MovLib\Model\I18nModel::$supportedLanguageCodes
    * @see \MovLib\Model\I18nModel::getSystemLanguages()
    * @var array
    */
@@ -154,65 +156,43 @@ class I18nModel extends BaseModel {
    *
    * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
    * @global \MovLib\Model\SessionModel $user
-   *   The currently logged in user.
-   * @param $locale
-   *   [Optional] The desired locale, if no locale is passed the following procedure is executed:
+   * @param $locale [optional]
+   *   The desired locale, if no locale is passed the following procedure is executed:
    *   <ol>
-   *     <li>Check if the server sent a language code.</li>
-   *     <li>Check if the user is logged in and has a preferred language.</li>
-   *     <li>Check if the user has provided an <code>HTTP_ACCEPT_LANGUAGE</code> header.</li>
-   *     <li>Use default locale.</li>
+   *     <li>Check if the server set a language code (access via subdomain)</li>
+   *     <li>Check if the user has a preferred language</li>
+   *     <li>Check if the user has provided an <code>HTTP_ACCEPT_LANGUAGE</code> header</li>
+   *     <li>Use default locale</li>
    *   </ol>
    */
   public function __construct($locale = null) {
     global $user;
-    if ($locale === null) {
-      (isset($_SERVER["LANGUAGE_CODE"]) && $locale = $_SERVER["LANGUAGE_CODE"])
-      || (isset($user) && $user->isLoggedIn === true && !empty($user->languageId) && $locale = $this->getLanguages()[$user->languageId]["code"])
-      || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($tmpLocale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && in_array($tmpLocale[0] . $tmpLocale[1], self::$supportedLanguageCodes) && $locale = $tmpLocale)
-      || ($locale = self::getDefaultLocale());
+    // Always export defaults first.
+    $this->defaultLocale = Locale::getDefault();
+    $this->defaultLanguageCode = "{$this->defaultLocale[0]}{$this->defaultLocale[1]}";
+    // To understand the following code it's important to understand comparison operations and assignments. If you don't
+    // understand the following code be sure to read more about both these topics before attempting to change anything
+    // here!
+    if (!$locale) {
+      // Use language code from subdomain if present.
+      (isset($_SERVER["LANGUAGE_CODE"]) && ($this->locale = $GLOBALS["movlib"]["locales"][$_SERVER["LANGUAGE_CODE"]]))
+      // Use the user's preferred language code if present (this is valid, otherwise it wouldn't be available to choose).
+      // @todo We should use the locale from the user and not only the language code if the user has set up a valid
+      //       language-country-combination (locale).
+      || (isset($user) && !empty($user->languageId) && ($this->locale = $GLOBALS["movlib"]["locales"][$this->getLanguages()[$user->languageId]["code"]]))
+      // Use the best matching value from the user's submitted HTTP accept language header.
+      || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($locale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && isset($GLOBALS["movlib"]["locales"]["{$locale[0]}{$locale[1]}"]) && ($this->locale = $locale));
     }
-    // The locale can be a two-letter code - only specifying the language - or five-letter - including the country.
-    $this->locale = $locale;
-    // The language code can only be a two-letter code.
-    $this->languageCode = $locale[0] . $locale[1];
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
-
-
-  /**
-   * Get the default ISO 639-1 alpha-2 language code extracted from <code>php.ini</code>.
-   *
-   * @static $defaultLanguageCode
-   *   Used to cache default language code among all instances.
-   * @return string
-   *   The default ISO 639-1 alpha-2 language code.
-   */
-  public static function getDefaultLanguageCode() {
-    static $defaultLanguageCode = null;
-    if ($defaultLanguageCode === null) {
-      $defaultLanguageCode = self::getDefaultLocale();
-      $defaultLanguageCode = $defaultLanguageCode[0] . $defaultLanguageCode[1];
+    // If we still have no locale, use defaults.
+    if (!$this->locale) {
+      $this->locale = $this->defaultLocale;
+      $this->languageCode = $this->defaultLanguageCode;
     }
-    return $defaultLanguageCode;
-  }
-
-  /**
-   * Get the default locale (e.g. <em>en-US</em>).
-   *
-   * @static $defaultLocale
-   *   Used to cache default locale among all instances.
-   * @return string
-   *   The default locale.
-   */
-  public static function getDefaultLocale() {
-    static $defaultLocale = null;
-    if ($defaultLocale === null) {
-      $defaultLocale = Locale::getDefault();
+    // The language code can only be a two-letter code in contrast to the locale which can be a two-letter code or a
+    // five-letter code (including separator and country).
+    else {
+      $this->languageCode = "{$this->locale[0]}{$this->locale[1]}";
     }
-    return $defaultLocale;
   }
 
 
@@ -239,11 +219,11 @@ class I18nModel extends BaseModel {
    * @return string
    *   The formatted and translated (if applicable) message.
    */
-  public function formatMessage($context, $pattern, $args, &$options) {
+  public function formatMessage($context, $pattern, array $args, array &$options) {
     if (empty($options["language_code"])) {
       $options["language_code"] = $this->languageCode;
     }
-    if ($options["language_code"] !== self::getDefaultLanguageCode()) {
+    if ($options["language_code"] != $this->defaultLanguageCode) {
       $result = $this->select("SELECT COLUMN_GET(`dyn_translations`, '{$options["language_code"]}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ]);
       if (empty($result[0]["translation"])) {
         DelayedLogger::log("Could not find {$options["language_code"]} translation for {$context}: '{$pattern}'", E_NOTICE);
@@ -253,17 +233,21 @@ class I18nModel extends BaseModel {
         $pattern = $result["translation"];
       }
     }
-    return msgfmt_format_message($options["language_code"], $pattern, $args);
+    if ($args) {
+      return msgfmt_format_message($options["language_code"], $pattern, $args);
+    }
+    return $pattern;
   }
 
   /**
    * Format the given timestamp for output.
    *
    * @link http://www.php.net/manual/en/class.intldateformatter.php#intl.intldateformatter-constants
+   * @todo Allow override of used locale to format the date.
    * @param int $timestamp
    *   The timestamp to format.
    * @param null|string $timezone
-   *   One of the PHP timezone identifiers ({@link http://www.php.net/manual/en/timezones.php}). Defaults to system
+   *   One of the {@link http://www.php.net/manual/en/timezones.php PHP timezone identifiers}. Defaults to system
    *   default timezone from <code>php.ini</code> configuration file.
    * @param int $datetype
    *   One of the <code>IntlDateFormatter</code> constants.
@@ -317,7 +301,7 @@ class I18nModel extends BaseModel {
         "SELECT `language_id` AS `%s`, `iso_alpha-2` AS `%s`, %s`%s` FROM `languages` ORDER BY `%s`",
         self::KEY_ID,
         self::KEY_CODE,
-        $this->languageCode === self::getDefaultLanguageCode() ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ",
+        $this->languageCode == $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ",
         self::KEY_NAME,
         self::KEY_ID
       );
@@ -405,7 +389,7 @@ class I18nModel extends BaseModel {
         "SELECT `country_id` AS `%s`, `iso_alpha-2` AS `%s`, %s`%s` FROM `countries` ORDER BY `%s`",
         self::KEY_ID,
         self::KEY_CODE,
-        $this->languageCode === self::getDefaultLanguageCode() ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ",
+        $this->languageCode == $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ",
         self::KEY_NAME,
         self::KEY_ID
       );
@@ -441,7 +425,7 @@ class I18nModel extends BaseModel {
    *   </ul>
    * @return \MovLib\Model\I18nModel
    */
-  public function insertPattern($context, $pattern, $options) {
+  public function insertPattern($context, $pattern, array $options) {
     $issetComment = isset($options["comment"]);
     $this->affectedRows = 0;
     if (isset($options["old_pattern"])) {
@@ -483,7 +467,6 @@ class I18nModel extends BaseModel {
    *   The translated pattern.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
-   *   If inserting or updating failed.
    */
   public function insertOrUpdateTranslation($context, $id, $languageCode, $translation) {
     $this
@@ -527,12 +510,12 @@ class I18nModel extends BaseModel {
    *   The formatted and translated <var>$route</var>.
    * @throws \IntlException
    */
-  public function r($route, $args = [], $options = []) {
+  public function r($route, array $args = null, array $options = null) {
     $route = $this->formatMessage("route", $route, $args, $options);
-    if (!empty($options["absolute"]) && $options["absolute"] === false) {
+    if (isset($options["absolute"]) && $options["absolute"] === false) {
       return $route;
     }
-    if ($options["language_code"] !== $this->languageCode) {
+    if ($options["language_code"] != $this->languageCode) {
       if (isset($_SERVER["LANGUAGE_CODE"])) {
         $serverName = str_replace($_SERVER["LANGUAGE_CODE"], $options["language_code"], $_SERVER["SERVER_NAME"]);
       }
@@ -543,7 +526,7 @@ class I18nModel extends BaseModel {
     else {
       $serverName = $_SERVER["SERVER_NAME"];
     }
-    return "https://{$serverName}{$route}";
+    return "{$_SERVER["SCHEME"]}://{$serverName}{$route}";
   }
 
   /**
@@ -566,7 +549,7 @@ class I18nModel extends BaseModel {
    *   The formatted and translated <var>$message</var>.
    * @throws \IntlException
    */
-  public function t($message, $args = [], $options = []) {
+  public function t($message, array $args = null, array $options = null) {
     return $this->formatMessage("message", $message, $args, $options);
   }
 
