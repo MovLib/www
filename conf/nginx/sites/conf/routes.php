@@ -265,8 +265,8 @@ location ^~ <?= $r("/user") ?> {
     try_files $movlib_cache @user;
   }
 
-  location = <?= $r("/user/logout") ?> {
-    set $movlib_presenter "User\\UserLogout";
+  location = <?= $r("/user/sign-out") ?> {
+    set $movlib_presenter "User\\UserSignOut";
     include sites/conf/fastcgi.conf;
   }
 
