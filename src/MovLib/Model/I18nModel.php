@@ -219,7 +219,7 @@ class I18nModel extends BaseModel {
    * @return string
    *   The formatted and translated (if applicable) message.
    */
-  public function formatMessage($context, $pattern, array $args, array &$options) {
+  public function formatMessage($context, $pattern, $args, array &$options) {
     if (empty($options["language_code"])) {
       $options["language_code"] = $this->languageCode;
     }
@@ -227,10 +227,16 @@ class I18nModel extends BaseModel {
       $result = $this->select("SELECT COLUMN_GET(`dyn_translations`, '{$options["language_code"]}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ]);
       if (empty($result[0]["translation"])) {
         DelayedLogger::log("Could not find {$options["language_code"]} translation for {$context}: '{$pattern}'", E_NOTICE);
-        DelayedMethodCalls::stack($this, "insertPattern", [ $context, $pattern, $options ]);
+        // @todo Remove this line after translation extractor was written.
+        if (php_sapi_name() === "cli") {
+          $this->insertPattern($context, $pattern, $options);
+        }
+        elseif ($context != "route") {
+          DelayedMethodCalls::stack($this, "insertPattern", [ $context, $pattern, $options ]);
+        }
       }
       else {
-        $pattern = $result["translation"];
+        $pattern = $result[0]["translation"];
       }
     }
     if ($args) {
@@ -426,10 +432,9 @@ class I18nModel extends BaseModel {
    * @return \MovLib\Model\I18nModel
    */
   public function insertPattern($context, $pattern, array $options) {
-    $issetComment = isset($options["comment"]);
     $this->affectedRows = 0;
     if (isset($options["old_pattern"])) {
-      if ($issetComment) {
+      if (isset($options["comment"])) {
         $this->update("{$context}s", "ssss", [ $context => $pattern, "comment" => $options["comment"] ], [ "old_pattern" => $options["old_pattern"] ]);
       }
       else {
@@ -437,12 +442,11 @@ class I18nModel extends BaseModel {
       }
     }
     if ($this->affectedRows === 0) {
-      try {
-        // Maybe we already inserted this translation by a prior call to this method. This can happen if the same new
-        // pattern occurres more than once on the same page.
-        $this->select("SELECT `{$context}_id` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ])[0];
-      } catch (ErrorException $e) {
-        if ($issetComment) {
+      // Maybe we already inserted this translation by a prior call to this method. This can happen if the same new
+      // pattern occurres more than once on the same page.
+      $result = $this->select("SELECT `{$context}_id` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ]);
+      if (!isset($result[0]["route_id"])) {
+        if (isset($options["comment"])) {
           $this->insert("{$context}s", "sss", [ $context => $pattern, "comment" => $options["comment"], "dyn_translations" => "" ]);
         }
         else {
@@ -510,7 +514,7 @@ class I18nModel extends BaseModel {
    *   The formatted and translated <var>$route</var>.
    * @throws \IntlException
    */
-  public function r($route, array $args = null, array $options = null) {
+  public function r($route, array $args = null, array $options = []) {
     $route = $this->formatMessage("route", $route, $args, $options);
     if (isset($options["absolute"]) && $options["absolute"] === false) {
       return $route;
@@ -549,7 +553,7 @@ class I18nModel extends BaseModel {
    *   The formatted and translated <var>$message</var>.
    * @throws \IntlException
    */
-  public function t($message, array $args = null, array $options = null) {
+  public function t($message, array $args = null, array $options = []) {
     return $this->formatMessage("message", $message, $args, $options);
   }
 
