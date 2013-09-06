@@ -66,25 +66,29 @@ class NginxRoutes extends AbstractCommand {
     }
 
     // Get default language code.
-    $languageCode = $i18n->defaultLanguageCode;
+    $GLOBALS["movcli"]["language_code"] = $i18n->defaultLanguageCode;
 
     /**
      * This closure will be used within our routes script to translate the strings.
      *
      * @param string $route
      *   The route to translate.
+     * @param null|array $args [optional]
+     *   Arguments that should be inserted into the pattern.
      * @return string
      *   The translated route.
      */
-    $r = function ($route) use ($i18n, $languageCode) {
+    $r = function ($route, array $args = null) use ($i18n) {
       // Formate message fourth parameter is by reference, therefor we have to introduce a variable.
-      $options = [ "language_code" => $languageCode ];
+      $options = [ "language_code" => $GLOBALS["movcli"]["language_code"] ];
       // DO NOT call $i18n->r() in here, it would return full routes rather than a simple translation!
-      return $i18n->formatMessage("route", $route, [], $options);
+      return $i18n->formatMessage("route", $route, $args, $options);
     };
 
     // Go through all supported languages and generate the routes.
     foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
+      $GLOBALS["movcli"]["language_code"] = $languageCode;
+
       // We need output buffering to catch the output of the following require call.
       if (ob_start() === false) {
         $this->exitOnError("Could not start output buffering!");
