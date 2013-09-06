@@ -320,8 +320,8 @@ location ^~ <?= $r("/user") ?> {
     include sites/conf/fastcgi.conf;
   }
 
-  location ~ ^<?= $r("/user/dangerzone-settings") ?>$ {
-    set $movlib_presenter "User\\UserDangerzoneSettings";
+  location ~ ^<?= $r("/user/danger-zone-settings") ?>$ {
+    set $movlib_presenter "User\\UserDangerZoneSettings";
     include sites/conf/fastcgi.conf;
   }
 
