@@ -39,8 +39,8 @@ class MovCli extends Application {
    * {@inheritDoc}
    */
   public function __construct() {
-    parent::__construct("MovCli", $GLOBALS["conf"]["version"]);
-    foreach (glob("{$_SERVER["HOME"]}/src/MovLib/Console/Command/*.php") as $command) {
+    parent::__construct("MovCli", $GLOBALS["movlib"]["version"]);
+    foreach (glob("{$_SERVER["DOCUMENT_ROOT"]}/src/MovLib/Console/Command/*.php") as $command) {
       $command = "\\MovLib\\Console\\Command\\" . basename($command, ".php");
       $reflectionClass = new ReflectionClass($command);
       // Make sure we do not include any abstract classes or interfaces.

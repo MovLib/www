@@ -52,39 +52,43 @@ class NginxRoutes extends AbstractCommand {
   protected function execute(InputInterface $input, OutputInterface $output) {
     global $i18n;
     $this->setIO($input, $output)->checkPrivileges();
-ini_set("display_errors", 1);
+
     // Check that the source file is present.
-    $routesFile = "{$_SERVER["HOME"]}/conf/nginx/sites/conf/routes.php";
+    $routesFile = "{$_SERVER["DOCUMENT_ROOT"]}/conf/nginx/sites/conf/routes.php";
     if (!is_file($routesFile)) {
       $this->exitOnError("Routes files is missing from the file system!");
     }
 
     // Check that the target directory is present.
-    $routesDir = "{$_SERVER["HOME"]}/conf/nginx/sites/conf/routes/";
+    $routesDir = "{$_SERVER["DOCUMENT_ROOT"]}/conf/nginx/sites/conf/routes/";
     if (!is_dir($routesDir)) {
       $this->exitOnError("Nginx routes directory is missing from the file system!");
     }
 
     // Get default language code.
-    $locale = $i18n->getDefaultLanguageCode();
+    $GLOBALS["movcli"]["language_code"] = $i18n->defaultLanguageCode;
 
     /**
      * This closure will be used within our routes script to translate the strings.
      *
      * @param string $route
      *   The route to translate.
+     * @param null|array $args [optional]
+     *   Arguments that should be inserted into the pattern.
      * @return string
      *   The translated route.
      */
-    $r = function ($route) use ($i18n, $locale) {
+    $r = function ($route, array $args = null) use ($i18n) {
       // Formate message fourth parameter is by reference, therefor we have to introduce a variable.
-      $options = [ "language_code" => $locale ];
+      $options = [ "language_code" => $GLOBALS["movcli"]["language_code"] ];
       // DO NOT call $i18n->r() in here, it would return full routes rather than a simple translation!
-      return $i18n->formatMessage("route", $route, [], $options);
+      return $i18n->formatMessage("route", $route, $args, $options);
     };
 
     // Go through all supported languages and generate the routes.
-    foreach ($GLOBALS["conf"]["i18n"]["supported_languages"] as $delta => $locale) {
+    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
+      $GLOBALS["movcli"]["language_code"] = $languageCode;
+
       // We need output buffering to catch the output of the following require call.
       if (ob_start() === false) {
         $this->exitOnError("Could not start output buffering!");
@@ -94,12 +98,12 @@ ini_set("display_errors", 1);
       require $routesFile;
 
       // Get the translated content of this run ...
-      if (($routes[$locale] = ob_get_clean()) === false) {
+      if (($routes[$languageCode] = ob_get_clean()) === false) {
         $this->exitOnError("Could not get buffered output!");
       }
 
       // ... and write it to the target directory.
-      if (file_put_contents("{$routesDir}{$locale}.conf", $routes[$locale]) === false) {
+      if (file_put_contents("{$routesDir}{$languageCode}.conf", $routes[$languageCode]) === false) {
         $this->exitOnError("Could not write translated routes file to nginx routes directory.");
       }
     }
