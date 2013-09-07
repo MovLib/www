@@ -18,6 +18,7 @@
 namespace MovLib\Model;
 
 use \MovLib\Exception\ErrorException;
+use \MovLib\Exception\FileSystemException;
 use \MovLib\Exception\HistoryException;
 use \MovLib\Model\BaseModel;
 use \ReflectionClass;
@@ -49,13 +50,13 @@ abstract class AbstractHistoryModel extends BaseModel {
    * The instance to be versioned
    * @var BaseModel
    */
-  protected $instance;
+  public $instance;
 
   /**
    * The Path to the repository
    * @var string
    */
-  protected $path;
+  public $path;
 
   /**
    *
@@ -71,7 +72,7 @@ abstract class AbstractHistoryModel extends BaseModel {
 
     $this->instance = $this->select(
       "SELECT *
-        FROM `{$this->type}`
+        FROM `{$this->type}s`
         WHERE `{$this->type}_id` = ?",
       "d",
       [$this->id]
@@ -87,7 +88,12 @@ abstract class AbstractHistoryModel extends BaseModel {
   abstract protected function writeFiles();
 
   /**
-   * Get the model's short class name (e.g. <em>AbstractHistory</em> for <em>AbstractHistoryModel</em>).
+   * Abstract method which should read files
+   */
+  abstract protected function readFiles();
+
+  /**
+   * Get the model's short class name (e.g. <em>movie</em> for <em>MovieHistoryModel</em>).
    *
    * The short name is the name of the current instance of this class without the namespace and the model suffix.
    *
@@ -95,7 +101,6 @@ abstract class AbstractHistoryModel extends BaseModel {
    *   The short name of the class (lowercase) without the "HistoryModel" suffix.
    */
   public function getShortName() {
-    // Always remove the "HistoryModel" suffix from the name.
     return strtolower(substr((new ReflectionClass($this))->getShortName(), 0, -12));
   }
 
@@ -105,7 +110,7 @@ abstract class AbstractHistoryModel extends BaseModel {
   public static function init() {
     createRepositoryFolder();
     initRepository();
-    writeJsonToFile();
+    writeFiles();
     commit("initial commit");
   }
 
@@ -132,16 +137,6 @@ abstract class AbstractHistoryModel extends BaseModel {
     }
   }
 
-  public function writeJsonToFile($filename, $json) {
-    try {
-      $fp = fopen("{$this->path}/{$filename}.json", 'w');
-      fwrite($fp, json_encode($json));
-      fclose($fp);
-    } catch (ErrorException $e) {
-      throw new HistoryException("Error writing json file", $e);
-    }
-  }
-
   /**
    * Checks in all changes and commits them
    *
@@ -161,7 +156,48 @@ abstract class AbstractHistoryModel extends BaseModel {
   }
 
   /**
-   * Returns an array with commits
+   * Returns diff between two commits of one file as styled HTML
+   *
+   * @param string $head
+   *  HEAD or hash of git commit
+   * @param sting $ref
+   *  Hash of git commit
+   * @param string $filename
+   *  Name of file in repository
+   *
+   * @throws HistoryException
+   *  If something went wrong with "git diff"
+   *
+   * @return string
+   *  Returns diff of one file as styled HTML
+   */
+  public function getDiffasHTML($head, $ref, $filename) {
+    $output = array();
+    $html = "";
+
+    try {
+      exec("cd {$this->path} && git diff {$ref} {$head} --word-diff='porcelain' {$filename}", $output);
+    } catch (ErrorException $e) {
+      throw new HistoryException("There was an error during 'git diff'", $e);
+    }
+
+    for ($i = 5; $i < count($output); $i++) {
+      if ($output[$i][0] == " ") {
+        $html .= substr($output[$i], 1);
+      } else if ($output[$i][0] == "+") {
+        $html .= "<span class='green'>" . substr($output[$i], 1) . "</span>";
+      } else if ($output[$i][0] == "-") {
+        $html .= "<span class='red'>" . substr($output[$i], 1) . "</span>";
+      } else if ($output[$i][0] == "~") {
+        $html .= "\n";
+      }
+    }
+
+    return $html;
+  }
+
+  /**
+   * Returns an array of associative arrays with commits
    *
    * @todo is subject safe?
    * @return array

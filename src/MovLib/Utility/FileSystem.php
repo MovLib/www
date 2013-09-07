@@ -113,4 +113,26 @@ class FileSystem {
     return $status !== 0;
   }
 
+  /**
+   * Write file to disk
+   *
+   * @param string $path
+   *  The path where the file should be stored.
+   * @param string $filename
+   *  The filename
+   * @param string $content
+   *  The content as string
+   * @throws FileSystemException
+   *  If any of the actions fails (e.g. wrong permissions).
+   */
+  public static function writeToFile($path, $filename, $content) {
+    try {
+      $fp = fopen("{$path}/{$filename}", 'w');
+      fwrite($fp, $content);
+      fclose($fp);
+    } catch (ErrorException $e) {
+      throw new FileSystemException("Error writing to file", $e);
+    }
+  }
+
 }

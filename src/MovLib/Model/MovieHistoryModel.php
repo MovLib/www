@@ -18,6 +18,7 @@
 namespace MovLib\Model;
 
 use \MovLib\Model\AbstractHistoryModel;
+use \MovLib\Utility\FileSystem;
 
 /**
  * Description of MovieHistoryModel
@@ -31,6 +32,10 @@ use \MovLib\Model\AbstractHistoryModel;
 class MovieHistoryModel extends AbstractHistoryModel {
 
   public function writeFiles() {
+    FileSystem::writeToFile($this->path, "original_title", $this->instance[0]["original_title"]);
+  }
+
+  public function readFiles() {
 
   }
 
