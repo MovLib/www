@@ -266,7 +266,7 @@ location ^~ <?= $r("/user") ?> {
   }
 
   location = <?= $r("/user/sign-out") ?> {
-    set $movlib_presenter "User\\UserSignOut";
+    set $movlib_presenter "User\\UserLogin";
     include sites/conf/fastcgi.conf;
   }
 
@@ -278,20 +278,6 @@ location ^~ <?= $r("/user") ?> {
   location = <?= $r("/user/register") ?> {
     set $movlib_presenter "User\\UserRegister";
     try_files $movlib_cache @user;
-  }
-
-  location ~ ^<?= $r("/user/register") ?>=([0-9a-z]*)$ {
-    set $movlib_presenter "User\\UserSetPassword";
-    set $movlib_action "Register";
-    set $movlib_token $1;
-    include sites/conf/fastcgi.conf;
-  }
-
-  location ~ ^<?= $r("/user/reset-password") ?>=([0-9a-z]*)$ {
-    set $movlib_presenter "User\\UserSetPassword";
-    set $movlib_action "ResetPassword";
-    set $movlib_token $1;
-    include sites/conf/fastcgi.conf;
   }
 
   location ~ ^<?= $r("/user/account-settings") ?>$ {
@@ -306,12 +292,6 @@ location ^~ <?= $r("/user") ?> {
 
   location ~ ^<?= $r("/user/mail-settings") ?>$ {
     set $movlib_presenter "User\\UserMailSettings";
-    include sites/conf/fastcgi.conf;
-  }
-
-  location ~ ^<?= $r("/user/mail-settings") ?>=([0-9a-z]*)$ {
-    set $movlib_presenter "User\\UserMailSettings";
-    set $movlib_token $1;
     include sites/conf/fastcgi.conf;
   }
 
