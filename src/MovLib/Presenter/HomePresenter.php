@@ -35,7 +35,7 @@ class HomePresenter extends AbstractPresenter {
    * Instantiate new home presenter instance.
    */
   public function __construct() {
-    $this->view = new HomeView($this);
+    new HomeView($this);
   }
 
   /**
