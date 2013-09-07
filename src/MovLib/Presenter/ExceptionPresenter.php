@@ -46,7 +46,7 @@ class ExceptionPresenter {
    *   Any exception that extends PHP's base exception class.
    */
   public function __construct($exception) {
-    $this->view = new ExceptionView($this, $exception);
+    new ExceptionView($this, $exception);
   }
 
   /**
@@ -55,9 +55,7 @@ class ExceptionPresenter {
    *
    * @return array
    */
-  public function getBreadcrumb() {
-    return [];
-  }
+  public function getBreadcrumb() {}
 
   /**
    * Get the presentation of this presenter.
@@ -65,7 +63,7 @@ class ExceptionPresenter {
    * @return string
    */
   public function __toString() {
-    return $this->view->getRenderedView();
+    return $this->view->__toString();
   }
 
 }
