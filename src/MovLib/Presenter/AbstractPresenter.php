@@ -19,6 +19,7 @@ namespace MovLib\Presenter;
 
 use \Exception;
 use \ReflectionClass;
+use \MovLib\Exception\UnauthorizedException;
 
 /**
  * Base class for any presenter.
@@ -87,6 +88,33 @@ abstract class AbstractPresenter {
   abstract public function getBreadcrumb();
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Get the presentation of this presenter.
+   *
+   * A <code>__toString()</code> method is not allowed to throw any kind of exception, therefor we catch everything and
+   * hope that our exception presenter is working. Please also note that the explicit calls to the magic <code>
+   * __toString()</code> method are necessary. A <code>__toString()</code> <b>has to</b> return a string.
+   *
+   * @return string
+   */
+  public function __toString() {
+    try {
+      return $this->view->__toString();
+    } catch (Exception $e1) {
+      try {
+        return (new ExceptionPresenter($e1))->__toString();
+      } catch (Exception $e2) {
+        // @todo How about some ASCII art? And we need something different for the production site!
+        header("Content-Type: text/plain; charset=utf-8");
+        return print_r([ $e1, $e2 ], true);
+      }
+    }
+  }
+
+
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
@@ -109,18 +137,18 @@ abstract class AbstractPresenter {
   }
 
   /**
-   * Get the presentation of this presenter.
+   * Checks if the user is logged in and if he ain't displays the login view with an alert message telling the user
+   * about the problem plus sending the correct HTTP headers.
    *
-   * @return string
+   * @global \MovLib\Model\SessionModel $user
+   * @return this
    */
-  public function __toString() {
-    // A __toString() method is not allowed to throw any kind of exception, therefor we catch everything and hope that
-    // our exception view is working.
-    try {
-      return $this->view->getRenderedView();
-    } catch (Exception $e) {
-      return (new ExceptionPresenter($e))->__toString();
+  public function checkAuthorization() {
+    global $user;
+    if ($user->isLoggedIn === false) {
+      throw new UnauthorizedException();
     }
+    return $this;
   }
 
 }
