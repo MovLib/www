@@ -17,12 +17,17 @@
  */
 namespace MovLib\Model;
 
+use \Exception;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Utility\DelayedLogger;
 use \mysqli;
+use \ReflectionFunction;
 
 /**
  * Base class for all models.
+ *
+ * Implements the most basic methods to query the database and handles connecting and disconnecting globally for all
+ * models. We ensure that we only have a single database connection per request in this class.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
@@ -35,40 +40,36 @@ use \mysqli;
 class BaseModel {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Default database name.
-   *
-   * @var string
-   */
-  const DEFAULT_DB = "movlib";
-
-
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Total count of connections for this request.
+   * Associative array containing the connect count for each database.
    *
-   * @var int
+   * @var array
    */
-  private static $connectionCounter = 0;
+  private static $connectionCounter = [];
 
   /**
-   * The MySQLi connection object for all queries.
+   * Name of the database to which this instance is connected.
+   *
+   * @var string
+   */
+  protected $database;
+
+  /**
+   * Associative array containing a single MySQLi instance for each database.
    *
    * @var \mysqli
    */
-  protected static $mysqli;
+  protected static $mysqli = [];
 
   /**
    * Total number of rows changed, deleted, or inserted by the last executed statement.
    *
    * @var int
    */
-  public $affectedRows;
+  public $affectedRows = 0;
 
   /**
    * The MySQLi statement object for all queries.
@@ -77,14 +78,21 @@ class BaseModel {
    */
   protected $stmt;
 
+  /**
+   * Used to cache the reference to <code>stmt_bind_param()</code> function, which allow us to invoke the function with
+   * an array of parameters. Using a shared reflection function among all instances of this function is faster than
+   * calling <code>call_user_func_array()</code>.
+   *
+   * @var \ReflectionFunction
+   */
+  private static $stmtBindParam;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Correctly close the database connection.
-   *
-   * @see \MovLib\Model\BaseModel::disconnect()
+   * Correctly close the database connections.
    */
   public function __destruct() {
     try {
@@ -100,217 +108,55 @@ class BaseModel {
 
 
   /**
-   * Generic delete query.
-   *
-   * <b>Important:</b> All where column/value pairs are concatenated with <code>AND</code>. If you have a more complex
-   * query, please use the generic query method.
-   *
-   * <b>Usage example:</b>
-   * <pre>$this->delete("users", "is", [ "id" => 42, "name" => "Smith" ]);</pre>
-   *
-   * <b>Resulting SQL query:</b>
-   * <pre>DELETE FROM `users` WHERE `id` = 42 AND `name` = "Smith";</pre>
-   *
-   * @see \MovLib\Model\BaseModel::prepareAndBind()
-   * @see \MovLib\Model\BaseModel::execute()
-   * @see \MovLib\Model\BaseModel::close()
-   * @param string $table
-   *   The name of the table where a record should be deleted.
-   * @param string $types
-   *   The type string for the <tt>WHERE</tt> clause in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $where
-   *   Associative array containing column names and values for where.
-   * @return this
-   * @throws \Exception
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public final function delete($table, $types, $where) {
-    $query = "DELETE FROM `{$table}` WHERE ";
-    $helper = "";
-    $values = [];
-    foreach ($where as $column => $value) {
-      $query .= "{$helper}`{$column}` = ?";
-      $values[] = $value;
-      $helper = " AND ";
-    }
-    return $this->prepareAndBind($query, $types, $values)->execute()->close();
-  }
-
-  /**
-   * Get the current MySQLi instance.
-   *
-   * @return null|\mysqli
-   */
-  public final function getMySQLi() {
-    return self::$mysqli;
-  }
-
-  /**
-   * Get the current prepared statement instance.
-   *
-   * @return null|\mysqli_stmt
-   */
-  public final function getStmt() {
-    return $this->stmt;
-  }
-
-  /**
-   * Generic insert method.
-   *
-   * <b>Usage example:</b>
-   * <pre>$this->insert("users", "ss", [ "name" => "Foobar", "mail" => "foobar@example.com" ]);</pre>
-   *
-   * <b>Resulting SQL query:</b>
-   * <pre>INSERT INTO `users` (`name`, `mail`) VALUES ("Foobar", "foobar@example.com");</pre>
-   *
-   * @see \MovLib\Model\BaseModel::prepareAndBind()
-   * @see \MovLib\Model\BaseModel::execute()
-   * @see \MovLib\Model\BaseModel::close()
-   * @param string $table
-   *   Name of the table where we should insert new data.
-   * @param string $types
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $data
-   *   Associative array containing column names and values for insert.
-   * @return this
-   * @throws \Exception
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public final function insert($table, $types, $data) {
-    $columns = $valueStr = $helper = "";
-    $values = [];
-    foreach ($data as $column => $value) {
-      $columns .= "{$helper}`{$column}`";
-      $valueStr .= "{$helper}?";
-      $values[] = $value;
-      $helper = ", ";
-    }
-    return $this
-      ->prepareAndBind("INSERT INTO `{$table}` ({$columns}) VALUES ({$valueStr})", $types, $values)
-      ->execute()
-      ->close()
-    ;
-  }
-
-  /**
-   * Generic query method that directly executes.
-   *
-   * <b>IMPORTANT!</b> This method does not close the prepared statement!
+   * Generic delete, insert, or update query method.
    *
    * @param string $query
    *   The query to be executed.
-   * @param string $types
+   * @param string $types [optional]
    *   The type string in <code>\mysqli_stmt::bind_param()</code> syntax.
-   * @param array $params
+   * @param array $params [optional]
    *   The parameters to bind.
+   * @param boolean $closeStmt [optional]
+   *   Flag indicating if the <code>\mysqli_stmt</code> instance should be closed or not.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public final function query($query, $types = null, $params = null) {
-    return ($types && $params)
-      ? $this->prepareAndBind($query, $types, $params)->execute()
-      : $this->prepare($query)->execute()
-    ;
+  public function query($query, $types = null, array $params = null, $closeStmt = true) {
+    $this->prepareAndExecute($query, $types, $params);
+    if ($closeStmt === true) {
+      $this->close();
+    }
+    return $this;
   }
 
   /**
-   * Generic select query with constraints.
+   * Generic select query method.
    *
-   * <b>Usage example:</b>
-   * <pre>$this->query('SELECT * FROM `users` WHERE `id` = ?', 'i', [ 42 ]);</pre>
-   *
-   * @see \MovLib\Model\BaseModel::prepareAndBind()
-   * @see \MovLib\Model\BaseModel::execute()
-   * @see \MovLib\Model\BaseModel::fetchAssoc()
-   * @see \MovLib\Model\BaseModel::close()
    * @param string $query
    *   The query to be executed.
-   * @param string $types
+   * @param string $types [optional]
    *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $values
-   *   The values that should be bound to the <tt>WHERE</tt> parameters.
-   * @return array
-   *   The query result as associative array.
-   * @throws \Exception
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public final function select($query, $types, $values) {
-    $this->prepareAndBind($query, $types, $values)->execute()->fetchAssoc($result)->close();
-    return $result;
-  }
-
-  /**
-   * Generic select query without constraints.
-   *
-   * <b>Important:</b> If you have to bind parameters to the query, use the generic query method.
-   *
-   * <b>Usage Example:</b>
-   * <pre>$this->queryAll("SELECT * FROM `users`");</pre>
-   *
-   * @see \MovLib\Model\BaseModel::prepare()
-   * @see \MovLib\Model\BaseModel::execute()
-   * @see \MovLib\Model\BaseModel::fetchAssoc()
-   * @see \MovLib\Model\BaseModel::close()
-   * @param string $query
-   *   The query to be executed.
+   * @param array $params [optional]
+   *   The parameters to bind.
    * @return array
    *   The query result as associative array.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public final function selectAll($query) {
-    $this->prepare($query)->execute()->fetchAssoc($result)->close();
+  public function select($query, $types = null, array $params = null) {
+    $this->prepareAndExecute($query, $types, $params);
+    if (($queryResult = $this->stmt->get_result()) === false) {
+      $error = $this->stmt->error;
+      $errno = $this->stmt->errno;
+      $this->close();
+      throw new DatabaseException("Get statement result failed: {$error} ({$errno})");
+    }
+    $this->close();
+    $result = [];
+    while ($row = $queryResult->fetch_assoc()) {
+      $result[] = $row;
+    }
+    $queryResult->free();
     return $result;
-  }
-
-  /**
-   * Generic update query.
-   *
-   * <b>Important:</b> All where column/value pairs are concatenated with <code>AND</code>. If you have a more complex
-   * query, please use the generic query method.
-   *
-   * <b>Usage example:</b>
-   * <pre>$this->update(
-   *   "user",
-   *   "isiis",
-   *   [ "id" => 42, "name" => "foobar", "age" => 99 ],
-   *   [ "id" => 1, "name" => "barfoo" ]
-   * );</pre>
-   *
-   * <b>Resulting SQL query:</b>
-   * <pre>UPDATE `user` SET `id` = 42, `name` = "foobar", `age` = 99 WHERE `id` = 1 AND `name` = "barfoo";</pre>
-   *
-   * @see \MovLib\Model\BaseModel::prepareAndBind()
-   * @see \MovLib\Model\BaseModel::execute()
-   * @see \MovLib\Model\BaseModel::close()
-   * @param string $table
-   *   Name of the database table to update.
-   * @param string $types
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $set
-   *   Associative array containing column names and values for <tt>SET</tt>.
-   * @param array $where
-   *   Associative array containing column names and values for <tt>WHERE</tt>.
-   * @return this
-   * @throws \Exception
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public final function update($table, $types, $set, $where) {
-    $query = "UPDATE `{$table}` SET ";
-    $comma = "";
-    $values = [];
-    foreach ($set as $column => $value) {
-      $query .= "{$comma}`{$column}` = ?";
-      $values[] = $value;
-      $comma = ", ";
-    }
-    $query .= " WHERE ";
-    $and = "";
-    foreach ($where as $column => $value) {
-      $query .= "{$and}`{$column}` = ?";
-      $values[] = $value;
-      $and = " AND ";
-    }
-    return $this->prepareAndBind($query, $types, $values)->execute()->close();
   }
 
 
@@ -321,41 +167,48 @@ class BaseModel {
    * Closes the prepared statement.
    *
    * @return this
-   * @throws \Exception
-   *   Might throw a generic excepiton if the prepared statement is not a valid object.
    * @throws \MovLib\Exception\DatabaseException
-   *   If closing the prepared statement fails.
    */
-  protected final function close() {
+  protected function close() {
     if ($this->stmt->close() === false) {
-      throw new DatabaseException("Closing prepared statement failed.");
+      $error = $this->stmt->error;
+      $errno = $this->stmt->errno;
+      throw new DatabaseException("Closing prepared statement failed: {$error} ({$errno})");
     }
     unset($this->stmt);
     return $this;
   }
 
   /**
-   * Connect to default database.
+   * Connect to database.
    *
    * @return this
-   * @throws \Exception
-   *   Might throw a generic exception if (for instance) the socket does not exist.
    * @throws \MovLib\Exception\DatabaseException
-   *   If connecting to the database or selecting the database fails.
    */
-  protected final function connect() {
-    self::$connectionCounter++;
-    if (!self::$mysqli) {
-      self::$mysqli = new mysqli();
-      if (self::$mysqli->real_connect() === false) {
-        throw new DatabaseException("Could not connect to database server.");
+  protected function connect() {
+    if (!$this->database) {
+      $this->database = $GLOBALS["movlib"]["default_database"];
+    }
+    if (!self::$stmtBindParam) {
+      self::$stmtBindParam = new ReflectionFunction("mysqli_stmt_bind_param");
+    }
+    if (!isset(self::$connectionCounter[$this->database])) {
+      self::$connectionCounter[$this->database] = 0;
+    }
+    self::$connectionCounter[$this->database]++;
+    if (!isset(self::$mysqli[$this->database])) {
+      $mysqli = new mysqli();
+      if ($mysqli->real_connect() === false || $mysqli->connect_error) {
+        $error = $mysqli->error;
+        $errno = $mysqli->errno;
+        throw new DatabaseException("Connecting to database server failed: {$error} ({$errno})");
       }
-      if (self::$mysqli->connect_error) {
-        throw new DatabaseException(self::$mysqli->error);
+      if ($mysqli->select_db($GLOBALS["movlib"]["default_database"]) === false) {
+        $error = $mysqli->error;
+        $errno = $mysqli->errno;
+        throw new DatabaseException("Selecting database failed: {$error} ({$errno})");
       }
-      if (self::$mysqli->select_db(self::DEFAULT_DB) === false) {
-        throw new DatabaseException(self::$mysqli->error);
-      }
+      self::$mysqli[$this->database] = $mysqli;
     }
     return $this;
   }
@@ -364,126 +217,68 @@ class BaseModel {
    * Disconnect from database.
    *
    * @return this
-   * @throws \Exception
-   *   Might throw a generic exception if the mysqli variable does not contain a valid object.
+   * @throws \MovLib\Exception\DatabaseException
    */
-  protected final function disconnect() {
-    self::$connectionCounter--;
-    if (self::$connectionCounter === 0) {
-      self::$mysqli->close();
-      self::$mysqli = null;
+  protected function disconnect() {
+    // No need to disconnect if we have no connection to this database.
+    if (isset(self::$connectionCounter[$this->database])) {
+      // Decrement connection counter for this database connection, if there are no instances left using this database
+      // connection (equality to zero) disconnect.
+      if (--self::$connectionCounter[$this->database] === 0) {
+        if (self::$mysqli[$this->database]->close() === false) {
+          $error = self::$mysqli[$this->database]->error;
+          $errno = self::$mysqli[$this->database]->errno;
+          throw new DatabaseException("Disconnecting from database server failed: {$error} ({$errno})");
+        }
+        // Make sure the array offset is removed entirely from the array. This ensures that any new instance that needs
+        // a connection to this database has to establish a new connection.
+        unset(self::$mysqli[$this->database]);
+      }
     }
     return $this;
-  }
-
-  /**
-   * Executes the previously prepared statement.
-   *
-   * @return this
-   * @throws \Exception
-   *   Might throw a generic exception if (for instance) the prepared statement is not a valid object.
-   * @throws \MovLib\Exception\DatabaseException
-   *   If the execution fails (returns <code>false</code>).
-   */
-  protected final function execute() {
-    unset($this->affectedRows);
-    if ($this->stmt->execute() === false) {
-      $error = $this->stmt->error;
-      $errno = $this->stmt->errno;
-      $this->close();
-      throw new DatabaseException("Execution of statement failed with error message: {$error} ({$errno})");
-    }
-    $this->affectedRows = $this->stmt->affected_rows;
-    return $this;
-  }
-
-  /**
-   * Get the statement's result as array.
-   *
-   * @param array|null $result
-   *   The query result as numeric array containg each resulting row as associative array.
-   * @return this
-   * @throws \Exception
-   *   Might throw a generic exception if (for instance) the prepared statement is not a valid object.
-   * @throws \MovLib\Exception\DatabaseException
-   *   If fetching the result failed.
-   */
-  protected final function fetchAssoc(&$result) {
-    if (($queryResult = $this->stmt->get_result()) === false) {
-      $this->close();
-      throw new DatabaseException("Get statement result failed.");
-    }
-    $result = [];
-    while ($row = $queryResult->fetch_assoc()) {
-      $result[] = $row;
-    }
-    $queryResult->free();
-    return $this;
-  }
-
-  /**
-   * Get a single field from the last executed statement and close it.
-   *
-   * @param string $name
-   *   The name of the field to fetch.
-   * @return mixed
-   *   The content of the field.
-   * @throws \MovLib\Exception\ErrorException
-   *   If the result was not a valid array, or something unknown.
-   * @throws \MovLib\Exception\DatabaseException
-   *   If fetching the result failed.
-   */
-  protected final function fetchField($name) {
-    $this->fetchAssoc($result)->close();
-    return $result[0][$name];
   }
 
   /**
    * Prepare a statement for execution.
    *
    * @param string $query
-   *   The query to be prepared.
+   *   The query to be executed.
+   * @param string $types [optional]
+   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
+   * @param array $params [optional]
+   *   The parameters to bind.
    * @return this
-   * @throws \Exception
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected final function prepare($query) {
-    if (!self::$mysqli) {
+  protected function prepareAndExecute($query, $types = null, array $params = null) {
+    if (!isset(self::$mysqli[$this->database])) {
       $this->connect();
     }
-    if (($this->stmt = self::$mysqli->prepare($query)) === false) {
-      throw new DatabaseException("Preparation of statement failed: " . self::$mysqli->error . " (" . self::$mysqli->errno . ")");
+    if (($this->stmt = self::$mysqli[$this->database]->prepare($query)) === false) {
+      $error = self::$mysqli[$this->database]->error;
+      $errno = self::$mysqli[$this->database]->errno;
+      throw new DatabaseException("Preparation of statement failed: {$error} ({$errno})");
     }
-    return $this;
-  }
-
-  /**
-   * Prepare a statement for execution and bind parameters to it.
-   *
-   * @see \MovLib\Model\BaseModel::prepare()
-   * @param string $query
-   *   The query to be prepared.
-   * @param string $types
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $values
-   *   The values to be substituted.
-   * @return this
-   * @throws \Exception
-   *   Might throw a generic exception if a PHP error occures. For instance if <var>$values</var> is not an array or the
-   *   type count is not equal to the given values count.
-   * @throws \MovLib\Exception\DatabaseException
-   *   If binding the parameters to the prepared statement fails.
-   */
-  protected final function prepareAndBind($query, $types, $values) {
-    $this->prepare($query);
-    $k = count($values);
-    $referencedParameters = [ $types ];
-    for ($i = 0; $i < $k; ++$i) {
-      $referencedParameters[$i + 1] = &$values[$i];
+    if ($types && $params) {
+      $c = count($params);
+      $refParams = [ $this->stmt, $types ];
+      for ($i = 0; $i < $c; ++$i) {
+        $refParams[$i + 2] = &$params[$i];
+      }
+      if (self::$stmtBindParam->invokeArgs($refParams) === false) {
+        $error = $this->stmt->error;
+        $errno = $this->stmt->errno;
+        throw new DatabaseException("Binding parameters to prepared statement failed: {$error} ({$errno})");
+      }
     }
-    if (call_user_func_array([ $this->stmt, "bind_param" ], $referencedParameters) === false) {
-      throw new DatabaseException("Binding parameters to prepared statement failed.");
+    $this->affectedRows = 0;
+    if ($this->stmt->execute() === false) {
+      $error = $this->stmt->error;
+      $errno = $this->stmt->errno;
+      $this->close();
+      throw new DatabaseException("Execution of prepared statement failed: {$error} ({$errno})");
     }
+    $this->affectedRows = $this->stmt->affected_rows;
     return $this;
   }
 

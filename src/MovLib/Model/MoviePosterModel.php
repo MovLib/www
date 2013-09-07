@@ -17,8 +17,8 @@
  */
 namespace MovLib\Model;
 
-use \MovLib\Exception\ImageException;
 use \MovLib\Model\AbstractImageModel;
+use \MovLib\Utility\DelayedLogger;
 use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
 use \MovLib\View\ImageStyle\ResizeImageStyle;
 
@@ -138,7 +138,7 @@ class MoviePosterModel extends AbstractImageModel {
 
 
   /**
-   * Construct a new poster model.
+   * Instantiate a new poster model.
    *
    * If the poster ID is not specified, an empty model is created.
    *
@@ -151,9 +151,9 @@ class MoviePosterModel extends AbstractImageModel {
   public function __construct($movieId, $posterId = null) {
     global $i18n;
     $this->id = $movieId;
+    $this->imageDirectory = "movie/posters/{$movieId}";
     if ($posterId) {
-      $this->imageDirectory = "movie/posters/{$movieId}";
-      $posterResult = $this->select(
+      $result = $this->select(
         "SELECT
           `movie_id` AS `id`,
           `section_id` AS `sectionId`,
@@ -179,24 +179,34 @@ class MoviePosterModel extends AbstractImageModel {
         "dd",
         [ $movieId, $posterId ]
       );
-      if (empty($posterResult)) {
-        throw new ImageException("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", $e);
+      if (empty($result[0])) {
+        DelayedLogger::log("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", E_NOTICE);
       }
-      $posterResult["description"] = $posterResult["description_localized"] ?: $posterResult["description_en"];
-      unset($posterResult["description_localized"]);
-      unset($posterResult["description_en"]);
-      foreach ($posterResult as $k => $v) {
-        $this->{$k} = $v;
+      else {
+        // Convenience
+        $result = $result[0];
+        // Get the description for this image (fallback to English).
+        foreach ([ "en", "localized" ] as $v) {
+          if (isset($result["description_{$v}"])) {
+            $result["description"] = $result["description_{$v}"];
+            unset($result["description_{$v}"]);
+          }
+        }
+        foreach ($result as $k => $v) {
+          $this->{$k} = $v;
+        }
+        if ($this->country) {
+          $this->country = $i18n->getCountries()[$this->country];
+        }
+        $this->initImage($this->imageName, [
+          new ResizeImageStyle(self::IMAGESTYLE_SMALL),
+          new ResizeImageStyle(self::IMAGESTYLE_LARGE_FIXED_WIDTH),
+          new ResizeImageStyle(self::IMAGESTYLE_HUGE_FIXED_WIDTH),
+          new ResizeImageStyle(self::IMAGESTYLE_GALLERY),
+          new ResizeImageStyle(self::IMAGESTYLE_DETAILS),
+          new ResizeCropCenterImageStyle(self::IMAGESTYLE_DETAILS_STREAM)
+        ]);
       }
-      $this->country = $i18n->getCountries()[$this->country];
-      $this->initImage($this->imageName, [
-        new ResizeImageStyle(self::IMAGESTYLE_SMALL),
-        new ResizeImageStyle(self::IMAGESTYLE_LARGE_FIXED_WIDTH),
-        new ResizeImageStyle(self::IMAGESTYLE_HUGE_FIXED_WIDTH),
-        new ResizeImageStyle(self::IMAGESTYLE_GALLERY),
-        new ResizeImageStyle(self::IMAGESTYLE_DETAILS),
-        new ResizeCropCenterImageStyle(self::IMAGESTYLE_DETAILS_STREAM)
-      ]);
     }
   }
 
@@ -213,6 +223,27 @@ class MoviePosterModel extends AbstractImageModel {
     parent::getImageDetails();
     $this->details["country"] = $this->country;
     return $this->details;
+  }
+
+  /**
+   * Get the position of the current poster within all posters sorted by creation datetime and the total poster count.
+   *
+   * <b>TIP:</b> Use <code>list($p, $c) = $this->getPosterPositionAndTotalCount();</code>.
+   *
+   * @return array
+   *   Numeric array, first offset is the position and second offset the total count.
+   */
+  public function getPosterPositionAndTotalCount() {
+    $position = 0;
+    $posters = $this->select("SELECT `section_id` FROM `posters` WHERE `movie_id` = ? ORDER BY `created` DESC", "d", [ $this->id ]);
+    $c = count($posters);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($posters[$i]["section_id"] === $this->sectionId) {
+        $position = ++$i;
+        break;
+      }
+    }
+    return [ $position, $c ];
   }
 
 }

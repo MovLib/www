@@ -17,7 +17,6 @@
  */
 namespace MovLib\Model;
 
-use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\UserException;
 use \MovLib\Model\AbstractImageModel;
 use \MovLib\Utility\String;
@@ -343,7 +342,7 @@ class UserModel extends AbstractImageModel {
    * @return this
    */
   public function commit() {
-    return $this->prepareAndBind(
+    return $this->query(
       "UPDATE `users` SET
         `language_id` = ?,
         `private` = ?,
@@ -370,7 +369,7 @@ class UserModel extends AbstractImageModel {
         $this->imageHash,
         $this->userId
       ]
-    )->execute()->close();;
+    );
   }
 
   /**
@@ -382,19 +381,80 @@ class UserModel extends AbstractImageModel {
    *   The user's language code or <code>NULL</code> if the user has none.
    */
   public function getLanguageCode() {
-    static $languageCode = null;
-    try {
-      if ($languageCode === null) {
-        $languageCode = $this->select(
-          "SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1",
-          "i",
-          $this->languageId
-        )[0]["iso_alpha-2"];
-      }
-      return $languageCode;
-    } catch (ErrorException $e) {
-      return null;
+    $result = $this->select("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", $this->languageId);
+    if (!empty($result[0]["iso_alpha-2"])) {
+      return $result[0]["iso_alpha-2"];
     }
+  }
+
+  /**
+   * Get temporary data for user's mail change request and delete it afterwards.
+   *
+   * @param string $hash
+   *   The user's hash.
+   * @return null|array
+   *   If no data is stored for <var>$hash</var> <code>NULL</code> is returned, otherwise an associative array with the
+   *   following keys:
+   *   <ul>
+   *     <li><code>"id"</code> of the user</li>
+   *     <li><code>"mail"</code> of the user</li>
+   *     <li><code>"time"</code> when the record was created</li>
+   *   </ul>
+   */
+  public function getTemporaryMailChangeData($hash) {
+    $result = $this->select(
+      "SELECT
+        COLUMN_GET(`dyn_data`, 'user_id' AS UNSIGNED) AS `id`,
+        COLUMN_GET(`dyn_data`, 'mail' AS CHAR({$GLOBALS["movlib"]["max_length_mail"]})) AS `mail`,
+        COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
+      FROM `tmp`
+      WHERE `key` = ?
+      LIMIT 1", "s", [ $hash ]
+    );
+    if (!empty($result[0])) {
+      $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $hash ]);
+      return $result[0];
+    }
+  }
+
+  /**
+   * Select the data that was previously stored and directly delete it.
+   *
+   * @param string $hash
+   *   The user submitted hash to identify the reset password request.
+   * @return null|array
+   *   <code>NULL</code> if no record was found for the hash, otherwise an associative array with the following keys:
+   *   <i>name</i>, <i>mail</i>, and <i>time</i>. The name might be <code>NULL</code>, depending on the data that
+   *   was stored previously (e.g. reset password requests do not have the name).
+   */
+  public function getTemporaryRegistrationData($hash) {
+    $result = $this->select(
+      "SELECT
+        COLUMN_GET(`dyn_data`, 'name' AS CHAR({$GLOBALS["movlib"]["max_length_username"]})) AS `name`,
+        COLUMN_GET(`dyn_data`, 'mail' AS CHAR({$GLOBALS["movlib"]["max_length_mail"]})) AS `mail`,
+        COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
+      FROM `tmp`
+        WHERE `key` = ?
+      LIMIT 1", "s", [ $hash ]
+    );
+    if (!empty($result[0])) {
+      $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $hash ]);
+      return $result[0];
+    }
+  }
+
+  /**
+   * Prepare change of mail.
+   *
+   * @param string $hash
+   *   The authentication token.
+   * @param string $newMail
+   *   The user's new mail.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function prepareMailChange($hash, $newMail) {
+    return $this->query("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('user_id', ?, 'mail', ?, 'time', CURRENT_TIMESTAMP))", "sss", [ $hash, $this->userId, $newMail ]);
   }
 
   /**
@@ -409,14 +469,22 @@ class UserModel extends AbstractImageModel {
    *   The valid name of the new user.
    * @param string $mail
    *   The valid mail of the new user.
+   * @return this
    */
-  public function preRegister($hash, $name, $mail) {
-    // @todo Catch exceptions, log and maybe even send a mail to the user?
-    $this->prepareAndBind(
-      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'mail', ?, 'time', NOW() + 0))",
-      "sss",
-      [ $hash, $name, $mail ]
-    )->execute()->close();
+  public function prepareRegistration($hash, $name, $mail) {
+    return $this->query("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'mail', ?, 'time', CURRENT_TIMESTAMP))", "sss", [ $hash, $name, $mail ]);
+  }
+
+  /**
+   * Add reset password request to our temporary database table.
+   *
+   * @param string $hash
+   *   The password reset hash used in the password reset link for identification.
+   * @param string $mail
+   *   The valid mail of the user.
+   */
+  public function prepareResetPassword($hash, $mail) {
+    return $this->query("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('mail', ?, 'time', CURRENT_TIMESTAMP))", "ss", [ $hash, $mail ]);
   }
 
   /**
@@ -445,85 +513,48 @@ class UserModel extends AbstractImageModel {
    */
   public function register($name, $mail, $pass) {
     global $i18n;
+    $this->query(
+      "INSERT INTO `users` (`language_id`, `name`, `mail`, `pass`, `created`, `login`, `timezone`, `init`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, '')",
+      "dsssss",
+      [ $this->languageId, $this->name, $this->mail, $this->pass, $this->timezone, $this->mail ],
+      false
+    );
     $this->languageId = $i18n->getLanguageId();
     $this->name       = $name;
     $this->mail       = $mail;
     $this->pass       = password_hash($pass, PASSWORD_BCRYPT);
     $this->deleted    = false;
     $this->timezone   = ini_get("date.timezone");
-    $this->prepareAndBind(
-      "INSERT INTO `users`
-        (`language_id`, `name`, `mail`, `pass`, `created`, `login`, `timezone`, `init`, `dyn_profile`)
-      VALUES
-        (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, '')",
-      "dsssss",
-      [ $this->languageId, $this->name, $this->mail, $this->pass, $this->timezone, $this->mail ]
-    )->execute();
     $this->userId = $this->stmt->insert_id;
     return $this->close();
   }
 
   /**
-   * Add reset password request to our temporary database table.
+   * Change the user's mail.
    *
-   * @param string $hash
-   *   The password reset hash used in the password reset link for identification.
-   * @param string $mail
-   *   The valid mail of the user.
-   */
-  public function preResetPassword($hash, $mail) {
-    // @todo Catch exceptions, log and maybe even send a mail to the user?
-    $this->prepareAndBind(
-      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('mail', ?, 'time', NOW() + 0))",
-      "ss",
-      [ $hash, $mail ]
-    )->execute()->close();
-  }
-
-  /**
-   * Select the data that was previously stored and directly delete it.
-   *
-   * @param string $hash
-   *   The user submitted hash to identify the reset password request.
-   * @return null|array
-   *   <code>NULL</code> if no record was found for the hash, otherwise an associative array with the following keys:
-   *   <i>name</i>, <i>mail</i>, and <i>time</i>. The name might be <code>NULL</code>, depending on the data that
-   *   was stored previously (e.g. reset password requests do not have the name).
-   */
-  public function selectAndDeleteTemporaryData($hash) {
-    try {
-      // Fetch the data from our temporary table.
-      $data = $this->select(
-        "SELECT
-          COLUMN_GET(`dyn_data`, 'name' AS CHAR(" . self::NAME_MAX_LENGTH . ")) AS `name`,
-          COLUMN_GET(`dyn_data`, 'mail' AS CHAR(" . self::MAIL_MAX_LENGTH . ")) AS `mail`,
-          COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
-        FROM `tmp`
-          WHERE `key` = ?
-        LIMIT 1", "s", [ $hash ]
-      )[0];
-      // Now directly delete it. Any of the temporary user data is only valid for one time usage.
-      $this->delete("tmp", "s", [ "key" => $hash ]);
-      return $data;
-    } catch (ErrorException $e) {
-      return null;
-    }
-  }
-
-  /**
-   * Validate the user submitted password against the stored hash of the current user.
-   *
-   * <b>IMPORTANT!</b> Only validates against a password that was submitted via <var>$_POST</var>. Additionally the
-   * key must be <code>pass</code> within the <var>$_POST</var> array.
-   *
+   * @param string $newMail
+   *   The new mail.
    * @return this
-   * @throws \MovLib\Exception\UserException
-   *   If the password isn't valid.
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function validatePassword() {
-    if (!isset($_POST["pass"]) || password_verify($_POST["pass"], $this->pass) === false) {
-      throw new UserException("The submitted password is invalid or empty.");
-    }
+  public function updateMail($newMail) {
+    $this->query("UPDATE `users` SET `mail` = ? WHERE `user_id` = ?", "sd", [ $newMail, $this->userId ]);
+    $this->mail = $newMail;
+    return $this;
+  }
+
+  /**
+   * Change the user's password.
+   *
+   * @param string $newPassword
+   *   The raw (not hashed) new password.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function updatePassword($newPassword) {
+    $newPassword = password_hash($newPassword, PASSWORD_BCRYPT);
+    $this->query("UPDATE `users` SET `pass` = ? WHERE `user_id` = ?", "sd", [ $newPassword, $this->userId ]);
+    $this->pass = $newPassword;
     return $this;
   }
 

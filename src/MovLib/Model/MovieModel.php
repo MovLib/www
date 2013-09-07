@@ -19,7 +19,6 @@ namespace MovLib\Model;
 
 use \MovLib\Exception\MovieException;
 use \MovLib\Model\BaseModel;
-use \MovLib\Utility\DelayedLogger;
 
 /**
  * The movie model is responsible for all database related functionality of a single movie entry.
@@ -594,14 +593,7 @@ class MovieModel extends BaseModel {
   public function getDisplayPoster() {
     if (!$this->displayPoster) {
       $posterId = $this->select("SELECT `section_id` AS `id` FROM `posters` WHERE `movie_id` = ? ORDER BY rating DESC LIMIT 1", "d", [ $this->id ]);
-      $posterId = empty($posterId[0]["id"]) ? null : $posterId[0]["id"];
-      try {
-        $this->displayPoster = new MoviePosterModel($this->id, $posterId);
-      } catch (ImageException $e) {
-        // Could happen if a poster was deleted and a request is made to the poster while deletion is running.
-        DelayedLogger::logException($e, E_NOTICE);
-        $this->displayPoster = new MoviePosterModel($this->id);
-      }
+      $this->displayPoster = new MoviePosterModel($this->id, empty($posterId[0]["id"]) ? null : $posterId[0]["id"]);
     }
     return $this->displayPoster;
   }
@@ -617,12 +609,7 @@ class MovieModel extends BaseModel {
       $posterIds = $this->select("SELECT `section_id` AS `id` FROM `posters` WHERE `movie_id` = ? ORDER BY `created` DESC", "d", [ $this->id ]);
       $c = count($posterIds);
       for ($i = 0; $i < $c; ++$i) {
-        try {
-          $this->posters[] = new MoviePosterModel($this->id, $posterIds[$i]["id"]);
-        } catch (ImageException $e) {
-          // Could happen if a poster was deleted and a request is made to the poster while deletion is running.
-          DelayedLogger::logException($e, E_NOTICE);
-        }
+        $this->posters[] = new MoviePosterModel($this->id, $posterIds[$i]["id"]);
       }
     }
     return $this->posters;
@@ -742,9 +729,9 @@ class MovieModel extends BaseModel {
     if (!$this->displayTitle) {
       $displayTitle = $this->select(
         "SELECT `title` AS `title` FROM `movies_titles` WHERE `movie_id` = ? AND is_display_title = 1 AND `language_id` = ? ORDER BY `title` ASC LIMIT 1",
-        "di", [ $this->id, $i18n->getLanguages(I18nModel::KEY_CODE)[$i18n->languageCode]["id"] ]
+        "di", [ $this->id, $i18n->getLanguages(I18nModel::KEY_CODE)[$i18n->languageCode][I18nModel::KEY_ID] ]
       );
-      $this->displayTitle = empty($displayTitle) ? $this->originalTitle : $displayTitle[0]["title"];
+      $this->displayTitle = empty($displayTitle[0]["title"]) ? $this->originalTitle : $displayTitle[0]["title"];
     }
     return $this->displayTitle;
   }

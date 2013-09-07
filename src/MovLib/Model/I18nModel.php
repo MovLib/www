@@ -21,7 +21,6 @@ use \DateTimeZone;
 use \IntlDateFormatter;
 use \Locale;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\ErrorException;
 use \MovLib\Model\BaseModel;
 use \MovLib\Utility\CollatorExtended;
 use \MovLib\Utility\DelayedLogger;
@@ -427,30 +426,21 @@ class I18nModel extends BaseModel {
    *   Associative array to overwrite the default options used in this method. Possible keys are:
    *   <ul>
    *     <li><code>comment</code>: default is <code>NULL</code>.</li>
-   *     <li><code>old_pattern</code>: default is <code>NULL</code>.</li>
    *   </ul>
    * @return \MovLib\Model\I18nModel
    */
   public function insertPattern($context, $pattern, array $options) {
     $this->affectedRows = 0;
-    if (isset($options["old_pattern"])) {
-      if (isset($options["comment"])) {
-        $this->update("{$context}s", "ssss", [ $context => $pattern, "comment" => $options["comment"] ], [ "old_pattern" => $options["old_pattern"] ]);
-      }
-      else {
-        $this->update("{$context}s", "sss", [ $context => $pattern ], [ "old_pattern" => $options["old_pattern"] ]);
-      }
-    }
     if ($this->affectedRows === 0) {
       // Maybe we already inserted this translation by a prior call to this method. This can happen if the same new
       // pattern occurres more than once on the same page.
       $result = $this->select("SELECT `{$context}_id` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ]);
       if (!isset($result[0]["route_id"])) {
         if (isset($options["comment"])) {
-          $this->insert("{$context}s", "sss", [ $context => $pattern, "comment" => $options["comment"], "dyn_translations" => "" ]);
+          $this->query("INSERT INTO `{$context}s` (`{$context}`, `comment`, `dyn_translations`) VALUES (?, ?, '')", "ss", [ $pattern, $options["comment"] ]);
         }
         else {
-          $this->insert("{$context}s", "ss", [ $context => $pattern, "dyn_translations" => "" ]);
+          $this->query("INSERT INTO `{$context}s` (`{$context}`, `dyn_translations`) VALUES (?, '')", "s", [ $pattern ]);
         }
       }
     }
@@ -473,16 +463,11 @@ class I18nModel extends BaseModel {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function insertOrUpdateTranslation($context, $id, $languageCode, $translation) {
-    $this
-      ->prepareAndBind(
-        "UPDATE `{$context}s`
-        SET `dyn_translations` = COLUMN_ADD(COLUMN_CREATE(?, ?), ?, ?)
-        WHERE `{$context}_id` = ?",
-        "ssssd", [ $languageCode, $translation, $languageCode, $translation, $id ]
-      )
-      ->execute()
-      ->close()
-    ;
+    $this->query(
+      "UPDATE `{$context}s` SET `dyn_translations` = COLUMN_ADD(COLUMN_CREATE(?, ?), ?, ?) WHERE `{$context}_id` = ?",
+      "ssssd",
+      [ $languageCode, $translation, $languageCode, $translation, $id ]
+    );
     // If affected rows is zero the translation was already present and exactly the same as was asked to update.
     if ($this->affectedRows === -1) {
       $exception = new DatabaseException("Could not insert nor update {$languageCode} translation for {$context} with ID '{$id}'");

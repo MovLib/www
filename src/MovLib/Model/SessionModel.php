@@ -286,7 +286,7 @@ class SessionModel extends BaseModel {
     // Remove the session from our volatile storage.
     $memcached->delete(ini_get("memcached.sess_prefix") . $sessionId);
     // Remove the session from our persistent storage as well.
-    return $this->delete("sessions", "s", [ "session_id" => $sessionId ]);
+    return $this->query("DELETE FROM `sessions` WHERE `session_id` = ?", "s", [ $sessionId ]);
   }
 
   /**
@@ -340,11 +340,11 @@ class SessionModel extends BaseModel {
    * @return this
    */
   public function insertSession() {
-    return $this->prepareAndBind(
+    return $this->query(
       "INSERT INTO `sessions` (`session_id`, `user_id`, `user_agent`, `ip_address`, `ttl`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
       "sdssi",
       [ $this->sessionId, $this->id, $this->userAgent, inet_pton($this->ipAddress), $this->ttl ]
-    )->execute()->close();
+    );
   }
 
   /**
