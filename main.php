@@ -32,6 +32,9 @@
  * @since 0.0.1-dev
  */
 
+// We want to know how long the execution of our software takes.
+$start = microtime(true);
+
 // Parse global configuration and ensure it's available globally.
 $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
 
@@ -193,6 +196,9 @@ catch (\MovLib\Exception\UnauthorizedException $e) {
   ]));
   echo $presenter;
 }
+
+$end = microtime(true) - $start;
+echo "<small style='text-align:center'>time taken to render page: {$end}</small>";
 
 // This makes sure that the output that was generated until this point will be returned to nginx for delivery.
 fastcgi_finish_request();
