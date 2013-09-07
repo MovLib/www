@@ -54,7 +54,7 @@
   color: #656565;
   display: block;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: bold;
   line-height: 50px;
   margin-top: 0;
   margin-bottom: 0;
@@ -232,6 +232,6 @@
 }
 
 #header__search-input {
-  font-weight: 300;
+  font-weight: 200;
   width: 660px;
 }

@@ -45,7 +45,7 @@
        url("/font/movlib/movlib.ttf?20130822") format("truetype"),
        url("/font/movlib/movlib.svg?20130822#movlib") format("svg")
   ;
-  font-weight: 500;
+  font-weight: normal;
   font-style: normal;
 }
 
@@ -53,7 +53,7 @@
 .icon:before {
   font-style: normal;
   font-variant: normal;
-  font-weight: 500;
+  font-weight: normal;
   line-height: 1;
   font-family: MovLib;
   speak: none;
