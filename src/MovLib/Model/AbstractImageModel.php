@@ -21,8 +21,6 @@ use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Model\BaseModel;
 use \MovLib\Model\UserModel;
-use \MovLib\Utility\Network;
-use \MovLib\Utility\Sanitizer;
 
 /**
  * Contains methods for models that contain images.
@@ -177,8 +175,8 @@ class AbstractImageModel extends BaseModel {
     $this->imageName = $imageName;
     if (isset($this->imageExtension) && isset($this->imageHash)) {
       $path = "uploads/{$this->imageDirectory}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
-      $this->imagePath = "{$_SERVER["HOME"]}/{$path}";
-      $this->imageUri = "{$GLOBALS["conf"]["static_domain"]}{$path}";
+      $this->imagePath = "{$_SERVER["DOCUMENT_ROOT"]}/{$path}";
+      $this->imageUri = "{$GLOBALS["movlib"]["static_domain"]}{$path}";
       $c = count($imageStyles);
       for ($i = 0; $i < $c; ++$i) {
         $imageStyles[$i]->sourcePath = $this->imagePath;
@@ -201,8 +199,8 @@ class AbstractImageModel extends BaseModel {
   protected function generateImageStylePaths() {
     foreach ($this->imageStyles as $style => $styleObj) {
       $path = "uploads/{$this->imageDirectory}/{$styleObj->dimensions}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
-      $this->imageStyles[$style]->path = "{$_SERVER["HOME"]}/{$path}";
-      $this->imageStyles[$style]->uri = "{$GLOBALS["conf"]["static_domain"]}{$path}";
+      $this->imageStyles[$style]->path = "{$_SERVER["DOCUMENT_ROOT"]}/{$path}";
+      $this->imageStyles[$style]->uri = "{$GLOBALS["movlib"]["static_domain"]}{$path}";
     }
     return $this;
   }
@@ -307,7 +305,7 @@ class AbstractImageModel extends BaseModel {
       list($width, $height) = getimagesize($_FILES[$formElementName]["tmp_name"]);
       $ext = $this->imageSupported[$_FILES[$formElementName]["type"]];
       $hash = filemtime($_FILES[$formElementName]["tmp_name"]);
-      $path = "{$_SERVER["HOME"]}/uploads/{$this->imageDirectory}/{$this->imageName}.{$hash}.{$ext}";
+      $path = "{$_SERVER["DOCUMENT_ROOT"]}/uploads/{$this->imageDirectory}/{$this->imageName}.{$hash}.{$ext}";
       // Remove any meta data from the original image before saving to storage.
       exec("convert {$_FILES[$formElementName]["tmp_name"]} -strip {$path}");
     } catch (ErrorException $e) {
@@ -322,7 +320,7 @@ class AbstractImageModel extends BaseModel {
     $this->imageHeight    = $height;
     $this->imagePath      = $path;
     $this->imageWidth     = $width;
-    $this->imageUri       = "{$GLOBALS["conf"]["static_domain"]}uploads/{$this->imageDirectory}/{$this->imageName}.{$hash}.{$ext}";
+    $this->imageUri       = "{$GLOBALS["movlib"]["static_domain"]}uploads/{$this->imageDirectory}/{$this->imageName}.{$hash}.{$ext}";
     return $this->generateImageStylePaths()->generateImageStyles();
   }
 
