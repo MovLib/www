@@ -62,19 +62,13 @@ class UserRegisterView extends AbstractPageView {
     global $i18n;
 
     $this->addClass("span span--6 offset--3", $this->form->attributes);
-
     $this->addClass("input--block-level", $this->form->elements["mail"]->attributes);
     $this->addAttributes([ "autofocus" ], $this->form->elements["mail"]->attributes);
-
     $this->addClass("input--block-level", $this->form->elements["name"]->attributes);
-    $this->addAttributes([
-      "placeholder" => $i18n->t("Enter your desired username"),
-      "title"       => $i18n->t("Please enter your desired username in this field."),
-    ], $this->form->elements["name"]->attributes);
-
+    $this->addAttributes([ "placeholder" => $i18n->t("Enter your desired username"), "title" => $i18n->t("Please enter your desired username in this field.") ], $this->form->elements["name"]->attributes);
     $this->form->elements["name"]->label = $i18n->t("Username");
-
-    $this->form->actionElements["submit"] = new SubmitInput([ "class" => "button--success button--large", "value" => $i18n->t("Sign Up") ]);
+    $this->addClass("button--success button--large", $this->form->actionElements["submit"]->attributes);
+    $this->addAttributes([ "value" => $i18n->t("Sign Up") ], $this->form->actionElements["submit"]->attributes);
 
     return
       "<div class='container'><div class='row'>{$this->form->open()}" .

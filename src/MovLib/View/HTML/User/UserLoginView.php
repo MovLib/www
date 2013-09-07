@@ -65,7 +65,8 @@ class UserLoginView extends AbstractPageView {
     $this->addClass("input--block-level", $this->form->elements["mail"]->attributes);
     $this->addAttributes([ "autofocus" ], $this->form->elements["mail"]->attributes);
     $this->addClass("input--block-level", $this->form->elements["pass"]->attributes);
-    $this->form->actionElements["submit"] = new SubmitInput([ "class" => "button--success button--large", "value" => $i18n->t("Sign In") ]);
+    $this->addClass("button--success button--large", $this->form->actionElements["submit"]->attributes);
+    $this->addAttributes([ "value" => $i18n->t("Sign In") ], $this->form->actionElements["submit"]->attributes);
 
     return
       "<div class='container'><div class='row'>{$this->form->open()}" .
