@@ -15,10 +15,11 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML\FormElement\Input;
+namespace MovLib\View\HTML\Input;
 
 use \MovLib\Utility\Sanitizer;
-use \MovLib\View\HTML\FormElement\AbstractFormElement;
+use \MovLib\Utility\Validator;
+use \MovLib\View\HTML\Input\AbstractInput;
 
 /**
  * Represents the most basic input element, the <code><input type="text"></code>.
@@ -29,7 +30,7 @@ use \MovLib\View\HTML\FormElement\AbstractFormElement;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class TextInput extends AbstractFormElement {
+class TextInput extends AbstractInput {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Public Properties
@@ -61,7 +62,7 @@ class TextInput extends AbstractFormElement {
   public $help;
 
   /**
-   * The human readable label describing this element.
+   * The label text of the input element.
    *
    * @var string
    */
@@ -109,42 +110,38 @@ class TextInput extends AbstractFormElement {
   /**
    * Instantiate new text input form element.
    *
-   * @global \MovLib\Model\I18nModel $i18n
-   * @param string $name
-   *   The global name of this form element.
-   * @param string $label
-   *   The human readable global name of this form element.
+   * @param string $id
+   *   The global identifier of the input element.
    * @param array $attributes [optional]
-   *   Array with attributes that should be applied to this element.
+   *   Additional attributes for this input element, the following attributes are set automatically:
+   *   <ul>
+   *     <li><code>"id"</code> is set to the value of <var>$id</var></li>
+   *     <li><code>"name"</code> is set to the value of <var>$id</var></li>
+   *     <li><code>"tabindex"</code> is set to the next global tabindex</li>
+   *   </ul>
+   *   The <code>"value"</code> will be overwritten by any user submitted <var>$_POST[$id]</var>.
    * @param string $defaultValue [optional]
    *   The default value of this form element. This will be used if the element is not required and no value was
    *   submitted by the user (e.g. GMT if the user should choose a timezone).
    */
-  public function __construct($name, $label, $attributes = [], $defaultValue = "") {
-    global $i18n;
+  public function __construct($id, array $attributes = null, $defaultValue = "") {
+    $this->id = $id;
     $this->defaultValue = $defaultValue;
-    $this->id = $name;
-    $this->label = ucfirst($label);
-    $this->labelAttributes = [ "for" => $name ];
-    $this->attributes = array_merge([
-      "id"       => $name,
-      "name"     => $name,
-      "tabindex" => $this->getTabindex(),
-    ], $attributes);
-    if (empty($this->attributes["placeholder"])) {
-      $this->attributes["placeholder"] = $i18n->t("Enter your {0}", [ $label ]);
-    }
-    if (empty($this->attributes["title"])) {
-      $this->attributes["title"] = $i18n->t("Please enter your {0} in this field.", [ $label ]);
-    }
+    $this->attributes = $attributes;
+    $this->attributes["id"] = $id;
+    $this->attributes["name"] = $id;
+    $this->attributes["role"] = "textbox";
+    $this->attributes["tabindex"] = $this->getTabindex();
     if (!empty($_POST[$this->id])) {
       $this->attributes["value"] = Sanitizer::escapeSingleQuotes($_POST[$this->id]);
     }
+    $this->labelAttributes = [ "for" => $id ];
   }
 
   /**
    * Get string representation of this form element.
    *
+   * @global \MovLib\Model\I18nModel $i18n
    * @return string
    *   The string representation of this form element.
    */
@@ -218,13 +215,14 @@ class TextInput extends AbstractFormElement {
   }
 
   /**
-   * Validate user input after submission.
+   * Validate the user submitted data.
+   *
+   * Text input fields have to validated by the presenter!
    *
    * @return this
-   * @throws \MovLib\Exception\ValidatorException
    */
   public function validate() {
-    $this->value = $_POST[$this->attributes["name"]];
+    $this->value = $_POST[$this->id];
     return $this;
   }
 

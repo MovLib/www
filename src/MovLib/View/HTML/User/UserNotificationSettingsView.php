@@ -15,12 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML\FormElement\Input;
+namespace MovLib\View\HTML\User;
 
-use \MovLib\View\HTML\FormElement\AbstractFormElement;
+use \MovLib\View\HTML\AbstractFormView;
+use \MovLib\View\HTML\Alert;
 
 /**
- * Represents an input form element of type hidden.
+ * User notification settings form template.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,37 +29,32 @@ use \MovLib\View\HTML\FormElement\AbstractFormElement;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HiddenInput extends AbstractFormElement {
+class UserNotificationSettingsView extends AbstractFormView {
+  use \MovLib\View\HTML\TraitSecondaryNavigationView;
 
   /**
-   * Instantiate new hidden form element. Please note that hidden form elements are always readonly form elements.
+   * Instantiate new user notification settings view.
    *
-   * @param string $name
-   *   The name of this form element that will be used as global identifier.
-   * @param mixed $value
-   *   The value of the form element.
-   * @param array $attributes [optional]
-   *   Custom attributes that should be applied to the element.
+   * @global \MovLib\Model\I18nModel $i18n
+   * @param \MovLib\Presenter\User\UserNotificationSettingsPresenter $presenter
+   *   The presenting presenter.
    */
-  public function __construct($name, $value, $attributes = []) {
-    $this->id = $name;
-    $this->attributes = array_merge([
-      "aria-hidden"   => "true",
-      "aria-readonly" => "true",
-      "hidden",
-      "id"            => $name,
-      "name"          => $name,
-      "readonly",
-      "type"          => "hidden",
-      "value"         => $value,
-    ], $attributes);
+  public function __construct($presenter) {
+    global $i18n;
+    $this->init($presenter, $i18n->t("Notification Settings"));
+    $this->stylesheets[] = "modules/user.css";
   }
 
   /**
    * @inheritdoc
    */
-  public function __toString() {
-    return "<input{$this->expandTagAttributes($this->attributes)}>";
+  public function getSecondaryContent() {
+    global $i18n;
+    return new Alert($i18n->t("The notification system isn’t implemented yet."), [
+      "block"    => true,
+      "title"    => $i18n->t("Check back later"),
+      "severity" => Alert::SEVERITY_INFO,
+    ]);
   }
 
 }

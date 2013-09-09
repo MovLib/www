@@ -17,10 +17,11 @@
  */
 namespace MovLib\View\HTML\Error;
 
+use \MovLib\View\HTML\Alert;
 use \MovLib\View\HTML\AlertView;
 
 /**
- * Display a <em>403 Forbidden</em> error page (with correct HTTP headers) to the user.
+ * Display a 403 Forbidden error view (with correct HTTP headers) to the user.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -31,23 +32,26 @@ use \MovLib\View\HTML\AlertView;
 class ForbiddenView extends AlertView {
 
   /**
-   * Create a <em>403 Forbidden</em> error page.
+   * Instantiate new 403 Forbidden error view.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
    * @param \MovLib\Presenter\AbstractPresenter $presenter
-   *   The presenter object controlling this view.
+   *   The presenting presenter.
    */
   public function __construct($presenter) {
     global $i18n;
     parent::__construct($presenter, $i18n->t("Forbidden"));
     http_response_code(403);
-    $this->setAlert(
-      "<p>{$i18n->t("Access to the requested page is forbidden.")}</p>" .
-      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a($i18n->r("/contact"), $i18n->t("contact us")) ])}</p>",
-      self::ALERT_SEVERITY_ERROR,
-      true
-    );
+    $this->addAlert(new Alert(
+      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.", [
+        "<a href='{$i18n->r("/contact")}'>", "</a>"
+      ])}</p>",
+      [
+        "block"    => true,
+        "title"    => $i18n->t("Access to the requested page is forbidden."),
+        "severity" => Alert::SEVERITY_ERROR,
+      ]
+    ));
   }
 
 }

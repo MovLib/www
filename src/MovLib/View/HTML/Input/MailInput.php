@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML\FormElement\Input;
+namespace MovLib\View\HTML\Input;
 
 use \MovLib\Exception\ValidatorException;
-use \MovLib\View\HTML\FormElement\Input\TextInput;
+use \MovLib\View\HTML\Input\TextInput;
 
 /**
  * Create new email address input element.
@@ -35,24 +35,45 @@ class MailInput extends TextInput {
    * Instantiate new email address input form element.
    *
    * @todo Is the pattern to restrictive, or is our validate to nice?
-   * @global \MovLib\Model\I18nModel $i18n
-   * @param array $attributes
-   *   Set additional or overwrite the defaults.
-   * @param string $name [optional]
-   *   The global identifier for this instance.
-   * @param string $label [optional]
-   *   The already translated human readable label.
+   * @param array $attributes [optional]
+   *   Additional attributes for this input element, the following attributes are set automatically:
+   *   <ul>
+   *     <li><code>"id"</code> is set to the value of <var>$id</var></li>
+   *     <li><code>"name"</code> is set to the value of <var>$id</var></li>
+   *     <li><code>"tabindex"</code> is set to the next global tabindex</li>
+   *     <li><code>"maxlength"</code> is set to the global configuration <var>$GLOBALS["movlib"]["max_length_mail"]</var></li>
+   *     <li><code>"pattern"</code> is set to a regular expression that helps browsers to validate the email address</li>
+   *     <li><code>"type"</code> is set to <code>"email"</code></li>
+   *   </ul>
+   *   The <code>"value"</code> will be overwritten by any user submitted <var>$_POST[$id]</var>.
+   * @param string $id [optional]
+   *   The global identifier of the input element.
    * @param string $defaultValue [optional]
    *   The default value of this form element. This will be used if the element is not required and no value was
    *   submitted by the user (e.g. GMT if the user should choose a timezone).
    */
-  public function __construct($attributes = [], $name = "mail", $label = null, $defaultValue = "") {
+  public function __construct(array $attributes = null, $id = "mail", $defaultValue = "") {
+    parent::__construct($id, $attributes, $defaultValue);
+    $this->attributes["maxlength"] = $GLOBALS["movlib"]["max_length_mail"];
+    $this->attributes["pattern"] = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$";
+    $this->attributes["type"] = "email";
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function __toString() {
     global $i18n;
-    parent::__construct($name, $label ?: $i18n->t("email address"), array_merge([
-      "maxlength" => $GLOBALS["conf"]["max_length_mail"],
-//      "pattern"   => "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$",
-//      "type"      => "email",
-    ], $attributes), $defaultValue);
+    if (!$this->label) {
+      $this->label = $i18n->t("Email Address");
+    }
+    if (!isset($this->attributes["placeholder"])) {
+      $this->attributes["placeholder"] = $i18n->t("Enter your email address");
+    }
+    if (!isset($this->attributes["title"])) {
+      $this->attributes["title"] = $i18n->t("Please enter your email address in this field.");
+    }
+    return parent::__toString();
   }
 
   /**
@@ -64,14 +85,14 @@ class MailInput extends TextInput {
    */
   public function validate() {
     global $i18n;
-    if (mb_strlen($_POST[$this->id]) > $GLOBALS["conf"]["max_length_mail"]) {
-      throw new ValidatorException($i18n->t("The {0} is too long: it must be {1,number,integer} characters or less.", [ $this->label, $GLOBALS["conf"]["max_length_mail"] ]));
+    if (mb_strlen($_POST[$this->id]) > $GLOBALS["movlib"]["max_length_mail"]) {
+      throw new ValidatorException($i18n->t("The {0} is too long: it must be {1,number,integer} characters or less.", [ $this->label, $GLOBALS["movlib"]["max_length_mail"] ]));
     }
     $filtered = filter_var($_POST[$this->id], FILTER_VALIDATE_EMAIL);
     if ($filtered === false || empty($filtered)) {
       throw new ValidatorException($i18n->t("The {0} does not appear to be valid.", [ $this->label ]));
     }
-    if (strcmp($filtered, $_POST[$this->id]) !== 0) {
+    if ($filtered != $_POST[$this->id]) {
       throw new ValidatorException($i18n->t("The {0} contains illegal characters.", [ $this->label ]));
     }
     $this->value = $filtered;

@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML\FormElement;
+namespace MovLib\View\HTML\Input;
 
-use \MovLib\View\HTML\BaseView;
+use \MovLib\View\HTML\AbstractBaseView;
 
 /**
- * Most basic properties and methods that are shared by all form elements.
+ * Most basic properties and methods that are shared by all input elements.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,11 +28,7 @@ use \MovLib\View\HTML\BaseView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractFormElement extends BaseView {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+abstract class AbstractInput extends AbstractBaseView {
 
   /**
    * Global identifier to access this element.
@@ -47,10 +43,6 @@ abstract class AbstractFormElement extends BaseView {
    * @var array
    */
   public $attributes = [];
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
-
 
   /**
    * Get the HTML for this input element.

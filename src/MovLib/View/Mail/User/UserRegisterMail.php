@@ -28,7 +28,7 @@ use \MovLib\View\Mail\AbstractMail;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserActivationMail extends AbstractMail {
+class UserRegisterMail extends AbstractMail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -56,7 +56,6 @@ class UserActivationMail extends AbstractMail {
    * Instantiate new mail.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *   Global i18n model instance.
    * @param string $hash
    *   The activation hash of the user.
    * @param string $name
@@ -72,44 +71,43 @@ class UserActivationMail extends AbstractMail {
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   protected function getHtmlBody() {
     global $i18n;
     return
       "<p>{$i18n->t("Hi {0}!", [ $this->name ])}</p>" .
-      "<p>{$i18n->t("Thank you for registering at MovLib. You may now log in by {0}clicking this link{1}.", [
-        "<a href='{$i18n->r("/user/register={0}", [ $this->hash ])}'>",
+      "<p>{$i18n->t("Thank you for registering at MovLib. You may now sign in by {0}clicking this link{1}.", [
+        "<a href='{$i18n->r("/user/register")}?{$i18n->t("token")}={$this->hash}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once to log in and will lead you to a page where you can set your password.")}</p>" .
-      "<p>{$i18n->t("After setting your password, you will be able to log in at MovLib in the future using:")}</p>" .
+      "<p>{$i18n->t("This link can only be used once within the next 24 hours and will lead you to a page where you can set your secret password.")}</p>" .
+      "<p>{$i18n->t("After setting your password, you will be able to sign in at MovLib in the future using:")}</p>" .
       "<table>" .
-        "<tr><td>{$i18n->t("Email address")}:</td><td>{$this->recipient}</td><tr>" .
-        "<tr><td>{$i18n->t("Password")}:</td><td>{$i18n->t("Your password")}</td></tr>" .
+        "<tr><td>{$i18n->t("Email Address")}:</td><td>{$this->recipient}</td><tr>" .
+        "<tr><td>{$i18n->t("Password")}:</td><td><em>{$i18n->t("Your Secret Password")}</em></td></tr>" .
       "</table>"
     ;
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   protected function getPlainBody() {
     global $i18n;
-    return implode("\n", [
-      $i18n->t("Hi {0}!", [ $this->name ]),
-      "",
-      $i18n->t("Thank you for registering at MovLib. You may now log in by clicking this link or copying and pasting it to your browser:"),
-      "",
-      $i18n->r("/user/register={0}", [ $this->hash ]),
-      "",
-      $i18n->t("This link can only be used once to log in and will lead you to a page where you can set your password."),
-      "",
-      $i18n->t("After setting your password, you will be able to log in at MovLib in the future using:"),
-      "",
-      "{$i18n->t("Email address")}:  {$this->recipient}",
-      "{$i18n->t("Password")}:       {$i18n->t("Your password")}",
-    ]);
+    return <<<EOT
+{$i18n->t("Hi {0}!", [ $this->name ])}
+
+{$i18n->t("Thank your for registering at MovLib. You may now sign in by clicking the following link or copying and pasting it to your browser:")}
+
+{$i18n->r("/user/register")}?{$i18n->t("token")}={$this->hash}
+
+{$i18n->t("This link can only be used once within the next 24 hours and will lead you to a page where you can set your secret password.")}
+
+{$i18n->t("After setting your password, you will be able to sign in at MovLib in the future using:")}
+{$i18n->t("Email Address")}:  '{$i18n->t("Your Email Address")}'
+{$i18n->t("Password")}:       '{$i18n->t("Your Secret Password")}'
+EOT;
   }
 
 }

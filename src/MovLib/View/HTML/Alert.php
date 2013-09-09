@@ -116,8 +116,10 @@ class Alert {
    */
   public function __construct($message, array $options = null) {
     $this->message = $message;
-    foreach ($options as $k => $v) {
-      $this->{$k} = $v;
+    if ($options) {
+      foreach ($options as $k => $v) {
+        $this->{$k} = $v;
+      }
     }
   }
 

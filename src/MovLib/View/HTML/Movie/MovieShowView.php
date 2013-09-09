@@ -87,24 +87,24 @@ class MovieShowView extends AbstractPageView {
       "id"      =>  "directors",
       "title"   =>  $i18n->t("Directors"),
       "content" => $this->getUnorderedList($this->presenter->movieModel->getDirectors(), "", function ($item) use ($i18n) {
-        return $this->a($i18n->r("/person/{0}", [ $item["id"] ]), $item["name"]);
+        return "<li>{$this->a($i18n->r("/person/{0}", [ $item["id"] ]), $item["name"])}</li>";
       })
     ];
 
     // ----------------------------------------------------------------------------------------------------------------- Titles
 
     $contents[] = [
-      "id"      =>  "titles",
-      "title"   =>  $i18n->t("Titles"),
-      "content" => $this->getUnorderedList($this->presenter->movieModel->getTitles(), "", function ($item) { return $item["title"]; })
+      "id"      => "titles",
+      "title"   => $i18n->t("Titles"),
+      "content" => "<li>{$this->getUnorderedList($this->presenter->movieModel->getTitles(), "", function ($item) { return $item["title"]; })}</li>",
     ];
 
     // ----------------------------------------------------------------------------------------------------------------- Taglines
 
     $contents[] = [
-      "id"      =>  "taglines",
-      "title"   =>  $i18n->t("Taglines"),
-      "content" => $this->getUnorderedList($this->presenter->movieModel->getTagLines(), "", function ($item) { return $item["tagline"]; })
+      "id"      => "taglines",
+      "title"   => $i18n->t("Taglines"),
+      "content" => "<li>{$this->getUnorderedList($this->presenter->movieModel->getTagLines(), "", function ($item) { return $item["tagline"]; })}</li>",
     ];
 
     // Construct the content from the content array.
@@ -148,7 +148,7 @@ class MovieShowView extends AbstractPageView {
    * @return string
    *   The rendered content ready for print.
    */
-  public function getRenderedContent($tag = "div", $attributes = null) {
+  public function getRenderedContent() {
     global $i18n, $user;
     if (isset($this->presenter->movieModel->year)) {
       $yearLink = $this->a(
@@ -284,7 +284,8 @@ class MovieShowView extends AbstractPageView {
                 $this->getImage(
                   $this->presenter->movieModel->getPosterDisplay(),
                   MoviePosterModel::IMAGESTYLE_LARGE_FIXED_WIDTH,
-                  [ "alt" => $this->presenter->displayTitle ]),
+                  // @todo Country might be missing from the poster details!
+                  [ "alt" => $i18n->t("{0} movie poster for {1}.", [ $this->presenter->displayTitle, $this->presenter->movieModel->country ]) ]),
                 [ "class" => "span span--3" ]
               ) .
             "</header>" .

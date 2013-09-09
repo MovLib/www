@@ -42,7 +42,6 @@ class UserRegisterExistingMail extends AbstractMail {
    * Instantiate new mail.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *   Global i18n model instance.
    * @param string $mail
    *   The valid mail.
    */
@@ -59,7 +58,7 @@ class UserRegisterExistingMail extends AbstractMail {
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   protected function getHtmlBody() {
     global $i18n;
@@ -74,19 +73,19 @@ class UserRegisterExistingMail extends AbstractMail {
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   protected function getPlainBody() {
     global $i18n;
-    return implode("\n", [
-      $i18n->t("Hi {0}!", [ $this->user->name ]),
-      "",
-      $i18n->t("You (or someone else) requested a new account with this email address. If you forgot your password visit the “reset password” page:"),
-      "",
-      $i18n->r("/user/reset-password"),
-      "",
-      $i18n->t("If it wasn’t you who requested a new account ignore this message."),
-    ]);
+    return <<<EOT
+{$i18n->t("Hi {0}!", [ $this->user->name ])}
+
+{$i18n->t("You (or someone else) requested a new account with this email address. If you forgot your password visit the “reset password” page:")}
+
+{$i18n->r("/user/reset-password")}
+
+{$i18n->t("If it wasn’t you who requested a new account ignore this message.")}
+EOT;
   }
 
 }

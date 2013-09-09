@@ -17,8 +17,8 @@
  */
 namespace MovLib\View\HTML\User;
 
-use \MovLib\Model\UserModel;
-use \MovLib\View\HTML\AbstractFormView;
+use \MovLib\View\HTML\AbstractPageView;
+use \MovLib\View\HTML\Form;
 
 /**
  * User reset password form.
@@ -29,41 +29,39 @@ use \MovLib\View\HTML\AbstractFormView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserResetPasswordView extends AbstractFormView {
+class UserResetPasswordView extends AbstractPageView {
+
+  /**
+   * The user reset password form.
+   *
+   * @var \MovLib\View\HTML\Form
+   */
+  private $form;
 
   /**
    * Instantiate new user reset password view.
    *
-   * @param \MovLib\Presenter\UserPresenter $userPresenter
-   *   The user presenter controlling this view.
+   * @global \MovLib\Model\I18nModel $i18n
+   * @param \MovLib\Presenter\UserPresenter $presenter
+   *   The presenting presenter.
+   * @param \MovLib\View\HTML\Input\MailInput $mail
+   *   The mail input.
    */
-  public function __construct($userPresenter) {
+  public function __construct($presenter, $mail) {
     global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Reset password"));
+    $this->init($presenter, $i18n->t("Reset Password"));
     $this->stylesheets[] = "modules/user.css";
+    $this->addClass("input--block-level", $mail->attributes);
+    $this->form = new Form("reset-password", $this->presenter, $elements, [ "class" => "span span--6 offset--3" ], [ "class" => "button--success button--large", "value" => $this->title ]);
+    $this->form->elements["mail"]->attributes["class"] .= "input--block-level";
+    $this->form->elements["mail"]->attributes[] = "autofocus";
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
-  public function getFormContent() {
-    global $i18n;
-    return
-      "<div class='row'>" .
-        "<div class='span span--6 offset--3'>" .
-          "<p><label for='mail'>{$i18n->t("Email address")}</label>{$this->input("mail", [
-            "autofocus",
-            "class"       => "input--block-level",
-            "maxlength"   => UserModel::MAIL_MAX_LENGTH,
-            "placeholder" => $i18n->t("Enter your email address"),
-            "required",
-            "title"       => $i18n->t("Plase enter the email address with which you registered your account."),
-            "type"        => "email",
-          ])}</p>" .
-          "<p>{$this->submit($i18n->t("Reset password"), $i18n->t("Click here after you’ve filled out all fields."))}</p>" .
-        "</div>" .
-      "</div>"
-    ;
+  public function getContent() {
+    return "<div class='container'><div class='row'>{$this->form->open()}<p>{$this->form->elements["mail"]}</p>{$this->form->close(false)}</div></div>";
   }
 
 }

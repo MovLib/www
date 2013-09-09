@@ -15,12 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\Mail;
+namespace MovLib\Presenter\User;
 
-use \MovLib\View\Mail\AbstractMail;
+use \MovLib\Model\UserModel;
+use \MovLib\Presenter\User\AbstractUserPresenter;
+use \MovLib\View\HTML\User\UserShowView;
 
 /**
- * Mail template for mails to be sent to all MovLib developers.
+ * Description of UserShowPresenter
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,51 +30,21 @@ use \MovLib\View\Mail\AbstractMail;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovDevMail extends AbstractMail {
+class UserShowPresenter extends AbstractUserPresenter {
 
   /**
-   * The message in HTML format.
+   * Instantiate new user show presenter.
    *
-   * @var string
-   */
-  public $html;
-
-  /**
-   * The message in plain text format.
+   * Please note that there is theoretically no possibility that the exception is ever thrown. If the user has a valid
+   * session, the user has a profile.
    *
-   * @var string
+   * @global \MovLib\Model\SessionModel $user
+   * @throws \MovLib\Exception\UserException
    */
-  public $text;
-
-  /**
-   * Instantiate new mail that will be sent to all devs.
-   *
-   * @param string $subject
-   *   The text to appear in the mail subject.
-   * @param string $text
-   *   The message in plain text format.
-   * @param string $html
-   *   The message in HTML format.
-   */
-  public function __construct($subject, $text, $html) {
-    $this->recipient = $GLOBALS["movlib"]["developer_mailinglist"];
-    $this->subject = $subject;
-    $this->html = $html;
-    $this->text = $text;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  protected function getHtmlBody() {
-    return "<p>Hi devs!</p>{$this->html}";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  protected function getPlainBody() {
-    return "Hi devs!\n\n{$this->text}";
+  public function __construct() {
+    global $user;
+    $this->checkAuthorization()->profile = new UserModel(UserModel::FROM_ID, $user->id);
+    new UserShowView($this);
   }
 
 }

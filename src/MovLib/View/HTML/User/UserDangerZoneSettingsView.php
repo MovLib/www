@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\Mail;
+namespace MovLib\View\HTML\User;
 
-use \MovLib\View\Mail\AbstractMail;
+use \MovLib\View\HTML\AbstractFormView;
 
 /**
- * Mail template for mails to be sent to all MovLib developers.
+ * User danger zone settings form template.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,51 +28,32 @@ use \MovLib\View\Mail\AbstractMail;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovDevMail extends AbstractMail {
+class UserDangerZoneSettingsView extends AbstractFormView {
+  use \MovLib\View\HTML\TraitSecondaryNavigationView;
 
   /**
-   * The message in HTML format.
+   * Instantiate new user password settings view.
    *
-   * @var string
+   * @global \MovLib\Model\I18nModel $i18n
+   * @param \MovLib\Presenter\User\UserDangerZoneSettingsPresenter $presenter
+   *   The presenting presenter.
+   * @param array $elements
+   *   Numeric array of form elements that should be attached to this view.
    */
-  public $html;
-
-  /**
-   * The message in plain text format.
-   *
-   * @var string
-   */
-  public $text;
-
-  /**
-   * Instantiate new mail that will be sent to all devs.
-   *
-   * @param string $subject
-   *   The text to appear in the mail subject.
-   * @param string $text
-   *   The message in plain text format.
-   * @param string $html
-   *   The message in HTML format.
-   */
-  public function __construct($subject, $text, $html) {
-    $this->recipient = $GLOBALS["movlib"]["developer_mailinglist"];
-    $this->subject = $subject;
-    $this->html = $html;
-    $this->text = $text;
+  public function __construct($presenter, $elements) {
+    global $i18n;
+    $this->initForm($presenter, $i18n->t("Danger Zone Settings"), $elements);
+    $this->stylesheets[] = "modules/user.css";
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
-  protected function getHtmlBody() {
-    return "<p>Hi devs!</p>{$this->html}";
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  protected function getPlainBody() {
-    return "Hi devs!\n\n{$this->text}";
+  public function getSecondaryContent() {
+    global $i18n;
+    return
+      ""
+    ;
   }
 
 }

@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML\Error;
+namespace MovLib\View\HTML\User;
 
-use \MovLib\View\HTML\Alert;
-use \MovLib\View\HTML\AlertView;
+use \MovLib\View\HTML\AbstractFormView;
 
 /**
- * Display a <em>400 Bad Request</em> error page (with correct HTTP headers) to the user.
+ * Description of UserAccountSettingsView
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,29 +28,19 @@ use \MovLib\View\HTML\AlertView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class BadRequestView extends AlertView {
+class UserAccountSettingsView extends AbstractFormView {
 
-  /**
-   * Create a <em>403 Forbidden</em> error page.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   * @param \MovLib\Presenter\AbstractPresenter $presenter
-   *   The presenter controlling this view.
-   */
-  public function __construct($presenter) {
+  public function __construct($presenter, $elements) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Bad Request"));
-    http_response_code(400);
-    $this->addAlert(new Alert(
-      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.", [
-        "<a href='{$i18n->r("/contact")}'>", "</a>"
-      ])}</p>",
-      [
-        "block"    => true,
-        "title"    => $i18n->t("Your browser sent a request that we could not understand."),
-        "severity" => Alert::SEVERITY_ERROR,
-      ]
-    ));
+    $this->initForm($presenter, $i18n->t("Account Settings"), $elements);
+    $this->stylesheets[] = "modules/user.css";
+  }
+
+  public function getContent() {
+    global $i18n;
+    return
+      ""
+    ;
   }
 
 }

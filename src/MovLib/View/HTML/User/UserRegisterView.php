@@ -18,7 +18,7 @@
 namespace MovLib\View\HTML\User;
 
 use \MovLib\View\HTML\AbstractPageView;
-use \MovLib\View\HTML\Input\SubmitInput;
+use \MovLib\View\HTML\Form;
 
 /**
  * User register form.
@@ -45,14 +45,27 @@ class UserRegisterView extends AbstractPageView {
    * @global \MovLib\Model\I18nModel $i18n
    * @param \MovLib\Presenter\UserPresenter $presenter
    *   The presenting presenter.
-   * @param \MovLib\View\HTML\Form $form
-   *   The user register form.
+   * @param \MovLib\View\HTML\Input\MailInput $mail
+   *   The mail input.
+   * @param \MovLib\View\HTML\Input\TextInput $name
+   *   The username input.
    */
-  public function __construct($presenter, $form) {
+  public function __construct($presenter, $mail, $name) {
     global $i18n;
-    $this->form = $form;
     $this->init($presenter, $i18n->t("Register"));
     $this->stylesheets[] = "modules/user.css";
+    $mail->attributes[] = "autofocus";
+    $mail->attributes["class"] = $name->attributes["class"] = "input--block-level";
+    $name->attributes["placeholder"] = $i18n->t("Enter your desired username");
+    $name->attributes["title"] = $i18n->t("Please enter your desired username in this field.");
+    $name->label = $i18n->t("Username");
+    $this->form = new Form(
+      "register",
+      $this->presenter,
+      [ $mail, $name ],
+      [ "class" => "span span--6 offset--3" ],
+      [ "class" => "button--success button--large", "value" => $i18n->t("Sign Up") ]
+    );
   }
 
   /**
@@ -60,16 +73,6 @@ class UserRegisterView extends AbstractPageView {
    */
   public function getContent() {
     global $i18n;
-
-    $this->addClass("span span--6 offset--3", $this->form->attributes);
-    $this->addClass("input--block-level", $this->form->elements["mail"]->attributes);
-    $this->addAttributes([ "autofocus" ], $this->form->elements["mail"]->attributes);
-    $this->addClass("input--block-level", $this->form->elements["name"]->attributes);
-    $this->addAttributes([ "placeholder" => $i18n->t("Enter your desired username"), "title" => $i18n->t("Please enter your desired username in this field.") ], $this->form->elements["name"]->attributes);
-    $this->form->elements["name"]->label = $i18n->t("Username");
-    $this->addClass("button--success button--large", $this->form->actionElements["submit"]->attributes);
-    $this->addAttributes([ "value" => $i18n->t("Sign Up") ], $this->form->actionElements["submit"]->attributes);
-
     return
       "<div class='container'><div class='row'>{$this->form->open()}" .
         "<small class='form-help'><a href='{$i18n->r("/user/login")}'>{$i18n->t("Already have an account?")}</a></small>" .

@@ -21,7 +21,6 @@ use \MovLib\Exception\UserException;
 use \MovLib\Model\UserModel;
 use \MovLib\Presenter\User\AbstractUserPresenter;
 use \MovLib\View\HTML\Alert;
-use \MovLib\View\HTML\Form;
 use \MovLib\View\HTML\Input\MailInput;
 use \MovLib\View\HTML\Input\PasswordInput;
 use \MovLib\View\HTML\Redirect;
@@ -57,7 +56,7 @@ class UserLoginPresenter extends AbstractUserPresenter {
     }
 
     // Now we also need to know the translated version of the login route.
-    $routeLogin = $i18n->r("/user/login", null, [ "absolute" => false ]);
+    $routeLogin = $action = $i18n->r("/user/login", null, [ "absolute" => false ]);
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
@@ -67,13 +66,12 @@ class UserLoginPresenter extends AbstractUserPresenter {
         $_GET["redirect_to"] = $_SERVER["PATH_INFO"];
       }
       $_GET["redirect_to"] = rawurlencode($_GET["redirect_to"]);
-      $routeLogin .= "?redirect_to={$_GET["redirect_to"]}";
+      $action .= "?redirect_to={$_GET["redirect_to"]}";
     }
-    $formAttributes = [ "action" => "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$routeLogin}" ];
 
     // Instantiate the view, pass the user login form along. The user login form will validate itself if we are
     // receiving the form (POST) and call our validate method if basic validation succeded.
-    new UserLoginView($this, new Form("login", $this, [ (new MailInput())->required(), new PasswordInput() ], $formAttributes));
+    new UserLoginView($this, (new MailInput())->required(), new PasswordInput(), "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$action}");
 
     // If the user requested to be signed out, do so.
     if ($user->isLoggedIn === true && $_SERVER["PATH_INFO"] == $routeLogout) {
@@ -83,6 +81,9 @@ class UserLoginPresenter extends AbstractUserPresenter {
         "severity" => Alert::SEVERITY_SUCCESS,
       ]));
     }
+
+    // Ensure all views are using the correct path info to render themselves.
+    $_SERVER["PATH_INFO"] = $routeLogin;
   }
 
   /**

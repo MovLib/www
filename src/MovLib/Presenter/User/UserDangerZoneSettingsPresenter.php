@@ -15,12 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML\FormElement\Action;
+namespace MovLib\Presenter\User;
 
-use \MovLib\View\HTML\FormElement\Action\BaseAction;
+use \MovLib\Presenter\User\AbstractUserPresenter;
+use \MovLib\HTML\User\UserDangerZoneSettingsView;
 
 /**
- * Submit action element.
+ * Takes care of user danger zone settings.
+ *
+ * Danger zone settings include user session management and disabling of the own account.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,23 +31,25 @@ use \MovLib\View\HTML\FormElement\Action\BaseAction;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class SubmitAction extends BaseAction {
+class UserDangerZoneSettingsPresenter extends AbstractUserPresenter {
 
   /**
-   * Instantiate new submit action form element.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   * @param array $attributes [optional]
-   *   Additional attributes that should be applied to this input element. Please note that the CSS classes <code>
-   *   "button button--success"</code> are always applied.
+   * Instantiate new user danger zone settings presenter.
    */
-  public function __construct($attributes = null) {
-    global $i18n;
-    parent::__construct("submit", $attributes);
-    $this->addClass("button button--success", $this->attributes);
-    if (empty($this->attributes["value"])) {
-      $this->attributes["value"] = $i18n->t("Submit");
-    }
+  public function __construct() {
+    $this->checkAuthorization();
+    new UserDangerZoneSettingsView($this, [
+
+    ]);
+  }
+
+  /**
+   * Continue validation after the basic form elements where validated by the view itself.
+   *
+   * @return this
+   */
+  public function validate() {
+    return $this;
   }
 
 }

@@ -18,7 +18,7 @@
 namespace MovLib\View\HTML\User;
 
 use \MovLib\View\HTML\AbstractPageView;
-use \MovLib\View\HTML\Input\SubmitInput;
+use \MovLib\View\HTML\Form;
 
 /**
  * User login form.
@@ -45,14 +45,26 @@ class UserLoginView extends AbstractPageView {
    * @global \MovLib\Model\I18nModel $i18n
    * @param \MovLib\Presenter\User\UserLoginPresenter $presenter
    *   The presenting presenter.
-   * @param \MovLib\View\HTML\Form $form
-   *   The user login form.
+   * @param \MovLib\View\HTML\Input\MailInput $mail
+   *   The mail input element.
+   * @param \MovLib\View\HTML\Input\PasswordInput $pass
+   *   The password input element.
+   * @param string $action
+   *   The form action value.
    */
-  public function __construct($presenter, $form) {
+  public function __construct($presenter, $mail, $pass, $action) {
     global $i18n;
-    $this->form = $form;
     $this->init($presenter, $i18n->t("Login"));
     $this->stylesheets[] = "modules/user.css";
+    $mail->attributes[] = "autofocus";
+    $mail->attributes["class"] = $pass->attributes["class"] = "input--block-level";
+    $this->form = new Form(
+      "login",
+      $this->presenter,
+      [ $mail, $pass ],
+      [ "action" => $action, "class" => "span span--6 offset--3" ],
+      [ "class" => "button--success button--large", "vlaue" => $i18n->t("Sign In") ]
+    );
   }
 
   /**
@@ -60,14 +72,6 @@ class UserLoginView extends AbstractPageView {
    */
   public function getContent() {
     global $i18n;
-
-    $this->addClass("span span--6 offset--3", $this->form->attributes);
-    $this->addClass("input--block-level", $this->form->elements["mail"]->attributes);
-    $this->addAttributes([ "autofocus" ], $this->form->elements["mail"]->attributes);
-    $this->addClass("input--block-level", $this->form->elements["pass"]->attributes);
-    $this->addClass("button--success button--large", $this->form->actionElements["submit"]->attributes);
-    $this->addAttributes([ "value" => $i18n->t("Sign In") ], $this->form->actionElements["submit"]->attributes);
-
     return
       "<div class='container'><div class='row'>{$this->form->open()}" .
         "<small class='form-help'><a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a></small>" .

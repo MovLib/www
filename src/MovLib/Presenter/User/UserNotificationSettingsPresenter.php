@@ -17,11 +17,11 @@
  */
 namespace MovLib\Presenter\User;
 
-use \MovLib\Presenter\User\UserLoginPresenter;
-use \MovLib\View\HTML\User\UserLoginView;
+use \MovLib\Presenter\User\AbstractUserPresenter;
+use \MovLib\View\HTML\User\UserNotificationSettingsView;
 
 /**
- * Handles user log outs.
+ * Takes care of user notificiation settings.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,24 +29,14 @@ use \MovLib\View\HTML\User\UserLoginView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserLogoutPresenter extends UserLoginPresenter {
+class UserNotificationSettingsPresenter extends AbstractUserPresenter {
 
   /**
-   * Instantiate new user logout presenter.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   * @global \MovLib\Model\SessionModel $user
+   * Instantiate new user notification settings presenter.
    */
   public function __construct() {
-    global $i18n, $user;
-    $this->init();
-    if ($user->isLoggedIn === true) {
-      $user->destroySession();
-      $this->view->setAlert([
-        "title"   => $i18n->t("You’ve been logged out successfully."),
-        "message" => $i18n->t("We hope to see you again soon."),
-      ], UserLoginView::ALERT_SEVERITY_SUCCESS);
-    }
+    $this->checkAuthorization();
+    new UserNotificationSettingsView($this);
   }
 
 }

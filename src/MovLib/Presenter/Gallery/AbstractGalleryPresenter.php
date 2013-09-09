@@ -15,42 +15,68 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\HTML\FormElement\Action;
+namespace MovLib\Presenter\Gallery;
 
-use \MovLib\View\HTML\FormElement\AbstractFormElement;
+use \MovLib\Presenter\AbstractPresenter;
+use \MovLib\View\HTML\Gallery\GalleryView;
 
 /**
- * Base class for all action form elements.
+ * Base class for all gallery presenter.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class BaseAction extends AbstractFormElement {
+abstract class AbstractGalleryPresenter extends AbstractPresenter {
 
   /**
-   * Instantiate new action form element.
+   * The gallery's model.
    *
-   * @param string $type
-   *   The value of the type attribute of the input element. Default is <code>"submit"</code>.
-   * @param array $attributes [optional]
-   *   Additional attributes that should be applied to this input element.
+   * @var \MovLib\Model\BaseModel
    */
-  public function __construct($type, $attributes = null) {
-    $this->id = $type;
-    $this->attributes = array_merge([
-      "tabindex" => $this->getTabindex(),
-      "type"     => $type,
-    ], $attributes);
-  }
+  public $model;
 
   /**
-   * @inheritdoc
+   * The entity's title.
+   *
+   * @var string
    */
-  public function __toString() {
-    return "<input{$this->expandTagAttributes($this->attributes)}>";
+  public $title;
+
+  /**
+   * The gallery's title.
+   *
+   * @var string
+   */
+  public $galleryTitle;
+
+  /**
+   * Numeric array containing all image models of this gallery.
+   *
+   * @var array
+   */
+  public $images;
+
+  /**
+   * Get the secondary navigation for this gallery presenter.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   * @return array
+   *   The secondary navigation points.
+   */
+  abstract public function getSecondaryNavigationPoints();
+
+  /**
+   * Set the view for this presenter.
+   *
+   * @return this
+   */
+  protected function setView() {
+    new GalleryView($this);
+    return $this;
   }
 
 }

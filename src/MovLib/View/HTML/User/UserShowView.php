@@ -30,6 +30,7 @@ use \MovLib\View\HTML\AbstractPageView;
  * @since 0.0.1-dev
  */
 class UserShowView extends AbstractPageView {
+  use \MovLib\View\HTML\TraitSecondaryNavigationView;
 
   /**
    * The user presenter controlling this view.
@@ -42,63 +43,52 @@ class UserShowView extends AbstractPageView {
    * Get user profile view.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
-   * @param \MovLib\Presenter\UserPresenter $userPresenter
-   *   The user presenter controlling this view.
+   * @param \MovLib\Presenter\UserPresenter $presenter
+   *   The presenting presenter.
    */
-  public function __construct($userPresenter) {
+  public function __construct($presenter) {
     global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Profile"));
+    $this->init($presenter, $i18n->t("Profile"));
     $this->stylesheets[] = "modules/user.css";
   }
 
   /**
-   * {@inheritdoc}
-   * @global \MovLib\Model\I18nModel $i18n
-   * @global \MovLib\Model\SessionModel $user
+   * @inheritdoc
    */
-  public function getContent() {
+  public function getSecondaryContent() {
     global $i18n, $user;
-    $nav = $this->presenter->getSecondarySettingsNavigation();
     return
-      "<div class='container'>" .
-        "<div class='row'>" .
-          "<aside class='span span--3'>{$this->getSecondaryNavigation($nav["title"], $nav["points"])}</aside>" .
-          "<div class='span span--9'>" .
-            "<h2>{$i18n->t("Your Account Summary")}</h2>" .
-            "<div class='row'>" .
-              "<dl class='span span--7'>" .
-                "<dt>{$i18n->t("Username")}</dt><dd>{$this->presenter->profile->name}</dd>" .
-                "<dt>{$i18n->t("User ID")}</dt><dd>{$this->presenter->profile->userId}</dd>" .
-                "<dt>{$i18n->t("Edits")}</dt><dd>{$this->presenter->profile->edits}</dd>" .
-                "<dt>{$i18n->t("Reputation")}</dt><dd><em>@todo</em> reputation counter</dd>" .
-                "<dt>{$i18n->t("Mail")}</dt><dd>{$this->presenter->profile->mail}</dd>" .
-                "<dt>{$i18n->t("Registration")}</dt><dd>{$i18n->formatDate($this->presenter->profile->created, $this->presenter->profile->timezone)}</dd>" .
-                "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->presenter->profile->access, $this->presenter->profile->timezone)}</dd>" .
-              "</dl>" .
-              "<div class='span span--2'>" .
-                $this->a($i18n->r("/user/account-settings"), $this->getImage($this->presenter->profile, UserModel::IMAGESTYLE_BIG), [
-                  "class" => "change-avatar no-border",
-                  "title" => "Change your avatar image.",
-                ]) .
-              "</div>" .
-            "</div>" .
-            "<h2>\$user</h2>" .
-            "<pre>" . print_r($this->presenter->profile, true) . "</pre>" .
-            "<h2>\$session</h2>" .
-            "<pre>" . print_r($user, true) . "</pre>" .
-            "<h2>\$_SESSION</h2>" .
-            "<pre>" . print_r($_SESSION, true) . "</pre>" .
-            "<h2>\$_SERVER</h2>" .
-            "<pre>" . print_r($_SERVER, true) . "</pre>" .
-          "</div>" .
+      "<h2>{$i18n->t("Your Account Summary")}</h2>" .
+      "<div class='row'>" .
+        "<dl class='span span--7'>" .
+          "<dt>{$i18n->t("Username")}</dt><dd>{$this->presenter->profile->name}</dd>" .
+          "<dt>{$i18n->t("User ID")}</dt><dd>{$this->presenter->profile->userId}</dd>" .
+          "<dt>{$i18n->t("Edits")}</dt><dd>{$this->presenter->profile->edits}</dd>" .
+          "<dt>{$i18n->t("Reputation")}</dt><dd><em>@todo</em> reputation counter</dd>" .
+          "<dt>{$i18n->t("Mail")}</dt><dd>{$this->presenter->profile->mail}</dd>" .
+          "<dt>{$i18n->t("Registration")}</dt><dd>{$i18n->formatDate($this->presenter->profile->created, $this->presenter->profile->timezone)}</dd>" .
+          "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->presenter->profile->access, $this->presenter->profile->timezone)}</dd>" .
+        "</dl>" .
+        "<div class='span span--2'>" .
+          $this->a($i18n->r("/user/account-settings"), $this->getImage($this->presenter->profile, UserModel::IMAGESTYLE_BIG), [
+            "class" => "change-avatar no-border",
+            "title" => "Change your avatar image.",
+          ]) .
         "</div>" .
-      "</div>"
+      "</div>" .
+      "<h2>\$user</h2>" .
+      "<pre>" . print_r($this->presenter->profile, true) . "</pre>" .
+      "<h2>\$session</h2>" .
+      "<pre>" . print_r($user, true) . "</pre>" .
+      "<h2>\$_SESSION</h2>" .
+      "<pre>" . print_r($_SESSION, true) . "</pre>" .
+      "<h2>\$_SERVER</h2>" .
+      "<pre>" . print_r($_SERVER, true) . "</pre>"
     ;
   }
 
   /**
-   * {@inheritdoc}
+   * @inheritdoc
    */
   public function getRenderedContent($tag = null, $attributes = null) {
     return parent::getRenderedContent("article");

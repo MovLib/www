@@ -45,11 +45,11 @@ class MoviesPresenter extends AbstractPresenter {
    */
   public function __construct() {
     $this->moviesModel = new MoviesModel();
-    $this->view = new MoviesView($this);
+    new MoviesView($this);
   }
 
   public function getBreadcrumb() {
-    
+
   }
 
   /**

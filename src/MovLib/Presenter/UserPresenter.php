@@ -39,7 +39,7 @@ use \MovLib\View\HTML\User\UserLoginView;
 use \MovLib\View\HTML\User\UserRegisterView;
 use \MovLib\View\HTML\User\UserResetPasswordView;
 use \MovLib\View\HTML\User\UserSettingsView;
-use \MovLib\View\Mail\User\UserActivationMail;
+use \MovLib\View\Mail\User\UserRegisterMail;
 use \MovLib\View\Mail\User\UserPasswordResetMail;
 use \MovLib\View\Mail\User\UserRegisterExistingMail;
 
@@ -206,7 +206,7 @@ class UserPresenter extends AbstractPresenter {
         else {
           $hash = Crypt::randomHash();
           DelayedMethodCalls::stack($userModel, "preRegister", [ $hash, $this->view->formElements["name"]->value, $this->view->formElements["mail"]->value ]);
-          DelayedMailer::stack(new UserActivationMail($hash, $this->view->formElements["name"]->value, $this->view->formElements["mail"]->value));
+          DelayedMailer::stack(new UserRegisterMail($hash, $this->view->formElements["name"]->value, $this->view->formElements["mail"]->value));
         }
         // Tell the user that we've sent a mail with instructions.
         $registerView = $this->view;
