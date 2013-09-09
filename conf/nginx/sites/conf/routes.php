@@ -256,57 +256,57 @@ location @user {
 location ^~ <?= $r("/user") ?> {
 
   location = <?= $r("/user") ?> {
-    set $movlib_presenter "User\\UserShow";
+    set $movlib_presenter "User\\Show";
     include sites/conf/fastcgi.conf;
   }
 
   location = <?= $r("/user/login") ?> {
-    set $movlib_presenter "User\\UserLogin";
+    set $movlib_presenter "User\\Login";
     try_files $movlib_cache @user;
   }
 
   location = <?= $r("/user/sign-out") ?> {
-    set $movlib_presenter "User\\UserLogin";
+    set $movlib_presenter "User\\Login";
     include sites/conf/fastcgi.conf;
   }
 
   location = <?= $r("/user/reset-password") ?> {
-    set $movlib_presenter "User\\UserResetPassword";
+    set $movlib_presenter "User\\ResetPassword";
     include sites/conf/fastcgi.conf;
   }
 
-  location = <?= $r("/user/register") ?> {
-    set $movlib_presenter "User\\UserRegister";
+  location = <?= $r("/user/registration") ?> {
+    set $movlib_presenter "User\\Registration";
     try_files $movlib_cache @user;
   }
 
   location ~ ^<?= $r("/user/account-settings") ?>$ {
-    set $movlib_presenter "User\\UserAccountSettings";
+    set $movlib_presenter "User\\AccountSettings";
     include sites/conf/fastcgi.conf;
   }
 
   location ~ ^<?= $r("/user/notification-settings") ?>$ {
-    set $movlib_presenter "User\\UserNotificationSettings";
+    set $movlib_presenter "User\\NotificationSettings";
     include sites/conf/fastcgi.conf;
   }
 
   location ~ ^<?= $r("/user/mail-settings") ?>$ {
-    set $movlib_presenter "User\\UserMailSettings";
+    set $movlib_presenter "User\\MailSettings";
     include sites/conf/fastcgi.conf;
   }
 
   location ~ ^<?= $r("/user/password-settings") ?>$ {
-    set $movlib_presenter "User\\UserPasswordSettings";
+    set $movlib_presenter "User\\PasswordSettings";
     include sites/conf/fastcgi.conf;
   }
 
   location ~ ^<?= $r("/user/danger-zone-settings") ?>$ {
-    set $movlib_presenter "User\\UserDangerZoneSettings";
+    set $movlib_presenter "User\\DangerZoneSettings";
     include sites/conf/fastcgi.conf;
   }
 
   location ~ ^<?= $r("/user") ?>/(.+)$ {
-    set $movlib_presenter "User\\UserProfile";
+    set $movlib_presenter "User\\Profile";
     set $movlib_user_name $1;
     try_files $movlib_cache @user;
   }
