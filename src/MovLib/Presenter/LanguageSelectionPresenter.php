@@ -36,7 +36,7 @@ class LanguageSelectionPresenter extends AbstractPresenter {
    * Instantiate new language selection presenter.
    */
   public function __construct() {
-    $this->view = new LanguageSelectionView($this);
+    new LanguageSelectionView($this);
   }
 
   /**
@@ -47,16 +47,16 @@ class LanguageSelectionPresenter extends AbstractPresenter {
   /**
    * Get menupoints for the language selection.
    *
+   * @todo Sort locales by user and/or page count.
    * @return array
    */
   public function getLanguageSelectionMenupoints() {
     $points = [];
-    $c = count($GLOBALS["conf"]["i18n"]["supported_languages"]);
-    for ($i = 0; $i < $c; ++$i) {
+    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
       $points[] = [
-        "https://{$GLOBALS["conf"]["i18n"]["supported_languages"][$i]}.{$_SERVER["SERVER_NAME"]}/",
-        Locale::getDisplayLanguage($GLOBALS["conf"]["i18n"]["supported_languages"][$i], $GLOBALS["conf"]["i18n"]["supported_languages"][$i]),
-        [ "lang" => $GLOBALS["conf"]["i18n"]["supported_languages"][$i], "rel" => "prefetch" ]
+        "{$_SERVER["SCHEME"]}://{$languageCode}.{$_SERVER["SERVER_NAME"]}/",
+        Locale::getDisplayLanguage($locale, $languageCode),
+        [ "lang" => $languageCode, "rel" => "prefetch" ],
       ];
     }
     return $points;

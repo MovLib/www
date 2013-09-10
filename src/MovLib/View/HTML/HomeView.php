@@ -33,20 +33,13 @@ use \MovLib\View\HTML\AbstractPageView;
 class HomeView extends AbstractPageView {
 
   /**
-   * The home presenter controlling this view.
-   *
-   * @var \MovLib\Presenter\HomePresenter
-   */
-  public $presenter;
-
-  /**
    * Instantiate new home view instance.
    *
    * @param \MovLib\Presenter\HomePresenter $presenter
    *   The home presenter controlling this view.
    */
   public function __construct($presenter) {
-    parent::__construct($presenter, "MovLib");
+    $this->init($presenter, "MovLib");
     $this->stylesheets[] = "modules/home.css";
   }
 
@@ -88,6 +81,7 @@ class HomeView extends AbstractPageView {
       "<div id='home-banner'>" .
         "<div class='container lead hero'>{$i18n->t("Do you like movies?<br>Great, so do we!")}</div>" .
       "</div>" .
+      $this->getAlerts() .
       "<div class='container container--home'>" .
         "<div class='row'>" .
           "<article class='span span--4 span--home'>" .
@@ -135,7 +129,7 @@ class HomeView extends AbstractPageView {
               "developers out there. We want to keep the barrier as low as possible and ensure that everybody can " .
               "use the data we all collect here at MovLib."
             )}</p>" .
-            "<p style='text-align:center'><a class='button button--primary button--large' href='https://api.movlib.org/'>" .
+            "<p style='text-align:center'><a class='button button--primary button--large' href='{$GLOBALS["movlib"]["api_domain"]}'>" .
               $i18n->t("Read the API documentation") .
             "</a></p>" .
           "</article>" .
@@ -147,15 +141,11 @@ class HomeView extends AbstractPageView {
   /**
    * We already have the <code><h1></code>-element in the header, the content shall not have another one.
    *
-   * @param null $tag
-   *   Unused but declaration must be compatible.
-   * @param null $attributes
-   *   Unused but declaration must be compatible.
    * @return string
    *   The rendered view ready for print.
    */
-  public function getRenderedContent($tag = null, $attributes = null) {
-    return "<div id='content' class='{$this->getShortName()}-content' role='main'>{$this->getContent()}</div>";
+  public function getRenderedContent() {
+    return "<div class='{$this->getShortName()}-content' id='content' role='main'>{$this->getContent()}</div>";
   }
 
 }

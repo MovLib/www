@@ -17,10 +17,11 @@
  */
 namespace MovLib\View\HTML\User;
 
-use \MovLib\View\HTML\AbstractFormView;
+use \MovLib\View\HTML\AbstractPageView;
+use \MovLib\View\HTML\Form;
 
 /**
- * User registration form.
+ * User register form.
  *
  * @link http://uxdesign.smashingmagazine.com/2011/11/08/extensive-guide-web-form-usability/
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -29,20 +30,42 @@ use \MovLib\View\HTML\AbstractFormView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserRegisterView extends AbstractFormView {
+class UserRegisterView extends AbstractPageView {
 
   /**
-   * Instantiate new user registration view.
+   * The user register form.
    *
-   * @param \MovLib\Presenter\UserPresenter $userPresenter
-   *   The user presenter controlling this view.
-   * @param array $elements
-   *   Numeric array of form elements that should be attached to this view.
+   * @var \MovLib\View\HTML\Form
    */
-  public function __construct($userPresenter, $elements) {
+  private $form;
+
+  /**
+   * Instantiate user register view.
+   *
+   * @global \MovLib\Model\I18nModel $i18n
+   * @param \MovLib\Presenter\UserPresenter $presenter
+   *   The presenting presenter.
+   * @param \MovLib\View\HTML\Input\MailInput $mail
+   *   The mail input.
+   * @param \MovLib\View\HTML\Input\TextInput $name
+   *   The username input.
+   */
+  public function __construct($presenter, $mail, $name) {
     global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Register"), $elements);
+    $this->init($presenter, $i18n->t("Register"));
     $this->stylesheets[] = "modules/user.css";
+    $mail->attributes[] = "autofocus";
+    $mail->attributes["class"] = $name->attributes["class"] = "input--block-level";
+    $name->attributes["placeholder"] = $i18n->t("Enter your desired username");
+    $name->attributes["title"] = $i18n->t("Please enter your desired username in this field.");
+    $name->label = $i18n->t("Username");
+    $this->form = new Form(
+      "register",
+      $this->presenter,
+      [ $mail, $name ],
+      [ "class" => "span span--6 offset--3" ],
+      [ "class" => "button--success button--large", "value" => $i18n->t("Sign Up") ]
+    );
   }
 
   /**
@@ -51,14 +74,11 @@ class UserRegisterView extends AbstractFormView {
   public function getContent() {
     global $i18n;
     return
-      "<div class='container'>" .
-        "<div class='row'>" .
-          $this->formOpen("span span--6 offset--3") .
-            "<p>{$this->formElements["mail"]}</p>" .
-            "<p>{$this->formElements["name"]}</p>" .
-          $this->formClose(false) .
-        "</div>" .
-      "</div>"
+      "<div class='container'><div class='row'>{$this->form->open()}" .
+        "<small class='form-help'><a href='{$i18n->r("/user/login")}'>{$i18n->t("Already have an account?")}</a></small>" .
+        "<p>{$this->form->elements["mail"]}</p>" .
+        "<p>{$this->form->elements["name"]}</p>" .
+      "{$this->form->close(false)}</div></div>"
     ;
   }
 

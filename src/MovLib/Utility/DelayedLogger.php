@@ -135,11 +135,12 @@ class DelayedLogger {
         case E_RECOVERABLE_ERROR:
           $logFile = "error";
           // Send email to developers upon logging of entries with high levels, there must be something that needs a fix.
-          (new DelayedMailer())->connect()->send(new MovDevMail(
+          $preLogEntry = String::checkPlain($logEntry);
+          (new DelayedMailer())->send(new MovDevMail(
             "IMPORTANT! An error message was just logged.",
-            "<p>A critical error was just logged, here is the log entry:</p><pre>" . String::checkPlain($logEntry) . "</pre>",
-            "A critical error was just logged, here is the log entry:\n\n{$logEntry}"
-          ))->disconnect();
+            "A critical error was just logged, here is the log entry:\n\n{$logEntry}",
+            "<p>A critical error was just logged, here is the log entry:</p><pre>{$preLogEntry}</pre>"
+          ));
           break;
 
         case E_WARNING:
@@ -154,7 +155,7 @@ class DelayedLogger {
           break;
       }
     }
-    $logFile = "{$_SERVER["HOME"]}/logs/{$logFile}.log";
+    $logFile = "{$_SERVER["DOCUMENT_ROOT"]}/logs/{$logFile}.log";
     if (!is_file($logFile)) {
       touch($logFile);
     }

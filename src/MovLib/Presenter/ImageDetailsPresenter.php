@@ -20,7 +20,7 @@ namespace MovLib\Presenter;
 use \MovLib\Exception\ImageException;
 use \MovLib\Model\MovieImageModel;
 use \MovLib\Model\MoviePosterModel;
-use \MovLib\View\HTML\ImageDetailsView;
+use \MovLib\View\HTML\ImageView;
 
 /**
  * Generic presenter for images (e.g. movie posters).
@@ -51,7 +51,7 @@ class ImageDetailsPresenter extends GalleryPresenter {
     try {
       $this->{__FUNCTION__ . $this->getAction()}();
       $this->title = $i18n->t("{0} details", [ ucfirst($_SERVER["TAB"]) ]);
-      $this->view = $this->view ?: new ImageDetailsView($this);
+      $this->view = $this->view ?: new ImageView($this);
       $this->setPresentation();
     } catch (ImageException $e) {
       $this->setPresentation("Error\\NotFound");

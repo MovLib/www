@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\Error;
 
+use \MovLib\View\HTML\Alert;
 use \MovLib\View\HTML\AlertView;
 
 /**
@@ -34,20 +35,23 @@ class NotFoundView extends AlertView {
    * Create a <em>404 Not Found</em> error page.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
    * @param \MovLib\Presenter\AbstractPresenter $presenter
-   *   The presenter object controlling this view.
+   *   The presenter controlling this view.
    */
   public function __construct($presenter) {
     global $i18n;
     parent::__construct($presenter, $i18n->t("Not Found"));
     http_response_code(404);
-    $this->setAlert(
-      "<p>{$i18n->t("The requested page could not be found.")}</p>" .
-      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a($i18n->r("/contact"), $i18n->t("contact us")) ])}</p>",
-      self::ALERT_SEVERITY_ERROR,
-      true
-    );
+    $this->addAlert(new Alert(
+      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.", [
+        "<a href='{$i18n->r("/contact")}'>", "</a>"
+      ])}</p>",
+      [
+        "block"    => true,
+        "title"    => $i18n->t("The requested page could not be found."),
+        "severity" => Alert::SEVERITY_ERROR,
+      ]
+    ));
   }
 
 }

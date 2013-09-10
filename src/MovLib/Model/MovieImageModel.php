@@ -17,10 +17,11 @@
  */
 namespace MovLib\Model;
 
-use \MovLib\Exception\ImageException;
+use \MovLib\Model\AbstractImageModel;
+use \MovLib\Utility\DelayedLogger;
 
 /**
- * Description of LobbyCardModel
+ * Represents a single movie's image (e.g. lobby card).
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -30,81 +31,90 @@ use \MovLib\Exception\ImageException;
  */
 class MovieImageModel extends AbstractImageModel {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Table properties
-  // The following properties were inherited from AbstractImageModel:
-  // filename, width, height, ext and hash.
+
 
   /**
-   * The movie ID this image belongs to.
+   * The movie's ID this image belongs to.
+   *
    * @var int
    */
   public $id;
 
   /**
-   * The ID of the image within the movie images.
+   * The ID of the image within the movie's images.
+   *
    * @var int
    */
   public $sectionId;
 
   /**
-   * The ID of the user who has uploaded/changed the image.
+   * The image's unique user ID.
+   *
    * @var int
    */
   public $userId;
 
   /**
-   * The ID of the license this poster has.
+   * The image's license ID.
+   *
    * @var int
    */
   public $licenseId;
 
   /**
    * The file size of the image in bytes.
+   *
    * @var int
    */
   public $size;
 
   /**
    * The timestamp this image was initially uploaded.
+   *
    * @var int
    */
   public $created;
 
   /**
    * The timestamp this image was last modified.
+   *
    * @var int
    */
   public $changed;
 
   /**
    * The overall count of upvotes for this image.
+   *
    * @var int
    */
   public $rating;
 
   /**
    * The image's description.
+   *
    * @var string
    */
   public $description;
 
   /**
    * The image's type (e.g. "lobby-card").
+   *
    * @var string
    */
   public $type;
 
   /**
    * The image's source.
+   *
    * @var string
    */
   public $source;
 
-  // ------------------------------------------------------------------------------------------------------------------- Image styles
 
-  /**
-   * @todo Add image styles
-   */
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Construct a new movie image model. If the image ID is not specified, an empty model is created.
@@ -121,47 +131,48 @@ class MovieImageModel extends AbstractImageModel {
     global $i18n;
     $this->id = $movieId;
     $this->type = $type;
+    $this->imageDirectory = "movie/{$type}s/{$movieId}";
     if ($imageId) {
-      try {
-        $this->imageDirectory = "movie/{$type}s/{$movieId}";
-        $result = $this->select(
-          "SELECT
-            `movie_id` AS `id`,
-            `section_id` AS `sectionId`,
-            `user_id` AS `userId`,
-            `license_id` AS `licenseId`,
-            `filename` AS `imageName`,
-            `width` AS `imageWidth`,
-            `height` AS `imageHeight`,
-            `size`,
-            `ext` AS `imageExtension`,
-            UNIX_TIMESTAMP(`created`) AS `created`,
-            UNIX_TIMESTAMP(`changed`) AS `changed`,
-            `rating`,
-            COLUMN_GET(`dyn_descriptions`, 'en' AS BINARY) AS `description_en`,
-            COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description_localized`,
-            `hash` AS `imageHash`,
-            `source`
-          FROM `movies_images`
-          WHERE `movie_id` = ?
-            AND `section_id` = ?
-          LIMIT 1",
-          "dd",
-          [ $movieId, $imageId ]
-        )[0];
+      $result = $this->select(
+        "SELECT
+          `movie_id` AS `id`,
+          `section_id` AS `sectionId`,
+          `user_id` AS `userId`,
+          `license_id` AS `licenseId`,
+          `filename` AS `imageName`,
+          `width` AS `imageWidth`,
+          `height` AS `imageHeight`,
+          `size`,
+          `ext` AS `imageExtension`,
+          UNIX_TIMESTAMP(`created`) AS `created`,
+          UNIX_TIMESTAMP(`changed`) AS `changed`,
+          `rating`,
+          COLUMN_GET(`dyn_descriptions`, 'en' AS BINARY) AS `description_en`,
+          COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description_localized`,
+          `hash` AS `imageHash`,
+          `source`
+        FROM `movies_images`
+        WHERE `movie_id` = ?
+          AND `section_id` = ?
+        LIMIT 1",
+        "dd",
+        [ $movieId, $imageId ]
+      );
+      if (empty($result)) {
+        DelayedLogger::log("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", E_NOTICE);
+      }
+      else {
         $result["description"] = $result["description_localized"] ?: $result["description_en"];
         unset($result["description_localized"]);
         unset($result["description_en"]);
-        foreach ($result as $property => $value) {
-          $this->{$property} = $value;
+        foreach ($result as $k => $v) {
+          $this->{$k} = $v;
         }
         $this->initImage($this->imageName, [
-          new ResizeImageStyle(AbstractImageModel::IMAGESTYLE_GALLERY),
-          new ResizeImageStyle(AbstractImageModel::IMAGESTYLE_DETAILS),
-          new ResizeCropCenterImageStyle(AbstractImageModel::IMAGESTYLE_DETAILS_STREAM)
+          new ResizeImageStyle(self::IMAGESTYLE_GALLERY),
+          new ResizeImageStyle(self::IMAGESTYLE_DETAILS),
+          new ResizeCropCenterImageStyle(self::IMAGESTYLE_DETAILS_STREAM)
         ]);
-      } catch (ErrorException $e) {
-        throw new ImageException("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", $e);
       }
     }
   }

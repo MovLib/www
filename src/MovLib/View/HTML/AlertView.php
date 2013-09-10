@@ -41,10 +41,25 @@ class AlertView extends AbstractPageView {
   public $content;
 
   /**
-   * {@inheritdoc}
+   * Instantiate new alert view.
+   *
+   * @param \MovLib\Presenter\AbstractPresenter $presenter
+   *   The presenter controlling this view, any presenter that is compatible with the abstract presenter interface.
+   * @param string $title
+   *   Already translated title for this view.
+   * @param string $content [optional]
+   *   Content to display below the alert messages.
+   */
+  public function __construct($presenter, $title, $content = "") {
+    $this->init($presenter, $title);
+    $this->content = $content;
+  }
+
+  /**
+   * @inheritdoc
    */
   public function getContent() {
-    return $this->content;
+    return $this->content ? "<div class='container'>{$this->content}</div>" : "";
   }
 
 }

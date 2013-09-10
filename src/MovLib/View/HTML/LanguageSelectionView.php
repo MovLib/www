@@ -31,13 +31,6 @@ use \MovLib\View\HTML\AbstractPageView;
 class LanguageSelectionView extends AbstractPageView {
 
   /**
-   * The language selection presenter controlling this view.
-   *
-   * @var \MovLib\Presenter\LanguageSelectionPresenter
-   */
-  public $presenter;
-
-  /**
    * Instantiate new language selection view.
    *
    * @param \MovLib\Presenter\LanguageSelectionPresenter $presenter
@@ -45,52 +38,42 @@ class LanguageSelectionView extends AbstractPageView {
    */
   public function __construct($presenter) {
     global $i18n;
-    parent::__construct($presenter, $i18n->t("Language Selection"));
+    $this->init($presenter, $i18n->t("Language Selection"));
     $this->stylesheets[] = "modules/language-selection.css";
   }
 
   /**
-   * Not implemented!
+   * We have to implement the signature because it's abstract in our parent class.
    *
-   * @see \MovLib\View\HTML\LanguageSelectionView::getRenderedView()
+   * @see \MovLib\View\HTML\LanguageSelectionView::__toString()
    */
   public function getContent() {}
 
   /**
    * @inheritdoc
    */
-  public function getFooter() {
-    global $i18n;
-    return
-      "<footer id='footer'>" .
-        "<div class='container'>" .
-          "<p>{$i18n->t(
-            "Is your language missing from our list? Help us translate MovLib to your language. More information can be found in {0}our translation portal{1}.",
-            [ "<a href='https://localize.{$_SERVER["SERVER_NAME"]}/'>", "</a>" ]
-          )}</p>" .
-        "</div>" .
-      "</footer>"
-    ;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function getRenderedView() {
+  public function __toString() {
     global $i18n;
     return
       $this->getHead() .
       "<div class='{$this->getShortName()}-content' id='content' role='main'>" .
         "<div class='container'>" .
           "<h1 class='clear-fix' id='logo-big'>" .
-            "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='192' src='{$GLOBALS["conf"]["static_domain"]}img/logo/vector.svg' width='192'>" .
+            "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='192' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='192'>" .
             "<span>{$i18n->t("MovLib <small>the <em>free</em> movie library.</small>")}</span>" .
           "</h1>" .
           "<p>{$i18n->t("Please select your preferred language from the list below.")}</p>" .
           $this->getNavigation($i18n->t("Language links"), $this->getShortName(), $this->presenter->getLanguageSelectionMenupoints(), " / ", [ "class" => "well well--large" ]) .
         "</div>" .
       "</div>" .
-      $this->getFooter()
+      "<footer id='footer'>" .
+        "<div class='container'>" .
+          "<p>{$i18n->t(
+            "Is your language missing from our list? Help us translate MovLib to your language. More information can be found in {0}our translation portal{1}.",
+            [ "<a href='{$GLOBALS["movlib"]["localize_domain"]}/'>", "</a>" ]
+          )}</p>" .
+        "</div>" .
+      "</footer>"
     ;
   }
 

@@ -35,8 +35,7 @@ ini_set("display_errors", 1);
 /*}}}DEBUG*/
 
 // Include the global I18n class.
-require dirname(__DIR__) . "/src/MovLib/Model/BaseModel.php";
-require dirname(__DIR__) . "/src/MovLib/Model/I18nModel.php";
+require dirname(__DIR__) . "/bootstrap.php";
 
 /**
  * Contains all country and basic language codes that our application shall know about.
@@ -49,23 +48,9 @@ $codes = [
 ];
 
 /**
- * Contains all language codes that our application supports.
- *
- * @var array
- */
-$supported_language_codes = \MovLib\Model\I18nModel::$supportedLanguageCodes;
-
-/**
- * Contains the default ISO 639-1 alpha-2 language code.
- *
- * @var string
- */
-$default_language_code = \MovLib\Model\I18nModel::getDefaultLanguageCode();
-
-/**
  * Helper function to translate country names.
  *
- * @global string $default_language_code
+ * @global \MovLib\Model\I18nModel $i18n
  * @param string $country_code
  *   The ISO 3166-1 alpha-2 country code.
  * @param string $locale
@@ -74,8 +59,8 @@ $default_language_code = \MovLib\Model\I18nModel::getDefaultLanguageCode();
  *   The country's name translated to the desired locale.
  */
 function translate_countries($country_code, $locale) {
-  global $default_language_code;
-  return \Locale::getDisplayRegion("{$default_language_code}-{$country_code}", $locale);
+  global $i18n;
+  return \Locale::getDisplayRegion("{$i18n->defaultLanguageCode}-{$country_code}", $locale);
 }
 
 /**
@@ -93,11 +78,9 @@ function translate_languages($language_code, $locale) {
 }
 
 // Get rid of the default language code in the supported language codes array.
-foreach ($supported_language_codes as $delta => $language_code) {
-  if ($language_code === $default_language_code) {
-    unset($supported_language_codes[$delta]); // Remove the default language code.
-    $supported_language_codes = array_values($supported_language_codes); // Re-index array
-    break;
+foreach ($GLOBALS["movlib"]["locales"] as $language_code => $locale) {
+  if ($language_code != $i18n->defaultLanguageCode) {
+    $supported_language_codes[] = $language_code;
   }
 }
 
@@ -113,7 +96,7 @@ foreach ($codes as $table => $data) {
   $bind_param_args = [ "" ];
   $names = [];
   for ($i = 0; $i <= $data_count; ++$i) {
-    $names[$i]["_"] = call_user_func("translate_{$table}", $data[$i], $default_language_code);
+    $names[$i]["_"] = call_user_func("translate_{$table}", $data[$i], $i18n->defaultLanguageCode);
     $values .= "(?, ?, COLUMN_CREATE(";
     $bind_param_args[0] .= "ss";
     $bind_param_args[] = &$data[$i];

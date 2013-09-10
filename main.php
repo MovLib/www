@@ -32,6 +32,9 @@
  * @since 0.0.1-dev
  */
 
+// We want to know how long the execution of our software takes.
+$start = microtime(true);
+
 // Parse global configuration and ensure it's available globally.
 $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
 
@@ -58,10 +61,12 @@ function __autoload($class) {
  */
 function uncaught_exception_handler($exception) {
   global $i18n;
-  $i18n = $i18n ?: new \MovLib\Model\I18nModel();
-  $presenter = new \MovLib\Presenter\ExceptionPresenter($exception);
-  \MovLib\Utility\DelayedLogger::run();
-  exit($presenter);
+  if (!$i18n) {
+    $i18n = new \MovLib\Data\I18n();
+  }
+  $page = new \MovLib\Presentation\Exception($exception);
+  \MovLib\Data\Delayed\Logger::run();
+  exit($page->getPresentation());
 }
 
 // Set the default exception handler.
@@ -160,14 +165,26 @@ try {
   // Instantiate session for the client requesting the page. A real session will only be generated if we know this user.
   // By default we don't start a session, nor do we send out any cookies to the client. We wait until the client is doing
   // anything where we really need a session.
-  $user = new \MovLib\Model\SessionModel();
+  $session = new \MovLib\Data\Session();
 
   // Instantiate global i18n object with the current display language.
-  $i18n = new \MovLib\Model\I18nModel();
+  $i18n = new \MovLib\Data\I18n();
 
   // Start the rendering process.
-  $presenter = "\\MovLib\\Presenter\\{$_SERVER["PRESENTER"]}Presenter";
-  echo new $presenter();
+  $presenter = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+  // We have to call a method; using __toString() would not allow the rendering method to throw an exception!
+  echo (new $presenter())->getPresentation();
+}
+// A presentation can throw a redirect exception for different reasons. An error might have happended that needs the
+// user to be redirected to a different page, or an action was successfully completed and the user should go to a
+// different page to continue. No matter what, the execution of the presentation rendering process has to be terminated
+// right away and the redirect has to be executed. Of course any delayed methods should be executed as usual.
+catch (\MovLib\Exception\RedirectException $e) {
+  $status = $e->getCode();
+  header("Location: {$e->getMessage()}", true, $status);
+  $title = [ 301 => "Moved Permanently", 302 => "Moved Temporarily", 303 => "See Other" ];
+  // @todo Do we really have to send this response ourself or is nginx handling this?
+  echo "<html><head><title>{$status} {$title[$status]}</title></head><body bgcolor=\"white\"><center><h1>{$status} {$title[$status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
 }
 // If the request requires user authentication or there was a problem during initializing the session, return
 // appropriate HTTP headers and display the login page with an alert that tells the user that this request requires
@@ -176,23 +193,31 @@ try {
 catch (\MovLib\Exception\UnauthorizedException $e) {
   // If the exception was thrown in the session model no i18n instance is present, but we need it.
   if (!$i18n) {
-    $i18n = new \MovLib\Model\I18nModel();
+    $i18n = new \MovLib\Data\I18n();
   }
+
   // We have to ensure that the login page is going to render the form without any further validation, therefor we have
   // to reset the request method to GET because we don't know (and don't want to check) the current request method.
   $_SERVER["REQUEST_METHOD"] = "GET";
+
   // The rest is straight forward, set headers, init presenter, render view ...
-  http_response_code(401);
   // http://stackoverflow.com/a/1088127/1251219
+  http_response_code(401);
   header("WWW-Authenticate: MovLib location=\"{$i18n->r("/user/login")}\"");
-  $presenter = new \MovLib\Presenter\User\UserLoginPresenter();
-  $presenter->view->addAlert(new \MovLib\View\HTML\Alert($e->getMessage(), [
-    "block" => true,
-    "title" => $e->getTitle(),
-    "severity" => \MovLib\View\HTML\Alert::SEVERITY_ERROR,
-  ]));
-  echo $presenter;
+
+  $alert = new \MovLib\Presentation\Partial\Alert($e->getMessage());
+  $alert->block = true;
+  $alert->title = $e->getTitle();
+  $alert->severity = \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR;
+
+  $login = new \MovLib\Presentation\User\Login();
+  $login->alerts .= $alert;
+
+  echo $login;
 }
+
+$end = microtime(true) - $start;
+echo "<small style='text-align:center'>time taken to render page: {$end}</small>";
 
 // This makes sure that the output that was generated until this point will be returned to nginx for delivery.
 fastcgi_finish_request();

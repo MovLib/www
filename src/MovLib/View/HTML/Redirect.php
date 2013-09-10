@@ -57,7 +57,7 @@ class Redirect {
    * @return string
    *   Render small HTML page, as per RFC.
    */
-  public function getRenderedView() {
+  public function __toString() {
     $title = [
       301 => "Moved Permanently",
       302 => "Moved Temporarily",

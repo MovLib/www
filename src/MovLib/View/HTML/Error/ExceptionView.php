@@ -17,8 +17,10 @@
  */
 namespace MovLib\View\HTML\Error;
 
+use \MovLib\Exception\DebugException;
 use \MovLib\Utility\DelayedLogger;
 use \MovLib\Utility\String;
+use \MovLib\View\HTML\Alert;
 use \MovLib\View\HTML\AlertView;
 
 /**
@@ -48,25 +50,32 @@ class ExceptionView extends AlertView {
     parent::__construct($presenter, $i18n->t("Internal Server Error"));
     http_response_code(500);
     $this->stylesheets[] = "modules/stacktrace.css";
-    $this->setAlert(
-      "<p>{$i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered.")}</p>" .
-      "<p>{$i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes.")}</p>",
-      self::ALERT_SEVERITY_ERROR,
-      true
-    );
-    $this->setAlert(
-      [
-        "title" => "Stacktrace",
-        "message" =>
-          "<div class='stacktrace'>" .
-            "<div class='stacktrace__title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
-            "<table class='stacktrace__table'>{$this->formatStacktrace($exception->getTrace())}</table>" .
-          "</div>" .
-          "<p><small>Debug information is only available if debugging is activated during bootstrap phase!</small></p>"
-      ],
-      self::ALERT_SEVERITY_INFO,
-      true
-    );
+    $stacktrace = ($exception instanceof DebugException)
+      ? "<tr class='stacktrace__tr'><td><pre>{$exception}</pre></td></tr>"
+      : $this->formatStacktrace($exception->getTrace())
+    ;
+    $this
+      ->addAlert(new Alert(
+        "<p>{$i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes.")}</p>",
+        [
+          "block"    => true,
+          "title"    => $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
+          "severity" => Alert::SEVERITY_ERROR,
+        ]
+      ))
+      ->addAlert(new Alert(
+        "<div class='stacktrace'>" .
+          "<div class='stacktrace__title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
+          "<table class='stacktrace__table'>{$stacktrace}</table>" .
+        "</div>" .
+        "<p><small>Debug information is only available if debugging is activated during bootstrap phase!</small></p>",
+        [
+          "block"    => true,
+          "title"    => "Stacktrace",
+          "severity" => Alert::SEVERITY_INFO,
+        ]
+      ))
+    ;
     DelayedLogger::logException($exception, E_RECOVERABLE_ERROR);
   }
 
@@ -78,11 +87,11 @@ class ExceptionView extends AlertView {
    * @return string
    *   The formatted stacktrace.
    */
-  private function formatStacktrace(array $stacktrace) {
+  private function formatStacktrace($stacktrace) {
     $output = "";
     $stacktraceCount = count($stacktrace);
     for ($i = 0; $i < $stacktraceCount; ++$i) {
-      if (isset($stacktrace[$i]["args"]) || !empty($stacktrace[$i]["args"])) {
+      if (!empty($stacktrace[$i]["args"])) {
         $argCount = count($stacktrace[$i]["args"]);
         for ($j = 0; $j < $argCount; ++$j) {
           $suffix = "";
@@ -102,7 +111,7 @@ class ExceptionView extends AlertView {
           $stacktrace[$i][$s] = "";
         }
       }
-      $stacktrace[$i]["file"] = str_replace($_SERVER["HOME"], "", $stacktrace[$i]["file"]);
+      $stacktrace[$i]["file"] = str_replace($_SERVER["DOCUMENT_ROOT"], "", $stacktrace[$i]["file"]);
       $output .=
         "<tr class='stacktrace__tr'>" .
           "<td class='stacktrace__td stacktrace__line-number'>{$stacktrace[$i]["line"]}</td>" .

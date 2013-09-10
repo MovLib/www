@@ -31,29 +31,22 @@ use \MovLib\Model\BaseModel;
 class RatingModel extends BaseModel {
 
   /**
-   * Retrieve a user's rating for a specific movie.
+   * Get the user's rating for a specific movie.
    *
    * @param int $userId
    *   The user's unique ID.
    * @param int $movieId
    *   The movie's unique ID.
-   * @return int|null
+   * @return null|int
    *   The user's rating for this movie, null if none is present.
    */
   public function getMovieRating($userId, $movieId) {
-    $rating = $this->select(
-      "SELECT
-        `user_id` AS `userId`,
-        `movie_id` AS `movieId`
-        FROM `movies_ratings`
-        WHERE `user_id` = ?
-          AND `movie_id` = ?
-        LIMIT 1",
-      "dd",
-      [ $userId, $movieId ]
+    $result = $this->select(
+      "SELECT `user_id` AS `userId`, `movie_id` AS `movieId` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1",
+      "dd", [ $userId, $movieId ]
     );
-    if (isset($rating[0])) {
-      return $rating[0];
+    if (!empty($result[0])) {
+      return $result[0];
     }
   }
 

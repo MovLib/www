@@ -42,7 +42,6 @@ class UserPasswordResetMail extends AbstractMail {
    * Instantiate new mail.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *   Global i18n model instance.
    * @param string $hash
    *   The reset hash.
    * @param string $mail
@@ -50,7 +49,7 @@ class UserPasswordResetMail extends AbstractMail {
    */
   public function __construct($hash, $mail) {
     global $i18n;
-    parent::__construct($mail, $i18n->t("Forgot your password?"));
+    parent::__construct($mail, $i18n->t("Requested Password Reset"));
     $this->hash = $hash;
   }
 
@@ -62,37 +61,37 @@ class UserPasswordResetMail extends AbstractMail {
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   protected function getHtmlBody() {
     global $i18n;
     return
       "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
       "<p>{$i18n->t("You (or someone else) requested a password reset for your account. You may now reset your password by {0}clicking this link{1}.", [
-        "<a href='{$i18n->r("/user/reset-password={0}", [ $this->hash ])}'>",
+        "<a href='{$i18n->r("/user/reset-password")}?{$i18n->t("token")}={$this->hash}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once to log in and will lead you to a page where you can set your password.")}</p>" .
+      "<p>{$i18n->t("This link can only be used once within the next 24 hours to log in and will lead you to a page where you can set your password.")}</p>" .
       "<p>{$i18n->t("If it wasn’t you who requested a new password ignore this message.")}</p>"
     ;
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   protected function getPlainBody() {
     global $i18n;
-    return implode("\n", [
-      $i18n->t("Hi {0}!", [ $this->user->name ]),
-      "",
-      $i18n->t("You (or someone else) requested a password reset for your account. You may now reset your password by clicking this link or copying and pasting it to your browser:"),
-      "",
-      $i18n->r("/user/reset-password={0}", [ $this->hash ]),
-      "",
-      $i18n->t("This link can only be used once to log in and will lead you to a page where you can set your password."),
-      "",
-      $i18n->t("If it wasn’t you who requested a new password ignore this message."),
-    ]);
+    return <<<EOT
+{$i18n->t("Hi {0}!", [ $this->user->name ])}
+
+{$i18n->t("You (or someone else) requested a password reset for your account. You may now reset your password by clicking the following link or copying and pasting it to your browser:")}
+
+{$i18n->r("/user/reset-password")}?{$i18n->t("token")}={$this->hash}
+
+{$i18n->t("This link can only be used once within the next 24 hours to log in and will lead you to a page where you can set your password.")}
+
+{$i18n->t("If it wasn’t you who requested a new password ignore this message.")}
+EOT;
   }
 
 }

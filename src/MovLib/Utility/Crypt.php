@@ -29,12 +29,20 @@ namespace MovLib\Utility;
 class Crypt {
 
   /**
+   * The length of our SHA-512 string.
+   *
+   * @see \MovLib\Utility\Crypt::randomHash()
+   * @var int
+   */
+  const HASH_LENGTH_SHA512 = 128;
+
+  /**
    * Calculates URL-safe SHA-512 hash from highly randomized bytes (full 8-bit range).
    *
-   * We do not utilize <em>/dev/urandom</em> to generate our random bytes. While it is a perfect source for pseudo
+   * We do not utilize <i>/dev/urandom</i> to generate our random bytes. While it is a perfect source for pseudo
    * random bytes, the <code>openssl_random_pseudo_bytes()</code> function is a magnitude faster (benchmarks have shown
-   * that it takes approx <em>0.1ms</em> while opening a stream, reading and closing <em>/dev/urandom</em> always was
-   * over <em>1ms</em>) and generates perfect random bytes, especially if we read 1024 bytes.
+   * that it takes approx <i>0.1ms</i> while opening a stream, reading and closing <i>/dev/urandom</i> always was
+   * over <i>1ms</i>) and generates perfect random bytes, especially if we read 1024 bytes.
    *
    * Please also note that the statement about PHP always reading 4096 bytes from a stream in the Drupal comment of
    * <code>\Drupal\Component\Utility\Crypt::randomBytes()</code> is not true, simply check the C implementation:

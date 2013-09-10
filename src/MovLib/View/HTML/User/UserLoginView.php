@@ -17,7 +17,8 @@
  */
 namespace MovLib\View\HTML\User;
 
-use \MovLib\View\HTML\AbstractFormView;
+use \MovLib\View\HTML\AbstractPageView;
+use \MovLib\View\HTML\Form;
 
 /**
  * User login form.
@@ -29,28 +30,55 @@ use \MovLib\View\HTML\AbstractFormView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserLoginView extends AbstractFormView {
+class UserLoginView extends AbstractPageView {
+
+  /**
+   * The user login form.
+   *
+   * @param \MovLib\View\HTML\Form
+   */
+  private $form;
 
   /**
    * Instantiate new user login view.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   * @param \MovLib\Presenter\UserPresenter $userPresenter
-   *   The user presenter controlling this view.
-   * @param array $elements
-   *   Numeric array of form elements that should be attached to this view.
+   * @param \MovLib\Presenter\User\UserLoginPresenter $presenter
+   *   The presenting presenter.
+   * @param \MovLib\View\HTML\Input\MailInput $mail
+   *   The mail input element.
+   * @param \MovLib\View\HTML\Input\PasswordInput $pass
+   *   The password input element.
+   * @param string $action
+   *   The form action value.
    */
-  public function __construct($userPresenter, $elements) {
+  public function __construct($presenter, $mail, $pass, $action) {
     global $i18n;
-    parent::__construct($userPresenter, $i18n->t("Login"), $elements);
+    $this->init($presenter, $i18n->t("Login"));
     $this->stylesheets[] = "modules/user.css";
+    $mail->attributes[] = "autofocus";
+    $mail->attributes["class"] = $pass->attributes["class"] = "input--block-level";
+    $this->form = new Form(
+      "login",
+      $this->presenter,
+      [ $mail, $pass ],
+      [ "action" => $action, "class" => "span span--6 offset--3" ],
+      [ "class" => "button--success button--large", "vlaue" => $i18n->t("Sign In") ]
+    );
   }
 
   /**
    * @inheritdoc
    */
   public function getContent() {
-    return "<div class='container'><div class='row'>{$this->formOpen("span span--6 offset--3")}<p>{$this->formElements["mail"]}</p><p>{$this->formElements["pass"]}</p>{$this->formClose(false)}</div></div>";
+    global $i18n;
+    return
+      "<div class='container'><div class='row'>{$this->form->open()}" .
+        "<small class='form-help'><a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a></small>" .
+        "<p>{$this->form->elements["mail"]}</p>" .
+        "<p>{$this->form->elements["pass"]}</p>" .
+      "{$this->form->close(false)}</div></div>"
+    ;
   }
 
 }

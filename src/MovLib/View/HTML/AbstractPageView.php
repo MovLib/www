@@ -17,10 +17,8 @@
  */
 namespace MovLib\View\HTML;
 
-use \MovLib\Utility\FileSystem;
-use \MovLib\Utility\Network;
 use \MovLib\Utility\String;
-use \MovLib\View\HTML\BaseView;
+use \MovLib\View\HTML\AbstractBaseView;
 
 /**
  * The <b>AbstractView</b> is the base class for all other HTML views.
@@ -31,39 +29,7 @@ use \MovLib\View\HTML\BaseView;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractPageView extends BaseView {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Severity level <em>error</em> for alert message (color <em>red</em>).
-   *
-   * @var string
-   */
-  const ALERT_SEVERITY_ERROR = "error";
-
-  /**
-   * Severity level <em>info</em> for alert message (color <em>blue</em>).
-   *
-   * @var string
-   */
-  const ALERT_SEVERITY_INFO = "info";
-
-  /**
-   * Severity level <em>success</em> for alert message (color <em>green</em>).
-   *
-   * @var string
-   */
-  const ALERT_SEVERITY_SUCCESS = "success";
-
-  /**
-   * Severity level <em>warning</em> (default) for alert message (color <em>yellow</em>).
-   *
-   * @var string
-   */
-  const ALERT_SEVERITY_WARNING = "warning";
+abstract class AbstractPageView extends AbstractBaseView {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -91,11 +57,11 @@ abstract class AbstractPageView extends BaseView {
   protected $activeHeaderUserNavigationPoint;
 
   /**
-   * Array containing all alert messages that might be set during execution.
+   * Contains all alert messages of the current view.
    *
-   * @var array
+   * @var string
    */
-  private $alerts = [];
+  private $alerts = "";
 
   /**
    * The presenter that created the view instance.
@@ -151,31 +117,6 @@ abstract class AbstractPageView extends BaseView {
   public $title = "";
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constructor
-
-
-  /**
-   * Initialize new view.
-   *
-   * @param \MovLib\Presenter\AbstractPresenter $presenter
-   *   The presenter that created the view instance.
-   * @param string $title
-   *   The unique title of this view.
-   */
-  public function init($presenter, $title) {
-    $this->presenter = $presenter;
-    $this->title = $title;
-    $this->scripts = array_merge([ "modules" => [] ], $GLOBALS["conf"]);
-    if (isset($_SESSION["ALERTS"])) {
-      $c = count($_SESSION["ALERTS"]);
-      for ($i = 0; $i < $c; ++$i) {
-        call_user_func_array([ $this, "setAlert" ], $_SESSION["ALERTS"][$i]);
-      }
-      unset($_SESSION["ALERTS"]);
-    }
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
 
@@ -187,8 +128,61 @@ abstract class AbstractPageView extends BaseView {
   abstract public function getContent();
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Final Methods
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
+
+  /**
+   * Get the full rendered view.
+   *
+   * @return string
+   *   The rendered view ready for print.
+   */
+  public function __toString() {
+    return
+      $this->getHead() .
+      $this->getHeader() .
+      $this->getRenderedContent() .
+      $this->getFooter()
+    ;
+  }
+
+  /**
+   * Add an alert to the current view.
+   *
+   * @param \MovLib\View\HTML\Alert $alert
+   *   The alert to add.
+   * @return this
+   */
+  public function addAlert($alert) {
+    $this->alerts .= $alert;
+    return $this;
+  }
+
+  /**
+   * Initialize new view.
+   *
+   * @param \MovLib\Presenter\AbstractPresenter $presenter
+   *   The presenter that created the view instance.
+   * @param string $title
+   *   The unique title of this view.
+   * @return this
+   */
+  public function init($presenter, $title) {
+    $this->presenter = $presenter;
+    // This is not real OO style, because we are playing with the properties of another object. But it makes life easy.
+    $this->presenter->view = $this;
+    $this->title = $title;
+    $this->scripts = $GLOBALS["movlib"];
+    $this->scripts["modules"] = [];
+    if (isset($_SESSION["ALERTS"])) {
+      $c = count($_SESSION["ALERTS"]);
+      for ($i = 0; $i < $c; ++$i) {
+        $this->alerts .= $_SESSION["ALERTS"][$i];
+      }
+      unset($_SESSION["ALERTS"]);
+    }
+    return $this;
+  }
 
   /**
    * Get all alerts that were previously set.
@@ -199,8 +193,8 @@ abstract class AbstractPageView extends BaseView {
    * @return string
    *   All alerts ready for print.
    */
-  public final function getAlerts() {
-    return "<div id='alerts'>" . implode("", $this->alerts) . "</div>";
+  public function getAlerts() {
+    return "<div id='alerts'>{$this->alerts}</div>";
   }
 
   /**
@@ -214,12 +208,12 @@ abstract class AbstractPageView extends BaseView {
    * @return string
    *   The head ready for print.
    */
-  public final function getHead() {
+  public function getHead() {
     global $i18n, $user;
     $c = count($this->stylesheets);
     $stylesheets = "";
     for ($i = 0; $i < $c; ++$i) {
-      $stylesheets .= "<link rel='stylesheet' href='{$GLOBALS["conf"]["static_domain"]}css/{$this->stylesheets[$i]}'>";
+      $stylesheets .= "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/{$this->stylesheets[$i]}'>";
     }
     $bodyClass = "{$this->getShortName()}-body";
     if (isset($user) && $user->isLoggedIn === true) {
@@ -231,7 +225,14 @@ abstract class AbstractPageView extends BaseView {
     }
     return
       "<!doctype html><html id='nojs' lang='{$i18n->languageCode}' dir='{$i18n->direction}'><head>" .
-        "<meta charset='utf-8'>" .
+        // @todo The meta-charset is only needed if a document is not sending appropriate HTTP headers. So for instance
+        //       if someone saves a page to disc. The question is, do we really need support for such situations? Older
+        //       (not supported) browsers like IE8 have problems with more than one charset declaration (experimental
+        //       page speed rule says so) and it is simply redundant in the web context. Our HTTP header already told
+        //       the browser that this page is completely in UTF-8 (same is true for any other text based content our
+        //       server is going to deliver). The bytes we save here are of course irrevelant, it's the redundancy that
+        //       bugs me.
+        //"<meta charset='utf-8'>" .
         "<title>{$this->getHeadTitle()}</title>" .
         $stylesheets .
         "<link rel='icon' type='image/svg+xml' href='/img/logo/vector.svg'>" .
@@ -256,13 +257,13 @@ abstract class AbstractPageView extends BaseView {
    * @return string
    *   The header ready for print.
    */
-  public final function getHeader() {
+  public function getHeader() {
     global $i18n, $user;
     if (isset($user) && $user->isLoggedIn === true) {
       $points = [
         [ $i18n->r("/user"), $i18n->t("Profile"), [ "title" => $i18n->t("Go to your personal user page.") ]],
         [ $i18n->r("/user/watchlist"), $i18n->t("Watchlist"), [ "title" => $i18n->t("Have a look at the latest changes of the content your are watching.") ]],
-        [ $i18n->r("/user/logout"), $i18n->t("Logout"), [ "title" => $i18n->t("Click here to log out from your current session.") ]],
+        [ $i18n->r("/user/sign-out"), $i18n->t("Sign Out"), [ "title" => $i18n->t("Click here to sign out from your current session.") ]],
       ];
     }
     else {
@@ -296,10 +297,13 @@ abstract class AbstractPageView extends BaseView {
         "<div class='container'>" .
           "<div class='row'>" .
             "<a class='span' href='{$i18n->r("/")}' id='header__logo' title='{$i18n->t("Take me back to the home page.")}'>" .
-              "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='42' id='logo' src='{$GLOBALS["conf"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib" .
+              "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='42' id='logo' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib" .
             "</a>" .
+            // Render the main navigation.
             $this->getNavigation($i18n->t("Main Navigation"), "main", $points, " ") .
-            "<form accept-charset='utf-8' action='{$i18n->t("/search")}' class='span' id='header__search-form' method='post' role='search'>" .
+            // Render the header search, this is not an instance of form because it would make things complicated.
+            "<form action='{$i18n->t("/search")}' class='span' id='header__search-form' method='post' role='search'>" .
+              "<input type='hidden' name='form_id' value='header-search'>" .
               "<label class='visuallyhidden' for='header__search-input'>{$i18n->t("Search the MovLib database.")}</label>" .
               "<input accesskey='f' id='header__search-input' name='searchterm' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t(
                 "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
@@ -327,95 +331,31 @@ abstract class AbstractPageView extends BaseView {
    *   All array offsets are mandatory; the attributes have to have an already translated title!
    * @param string $glue
    *   The string that is used to combine the various navigation points.
-   * @param array $attributes
-   *   [Optional] The attributes that should be applied to the HTML nav element.
-   * @param boolean $hideTitle
-   *   [Optional] Defines if the title should be hidden or not, default is to hide the title on navigation elements.
+   * @param array $attributes [optional]
+   *   The attributes that should be applied to the HTML nav element.
+   * @param boolean $hideTitle [optional]
+   *   Defines if the title should be hidden or not, default is to hide the title on navigation elements.
    * @return string
    *   Fully rendered navigation.
    */
-  public final function getNavigation($title, $role, $points, $glue, $attributes = [], $hideTitle = true) {
+  public function getNavigation($title, $role, array $points, $glue, array $attributes = null, $hideTitle = true) {
+    $menuitems = "";
     $k = count($points);
     for ($i = 0; $i < $k; ++$i) {
       $classes = "menuitem";
       $this->addClass($classes, $points[$i][2]);
       $points[$i][2]["role"] = "menuitem";
-      $points[$i] = $this->a($points[$i][0], $points[$i][1], $points[$i][2]);
+      if ($i !== 0) {
+        $menuitems .= $glue;
+      }
+      $menuitems .= $this->a($points[$i][0], $points[$i][1], $points[$i][2]);
     }
-    $points = implode($glue, $points);
     $attributes["id"] = "nav-{$role}";
     $attributes["role"] = "menu";
     $attributes["aria-labelledby"] = "nav-{$role}__title";
     $hideTitle = $hideTitle === true ? " class='visuallyhidden'" : "";
-    return "<nav{$this->expandTagAttributes($attributes)}><h2 id='nav-{$role}__title'{$hideTitle} role='presentation'>{$title}</h2>{$points}</nav>";
+    return "<nav{$this->expandTagAttributes($attributes)}><h2 id='nav-{$role}__title'{$hideTitle} role='presentation'>{$title}</h2>{$menuitems}</nav>";
   }
-
-  /**
-   * Helper method to generate a secondary navigation.
-   *
-   * @param string $title
-   *   The title of the section, this will be wrapped in a <code>&lt;h2&gt;</code>.
-   * @param array $points
-   *   Numeric array containing the navigation points in the format:
-   *   <pre>[ 0 => route, 1 => text, 2 => attributes ]</pre>
-   *   All array offsets are mandatory; the attributes have to have an already translated title!
-   * @param array $attributes
-   *   [Optional] The attributes that should be applied to the HTML nav element.
-   * @param string $role
-   *   [Optional] The logic role of this navigation menu (e.g. <em>main</em>, <em>footer</em>, ...).
-   * @param boolean $hideTitle
-   *   [Optional] Defines if the title should be hidden or not, default is to hide the title on navigation elements.
-   * @return string
-   *   Fully rendered navigation.
-   */
-  public final function getSecondaryNavigation($title, $points, $attributes = [], $role = "secondary", $hideTitle = true) {
-    $k = count($points);
-    for ($i = 0; $i < $k; ++$i) {
-      $this->addClass("menuitem", $points[$i][2]);
-      $points[$i][2]["role"] = "menuitem";
-      $points[$i] = "<li>{$this->a($points[$i][0], $points[$i][1], $points[$i][2])}</li>";
-    }
-    $points = implode("", $points);
-    $this->addClass("nav--secondary", $attributes);
-    $attributes["id"] = "nav-{$role}";
-    $attributes["role"] = "menu";
-    $attributes["aria-labelledby"] = "nav-{$role}__title";
-    $hideTitle = $hideTitle === true ? " class='visuallyhidden'" : "";
-    return "<nav{$this->expandTagAttributes($attributes)}><h2 id='nav-{$role}__title'{$hideTitle} role='presentation'>{$title}</h2><ul class='no-list'>{$points}</ul></nav>";
-  }
-
-  /**
-   * Add new alert message to the output of the view.
-   *
-   * @link http://www.w3.org/TR/wai-aria/roles#alert
-   * @link http://www.w3.org/TR/wai-aria/states_and_properties#aria-live
-   * @param string|array $message
-   *   The message that should be displayed to the user. If you want a title for this alert message (recommended if
-   *   displaying block messages) pass an associative array with <em>message</em> and <em>title</em> keys.
-   * @param string $severity
-   *   [Optional] The severity level of this alert, defaults to <var>AbstractView::ALERT_SEVERITY_WARNING</var>.
-   * @param boolean $block
-   *   [Optional] If your message is very long, or your alert is very important, increase the padding around the message
-   *   and enclose the title in a level-4 heading instead of the bold tag.
-   * @return this
-   */
-  public final function setAlert($message, $severity = self::ALERT_SEVERITY_WARNING, $block = false) {
-    $title = "";
-    if (is_array($message)) {
-      $title = $message["title"];
-      $message = $message["message"];
-    }
-    if (!empty($title)) {
-      $tag = ($block === true) ? "h4" : "b";
-      $title = "<{$tag} class='alert__title'>{$title}</{$tag}> ";
-    }
-    $this->alerts[] = "<div class='alert alert--{$severity}' role='alert'><div class='container'>{$title}{$message}</div></div>";
-    return $this;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Public Methods
-
 
   /**
    * Get the breadcrumb navigation.
@@ -434,11 +374,11 @@ abstract class AbstractPageView extends BaseView {
     $trailCount = count($trail);
     if ($trailCount !== 0) {
       for ($i = 0; $i < $trailCount; ++$i) {
-        $trail[$i][1] = String::shorten($trail[$i][1], 25, $i18n->t("…"));
+        $trail[$i][1] = mb_strimwidth($trail[$i][1], 0, 25, $i18n->t("…"));
         $points[] = $trail[$i];
       }
     }
-    $points[] = [ $_SERVER["REQUEST_URI"], $this->title ];
+    $points[] = [ $_SERVER["REQUEST_URI"], isset($this->breadcrumbTitle) ? $this->breadcrumbTitle : $this->title ];
     return "<div id='breadcrumb'>{$this->getNavigation($i18n->t("You are here: "), "breadcrumb", $points, " › ", [ "class" => "container" ], false)}</div>";
   }
 
@@ -470,15 +410,15 @@ abstract class AbstractPageView extends BaseView {
             ) .
           "</div>" .
           "<div class='row footer-row-logos'>" .
-            "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='{$GLOBALS["conf"]["static_domain"]}img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
-            "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='{$GLOBALS["conf"]["static_domain"]}img/footer/github.svg' width='64'></a>" .
+            "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
+            "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/github.svg' width='64'></a>" .
           "</div>" .
         "</div>" .
       "</footer>"
 //      "<script id='js-settings' type='application/json'>" . json_encode($this->scripts) . "</script>"
       // @todo Minify and combine!
-//      "<script src='{$GLOBALS["conf"]["static_domain"]}js/jquery.js'></script>" .
-//      "<script src='{$GLOBALS["conf"]["static_domain"]}js/movlib.js?" . rand() . "'></script>"
+//      "<script src='{$GLOBALS["movlib"]["static_domain"]}js/jquery.js'></script>" .
+//      "<script src='{$GLOBALS["movlib"]["static_domain"]}js/movlib.js?" . rand() . "'></script>"
     ;
   }
 
@@ -533,37 +473,19 @@ abstract class AbstractPageView extends BaseView {
    * @return string
    *   The rendered content ready for print.
    */
-  public function getRenderedContent($tag = "div", $attributes = []) {
-    $this->addClass("{$this->getShortName()}-content", $attributes);
-    $attributes["id"] = "content";
-    $attributes["role"] = "main";
+  public function getRenderedContent() {
     return
-      "<{$tag}{$this->expandTagAttributes($attributes)}>" .
+      "<div class='{$this->getShortName()}-content' id='content' role='main'>" .
         "<div id='content__header'>" .
           "<div class='container'>" .
             $this->headerBefore .
-            "<h1 id='content__header__title' class='title'>{$this->title}</h1>" .
+            "<h1 class='title' id='content__header__title'>{$this->title}</h1>" .
             $this->headerAfter .
           "</div>" .
           $this->getAlerts() .
         "</div>" .
         $this->getContent() .
-      "</{$tag}>"
-    ;
-  }
-
-  /**
-   * Get the full rendered view.
-   *
-   * @return string
-   *   The rendered view ready for print.
-   */
-  public function getRenderedView() {
-    return
-      $this->getHead() .
-      $this->getHeader() .
-      $this->getRenderedContent() .
-      $this->getFooter()
+      "</div>"
     ;
   }
 

@@ -66,21 +66,26 @@ class MoviesView extends AbstractPageView {
               if (isset($movieModel->year)) {
                 $titleSuffix[] = $movieModel->year;
               }
-              if (!empty($titleSuffix = $this->getCommaSeparatedList($titleSuffix, ""))) {
+              $titleSuffix = $this->getCommaSeparatedList($titleSuffix, "");
+              if (!empty($titleSuffix)) {
                 $titleSuffix = " ({$titleSuffix})";
               }
+              $displayPoster = $movieModel->getDisplayPoster();
               return
                 $this->a(
-                  $this->r("/movie/{0}", [ $movieModel->id ]),
-                  "<article>" .
-                    "<div class='movies-list__poster'>{$this->getImage($movieModel->getDisplayPoster(), MoviePosterModel::IMAGESTYLE_SMALL, [
-                      "alt" => $i18n->t("{0} movie poster", [ $title ])
+                  $i18n->r("/movie/{0}", [ $movieModel->id ]),
+                  "<li><article>" .
+                    "<div class='movies-list__poster'>{$this->getImage($displayPoster, MoviePosterModel::IMAGESTYLE_SMALL, [
+                      "alt" => $i18n->t("{0} movie poster{1}.", [ $title, isset($displayPoster->country)
+                        ? $i18n->t(" for {0}", [ $displayPoster->country["name"] ])
+                        : ""
+                      ]),
                     ])}</div>" .
                     "<div class='movies-list__info clear-fix'>" .
                       "<h2>{$title}{$titleSuffix}</h2>" .
                       "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $movieModel->originalTitle ])}</p>" .
                     "</div>" .
-                  "</article>",
+                  "</article></li>",
                   [ "tabindex" => $this->getTabindex() ]
                 )
               ;

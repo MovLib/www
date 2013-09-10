@@ -85,7 +85,6 @@ abstract class AbstractMail {
    * @link http://www.emailonacid.com/blog/details/C13/doctype_-_the_black_sheep_of_html_email_design
    * @todo We should test if the usage of single quotes in the HTML is a problem for email clients.
    * @global \MovLib\Model\I18nModel $i18n
-   *   Global i18n model instance.
    * @return string
    *   The translated HTML body of the mail.
    */
@@ -107,7 +106,6 @@ abstract class AbstractMail {
    * Set the translated plain text body of the mail.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *   Global i18n model instance.
    * @return string
    *   The translated plain text body of the mail.
    */
@@ -119,7 +117,6 @@ abstract class AbstractMail {
    * Appends the MovLib signature to the mail.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *   Global i18n model instance.
    * @return string
    *   The translated plain text body of the mail.
    */

@@ -23,6 +23,7 @@ use \MovLib\Model\RatingModel;
 use \MovLib\Model\ReleasesModel;
 use \MovLib\View\HTML\Movie\MovieShowView;
 use \MovLib\View\HTML\Error\GoneView;
+use \MovLib\View\HTML\Alert;
 
 
 /**
@@ -68,21 +69,21 @@ class MoviePresenter extends AbstractPresenter {
     try {
       $this->movieModel = new MovieModel($_SERVER["MOVIE_ID"]);
       if ($this->movieModel->deleted === true) {
-        $this->view = new GoneView($this);
+        new GoneView($this);
         return;
       }
       $this->ratingModel = new RatingModel();
       $this->releasesModel = (new ReleasesModel())->__constructFromMovieId($this->movieModel->id);
-      $this->view = new MovieShowView($this);
+      new MovieShowView($this);
       if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if ($user->isLoggedIn) {
           /** @todo Rate the movie for the current user. */
         } else {
-          $this->view->setAlert($i18n->t("You have to be logged in to rate this movie."));
+          $this->view->addAlert(new Alert($i18n->t("You have to be logged in to rate this movie.")));
         }
       }
     } catch (MovieException $e) {
-      $this->view = new NotFoundView($this);
+      new NotFoundView($this);
     }
   }
 

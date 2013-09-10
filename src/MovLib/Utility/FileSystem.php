@@ -17,11 +17,7 @@
  */
 namespace MovLib\Utility;
 
-use \FilesystemIterator;
 use \MovLib\Exception\FileSystemException;
-use \MovLib\Utility\Network;
-use \RecursiveDirectoryIterator;
-use \RecursiveIteratorIterator;
 
 /**
  * The <b>FileSystem</b> class provides several static utility methods to work with the local filesystem.
@@ -105,58 +101,16 @@ class FileSystem {
   }
 
   /**
-   * Delete directory, file or symbolic link.
+   * Recursive deletion of given path.
    *
-   * The behaviour of this method is equivalent to the <tt>rm -rf</tt> Linux command.
-   *
-   * If the passed path is a valid local directory this method will delete the contents of the directory before
-   * deleting the directory itself. The default {@link http://php.net/manual/en/function.rmdir.php <code>rmdir</code>}
-   * function only deletes a directory if it is empty.
-   *
-   * If the passed path is a local symbolic link only the symbolic link will be deleted. If the symbolic link points to
-   * a valid local directory or file, both will stay untouched.
-   *
-   * @todo Should the exception be more specific about which file could not be deleted? Or is it sufficient and the
-   *       developer has to go to the directory, file or symbolic link himself to check what the problem is?
    * @param string $path
    *   Absolute or relative path to the directory, file or symlink.
    * @return boolean
-   *   <code>true</code> if all files and directories have been deleted. <code>false</code> on error or if the given
-   *   path is not valid.
-   * @throws \MovLib\Exception\FileSystemException
-   *   If any of the delete actions fails (e.g. wrong permissions).
-   * @since 0.0.1-dev
+   *   <code>TRUE</code> if all files and directories have been deleted, otherwise <code>FALSE</code>.
    */
   public static function unlinkRecursive($path) {
-    $return = false;
-    $exceptionMessage = "Could not delete given directory, file or symbolic link: '{$path}'";
-    // Check if a path was given at all and if the path is on our local filesystem and exists.
-    if (empty($path) === false && realpath($path) === true && file_exists($path) === true) {
-      if (is_dir($path) === true) {
-        /* @var $tmpPath \DirectoryIterator */
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $tmpPath) {
-          if ($tmpPath->isDir() === true) {
-            $return = rmdir($tmpPath->getPathname());
-          }
-          elseif ($tmpPath->isFile() === true || $tmpPath->isLink() === true) {
-            $return = unlink($tmpPath->getPathname());
-          }
-          // Check each iteration if something went wrong.
-          if ($return === false) {
-            throw new FileSystemException($exceptionMessage);
-          }
-        }
-        // Above loop will not delete the directory itself, this is the last step.
-        $return = rmdir($path);
-      }
-      elseif (is_file($path) === true || is_link($path) === true) {
-        $return = unlink($path);
-      }
-    }
-    if ($return === false) {
-      throw new FileSystemException($exceptionMessage);
-    }
-    return $return;
+    exec("rm -r {$path}", $output, $status);
+    return $status !== 0;
   }
 
 }

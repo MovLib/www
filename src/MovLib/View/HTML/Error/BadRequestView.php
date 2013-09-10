@@ -17,6 +17,7 @@
  */
 namespace MovLib\View\HTML\Error;
 
+use \MovLib\View\HTML\Alert;
 use \MovLib\View\HTML\AlertView;
 
 /**
@@ -34,20 +35,23 @@ class BadRequestView extends AlertView {
    * Create a <em>403 Forbidden</em> error page.
    *
    * @global \MovLib\Model\I18nModel $i18n
-   *   The global i18n model instance.
    * @param \MovLib\Presenter\AbstractPresenter $presenter
-   *   The presenter object controlling this view.
+   *   The presenter controlling this view.
    */
   public function __construct($presenter) {
     global $i18n;
     parent::__construct($presenter, $i18n->t("Bad Request"));
     http_response_code(400);
-    $this->setAlert(
-      "<p>{$i18n->t("Your browser sent a request that we could not understand.")}</p>" .
-      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}.", [ $this->a($i18n->r("/contact"), $i18n->t("contact us")) ])}</p>",
-      self::ALERT_SEVERITY_ERROR,
-      true
-    );
+    $this->addAlert(new Alert(
+      "<p>{$i18n->t("There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.", [
+        "<a href='{$i18n->r("/contact")}'>", "</a>"
+      ])}</p>",
+      [
+        "block"    => true,
+        "title"    => $i18n->t("Your browser sent a request that we could not understand."),
+        "severity" => Alert::SEVERITY_ERROR,
+      ]
+    ));
   }
 
 }

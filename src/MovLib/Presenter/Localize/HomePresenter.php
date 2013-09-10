@@ -30,11 +30,8 @@ use \MovLib\Presenter\AbstractPresenter;
  */
 class HomePresenter extends AbstractPresenter {
 
-  /**
-   * {@inheritdoc}
-   */
   public function __construct() {
-    $this->setPresentation($this->getShortName());
+
   }
 
   /**

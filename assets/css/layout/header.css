@@ -54,7 +54,7 @@
   color: #656565;
   display: block;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: bold;
   line-height: 50px;
   margin-top: 0;
   margin-bottom: 0;
@@ -82,9 +82,9 @@
 
 /*
   Display as table to get rid of the spaces between the menuitems. We want those spaces because otherwise the words are
-  directly next to each other (e.g. "LoginWatchlist" instead of "Login Watchlist").
+  directly next to each other (e.g. "FooBar" instead of "Foo Bar").
 */
-#nav-main {
+#main-nav {
   display: table;
   height: 50px;
   float: right;
@@ -93,7 +93,7 @@
   vertical-align: middle;
 }
 
-#nav-main .menuitem {
+#main-nav a {
   border-bottom-width: 5px;
   color: #656565;
   display: table-cell;
@@ -104,10 +104,10 @@
   width: 100px;
 }
 
-#nav-main .menuitem:hover,
-#nav-main .menuitem:focus,
-#nav-main .menuitem:active,
-#nav-main .menuitem.active {
+#main-nav a:hover,
+#main-nav a:focus,
+#main-nav a:active,
+#main-nav a.active {
   color: #09c;
   border-bottom-color: #09c;
 }
@@ -116,12 +116,12 @@
 /* ==== MEGA NAVIGATION ============================================================================================= */
 
 
-#nav-mega-container .container {
+#mega-nav-container .container {
   position: relative;
   z-index: 9999999;
 }
 
-#nav-mega {
+#mega-nav {
   background-color: #252525;
   color: #fff;
   height: 0;
@@ -129,31 +129,31 @@
   transition: height 0.4s ease-in-out;
 }
 
-#nav-mega .container {
+#mega-nav .container {
   position: relative;
 }
 
-#nav-mega h2 {
+#mega-nav h2 {
   color: #fff;
 }
 
-#nav-mega .menuitem {
+#mega-nav a {
   display: block;
 }
 
-#nav-mega .menuitem.active {
+#mega-nav a.active {
   color: #c7c7c7;
   border-bottom-color: transparent;
 }
 
-#nav-mega > .container,
-#nav-mega-container:hover #nav-mega,
-#nav-mega-container:focus #nav-mega,
-#nav-mega-container:active #nav-mega {
+#mega-nav > .container,
+#mega-nav-container:hover #mega-nav,
+#mega-nav-container:focus #mega-nav,
+#mega-nav-container:active #mega-nav {
   height: 200px;
 }
 
-#nav-mega-switch {
+#mega-nav-switch {
   display: table;
   height: 50px;
   width: 50px;
@@ -162,7 +162,7 @@
   bottom: -50px;
 }
 
-#nav-mega-switch .button {
+#mega-nav-switch .button {
   display: table-cell;
   vertical-align: middle;
   font-size: 21.333333px;
@@ -173,24 +173,25 @@
 /* ==== BREADCRUMB ================================================================================================== */
 
 
-#breadcrumb,
-#nav-breadcrumb__title {
+#breadcrumb-nav,
+#breadcrumb-nav-title {
   font-size: 12px;
   margin: 1.39em 0;
   padding: 0;
 }
 
-#nav-breadcrumb__title {
-  display: inline;
-  line-height: 1.46;
-}
-
-#nav-mega #breadcrumb {
+/* We have to use both IDs at this point to overwrite the inheritance from the "#mega-nav .container" selector! */
+#mega-nav #breadcrumb-nav {
   bottom: 0;
   position: absolute;
 }
 
-#nav-mega #breadcrumb .menuitem {
+#breadcrumb-nav-title {
+  display: inline;
+  line-height: 1.46;
+}
+
+#breadcrumb-nav a {
   display: inline;
 }
 
@@ -232,6 +233,6 @@
 }
 
 #header__search-input {
-  font-weight: 300;
+  font-weight: 200;
   width: 660px;
 }
