@@ -500,21 +500,21 @@ class I18n extends \MovLib\Data\Database {
    */
   public function r($route, array $args = null, array $options = []) {
     $route = $this->formatMessage("route", $route, $args, $options);
-    if (isset($options["absolute"]) && $options["absolute"] === false) {
-      return $route;
-    }
-    if ($options["language_code"] != $this->languageCode) {
-      if (isset($_SERVER["LANGUAGE_CODE"])) {
-        $serverName = str_replace($_SERVER["LANGUAGE_CODE"], $options["language_code"], $_SERVER["SERVER_NAME"]);
+    if (isset($options["absolute"]) && $options["absolute"] === true) {
+      if ($options["language_code"] != $this->languageCode) {
+        if (isset($_SERVER["LANGUAGE_CODE"])) {
+          $serverName = str_replace($_SERVER["LANGUAGE_CODE"], $options["language_code"], $_SERVER["SERVER_NAME"]);
+        }
+        else {
+          $serverName = "{$options["language_code"]}.{$_SERVER["SERVER_NAME"]}";
+        }
       }
       else {
-        $serverName = "{$options["language_code"]}.{$_SERVER["SERVER_NAME"]}";
+        $serverName = $_SERVER["SERVER_NAME"];
       }
+      $route = "{$_SERVER["SCHEME"]}://{$serverName}{$route}";
     }
-    else {
-      $serverName = $_SERVER["SERVER_NAME"];
-    }
-    return "{$_SERVER["SCHEME"]}://{$serverName}{$route}";
+    return $route;
   }
 
   /**
