@@ -286,8 +286,6 @@ class I18n extends \MovLib\Data\Database {
    *
    * <em>NOTE:</em> The translations for the languages cannot be empty, we get them from Intl ICU.
    *
-   * @staticvar array $countries
-   *   Used to cache the array.
    * @param string $key
    *   [Optional] Get array of languages sorted by ID, ISO alpha-2 code, or name. Use the <var>KEY_*</var> class
    *   constants.
@@ -374,8 +372,6 @@ class I18n extends \MovLib\Data\Database {
    *
    * <em>NOTE:</em> The translations for the countries cannot be empty, we get them from Intl ICU.
    *
-   * @staticvar array $countries
-   *   Used to cache the array.
    * @param string $key
    *   [Optional] Get array of countries sorted by ID, ISO alpha-2 code, or name. Use the <var>KEY_*</var> class
    *   constants.
