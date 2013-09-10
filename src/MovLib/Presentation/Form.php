@@ -168,7 +168,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
       }
 
       // Only call the validation callback if there were no errors at all.
-      if ($page->checkError($errors) === false) {
+      if ($page->checkErrors($errors) === false) {
         $page->{$validationCallback}();
       }
     }
