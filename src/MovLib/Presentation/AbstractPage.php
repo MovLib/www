@@ -62,7 +62,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
     "layout/generic.css",
     "layout/header.css",
     "layout/content.css",
-    "layout/nav-secondary.css",
+    "layout/secondary-navigation.css",
     "layout/footer.css",
     "layout/icons.css",
     "layout/alert.css",
