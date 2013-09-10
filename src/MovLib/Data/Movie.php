@@ -379,7 +379,7 @@ class Movie extends \MovLib\Data\Database {
       );
       $c = count($this->crew);
       for ($i = 0; $i < $c; ++$i){
-        $this->crew[$i]["job_title"] = empty($this->crew[$i]["job_title_localized"]) ?: $this->crew[$i]["job_title_localized"];
+        $this->crew[$i]["job_title"] = $this->crew[$i]["job_title_localized"] ?: $this->crew[$i]["job_title"];
         unset($this->crew[$i]["job_title_localized"]);
         settype($this->crew[$i]["personDeleted"], "deleted");
         settype($this->crew[$i]["companyDeleted"], "deleted");
