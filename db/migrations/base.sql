@@ -21,7 +21,6 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
   `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime in minutes.' ,
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.' ,
   `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.' ,
-  `bin_relationships` BLOB NULL COMMENT 'The movie\'s relations to other movies, e.g sequels.\nStored in igbinary serialized format.' ,
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this movie was created.' ,
   PRIMARY KEY (`movie_id`) ,
   UNIQUE INDEX `uq_movies_rank` (`rank` ASC) )
@@ -167,7 +166,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `google_plus` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s Google+ data.' ,
   `twitter` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s Twitter data.' ,
   `avatar_extension` VARCHAR(5) NULL COMMENT 'The file extension of the user\'s avatar without leading dot.' ,
-  `avatar_hash` CHAR(10) NULL COMMENT 'The avatar\'s modification timestamp (UNIX format) for cache busting.' ,
+  `avatar_name` CHAR(32) NULL COMMENT 'The avatar\'s name (md5 hash of the user\'s name).' ,
+  `avatar_changed` TIMESTAMP NULL COMMENT 'The timestamp the avatar has been changed.' ,
   PRIMARY KEY (`user_id`) ,
   INDEX `fk_users_countries` (`country_id` ASC) ,
   INDEX `fk_users_languages` (`language_id` ASC) ,
@@ -1300,6 +1300,36 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_relationships`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`movies_relationships` (
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The first movie\'s unique ID in this relationship.' ,
+  `movie_id_other` BIGINT UNSIGNED NOT NULL COMMENT 'The second movie\'s unique ID in this relationship.' ,
+  `relationship_type_id` BIGINT NOT NULL COMMENT 'The unique ID of the relationship type.' ,
+  PRIMARY KEY (`movie_id`, `movie_id_other`, `relationship_type_id`) ,
+  INDEX `fk_movies_relationships_relationship_types1_idx` (`relationship_type_id` ASC) ,
+  INDEX `fk_movies_relationships_movies1_idx` (`movie_id` ASC) ,
+  INDEX `fk_movies_relationships_movies2_idx` (`movie_id_other` ASC) ,
+  CONSTRAINT `fk_movies_relationships_relationship_types`
+    FOREIGN KEY (`relationship_type_id` )
+    REFERENCES `movlib`.`relationship_types` (`relationship_type_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_relationships_movies`
+    FOREIGN KEY (`movie_id` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_relationships_movies_other`
+    FOREIGN KEY (`movie_id_other` )
+    REFERENCES `movlib`.`movies` (`movie_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
 USE `movlib` ;
