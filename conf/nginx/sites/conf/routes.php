@@ -290,8 +290,8 @@ location ^~ <?= $r("/user") ?> {
     include sites/conf/fastcgi.conf;
   }
 
-  location ~ ^<?= $r("/user/mail-settings") ?>$ {
-    set $movlib_presenter "User\\MailSettings";
+  location ~ ^<?= $r("/user/email-settings") ?>$ {
+    set $movlib_presenter "User\\EmailSettings";
     include sites/conf/fastcgi.conf;
   }
 

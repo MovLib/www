@@ -29,14 +29,14 @@
 /* ==== The LIST ==================================================================================================== */
 
 
-#nav-secondary .no-list {
+.secondary-navigation .no-list {
   margin: 0;
   overflow: hidden;
   padding: 30px 0;
   position: relative;
 }
 
-#nav-secondary .no-list:after {
+.secondary-navigation .no-list:after {
   bottom: 0;
   box-shadow: 0 0 10px #dfdfdf;
   content: "";
@@ -52,7 +52,7 @@
 /* ==== The MENUITEMS =============================================================================================== */
 
 
-#nav-secondary .menuitem:before {
+.secondary-navigation a:before {
   background-color: #e5e5e5;
   bottom: -1px;
   content: "";
@@ -63,7 +63,7 @@
   width: 5px;
 }
 
-#nav-secondary .menuitem {
+.secondary-navigation a {
   background-color: #fcfcfc;
   border: 1px solid #e5e5e5;
   border-right: 0;
@@ -77,25 +77,25 @@
   transition-property: color, background-color, border-color, margin-left;
 }
 
-#nav-secondary .menuitem:focus,
-#nav-secondary .menuitem:hover {
+.secondary-navigation a:focus,
+.secondary-navigation a:hover {
   background-color: #fff;
 }
 
-#nav-secondary .menuitem.active {
+.secondary-navigation a.active {
   background-color: #fff;
   z-index: 2;
 }
 
-#nav-secondary .menuitem:focus:before,
-#nav-secondary .menuitem:hover:before,
-#nav-secondary .menuitem.active:before {
+.secondary-navigation a:focus:before,
+.secondary-navigation a:hover:before,
+.secondary-navigation a.active:before {
   background-color: #09c;
 }
 
-#nav-secondary .menuitem:focus,
-#nav-secondary .menuitem:hover,
-#nav-secondary .menuitem.active {
+.secondary-navigation a:focus,
+.secondary-navigation a:hover,
+.secondary-navigation a.active {
   color: #09c;
   margin-left: 5px;
 }
@@ -104,15 +104,15 @@
 /* ==== SPECIAL STYLES ============================================================================================== */
 
 
-#nav-secondary .menuitem--delete:focus:before,
-#nav-secondary .menuitem--delete:hover:before,
-#nav-secondary .menuitem--delete.active:before {
+.secondary-navigation .delete:focus:before,
+.secondary-navigation .delete:hover:before,
+.secondary-navigation .delete.active:before {
   background-color: #c00;
 }
 
-#nav-secondary .menuitem--delete:focus,
-#nav-secondary .menuitem--delete:hover,
-#nav-secondary .menuitem--delete.active {
+.secondary-navigation .delete:focus,
+.secondary-navigation .delete:hover,
+.secondary-navigation .delete.active {
   color: #c00;
 }
 
@@ -120,11 +120,11 @@
 /* ==== The ICONS =================================================================================================== */
 
 
-#nav-secondary .menuitem--separator {
+.secondary-navigation .separator {
   margin-bottom: 30px;
 }
 
-#nav-secondary .icon {
+.secondary-navigation .icon {
   margin-right: 10px;
   width: 15px;
 }

@@ -23,7 +23,12 @@ use \MovLib\Exception\ValidatorException;
 use \MovLib\View\HTML\Input\HiddenInput;
 
 /**
- * Description of Form
+ * Auto-validating HTML form for POST requests.
+ *
+ * Please note that this form is only meant for POST requests only. If you need a form for GET requests simply create
+ * the form within your HTML. A GET submitted form doesn't need a form ID, nor a CSRF token. Additionally auto-
+ * validation doesn't make much sense for a GET form, as their parameters are often only used for pagination or similar
+ * simple tasks which won't be saved nor affect cirtical parts of our system.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -47,16 +52,6 @@ class Form extends \MovLib\Presentation\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * Array used to create a map between PHP's <var>INPUT_*</var> constants to their string representation.
-   *
-   * @var array
-   */
-  public $input = [
-    INPUT_POST => "POST",
-    INPUT_GET  => "GET",
-  ];
 
   /**
    * Global identifier for this form.
@@ -111,11 +106,9 @@ class Form extends \MovLib\Presentation\AbstractBase {
    * @param string $validationCallback [optional]
    *   The name of the method that should be called if the form's auto-validation is completed an no errors were
    *   detected. Defaults to <code>"validate"</code>.
-   * @param int $inputType [optional]
-   *   One of PHP's built-in <var>INPUT_*</var> constants, defaults to <var>INPUT_POST</var>.
    * @throws \MovLib\Exception\ValidatorException
    */
-  public function __construct($page, array $elements, $id = null, $validationCallback = "validate", $inputType = INPUT_POST) {
+  public function __construct($page, array $elements, $id = null, $validationCallback = "validate") {
     global $i18n, $session;
     $this->id = $id ?: $page->id;
     $this->hiddenElements[] = new HiddenInput("form_id", $this->id);
@@ -131,11 +124,11 @@ class Form extends \MovLib\Presentation\AbstractBase {
       // @todo Can we trust on our supported browser to use the document encoding that we've sent via HTTP?
       //"accept-charset" => "UTF-8",
       "action" => "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$_SERVER["PATH_INFO"]}",
-      "method" => $this->input[$inputType],
+      "method" => "post",
     ];
 
     // Validate all attached form elements if we are receiving this form.
-    if ($_SERVER["REQUEST_METHOD"] == $this->input[$inputType] && filter_input($inputType, "form_id") == $this->id) {
+    if (filter_input(INPUT_POST, "form_id") == $this->id) {
       $errors = $mandatoryError = null;
 
       $c = count($elements);
@@ -147,7 +140,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
 
         // No need to go through the complete validation process to check if the element is empty or not. Plus it's
         // tedious to re-implement this in each validation method. Directly take care of it here.
-        if (!filter_input($inputType, $elements[$i]->id, FILTER_DEFAULT, FILTER_REQUIRE_SCALAR)) {
+        if (empty($_POST[$elements[$i]->id])) {
           if ($elements[$i]->required() === true) {
             $elements[$i]->invalid();
             $mandatoryError = true;
@@ -158,10 +151,10 @@ class Form extends \MovLib\Presentation\AbstractBase {
         }
         else {
           try {
-            $elements[$i]->validate($inputType);
+            $elements[$i]->validate();
           } catch (ValidatorException $e) {
             $elements[$i]->invalid();
-            $errors .= "<p>{$e->getMessage()}</p>";
+            $errors[] = $e->getMessage();
           }
         }
       }
@@ -171,16 +164,11 @@ class Form extends \MovLib\Presentation\AbstractBase {
       // marked with the aria-required-attribute which ensures that clients for handicapped people tell them exactly
       // which elements are required and which aren't.
       if ($mandatoryError) {
-        $errors .= "<p>{$i18n->t("One or more required fields are empty and are highlighted with a red color, please make sure to fill out all required fields.")}</p>";
+        $errors[] = $i18n->t("One or more required fields are empty and are highlighted with a red color, please make sure to fill out all required fields.");
       }
 
-      // Only call the presenter's validate method if there was no error so far.
-      if ($errors) {
-        $alert = new Alert($errors);
-        $alert->severity = Alert::SEVERITY_ERROR;
-        $page->alerts .= $alert;
-      }
-      else {
+      // Only call the validation callback if there were no errors at all.
+      if ($page->checkError($errors) === false) {
         $page->{$validationCallback}();
       }
     }
