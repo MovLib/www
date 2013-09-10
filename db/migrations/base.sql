@@ -147,8 +147,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `user_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The user’s unique ID.' ,
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The user’s language.' ,
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.' ,
-  `mail` VARCHAR(254) NOT NULL COMMENT 'The user’s unique email address.' ,
-  `pass` TINYBLOB NOT NULL COMMENT 'The user’s unique password (hashed).' ,
+  `email` VARCHAR(254) NOT NULL COMMENT 'The user’s unique email address.' ,
+  `password` TINYBLOB NOT NULL COMMENT 'The user’s unique password (hashed).' ,
   `created` TIMESTAMP NOT NULL COMMENT 'Timestamp for user’s creation datetime.' ,
   `access` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.' ,
   `login` TIMESTAMP NOT NULL COMMENT 'Timestamp for user’s last login.' ,
@@ -172,7 +172,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   INDEX `fk_users_countries` (`country_id` ASC) ,
   INDEX `fk_users_languages` (`language_id` ASC) ,
   UNIQUE INDEX `uq_users_name` (`name` ASC) ,
-  UNIQUE INDEX `uq_users_mail` (`mail` ASC) ,
+  UNIQUE INDEX `uq_users_mail` (`email` ASC) ,
   CONSTRAINT `fk_users_countries`
     FOREIGN KEY (`country_id` )
     REFERENCES `movlib`.`countries` (`country_id` )

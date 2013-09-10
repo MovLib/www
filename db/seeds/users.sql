@@ -3,8 +3,8 @@ BEGIN;
 INSERT INTO `users` (
   `language_id`,
   `name`,
-  `mail`,
-  `pass`,
+  `email`,
+  `password`,
   `created`,
   `login`,
   `timezone`,
