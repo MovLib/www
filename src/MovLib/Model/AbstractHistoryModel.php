@@ -215,11 +215,11 @@ abstract class AbstractHistoryModel extends BaseModel {
 
     exec("cd {$this->path} && git log --format='{$format}'", $output);
 
-    $mapfunction = function($value) {
-        return json_decode($value, true);
-    };
+    foreach ($output as $key => $value) {
+      $output[$key] = json_decode($value, true);
+    }
 
-    return array_map($mapfunction, $output);
+    return $output;
   }
 
   /**
@@ -240,6 +240,48 @@ abstract class AbstractHistoryModel extends BaseModel {
     } catch (ErrorException $e) {
       throw new FileSystemException("Error writing to file", $e);
     }
+  }
+
+  /**
+   * Write specific columns of a related database row to a file.
+   *
+   * If no columns are given all columns are selected.
+   *
+   * @param string $relation
+   *  A database relation (e.g. <em>movies_titles</em>).
+   * @param array $columns
+   *  Array of non dynmic columns to be written to the file.
+   * @param array $dyn_columns
+   *  Array of dynamic colums to be written to the file.
+   */
+  protected function writeRelatedRowsToFile($relation, $columns = array(), $dyn_columns = array()) {
+    $tmp_dyn_columns = $dyn_columns;
+
+    if (empty($columns) && empty($dyn_columns)) {
+      $all_columns = "*";
+    } else {
+      foreach ($columns as $key => $value) {
+        $columns[$key] = "`{$value}`";
+      }
+      foreach ($tmp_dyn_columns as $key => $value) {
+        $tmp_dyn_columns[$key] = "COLUMN_JSON({$value}) AS `{$value}`";
+      }
+      $all_columns = implode(", ", array_merge($columns, $tmp_dyn_columns));
+    }
+
+    $rows = $this->select(
+      "SELECT {$all_columns}
+        FROM `{$relation}`
+        WHERE `{$this->type}_id` = ?",
+      "d",
+      [$this->id]
+    );
+
+    foreach ($dyn_columns as $value) {
+      $rows[0][$value] = json_decode($rows[0][$value], true);
+    }
+
+    $this->writeToFile("{$relation}", json_encode($rows));
   }
 
 }

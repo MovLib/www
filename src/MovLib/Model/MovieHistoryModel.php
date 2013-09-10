@@ -78,7 +78,19 @@ class MovieHistoryModel extends AbstractHistoryModel {
       $this->writeToFile("{$synopsis_language}_synopsis", $synopsis);
     }
 
-    $this->writeToFile("titles", $this->getTitles());
+    $this->writeRelatedRowsToFile("movies_titles",    ["title", "is_display_title", "language_id"], ["dyn_comments"]);
+    $this->writeRelatedRowsToFile("movies_taglines",  ["tagline", "language_id"], ["dyn_comments"]);
+    $this->writeRelatedRowsToFile("movies_links",     ["title", "text", "url", "language_id"]);
+    $this->writeRelatedRowsToFile("movies_trailers");
+    $this->writeRelatedRowsToFile("movies_cast",      ["person_id", "roles"]);
+    $this->writeRelatedRowsToFile("movies_crew",      ["crew_id"]);
+    $this->writeRelatedRowsToFile("movies_awards",    ["award_count"]);
+    $this->writeRelatedRowsToFile("movies_relationships",    ["movie_id_other", "relationship_type_id"]);
+    $this->writeRelatedRowsToFile("movies_genres",    ["genre_id"]);
+    $this->writeRelatedRowsToFile("movies_styles",    ["style_id"]);
+    $this->writeRelatedRowsToFile("movies_languages", ["language_id"]);
+    $this->writeRelatedRowsToFile("movies_countries", ["country_id"]);
+    $this->writeRelatedRowsToFile("movies_directors", ["person_id"]);
   }
 
   /**
@@ -106,29 +118,6 @@ class MovieHistoryModel extends AbstractHistoryModel {
     );
 
     return json_decode($synopses[0]["dyn_synopses"], true);
-  }
-
-  /**
-   * Get all titles and return them as json string.
-   *
-   * @return string
-   */
-  private function getTitles() {
-    $titles = $this->select(
-      "SELECT `title` AS `title`,
-        COLUMN_JSON(dyn_comments) AS `dyn_comments`,
-        `is_display_title` AS isDisplayTitle,
-        `language_id` AS `languageId`
-        FROM `movies_titles`
-        WHERE `movie_id` = ?
-        ORDER BY `title` ASC",
-      "d",
-      [$this->id]
-    );
-
-    $titles[0]["dyn_comments"] = json_decode($titles[0]["dyn_comments"], true);
-
-    return json_encode($titles);
   }
 
 }

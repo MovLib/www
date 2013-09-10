@@ -72,13 +72,46 @@ class MovieHistoryModelTest extends PHPUnit_Framework_TestCase {
     $test->writeFiles();
 
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title");
-    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title", "The Shawshank Redemption");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/runtime");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year");
 
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/de_synopsis");
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/en_synopsis");
 
-    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/titles");
-    }
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_titles");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_taglines");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_links");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_trailers");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_relationships");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_cast");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_crew");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_awards");
+
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_styles");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_genres");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_languages");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_countries");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movies_directors");
+  }
+
+  public function testWriteToFile() {
+    $this->assertStringEqualsFile(
+      "{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title",
+      "The Shawshank Redemption"
+    );
+  }
+
+  public function writeRelatedRowsToFile() {
+    $this->assertStringEqualsFile(
+      "{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movie_directors",
+      '[{"person_id":5}]'
+    );
+    $this->assertStringEqualsFile(
+      "{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/movie_titles",
+      '[{"title":"Die Verurteilten","is_display_title":1,"language_id":52,
+       "dyn_comments":{"de":"deutsches Kommentar","en":"english comment"}}]'
+    );
+  }
 
   public function testCommit() {
     (new MovieHistoryModel(2))->commit(20, "initial commit");
