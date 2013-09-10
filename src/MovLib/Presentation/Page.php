@@ -89,6 +89,28 @@ class Page extends \MovLib\Presentation\AbstractPage {
 
 
   /**
+   * Checks if <var>$errors</var> contains anything and aborts if it does.
+   *
+   * It's a very common pattern to collect error messages within an array if validating data. Otherwise one would have
+   * to set an alert message for each error that occurs. This method let's you pass the possibly collected errors and
+   * checks if there are any, if there are any it will create and set the alert message for you.
+   *
+   * @param null|array $errors
+   *   The collected error messages to check.
+   * @return boolean
+   *   Returns <code>TRUE</code> if there were any errors, otherwise <code>FALSE</code>.
+   */
+  public function checkErrors($errors) {
+    if ($errors) {
+      $errors = implode("<br>", $errors);
+      $alert = new Alert("<p>{$errors}</p>");
+      $alert->severity = Alert::SEVERITY_ERROR;
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Get the breadcrumb navigation.
    *
    * @see \MovLib\Presentation\Partial\Navigation
@@ -101,7 +123,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
 
     // Always include the home and the current page, any other breadcrumb trails are up to the extending class.
     $trail = [[ "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ]]];
-    $breadcrumbs = $this->getBreadcrumbTrail();
+    $breadcrumbs = $this->getBreadcrumbs();
     $c = count($breadcrumbs);
     for ($i = 0; $i < $c; ++$i) {
       // 0 => route
@@ -126,7 +148,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
   }
 
   /**
-   * Get additional breadcrumb trails.
+   * Get additional breadcrumbs.
    *
    * This method is called automatically from the reference implementation of
    * {@see \MovLib\Presentation\Page::getBreadcrumb()}. If a presentation has additional breadcrumbs that should be
@@ -138,7 +160,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
    *   Additional breadcrumbs that should be added to the trail. Please have a look at the navigation partial for an in
    *   depth disucssion about the format of the returned array.
    */
-  protected function getBreadcrumbTrail() {
+  protected function getBreadcrumbs() {
     // The reference implementation doesn't add any breadcrumbs to the trail!
   }
 
@@ -252,7 +274,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
         "</div>" . // #mega-nav-container
         "<div class='container'>" .
           "<div class='row'>" .
-            "<a class='span' href='{$i18n->r("/")}' id='header__logo' title='{$i18n->t("Take me back to the home page.")}'>" .
+            "<a class='span' href='/' id='header__logo' title='{$i18n->t("Go back to the home page.")}'>" .
               "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='42' id='logo' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib" .
             "</a>" .
             $mainNavigation .
@@ -283,9 +305,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected function getHeaderLogo() {
     global $i18n;
     return
-      "<a class='inline' href='{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}/' id='logo' title='{$i18n->t(
-        "Go back to the home page."
-      )}'>{$i18n->t(
+      "<a class='inline' href='/' id='logo' title='{$i18n->t("Go back to the home page.")}'>{$i18n->t(
         "{0} {1}the {2}free{3} movie library.{4}",
         [ "MovLib", "<small>", "<em>", "</em>", "</small>" ]
       )}</a>"
