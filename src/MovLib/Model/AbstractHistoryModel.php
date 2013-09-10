@@ -38,48 +38,32 @@ abstract class AbstractHistoryModel extends BaseModel {
    * The instance's id.
    * @var int
    */
-  private $id;
+  protected $id;
 
   /**
    * The instance's model short name.
    * @var string
    */
-  private $type;
-
-  /**
-   * The instance to be versioned
-   * @var BaseModel
-   */
-  public $instance;
+  protected $type;
 
   /**
    * The Path to the repository
    * @var string
    */
-  public $path;
+  protected $path;
 
   /**
+   * Constructor which must be called by all child classes
    *
    * @param int $id
    *  The id of the instance to be versioned
    * @throws HistoryException
    *  If no instance with given id is found
    */
-  public function __construct($id = null) {
+  public function __construct($id) {
     $this->type = $this->getShortName();
     $this->id = $id;
     $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
-
-    $this->instance = $this->select(
-      "SELECT *
-        FROM `{$this->type}s`
-        WHERE `{$this->type}_id` = ?",
-      "d",
-      [$this->id]
-    );
-    if (isset($this->instance[0]) === false) {
-      throw new HistoryException("Could not find {$this->type} with ID '{$this->id}'!");
-    }
   }
 
   /**
@@ -197,6 +181,29 @@ abstract class AbstractHistoryModel extends BaseModel {
   }
 
   /**
+   *
+   * @param string $head
+   *  HEAD or hash of git commit
+   * @param sting $ref
+   *  Hash of git commit
+   *
+   * @throws HistoryException
+   *  If something went wrong with "git diff"
+   *
+   * @return array
+   *  Returns an array of changed files
+   */
+  public function getChangedFiles($head, $ref) {
+    $output = array();
+    try {
+      exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output);
+    } catch (ErrorException $e) {
+      throw new HistoryException("There was an error during 'git diff'", $e);
+    }
+    return $output;
+  }
+
+  /**
    * Returns an array of associative arrays with commits
    *
    * @todo is subject safe?
@@ -213,6 +220,26 @@ abstract class AbstractHistoryModel extends BaseModel {
     };
 
     return array_map($mapfunction, $output);
+  }
+
+  /**
+   * Write file to repository path
+   *
+   * @param string $filename
+   *  The filename
+   * @param string $content
+   *  The content as string
+   * @throws FileSystemException
+   *  If any of the actions fails (e.g. wrong permissions).
+   */
+  protected function writeToFile($filename, $content) {
+    try {
+      $fp = fopen("{$this->path}/{$filename}", 'w');
+      fwrite($fp, $content);
+      fclose($fp);
+    } catch (ErrorException $e) {
+      throw new FileSystemException("Error writing to file", $e);
+    }
   }
 
 }

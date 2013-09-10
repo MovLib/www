@@ -18,10 +18,8 @@
 namespace MovLib\Test\Model;
 
 use \MovLib\Exception\HistoryException;
-use \MovLib\Model\BaseModel;
 use \MovLib\Model\MovieHistoryModel;
 use \PHPUnit_Framework_TestCase;
-use \mysqli;
 
 /**
  * Test the MovieHistoryModel.
@@ -39,7 +37,7 @@ class MovieHistoryModelTest extends PHPUnit_Framework_TestCase {
   public static function tearDownAfterClass() {
     $path = "{$_SERVER["DOCUMENT_ROOT"]}/history/movie";
     if(is_dir($path)) {
-      exec("rm -Rf {$path}");
+      //exec("rm -Rf {$path}");
     }
   }
 
@@ -72,9 +70,15 @@ class MovieHistoryModelTest extends PHPUnit_Framework_TestCase {
   public function testWriteFiles() {
     $test = new MovieHistoryModel(2);
     $test->writeFiles();
+
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title");
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title", "The Shawshank Redemption");
-  }
+
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/de_synopsis");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/en_synopsis");
+
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/titles");
+    }
 
   public function testCommit() {
     (new MovieHistoryModel(2))->commit(20, "initial commit");
@@ -83,11 +87,17 @@ class MovieHistoryModelTest extends PHPUnit_Framework_TestCase {
 
   public function testGetDiffAsHTML() {
     $test = new MovieHistoryModel(2);
-    $test->instance[0]["original_title"] = "The Foobar is a lie";
+    $test->movie[0]["original_title"] = "The Foobar is a lie";
     $test->writeFiles();
     $test->commit(20, "second commit");
     $this->assertEquals("The<span class='red'>Shawshank Redemption</span><span class='green'>Foobar is a lie</span>\n",
       $test->getDiffasHTML("HEAD", "HEAD^1", "original_title"));
+  }
+
+  public function testGetChangedFiles() {
+    $test = new MovieHistoryModel(2);
+    $changed_files = $test->getChangedFiles("HEAD", "HEAD^1");
+    $this->assertEquals("original_title", $changed_files[0]);
   }
 
   public function testGetLastCommits() {
