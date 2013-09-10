@@ -22,6 +22,14 @@ namespace MovLib\Presentation\Partial;
  *
  * Everything in this class is kept public, we want to ensure highest flexibility while working with this.
  *
+ * The navigation has all accessability (ARIA) roles correctly applied. The <code><nav></code> element will be used
+ * as the most outter wrapper element around the navigation. Unlike most other software we aren't using an unordered
+ * list to create the navigation, instead we use <i>normal</i> anchor elements. The reason for this is simple. The ARIA
+ * attributes help us to define the real semantic of the mark-up. This is ensured by applying <code>role='menuitem'</code>
+ * to each anchor element. We save a lot of document objects this way (consider <code><ul><li><a></li></ul></code> vs.
+ * <code><a></code> with many menuitems). But there is an optional parameter available that allows developers to wrap
+ * the menuitems in an unordered list, if it really makes sense (e.g. for styling via CSS).
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -121,19 +129,21 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    */
   public $closure = null;
 
+  /**
+   * Flag indicating if all menuitems should be wrapped in an unordered list.
+   *
+   * Please be sure to read and understand the class description before chaning this flag to <code>TRUE</code>.
+   *
+   * @var boolean
+   */
+  public $unorderedList = false;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
    * Instantiate new navigation partial.
-   *
-   * Create a new navigation with all accessability (ARIA) roles correctly applied. The <code><nav></code>-element will
-   * be used to create the navigation. Unlike most developers we aren't using an unordered list to create the
-   * navigation, instead we use <i>normal</i> anchor elements. The reason for this is simple. ARIA helps us to define
-   * the real meaning of each anchor element, by applying <code><a role='menuitem'></code> to each anchor. Additionally
-   * we save a lot of document objects (consider <code><ul><li><a></code> vs. <code><a></code> with many navigational
-   * points).
    *
    * @param string $id
    *   The globally unique identifier of this navigation.
@@ -164,6 +174,9 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    */
   public function __toString() {
     $menuitems = "";
+    if ($this->unorderedList === true) {
+      $menuitems = "<ul class='no-list'>";
+    }
     $c = count($this->menuitems);
     for ($i = 0; $i < $c; ++$i) {
       if ($i !== 0) {
@@ -173,7 +186,11 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
       if ($this->closure) {
         $this->closure($this->menuitems[$i], $i, $c);
       }
-      $menuitems .= $this->a($this->menuitems[$i][0], $this->menuitems[$i][1], $this->menuitems[$i][2]);
+      $menuitem = $this->a($this->menuitems[$i][0], $this->menuitems[$i][1], $this->menuitems[$i][2]);
+      $menuitems .= ($this->unorderedList === true) ? "<li>{$menuitem}</li>" : $menuitem;
+    }
+    if ($this->unorderedList === true) {
+      $menuitems .= "</ul>";
     }
     $this->attributes["id"] = "{$this->id}-nav";
     $this->attributes["role"] = "menu";
