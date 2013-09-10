@@ -113,7 +113,7 @@ class Home extends \MovLib\Presentation\Page {
               "<h2>{$i18n->t("My MovLib")}</h2>" .
               "<p></p>" .
               "<p style='text-align:center'>{$this->a(
-                $i18n->r("/user/register"),
+                $i18n->r("/user/registration"),
                 $i18n->t("Sign up for a new account"),
                 [ "class" => "button button--success button--large" ]
               )}</p>" .
