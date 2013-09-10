@@ -69,9 +69,6 @@ class Exception extends \MovLib\Presentation\Page {
     $stack->title = $i18n->t("Stacktrace");
     $stack->severity = Alert::SEVERITY_INFO;
     $this->alerts .= $stack;
-
-    // Be sure to log this exception
-    Logger::logException($exception, E_RECOVERABLE_ERROR);
   }
 
   /**

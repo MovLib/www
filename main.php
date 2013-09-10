@@ -64,6 +64,7 @@ function uncaught_exception_handler($exception) {
   if (!$i18n) {
     $i18n = new \MovLib\Data\I18n();
   }
+  \MovLib\Data\Delayed\Logger::logException($exception, E_RECOVERABLE_ERROR);
   $page = new \MovLib\Presentation\Exception($exception);
   \MovLib\Data\Delayed\Logger::run();
   exit($page->getPresentation());
@@ -195,6 +196,9 @@ catch (\MovLib\Exception\UnauthorizedException $e) {
   if (!$i18n) {
     $i18n = new \MovLib\Data\I18n();
   }
+
+  // Ensure any active session is destroyed.
+  $session->destroySession();
 
   // We have to ensure that the login page is going to render the form without any further validation, therefor we have
   // to reset the request method to GET because we don't know (and don't want to check) the current request method.
