@@ -22,6 +22,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.' ,
   `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.' ,
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this movie was created.' ,
+  `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.' ,
   PRIMARY KEY (`movie_id`) ,
   UNIQUE INDEX `uq_movies_rank` (`rank` ASC) )
 COMMENT = 'Contains all movie’s data.'
@@ -207,6 +208,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons` (
   `dyn_aliases` BLOB NOT NULL COMMENT 'The person’s aliases.' ,
   `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s translatable biographies.' ,
   `dyn_links` BLOB NOT NULL COMMENT 'The person’s external weblinks.' ,
+  `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.' ,
   PRIMARY KEY (`person_id`) )
 COMMENT = 'Contains all person related data.'
 ROW_FORMAT = COMPRESSED;
@@ -828,6 +830,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`series` (
   `rank` BIGINT UNSIGNED NULL COMMENT 'The series’ global rank.' ,
   `dyn_synopses` BLOB NOT NULL COMMENT 'The series’ translatable synopses.' ,
   `bin_relationships` BLOB NULL COMMENT 'The series´ relations to other series, e.g. sequel.\nStored in igbinary serialized format.' ,
+  `commit` CHAR(40) NULL COMMENT 'The series\' last commit sha-1 hash.' ,
   PRIMARY KEY (`series_id`) )
 ENGINE = InnoDB
 COMMENT = 'Contains all series data.';
@@ -1007,6 +1010,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`articles` (
   `text` BLOB NOT NULL COMMENT 'The article´s text.' ,
   `dyn_texts` BLOB NOT NULL COMMENT 'The article´s translated text.' ,
   `admin` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Determines whether the article can be edited by users (FALSE - 0) or not (TRUE - 1). Defaults to FALSE (0).' ,
+  `commit` CHAR(40) NULL COMMENT 'The article\'s last commit sha-1 hash.' ,
   PRIMARY KEY (`article_id`) ,
   UNIQUE INDEX `uq_title` (`title` ASC) )
 ROW_FORMAT = COMPRESSED;
@@ -1047,6 +1051,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`master_releases` (
   `dyn_notes` BLOB NOT NULL COMMENT 'The master release´s translatable release notes.' ,
   `release_date` DATE NULL COMMENT 'The date this master release has been published.' ,
   `packaging_id` INT UNSIGNED NULL COMMENT 'The master release´s packaging (Only present if there are more than 1 releases in this master release).' ,
+  `commit` CHAR(40) NULL COMMENT 'The master release\'s last commit sha-1 hash.' ,
   PRIMARY KEY (`master_release_id`) ,
   INDEX `fk_master_releases_countries1_idx` (`country_id` ASC) ,
   INDEX `fk_master_releases_packaging1_idx` (`packaging_id` ASC) ,
