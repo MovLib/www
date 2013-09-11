@@ -18,7 +18,6 @@
 
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Exception\ValidatorException;
 use \MovLib\View\HTML\Input\HiddenInput;
 
@@ -123,7 +122,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
     $this->attributes = [
       // @todo Can we trust on our supported browser to use the document encoding that we've sent via HTTP?
       //"accept-charset" => "UTF-8",
-      "action" => "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$_SERVER["PATH_INFO"]}",
+      "action" => $_SERVER["PATH_INFO"],
       "method" => "post",
     ];
 
