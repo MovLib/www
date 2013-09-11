@@ -15,11 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Model;
+namespace MovLib\Data\History;
 
 use \MovLib\Exception\HistoryException;
-use \MovLib\Model\AbstractHistoryModel;
-use \MovLib\Utility\FileSystem;
 
 /**
  * Description of MovieHistoryModel
@@ -30,7 +28,7 @@ use \MovLib\Utility\FileSystem;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistoryModel extends AbstractHistoryModel {
+class Movie extends AbstractHistory {
 
   /**
    * The current movie
@@ -91,16 +89,6 @@ class MovieHistoryModel extends AbstractHistoryModel {
     $this->writeRelatedRowsToFile("movies_languages", ["language_id"]);
     $this->writeRelatedRowsToFile("movies_countries", ["country_id"]);
     $this->writeRelatedRowsToFile("movies_directors", ["person_id"]);
-  }
-
-  /**
-   * Implementation ob abstract method <code>readFiles()</code>.
-   * Reads all history relevant information from files and returns them as associative array.
-   *
-   * @return associative array
-   */
-  public function readFiles() {
-
   }
 
   /**

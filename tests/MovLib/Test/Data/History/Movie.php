@@ -15,14 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Test\Model;
+namespace MovLib\Test\Data\History;
 
+use \MovLib\Data\History\Movie;
 use \MovLib\Exception\HistoryException;
-use \MovLib\Model\MovieHistoryModel;
-use \PHPUnit_Framework_TestCase;
 
 /**
- * Test the MovieHistoryModel.
+ * Test the Movie.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -30,7 +29,7 @@ use \PHPUnit_Framework_TestCase;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistoryModelTest extends PHPUnit_Framework_TestCase {
+class MovieTest extends \PHPUnit_Framework_TestCase {
   /**
    * Fixture after all tests have been executed and class instance is destroyed.
    */
@@ -46,29 +45,25 @@ class MovieHistoryModelTest extends PHPUnit_Framework_TestCase {
 
   public function testWithoutId() {
     try {
-      new MovieHistoryModel(null);
+      new Movie(null);
     } catch (HistoryException $expected) {
       return;
     }
     $this->fail('An expected exception has not been raised (id is null).');
   }
 
-  public function testGetRelationName() {
-    $this->assertEquals("movie", (new MovieHistoryModel(2))->getShortName());
+  public function testGetShortName() {
+    $this->assertEquals("movie", (new Movie(2))->getShortName());
   }
 
-  public function testCreateRepositoryFolder() {
-    (new MovieHistoryModel(2))->createRepositoryFolder();
+  public function testCreateRepository() {
+    (new Movie(2))->createRepository();
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2");
-  }
-
-  public function testInitRepository() {
-    (new MovieHistoryModel(2))->initRepository();
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/.git/HEAD");
   }
 
   public function testWriteFiles() {
-    $test = new MovieHistoryModel(2);
+    $test = new Movie(2);
     $test->writeFiles();
 
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title");
@@ -114,12 +109,12 @@ class MovieHistoryModelTest extends PHPUnit_Framework_TestCase {
   }
 
   public function testCommit() {
-    (new MovieHistoryModel(2))->commit(20, "initial commit");
+    (new Movie(2))->commit(20, "initial commit");
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/.git/refs/heads/master");
   }
 
   public function testGetDiffAsHTML() {
-    $test = new MovieHistoryModel(2);
+    $test = new Movie(2);
     $test->movie[0]["original_title"] = "The Foobar is a lie";
     $test->writeFiles();
     $test->commit(20, "second commit");
@@ -128,13 +123,13 @@ class MovieHistoryModelTest extends PHPUnit_Framework_TestCase {
   }
 
   public function testGetChangedFiles() {
-    $test = new MovieHistoryModel(2);
+    $test = new Movie(2);
     $changed_files = $test->getChangedFiles("HEAD", "HEAD^1");
     $this->assertEquals("original_title", $changed_files[0]);
   }
 
   public function testGetLastCommits() {
-    $result = (new MovieHistoryModel(2))->getLastCommits();
+    $result = (new Movie(2))->getLastCommits();
     $this->assertEquals(20, $result[0]["author_id"]);
     $this->assertEquals("second commit", $result[0]["subject"]);
   }
