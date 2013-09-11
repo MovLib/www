@@ -36,7 +36,8 @@ INSERT INTO `movies_titles` (`movie_id`, `language_id`, `title`, `dyn_comments`,
   'en', 'english comment',
   'de', 'deutsches Kommentar'
   ),
-  true);
+  true
+);
 INSERT INTO `movies_countries` (`movie_id`, `country_id`) VALUES (2, 233);
 INSERT INTO `movies_genres` (`movie_id`, `genre_id`) VALUES (2, 6), (2, 8);
 INSERT INTO `movies_directors` (`movie_id`, `person_id`) VALUES (2, 5); -- Frank Darabont
@@ -83,7 +84,15 @@ INSERT INTO `movies_awards` (`award_count`, `award_id`, `award_category_id`, `mo
   (36, 25, 1, 2, 5, 1995, true),      -- USC Scripter Award (Frank Darabont)
   (37, 26, 1, 2, 5, 1995, false)      -- WGA Award (Best Adapted Screenplay - Frank Darabont)
 ;
-INSERT INTO `movies_taglines` (`movie_id`, `language_id`, `tagline`, `dyn_comments`) VALUES (2, 41, 'Fear can hold you prisoner. Hope can set you free.', '');
+INSERT INTO `movies_taglines` (`movie_id`, `language_id`, `tagline`, `dyn_comments`) VALUES (
+  2,
+  41,
+  'Fear can hold you prisoner. Hope can set you free.',
+  COLUMN_CREATE(
+    'en', 'english comment',
+    'de', 'deutsches Kommentar'
+  )
+);
 INSERT INTO `movies_languages` (`movie_id`, `language_id`) VALUES (2, 41);
 COMMIT;
 

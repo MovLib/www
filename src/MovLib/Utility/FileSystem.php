@@ -102,6 +102,8 @@ class FileSystem {
 
   /**
    * Recursive deletion of given path.
+   * 
+   * Please note: This method just executes a <code>rm</code> and does NOT follow links!
    *
    * @param string $path
    *   Absolute or relative path to the directory, file or symlink.
@@ -109,8 +111,12 @@ class FileSystem {
    *   <code>TRUE</code> if all files and directories have been deleted, otherwise <code>FALSE</code>.
    */
   public static function unlinkRecursive($path) {
-    exec("rm -r {$path}", $output, $status);
-    return $status !== 0;
+    if (!file_exists($path)) {
+      return true;
+    }
+      exec("rm -r --interactive=never {$path}", $output, $status);
+      return $status === 0;
+    
   }
 
 }

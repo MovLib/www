@@ -15,16 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Model;
+namespace MovLib\Data\History;
 
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\FileSystemException;
 use \MovLib\Exception\HistoryException;
-use \MovLib\Model\BaseModel;
 use \ReflectionClass;
 
 /**
- * Contains methods for models that manage histories.
+ * Contains methods to manage histories.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -32,7 +31,7 @@ use \ReflectionClass;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractHistoryModel extends BaseModel {
+abstract class AbstractHistory extends \MovLib\Data\Database {
 
   /**
    * The instance's id.
@@ -47,7 +46,7 @@ abstract class AbstractHistoryModel extends BaseModel {
   protected $type;
 
   /**
-   * The Path to the repository
+   * The path to the repository
    * @var string
    */
   protected $path;
@@ -67,57 +66,48 @@ abstract class AbstractHistoryModel extends BaseModel {
   }
 
   /**
-   * Abstract method which should write files
+   * Abstract method which should write files to repository.
    */
   abstract protected function writeFiles();
 
   /**
-   * Abstract method which should read files
-   */
-  abstract protected function readFiles();
-
-  /**
-   * Get the model's short class name (e.g. <em>movie</em> for <em>MovieHistoryModel</em>).
+   * Get the model's short class name (e.g. <em>movie</em> for <em>MovLib\Data\History\Movie</em>).
    *
-   * The short name is the name of the current instance of this class without the namespace and the model suffix.
+   * The short name is the name of the current instance of this class without the namespace lowercased.
    *
    * @return string
-   *   The short name of the class (lowercase) without the "HistoryModel" suffix.
+   *   The short name of the class (lowercase) without the namespace.
    */
   public function getShortName() {
-    return strtolower(substr((new ReflectionClass($this))->getShortName(), 0, -12));
+    return strtolower((new ReflectionClass($this))->getShortName());
   }
 
   /**
    * Creates a new folder, makes a git repository out of it, writes files and commits them.
    */
-  public static function init() {
-    createRepositoryFolder();
-    initRepository();
-    writeFiles();
-    commit("initial commit");
+  public function init() {
+    $this->createRepository();
+    $this->writeFiles();
+    $this->commit("initial commit");
   }
 
   /**
-   * Create a new folder for the repository
-   */
-  public function createRepositoryFolder() {
-    if (!is_dir(($this->path))) {
-      mkdir($this->path, 0777, true);
-    }
-  }
-
-  /**
-   * Make a git repository out of the specified folder.
+   * Create a folder on the filesystem and make it a git repository.
    *
    * @throws HistoryException
    *  If something went wrong with "git init"
    */
-  public function initRepository() {
-    try {
-      exec("cd {$this->path} && git init");
-    } catch (ErrorException $e) {
-      throw new HistoryException("Error executing 'git init'", $e);
+  public function createRepository() {
+    $output = array();
+    $returnVar = null;
+
+    if (!is_dir(($this->path))) {
+      mkdir($this->path, 0777, true);
+    }
+
+    exec("cd {$this->path} && git init", $output, $returnVar);
+    if ($returnVar != 0) {
+      throw new HistoryException("Error creating repository");
     }
   }
 
@@ -128,14 +118,17 @@ abstract class AbstractHistoryModel extends BaseModel {
    *  The user id of the author
    * @param string $message
    *  The commit message
+   *
    * @throws HistoryException
    *  If something went wrong during commit
    */
   public function commit($author_id, $message) {
-    try {
-      exec("cd {$this->path} && git add -A && git commit --author='{$author_id} <>' -m '{$message}'");
-    } catch (ErrorException $e) {
-      throw new HistoryException("Error commiting changes", $e);
+    $output = array();
+    $returnVar = null;
+
+    exec("cd {$this->path} && git add -A && git commit --author='{$author_id} <>' -m '{$message}'", $output, $returnVar);
+    if ($returnVar != 0) {
+      throw new HistoryException("Error commiting changes");
     }
   }
 
@@ -143,9 +136,9 @@ abstract class AbstractHistoryModel extends BaseModel {
    * Returns diff between two commits of one file as styled HTML
    *
    * @param string $head
-   *  HEAD or hash of git commit
+   *  Hash of git commit (newer one)
    * @param sting $ref
-   *  Hash of git commit
+   *  Hash of git commit (older one)
    * @param string $filename
    *  Name of file in repository
    *
@@ -157,12 +150,12 @@ abstract class AbstractHistoryModel extends BaseModel {
    */
   public function getDiffasHTML($head, $ref, $filename) {
     $output = array();
+    $returnVar = null;
     $html = "";
 
-    try {
-      exec("cd {$this->path} && git diff {$ref} {$head} --word-diff='porcelain' {$filename}", $output);
-    } catch (ErrorException $e) {
-      throw new HistoryException("There was an error during 'git diff'", $e);
+    exec("cd {$this->path} && git diff {$ref} {$head} --word-diff='porcelain' {$filename}", $output, $returnVar);
+    if ($returnVar != 0) {
+      throw new HistoryException("There was an error during 'git diff'");
     }
 
     for ($i = 5; $i < count($output); $i++) {
@@ -183,9 +176,9 @@ abstract class AbstractHistoryModel extends BaseModel {
   /**
    *
    * @param string $head
-   *  HEAD or hash of git commit
+   *  Hash of git commit (newer one)
    * @param sting $ref
-   *  Hash of git commit
+   *  Hash of git commit (older one)
    *
    * @throws HistoryException
    *  If something went wrong with "git diff"
@@ -195,10 +188,10 @@ abstract class AbstractHistoryModel extends BaseModel {
    */
   public function getChangedFiles($head, $ref) {
     $output = array();
-    try {
-      exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output);
-    } catch (ErrorException $e) {
-      throw new HistoryException("There was an error during 'git diff'", $e);
+    $returnVar = null;
+    exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output, $returnVar);
+    if ($returnVar != 0) {
+      throw new HistoryException("There was an error locating changed files");
     }
     return $output;
   }
@@ -207,19 +200,28 @@ abstract class AbstractHistoryModel extends BaseModel {
    * Returns an array of associative arrays with commits
    *
    * @todo is subject safe?
-   * @return array
+   *
+   * @throws HistoryException
+   *  If something went wrong with "git log"
+   *
+   * @return associative array
+   *  Returns an array of associative arrays with commits
    */
   public function getLastCommits() {
     $output = array();
+    $returnVar = null;
     $format = '{"hash":"%H","author_id":%an, "timestamp":%at, "subject":"%s"}';
 
-    exec("cd {$this->path} && git log --format='{$format}'", $output);
+    exec("cd {$this->path} && git log --format='{$format}'", $output, $returnVar);
+    if ($returnVar != 0) {
+      throw new HistoryException("There was an error getting last commits");
+    }
 
-    $mapfunction = function($value) {
-        return json_decode($value, true);
-    };
+    foreach ($output as $key => $value) {
+      $output[$key] = json_decode($value, true);
+    }
 
-    return array_map($mapfunction, $output);
+    return $output;
   }
 
   /**
@@ -229,6 +231,7 @@ abstract class AbstractHistoryModel extends BaseModel {
    *  The filename
    * @param string $content
    *  The content as string
+   *
    * @throws FileSystemException
    *  If any of the actions fails (e.g. wrong permissions).
    */
@@ -240,6 +243,48 @@ abstract class AbstractHistoryModel extends BaseModel {
     } catch (ErrorException $e) {
       throw new FileSystemException("Error writing to file", $e);
     }
+  }
+
+  /**
+   * Write specific columns of a related database row to a file.
+   *
+   * If no columns are given all columns are selected.
+   *
+   * @param string $relation
+   *  A database relation (e.g. <em>movies_titles</em>).
+   * @param array $columns
+   *  Array of non dynmic columns to be written to the file.
+   * @param array $dyn_columns
+   *  Array of dynamic colums to be written to the file.
+   */
+  protected function writeRelatedRowsToFile($relation, $columns = array(), $dyn_columns = array()) {
+    $tmp_dyn_columns = $dyn_columns;
+
+    if (empty($columns) && empty($dyn_columns)) {
+      $all_columns = "*";
+    } else {
+      foreach ($columns as $key => $value) {
+        $columns[$key] = "`{$value}`";
+      }
+      foreach ($tmp_dyn_columns as $key => $value) {
+        $tmp_dyn_columns[$key] = "COLUMN_JSON({$value}) AS `{$value}`";
+      }
+      $all_columns = implode(", ", array_merge($columns, $tmp_dyn_columns));
+    }
+
+    $rows = $this->select(
+      "SELECT {$all_columns}
+        FROM `{$relation}`
+        WHERE `{$this->type}_id` = ?",
+      "d",
+      [$this->id]
+    );
+
+    foreach ($dyn_columns as $value) {
+      $rows[0][$value] = json_decode($rows[0][$value], true);
+    }
+
+    $this->writeToFile("{$relation}", json_encode($rows));
   }
 
 }

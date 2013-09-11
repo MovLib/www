@@ -16,7 +16,7 @@ INSERT INTO `users` (
   `birthday`,
   `website`,
   `avatar_extension`,
-  `avatar_hash`
+  `avatar_name`
 ) VALUES (
   (SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = 'en' LIMIT 1),
   'Fleshgrinder',
