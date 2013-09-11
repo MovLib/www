@@ -92,7 +92,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
    */
   protected function getHeadTitle() {
     global $i18n;
-    return "{$this->checkPlain($this->title)}{$i18n->t(" — ", null, [ "comment" =>
+    return "{$this->title}{$i18n->t(" — ", null, [ "comment" =>
       "The em dash is used as separator character in the header title to denote the source of the document (like in " .
       "a quote the author), this should be translated to the equivalent character in your language. More information " .
       "on this specific character can be found at <a href='//en.wikipedia.org/wiki/Dash#Em_dash'>Wikipedia</a>."
