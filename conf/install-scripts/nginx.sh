@@ -81,6 +81,12 @@ msginfo "Changing to directory: ${SD}${NAME}"
   --with-http_ssl_module \
   --with-http_spdy_module \
   --with-openssl="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
+#
+# LINK: http://vincent.bernat.im/en/blog/2011-ssl-perfect-forward-secrecy.html
+#
+# ./config enable-ec_nistp_64_gcc_128
+# make depend
+#
   --with-md5="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
   --with-md5-asm \
   --with-sha1="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
