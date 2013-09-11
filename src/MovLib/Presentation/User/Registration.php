@@ -17,11 +17,16 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Data\Delayed\Mailer;
+use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
+use \MovLib\Data\User;
 use \MovLib\Exception\RedirectException;
 use \MovLib\Presentation\Form;
 use \MovLib\Presentation\FormElement\Input;
 use \MovLib\Presentation\FormElement\InputEmail;
 use \MovLib\Presentation\FormElement\InputSubmit;
+use \MovLib\Presentation\Partial\Alert;
+use \Normalizer;
 
 /**
  * User registration presentation.
@@ -32,7 +37,8 @@ use \MovLib\Presentation\FormElement\InputSubmit;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Registration extends \MovLib\Presentation\User\AbstractUserPage {
+class Registration extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\User\UserTrait;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -59,6 +65,13 @@ class Registration extends \MovLib\Presentation\User\AbstractUserPage {
    */
   private $username;
 
+  /**
+   * Flag indicating if this registration attempt was accepted or not.
+   *
+   * @var boolean
+   */
+  private $accepted = false;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -80,19 +93,25 @@ class Registration extends \MovLib\Presentation\User\AbstractUserPage {
     // Start rendering the page.
     $this->init($i18n->t("Registration"));
 
-    // @todo max-length
     $this->email = new InputEmail([ "autofocus", "class" => "input--block-level" ]);
     $this->email->required();
 
-    // @todo max-length
-    $this->username = new Input("username", [ "class" => "input--block-level" ]);
+    // We do not use the specialized input text form element, as it would sanitize the string too much. We want to let
+    // the user know about anything that's not okay with the entered string.
+    $this->username = new Input("username", [
+      "class"       => "input--block-level",
+      "max-length"  => User::MAX_LENGTH_NAME,
+      "placeholder" => $i18n->t("Enter your desired username"),
+      "title"       => $i18n->t("Please enter your desired username in this field."),
+    ]);
     $this->username->required();
+    $this->username->label = $i18n->t("Username");
 
     $this->form = new Form($this, [ $this->email, $this->username ]);
     $this->form->attributes["class"] = "span span--6 offset--3";
 
     $this->form->actionElements[] = new InputSubmit([
-      "class" => "button--success button--large",
+      "class" => "button--large button--success",
       "title" => $i18n->t("Click here to sign up after you filled out all fields"),
       "value" => $i18n->t("Sign Up"),
     ]);
@@ -103,6 +122,12 @@ class Registration extends \MovLib\Presentation\User\AbstractUserPage {
    */
   protected function getContent() {
     global $i18n;
+    if ($this->accepted === true) {
+      return "<div class='container'><small>{$i18n->t(
+        "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
+        [ "<a href='{$_SERVER["PATH_INFO"]}'>", "</a>" ]
+      )}</small></div>";
+    }
     return
       "<div class='container'><div class='row'>{$this->form->open()}" .
         "<small class='form-help'><a href='{$i18n->r("/user/login")}'>{$i18n->t("Already have an account?")}</a></small>" .
@@ -126,6 +151,10 @@ class Registration extends \MovLib\Presentation\User\AbstractUserPage {
   public function validate() {
     global $i18n;
     $errors = null;
+
+    // Prepare a user for this registration.
+    $user = new User();
+
     // Validate the username.
     if (substr($this->username->value, 0, 1) == " ") {
       $errors[] = $i18n->t("The username cannot begin with a space.");
@@ -136,60 +165,58 @@ class Registration extends \MovLib\Presentation\User\AbstractUserPage {
     if (strpos($this->username->value, "  ") !== false) {
       $errors[] = $i18n->t("The username cannot contain multiple spaces in a row.");
     }
-    // @todo we need to have a new method to validate strings
-//    if (($nameFiltered = Validator::string($_POST[$form->elements["name"]->id])) === false) {
-//      $errors[] = $i18n->t("The username contains one or more illegal character.");
-//    }
-    // @todo max-length must go into the user class, this is specific to our persistent data
-//    if (mb_strlen($nameFiltered) > $GLOBALS["movlib"]["max_length_username"]) {
-//      $errors[] = $i18n->t("The username is too long: it must be {1,number,integer} characters or less.", [ $GLOBALS["movlib"]["max_length_username"] ]);
-//    }
+    if (mb_strlen($this->username->value) > $this->username->attributes["max-length"]) {
+      $errors[] = $i18n->t("The username is too long: it must be {1,number,integer} characters or less.", [ $this->username->attributes["max-length"] ]);
+    }
+    elseif (
+      // Validate UTF-8
+      preg_match("//u", $this->username->value) == false
+      // Check if UTF-8 is in NFC form
+      || $this->username->value != Normalizer::normalize($this->username->value)
+      // Check for low ASCII characters (control characters)
+      || $this->username->value != filter_var($this->username->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)
+    ) {
+      $errors[] = $i18n->t("The username contains illegal characters.");
+    }
+    elseif ($user->checkName($this->username->value) === false) {
+      $errors[] = $i18n->t("The username {0} is already taken, please choose another one.", [ $this->placeholder($this->username->value) ]);
+    }
+
     // @todo The blacklist's content must be translated along with the routes.
     $blacklist = json_decode(file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/conf/username-blacklist.json"));
+    $lowercased = mb_strtolower($this->username->value);
     $c = count($blacklist);
     for ($i = 0; $i < $c; ++$i) {
-      if ($blacklist[$i] == mb_strtolower($this->username->value)) {
-        $errors[] = $i18n->t("The username {0} is a system reserved word, please choose another one.", [ String::placeholder($nameFiltered) ]);
+      if ($blacklist[$i] == $lowercased) {
+        $errors[] = $i18n->t("The username {0} is a system reserved word, please choose another one.", [ $this->placeholder($this->username->value) ]);
         break;
       }
     }
-    if ($errors) {
-      $errors = implode("<br>", $errors);
-      $alert = new Alert("<p>{$errors}</p>");
-      $alert->severity = Alert::SEVERITY_ERROR;
-      $this->alerts .= $alert;
-      return $this;
+
+    if ($this->checkErrors($errors) === false) {
+      // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
+      // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
+      if ($user->checkEmail($this->email->value) === true) {
+        Mailer::stack(new RegistrationEmailExists($this->email->value));
+      }
+      // If this is a vliad new registration generate the authentication token and insert the submitted data into our
+      // temporary database, and of course send out the email with the token.
+      else {
+        $user->name = $this->username->value;
+        $user->email = $this->email->value;
+        $user->setAuthenticationToken();
+        DelayedMethodCalls::stack($user, "prepareRegistration");
+        Mailer::stack(new RegistrationEmail($user));
+      }
+
+      $this->accepted = true;
+      $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($user->email)] ));
+      $success->block = true;
+      $success->title = $i18n->t("Registration Successful");
+      $success->severity = Alert::SEVERITY_INFO;
+      $this->alerts .= $success;
     }
-    // We have to query the database for some checks, create empty user model instance.
-    $userModel = new UserModel();
-    if (!empty($userModel->select("SELECT `user_id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $nameFiltered ]))) {
-      $this->view->addAlert(new Alert(
-        "<p>{$i18n->t("The username {0} is already taken, please choose another one.", [ String::placeholder($nameFiltered) ])}</p>",
-        [ "severity" => Alert::SEVERITY_ERROR ]
-      ));
-      return;
-    }
-    // Don't tell the user that we already have this mail, otherwise it would be possible for an attacker to find
-    // out which mails we have in our system. Instead we send a message to the user this mail belongs to.
-    if (!empty($userModel->select("SELECT `user_id` FROM `users` WHERE `mail` = ? OR `init` = ? LIMIT 1", "ss", [ $form->elements["mail"]->value, $form->elements["mail"]->value ]))) {
-      DelayedMailer::stack(new UserRegisterExistingMail($form->elements["mail"]->value));
-    }
-    // If this is a valid new registration generate a unique activation link and insert the user's data into our
-    // temporary database table (which will be deleted after 24 hours). Also send the user a mail explaining what
-    // to do to activate the account.
-    else {
-      $hash = Crypt::randomHash();
-      DelayedMethodCalls::stack($userModel, "prepareRegistration", [ $hash, $form->elements["name"]->value, $form->elements["mail"]->value ]);
-      DelayedMailer::stack(new UserRegisterMail($hash, $form->elements["name"]->value, $form->elements["mail"]->value));
-    }
-    // Tell the user that we've sent a mail with instructions but use a view without distractions.
-    (new AlertView($this, $this->view->title, "<div class='container'><small>{$i18n->t(
-      "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-      [ "<a href='{$_SERVER["REQUEST_URI"]}'>" , "</a>" ]
-    )}</small></div>"))->addAlert(new Alert(
-      "<p>{$i18n->t("A mail with further instructions has been sent to {0}.", [ String::placeholder($form->elements["mail"]->value) ])}</p>",
-      [ "severity" => Alert::SEVERITY_INFO ]
-    ));
+
     return $this;
   }
 

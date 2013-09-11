@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\FormElement;
 
+use \MovLib\Data\User;
 use \MovLib\Exception\ValidatorException;
 
 /**
@@ -42,7 +43,10 @@ class InputEmail extends \MovLib\Presentation\FormElement\Input {
    */
   public function __construct(array $attributes = null, $id = "email", $defaultValue = "") {
     parent::__construct($id, $attributes, $defaultValue);
-    $this->attributes["pattern"] = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$";
+    // @todo Right now all email related inputs are directly related to users, therefor we can set this within this
+    //       class. This might change in the future if other email input fields are required. Be sure to update the
+    //       validation method, because it checks for the length that is set here!
+    $this->attributes["max-length"] = User::MAX_LENGTH_EMAIL;
     $this->attributes["type"] = "email";
   }
 
@@ -64,29 +68,42 @@ class InputEmail extends \MovLib\Presentation\FormElement\Input {
   }
 
   /**
-   * Validate the user submitted email address.
+   * Validates the user submitted email address.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param int $inputType
-   *   One of PHP's built in <var>INPUT_*</var> constants.
    * @return this
    * @throws \MovLib\Exception\ValidatorException
    */
-  public function validate($inputType) {
+  public function validate() {
     global $i18n;
-    $filtered = filter_input($inputType, $this->id, FILTER_VALIDATE_EMAIL);
+    $errors = null;
 
-    // Check if the filter failed or if the filtered input is empty.
-    if ($filtered === false || empty($filtered)) {
-      throw new ValidatorException($i18n->t("The email address does not appear to be valid."));
+    // Use PHP's built-in validation function.
+    if (filter_var($_POST[$this->id], FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
+      $errors[] = $i18n->t("The email address {0} doesn’t appear to be valid.", [ $this->placeholder($_POST[$this->id]) ]);
+    }
+    // If the syntax is valid, check if we actually can send emails to the given address.
+    else {
+      $host = substr($_POST[$this->id], strpos($_POST[$this->id], "@") + 1);
+      // The host part needs at least a single point in it, otherwise localhost would be valid. We check the DNS entries
+      // in the order of their weight for the current operation. An A record is for IPv4 hosts, an AAAA record is for
+      // IPv6 hosts and the MX record is for mail servers only.
+      if (strpos($host, ".") === false || (checkdnsrr($host, "A") === false && checkdnsrr($host, "AAAA") === false && checkdnsrr($host, "MX") === false)) {
+        $errors[] = $i18n->t("The email address {0} doesn’t appear to be valid.", [ $this->placeholder($_POST[$this->id]) ]);
+      }
     }
 
-    // Check if input is valid UTF-8.
-    if (preg_match("//u", $filtered) == false) {
-      throw new ValidatorException($i18n->t("The email address contains illegal characters."));
+    // No need for multi-byte functions, utf-8 is not allowed in emails.
+    if (strlen($_POST[$this->id]) > $this->attributes["max-length"]) {
+      $errors[] = $i18n->t("The email address {0} is too long: it must be {1,number,integer} or less.", [ $this->placeholder($_POST[$this->id]), $this->attributes["max-length"] ]);
     }
 
-    $this->value = $filtered;
+    // Always throw aggregated error messages, to ensure that the user knows about all problems regarding this field.
+    if ($errors) {
+      throw new ValidatorException(implode("<br>", $errors));
+    }
+
+    $this->value = $_POST[$this->id];
     return $this;
   }
 

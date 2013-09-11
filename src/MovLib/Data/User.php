@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Model;
+namespace MovLib\Data;
 
 use \MovLib\Exception\UserException;
-use \MovLib\Utility\String;
 use \MovLib\View\ImageStyle\ResizeImageStyle;
 
 /**
@@ -35,6 +34,13 @@ class User extends \MovLib\Data\AbstractImage {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
+
+  /**
+   * Length of the authentication token.
+   *
+   * @var int
+   */
+  const AUTHENTICATION_TOKEN_LENGTH = 128;
 
   /**
    * Load the user from ID.
@@ -55,7 +61,7 @@ class User extends \MovLib\Data\AbstractImage {
    *
    * @var string
    */
-  const FROM_MAIL = "mail";
+  const FROM_EMAIL = "email";
 
   /**
    * Maximum length an email address can have.
@@ -66,7 +72,7 @@ class User extends \MovLib\Data\AbstractImage {
    *
    * @var int
    */
-  const MAIL_MAX_LENGTH = 254;
+  const MAX_LENGTH_EMAIL = 254;
 
   /**
    * Maximum length a username can have.
@@ -77,7 +83,14 @@ class User extends \MovLib\Data\AbstractImage {
    *
    * @var int
    */
-  const NAME_MAX_LENGTH = 40;
+  const MAX_LENGTH_NAME = 40;
+
+  /**
+   * Minimum length for a password.
+   *
+   * @var int
+   */
+  const MIN_LENGTH_PASSWORD = 6;
 
   /**
    * Small image style.
@@ -111,7 +124,7 @@ class User extends \MovLib\Data\AbstractImage {
    */
   private $types = [
     self::FROM_ID => "d",
-    self::FROM_MAIL => "s",
+    self::FROM_EMAIL => "s",
     self::FROM_NAME => "s",
   ];
 
@@ -120,7 +133,7 @@ class User extends \MovLib\Data\AbstractImage {
    *
    * @var int
    */
-  public $userId;
+  public $id;
 
   /**
    * The user's preferred system language's ID.
@@ -148,7 +161,7 @@ class User extends \MovLib\Data\AbstractImage {
    *
    * @var string
    */
-  public $password;
+  private $password;
 
   /**
    * The user's creation time (UNIX timestamp).
@@ -193,13 +206,6 @@ class User extends \MovLib\Data\AbstractImage {
    * @var string
    */
   public $timezone;
-
-  /**
-   * The mail the user originally registered the account.
-   *
-   * @var string
-   */
-  public $init;
 
   /**
    * The user's edit counter.
@@ -266,6 +272,14 @@ class User extends \MovLib\Data\AbstractImage {
    */
   public $imageDirectory = "user";
 
+  /**
+   * The user's authentication token.
+   *
+   * @see \MovLib\Data\User::setAuthenticationToken()
+   * @var string
+   */
+  public $authenticationToken;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -287,7 +301,7 @@ class User extends \MovLib\Data\AbstractImage {
     if (!empty($from) && !empty($value)) {
       $result = $this->select(
         "SELECT
-          `user_id` AS `userId`,
+          `user_id` AS `id`,
           `language_id` AS `languageId`,
           `name`,
           `email`,
@@ -298,7 +312,6 @@ class User extends \MovLib\Data\AbstractImage {
           `private`,
           `deleted`,
           `timezone`,
-          `init`,
           `edits`,
           COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY) AS `profile`,
           `sex`,
@@ -307,7 +320,7 @@ class User extends \MovLib\Data\AbstractImage {
           `birthday`,
           `website`,
           `avatar_extension` AS `imageExtension`,
-          `avatar_hash` AS `imageHash`
+          `avatar_name` AS `imageHash`
         FROM `users`
           WHERE `{$from}` = ?
         LIMIT 1", $this->types[$from], [ $value ]
@@ -320,7 +333,7 @@ class User extends \MovLib\Data\AbstractImage {
       }
       settype($this->private, "boolean");
       settype($this->deleted, "boolean");
-      $this->initImage(String::convertToRoute($this->name), [
+      $this->initImage($this->imageHash, [
         new ResizeImageStyle(self::IMAGESTYLE_SMALL),
         new ResizeImageStyle(self::IMAGESTYLE_NORMAL),
         new ResizeImageStyle(self::IMAGESTYLE_BIG),
@@ -331,6 +344,32 @@ class User extends \MovLib\Data\AbstractImage {
 
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
+
+  /**
+   * Check if this email address is already in use.
+   *
+   * @param string $email
+   *   The email address to check.
+   * @return boolean
+   *   <code>TRUE</code> if this email address is already in use, otherwise <code>FALSE</code>.
+   */
+  public function checkEmail($email) {
+    $result = $this->select("SELECT `user_id` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]);
+    return !empty($result[0]);
+  }
+
+  /**
+   * Check if this name is already in use.
+   *
+   * @param string $name
+   *   The name to check.
+   * @return boolean
+   *   <code>TRUE</code> if this name is already in use, otherwise <code>FALSE</code>.
+   */
+  public function checkName($name) {
+    $result = $this->select("SELECT `user_id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $name ]);
+    return !empty($result[0]);
+  }
 
   /**
    * Update the user model in the database with the data of the current class instance.
@@ -350,7 +389,7 @@ class User extends \MovLib\Data\AbstractImage {
         `sex` = ?,
         `website` = ?,
         `avatar_extension` = ?,
-        `avatar_hash` = ?
+        `avatar_name` = ?
       WHERE `user_id` = ?",
       "iisississsd",
       [
@@ -364,7 +403,7 @@ class User extends \MovLib\Data\AbstractImage {
         $this->website,
         $this->imageExtension,
         $this->imageHash,
-        $this->userId
+        $this->id
       ]
     );
   }
@@ -398,11 +437,12 @@ class User extends \MovLib\Data\AbstractImage {
    *     <li><code>"time"</code> when the record was created</li>
    *   </ul>
    */
-  public function getTemporaryMailChangeData($hash) {
+  public function getTemporaryEmailChangeData($hash) {
+    $emailLength = self::MAX_LENGTH_EMAIL;
     $result = $this->select(
       "SELECT
         COLUMN_GET(`dyn_data`, 'user_id' AS UNSIGNED) AS `id`,
-        COLUMN_GET(`dyn_data`, 'email' AS CHAR({$GLOBALS["movlib"]["max_length_mail"]})) AS `email`,
+        COLUMN_GET(`dyn_data`, 'email' AS CHAR({$emailLength})) AS `email`,
         COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
       FROM `tmp`
       WHERE `key` = ?
@@ -425,10 +465,12 @@ class User extends \MovLib\Data\AbstractImage {
    *   was stored previously (e.g. reset password requests do not have the name).
    */
   public function getTemporaryRegistrationData($hash) {
+    $nameLength = self::MAX_LENGTH_NAME;
+    $emailLength = self::MAX_LENGTH_EMAIL;
     $result = $this->select(
       "SELECT
-        COLUMN_GET(`dyn_data`, 'name' AS CHAR({$GLOBALS["movlib"]["max_length_username"]})) AS `name`,
-        COLUMN_GET(`dyn_data`, 'email' AS CHAR({$GLOBALS["movlib"]["max_length_mail"]})) AS `email`,
+        COLUMN_GET(`dyn_data`, 'name' AS CHAR({$nameLength})) AS `name`,
+        COLUMN_GET(`dyn_data`, 'email' AS CHAR({$emailLength})) AS `email`,
         COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
       FROM `tmp`
         WHERE `key` = ?
@@ -443,15 +485,17 @@ class User extends \MovLib\Data\AbstractImage {
   /**
    * Prepare change of mail.
    *
-   * @param string $hash
-   *   The authentication token.
    * @param string $newEmail
    *   The user's new email address.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function prepareMailChange($hash, $newEmail) {
-    return $this->query("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('user_id', ?, 'email', ?, 'time', CURRENT_TIMESTAMP))", "sss", [ $hash, $this->userId, $newEmail ]);
+  public function prepareEmailChange($newEmail) {
+    return $this->query(
+      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('user_id', ?, 'email', ?, 'time', CURRENT_TIMESTAMP))",
+      "sss",
+      [ $this->authenticationToken, $this->id, $newEmail ]
+    );
   }
 
   /**
@@ -516,25 +560,55 @@ class User extends \MovLib\Data\AbstractImage {
     );
     $this->languageId = $i18n->getLanguageId();
     $this->name       = $name;
-    $this->email       = $email;
+    $this->email      = $email;
     $this->password   = password_hash($password, PASSWORD_BCRYPT);
     $this->deleted    = false;
     $this->timezone   = ini_get("date.timezone");
-    $this->userId = $this->stmt->insert_id;
+    $this->id         = $this->stmt->insert_id;
     return $this->close();
   }
 
   /**
-   * Change the user's mail.
+   * Set an authentication token for this instance.
    *
-   * @param string $newMail
-   *   The new mail.
+   * Calculates URL-safe SHA-512 hash from highly randomized bytes (full 8-bit range). This kind of token is used for
+   * all actions that require the user to confirm an action via email. This includes but is not limited to: Registration,
+   * Email Change, and Password Change.
+   *
+   * We do not utilize <code>/dev/urandom</code> to generate our random bytes. While it is a perfect source for pseudo
+   * random bytes, the <code>openssl_random_pseudo_bytes()</code> function is a magnitude faster (benchmarks have shown
+   * that it takes approx <i>0.1ms</i> while opening a stream, reading and closing <code>/dev/urandom</code> always was
+   * over <i>1ms</i>) and generates perfect random bytes, especially if we read 1024 bytes.
+   *
+   * Please also note that the statement about PHP always reading 4096 bytes from a stream in the Drupal comment of
+   * <code>\Drupal\Component\Utility\Crypt::randomBytes()</code> is not true, simply check the C implementation:
+   * {@link https://github.com/php/php-src/blob/master/main/streams/streams.c#L703}
+   *
+   * The collision probability of SHA-512 is extremely, extremely low. There is absolutely no need to generate some
+   * special hash based on environment values or anything else. It's impossible to guess the hash and nearly impossible
+   * that the hash collides with another hash. If you still have concerns, read the following:
+   * {@link http://stackoverflow.com/a/4014407/1251219}
+   *
+   * SHA-512 is extremely fast on a 64-bit machine, most of the time close to MD5 and SHA-1.
+   *
+   * @return this
+   */
+  public function setAuthenticationToken() {
+    $this->authenticationToken = hash("sha512", openssl_random_pseudo_bytes(1024));
+    return $this;
+  }
+
+  /**
+   * Change the user's email address.
+   *
+   * @param string $newEmail
+   *   The already validated new email address.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function updateMail($newMail) {
-    $this->query("UPDATE `users` SET `email` = ? WHERE `user_id` = ?", "sd", [ $newMail, $this->userId ]);
-    $this->email = $newMail;
+  public function updateEmail($newEmail) {
+    $this->query("UPDATE `users` SET `email` = ? WHERE `user_id` = ?", "sd", [ $newEmail, $this->id ]);
+    $this->email = $newEmail;
     return $this;
   }
 
@@ -548,8 +622,34 @@ class User extends \MovLib\Data\AbstractImage {
    */
   public function updatePassword($newPassword) {
     $newPassword = password_hash($newPassword, PASSWORD_BCRYPT);
-    $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $newPassword, $this->userId ]);
+    $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $newPassword, $this->id ]);
     $this->password = $newPassword;
+    return $this;
+  }
+
+  /**
+   * Verify the given <var>$password</var> against this user's password.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $password
+   *   The submitted password.
+   * @param boolean $exception [optional]
+   *   Set this to <code>FALSE</code> if this method should return a <code>boolean</code> rather than throwing an
+   *   exception if the password's don't match. Defaults to <code>TRUE</code>, throw an exception.
+   * @return this|boolean
+   *   Depending on the setting of <var>$exception</var> this method returns it's instance or <code>TRUE</code> if the
+   *   password is valid and <code>FALSE</code> it it's not. Defaults to returning it's instance.
+   * @throws \MovLib\Exception\UserException
+   */
+  public function verifyPassword($password, $exception = true) {
+    global $i18n;
+    $valid = password_verify($password, $this->password);
+    if ($exception === false) {
+      return $valid;
+    }
+    if ($valid === false) {
+      throw new UserException($i18n->t("The submitted password is not valid."));
+    }
     return $this;
   }
 
