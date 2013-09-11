@@ -184,6 +184,19 @@ abstract class AbstractBase {
   }
 
   /**
+   * Normalize all kinds of line feeds to *NIX style (real LF).
+   *
+   * @link http://stackoverflow.com/a/7836692/1251219 How to replace different newline styles in PHP the smartest way?
+   * @param string $text
+   *   The text to normalize.
+   * @return string
+   *   The normalized text.
+   */
+  protected final function normalizeLineFeeds($text) {
+    return preg_replace("/\R/u", "\n", $text);
+  }
+
+  /**
    * Formats text for emphasized display in a placeholder inside a sentence.
    *
    * @param string $text

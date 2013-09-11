@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Email;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovDevEmail extends \MovLib\Presentation\Email\AbstractBase {
+class MovDevEmail extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
