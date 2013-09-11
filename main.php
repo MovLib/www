@@ -55,7 +55,7 @@ function __autoload($class) {
  * To ensure that no unexpected behaviour crashes our software any uncaught exception will be caught at this place. An
  * error is logged and, depending on the error, a message is displayed to the user.
  *
- * @global \MovLib\Model\I18nModel $i18n
+ * @global \MovLib\Data\I18n $i18n
  * @param \Exception $exception
  *   The uncaught exception.
  */
@@ -204,7 +204,7 @@ catch (\MovLib\Exception\UnauthorizedException $e) {
   // to reset the request method to GET because we don't know (and don't want to check) the current request method.
   $_SERVER["REQUEST_METHOD"] = "GET";
 
-  // The rest is straight forward, set headers, init presenter, render view ...
+  // The rest is straight forward, set headers, init presentation, ...
   // http://stackoverflow.com/a/1088127/1251219
   http_response_code(401);
   header("WWW-Authenticate: MovLib location=\"{$i18n->r("/user/login")}\"");
@@ -241,4 +241,4 @@ foreach ($delayed as $classes) {
 }
 
 // The logger is always executed at last!
-\MovLib\Utility\DelayedLogger::run();
+\MovLib\Data\Delayed\Logger::run();
