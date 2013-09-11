@@ -105,6 +105,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
       $errors = implode("<br>", $errors);
       $alert = new Alert("<p>{$errors}</p>");
       $alert->severity = Alert::SEVERITY_ERROR;
+      $this->alerts .= $alert;
       return true;
     }
     return false;

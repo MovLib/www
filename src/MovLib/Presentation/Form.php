@@ -18,9 +18,8 @@
 
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Exception\ValidatorException;
-use \MovLib\View\HTML\Input\HiddenInput;
+use \MovLib\Presentation\FormElement\InputHidden;
 
 /**
  * Auto-validating HTML form for POST requests.
@@ -111,19 +110,19 @@ class Form extends \MovLib\Presentation\AbstractBase {
   public function __construct($page, array $elements, $id = null, $validationCallback = "validate") {
     global $i18n, $session;
     $this->id = $id ?: $page->id;
-    $this->hiddenElements[] = new HiddenInput("form_id", $this->id);
+    $this->hiddenElements[] = new InputHidden("form_id", $this->id);
 
     // Any form has to include the CSRF token if a session is active (including anon session where the login-flag would
     // be false).
     if ($token = $session->csrfToken) {
-      $this->hiddenElements[] = new HiddenInput("csrf", $token);
+      $this->hiddenElements[] = new InputHidden("csrf", $token);
     }
 
     // Set default attributes, a dev can override them by accessing the properties directly.
     $this->attributes = [
       // @todo Can we trust on our supported browser to use the document encoding that we've sent via HTTP?
       //"accept-charset" => "UTF-8",
-      "action" => "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$_SERVER["PATH_INFO"]}",
+      "action" => $_SERVER["PATH_INFO"],
       "method" => "post",
     ];
 
@@ -168,7 +167,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
       }
 
       // Only call the validation callback if there were no errors at all.
-      if ($page->checkError($errors) === false) {
+      if ($page->checkErrors($errors) === false) {
         $page->{$validationCallback}();
       }
     }

@@ -104,20 +104,13 @@ abstract class AbstractBase {
    *
    * <b>Always</b> use this method before displaying any plain-text string to the user.
    *
-   * While our policy is not to create simple wrapper methods for PHP functions we had to make an exception here. The
-   * reason is security. A wrong call to <code>htmlspecialchars()</code> could be fatal. This method ensures that the
-   * correct flags are used within our application.
-   *
-   * This method is inspired by Drupal's <code>String::checkPlain()</code> method.
-   *
-   * @todo Run UTF-8 PHPUnit tests against this method to verify that it really validates UTF-8.
-   * @param string $string
+   * @param string $text
    *   The plain-text string to process.
    * @return string
-   *   The <var>$string</var> with encoded HTML special characters.
+   *   The <var>$text</var> with encoded HTML special characters.
    */
-  protected final function checkPlain($string) {
-    return htmlspecialchars($string, ENT_QUOTES|ENT_HTML5);
+  protected final function checkPlain($text) {
+    return htmlspecialchars($text, ENT_QUOTES|ENT_HTML5);
   }
 
   /**
@@ -190,6 +183,14 @@ abstract class AbstractBase {
     return self::$tabindex++;
   }
 
+  /**
+   * Formats text for emphasized display in a placeholder inside a sentence.
+   *
+   * @param string $text
+   *   The text to format (plain-text).
+   * @return string
+   *   The formatted text (html).
+   */
   protected final function placeholder($text) {
     return "<em class='placeholder'>{$this->checkPlain($text)}</em>";
   }

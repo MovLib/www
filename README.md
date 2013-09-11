@@ -1,4 +1,4 @@
-# MovLib, the free movie library
+# MovLib, the free movie library.
 
 The free movie library that anyone can edit.
 

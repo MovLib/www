@@ -17,14 +17,14 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Data\User;
 use \MovLib\Exception\RedirectException;
 use \MovLib\Exception\UserException;
-use \MovLib\Model\UserModel;
 use \MovLib\Presentation\Form;
-use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\FormElement\InputEmail;
 use \MovLib\Presentation\FormElement\InputPassword;
 use \MovLib\Presentation\FormElement\InputSubmit;
+use \MovLib\Presentation\Partial\Alert;
 
 /**
  * User login presentation.
@@ -35,7 +35,12 @@ use \MovLib\Presentation\FormElement\InputSubmit;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Login extends \MovLib\Presentation\User\AbstractUserPage {
+class Login extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\User\UserTrait;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The input email form element.
@@ -58,20 +63,33 @@ class Login extends \MovLib\Presentation\User\AbstractUserPage {
    */
   private $password;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Instantiate new user login presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\Session $session
+   * @throws \MovLib\Exception\RedirectException
+   */
   public function __construct() {
     global $i18n, $session;
-    $this->init($i18n->t("Login"));
 
     // Translate the sign out route, so we can check if the current page is the sign out page.
-    $routeLogout = $i18n->r("/user/sign-out", null, [ "absolute" => false ]);
+    $routeLogout = $i18n->r("/user/sign-out");
 
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
     if ($session->isLoggedIn === true && $_SERVER["PATH_INFO"] != $routeLogout) {
       throw new RedirectException($i18n->r("/my"), 302);
     }
 
+    // Start rendering the page.
+    $this->init($i18n->t("Login"));
+
     // Now we also need to know the translated version of the login route.
-    $routeLogin = $action = $i18n->r("/user/login", null, [ "absolute" => false ]);
+    $routeLogin = $action = $i18n->r("/user/login");
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
@@ -95,7 +113,7 @@ class Login extends \MovLib\Presentation\User\AbstractUserPage {
     $this->form->attributes["class"] = "span span--6 offset--3";
 
     $this->form->actionElements[] = new InputSubmit([
-      "class" => "button--success button--large",
+      "class" => "button--large button--success",
       "title" => $i18n->t("Click here to sign in after you filled out all fields."),
       "value" => $i18n->t("Sign In"),
     ]);
@@ -113,6 +131,9 @@ class Login extends \MovLib\Presentation\User\AbstractUserPage {
     $_SERVER["PATH_INFO"] = $routeLogin;
   }
 
+  /**
+   * @inheritdoc
+   */
   protected function getContent() {
     global $i18n;
     return
@@ -139,18 +160,14 @@ class Login extends \MovLib\Presentation\User\AbstractUserPage {
     global $i18n, $session;
     try {
       // Try to load the user from the database and validate the submitted password against this user.
-      $this->user = new UserModel(UserModel::FROM_MAIL, $this->email->value);
-      if (password_verify($this->password->value, $this->user->pass) === false) {
-        // We want to use the same alert message for non-existent user and invalid password, therefor we throw a user
-        // exception at this point, so we can catch both errors and set the same alert message.
-        throw new UserException("Password is invalid.");
-      }
+      $this->user = new User(User::FROM_EMAIL, $this->email->value);
+      $this->user->verifyPassword($this->password->value);
 
       // If we were able to load the user and the password is valid, allow 'em to enter.
       $session->startSession($this->user);
 
       // Ensure that the user know's that the log in succeded.
-      $alert = new Alert($i18n->t("Login was successful, welcome back {0}!", [ "<b>{$this->checkPlain($this->user->name)}</b>" ]));
+      $alert = new Alert($i18n->t("Login was successful, welcome back {0}!", [ $this->placeholder($this->user->name) ]));
       $alert->severity = Alert::SEVERITY_SUCCESS;
       $_SESSION["ALERTS"][] = $alert;
 

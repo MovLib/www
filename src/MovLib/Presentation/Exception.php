@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Data\Delayed\Logger;
 use \MovLib\Exception\DebugException;
 use \MovLib\Presentation\Partial\Alert;
 

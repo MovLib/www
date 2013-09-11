@@ -15,11 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Model;
+namespace MovLib\Data\History;
 
 use \MovLib\Exception\HistoryException;
-use \MovLib\Model\AbstractHistoryModel;
-use \MovLib\Utility\FileSystem;
 
 /**
  * Description of MovieHistoryModel
@@ -30,39 +28,16 @@ use \MovLib\Utility\FileSystem;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistoryModel extends AbstractHistoryModel {
-
-  /**
-   * The current movie
-   * @var associative array
-   */
-  public $movie;
+class Movie extends AbstractHistory {
 
   /**
    * Instantiate new movie history model.
    *
-   * Construct new movie history model from given ID and gather basic movie information available in the movies table.
-   * If the ID is invalid a <code>\MovLib\Exception\HistoryException</code> will be thrown.
-   *
    * @param int $id
    *  The movie id
-   * @throws HistoryException
-   *  If movie is not found
    */
   public function __construct($id) {
-    parent::__construct($id);
-
-    $this->movie = $this->select(
-      "SELECT `original_title`, `runtime`, `year`
-        FROM `movies`
-        WHERE `movie_id` = ?",
-      "d",
-      [$this->id]
-    );
-
-    if (isset($this->movie[0]) === false) {
-      throw new HistoryException("Could not find movie with ID '{$this->id}'!");
-    }
+    parent::__construct($id, ["original_title", "runtime", "year"]);
   }
 
   /**
@@ -71,7 +46,7 @@ class MovieHistoryModel extends AbstractHistoryModel {
    */
   public function writeFiles() {
     foreach (["original_title", "runtime", "year"] as $fildname) {
-      $this->writeToFile($fildname, $this->movie[0][$fildname]);
+      $this->writeToFile($fildname, $this->instance[0][$fildname]);
     }
 
     foreach ($this->getSynopses() as $synopsis_language => $synopsis) {
@@ -91,16 +66,6 @@ class MovieHistoryModel extends AbstractHistoryModel {
     $this->writeRelatedRowsToFile("movies_languages", ["language_id"]);
     $this->writeRelatedRowsToFile("movies_countries", ["country_id"]);
     $this->writeRelatedRowsToFile("movies_directors", ["person_id"]);
-  }
-
-  /**
-   * Implementation ob abstract method <code>readFiles()</code>.
-   * Reads all history relevant information from files and returns them as associative array.
-   *
-   * @return associative array
-   */
-  public function readFiles() {
-
   }
 
   /**
