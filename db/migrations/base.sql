@@ -980,27 +980,6 @@ ENGINE = InnoDB;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`sessions`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`sessions` (
-  `session_id` VARBINARY(86) NOT NULL COMMENT 'The generated session ID.' ,
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user\'s unique ID.' ,
-  `user_agent` TINYBLOB NOT NULL COMMENT 'The session\'s user agent string.' ,
-  `ip_address` VARBINARY(39) NOT NULL COMMENT 'The IP address bound to this session.' ,
-  `ttl` TIMESTAMP NOT NULL COMMENT 'The session\'s time to live.' ,
-  PRIMARY KEY (`session_id`, `user_id`) ,
-  INDEX `sessions_users` (`user_id` ASC) ,
-  INDEX `sessions` (`session_id` ASC) ,
-  CONSTRAINT `fk_sessions_users`
-    FOREIGN KEY (`user_id` )
-    REFERENCES `movlib`.`users` (`user_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`articles`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`articles` (
