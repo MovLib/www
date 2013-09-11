@@ -18,7 +18,7 @@
 namespace MovLib\Test\Data\History;
 
 use \MovLib\Data\History\Movie;
-use \MovLib\Exception\HistoryException;
+use \MovLib\Data\User;
 
 /**
  * Test the Movie.
@@ -30,9 +30,7 @@ use \MovLib\Exception\HistoryException;
  * @since 0.0.1-dev
  */
 class MovieTest extends \PHPUnit_Framework_TestCase {
-  /**
-   * Fixture after all tests have been executed and class instance is destroyed.
-   */
+
   public static function tearDownAfterClass() {
     $path = "{$_SERVER["DOCUMENT_ROOT"]}/history/movie";
     if(is_dir($path)) {
@@ -43,13 +41,12 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
+  /**
+   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedExceptionMessage Could not find movie with ID ''!
+   */
   public function testWithoutId() {
-    try {
       new Movie(null);
-    } catch (HistoryException $expected) {
-      return;
-    }
-    $this->fail('An expected exception has not been raised (id is null).');
   }
 
   public function testGetShortName() {
@@ -109,15 +106,15 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testCommit() {
-    (new Movie(2))->commit(20, "initial commit");
+    (new Movie(2))->commit("initial commit");
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/.git/refs/heads/master");
   }
 
   public function testGetDiffAsHTML() {
     $test = new Movie(2);
-    $test->movie[0]["original_title"] = "The Foobar is a lie";
+    $test->instance[0]["original_title"] = "The Foobar is a lie";
     $test->writeFiles();
-    $test->commit(20, "second commit");
+    $test->commit("second commit");
     $this->assertEquals("The<span class='red'>Shawshank Redemption</span><span class='green'>Foobar is a lie</span>\n",
       $test->getDiffasHTML("HEAD", "HEAD^1", "original_title"));
   }
@@ -130,8 +127,26 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
   public function testGetLastCommits() {
     $result = (new Movie(2))->getLastCommits();
-    $this->assertEquals(20, $result[0]["author_id"]);
+    $this->assertEquals(1, $result[0]["author_id"]);
     $this->assertEquals("second commit", $result[0]["subject"]);
+  }
+
+  /**
+   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedExceptionMessage No changed files to commit
+   */
+  public function testCommitWithoutChangedFiles() {
+    (new Movie(2))->commit("empty commit");
+  }
+
+  public function testSaveHistory() {
+    $test = new Movie(2);
+    $test->instance[0]["original_title"] = "Shawshank Redemption";
+    $test->saveHistory("with branching");
+
+    $result = $test->getLastCommits();
+    $this->assertEquals(1, $result[0]["author_id"]);
+    $this->assertEquals("with branching", $result[0]["subject"]);
   }
 
 }

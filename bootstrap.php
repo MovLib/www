@@ -43,5 +43,7 @@ $composerAutoloader->add("MovLib\Test", "{$_SERVER["DOCUMENT_ROOT"]}/tests");
 $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
 
 // Needed by various objects (e.g. DelayedLogger).
-$i18n = new \MovLib\Model\I18nModel();
+$i18n = new \MovLib\Data\I18n();
 $_SERVER["LANGUAGE_CODE"] = $i18n->defaultLanguageCode;
+
+$session = new \MovLib\Data\User(\MovLib\Data\User::FROM_ID, 1);
