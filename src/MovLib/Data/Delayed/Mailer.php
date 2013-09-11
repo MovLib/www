@@ -69,7 +69,7 @@ class Mailer {
         "Content-Type: text/plain; charset=utf-8",
         "Content-Transfer-Encoding: BASE64",
         "",
-        base64_encode($this->wordwrap($mail->getPlain())),
+        base64_encode($mail->getPlain()),
         "",
         "--{$messageId}",
         "Content-Type: text/html; charset=utf-8",
