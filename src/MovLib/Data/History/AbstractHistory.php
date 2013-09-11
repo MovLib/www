@@ -35,34 +35,91 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
 
   /**
    * The instance's id.
+   *
    * @var int
    */
   protected $id;
 
   /**
    * The instance's model short name.
+   *
    * @var string
    */
   protected $type;
 
   /**
-   * The path to the repository
+   * The current instance
+   *
+   * @var associative array
+   */
+  public $instance;
+
+
+  /**
+   * The path to the repository.
+   *
    * @var string
    */
   protected $path;
 
   /**
+   * Did we use a branche other then 'master'?
+   *
+   * @var boolean
+   */
+  protected $customBranch = false;
+
+  /**
    * Constructor which must be called by all child classes
+   *
+   * Construct new history model from given ID and gather basic information.
+   * If the ID is invalid a <code>\MovLib\Exception\HistoryException</code> will be thrown.
    *
    * @param int $id
    *  The id of the instance to be versioned
+   * @param array $columns
+   *  The columns which should be selected for $instance
+   *
    * @throws HistoryException
    *  If no instance with given id is found
    */
-  public function __construct($id) {
+  public function __construct($id, $columns) {
     $this->type = $this->getShortName();
     $this->id = $id;
     $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
+
+    if (empty($columns)) {
+      $all_columns = "*";
+    } else {
+      foreach ($columns as $key => $value) {
+        $columns[$key] = "`{$value}`";
+      }
+      $all_columns = implode(", ", $columns);
+    }
+
+    $this->instance = $this->select(
+      "SELECT {$all_columns}
+        FROM `{$this->type}s`
+        WHERE `{$this->type}_id` = ?",
+      "d",
+      [$this->id]
+    );
+
+    if (isset($this->instance[0]) === false) {
+      throw new HistoryException("Could not find {$this->type} with ID '{$this->id}'!");
+    }
+
+    if (!is_dir($this->path."/.git")) {
+      $this->createRepository();
+    }
+  }
+
+  public function __destruct() {
+    parent::__destruct();
+
+    if($this->customBranch) {
+      $this->destroyUserBranch();
+    }
   }
 
   /**
@@ -71,64 +128,45 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   abstract protected function writeFiles();
 
   /**
-   * Get the model's short class name (e.g. <em>movie</em> for <em>MovLib\Data\History\Movie</em>).
+   * Commit the current state of the object
    *
-   * The short name is the name of the current instance of this class without the namespace lowercased.
+   * A new branch is created, files are written, commited and merged into master.
+   * At the end the temporary branch is destroyed.
    *
-   * @return string
-   *   The short name of the class (lowercase) without the namespace.
+   * @param string $message
+   *  The commit message.
    */
-  public function getShortName() {
-    return strtolower((new ReflectionClass($this))->getShortName());
-  }
-
-  /**
-   * Creates a new folder, makes a git repository out of it, writes files and commits them.
-   */
-  public function init() {
-    $this->createRepository();
+  public function saveHistory($message) {
+    $this->getUserBranch();
     $this->writeFiles();
-    $this->commit("initial commit");
-  }
-
-  /**
-   * Create a folder on the filesystem and make it a git repository.
-   *
-   * @throws HistoryException
-   *  If something went wrong with "git init"
-   */
-  public function createRepository() {
-    $output = array();
-    $returnVar = null;
-
-    if (!is_dir(($this->path))) {
-      mkdir($this->path, 0777, true);
-    }
-
-    exec("cd {$this->path} && git init", $output, $returnVar);
-    if ($returnVar != 0) {
-      throw new HistoryException("Error creating repository");
-    }
+    $this->commit($message);
+    $this->mergeIntoMaster();
+    $this->destroyUserBranch();
   }
 
   /**
    * Checks in all changes and commits them
    *
-   * @param int $author_id
-   *  The user id of the author
+   * @global \Movlib\Data\Session $session
    * @param string $message
    *  The commit message
    *
    * @throws HistoryException
    *  If something went wrong during commit
    */
-  public function commit($author_id, $message) {
+  public function commit($message) {
+    global $session;
+
     $output = array();
     $returnVar = null;
 
-    exec("cd {$this->path} && git add -A && git commit --author='{$author_id} <>' -m '{$message}'", $output, $returnVar);
+    exec("cd {$this->path} && git add -A && git commit --author='{$session->id} <>' -m '{$message}'", $output, $returnVar);
     if ($returnVar != 0) {
-      throw new HistoryException("Error commiting changes");
+      if (empty($this->getChangedFiles())) {
+        throw new HistoryException("No changed files to commit");
+      } else {
+        throw new HistoryException("Error commiting changes");
+      }
     }
   }
 
@@ -186,7 +224,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @return array
    *  Returns an array of changed files
    */
-  public function getChangedFiles($head, $ref) {
+  public function getChangedFiles($head = null, $ref = null) {
     $output = array();
     $returnVar = null;
     exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output, $returnVar);
@@ -287,4 +325,124 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     $this->writeToFile("{$relation}", json_encode($rows));
   }
 
+  /**
+   * Get the model's short class name (e.g. <em>movie</em> for <em>MovLib\Data\History\Movie</em>).
+   *
+   * The short name is the name of the current instance of this class without the namespace lowercased.
+   *
+   * @return string
+   *   The short name of the class (lowercase) without the namespace.
+   */
+  public function getShortName() {
+    return strtolower((new ReflectionClass($this))->getShortName());
+  }
+
+ /**
+   * Create a folder on the filesystem and make it a git repository.
+   *
+   * @throws HistoryException
+   *  If something went wrong with "git init"
+   */
+  public function createRepository() {
+    $output = array();
+    $returnVar = null;
+
+    if (!is_dir(($this->path))) {
+      mkdir($this->path, 0777, true);
+    }
+
+    exec("cd {$this->path} && git init", $output, $returnVar);
+    if ($returnVar != 0) {
+      throw new HistoryException("Error creating repository");
+    }
+  }
+
+  /**
+   * Create a new 'user branch' and check it out.
+   *
+   * @global \Movlib\Data\Session $session
+   *
+   * @throws HistoryException
+   *  If something went wrong during creating  or changing into a new branch.
+   */
+  private function getUserBranch() {
+    global $session;
+
+    $output = array();
+    $returnVar = null;
+
+    exec("cd {$this->path} && git checkout -q -B {$session->id}", $output, $returnVar);
+    if ($returnVar == 0) {
+      $this->customBranch = true;
+    } else {
+      throw new HistoryException("Error while creating new branch");
+    }
+  }
+
+  /**
+   * Destroy the custom 'user branch'
+   *
+   * @global \Movlib\Data\Session $session
+   *
+   * @throws HistoryException
+   *  If something went wrong during destroying this branch.
+   */
+  private function destroyUserBranch() {
+    global $session;
+
+    $output = array();
+    $returnVar = null;
+
+    $this->checkoutBranch("master");
+
+    exec("cd {$this->path} && git branch -D {$session->id}", $output, $returnVar);
+    if ($returnVar == 0) {
+      $this->customBranch = false;
+    } else {
+      throw new HistoryException("Error while destroying branch!");
+    }
+  }
+
+  /**
+   * Change Branch
+   *
+   * @param string $name
+   *  The name of the branch which should be checked out
+   *
+   * @throws HistoryException
+   *  If something went wrong checking out the branch
+   */
+  private function checkoutBranch($name) {
+    $output = array();
+    $returnVar = null;
+
+    exec("cd {$this->path} && git checkout -q {$name}", $output, $returnVar);
+    if ($returnVar != 0) {
+      throw new HistoryException("Error checking out branch '{$name}'");
+    }
+  }
+
+  /**
+   * Merging 'user branch' back into master
+   *
+   * @todo Handling of merge conflicts 
+   *
+   * @global \Movlib\Data\Session $session
+   *
+   * @throws HistoryException
+   *  If something went wrong during git merge.
+   */
+  private function mergeIntoMaster() {
+    global $session;
+
+    $output = array();
+    $returnVar = null;
+
+    $this->checkoutBranch("master");
+
+    exec("cd {$this->path} && git merge {$session->id}", $output, $returnVar);
+    if ($returnVar != 0) {
+      throw new HistoryException("Error while merging into master!");
+    }
+  }
 }
