@@ -146,7 +146,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `user_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The user’s unique ID.' ,
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The user’s language.' ,
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.' ,
-  `email` VARCHAR(254) NOT NULL COMMENT 'The user’s unique email address.' ,
+  `email` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The user’s unique email address.' ,
   `password` TINYBLOB NOT NULL COMMENT 'The user’s unique password (hashed).' ,
   `created` TIMESTAMP NOT NULL COMMENT 'Timestamp for user’s creation datetime.' ,
   `access` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.' ,
@@ -154,7 +154,6 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `private` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.' ,
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE if this account was deleted or blocked, default is FALSE.' ,
   `timezone` TINYTEXT NOT NULL COMMENT 'User’s timezone: http://php.net/manual/en/timezones.php' ,
-  `init` VARCHAR(254) NOT NULL COMMENT 'Email address used for initial account creation.' ,
   `edits` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The user’s edit counter.' ,
   `dyn_profile` BLOB NOT NULL COMMENT 'The user’s profile text (translatable).' ,
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.' ,
@@ -183,6 +182,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
     REFERENCES `movlib`.`languages` (`language_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci
 COMMENT = 'Contains all user related data.'
 ROW_FORMAT = COMPRESSED;
 
@@ -287,7 +288,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`licenses` (
   `license_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license\'s unique ID.' ,
-  `name` VARCHAR(255) NOT NULL COMMENT 'The license\'s english name.' ,
+  `name` VARCHAR(255) CHARACTER SET 'utf8' COLLATE 'utf8_general_ci' NOT NULL COMMENT 'The license\'s english name.' ,
   `description` BLOB NOT NULL COMMENT 'The license\'s english description.' ,
   `dyn_names` BLOB NOT NULL COMMENT 'The license\'s translated names.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The license\'s translated descriptions.' ,
@@ -296,7 +297,10 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`licenses` (
   `icon_extension` VARCHAR(5) NULL COMMENT 'The file extension of the license icon.' ,
   `icon_hash` CHAR(10) NULL COMMENT 'The hash of the license icon.' ,
   `admin` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Flag which determines whether this license can be edited by ever user (FALSE - 0) or only by admins (TRUE - 1).\nDefaults to 0.' ,
-  PRIMARY KEY (`license_id`) )
+  PRIMARY KEY (`license_id`) ,
+  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
@@ -509,7 +513,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`routes` (
   `route_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The route’s unique ID.' ,
-  `route` VARCHAR(254) NOT NULL COMMENT 'The route’s unique English pattern.' ,
+  `route` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The route’s unique English pattern.' ,
   `dyn_translations` BLOB NOT NULL COMMENT 'The route’s translations.' ,
   PRIMARY KEY (`route_id`) ,
   UNIQUE INDEX `uq_routes_route` (`route` ASC) )
@@ -607,7 +611,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`awards` (
   `award_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.' ,
-  `name` VARCHAR(100) NOT NULL COMMENT 'The awards unique English name.' ,
+  `name` VARCHAR(100) NOT NULL COMMENT 'The award\'s unique English name.' ,
   `description` BLOB NULL COMMENT 'The award’s English description.' ,
   `dyn_names` BLOB NOT NULL COMMENT 'The award’s title translations.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description translations.' ,
@@ -744,6 +748,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_links` (
     REFERENCES `movlib`.`languages` (`language_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
@@ -812,7 +818,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`series` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series` unique ID.' ,
-  `original_title` VARCHAR(255) NOT NULL COMMENT 'The series\' original title.' ,
+  `original_title` BLOB NOT NULL COMMENT 'The series\' original title.' ,
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of this series.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.' ,
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ arithmetic mean rating.' ,
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The series’ vote count.' ,
@@ -883,7 +889,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`seasons_episodes` (
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode´s chronological position within the season.' ,
   `episode_number` TINYTEXT NULL COMMENT 'The episodes number within the season (e.g. 01, but also 0102 if it contains two episodes).' ,
   `original_air_date` DATE NULL COMMENT 'The date the episode was originally aired.' ,
-  `original_title` VARCHAR(255) NOT NULL COMMENT 'The episode´s original title.' ,
+  `original_title` BLOB NOT NULL COMMENT 'The episode´s original title.' ,
   PRIMARY KEY (`series_id`, `seasons_number`, `position`) ,
   INDEX `fk_seasons_episodes_series_seasons1_idx1` (`series_id` ASC, `seasons_number` ASC) ,
   CONSTRAINT `fk_seasons_episodes_series_seasons`
