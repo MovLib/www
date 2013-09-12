@@ -160,9 +160,11 @@ class DB extends \MovLib\Console\Command\AbstractCommand {
     }
     if ($options[self::OPTION_BACKUP]) {
       /** @todo Implement */
+      return;
     }
     if ($options[self::OPTION_RESTORE]) {
       /** @todo Implement */
+      return;
     }
     if ($options[self::OPTION_MIGRATION]) {
       $this->runMigrations();
@@ -262,7 +264,7 @@ class DB extends \MovLib\Console\Command\AbstractCommand {
       case self::MODE_DATE:
         $answer = $this->askWithChoices("Please select a migration snapshot to set up the schema.", $migrationChoices[$c - 1], $migrationChoices);
         if (($length = array_search($answer, $migrationChoices)) === false) {
-          $this->exitOnError("Unknown migration '{$answer}'. Possible migrations are: " . implode(", ", $migrationChoices) . ".");
+          $this->write("Unknown migration '{$answer}'. Possible migrations are: " . implode(", ", $migrationChoices) . ".", self::MESSAGE_TYPE_ERROR);
         }
         $this->importSqlScripts(array_slice($migrationScripts, 0, ++$length));
         break;
@@ -274,8 +276,13 @@ class DB extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
+   * Run seed imports according to the <code>MODE_*</code> constants.
    *
-   * @param type $interactive
+   * The flag <var>$interactive</var> determines whether the user is prompted for the mode or if all seeds should be imported.
+   *
+   * @param boolean $interactive [optional]
+   *   Determines whether the user should be asked for the mode (<code>TRUE</code>) or not (<code>FALSE</code>).
+   *   Defaults to <code>TRUE</code>, which means that all seeds are imported.
    * @return this
    */
   private function runSeeds($interactive = true) {
