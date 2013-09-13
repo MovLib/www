@@ -17,8 +17,6 @@
  */
 namespace MovLib\Data\History;
 
-use \MovLib\Exception\HistoryException;
-
 /**
  * Description of MovieHistoryModel
  *
@@ -37,7 +35,7 @@ class Movie extends AbstractHistory {
    *  The movie id
    */
   public function __construct($id) {
-    parent::__construct($id, ["original_title", "runtime", "year"]);
+    parent::__construct($id, ["original_title", "runtime", "year"], ["dyn_synopses"]);
   }
 
   /**
@@ -46,10 +44,10 @@ class Movie extends AbstractHistory {
    */
   public function writeFiles() {
     foreach (["original_title", "runtime", "year"] as $fildname) {
-      $this->writeToFile($fildname, $this->instance[0][$fildname]);
+      $this->writeToFile($fildname, $this->historyObject[0][$fildname]);
     }
 
-    foreach ($this->getSynopses() as $synopsis_language => $synopsis) {
+    foreach (json_decode($this->historyObject[0]["dyn_synopses"], true) as $synopsis_language => $synopsis) {
       $this->writeToFile("{$synopsis_language}_synopsis", $synopsis);
     }
 
@@ -66,23 +64,6 @@ class Movie extends AbstractHistory {
     $this->writeRelatedRowsToFile("movies_languages", ["language_id"]);
     $this->writeRelatedRowsToFile("movies_countries", ["country_id"]);
     $this->writeRelatedRowsToFile("movies_directors", ["person_id"]);
-  }
-
-  /**
-   * Get all translated synopses and return them as associative array.
-   *
-   * @return associative array
-   */
-  private function getSynopses() {
-    $synopses = $this->select(
-      "SELECT COLUMN_JSON(dyn_synopses) AS `dyn_synopses`
-        FROM `movies`
-        WHERE `movie_id` = ?",
-      "d",
-      [$this->id]
-    );
-
-    return json_decode($synopses[0]["dyn_synopses"], true);
   }
 
 }

@@ -18,7 +18,6 @@
 namespace MovLib\Test\Data\History;
 
 use \MovLib\Data\History\Movie;
-use \MovLib\Data\User;
 
 /**
  * Test the Movie.
@@ -37,7 +36,6 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
       exec("rm -Rf {$path}");
     }
   }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
@@ -112,7 +110,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
   public function testGetDiffAsHTML() {
     $test = new Movie(2);
-    $test->instance[0]["original_title"] = "The Foobar is a lie";
+    $test->historyObject[0]["original_title"] = "The Foobar is a lie";
     $test->writeFiles();
     $test->commit("second commit");
     $this->assertEquals("The<span class='red'>Shawshank Redemption</span><span class='green'>Foobar is a lie</span>\n",
@@ -141,7 +139,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
   public function testSaveHistory() {
     $test = new Movie(2);
-    $test->instance[0]["original_title"] = "Shawshank Redemption";
+    $test->historyObject[0]["original_title"] = "Shawshank Redemption";
     $test->saveHistory("with branching");
 
     $result = $test->getLastCommits();

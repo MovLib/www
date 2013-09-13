@@ -46,4 +46,9 @@ $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini
 $i18n = new \MovLib\Data\I18n();
 $_SERVER["LANGUAGE_CODE"] = $i18n->defaultLanguageCode;
 
-$session = new \MovLib\Data\User(\MovLib\Data\User::FROM_ID, 1);
+$session = new \MovLib\Data\Session();
+$session->userId = 1;
+$session->userName = "Fleshgrinder";
+$session->csrfToken = "csrf";
+$session->isAuthenticated = true;
+$session->signIn = time();
