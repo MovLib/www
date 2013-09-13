@@ -18,7 +18,7 @@
 
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
+use \RuntimeException;
 
 /**
  * Description of RedirectException
@@ -29,7 +29,20 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RedirectException extends AbstractException {
+class RedirectException extends RuntimeException {
+
+  /**
+   * The redirect's target route.
+   *
+   * @var string
+   */
+  public $route;
+
+  /**
+   * The redirect's HTTP status code.
+   * @var int
+   */
+  public $status;
 
   /**
    * Instantiate new redirect exception.
@@ -41,7 +54,12 @@ class RedirectException extends AbstractException {
    *   <code>301</code>.
    */
   public function __construct($route, $status = 301) {
-    parent::__construct($route, null, $status);
+    parent::__construct("Redirecting to user to {$route} with status {$status}.", E_NOTICE, null);
+    if (strpos($route, "http") === false) {
+      $route = "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$route}";
+    }
+    $this->route = $route;
+    $this->status = $status;
   }
 
 }
