@@ -52,7 +52,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @var associative array
    */
-  public $instance;
+  public $historyObject;
 
 
   /**
@@ -70,50 +70,33 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   protected $customBranch = false;
 
   /**
-   * Constructor which must be called by all child classes
+   * Constructor which must be called by all child classes.
    *
    * Construct new history model from given ID and gather basic information.
-   * If the ID is invalid a <code>\MovLib\Exception\HistoryException</code> will be thrown.
    *
    * @param int $id
-   *  The id of the instance to be versioned
+   *  The id of the object to be versioned.
    * @param array $columns
-   *  The columns which should be selected for $instance
-   *
-   * @throws HistoryException
-   *  If no instance with given id is found
+   *  An array with the names regular of columns to be selected.
+   * @param array $dyn_columns
+   *  An array with the names of dynamic columns to be selected.
    */
-  public function __construct($id, $columns) {
+  public function __construct($id, $columns = array(), $dyn_columns = array()) {
     $this->type = $this->getShortName();
     $this->id = $id;
     $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
 
-    if (empty($columns)) {
-      $all_columns = "*";
-    } else {
-      foreach ($columns as $key => $value) {
-        $columns[$key] = "`{$value}`";
-      }
-      $all_columns = implode(", ", $columns);
-    }
+    $this->getHistoryObject($columns, $dyn_columns);
 
-    $this->instance = $this->select(
-      "SELECT {$all_columns}
-        FROM `{$this->type}s`
-        WHERE `{$this->type}_id` = ?",
-      "d",
-      [$this->id]
-    );
-
-    if (isset($this->instance[0]) === false) {
-      throw new HistoryException("Could not find {$this->type} with ID '{$this->id}'!");
-    }
-
+    // If no repository exists, create one
     if (!is_dir($this->path."/.git")) {
       $this->createRepository();
     }
   }
 
+  /**
+   * Destructor which checks if there is still a 'user branch' and destroys it if necessary.
+   */
   public function __destruct() {
     parent::__destruct();
 
@@ -296,19 +279,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *  Array of dynamic colums to be written to the file.
    */
   protected function writeRelatedRowsToFile($relation, $columns = array(), $dyn_columns = array()) {
-    $tmp_dyn_columns = $dyn_columns;
-
-    if (empty($columns) && empty($dyn_columns)) {
-      $all_columns = "*";
-    } else {
-      foreach ($columns as $key => $value) {
-        $columns[$key] = "`{$value}`";
-      }
-      foreach ($tmp_dyn_columns as $key => $value) {
-        $tmp_dyn_columns[$key] = "COLUMN_JSON({$value}) AS `{$value}`";
-      }
-      $all_columns = implode(", ", array_merge($columns, $tmp_dyn_columns));
-    }
+    $all_columns = $this->getColumnsForSelectQuery($columns, $dyn_columns);
 
     $rows = $this->select(
       "SELECT {$all_columns}
@@ -323,6 +294,61 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     }
 
     $this->writeToFile("{$relation}", json_encode($rows));
+  }
+
+  /**
+   * Returns a string which can be used in a SELECT query (e.g. <em>["title"]["dyn_comment]</em> will become
+   * <em>`title`, COLUMN_JSON(dyn_comment) AS `dyn_comment`</em>). If no columns or dynamic columns are given
+   * all columns (*) are selected. If dynamic columns are given these are selectet as COLUMN_JSON.
+   *
+   * @param array $columns
+   *  An array with the names regular of columns to be selected.
+   * @param array $dyn_columns
+   *  An array with the names of dynamic columns to be selected.
+   *
+   * @return string
+   *  Returns a string which can be used in a SELECT query.
+   */
+  private function getColumnsForSelectQuery($columns = array(), $dyn_columns = array()) {
+    if (empty($columns) && empty($dyn_columns)) {
+      return "*";
+    } else {
+      foreach ($columns as $key => $value) {
+        $columns[$key] = "`{$value}`";
+      }
+      foreach ($dyn_columns as $key => $value) {
+        $dyn_columns[$key] = "COLUMN_JSON({$value}) AS `{$value}`";
+      }
+     return implode(", ", array_merge($columns, $dyn_columns));
+    }
+  }
+
+  /**
+   * Gets basic information about the object which should be versioned.
+   * If this object is not found a HistoryException is thrown.
+   *
+   * @param array $columns
+   *  An array with the names regular of columns to be selected.
+   * @param array $dyn_columns
+   *  An array with the names of dynamic columns to be selected.
+   *
+   * @throws HistoryException
+   *  If no row with given id is found
+   */
+  private function getHistoryObject($columns = array(), $dyn_columns = array()) {
+    $all_columns = $this->getColumnsForSelectQuery($columns, $dyn_columns);
+
+    $this->historyObject = $this->select(
+      "SELECT {$all_columns}
+        FROM `{$this->type}s`
+        WHERE `{$this->type}_id` = ?",
+      "d",
+      [$this->id]
+    );
+
+    if (isset($this->historyObject[0]) === false) {
+      throw new HistoryException("Could not find {$this->type} with ID '{$this->id}'!");
+    }
   }
 
   /**
@@ -425,7 +451,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Merging 'user branch' back into master
    *
-   * @todo Handling of merge conflicts 
+   * @todo Handling of merge conflicts
    *
    * @global \Movlib\Data\Session $session
    *
