@@ -1322,6 +1322,26 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_relationships` (
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`sessions`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`sessions` (
+  `session_id` VARBINARY(86) NOT NULL ,
+  `user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 ,
+  `user_agent` BLOB NOT NULL ,
+  `ip_address` BLOB NOT NULL ,
+  `sign_in` TIMESTAMP NOT NULL ,
+  PRIMARY KEY (`session_id`) ,
+  INDEX `fk_sessions_users1_idx` (`user_id` ASC) ,
+  CONSTRAINT `fk_sessions_users1`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `movlib`.`users` (`user_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+SHOW WARNINGS;
 USE `movlib` ;
 
 
