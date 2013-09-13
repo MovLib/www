@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\User;
 use \MovLib\Exception\RedirectException;
 use \MovLib\Exception\SessionException;
 use \MovLib\Presentation\Form;
