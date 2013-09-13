@@ -50,7 +50,7 @@ trait UserTrait {
     global $i18n, $session;
     $breadcrumbs = [[ $i18n->r("/users"), $i18n->t("Users"), [ "title" => $i18n->t("Have a look at our user statistics.") ]]];
     $userRoute = $i18n->r("/user");
-    if ($session->isLoggedIn === true && strpos($_SERVER["PATH_INFO"], $userRoute) !== false) {
+    if ($session->isAuthenticated === true && strpos($_SERVER["PATH_INFO"], $userRoute) !== false) {
       $breadcrumbs[] = [ $i18n->r("/user"), $i18n->t("Profile"), [ "title" => $i18n->t("Go to your personal profile page.") ]];
     }
     return $breadcrumbs;

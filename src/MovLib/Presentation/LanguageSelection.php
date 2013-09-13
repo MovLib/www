@@ -18,6 +18,8 @@
 namespace MovLib\Presentation;
 
 use \Locale;
+use \MovLib\Data\User;
+use \MovLib\Exception\RedirectException;
 use \MovLib\Presentation\Partial\Navigation;
 
 /**
@@ -55,9 +57,18 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
    * Instantiate new language selection presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\Session $session
    */
   public function __construct() {
-    global $i18n;
+    global $i18n, $session;
+
+    // If a signed in user is requesting this page we know where to send her or him.
+    if ($session->isAuthenticated === true) {
+      $user = new User(User::FROM_ID, $session->userId);
+      throw new RedirectException("{$_SERVER["SCHEME"]}://{$user->getLanguageCode()}.{$_SERVER["SERVER_NAME"]}/");
+    }
+
+    // If not render the page.
     $this->init($i18n->t("Language Selection"));
     $this->stylesheets[] = "modules/language-selection.css";
 

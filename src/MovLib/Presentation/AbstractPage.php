@@ -127,7 +127,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
     }
 
     // Apply additional CSS class if the current request is made from a signed in user.
-    $login = $session->isLoggedIn === true ? " signed-in" : "";
+    $login = $session->isAuthenticated === true ? " signed-in" : "";
 
     // Include the complete namespace of this page as class on the body element.
     $namespace = strpos($this->id, "-") === false ? $this->id : strtr($this->id, "-", " ");

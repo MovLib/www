@@ -157,13 +157,6 @@ class User extends \MovLib\Data\AbstractImage {
   public $email;
 
   /**
-   * The user's hashed password.
-   *
-   * @var string
-   */
-  private $password;
-
-  /**
    * The user's creation time (UNIX timestamp).
    *
    * @var int
@@ -305,7 +298,6 @@ class User extends \MovLib\Data\AbstractImage {
           `language_id` AS `languageId`,
           `name`,
           `email`,
-          `password`,
           UNIX_TIMESTAMP(`created`) AS `created`,
           UNIX_TIMESTAMP(`access`) AS `access`,
           UNIX_TIMESTAMP(`login`) AS `login`,
@@ -411,16 +403,12 @@ class User extends \MovLib\Data\AbstractImage {
   /**
    * Get the user's preferred ISO 639-1 alpha-2 language code.
    *
-   * @staticvar string $languageCode
-   *   Used to cache the lookup.
-   * @return null|string
-   *   The user's language code or <code>NULL</code> if the user has none.
+   * @return string
+   *   The user's preferred system language code.
+   * @throws \MovLib\Data\DatabaseException
    */
   public function getLanguageCode() {
-    $result = $this->select("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", $this->languageId);
-    if (!empty($result[0]["iso_alpha-2"])) {
-      return $result[0]["iso_alpha-2"];
-    }
+    return $this->select("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", $this->languageId)[0]["iso_alpha-2"];
   }
 
   /**
@@ -624,32 +612,6 @@ class User extends \MovLib\Data\AbstractImage {
     $newPassword = password_hash($newPassword, PASSWORD_BCRYPT);
     $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $newPassword, $this->id ]);
     $this->password = $newPassword;
-    return $this;
-  }
-
-  /**
-   * Verify the given <var>$password</var> against this user's password.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $password
-   *   The submitted password.
-   * @param boolean $exception [optional]
-   *   Set this to <code>FALSE</code> if this method should return a <code>boolean</code> rather than throwing an
-   *   exception if the password's don't match. Defaults to <code>TRUE</code>, throw an exception.
-   * @return this|boolean
-   *   Depending on the setting of <var>$exception</var> this method returns it's instance or <code>TRUE</code> if the
-   *   password is valid and <code>FALSE</code> it it's not. Defaults to returning it's instance.
-   * @throws \MovLib\Exception\UserException
-   */
-  public function verifyPassword($password, $exception = true) {
-    global $i18n;
-    $valid = password_verify($password, $this->password);
-    if ($exception === false) {
-      return $valid;
-    }
-    if ($valid === false) {
-      throw new UserException($i18n->t("The submitted password is not valid."));
-    }
     return $this;
   }
 

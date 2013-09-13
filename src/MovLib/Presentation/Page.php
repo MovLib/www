@@ -239,7 +239,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
     $otherNavigation = new Navigation("other", $i18n->t("Other"), []);
     $otherNavigation->hideTitle = false;
 
-    if ($session->isLoggedIn === true) {
+    if ($session->isAuthenticated === true) {
       $mainMenuitems = [
         [ $i18n->r("/user"),            $i18n->t("Profile"),    [ "title" => $i18n->t("Go to your personal user page.")                                       ]],
         [ $i18n->r("/user/watchlist"),  $i18n->t("Watchlist"),  [ "title" => $i18n->t("Have a look at the latest changes of the content your are watching.")  ]],
@@ -367,12 +367,12 @@ class Page extends \MovLib\Presentation\AbstractPage {
    * @inheritdoc
    */
   protected function init($title) {
-    if (isset($_SESSION["ALERTS"])) {
-      $c = count($_SESSION["ALERTS"]);
+    if (isset($_SESSION["alerts"])) {
+      $c = count($_SESSION["alerts"]);
       for ($i = 0; $i < $c; ++$i) {
-        $this->alerts .= $_SESSION["ALERTS"][$i];
+        $this->alerts .= $_SESSION["alerts"][$i];
       }
-      unset($_SESSION["ALERTS"]);
+      unset($_SESSION["alerts"]);
     }
     return parent::init($title);
   }

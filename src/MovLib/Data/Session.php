@@ -18,14 +18,8 @@
 namespace MovLib\Data;
 
 use \Memcached;
-use \MovLib\Exception\ErrorException;
-use \MovLib\Exception\NetworkException;
-use \MovLib\Exception\SessionException;
-use \MovLib\Exception\UserException;
-use \MovLib\Data\I18n;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-use \MovLib\Utility\Crypt;
-use \MovLib\Utility\String;
+use \MovLib\Exception\SessionException;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -39,236 +33,166 @@ use \MovLib\Utility\String;
 class Session extends \MovLib\Data\Database {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Properties
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The user's CSRF token.
+   * The session's CSRF token.
    *
    * @var string
    */
   public $csrfToken;
 
   /**
-   * The user's account status.
+   * The session's ID.
    *
-   * <tt>TRUE</tt> if the user is deleted or deactivated, otherwise <tt>TRUE</tt>.
+   * @var string
+   */
+  private $id;
+
+  /**
+   * The user's authentication status.
    *
    * @var boolean
    */
-  public $deleted;
+  public $isAuthenticated = false;
 
   /**
-   * The user's unique ID.
+   * The session's name.
+   *
+   * @var string
+   */
+  private $name;
+
+  /**
+   * The session's user ID.
    *
    * @var int
    */
-  public $id;
+  public $userId;
 
   /**
-   * The user's login status.
-   *
-   * <tt>TRUE</tt> if the user is logged in, otherwise <tt>FALSE</tt>.
-   *
-   * @var boolean
-   */
-  public $isLoggedIn = false;
-
-  /**
-   * The user's name.
+   * The session's user name.
    *
    * @var string
    */
-  public $name;
+  public $userName;
 
   /**
-   * The user's session ID.
-   *
-   * @var string
-   */
-  public $sessionId;
-
-  /**
-   * The user's timezone.
-   *
-   * @see timezone_identifiers_list()
-   * @see \DateTimeZone::listIdentifiers()
-   * @var string
-   */
-  public $timezone;
-
-  /**
-   * The user agent string as submitted by the client.
-   *
-   * @var string
-   */
-  public $userAgent;
-
-  /**
-   * The time to live for this session (UNIX timestamp).
+   * Timestamp this session was first authenticated.
    *
    * @var int
    */
-  public $ttl;
-
-  /**
-   * The IP address as submitted by the client.
-   *
-   * @var string
-   */
-  public $ipAddress;
-
-  /**
-   * The user's preferrec system language's ID.
-   *
-   * @var int
-   */
-  public $languageId;
+  public $signIn;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new session model.
+   * Resume existing session if any.
    *
-   * @throws \MovLib\Exception\NetworkException
-   *   If user agent string or IP address are invalid.
+   * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Exception\SessionException
-   *   If no session can be started or if the user with the ID stored in the session does not exist.
-   * @throws \MovLib\Exception\UserException
-   *   If the user is deleted or deactivated.
    */
   public function __construct() {
-    // Always export user agent and IP address to class scope, no matter if this is a user we know or not.
-    // Do not even attempt to check if the filter was successful, the user agent string may contain all kind of funny
-    // stuff. We really don't care, we only store it to display it to the user later on so they are able to check
-    // for themselves.
-    $this->userAgent = filter_input(INPUT_SERVER, "HTTP_USER_AGENT", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
-    // Of course we validate the IP address. The source IP of the TCP connection cannot be substituted by changing a
-    // simple HTTP header. We only have to ensure that this variable will still contain the correct IP address of the
-    // client when we begin to use proxy servers.
-    if (($this->ipAddress = filter_input(INPUT_SERVER, "REMOTE_ADDR", FILTER_VALIDATE_IP)) == false) {
-      throw new NetworkException("The IP address is empty, or not a valid IPv4 nor IPv6 address. The address was: <code>" . String::checkPlain($_SERVER["REMOTE_ADDR"]) . "</code>");
-    }
-    // Check if a cookie is present and not empty.
-    // Only attempt to start a session if no session is already active.
-    if (!empty($_COOKIE["MOVSID"]) && session_status() === PHP_SESSION_NONE) {
+    // Export the session's name to class scope.
+    $this->name = session_name();
+
+    // Only attempt to load the session if a non-empty session ID is present. Anonymous user's don't get any session to
+    // ensure that HTTP proxies are able to cache anonymous pageviews.
+    if (!empty($_COOKIE[$this->name])) {
+      // Try to resume the session with the ID from the cookie.
       if (session_start() === false) {
-        throw new SessionException("Could not start session.");
+        throw new SessionException("Could not resume session.");
       }
-      try {
-        $this->loadSession(
-          "SELECT
-            `user_id` AS `id`,
-            `name`,
-            `deleted`,
-            `timezone`,
-            `language_id` AS `languageId`
-          FROM `users`
-          WHERE `user_id` = ?
-          LIMIT 1",
-          "d", $_SESSION["UID"]
-        );
-        if ($_SESSION["TTL"] < time()) {
-          $this->destroySessionAndRedirectToLogin();
+      $this->id = session_id();
+
+      // We have to try loading the session from our persistent session storage if the session IDs don't match.
+      if ($_COOKIE[$this->name] !== $this->id) {
+        $result = $this->select("SELECT `user_id`, UNIX_TIMESTAMP(`sign_in`) AS `sign_in` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", $_COOKIE[$this->name]);
+
+        // This is an old session that requires sign in and it's expired for anonymous users.
+        if (empty($result[0])) {
+          $this->destroy();
         }
+        // Otherwise we have to initialize this new session with fresh data and update the record in our persistent
+        // session storage.
         else {
-          $this->sessionId = session_id();
-          $this->csrfToken = $_SESSION["CSRF"];
-          $this->ttl       = $_SESSION["TTL"];
-          $this->isLoggedIn = true;
+          $this->init($result[0]["user_id"], $result[0]["sign_in"]);
+          DelayedMethodCalls::stack($this, "update", [ $_COOKIE[$this->name] ]);
         }
-      } catch (UserException $e) {
-        // @todo Account is deleted or deactivated, redirect and display help.
-        throw new SessionException("@todo Account is deleted or deactivated, redirect and display help.", $e);
-      } catch (ErrorException $e) {
-        // Catching this exception might have several reasons. Maybe Memcached was down or reloaded and the newly
-        // generated session ID doesn't have the necessary fields UID, CSRF and TTL stored along. Let's check our
-        // persistent storage.
-        try {
-          $result = $this->loadSession(
-            "SELECT
-              `u`.`user_id` AS `id`,
-              `u`.`name` AS `name`,
-              `u`.`deleted` AS `deleted`,
-              `u`.`timezone` AS `timezone`,
-              `u`.`language_id` AS `languageId`
-            FROM `users` `u`
-              INNER JOIN `sessions` `s`
-                ON `s`.`user_id` = `u`.`user_id`
-            WHERE `s`.`session_id` = ?
-            LIMIT 1",
-            "s", $_COOKIE["MOVSID"]
-          );
-          // Fake an object, we don't want to load a complete user model.
-          $this->startSession((object) $result);
-        } catch (UserException $e) {
-          // @todo Account is deleted or deactivated, redirect and display help.
-          throw new SessionException("@todo Account is deleted or deactivated, redirect and display help.", $e);
-        } catch (ErrorException $e) {
-          $this->destroySessionAndRedirectToLogin();
+      }
+      // Maybe somebody is trying with a random session ID to get a session?
+      elseif (!isset($_SESSION["user_id"])) {
+        $this->destroy();
+      }
+      // If we have a user ID everything should be fine, export default session data to class scope.
+      else {
+        $this->csrfToken = $_SESSION["csrf_token"];
+        $this->signIn    = $_SESSION["sign_in"];
+        $this->userId    = $_SESSION["user_id"];
+        $this->userName  = $_SESSION["user_name"];
+        if ($this->userId > 0) {
+          $this->isAuthenticated = true;
         }
       }
     }
   }
 
-  /**
-   * Destroy the currently active session and redirect the user to the login page.
-   *
-   * This method can be called during any bootstrap stage. If no i18n instance is active, a new one will be created.
-   * Note that this will exit the request and no deferred methods and nothing else will be executed!
-   *
-   * @global \MovLib\Data\I18n $i18n
-   */
-  private function destroySessionAndRedirectToLogin() {
-    global $i18n;
-    if (!isset($i18n)) {
-      $i18n = new I18n();
-    }
-    $this->destroySession();
-    $loginRoute = $i18n->r("/user/login");
-    $redirectTo = "";
-    if ($_SERVER["REQUEST_URI"] !== $loginRoute) {
-      $redirectTo = "?redirect_to={$_SERVER["REQUEST_URI"]}";
-    }
-    header("Location: {$loginRoute}{$redirectTo}", true, 302);
-    exit("<html><head><title>302 Moved Temporarily</title></head><body bgcolor=\"white\"><center><h1>302 Moved Temporarily</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>");
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
-   * Load session data from the specified query and export values to class scope.
+   * Authenticate a user.
    *
-   * @param string $query
-   *   The query to execute.
-   * @param string $type
-   *   The type of the value in mysqli bind param syntax.
-   * @param mixed $value
-   *   The value to search for (will be converted to array automatically).
-   * @throws \MovLib\Exception\UserException
-   *   If the account is either deleted or deactivated.
+   * @param string $email
+   *   The user submitted email address.
+   * @param string $rawPassword
+   *   The user submitted raw password.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\SessionException
    */
-  private function loadSession($query, $type, $value) {
-    foreach ($this->select($query, $type, [ $value ])[0] as $name => $value) {
-      $this->{$name} = $value;
+  public function authenticate($email, $rawPassword) {
+    // Load necessary user data from storage.
+    $result = $this->select("SELECT `user_id`, `name`, `password` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]);
+
+    // We couldn't find a user for the given email address if above query's result is empty.
+    if (empty($result[0])) {
+      throw new SessionException("Could not find user with email {$email}", E_NOTICE);
     }
-    settype($this->deleted, "boolean");
-    if ($this->deleted === true) {
-      // @todo Redirect and tell to user about possible actions.
-      throw new UserException("The user's account is either deleted or deactivated.");
+
+    // Validate the submitted password.
+    if (password_verify($rawPassword, $result[0]["password"]) === false) {
+      throw new SessionException("Invalid password for user with email {$email}", E_NOTICE);
     }
+
+    // Start a new session for this user. Failing could mean that Memcached is down!
+    if (session_start() === false) {
+      throw new SessionException("Could not start session (may be Memcached is down?).");
+    }
+
+    // Initialize this new session and insert it into our persistent session storage.
+    $this->init($result[0]["user_id"], time());
+    DelayedMethodCalls::stack($this, "insert");
+
+    return $this;
   }
 
   /**
    * Deletes this session from our session database.
    *
-   * @param string $sessionId
-   *   [Optional] The unique session ID that should be deleted. If no ID is passed along the current session ID of this
-   *   instance will be used.
+   * Must be public for delayed execution.
+   *
+   * @param string $sessionId [optional]
+   *   The unique session ID that should be deleted. If no ID is passed along the current session ID of this instance
+   *   will be used.
    * @return this
    */
-  public function deleteSession($sessionId = null) {
-    $sessionId = $sessionId ?: $this->sessionId;
+  public function delete($sessionId = null) {
+    $sessionId = $sessionId ?: $this->id;
     // Fetch all configured Memcached servers from the PHP configuration and split them by the delimiter.
     $servers = explode(",", ini_get("session.save_path"));
     // Build the array as expected by Memcached::addServers().
@@ -295,16 +219,17 @@ class Session extends \MovLib\Data\Database {
    *
    * @return this
    */
-  public function destroySession() {
-    // The user is no longer logged in.
-    $this->isLoggedIn = false;
+  public function destroy() {
+    // The user is no longer authenticated!
+    $this->isAuthenticated = false;
     // Remove all data associated with this session.
     session_destroy();
+    session_unset();
     // Remove the cookie.
     $cookieParams = session_get_cookie_params();
     setcookie(session_name(), "", time() - 42000, $cookieParams["path"], $cookieParams["domain"], $cookieParams["secure"], $cookieParams["httponly"]);
     // Remove the session ID from our database.
-    DelayedMethodCalls::stack($this, "deleteSession");
+    DelayedMethodCalls::stack($this, "delete");
     return $this;
   }
 
@@ -312,19 +237,22 @@ class Session extends \MovLib\Data\Database {
    * Retrieve a list of all active sessions.
    *
    * @return array
-   *   Associative array containing all active sessions of this user. The key is the session ID and the value is an
-   *   associative array as well, containing the following information:
+   *   Numeric array ontaining all sessions currently stored in the persistent session storage for the currently signed
+   *   in user. Each entry in the numeric array is an associative array with the following entries:
    *   <ul>
-   *     <li><b>CSRF:</b> The CSRF token.</li>
-   *     <li><b>IP:</b> The IP address.</li>
-   *     <li><b>TTL:</b> Time to life for this session.</li>
-   *     <li><b>UA:</b> The user agent string.</li>
+   *     <li><code>"session_id"</code> is the entries session ID</li>
+   *     <li><code>"user_agent"</code> is the browser submitted user agent</li>
+   *     <li><code>"ip_address"</code> is the IP address stored during authentication or regeneration</li>
+   *     <li><code>"sign_in"</code> is the timestamp when this session was initially created</li>
    *   </ul>
-   * @throws \MovLib\Exception\SessionException
-   *   If no sessions could be retrieved from the database.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function getActiveSessions() {
-    $sessions = $this->select("SELECT `session_id`, `user_agent`, `ip_address`, UNIX_TIMESTAMP(`ttl`) AS `ttl` FROM `sessions` WHERE `user_id` = ?", "d", [ $this->id ]);
+    $sessions = $this->select(
+      "SELECT `session_id`, `user_agent`, `ip_address`, UNIX_TIMESTAMP(`sign_in`) AS `sign_in` FROM `sessions` WHERE `user_id` = ? LIMIT 1",
+      "d",
+      [ $_SESSION["user_id"] ]
+    );
     $c = count($sessions);
     for ($i = 0; $i < $c; ++$i) {
       // Transform each IP address into a humand readable form.
@@ -334,57 +262,105 @@ class Session extends \MovLib\Data\Database {
   }
 
   /**
-   * Insert newly created session into our persistent database.
+   * Initialize session with default data.
+   *
+   * @param int $userId [optional]
+   *   The ID of the user for wish we should initialize a session. Zero is used if no value is passed, this will
+   *   initialize the session for an anonymous user.
+   * @param int $signIn [optional]
+   *   The timestamp of the last time this user signed in. Zero is used if no value is passed, this will initialize the
+   *   session for an anonymous user.
+   * @return this
+   * @throws \MovLib\Exception\SessionException
+   */
+  private function init($userId = 0, $signIn = 0) {
+    $this->id               = session_id();
+    $this->csrfToken        = $_SESSION["csrf_token"] = hash("sha512", openssl_random_pseudo_bytes(1024));
+    $_SESSION["ip_address"] = filter_input(INPUT_SERVER, "REMOTE_ADDR", FILTER_SANITIZE_STRING);
+    $_SESSION["user_agent"] = filter_input(INPUT_SERVER, "HTTP_USER_AGENT", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+
+    // We are initializing this session for a registered user.
+    if ($userId > 0) {
+      $result = $this->select("SELECT `name` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ $userId ]);
+      if (empty($result[0]["name"])) {
+        throw new SessionException("Could not fetch user name for user ID {$userId}.");
+      }
+      $this->userId          = $_SESSION["user_id"]   = $userId;
+      $this->userName        = $_SESSION["user_name"] = $result[0]["name"];
+      $this->signIn          = $_SESSION["sign_in"]   = $signIn;
+      $this->isAuthenticated = true;
+    }
+    // Initialize this session for an anonymous user.
+    else {
+      $this->userId   = $_SESSION["user_id"]   = 0;
+      $this->userName = $_SESSION["user_name"] = $_SESSION["ip_address"];
+      $this->signIn   = $_SESSION["sign_in"]   = 0;
+    }
+
+    return $this;
+  }
+
+  /**
+   * Insert newly created session into persistent session storage.
+   *
+   * Must be public for delayed execution.
    *
    * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function insertSession() {
+  public function insert() {
     return $this->query(
-      "INSERT INTO `sessions` (`session_id`, `user_id`, `user_agent`, `ip_address`, `ttl`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
+      "INSERT INTO `sessions` (`session_id`, `user_id`, `user_agent`, `ip_address`, `sign_in`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
       "sdssi",
-      [ $this->sessionId, $this->id, $this->userAgent, inet_pton($this->ipAddress), $this->ttl ]
+      [ $this->id, $_SESSION["user_id"], $_SESSION["user_agent"], inet_pton($_SESSION["ip_address"]), $_SESSION["sign_in"] ]
     );
   }
 
   /**
-   * Forcefully starts a new session for the given user model, regenerating the session's ID. Preserving any
-   * previously set session data. This should be called after a user has successfully logged in.
+   * Shutdown the currently active session and start one for anonymous users if we have to.
    *
-   * @param \MovLib\Data\UserModel $userModel
-   *   The user model for which we should start a new session.
    * @return this
    * @throws \MovLib\Exception\SessionException
-   *   If starting a new session failed. Do not attempt to catch this exception, this is fatal and this request should
-   *   fail!
    */
-  public function startSession($userModel) {
-    // Create a copy of any previously set session data, the call to session_start() will empty this array.
-    $sessionData = isset($_SESSION) ? $_SESSION : null;
-    // It's important to destroy any active session, otherwise we can't start a new one.
-    if (session_status() === PHP_SESSION_ACTIVE) {
-      session_destroy();
-    }
-    // Memcached is most likely down or full if starting a new session fails.
-    if (session_start() === false) {
-      throw new SessionException("Could not start session.");
-    }
-    // After PHP has started the session, we can combine the arrays again.
-    if (!empty($sessionData)) {
+  public function shutdown() {
+    // Only start a session for this anonymous user if there is any data that we need to remember and if no session is
+    // already active (which is the case if this request was made by an authenticated user).
+    if (session_status() === PHP_SESSION_NONE && !empty($_SESSION)) {
+      // Create a copy of the data stored in this session, the call to session_start() would delete everything.
+      $sessionData = $_SESSION;
+      if (session_start() === false) {
+        throw new SessionException("Could not start session (may be Memcached is down?).");
+      }
       $_SESSION += $sessionData;
+      $this->init();
     }
-    // IP address and user agent string are already set.
-    $this->sessionId  = session_id();
-    $this->csrfToken  = $_SESSION["CSRF"] = Crypt::randomHash();
-    $this->id         = $_SESSION["UID"]  = $userModel->userId;
-    $this->ttl        = $_SESSION["TTL"]  = time() + ini_get("session.gc_maxlifetime");
-    $this->deleted    = $userModel->deleted;
-    $this->name       = $userModel->name;
-    $this->timezone   = $userModel->timezone;
-    $this->languageId = $userModel->languageId;
-    $this->isLoggedIn = true;
-    // Be sure to insert this new session into the database.
-    DelayedMethodCalls::stack($this, "insertSession");
+
+    // Save session data to Memcached before sending the response to the user. No matter if we just started as session
+    // in the code above or we already have an active user session. This ensures that the session lock is released for
+    // this session and the next request can resume this session.
+    if (session_status() === PHP_SESSION_ACTIVE) {
+      session_write_close();
+    }
+
     return $this;
+  }
+
+  /**
+   * Update the ID of a session in our persistent session store.
+   *
+   * Must be public for delayed execution.
+   *
+   * @param string $oldSessionId
+   *   The old session ID that should be updated.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function update($oldSessionId) {
+    return $this->query(
+      "UPDATE `sessions` SET `session_id` = ?, `ip_address` = ?, `user_agent` = ? WHERE `session_id` = ? AND `user_id` = ?",
+      "sissd",
+      [ $this->id, inet_pton($_SESSION["ip_address"]), $_SESSION["user_agent"], $oldSessionId, $_SESSION["user_id"] ]
+    );
   }
 
 }

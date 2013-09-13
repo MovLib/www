@@ -19,7 +19,7 @@ namespace MovLib\Presentation\User;
 
 use \MovLib\Data\User;
 use \MovLib\Exception\RedirectException;
-use \MovLib\Exception\UserException;
+use \MovLib\Exception\SessionException;
 use \MovLib\Presentation\Form;
 use \MovLib\Presentation\FormElement\InputEmail;
 use \MovLib\Presentation\FormElement\InputPassword;
@@ -81,7 +81,7 @@ class Login extends \MovLib\Presentation\Page {
     $routeLogout = $i18n->r("/user/sign-out");
 
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
-    if ($session->isLoggedIn === true && $_SERVER["PATH_INFO"] != $routeLogout) {
+    if ($session->isAuthenticated === true && $_SERVER["PATH_INFO"] != $routeLogout) {
       throw new RedirectException($i18n->r("/my"), 302);
     }
 
@@ -119,7 +119,7 @@ class Login extends \MovLib\Presentation\Page {
     ]);
 
     // If the user requested to be signed out, do so.
-    if ($session->isLoggedIn === true && $_SERVER["PATH_INFO"] == $routeLogout) {
+    if ($session->isAuthenticated === true && $_SERVER["PATH_INFO"] == $routeLogout) {
       $session->destroy();
       $alert = new Alert($i18n->t("We hope to see you again soon."));
       $alert->severity = Alert::SEVERITY_SUCCESS;
@@ -149,37 +149,40 @@ class Login extends \MovLib\Presentation\Page {
    * Validation callback after auto-validation of form has succeeded.
    *
    * The redirect exception is thrown if the supplied data is valid. The user will be redirected to her or his personal
-   * dashboard.
+   * dashboard. The session exception is thrown if our system isn't able to start a new session at all.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
    * @return this
    * @throws \MovLib\Exception\RedirectException
+   * @throws \MovLib\Exception\SessionException
    */
   public function validate() {
     global $i18n, $session;
     try {
-      // Try to load the user from the database and validate the submitted password against this user.
-      $this->user = new User(User::FROM_EMAIL, $this->email->value);
-      $this->user->verifyPassword($this->password->value);
-
-      // If we were able to load the user and the password is valid, allow 'em to enter.
-      $session->start($this->user);
+      $session->authenticate($this->email->value, $this->password->value);
 
       // Ensure that the user know's that the log in succeded.
-      $alert = new Alert($i18n->t("Login was successful, welcome back {0}!", [ $this->placeholder($this->user->name) ]));
+      $alert = new Alert($i18n->t("Login was successful."));
+      $alert->block = true;
+      $alert->title = $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]);
       $alert->severity = Alert::SEVERITY_SUCCESS;
-      $_SESSION["ALERTS"][] = $alert;
+      $_SESSION["alerts"][] = $alert;
 
       // Redirect the user to the requested redirect destination and if none was set to the personalized dashboard.
       throw new RedirectException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"), 302);
     }
     // Never tell the person who's trying to sing in which value was wrong. Both attributes are considered a secret and
     // should never be exposed by our application itself.
-    catch (UserException $e) {
-      $alert = new Alert($i18n->t("We either don’t know the email address, or the password was wrong."));
-      $alert->severity = Alert::SEVERITY_ERROR;
-      $this->alerts .= $alert;
+    catch (SessionException $e) {
+      if ($e->getCode() === E_NOTICE) {
+        $alert = new Alert($i18n->t("We either don’t know the email address, or the password was wrong."));
+        $alert->severity = Alert::SEVERITY_ERROR;
+        $this->alerts .= $alert;
+      }
+      else {
+        throw $e;
+      }
     }
     return $this;
   }
