@@ -51,4 +51,4 @@ $session->userId = 1;
 $session->userName = "Fleshgrinder";
 $session->csrfToken = "csrf";
 $session->isAuthenticated = true;
-$session->signIn = time();
+$session->authentication = time();

@@ -1327,11 +1327,11 @@ SHOW WARNINGS;
 -- Table `movlib`.`sessions`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`sessions` (
-  `session_id` VARBINARY(86) NOT NULL ,
-  `user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 ,
-  `user_agent` BLOB NOT NULL ,
-  `ip_address` BLOB NOT NULL ,
-  `sign_in` TIMESTAMP NOT NULL ,
+  `session_id` VARBINARY(86) NOT NULL COMMENT 'The session\'s unique ID.' ,
+  `user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The session\'s unique user ID.' ,
+  `authentication` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp when this session was initialized.' ,
+  `ip_address` BLOB NOT NULL COMMENT 'The session\'s IP address.' ,
+  `user_agent` BLOB NOT NULL COMMENT 'The session\'s user agent string.' ,
   PRIMARY KEY (`session_id`) ,
   INDEX `fk_sessions_users1_idx` (`user_id` ASC) ,
   CONSTRAINT `fk_sessions_users1`
@@ -1339,7 +1339,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`sessions` (
     REFERENCES `movlib`.`users` (`user_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Persistent session storage.';
 
 SHOW WARNINGS;
 USE `movlib` ;

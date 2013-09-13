@@ -95,17 +95,21 @@ class Page extends \MovLib\Presentation\AbstractPage {
    * to set an alert message for each error that occurs. This method let's you pass the possibly collected errors and
    * checks if there are any, if there are any it will create and set the alert message for you.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @param null|array $errors
    *   The collected error messages to check.
    * @return boolean
    *   Returns <code>TRUE</code> if there were any errors, otherwise <code>FALSE</code>.
    */
   public function checkErrors($errors) {
+    global $i18n;
     if ($errors) {
-      $errors = implode("<br>", $errors);
-      $alert = new Alert("<p>{$errors}</p>");
-      $alert->severity = Alert::SEVERITY_ERROR;
-      $this->alerts .= $alert;
+      $errors           = implode("<br>", $errors);
+      $alert            = new Alert($errors);
+      $alert->block     = true;
+      $alert->title     = $i18n->t("Validation Error");
+      $alert->severity  = Alert::SEVERITY_ERROR;
+      $this->alerts    .= $alert;
       return true;
     }
     return false;
@@ -345,7 +349,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
    */
   protected function getWrappedContent() {
     global $i18n;
-    $noscript = new Alert("<p>{$i18n->t("Please activate JavaScript in your browser to experience our website with all its features.")}</p>");
+    $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."));
     $noscript->title = $i18n->t("JavaScript Disabled");
     $noscript->block = true;
     return

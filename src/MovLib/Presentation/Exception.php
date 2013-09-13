@@ -52,7 +52,7 @@ class Exception extends \MovLib\Presentation\Page {
       $stacktrace = $this->formatStacktrace($exception->getTrace());
     }
 
-    $error = new Alert("<p>{$i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes.")}</p>");
+    $error = new Alert($i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."));
     $error->block = true;
     $error->title = $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered.");
     $error->severity = Alert::SEVERITY_ERROR;

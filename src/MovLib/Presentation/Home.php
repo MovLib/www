@@ -77,7 +77,7 @@ class Home extends \MovLib\Presentation\Page {
         "<div id='home-banner'>" .
           "<div class='container lead hero'>{$i18n->t("Do you like movies?<br>Great, so do we!")}</div>" .
         "</div>" .
-        "<div id='alerts'><noscript>{$noscript}</noscript></div>" .
+        "<div id='alerts'><noscript>{$noscript}</noscript>{$this->alerts}</div>" .
         "<div class='container container--home'>" .
           "<div class='row'>" .
             "<article class='span span--4 span--home'>" .

@@ -471,7 +471,7 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
-   * Prepare change of mail.
+   * Prepare email change data for existing user account.
    *
    * @param string $newEmail
    *   The user's new email address.
@@ -479,41 +479,44 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function prepareEmailChange($newEmail) {
-    return $this->query(
-      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('user_id', ?, 'email', ?, 'time', CURRENT_TIMESTAMP))",
+    $this->query(
+      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('id', ?, 'email', ?, 'time', CURRENT_TIMESTAMP))",
       "sss",
       [ $this->authenticationToken, $this->id, $newEmail ]
     );
+    return $this;
   }
 
   /**
-   * Pre-register a new user account.
+   * Prepare registration data for new user account.
    *
-   * The pre-registration step is to put the provided information into our temporary database where we can pull it out
-   * after the user clicked the link in the mail we've sent him.
+   * Save data provided via the registration form in our temporary database.
    *
-   * @param string $hash
-   *   The activation hash used in the activation link for identification.
-   * @param string $name
-   *   The valid name of the new user.
-   * @param string $email
-   *   The valid email address of the new user.
    * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function prepareRegistration($hash, $name, $email) {
-    return $this->query("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'email', ?, 'time', CURRENT_TIMESTAMP))", "sss", [ $hash, $name, $email ]);
+  public function prepareRegistration() {
+    $this->query(
+      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'email', ?, 'time', CURRENT_TIMESTAMP))",
+      "sss",
+      [ $this->authenticationToken, $this->name, $this->email ]
+    );
+    return $this;
   }
 
   /**
-   * Add reset password request to our temporary database table.
+   * Prepare reset password data for existing user account.
    *
-   * @param string $hash
-   *   The password reset hash used in the password reset link for identification.
-   * @param string $email
-   *   The valid email address of the user.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function prepareResetPassword($hash, $email) {
-    return $this->query("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('email', ?, 'time', CURRENT_TIMESTAMP))", "ss", [ $hash, $email ]);
+  public function prepareResetPassword() {
+    $this->query(
+      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('email', ?, 'time', CURRENT_TIMESTAMP))",
+      "ss",
+      [ $this->authenticationToken, $this->email ]
+    );
+    return $this;
   }
 
   /**

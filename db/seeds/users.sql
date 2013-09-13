@@ -20,11 +20,11 @@ INSERT INTO `users` (
   (SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = 'en' LIMIT 1),
   'Fleshgrinder',
   'richard@fussenegger.info',
-  '$2y$10$zxXKIGS8N9z6vk6iAPiR1u5h2Eypz7kWOQRRfa1uXZ1igkjQ1F8Ga', -- Hashed password "test"
+  '$2y$10$N/kvo2/A9vAv.8Mkgb4ky.llucBnDaPi5pdW7HPP2OCHV9yDQyjbG', -- Hashed password "test1234"
   CURRENT_TIMESTAMP,
   CURRENT_TIMESTAMP,
   'Europe/Vienna',
-  COLUMN_CREATE('en', 'Richard’s English profile text.', 'de', 'Richard’s deutscher Profiltext.'),
+  COLUMN_CREATE('en', 'Richard’s English profile text.', 'de', 'Richards deutscher Profiltext.'),
   1,
   (SELECT `country_id` FROM `countries` WHERE `iso_alpha-2` = 'at' LIMIT 1),
   'Richard Fussenegger',

@@ -93,12 +93,17 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
    */
   public function __construct() {
     global $i18n, $session;
-    if ($session->isLoggedIn === false) {
-      throw new UnauthorizedException($i18n->t("You need to be signed in to change your password."));
+
+    // Determine if this is a new registration or if we are handling a password reset request.
+    $this->signUp = $_SERVER["PATH_INFO"] == $i18n->r("/user/sign-up");
+
+    // Check the last authentication time if we aren't handling a sign up.
+    if ($this->signUp === false) {
+      $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
     }
+
     $this->init($i18n->t("Password Settings"));
     $this->settingsRoute = $i18n->r("/user/password-settings");
-    $this->signUp = $_SERVER["PATH_INFO"] == $i18n->r("/user/sign-up");
 
     $this->currentPassword = new InputPassword([
       "autofocus",

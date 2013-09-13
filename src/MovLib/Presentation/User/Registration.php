@@ -21,6 +21,7 @@ use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Data\User;
 use \MovLib\Exception\RedirectException;
+use \MovLib\Presentation\Email\User\Registration as RegistrationEmail;
 use \MovLib\Presentation\Form;
 use \MovLib\Presentation\FormElement\Input;
 use \MovLib\Presentation\FormElement\InputEmail;
@@ -86,7 +87,7 @@ class Registration extends \MovLib\Presentation\Page {
     global $i18n, $session;
 
     // If the user is logged in, no need for registration.
-    if ($session->isLoggedIn === true) {
+    if ($session->isAuthenticated === true) {
       throw new RedirectException($i18n->r("/my"), 302);
     }
 
@@ -152,10 +153,8 @@ class Registration extends \MovLib\Presentation\Page {
     global $i18n;
     $errors = null;
 
-    // Prepare a user for this registration.
+    // Prepare a user for this registration and start validation of the desired user name.
     $user = new User();
-
-    // Validate the username.
     if (substr($this->username->value, 0, 1) == " ") {
       $errors[] = $i18n->t("The username cannot begin with a space.");
     }
@@ -168,7 +167,7 @@ class Registration extends \MovLib\Presentation\Page {
     if (mb_strlen($this->username->value) > $this->username->attributes["max-length"]) {
       $errors[] = $i18n->t("The username is too long: it must be {1,number,integer} characters or less.", [ $this->username->attributes["max-length"] ]);
     }
-    elseif (
+    if (
       // Validate UTF-8
       preg_match("//u", $this->username->value) == false
       // Check if UTF-8 is in NFC form
@@ -178,18 +177,24 @@ class Registration extends \MovLib\Presentation\Page {
     ) {
       $errors[] = $i18n->t("The username contains illegal characters.");
     }
-    elseif ($user->checkName($this->username->value) === false) {
-      $errors[] = $i18n->t("The username {0} is already taken, please choose another one.", [ $this->placeholder($this->username->value) ]);
-    }
 
-    // @todo The blacklist's content must be translated along with the routes.
-    $blacklist = json_decode(file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/conf/username-blacklist.json"));
-    $lowercased = mb_strtolower($this->username->value);
-    $c = count($blacklist);
-    for ($i = 0; $i < $c; ++$i) {
-      if ($blacklist[$i] == $lowercased) {
-        $errors[] = $i18n->t("The username {0} is a system reserved word, please choose another one.", [ $this->placeholder($this->username->value) ]);
-        break;
+    // The following two checks only make sense if the desired name is valid up to this point.
+    if (!$errors) {
+      // @todo The blacklist's content must be translated along with the routes.
+      $blacklist = json_decode(file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/conf/username-blacklist.json"));
+      $lowercased = mb_strtolower($this->username->value);
+      $c = count($blacklist);
+      for ($i = 0; $i < $c; ++$i) {
+        if ($blacklist[$i] == $lowercased) {
+          $errors[] = $i18n->t("The username {0} is a system reserved word, please choose another one.", [ $this->placeholder($this->username->value) ]);
+          break;
+        }
+      }
+
+      // Only query the database if the name is valid until this point. Doesn't make much sense to check the database for
+      // a user name that is impossible to register.
+      if (!$errors && $user->checkName($this->username->value) === true) {
+        $errors[] = $i18n->t("The username {0} is already taken, please choose another one.", [ $this->placeholder($this->username->value) ]);
       }
     }
 
@@ -209,7 +214,9 @@ class Registration extends \MovLib\Presentation\Page {
         Mailer::stack(new RegistrationEmail($user));
       }
 
+      // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
       $this->accepted = true;
+
       $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($user->email)] ));
       $success->block = true;
       $success->title = $i18n->t("Registration Successful");

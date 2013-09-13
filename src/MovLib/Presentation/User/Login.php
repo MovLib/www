@@ -174,14 +174,9 @@ class Login extends \MovLib\Presentation\Page {
     // Never tell the person who's trying to sing in which value was wrong. Both attributes are considered a secret and
     // should never be exposed by our application itself.
     catch (SessionException $e) {
-      if ($e->getCode() === E_NOTICE) {
-        $alert = new Alert($i18n->t("We either don’t know the email address, or the password was wrong."));
-        $alert->severity = Alert::SEVERITY_ERROR;
-        $this->alerts .= $alert;
-      }
-      else {
-        throw $e;
-      }
+      $alert = new Alert($i18n->t("We either don’t know the email address, or the password was wrong."));
+      $alert->severity = Alert::SEVERITY_ERROR;
+      $this->alerts .= $alert;
     }
     return $this;
   }

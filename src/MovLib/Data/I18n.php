@@ -490,22 +490,7 @@ class I18n extends \MovLib\Data\Database {
    * @throws \IntlException
    */
   public function r($route, array $args = null, array $options = []) {
-    $route = $this->formatMessage("route", $route, $args, $options);
-    if (isset($options["absolute"]) && $options["absolute"] === true) {
-      if ($options["language_code"] != $this->languageCode) {
-        if (isset($_SERVER["LANGUAGE_CODE"])) {
-          $serverName = str_replace($_SERVER["LANGUAGE_CODE"], $options["language_code"], $_SERVER["SERVER_NAME"]);
-        }
-        else {
-          $serverName = "{$options["language_code"]}.{$_SERVER["SERVER_NAME"]}";
-        }
-      }
-      else {
-        $serverName = $_SERVER["SERVER_NAME"];
-      }
-      $route = "{$_SERVER["SCHEME"]}://{$serverName}{$route}";
-    }
-    return $route;
+    return $this->formatMessage("route", $route, $args, $options);
   }
 
   /**
