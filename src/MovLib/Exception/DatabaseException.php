@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * A database exception might be thrown if any database action fails.
  *
@@ -29,6 +27,4 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class DatabaseException extends AbstractException {
-
-}
+class DatabaseException extends \MovLib\Exception\AbstractException {}

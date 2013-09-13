@@ -15,10 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
 namespace MovLib\Exception;
-
-use \MovLib\Exception\AbstractException;
 
 /**
  * An unauthorized exception might be thrown is a user is not allowed to access some specific content.
@@ -29,7 +26,7 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UnauthorizedException extends AbstractException {
+class UnauthorizedException extends \MovLib\Exception\AbstractException {
 
   /**
    * The title.
@@ -46,7 +43,7 @@ class UnauthorizedException extends AbstractException {
    */
   public function __construct($message = null, $title = null) {
     global $i18n;
-    parent::__construct($message);
+    parent::__construct("{$title} {$message}");
     $this->title = empty($title) ? $i18n->t("You must be logged in to access this content.") : $title;
     if (empty($this->message)) {
       $this->message = "<p>{$i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/user/register")}'>", "</a>" ])}</p>";

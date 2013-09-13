@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * An image exception might be thrown if any image action fails.
  *
@@ -28,6 +26,4 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageException extends AbstractException {
-
-}
+class ImageException extends \MovLib\Exception\AbstractException {}

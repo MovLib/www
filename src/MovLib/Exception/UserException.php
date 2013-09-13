@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * A user exception might be thrown if an error occures related to a user entity.
  *
@@ -29,6 +27,4 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserException extends AbstractException {
-
-}
+class UserException extends \MovLib\Exception\AbstractException {}

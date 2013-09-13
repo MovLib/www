@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * A session exception might be thrown if an error occures related to session handling.
  *
@@ -28,6 +26,4 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class SessionException extends AbstractException {
-
-}
+class SessionException extends \MovLib\Exception\AbstractException {}

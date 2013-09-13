@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * A debug exception can be thrown to dissect variables.
  *
@@ -28,7 +26,7 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class DebugException extends AbstractException {
+class DebugException extends \MovLib\Exception\AbstractException {
 
   /**
    * The variable to dissect.

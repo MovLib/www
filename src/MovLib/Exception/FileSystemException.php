@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * A file system exception might be thrown if any local filesystem action fails.
  *
@@ -28,6 +26,4 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class FileSystemException extends AbstractException {
-
-}
+class FileSystemException extends \MovLib\Exception\AbstractException {}

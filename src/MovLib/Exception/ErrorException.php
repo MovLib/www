@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * An error exception might be thrown if there is any PHP error that was not handled properly.
  *
@@ -28,6 +26,4 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorException extends AbstractException {
-
-}
+class ErrorException extends \MovLib\Exception\AbstractException {}

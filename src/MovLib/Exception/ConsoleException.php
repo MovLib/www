@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * A console exception might be thrown if something goes wrong during the execution of a console command.
  *
@@ -28,6 +26,4 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ConsoleException extends AbstractException {
-
-}
+class ConsoleException extends \MovLib\Exception\AbstractException {}

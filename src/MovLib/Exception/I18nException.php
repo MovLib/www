@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * A I18n exception might be thrown if an error occures related to translating contents.
  *
@@ -29,6 +27,4 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class I18nException extends AbstractException {
-
-}
+class I18nException extends \MovLib\Exception\AbstractException {}

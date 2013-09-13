@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * A git exception might be thrown if something goes wrong during the execution of a git command.
  *
@@ -28,6 +26,4 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryException extends AbstractException {
-
-}
+class HistoryException extends \MovLib\Exception\AbstractException {}

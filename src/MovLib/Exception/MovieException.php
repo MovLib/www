@@ -17,8 +17,6 @@
  */
 namespace MovLib\Exception;
 
-use \MovLib\Exception\AbstractException;
-
 /**
  * A movie exception might be thrown if an error occures related to movies.
  *
@@ -29,6 +27,4 @@ use \MovLib\Exception\AbstractException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieException extends AbstractException {
-
-}
+class MovieException extends \MovLib\Exception\AbstractException {}

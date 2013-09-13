@@ -18,8 +18,6 @@
 
 namespace MovLib\Exception;
 
-use \RuntimeException;
-
 /**
  * Description of RedirectException
  *
@@ -29,7 +27,7 @@ use \RuntimeException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RedirectException extends RuntimeException {
+class RedirectException extends \RuntimeException {
 
   /**
    * The redirect's target route.
@@ -54,7 +52,7 @@ class RedirectException extends RuntimeException {
    *   <code>301</code>.
    */
   public function __construct($route, $status = 301) {
-    parent::__construct("Redirecting user to {$route} with status {$status}.", E_NOTICE, null);
+    parent::__construct("Redirecting user to {$route} with status {$status}.");
     if (strpos($route, "http") === false) {
       $route = "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$route}";
     }
