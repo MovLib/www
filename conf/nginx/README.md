@@ -7,3 +7,6 @@ Therefor we keep the configuration files within our application for easy deploym
   * The `sites/conf` folder contains server specific configuration files that are the same for all servers.
   * The `sites/conf/routes` folder contains localized location configuration for our servers.
 * The `ssl` folder contains SSL certificates.
+
+## Weblinks
+* [Getting IPv6 connectivity under Linux](http://www.pps.univ-paris-diderot.fr/~jch/software/ipv6-connectivity.html)

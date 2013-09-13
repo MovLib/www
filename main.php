@@ -163,13 +163,13 @@ function delayed_register($class, $weight = 50, $method = "run") {
 }
 
 try {
+  // Instantiate global i18n object with the current display language.
+  $i18n = new \MovLib\Data\I18n();
+
   // Instantiate session for the client requesting the page. A real session will only be generated if we know this user.
   // By default we don't start a session, nor do we send out any cookies to the client. We wait until the client is doing
   // anything where we really need a session.
   $session = new \MovLib\Data\Session();
-
-  // Instantiate global i18n object with the current display language.
-  $i18n = new \MovLib\Data\I18n();
 
   // Start the rendering process.
   $presenter = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
@@ -192,13 +192,8 @@ catch (\MovLib\Exception\RedirectException $e) {
 // authentication. This is the most outter scope were we can catch and construct this, not pretty, but effective and
 // easy to use for us developers.
 catch (\MovLib\Exception\UnauthorizedException $e) {
-  // If the exception was thrown in the session model no i18n instance is present, but we need it.
-  if (!$i18n) {
-    $i18n = new \MovLib\Data\I18n();
-  }
-
   // Ensure any active session is destroyed.
-  $session->destroySession();
+  $session->destroy();
 
   // We have to ensure that the login page is going to render the form without any further validation, therefor we have
   // to reset the request method to GET because we don't know (and don't want to check) the current request method.

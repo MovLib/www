@@ -158,7 +158,6 @@ class I18n extends \MovLib\Data\Database {
    *   The desired locale, if no locale is passed the following procedure is executed:
    *   <ol>
    *     <li>Check if the server set a language code (access via subdomain)</li>
-   *     <li>Check if the user has a preferred language</li>
    *     <li>Check if the user has provided an <code>HTTP_ACCEPT_LANGUAGE</code> header</li>
    *     <li>Use default locale</li>
    *   </ol>
@@ -174,10 +173,6 @@ class I18n extends \MovLib\Data\Database {
     if (!$locale) {
       // Use language code from subdomain if present.
       (isset($_SERVER["LANGUAGE_CODE"]) && ($this->locale = $GLOBALS["movlib"]["locales"][$_SERVER["LANGUAGE_CODE"]]))
-      // Use the user's preferred language code if present (this is valid, otherwise it wouldn't be available to choose).
-      // @todo We should use the locale from the user and not only the language code if the user has set up a valid
-      //       language-country-combination (locale).
-      || (isset($session) && !empty($session->languageId) && ($this->locale = $GLOBALS["movlib"]["locales"][$this->getLanguages()[$session->languageId]["code"]]))
       // Use the best matching value from the user's submitted HTTP accept language header.
       || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($locale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && isset($GLOBALS["movlib"]["locales"]["{$locale[0]}{$locale[1]}"]) && ($this->locale = $locale));
     }

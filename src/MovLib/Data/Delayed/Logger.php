@@ -99,7 +99,7 @@ class Logger {
   /**
    * Log a simple message.
    *
-   * @see \MovLib\Utility\DelayedLogger::stack()
+   * @see \MovLib\Data\Delayed\Logger::stack()
    * @param string $message
    *   The message to log.
    * @param string $level
@@ -168,7 +168,7 @@ class Logger {
   /**
    * Log an exception.
    *
-   * @see \MovLib\Utility\DelayedLogger::stack()
+   * @see \MovLib\Data\Delayed\Logger::stack()
    * @param \Exception $exception
    *   The exception to log.
    * @param string $level

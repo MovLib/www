@@ -280,27 +280,32 @@ location ^~ <?= $r("/user") ?> {
     try_files $movlib_cache @user;
   }
 
-  location ~ ^<?= $r("/user/account-settings") ?>$ {
+  location = <?= $r("/user/account-settings") ?> {
     set $movlib_presenter "User\\AccountSettings";
     include sites/conf/fastcgi.conf;
   }
 
-  location ~ ^<?= $r("/user/notification-settings") ?>$ {
+  location = <?= $r("/user/notification-settings") ?> {
     set $movlib_presenter "User\\NotificationSettings";
     include sites/conf/fastcgi.conf;
   }
 
-  location ~ ^<?= $r("/user/email-settings") ?>$ {
+  location = <?= $r("/user/email-settings") ?> {
     set $movlib_presenter "User\\EmailSettings";
     include sites/conf/fastcgi.conf;
   }
 
-  location ~ ^<?= $r("/user/password-settings") ?>$ {
+  location = <?= $r("/user/sign-up") ?> {
     set $movlib_presenter "User\\PasswordSettings";
     include sites/conf/fastcgi.conf;
   }
 
-  location ~ ^<?= $r("/user/danger-zone-settings") ?>$ {
+  location = <?= $r("/user/password-settings") ?> {
+    set $movlib_presenter "User\\PasswordSettings";
+    include sites/conf/fastcgi.conf;
+  }
+
+  location = <?= $r("/user/danger-zone-settings") ?> {
     set $movlib_presenter "User\\DangerZoneSettings";
     include sites/conf/fastcgi.conf;
   }

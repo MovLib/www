@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Data\Delayed\Logger as DelayedLogger;
+use \MovLib\Data\Delayed\Logger;
 use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
 use \MovLib\View\ImageStyle\ResizeImageStyle;
 
@@ -179,7 +179,7 @@ class MoviePoster extends \MovLib\Data\AbstractImage {
         [ $movieId, $posterId ]
       );
       if (empty($result[0])) {
-        DelayedLogger::log("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", E_NOTICE);
+        Logger::log("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", E_NOTICE);
       }
       else {
         // Convenience

@@ -120,7 +120,7 @@ class Login extends \MovLib\Presentation\Page {
 
     // If the user requested to be signed out, do so.
     if ($session->isLoggedIn === true && $_SERVER["PATH_INFO"] == $routeLogout) {
-      $session->destroySession();
+      $session->destroy();
       $alert = new Alert($i18n->t("We hope to see you again soon."));
       $alert->severity = Alert::SEVERITY_SUCCESS;
       $alert->title = $i18n->t("You’ve been signed out successfully.");
@@ -164,7 +164,7 @@ class Login extends \MovLib\Presentation\Page {
       $this->user->verifyPassword($this->password->value);
 
       // If we were able to load the user and the password is valid, allow 'em to enter.
-      $session->startSession($this->user);
+      $session->start($this->user);
 
       // Ensure that the user know's that the log in succeded.
       $alert = new Alert($i18n->t("Login was successful, welcome back {0}!", [ $this->placeholder($this->user->name) ]));

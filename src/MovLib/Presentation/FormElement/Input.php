@@ -31,6 +31,7 @@ class Input extends \MovLib\Presentation\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
   /**
    * Global identifier to access this element.
    *
@@ -149,9 +150,6 @@ class Input extends \MovLib\Presentation\AbstractBase {
     if (!empty($_POST[$this->id])) {
       $this->attributes["value"] = $this->checkPlain($_POST[$this->id]);
     }
-    elseif (!empty($_GET[$this->id])) {
-      $this->attributes["value"] = $this->checkPlain($_GET[$this->id]);
-    }
     elseif (empty($this->attributes["value"]) && !empty($defaultValue)) {
       $this->attributes["value"] = $this->checkPlain($defaultValue);
     }
@@ -234,17 +232,12 @@ class Input extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Validate the user submitted data.
+   * The default input element has no validation at all!
    *
    * @return this
    */
-  public function validate($inputType) {
-    global $i18n;
-    $filtered = filter_input($inputType, $this->id);
-    if (preg_match("//u", $filtered) === false) {
-      throw new ValidatorException($i18n->t("One or more field contains illegal characters."));
-    }
-    $this->value = $filtered;
+  public function validate() {
+    $this->value = $_POST[$this->id];
     return $this;
   }
 

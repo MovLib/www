@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
- * Description of AbstractBase
+ * Allows a user to manage her or his notification settings.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,32 +28,34 @@ namespace MovLib\Presentation\User;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractUserPage extends \MovLib\Presentation\Page {
+class NotificationSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+  use \MovLib\Presentation\User\UserTrait;
 
   /**
-   * The user we are currently displaying.
+   * Instantiate new user notification settings presentation.
    *
-   * @var \MovLib\Data\User
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\Session $session
+   * @throws \MovLib\Exception\UnauthorizedException
    */
-  protected $user;
-
-  /**
-   * @inheritdoc
-   */
-  protected function init($title) {
-    $this->stylesheets[] = "modules/user.css";
-    return parent::init($title);
+  public function __construct() {
+    global $i18n, $session;
+    if ($session->isLoggedIn === false) {
+      throw new UnauthorizedException($i18n->t("You must be logged in to manage your account settings."));
+    }
+    $this->init($i18n->t("Notification Settings"));
   }
 
   /**
    * @inheritdoc
    */
-  protected function getBreadcrumbTrail() {
-    global $i18n, $session;
-    if ($session->isLoggedIn === true) {
-      return [[ $i18n->r("/users"), $i18n->t("Users"), [ "title" => $i18n->t("Have a look at our user statistics.") ]]];
-    }
-    return [[ $i18n->r("/user"),  $i18n->t("Profile"), [ "title" => $i18n->t("Go to your profile, get an account summary or manage your settings.") ]]];
+  protected function getPageContent() {
+    global $i18n;
+    $alert = new Alert($i18n->t("The notification system isn’t implemented yet."));
+    $alert->block = true;
+    $alert->title = $i18n->t("Check back later");
+    $alert->severity = Alert::SEVERITY_INFO;
+    return $alert;
   }
 
 }

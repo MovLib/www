@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Data\Delayed\Logger as DelayedLogger;
+use \MovLib\Data\Delayed\Logger;
 
 /**
  * Represents a single movie's image (e.g. lobby card).
@@ -158,7 +158,7 @@ class MovieImage extends \MovLib\Data\AbstractImage {
         [ $movieId, $imageId ]
       );
       if (empty($result)) {
-        DelayedLogger::log("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", E_NOTICE);
+        Logger::log("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", E_NOTICE);
       }
       else {
         $result["description"] = $result["description_localized"] ?: $result["description_en"];

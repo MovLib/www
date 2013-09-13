@@ -39,7 +39,7 @@ abstract class AbstractCommand extends Command {
 
 
   /**
-   * Symfony console message type <em>info</em>.
+   * Symfony console message type <i>info</i>.
    *
    * Info text will be displayed with a green foreground color.
    *
@@ -49,7 +49,7 @@ abstract class AbstractCommand extends Command {
   const MESSAGE_TYPE_INFO = "info";
 
   /**
-   * Symfony console message type <em>comment</em>.
+   * Symfony console message type <i>comment</i>.
    *
    * Info text will be displayed with a yellow foreground color.
    *
@@ -59,7 +59,7 @@ abstract class AbstractCommand extends Command {
   const MESSAGE_TYPE_COMMENT = "comment";
 
   /**
-   * Symfony console message type <em>question</em>.
+   * Symfony console message type <i>question</i>.
    *
    * Info text will be displayed with a black foreground color on a cyan background.
    *
@@ -69,7 +69,7 @@ abstract class AbstractCommand extends Command {
   const MESSAGE_TYPE_QUESTION = "question";
 
   /**
-   * Symfony console message type <em>error</em>.
+   * Symfony console message type <i>error</i>.
    *
    * Info text will be displayed with a white foreground color on a red background.
    *
@@ -153,6 +153,35 @@ abstract class AbstractCommand extends Command {
   function askConfirmation($question, $default = true) {
     $d = $default === true ? "y" : "n";
     return $this->getDialog()->askConfirmation($this->output, "<question>{$question}</question> [default: {$d}] ", $default);
+  }
+
+  /**
+   * Ask a question to the user, displaying all choice possibilities.
+   *
+   * @param string $text
+   *   The heading of the choice list.
+   * @param string $default [optional]
+   *   The default answer.
+   * @param array $choices [optional]
+   *   The available choices (also used for autocompletion) as numeric array.
+   * @param array $choiceExplanations [optional]
+   *   The explanations for the available choices as numeric array..
+   * @return string
+   *   The user's answer.
+   */
+  function askWithChoices($text, $default = null, array $choices = null, array $choiceExplanations = null) {
+    $this->write($text, self::MESSAGE_TYPE_COMMENT)->write("Possible choices are:", self::MESSAGE_TYPE_COMMENT);
+    if ($choices && $choiceExplanations){
+      $c = count($choices);
+      for ($i = 0; $i < $c; ++$i) {
+        $choiceExplanations[$i] = "{$choices[$i]}: {$choiceExplanations[$i]}";
+      }
+    }
+    else {
+      $choiceExplanations = $choices;
+    }
+    $this->write($choiceExplanations);
+    return $this->ask("Which one should it be?", $default, $choices);
   }
 
   /**
@@ -297,8 +326,9 @@ abstract class AbstractCommand extends Command {
    * @link http://symfony.com/doc/master/components/console/introduction.html#components-console-coloring
    * @param string|array $message
    *   The message that should be displayed to the user.
-   * @param string $type
-   *   The message type, one of the predefined Symfony console styles (see the class constants <var>MESSAGE_TYPE_*</code>).
+   * @param string $type [optional]
+   *   The message type, one of the predefined Symfony console styles (see the class constants <var>MESSAGE_TYPE_*</var>).
+   *   Defaults to <var>MESSAGE_TYPE_INFO</var>
    * @return this
    */
   protected final function write($message, $type = self::MESSAGE_TYPE_INFO) {
