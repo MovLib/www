@@ -52,7 +52,6 @@ class NotificationSettings extends \MovLib\Presentation\AbstractSecondaryNavigat
   protected function getPageContent() {
     global $i18n;
     $alert = new Alert($i18n->t("The notification system isn’t implemented yet."));
-    $alert->block = true;
     $alert->title = $i18n->t("Check back later");
     $alert->severity = Alert::SEVERITY_INFO;
     return $alert;

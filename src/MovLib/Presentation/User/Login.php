@@ -163,7 +163,6 @@ class Login extends \MovLib\Presentation\Page {
 
       // Ensure that the user know's that the log in succeded.
       $alert = new Alert($i18n->t("Login was successful."));
-      $alert->block = true;
       $alert->title = $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]);
       $alert->severity = Alert::SEVERITY_SUCCESS;
       $_SESSION["alerts"][] = $alert;

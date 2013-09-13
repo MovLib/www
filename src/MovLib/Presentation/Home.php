@@ -71,7 +71,6 @@ class Home extends \MovLib\Presentation\Page {
     global $i18n;
     $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."));
     $noscript->title = $i18n->t("JavaScript Disabled");
-    $noscript->block = true;
     return
       "<div class='{$this->id}-content' id='content' role='main'>" .
         "<div id='home-banner'>" .

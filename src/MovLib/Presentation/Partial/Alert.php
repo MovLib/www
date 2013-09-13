@@ -65,13 +65,6 @@ class Alert {
 
 
   /**
-   * Flag indicating if the alert message is using block or inline elements.
-   *
-   * @var boolean
-   */
-  public $block = false;
-
-  /**
    * The alert's message.
    *
    * @var string
@@ -119,8 +112,7 @@ class Alert {
    */
   public function __toString() {
     if ($this->title) {
-      $tag = $this->block === true ? "h4" : "b";
-      $this->title = "<{$tag} class='alert__title'>{$this->title}</{$tag}>";
+      $this->title = "<h4 class='alert__title'>{$this->title}</h4>";
     }
     return "<div class='alert{$this->severity}' role='alert'><div class='container'>{$this->title}{$this->message}</div></div>";
   }

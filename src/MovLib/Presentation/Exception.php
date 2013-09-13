@@ -53,7 +53,6 @@ class Exception extends \MovLib\Presentation\Page {
     }
 
     $error = new Alert($i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."));
-    $error->block = true;
     $error->title = $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered.");
     $error->severity = Alert::SEVERITY_ERROR;
     $this->alerts .= $error;
@@ -64,7 +63,6 @@ class Exception extends \MovLib\Presentation\Page {
         "<table class='stacktrace__table'>{$stacktrace}</table>" .
       "</div>"
     );
-    $stack->block = true;
     $stack->title = $i18n->t("Stacktrace");
     $stack->severity = Alert::SEVERITY_INFO;
     $this->alerts .= $stack;
