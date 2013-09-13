@@ -162,35 +162,38 @@ function delayed_register($class, $weight = 50, $method = "run") {
   $delayed[$weight][$class] = $method;
 }
 
+// Instantiate new session object and try to resume any existing session.
+$session = new \MovLib\Data\Session();
+
+// Instantiate global i18n object with the current display language.
+$i18n = new \MovLib\Data\I18n();
+
 try {
-  // Instantiate global i18n object with the current display language.
-  $i18n = new \MovLib\Data\I18n();
-
-  // Instantiate session for the client requesting the page. A real session will only be generated if we know this user.
-  // By default we don't start a session, nor do we send out any cookies to the client. We wait until the client is doing
-  // anything where we really need a session.
-  $session = new \MovLib\Data\Session();
-
   // Start the rendering process.
   $presenter = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+  $presentation = new $presenter();
+
+  $session->shutdown();
+
   // We have to call a method; using __toString() would not allow the rendering method to throw an exception!
-  echo (new $presenter())->getPresentation();
+  echo $presentation->getPresentation();
 }
 // A presentation can throw a redirect exception for different reasons. An error might have happended that needs the
 // user to be redirected to a different page, or an action was successfully completed and the user should go to a
 // different page to continue. No matter what, the execution of the presentation rendering process has to be terminated
-// right away and the redirect has to be executed. Of course any delayed methods should be executed as usual.
+// right away and the redirect has to be executed. Of course any delayed methods should be executed as usual. Throwing
+// an exception to redirect is the absolutely right way to handle this kind of action. The presentation couldn't comply
+// with it's promise to generate a page, additionally a redirect is producing a side effect and shouldn't be part of our
+// object oriented code.
 catch (\MovLib\Exception\RedirectException $e) {
-  $status = $e->getCode();
-  header("Location: {$e->getMessage()}", true, $status);
+  header("Location: {$e->route}", true, $e->status);
   $title = [ 301 => "Moved Permanently", 302 => "Moved Temporarily", 303 => "See Other" ];
   // @todo Do we really have to send this response ourself or is nginx handling this?
-  echo "<html><head><title>{$status} {$title[$status]}</title></head><body bgcolor=\"white\"><center><h1>{$status} {$title[$status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
+  echo "<html><head><title>{$e->status} {$title[$e->status]}</title></head><body bgcolor=\"white\"><center><h1>{$e->status} {$title[$e->status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
 }
-// If the request requires user authentication or there was a problem during initializing the session, return
-// appropriate HTTP headers and display the login page with an alert that tells the user that this request requires
-// authentication. This is the most outter scope were we can catch and construct this, not pretty, but effective and
-// easy to use for us developers.
+// A presentation can throw a unauthorized exception if the current page needs a valid signed in user. This is another
+// exception that has to be in our main application and can't reside in our object oriented code. The current process
+// has to be terminated right away, delayed methods have to executed and this kind of code has side effects.
 catch (\MovLib\Exception\UnauthorizedException $e) {
   // Ensure any active session is destroyed.
   $session->destroy();
@@ -220,13 +223,6 @@ echo "<small style='text-align:center'>time taken to render page: {$end}</small>
 
 // This makes sure that the output that was generated until this point will be returned to nginx for delivery.
 fastcgi_finish_request();
-
-// Ensure that the session gets written to our session database (encountered some odd situations where they weren't;
-// this seems to solve this, although I never found out what is really causing the problem, it apparently is tightly
-// bound to the above call to fastcgi_finish_request().
-if (session_status() === PHP_SESSION_ACTIVE) {
-  session_write_close();
-}
 
 // Execute each delayed run method after sending the generated output to the user.
 foreach ($delayed as $classes) {
