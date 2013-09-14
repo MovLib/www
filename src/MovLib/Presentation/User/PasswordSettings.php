@@ -20,6 +20,7 @@ namespace MovLib\Presentation\User;
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Data\User;
+use \MovLib\Exception\RedirectException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Form;
 use \MovLib\Presentation\FormElement\InputPassword;
@@ -63,13 +64,6 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
    */
   private $newPasswordConfirm;
 
-  /**
-   * Flag indicating if this page is viewed in the context of a new sign up.
-   *
-   * @var boolean
-   */
-  private $signUp;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -84,19 +78,11 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
   public function __construct() {
     global $i18n, $session;
 
-    // Determine if this is a new registration or if we are handling a password reset request.
-    $this->signUp = $_SERVER["PATH_INFO"] == $i18n->r("/user/sign-up");
+    $session
+      ->checkAuthorization($i18n->t("You need to sign in to change your password."))
+      ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
+    ;
 
-    // Check the last authentication time if we aren't handling a sign up. We call both auth-methods the session has to
-    // ensure that the error message we display is as accurate as possible; anything else could distract the user.
-    if ($this->signUp === false) {
-      $session
-        ->checkAuthorization($i18n->t("You need to sign in to change your password."))
-        ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
-      ;
-    }
-
-    // Start rendering the page.
     $this->init($i18n->t("Password Settings"));
 
     $this->newPassword = new InputPassword([
@@ -133,15 +119,11 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
    */
   protected function getPageContent() {
     global $i18n;
-    $info = null;
-    // We only generate this notice if we aren't currently handling a sign-up request. See constructor why!
-    if ($this->signUp === false) {
-      $info = new Alert("<p>{$i18n->t(
-        "Choose a strong password, which is easy to remember but still hard to crack. To help you, we generated a " .
-        "password from the most frequent words in American English:"
-      )}</p><p><code>{$this->randomPassword()}</code></p>");
-      $info->severity = Alert::SEVERITY_INFO;
-    }
+    $info = new Alert("<p>{$i18n->t(
+      "Choose a strong password, which is easy to remember but still hard to crack. To help you, we generated a " .
+      "password from the most frequent words in American English:"
+    )}</p><p><code>{$this->randomPassword()}</code></p>");
+    $info->severity = Alert::SEVERITY_INFO;
     return "{$info}{$this->form}";
   }
 
@@ -183,8 +165,34 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     return $this;
   }
 
+  /**
+   * Validate the submitted authentication token and update the user's password.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\Session $session
+   * @return this
+   */
   public function validateToken() {
-
+    global $i18n, $session;
+    $errors = null;
+    $this->user = new User(User::FROM_ID, $session->userId);
+    if (empty($_GET["token"]) || strlen($_GET["token"]) !== User::AUTHENTICATION_TOKEN_LENGTH) {
+      $errors[] = $i18n->t("The authentication token is invalid, please go back to the mail we sent you and copy the whole link.");
+    }
+    elseif (!($data = $this->user->getTemporaryPasswordChangeData($_GET["token"]))) {
+      $errors[] = $i18n->t("Your authentication token has expired, please fill out the form again.");
+    }
+    elseif ($data["id"] !== $this->user->id) {
+      throw new UnauthorizedException($i18n->t("The authentication token is invalid, please sign in again and request a new token to change your password."));
+    }
+    if ($this->checkErrors($errors) === false) {
+      $this->user->updatePassword($data["password"]);
+      $success = new Alert($i18n->t("Your password was successfully changed to {0}.", [ $this->placeholder($data["password"]) ]));
+      $success->title = $i18n->t("Password Changed Successfully");
+      $success->severity = Alert::SEVERITY_SUCCESS;
+      $this->alerts .= $success;
+    }
+    return $this;
   }
 
   /**
