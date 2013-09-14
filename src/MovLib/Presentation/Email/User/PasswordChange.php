@@ -18,16 +18,16 @@
 namespace MovLib\Presentation\Email\User;
 
 /**
- * This email template is used if a user requests an email change.
+ * This email template is used if a user requests a password change.
  *
- * @see \MovLib\Presentation\User\EmailSettings
+ * @see \MovLib\Presentation\User\PasswordSettings
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
+class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -52,20 +52,15 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   /**
-   * Instantiate new user email change email.
+   * Instantiate new user password change email.
    *
-   * @todo Should we send an email to the old address as well?
    * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\User $user
-   *   The user who requested an email change.
-   * @param string $newEmail
-   *   The already validated new email address. The email will be sent to this address. We cannot send the email to the
-   *   old email address, because people tend to loose their passwords and stuff, therefor it would be very difficult
-   *   for them to update their email address.
+   *   The user who requested the password change.
    */
-  public function __construct($user, $newEmail) {
+  public function __construct($user) {
     global $i18n;
-    parent::__construct($newEmail, $i18n->t("Requested Email Change"));
+    parent::__construct($user->email, $i18n->t("Requested Password Change"));
     $this->name = $user->name;
     $this->token = $user->authenticationToken;
   }
@@ -81,11 +76,11 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
     global $i18n;
     return
       "<p>{$i18n->t("Hi {0}!", [ $this->name ])}</p>" .
-      "<p>{$i18n->t("You (or someone else) requested to change your account’s email address.")} {$i18n->t("You may now confirm this action by {0}clicking this link{1}.", [
-        "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/email-settings")}?{$i18n->t("token")}={$this->token}'>",
+      "<p>{$i18n->t("You (or someone else) requested to change your account’s password.")} {$i18n->t("You may now confirm this action by {0}clicking this link{1}.", [
+        "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/password-settings")}?{$i18n->t("token")}={$this->token}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old email address.")}</p>" .
+      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old password.")}</p>" .
       "<p>{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
@@ -98,13 +93,14 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
     return <<<EOT
 {$i18n->t("Hi {0}!", [ $this->name ])}
 
-{$i18n->t("You (or someone else) requested to change your account’s email address.")} {$i18n->t("You may now confirm this action by clicking the following link or copying and pasting it to your browser:")}
+{$i18n->t("You (or someone else) requested to change your account’s password.")} {$i18n->t("You may now confirm this action by clicking the following link or copying and pasting it to your browser:")}
 
 {$_SERVER["SERVER"]}{$i18n->r("/user/email-settings")}?{$i18n->t("token")}={$this->token}
 
-{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old email address.")}
+{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old password.")}
 
 {$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }
+
 }

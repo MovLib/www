@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Email;
 
 /**
- * Template for emails that are sent to the MovLib developers.
+ * Default generic implementation of email.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,21 +26,21 @@ namespace MovLib\Presentation\Email;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovDevEmail extends \MovLib\Presentation\Email\AbstractEmail {
+class Email extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The message in HTML format.
+   * HTML body of this generic email.
    *
    * @var string
    */
   public $html;
 
   /**
-   * The message in plain text format.
+   * Plain text body of this generic email.
    *
    * @var string
    */
@@ -51,34 +51,26 @@ class MovDevEmail extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   /**
-   * Instantiate new email that will be sent to all devs.
-   *
-   * @param string $subject
-   *   The text to appear in the email subject.
-   * @param string $text
-   *   The message in plain text format.
-   * @param string $html
-   *   The message in HTML format.
+   * Instantiate new generic email.
    */
-  public function __construct($subject, $text, $html) {
-    $this->recipient = $GLOBALS["movlib"]["developer_mailinglist"];
-    $this->subject = $subject;
-    $this->text = $text;
+  public function __construct($recipient, $subject, $html, $text) {
+    parent::__construct($recipient, $subject);
     $this->html = $html;
+    $this->text = $text;
   }
 
   /**
    * @inheritdoc
    */
   protected function getHtmlBody() {
-    return "<p>Hi devs!</p>{$this->html}";
+    return $this->html;
   }
 
   /**
    * @inheritdoc
    */
   protected function getPlainBody() {
-    return "Hi devs!\n\n{$this->text}";
+    return $this->text;
   }
 
 }
