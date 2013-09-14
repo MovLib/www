@@ -188,28 +188,27 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected function getFooter() {
     global $i18n;
     return
-      "<footer id='footer'>" .
-        "<div class='container'>" .
-          "<div class='row footer-row-copyright'>" .
-            "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
-              "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
-              [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
-            )}<br>" .
-            "{$i18n->t(
-              "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
-            )}<br>" .
-            $i18n->t(
-              "By using this site, you agree to the {0} and {1}.",
-              [ $this->a($i18n->r("/terms-of-use"), $i18n->t("Terms of Use")), $this->a($i18n->r("/privacy-policy"), $i18n->t("Privacy Policy")) ],
-              [ "comment" => "<code>{0}</code> is <em>Terms of Use</em> and <code>{1}</tt> is <em>Privacy Policy</em>." ]
-            ) .
-          "</div>" .
-          "<div class='row footer-row-logos'>" .
-            "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
-            "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/github.svg' width='64'></a>" .
-          "</div>" .
+      "<footer id='footer'><div class='container'>" .
+        // .footer-row-copyright
+        "<div class='row footer-row-copyright'>" .
+          "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
+            "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
+            [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
+          )}<br>{$i18n->t(
+            "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
+          )}<br>{$i18n->t(
+            "By using this site, you agree to the {0}Terms of Use{1} and {2}Privacy Policy{3}.",
+            [ "<a href='{$i18n->r("/terms-of-use")}'>", "</a>", "<a href='{$i18n->r("/privacy-policy")}'>", "</a>" ]
+          )}" .
         "</div>" .
-      "</footer>"
+        // .footer-row-copyright
+        // .footer-row-logos
+        "<div class='row footer-row-logos'>" .
+          "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
+          "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/github.svg' width='64'></a>" .
+        "</div>" .
+        // .footer-row-logos
+      "</div></footer>"
 //      "<script id='js-settings' type='application/json'>" . json_encode($this->scripts) . "</script>"
       // @todo Minify and combine!
 //      "<script src='{$GLOBALS["movlib"]["static_domain"]}js/jquery.js'></script>" .
@@ -279,10 +278,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
         "</div>" . // #mega-nav-container
         "<div class='container'>" .
           "<div class='row'>" .
-            "<a class='span' href='/' id='header__logo' title='{$i18n->t("Go back to the home page.")}'>" .
-              "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='42' id='logo' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib" .
-            "</a>" .
-            $mainNavigation .
+            "{$this->getHeaderLogo()}{$mainNavigation}" .
             // Render the header search, this is not an instance of form because it would make things complicated.
             "<form action='{$i18n->t("/search")}' class='span' id='header__search-form' method='post' role='search'>" .
               "<input type='hidden' name='form_id' value='header-search'>" .
@@ -310,10 +306,9 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected function getHeaderLogo() {
     global $i18n;
     return
-      "<a class='inline' href='/' id='logo' title='{$i18n->t("Go back to the home page.")}'>{$i18n->t(
-        "{0} {1}the {2}free{3} movie library.{4}",
-        [ "MovLib", "<small>", "<em>", "</em>", "</small>" ]
-      )}</a>"
+      "<a class='span' href='/' id='header__logo' title='{$i18n->t("Go back to the home page.")}'>" .
+        "<img alt='{$i18n->t("{0}, the free movie library.", [ "MovLib" ])}' height='42' id='logo' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib" .
+      "</a>"
     ;
   }
 
@@ -343,14 +338,10 @@ class Page extends \MovLib\Presentation\AbstractPage {
   /**
    * Get the wrapped content, including heading.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The wrapped content, including heading.
    */
   protected function getWrappedContent() {
-    global $i18n;
-    $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."));
-    $noscript->title = $i18n->t("JavaScript Disabled");
     return
       "<div class='{$this->id}-content' id='content' role='main'>" .
         "<div id='content__header'>" .
@@ -359,7 +350,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
             "<h1 class='title' id='content__header__title'>{$this->title}</h1>" .
             $this->headingAfter .
           "</div>" .
-          "<div id='alerts'><noscript>{$noscript}</noscript>{$this->alerts}</div>" .
+          "<div id='alerts'>{$this->alerts}</div>" .
         "</div>" .
         $this->getContent() .
       "</div>"
@@ -367,9 +358,20 @@ class Page extends \MovLib\Presentation\AbstractPage {
   }
 
   /**
-   * @inheritdoc
+   * Initialize this presentation.
+   *
+   * The reference implementation extends the abstract class by creating the noscript alert that advises any user with
+   * disabled JavaScript to activate it, additionally any alerts saved in the user's session will be set as well.
+   *
+   * @param string $title
+   *   The already translated title of this page.
+   * @return this
    */
   protected function init($title) {
+    global $i18n;
+    $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."));
+    $noscript->title = $i18n->t("JavaScript Disabled");
+    $this->alerts .= "<noscript>{$noscript}</noscript>";
     if (isset($_SESSION["alerts"])) {
       $c = count($_SESSION["alerts"]);
       for ($i = 0; $i < $c; ++$i) {

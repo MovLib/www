@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
  * The global home page for anonymous visitors.
  *
@@ -53,7 +51,11 @@ class Home extends \MovLib\Presentation\Page {
    */
   protected function getHeaderLogo() {
     global $i18n;
-    return "<h1 id='logo' class='inline'>{$i18n->t("{0} {1}the {2}free{3} movie library.{4}", [ "MovLib", "<small>", "<em>", "</em>", "</small>" ])}</h1>";
+    return
+      "<h1 class='span' id='header__logo'>" .
+        "<img alt='{$i18n->t("{0}, the free movie library.", [ "MovLib" ])}' height='42' id='logo' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib" .
+      "</h1>"
+    ;
   }
 
   /**
@@ -69,14 +71,12 @@ class Home extends \MovLib\Presentation\Page {
    */
   protected function getWrappedContent() {
     global $i18n;
-    $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."));
-    $noscript->title = $i18n->t("JavaScript Disabled");
     return
       "<div class='{$this->id}-content' id='content' role='main'>" .
         "<div id='home-banner'>" .
           "<div class='container lead hero'>{$i18n->t("Do you like movies?<br>Great, so do we!")}</div>" .
         "</div>" .
-        "<div id='alerts'><noscript>{$noscript}</noscript>{$this->alerts}</div>" .
+        "<div id='alerts'>{$this->alerts}</div>" .
         "<div class='container container--home'>" .
           "<div class='row'>" .
             "<article class='span span--4 span--home'>" .
