@@ -271,7 +271,7 @@ class I18n extends \MovLib\Data\Database {
    *   The unique ID of the current language.
    */
   public function getLanguageId() {
-    return $this->getLanguages(self::KEY_CODE)[$this->languageCode]["id"];
+    return $this->select("SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = ? LIMIT 1", "s", [ $this->languageCode ])[0]["language_id"];
   }
 
   /**
@@ -302,7 +302,7 @@ class I18n extends \MovLib\Data\Database {
         self::KEY_NAME,
         self::KEY_ID
       );
-      foreach ($this->selectAll($query) as $l) {
+      foreach ($this->select($query) as $l) {
         $l = [
           self::KEY_ID   => $l[self::KEY_ID],
           self::KEY_CODE => $l[self::KEY_CODE],
@@ -388,7 +388,7 @@ class I18n extends \MovLib\Data\Database {
         self::KEY_NAME,
         self::KEY_ID
       );
-      $result = $this->selectAll($query);
+      $result = $this->select($query);
       foreach ($result as $c) {
         $c = [
           self::KEY_ID   => $c[self::KEY_ID],

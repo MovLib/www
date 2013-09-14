@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\User;
 
 use \MovLib\Data\Delayed\Mailer;
-use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Data\User;
 use \MovLib\Exception\UnauthorizedException;
 use \MovLib\Presentation\Email\User\EmailChange;
@@ -155,8 +154,6 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     }
 
     if ($this->checkErrors($errors) === false) {
-      $this->user->setAuthenticationToken();
-      DelayedMethodCalls::stack($this->user, "prepareEmailChange", [ $this->email->value ]);
       Mailer::stack(new EmailChange($this->user, $this->email->value));
 
       // The request has been accepted, but further action is required to complete it.
@@ -186,24 +183,10 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    */
   private function validateToken() {
     global $i18n, $session;
-    $errors = null;
-
-    // Validate the token before attempting to load associated data from the database. We don't use the Validator method
-    // length at this point, because the string only consists of ASCII characters and we don't want a try-catch-block.
-    if (empty($_GET["token"]) || strlen($_GET["token"]) !== User::AUTHENTICATION_TOKEN_LENGTH) {
-      $errors[] = $i18n->t("The authentication token is invalid, please go back to the mail we sent you and copy the whole link.");
-    }
-    // The token seems valid, try to load associated data from the temporary table.
-    elseif (!($data = $this->user->getTemporaryEmailChangeData($_GET["token"]))) {
-      $errors[] = $i18n->t("Your authentication token has expired, please fill out the form again.");
-    }
-    // Data was loaded successfully, compare the stored ID with the current user's ID. This is a really odd situation
-    // we could encounter here. How was this user able to snatch the token from the other user? What should we do?
-    // Might this be a hash collision (which is highly unlikely)?
-    elseif ($data["id"] !== $session->userId) {
+    $data = $this->user->validateAuthenticationToken($errors, $this->id);
+    if ($data && $data["id"] !== $session->userId) {
       throw new UnauthorizedException($i18n->t("The authentication token is invalid, please sign in again and request a new token to change your email address."));
     }
-
     if ($this->checkErrors($errors) === false) {
       $this->user->updateEmail($data["email"]);
       $success = new Alert($i18n->t("Your email address was successfully changed to {0}.", [ $this->placeholder($this->user->email) ]));

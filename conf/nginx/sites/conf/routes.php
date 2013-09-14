@@ -295,11 +295,6 @@ location ^~ <?= $r("/user") ?> {
     include sites/conf/fastcgi.conf;
   }
 
-  location = <?= $r("/user/sign-up") ?> {
-    set $movlib_presenter "User\\PasswordSettings";
-    include sites/conf/fastcgi.conf;
-  }
-
   location = <?= $r("/user/password-settings") ?> {
     set $movlib_presenter "User\\PasswordSettings";
     include sites/conf/fastcgi.conf;

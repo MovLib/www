@@ -34,18 +34,11 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   /**
-   * The user's name.
+   * The user's who requested the email change.
    *
-   * @var string
+   * @var \MovLib\Data\User
    */
-  private $name;
-
-  /**
-   * The user's authentication token.
-   *
-   * @var string
-   */
-  private $token;
+  private $user;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -63,11 +56,10 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
    *   old email address, because people tend to loose their passwords and stuff, therefor it would be very difficult
    *   for them to update their email address.
    */
-  public function __construct($user, $newEmail) {
+  public function __construct(&$user, $newEmail) {
     global $i18n;
     parent::__construct($newEmail, $i18n->t("Requested Email Change"));
-    $this->name = $user->name;
-    $this->token = $user->authenticationToken;
+    $this->user = $user;
   }
 
 
@@ -75,14 +67,24 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   /**
+   * Initialize email properties.
+   *
+   * @return this
+   */
+  public function init() {
+    $this->user->setAuthenticationToken()->prepareTemporaryData("ds", [ "id", "email" ], [ $this->user->id, $this->recipient ]);
+    return $this;
+  }
+
+  /**
    * @inheritdoc
    */
   protected function getHtmlBody() {
     global $i18n;
     return
-      "<p>{$i18n->t("Hi {0}!", [ $this->name ])}</p>" .
+      "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
       "<p>{$i18n->t("You (or someone else) requested to change your account’s email address.")} {$i18n->t("You may now confirm this action by {0}clicking this link{1}.", [
-        "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/email-settings")}?{$i18n->t("token")}={$this->token}'>",
+        "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/email-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}'>",
         "</a>"
       ])}</p>" .
       "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old email address.")}</p>" .
@@ -96,11 +98,11 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
   protected function getPlainBody() {
     global $i18n;
     return <<<EOT
-{$i18n->t("Hi {0}!", [ $this->name ])}
+{$i18n->t("Hi {0}!", [ $this->user->name ])}
 
 {$i18n->t("You (or someone else) requested to change your account’s email address.")} {$i18n->t("You may now confirm this action by clicking the following link or copying and pasting it to your browser:")}
 
-{$_SERVER["SERVER"]}{$i18n->r("/user/email-settings")}?{$i18n->t("token")}={$this->token}
+{$_SERVER["SERVER"]}{$i18n->r("/user/email-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}
 
 {$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old email address.")}
 

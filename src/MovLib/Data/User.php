@@ -445,58 +445,6 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
-   * Select data previously inserted and delete it if available.
-   *
-   * @param string $hash
-   *   The user submitted hash to identify the email change request.
-   * @return null|array
-   *   <code>NULL</code> if no record was found. Otherwise an associative array with the form:
-   *   following keys:
-   *   <ul>
-   *     <li><code>"id"</code> is the user's unique ID</li>
-   *     <li><code>"email"</code> is the user's desired and valid new email address</li>
-   *   </ul>
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getTemporaryEmailChangeData($hash) {
-    return $this->getTemporaryData($hash, [ "id" => "UNSIGNED", "email" => "BINARY" ]);
-  }
-
-  /**
-   * Select data previously inserted and delete it if available.
-   *
-   * @param string $hash
-   *   The user submitted hash to identify the password change request.
-   * @return null|array
-   *   <code>NULL</code> if no record was found. Otherwise an associative array with the form:
-   *   <ul>
-   *     <li><code>"id"</code> is the user's unique ID</li>
-   *     <li><code>"password"</code> is the unhashed new password</li>
-   *   </ul>
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getTemporaryPasswordChangeData($hash) {
-    return $this->getTemporaryData($hash, [ "id" => "UNSIGNED", "password" => "BINARY" ]);
-  }
-
-  /**
-   * Select data previously inserted and delete it if available.
-   *
-   * @param string $hash
-   *   The user submitted hash to identify the reset password request.
-   * @return null|array
-   *   <code>NULL</code> if no record was found. Otherwise an associative array with the form:
-   *   <ul>
-   *     <li><code>"name"</code> is the user's desired and valid name</li>
-   *     <li><code>"email"</code> is the user's email address</li>
-   *   </ul>
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getTemporaryRegistrationData($hash) {
-    return $this->getTemporaryData($hash, [ "name" => "BINARY", "email" => "BINARY" ]);
-  }
-
-  /**
    * Helper method to insert data into the temporary database table in a consistent format.
    *
    * @param string $types
@@ -508,7 +456,7 @@ class User extends \MovLib\Data\AbstractImage {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  private function prepareTemporaryData($types, array $dynamicColumns, array $params) {
+  public function prepareTemporaryData($types, array $dynamicColumns, array $params) {
     $columns = null;
     $c = count($dynamicColumns);
     for ($i = 0; $i < $c; ++$i) {
@@ -522,46 +470,6 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
-   * Prepare email change data for existing user account.
-   *
-   * This method must be public for delayed execution.
-   *
-   * @param string $newEmail
-   *   The user's new email address.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function prepareEmailChange($newEmail) {
-    return $this->prepareTemporaryData("ds", [ "id", "email" ], [ $this->id, $newEmail ]);
-  }
-
-  /**
-   * Prepare password change data for existing user account.
-   *
-   * This method must be public for delayed execution.
-   *
-   * @param string $rawPassword
-   *   The new unhashed password.
-   * @return string
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function preparePasswordChange($rawPassword) {
-    return $this->prepareTemporaryData("ds", [ "id", "password" ], [ $this->id, $rawPassword ]);
-  }
-
-  /**
-   * Prepare registration data for new user account.
-   *
-   * This method must be public for delayed execution.
-   *
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function prepareRegistration() {
-    return $this->prepareTemporaryData("ss", [ "name", "email" ], [ $this->name, $this->email ]);
-  }
-
-  /**
    * Prepare reset password data for existing user account.
    *
    * This method must be public for delayed execution.
@@ -571,6 +479,28 @@ class User extends \MovLib\Data\AbstractImage {
    */
   public function prepareResetPassword() {
     return $this->prepareTemporaryData("s", [ "email" ], [ $this->email ]);
+  }
+
+  /**
+   * Get random password.
+   *
+   * Passwords are generated with <i>pwgen</i> and much like the ones KeePass generates by default. Definitely not easy
+   * to remember and not pronouncable if you ask me (unlike the man page promises). The following options (in that order)
+   * are used to generate the passwords:
+   * <ul>
+   *   <li><code>"-c"</code> include at least one capital letter</li>
+   *   <li><code>"-n"</code> include at least one number</li>
+   *   <li><code>"-B"</code> don't include ambiguous characters</li>
+   *   <li><code>"-v"</code> don't include any vowels (avoid accidental nasty words)</li>
+   *   <li><code>20</code> the final length</li>
+   *   <li><code>1</code> return a single password</li>
+   * </ul>
+   *
+   * @return string
+   *   The random password.
+   */
+  public static function getRandomPassword() {
+    return shell_exec("pwgen -cnBv 20 1");
   }
 
   /**
@@ -604,13 +534,13 @@ class User extends \MovLib\Data\AbstractImage {
     $this->deleted    = false;
     $this->timezone   = ini_get("date.timezone");
     $this->query(
-      "INSERT INTO `users` (`language_id`, `name`, `email`, `password`, `created`, `login`, `timezone`, `init`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, '')",
-      "dsssss",
-      [ $this->languageId, $this->name, $this->email, $password, $this->timezone, $this->email ],
+      "INSERT INTO `users` (`language_id`, `name`, `email`, `password`, `created`, `login`, `timezone`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, '')",
+      "dssss",
+      [ $this->languageId, $this->name, $this->email, $password, $this->timezone ],
       false
     );
     $this->id = $this->stmt->insert_id;
-    return $this->close();
+    return $this;
   }
 
   /**
@@ -671,6 +601,48 @@ class User extends \MovLib\Data\AbstractImage {
     $password = password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
     $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $password, $this->id ]);
     return $this;
+  }
+
+  /**
+   * Helper method to validate a user submitted authentication token and retrieve the associated data from the temporary
+   * database table.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param null $errors
+   *   The errors variable used to collect validation error messages.
+   * @param string $type
+   *   The type of authentication token to validate, simply pass the <var>AbstractPage::$id</var>.
+   * @return null|array
+   *   <code>NULL</code> is returned if no data could be retrieved from the database, otherwise an associative array
+   *   with the data from the temporary database table. Please check implementation to check the anatomy of the returned
+   *   array.
+   */
+  public function validateAuthenticationToken(&$errors, $type) {
+    global $i18n;
+    if (empty($_GET["token"]) || strlen($_GET["token"]) !== self::AUTHENTICATION_TOKEN_LENGTH) {
+      $errors[] = $i18n->t("The authentication token is invalid, please go back to the mail we sent you and copy the whole link.");
+    }
+    else {
+      switch ($type) {
+        case "user-emailsettings":
+          $data = $this->getTemporaryData($_GET["token"], [ "id" => "UNSIGNED", "email" => "BINARY" ]);
+          break;
+
+        case "user-passwordsettings":
+          $data = $this->getTemporaryData($_GET["token"], [ "id" => "UNSIGNED", "password" => "BINARY" ]);
+          break;
+
+        case "user-registration":
+          $data = $this->getTemporaryData($_GET["token"], [ "name" => "BINARY", "email" => "BINARY" ]);
+          break;
+      }
+      if (!$data) {
+        $errors[] = $i18n->t("Your authentication token has expired, please fill out the form again.");
+      }
+      else {
+        return $data;
+      }
+    }
   }
 
 }

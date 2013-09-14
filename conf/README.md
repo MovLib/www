@@ -16,6 +16,7 @@ Things one might want to configure as well (to be extended):
 ** libmemcached
 ** igbinary
 ** ImageMagick
+** pwgen
 
 ## Installing ICU
 ```

@@ -18,10 +18,10 @@
 namespace MovLib\Presentation\User;
 
 use \MovLib\Data\Delayed\Mailer;
-use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Data\User;
 use \MovLib\Exception\RedirectException;
 use \MovLib\Presentation\Email\User\Registration as RegistrationEmail;
+use \MovLib\Presentation\Email\User\RegistrationEmailExists;
 use \MovLib\Presentation\Form;
 use \MovLib\Presentation\FormElement\Input;
 use \MovLib\Presentation\FormElement\InputEmail;
@@ -115,6 +115,10 @@ class Registration extends \MovLib\Presentation\Page {
       "title" => $i18n->t("Click here to sign up after you filled out all fields"),
       "value" => $i18n->t("Sign Up"),
     ]);
+
+    if (isset($_GET["token"])) {
+      $this->validateToken();
+    }
   }
 
   /**
@@ -208,18 +212,57 @@ class Registration extends \MovLib\Presentation\Page {
       else {
         $user->name = $this->username->value;
         $user->email = $this->email->value;
-        $user->setAuthenticationToken();
-        DelayedMethodCalls::stack($user, "prepareRegistration");
         Mailer::stack(new RegistrationEmail($user));
       }
 
       // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
       $this->accepted = true;
 
-      $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($user->email)] ));
+      $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value)] ));
       $success->title = $i18n->t("Registration Successful");
       $success->severity = Alert::SEVERITY_INFO;
       $this->alerts .= $success;
+    }
+
+    return $this;
+  }
+
+  /**
+   * Validate the submitted authentication token, register, sign in and redirect to password settings.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\Session $session
+   * @return this
+   */
+  public function validateToken() {
+    global $i18n, $session;
+    $errors = null;
+    $user = new User();
+    $data = $user->validateAuthenticationToken($errors, $this->id);
+
+    if (!empty($data)) {
+      $this->username->attributes["value"] = $data["name"];
+      $this->email->attributes["value"] = $data["email"];
+
+      if ($user->checkName($data["name"]) === true) {
+        $this->username->invalid();
+        $errors[] = $i18n->t("Unfortunately in the meantime someone took your desired username {0}, please choose another one.", [ $this->placeholder($data["name"]) ]);
+      }
+
+      if ($user->checkEmail($data["email"]) === true) {
+        $this->email->invalid();
+        $errors[] = $i18n->t("Seems like you already signed up with this email address, did you {0}forget your password?{1}", [
+          "<a href='{$i18n->r("/user/reset-password")}'>", "</a>"
+        ]);
+      }
+    }
+
+    if ($this->checkErrors($errors) === false) {
+      $rawPassword = User::getRandomPassword();
+      $user->register($data["name"], $data["email"], $rawPassword);
+      $session->authenticate($data["email"], $rawPassword);
+      $_SESSION["password"] = $rawPassword;
+      throw new RedirectException($i18n->r("/user/password-settings"), 302);
     }
 
     return $this;

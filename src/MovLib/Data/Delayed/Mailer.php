@@ -61,6 +61,9 @@ class Mailer {
   public function send(AbstractEmail $mail) {
     global $i18n;
     $messageId = uniqid("movlib");
+    if (method_exists($mail, "init")) {
+      $mail->init();
+    }
     mail(
       $mail->recipient,
       mb_encode_mimeheader($mail->subject),

@@ -28,12 +28,20 @@ namespace MovLib\Presentation\Email\User;
  */
 class Registration extends \MovLib\Presentation\Email\AbstractEmail {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The new user.
    *
    * @var \MovLib\Data\User
    */
   private $user;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Create registration email for activation of account.
@@ -48,6 +56,20 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
     $this->user = $user;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Initialize email properties.
+   *
+   * @return this
+   */
+  public function init() {
+    $this->user->setAuthenticationToken()->prepareTemporaryData("ss", [ "name", "email" ], [ $this->user->name, $this->user->email ]);
+    return $this;
+  }
+
   /**
    * @inheritdoc
    */
@@ -55,11 +77,12 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
     global $i18n;
     return
       "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
-      "<p>{$i18n->t("Thank you for registering at MovLib. You may now sign in by {0}clicking this link{1}.", [
-        "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/sign-up")}?{$i18n->t("token")}={$this->user->authenticationToken}'>",
+      "<p>{$i18n->t("Thank you for registering at {0}. You may now sign in by {1}clicking this link{2}.", [
+        "MovLib",
+        "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/registration")}?{$i18n->t("token")}={$this->user->authenticationToken}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once within the next 24 hours and will lead you to a page where you can set your secret password.")}</p>" .
+      "<p>{$i18n->t("This link can only be used once within the next 24 hours and will lead you to a page where you can view (and change) your secret password.")}</p>" .
       "<p>{$i18n->t("After setting your password, you will be able to sign in at MovLib in the future using:")}</p>" .
       "<table>" .
         "<tr><td>{$i18n->t("Email Address")}:</td><td>{$this->recipient}</td><tr>" .
@@ -76,11 +99,11 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
     return <<<EOT
 {$i18n->t("Hi {0}!", [ $this->user->name ])}
 
-{$i18n->t("Thank your for registering at MovLib. You may now sign in by clicking the following link or copying and pasting it to your browser:")}
+{$i18n->t("Thank your for registering at {0}. You may now sign in by clicking the following link or copying and pasting it to your browser:", [ "MovLib" ])}
 
-{$_SERVER["SERVER"]}{$i18n->r("/user/sign-up")}?{$i18n->t("token")}={$this->user->authenticationToken}
+{$_SERVER["SERVER"]}{$i18n->r("/user/registration")}?{$i18n->t("token")}={$this->user->authenticationToken}
 
-{$i18n->t("This link can only be used once within the next 24 hours and will lead you to a page where you can set your secret password.")}
+{$i18n->t("This link can only be used once within the next 24 hours and will lead you to a page where you can view (and change) your secret password.")}
 
 {$i18n->t("After setting your password, you will be able to sign in at MovLib in the future using:")}
 {$i18n->t("Email Address")}:  '{$i18n->t("Your Email Address")}'
