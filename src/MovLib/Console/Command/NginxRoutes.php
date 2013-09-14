@@ -71,6 +71,7 @@ class NginxRoutes extends AbstractCommand {
     /**
      * This closure will be used within our routes script to translate the strings.
      *
+     * @global \MovLib\Data\I18n $i18n
      * @param string $route
      *   The route to translate.
      * @param null|array $args [optional]
@@ -78,16 +79,18 @@ class NginxRoutes extends AbstractCommand {
      * @return string
      *   The translated route.
      */
-    $r = function ($route, array $args = null) use ($i18n) {
-      // Formate message fourth parameter is by reference, therefor we have to introduce a variable.
-      $options = [ "language_code" => $GLOBALS["movcli"]["language_code"] ];
-      // DO NOT call $i18n->r() in here, it would return full routes rather than a simple translation!
-      return $i18n->formatMessage("route", $route, $args, $options);
+    $r = function ($route, array $args = null) {
+      global $i18n;
+      return $i18n->insertRoute($route)->r($route, $args);
     };
+
+    // Drop all routes from this server.
+    // @todo Translations have to be fetched from the localize server!
+    $i18n->query("TRUNCATE `routes`");
 
     // Go through all supported languages and generate the routes.
     foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
-      $GLOBALS["movcli"]["language_code"] = $languageCode;
+      $i18n->languageCode = $languageCode;
 
       // We need output buffering to catch the output of the following require call.
       if (ob_start() === false) {
