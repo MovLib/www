@@ -31,6 +31,10 @@
   width: 940px;
 }
 
+.container .container {
+  width: auto;
+}
+
 .row {
   margin-left: -20px;
 }

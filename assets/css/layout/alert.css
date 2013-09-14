@@ -31,15 +31,15 @@
   padding: 8px 35px 8px 14px;
 }
 
-#alert .alert {
-  padding: 14px 0;
+#alerts .alert {
+  padding: 20px 0;
 }
 
-.alert > p:first-of-type {
+.alert p:first-of-type {
   margin-top: 0;
 }
 
-.alert > p:last-child {
+.alert p:last-of-type {
   margin-bottom: 0;
 }
 
