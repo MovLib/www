@@ -136,11 +136,12 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
   protected function getPageContent() {
     global $i18n;
     $info = null;
-    if (empty($this->alerts)) {
-      $info = new Alert("<p>{$i18n->t(
-        "Choose a strong password, which is easy to remember but still hard to crack. To help you, we generated a " .
-        "password from the most frequent words in American English:"
-      )}</p><p><code>{$this->randomPassword()}</code></p>");
+    if (!isset($_SESSION["password"])) {
+      $randomPassword = User::getRandomPassword();
+      $info = new Alert(
+        "<p>{$i18n->t("Choose a strong password to secure your account. To help you, we generated a password for you:")}</p>" .
+        "<p><code>{$randomPassword}</code></p>"
+      );
       $info->severity = Alert::SEVERITY_INFO;
     }
     return "{$info}{$this->form}";
