@@ -49,10 +49,27 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   protected function getPageContent() {
     global $i18n, $session;
+    ob_start();
+    var_dump($this->user);
+    $var[] = ob_get_clean();
+    ob_start();
+    var_dump($session);
+    $var[] = ob_get_clean();
+    ob_start();
+    var_dump($GLOBALS);
+    $var[] = ob_get_clean();
+    for ($i = 0; $i < 3; ++$i) {
+      $var[$i] = highlight_string("<?php\n\n{$var[$i]}\n?>", true);
+      $var[$i] = str_replace(
+        [ "<code>", "</code>" ],
+        [ "<pre style='whitespace:normal'>", "</pre>" ],
+        $var[$i]
+      );
+    }
     return
       "<h2>{$i18n->t("Your Account Summary")}</h2>" .
       "<div class='row'>" .
-        "<dl class='span span--7'>" .
+        "<dl class='dl--horizontal span span--7'>" .
           "<dt>{$i18n->t("Username")}</dt><dd>{$this->user->name}</dd>" .
           "<dt>{$i18n->t("User ID")}</dt><dd>{$this->user->id}</dd>" .
           "<dt>{$i18n->t("Edits")}</dt><dd>{$this->user->edits}</dd>" .
@@ -68,14 +85,9 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
           ]) .
         "</div>" .
       "</div>" .
-      "<h2>\$session</h2>" .
-      "<pre>" . print_r($this->user, true) . "</pre>" .
-      "<h2>\$session</h2>" .
-      "<pre>" . print_r($session, true) . "</pre>" .
-      "<h2>\$_SESSION</h2>" .
-      "<pre>" . print_r($_SESSION, true) . "</pre>" .
-      "<h2>\$_SERVER</h2>" .
-      "<pre>" . print_r($_SERVER, true) . "</pre>"
+      "<h2>User</h2>{$var[0]}" .
+      "<h2>Session</h2>{$var[1]}" .
+      "<h2>\$GLOBALS</h2>{$var[2]}"
     ;
   }
 
