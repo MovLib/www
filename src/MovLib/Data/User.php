@@ -408,7 +408,8 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Data\DatabaseException
    */
   public function getLanguageCode() {
-    return $this->select("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", $this->languageId)[0]["iso_alpha-2"];
+    // All fields are mandatory and if missing something is terribly wrong, therefor we can access the result directly.
+    return $this->select("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", [ $this->languageId ])[0]["iso_alpha-2"];
   }
 
   /**
