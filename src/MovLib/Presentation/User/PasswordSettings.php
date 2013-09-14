@@ -20,7 +20,6 @@ namespace MovLib\Presentation\User;
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Data\User;
-use \MovLib\Exception\RedirectException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Form;
 use \MovLib\Presentation\FormElement\InputPassword;
