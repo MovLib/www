@@ -200,8 +200,15 @@ class Session extends \MovLib\Data\Database {
       throw new SessionException("Invalid password for user with email {$email}");
     }
 
-    // Start, initialize, and insert (to persistent session storage) this new session.
-    $this->start()->init($result[0]["user_id"]);
+    // My be the user was doing some work as anonymous user and already has a session active. If so generate new session
+    // ID and if not generate a completely new session.
+    if (session_status() === PHP_SESSION_ACTIVE) {
+      session_regenerate_id(true);
+    }
+    else {
+      $this->start();
+    }
+    $this->init($result[0]["user_id"]);
     DelayedMethodCalls::stack($this, "insert");
 
     // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
@@ -449,9 +456,6 @@ class Session extends \MovLib\Data\Database {
    */
   private function start() {
     $sessionData = isset($_SESSION) ? $_SESSION : null;
-    if (session_status() === PHP_SESSION_ACTIVE) {
-      $this->destroy();
-    }
     if (session_start() === false) {
       throw new MemcachedException("Could not start session (may be Memcached is down?).");
     }
