@@ -17,10 +17,14 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Exception\UnauthorizedException;
-use \MovLib\Presentation\FormElement\InputPassword;
+use \MovLib\Data\Delayed\Mailer;
+use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
+use \MovLib\Data\User;
+use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Form;
+use \MovLib\Presentation\FormElement\InputPassword;
 use \MovLib\Presentation\FormElement\InputSubmit;
+use \MovLib\Presentation\Partial\Alert;
 
 /**
  * Allows a user to change her or his password.
@@ -39,20 +43,6 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
 
 
   /**
-   * The input password form element for the current password.
-   *
-   * @var \MovLib\Presentation\FormElement\InputPassword
-   */
-  private $currentPassword;
-
-  /**
-   * The input password form element for confirmation of the new password.
-   *
-   * @var \MovLib\Presentation\FormElement\InputPassword
-   */
-  private $confirmPassword;
-
-  /**
    * The page's form.
    *
    * @var \MovLib\Presentation\Form
@@ -67,11 +57,11 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
   private $newPassword;
 
   /**
-   * The translated route to the password settings page.
+   * The input password form element for confirmation of the new password.
    *
-   * @var string
+   * @var \MovLib\Presentation\FormElement\InputPassword
    */
-  private $settingsRoute;
+  private $newPasswordConfirm;
 
   /**
    * Flag indicating if this page is viewed in the context of a new sign up.
@@ -97,48 +87,44 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     // Determine if this is a new registration or if we are handling a password reset request.
     $this->signUp = $_SERVER["PATH_INFO"] == $i18n->r("/user/sign-up");
 
-    // Check the last authentication time if we aren't handling a sign up.
+    // Check the last authentication time if we aren't handling a sign up. We call both auth-methods the session has to
+    // ensure that the error message we display is as accurate as possible; anything else could distract the user.
     if ($this->signUp === false) {
-      $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
+      $session
+        ->checkAuthorization($i18n->t("You need to sign in to change your password."))
+        ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
+      ;
     }
 
+    // Start rendering the page.
     $this->init($i18n->t("Password Settings"));
-    $this->settingsRoute = $i18n->r("/user/password-settings");
-
-    $this->currentPassword = new InputPassword([
-      "autofocus",
-      "class"       => "input--block-level",
-      "placeholder" => $i18n->t("Enter your current password"),
-      "title"       => $i18n->t("Please enter your secret password in this field to verify this action."),
-    ]);
-    $this->currentPassword->label = $i18n->t("Current Password");
 
     $this->newPassword = new InputPassword([
-      "class"       => "input--block-level",
       "placeholder" => $i18n->t("Enter your new password"),
       "title"       => $i18n->t("Please enter your desired new password in this field."),
     ]);
     $this->newPassword->label = $i18n->t("New Password");
+    $this->newPassword->help = "<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>";
+    $this->newPassword->helpPopup = false;
 
-    $this->confirmPassword = new InputPassword([
-      "class"       => "input--block-level",
+    $this->newPasswordConfirm = new InputPassword([
       "placeholder" => $i18n->t("Enter your new password again"),
       "title"       => $i18n->t("Please enter your new password again in this field. we want to make sure that you don’t mistype this."),
     ]);
-    $this->confirmPassword->label = $i18n->t("Confirm Password");
+    $this->newPasswordConfirm->label = $i18n->t("Confirm Password");
 
-    $this->form = new Form($this, [ $this->currentPassword, $this->newPassword, $this->confirmPassword ]);
-    $this->form->attributes["action"] = $this->settingsRoute;
+    $this->form = new Form($this, [ $this->newPassword, $this->newPasswordConfirm ]);
+    $this->form->attributes["action"] = $i18n->r("/user/password-settings");
     $this->form->attributes["autocomplete"] = "off";
 
     $this->form->actionElements[] = new InputSubmit([
       "class" => "button--large button--success",
-      "title" => $i18n->t("Click here to request the change of your password after you filled out all fields."),
+      "title" => $i18n->t("Click here to request the password change after you filled out all fields."),
       "value" => $i18n->t("Request Password Change"),
     ]);
 
     if (isset($_GET["token"])) {
-      $this->validatePasswordChange();
+      $this->validateToken();
     }
   }
 
@@ -147,21 +133,58 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
    */
   protected function getPageContent() {
     global $i18n;
-    $notice = null;
+    $info = null;
     // We only generate this notice if we aren't currently handling a sign-up request. See constructor why!
     if ($this->signUp === false) {
-      $notice = "<p>{$i18n->t(
+      $info = new Alert("<p>{$i18n->t(
         "Choose a strong password, which is easy to remember but still hard to crack. To help you, we generated a " .
         "password from the most frequent words in American English:"
-      )}&nbsp;<code>{$this->randomPassword()}</code></p><hr>";
+      )}</p><p><code>{$this->randomPassword()}</code></p>");
+      $info->severity = Alert::SEVERITY_INFO;
     }
-    return
-      "{$notice}{$this->form->open()}<small class='form-help'>{$this->a(
-        $i18n->r("/user/reset-password"),
-        $i18n->t("Forgot your current password?"),
-        [ "title" => $i18n->t("Follow this link if you forgot your password.") ]
-      )}</small><p>{$this->currentPassword}</p><p>{$this->newPassword}</p><p>{$this->confirmPassword}</p>{$this->form->close()}"
-    ;
+    return "{$info}{$this->form}";
+  }
+
+  /**
+   * Validation callback after auto-validation of form has succeeded.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\Session $session
+   * @return this
+   */
+  public function validate() {
+    global $i18n, $session;
+    if ($this->newPassword->value != $this->newPasswordConfirm->value) {
+      $this->newPassword->invalid();
+      $this->newPasswordConfirm->invalid();
+      $this->checkErrors([ $i18n->t("The confirmation password doesn’t match the new password, please try again.") ]);
+    }
+    else {
+      $user = new User(User::FROM_ID, $session->userId);
+      $user->setAuthenticationToken();
+      DelayedMethodCalls::stack($user, "preparePasswordChange", [ $this->newPassword->value ]);
+      Mailer::stack(new PasswordChangeEmail($user));
+
+      // The request has been accepted, but further action is required to complete it.
+      http_response_code(202);
+
+      // Explain to the user where to find this further action to complete the request.
+      $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($user->email) ]));
+      $success->title = $i18n->t("Successfully Requested Password Change");
+      $success->severity = Alert::SEVERITY_SUCCESS;
+      $this->alerts .= $success;
+
+      // Also explain that this change is no immidiate action and that our system is still using the old password.
+      $info = new Alert($i18n->t("You have to sign in with your old password until you’ve successfully confirmed your password change via the link we’ve just sent you."));
+      $info->title = $i18n->t("Important!");
+      $info->severity = Alert::SEVERITY_INFO;
+      $this->alerts .= $info;
+    }
+    return $this;
+  }
+
+  public function validateToken() {
+
   }
 
   /**

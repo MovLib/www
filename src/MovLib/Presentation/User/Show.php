@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\User;
 
 use \MovLib\Data\User;
-use \MovLib\Exception\UnauthorizedException;
 
 /**
  * User account summary for logged in user's.
@@ -32,13 +31,17 @@ use \MovLib\Exception\UnauthorizedException;
 class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   use \MovLib\Presentation\User\UserTrait;
 
+  /**
+   * Instantiate new user show presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\Session $session
+   * @throws \MovLib\Exception\UnauthorizedException
+   */
   public function __construct() {
     global $i18n, $session;
-    if ($session->isLoggedIn === false) {
-      throw new UnauthorizedException($i18n->t("You must be logged in to view your profile."));
-    }
-    $this->init($i18n->t("Profile"));
-    $this->user = new User(User::FROM_ID, $session->id);
+    $session->checkAuthorization($i18n->t("You must be signed in to view your profile."));
+    $this->init($i18n->t("Profile"))->user = new User(User::FROM_ID, $session->userId);
   }
 
   /**
@@ -51,7 +54,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       "<div class='row'>" .
         "<dl class='span span--7'>" .
           "<dt>{$i18n->t("Username")}</dt><dd>{$this->user->name}</dd>" .
-          "<dt>{$i18n->t("User ID")}</dt><dd>{$this->user->userId}</dd>" .
+          "<dt>{$i18n->t("User ID")}</dt><dd>{$this->user->id}</dd>" .
           "<dt>{$i18n->t("Edits")}</dt><dd>{$this->user->edits}</dd>" .
           "<dt>{$i18n->t("Reputation")}</dt><dd><em>@todo</em> reputation counter</dd>" .
           "<dt>{$i18n->t("Email Address")}</dt><dd>{$this->user->email}</dd>" .

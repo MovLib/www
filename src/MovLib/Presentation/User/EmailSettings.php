@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -21,11 +21,9 @@ use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Data\User;
 use \MovLib\Exception\UnauthorizedException;
-use \MovLib\Exception\UserException;
 use \MovLib\Presentation\Email\User\EmailChange;
 use \MovLib\Presentation\Form;
 use \MovLib\Presentation\FormElement\InputEmail;
-use \MovLib\Presentation\FormElement\InputPassword;
 use \MovLib\Presentation\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\Alert;
 
@@ -48,6 +46,8 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
   /**
    * The input email form element.
    *
+   * A confirmation field is {@link http://ux.stackexchange.com/a/4769 senseless}.
+   *
    * @var \MovLib\Presentation\FormElement\InputEmail
    */
   private $email;
@@ -58,13 +58,6 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    * @var \MovLib\Presentation\Form
    */
   private $form;
-
-  /**
-   * The input password form element.
-   *
-   * @var \MovLib\Presentation\FormElement\InputPassword
-   */
-  private $password;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -79,28 +72,31 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    */
   public function __construct() {
     global $i18n, $session;
-    if ($session->isLoggedIn === false) {
-      throw new UnauthorizedException($i18n->t("You must be signed in to change your email address."));
-    }
-    $this->init($i18n->t("Email Settings"));
-    $this->user = new User(User::FROM_ID, $session->id);
+
+    // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
+    $session
+      ->checkAuthorization($i18n->t("You need to sign in to change your email address."))
+      ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
+    ;
+
+    // Start rendering the page.
+    $this->init($i18n->t("Email Settings"))->user = new User(User::FROM_ID, $session->userId);
 
     $this->email = new InputEmail([
       "autofocus",
-      "class"       => "input--block-level",
       "placeholder" => $i18n->t("Enter your new email address"),
       "title"       => $i18n->t("Please enter your desired new email address in this field."),
     ]);
     $this->email->label = $i18n->t("New Email Address");
     $this->email->required();
+    $this->email->help = $i18n->t(
+      "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
+      "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to your " .
+      "{0}notification settings{1}.",
+      [ "<a href='{$i18n->r("/user/notification-settings")}'>", "</a>" ]
+    );
 
-    $this->password = new InputPassword([
-      "autocomplete" => "off",
-      "class"        => "input--block-level",
-      "title"        => $i18n->t("Please enter your secret password in this field to verify this action."),
-    ]);
-
-    $this->form = new Form($this, [ $this->email, $this->password ]);
+    $this->form = new Form($this, [ $this->email ]);
 
     $this->form->actionElements[] = new InputSubmit([
       "class" => "button--large button--success",
@@ -109,7 +105,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     ]);
 
     if (isset($_GET["token"])) {
-      $this->validateEmailChange();
+      $this->validateToken();
     }
   }
 
@@ -118,16 +114,9 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    */
   protected function getPageContent() {
     global $i18n;
-    $currentMail = new Alert($i18n->t("Your current email address is {0}.", [ $this->placeholder($this->user->email) ]));
-    $currentMail->severity = Alert::SEVERITY_INFO;
-    return
-      "<p>{$i18n->t(
-        "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
-        "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to the " .
-        "{0}notification settings{1}.",
-        [ "<a href='{$i18n->r("/user/notification-settings")}'>", "</a>" ]
-      )}</p>{$currentMail}{$this->form->open()}<p>{$this->email}</p><p>{$this->password}</p>{$this->form->close()}"
-    ;
+    $currentEmail = new Alert($i18n->t("Your current email address is {0}.", [ $this->placeholder($this->user->email) ]));
+    $currentEmail->severity = Alert::SEVERITY_INFO;
+    return "{$currentEmail}{$this->form}";
   }
 
   /**
@@ -152,18 +141,17 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     if ($this->user->email == $this->email->value) {
       $errors[] = $i18n->t("You are already using this email address.");
     }
-    else {
-      try {
-        new User(User::FROM_EMAIL, $this->email->value);
-        $errors[] = $i18n->t("The entered email address is already in use, please choose another one.");
-      } catch (UserException $e) {
-        // No problem if we couldn't find a user with this email address.
-      }
-    }
-
-    // A user is only allowed to change the email address if she or he knows the current password.
-    if ($this->user->verifyPassword($this->password->value) === false) {
-      $errors[] = $i18n->t("The entered password is not valid, please try again.");
+    // Check if this email address is already in use by another user. Entering an already used email address might imply
+    // that the user has multiple accounts. Although it's never good having user's with multiple accounts, there isn't
+    // much we can do against it. Especially becuase it's impossible to delete any account, some users might simply
+    // create a new account because they don't want to be associated with their old account. But still, we can't let
+    // anyone use any email we already have in our system. A user experiencing this kind of problem should contact us
+    // directly.
+    elseif ($this->user->checkEmail($this->email->value) === true) {
+      $errors[] = $i18n->t("This email address is already registered, please choose another one.");
+      $errors[] = $i18n->t("If you feel that receiving this error is a mistake please {0}contact us{1}.", [
+        "<a href='{$i18n->r("/contact")}'>", "</a>"
+      ]);
     }
 
     if ($this->checkErrors($errors) === false) {
@@ -176,14 +164,12 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
 
       // Explain to the user where to find this further action to complete the request.
       $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
-      $success->block = true;
       $success->title = $i18n->t("Successfully requested email change");
       $success->severity = Alert::SEVERITY_SUCCESS;
       $this->alerts .= $success;
 
       // Also explain that this change is no immidiate action and that our system is still using the old email address.
       $info = new Alert($i18n->t("You have to sign in with your old email address until you’ve successfully confirmed your email change via the link that we’ve just sent you."));
-      $info->block = true;
       $info->title = $i18n->t("Important!");
       $info->severity = Alert::SEVERITY_INFO;
       $this->alerts .= $info;
@@ -198,7 +184,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    * @global \MovLib\Data\Session $session
    * @return this
    */
-  private function validateEmailChange() {
+  private function validateToken() {
     global $i18n, $session;
     $errors = null;
 
@@ -215,14 +201,13 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     // Data was loaded successfully, compare the stored ID with the current user's ID. This is a really odd situation
     // we could encounter here. How was this user able to snatch the token from the other user? What should we do?
     // Might this be a hash collision (which is highly unlikely)?
-    elseif ($data["id"] !== $session->id) {
-      throw new UnauthorizedException($i18n->t("Something is odd, therefor we logged you out. Please double check the authentication token you used and sign in with your old email address before trying again."));
+    elseif ($data["id"] !== $session->userId) {
+      throw new UnauthorizedException($i18n->t("The authentication token is invalid, please sign in again and request a new token to change your email address."));
     }
 
     if ($this->checkErrors($errors) === false) {
       $this->user->updateEmail($data["email"]);
       $success = new Alert($i18n->t("Your email address was successfully changed to {0}.", [ $this->placeholder($this->user->email) ]));
-      $success->block = true;
       $success->title = $i18n->t("Email address was successfully changed");
       $success->severity = Alert::SEVERITY_SUCCESS;
       $this->alerts .= $success;

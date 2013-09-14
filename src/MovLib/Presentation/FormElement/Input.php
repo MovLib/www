@@ -46,6 +46,13 @@ class Input extends \MovLib\Presentation\AbstractBase {
    */
   public $attributes = [];
 
+  /**
+   * If set to <code>TRUE</code> (default) the form element is displayed within a paragraph and spans over the whole
+   * available width.
+   *
+   * @var boolean
+   */
+  public $block = true;
 
   /**
    * The default value of this form element.
@@ -71,6 +78,13 @@ class Input extends \MovLib\Presentation\AbstractBase {
    * @var string
    */
   public $help;
+
+  /**
+   * Flag indicating if the help should be displayed pop-up or not.
+   *
+   * @var boolean
+   */
+  public $helpPopup = true;
 
   /**
    * The label text of the input element.
@@ -163,7 +177,17 @@ class Input extends \MovLib\Presentation\AbstractBase {
    *   The string representation of this form element.
    */
   public function __toString() {
-    return "<label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label>{$this->help()}<input{$this->expandTagAttributes($this->attributes)}>";
+    // This must be called first, because it alters the attributes of our input element if a help is available!
+    $help = $this->help();
+    // We also have to repeat the string at this point, because a block setting alters the attributes.
+    if ($this->block === true) {
+      $this->addClass("input--block-level", $this->attributes);
+      $input = "<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+    }
+    else {
+      $input = "<label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}>";
+    }
+    return "{$help}{$input}";
   }
 
 
@@ -183,13 +207,26 @@ class Input extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Get the help of this element (if any).
+   * Get the help of this form element (if any).
    *
    * @return string
-   *   The help of this element or an empty string if no help text was set.
+   *   The help of this form element or an empty string if no help was set.
    */
   public function help() {
-    return empty($this->help) ? "" : "<span class='form-help popup-container'><i class='icon icon--help-circled'></i><small class='popup'>{$this->help}</small></span>";
+    if (!$this->help) {
+      return "";
+    }
+    $this->attributes["aria-describedby"] = "{$this->id}-help";
+    // We use a div as wrapper to ensure that the W3C validator throws an error if an author tries to use a help within
+    // a block element. This is important, because we are using the small element within the help to denote that this
+    // text isn't important for the main content (and the ARIA note role).
+    if ($this->helpPopup === true) {
+      $help = "<div class='form-help popup-container' id='{$this->id}-help' role='note'><i class='icon icon--help-circled'></i><small class='popup'>{$this->help}</small></div>";
+    }
+    else {
+      $help = "<small class='form-help' id='{$this->id}-help' role='note'>{$this->help}</small>";
+    }
+    return $help;
   }
 
   /**

@@ -77,6 +77,15 @@ class Form extends \MovLib\Presentation\AbstractBase {
   public $actionElements = [];
 
   /**
+   * Numeric array containing all form elements that were passed to the constructor.
+   *
+   * All these elements are part of the forms body and will be auto-validated upon submission.
+   *
+   * @var type
+   */
+  private $elements = [];
+
+  /**
    * Numeric array containing all hidden form elements.
    *
    * Hidden elements are all elements that are an instance of <code>\MovLib\View\HTML\Input\HiddenInput</code>. Hidden
@@ -132,6 +141,11 @@ class Form extends \MovLib\Presentation\AbstractBase {
 
       $c = count($elements);
       for ($i = 0; $i < $c; ++$i) {
+        // We don't want a copy of the element, we want the actual element the presentation class is keeping as a
+        // property. Passing the array by reference in the declaration of the method would not allow us to do this,
+        // because the array isn't kept as property in the presentation class.
+        $this->elements[] = &$elements[$i];
+
         // A disabled element is not submitted by the browser, therefor we can't check it at all and we don't want to.
         if ($elements[$i]->disabled === true) {
           continue;
@@ -171,6 +185,13 @@ class Form extends \MovLib\Presentation\AbstractBase {
         $page->{$validationCallback}();
       }
     }
+    else {
+      $c = count($elements);
+      for ($i = 0; $i < $c; ++$i) {
+        // The actual element, not a copy, see comment above.
+        $this->elements[] = &$elements[$i];
+      }
+    }
   }
 
 
@@ -204,7 +225,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The closing <code><form></code>-tag, including the submit input element.
    */
-  public function close($wrap = true) {
+  public function close($wrap = false) {
     $actions = "";
     $c = count($this->actionElements);
     for ($i = 0; $i < $c; ++$i) {
@@ -214,6 +235,20 @@ class Form extends \MovLib\Presentation\AbstractBase {
       $actions = "<div class='form-actions'>{$actions}</div>";
     }
     return "{$actions}</form>";
+  }
+
+  /**
+   * Get string representation of this form element.
+   *
+   * @return string
+   */
+  public function __toString() {
+    $inputs = "";
+    $c = count($this->elements);
+    for ($i = 0; $i < $c; ++$i) {
+      $inputs .= $this->elements[$i];
+    }
+    return "{$this->open()}{$inputs}{$this->close()}";
   }
 
 }

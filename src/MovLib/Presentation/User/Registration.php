@@ -94,13 +94,12 @@ class Registration extends \MovLib\Presentation\Page {
     // Start rendering the page.
     $this->init($i18n->t("Registration"));
 
-    $this->email = new InputEmail([ "autofocus", "class" => "input--block-level" ]);
+    $this->email = new InputEmail([ "autofocus" ]);
     $this->email->required();
 
     // We do not use the specialized input text form element, as it would sanitize the string too much. We want to let
     // the user know about anything that's not okay with the entered string.
     $this->username = new Input("username", [
-      "class"       => "input--block-level",
       "max-length"  => User::MAX_LENGTH_NAME,
       "placeholder" => $i18n->t("Enter your desired username"),
       "title"       => $i18n->t("Please enter your desired username in this field."),
@@ -218,7 +217,6 @@ class Registration extends \MovLib\Presentation\Page {
       $this->accepted = true;
 
       $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($user->email)] ));
-      $success->block = true;
       $success->title = $i18n->t("Registration Successful");
       $success->severity = Alert::SEVERITY_INFO;
       $this->alerts .= $success;

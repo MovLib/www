@@ -17,11 +17,8 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\User;
-use \MovLib\Presentation\Partial\Alert;
-
 /**
- * Allows a user to manage her or his notification settings.
+ * Allows a user to terminate sessions and deactivate the account.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,11 +26,11 @@ use \MovLib\Presentation\Partial\Alert;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class NotificationSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   use \MovLib\Presentation\User\UserTrait;
 
   /**
-   * Instantiate new user notification settings presentation.
+   * Instantiate new user danger zone settings presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
@@ -41,8 +38,15 @@ class NotificationSettings extends \MovLib\Presentation\AbstractSecondaryNavigat
    */
   public function __construct() {
     global $i18n, $session;
-    $session->checkAuthorization($i18n->t("You must be signed in to change your notification settings."));
-    $this->init($i18n->t("Notification Settings"))->user = new User(User::FROM_ID, $session->userId);
+
+    // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
+    $session
+      ->checkAuthorization($i18n->t("You need to sign in to access the danger zone."))
+      ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
+    ;
+
+    // Start rendering the page.
+    $this->init($i18n->t("Danger Zone Settings"));
   }
 
   /**
@@ -50,10 +54,7 @@ class NotificationSettings extends \MovLib\Presentation\AbstractSecondaryNavigat
    */
   protected function getPageContent() {
     global $i18n;
-    $alert = new Alert($i18n->t("The notification system isn’t implemented yet."));
-    $alert->title = $i18n->t("Check back later");
-    $alert->severity = Alert::SEVERITY_INFO;
-    return $alert;
+    return "<p>Hello World</p>";
   }
 
 }

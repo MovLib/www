@@ -102,10 +102,12 @@ class Login extends \MovLib\Presentation\Page {
     }
 
     // @todo max-length
-    $this->email = new InputEmail([ "autofocus", "class" => "input--block-level" ]);
+    $this->email = new InputEmail([ "autofocus" ]);
     $this->email->required();
+    $this->email->help = "<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>";
+    $this->email->helpPopup = false;
 
-    $this->password = new InputPassword([ "class" => "input--block-level" ]);
+    $this->password = new InputPassword();
 
     $this->form = new Form($this, [ $this->email, $this->password ]);
     $this->form->attributes["action"] = $action;
@@ -134,14 +136,7 @@ class Login extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getContent() {
-    global $i18n;
-    return
-      "<div class='container'><div class='row'>{$this->form->open()}" .
-        "<small class='form-help'><a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a></small>" .
-        "<p>{$this->email}</p>" .
-        "<p>{$this->password}</p>" .
-      "{$this->form->close(false)}</div></div>"
-    ;
+    return "<div class='container'><div class='row'>{$this->form}</div></div>";
   }
 
   /**
