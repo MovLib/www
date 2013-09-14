@@ -45,29 +45,22 @@ class DebugException extends \MovLib\Exception\AbstractException {
    *   <code>"var_dump"</code> (default) and <code>"print_r"</code>. You can pass any name of a callable in here which
    *   will be called with <code>call_user_func()</code> or <code>call_user_func_array()</code> (depending on the type
    *   of <var>$mixed</var>).
-   * @param string $code [optional]
-   *   The exception code, default to <var>E_NOTICE</var>.
    */
-  public function __construct($mixed, $method = "var_dump", $code = E_NOTICE) {
-    $this->message = "Debug Exception Output";
-    switch ($method) {
-      case "var_dump":
-        ob_start();
-        var_dump($mixed);
-        $this->mixed = ob_get_clean();
-        break;
-
-      case "print_r":
-        $this->mixed = print_r($mixed, true);
-        break;
-
-      default:
-        if (is_array($mixed) || is_object($mixed)) {
-          $this->mixed = call_user_func_array($method, $mixed);
-        }
-        else {
-          $this->mixed = call_user_func($method, $mixed);
-        }
+  public function __construct($mixed, $method = "var_dump") {
+    parent::__construct("Debug Exception Output", null, E_NOTICE);
+    if ($method == "var_dump") {
+      ob_start();
+      var_dump($mixed);
+      $this->mixed = ob_get_clean();
+    }
+    elseif ($method == "print_r") {
+      $this->mixed = print_r($mixed, true);
+    }
+    elseif (is_array($mixed) || is_object($mixed)) {
+      $this->mixed = call_user_func_array($method, $mixed);
+    }
+    else {
+      $this->mixed = call_user_func($method, $mixed);
     }
   }
 

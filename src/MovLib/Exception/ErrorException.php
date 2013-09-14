@@ -17,8 +17,13 @@
  */
 namespace MovLib\Exception;
 
+use \MovLib\Data\Delayed\Logger;
+
 /**
  * An error exception might be thrown if there is any PHP error that was not handled properly.
+ *
+ * You should not throw an error exception yourself in your code, this is meant only for transforming PHP errors of all
+ * kind to an exception!
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,4 +31,44 @@ namespace MovLib\Exception;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorException extends \MovLib\Exception\AbstractException {}
+class ErrorException extends \MovLib\Exception\AbstractException {
+
+  /**
+   * Instantiate new error exception.
+   *
+   * @param int $type
+   *   The error's type, one of the PHP predefined <var>E_*</var> constants.
+   * @param string $message
+   *   The error's message.
+   * @param string $file
+   *   The absolute path to the file where the error was raised.
+   * @param int $line
+   *   The line number within the file.
+   */
+  public function __construct($type, $message, $file, $line) {
+    parent::__construct($message, null, $type);
+    $this->file = $file;
+    $this->line = $line;
+    switch ($type) {
+      case E_ERROR:
+      case E_PARSE:
+      case E_CORE_ERROR:
+      case E_COMPILE_ERROR:
+      case E_USER_ERROR:
+      case E_RECOVERABLE_ERROR:
+        Logger::stack($this, Logger::FATAL);
+        break;
+
+      case E_WARNING:
+      case E_CORE_WARNING:
+      case E_COMPILE_WARNING:
+      case E_USER_WARNING:
+        Logger::stack($this, Logger::ERROR);
+        break;
+
+      default:
+        Logger::stack($this);
+    }
+  }
+
+}

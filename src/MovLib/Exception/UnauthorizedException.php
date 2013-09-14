@@ -44,7 +44,7 @@ class UnauthorizedException extends \MovLib\Exception\AbstractException {
   public function __construct($message = null, $title = null) {
     global $i18n;
     parent::__construct("{$title} {$message}");
-    $this->title = empty($title) ? $i18n->t("You must be logged in to access this content.") : $title;
+    $this->title = empty($title) ? $i18n->t("You must be signed in to access this content.") : $title;
     if (empty($this->message)) {
       $this->message = "<p>{$i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/user/register")}'>", "</a>" ])}</p>";
     }

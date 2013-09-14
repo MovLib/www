@@ -17,8 +17,9 @@
  */
 namespace MovLib\Data\Delayed;
 
+use \Exception;
 use \MovLib\Data\Delayed\Mailer;
-use \MovLib\Presentation\Email\MovDevEmail;
+use \MovLib\Presentation\Email\Email;
 
 /**
  * Delayed log facility.
@@ -36,28 +37,42 @@ class Logger {
 
 
   /**
-   * Default log entry type.
+   * System might be unusable, action must be taken immediately (email is sent to all developers).
    *
-   * @var int
+   * @var string
    */
-  const LOGTYPE_DEFAULT = 0;
+  const FATAL = "FATAL";
 
   /**
-   * Exception log entry type.
+   * An error condition was encountered (email is sent to webmaster).
    *
-   * @var int
+   * @var string
    */
-  const LOGTYPE_EXCEPTION = 1;
+  const ERROR = "ERROR";
 
   /**
-   * Maximum size a log file can grow to in Bytes. Defaults to 64 MB.
+   * Normal but significant condition was encountered (no email is sent).
    *
-   * @var int
+   * @var string
    */
-  const MAX_LOG_SIZE = 67108864;
+  const WARNING = "WARNING";
+
+  /**
+   * Debug or informational condition.
+   *
+   * @var string
+   */
+  const DEBUG = "DEBUG";
+
+  /**
+   * Written to special slow-log file.
+   *
+   * @var string
+   */
+  const SLOW = "SLOW";
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Static Properties
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
@@ -65,136 +80,71 @@ class Logger {
    *
    * @var array
    */
-  private static $logEntries = [];
+  private static $entries = [];
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Static Methods
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * Writes all log entries from the stack to the appropriate log file on the filesystem.
+   * Send all log entries to the system logger.
    */
   public static function run() {
-    $logEntries = [];
-    // Generate log entries from stack (unpacking of nested arrays is only available in PHP 5.5+).
-    foreach (self::$logEntries as list($type, $date, $logEntry, $level)) {
-      $logEntries[$level] = "";
-      switch ($type) {
-        case self::LOGTYPE_EXCEPTION:
-          $logEntries[$level] .= "{$date} [{$logEntry->getFile()}:{$logEntry->getLine()}]: {$logEntry->getMessage()}\n";
-          break;
+    // Go through all stacked log entries.
+    foreach (self::$entries as $priority => $entries) {
+      $email = "";
 
-        default:
-          $logEntries[$level] .= "{$date}: {$logEntry}\n";
-          break;
+      // Log all entries to the appropriate facility.
+      $c = count($entries);
+      for ($i = 0; $i < $c; ++$i) {
+        $time = date("Y-m-d H:i:s e", $entries[$i]["time"]);
+        if ($entries[$i]["entry"] instanceof Exception) {
+          $entries[$i]["entry"] = "{$entries[$i]["entry"]->getMessage()} (code: {$entries[$i]["entry"]->getCode()})\n#### Stacktrace ####\n{$entries[$i]["entry"]->getTraceAsString()}";
+        }
+        $entry = "[{$time}] {$priority}: {$entries[$i]["entry"]}\n";
+        error_log($entry, 3, ini_get("error_log"));
+        // Slow log entries are also written to a seperate log file.
+        if ($priority === self::SLOW) {
+          error_log($entry, 3, $GLOBALS["movlib"]["slowlog"]);
+        }
+        $email .= $entry;
+      }
+
+      // Fatal log entries go to all developers.
+      if ($priority === self::FATAL || $priority === self::ERROR) {
+        $emailHtml = htmlspecialchars(print_r($email, true), ENT_QUOTES);
+        if ($priority === self::FATAL) {
+          $email = new Email(
+            $GLOBALS["movlib"]["developer_mailinglist"],
+            "IMPORTANT! A fatal error was just logged!",
+            "<p>Hi devs!</p><p>A fatal log entry was just written, the system might be unusable, action must be taken immediately!</p><pre style='background:#eaeaea;padding:5px'>{$emailHtml}</pre>",
+            "Hi devs!\n\nA fatal log entry was just written, the system might be unusable, action must be taken immediately!\n\n{$email}"
+          );
+        }
+        // Error log entries only to the webmaster.
+        elseif ($priority === self::ERROR) {
+          $email = new Email(
+            $GLOBALS["movlib"]["webmaster_mail"],
+            "IMPORTANT! An error was just logged!",
+            "<p>Hi Webmaster!</p><p>An error log entry was just written, the system might be in trouble, please review the attached entries:</p><pre style='background:#eaeaea;padding:5px'>{$emailHtml}</pre>",
+            "An error log entry was just written, the system might be in trouble, please review the attached entries:\n\n{$email}"
+          );
+        }
+        (new Mailer())->send($email);
       }
     }
-    // Write all log entries to the appropriate log file. If the maximum log filesize is reached simply overwrite the
-    // existing log file. Otherwise append the entries to the log.
-    foreach ($logEntries as $level => $logEntry) {
-      self::logNow($logEntry, $level);
-    }
   }
 
   /**
-   * Log a simple message.
+   * Stack log entry.
    *
-   * @see \MovLib\Data\Delayed\Logger::stack()
-   * @param string $message
-   *   The message to log.
-   * @param string $level
-   *   The log level, defaults to <var>E_WARNING</var>.
+   * @param string|\Exception $entry
+   *   The log entry, either a string or an instance of PHP's <code>\Exception</code> class.
+   * @param string $level [optional]
+   *   The message's log level, defaults to <var>Logger::WARNING</var>.
    */
-  public static function log($message, $level = E_WARNING) {
-    self::stack($message, $level);
-  }
-
-  /**
-   * Log a simple message now, this means that this entry will not be written with a delay, it's in real-time!
-   *
-   * This method is used internally by this class, but can be utilized for debugging. This is also the reason why the
-   * default level is set to <var>E_NOTICE</var>.
-   *
-   * @param string $logEntry
-   *   The entry to log.
-   * @param string $level
-   *   The log level, defaults to <var>E_NOTICE</var>. <b>HINT:</b> If you pass along a string as level, you can log
-   *   to a completely different log file. This is very useful for creating dedicated debug log files. Example usage
-   *   can be found in the \MovLib\Data\Delayed\Mailer class.
-   */
-  public static function logNow($logEntry, $level = E_NOTICE) {
-    $logFile = $level;
-    if (!is_string($level)) {
-      // @see http://www.php.net/manual/en/errorfunc.constants.php
-      switch ($level) {
-        case E_ERROR:
-        case E_PARSE:
-        case E_CORE_ERROR:
-        case E_COMPILE_ERROR:
-        case E_USER_ERROR:
-        case E_RECOVERABLE_ERROR:
-          $logFile = "error";
-          // Send email to developers upon logging of entries with high levels, there must be something that needs a fix.
-          $preLogEntry = htmlspecialchars($logEntry, ENT_QUOTES);
-          (new Mailer())->send(new MovDevEmail(
-            "IMPORTANT! An error message was just logged.",
-            "A critical error was just logged, here is the log entry:\n\n{$logEntry}",
-            "<p>A critical error was just logged, here is the log entry:</p><pre>{$preLogEntry}</pre>"
-          ));
-          break;
-
-        case E_WARNING:
-        case E_CORE_WARNING:
-        case E_COMPILE_WARNING:
-        case E_USER_WARNING:
-          $logFile = "warning";
-          break;
-
-        default:
-          $logFile = "notice";
-          break;
-      }
-    }
-    $logFile = "{$_SERVER["DOCUMENT_ROOT"]}/logs/{$logFile}.log";
-    if (!is_file($logFile)) {
-      touch($logFile);
-    }
-    if (filesize($logFile) >= self::MAX_LOG_SIZE) {
-      exec("tail -n 100 {$logFile} > {$logFile}");
-    }
-    file_put_contents($logFile, $logEntry, FILE_APPEND);
-  }
-
-  /**
-   * Log an exception.
-   *
-   * @see \MovLib\Data\Delayed\Logger::stack()
-   * @param \Exception $exception
-   *   The exception to log.
-   * @param string $level
-   *   The log level, defaults to <var>E_WARNING</var>.
-   */
-  public static function logException($exception, $level = E_WARNING) {
-    self::stack($exception, $level, self::LOGTYPE_EXCEPTION);
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Private Static Methods
-
-
-  /**
-   * Add log entry to stack.
-   *
-   * @param mixed $message
-   *   The log entry's message or object containing the message.
-   * @param string $level
-   *   The log entry's severity level.
-   * @param int $type [optional]
-   *   The log entry's type, defaults to <var>AsyncLogger::LOGTYPE_DEFAULT</var>.
-   * @return this
-   */
-  private static function stack($message, $level, $type = self::LOGTYPE_DEFAULT) {
-    self::$logEntries[] = [ $type, date("Y-m-d H:i:s"), $message, $level ];
+  public static function stack($entry, $priority = self::WARNING) {
+    self::$entries[$priority][] = [ "time" => time(), "entry" => $entry ];
   }
 
 }

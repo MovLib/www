@@ -47,24 +47,66 @@ function __autoload($class) {
 }
 
 /**
- * This is the outermost place to catch any exception that might have been forgotten somewhere.
+ * Transform PHP fatal errors to exceptions.
  *
- * To ensure that no unexpected behaviour crashes our software any uncaught exception will be caught at this place. An
- * error is logged and, depending on the error, a message is displayed to the user.
+ * This function is not meant to recover after a fatal error occurred. The purpose of this is to ensure that a nice
+ * error view is displayed to the user.
  *
- * @global \MovLib\Data\I18n $i18n
- * @param \Exception $exception
- *   The uncaught exception.
+ * @link http://stackoverflow.com/a/2146171/1251219 How do I catch a PHP Fatal Error
  */
-function uncaught_exception_handler($exception) {
-  global $i18n;
-  if (!$i18n) {
-    $i18n = new \MovLib\Data\I18n();
+function error_fatal_handler() {
+  if ($error = error_get_last()) {
+    // We have to build our own trace, well, at least we can try with the available information.
+    $error["trace"] = [
+      [ "function" => __FUNCTION__, "line" => __LINE__, "file" => __FILE__ ],
+      [ "function" => "<em>unknown</em>", "line" => $error["line"], "file" => $error["file"] ],
+    ];
+
+    // Please note that we HAVE TO use PHP's base exception class at this point, otherwise we can't set our own trace!
+    $exception = new \Exception($error["message"], $error["type"]);
+    $reflectionClass = new \ReflectionClass($exception);
+    foreach ([ "file", "line", "trace" ] as $propertyName) {
+      $reflectionProperty = $reflectionClass->getProperty($propertyName);
+      $reflectionProperty->setAccessible(true);
+      $reflectionProperty->setValue($exception, $error[$propertyName]);
+    }
+
+    // Be sure to log this exception before attempting to render the exception presentation. We don't want to risk any
+    // further errors without having sent out that mail to all developers.
+    \MovLib\Data\Delayed\Logger::stack($exception, \MovLib\Data\Delayed\Logger::FATAL);
+    \MovLib\Data\Delayed\Logger::run();
+
+    // Force display of trace upon fatal errors; a user might be able to tell us how to fix the problem (open source FTW).
+    $GLOBALS["movlib"]["version"] = substr($GLOBALS["movlib"]["version"], strpos($GLOBALS["movlib"]["version"], "-") + 1) . "-dev";
+
+    try {
+      exit((new \MovLib\Presentation\Stacktrace($exception))->getPresentation());
+    }
+    // @todo How about some ASCII art?
+    catch (\Exception $e) {
+      header("content-type: text/plain");
+      print_r($e);
+      exit();
+    }
   }
-  \MovLib\Data\Delayed\Logger::logException($exception, E_RECOVERABLE_ERROR);
-  $page = new \MovLib\Presentation\Exception($exception);
+}
+
+// Check for possible fatal errors that are not catchable otherwise.
+register_shutdown_function("error_fatal_handler");
+
+/**
+* This is the outermost place to catch any exception that might have been forgotten somewhere.
+*
+* To ensure that no unexpected behaviour crashes our software any uncaught exception will be caught at this place. An
+* error is logged and, depending on the error, a message is displayed to the user.
+*
+* @global \MovLib\Data\I18n $i18n
+* @param \Exception $exception
+* The uncaught exception.
+*/
+function uncaught_exception_handler($exception) {
   \MovLib\Data\Delayed\Logger::run();
-  exit($page->getPresentation());
+  exit((new \MovLib\Presentation\Stacktrace($exception))->getPresentation());
 }
 
 // Set the default exception handler.
@@ -93,51 +135,13 @@ set_exception_handler("uncaught_exception_handler");
  *   The absolute path to the file where the error was raised.
  * @param int $line
  *   The line number within the file.
- * @throws \MovLib\Exception\ErrorException
  */
 function error_all_handler($type, $message, $file, $line) {
-  $exception = new \MovLib\Exception\ErrorException($message, null, $type);
-  $exception->setFile($file)->setLine($line);
-  throw $exception;
+  uncaught_exception_handler(new \MovLib\Exception\ErrorException($type, $message, $file, $line));
 }
 
 // Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
 set_error_handler("error_all_handler");
-
-/**
- * Transform PHP fatal errors to exceptions.
- *
- * This function is not meant to recover after a fatal error occurred. The purpose of this is to ensure that a nice
- * error view is displayed to the user.
- *
- * @link http://stackoverflow.com/a/2146171/1251219 How do I catch a PHP Fatal Error
- */
-function error_fatal_handler() {
-  if ($error = error_get_last()) {
-    $exception = new \Exception($error["message"], $error["type"]);
-    $reflection = new \ReflectionClass("Exception");
-
-    $trace = $reflection->getProperty("trace");
-    $trace->setAccessible(true);
-    $trace->setValue($exception, [
-      [ "function" => __FUNCTION__, "line" => __LINE__, "file" => __FILE__ ],
-      [ "function" => "<em>unknown</em>", "line" => $error["line"], "file" => $error["file"] ],
-    ]);
-
-    $file = $reflection->getProperty("file");
-    $file->setAccessible(true);
-    $file->setValue($exception, $error["file"]);
-
-    $line = $reflection->getProperty("line");
-    $line->setAccessible(true);
-    $line->setValue($exception, $error["line"]);
-
-    uncaught_exception_handler($exception);
-  }
-}
-
-// Check for possible fatal errors that are not catchable otherwise.
-register_shutdown_function("error_fatal_handler");
 
 // Array to collect class names and function names which will be executed after the response was sent to the user.
 $delayed = [];
@@ -159,21 +163,16 @@ function delayed_register($class, $weight = 50, $method = "run") {
   $delayed[$weight][$class] = $method;
 }
 
-// Instantiate new session object and try to resume any existing session.
-$session = new \MovLib\Data\Session();
-
-// Instantiate global i18n object with the current display language.
-$i18n = new \MovLib\Data\I18n();
-
 try {
-  // Start the rendering process.
+  // Instantiate new session object and try to resume any existing session.
+  $session = new \MovLib\Data\Session();
+
+  // Instantiate global i18n object with the current display language.
+  $i18n = new \MovLib\Data\I18n();
+
+  // Instantiate the presenter as set in the nginx route and try to render the presentation.
   $presenter = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-  $presentation = new $presenter();
-
-  $session->shutdown();
-
-  // We have to call a method; using __toString() would not allow the rendering method to throw an exception!
-  echo $presentation->getPresentation();
+  $presentation = (new $presenter())->getPresentation();
 }
 // A presentation can throw a redirect exception for different reasons. An error might have happended that needs the
 // user to be redirected to a different page, or an action was successfully completed and the user should go to a
@@ -186,7 +185,7 @@ catch (\MovLib\Exception\RedirectException $e) {
   header("Location: {$e->route}", true, $e->status);
   $title = [ 301 => "Moved Permanently", 302 => "Moved Temporarily", 303 => "See Other" ];
   // @todo Do we really have to send this response ourself or is nginx handling this?
-  echo "<html><head><title>{$e->status} {$title[$e->status]}</title></head><body bgcolor=\"white\"><center><h1>{$e->status} {$title[$e->status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
+  $presentation = "<html><head><title>{$e->status} {$title[$e->status]}</title></head><body bgcolor=\"white\"><center><h1>{$e->status} {$title[$e->status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
 }
 // A presentation can throw a unauthorized exception if the current page needs a valid signed in user. This is another
 // exception that has to be in our main application and can't reside in our object oriented code. The current process
@@ -211,22 +210,57 @@ catch (\MovLib\Exception\UnauthorizedException $e) {
 
   $login = new \MovLib\Presentation\User\Login();
   $login->alerts .= $alert;
-
-  echo $login;
+  $presentation = $login->getPresentation();
 }
-
-$end = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
-echo "<small style='text-align:center'>time taken to render page: {$end} seconds</small>";
-
-// This makes sure that the output that was generated until this point will be returned to nginx for delivery.
-fastcgi_finish_request();
-
-// Execute each delayed run method after sending the generated output to the user.
-foreach ($delayed as $classes) {
-  foreach ($classes as $class => $method) {
-    $class::{$method}();
+// Because of the finally block many exception thrown at this point are not passed to the custom uncaught exception
+// handler we defined before. I don't have hard evidence that the finally block is the reason, but this problem first
+// was observed after introducing it. Catching the most basic exception type and passing it to our function solves this.
+//
+// Catch software generated exceptions.
+catch (\MovLib\Exception\AbstractException $e) {
+  uncaught_exception_handler($e);
+}
+// Catch PHP generated exceptions and be sure to log them as an error.
+catch (\Exception $e) {
+  \MovLib\Data\Delayed\Logger::stack($e, \MovLib\Data\Delayed\Logger::ERROR);
+  uncaught_exception_handler($e);
+}
+// This is always executed, no matter what happens!
+finally {
+  // If we have a session, we have to shut it down correctly.
+  if ($session) {
+    $session->shutdown();
   }
-}
 
-// The logger is always executed at last!
-\MovLib\Data\Delayed\Logger::run();
+  // Render the presentation.
+  echo $presentation;
+
+  // This makes sure that the output that was generated until this point will be returned to nginx for delivery.
+  fastcgi_finish_request();
+
+  $responseEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
+  if ($responseEnd > 1.0) {
+    \MovLib\Data\Delayed\Logger::stack(
+      "RESPONSE {$responseEnd}s <{$_SERVER["SERVER"]}{$_SERVER["REQUEST_URI"]}>",
+      \MovLib\Data\Delayed\Logger::SLOW
+    );
+  }
+
+  // Execute each delayed run method after sending the generated output to the user.
+  foreach ($delayed as $classes) {
+    foreach ($classes as $class => $method) {
+      $class::{$method}();
+    }
+  }
+
+  $delayedEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
+  if ($delayedEnd > 5.0) {
+    \MovLib\Data\Delayed\Logger::stack(
+      "DELAYED {$responseEnd}s <{$_SERVER["SERVER"]}{$_SERVER["REQUEST_URI"]}>",
+      \MovLib\Data\Delayed\Logger::SLOW
+    );
+  }
+
+  // The logger is always executed at last!
+  \MovLib\Data\Delayed\Logger::run();
+}

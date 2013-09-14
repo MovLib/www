@@ -20,9 +20,10 @@ namespace MovLib\Exception;
 /**
  * The MovLib abstract exception is the base class for all exceptions and used to extend the default exception
  * implementation of PHP. Our exceptions are always SPL runtime exceptions, if you need to throw another kind of
- * exception, please use the other <a href="http://www.php.net/manual/en/spl.exceptions.php">SPL exception classes</a>.
+ * exception, please use the other {@link http://www.php.net/manual/en/spl.exceptions.php SPL exception classes}.
  *
  * @link http://ralphschindler.com/2010/09/15/exception-best-practices-in-php-5-3
+ *   Ralph Schindler: Exception best practices in PHP 5.3
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -45,32 +46,6 @@ class AbstractException extends \RuntimeException {
    */
   public function __construct($message, $previous = null, $code = E_RECOVERABLE_ERROR) {
     parent::__construct($message, $code, $previous);
-  }
-
-  /**
-   * The file where the error/exception originated from (this overrides the default <var>__FILE__</var> that is used by
-   * exceptions).
-   *
-   * @param string $file
-   *   Absolute path to the file where the error/exception originated from.
-   * @return this
-   */
-  public function setFile($file) {
-    $this->file = $file;
-    return $this;
-  }
-
-  /**
-   * The line where the error/exception originated from (this overrides the default <var>__LINE__</var> that is used by
-   * exceptions).
-   *
-   * @param int $line
-   *   The line number where the error/exception originated from.
-   * @return this
-   */
-  public function setLine($line) {
-    $this->line = $line;
-    return $this;
   }
 
 }
