@@ -95,7 +95,7 @@ class Login extends \MovLib\Presentation\Page {
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
     if ($_SERVER["PATH_INFO"] != $routeLogin && $_SERVER["PATH_INFO"] != $routeLogout) {
       if (empty($_GET["redirect_to"])) {
-        $_GET["redirect_to"] = $_SERVER["PATH_INFO"];
+        $_GET["redirect_to"] = $_SERVER["REQUEST_URI"];
       }
       $_GET["redirect_to"] = rawurlencode($_GET["redirect_to"]);
       $action .= "?redirect_to={$_GET["redirect_to"]}";
