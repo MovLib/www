@@ -413,30 +413,31 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
-   * Get temporary data for user's mail change request and delete it afterwards.
+   * Helper method to retrieve previously stored data from the temporary database table and directly delete it if the
+   * query returned a result.
    *
    * @param string $hash
-   *   The user's hash.
-   * @return null|array
-   *   If no data is stored for <var>$hash</var> <code>NULL</code> is returned, otherwise an associative array with the
-   *   following keys:
+   *   The user submitted hash to identify the email change request.
+   * @param array $dynamicData
+   *   Numeric array with numeric arrays, the inner numeric array must be in the following format:
    *   <ul>
-   *     <li><code>"id"</code> of the user</li>
-   *     <li><code>"email"</code> of the user</li>
-   *     <li><code>"time"</code> when the record was created</li>
+   *     <li><code>0</code> is the name of the column</li>
+   *     <li><code>1</code> is the data type of the column</li>
    *   </ul>
+   * @return null|array
+   *   <code>NULL</code> if no record was found, otherwise an associative array consisting of the dynamic columns
+   *   specified in <var>$dynamicData</var>.
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function getTemporaryEmailChangeData($hash) {
-    $emailLength = self::MAX_LENGTH_EMAIL;
-    $result = $this->select(
-      "SELECT
-        COLUMN_GET(`dyn_data`, 'id' AS UNSIGNED) AS `id`,
-        COLUMN_GET(`dyn_data`, 'email' AS CHAR({$emailLength})) AS `email`,
-        COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
-      FROM `tmp`
-      WHERE `key` = ?
-      LIMIT 1", "s", [ $hash ]
-    );
+  private function getTemporaryData($hash, array $dynamicData) {
+    $select = null;
+    foreach ($dynamicData as $name => $type) {
+      if ($select) {
+        $select .= ", ";
+      }
+      $select .= "COLUMN_GET(`dyn_data`, '{$name}' AS {$type}) AS `{$name}`";
+    }
+    $result = $this->select("SELECT {$select} FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $hash ]);
     if (!empty($result[0])) {
       $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $hash ]);
       return $result[0];
@@ -444,31 +445,80 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
-   * Select the data that was previously stored and directly delete it.
+   * Select data previously inserted and delete it if available.
+   *
+   * @param string $hash
+   *   The user submitted hash to identify the email change request.
+   * @return null|array
+   *   <code>NULL</code> if no record was found. Otherwise an associative array with the form:
+   *   following keys:
+   *   <ul>
+   *     <li><code>"id"</code> is the user's unique ID</li>
+   *     <li><code>"email"</code> is the user's desired and valid new email address</li>
+   *   </ul>
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getTemporaryEmailChangeData($hash) {
+    return $this->getTemporaryData($hash, [ "id" => "UNSIGNED", "email" => "BINARY" ]);
+  }
+
+  /**
+   * Select data previously inserted and delete it if available.
+   *
+   * @param string $hash
+   *   The user submitted hash to identify the password change request.
+   * @return null|array
+   *   <code>NULL</code> if no record was found. Otherwise an associative array with the form:
+   *   <ul>
+   *     <li><code>"id"</code> is the user's unique ID</li>
+   *     <li><code>"password"</code> is the unhashed new password</li>
+   *   </ul>
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getTemporaryPasswordChangeData($hash) {
+    return $this->getTemporaryData($hash, [ "id" => "UNSIGNED", "password" => "BINARY" ]);
+  }
+
+  /**
+   * Select data previously inserted and delete it if available.
    *
    * @param string $hash
    *   The user submitted hash to identify the reset password request.
    * @return null|array
-   *   <code>NULL</code> if no record was found for the hash, otherwise an associative array with the following keys:
-   *   <i>name</i>, <i>email</i>, and <i>time</i>. The name might be <code>NULL</code>, depending on the data that
-   *   was stored previously (e.g. reset password requests do not have the name).
+   *   <code>NULL</code> if no record was found. Otherwise an associative array with the form:
+   *   <ul>
+   *     <li><code>"name"</code> is the user's desired and valid name</li>
+   *     <li><code>"email"</code> is the user's email address</li>
+   *   </ul>
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function getTemporaryRegistrationData($hash) {
-    $nameLength = self::MAX_LENGTH_NAME;
-    $emailLength = self::MAX_LENGTH_EMAIL;
-    $result = $this->select(
-      "SELECT
-        COLUMN_GET(`dyn_data`, 'name' AS CHAR({$nameLength})) AS `name`,
-        COLUMN_GET(`dyn_data`, 'email' AS CHAR({$emailLength})) AS `email`,
-        COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
-      FROM `tmp`
-        WHERE `key` = ?
-      LIMIT 1", "s", [ $hash ]
-    );
-    if (!empty($result[0])) {
-      $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $hash ]);
-      return $result[0];
+    return $this->getTemporaryData($hash, [ "name" => "BINARY", "email" => "BINARY" ]);
+  }
+
+  /**
+   * Helper method to insert data into the temporary database table in a consistent format.
+   *
+   * @param string $types
+   *   The type string in <code>\mysqli_stmt::bind_param()</code> syntax.
+   * @param array $dynamicColumns
+   *   Numeric array containing the names of the dynamic columns that should be created.
+   * @param array $params
+   *   Numeric array containing the values for the dynamic columns.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  private function prepareTemporaryData($types, array $dynamicColumns, array $params) {
+    $columns = null;
+    $c = count($dynamicColumns);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($i !== 0) {
+        $columns .= ", ";
+      }
+      $columns .= "'{$dynamicColumns[$i]}', ?";
     }
+    array_unshift($params, $this->authenticationToken);
+    return $this->query("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE({$columns}, 'time', CURRENT_TIMESTAMP))", "s{$types}", $params);
   }
 
   /**
@@ -482,12 +532,7 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function prepareEmailChange($newEmail) {
-    $this->query(
-      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('id', ?, 'email', ?, 'time', CURRENT_TIMESTAMP))",
-      "sds",
-      [ $this->authenticationToken, $this->id, $newEmail ]
-    );
-    return $this;
+    return $this->prepareTemporaryData("ds", [ "id", "email" ], [ $this->id, $newEmail ]);
   }
 
   /**
@@ -501,12 +546,7 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function preparePasswordChange($rawPassword) {
-    $this->query(
-      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('id', ?, 'password', ?, 'time', CURRENT_TIMESTAMP))",
-      "sds",
-      [ $this->authenticationToken, $this->id, $rawPassword ]
-    );
-    return $this;
+    return $this->prepareTemporaryData("ds", [ "id", "password" ], [ $this->id, $rawPassword ]);
   }
 
   /**
@@ -518,12 +558,7 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function prepareRegistration() {
-    $this->query(
-      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('name', ?, 'email', ?, 'time', CURRENT_TIMESTAMP))",
-      "sss",
-      [ $this->authenticationToken, $this->name, $this->email ]
-    );
-    return $this;
+    return $this->prepareTemporaryData("ss", [ "name", "email" ], [ $this->name, $this->email ]);
   }
 
   /**
@@ -535,12 +570,7 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function prepareResetPassword() {
-    $this->query(
-      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('email', ?, 'time', CURRENT_TIMESTAMP))",
-      "ss",
-      [ $this->authenticationToken, $this->email ]
-    );
-    return $this;
+    return $this->prepareTemporaryData("s", [ "email" ], [ $this->email ]);
   }
 
   /**
