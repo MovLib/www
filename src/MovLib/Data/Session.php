@@ -449,6 +449,9 @@ class Session extends \MovLib\Data\Database {
    */
   private function start() {
     $sessionData = isset($_SESSION) ? $_SESSION : null;
+    if (session_status() === PHP_SESSION_ACTIVE) {
+      $this->destroy();
+    }
     if (session_start() === false) {
       throw new MemcachedException("Could not start session (may be Memcached is down?).");
     }
