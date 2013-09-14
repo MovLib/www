@@ -195,8 +195,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     }
     // The token seems valid, try to load associated data from the temporary table.
     elseif (!($data = $this->user->getTemporaryEmailChangeData($_GET["token"]))) {
-      $errors[] = $i18n->t("The authentication token is invalid, please go back to the mail we sent you and copy the whole link.");
-      $errors[] = $i18n->t("Your authentication token has expired if it is older than 24 hours. If so, please request a new mail change below.");
+      $errors[] = $i18n->t("Your authentication token has expired, please fill out the form again.");
     }
     // Data was loaded successfully, compare the stored ID with the current user's ID. This is a really odd situation
     // we could encounter here. How was this user able to snatch the token from the other user? What should we do?
@@ -208,7 +207,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     if ($this->checkErrors($errors) === false) {
       $this->user->updateEmail($data["email"]);
       $success = new Alert($i18n->t("Your email address was successfully changed to {0}.", [ $this->placeholder($this->user->email) ]));
-      $success->title = $i18n->t("Email address was successfully changed");
+      $success->title = $i18n->t("Email Address Changed Successfully");
       $success->severity = Alert::SEVERITY_SUCCESS;
       $this->alerts .= $success;
     }
