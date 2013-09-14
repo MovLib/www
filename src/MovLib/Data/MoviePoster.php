@@ -179,7 +179,7 @@ class MoviePoster extends \MovLib\Data\AbstractImage {
         [ $movieId, $posterId ]
       );
       if (empty($result[0])) {
-        Logger::log("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", E_NOTICE);
+        Logger::stack("Could not retrieve poster (movie id: {$movieId}, poster id: {$posterId})!", Logger::DEBUG);
       }
       else {
         // Convenience

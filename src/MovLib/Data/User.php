@@ -64,6 +64,27 @@ class User extends \MovLib\Data\AbstractImage {
   const FROM_EMAIL = "email";
 
   /**
+   * Small image style.
+   *
+   * @var int
+   */
+  const IMAGESTYLE_SMALL = "50x50";
+
+  /**
+   * Normal image style.
+   *
+   * @var int
+   */
+  const IMAGESTYLE_NORMAL = "100x100";
+
+  /**
+   * Big image style.
+   *
+   * @var int
+   */
+  const IMAGESTYLE_BIG = "140x140";
+
+  /**
    * Maximum length an email address can have.
    *
    * This length must be the same as it is defined in the database table. We redefine this here in order to validate the
@@ -91,27 +112,6 @@ class User extends \MovLib\Data\AbstractImage {
    * @var int
    */
   const MIN_LENGTH_PASSWORD = 6;
-
-  /**
-   * Small image style.
-   *
-   * @var int
-   */
-  const IMAGESTYLE_SMALL = "50x50";
-
-  /**
-   * Normal image style.
-   *
-   * @var int
-   */
-  const IMAGESTYLE_NORMAL = "100x100";
-
-  /**
-   * Big image style.
-   *
-   * @var int
-   */
-  const IMAGESTYLE_BIG = "140x140";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -429,7 +429,7 @@ class User extends \MovLib\Data\AbstractImage {
     $emailLength = self::MAX_LENGTH_EMAIL;
     $result = $this->select(
       "SELECT
-        COLUMN_GET(`dyn_data`, 'user_id' AS UNSIGNED) AS `id`,
+        COLUMN_GET(`dyn_data`, 'id' AS UNSIGNED) AS `id`,
         COLUMN_GET(`dyn_data`, 'email' AS CHAR({$emailLength})) AS `email`,
         COLUMN_GET(`dyn_data`, 'time' AS UNSIGNED) AS `time`
       FROM `tmp`
@@ -473,6 +473,8 @@ class User extends \MovLib\Data\AbstractImage {
   /**
    * Prepare email change data for existing user account.
    *
+   * This method must be public for delayed execution.
+   *
    * @param string $newEmail
    *   The user's new email address.
    * @return this
@@ -481,8 +483,27 @@ class User extends \MovLib\Data\AbstractImage {
   public function prepareEmailChange($newEmail) {
     $this->query(
       "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('id', ?, 'email', ?, 'time', CURRENT_TIMESTAMP))",
-      "sss",
+      "sds",
       [ $this->authenticationToken, $this->id, $newEmail ]
+    );
+    return $this;
+  }
+
+  /**
+   * Prepare password change data for existing user account.
+   *
+   * This method must be public for delayed execution.
+   *
+   * @param string $rawPassword
+   *   The new unhashed password.
+   * @return string
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function preparePasswordChange($rawPassword) {
+    $this->query(
+      "INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE('id', ?, 'password', ?, 'time', CURRENT_TIMESTAMP))",
+      "sds",
+      [ $this->authenticationToken, $this->id, $rawPassword ]
     );
     return $this;
   }
@@ -490,7 +511,7 @@ class User extends \MovLib\Data\AbstractImage {
   /**
    * Prepare registration data for new user account.
    *
-   * Save data provided via the registration form in our temporary database.
+   * This method must be public for delayed execution.
    *
    * @return this
    * @throws \MovLib\Exception\DatabaseException
@@ -506,6 +527,8 @@ class User extends \MovLib\Data\AbstractImage {
 
   /**
    * Prepare reset password data for existing user account.
+   *
+   * This method must be public for delayed execution.
    *
    * @return this
    * @throws \MovLib\Exception\DatabaseException
@@ -535,27 +558,27 @@ class User extends \MovLib\Data\AbstractImage {
    *   The valid unique user's name.
    * @param string $email
    *   The valid unique user's email address.
-   * @param string $password
+   * @param string $rawPassword
    *   The unhashed user's password.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Exception\SessionException
    */
-  public function register($name, $email, $password) {
+  public function register($name, $email, $rawPassword) {
     global $i18n;
-    $this->query(
-      "INSERT INTO `users` (`language_id`, `name`, `email`, `password`, `created`, `login`, `timezone`, `init`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, '')",
-      "dsssss",
-      [ $this->languageId, $this->name, $this->email, $this->password, $this->timezone, $this->email ],
-      false
-    );
+    $password         = password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
     $this->languageId = $i18n->getLanguageId();
     $this->name       = $name;
     $this->email      = $email;
-    $this->password   = password_hash($password, PASSWORD_BCRYPT);
     $this->deleted    = false;
     $this->timezone   = ini_get("date.timezone");
-    $this->id         = $this->stmt->insert_id;
+    $this->query(
+      "INSERT INTO `users` (`language_id`, `name`, `email`, `password`, `created`, `login`, `timezone`, `init`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?, '')",
+      "dsssss",
+      [ $this->languageId, $this->name, $this->email, $password, $this->timezone, $this->email ],
+      false
+    );
+    $this->id = $this->stmt->insert_id;
     return $this->close();
   }
 
@@ -606,15 +629,16 @@ class User extends \MovLib\Data\AbstractImage {
   /**
    * Change the user's password.
    *
-   * @param string $newPassword
-   *   The raw (not hashed) new password.
+   * This method must be public for delayed execution!
+   *
+   * @param string $rawPassword
+   *   The new unhashed password.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function updatePassword($newPassword) {
-    $newPassword = password_hash($newPassword, PASSWORD_BCRYPT);
-    $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $newPassword, $this->id ]);
-    $this->password = $newPassword;
+  public function updatePassword($rawPassword) {
+    $password = password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
+    $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $password, $this->id ]);
     return $this;
   }
 

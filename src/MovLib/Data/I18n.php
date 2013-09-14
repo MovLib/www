@@ -20,10 +20,9 @@ namespace MovLib\Data;
 use \DateTimeZone;
 use \IntlDateFormatter;
 use \Locale;
+use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Utility\CollatorExtended;
-use \MovLib\Data\Delayed\Logger;
-use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 
 /**
  * @todo Description of I18nModel
@@ -201,7 +200,7 @@ class I18n extends \MovLib\Data\Database {
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
    * @param array $args
    *   Numeric array of arguments that should be inserted into <var>$pattern</var>.
-   * @param array $options
+   * @param array $options [optional]
    *   Associative array of options to alter the behaviour of this method. Available options are:
    *   <ul>
    *     <li><var>"comment"</var> You can pass along a comment that will be stored along this pattern for translators
@@ -212,20 +211,21 @@ class I18n extends \MovLib\Data\Database {
    * @return string
    *   The formatted and translated (if applicable) message.
    */
-  public function formatMessage($context, $pattern, $args, array &$options) {
-    if (empty($options["language_code"])) {
-      $options["language_code"] = $this->languageCode;
-    }
-    if ($options["language_code"] != $this->defaultLanguageCode) {
-      $result = $this->select("SELECT COLUMN_GET(`dyn_translations`, '{$options["language_code"]}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ]);
+  public function formatMessage($context, $pattern, $args, $options = null) {
+    $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
+    if ($languageCode != $this->defaultLanguageCode) {
+      $result = $this->select(
+        "SELECT COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1",
+        "s",
+        [ $pattern ]
+      );
       if (empty($result[0]["translation"])) {
-        Logger::log("Could not find {$options["language_code"]} translation for {$context}: '{$pattern}'", E_NOTICE);
-        // @todo Remove this line after translation extractor was written.
-        if (php_sapi_name() === "cli") {
-          $this->insertPattern($context, $pattern, $options);
-        }
-        elseif ($context != "route") {
-          DelayedMethodCalls::stack($this, "insertPattern", [ $context, $pattern, $options ]);
+        // @todo remove the following lines after the translation extractor has been created. NOTE that routes are
+        //       already handled via MovCli. We should also write an extended I18n class for MovCli and move all
+        //       methods that aren't needed in this class to the extended version. Many methods are only from interest
+        //       for that extended version (e.g. everything that has to do with inserting, updating and deleting).
+        if ($context === "message") {
+          DelayedMethodCalls::stack($this, "insertMessage", [ $pattern, $options ]);
         }
       }
       else {
@@ -233,7 +233,7 @@ class I18n extends \MovLib\Data\Database {
       }
     }
     if ($args) {
-      return msgfmt_format_message($options["language_code"], $pattern, $args);
+      return msgfmt_format_message($languageCode, $pattern, $args);
     }
     return $pattern;
   }
@@ -406,35 +406,37 @@ class I18n extends \MovLib\Data\Database {
   }
 
   /**
-   * Insert a pattern for translation into the database table identified by context.
+   * Insert message pattern.
    *
-   * @param string $context
-   *   The context of this translation, either <em>message</em> or <em>route</em>.
-   * @param string $pattern
-   *   The pattern to insert.
-   * @param array $options
-   *   Associative array to overwrite the default options used in this method. Possible keys are:
-   *   <ul>
-   *     <li><code>comment</code>: default is <code>NULL</code>.</li>
-   *   </ul>
-   * @return \MovLib\Data\I18n
+   * @param string $message
+   *   The message to insert.
+   * @param array $options [optional]
+   *   Associative array with additional options. Currently only the <code>"comment"</code> option is supported.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function insertPattern($context, $pattern, array $options) {
-    $this->affectedRows = 0;
-    if ($this->affectedRows === 0) {
-      // Maybe we already inserted this translation by a prior call to this method. This can happen if the same new
-      // pattern occurs more than once on the same page.
-      $result = $this->select("SELECT `{$context}_id` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ]);
-      if (!isset($result[0]["route_id"])) {
-        if (isset($options["comment"])) {
-          $this->query("INSERT INTO `{$context}s` (`{$context}`, `comment`, `dyn_translations`) VALUES (?, ?, '')", "ss", [ $pattern, $options["comment"] ]);
-        }
-        else {
-          $this->query("INSERT INTO `{$context}s` (`{$context}`, `dyn_translations`) VALUES (?, '')", "s", [ $pattern ]);
-        }
+  public function insertMessage($message, $options = null) {
+    if (empty($this->select("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", [ $message ]))) {
+      if (!isset($options["comment"])) {
+        $options["comment"] = null;
       }
+      $this->query("INSERT INTO `messages` (`message`, `comment`, `dyn_translations`) VALUES (?, ?, '')", "ss", [ $message, $options["comment"] ]);
     }
-    unset($this->affectedRows);
+    return $this;
+  }
+
+  /**
+   * Insert raoute pattern.
+   *
+   * @param string $route
+   *   The route to insert.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function insertRoute($route) {
+    if (empty($this->select("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ]))) {
+      $this->query("INSERT INTO `routes` (`route`, `dyn_translations`) VALUES (?, '')", "s", [ $route ]);
+    }
     return $this;
   }
 
@@ -461,7 +463,7 @@ class I18n extends \MovLib\Data\Database {
     // If affected rows is zero the translation was already present and exactly the same as was asked to update.
     if ($this->affectedRows === -1) {
       $exception = new DatabaseException("Could not insert nor update {$languageCode} translation for {$context} with ID '{$id}'");
-      Logger::logException($exception);
+      Logger::stack($exception);
       throw $exception;
     }
     return $this;
@@ -489,7 +491,7 @@ class I18n extends \MovLib\Data\Database {
    *   The formatted and translated <var>$route</var>.
    * @throws \IntlException
    */
-  public function r($route, array $args = null, array $options = []) {
+  public function r($route, array $args = null, array $options = null) {
     return $this->formatMessage("route", $route, $args, $options);
   }
 
@@ -513,7 +515,7 @@ class I18n extends \MovLib\Data\Database {
    *   The formatted and translated <var>$message</var>.
    * @throws \IntlException
    */
-  public function t($message, array $args = null, array $options = []) {
+  public function t($message, array $args = null, array $options = null) {
     return $this->formatMessage("message", $message, $args, $options);
   }
 

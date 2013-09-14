@@ -99,7 +99,7 @@ class Database {
       $this->disconnect();
     } catch (Exception $e) {
       // Do nothing! If everything worked fine till this point there is no reason to exit the execution of the request.
-      Logger::logException($e);
+      Logger::stack($e);
     }
   }
 

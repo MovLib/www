@@ -20,6 +20,7 @@ namespace MovLib\Data;
 use \Memcached;
 use \MemcachedException;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
+use \MovLib\Data\User;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UnauthorizedException;
 
@@ -202,6 +203,11 @@ class Session extends \MovLib\Data\Database {
     // Start, initialize, and insert (to persistent session storage) this new session.
     $this->start()->init($result[0]["user_id"]);
     DelayedMethodCalls::stack($this, "insert");
+
+    // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
+    //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
+    //       have to worry about. Maybe introduce a configuration option for this?
+    DelayedMethodCalls::stack($this, "passwordNeedsRehash", [ $result[0]["password"], $rawPassword ]);
 
     return $this;
   }
@@ -386,6 +392,27 @@ class Session extends \MovLib\Data\Database {
       "sdssi",
       [ $this->id, $this->userId, $this->userAgent, inet_pton($this->ipAddress), $this->authentication ]
     );
+  }
+
+  /**
+   * Test after every authentication if the password needs to be rehashed.
+   *
+   * This method must be public for delayed execution.
+   *
+   * @param string $password
+   *   The hashed password.
+   * @param string $rawPassword
+   *   The unhashed password.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\UserException
+   */
+  public function passwordNeedsRehash($password, $rawPassword) {
+    if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"]]) === true) {
+      $user = new User(User::FROM_ID, $this->userId);
+      $user->updatePassword($rawPassword);
+    }
+    return $this;
   }
 
   /**

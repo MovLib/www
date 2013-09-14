@@ -158,7 +158,7 @@ class MovieImage extends \MovLib\Data\AbstractImage {
         [ $movieId, $imageId ]
       );
       if (empty($result)) {
-        Logger::log("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", E_NOTICE);
+        Logger::stack("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", Logger::DEBUG);
       }
       else {
         $result["description"] = $result["description_localized"] ?: $result["description_en"];
