@@ -18,9 +18,12 @@
 namespace MovLib\Presentation\User;
 
 use \IntlDateFormatter;
+use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\User;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\RedirectException;
+use \MovLib\Exception\UnauthorizedException;
+use \MovLib\Presentation\Email\User\Deactivation;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\Button;
@@ -125,6 +128,10 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
       "class" => "button--danger",
       "value" => $i18n->t("Request Deactivation"),
     ]);
+
+    if (isset($_GET["token"])) {
+      $this->validateToken();
+    }
   }
 
 
@@ -177,6 +184,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
    * @return this
+   * @throws \MovLib\Exception\RedirectException
    */
   public function deleteSession() {
     global $i18n, $session;
@@ -197,11 +205,49 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
   /**
    * Delete all personal data and sign out the user.
    *
-   * @todo Implement
+   * @global \MovLib\Data\I18n $i18n
    * @return $this
    */
   public function validateDeactivation() {
-    $this->alerts .= "<div class='alert alert--error'><div class='container'>Not implemented yet!</div></div>";
+    global $i18n;
+    Mailer::stack(new Deactivation($this->user));
+    http_response_code(202);
+    $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]));
+    $success->title = $i18n->t("Successfully Requested Deactivation");
+    $success->severity = Alert::SEVERITY_SUCCESS;
+    $info = new Alert($i18n->t("You have to follow the link that we just sent to you via email to complete this action."));
+    $info->title = $i18n->t("Important!");
+    $info->severity = Alert::SEVERITY_INFO;
+    $this->alerts .= "{$success}{$info}";
+    return $this;
+  }
+
+  /**
+   * Validate the submitted authentication token and deactivate the user's account.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\Session $session
+   * @return this
+   * @throws \MovLib\Exception\RedirectException
+   * @throws \MovLib\Exception\UnauthorizedException
+   */
+  private function validateToken() {
+    global $i18n, $session;
+    $data = $this->user->validateAuthenticationToken($errors, $this->id);
+    if ($data && $data["id"] !== $session->userId) {
+      throw new UnauthorizedException($i18n->t("The authentication token is invalid, please sign in again and request a new token to deactivate your account."));
+    }
+    if ($this->checkErrors($errors) === false) {
+      $this->user->deactivate();
+      $success = new Alert(
+        "<p>{$i18n->t("Your account has been successfully deactivated and all your personal data has been purged from our system.")}</p>" .
+        "<p>{$i18n->t("To reactivate your account, simply sign in with your email address and secret password.")}</p>"
+      );
+      $success->title = $i18n->t("Deactivation Successful");
+      $success->severity = Alert::SEVERITY_SUCCESS;
+      $session->alerts .= $success;
+      throw new RedirectException($i18n->r("/user/sign-out"), 302);
+    }
     return $this;
   }
 

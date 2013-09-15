@@ -381,12 +381,9 @@ class Page extends \MovLib\Presentation\AbstractPage {
     $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."));
     $noscript->title = $i18n->t("JavaScript Disabled");
     $this->alerts .= "<noscript>{$noscript}</noscript>";
-    if (isset($_SESSION["alerts"])) {
-      $c = count($_SESSION["alerts"]);
-      for ($i = 0; $i < $c; ++$i) {
-        $this->alerts .= $_SESSION["alerts"][$i];
-      }
-      unset($_SESSION["alerts"]);
+    if (isset($_COOKIE["alerts"])) {
+      $this->alerts .= $_COOKIE["alerts"];
+      setcookie("alerts", "", time() - 42000, "/", ini_get("session.cookie_domain"));
     }
     return parent::init($title);
   }

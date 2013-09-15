@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Exception\UserException;
 use \MovLib\View\ImageStyle\ResizeImageStyle;
 
@@ -401,6 +402,43 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
+   * Set deactivated flag, purge personal data.
+   *
+   * @todo Delete avatar image!
+   * @global \MovLib\Data\Session $session
+   * @return this
+   * @throws \MovLib\Data\DatabaseException
+   */
+  public function deactivate() {
+    global $session;
+    $sessions = $session->getActiveSessions();
+    DelayedMethodCalls::stack($session, "delete", array_column($sessions, "session_id"));
+    return $this
+      ->query(
+        "UPDATE `users` SET
+          `private`           = false,
+          `deleted`           = true,
+          `timezone`          = ?,
+          `dyn_profile`       = '',
+          `sex`               = 0,
+          `country_id`        = NULL,
+          `real_name`         = NULL,
+          `birthday`          = NULL,
+          `website`           = NULL,
+          `facebook`          = NULL,
+          `google_plus`       = NULL,
+          `twitter`           = NULL,
+          `avatar_extension`  = NULL,
+          `avatar_name`       = NULL,
+          `avatar_changed`    = NULL
+        WHERE `user_id` = ?",
+        "sd",
+        [ ini_get("date.timezone"), $this->id ]
+      )
+    ;
+  }
+
+  /**
    * Get the user's preferred ISO 639-1 alpha-2 language code.
    *
    * @return string
@@ -501,6 +539,16 @@ class User extends \MovLib\Data\AbstractImage {
    */
   public static function getRandomPassword() {
     return shell_exec("pwgen -cnBv 20 1");
+  }
+
+  /**
+   * Reactivate a deactivated account.
+   *
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function reactivate() {
+    return $this->query("UPDATE `users` SET `deleted` = true WHERE `user_id` = ?", "d", [ $this->id ]);
   }
 
   /**
@@ -634,6 +682,10 @@ class User extends \MovLib\Data\AbstractImage {
 
         case "user-registration":
           $data = $this->getTemporaryData($_GET["token"], [ "name" => "BINARY", "email" => "BINARY" ]);
+          break;
+
+        case "user-dangerzonesettings":
+          $data = $this->getTemporaryData($_GET["token"], [ "id" => "UNSIGNED" ]);
           break;
       }
       if (!$data) {

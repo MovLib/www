@@ -132,6 +132,11 @@
   margin: 0;
 }
 
+.form-actions input,
+.form-actions button {
+  margin-right: 10px;
+}
+
 
 /* ==== PAGE LAYOUT ================================================================================================= */
 

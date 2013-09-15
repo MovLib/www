@@ -19,6 +19,7 @@ namespace MovLib\Presentation\User;
 
 use \MovLib\Exception\RedirectException;
 use \MovLib\Exception\SessionException;
+use \MovLib\Exception\UserException;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
@@ -156,10 +157,10 @@ class Login extends \MovLib\Presentation\Page {
       $session->authenticate($this->email->value, $this->password->value);
 
       // Ensure that the user know's that the log in succeded.
-      $alert = new Alert($i18n->t("Login was successful."));
-      $alert->title = $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]);
-      $alert->severity = Alert::SEVERITY_SUCCESS;
-      $_SESSION["alerts"][] = $alert;
+      $success = new Alert($i18n->t("Login was successful."));
+      $success->title = $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]);
+      $success->severity = Alert::SEVERITY_SUCCESS;
+      $session->alerts .= $success;
 
       // Redirect the user to the requested redirect destination and if none was set to the personalized dashboard.
       throw new RedirectException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"), 302);
@@ -167,9 +168,13 @@ class Login extends \MovLib\Presentation\Page {
     // Never tell the person who's trying to sing in which value was wrong. Both attributes are considered a secret and
     // should never be exposed by our application itself.
     catch (SessionException $e) {
-      $alert = new Alert($i18n->t("We either don’t know the email address, or the password was wrong."));
-      $alert->severity = Alert::SEVERITY_ERROR;
-      $this->alerts .= $alert;
+      $error = new Alert($i18n->t("We either don’t know the email address, or the password was wrong."));
+      $error->severity = Alert::SEVERITY_ERROR;
+      $this->alerts .= $error;
+    }
+    // Account has been deactivated!
+    catch (UserException $e) {
+      throw new RedirectException($i18n->r("/user/deactivated"), 302, $e);
     }
     return $this;
   }

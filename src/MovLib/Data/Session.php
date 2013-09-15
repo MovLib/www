@@ -22,6 +22,7 @@ use \MemcachedException;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Data\User;
 use \MovLib\Exception\SessionException;
+use \MovLib\Exception\UserException;
 use \MovLib\Exception\UnauthorizedException;
 
 /**
@@ -47,6 +48,13 @@ class Session extends \MovLib\Data\Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * Alert messages that should be displayed to the user on the next pageview.
+   *
+   * @var string
+   */
+  public $alerts = "";
 
   /**
    * Timestamp this session was first authenticated.
@@ -191,7 +199,7 @@ class Session extends \MovLib\Data\Database {
    */
   public function authenticate($email, $rawPassword) {
     // Load necessary user data from storage.
-    $result = $this->select("SELECT `user_id`, `name`, `password` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]);
+    $result = $this->select("SELECT `user_id`, `name`, `password`, `deleted` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]);
 
     // We couldn't find a user for the given email address if above query's result is empty.
     if (empty($result[0])) {
@@ -218,6 +226,10 @@ class Session extends \MovLib\Data\Database {
     //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
     //       have to worry about. Maybe introduce a configuration option for this?
     DelayedMethodCalls::stack($this, "passwordNeedsRehash", [ $result[0]["password"], $rawPassword ]);
+
+    if ((bool) $result[0]["deleted"] === true) {
+      throw new UserException("Account is deactivated!");
+    }
 
     return $this;
   }
@@ -257,13 +269,14 @@ class Session extends \MovLib\Data\Database {
    *
    * Must be public for delayed execution.
    *
-   * @param string $sessionId [optional]
-   *   The unique session ID that should be deleted. If no ID is passed along the current session ID of this instance
-   *   will be used.
+   * @param string|array $sessionId [optional]
+   *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
+   *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function delete($sessionId = null) {
+    $sessionPrefix = ini_get("memcached.sess_prefix");
     $sessionId = $sessionId ?: $this->id;
     // Fetch all configured Memcached servers from the PHP configuration and split them by the delimiter.
     $servers = explode(",", ini_get("session.save_path"));
@@ -279,14 +292,24 @@ class Session extends \MovLib\Data\Database {
     try {
       $memcached = new Memcached();
       $memcached->addServers($servers);
-      // Remove the session from our volatile storage.
-      $memcached->delete(ini_get("memcached.sess_prefix") . $sessionId);
+      if (is_array($sessionId)) {
+        $c = count($sessionId);
+        $clause = implode(", ", array_fill(0, $c, "?"));
+        $this->query("DELETE FROM `sessions` WHERE `session_id` IN ({$clause})", str_repeat("s", $c), $sessionId);
+        for ($i = 0; $i < $c; ++$i) {
+          $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
+        }
+        $memcached->deleteMulti($sessionId);
+      }
+      else {
+        $this->query("DELETE FROM `sessions` WHERE `session_id` = ?", "s", [ $sessionId ]);
+        $memcached->delete("{$sessionPrefix}{$sessionId}");
+      }
     }
     catch (MemcachedException $e) {
       throw new DatabaseException($e->getMessage(), $e);
     }
-    // Remove the session from our persistent storage as well.
-    return $this->query("DELETE FROM `sessions` WHERE `session_id` = ?", "s", [ $sessionId ]);
+    return $this;
   }
 
   /**
@@ -444,6 +467,13 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\SessionException
    */
   public function shutdown() {
+    // Store alert messages as cookie instead of storing them on our server. This will only increase network traffic by
+    // a few bytes instead of wasting our RAM. Plus the alert message is stored until the user closes the user agent,
+    // instead of the Memcached lifetime for session entries.
+    if (!empty($this->alerts)) {
+      setcookie("alerts", $this->alerts, 0, "/", ini_get("session.cookie_domain"));
+    }
+
     // Only start a session for this anonymous user if there is any data that we need to remember and if no session is
     // already active (which is the case if this request was made by an authenticated user).
     if (session_status() === PHP_SESSION_NONE && !empty($_SESSION)) {

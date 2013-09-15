@@ -305,6 +305,11 @@ location ^~ <?= $r("/user") ?> {
     include sites/conf/fastcgi.conf;
   }
 
+  location = <?= $r("/user/deactivated") ?> {
+    set $movlib_presenter "User\\Deactivated";
+    include sites/conf/fastcgi.conf;
+  }
+
   location ~ ^<?= $r("/user") ?>/(.+)$ {
     set $movlib_presenter "User\\Profile";
     set $movlib_user_name $1;

@@ -161,7 +161,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
 
       // Explain to the user where to find this further action to complete the request.
       $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
-      $success->title = $i18n->t("Successfully requested email change");
+      $success->title = $i18n->t("Successfully Requested Email Change");
       $success->severity = Alert::SEVERITY_SUCCESS;
       $this->alerts .= $success;
 
