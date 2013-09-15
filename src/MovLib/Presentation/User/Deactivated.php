@@ -49,7 +49,14 @@ class Deactivated extends \MovLib\Presentation\Page {
    * @global \MovLib\Data\Session $session
    */
   public function __construct() {
-    global $i18n;
+    global $i18n, $session;
+    if ($session->isAuthenticated === false) {
+      throw new RedirectException("/", 302);
+    }
+    $this->user = new User(User::FROM_ID, $session->userId);
+    if ($this->user->deactivated === false) {
+      throw new RedirectException($i18n->r("/my"), 302);
+    }
     $this->init($i18n->t("Deactivated"));
     $info = new Alert($i18n->t("Your account has been deactivated, do you wish to activate it again?"));
     $info->title = $i18n->t("Account Deactivated");

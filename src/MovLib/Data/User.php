@@ -190,7 +190,7 @@ class User extends \MovLib\Data\AbstractImage {
    *
    * @var boolean
    */
-  public $deleted;
+  public $deactivated;
 
   /**
    * PHP timezone string of the user's timezone.
@@ -325,7 +325,7 @@ class User extends \MovLib\Data\AbstractImage {
         $this->{$k} = $v;
       }
       settype($this->private, "boolean");
-      settype($this->deleted, "boolean");
+      settype($this->deactivated, "boolean");
       $this->initImage($this->imageHash, [
         new ResizeImageStyle(self::IMAGESTYLE_SMALL),
         new ResizeImageStyle(self::IMAGESTYLE_NORMAL),
@@ -579,7 +579,7 @@ class User extends \MovLib\Data\AbstractImage {
     $this->languageId = $i18n->getLanguageId();
     $this->name       = $name;
     $this->email      = $email;
-    $this->deleted    = false;
+    $this->deactivated    = false;
     $this->timezone   = ini_get("date.timezone");
     $this->query(
       "INSERT INTO `users` (`language_id`, `name`, `email`, `password`, `created`, `login`, `timezone`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, '')",

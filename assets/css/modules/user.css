@@ -26,10 +26,6 @@
  * @since 0.0.1-dev
  */
 
-.user .form-actions {
-  text-align: center;
-}
-
 #user-sessions th,
 #user-sessions td {
   white-space: pre;
@@ -37,4 +33,9 @@
 
 #user-sessions tt {
   white-space: normal;
+}
+
+#user-deactivated .form-actions,
+#user-sessions .form-actions {
+  text-align: center;
 }
