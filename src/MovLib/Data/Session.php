@@ -67,7 +67,7 @@ class Session extends \MovLib\Data\Database {
    *
    * @var string
    */
-  private $id;
+  public $id;
 
   /**
    * The session's IP address.
