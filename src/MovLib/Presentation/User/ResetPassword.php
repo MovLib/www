@@ -17,9 +17,9 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Presentation\Form;
-use \MovLib\Presentation\FormElement\InputEmail;
-use \MovLib\Presentation\FormElement\InputSubmit;
+use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\InputEmail;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 
 /**
  * User reset password presentation.
@@ -39,14 +39,14 @@ class ResetPassword extends \MovLib\Presentation\Page {
   /**
    * The email input form element.
    *
-   * @var \MovLib\Presentation\FormElement\InputEmail
+   * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
   private $email;
 
   /**
    * The page's form element.
    *
-   * @var \MovLib\Presentation\Form;
+   * @var \MovLib\Presentation\Partial\Form;
    */
   private $form;
 
@@ -80,7 +80,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   public function getContent() {
-    return "<div class='container'><div class='row'>{$this->form->open()}<p>{$this->email}</p>{$this->form->close(false)}</div></div>";
+    return "<div class='container'><div class='row'>{$this->form}</div></div>";
   }
 
   /**

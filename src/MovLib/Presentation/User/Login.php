@@ -19,11 +19,11 @@ namespace MovLib\Presentation\User;
 
 use \MovLib\Exception\RedirectException;
 use \MovLib\Exception\SessionException;
-use \MovLib\Presentation\Form;
-use \MovLib\Presentation\FormElement\InputEmail;
-use \MovLib\Presentation\FormElement\InputPassword;
-use \MovLib\Presentation\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\InputEmail;
+use \MovLib\Presentation\Partial\FormElement\InputPassword;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 
 /**
  * User login presentation.
@@ -44,21 +44,21 @@ class Login extends \MovLib\Presentation\Page {
   /**
    * The input email form element.
    *
-   * @var \MovLib\Presentation\FormElement\InputEmail
+   * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
   private $email;
 
   /**
    * The page's form.
    *
-   * @var \MovLib\Presentation\Form
+   * @var \MovLib\Presentation\Partial\Form
    */
   private $form;
 
   /**
    * The input password form element.
    *
-   * @var \MovLib\Presentation\FormElement\InputPassword
+   * @var \MovLib\Presentation\Partial\FormElement\InputPassword
    */
   private $password;
 
@@ -104,8 +104,7 @@ class Login extends \MovLib\Presentation\Page {
     // @todo max-length
     $this->email = new InputEmail([ "autofocus" ]);
     $this->email->required();
-    $this->email->help = "<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>";
-    $this->email->helpPopup = false;
+    $this->email->setHelp("<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
 
     $this->password = new InputPassword();
 

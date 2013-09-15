@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\FormElement;
+namespace MovLib\Presentation\Partial\FormElement;
 
 /**
  * HTML input type password form element.
@@ -26,7 +26,7 @@ namespace MovLib\Presentation\FormElement;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputPassword extends \MovLib\Presentation\FormElement\Input {
+class InputPassword extends \MovLib\Presentation\Partial\FormElement\Input {
 
   /**
    * Instantiate new HTML input form element of type password.

@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,11 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
-namespace MovLib\Presentation;
+namespace MovLib\Presentation\Partial;
 
 use \MovLib\Exception\ValidatorException;
-use \MovLib\Presentation\FormElement\InputHidden;
+use \MovLib\Presentation\Partial\FormElement\InputHidden;
 
 /**
  * Auto-validating HTML form for POST requests.
@@ -69,7 +68,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
   /**
    * Numeric array containing all action form elments.
    *
-   * Action elements are the elements that will be included in the <code>Form::close()</code>-method. Action elements
+   * Action elements are the elements that will be included in the <code>Form::close()</code> method. Action elements
    * won't be validated.
    *
    * @var array
@@ -88,9 +87,8 @@ class Form extends \MovLib\Presentation\AbstractBase {
   /**
    * Numeric array containing all hidden form elements.
    *
-   * Hidden elements are all elements that are an instance of <code>\MovLib\View\HTML\Input\HiddenInput</code>. Hidden
-   * elements won't be validated, hidden elements usually include special values like the <code>"form_id"</code> and/or
-   * the <code>"csrf"</code>-token. They are usually validated at other points within the application.
+   * Hidden elements are the elements that will be included in the <code>Form::open()</code> method. Hidden elements
+   * won't be validated.
    *
    * @var array
    */
@@ -138,6 +136,13 @@ class Form extends \MovLib\Presentation\AbstractBase {
     // Validate all attached form elements if we are receiving this form.
     if (filter_input(INPUT_POST, "form_id") == $this->id) {
       $errors = $mandatoryError = null;
+
+      if ($session->validateCsrfToken() === false) {
+        $page->checkErrors([$i18n->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
+          "<a href='{$_SERVER["REQUEST_URI"]}'>", "</a>"
+        ])]);
+        return;
+      }
 
       $c = count($elements);
       for ($i = 0; $i < $c; ++$i) {
@@ -205,7 +210,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
    *   The opening <code><form></code>-tag, including all hidden input elements.
    */
   public function open() {
-    $hidden = "";
+    $hidden = null;
     $c = count($this->hiddenElements);
     for ($i = 0; $i < $c; ++$i) {
       $hidden .= $this->hiddenElements[$i];
@@ -214,25 +219,19 @@ class Form extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Get the closing <code><form></code>-tag, including the submit input element.
+   * Get the closing <code><form></code>-tag, including all form elements from <code>Form::$actionElements</code>.
    *
-   * If no submit element is present within the current <var>$this->actionElements</var> one will be created with the
-   * default values.
-   *
-   * @param boolean $wrap [optional]
-   *   If set to <code>FALSE</code> the submit input element won't be wrapped with the <code><div class='form-actions'/>
-   *   </code>-mark-up, default is <code>TRUE</code> and therefor to wrap it.
    * @return string
-   *   The closing <code><form></code>-tag, including the submit input element.
+   *   The closing <code><form></code>-tag, including all form elements from <code>Form::$actionElements</code>.
    */
-  public function close($wrap = false) {
-    $actions = "";
+  public function close() {
+    $actions = null;
     $c = count($this->actionElements);
     for ($i = 0; $i < $c; ++$i) {
       $actions .= $this->actionElements[$i];
     }
-    if ($wrap === true) {
-      $actions = "<div class='form-actions'>{$actions}</div>";
+    if ($actions) {
+      $actions = "<p class='form-actions'>{$actions}</div>";
     }
     return "{$actions}</form>";
   }
@@ -243,7 +242,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
    * @return string
    */
   public function __toString() {
-    $inputs = "";
+    $inputs = null;
     $c = count($this->elements);
     for ($i = 0; $i < $c; ++$i) {
       $inputs .= $this->elements[$i];

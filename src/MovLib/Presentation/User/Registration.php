@@ -22,11 +22,11 @@ use \MovLib\Data\User;
 use \MovLib\Exception\RedirectException;
 use \MovLib\Presentation\Email\User\Registration as RegistrationEmail;
 use \MovLib\Presentation\Email\User\RegistrationEmailExists;
-use \MovLib\Presentation\Form;
-use \MovLib\Presentation\FormElement\Input;
-use \MovLib\Presentation\FormElement\InputEmail;
-use \MovLib\Presentation\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\Input;
+use \MovLib\Presentation\Partial\FormElement\InputEmail;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \Normalizer;
 
 /**
@@ -48,21 +48,21 @@ class Registration extends \MovLib\Presentation\Page {
   /**
    * The input email form element.
    *
-   * @var \MovLib\Presentation\FormElement\InputEmail
+   * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
   private $email;
 
   /**
    * The page's form.
    *
-   * @var \MovLib\Presentation\Form
+   * @var \MovLib\Presentation\Partial\Form
    */
   private $form;
 
   /**
    * The input text form element for the username.
    *
-   * @var \MovLib\Presentation\FormElement\Input
+   * @var \MovLib\Presentation\Partial\FormElement\Input
    */
   private $username;
 
@@ -96,6 +96,7 @@ class Registration extends \MovLib\Presentation\Page {
 
     $this->email = new InputEmail([ "autofocus" ]);
     $this->email->required();
+    $this->email->setHelp("<a href='{$i18n->r("/user/login")}'>{$i18n->t("Already have an account?")}</a>", false);
 
     // We do not use the specialized input text form element, as it would sanitize the string too much. We want to let
     // the user know about anything that's not okay with the entered string.
@@ -132,12 +133,7 @@ class Registration extends \MovLib\Presentation\Page {
         [ "<a href='{$_SERVER["PATH_INFO"]}'>", "</a>" ]
       )}</small></div>";
     }
-    return
-      "<div class='container'><div class='row'>{$this->form->open()}" .
-        "<small class='form-help'><a href='{$i18n->r("/user/login")}'>{$i18n->t("Already have an account?")}</a></small>" .
-        "<p>{$this->email}</p>" .
-        "<p>{$this->username}</p>" .
-      "{$this->form->close(false)}</div></div>"
+    return "<div class='container'><div class='row'>{$this->form}</div></div>"
     ;
   }
 

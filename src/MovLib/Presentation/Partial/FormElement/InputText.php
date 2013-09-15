@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\FormElement;
+namespace MovLib\Presentation\Partial\FormElement;
 
 use \Normalizer;
 
@@ -31,7 +31,7 @@ use \Normalizer;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputText extends \MovLib\Presentation\FormElement\Input {
+class InputText extends \MovLib\Presentation\Partial\FormElement\Input {
 
   /**
    * Instantiate new HTML input form element of type text.

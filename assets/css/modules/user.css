@@ -26,27 +26,15 @@
  * @since 0.0.1-dev
  */
 
-#user-sessions {
-  table-layout: fixed;
-  word-wrap: break-word;
-}
-
-#user-sessions col {
-  width: 18%;
-}
-
-#user-sessions col:first-child {
-  width: 40%;
-}
-
-#user-sessions col:nth-child(2) {
-  width: 24%;
-}
-
-#user-sessions tr td:last-child {
+.user .form-actions {
   text-align: center;
 }
 
-.usersettings-content .form-actions {
-  text-align: center;
+#user-sessions th,
+#user-sessions td {
+  white-space: pre;
+}
+
+#user-sessions tt {
+  white-space: normal;
 }

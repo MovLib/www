@@ -15,7 +15,9 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\FormElement;
+namespace MovLib\Presentation\Partial\FormElement;
+
+use \MovLib\Presentation\Partial\Help;
 
 /**
  * Default HTML input form element (HTML default is type text).
@@ -77,14 +79,7 @@ class Input extends \MovLib\Presentation\AbstractBase {
    *
    * @var string
    */
-  public $help;
-
-  /**
-   * Flag indicating if the help should be displayed pop-up or not.
-   *
-   * @var boolean
-   */
-  public $helpPopup = true;
+  protected $help;
 
   /**
    * The label text of the input element.
@@ -177,17 +172,13 @@ class Input extends \MovLib\Presentation\AbstractBase {
    *   The string representation of this form element.
    */
   public function __toString() {
-    // This must be called first, because it alters the attributes of our input element if a help is available!
-    $help = $this->help();
-    // We also have to repeat the string at this point, because a block setting alters the attributes.
     if ($this->block === true) {
       $this->addClass("input--block-level", $this->attributes);
-      $input = "<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+      return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
     }
     else {
-      $input = "<label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}>";
+      return "{$this->help}<label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}>";
     }
-    return "{$help}{$input}";
   }
 
 
@@ -207,26 +198,14 @@ class Input extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Get the help of this form element (if any).
+   * Set input's help.
    *
-   * @return string
-   *   The help of this form element or an empty string if no help was set.
+   * @return this
    */
-  public function help() {
-    if (!$this->help) {
-      return "";
-    }
+  public function setHelp($content, $popup = true) {
     $this->attributes["aria-describedby"] = "{$this->id}-help";
-    // We use a div as wrapper to ensure that the W3C validator throws an error if an author tries to use a help within
-    // a block element. This is important, because we are using the small element within the help to denote that this
-    // text isn't important for the main content (and the ARIA note role).
-    if ($this->helpPopup === true) {
-      $help = "<div class='form-help popup-container' id='{$this->id}-help' role='note'><i class='icon icon--help-circled'></i><small class='popup'>{$this->help}</small></div>";
-    }
-    else {
-      $help = "<small class='form-help' id='{$this->id}-help' role='note'>{$this->help}</small>";
-    }
-    return $help;
+    $this->help = new Help($content, $this->id, $popup);
+    return $this;
   }
 
   /**

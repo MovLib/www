@@ -21,10 +21,10 @@ use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\User;
 use \MovLib\Exception\UnauthorizedException;
 use \MovLib\Presentation\Email\User\EmailChange;
-use \MovLib\Presentation\Form;
-use \MovLib\Presentation\FormElement\InputEmail;
-use \MovLib\Presentation\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\InputEmail;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 
 /**
  * Allows a user to change her or his email address.
@@ -47,14 +47,14 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    *
    * A confirmation field is {@link http://ux.stackexchange.com/a/4769 senseless}.
    *
-   * @var \MovLib\Presentation\FormElement\InputEmail
+   * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
   private $email;
 
   /**
    * The page's form.
    *
-   * @var \MovLib\Presentation\Form
+   * @var \MovLib\Presentation\Partial\Form
    */
   private $form;
 
@@ -88,12 +88,12 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     ]);
     $this->email->label = $i18n->t("New Email Address");
     $this->email->required();
-    $this->email->help = $i18n->t(
+    $this->email->setHelp($i18n->t(
       "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
       "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to your " .
       "{0}notification settings{1}.",
       [ "<a href='{$i18n->r("/user/notification-settings")}'>", "</a>" ]
-    );
+    ));
 
     $this->form = new Form($this, [ $this->email ]);
 

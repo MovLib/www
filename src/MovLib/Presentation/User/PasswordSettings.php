@@ -20,10 +20,10 @@ namespace MovLib\Presentation\User;
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\User;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
-use \MovLib\Presentation\Form;
-use \MovLib\Presentation\FormElement\InputPassword;
-use \MovLib\Presentation\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\InputPassword;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 
 /**
  * Allows a user to change her or his password.
@@ -44,21 +44,21 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
   /**
    * The page's form.
    *
-   * @var \MovLib\Presentation\Form
+   * @var \MovLib\Presentation\Partial\Form
    */
   private $form;
 
   /**
    * The input password form element for the new password.
    *
-   * @var \MovLib\Presentation\FormElement\InputPassword
+   * @var \MovLib\Presentation\Partial\FormElement\InputPassword
    */
   private $newPassword;
 
   /**
    * The input password form element for confirmation of the new password.
    *
-   * @var \MovLib\Presentation\FormElement\InputPassword
+   * @var \MovLib\Presentation\Partial\FormElement\InputPassword
    */
   private $newPasswordConfirm;
 
@@ -88,8 +88,7 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
       "title"       => $i18n->t("Please enter your desired new password in this field."),
     ]);
     $this->newPassword->label = $i18n->t("New Password");
-    $this->newPassword->help = "<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>";
-    $this->newPassword->helpPopup = false;
+    $this->newPassword->setHelp("<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
 
     $this->newPasswordConfirm = new InputPassword([
       "placeholder" => $i18n->t("Enter your new password again"),

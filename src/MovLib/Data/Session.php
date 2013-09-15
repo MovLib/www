@@ -139,7 +139,7 @@ class Session extends \MovLib\Data\Database {
       $this->id = session_id();
 
       // We have to try loading the session from our persistent session storage if the session IDs don't match.
-      if ($_COOKIE[$this->name] !== $this->id) {
+      if ($_COOKIE[$this->name] != $this->id) {
         $result = $this->select("SELECT `user_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", $_COOKIE[$this->name]);
 
         // This is an old session that requires sign in and it's expired for anonymous users.
@@ -163,6 +163,9 @@ class Session extends \MovLib\Data\Database {
         $this->authentication = $_SESSION["authentication"];
         $this->userId         = $_SESSION["user_id"];
         $this->userName       = $_SESSION["user_name"];
+        if ($this->authentication + 86400 < time()) {
+          $this->regenerate();
+        }
         if ($this->userId > 0) {
           $this->isAuthenticated = true;
         }
@@ -203,7 +206,7 @@ class Session extends \MovLib\Data\Database {
     // My be the user was doing some work as anonymous user and already has a session active. If so generate new session
     // ID and if not generate a completely new session.
     if (session_status() === PHP_SESSION_ACTIVE) {
-      session_regenerate_id(true);
+      $this->regenerate();
     }
     else {
       $this->start();
@@ -258,7 +261,6 @@ class Session extends \MovLib\Data\Database {
    *   The unique session ID that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used.
    * @return this
-   * @throws \MemcachedException
    * @throws \MovLib\Exception\DatabaseException
    */
   public function delete($sessionId = null) {
@@ -274,10 +276,15 @@ class Session extends \MovLib\Data\Database {
         $servers[$i][1] = 0;
       }
     }
-    $memcached = new Memcached();
-    $memcached->addServers($servers);
-    // Remove the session from our volatile storage.
-    $memcached->delete(ini_get("memcached.sess_prefix") . $sessionId);
+    try {
+      $memcached = new Memcached();
+      $memcached->addServers($servers);
+      // Remove the session from our volatile storage.
+      $memcached->delete(ini_get("memcached.sess_prefix") . $sessionId);
+    }
+    catch (MemcachedException $e) {
+      throw new DatabaseException($e->getMessage(), $e);
+    }
     // Remove the session from our persistent storage as well.
     return $this->query("DELETE FROM `sessions` WHERE `session_id` = ?", "s", [ $sessionId ]);
   }
@@ -314,6 +321,7 @@ class Session extends \MovLib\Data\Database {
    *   Numeric array ontaining all sessions currently stored in the persistent session storage for the currently signed
    *   in user. Each entry in the numeric array is an associative array with the following entries:
    *   <ul>
+   *     <li><code>"session_id"</code> is the session's unique ID</li>
    *     <li><code>"authentication"</code> is the timestamp when this session was initially created</li>
    *     <li><code>"ip_address"</code> is the IP address stored during authentication or regeneration</li>
    *     <li><code>"user_agent"</code> is the user agent string submitted during authentication or regeneration</li>
@@ -321,17 +329,11 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getActiveSessions() {
-    $sessions = $this->select(
-      "SELECT UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ? LIMIT 1",
+    return $this->select(
+      "SELECT `session_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ?",
       "d",
       [ $_SESSION["user_id"] ]
     );
-    $c = count($sessions);
-    for ($i = 0; $i < $c; ++$i) {
-      // Transform each IP address into a human readable form.
-      $sessions[$i]["ip_address"] = inet_ntop($sessions[$i]["ip_address"]);
-    }
-    return $sessions;
   }
 
   /**
@@ -423,6 +425,18 @@ class Session extends \MovLib\Data\Database {
   }
 
   /**
+   * Regenerate session ID and update persistent storage.
+   *
+   * @return this
+   */
+  private function regenerate() {
+    session_regenerate_id(true);
+    DelayedMethodCalls::stack($this, "update", [ $this->id ]);
+    $this->id = session_id();
+    return $this;
+  }
+
+  /**
    * Shutdown the currently active session and start one for anonymous users if we have to.
    *
    * @return this
@@ -481,6 +495,20 @@ class Session extends \MovLib\Data\Database {
       "sissd",
       [ $this->id, inet_pton($this->ipAddress), $this->userAgent, $oldSessionId, $this->userId ]
     );
+  }
+
+  /**
+   * Validate session's CSRF token.
+   *
+   * @return boolean
+   *   <code>TRUE</code> if the token is valid, otherwise <code>FALSE</code>.
+   */
+  public function validateCsrfToken() {
+    if (session_status() === PHP_SESSION_ACTIVE && (!isset($_POST["csrf"]) || $this->csrfToken != $_POST["csrf"])) {
+      $this->regenerate();
+      return false;
+    }
+    return true;
   }
 
 }

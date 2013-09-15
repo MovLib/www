@@ -17,6 +17,16 @@
  */
 namespace MovLib\Presentation\User;
 
+use \IntlDateFormatter;
+use \MovLib\Data\User;
+use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\RedirectException;
+use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\Button;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
+use \MovLib\Presentation\Partial\Help;
+
 /**
  * Allows a user to terminate sessions and deactivate the account.
  *
@@ -28,6 +38,35 @@ namespace MovLib\Presentation\User;
  */
 class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   use \MovLib\Presentation\User\UserTrait;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The form for the sessions listing.
+   *
+   * @var \MovLib\Presentation\Partial\Form
+   */
+  private $formSessions;
+
+  /**
+   * The form to deactivate an account.
+   *
+   * @var \MovLib\Presentation\Partial\Form
+   */
+  private $formDeactivate;
+
+  /**
+   * String buffer used to construct the table with the session listing.
+   *
+   * @var string
+   */
+  private $sessionsTable;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new user danger zone settings presentation.
@@ -46,15 +85,124 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
     ;
 
     // Start rendering the page.
-    $this->init($i18n->t("Danger Zone Settings"));
+    $this->init($i18n->t("Danger Zone Settings"))->user = new User(User::FROM_ID, $session->userId);
+
+    // We must instantiate the form before we create the sessions table, otherwise deletions would happen after the
+    // table containing the sessions listing was built. Deleted sessions would still be displayed!
+    $this->formSessions = new Form($this, [], "sessions", "deleteSession");
+    $buttonText = $i18n->t("Terminate");
+    $buttonTitle = $i18n->t("Terminate this session, the associated user agent will be signed out immediately.");
+    $sessions = $session->getActiveSessions();
+    $c = count($sessions);
+    for ($i = 0; $i < $c; ++$i) {
+      $sessions[$i]["authentication"] = $i18n->formatDate($sessions[$i]["authentication"], $this->user->timezone, IntlDateFormatter::SHORT, IntlDateFormatter::SHORT);
+      $sessions[$i]["ip_address"] = inet_ntop($sessions[$i]["ip_address"]);
+      $active = null;
+      $button = new Button("session_id", $buttonText, [
+        "class" => "button--danger",
+        "type"  => "submit",
+        "value" => $sessions[$i]["session_id"],
+        "title" => $buttonTitle,
+      ]);
+      unset($button->attributes["id"]);
+      if ($sessions[$i]["session_id"] == $session->id) {
+        $active = " class='warning'";
+        $button->attributes["title"] = $i18n->t("If you click this button your active session is terminated and you’ll be signed out!");
+        $button->content = $i18n->t("Sign Out");
+      }
+      $this->sessionsTable .=
+        "<tr{$active}>" .
+          "<td>{$sessions[$i]["authentication"]}</td>" .
+          "<td class='small'><tt>{$this->checkPlain($sessions[$i]["user_agent"])}</tt></td>" .
+          "<td><tt>{$sessions[$i]["ip_address"]}</tt></td>" .
+          "<td class='form-actions'>{$button}</td>" .
+        "</tr>"
+      ;
+    }
+
+    $this->formDeactivate = new Form($this, [], "deactivate", "validateDeactivation");
+    $this->formDeactivate->actionElements[] = new InputSubmit([
+      "class" => "button--danger",
+      "value" => $i18n->t("Request Deactivation"),
+    ]);
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc
    */
   protected function getPageContent() {
     global $i18n;
-    return "<p>Hello World</p>";
+
+    $help = new Help($i18n->t(
+      "You agreed to release all your contributions to the {0} database along with an open and free license, therefor " .
+      "each of your edits is tightly bound to your account. To draw an analogy, you cannot withdraw your copyright " .
+      "if you create something in the European juristiction. The deactivation of your account would be just like that. " .
+      "Your {1}personal data{2} is of course deleted and only your username will remain visible to the public.",
+      [ "MovLib", "<a href='{$i18n->r("/user/account-settings")}'>", "</a>" ]
+    ));
+
+    $deactivate = new Alert("{$help}<p>{$i18n->t(
+      "If you want to deactivate your account, for whatever reason, click the button below. All your {0}personal data{1} " .
+      "will be purged from our system and you are signed out. To reactivate your account, simply sign in again with " .
+      "your email address and secret password (of course you’ll have to re-enter your personal data).",
+      [ "<a href='{$i18n->r("/user/account-settings")}'>", "</a>" ]
+    )}</p>{$this->formDeactivate}");
+    $deactivate->severity = Alert::SEVERITY_ERROR;
+
+    return
+      "<h2>{$i18n->t("Active Sessions")}</h2>" .
+      "{$this->formSessions->open()}<table class='table-hover' id='user-sessions'>" .
+        "<caption>{$i18n->t(
+          "The following table contains a listing of all your active sessions. You can terminate any session by " .
+          "clicking on the button to the right. Your current session is highlighted with a yellow background color " .
+          "and the button reads “sign out” instead of “terminate”. If you have the feeling that some sessions that are " .
+          "listed weren’t initiated by you, terminate them and consider to {0}set a new password{1} to ensure that " .
+          "nobody else has access to your account.",
+          [ "<a href='{$i18n->r("/user/password-settings")}'>", "</a>" ]
+        )}</caption>" .
+        "<thead><tr><th>{$i18n->t("Sign In Time")}</th><th>{$i18n->t("User Agent")}</th><th>{$i18n->t("IP address")}</th><th></th></tr></thead>" .
+        "<tbody>{$this->sessionsTable}</tbody>" .
+      "</table>{$this->formSessions->close()}" .
+      "<h2>{$i18n->t("Deactivate Account")}</h2>{$deactivate}"
+    ;
+  }
+
+  /**
+   * Attempt to delete the session identified by the submitted session ID from Memcached and our persistent storage.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\Session $session
+   * @return this
+   */
+  public function deleteSession() {
+    global $i18n, $session;
+    if ($_POST["session_id"] == $session->id) {
+      throw new RedirectException($i18n->r("/user/sign-out"), 302);
+    }
+    else {
+      try {
+        $session->delete($_POST["session_id"]);
+      }
+      catch (DatabaseException $e) {
+        $this->checkErrors([ $i18n->t("The submitted session ID was invalid.") ]);
+      }
+    }
+    return $this;
+  }
+
+  /**
+   * Delete all personal data and sign out the user.
+   *
+   * @todo Implement
+   * @return $this
+   */
+  public function validateDeactivation() {
+    $this->alerts .= "<div class='alert alert--error'><div class='container'>Not implemented yet!</div></div>";
+    return $this;
   }
 
 }
