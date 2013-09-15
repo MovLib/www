@@ -199,7 +199,7 @@ class Session extends \MovLib\Data\Database {
    */
   public function authenticate($email, $rawPassword) {
     // Load necessary user data from storage.
-    $result = $this->select("SELECT `user_id`, `name`, `password`, `deleted` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]);
+    $result = $this->select("SELECT `user_id`, `name`, `password`, `deactivated` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]);
 
     // We couldn't find a user for the given email address if above query's result is empty.
     if (empty($result[0])) {
@@ -227,7 +227,7 @@ class Session extends \MovLib\Data\Database {
     //       have to worry about. Maybe introduce a configuration option for this?
     DelayedMethodCalls::stack($this, "passwordNeedsRehash", [ $result[0]["password"], $rawPassword ]);
 
-    if ((bool) $result[0]["deleted"] === true) {
+    if ((bool) $result[0]["deactivated"] === true) {
       throw new UserException("Account is deactivated!");
     }
 

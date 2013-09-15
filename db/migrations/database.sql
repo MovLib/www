@@ -153,7 +153,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `access` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.' ,
   `login` TIMESTAMP NOT NULL COMMENT 'Timestamp for user’s last login.' ,
   `private` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.' ,
-  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE if this account was deleted or blocked, default is FALSE.' ,
+  `deactivated` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE if this account was deleted or blocked, default is FALSE.' ,
   `timezone` TINYTEXT NOT NULL COMMENT 'User’s timezone: http://php.net/manual/en/timezones.php' ,
   `edits` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The user’s edit counter.' ,
   `dyn_profile` BLOB NOT NULL COMMENT 'The user’s profile text (translatable).' ,

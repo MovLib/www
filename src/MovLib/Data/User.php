@@ -186,7 +186,7 @@ class User extends \MovLib\Data\AbstractImage {
   public $private;
 
   /**
-   * Flag defining if the user's profile is deactivated or deleted.
+   * Flag defining if the user's profile is deactivated.
    *
    * @var boolean
    */
@@ -303,7 +303,7 @@ class User extends \MovLib\Data\AbstractImage {
           UNIX_TIMESTAMP(`access`) AS `access`,
           UNIX_TIMESTAMP(`login`) AS `login`,
           `private`,
-          `deleted`,
+          `deactivated`,
           `timezone`,
           `edits`,
           COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY) AS `profile`,
@@ -417,7 +417,7 @@ class User extends \MovLib\Data\AbstractImage {
       ->query(
         "UPDATE `users` SET
           `private`           = false,
-          `deleted`           = true,
+          `deactivated`       = true,
           `timezone`          = ?,
           `dyn_profile`       = '',
           `sex`               = 0,
@@ -548,7 +548,7 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function reactivate() {
-    return $this->query("UPDATE `users` SET `deleted` = false WHERE `user_id` = ?", "d", [ $this->id ]);
+    return $this->query("UPDATE `users` SET `deactivated` = false WHERE `user_id` = ?", "d", [ $this->id ]);
   }
 
   /**
