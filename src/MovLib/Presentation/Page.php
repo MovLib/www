@@ -19,6 +19,7 @@ namespace MovLib\Presentation;
 
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Navigation;
+use \Locale;
 
 /**
  * A simple page without any content.
@@ -187,27 +188,35 @@ class Page extends \MovLib\Presentation\AbstractPage {
    */
   protected function getFooter() {
     global $i18n;
+    $displayLanguage = Locale::getDisplayLanguage($_SERVER["LANGUAGE_CODE"], $i18n->locale);
+    $languageLinks = new Navigation("language-links", $i18n->r("Language Links"), $i18n->getLanguageLinks());
     return
       "<footer id='footer'><div class='container'>" .
-        // .footer-row-copyright
-        "<div class='row footer-row-copyright'>" .
-          "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
-            "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
-            [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
-          )}<br>{$i18n->t(
-            "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
-          )}<br>{$i18n->t(
-            "By using this site, you agree to the {0}Terms of Use{1} and {2}Privacy Policy{3}.",
-            [ "<a href='{$i18n->r("/terms-of-use")}'>", "</a>", "<a href='{$i18n->r("/privacy-policy")}'>", "</a>" ]
-          )}" .
+        "<div class='row'>" .
+          // #footer-copyright
+          "<div id='footer-copyright'>" .
+            "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
+              "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
+              [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
+            )}<br>{$i18n->t(
+              "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
+            )}<br>{$i18n->t(
+              "By using this site, you agree to the {0}Terms of Use{1} and {2}Privacy Policy{3}.",
+              [ "<a href='{$i18n->r("/terms-of-use")}'>", "</a>", "<a href='{$i18n->r("/privacy-policy")}'>", "</a>" ]
+            )}" .
+          "</div>" .
+          // #footer-copyright
+          // #footer-links
+          "<div id='footer-links'>" .
+            "<button class='button button--inverse'>{$i18n->t("Language")}: {$displayLanguage}</button>" .
+            "<div class='well'>{$languageLinks}</div>" .
+          "</div>" .
+          // #footer-links
         "</div>" .
-        // .footer-row-copyright
-        // .footer-row-logos
-        "<div class='row footer-row-logos'>" .
+        "<div class='row' id='footer-logos'>" .
           "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
           "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/github.svg' width='64'></a>" .
         "</div>" .
-        // .footer-row-logos
       "</div></footer>"
 //      "<script id='js-settings' type='application/json'>" . json_encode($this->scripts) . "</script>"
       // @todo Minify and combine!

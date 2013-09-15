@@ -15,12 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Utility;
-
-use \Collator;
+namespace MovLib\Data;
 
 /**
- * Description of Collator
+ * Same as PHP's built in collator.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -28,7 +26,7 @@ use \Collator;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class CollatorExtended extends Collator {
+class Collator extends \Collator {
 
   /**
    * Sorts an array by key, maintaining key to data correlations. This is useful for associative arrays.
@@ -50,7 +48,7 @@ class CollatorExtended extends Collator {
    * @return boolean
    *   Returns <code>TRUE</code> on success or <code>FALSE</code> on failure.
    */
-  public function ksort(&$array, $sort_flags = Collator::SORT_REGULAR) {
+  public function ksort(&$array, $sort_flags = \Collator::SORT_REGULAR) {
     $original = $array;
     $sorted = array_keys($array);
     if (!$this->sort($sorted, $sort_flags)) {

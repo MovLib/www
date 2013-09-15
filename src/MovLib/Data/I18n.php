@@ -20,9 +20,9 @@ namespace MovLib\Data;
 use \DateTimeZone;
 use \IntlDateFormatter;
 use \Locale;
+use \MovLib\Data\Collator;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Utility\CollatorExtended;
 
 /**
  * @todo Description of I18nModel
@@ -116,7 +116,7 @@ class I18n extends \MovLib\Data\Database {
    * Extended collator for locale aware sorting.
    *
    * @see \MovLib\Data\I18n::getCollator()
-   * @var \MovLib\Utility\CollatorExtended
+   * @var \MovLib\Data\Collator
    */
   private $collator;
 
@@ -274,6 +274,32 @@ class I18n extends \MovLib\Data\Database {
     return $this->select("SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = ? LIMIT 1", "s", [ $this->languageCode ])[0]["language_id"];
   }
 
+  public function getLanguageLinks() {
+    // Translate all supported system languages to the current display language.
+    $translated = [];
+    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
+      $translated[$languageCode] = Locale::getDisplayLanguage($languageCode, $this->locale);
+    }
+    // Sort by current display language.
+    $this->getCollator()->asort($translated);
+    // Now we can finally build the links.
+    $links = [];
+    foreach ($translated as $languageCode => $displayLanguage) {
+      $translatedDisplayLanguage = Locale::getDisplayLanguage($languageCode, $languageCode);
+      if ($this->languageCode == $languageCode) {
+        $links[] = [ "#", "<b>{$displayLanguage} ({$translatedDisplayLanguage})</b>", [ "class" => "active" ]];
+      }
+      else {
+        $links[] = [
+          "{$_SERVER["SCHEME"]}://{$languageCode}.{$GLOBALS["movlib"]["default_domain"]}{$_SERVER["PATH_INFO"]}",
+          "{$displayLanguage} ({$translatedDisplayLanguage})",
+          [ "lang" => $languageCode, "title" => $this->t("Read this page in {0}.", [ $displayLanguage ]) ]
+        ];
+      }
+    }
+    return $links;
+  }
+
   /**
    * Get array containing all languages.
    *
@@ -349,13 +375,13 @@ class I18n extends \MovLib\Data\Database {
   /**
    * Get collator for the current locale.
    *
-   * @return \MovLib\Utility\CollatorExtended
+   * @return \MovLib\Data\Collator
    * @throws \IntlException
    *   If instantiating of the collator failed (e.g. non supported locale).
    */
   public function getCollator() {
     if (!$this->collator) {
-      $this->collator = new CollatorExtended($this->locale);
+      $this->collator = new Collator($this->locale);
     }
     return $this->collator;
   }
