@@ -548,7 +548,7 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function reactivate() {
-    return $this->query("UPDATE `users` SET `deleted` = true WHERE `user_id` = ?", "d", [ $this->id ]);
+    return $this->query("UPDATE `users` SET `deleted` = false WHERE `user_id` = ?", "d", [ $this->id ]);
   }
 
   /**
