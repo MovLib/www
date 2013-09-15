@@ -172,9 +172,9 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     // @todo Date of Birth
     $this->birthday = new InputDate();
 
-    // @todo Website
+    // We don't validate the existens of the user's website (respectively homepage).
     $this->website = new InputUrl("website", [
-      "title" => $i18n->t("Please enter your website address in this field."),
+      "title" => $i18n->t("Please enter your website address in this field. The address must start with either HTTP or HTTPS."),
     ], $this->user->website);
     $this->website->label = $i18n->t("Website");
 
@@ -194,6 +194,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->realName,
       $this->website,
     ]);
+
     $this->form->actionElements[] = new InputSubmit([
       "class" => "button--large button--success",
       "value" => $i18n->t("Update Account Settings"),
