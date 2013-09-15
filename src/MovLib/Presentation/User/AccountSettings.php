@@ -19,7 +19,15 @@ namespace MovLib\Presentation\User;
 
 use \MovLib\Data\User;
 use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
+use \MovLib\Presentation\Partial\FormElement\InputDate;
+use \MovLib\Presentation\Partial\FormElement\InputFile;
+use \MovLib\Presentation\Partial\FormElement\InputRadio;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
+use \MovLib\Presentation\Partial\FormElement\InputUrl;
+use \MovLib\Presentation\Partial\FormElement\Select;
+use \MovLib\Presentation\Partial\FormElement\Textarea;
 
 /**
  * Allows the user to manage his personalized settings.
@@ -38,6 +46,27 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
 
 
   /**
+   * The user's avatar input file form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputFile
+   */
+  private $avatar;
+
+  /**
+   * The user's birthday input date form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputDate
+   */
+  private $birthday;
+
+  /**
+   * The user's country select form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\Select
+   */
+  private $country;
+
+  /**
    * The presentation's form.
    *
    * @var \MovLib\Presentation\Partial\Form
@@ -45,11 +74,53 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
   private $form;
 
   /**
+   * The user's language select form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\Select
+   */
+  private $language;
+
+  /**
+   * The user's private input checkbox form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputCheckbox
+   */
+  private $private;
+
+  /**
+   * The user's profile textarea form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\Textarea
+   */
+  private $profile;
+
+  /**
    * The user's real name input text form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputText
    */
   private $realName;
+
+  /**
+   * The user's sex input radio form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputRadio
+   */
+  private $sex;
+
+  /**
+   * The user's timezone select form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\Select
+   */
+  private $timezone;
+
+  /**
+   * The user's website input url form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputUrl
+   */
+  private $website;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -74,14 +145,58 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     // Start rendering the page.
     $this->init($i18n->t("Account Settings"))->user = new User(User::FROM_ID, $session->userId);
 
+    // @todo Avatar Upload
+    $this->avatar = new InputFile();
+
     $this->realName = new InputText("real_name", [
       "placeholder" => $i18n->t("Enter your real name"),
       "title"       => $i18n->t("Please enter your real name in this field."),
     ], $this->user->realName);
     $this->realName->label = $i18n->t("Real Name");
 
+    // @todo System Language (ID)
+    $this->language = new Select();
+
+    // @todo Timezone Selection
+    $this->timezone = new Select();
+
+    // @todo Dynamic Profile
+    $this->profile = new Textarea();
+
+    // @todo Sex
+    $this->sex = new InputRadio();
+
+    // @todo Country (ID)
+    $this->country = new Select();
+
+    // @todo Date of Birth
+    $this->birthday = new InputDate();
+
+    // @todo Website
+    $this->website = new InputUrl("website", [
+      "title" => $i18n->t("Please enter your website address in this field."),
+    ], $this->user->website);
+    $this->website->label = $i18n->t("Website");
+
+    // @todo Facebook
+    //$this->facebook = ?
+
+    // @todo Google Plus
+    //$this->googlePlus = ?
+
+    // @todo Twitter
+    //$this->twitter = ?
+
+    // @todo Private Flag
+    $this->private = new InputCheckbox();
+
     $this->form = new Form($this, [
       $this->realName,
+      $this->website,
+    ]);
+    $this->form->actionElements[] = new InputSubmit([
+      "class" => "button--large button--success",
+      "value" => $i18n->t("Update Account Settings"),
     ]);
   }
 
