@@ -125,7 +125,6 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    * dashboard.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
    * @return this
    */
   public function validate() {
@@ -180,6 +179,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
    * @return this
+   * @throws \MovLib\Exception\UnauthorizedException
    */
   private function validateToken() {
     global $i18n, $session;

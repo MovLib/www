@@ -43,7 +43,7 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\Input {
    * @param string $defaultValue [optional]
    *   The default value of this form element, defaults to empty string.
    */
-  public function __construct($id = "email", array $attributes = null, $defaultValue = "") {
+  public function __construct($id, array $attributes = null, $defaultValue = "") {
     parent::__construct($id, $attributes, $defaultValue);
     $this->attributes["type"] = "text";
   }
