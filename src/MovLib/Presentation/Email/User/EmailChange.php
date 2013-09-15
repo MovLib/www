@@ -87,8 +87,8 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
         "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/email-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old email address.")}</p>" .
-      "<p>{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
+      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old email address.")}<br>" .
+      "{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
 
@@ -105,7 +105,6 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
 {$_SERVER["SERVER"]}{$i18n->r("/user/email-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}
 
 {$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old email address.")}
-
 {$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }

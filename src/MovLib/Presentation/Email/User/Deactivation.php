@@ -81,8 +81,8 @@ class Deactivation extends \MovLib\Presentation\Email\AbstractEmail {
         "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/danger-zone-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above your account will be deactivated and all your personal data will be purged.")}</p>" .
-      "<p>{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
+      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above your account will be deactivated and all your personal data will be purged.")}<br>" .
+      "{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
 
@@ -99,7 +99,6 @@ class Deactivation extends \MovLib\Presentation\Email\AbstractEmail {
 {$_SERVER["SERVER"]}{$i18n->r("/user/danger-zone-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}
 
 {$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above your account will be deactivated and all your personal data will be purged.")}
-
 {$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }

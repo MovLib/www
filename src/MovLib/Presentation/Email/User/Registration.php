@@ -82,12 +82,13 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
         "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/registration")}?{$i18n->t("token")}={$this->user->authenticationToken}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once within the next 24 hours and will lead you to a page where you can view (and change) your secret password.")}</p>" .
-      "<p>{$i18n->t("After setting your password, you will be able to sign in at MovLib in the future using:")}</p>" .
+      "<p>{$i18n->t("This link can only be used once within the next 24 hours and will lead you to a page where you can view (and change) your secret password.")}<br>" .
+      "{$i18n->t("After setting your password, you will be able to sign in at MovLib in the future using:")}</p>" .
       "<table>" .
         "<tr><td>{$i18n->t("Email Address")}:</td><td>{$this->recipient}</td><tr>" .
         "<tr><td>{$i18n->t("Password")}:</td><td><em>{$i18n->t("Your Secret Password")}</em></td></tr>" .
-      "</table>"
+      "</table>" .
+      "<p>{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
 
@@ -108,6 +109,8 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
 {$i18n->t("After setting your password, you will be able to sign in at MovLib in the future using:")}
 {$i18n->t("Email Address")}:  '{$i18n->t("Your Email Address")}'
 {$i18n->t("Password")}:       '{$i18n->t("Your Secret Password")}'
+
+{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }
 

@@ -17,6 +17,9 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Data\Delayed\Mailer;
+use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
@@ -95,6 +98,12 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * @throws \MovLib\Exception\RedirectException
    */
   public function validate() {
+    global $i18n;
+    Mailer::stack(new ResetPasswordEmail($this->email->value));
+    $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
+    $success->title = $i18n->t("Successfully Requested Password Reset");
+    $success->severity = Alert::SEVERITY_SUCCESS;
+    $this->alerts .= $success;
     return $this;
   }
 

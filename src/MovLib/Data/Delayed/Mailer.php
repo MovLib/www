@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Delayed;
 
+use \MovLib\Data\Delayed\Logger;
 use \MovLib\Exception\MailerException;
 use \MovLib\Presentation\Email\AbstractEmail;
 
@@ -60,37 +61,42 @@ class Mailer {
    */
   public function send(AbstractEmail $mail) {
     global $i18n;
-    $messageId = uniqid("movlib");
-    if (method_exists($mail, "init")) {
-      $mail->init();
+    try {
+      $messageId = uniqid("movlib");
+      if (method_exists($mail, "init")) {
+        $mail->init();
+      }
+      mail(
+        $mail->recipient,
+        mb_encode_mimeheader($mail->subject),
+        implode("\n", [
+          "--{$messageId}",
+          "Content-Type: text/plain; charset=utf-8",
+          "Content-Transfer-Encoding: BASE64",
+          "",
+          base64_encode($mail->getPlain()),
+          "",
+          "--{$messageId}",
+          "Content-Type: text/html; charset=utf-8",
+          "Content-Transfer-Encoding: BASE64",
+          "",
+          base64_encode($mail->getHtml()),
+          "",
+          "--{$messageId}--",
+        ]),
+        implode("\n", [
+          "Content-Type: multipart/alternative;",
+          "\tboundary=\"{$messageId}\"",
+          "From: \"" . mb_encode_mimeheader($i18n->t($GLOBALS["movlib"]["default_from_name"])) . "\" <{$GLOBALS["movlib"]["default_from"]}>",
+          "Message-ID: <{$messageId}@{$GLOBALS["movlib"]["default_domain"]}>",
+          "MIME-Version: 1.0",
+        ]),
+        "-f {$GLOBALS["movlib"]["default_from"]}"
+      );
     }
-    mail(
-      $mail->recipient,
-      mb_encode_mimeheader($mail->subject),
-      implode("\n", [
-        "--{$messageId}",
-        "Content-Type: text/plain; charset=utf-8",
-        "Content-Transfer-Encoding: BASE64",
-        "",
-        base64_encode($mail->getPlain()),
-        "",
-        "--{$messageId}",
-        "Content-Type: text/html; charset=utf-8",
-        "Content-Transfer-Encoding: BASE64",
-        "",
-        base64_encode($mail->getHtml()),
-        "",
-        "--{$messageId}--",
-      ]),
-      implode("\n", [
-        "Content-Type: multipart/alternative;",
-        "\tboundary=\"{$messageId}\"",
-        "From: \"" . mb_encode_mimeheader($i18n->t($GLOBALS["movlib"]["default_from_name"])) . "\" <{$GLOBALS["movlib"]["default_from"]}>",
-        "Message-ID: <{$messageId}@{$GLOBALS["movlib"]["default_domain"]}>",
-        "MIME-Version: 1.0",
-      ]),
-      "-f {$GLOBALS["movlib"]["default_from"]}"
-    );
+    catch (MailerException $e) {
+      Logger::stack($e);
+    }
     return $this;
   }
 

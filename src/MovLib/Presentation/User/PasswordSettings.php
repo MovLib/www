@@ -19,6 +19,7 @@ namespace MovLib\Presentation\User;
 
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\User;
+use \MovLib\Exception\UnauthorizedException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -76,10 +77,12 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
   public function __construct() {
     global $i18n, $session;
 
-    $session
-      ->checkAuthorization($i18n->t("You need to sign in to change your password."))
-      ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
-    ;
+    if (!isset($_GET["token"])) {
+      $session
+        ->checkAuthorization($i18n->t("You need to sign in to change your password."))
+        ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
+      ;
+    }
 
     $this->init($i18n->t("Password Settings"));
 
@@ -191,17 +194,31 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
    */
   public function validateToken() {
     global $i18n, $session;
-    $this->user = new User(User::FROM_ID, $session->userId);
+    $this->user = new User();
     $data = $this->user->validateAuthenticationToken($errors, $this->id);
-    if ($data && $data["id"] !== $this->user->id) {
-      throw new UnauthorizedException($i18n->t("The authentication token is invalid, please sign in again and request a new token to change your password."));
+    if ($data && $data["id"]) {
+      if ($session->isAuthenticated === true && $data["id"] !== $session->id) {
+        throw new UnauthorizedException($i18n->t("The authentication token is invalid, please sign in again and request a new token to change your password."));
+      }
+      $this->user = new User(User::FROM_ID, $data["id"]);
+    }
+    if (empty($data["password"])) {
+      $data["password"] = User::getRandomPassword();
+      $success = new Alert($i18n->t("Your new secret password is {0}.", [ "<code>{$data["password"]}</code>" ]));
+      $success->title = $i18n->t("Password Reset Successfully");
+    }
+    else {
+      $success = new Alert($i18n->t("Your password was successfully changed to {0}.", [ "<code>{$data["password"]}</code>" ]));
+      $success->title = $i18n->t("Password Changed Successfully");
     }
     if ($this->checkErrors($errors) === false) {
       $this->user->updatePassword($data["password"]);
-      $success = new Alert($i18n->t("Your password was successfully changed to {0}.", [ $this->placeholder($data["password"]) ]));
-      $success->title = $i18n->t("Password Changed Successfully");
+      $session->authenticate($this->user->email, $data["password"]);
       $success->severity = Alert::SEVERITY_SUCCESS;
       $this->alerts .= $success;
+    }
+    elseif ($session->isAuthenticated === false) {
+      throw new UnauthorizedException("Your authentication token has expired, please fill out the form again.");
     }
     return $this;
   }

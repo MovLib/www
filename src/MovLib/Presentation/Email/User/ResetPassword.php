@@ -17,54 +17,46 @@
  */
 namespace MovLib\Presentation\Email\User;
 
+use \MovLib\Data\User;
+use \MovLib\Exception\MailerException;
+use \MovLib\Exception\UserException;
+
 /**
- * This email template is used if a user requests a password change.
+ * Description of ResetPassword
  *
- * @see \MovLib\Presentation\User\PasswordSettings
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
+class ResetPassword extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The user who requested the password change.
+   * The user who requested the password reset.
    *
    * @var \MovLib\Data\User
    */
   private $user;
-
-  /**
-   * the user's new unhashed password.
-   *
-   * @var string
-   */
-  private $rawPassword;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new user password change email.
+   * Instantiate new user reset password email.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param \MovLib\Data\User $user
-   *   The user who requested the password change.
-   * @param string $rawPassword
-   *   The new unhashed password.
+   * @param string $email
+   *   The user submitted email address.
    */
-  public function __construct($user, $rawPassword) {
+  public function __construct($email) {
     global $i18n;
-    parent::__construct($user->email, $i18n->t("Requested Password Change"));
-    $this->user = $user;
-    $this->rawPassword = $rawPassword;
+    parent::__construct($email, $i18n->t("Requested Password Reset"));
   }
 
 
@@ -77,7 +69,13 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
    * @return this
    */
   public function init() {
-    $this->user->setAuthenticationToken()->prepareTemporaryData("ds", [ "id", "password" ], [ $this->user->id, $this->rawPassword ]);
+    try {
+      $this->user = new User(User::FROM_EMAIL, $this->recipient);
+      $this->user->setAuthenticationToken()->prepareTemporaryData("d", [ "id" ], [ $this->user->id ]);
+    }
+    catch (UserException $e) {
+      throw new MailerException("User with user for email {$this->recipient}.", $e);
+    }
     return $this;
   }
 
@@ -88,11 +86,10 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
     global $i18n;
     return
       "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
-      "<p>{$i18n->t("You (or someone else) requested to change your account’s password.")} {$i18n->t("You may now confirm this action by {0}clicking this link{1}.", [
-        "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/password-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}'>",
-        "</a>"
+      "<p>{$i18n->t("You (or someone else) requested to reset your password.")} {$i18n->t("You may now confirm this action by {0}clicking this link{1}.", [
+        "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/password-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}'>", "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old password.")}<br>" .
+      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old password.")}<br/>" .
       "{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
@@ -105,7 +102,7 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
     return <<<EOT
 {$i18n->t("Hi {0}!", [ $this->user->name ])}
 
-{$i18n->t("You (or someone else) requested to change your account’s password.")} {$i18n->t("You may now confirm this action by clicking the following link or copying and pasting it to your browser:")}
+{$i18n->t("You (or someone else) requested to reset your password.")} {$i18n->t("You may now confirm this action by clicking the following link or copying and pasting it to your browser:")}
 
 {$_SERVER["SERVER"]}{$i18n->r("/user/password-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}
 

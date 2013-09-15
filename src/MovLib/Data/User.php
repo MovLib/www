@@ -538,7 +538,7 @@ class User extends \MovLib\Data\AbstractImage {
    *   The random password.
    */
   public static function getRandomPassword() {
-    return shell_exec("pwgen -cnBv 20 1");
+    return trim(shell_exec("pwgen -cnBv 20 1"));
   }
 
   /**
