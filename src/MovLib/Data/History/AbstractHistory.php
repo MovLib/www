@@ -87,6 +87,8 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    */
   public function __construct($id, array $columns = [], array $dynamicColumns = []) {
     $this->type = $this->getShortName();
+    $this->id = $id;
+
     $result = $this->select(
       "SELECT {$this->getColumnsForSelectQuery($columns, $dynamicColumns)} FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1",
       "d",
@@ -95,7 +97,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     if (empty($result[0])) {
       throw new HistoryException("Could not find {$this->type} with ID '{$this->id}'!");
     }
-    $this->id = $id;
+
     $this->entity = $result[0];
     $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
 
@@ -158,7 +160,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    */
   public function commit($message) {
     global $session;
-    exec("cd {$this->path} && git add -A && git commit --author='{$session->id} <>' -m '{$message}'", $output, $returnVar);
+    exec("cd {$this->path} && git add -A && git commit --author='{$session->userId} <>' -m '{$message}'", $output, $returnVar);
     if ($returnVar !== 0) {
       if (empty($this->getChangedFiles())) {
         throw new HistoryException("No changed files to commit");
@@ -366,46 +368,41 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * Create a new 'user branch' and check it out.
    *
    * @global \Movlib\Data\Session $session
-   *
-   * @throws HistoryException
-   *  If something went wrong during creating  or changing into a new branch.
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
    */
   private function getUserBranch() {
     global $session;
 
-    $output = array();
-    $returnVar = null;
-
-    exec("cd {$this->path} && git checkout -q -B {$session->id}", $output, $returnVar);
+    exec("cd {$this->path} && git checkout -q -B {$session->userId}", $output, $returnVar);
     if ($returnVar == 0) {
       $this->customBranch = true;
     } else {
       throw new HistoryException("Error while creating new branch");
     }
+    return $this;
   }
 
   /**
    * Destroy the custom 'user branch'
    *
    * @global \Movlib\Data\Session $session
-   *
-   * @throws HistoryException
-   *  If something went wrong during destroying this branch.
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
    */
   private function destroyUserBranch() {
     global $session;
 
-    $output = array();
-    $returnVar = null;
-
     $this->checkoutBranch("master");
 
-    exec("cd {$this->path} && git branch -D {$session->id}", $output, $returnVar);
+    exec("cd {$this->path} && git branch -D {$session->userId}", $output, $returnVar);
     if ($returnVar == 0) {
       $this->customBranch = false;
-    } else {
+    }
+    else {
       throw new HistoryException("Error while destroying branch!");
     }
+    return $this;
   }
 
   /**
@@ -413,41 +410,34 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @param string $name
    *  The name of the branch which should be checked out
-   *
-   * @throws HistoryException
-   *  If something went wrong checking out the branch
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
    */
   private function checkoutBranch($name) {
-    $output = array();
-    $returnVar = null;
-
     exec("cd {$this->path} && git checkout -q {$name}", $output, $returnVar);
     if ($returnVar != 0) {
       throw new HistoryException("Error checking out branch '{$name}'");
     }
+    return $this;
   }
 
   /**
    * Merging 'user branch' back into master
    *
    * @todo Handling of merge conflicts
-   *
    * @global \Movlib\Data\Session $session
-   *
-   * @throws HistoryException
-   *  If something went wrong during git merge.
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
    */
   private function mergeIntoMaster() {
     global $session;
 
-    $output = array();
-    $returnVar = null;
-
     $this->checkoutBranch("master");
 
-    exec("cd {$this->path} && git merge {$session->id}", $output, $returnVar);
+    exec("cd {$this->path} && git merge {$session->userId}", $output, $returnVar);
     if ($returnVar != 0) {
       throw new HistoryException("Error while merging into master!");
     }
+    return $this;
   }
 }
