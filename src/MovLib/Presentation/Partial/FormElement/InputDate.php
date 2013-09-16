@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -17,22 +17,96 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Exception\ValidatorException;
+
 /**
- * Description of InputDate
+ * HTML input type date form element.
  *
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputDate {
+class InputDate extends \MovLib\Presentation\Partial\FormElement\InputText {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
   /**
+   * Full date formatting according to RFC3339.
    *
+   * This constant can be used to format the default value, or the min and max attribute. The resulting formatted string
+   * will be in the format <code>"yyyy-mm-dd"</code> (e.g. <code>date(InputDate::RFC3339, time())</code>
+   * becomse <code>2013-06-27</code>).
+   *
+   * @link http://tools.ietf.org/html/rfc3339#section-5.6
+   * @var string
    */
-  public function __construct() {
+  const RFC3339 = "Y-m-d";
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new input form element of type date.
+   *
+   * @param string $id
+   *   The form element's global identifier.
+   * @param string $label
+   *   The form element's label content.
+   * @param array $attributes [optional]
+   *   The form element's attributes.
+   * @param string $value [optional]
+   *   The form element's default value.
+   * @param array $labelAttributes [optional]
+   *   The form element's label attributes.
+   */
+  public function __construct($id, $label, array $attributes = null, $value = null, array $labelAttributes = null) {
+    parent::__construct($id, $label, $value, $attributes, $labelAttributes);
+    $this->attributes["type"] = "date";
+    if (!isset($this->attributes["placeholder"])) {
+      $this->attributes["placeholder"] = "yyyy-mm-dd";
+    }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  public function validate() {
+    global $i18n;
+
+    if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $_POST[$this->id]) === false) {
+      throw new ValidatorException($i18n->t("The submitted date {0} has the wrong format.", [ $this->placeholder($_POST[$this->id]) ]));
+    }
+
+    list($year, $month, $day) = explode("-", $_POST[$this->id]);
+    if (checkdate($month, $day, $year) === false) {
+      throw new ValidatorException($i18n->t("The submitted date {0} is not valid.", [ $this->placeholder($_POST[$this->id]) ]));
+    }
+
+    if (isset($this->attributes["min"]) && strtotime($_POST[$this->id]) < strtotime($this->attributes["min"])) {
+      throw new ValidatorException($i18n->t("The submitted date {0} must not be less than {1}.", [
+        $this->placeholder($_POST[$this->id]),
+        $this->attributes["max"],
+      ]));
+    }
+
+    if (isset($this->attributes["max"]) && strtotime($_POST[$this->id]) > strtotime($this->attributes["max"])) {
+      throw new ValidatorException($i18n->t("The submitted date {0} must not be greater than {1}.", [
+        $this->placeholder($_POST[$this->id]),
+        $this->attributes["max"],
+      ]));
+    }
+
+    return $this;
   }
 
 }

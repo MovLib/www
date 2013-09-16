@@ -81,12 +81,11 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     // Start rendering the page.
     $this->init($i18n->t("Email Settings"))->user = new User(User::FROM_ID, $session->userId);
 
-    $this->email = new InputEmail([
+    $this->email = new InputEmail("email", [
       "autofocus",
       "placeholder" => $i18n->t("Enter your new email address"),
       "title"       => $i18n->t("Please enter your desired new email address in this field."),
-    ]);
-    $this->email->label = $i18n->t("New Email Address");
+    ], $i18n->t("New Email Address"));
     $this->email->required();
     $this->email->setHelp($i18n->t(
       "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .

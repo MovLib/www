@@ -52,31 +52,31 @@ class InputSubmit extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new HTML input form element of type submit.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @param array $attributes [optional]
    *   Additional attributes that should be set on this form element, defaults to no additional attributes.
    * @param string $id
    *   The global unique identifier of this form element.
    */
   public function __construct(array $attributes = null, $id = "submit") {
+    global $i18n;
     $this->id = $id;
     $this->attributes = $attributes;
-    $this->attributes["tabindex"] = $this->getTabindex();
     $this->attributes["type"] = "submit";
+    $this->attributes["tabindex"] = $this->getTabindex();
+    if (empty($this->attributes["value"])) {
+      $this->attributes["value"] = $i18n->t("Submit");
+    }
     $this->addClass("button", $this->attributes);
   }
 
   /**
    * Get string representation of this form element.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The string representation of this form element.
    */
   public function __toString() {
-    global $i18n;
-    if (empty($this->attributes["value"])) {
-      $this->attributes["value"] = $i18n->t("Submit");
-    }
     return "<input{$this->expandTagAttributes($this->attributes)}>";
   }
 

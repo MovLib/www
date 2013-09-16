@@ -529,6 +529,15 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
+input[role="textbox"],
+textarea {
+  display: block;
+  margin-bottom: 15px;
+  min-height: 30px;
+  padding: 7px 9px;
+  width: 100%;
+}
+
 label {
   display: block;
   margin-bottom: 5px;
@@ -558,20 +567,25 @@ textarea {
   vertical-align: middle;
 }
 
-input:focus {
+input:focus,
+textarea:focus {
   border-color: rgba(82, 168, 236, 0.8);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
   outline: 0;
 }
 
 input:invalid:not(:empty),
-input[aria-invalid] {
+input.invalid,
+textarea:invalid:not(:empty),
+textarea.invalid {
   border-color: #ee5f5b;
   outline: 0;
 }
 
 input:focus:invalid:focus:not(:empty),
-input[aria-invalid]:focus {
+input.invalid:focus,
+textarea:focus:invalid:focus:not(:empty),
+textarea.invalid:focus {
   border-color: rgba(233, 50, 45, 0.8);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
   outline: 0;
@@ -630,6 +644,7 @@ textarea:focus::-webkit-input-placeholder {
 }
 
 textarea {
+  min-height: 150px; /* input has 30px, 30 * 5 = 150px (we want people to write a lot). */
   resize: vertical;
 }
 

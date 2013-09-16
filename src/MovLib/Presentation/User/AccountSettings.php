@@ -148,11 +148,11 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     // @todo Avatar Upload
     $this->avatar = new InputFile();
 
-    $this->realName = new InputText("real_name", [
+    $this->realName = new InputText("real_name", $i18n->t("Real Name"), $this->user->realName, [
+      "inputmode"   => "latin-name",
       "placeholder" => $i18n->t("Enter your real name"),
       "title"       => $i18n->t("Please enter your real name in this field."),
-    ], $this->user->realName);
-    $this->realName->label = $i18n->t("Real Name");
+    ]);
 
     // @todo System Language (ID)
     $this->language = new Select();
@@ -161,7 +161,9 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->timezone = new Select();
 
     // @todo Dynamic Profile
-    $this->profile = new Textarea();
+    $this->profile = new Textarea("profile", $i18n->t("About You"), $this->user->profile, [
+      "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
+    ]);
 
     // @todo Sex
     $this->sex = new InputRadio();
@@ -169,8 +171,14 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     // @todo Country (ID)
     $this->country = new Select();
 
-    // @todo Date of Birth
-    $this->birthday = new InputDate();
+    $birthdayMax = date(InputDate::RFC3339, (time() - 1.893e8));   //   6 years
+    $birthdayMin = date(InputDate::RFC3339, (time() - 3.78683e9)); // 120 years
+    $this->birthday = new InputDate("birthday", $i18n->t("Date of Birth"), [
+      "max"   => $birthdayMax,
+      "min"   => $birthdayMin,
+      "title" => $i18n->t("Please enter your date of birth in this field. The date must be between {0} (120 years) and {1} (6 years).", [ $birthdayMin, $birthdayMax ]),
+    ], $this->user->birthday);
+    $this->birthday->setHelp($i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evalutions."));
 
     // We don't validate the existens of the user's website (respectively homepage).
     $this->website = new InputUrl("website", [
@@ -188,11 +196,21 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     //$this->twitter = ?
 
     // @todo Private Flag
-    $this->private = new InputCheckbox();
+    $this->private = new InputCheckbox("private", $this->user->private);
+    $this->private->label = $i18n->t("Keep my data private!");
+    $this->private->setHelp($i18n->t(
+      "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
+      "used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data " .
+      "like sex and country, scientists around the world are enabled to research the human interests in movies more " .
+      "closely. Of course your real name won’t be used for anything!"
+    ));
 
     $this->form = new Form($this, [
       $this->realName,
+      $this->birthday,
+      $this->profile,
       $this->website,
+      $this->private,
     ]);
 
     $this->form->actionElements[] = new InputSubmit([

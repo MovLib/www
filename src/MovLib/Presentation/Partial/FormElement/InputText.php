@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \Normalizer;
+use \MovLib\Exception\ValidatorException;
 
 /**
  * HTML input type text form element.
@@ -25,47 +26,94 @@ use \Normalizer;
  * In contrast to the default input element, this is specialized for plain text input. The user submitted string is
  * sanitized. No validation!
  *
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputText extends \MovLib\Presentation\Partial\FormElement\Input {
+class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+  use \MovLib\Presentation\Partial\FormElement\TraitReadonly;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
-   * Instantiate new HTML input form element of type text.
+   * The form element's value.
+   *
+   * @var null|string
+   */
+  public $value;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new input form element of type text.
    *
    * @param string $id
-   *   The global unique identifier of this form element.
+   *   The form element's global identifier.
+   * @param string $label
+   *   The form element's label content.
+   * @param string $value [optional]
+   *   The form element's default value.
    * @param array $attributes [optional]
-   *   Additional attributes that should be set on this form element, defaults to no additional attributes.
-   * @param string $defaultValue [optional]
-   *   The default value of this form element, defaults to empty string.
+   *   The form element's attributes.
+   * @param array $labelAttributes [optional]
+   *   The form element's label attributes.
    */
-  public function __construct($id, array $attributes = null, $defaultValue = "") {
-    parent::__construct($id, $attributes, $defaultValue);
+  public function __construct($id, $label, $value = null, array $attributes = null, array $labelAttributes = null) {
+    parent::__construct($id, $attributes, $label, $labelAttributes);
     $this->attributes["type"] = "text";
+    $this->attributes["role"] = "textbox";
+    $this->value = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }
 
   /**
-   * Sanitize the input string.
-   *
-   * @return this
+   * @inheritdoc
+   */
+  public function __toString() {
+    $this->attributes["value"] = $this->value;
+    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
    */
   public function validate() {
-    // Normalize utf-8 to NFC.
-    $normalized = Normalizer::normalize($_POST[$this->id]);
+    global $i18n;
+
+    // Validate UTF-8 and normalize to NFC.
+    if (preg_match("//u", $this->value) === false || !($this->value = Normalizer::normalize($this->value))) {
+      throw new ValidatorException($i18n->t("The highlighted element contains illegal characters."));
+    }
+
     // Decode possible entities twice.
-    $decoded = html_entity_decode(html_entity_decode($normalized, ENT_QUOTES|ENT_HTML5), ENT_QUOTES|ENT_HTML5);
+    $this->value = html_entity_decode(html_entity_decode($this->value, ENT_QUOTES), ENT_QUOTES|ENT_HTML5);
+
     // Strip all possible HTML tags, but allow <> as it's harmless and no problem.
-    $stripped = strip_tags($decoded, "<>");
+    $this->value = strip_tags($this->value, "<>");
+
     // Collapse all kinds of whitespace characters to a single whitespace.
-    $collapsed = preg_replace("/\s+/m", " ", $stripped);
+    if (!($this->value = preg_replace("/\s+/m", " ", $this->value))) {
+      throw new ValidatorException($i18n->t("The highlighted element contains illegal characters."));
+    }
+
     // Strip low ASCII characters (including line feeds).
-    $filtered = filter_var($collapsed, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+    if (($this->value = filter_var($this->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_REQUIRE_SCALAR)) === false) {
+      throw new ValidatorException($i18n->t("The highlighted element contains illegal characters."));
+    }
+
     // Finally remove whitespaces at beginning and end and we're done.
-    return trim($filtered);
+    $this->value = trim($this->value);
+    return $this;
   }
 
 }

@@ -66,7 +66,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
     global $i18n;
     $this->init($i18n->t("Reset Password"));
 
-    $this->email = new InputEmail([ "autofocus" ]);
+    $this->email = new InputEmail("email", [ "autofocus" ]);
     $this->email->required();
 
     $this->form = new Form($this, [ $this->email ]);

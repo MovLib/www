@@ -29,50 +29,44 @@ use \MovLib\Exception\ValidatorException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputEmail extends \MovLib\Presentation\Partial\FormElement\Input {
+class InputEmail extends \MovLib\Presentation\Partial\FormElement\InputText {
 
   /**
-   * Instantiate new HTML input form element of type email.
+   * Instantiate new input form element of type text.
    *
-   * @param array $attributes [optional]
-   *   Additional attributes that should be set on this form element, defaults to no additional attributes.
+   * @global \MovLib\Data\I18n $i18n
    * @param string $id [optional]
-   *   The global unique identifier of this form element.
+   *   The form element's global identifier, defaults to <code>"email"</code>.
+   * @param array $attributes [optional]
+   *   The form element's attributes.
+   * @param string $label [optional]
+   *   The form element's label content.
    * @param string $defaultValue [optional]
-   *   The default value of this form element, defaults to empty string.
+   *   The form element's default value.
+   * @param array $labelAttributes [optional]
+   *   The form element's label attributes.
    */
-  public function __construct(array $attributes = null, $id = "email", $defaultValue = "") {
-    parent::__construct($id, $attributes, $defaultValue);
+  public function __construct($id = "email", array $attributes = null, $label = null, $defaultValue = null, array $labelAttributes = null) {
+    global $i18n;
+    parent::__construct($id, $label, $defaultValue, $attributes, $labelAttributes);
+    $this->attributes["type"] = "email";
     // @todo Right now all email related inputs are directly related to users, therefor we can set this within this
     //       class. This might change in the future if other email input fields are required. Be sure to update the
     //       validation method, because it checks for the length that is set here!
     $this->attributes["max-length"] = User::MAX_LENGTH_EMAIL;
-    $this->attributes["type"] = "email";
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function __toString() {
-    global $i18n;
-    if (!$this->label) {
-      $this->label = $i18n->t("Email Address");
-    }
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = $i18n->t("Enter your email address");
     }
     if (!isset($this->attributes["title"])) {
       $this->attributes["title"] = $i18n->t("Please enter your email address in this field.");
     }
-    return parent::__toString();
+    if (!$this->label) {
+      $this->label = $i18n->t("Email Address");
+    }
   }
 
   /**
-   * Validates the user submitted email address.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return this
-   * @throws \MovLib\Exception\ValidatorException
+   * @inheritdoc
    */
   public function validate() {
     global $i18n;

@@ -20,48 +20,80 @@ namespace MovLib\Presentation\Partial\FormElement;
 /**
  * HTML input type password form element.
  *
+ * <b>IMPORTANT!</b> The input form element of type password doesn't have a value property, instead you have to access
+ * the password via the global POST array. This is intentional, we want to make sure that developers realize that the
+ * password isn't validated or sanitized at all, it's the pure raw user submitted data, without any alternations and
+ * it should never be altered in any way (beside the hashing wish happens in the Data layer).
+ *
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputPassword extends \MovLib\Presentation\Partial\FormElement\Input {
+class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+  use \MovLib\Presentation\Partial\FormElement\TraitReadonly;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
-   * Instantiate new HTML input form element of type password.
+   * Instantiate new input form element of type password.
    *
-   * @param array $attributes [optional]
-   *   Additional attributes that should be set on this form element, defaults to no additional attributes.
    * @param string $id [optional]
-   *   The global unique identifier of this form element.
+   *   The form element's global identifier, defaults to <code>"password"</code>.
+   * @param array $attributes [optional]
+   *   The form element's attributes.
+   * @param string $label [optional]
+   *   The form element's label content, defaults to <code>$i18n->t("Password")</code>.
+   * @param array $labelAttributes [optional]
+   *   The form element's label attributes.
    */
-  public function __construct(array $attributes = null, $id = "password") {
-    parent::__construct($id, $attributes);
-    $this->attributes["type"] = "password";
-    $this->required(); // A password field is always required!
-
-    // Only a presenter is allowed to prefill a password input!
-    if (!empty($this->attributes["value"]) && empty($attributes["value"])) {
-      unset($this->attributes["value"]);
-    }
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function __toString() {
+  public function __construct($id = "password", array $attributes = null, $label = null, array $labelAttributes = null) {
     global $i18n;
-    if (!$this->label) {
-      $this->label = $i18n->t("Password");
-    }
+    parent::__construct($id, $attributes, $label, $labelAttributes);
+    $this->attributes["inputmode"] = "verbatim";
+    $this->attributes["role"] = "textbox";
+    $this->attributes["type"] = "password";
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = $i18n->t("Enter your password");
     }
     if (!isset($this->attributes["title"])) {
       $this->attributes["title"] = $i18n->t("Please enter your password in this field.");
     }
-    return parent::__toString();
+    if (!$this->label) {
+      $this->label = $i18n->t("Password");
+    }
+
+    // A password field is always required!
+    $this->required();
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function __toString() {
+    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Password's aren't validated!
+   *
+   * It's easier to implement an empty method at this point, rather than checking for the existence of this method in
+   * <code>\MovLib\Presentation\Partial\Form</code>, in particular if you realize that this is the absolutely only
+   * form element (beside the special hidden and action elements, but they aren't validated) that would not have the
+   * validate method, plus the password element is used very little compared to other form elements.
+   *
+   * @return this
+   */
+  public function validate() {
+    return $this;
   }
 
 }

@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Exception\ValidatorException;
+
 /**
- * Description of InputCheckbox
+ * HTML input type checkbox form element.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,13 +28,65 @@ namespace MovLib\Presentation\Partial\FormElement;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputCheckbox {
+class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
+   * The form element's value.
    *
+   * @var boolean
    */
-  public function __construct() {
+  public $value;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new input checkbox form element.
+   *
+   * @param string $id
+   *   The global unique identifier of this form element.
+   * @param boolean $value [optional]
+   *   The value of this form element, defaults to <code>FALSE</code>. Note that a checkbox can only have to states,
+   *   either <code>TRUE</code> (checked) or <code>FALSE</code> (unchecked).
+   * @param array $attributes [optional]
+   *   Additional attributes that should be set on this form element, defaults to no additional attributes.
+   */
+  public function __construct($id, $value = false, array $attributes = null) {
+    parent::__construct($id, $attributes, $value);
+    $this->attributes["type"] = "checkbox";
+    $this->value = (bool) isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
+    $this->labelAttributes["class"] = "checkbox";
+    if ($value === true) {
+      $this->attributes[] = "checked";
+    }
+  }
+
+  /**
+   * Get string representation of this form element.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The string representation of this form element.
+   */
+  public function __toString() {
+    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}><input{$this->expandTagAttributes($this->attributes)}>{$this->label}</label></p>";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  public function validate() {
+    $this->value = isset($_POST[$this->id]) && $_POST[$this->id] == true;
+    return $this;
   }
 
 }

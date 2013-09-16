@@ -103,11 +103,11 @@ class Login extends \MovLib\Presentation\Page {
     }
 
     // @todo max-length
-    $this->email = new InputEmail([ "autofocus" ]);
+    $this->email = new InputEmail("email", [ "autofocus" ]);
     $this->email->required();
     $this->email->setHelp("<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
 
-    $this->password = new InputPassword();
+    $this->password = new InputPassword("password");
 
     $this->form = new Form($this, [ $this->email, $this->password ]);
     $this->form->attributes["action"] = $action;
@@ -154,7 +154,7 @@ class Login extends \MovLib\Presentation\Page {
   public function validate() {
     global $i18n, $session;
     try {
-      $session->authenticate($this->email->value, $this->password->value);
+      $session->authenticate($this->email->value, $_POST[$this->password->id]);
 
       // Ensure that the user know's that the log in succeded.
       $success = new Alert($i18n->t("Login was successful."));

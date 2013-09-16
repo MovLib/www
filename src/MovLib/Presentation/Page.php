@@ -292,7 +292,9 @@ class Page extends \MovLib\Presentation\AbstractPage {
             "<form action='{$i18n->t("/search")}' class='span' id='header__search-form' method='post' role='search'>" .
               "<input type='hidden' name='form_id' value='header-search'>" .
               "<label class='visuallyhidden' for='header__search-input'>{$i18n->t("Search the MovLib database.")}</label>" .
-              "<input accesskey='f' id='header__search-input' name='searchterm' required role='textbox' tabindex='{$this->getTabindex()}' title='{$i18n->t(
+              // @todo Using role='textbox' might not be a good idea for the search input because it might break the
+              //       complete layout (zooming etc.). The new type='search' is maybe enough?
+              "<input accesskey='f' id='header__search-input' name='searchterm' required tabindex='{$this->getTabindex()}' title='{$i18n->t(
                 "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
               )}' type='search'>" .
               "<button id='header__search-button' title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .

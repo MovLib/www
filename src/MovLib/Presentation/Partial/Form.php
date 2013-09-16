@@ -158,14 +158,9 @@ class Form extends \MovLib\Presentation\AbstractBase {
 
         // No need to go through the complete validation process to check if the element is empty or not. Plus it's
         // tedious to re-implement this in each validation method. Directly take care of it here.
-        if (empty($_POST[$elements[$i]->id])) {
-          if ($elements[$i]->required() === true) {
-            $elements[$i]->invalid();
-            $mandatoryError = true;
-          }
-          else {
-            $elements[$i]->value = $elements[$i]->defaultValue;
-          }
+        if (empty($_POST[$elements[$i]->id]) && $elements[$i]->required === true) {
+          $elements[$i]->invalid();
+          $mandatoryError = true;
         }
         else {
           try {

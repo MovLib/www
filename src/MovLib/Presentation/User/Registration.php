@@ -24,7 +24,7 @@ use \MovLib\Presentation\Email\User\Registration as RegistrationEmail;
 use \MovLib\Presentation\Email\User\RegistrationEmailExists;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\FormElement\Input;
+use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \Normalizer;
@@ -62,7 +62,7 @@ class Registration extends \MovLib\Presentation\Page {
   /**
    * The input text form element for the username.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\Input
+   * @var \MovLib\Presentation\Partial\FormElement\AbstractInput
    */
   private $username;
 
@@ -94,19 +94,17 @@ class Registration extends \MovLib\Presentation\Page {
     // Start rendering the page.
     $this->init($i18n->t("Registration"));
 
-    $this->email = new InputEmail([ "autofocus" ]);
+    $this->email = new InputEmail("email", [ "autofocus" ]);
     $this->email->required();
     $this->email->setHelp("<a href='{$i18n->r("/user/login")}'>{$i18n->t("Already have an account?")}</a>", false);
 
-    // We do not use the specialized input text form element, as it would sanitize the string too much. We want to let
-    // the user know about anything that's not okay with the entered string.
-    $this->username = new Input("username", [
+    $this->username = new InputText("username", $i18n->t("Username"), null, [
+      "inputmode"   => "verbatim",
       "max-length"  => User::MAX_LENGTH_NAME,
       "placeholder" => $i18n->t("Enter your desired username"),
       "title"       => $i18n->t("Please enter your desired username in this field."),
     ]);
     $this->username->required();
-    $this->username->label = $i18n->t("Username");
 
     $this->form = new Form($this, [ $this->email, $this->username ]);
     $this->form->attributes["class"] = "span span--6 offset--3";
@@ -152,29 +150,25 @@ class Registration extends \MovLib\Presentation\Page {
     global $i18n;
     $errors = null;
 
-    // Prepare a user for this registration and start validation of the desired user name.
+    // Prepare a user for this registration and start validation of the desired username. We have to validate the
+    // original user input from the POST array because the value of the input element was already sanitized and
+    // validated against the most basic requirements. That includes stripping of whitespace, and we don't want that.
+    // It would be confusing for the user if she or he entered " MovLib " as username and the final result is "MovLib";
+    // we need to tell the user about this!
     $user = new User();
-    if (substr($this->username->value, 0, 1) == " ") {
+    if (substr($_POST[$this->username->id], 0, 1) == " ") {
       $errors[] = $i18n->t("The username cannot begin with a space.");
     }
-    if (substr($this->username->value, -1) == " ") {
+    if (substr($_POST[$this->username->id], -1) == " ") {
       $errors[] = $i18n->t("The username cannot end with a space.");
     }
-    if (strpos($this->username->value, "  ") !== false) {
+    if (strpos($_POST[$this->username->id], "  ") !== false) {
       $errors[] = $i18n->t("The username cannot contain multiple spaces in a row.");
     }
+
+    // From this point on we use the sanitized value from the input text form element.
     if (mb_strlen($this->username->value) > $this->username->attributes["max-length"]) {
       $errors[] = $i18n->t("The username is too long: it must be {1,number,integer} characters or less.", [ $this->username->attributes["max-length"] ]);
-    }
-    if (
-      // Validate UTF-8
-      preg_match("//u", $this->username->value) == false
-      // Check if UTF-8 is in NFC form
-      || $this->username->value != Normalizer::normalize($this->username->value)
-      // Check for low ASCII characters (control characters)
-      || $this->username->value != filter_var($this->username->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)
-    ) {
-      $errors[] = $i18n->t("The username contains illegal characters.");
     }
 
     // The following two checks only make sense if the desired name is valid up to this point.

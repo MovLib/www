@@ -86,18 +86,16 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
 
     $this->init($i18n->t("Password Settings"));
 
-    $this->newPassword = new InputPassword([
+    $this->newPassword = new InputPassword("new-password", [
       "placeholder" => $i18n->t("Enter your new password"),
       "title"       => $i18n->t("Please enter your desired new password in this field."),
-    ]);
-    $this->newPassword->label = $i18n->t("New Password");
+    ], $i18n->t("New Password"));
     $this->newPassword->setHelp("<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
 
-    $this->newPasswordConfirm = new InputPassword([
+    $this->newPasswordConfirm = new InputPassword("new-password-confirm", [
       "placeholder" => $i18n->t("Enter your new password again"),
       "title"       => $i18n->t("Please enter your new password again in this field. we want to make sure that you don’t mistype this."),
-    ]);
-    $this->newPasswordConfirm->label = $i18n->t("Confirm Password");
+    ], $i18n->t("Confirm Password"));
 
     $this->form = new Form($this, [ $this->newPassword, $this->newPasswordConfirm ]);
     $this->form->attributes["action"] = $i18n->r("/user/password-settings");

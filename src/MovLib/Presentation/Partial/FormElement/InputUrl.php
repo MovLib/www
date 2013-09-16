@@ -22,6 +22,7 @@ use \MovLib\Exception\ValidatorException;
 /**
  * HTML input type URL form element.
  *
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -35,29 +36,26 @@ class InputUrl extends \MovLib\Presentation\Partial\FormElement\InputText {
 
 
   /**
-   * Instantiate new input URL form element.
+   * Instantiate new input form element of type url.
    *
    * @param string $id
-   *   The global unique identifier of this form element.
-   * @param array $attributes [optional]
-   *   Additional attributes that should be set on this form element, defaults to no additional attributes.
+   *   The form element's global identifier.
+   * @param string $label
+   *   The form element's label content.
    * @param string $defaultValue [optional]
-   *   The default value of this form element, defaults to empty string.
+   *   The form element's default value.
+   * @param array $attributes [optional]
+   *   The form element's attributes.
+   * @param array $labelAttributes [optional]
+   *   The form element's label attributes.
    */
-  public function __construct($id, array $attributes = null, $defaultValue = "") {
-    parent::__construct($id, $attributes, $defaultValue);
+  public function __construct($id, $label, $defaultValue = null, array $attributes = null, array $labelAttributes = null) {
+    parent::__construct($id, $label, $defaultValue, $attributes, $labelAttributes);
     $this->attributes["type"] = "url";
     $this->attributes["pattern"] = "https?://.*";
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function __toString() {
     if (!isset($this->attributes["placeholder"])) {
-      $this->attributes["placeholder"] = "http://";
+      $this->attributes["placeholder"] = "http(s)://";
     }
-    return parent::__toString();
   }
 
 
@@ -65,21 +63,17 @@ class InputUrl extends \MovLib\Presentation\Partial\FormElement\InputText {
 
 
   /**
-   * Validates the user submitted URL.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return this
-   * @throws \MovLib\Exception\ValidatorException
+   * @inheritdoc
    */
   public function validate() {
     global $i18n;
-    $errors = null;
 
     // Split the URL into separate parts for easy validation and proper encoding.
-    if (($parts = parse_url($_POST[$this->id])) === false) {
+    if (($parts = parse_url($this->value)) === false) {
       throw new ValidatorException($i18n->t("The URL {0} doesn’t seem to be valid.", [ $this->placeholder($_POST[$this->id]) ]));
     }
 
+    $errors = null;
     // A URL must have a scheme and host, otherwise we consider it to be invalid. No support for protocol relative
     // URLs. They often lead to problems for other applications and we're using SSL everywhere, which most other
     // websites aren't using. Therefor we simply don't allow and we have to make sure via the UI that the user is
@@ -105,7 +99,7 @@ class InputUrl extends \MovLib\Presentation\Partial\FormElement\InputText {
     }
 
     // Rebuild the URL including all provided and allowed parts.
-    $_POST[$this->id] = "{$parts["scheme"]}://{$parts["host"]}";
+    $this->value = "{$parts["scheme"]}://{$parts["host"]}";
 
     // We have to encode unicode characters, otherwise not only the filter fails, but we are only interested in perfect
     // valid URLs and we cannot treat an unencoded unicode character in the path as something that is invalid. The
@@ -116,24 +110,24 @@ class InputUrl extends \MovLib\Presentation\Partial\FormElement\InputText {
       for ($i = 0; $i < $c; ++$i) {
         $path[$i] = rawurlencode(rawurldecode($path[$i]));
       }
-      $_POST[$this->id] .= implode("/", $path);
+      $this->value .= implode("/", $path);
     }
 
     // Don't forget the allowed optional parts of the URL including their prefix.
     foreach ([ "query" => "?", "fragment" => "#" ] as $optionalPart => $prefix) {
       if (!empty($parts[$optionalPart])) {
-        $_POST[$this->id] .= "{$prefix}{$parts[$optionalPart]}";
+        $this->value .= "{$prefix}{$parts[$optionalPart]}";
       }
     }
 
     // And last but not least validate it again (the flag might be a bit useless at this point).
-    if (filter_var($_POST[$this->id], FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED) === false) {
+    if (filter_var($this->value, FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED) === false) {
       throw new ValidatorException($i18n->t("The URL {0} doesn’t seem to be valid.", [ $this->placeholder($_POST[$this->id]) ]));
     }
 
     // Additionally check if the URL exists if the appropriate data attribute is set.
     if (isset($this->attributes["data-url-exists"]) && $this->attributes["data-url-exists"] == true) {
-      $ch = curl_init($_POST[$this->id]);
+      $ch = curl_init($this->value);
       curl_setopt($ch, CURLOPT_NOBODY, true);
       curl_exec($ch);
       $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE) / 100;
@@ -143,7 +137,7 @@ class InputUrl extends \MovLib\Presentation\Partial\FormElement\InputText {
       }
     }
 
-    $this->value = $_POST[$this->id];
+    $this->value = $this->value;
     return $this;
   }
 

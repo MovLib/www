@@ -31,13 +31,13 @@
 
 .checkbox,
 .radio {
+  display: inline-block;
   min-height: 20px;
   padding-left: 20px;
 }
 
 .checkbox.inline,
 .radio.inline {
-  display: inline-block;
   margin-bottom: 0;
   margin-right: 25px;
   padding-top: 5px;
@@ -48,14 +48,6 @@
 .radio input {
   float: left;
   margin-left: -20px;
-}
-
-.input--block-level {
-  display: block;
-  margin-bottom: 15px;
-  min-height: 30px;
-  padding: 7px 9px;
-  width: 100%;
 }
 
 .popup-container {
