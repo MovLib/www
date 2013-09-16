@@ -110,7 +110,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
   public function testGetDiffAsHTML() {
     $test = new Movie(2);
-    $test->historyObject[0]["original_title"] = "The Foobar is a lie";
+    $test->entity[0]["original_title"] = "The Foobar is a lie";
     $test->writeFiles();
     $test->commit("second commit");
     $this->assertEquals("The<span class='red'>Shawshank Redemption</span><span class='green'>Foobar is a lie</span>\n",
@@ -139,7 +139,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
   public function testSaveHistory() {
     $test = new Movie(2);
-    $test->historyObject[0]["original_title"] = "Shawshank Redemption";
+    $test->entity[0]["original_title"] = "Shawshank Redemption";
     $test->saveHistory("with branching");
 
     $result = $test->getLastCommits();

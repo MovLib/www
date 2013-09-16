@@ -17,13 +17,12 @@
  */
 namespace MovLib\Data\History;
 
-use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\FileSystemException;
 use \MovLib\Exception\HistoryException;
 use \ReflectionClass;
 
 /**
- * Contains methods to manage histories.
+ * Abstract base class for all history classes.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -33,27 +32,30 @@ use \ReflectionClass;
  */
 abstract class AbstractHistory extends \MovLib\Data\Database {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
-   * The instance's id.
+   * Flag determining if we are on a branch other than "master".
+   *
+   * @var boolean
+   */
+  protected $customBranch = false;
+
+  /**
+   * Associative array containing this entity's database table (all or selected columns).
+   *
+   * @var array
+   */
+  public $entity;
+
+  /**
+   * Entity's unique ID (e.g. movie ID).
    *
    * @var int
    */
   protected $id;
-
-  /**
-   * The instance's model short name.
-   *
-   * @var string
-   */
-  protected $type;
-
-  /**
-   * The current instance
-   *
-   * @var associative array
-   */
-  public $historyObject;
-
 
   /**
    * The path to the repository.
@@ -63,131 +65,145 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   protected $path;
 
   /**
-   * Did we use a branche other then 'master'?
+   * Entity's short name.
    *
-   * @var boolean
+   * @var string
    */
-  protected $customBranch = false;
+  protected $type;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
-   * Constructor which must be called by all child classes.
-   *
-   * Construct new history model from given ID and gather basic information.
+   * Instantiate new history model from given ID and gather basic information.
    *
    * @param int $id
-   *  The id of the object to be versioned.
-   * @param array $columns
-   *  An array with the names regular of columns to be selected.
-   * @param array $dyn_columns
-   *  An array with the names of dynamic columns to be selected.
+   *   The id of the object to be versioned.
+   * @param array $columns [optional]
+   *   Numeric array containing the column names.
+   * @param array $dynamicColumns [optional]
+   *   Numeric array containing the dynamic column names.
    */
-  public function __construct($id, $columns = array(), $dyn_columns = array()) {
+  public function __construct($id, array $columns = [], array $dynamicColumns = []) {
     $this->type = $this->getShortName();
+    $result = $this->select(
+      "SELECT {$this->getColumnsForSelectQuery($columns, $dynamicColumns)} FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1",
+      "d",
+      [ $this->id ]
+    );
+    if (empty($result[0])) {
+      throw new HistoryException("Could not find {$this->type} with ID '{$this->id}'!");
+    }
     $this->id = $id;
+    $this->entity = $result[0];
     $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
 
-    $this->getHistoryObject($columns, $dyn_columns);
-
-    // If no repository exists, create one
-    if (!is_dir($this->path."/.git")) {
+    // @todo Should be called when entity is first created!
+    if (is_dir("{$this->path}/.git") === false) {
       $this->createRepository();
     }
   }
 
   /**
-   * Destructor which checks if there is still a 'user branch' and destroys it if necessary.
+   * Destroy the history model and the custom branch if necessary.
    */
   public function __destruct() {
     parent::__destruct();
-
-    if($this->customBranch) {
+    if ($this->customBranch) {
       $this->destroyUserBranch();
     }
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
   /**
-   * Abstract method which should write files to repository.
+   * Write files to repository.
+   *
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\FileSystemException
    */
   abstract protected function writeFiles();
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
+   * C
    * Commit the current state of the object
    *
    * A new branch is created, files are written, commited and merged into master.
    * At the end the temporary branch is destroyed.
    *
    * @param string $message
-   *  The commit message.
+   *   The commit message.
+   * @return this
    */
   public function saveHistory($message) {
-    $this->getUserBranch();
-    $this->writeFiles();
-    $this->commit($message);
-    $this->mergeIntoMaster();
-    $this->destroyUserBranch();
+    return $this->getUserBranch()->writeFiles()->commit($message)->mergeIntoMaster()->destroyUserBranch();
   }
 
   /**
-   * Checks in all changes and commits them
+   * Checks in all changes and commits them.
    *
    * @global \Movlib\Data\Session $session
    * @param string $message
-   *  The commit message
-   *
-   * @throws HistoryException
-   *  If something went wrong during commit
+   *   The commit message.
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
    */
   public function commit($message) {
     global $session;
-
-    $output = array();
-    $returnVar = null;
-
     exec("cd {$this->path} && git add -A && git commit --author='{$session->id} <>' -m '{$message}'", $output, $returnVar);
-    if ($returnVar != 0) {
+    if ($returnVar !== 0) {
       if (empty($this->getChangedFiles())) {
         throw new HistoryException("No changed files to commit");
-      } else {
+      }
+      else {
         throw new HistoryException("Error commiting changes");
       }
     }
+    return $this;
   }
 
   /**
-   * Returns diff between two commits of one file as styled HTML
+   * Returns diff between two commits of one file as styled HTML.
    *
+   * @todo Move to presentation.
    * @param string $head
-   *  Hash of git commit (newer one)
+   *   Hash of git commit (newer one).
    * @param sting $ref
-   *  Hash of git commit (older one)
+   *   Hash of git commit (older one).
    * @param string $filename
-   *  Name of file in repository
-   *
-   * @throws HistoryException
-   *  If something went wrong with "git diff"
-   *
+   *   Name of file in repository.
    * @return string
-   *  Returns diff of one file as styled HTML
+   *   Returns diff of one file as styled HTML.
+   * @throws \MovLib\Exception\HistoryException
    */
   public function getDiffasHTML($head, $ref, $filename) {
-    $output = array();
-    $returnVar = null;
     $html = "";
 
     exec("cd {$this->path} && git diff {$ref} {$head} --word-diff='porcelain' {$filename}", $output, $returnVar);
-    if ($returnVar != 0) {
+    if ($returnVar !== 0) {
       throw new HistoryException("There was an error during 'git diff'");
     }
 
-    for ($i = 5; $i < count($output); $i++) {
+    $c = count($output);
+    for ($i = 5; $i < $c; ++$i) {
       if ($output[$i][0] == " ") {
         $html .= substr($output[$i], 1);
-      } else if ($output[$i][0] == "+") {
-        $html .= "<span class='green'>" . substr($output[$i], 1) . "</span>";
-      } else if ($output[$i][0] == "-") {
-        $html .= "<span class='red'>" . substr($output[$i], 1) . "</span>";
-      } else if ($output[$i][0] == "~") {
-        $html .= "\n";
+      }
+      elseif ($output[$i][0] == "+") {
+        $tmp = substr($output[$i], 1);
+        $html .= "<span class='green'>{$tmp}</span>";
+      }
+      elseif ($output[$i][0] == "-") {
+        $tmp = substr($output[$i], 1);
+        $html .= "<span class='red'>{$tmp}</span>";
       }
     }
 
@@ -195,160 +211,126 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
+   * Get the file names of files that have changed.
    *
-   * @param string $head
-   *  Hash of git commit (newer one)
-   * @param sting $ref
-   *  Hash of git commit (older one)
-   *
-   * @throws HistoryException
-   *  If something went wrong with "git diff"
-   *
+   * @param string $head [optional]
+   *   Hash of git commit (newer one).
+   * @param sting $ref [optional]
+   *   Hash of git commit (older one).
    * @return array
-   *  Returns an array of changed files
+   *   Numeric array of changed files.
+   * @throws \MovLib\Exception\HistoryException
    */
   public function getChangedFiles($head = null, $ref = null) {
-    $output = array();
-    $returnVar = null;
     exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output, $returnVar);
-    if ($returnVar != 0) {
+    if ($returnVar !== 0) {
       throw new HistoryException("There was an error locating changed files");
     }
     return $output;
   }
 
   /**
-   * Returns an array of associative arrays with commits
+   * Returns an array of associative arrays with commits.
    *
-   * @todo is subject safe?
-   *
-   * @throws HistoryException
-   *  If something went wrong with "git log"
-   *
-   * @return associative array
-   *  Returns an array of associative arrays with commits
+   * @todo Is subject safe?
+   * @return array
+   *   Numeric array with associative array containing the commits.
+   * @throws \MovLib\Exception\HistoryException
    */
   public function getLastCommits() {
-    $output = array();
-    $returnVar = null;
-    $format = '{"hash":"%H","author_id":%an, "timestamp":%at, "subject":"%s"}';
-
+    $format = '{"hash":"%H","author_id":%an,"timestamp":%at,"subject":"%s"}';
     exec("cd {$this->path} && git log --format='{$format}'", $output, $returnVar);
-    if ($returnVar != 0) {
+    if ($returnVar !== 0) {
       throw new HistoryException("There was an error getting last commits");
     }
-
-    foreach ($output as $key => $value) {
-      $output[$key] = json_decode($value, true);
+    $c = count($output);
+    for ($i = 0; $i < $c; ++$i) {
+      $output[$i] = json_decode($output[$i], true);
     }
-
     return $output;
   }
 
   /**
-   * Write file to repository path
+   * Write file to repository path.
    *
    * @param string $filename
-   *  The filename
+   *   The filename.
    * @param string $content
-   *  The content as string
-   *
-   * @throws FileSystemException
-   *  If any of the actions fails (e.g. wrong permissions).
+   *   The content.
+   * @return this
+   * @throws \MovLib\Exception}FileSystemException
    */
   protected function writeToFile($filename, $content) {
-    try {
-      $fp = fopen("{$this->path}/{$filename}", 'w');
-      fwrite($fp, $content);
-      fclose($fp);
-    } catch (ErrorException $e) {
-      throw new FileSystemException("Error writing to file", $e);
+    if (file_put_contents("{$this->path}/{$filename}", $content) === false) {
+      throw new FileSystemException("Error writing to file.");
     }
+    return $this;
   }
 
   /**
    * Write specific columns of a related database row to a file.
    *
-   * If no columns are given all columns are selected.
+   * If no columns are given, all columns are selected.
    *
    * @param string $relation
-   *  A database relation (e.g. <em>movies_titles</em>).
-   * @param array $columns
-   *  Array of non dynmic columns to be written to the file.
-   * @param array $dyn_columns
-   *  Array of dynamic colums to be written to the file.
+   *   A database relation (e.g. <i>movies_titles</i>).
+   * @param array $columns [optional]
+   *   Array of columns to be written to the file.
+   * @param array $dynColumns [optional]
+   *   Array of dynamic colums to be written to the file.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
-  protected function writeRelatedRowsToFile($relation, $columns = array(), $dyn_columns = array()) {
-    $all_columns = $this->getColumnsForSelectQuery($columns, $dyn_columns);
-
-    $rows = $this->select(
-      "SELECT {$all_columns}
-        FROM `{$relation}`
-        WHERE `{$this->type}_id` = ?",
+  protected function writeRelatedRowsToFile($relation, array $columns = [], array $dynColumns = []) {
+    $result = $this->select(
+      "SELECT {$this->getColumnsForSelectQuery($columns, $dynColumns)} FROM `{$relation}` WHERE `{$this->type}_id` = ? LIMIT 1",
       "d",
-      [$this->id]
+      [ $this->id ]
     );
-
-    foreach ($dyn_columns as $value) {
-      $rows[0][$value] = json_decode($rows[0][$value], true);
+    if (empty($result[0])) {
+      // @todo ????
     }
-
-    $this->writeToFile("{$relation}", json_encode($rows));
+    foreach ($dynColumns as $value) {
+      $result[0][$value] = json_decode($result[0][$value], true);
+    }
+    $this->writeToFile($relation, json_encode($result));
+    return $this;
   }
 
   /**
-   * Returns a string which can be used in a SELECT query (e.g. <em>["title"]["dyn_comment]</em> will become
-   * <em>`title`, COLUMN_JSON(dyn_comment) AS `dyn_comment`</em>). If no columns or dynamic columns are given
+   * Build query select part.
+   *
+   * Build string which can be used in a SELECT query (e.g. <code>["title"]["dyn_comment]</code> will become
+   * <code>`title`, COLUMN_JSON(dyn_comment) AS `dyn_comment`</code>). If no columns or dynamic columns are given
    * all columns (*) are selected. If dynamic columns are given these are selectet as COLUMN_JSON.
    *
-   * @param array $columns
-   *  An array with the names regular of columns to be selected.
-   * @param array $dyn_columns
-   *  An array with the names of dynamic columns to be selected.
-   *
+   * @param array $columns [optional]
+   *   Numeric array containing the column names.
+   * @param array $dynamicColumns [optional]
+   *   Numeric array containing the dynamic column names.
    * @return string
-   *  Returns a string which can be used in a SELECT query.
+   *   SELECT part of query.
    */
-  private function getColumnsForSelectQuery($columns = array(), $dyn_columns = array()) {
-    if (empty($columns) && empty($dyn_columns)) {
+  private function getColumnsForSelectQuery(array $columns = null, array $dynamicColumns = null) {
+    if (!$columns && !$dynamicColumns) {
       return "*";
-    } else {
-      foreach ($columns as $key => $value) {
-        $columns[$key] = "`{$value}`";
-      }
-      foreach ($dyn_columns as $key => $value) {
-        $dyn_columns[$key] = "COLUMN_JSON({$value}) AS `{$value}`";
-      }
-     return implode(", ", array_merge($columns, $dyn_columns));
     }
-  }
-
-  /**
-   * Gets basic information about the object which should be versioned.
-   * If this object is not found a HistoryException is thrown.
-   *
-   * @param array $columns
-   *  An array with the names regular of columns to be selected.
-   * @param array $dyn_columns
-   *  An array with the names of dynamic columns to be selected.
-   *
-   * @throws HistoryException
-   *  If no row with given id is found
-   */
-  private function getHistoryObject($columns = array(), $dyn_columns = array()) {
-    $all_columns = $this->getColumnsForSelectQuery($columns, $dyn_columns);
-
-    $this->historyObject = $this->select(
-      "SELECT {$all_columns}
-        FROM `{$this->type}s`
-        WHERE `{$this->type}_id` = ?",
-      "d",
-      [$this->id]
-    );
-
-    if (isset($this->historyObject[0]) === false) {
-      throw new HistoryException("Could not find {$this->type} with ID '{$this->id}'!");
+    $select = null;
+    $c = count($columns);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($i !== 0) {
+        $select .= ", ";
+      }
+      $select .= "`{$columns[$i]}`";
     }
+    $c = count($dynamicColumns);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($select || $i !== 0) {
+        $select .= ", ";
+      }
+      $select .= "COLUMN_JSON(`{$dynamicColumns[$i]}`) AS `{$dynamicColumns[$i]}`";
+    }
+    return $select;
   }
 
   /**
@@ -363,24 +345,21 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     return strtolower((new ReflectionClass($this))->getShortName());
   }
 
- /**
-   * Create a folder on the filesystem and make it a git repository.
+  /**
+   * Create GIT repository.
    *
-   * @throws HistoryException
-   *  If something went wrong with "git init"
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
    */
   public function createRepository() {
-    $output = array();
-    $returnVar = null;
-
-    if (!is_dir(($this->path))) {
-      mkdir($this->path, 0777, true);
+    if (is_dir(($this->path)) === false && mkdir($this->path, 0777, true) === false) {
+      throw new FileSystemException("Could not create directory for GIT repository.");
     }
-
     exec("cd {$this->path} && git init", $output, $returnVar);
-    if ($returnVar != 0) {
-      throw new HistoryException("Error creating repository");
+    if ($returnVar !== 0) {
+      throw new HistoryException("Could not initialize GIT repository.");
     }
+    return $this;
   }
 
   /**

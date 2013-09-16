@@ -44,10 +44,10 @@ class Movie extends AbstractHistory {
    */
   public function writeFiles() {
     foreach (["original_title", "runtime", "year"] as $fildname) {
-      $this->writeToFile($fildname, $this->historyObject[0][$fildname]);
+      $this->writeToFile($fildname, $this->entity[0][$fildname]);
     }
 
-    foreach (json_decode($this->historyObject[0]["dyn_synopses"], true) as $synopsis_language => $synopsis) {
+    foreach (json_decode($this->entity[0]["dyn_synopses"], true) as $synopsis_language => $synopsis) {
       $this->writeToFile("{$synopsis_language}_synopsis", $synopsis);
     }
 
