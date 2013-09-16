@@ -28,16 +28,24 @@ use \MovLib\Presentation\Partial\FormElement\InputUrl;
  */
 class InputUrlTest extends \PHPUnit_Framework_TestCase {
 
-  public $inputUrl;
+  /**
+   * Instance to be tested.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputUrl
+   */
+  public static $inputUrl;
 
-  public function setUp() {
-    $this->inputUrl = new InputUrl("phpunit");
+  /**
+   * Instantiate input url form element for tests.
+   */
+  public static function setUpBeforeClass() {
+    self::$inputUrl = new InputUrl("phpunit");
   }
 
   public function testDefaults() {
-    $this->assertEquals("phpunit", $this->inputUrl->id);
-    $this->assertEquals("url", $this->inputUrl->attributes["type"]);
-    $this->assertEquals("https?://.*", $this->inputUrl->attributes["pattern"]);
+    $this->assertEquals("phpunit", self::$inputUrl->id);
+    $this->assertEquals("url", self::$inputUrl->attributes["type"]);
+    $this->assertEquals("https?://.*", self::$inputUrl->attributes["pattern"]);
   }
 
   public static function dataProviderValidationValid() {
@@ -47,10 +55,10 @@ class InputUrlTest extends \PHPUnit_Framework_TestCase {
       [ "https://movlib.org/", "https://movlib.org/" ],
       [ "http://movlib.org/foo/bar/", "http://movlib.org/foo/bar/" ],
       [ "http://movlib.org/foo?bar=42", "http://movlib.org/foo?bar=42" ],
-      [ "https://en.wikipedia.org/wiki//dev/random", "https://en.wikipedia.org/wiki//dev/random" ],
-      [ "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB", "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB" ],
-      [ "http://www.youtube.com/watch?v=5gUKvmOEGCU", "http://www.youtube.com/watch?v=5gUKvmOEGCU" ],
       [ "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB", "https://ja.wikipedia.org/wiki/Unix系" ],
+      [ "https://en.wikipedia.org/wiki//dev/random", "https://en.wikipedia.org/wiki//dev/random" ],
+      [ "http://www.youtube.com/watch?v=5gUKvmOEGCU", "http://www.youtube.com/watch?v=5gUKvmOEGCU" ],
+      [ "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB", "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB" ],
       [
         "https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Component%21Utility%21Url.php/function/Url%3A%3AisValid/8",
         "https://api.drupal.org/api/drupal/core!lib!Drupal!Component!Utility!Url.php/function/Url%3A%3AisValid/8"
@@ -63,35 +71,36 @@ class InputUrlTest extends \PHPUnit_Framework_TestCase {
    */
   public function testValidationValid($expected, $input) {
     $_POST["phpunit"] = $input;
-    $this->assertEquals($expected, $this->inputUrl->validate()->value);
+    $this->assertEquals($expected, self::$inputUrl->validate()->value);
   }
 
   /**
    * @expectedException \MovLib\Exception\ValidatorException
    */
   public function testValidationExists() {
-    $_POST["phpunit"] = "http://movlib/foo/bar";
-    $this->inputUrl->attributes["data-url-exists"] = "true";
-    $this->inputUrl->validate();
+    $inputUrl = new InputUrl("phpunit");
+    $_POST[$inputUrl->id] = "http://movlib/foo/bar";
+    $inputUrl->attributes["data-url-exists"] = "true";
+    $inputUrl->validate();
   }
 
   public static function dataProviderValidationInvalid() {
     return [
-      [ "http://movlib.org:80/" ],
-      [ "http://admin:1234@movlib.org/" ],
-      [ "http://admin@movlib.org/" ],
-      [ "ftp://movlib.org/" ],
-      [ "ldap://movlib.org/" ],
-      [ "mailto:user@movlib.org" ],
-      [ "//movlib.org" ],
-      [ "movlib.org" ],
-      [ "www.movlib.org" ],
-      [ "//movlib.org/foo/bar" ],
-      [ "movlib.org/foo/bar" ],
-      [ "www.movlib.org/foo/bar" ],
-      [ "MovLib" ],
-      [ "\n" ],
       [ "" ],
+      [ "\n" ],
+      [ "MovLib" ],
+      [ "movlib.org" ],
+      [ "//movlib.org" ],
+      [ "www.movlib.org" ],
+      [ "ftp://movlib.org/" ],
+      [ "movlib.org/foo/bar" ],
+      [ "ldap://movlib.org/" ],
+      [ "//movlib.org/foo/bar" ],
+      [ "http://movlib.org:80/" ],
+      [ "mailto:user@movlib.org" ],
+      [ "www.movlib.org/foo/bar" ],
+      [ "http://admin@movlib.org/" ],
+      [ "http://admin:1234@movlib.org/" ],
     ];
   }
 
@@ -100,8 +109,8 @@ class InputUrlTest extends \PHPUnit_Framework_TestCase {
    * @expectedException \MovLib\Exception\ValidatorException
    */
   public function testValidationInvalid($input) {
-    $_POST["phpunit"] = $input;
-    $this->inputUrl->validate();
+    $_POST[self::$inputUrl->id] = $input;
+    self::$inputUrl->validate();
   }
 
 }

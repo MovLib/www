@@ -34,19 +34,19 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
-  public $inputEmail;
+  public static $inputEmail;
 
   /**
    * Instantiate input email form element for tests.
    */
-  public function setUp() {
-    $this->inputEmail = new InputEmail();
+  public static function setUpBeforeClass() {
+    self::$inputEmail = new InputEmail();
   }
 
   public function testDefaults() {
-    $this->assertEquals("email", $this->inputEmail->id);
-    $this->assertEquals(User::MAX_LENGTH_EMAIL, $this->inputEmail->attributes["max-length"]);
-    $this->assertEquals("email", $this->inputEmail->attributes["type"]);
+    $this->assertEquals("email", self::$inputEmail->id);
+    $this->assertEquals(User::MAX_LENGTH_EMAIL, self::$inputEmail->attributes["max-length"]);
+    $this->assertEquals("email", self::$inputEmail->attributes["type"]);
   }
 
   /**
@@ -97,8 +97,8 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
    * @dataProvider dataProviderValidationValid
    */
   public function testValidationValid($input) {
-    $_POST[$this->inputEmail->id] = $input;
-    $this->inputEmail->validate();
+    $_POST[self::$inputEmail->id] = $input;
+    self::$inputEmail->validate();
   }
 
   public static function dataProviderValidationInvalid() {
@@ -181,8 +181,8 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
    * @expectedException \MovLib\Exception\ValidatorException
    */
   public function testValidationInvalid($input) {
-    $_POST[$this->inputEmail->id] = $input;
-    $this->inputEmail->validate();
+    $_POST[self::$inputEmail->id] = $input;
+    self::$inputEmail->validate();
   }
 
 }
