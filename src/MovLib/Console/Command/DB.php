@@ -17,6 +17,7 @@
  */
 namespace MovLib\Console\Command;
 
+use \mysqli;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -32,21 +33,6 @@ class DB extends \MovLib\Console\Command\AbstractCommand {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
-
-  /**
-   * The mode for running all scripts in the respective context.
-   */
-  const MODE_ALL = "all";
-
-  /**
-   * The mode for running migrations up to a point in time.
-   */
-  const MODE_DATE = "date";
-
-  /**
-   * The mode for running a single script in the respective context.
-   */
-  const MODE_SINGLE = "single";
 
   /**
    * Option for running all migrations and imports.
@@ -98,11 +84,6 @@ class DB extends \MovLib\Console\Command\AbstractCommand {
    */
   const OPTION_SHORTCUT_SEED = "s";
 
-  /**
-   * Constant for the special Intl ICU seed.
-   */
-  const SEED_INTL = "intl_translations";
-
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -115,11 +96,25 @@ class DB extends \MovLib\Console\Command\AbstractCommand {
   private $migrationDir;
 
   /**
+   * The mysqli connection to the database.
+   *
+   * @var \mysqli
+   */
+  private $mysqli;
+
+  /**
    * The directory containing the seed scripts.
    *
    * @var string
    */
   private $seedDir;
+
+  /**
+   * Associative array containing the seed names without extension as keys and the script paths as values.
+   *
+   * @var array
+   */
+  private $seedScripts;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -132,6 +127,12 @@ class DB extends \MovLib\Console\Command\AbstractCommand {
     parent::__construct("db");
     $this->migrationDir = "{$_SERVER["DOCUMENT_ROOT"]}/db/migrations";
     $this->seedDir = "{$_SERVER["DOCUMENT_ROOT"]}/db/seeds";
+    foreach (glob("{$this->seedDir}/*.sql") as $file) {
+      $this->seedScripts[basename($file, ".sql")] = $file;
+    }
+    $this->mysqli = new mysqli();
+    $this->mysqli->real_connect();
+    $this->mysqli->select_db($GLOBALS["movlib"]["default_database"]);
   }
 
   /**
@@ -140,37 +141,59 @@ class DB extends \MovLib\Console\Command\AbstractCommand {
   protected function configure() {
     $this
       ->setDescription("Execute database tasks.")
-      ->addOption(self::OPTION_ALL, self::OPTION_SHORTCUT_ALL, InputOption::VALUE_NONE, "Run all migrations and import all seed data (Ignores all other options).")
       ->addOption(self::OPTION_BACKUP, self::OPTION_SHORTCUT_BACKUP, InputOption::VALUE_NONE, "Perform a backup of the database (Ignores all other options).")
       ->addOption(self::OPTION_RESTORE, self::OPTION_SHORTCUT_RESTORE, InputOption::VALUE_NONE, "Perform a backup of the database (Ignores all other options).")
-      ->addOption(self::OPTION_MIGRATION, self::OPTION_SHORTCUT_MIGRATION, InputOption::VALUE_NONE, "Run migration(s).")
-      ->addOption(self::OPTION_SEED, self::OPTION_SHORTCUT_SEED, InputOption::VALUE_NONE, "Import seed data file(s).");
+      ->addOption(self::OPTION_MIGRATION, self::OPTION_SHORTCUT_MIGRATION, InputOption::VALUE_NONE, "Run migration(s).");
+    if (DEV) {
+      $this->addOption(self::OPTION_ALL, self::OPTION_SHORTCUT_ALL, InputOption::VALUE_NONE, "Run all migrations and import all seed data (Ignores all other options).");
+      $this->addOption(self::OPTION_SEED, self::OPTION_SHORTCUT_SEED, InputOption::VALUE_OPTIONAL, "Import seed data file(s).");
+    }
   }
 
   /**
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
+    global $argv;
     $this->setIO($input, $output);
     $options = $this->input->getOptions();
     if ($options[self::OPTION_ALL]) {
-      $this->runMigrations(false);
-      $this->runSeeds(false);
+      $this->write("Importing schema.");
+      $this->importSqlScripts("{$_SERVER["DOCUMENT_ROOT"]}/db/movlib.sql");
+      $this->write("Import successful.", self::MESSAGE_TYPE_INFO);
+      $this->write("Importing Intl translations for countries and languages.");
+      $this->importIntlTranslations();
+      $this->write("Import successful.", self::MESSAGE_TYPE_INFO);
+      $this->write("Importing seeds.");
+      $this->importSeeds();
       return;
     }
     if ($options[self::OPTION_BACKUP]) {
       /** @todo Implement */
+      $this->exitOnError("Not implemented yet!");
       return;
     }
     if ($options[self::OPTION_RESTORE]) {
       /** @todo Implement */
+      $this->exitOnError("Not implemented yet!");
       return;
     }
     if ($options[self::OPTION_MIGRATION]) {
       $this->runMigrations();
     }
-    if ($options[self::OPTION_SEED]) {
-      $this->runSeeds();
+    if (array_search("--" . self::OPTION_SEED, $argv) || array_search("-" . self::OPTION_SHORTCUT_SEED, $argv)) {
+      if (!empty($options[self::OPTION_SEED])) {
+        $this->importSeeds(true, $options[self::OPTION_SEED]);
+      }
+      else {
+        $this->runSeedsInteractive();
+      }
+    }
+  }
+
+  protected function rollback() {
+    if (isset($this->mysqli)) {
+      $this->mysqli->close();
     }
   }
 
@@ -184,12 +207,159 @@ class DB extends \MovLib\Console\Command\AbstractCommand {
    * @return this
    */
   private function importIntlTranslations() {
-    $this->write("Importing Intl ICU tranlations for countries and languages.");
-    $this->system(
-      "php {$_SERVER["DOCUMENT_ROOT"]}/bin/translation_importer.php",
-      "Could not import Intl ICU translations for countries and languages!",
-      [ "exit_on_error" => false ]
-    );
+    global $i18n;
+    /**
+     * Contains all country and basic language codes that our application shall know about.
+     *
+     * @var array
+     */
+    $codes = [
+      "countries" => [ "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW" ],
+      "languages" => [ "ab", "aa", "af", "ak", "sq", "am", "ar", "an", "hy", "as", "av", "ae", "ay", "az", "bm", "ba", "eu", "be", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "ch", "ce", "ny", "zh", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "gl", "ka", "de", "el", "gn", "gu", "ht", "ha", "he", "hz", "hi", "ho", "hu", "ia", "id", "ie", "ga", "ig", "ik", "io", "is", "it", "iu", "ja", "jv", "kl", "kn", "kr", "ks", "kk", "km", "ki", "rw", "ky", "kv", "kg", "ko", "ku", "kj", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "gv", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mh", "mn", "na", "nv", "nb", "nd", "ne", "ng", "nn", "no", "ii", "nr", "oc", "oj", "cu", "om", "or", "os", "pa", "pi", "fa", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "sa", "sc", "sd", "se", "sm", "sg", "sr", "gd", "sn", "si", "sk", "sl", "so", "st", "es", "su", "sw", "ss", "sv", "ta", "te", "tg", "th", "ti", "bo", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "cy", "wo", "fy", "xh", "yi", "yo", "za", "zu" ]
+    ];
+
+    /**
+     * Helper function to translate country names.
+     *
+     * @global \MovLib\Model\I18nModel $i18n
+     * @param string $country_code
+     *   The ISO 3166-1 alpha-2 country code.
+     * @param string $locale
+     *   The desired locale or ISO 639-1 alpha-2 language code.
+     * @return string
+     *   The country's name translated to the desired locale.
+     */
+    $countries = function ($country_code, $locale) {
+      global $i18n;
+      return \Locale::getDisplayRegion("{$i18n->defaultLanguageCode}-{$country_code}", $locale);
+    };
+
+    /**
+     * Helper function to translate language names.
+     *
+     * @param string $language_code
+     *   The ISO 639-1 alpha-2 language code.
+     * @param string $locale
+     *   The desired locale or ISO 639-1 alpha-2 language code.
+     * @return string
+     *   The language's name translated to the desired locale.
+     */
+    $languages = function ($language_code, $locale) {
+      return \Locale::getDisplayLanguage($language_code, $locale);
+    };
+
+    // Get rid of the default language code in the supported language codes array.
+    foreach ($GLOBALS["movlib"]["locales"] as $language_code => $locale) {
+      if ($language_code != $i18n->defaultLanguageCode) {
+        $supported_language_codes[] = $language_code;
+      }
+    }
+
+    // Insert data into database.
+    foreach ($codes as $table => $data) {
+      $data_count = count($data) - 1;
+      $values = "";
+      $bind_param_args = [ "" ];
+      $names = [];
+      for ($i = 0; $i <= $data_count; ++$i) {
+        $names[$i]["_"] = call_user_func(${$table}, $data[$i], $i18n->defaultLanguageCode);
+        $values .= "(?, ?, COLUMN_CREATE(";
+        $bind_param_args[0] .= "ss";
+        $bind_param_args[] = &$data[$i];
+        $bind_param_args[] = &$names[$i]["_"];
+        $comma = "";
+        $supported_language_codes_count = count($supported_language_codes);
+        for ($j = 0; $j < $supported_language_codes_count; ++$j) {
+          $names[$i][$j] = call_user_func(${$table}, $data[$i], $supported_language_codes[$j]);
+          $values .= "{$comma}?, ?";
+          $bind_param_args[0] .= "ss";
+          $bind_param_args[] = &$supported_language_codes[$j];
+          $bind_param_args[] = &$names[$i][$j];
+          $comma = ", ";
+        }
+        $values .= "))";
+        if ($i < $data_count) {
+          $values .= ", ";
+        }
+      }
+      if (($stmt = $this->mysqli->prepare(
+        "INSERT
+          INTO `{$table}` (`iso_alpha-2`, `name`, `dyn_translations`)
+          VALUES {$values}
+          ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)
+        "
+      )) === false) {
+        $this->exitOnError("Could not insert Intl ICU translations: {$this->mysqli->error} ({$this->mysqli->errno})");
+      }
+      if (call_user_func_array([ $stmt, "bind_param" ], $bind_param_args) === false) {
+        $stmt->close();
+        $this->exitOnError("Could not insert Intl ICU translations: {$stmt->error} ({$stmt->errno})");
+      }
+      $stmt->execute();
+      $stmt->close();
+    }
+    // Insert the "Silent" language, because it is not present in the language list of Intl.
+    if (($stmt = $this->mysqli->prepare(
+      "INSERT
+        INTO `languages` (`iso_alpha-2`, `name`, `dyn_translations`)
+        VALUES ('xx', 'Silent', COLUMN_CREATE('de', 'Stumm'))
+        ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)
+      "
+    )) === false) {
+      $this->exitOnError("Could not insert Intl ICU translations: {$this->mysqli->error} ({$this->mysqli->errno})");
+    }
+    $stmt->execute();
+    $stmt->close();
+  }
+
+  /**
+   * Import seed scripts.
+   *
+   * @param boolean $truncate [optional]
+   *   Flag to determine, whether the table(s) should be truncated before the inserts or not.
+   *   Defaults to <code>FALSE</code>.
+   * @param string $seedName [optional]
+   *   If supplied, the seed with this name is imported, otherwise all seeds are imported.
+   * @return this
+   */
+  private function importSeeds($truncate = false, $seedName = null) {
+    if ($seedName) {
+      if (array_key_exists($seedName, $this->seedScripts) === false) {
+        $this->write("Invalid seed name '{$seedName}'. Possible choices are: " . implode(", ", array_keys($this->seedScripts)), self::MESSAGE_TYPE_ERROR);
+        return $this;
+      }
+      $seeds[$seedName] = $this->seedScripts[$seedName];
+    }
+    else {
+      $seeds = $this->seedScripts;
+    }
+    $this->mysqli->query("SET foreign_key_checks = 0");
+    foreach ($seeds as $table => $script) {
+      $this->write("Importing seed script '{$script}'.");
+      if ($truncate === true) {
+        $this->write("Truncating table `{$table}`.");
+        $success = $this->mysqli->query("TRUNCATE TABLE `{$table}`");
+        if ($success === false) {
+          $this->exitOnError("Could not truncate table `{$table}`: {$this->mysqli->error} ({$this->mysqli->errno})!");
+        }
+      }
+      if (($query = file_get_contents($script)) === false) {
+        $this->exitOnError("Could not read '{$script}'!");
+        continue;
+      }
+      $success = $this->mysqli->multi_query($query);
+      while($success) {
+        if ($this->mysqli->more_results() === false) {
+          break;
+        }
+        $success = $this->mysqli->next_result();
+      }
+      if ($this->mysqli->errno !== 0) {
+        $this->exitOnError("Execution of seed '{$script}' failed: {$this->mysqli->error} ({$this->mysqli->errno})!");
+      }
+      $this->write("Import successful.", self::MESSAGE_TYPE_INFO);
+    }
+    $this->mysqli->query("SET foreign_key_checks = 1");
     return $this;
   }
 
@@ -216,117 +386,22 @@ class DB extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
-   * Run migrations according to the <code>MODE_*</code> constants.
-   *
-   * The flag <var>$interactive</var> determines whether the user is prompted for the mode or if all migrations should be run.
-   *
-   * @param boolean $interactive [optional]
-   *   Determines whether the user should be asked for the mode (<code>TRUE</code>) or not (<code>FALSE</code>).
-   *   Defaults to <code>TRUE</code>, which means that all migrations are run.
-   * @return this
+   * Run migrations.
    */
   private function runMigrations($interactive = true) {
-    // Gather all available migration scripts for autocompletion and execution.
-    $migrationChoices = [];
-    $migrationScripts = [];
-    foreach (glob("{$this->migrationDir}/*.sql") as $file) {
-      $migrationChoices[] = basename($file);
-      $migrationScripts[] = $file;
-    }
-    $c = count($migrationChoices);
-
-    if ($interactive === true) {
-      $answers = [
-        self::MODE_ALL    => "Run all migrations (default).",
-        self::MODE_SINGLE => "Run a single migration (You can do that several times).",
-        self::MODE_DATE   => "Run migrations up to a specified point in time.",
-      ];
-      $answer = $this->askWithChoices("Please select a migration mode", self::MODE_ALL, array_keys($answers), array_values($answers));
-    }
-    else {
-      $answer = self::MODE_ALL;
-    }
-    switch ($answer) {
-      case self::MODE_ALL:
-        $this->importSqlScripts($migrationScripts);
-        break;
-      case self::MODE_SINGLE:
-        do {
-          $answer = $this->askWithChoices("Please select a migration to run.", null, $migrationChoices);
-          if (($i = array_search($answer, $migrationChoices)) === false) {
-            $this->write("Unknown migration '{$answer}'. Possible migrations are: " . implode(", ", $migrationChoices) . ".", self::MESSAGE_TYPE_ERROR);
-          }
-          else {
-            $this->importSqlScripts($migrationScripts[$i]);
-          }
-        } while ($this->askConfirmation("Do you want to run another migration?"));
-        break;
-      case self::MODE_DATE:
-        $answer = $this->askWithChoices("Please select a migration snapshot to set up the schema.", $migrationChoices[$c - 1], $migrationChoices);
-        if (($length = array_search($answer, $migrationChoices)) === false) {
-          $this->write("Unknown migration '{$answer}'. Possible migrations are: " . implode(", ", $migrationChoices) . ".", self::MESSAGE_TYPE_ERROR);
-        }
-        $this->importSqlScripts(array_slice($migrationScripts, 0, ++$length));
-        break;
-      default:
-        $this->exitOnError("Unknown migration mode '{$answer}'. Possible modes are: " . implode(", ", array_keys($answers)) . ".");
-        break;
-    }
-    return $this;
+    /** @todo Implement upgrading with migrations. */
   }
 
   /**
-   * Run seed imports according to the <code>MODE_*</code> constants.
+   * Run seed imports with an interactive dialogue.
    *
-   * The flag <var>$interactive</var> determines whether the user is prompted for the mode or if all seeds should be imported.
-   *
-   * @param boolean $interactive [optional]
-   *   Determines whether the user should be asked for the mode (<code>TRUE</code>) or not (<code>FALSE</code>).
-   *   Defaults to <code>TRUE</code>, which means that all seeds are imported.
    * @return this
    */
-  private function runSeeds($interactive = true) {
-    // Gather all available seed data scripts for autocompletion and execution.
-    $seedScripts = [ self::SEED_INTL => ""  ];
-    foreach (glob("{$this->seedDir}/*.sql") as $file) {
-      $seedScripts[basename($file)] = $file;
-    }
-    if ($interactive === true) {
-      $answers = [
-        self::MODE_ALL  => "Import all seed data in the correct order (default).",
-        self::MODE_SINGLE => "Import a single seed script (You can do that several times).
-          Many of these scripts have dependencies, therefore it is HIGHLY recommended to import all seed data at once.",
-      ];
-      $answer = $this->askWithChoices("Please select a seed import mode.", self::MODE_ALL, array_keys($answers), array_values($answers));
-    } else {
-      $answer = self::MODE_ALL;
-    }
-    switch ($answer) {
-      case self::MODE_ALL:
-        $this->importIntlTranslations();
-        chdir($this->seedDir);
-        $this->importSqlScripts("{$this->seedDir}/load_all.txt");
-        break;
-      case self::MODE_SINGLE:
-        do {
-          $answer = $this->askWithChoices("Please select a seed to import.", null, array_keys($seedScripts));
-          if (array_key_exists($answer, $seedScripts) === false) {
-            $this->write("Unknown seed '{$answer}'. Possible seeds are: " . implode(", ", array_values($seedScripts)) . ".", self::MESSAGE_TYPE_ERROR);
-          }
-          else {
-            if ($answer === self::SEED_INTL) {
-              $this->importIntlTranslations();
-            }
-            else {
-              $this->importSqlScripts($seedScripts[$answer]);
-            }
-          }
-        } while ($this->askConfirmation("Do you want to import another seed?"));
-        break;
-      default:
-        $this->exitOnError("Unknown seed import mode '{$answer}'. Possible modes are: " . implode(", ", array_keys($answers)) . ".");
-        break;
-    }
+  private function runSeedsInteractive() {
+    do {
+      $answer = $this->askWithChoices("Please select a seed to import.", null, array_keys($this->seedScripts));
+      $this->importSeeds(true, $answer);
+    } while ($this->askConfirmation("Do you want to import another seed?"));
     return $this;
   }
 

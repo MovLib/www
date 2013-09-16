@@ -170,18 +170,20 @@ abstract class AbstractCommand extends Command {
    *   The user's answer.
    */
   function askWithChoices($text, $default = null, array $choices = null, array $choiceExplanations = null) {
-    $this->write($text, self::MESSAGE_TYPE_COMMENT)->write("Possible choices are:", self::MESSAGE_TYPE_COMMENT);
+    $this->write($text, self::MESSAGE_TYPE_COMMENT)->write("Possible choices are:\n", self::MESSAGE_TYPE_COMMENT);
     if ($choices && $choiceExplanations){
       $c = count($choices);
       for ($i = 0; $i < $c; ++$i) {
-        $choiceExplanations[$i] = "{$choices[$i]}: {$choiceExplanations[$i]}";
+        $this->write("{$choices[$i]}: {$choiceExplanations[$i]}");
       }
     }
     else {
-      $choiceExplanations = $choices;
+      $c = count($choices);
+      for ($i = 0; $i < $c; ++$i) {
+        $this->write($choices[$i]);
+      }
     }
-    $this->write($choiceExplanations);
-    return $this->ask("Which one should it be?", $default, $choices);
+    return $this->write("")->ask("Which one should it be?", $default ?: "none", $choices);
   }
 
   /**
@@ -328,14 +330,17 @@ abstract class AbstractCommand extends Command {
    *   The message that should be displayed to the user.
    * @param string $type [optional]
    *   The message type, one of the predefined Symfony console styles (see the class constants <var>MESSAGE_TYPE_*</var>).
-   *   Defaults to <var>MESSAGE_TYPE_INFO</var>
+   *   Defaults to no style (white text).
    * @return this
    */
-  protected final function write($message, $type = self::MESSAGE_TYPE_INFO) {
-    $this->output->writeln(is_array($message)
-      ? $this->getHelper("formatter")->formatBlock($message, $type, true)
-      : "<{$type}>{$message}</{$type}>"
-    );
+  protected final function write($message, $type = null) {
+    if (is_array($message)) {
+      $message = $this->getHelper("formatter")->formatBlock($message, $type, true);
+    }
+    elseif ($type) {
+      $message = "<{$type}>{$message}</{$type}>";
+    }
+    $this->output->writeln($message);
     return $this;
   }
 
