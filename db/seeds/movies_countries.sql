@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 16, 2013 at 12:17 PM
+-- Generation Time: Sep 16, 2013 at 12:19 PM
 -- Server version: 10.0.4-MariaDB-1~wheezy-log
 -- PHP Version: 5.5.2
 
@@ -23,13 +23,14 @@ SET time_zone = "+00:00";
 --
 
 --
--- Dumping data for table `aspect_ratios`
+-- Dumping data for table `movies_countries`
 --
 
-INSERT INTO `aspect_ratios` (`aspect_ratio_id`, `name`) VALUES
-(1, '1,78:1 (anamorph / 16:9)'),
-(2, '1,33:1'),
-(3, '1,85:1 (anamorph / 16:9)');
+INSERT INTO `movies_countries` (`movie_id`, `country_id`) VALUES
+(1, 77),
+(2, 233),
+(3, 75),
+(3, 233);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

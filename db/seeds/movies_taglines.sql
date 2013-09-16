@@ -23,14 +23,15 @@ SET time_zone = "+00:00";
 --
 
 --
--- Dumping data for table `packaging`
+-- Dumping data for table `movies_taglines`
 --
 
-INSERT INTO `packaging` (`packaging_id`, `name`, `dyn_names`, `dyn_descriptions`) VALUES
-(1, 'Steelbook', '', ''),
-(2, 'Keep Case (Amaray)', '', ''),
-(3, 'Blu-Ray Case (Amaray)', '', ''),
-(4, 'Video Box', '', '');
+INSERT INTO `movies_taglines` (`movie_id`, `language_id`, `tagline`, `dyn_comments`) VALUES
+(2, 41, 'Fear can hold you prisoner. Hope can set you free.', '\0\0\0\0\0\0Cdeen!deutsches Kommentar!english comment'),
+(3, 41, 'If you want a job done well hire a professional.', ''),
+(3, 41, 'A perfect assassin. An innocent girl. They have nothing left to lose except each other. He moves without sound. Kills without emotion. Disappears without trace. Only a 12 year old girl... knows his weakness.', ''),
+(3, 41, 'He moves without sound. Kills without emotion. Disappears without trace.', ''),
+(3, 41, 'You can&apos;t stop what you can&apos;t see.', '');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

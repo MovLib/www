@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 16, 2013 at 12:17 PM
+-- Generation Time: Sep 16, 2013 at 12:21 PM
 -- Server version: 10.0.4-MariaDB-1~wheezy-log
 -- PHP Version: 5.5.2
 
@@ -23,13 +23,12 @@ SET time_zone = "+00:00";
 --
 
 --
--- Dumping data for table `aspect_ratios`
+-- Dumping data for table `persons_photos`
 --
 
-INSERT INTO `aspect_ratios` (`aspect_ratio_id`, `name`) VALUES
-(1, '1,78:1 (anamorph / 16:9)'),
-(2, '1,33:1'),
-(3, '1,85:1 (anamorph / 16:9)');
+INSERT INTO `persons_photos` (`person_id`, `section_id`, `user_id`, `license_id`, `filename`, `width`, `height`, `size`, `ext`, `changed`, `created`, `rating`, `dyn_descriptions`, `hash`, `source`) VALUES
+(1, 1, 1, 1, 'Luc-Besson.1.en', 858, 1087, 239919, 'jpg', '2013-09-16 11:37:18', '2013-09-16 11:37:18', 0, '', 'hash\0\0\0\0\0\0\0\0\0\0\0\0', 'http://commons.wikimedia.org/wiki/File:Luc-Besson-Taken.JPG'),
+(5, 1, 1, 1, 'Frank-Darabont.1.en', 348, 394, 109183, 'jpg', '2013-09-16 11:37:18', '2013-09-16 11:37:18', 0, '', 'hash\0\0\0\0\0\0\0\0\0\0\0\0', 'http://commons.wikimedia.org/wiki/File:Struzan_darabont.jpg');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

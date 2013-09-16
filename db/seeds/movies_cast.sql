@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 16, 2013 at 12:17 PM
+-- Generation Time: Sep 16, 2013 at 12:19 PM
 -- Server version: 10.0.4-MariaDB-1~wheezy-log
 -- PHP Version: 5.5.2
 
@@ -23,13 +23,15 @@ SET time_zone = "+00:00";
 --
 
 --
--- Dumping data for table `aspect_ratios`
+-- Dumping data for table `movies_cast`
 --
 
-INSERT INTO `aspect_ratios` (`aspect_ratio_id`, `name`) VALUES
-(1, '1,78:1 (anamorph / 16:9)'),
-(2, '1,33:1'),
-(3, '1,85:1 (anamorph / 16:9)');
+INSERT INTO `movies_cast` (`movie_id`, `person_id`, `roles`) VALUES
+(2, 6, 'Andy Dufresne'),
+(2, 7, 'Ellis Boyd &quot;Red&quot; Redding'),
+(3, 2, 'Léon'),
+(3, 3, 'Mathilda'),
+(3, 4, 'Stansfield');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

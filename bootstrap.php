@@ -42,6 +42,9 @@ $composerAutoloader->add("MovLib\Test", "{$_SERVER["DOCUMENT_ROOT"]}/tests");
 // Create global configuration.
 $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
 
+// Define global constant for determining, if we are in a dev or a production release.
+define("DEV", stripos($GLOBALS["movlib"]["version"], "-dev") === false ? false : true);
+
 // Needed by various objects (e.g. DelayedLogger).
 $i18n = new \MovLib\Data\I18n();
 $_SERVER["LANGUAGE_CODE"] = $i18n->defaultLanguageCode;
