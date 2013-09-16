@@ -166,9 +166,9 @@ pip-log.txt
 # Added via NetBeans, project specific
 !/bin/
 /experimental/
+/conf/nginx/sites/phpmyadmin.conf
 /conf/nginx/sites/test.conf
 /conf/movlib.ini
 /vendor/
 /uploads/
 /history/
-

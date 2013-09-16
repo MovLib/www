@@ -20,8 +20,6 @@ namespace MovLib\Test\Presentation\Partial\FormElement;
 use \MovLib\Presentation\Partial\FormElement\InputUrl;
 
 /**
- * @todo Test HTML, XSS, and other possible fraud.
- *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

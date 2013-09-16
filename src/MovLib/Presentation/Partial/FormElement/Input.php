@@ -110,13 +110,6 @@ class Input extends \MovLib\Presentation\AbstractBase {
   public $required = false;
 
   /**
-   * Flag indicating if the value of this element is valid or not.
-   *
-   * @var boolean
-   */
-  public $valid = true;
-
-  /**
    * The value of this element after it was validated. Please note that this will be null if validation failed.
    *
    * @var mixed
@@ -216,7 +209,6 @@ class Input extends \MovLib\Presentation\AbstractBase {
   public function invalid() {
     $this->addClass("invalid", $this->attributes);
     $this->attributes["aria-invalid"] = "true";
-    $this->valid = false;
     return $this;
   }
 

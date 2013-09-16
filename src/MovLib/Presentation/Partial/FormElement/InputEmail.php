@@ -76,31 +76,31 @@ class InputEmail extends \MovLib\Presentation\Partial\FormElement\Input {
    */
   public function validate() {
     global $i18n;
-    $errors = null;
-
-    // Use PHP's built-in validation function.
-    if (filter_var($_POST[$this->id], FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
-      $errors[] = $i18n->t("The email address {0} doesn’t appear to be valid.", [ $this->placeholder($_POST[$this->id]) ]);
-    }
-    // If the syntax is valid, check if we actually can send emails to the given address.
-    else {
-      $host = substr($_POST[$this->id], strpos($_POST[$this->id], "@") + 1);
-      // The host part needs at least a single point in it, otherwise localhost would be valid. We check the DNS entries
-      // in the order of their weight for the current operation. An A record is for IPv4 hosts, an AAAA record is for
-      // IPv6 hosts and the MX record is for mail servers only.
-      if (strpos($host, ".") === false || (checkdnsrr($host, "A") === false && checkdnsrr($host, "AAAA") === false && checkdnsrr($host, "MX") === false)) {
-        $errors[] = $i18n->t("The email address {0} doesn’t appear to be valid.", [ $this->placeholder($_POST[$this->id]) ]);
-      }
-    }
 
     // No need for multi-byte functions, utf-8 is not allowed in emails.
     if (strlen($_POST[$this->id]) > $this->attributes["max-length"]) {
-      $errors[] = $i18n->t("The email address {0} is too long: it must be {1,number,integer} or less.", [ $this->placeholder($_POST[$this->id]), $this->attributes["max-length"] ]);
+      throw new ValidatorException($i18n->t("The email address {0} is too long: it must be {1,number,integer} or less.", [
+        $this->placeholder($_POST[$this->id]),
+        $this->attributes["max-length"],
+      ]));
     }
 
-    // Always throw aggregated error messages, to ensure that the user knows about all problems regarding this field.
-    if ($errors) {
-      throw new ValidatorException(implode("<br>", $errors));
+    // Use PHP's built-in validation function.
+    if (filter_var($_POST[$this->id], FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
+      throw new ValidatorException($i18n->t("The email address {0} doesn’t appear to be valid.", [
+        $this->placeholder($_POST[$this->id]),
+      ]));
+    }
+
+    // If the syntax is valid, check if we actually can send emails to the given address.
+    $host = substr($_POST[$this->id], strrpos($_POST[$this->id], "@") + 1);
+    // The host part needs at least a single point in it, otherwise localhost would be valid. We check the DNS entries
+    // in the order of their weight for the current operation. An A record is for IPv4 hosts, an AAAA record is for
+    // IPv6 hosts and the MX record is for mail servers only.
+    if (strpos($host, ".") === false || (checkdnsrr($host, "A") === false && checkdnsrr($host, "AAAA") === false && checkdnsrr($host, "MX") === false)) {
+      throw new ValidatorException($i18n->t("The email address {0} doesn’t appear to be valid.", [
+        $this->placeholder($_POST[$this->id]),
+      ]));
     }
 
     $this->value = $_POST[$this->id];
