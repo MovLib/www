@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 16, 2013 at 12:17 PM
+-- Generation Time: Sep 16, 2013 at 12:18 PM
 -- Server version: 10.0.4-MariaDB-1~wheezy-log
 -- PHP Version: 5.5.2
 
@@ -23,13 +23,13 @@ SET time_zone = "+00:00";
 --
 
 --
--- Dumping data for table `aspect_ratios`
+-- Dumping data for table `master_releases`
 --
 
-INSERT INTO `aspect_ratios` (`aspect_ratio_id`, `name`) VALUES
-(1, '1,78:1 (anamorph / 16:9)'),
-(2, '1,33:1'),
-(3, '1,85:1 (anamorph / 16:9)');
+INSERT INTO `master_releases` (`master_release_id`, `title`, `country_id`, `dyn_notes`, `release_date`, `packaging_id`, `commit`) VALUES
+(1, 'Die Verurteilten', 57, '', '2007-11-15', NULL, NULL),
+(2, 'Die Verurteilten', 57, '', '2003-01-16', NULL, NULL),
+(3, 'Die Verurteilten', 57, '', '2000-09-28', NULL, NULL);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
