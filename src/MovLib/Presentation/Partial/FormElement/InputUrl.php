@@ -122,8 +122,6 @@ class InputUrl extends \MovLib\Presentation\Partial\FormElement\InputText {
     // Don't forget the allowed optional parts of the URL including their prefix.
     foreach ([ "query" => "?", "fragment" => "#" ] as $optionalPart => $prefix) {
       if (!empty($parts[$optionalPart])) {
-        // @todo Should we encode / sanitize the query and fragment as well?
-        //$parts[$optionalPart] = rawurlencode(rawurldecode($parts[$optionalPart]));
         $_POST[$this->id] .= "{$prefix}{$parts[$optionalPart]}";
       }
     }
