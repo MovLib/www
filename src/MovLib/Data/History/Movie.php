@@ -41,13 +41,15 @@ class Movie extends AbstractHistory {
   /**
    * Implementation ob abstract method <code>writeFiles()</code>.
    * Writes all history relevant information in files.
+   *
+   * @return this
    */
   public function writeFiles() {
     foreach (["original_title", "runtime", "year"] as $fildname) {
-      $this->writeToFile($fildname, $this->entity[0][$fildname]);
+      $this->writeToFile($fildname, $this->entity[$fildname]);
     }
 
-    foreach (json_decode($this->entity[0]["dyn_synopses"], true) as $synopsis_language => $synopsis) {
+    foreach (json_decode($this->entity["dyn_synopses"], true) as $synopsis_language => $synopsis) {
       $this->writeToFile("{$synopsis_language}_synopsis", $synopsis);
     }
 
@@ -64,6 +66,8 @@ class Movie extends AbstractHistory {
     $this->writeRelatedRowsToFile("movies_languages", ["language_id"]);
     $this->writeRelatedRowsToFile("movies_countries", ["country_id"]);
     $this->writeRelatedRowsToFile("movies_directors", ["person_id"]);
+
+    return $this;
   }
 
 }
