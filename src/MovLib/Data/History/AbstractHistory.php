@@ -36,18 +36,11 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
   /**
-   * The commit hash of HEAD.
+   * The commit hash.
    *
    * @var string
    */
   protected $commitHash = null;
-
-  /**
-   * Associative array containing this entity's database table (all or selected columns).
-   *
-   * @var array
-   */
-  public $entity;
 
   /**
    * Entity's unique ID (e.g. movie ID).
@@ -80,38 +73,23 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
-
   /**
-   * Instantiate new history model from given ID and gather basic information.
+   * Instantiate new history model from given ID.
    *
    * @param int $id
    *   The id of the object to be versioned.
-   * @param array $columns [optional]
-   *   Numeric array containing the column names.
-   * @param array $dynamicColumns [optional]
-   *   Numeric array containing the dynamic column names.
    */
-  public function __construct($id, array $columns = [], array $dynamicColumns = []) {
+  public function __construct($id) {
     $this->type = $this->getShortName();
     $this->id = $id;
 
-    $result = $this->select(
-      "SELECT {$this->getColumnsForSelectQuery($columns, $dynamicColumns)}, `commit`
-        FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1",
-      "d",
-      [ $this->id ]
-    );
+    // verify if id is valid.
+    $result = $this->select("SELECT `{$this->type}_id` FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1", "d", [ $this->id ]);
     if (empty($result[0])) {
       throw new HistoryException("Could not find {$this->type} with ID '{$this->id}'!");
     }
 
-    $this->entity = $result[0];
     $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
-
-    // @todo Should be called when entity is first created!
-    if (is_dir("{$this->path}/.git") === false) {
-      $this->createRepository();
-    }
   }
 
   /**
@@ -139,7 +117,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    */
   abstract protected function writeFiles(array $data);
 
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
   /**
@@ -148,7 +125,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @return this
    * @throws \MovLib\Exception\HistoryException
    */
-  private function stageFiles() {
+  private function stageAllFiles() {
     exec("cd {$this->path} && git add -A", $output, $returnVar);
     if ($returnVar !== 0) {
       throw new HistoryException("Error adding files to stage!");
@@ -167,7 +144,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   private function unstageFiles(array $files) {
     $filesToUnstage = implode(" ", $files);
     exec("cd {$this->path} && git reset HEAD {$filesToUnstage}", $output, $returnVar);
-    if ($returnVar !== 0) {
+    if ($returnVar !== 1) { // not 0!
       throw new HistoryException("Error unstaging files!");
     }
     return $this;
@@ -263,7 +240,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   Numeric array of changed files.
    * @throws \MovLib\Exception\HistoryException
    */
-  public function getChangedFiles($head = null, $ref = null) {
+  private function getChangedFiles($head = null, $ref = null) {
     exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output, $returnVar);
     if ($returnVar !== 0) {
       throw new HistoryException("There was an error locating changed files");
@@ -325,11 +302,11 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
 
   public function saveHistory(array $entitiy, $message) {
     if (!isset($this->commitHash)) {
-      throw new HistoryException("startEditing have to be called bevore saveHistory!");
+      throw new HistoryException("startEditing() have to be called bevore saveHistory()!");
     }
     $this->hideRepository();
     $this->writeFiles($entitiy);
-    $this->addFilesToStage();
+    $this->stageAllFiles();
     if ($this->commitHash != $this->getLastCommitHash()) {
       // If someone else commited in the meantime find intersecting files.
       $changedSinceStartEditing = $this->getChangedFiles("HEAD", $this->commitHash);
@@ -422,74 +399,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
-   * Write specific columns of a related database row to a file.
-   *
-   * If no columns are given, all columns are selected.
-   *
-   * @param string $relation
-   *   A database relation (e.g. <i>movies_titles</i>).
-   * @param array $columns [optional]
-   *   Array of columns to be written to the file.
-   * @param array $dynamicColumns [optional]
-   *   Array of dynamic colums to be written to the file.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected function writeRelatedRowsToFile($relation, array $columns = [], array $dynamicColumns = []) {
-    $result = $this->select(
-      "SELECT {$this->getColumnsForSelectQuery($columns, $dynamicColumns)} FROM `{$relation}` WHERE `{$this->type}_id` = ? LIMIT 1",
-      "d",
-      [ $this->id ]
-    );
-    foreach ($dynamicColumns as $value) {
-      try {
-        $result[0][$value] = json_decode($result[0][$value], true);
-      }
-      catch (ErrorException $e) {
-        throw new HistoryException("Could not find '{$value}' in result!");
-      }
-    }
-    $this->writeToFile($relation, json_encode($result));
-    return $this;
-  }
-
-  /**
-   * Build query select part.
-   *
-   * Build string which can be used in a SELECT query (e.g. <code>["title"]["dyn_comment]</code> will become
-   * <code>`title`, COLUMN_JSON(dyn_comment) AS `dyn_comment`</code>). If no columns or dynamic columns are given
-   * all columns (*) are selected. If dynamic columns are given these are selectet as COLUMN_JSON.
-   *
-   * @param array $columns [optional]
-   *   Numeric array containing the column names.
-   * @param array $dynamicColumns [optional]
-   *   Numeric array containing the dynamic column names.
-   * @return string
-   *   SELECT part of query.
-   */
-  private function getColumnsForSelectQuery(array $columns = null, array $dynamicColumns = null) {
-    if (!$columns && !$dynamicColumns) {
-      return "*";
-    }
-    $select = null;
-    $c = count($columns);
-    for ($i = 0; $i < $c; ++$i) {
-      if ($i !== 0) {
-        $select .= ", ";
-      }
-      $select .= "`{$columns[$i]}`";
-    }
-    $c = count($dynamicColumns);
-    for ($i = 0; $i < $c; ++$i) {
-      if ($select || $i !== 0) {
-        $select .= ", ";
-      }
-      $select .= "COLUMN_JSON(`{$dynamicColumns[$i]}`) AS `{$dynamicColumns[$i]}`";
-    }
-    return $select;
-  }
-
-  /**
    * Get the current commit hash of the entity from DB
    *
    * @return string
@@ -531,6 +440,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     if ($returnVar !== 0) {
       throw new HistoryException("Could not initialize GIT repository.");
     }
+
     return $this;
   }
 

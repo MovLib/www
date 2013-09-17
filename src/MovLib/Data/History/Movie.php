@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\History;
 
+use \MovLib\Exception\HistoryException;
+
 /**
  * Description of MovieHistoryModel
  *
@@ -29,48 +31,40 @@ namespace MovLib\Data\History;
 class Movie extends AbstractHistory {
 
   /**
-   * Instantiate new movie history model.
-   *
-   * @param int $id
-   *  The movie id
-   */
-  public function __construct($id) {
-    parent::__construct($id, ["original_title", "runtime", "year"], ["dyn_synopses"]);
-  }
-
-  /**
    * Implementation ob abstract method <code>writeFiles()</code>.
-   * 
-   * Write files to repository.
+   *
+   * Write files to repository if offset exists in $data.
    *
    * @param array $data
-   *   Associative array with data to store (use file name as key)
+   *   Associative array with data to store.
    * @return this
-   * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Exception\FileSystemException
+   * @throws \MovLib\Exception\HistoryException
    */
   public function writeFiles(array $data) {
-    foreach (["original_title", "runtime", "year"] as $fildname) {
-      $this->writeToFile($fildname, $this->entity[$fildname]);
+    if(empty($data)) {
+      throw new HistoryException("Data cannot be empty!");
     }
 
-    foreach (json_decode($this->entity["dyn_synopses"], true) as $synopsis_language => $synopsis) {
-      $this->writeToFile("{$synopsis_language}_synopsis", $synopsis);
+    foreach (["original_title", "runtime", "year"] as $offset) {
+      if (isset($data[$offset])) {
+        $this->writeToFile($offset, $data[$offset]);
+      }
     }
 
-    $this->writeRelatedRowsToFile("movies_titles",    ["title", "is_display_title", "language_id"], ["dyn_comments"]);
-    $this->writeRelatedRowsToFile("movies_taglines",  ["tagline", "language_id"], ["dyn_comments"]);
-    $this->writeRelatedRowsToFile("movies_links",     ["title", "text", "url", "language_id"]);
-    $this->writeRelatedRowsToFile("movies_trailers");
-    $this->writeRelatedRowsToFile("movies_cast",      ["person_id", "roles"]);
-    $this->writeRelatedRowsToFile("movies_crew",      ["crew_id"]);
-    $this->writeRelatedRowsToFile("movies_awards",    ["award_count"]);
-    $this->writeRelatedRowsToFile("movies_relationships",    ["movie_id_other", "relationship_type_id"]);
-    $this->writeRelatedRowsToFile("movies_genres",    ["genre_id"]);
-    $this->writeRelatedRowsToFile("movies_styles",    ["style_id"]);
-    $this->writeRelatedRowsToFile("movies_languages", ["language_id"]);
-    $this->writeRelatedRowsToFile("movies_countries", ["country_id"]);
-    $this->writeRelatedRowsToFile("movies_directors", ["person_id"]);
+    foreach ($GLOBALS["movlib"]["locales"] as $language => $value) {
+      if (isset($data["{$language}_synopsis"])) {
+        $this->writeToFile("{$language}_synopsis", $data["{$language}_synopsis"]);
+      }
+    }
+
+    $relatedData = ["titles", "taglines", "links", "trailers", "cast", "crew", "awards",
+      "relationships", "genres", "styles", "languages", "countries", "directors"];
+    foreach ($relatedData as $offset) {
+      if (isset($data[$offset])) {
+        $this->writeToFile($offset, serialize($data[$offset]));
+      }
+    }
 
     return $this;
   }
