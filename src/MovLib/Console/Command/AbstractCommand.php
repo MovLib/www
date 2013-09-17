@@ -316,8 +316,8 @@ abstract class AbstractCommand extends Command {
     }
     $this->write($message, self::MESSAGE_TYPE_ERROR);
     if (method_exists($this, "rollback") && $recursion === false) {
-      $this->rollback();
       $recursion = true;
+      $this->rollback();
     }
     exit(1);
   }
