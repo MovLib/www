@@ -720,7 +720,7 @@ class Movie extends \MovLib\Data\Database {
     global $i18n;
     if (!$this->displayTitle) {
       $displayTitle = $this->select(
-        "SELECT `title` AS `title` FROM `movies_titles` WHERE `movie_id` = ? AND is_display_title = 1 AND `language_id` = ? ORDER BY `title` ASC LIMIT 1",
+        "SELECT `title` FROM `movies_titles` WHERE `movie_id` = ? AND is_display_title = true AND `language_id` = ? ORDER BY `title` ASC LIMIT 1",
         "di", [ $this->id, $i18n->getLanguages(I18n::KEY_CODE)[$i18n->languageCode][I18n::KEY_ID] ]
       );
       $this->displayTitle = empty($displayTitle[0]["title"]) ? $this->originalTitle : $displayTitle[0]["title"];
