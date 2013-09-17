@@ -480,6 +480,7 @@ hr {
   padding: 0;
 }
 
+fieldset,
 hr,
 p,
 small {
@@ -504,6 +505,10 @@ img {
 
 /* ==== FORMs, INPUTs And BUTTONs =================================================================================== */
 
+fieldset {
+  border: 0;
+  padding: 0;
+}
 
 button,
 html button,
@@ -529,7 +534,12 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
-input[role="textbox"],
+input[type="date"],
+input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="url"],
+select,
 textarea {
   display: block;
   margin-bottom: 15px;
@@ -538,7 +548,8 @@ textarea {
   width: 100%;
 }
 
-label {
+label,
+legend {
   display: block;
   margin-bottom: 5px;
 }
@@ -558,6 +569,7 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 input,
+select,
 textarea {
   border: 1px solid #ccc;
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
@@ -568,6 +580,7 @@ textarea {
 }
 
 input:focus,
+select:focus,
 textarea:focus {
   border-color: rgba(82, 168, 236, 0.8);
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
@@ -576,6 +589,7 @@ textarea:focus {
 
 input:invalid:not(:empty),
 input.invalid,
+select.invalid,
 textarea:invalid:not(:empty),
 textarea.invalid {
   border-color: #ee5f5b;
@@ -584,6 +598,7 @@ textarea.invalid {
 
 input:focus:invalid:focus:not(:empty),
 input.invalid:focus,
+select.invalid:focus,
 textarea:focus:invalid:focus:not(:empty),
 textarea.invalid:focus {
   border-color: rgba(233, 50, 45, 0.8);
@@ -648,13 +663,17 @@ textarea {
   resize: vertical;
 }
 
-select:focus,
 input[type="file"]:focus,
 input[type="radio"]:focus,
 input[type="checkbox"]:focus {
   outline: thin dotted #353535;
   outline: 5px auto -webkit-focus-ring-color;
   outline-offset: -2px;
+}
+
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 #656565;
 }
 
 

@@ -100,7 +100,7 @@ class Registration extends \MovLib\Presentation\Page {
 
     $this->username = new InputText("username", $i18n->t("Username"), null, [
       "inputmode"   => "verbatim",
-      "max-length"  => User::MAX_LENGTH_NAME,
+      "maxlength"   => User::MAX_LENGTH_NAME,
       "placeholder" => $i18n->t("Enter your desired username"),
       "title"       => $i18n->t("Please enter your desired username in this field."),
     ]);

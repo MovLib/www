@@ -25,6 +25,7 @@ namespace MovLib\Presentation\Partial\FormElement;
  * password isn't validated or sanitized at all, it's the pure raw user submitted data, without any alternations and
  * it should never be altered in any way (beside the hashing wish happens in the Data layer).
  *
+ * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
  * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -54,8 +55,6 @@ class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractFor
   public function __construct($id = "password", array $attributes = null, $label = null, array $labelAttributes = null) {
     global $i18n;
     parent::__construct($id, $attributes, $label, $labelAttributes);
-    $this->attributes["inputmode"] = "verbatim";
-    $this->attributes["role"] = "textbox";
     $this->attributes["type"] = "password";
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = $i18n->t("Enter your password");

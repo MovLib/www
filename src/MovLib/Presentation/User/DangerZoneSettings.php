@@ -98,7 +98,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
     $sessions = $session->getActiveSessions();
     $c = count($sessions);
     for ($i = 0; $i < $c; ++$i) {
-      $sessions[$i]["authentication"] = $i18n->formatDate($sessions[$i]["authentication"], $this->user->timezone, IntlDateFormatter::SHORT, IntlDateFormatter::SHORT);
+      $sessions[$i]["authentication"] = $i18n->formatDate($sessions[$i]["authentication"], $this->user->timeZoneId, IntlDateFormatter::SHORT, IntlDateFormatter::SHORT);
       $sessions[$i]["ip_address"] = inet_ntop($sessions[$i]["ip_address"]);
       $active = null;
       $button = new Button("session_id", $buttonText, [
@@ -116,8 +116,8 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
       $this->sessionsTable .=
         "<tr{$active}>" .
           "<td>{$sessions[$i]["authentication"]}</td>" .
-          "<td class='small'><tt>{$this->checkPlain($sessions[$i]["user_agent"])}</tt></td>" .
-          "<td><tt>{$sessions[$i]["ip_address"]}</tt></td>" .
+          "<td class='small'><code>{$this->checkPlain($sessions[$i]["user_agent"])}</code></td>" .
+          "<td><code>{$sessions[$i]["ip_address"]}</code></td>" .
           "<td class='form-actions'>{$button}</td>" .
         "</tr>"
       ;

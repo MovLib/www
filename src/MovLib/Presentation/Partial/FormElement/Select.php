@@ -26,13 +26,62 @@ namespace MovLib\Presentation\Partial\FormElement;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Select {
+class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+  use \MovLib\Presentation\Partial\FormElement\TraitReadonly;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
+   * The select's options.
    *
+   * @var array
    */
-  public function __construct() {
+  public $options;
 
+  /**
+   * The select's value.
+   *
+   * @var mixed
+   */
+  public $value;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  public function __construct($id, $label, array $options, $value = null, array $attributes = null, array $labelAttributes = null) {
+    parent::__construct($id, $attributes, $label, $labelAttributes);
+    $this->value = isset($_POST[$this->id]) && isset($options[$this->id]) ? $options[$this->id] : $value;
+    $this->options = $options;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function __toString() {
+    global $i18n;
+    $disabled = $this->required === true ? " disabled" : null;
+    $selected = isset($this->value) ? null : " selected";
+    $options = "<option{$disabled}{$selected}>{$i18n->t("Please Select …")}</option>";
+    foreach ($this->options as $value => $option) {
+      $selected = $this->value == $value ? " selected" : null;
+      $options .= "<option{$selected} value='{$value}'>{$option}</option>";
+    }
+    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><select{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  public function validate() {
+    global $i18n;
+    return $this;
   }
 
 }

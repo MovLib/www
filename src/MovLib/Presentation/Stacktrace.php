@@ -153,7 +153,7 @@ class Stacktrace {
           "<link rel='icon' type='image/png' sizes='16x16' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/16.png'>" .
           "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
         "</head>" .
-        "<body class='stacktrace-body' id='stacktrace' role='document'>" .
+        "<body class='stacktrace-body' id='stacktrace'>" .
           "<header id='header'>" .
             "<div class='container'>" .
               "<div id='header__logo'>" .

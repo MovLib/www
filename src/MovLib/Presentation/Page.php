@@ -189,7 +189,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected function getFooter() {
     global $i18n;
     $displayLanguage = Locale::getDisplayLanguage($_SERVER["LANGUAGE_CODE"], $i18n->locale);
-    $languageLinks = new Navigation("language-links", $i18n->r("Language Links"), $i18n->getLanguageLinks());
+    $languageLinks = new Navigation("language-links", $i18n->r("Language Links"), $i18n->getSystemLanguageLinks());
     return
       "<footer id='footer'><div class='container'>" .
         "<div class='row'>" .
@@ -236,19 +236,19 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected function getHeader() {
     global $i18n, $session;
 
-    $moviesNavigation = new Navigation("movies", $i18n->t("Movies"), [
+    $moviesNavigation = new Navigation("movies-mega", $i18n->t("Movies"), [
       [ $i18n->r("/movies"),      $i18n->t("Latest movie entries"), [ "title" => $i18n->t("Have a look at the latest movie entries at MovLib.") ]],
       [ $i18n->r("/movies/new"),  $i18n->t("Create new movie"),     [ "title" => $i18n->t("Add a new movie to the MovLib library.")             ]],
     ]);
     $moviesNavigation->hideTitle = false;
 
-    $seriesNavigation = new Navigation("series", $i18n->t("Series"), []);
+    $seriesNavigation = new Navigation("series-mega", $i18n->t("Series"), []);
     $seriesNavigation->hideTitle = false;
 
-    $personsNavigation = new Navigation("persons", $i18n->t("Perons"), []);
+    $personsNavigation = new Navigation("persons-mega", $i18n->t("Perons"), []);
     $personsNavigation->hideTitle = false;
 
-    $otherNavigation = new Navigation("other", $i18n->t("Other"), []);
+    $otherNavigation = new Navigation("other-mega", $i18n->t("Other"), []);
     $otherNavigation->hideTitle = false;
 
     if ($session->isAuthenticated === true) {
@@ -292,8 +292,6 @@ class Page extends \MovLib\Presentation\AbstractPage {
             "<form action='{$i18n->t("/search")}' class='span' id='header__search-form' method='post' role='search'>" .
               "<input type='hidden' name='form_id' value='header-search'>" .
               "<label class='visuallyhidden' for='header__search-input'>{$i18n->t("Search the MovLib database.")}</label>" .
-              // @todo Using role='textbox' might not be a good idea for the search input because it might break the
-              //       complete layout (zooming etc.). The new type='search' is maybe enough?
               "<input accesskey='f' id='header__search-input' name='searchterm' required tabindex='{$this->getTabindex()}' title='{$i18n->t(
                 "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
               )}' type='search'>" .
@@ -353,12 +351,13 @@ class Page extends \MovLib\Presentation\AbstractPage {
    *   The wrapped content, including heading.
    */
   protected function getWrappedContent() {
+    $title = isset($this->pageTitle) ? $this->pageTitle : $this->title;
     return
       "<div class='{$this->id}-content' id='content' role='main'>" .
         "<div id='content__header'>" .
           "<div class='container'>" .
             $this->headingBefore .
-            "<h1 class='title' id='content__header__title'>{$this->title}</h1>" .
+            "<h1 class='title' id='content__header__title'>{$title}</h1>" .
             $this->headingAfter .
           "</div>" .
           "<div id='alerts'>{$this->alerts}</div>" .

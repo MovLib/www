@@ -30,6 +30,7 @@ namespace MovLib\Presentation\Partial;
  * <code><a></code> with many menuitems). But there is an optional parameter available that allows developers to wrap
  * the menuitems in an unordered list, if it really makes sense (e.g. for styling via CSS).
  *
+ * @link http://stackoverflow.com/questions/12279113/recommended-wai-aria-implementation-for-navigation-bar-menu
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -193,10 +194,9 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
       $menuitems .= "</ul>";
     }
     $this->attributes["id"] = "{$this->id}-nav";
-    $this->attributes["role"] = "menu";
-    $this->attributes["aria-labelledby"] = "{$this->id}-title";
+    $this->attributes["role"] = "navigation";
     $this->hideTitle = ($this->hideTitle === true) ? " class='visuallyhidden'" : "";
-    return "<nav{$this->expandTagAttributes($this->attributes)}><h2{$this->hideTitle} id='{$this->id}-nav-title' role='presentation'>{$this->title}</h2>{$menuitems}</nav>";
+    return "<nav{$this->expandTagAttributes($this->attributes)}><h2{$this->hideTitle} id='{$this->id}-nav-title'>{$this->title}</h2><div role='menu'>{$menuitems}</div></nav>";
   }
 
 }

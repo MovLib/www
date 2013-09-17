@@ -21,7 +21,6 @@ namespace MovLib\Presentation\Partial\FormElement;
  * HTML textarea form element.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea
- * @link https://developer.mozilla.org/en-US/docs/Accessibility/ARIA/ARIA_Techniques/Using_the_textbox_role
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -58,7 +57,6 @@ class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractFormElem
    */
   public function __construct($id, $label, $value = null, array $attributes = null, array $labelAttributes = null) {
     parent::__construct($id, $attributes, $label, $labelAttributes);
-    $this->attributes["role"] = "textbox";
     $this->attributes["aria-multiline"] = "true";
     $this->value = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }

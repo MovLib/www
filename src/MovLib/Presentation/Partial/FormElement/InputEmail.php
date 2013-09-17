@@ -17,12 +17,18 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Data\User;
 use \MovLib\Exception\ValidatorException;
 
 /**
  * HTML input type email form element.
  *
+ * The usage of a magic constant at this point is absolutely okay, because 254 is the official upper limit for any valid
+ * email address. This restriction is layed down in RFC 2821 on the length for MAIL and RCPT commands. It's only used
+ * twice within this class, so no need for a constant. But if the use-case emerges that it's needed elsewhere a class
+ * constant should be created.
+ *
+ * @link http://www.rfc-editor.org/errata_search.php?rfc=3696&eid=1690
+ * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -50,10 +56,7 @@ class InputEmail extends \MovLib\Presentation\Partial\FormElement\InputText {
     global $i18n;
     parent::__construct($id, $label, $defaultValue, $attributes, $labelAttributes);
     $this->attributes["type"] = "email";
-    // @todo Right now all email related inputs are directly related to users, therefor we can set this within this
-    //       class. This might change in the future if other email input fields are required. Be sure to update the
-    //       validation method, because it checks for the length that is set here!
-    $this->attributes["max-length"] = User::MAX_LENGTH_EMAIL;
+    $this->attributes["maxlength"] = 254;
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = $i18n->t("Enter your email address");
     }
@@ -72,7 +75,7 @@ class InputEmail extends \MovLib\Presentation\Partial\FormElement\InputText {
     global $i18n;
 
     // No need for multi-byte functions, utf-8 is not allowed in emails.
-    if (strlen($_POST[$this->id]) > $this->attributes["max-length"]) {
+    if (strlen($_POST[$this->id]) > 254) {
       throw new ValidatorException($i18n->t("The email address {0} is too long: it must be {1,number,integer} or less.", [
         $this->placeholder($_POST[$this->id]),
         $this->attributes["max-length"],

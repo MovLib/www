@@ -17,17 +17,19 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Data\I18n;
 use \MovLib\Data\User;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputDate;
 use \MovLib\Presentation\Partial\FormElement\InputFile;
-use \MovLib\Presentation\Partial\FormElement\InputRadio;
+use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputUrl;
 use \MovLib\Presentation\Partial\FormElement\Select;
 use \MovLib\Presentation\Partial\FormElement\Textarea;
+use \Locale;
 
 /**
  * Allows the user to manage his personalized settings.
@@ -104,7 +106,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
   /**
    * The user's sex input radio form element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputRadio
+   * @var \MovLib\Presentation\Partial\FormElement\RadioGroup
    */
   private $sex;
 
@@ -154,22 +156,12 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "title"       => $i18n->t("Please enter your real name in this field."),
     ]);
 
-    // @todo System Language (ID)
-    $this->language = new Select();
-
-    // @todo Timezone Selection
-    $this->timezone = new Select();
-
-    // @todo Dynamic Profile
-    $this->profile = new Textarea("profile", $i18n->t("About You"), $this->user->profile, [
-      "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
+    $this->sex = new RadioGroup("sex", $i18n->t("Sex"), $this->user->sex, [
+      2 => $i18n->t("Female"),
+      1 => $i18n->t("Male"),
+      0 => $i18n->t("Unknown"),
     ]);
-
-    // @todo Sex
-    $this->sex = new InputRadio();
-
-    // @todo Country (ID)
-    $this->country = new Select();
+    $this->sex->setHelp($i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
 
     $birthdayMax = date(InputDate::RFC3339, (time() - 1.893e8));   //   6 years
     $birthdayMin = date(InputDate::RFC3339, (time() - 3.78683e9)); // 120 years
@@ -178,7 +170,20 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "min"   => $birthdayMin,
       "title" => $i18n->t("Please enter your date of birth in this field. The date must be between {0} (120 years) and {1} (6 years).", [ $birthdayMin, $birthdayMax ]),
     ], $this->user->birthday);
-    $this->birthday->setHelp($i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evalutions."));
+    $this->birthday->setHelp($i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
+
+    $this->profile = new Textarea("profile", $i18n->t("About You"), $this->user->profile, [
+      "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
+    ]);
+
+    $this->language = new Select("language", $i18n->t("Language"), $i18n->getSystemLanguages(), $this->user->getLanguageCode());
+    $this->language->required();
+
+    $this->country = new Select("country", $i18n->t("Country"), array_column($i18n->getCountries(I18n::KEY_NAME), I18n::KEY_NAME, I18n::KEY_CODE), $this->user->getCountryCode());
+
+    // @todo Should we create groups for continents? They look ugly and each it's already sorted alphabetically.
+    $this->timezone = new Select("timezone", $i18n->t("Time Zone"), $i18n->getTimeZones(), $this->user->timeZoneId);
+    $this->language->required();
 
     // We don't validate the existens of the user's website (respectively homepage).
     $this->website = new InputUrl("website", [
@@ -207,8 +212,12 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
 
     $this->form = new Form($this, [
       $this->realName,
+      $this->sex,
       $this->birthday,
       $this->profile,
+      $this->language,
+      $this->country,
+      $this->timezone,
       $this->website,
       $this->private,
     ]);

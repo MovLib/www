@@ -68,48 +68,7 @@ class I18n extends \MovLib\Data\Database {
   const KEY_NAME = "name";
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Properties
-
-
-  /**
-   * The system's default locale.
-   *
-   * @var string
-   */
-  public $defaultLocale;
-
-  /**
-   * The system's default language code.
-   *
-   * @var string
-   */
-  public $defaultLanguageCode;
-
-  /**
-   * The languages direction.
-   *
-   * @todo Implement right-to-left language detection.
-   * @var string
-   */
-  public $direction = "ltr";
-
-  /**
-   * ISO 639-1 alpha-2 language code. Supported language codes are defined via nginx configuration.
-   *
-   * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-   * @var string
-   */
-  public $languageCode;
-
-  /**
-   * Locale for the current language code, used for Intl ICU related classes and functions (e.g. collators).
-   *
-   * @var string
-   */
-  public $locale;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Private Properties
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
@@ -129,7 +88,37 @@ class I18n extends \MovLib\Data\Database {
   private $countries;
 
   /**
-   * Associative array that will be filled with all info on all available languages on demand.
+   * The system's default language code.
+   *
+   * @var string
+   */
+  public $defaultLanguageCode;
+
+  /**
+   * The system's default locale.
+   *
+   * @var string
+   */
+  public $defaultLocale;
+
+  /**
+   * The languages direction.
+   *
+   * @todo Implement right-to-left language detection.
+   * @var string
+   */
+  public $direction = "ltr";
+
+  /**
+   * ISO 639-1 alpha-2 language code. Supported language codes are defined via nginx configuration.
+   *
+   * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
+   * @var string
+   */
+  public $languageCode;
+
+  /**
+   * Associative array that will be filled on demand with all info on all available languages.
    *
    * @see \MovLib\Data\I18n::getLanguages()
    * @var array
@@ -137,12 +126,11 @@ class I18n extends \MovLib\Data\Database {
   private $languages;
 
   /**
-   * Associative array that will be filled with all info on supported system language on demand.
+   * Locale for the current language code, used for Intl ICU related classes and functions (e.g. collators).
    *
-   * @see \MovLib\Data\I18n::getSystemLanguages()
-   * @var array
+   * @var string
    */
-  private $systemLanguages;
+  public $locale;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -188,8 +176,33 @@ class I18n extends \MovLib\Data\Database {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Format the given timestamp for output.
+   *
+   * @link http://www.php.net/manual/en/class.intldateformatter.php#intl.intldateformatter-constants
+   * @todo Allow override of used locale to format the date.
+   * @param int $timestamp
+   *   The timestamp to format.
+   * @param null|string $timezone
+   *   One of the {@link http://www.php.net/manual/en/timezones.php PHP timezone identifiers}. Defaults to system
+   *   default timezone from <code>php.ini</code> configuration file.
+   * @param int $datetype
+   *   One of the <code>IntlDateFormatter</code> constants.
+   * @param int $timetype
+   *   One of the <code>IntlDateFormatter</code> constants.
+   * @return string|boolean
+   *   The formatted string or, if an error occurred, <code>FALSE</code>.
+   * @throws \Exception
+   *   If the supplied timezone is not recognised as a valid timezone.
+   */
+  public function formatDate($timestamp, $timezone = null, $datetype = IntlDateFormatter::LONG, $timetype = IntlDateFormatter::LONG) {
+    $timezone = $timezone ?: ini_get("date.timezone");
+    $fmt = new IntlDateFormatter($this->locale, $datetype, $timetype, new DateTimeZone($timezone));
+    return $fmt->format($timestamp);
+  }
 
   /**
    * Format the given message and translate it to the display locale.
@@ -236,140 +249,6 @@ class I18n extends \MovLib\Data\Database {
       return msgfmt_format_message($languageCode, $pattern, $args);
     }
     return $pattern;
-  }
-
-  /**
-   * Format the given timestamp for output.
-   *
-   * @link http://www.php.net/manual/en/class.intldateformatter.php#intl.intldateformatter-constants
-   * @todo Allow override of used locale to format the date.
-   * @param int $timestamp
-   *   The timestamp to format.
-   * @param null|string $timezone
-   *   One of the {@link http://www.php.net/manual/en/timezones.php PHP timezone identifiers}. Defaults to system
-   *   default timezone from <code>php.ini</code> configuration file.
-   * @param int $datetype
-   *   One of the <code>IntlDateFormatter</code> constants.
-   * @param int $timetype
-   *   One of the <code>IntlDateFormatter</code> constants.
-   * @return string|boolean
-   *   The formatted string or, if an error occurred, <code>FALSE</code>.
-   * @throws \Exception
-   *   If the supplied timezone is not recognised as a valid timezone.
-   */
-  public function formatDate($timestamp, $timezone = null, $datetype = IntlDateFormatter::LONG, $timetype = IntlDateFormatter::LONG) {
-    $timezone = $timezone ?: ini_get("date.timezone");
-    $fmt = new IntlDateFormatter($this->locale, $datetype, $timetype, new DateTimeZone($timezone));
-    return $fmt->format($timestamp);
-  }
-
-  /**
-   * Get the unique ID of the current language.
-   *
-   * @see \MovLib\Data\I18n::getLanguages()
-   * @return int
-   *   The unique ID of the current language.
-   */
-  public function getLanguageId() {
-    return $this->select("SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = ? LIMIT 1", "s", [ $this->languageCode ])[0]["language_id"];
-  }
-
-  public function getLanguageLinks() {
-    // Translate all supported system languages to the current display language.
-    $translated = [];
-    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
-      $translated[$languageCode] = Locale::getDisplayLanguage($languageCode, $this->locale);
-    }
-    // Sort by current display language.
-    $this->getCollator()->asort($translated);
-    // Now we can finally build the links.
-    $links = [];
-    foreach ($translated as $languageCode => $displayLanguage) {
-      $translatedDisplayLanguage = Locale::getDisplayLanguage($languageCode, $languageCode);
-      if ($this->languageCode == $languageCode) {
-        $links[] = [ "#", "<b>{$displayLanguage} ({$translatedDisplayLanguage})</b>", [ "class" => "active" ]];
-      }
-      else {
-        $links[] = [
-          "{$_SERVER["SCHEME"]}://{$languageCode}.{$GLOBALS["movlib"]["default_domain"]}{$_SERVER["PATH_INFO"]}",
-          "{$displayLanguage} ({$translatedDisplayLanguage})",
-          [ "lang" => $languageCode, "title" => $this->t("Read this page in {0}.", [ $displayLanguage ]) ]
-        ];
-      }
-    }
-    return $links;
-  }
-
-  /**
-   * Get array containing all languages.
-   *
-   * The names are translated to the current language of this i18n model instance.
-   *
-   * <em>NOTE:</em> The translations for the languages cannot be empty, we get them from Intl ICU.
-   *
-   * @param string $key
-   *   [Optional] Get array of languages sorted by ID, ISO alpha-2 code, or name. Use the <var>KEY_*</var> class
-   *   constants.
-   * @return array
-   *   Associative array containing all languages in the form:
-   *   <pre>array(
-   *   "id" => $id => array("id" => $id, "code" => $code, "name" => $name),
-   *   "code" => $code => array("id" => $id, "code" => $code, "name" => $name),
-   *   "name" => $name => array("id" => $id, "code" => $code, "name" => $name),
-   *   )</pre>
-   */
-  public function getLanguages($key = self::KEY_ID) {
-    if (!$this->languages) {
-      $query = sprintf(
-        "SELECT `language_id` AS `%s`, `iso_alpha-2` AS `%s`, %s`%s` FROM `languages` ORDER BY `%s`",
-        self::KEY_ID,
-        self::KEY_CODE,
-        $this->languageCode == $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ",
-        self::KEY_NAME,
-        self::KEY_ID
-      );
-      foreach ($this->select($query) as $l) {
-        $l = [
-          self::KEY_ID   => $l[self::KEY_ID],
-          self::KEY_CODE => $l[self::KEY_CODE],
-          self::KEY_NAME => $l[self::KEY_NAME],
-        ];
-        $this->languages[self::KEY_ID][$l[self::KEY_ID]] = $l;
-        $this->languages[self::KEY_CODE][$l[self::KEY_CODE]] = $l;
-        $this->languages[self::KEY_NAME][$l[self::KEY_NAME]] = $l;
-      }
-      ksort($this->languages[self::KEY_CODE]);
-      $this->getCollator()->ksort($this->languages[self::KEY_NAME]);
-    }
-    return $this->languages[$key];
-  }
-
-  /**
-   * Get a sorted associative array of all supported system languages.
-   *
-   * @param string $key
-   *   [Optional] Sort by language ID, ISO alpha-2 code, or name. Use the <var>KEY_*</var> class constants.
-   * @return array
-   *   Associative array containing all supported system languages.
-   */
-  public function getSystemLanguages($key = self::KEY_ID) {
-    if (!$this->systemLanguages) {
-      $languages = $this->getLanguages(self::KEY_CODE);
-      $c = count(self::$supportedLanguageCodes);
-      for ($i = 0; $i < $c; ++$i) {
-        $l = [
-          self::KEY_ID   => $languages[self::$supportedLanguageCodes[$i]][self::KEY_ID],
-          self::KEY_CODE => $languages[self::$supportedLanguageCodes[$i]][self::KEY_CODE],
-          self::KEY_NAME => $languages[self::$supportedLanguageCodes[$i]][self::KEY_NAME],
-        ];
-        $this->systemLanguages[self::KEY_ID][$l[self::KEY_ID]] = $l;
-        $this->systemLanguages[self::KEY_CODE][$l[self::KEY_CODE]] = $l;
-        $this->systemLanguages[self::KEY_NAME][$l[self::KEY_NAME]] = $l;
-      }
-      ksort($this->systemLanguages[self::KEY_CODE]);
-      $this->getCollator()->ksort($this->systemLanguages[self::KEY_NAME]);
-    }
-    return $this->systemLanguages[$key];
   }
 
   /**
@@ -432,6 +311,130 @@ class I18n extends \MovLib\Data\Database {
   }
 
   /**
+   * Get the unique ID of the current language.
+   *
+   * @see \MovLib\Data\I18n::getLanguages()
+   * @return int
+   *   The unique ID of the current language.
+   */
+  public function getLanguageId() {
+    return $this->select("SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = ? LIMIT 1", "s", [ $this->languageCode ])[0]["language_id"];
+  }
+
+  /**
+   * Get array containing all languages.
+   *
+   * The names are translated to the current language of this i18n model instance.
+   *
+   * <em>NOTE:</em> The translations for the languages cannot be empty, we get them from Intl ICU.
+   *
+   * @param string $key
+   *   [Optional] Get array of languages sorted by ID, ISO alpha-2 code, or name. Use the <var>KEY_*</var> class
+   *   constants.
+   * @return array
+   *   Associative array containing all languages in the form:
+   *   <pre>array(
+   *   "id" => $id => array("id" => $id, "code" => $code, "name" => $name),
+   *   "code" => $code => array("id" => $id, "code" => $code, "name" => $name),
+   *   "name" => $name => array("id" => $id, "code" => $code, "name" => $name),
+   *   )</pre>
+   */
+  public function getLanguages($key = self::KEY_ID) {
+    if (!$this->languages) {
+      $query = sprintf(
+        "SELECT `language_id` AS `%s`, `iso_alpha-2` AS `%s`, %s`%s` FROM `languages` ORDER BY `%s`",
+        self::KEY_ID,
+        self::KEY_CODE,
+        $this->languageCode == $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ",
+        self::KEY_NAME,
+        self::KEY_ID
+      );
+      foreach ($this->select($query) as $l) {
+        $l = [
+          self::KEY_ID   => $l[self::KEY_ID],
+          self::KEY_CODE => $l[self::KEY_CODE],
+          self::KEY_NAME => $l[self::KEY_NAME],
+        ];
+        $this->languages[self::KEY_ID][$l[self::KEY_ID]] = $l;
+        $this->languages[self::KEY_CODE][$l[self::KEY_CODE]] = $l;
+        $this->languages[self::KEY_NAME][$l[self::KEY_NAME]] = $l;
+      }
+      ksort($this->languages[self::KEY_CODE]);
+      $this->getCollator()->ksort($this->languages[self::KEY_NAME]);
+    }
+    return $this->languages[$key];
+  }
+
+  /**
+   * Get sorted array with all system languages translated to the current locale.
+   *
+   * The array can directly be used together with a Navigation partial. The languages are sorted by their name in the
+   * current locale and each link's text contains the native name in parentheses.
+   *
+   * @return array
+   *   Sorted array with all system languages translated to the current locale.
+   */
+  public function getSystemLanguageLinks() {
+    $links = [];
+    foreach ($this->getSystemLanguages() as $languageCode => $displayLanguage) {
+      $translatedDisplayLanguage = Locale::getDisplayLanguage($languageCode, $languageCode);
+      if ($this->languageCode == $languageCode) {
+        $links[] = [ "#", "<b>{$displayLanguage} ({$translatedDisplayLanguage})</b>", [ "class" => "active" ]];
+      }
+      else {
+        $links[] = [
+          "{$_SERVER["SCHEME"]}://{$languageCode}.{$GLOBALS["movlib"]["default_domain"]}{$_SERVER["PATH_INFO"]}",
+          "{$displayLanguage} ({$translatedDisplayLanguage})",
+          [ "lang" => $languageCode, "title" => $this->t("Read this page in {0}.", [ $displayLanguage ]) ]
+        ];
+      }
+    }
+    return $links;
+  }
+
+  /**
+   * Get sorted associative array with all system languages translated to the current locale.
+   *
+   * The returned array has the ISO alpha-2 code as key and the value is the translated language's display name.
+   * <b>Example for locale <code>"de_AT"</code>:</b>
+   * <pre>[
+   *   "en" => "Englisch",
+   *   "de" => "Deutsch",
+   * ];</pre>
+   *
+   * @return array
+   *   Sorted associative array with all system languages for the current locale.
+   */
+  public function getSystemLanguages() {
+    $translated = [];
+    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
+      $translated[$languageCode] = Locale::getDisplayLanguage($languageCode, $this->locale);
+    }
+    $this->getCollator()->asort($translated);
+    return $translated;
+  }
+
+  /**
+   * Get all time zones in the current locale.
+   *
+   * The returned array is associative and the keys are the time zone IDs (e.g. <code>"Europe/Vienna"</code>) and the
+   * values the translated string in the current locale.
+   *
+   * @return array
+   *   Get all time zones in the current locale.
+   */
+  public function getTimeZones() {
+    $timezones = timezone_identifiers_list();
+    $translated = [];
+    $c = count($timezones);
+    for ($i = 0; $i < $c; ++$i) {
+      $translated[$timezones[$i]] = $this->t(strtr($timezones[$i], "_", " "));
+    }
+    $this->getCollator()->asort($translated, Collator::SORT_STRING);
+    return $translated;
+  }
+
+  /**
    * Insert message pattern.
    *
    * @param string $message
@@ -447,21 +450,6 @@ class I18n extends \MovLib\Data\Database {
         $options["comment"] = null;
       }
       $this->query("INSERT INTO `messages` (`message`, `comment`, `dyn_translations`) VALUES (?, ?, '')", "ss", [ $message, $options["comment"] ]);
-    }
-    return $this;
-  }
-
-  /**
-   * Insert raoute pattern.
-   *
-   * @param string $route
-   *   The route to insert.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function insertRoute($route) {
-    if (empty($this->select("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ]))) {
-      $this->query("INSERT INTO `routes` (`route`, `dyn_translations`) VALUES (?, '')", "s", [ $route ]);
     }
     return $this;
   }
@@ -491,6 +479,21 @@ class I18n extends \MovLib\Data\Database {
       $exception = new DatabaseException("Could not insert nor update {$languageCode} translation for {$context} with ID '{$id}'");
       Logger::stack($exception);
       throw $exception;
+    }
+    return $this;
+  }
+
+  /**
+   * Insert raoute pattern.
+   *
+   * @param string $route
+   *   The route to insert.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function insertRoute($route) {
+    if (empty($this->select("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ]))) {
+      $this->query("INSERT INTO `routes` (`route`, `dyn_translations`) VALUES (?, '')", "s", [ $route ]);
     }
     return $this;
   }

@@ -17,11 +17,11 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ValidatorException;
-
 /**
  * HTML input type checkbox form element.
  *
+ * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -49,15 +49,19 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
    * Instantiate new input checkbox form element.
    *
    * @param string $id
-   *   The global unique identifier of this form element.
+   *   The form element's global identifier.
+   * @param string $label
+   *   The form element's label content.
    * @param boolean $value [optional]
-   *   The value of this form element, defaults to <code>FALSE</code>. Note that a checkbox can only have to states,
-   *   either <code>TRUE</code> (checked) or <code>FALSE</code> (unchecked).
+   *   The form element's value. Defaults to <code>FALSE</code>. Note that a checkbox can only have to states, either
+   *   <code>TRUE</code> (checked) or <code>FALSE</code> (unchecked).
    * @param array $attributes [optional]
-   *   Additional attributes that should be set on this form element, defaults to no additional attributes.
+   *   The form element's attributes.
+   * @param array $labelAttributes [optional]
+   *   The form element's label attributes.
    */
-  public function __construct($id, $value = false, array $attributes = null) {
-    parent::__construct($id, $attributes, $value);
+  public function __construct($id, $label, $value = false, array $attributes = null, array $labelAttributes = null) {
+    parent::__construct($id, $attributes, $label, $labelAttributes);
     $this->attributes["type"] = "checkbox";
     $this->value = (bool) isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
     $this->labelAttributes["class"] = "checkbox";

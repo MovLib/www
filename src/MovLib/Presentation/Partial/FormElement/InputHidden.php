@@ -20,6 +20,8 @@ namespace MovLib\Presentation\Partial\FormElement;
 /**
  * HTML input type hidden form element.
  *
+ * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -70,7 +72,7 @@ class InputHidden {
    *   String representation of this form element.
    */
   public function __toString() {
-    return "<input id='{$this->id}' name='{$this->id}' type='hidden' value='{$this->value}'>";
+    return "<input name='{$this->id}' type='hidden' value='{$this->value}'>";
   }
 
 }

@@ -26,6 +26,8 @@ use \MovLib\Exception\ValidatorException;
  * In contrast to the default input element, this is specialized for plain text input. The user submitted string is
  * sanitized. No validation!
  *
+ * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
+ * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/association-of-controls-and-forms.html#attr-fe-inputmode
  * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -68,7 +70,6 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   public function __construct($id, $label, $value = null, array $attributes = null, array $labelAttributes = null) {
     parent::__construct($id, $attributes, $label, $labelAttributes);
     $this->attributes["type"] = "text";
-    $this->attributes["role"] = "textbox";
     $this->value = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }
 
@@ -76,7 +77,9 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @inheritdoc
    */
   public function __toString() {
-    $this->attributes["value"] = $this->value;
+    if ($this->value) {
+      $this->attributes["value"] = $this->value;
+    }
     return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
   }
 

@@ -186,6 +186,7 @@
   position: absolute;
 }
 
+#breadcrumb-nav div,
 #breadcrumb-nav-title {
   display: inline;
   line-height: 1.46;

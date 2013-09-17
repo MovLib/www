@@ -28,6 +28,7 @@ use \MovLib\Presentation\Partial\FormElement\InputHidden;
  * validation doesn't make much sense for a GET form, as their parameters are often only used for pagination or similar
  * simple tasks which won't be saved nor affect cirtical parts of our system.
  *
+ * @link http://www.w3.org/TR/2013/WD-aria-in-html-20130214/#recommendations-table
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -226,7 +227,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
       $actions .= $this->actionElements[$i];
     }
     if ($actions) {
-      $actions = "<p class='form-actions'>{$actions}</div>";
+      $actions = "<p class='form-actions'>{$actions}</p>";
     }
     return "{$actions}</form>";
   }

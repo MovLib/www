@@ -161,7 +161,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
           "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
         "</head>" .
         // @todo Drop the {$this->id}-body class!
-        "<body id='{$this->id}' class='{$this->id}-body {$namespace}{$login}' role='document'>"
+        "<body id='{$this->id}' class='{$this->id}-body {$namespace}{$login}'>"
       // Please note that there is no need to include the closing body- nor html-tag with the HTML5 doc-type! We abuse
       // this for our inheritance and other classes can overwrite and extend the most default __toString() method
       // while retaining the global header.

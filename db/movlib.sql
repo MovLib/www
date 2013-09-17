@@ -154,7 +154,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `login` TIMESTAMP NOT NULL COMMENT 'Timestamp for user’s last login.' ,
   `private` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.' ,
   `deactivated` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE if this account was deleted or blocked, default is FALSE.' ,
-  `timezone` TINYTEXT NOT NULL COMMENT 'User’s timezone: http://php.net/manual/en/timezones.php' ,
+  `time_zone_id` VARCHAR(30) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'User’s time zone ID.' ,
   `edits` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The user’s edit counter.' ,
   `dyn_profile` BLOB NOT NULL COMMENT 'The user’s profile text (translatable).' ,
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.' ,

@@ -86,17 +86,6 @@ class User extends \MovLib\Data\AbstractImage {
   const IMAGESTYLE_BIG = "140x140";
 
   /**
-   * Maximum length an email address can have.
-   *
-   * This length must be the same as it is defined in the database table. We redefine this here in order to validate the
-   * length of the email address before attempting to insert it into our database. Be sure to count the strings length
-   * with <code>mb_strlen()</code> because the length is defined per character and not per byte.
-   *
-   * @var int
-   */
-  const MAX_LENGTH_EMAIL = 254;
-
-  /**
    * Maximum length a username can have.
    *
    * This length must be the same as it is defined in the database table. We redefine this here in order to validate the
@@ -193,13 +182,11 @@ class User extends \MovLib\Data\AbstractImage {
   public $deactivated;
 
   /**
-   * PHP timezone string of the user's timezone.
+   * The user's time zone ID (e.g. <code>"Europe/Vienna"</code>).
    *
-   * @see timezone_identifiers_list()
-   * @see \DateTimeZone::listIdentifiers()
    * @var string
    */
-  public $timezone;
+  public $timeZoneId;
 
   /**
    * The user's edit counter.
@@ -304,7 +291,7 @@ class User extends \MovLib\Data\AbstractImage {
           UNIX_TIMESTAMP(`login`) AS `login`,
           `private`,
           `deactivated`,
-          `timezone`,
+          `time_zone_id` AS `timeZoneId`,
           `edits`,
           COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY) AS `profile`,
           `sex`,
@@ -375,7 +362,7 @@ class User extends \MovLib\Data\AbstractImage {
       "UPDATE `users` SET
         `language_id` = ?,
         `private` = ?,
-        `timezone` = ?,
+        `time_zone_id` = ?,
         `country_id` = ?,
         `real_name` = ?,
         `birthday` = ?,
@@ -388,7 +375,7 @@ class User extends \MovLib\Data\AbstractImage {
       [
         $this->languageId,
         $this->private,
-        $this->timezone,
+        $this->timeZoneId,
         $this->countryId,
         $this->realName,
         $this->birthday,
@@ -418,7 +405,7 @@ class User extends \MovLib\Data\AbstractImage {
         "UPDATE `users` SET
           `private`           = false,
           `deactivated`       = true,
-          `timezone`          = ?,
+          `time_zone_id`      = ?,
           `dyn_profile`       = '',
           `sex`               = 0,
           `country_id`        = NULL,
@@ -439,6 +426,19 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
+   * Get the user's country code.
+   *
+   * @return null|string
+   *   The user's country code, or <code>NULL</code> if the user has no country set.
+   * @throws \MovLib\Data\DatabaseException
+   */
+  public function getCountryCode() {
+    if ($this->countryId) {
+      return $this->select("SELECT `iso_alpha-2` FROM `countries` WHERE `country_id` = ? LIMIT 1", "i", [ $this->countryId ])[0]["iso_alpha-2"];
+    }
+  }
+
+  /**
    * Get the user's preferred ISO 639-1 alpha-2 language code.
    *
    * @return string
@@ -448,6 +448,17 @@ class User extends \MovLib\Data\AbstractImage {
   public function getLanguageCode() {
     // All fields are mandatory and if missing something is terribly wrong, therefor we can access the result directly.
     return $this->select("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", [ $this->languageId ])[0]["iso_alpha-2"];
+  }
+
+  /**
+   * Get the user's preferred locale.
+   *
+   * @return string
+   *   The user's preferred locale.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getLocale() {
+    return $GLOBALS["movlib"]["locales"][$this->getLanguageCode()];
   }
 
   /**
@@ -580,11 +591,11 @@ class User extends \MovLib\Data\AbstractImage {
     $this->name       = $name;
     $this->email      = $email;
     $this->deactivated    = false;
-    $this->timezone   = ini_get("date.timezone");
+    $this->timeZoneId   = ini_get("date.timezone");
     $this->query(
-      "INSERT INTO `users` (`language_id`, `name`, `email`, `password`, `created`, `login`, `timezone`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, '')",
+      "INSERT INTO `users` (`language_id`, `name`, `email`, `password`, `created`, `login`, `time_zone_id`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, '')",
       "dssss",
-      [ $this->languageId, $this->name, $this->email, $password, $this->timezone ],
+      [ $this->languageId, $this->name, $this->email, $password, $this->timeZoneId ],
       false
     );
     $this->id = $this->stmt->insert_id;

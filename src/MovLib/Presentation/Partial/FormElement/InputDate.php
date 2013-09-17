@@ -22,6 +22,7 @@ use \MovLib\Exception\ValidatorException;
 /**
  * HTML input type date form element.
  *
+ * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
  * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -68,9 +69,6 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\InputText {
   public function __construct($id, $label, array $attributes = null, $value = null, array $labelAttributes = null) {
     parent::__construct($id, $label, $value, $attributes, $labelAttributes);
     $this->attributes["type"] = "date";
-    if (!isset($this->attributes["placeholder"])) {
-      $this->attributes["placeholder"] = "yyyy-mm-dd";
-    }
   }
 
 

@@ -31,7 +31,10 @@
   white-space: pre;
 }
 
-#user-sessions tt {
+#user-sessions code {
+  background: none;
+  border: 0;
+  padding: 0;
   white-space: normal;
 }
 

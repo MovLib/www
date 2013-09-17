@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -20,44 +20,45 @@ namespace MovLib\Presentation\Partial\FormElement;
 use \MovLib\Presentation\Partial\Help;
 
 /**
- * Base class for any form element.
+ * Fieldset with multiple input radio form elements.
  *
- * @link https://developer.mozilla.org/en-US/docs/tag/Forms
+ * @link http://www.w3.org/TR/wai-aria/roles#radiogroup
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/fieldset
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
+class RadioGroup extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The form element's attributes.
-   *
-   * The following attributes are always set:
-   * <ul>
-   *   <li><code>"id"</code> is set to <var>AbstractFormElement::$id</var></li>
-   *   <li><code>"name"</code> is set to <var>AbstractFormElement::$id</var></li>
-   *   <li><code>"tabindex"</code> is set to the next global tabindex</li>
-   * </ul>
+   * The fieldset's attributes.
    *
    * @var array
    */
   public $attributes;
 
   /**
-   * Flag indicating if this element is disabled or not.
+   * The radios in the group.
+   *
+   * @var array
+   */
+  protected $choices;
+
+  /**
+   * Flag indicating if this group is disabled or not.
    *
    * @var boolean
    */
   public $disabled = false;
 
   /**
-   * The form element's help.
+   * The group's help.
    *
    * @see AbstractFormElement::setHelp
    * @var null|\MovLib\Presentation\Partial\Help
@@ -65,7 +66,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   protected $help;
 
   /**
-   * The form element's global identifier.
+   * The group's global identifier.
    *
    * The ID is used for the ID and name attributes of the element.
    *
@@ -74,65 +75,102 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   public $id;
 
   /**
-   * The form element's label content.
+   * The fieldset's legend content.
    *
    * @var string
    */
-  public $label;
+  public $legend;
 
   /**
-   * The form element's label attributes.
-   *
-   * The following attributes are always set:
-   * <ul>
-   *   <li><code>"for"</code> is set to <var>AbstractFormElement::$id</var></li>
-   * </ul>
+   * The fieldset's legend attributes.
    *
    * @var array
    */
-  public $labelAttributes;
+  public $legendAttributes;
 
   /**
    * Flag indicating if this element is required or not.
    *
+   * Always <code>TRUE</code> for a groups only consisting of radio inputs. While the ARIA required attribute has to be
+   * set to false, this has to be set to <code>TRUE</code>. Otherwise the controlling form wouldn't call the validate
+   * method. This implementation currently doesn't support radio groups without values!
+   *
    * @var boolean
    */
-  public $required = false;
+  public $required = true;
+
+  /**
+   * The fieldset's value.
+   *
+   * @var mixed
+   */
+  public $value;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new form element.
+   * Instantiate new fieldset with input form elements of type radio.
    *
    * @param string $id
-   *   The form element's global identifier.
+   *   The fieldset's global identifier.
+   * @param string $legend
+   *   The fieldset's legend content.
+   * @param mixed $value
+   *   The fieldset's initial value.
+   * @param array $choices
+   *   Associative array containing the value and label of each radio element, example:
+   *   <code>[ "f" => $i18n->t("Female"), "m" => $i18n->t("Male") ]</code>
    * @param array $attributes [optional]
-   *   The form element's attributes.
-   * @param string $label [optional]
-   *   The form element's label content.
-   * @param array $labelAttributes [optional]
-   *   The form element's label attributes.
+   *   Additional attributes for the fieldset. The <code>"id"</code> is always set to <var>$id</var>.
+   * @param array $legendAttributes [optional]
+   *   Additional attributes for the legend. This element has no default attributes.
    */
-  public function __construct($id, array $attributes = null, $label = null, array $labelAttributes = null) {
+  public function __construct($id, $legend, $value, array $choices, array $attributes = null, array $legendAttributes = null) {
     $this->id = $id;
+    $this->legend = $legend;
+    $this->value = $value;
+    foreach ($choices as $choiceValue => $choiceLabel) {
+      $this->choices[$choiceValue] = [
+        "attributes" => [
+          "id"       => "{$id}-{$choiceValue}",
+          "name"     => $id,
+          "required",
+          "tabindex" => $this->getTabindex(),
+          "type"     => "radio",
+          "value"    => $choiceValue
+        ],
+        "label" => $choiceLabel,
+      ];
+    }
+    if (isset($_POST[$this->id]) && isset($this->choices[$_POST[$this->id]])) {
+      $this->choices[$_POST[$this->id]]["attributes"][] = "checked";
+    }
+    else {
+      $this->choices[$value]["attributes"][] = "checked";
+    }
     $this->attributes = $attributes;
     $this->attributes["id"] = $id;
-    $this->attributes["name"] = $id;
-    $this->attributes["tabindex"] = $this->getTabindex();
-    $this->label = $label;
-    $this->labelAttributes = $labelAttributes;
-    $this->labelAttributes["for"] = $id;
+    $this->attributes["aria-expanded"] = "true";
+    $this->attributes["aria-required"] = "false"; // @todo Do we have support radiogroups without default values?
+    $this->attributes["role"] = "radiogroup";
+    $this->legendAttributes = $legendAttributes;
   }
 
   /**
-   * Get string representation of this form element.
+   * Get string representation of this fieldset and it's form elements.
    *
    * @return string
-   *   String representation of this form element.
+   *   String representation of this fieldset and it's form elements.
    */
-  abstract public function __toString();
+  public function __toString() {
+    $choices = null;
+    foreach ($this->choices as $value => $choice) {
+      $choices .= "<label class='radio inline'><input{$this->expandTagAttributes($choice["attributes"])}>{$choice["label"]}</label>";
+    }
+    return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend{$this->expandTagAttributes($this->legendAttributes)}>{$this->legend}</legend>{$choices}</fieldset>";
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -151,6 +189,10 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
     $this->attributes["aria-disabled"] = "true";
     $this->attributes[] = "disabled";
     $this->disabled = true;
+    foreach ($this->choices as $value => $choice) {
+      $this->choices[$value]["attributes"]["aria-disabled"] = "true";
+      $this->choices[$value]["attributes"][] = "disabled";
+    }
     return $this;
   }
 
@@ -167,23 +209,10 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   public function invalid() {
     $this->addClass("invalid", $this->attributes);
     $this->attributes["aria-invalid"] = "true";
-    return $this;
-  }
-
-  /**
-   * Mark this form element as required.
-   *
-   * A form element that is marked as required will also fail during validation if the submitted value is empty.
-   * Browsers supporting this feature will prevent form submission if this element is empty. The attribute is ignored
-   * on input form elements of type <code>hidden</code>, <code>image</code>, <code>submit</code>, <code>reset</code>
-   * and <code>button</code>.
-   *
-   * @return this
-   */
-  public function required() {
-    $this->attributes["aria-required"] = "true";
-    $this->attributes[] = "required";
-    $this->required = true;
+    foreach ($this->choices as $value => $choice) {
+      $this->choices[$value]["attributes"]["aria-invalid"] = "true";
+      $this->choices[$value]["attributes"]["class"] = "invalid";
+    }
     return $this;
   }
 
@@ -193,6 +222,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * Automatically instantiates <code>\MovLib\Presentation\Partial\Help</code> and sets the appropriate ARIA attribute
    * on this input element.
    *
+   * @todo Is it a good idea to add the ARIA describeby attribute to each radio input?
    * @param string $content
    *   The translated help content.
    * @param boolean $popup [optional]
@@ -201,6 +231,9 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    */
   public function setHelp($content, $popup = true) {
     $this->attributes["aria-describedby"] = "{$this->id}-help";
+    foreach ($this->choices as $value => $choice) {
+      $this->choices[$value]["attributes"]["aria-describedby"] = "{$this->id}-help";
+    }
     $this->help = new Help($content, $this->id, $popup);
     return $this;
   }
@@ -212,6 +245,9 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * @return this
    * @throws \MovLib\Exception\ValidatorException
    */
-  abstract public function validate();
+  public function validate() {
+    global $i18n;
+    return $this;
+  }
 
 }

@@ -45,7 +45,6 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
 
   public function testDefaults() {
     $this->assertEquals("email", self::$inputEmail->id);
-    $this->assertEquals(User::MAX_LENGTH_EMAIL, self::$inputEmail->attributes["max-length"]);
     $this->assertEquals("email", self::$inputEmail->attributes["type"]);
   }
 
