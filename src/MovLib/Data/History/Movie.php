@@ -40,11 +40,16 @@ class Movie extends AbstractHistory {
 
   /**
    * Implementation ob abstract method <code>writeFiles()</code>.
-   * Writes all history relevant information in files.
+   * 
+   * Write files to repository.
    *
+   * @param array $data
+   *   Associative array with data to store (use file name as key)
    * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\FileSystemException
    */
-  public function writeFiles() {
+  public function writeFiles(array $data) {
     foreach (["original_title", "runtime", "year"] as $fildname) {
       $this->writeToFile($fildname, $this->entity[$fildname]);
     }

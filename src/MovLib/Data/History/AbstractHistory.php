@@ -35,13 +35,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
   /**
-   * Flag determining if we are on a branch other than "master".
+   * The commit hash of HEAD.
    *
-   * @var boolean
+   * @var string
    */
-  protected $customBranch = false;
+  protected $commitHash = null;
 
   /**
    * Associative array containing this entity's database table (all or selected columns).
@@ -63,6 +62,13 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @var string
    */
   protected $path;
+
+  /**
+   * Flag which indicates if repository is hidden to prevent access.
+   *
+   * @var boolean
+   */
+  private $repositoryHidden = false;
 
   /**
    * Entity's short name.
@@ -90,7 +96,8 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     $this->id = $id;
 
     $result = $this->select(
-      "SELECT {$this->getColumnsForSelectQuery($columns, $dynamicColumns)} FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1",
+      "SELECT {$this->getColumnsForSelectQuery($columns, $dynamicColumns)}, `commit`
+        FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1",
       "d",
       [ $this->id ]
     );
@@ -108,12 +115,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
-   * Destroy the history model and the custom branch if necessary.
+   * Destroy the history model and rename repository if necessary.
    */
   public function __destruct() {
     parent::__destruct();
-    if ($this->customBranch) {
-      $this->destroyUserBranch();
+    if ($this->repositoryHidden) {
+      $this->unhideRepository();
     }
   }
 
@@ -124,33 +131,67 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Write files to repository.
    *
+   * @param array $data
+   *   Associative array with data to store (use file name as key)
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Exception\FileSystemException
    */
-  abstract protected function writeFiles();
+  abstract protected function writeFiles(array $data);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
   /**
-   * C
-   * Commit the current state of the object
+   * Stage all changed files.
    *
-   * A new branch is created, files are written, commited and merged into master.
-   * At the end the temporary branch is destroyed.
-   *
-   * @param string $message
-   *   The commit message.
    * @return this
+   * @throws \MovLib\Exception\HistoryException
    */
-  public function saveHistory($message) {
-    return $this->getUserBranch()->writeFiles()->commit($message)->mergeIntoMaster()->destroyUserBranch();
+  private function stageFiles() {
+    exec("cd {$this->path} && git add -A", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new HistoryException("Error adding files to stage!");
+    }
+    return $this;
   }
 
   /**
-   * Checks in all changes and commits them.
+   * Unstage files
+   *
+   * @param array $files
+   *   Numeric array containing the file names to unstage.
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
+   */
+  private function unstageFiles(array $files) {
+    $filesToUnstage = implode(" ", $files);
+    exec("cd {$this->path} && git reset HEAD {$filesToUnstage}", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new HistoryException("Error unstaging files!");
+    }
+    return $this;
+  }
+
+  /**
+   * Reset unstaged files
+   *
+   * @param array $files
+   *   Numeric array containing the file names to be reseted. Only unstaged files can be reseted!
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
+   */
+  private function resetFiles(array $files) {
+    $filesToReset = implode(" ", $files);
+    exec("cd {$this->path} && git checkout -- {$filesToReset}", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new HistoryException("Error resetting files!");
+    }
+    return $this;
+  }
+
+  /**
+   * Commit staged files
    *
    * @global \Movlib\Data\Session $session
    * @param string $message
@@ -158,9 +199,9 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @return this
    * @throws \MovLib\Exception\HistoryException
    */
-  public function commit($message) {
+  private function commitFiles($message) {
     global $session;
-    exec("cd {$this->path} && git add -A && git commit --author='{$session->userId} <>' -m '{$message}'", $output, $returnVar);
+    exec("cd {$this->path} && git commit --author='{$session->userId} <>' -m '{$message}'", $output, $returnVar);
     if ($returnVar !== 0) {
       if (empty($this->getChangedFiles())) {
         throw new HistoryException("No changed files to commit");
@@ -208,7 +249,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
         $html .= "<span class='red'>{$tmp}</span>";
       }
     }
-
     return $html;
   }
 
@@ -232,16 +272,34 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
+   * Get the last commit hash from the repository.
+   *
+   * @return string
+   *   Last commit hash from the repository.
+   * @throws HistoryException
+   */
+  private function getLastCommitHash() {
+    exec("cd {$this->path} && git log --format='%H' --max-count=1", $output, $returnVar);
+    if ($returnVar !== 0 || !isset($output[0])) {
+      throw new HistoryException("There was an error getting last commit hash from repository");
+    }
+    return $output[0];
+  }
+
+  /**
    * Returns an array of associative arrays with commits.
    *
    * @todo Is subject safe?
+   * @param int $limit [optional]
+   *   The number of commits which should be retrieved.
    * @return array
    *   Numeric array with associative array containing the commits.
    * @throws \MovLib\Exception\HistoryException
    */
-  public function getLastCommits() {
+  public function getLastCommits($limit = null) {
+    $limit = isset($limit)? " --max-count={$limit}" : "";
     $format = '{"hash":"%H","author_id":%an,"timestamp":%at,"subject":"%s"}';
-    exec("cd {$this->path} && git log --format='{$format}'", $output, $returnVar);
+    exec("cd {$this->path} && git log --format='{$format}'{$limit}", $output, $returnVar);
     if ($returnVar !== 0) {
       throw new HistoryException("There was an error getting last commits");
     }
@@ -250,6 +308,100 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       $output[$i] = json_decode($output[$i], true);
     }
     return $output;
+  }
+
+  /**
+   * Remembers the state of the repository when editing starts.
+   *
+   * This methode should be called before editing actually starts. The hash is used to verify if between
+   * <code>startEditing</code> and <code>saveHistory</code> someone else edited the history.
+   *
+   * @return this
+   */
+  public function startEditing() {
+    $this->commitHash = $this->getCommitHash();
+    return $this;
+  }
+
+  public function saveHistory(array $entitiy, $message) {
+    if (!isset($this->commitHash)) {
+      throw new HistoryException("startEditing have to be called bevore saveHistory!");
+    }
+    $this->hideRepository();
+    $this->writeFiles($entitiy);
+    $this->addFilesToStage();
+    if ($this->commitHash != $this->getLastCommitHash()) {
+      // If someone else commited in the meantime find intersecting files.
+      $changedSinceStartEditing = $this->getChangedFiles("HEAD", $this->commitHash);
+      $changedFiles = $this->getChangedFiles();
+      $intersection = array_intersect($changedFiles, $changedSinceStartEditing);
+      if (empty($intersection)) {
+        // If there are no intersecting files we can commit normaly.
+        $this->commitFiles($message);
+      }
+      else {
+        // Else we reset the intersecting files.
+        $this->unstageFiles($intersection);
+        $this->resetFiles($intersection);
+        // If there are files left which can be commited do it.
+        if (!empty($this->getChangedFiles())) {
+          $this->commitFiles($message);
+        }
+        // @todo: show intersection to user instead of this exception.
+        throw new HistoryException("Someone else edited the same information about the {$this->type}!");
+      }
+    }
+    else {
+      $this->commitFiles($message);
+    }
+    $this->unhideRepository();
+    return $this->getLastCommitHash();
+  }
+
+  /**
+   * Hide a repository
+   *
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
+   * @throws \MovLib\Exception}FileSystemException
+   */
+  private function hideRepository() {
+    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/.{$this->id}";
+    if ($this->repositoryHidden || is_dir($newPath)) {
+      throw new HistoryException("Repository already hidden");
+    }
+    exec("mv {$this->path} {$newPath}", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new FileSystemException("Error while renaming repository");
+    }
+    else {
+      $this->repositoryHidden = true;
+      $this->path = $newPath;
+    }
+    return $this;
+  }
+
+  /**
+   * Unhide a repository
+   *
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
+   * @throws \MovLib\Exception}FileSystemException
+   */
+  private function unhideRepository() {
+    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
+    if ($this->repositoryHidden === false || is_dir($newPath)) {
+      throw new HistoryException("Repository not hidden");
+    }
+    exec("mv {$this->path} {$newPath}", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new FileSystemException("Error while renaming repository");
+    }
+    else {
+      $this->repositoryHidden = false;
+      $this->path = $newPath;
+    }
+    return $this;
   }
 
   /**
@@ -278,22 +430,24 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   A database relation (e.g. <i>movies_titles</i>).
    * @param array $columns [optional]
    *   Array of columns to be written to the file.
-   * @param array $dynColumns [optional]
+   * @param array $dynamicColumns [optional]
    *   Array of dynamic colums to be written to the file.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function writeRelatedRowsToFile($relation, array $columns = [], array $dynColumns = []) {
+  protected function writeRelatedRowsToFile($relation, array $columns = [], array $dynamicColumns = []) {
     $result = $this->select(
-      "SELECT {$this->getColumnsForSelectQuery($columns, $dynColumns)} FROM `{$relation}` WHERE `{$this->type}_id` = ? LIMIT 1",
+      "SELECT {$this->getColumnsForSelectQuery($columns, $dynamicColumns)} FROM `{$relation}` WHERE `{$this->type}_id` = ? LIMIT 1",
       "d",
       [ $this->id ]
     );
-    if (empty($result[0])) {
-      // @todo ????
-    }
-    foreach ($dynColumns as $value) {
-      $result[0][$value] = json_decode($result[0][$value], true);
+    foreach ($dynamicColumns as $value) {
+      try {
+        $result[0][$value] = json_decode($result[0][$value], true);
+      }
+      catch (ErrorException $e) {
+        throw new HistoryException("Could not find '{$value}' in result!");
+      }
     }
     $this->writeToFile($relation, json_encode($result));
     return $this;
@@ -336,6 +490,22 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
+   * Get the current commit hash of the entity from DB
+   *
+   * @return string
+   *   Commit hash as string.
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\HistoryException
+   */
+  private function getCommitHash() {
+    $result = $this->select("SELECT `commit` FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1", "d", [$this->id]);
+    if (!isset($result[0]["commit"])) {
+      throw new HistoryException("Could not find commit hash of {$this->type} with ID '{$this->id}'!");
+    }
+    return $result[0]["commit"];;
+  }
+
+  /**
    * Get the model's short class name (e.g. <em>movie</em> for <em>MovLib\Data\History\Movie</em>).
    *
    * The short name is the name of the current instance of this class without the namespace lowercased.
@@ -343,7 +513,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @return string
    *   The short name of the class (lowercase) without the namespace.
    */
-  public function getShortName() {
+  private function getShortName() {
     return strtolower((new ReflectionClass($this))->getShortName());
   }
 
@@ -364,80 +534,4 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     return $this;
   }
 
-  /**
-   * Create a new 'user branch' and check it out.
-   *
-   * @global \Movlib\Data\Session $session
-   * @return this
-   * @throws \MovLib\Exception\HistoryException
-   */
-  private function getUserBranch() {
-    global $session;
-
-    exec("cd {$this->path} && git checkout -q -B {$session->userId}", $output, $returnVar);
-    if ($returnVar == 0) {
-      $this->customBranch = true;
-    } else {
-      throw new HistoryException("Error while creating new branch");
-    }
-    return $this;
-  }
-
-  /**
-   * Destroy the custom 'user branch'
-   *
-   * @global \Movlib\Data\Session $session
-   * @return this
-   * @throws \MovLib\Exception\HistoryException
-   */
-  private function destroyUserBranch() {
-    global $session;
-
-    $this->checkoutBranch("master");
-
-    exec("cd {$this->path} && git branch -D {$session->userId}", $output, $returnVar);
-    if ($returnVar == 0) {
-      $this->customBranch = false;
-    }
-    else {
-      throw new HistoryException("Error while destroying branch!");
-    }
-    return $this;
-  }
-
-  /**
-   * Change Branch
-   *
-   * @param string $name
-   *  The name of the branch which should be checked out
-   * @return this
-   * @throws \MovLib\Exception\HistoryException
-   */
-  private function checkoutBranch($name) {
-    exec("cd {$this->path} && git checkout -q {$name}", $output, $returnVar);
-    if ($returnVar != 0) {
-      throw new HistoryException("Error checking out branch '{$name}'");
-    }
-    return $this;
-  }
-
-  /**
-   * Merging 'user branch' back into master
-   *
-   * @todo Handling of merge conflicts
-   * @global \Movlib\Data\Session $session
-   * @return this
-   * @throws \MovLib\Exception\HistoryException
-   */
-  private function mergeIntoMaster() {
-    global $session;
-
-    $this->checkoutBranch("master");
-
-    exec("cd {$this->path} && git merge {$session->userId}", $output, $returnVar);
-    if ($returnVar != 0) {
-      throw new HistoryException("Error while merging into master!");
-    }
-    return $this;
-  }
 }

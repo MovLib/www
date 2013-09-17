@@ -18,6 +18,9 @@
 namespace MovLib\Test\Data\History;
 
 use \MovLib\Data\History\Movie;
+use \mysqli;
+use \ReflectionClass;
+use \ReflectionMethod;
 
 /**
  * Test the Movie.
@@ -29,6 +32,14 @@ use \MovLib\Data\History\Movie;
  * @since 0.0.1-dev
  */
 class MovieTest extends \PHPUnit_Framework_TestCase {
+
+  public static function setUpBeforeClass() {
+    $db = new mysqli();
+    $db->real_connect();
+    $db->select_db($GLOBALS["movlib"]["default_database"]);
+    $db->query("UPDATE movies SET commit = 'b006169990b07af17d198f6a37efb324ced95fb3' WHERE movie_id = 2");
+    $db->close();
+  }
 
   public static function tearDownAfterClass() {
     $path = "{$_SERVER["DOCUMENT_ROOT"]}/history/movie";
@@ -48,7 +59,24 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testGetShortName() {
-    $this->assertEquals("movie", (new Movie(2))->getShortName());
+    $getShortName = new ReflectionMethod("\MovLib\Data\History\Movie", "getShortName");
+    $getShortName->setAccessible(true);
+    $this->assertEquals("movie", $getShortName->invoke(new Movie(2)));
+  }
+
+  public function testGetColumnsForSelectQuery() {
+    $getColumnsForSelectQuery = new ReflectionMethod("\MovLib\Data\History\Movie", "getColumnsForSelectQuery");
+    $getColumnsForSelectQuery->setAccessible(true);
+    $this->assertEquals("*", $getColumnsForSelectQuery->invoke(new Movie(2)));
+    $this->assertEquals("`test1`, `test2`", $getColumnsForSelectQuery->invoke(new Movie(2), ["test1", "test2"], []));
+    $this->assertEquals(
+      "COLUMN_JSON(`dyn_comments`) AS `dyn_comments`, COLUMN_JSON(`dyn_synopses`) AS `dyn_synopses`",
+      $getColumnsForSelectQuery->invoke(new Movie(2), [], ["dyn_comments", "dyn_synopses"])
+    );
+    $this->assertEquals(
+      "`test1`, COLUMN_JSON(`dyn_comments`) AS `dyn_comments`",
+      $getColumnsForSelectQuery->invoke(new Movie(2), ["test1"], ["dyn_comments"])
+    );
   }
 
   public function testCreateRepository() {
@@ -57,7 +85,67 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/.git/HEAD");
   }
 
-  public function testWriteFiles() {
+  public function testHideRepository() {
+    $movie = new Movie(2);
+    $hideRepository = new ReflectionMethod("\MovLib\Data\History\Movie", "hideRepository");
+    $hideRepository->setAccessible(true);
+    $hideRepository->invoke($movie);
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/.2");
+  }
+
+  /**
+   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedExceptionMessage Repository already hidden
+   */
+  public function testHideRepositoryIfHidden() {
+    $movie = new Movie(2);
+    $hideRepository = new ReflectionMethod("\MovLib\Data\History\Movie", "hideRepository");
+    $hideRepository->setAccessible(true);
+    $hideRepository->invoke($movie);
+    $hideRepository->invoke($movie);
+  }
+
+  public function testUnhideRepository() {
+    $movie = new Movie(2);
+
+    // hide
+    $hideRepository = new ReflectionMethod("\MovLib\Data\History\Movie", "hideRepository");
+    $hideRepository->setAccessible(true);
+    $hideRepository->invoke($movie);
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/.2");
+    //unhide
+    $unhideRepository = new ReflectionMethod("\MovLib\Data\History\Movie", "unhideRepository");
+    $unhideRepository->setAccessible(true);
+    $unhideRepository->invoke($movie);
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2");
+  }
+
+  /**
+   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedExceptionMessage Repository not hidden
+   */
+  public function testUnhideRepositoryIfNotHidden() {
+    $movie = new Movie(2);
+    $unhideRepository = new ReflectionMethod("\MovLib\Data\History\Movie", "unhideRepository");
+    $unhideRepository->setAccessible(true);
+    $unhideRepository->invoke($movie);
+  }
+
+  public function testStartEditing() {
+    $movie = new Movie(2);
+    $movie->startEditing();
+
+    $reflectionClass = new ReflectionClass('\MovLib\Data\History\Movie');
+    $reflectionProperty = $reflectionClass->getProperty('commitHash');
+    $reflectionProperty->setAccessible(true);
+    $this->assertEquals(
+      "b006169990b07af17d198f6a37efb324ced95fb3",
+      $reflectionProperty->getValue($movie)
+    );
+  }
+  
+
+  /*public function testWriteFiles() {
     $test = new Movie(2);
     $test->writeFiles();
 
@@ -129,10 +217,10 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("second commit", $result[0]["subject"]);
   }
 
-  /**
+  / **
    * @expectedException        \MovLib\Exception\HistoryException
    * @expectedExceptionMessage No changed files to commit
-   */
+   * /
   public function testCommitWithoutChangedFiles() {
     (new Movie(2))->commit("empty commit");
   }
@@ -145,6 +233,6 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $result = $test->getLastCommits();
     $this->assertEquals(1, $result[0]["author_id"]);
     $this->assertEquals("with branching", $result[0]["subject"]);
-  }
+  }*/
 
 }
