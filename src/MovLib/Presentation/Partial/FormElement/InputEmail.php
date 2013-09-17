@@ -23,9 +23,7 @@ use \MovLib\Exception\ValidatorException;
  * HTML input type email form element.
  *
  * The usage of a magic constant at this point is absolutely okay, because 254 is the official upper limit for any valid
- * email address. This restriction is layed down in RFC 2821 on the length for MAIL and RCPT commands. It's only used
- * twice within this class, so no need for a constant. But if the use-case emerges that it's needed elsewhere a class
- * constant should be created.
+ * email address. This restriction is layed down in RFC 2821 on the length for MAIL and RCPT commands.
  *
  * @link http://www.rfc-editor.org/errata_search.php?rfc=3696&eid=1690
  * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
@@ -47,21 +45,20 @@ class InputEmail extends \MovLib\Presentation\Partial\FormElement\InputText {
    *   The form element's attributes.
    * @param string $label [optional]
    *   The form element's label content.
-   * @param string $defaultValue [optional]
+   * @param string $value [optional]
    *   The form element's default value.
    * @param array $labelAttributes [optional]
    *   The form element's label attributes.
    */
-  public function __construct($id = "email", array $attributes = null, $label = null, $defaultValue = null, array $labelAttributes = null) {
+  public function __construct($id = "email", array $attributes = null, $label = null, $value = null, array $labelAttributes = null) {
     global $i18n;
-    parent::__construct($id, $label, $defaultValue, $attributes, $labelAttributes);
-    $this->attributes["type"] = "email";
+    parent::__construct($id, $label, $value, $attributes, $labelAttributes);
+    $this->attributes["type"]      = "email";
     $this->attributes["maxlength"] = 254;
+    $this->attributes["pattern"]   = "^.+@.+\..+$"; // @todo Extend regular expression to be more precise!
+    $this->attributes["title"]     = $i18n->t("An email address in the format [local]@[host].[tld]");
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = $i18n->t("Enter your email address");
-    }
-    if (!isset($this->attributes["title"])) {
-      $this->attributes["title"] = $i18n->t("Please enter your email address in this field.");
     }
     if (!$this->label) {
       $this->label = $i18n->t("Email Address");
@@ -75,32 +72,31 @@ class InputEmail extends \MovLib\Presentation\Partial\FormElement\InputText {
     global $i18n;
 
     // No need for multi-byte functions, utf-8 is not allowed in emails.
-    if (strlen($_POST[$this->id]) > 254) {
+    if (strlen($this->value) > $this->attributes["maxlength"]) {
       throw new ValidatorException($i18n->t("The email address {0} is too long: it must be {1,number,integer} or less.", [
-        $this->placeholder($_POST[$this->id]),
-        $this->attributes["max-length"],
+        $this->placeholder($this->value),
+        $this->attributes["maxlength"],
       ]));
     }
 
     // Use PHP's built-in validation function.
-    if (filter_var($_POST[$this->id], FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
+    if (filter_var($this->value, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
       throw new ValidatorException($i18n->t("The email address {0} doesn’t appear to be valid.", [
-        $this->placeholder($_POST[$this->id]),
+        $this->placeholder($this->value),
       ]));
     }
 
     // If the syntax is valid, check if we actually can send emails to the given address.
-    $host = substr($_POST[$this->id], strrpos($_POST[$this->id], "@") + 1);
+    $host = substr($this->value, strrpos($this->value, "@") + 1);
     // The host part needs at least a single point in it, otherwise localhost would be valid. We check the DNS entries
     // in the order of their weight for the current operation. An A record is for IPv4 hosts, an AAAA record is for
     // IPv6 hosts and the MX record is for mail servers only.
     if (strpos($host, ".") === false || (checkdnsrr($host, "A") === false && checkdnsrr($host, "AAAA") === false && checkdnsrr($host, "MX") === false)) {
       throw new ValidatorException($i18n->t("The email address {0} doesn’t appear to be valid.", [
-        $this->placeholder($_POST[$this->id]),
+        $this->placeholder($this->value),
       ]));
     }
 
-    $this->value = $_POST[$this->id];
     return $this;
   }
 

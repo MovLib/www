@@ -59,9 +59,6 @@ class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractFor
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = $i18n->t("Enter your password");
     }
-    if (!isset($this->attributes["title"])) {
-      $this->attributes["title"] = $i18n->t("Please enter your password in this field.");
-    }
     if (!$this->label) {
       $this->label = $i18n->t("Password");
     }

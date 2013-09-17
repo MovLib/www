@@ -39,21 +39,24 @@ class InputUrl extends \MovLib\Presentation\Partial\FormElement\InputText {
   /**
    * Instantiate new input form element of type url.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @param string $id
    *   The form element's global identifier.
    * @param string $label
    *   The form element's label content.
-   * @param string $defaultValue [optional]
+   * @param string $value [optional]
    *   The form element's default value.
    * @param array $attributes [optional]
    *   The form element's attributes.
    * @param array $labelAttributes [optional]
    *   The form element's label attributes.
    */
-  public function __construct($id, $label, $defaultValue = null, array $attributes = null, array $labelAttributes = null) {
-    parent::__construct($id, $label, $defaultValue, $attributes, $labelAttributes);
-    $this->attributes["type"] = "url";
-    $this->attributes["pattern"] = "https?://.*";
+  public function __construct($id, $label, $value = null, array $attributes = null, array $labelAttributes = null) {
+    global $i18n;
+    parent::__construct($id, $label, $value, $attributes, $labelAttributes);
+    $this->attributes["type"]    = "url";
+    $this->attributes["pattern"] = "^https?://[a-z0-9\-\.]+\.[a-z]{2,5}(/.*)*$";
+    $this->attributes["title"]   = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = "http(s)://";
     }
@@ -86,6 +89,10 @@ class InputUrl extends \MovLib\Presentation\Partial\FormElement\InputText {
     // Only HTTP and HTTPS are considered valid schemes.
     elseif ($parts["scheme"] != "http" && $parts["scheme"] != "https") {
       $errors[] = $i18n->t("Scheme (protocol) must be of type HTTP or HTTPS.");
+    }
+    // Check for valid TLD.
+    elseif (preg_match("/\.[a-z]{2,5}$/", $parts["host"]) == false) {
+      $errors[] = $i18n->t("The URL {0} must have a valid top level domain (TLD).", [ $this->placeholder($_POST[$this->id]) ]);
     }
 
     // If any of the following parts is present the complete URL is considered invalid. No reputable website is

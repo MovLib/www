@@ -84,7 +84,6 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     $this->email = new InputEmail("email", [
       "autofocus",
       "placeholder" => $i18n->t("Enter your new email address"),
-      "title"       => $i18n->t("Please enter your desired new email address in this field."),
     ], $i18n->t("New Email Address"));
     $this->email->required();
     $this->email->setHelp($i18n->t(

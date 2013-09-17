@@ -29,88 +29,106 @@ use \MovLib\Presentation\Partial\FormElement\InputUrl;
 class InputUrlTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * Instance to be tested.
+   * Instantiate input url form element for test.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputUrl
+   * @return \MovLib\Presentation\Partial\FormElement\InputUrl
    */
-  public static $inputUrl;
-
-  /**
-   * Instantiate input url form element for tests.
-   */
-  public static function setUpBeforeClass() {
-    self::$inputUrl = new InputUrl("phpunit");
+  public static function getInput($value) {
+    $_POST["phpunit"] = $value;
+    return new InputUrl("phpunit", "PHPUnit", $value);
   }
 
-  public function testDefaults() {
-    $this->assertEquals("phpunit", self::$inputUrl->id);
-    $this->assertEquals("url", self::$inputUrl->attributes["type"]);
-    $this->assertEquals("https?://.*", self::$inputUrl->attributes["pattern"]);
-  }
-
-  public static function dataProviderValidationValid() {
+  public static function dataProviderValid() {
     return [
-      [ "http://movlib.org", "http://movlib.org" ],
-      [ "http://movlib.org/", "http://movlib.org/" ],
-      [ "https://movlib.org/", "https://movlib.org/" ],
-      [ "http://movlib.org/foo/bar/", "http://movlib.org/foo/bar/" ],
-      [ "http://movlib.org/foo?bar=42", "http://movlib.org/foo?bar=42" ],
-      [ "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB", "https://ja.wikipedia.org/wiki/Unix系" ],
-      [ "https://en.wikipedia.org/wiki//dev/random", "https://en.wikipedia.org/wiki//dev/random" ],
-      [ "http://www.youtube.com/watch?v=5gUKvmOEGCU", "http://www.youtube.com/watch?v=5gUKvmOEGCU" ],
-      [ "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB", "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB" ],
+      [ self::getInput("http://movlib.org"), "http://movlib.org" ],
+      [ self::getInput("http://movlib.org/"), "http://movlib.org/" ],
+      [ self::getInput("https://movlib.org/"), "https://movlib.org/" ],
+      [ self::getInput("http://movlib.org/foo/bar/"), "http://movlib.org/foo/bar/" ],
+      [ self::getInput("http://movlib.org/foo?bar=42"), "http://movlib.org/foo?bar=42" ],
+      [ self::getInput("https://ja.wikipedia.org/wiki/Unix系"), "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB" ],
+      [ self::getInput("https://en.wikipedia.org/wiki//dev/random"), "https://en.wikipedia.org/wiki//dev/random" ],
+      [ self::getInput("http://www.youtube.com/watch?v=5gUKvmOEGCU"), "http://www.youtube.com/watch?v=5gUKvmOEGCU" ],
+      [ self::getInput("https://ja.wikipedia.org/wiki/Unix%E7%B3%BB"), "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB" ],
       [
-        "https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Component%21Utility%21Url.php/function/Url%3A%3AisValid/8",
-        "https://api.drupal.org/api/drupal/core!lib!Drupal!Component!Utility!Url.php/function/Url%3A%3AisValid/8"
+        self::getInput("https://api.drupal.org/api/drupal/core!lib!Drupal!Component!Utility!Url.php/function/Url%3A%3AisValid/8"),
+        "https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Component%21Utility%21Url.php/function/Url%3A%3AisValid/8"
       ]
     ];
   }
 
-  /**
-   * @dataProvider dataProviderValidationValid
-   */
-  public function testValidationValid($expected, $input) {
-    $_POST["phpunit"] = $input;
-    $this->assertEquals($expected, self::$inputUrl->validate()->value);
-  }
-
-  /**
-   * @expectedException \MovLib\Exception\ValidatorException
-   */
-  public function testValidationExists() {
-    $inputUrl = new InputUrl("phpunit");
-    $_POST[$inputUrl->id] = "http://movlib/foo/bar";
-    $inputUrl->attributes["data-url-exists"] = "true";
-    $inputUrl->validate();
-  }
-
-  public static function dataProviderValidationInvalid() {
+  public static function dataProviderInvalid() {
     return [
-      [ "" ],
-      [ "\n" ],
-      [ "MovLib" ],
-      [ "movlib.org" ],
-      [ "//movlib.org" ],
-      [ "www.movlib.org" ],
-      [ "ftp://movlib.org/" ],
-      [ "movlib.org/foo/bar" ],
-      [ "ldap://movlib.org/" ],
-      [ "//movlib.org/foo/bar" ],
-      [ "http://movlib.org:80/" ],
-      [ "mailto:user@movlib.org" ],
-      [ "www.movlib.org/foo/bar" ],
-      [ "http://admin@movlib.org/" ],
-      [ "http://admin:1234@movlib.org/" ],
+      [ self::getInput("") ],
+      [ self::getInput("\n") ],
+      [ self::getInput("MovLib") ],
+      [ self::getInput("movlib.org") ],
+      [ self::getInput("//movlib.org") ],
+      [ self::getInput("www.movlib.org") ],
+      [ self::getInput("ftp://movlib.org/") ],
+      [ self::getInput("http://movlib.123") ],
+      [ self::getInput("movlib.org/foo/bar") ],
+      [ self::getInput("ldap://movlib.org/") ],
+      [ self::getInput("//movlib.org/foo/bar") ],
+      [ self::getInput("http://movlib.org:80/") ],
+      [ self::getInput("mailto:user@movlib.org") ],
+      [ self::getInput("www.movlib.org/foo/bar") ],
+      [ self::getInput("http://admin@movlib.org/") ],
+      [ self::getInput("http://admin:1234@movlib.org/") ],
+      [ self::getInput("http://admin:1234@movlib.org:1234") ],
     ];
   }
 
   /**
-   * @dataProvider dataProviderValidationInvalid
+   * @covers InputUrl::__construct
+   */
+  public function testDefaults() {
+    $input = self::getInput(null);
+    $this->assertEquals("phpunit", $input->id);
+    $this->assertEquals("url", $input->attributes["type"]);
+    $this->assertEquals("^https?://[a-z0-9\-\.]+\.[a-z]{2,5}(/.*)*$", $input->attributes["pattern"]);
+  }
+
+  /**
+   * @covers InputUrl::__construct
+   * @dataProvider dataProviderInvalid
+   */
+  public function testValidationRegExInvalid(InputUrl $input) {
+    $this->assertFalse((bool) preg_match("#{$input->attributes["pattern"]}#", $input->value));
+  }
+
+  /**
+   * @covers InputUrl::__construct
+   * @dataProvider dataProviderValid
+   */
+  public function testValidationRegExValid(InputUrl $input) {
+    $this->assertTrue((bool) preg_match("#{$input->attributes["pattern"]}#", $input->value));
+  }
+
+  /**
+   * @covers InputUrl::validate
    * @expectedException \MovLib\Exception\ValidatorException
    */
-  public function testValidationInvalid($input) {
-    $_POST[self::$inputUrl->id] = $input;
-    self::$inputUrl->validate();
+  public function testValidationExists() {
+    $input = self::getInput("https://movlib.org/foo/bar/phpunit");
+    $input->attributes["data-url-exists"] = "true";
+    $input->validate();
+  }
+
+  /**
+   * @covers InputUrl::validate
+   * @dataProvider dataProviderInvalid
+   * @expectedException \MovLib\Exception\ValidatorException
+   */
+  public function testValidationInvalid(InputUrl $input) {
+    $input->validate();
+  }
+
+  /**
+   * @covers InputUrl::validate
+   * @dataProvider dataProviderValid
+   */
+  public function testValidationValid(InputUrl $input, $expected) {
+    $this->assertEquals($expected, $input->validate()->value);
   }
 
 }

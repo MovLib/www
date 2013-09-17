@@ -17,7 +17,6 @@
  */
 namespace MovLib\Test\Presentation\Partial\FormElement;
 
-use \MovLib\Data\User;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 
 /**
@@ -30,158 +29,178 @@ use \MovLib\Presentation\Partial\FormElement\InputEmail;
 class InputEmailTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * Instance to be tested.
+   * Instantiate input email form element for test.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputEmail
+   * @return \MovLib\Presentation\Partial\FormElement\InputEmail
    */
-  public static $inputEmail;
-
-  /**
-   * Instantiate input email form element for tests.
-   */
-  public static function setUpBeforeClass() {
-    self::$inputEmail = new InputEmail();
-  }
-
-  public function testDefaults() {
-    $this->assertEquals("email", self::$inputEmail->id);
-    $this->assertEquals("email", self::$inputEmail->attributes["type"]);
+  public static function getInput($value) {
+    $_POST["email"] = $value;
+    $input = new InputEmail();
+    $input->value = $value;
+    return $input;
   }
 
   /**
    * @link https://github.com/iamcal/rfc822/blob/master/tests/tests.xml
    * @link http://codefool.tumblr.com/post/15288874550/list-of-valid-and-invalid-email-addresses
    */
-  public static function dataProviderValidationValid() {
+  public static function dataProviderValid() {
     return [
-      [ '""@movlib.org' ],
-      [ "+1~1+@movlib.org" ],
-      [ '$a12345@movlib.org' ],
-      [ "phpunit@movlib.org" ],
-      [ "_______@movlib.org" ],
-      [ "_phpunit@movlib.org" ],
-      [ '"phpunit"@movlib.org' ],
-      [ "phpunit@about.museum" ],
-      [ "phpunit@amazon.co.jp" ],
-      [ "0123456789@movlib.org" ],
-      [ "1234567890@movlib.org" ],
-      [ "{_phpunit_}@movlib.org" ],
-      [ "phpunit@dev.movlib.org" ],
-      [ "!abc!xyz%abc@movlib.org" ],
-      [ "phpunit@blue-tomato.com" ],
-      [ "phpunit@fussenegger.info" ],
-      [ "phpunit@api.dev.movlib.org" ],
-      [ "phpunit.phpunit@movlib.org" ],
-      [ "phpunit+phpunit@movlib.org" ],
-      [ "phpunit-phpunit@movlib.org" ],
-      [ "phpunit*phpunit@movlib.org" ],
-      [ 'phpunit."phpunit"@movlib.org' ],
-      [ '"phpunit\phpunit"@movlib.org' ],
-      [ '"phpunit@phpunit"@movlib.org' ],
-      [ '"phpunit\"phpunit"@movlib.org' ],
-      [ '"phpunit\@phpunit"@movlib.org' ],
-      [ '"phpunit\\phpunit"@movlib.org' ],
-      [ '"phpunit\ phpunit"@movlib.org' ],
-      [ '"phpunit.\\phpunit"@movlib.org' ],
-      [ "phpunit/phpunit=phpunit@movlib.org" ],
-      [ 'very.unusual."@".unusual.com@movlib.org' ],
-      [ 'very."(),:;<>[]".very."very@\\\\\\ \"very".unusual@dev.movlib.org' ],
-      [ "phpunit@x23456789012345678901234567890123456789012345678901234567890123.movlib.org" ],
+      [ self::getInput('""@movlib.org') ],
+      [ self::getInput("+1~1+@movlib.org") ],
+      [ self::getInput('$a12345@movlib.org') ],
+      [ self::getInput("phpunit@movlib.org") ],
+      [ self::getInput("_______@movlib.org") ],
+      [ self::getInput("_phpunit@movlib.org") ],
+      [ self::getInput('"phpunit"@movlib.org') ],
+      [ self::getInput("phpunit@about.museum") ],
+      [ self::getInput("phpunit@amazon.co.jp") ],
+      [ self::getInput("0123456789@movlib.org") ],
+      [ self::getInput("1234567890@movlib.org") ],
+      [ self::getInput("{_phpunit_}@movlib.org") ],
+      [ self::getInput("phpunit@dev.movlib.org") ],
+      [ self::getInput("!abc!xyz%abc@movlib.org") ],
+      [ self::getInput("phpunit@blue-tomato.com") ],
+      [ self::getInput("phpunit@fussenegger.info") ],
+      [ self::getInput("phpunit@api.dev.movlib.org") ],
+      [ self::getInput("phpunit.phpunit@movlib.org") ],
+      [ self::getInput("phpunit+phpunit@movlib.org") ],
+      [ self::getInput("phpunit-phpunit@movlib.org") ],
+      [ self::getInput("phpunit*phpunit@movlib.org") ],
+      [ self::getInput('phpunit."phpunit"@movlib.org') ],
+      [ self::getInput('"phpunit\phpunit"@movlib.org') ],
+      [ self::getInput('"phpunit@phpunit"@movlib.org') ],
+      [ self::getInput('"phpunit\"phpunit"@movlib.org') ],
+      [ self::getInput('"phpunit\@phpunit"@movlib.org') ],
+      [ self::getInput('"phpunit\\phpunit"@movlib.org') ],
+      [ self::getInput('"phpunit\ phpunit"@movlib.org') ],
+      [ self::getInput('"phpunit.\\phpunit"@movlib.org') ],
+      [ self::getInput("phpunit/phpunit=phpunit@movlib.org") ],
+      [ self::getInput('very.unusual."@".unusual.com@movlib.org') ],
+      [ self::getInput('very."(),:;<>[]".very."very@\\\\\\ \"very".unusual@dev.movlib.org') ],
+      [ self::getInput("phpunit@x23456789012345678901234567890123456789012345678901234567890123.movlib.org") ],
       // The following address has exactly 254 characters!
-      [ "12345678901234567890123456789012345678901234567890123456789@12345678901234567890123456789012345678901234567890123456789.12345678901234567890123456789012345678901234567890123456789.123456789012345678901234567890123456789012345678901234567890123.movlib.org" ],
+      [ self::getInput("12345678901234567890123456789012345678901234567890123456789@12345678901234567890123456789012345678901234567890123456789.12345678901234567890123456789012345678901234567890123456789.123456789012345678901234567890123456789012345678901234567890123.movlib.org") ],
     ];
   }
 
-  /**
-   * @dataProvider dataProviderValidationValid
-   */
-  public function testValidationValid($input) {
-    $_POST[self::$inputEmail->id] = $input;
-    self::$inputEmail->validate();
-  }
-
-  public static function dataProviderValidationInvalid() {
+  public static function dataProviderInvalid() {
     return [
       // Valid syntax but no DNS record
-      [ "phpunit@123.123.123.x123" ],
-      [ "phpunit@[123.123.123.123]" ],
-      [ "phpunit@[ipv6:::12.34.56.78]" ],
-      [ "phpunit.phpunit@[12.34.56.78]" ],
-      [ "phpunit@[ipv6:1111:2222:3333::4444:5555:6666]" ],
-      [ "phpunit@[ipv6:1111:2222:3333:4444:5555:6666::]" ],
-      [ "phpunit@[ipv6:::1111:2222:3333:4444:5555:6666]" ],
-      [ "phpunit@[ipv6:1111:2222:3333::4444:12.34.56.78]" ],
-      [ "phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777:8888]" ],
-      [ "phpunit@[ipv6:1111:2222:3333:4444:5555:6666:12.34.56.78]" ],
-      [ "x@x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x2" ],
+      [ self::getInput("phpunit@123.123.123.x123") ],
+      [ self::getInput("phpunit@[123.123.123.123]") ],
+      [ self::getInput("phpunit@[ipv6:::12.34.56.78]") ],
+      [ self::getInput("phpunit.phpunit@[12.34.56.78]") ],
+      [ self::getInput("phpunit@[ipv6:1111:2222:3333::4444:5555:6666]") ],
+      [ self::getInput("phpunit@[ipv6:1111:2222:3333:4444:5555:6666::]") ],
+      [ self::getInput("phpunit@[ipv6:::1111:2222:3333:4444:5555:6666]") ],
+      [ self::getInput("phpunit@[ipv6:1111:2222:3333::4444:12.34.56.78]") ],
+      [ self::getInput("phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777:8888]") ],
+      [ self::getInput("phpunit@[ipv6:1111:2222:3333:4444:5555:6666:12.34.56.78]") ],
+      [ self::getInput("x@x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x2") ],
       // Valid syntax but too long
-      [ "123456789012345678901234567890123456789012345678901234567890@12345678901234567890123456789012345678901234567890123456789.12345678901234567890123456789012345678901234567890123456789.123456789012345678901234567890123456789012345678901234567890123.movlib.org" ],
+      [ self::getInput("123456789012345678901234567890123456789012345678901234567890@12345678901234567890123456789012345678901234567890123456789.12345678901234567890123456789012345678901234567890123456789.123456789012345678901234567890123456789012345678901234567890123.movlib.org") ],
       // Invalid IP address as host
-      [ "phpunit.phpunit@[.12.34.56.78]" ],
-      [ "phpunit.phpunit@[12.34.56.789]" ],
-      [ "phpunit.phpunit@[::12.34.56.78]" ],
-      [ "phpunit.phpunit@[IPv5:::12.34.56.78]" ],
-      [ "phpunit.phpunit@[ipv6:1111:2222:333x::4444:5555]" ],
-      [ "phpunit.phpunit@[ipv6:1111:2222:33333::4444:5555]" ],
-      [ "phpunit.phpunit@[ipv6:1111:2222::3333::4444:5555:6666]" ],
-      [ "phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777]" ],
-      [ "phpunit.phpunit@[ipv6:1111:2222:3333::4444:5555:6666:7777]" ],
-      [ "phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:12.34.56.78]" ],
-      [ "phpunit.phpunit@[ipv6:1111:2222:3333::4444:5555:12.34.56.78]" ],
-      [ "phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777:8888:9999]" ],
-      [ "phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777:12.34.56.78]" ],
+      [ self::getInput("phpunit.phpunit@[.12.34.56.78]") ],
+      [ self::getInput("phpunit.phpunit@[12.34.56.789]") ],
+      [ self::getInput("phpunit.phpunit@[::12.34.56.78]") ],
+      [ self::getInput("phpunit.phpunit@[IPv5:::12.34.56.78]") ],
+      [ self::getInput("phpunit.phpunit@[ipv6:1111:2222:333x::4444:5555]") ],
+      [ self::getInput("phpunit.phpunit@[ipv6:1111:2222:33333::4444:5555]") ],
+      [ self::getInput("phpunit.phpunit@[ipv6:1111:2222::3333::4444:5555:6666]") ],
+      [ self::getInput("phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777]") ],
+      [ self::getInput("phpunit.phpunit@[ipv6:1111:2222:3333::4444:5555:6666:7777]") ],
+      [ self::getInput("phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:12.34.56.78]") ],
+      [ self::getInput("phpunit.phpunit@[ipv6:1111:2222:3333::4444:5555:12.34.56.78]") ],
+      [ self::getInput("phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777:8888:9999]") ],
+      [ self::getInput("phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777:12.34.56.78]") ],
       // No local part at all
-      [ "movlib.org" ],
-      [ "@movlib.org" ],
+      [ self::getInput("movlib.org") ],
+      [ self::getInput("@movlib.org") ],
       // Syntax error in local part
-      [ '"""@movlib.org' ],
-      [ '"\"@movlib.org' ],
-      [ '"phpunit@movlib.org' ],
-      [ 'phpunit"@movlib.org' ],
-      [ '"[[ phpunit ]]"@movlib.org' ],
-      [ "phpunit phpunit@movlib.org" ],
-      [ "phpunit@phpunit@movlib.org" ],
-      [ ".phpunit.phpunit@movlib.org" ],
-      [ "phpunit.phpunit.@movlib.org" ],
-      [ "phpunit..phpunit@movlib.org" ],
-      [ "phpunit\@phpunit@movlib.org" ],
-      [ '"phpunit phpunit"@movlib.org' ],
-      [ "phpunit\\@phpunit@movlib.org" ],
-      [ '"phpunit"phpunit"@movlib.org' ],
-      [ 'phpunit\\@phpunit@movlib.org' ],
-      [ 'phpunit\ "phpunit"\ phpunit@movlib.org' ],
-      [ '"phpunit "phpunit" phpunit."@movlib.org' ],
-      [ '"phpunit \"phpunit\" phpunit.@movlib.org' ],
-      [ '"phpunit \"phpunit\"\ phpunit\.@movlib.org' ],
+      [ self::getInput('"""@movlib.org') ],
+      [ self::getInput('"\"@movlib.org') ],
+      [ self::getInput('"phpunit@movlib.org') ],
+      [ self::getInput('phpunit"@movlib.org') ],
+      [ self::getInput('"[[ phpunit ]]"@movlib.org') ],
+      [ self::getInput("phpunit phpunit@movlib.org") ],
+      [ self::getInput("phpunit@phpunit@movlib.org") ],
+      [ self::getInput(".phpunit.phpunit@movlib.org") ],
+      [ self::getInput("phpunit.phpunit.@movlib.org") ],
+      [ self::getInput("phpunit..phpunit@movlib.org") ],
+      [ self::getInput("phpunit\@phpunit@movlib.org") ],
+      [ self::getInput('"phpunit phpunit"@movlib.org') ],
+      [ self::getInput("phpunit\\@phpunit@movlib.org") ],
+      [ self::getInput('"phpunit"phpunit"@movlib.org') ],
+      [ self::getInput('phpunit\\@phpunit@movlib.org') ],
+      [ self::getInput('phpunit\ "phpunit"\ phpunit@movlib.org') ],
+      [ self::getInput('"phpunit "phpunit" phpunit."@movlib.org') ],
+      [ self::getInput('"phpunit \"phpunit\" phpunit.@movlib.org') ],
+      [ self::getInput('"phpunit \"phpunit\"\ phpunit\.@movlib.org') ],
       // No host part at all
-      [ "phpunit" ],
-      [ "phpunit.phpunit" ],
-      [ "phpunit.phpunit@" ],
+      [ self::getInput("phpunit") ],
+      [ self::getInput("phpunit.phpunit") ],
+      [ self::getInput("phpunit.phpunit@") ],
       // Syntax error in host part
-      [ "phpunit@org" ],
-      [ "phpunit@movlib.123" ],
-      [ "phpunit@movlib.org." ],
-      [ "phpunit@-movlib.org" ],
-      [ "phpunit@movlib-.org" ],
-      [ "phpunit@movlib.org,com" ],
+      [ self::getInput("phpunit@org") ],
+      [ self::getInput("phpunit@movlib.123") ],
+      [ self::getInput("phpunit@movlib.org.") ],
+      [ self::getInput("phpunit@-movlib.org") ],
+      [ self::getInput("phpunit@movlib-.org") ],
+      [ self::getInput("phpunit@movlib.org,com") ],
       // Invalid, just invalid
-      [ "" ],
-      [ "\n" ],
-      [ "#@%^%#$@#$@#.org" ],
-      [ '"(),:;<>[\]@movlib.org' ],
-      [ "ハローワールド@movlib.org" ], // hello world
-      [ "phpunit@movlib.org (PHPUnit)" ],
-      [ "PHPUnit PHPUnit <phpunit@movlib.org>" ],
+      [ self::getInput("") ],
+      [ self::getInput("\n") ],
+      [ self::getInput("#@%^%#$@#$@#.org") ],
+      [ self::getInput('"(),:;<>[\]@movlib.org') ],
+      [ self::getInput("ハローワールド@movlib.org") ], // hello world
+      [ self::getInput("phpunit@movlib.org (PHPUnit)") ],
+      [ self::getInput("PHPUnit PHPUnit <phpunit@movlib.org>") ],
     ];
   }
 
   /**
-   * @dataProvider dataProviderValidationInvalid
+   * @covers InputEmail::__constructor
+   */
+  public function testDefaults() {
+    $input = self::getInput(null);
+    $this->assertEquals("email", $input->id);
+    $this->assertEquals("email", $input->attributes["type"]);
+    $this->assertEquals(254, $input->attributes["maxlength"]);
+  }
+
+  /**
+   * @todo Extend regular expression to be more precise!
+   * @covers InputUrl::__construct
+   * @dataProvider dataProviderInvalid
+   */
+//  public function testValidationRegExInvalid(InputEmail $input) {
+//    $this->assertFalse((bool) preg_match("/{$input->attributes["pattern"]}/", $input->value));
+//  }
+
+  /**
+   * @covers InputUrl::__construct
+   * @dataProvider dataProviderValid
+   */
+  public function testValidationRegExValid(InputEmail $input) {
+    $this->assertTrue((bool) preg_match("/{$input->attributes["pattern"]}/", $input->value));
+  }
+
+  /**
+   * @covers InputEmail::validate
+   * @dataProvider dataProviderInvalid
    * @expectedException \MovLib\Exception\ValidatorException
    */
-  public function testValidationInvalid($input) {
-    $_POST[self::$inputEmail->id] = $input;
-    self::$inputEmail->validate();
+  public function testValidationInvalid(InputEmail $input) {
+    $input->validate();
+  }
+
+  /**
+   * @covers InputEmail::validate
+   * @dataProvider dataProviderValid
+   */
+  public function testValidationValid(InputEmail $input) {
+    $input->validate();
   }
 
 }

@@ -29,7 +29,6 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputUrl;
 use \MovLib\Presentation\Partial\FormElement\Select;
 use \MovLib\Presentation\Partial\FormElement\Textarea;
-use \Locale;
 
 /**
  * Allows the user to manage his personalized settings.
@@ -147,28 +146,26 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     // Start rendering the page.
     $this->init($i18n->t("Account Settings"))->user = new User(User::FROM_ID, $session->userId);
 
-    // @todo Avatar Upload
+    // @todo Avatar Upload (autofocus?)
     $this->avatar = new InputFile();
 
     $this->realName = new InputText("real_name", $i18n->t("Real Name"), $this->user->realName, [
       "inputmode"   => "latin-name",
       "placeholder" => $i18n->t("Enter your real name"),
-      "title"       => $i18n->t("Please enter your real name in this field."),
     ]);
 
-    $this->sex = new RadioGroup("sex", $i18n->t("Sex"), $this->user->sex, [
+    $this->sex = (new RadioGroup("sex", $i18n->t("Sex"), $this->user->sex, [
       2 => $i18n->t("Female"),
       1 => $i18n->t("Male"),
       0 => $i18n->t("Unknown"),
-    ]);
-    $this->sex->setHelp($i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
+    ]))->setHelp($i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
 
     $birthdayMax = date(InputDate::RFC3339, (time() - 1.893e8));   //   6 years
     $birthdayMin = date(InputDate::RFC3339, (time() - 3.78683e9)); // 120 years
     $this->birthday = new InputDate("birthday", $i18n->t("Date of Birth"), [
       "max"   => $birthdayMax,
       "min"   => $birthdayMin,
-      "title" => $i18n->t("Please enter your date of birth in this field. The date must be between {0} (120 years) and {1} (6 years).", [ $birthdayMin, $birthdayMax ]),
+      "title" => $i18n->t("The date must be between {0} (120 years) and {1} (6 years)", [ $birthdayMin, $birthdayMax ]),
     ], $this->user->birthday);
     $this->birthday->setHelp($i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
 
@@ -176,20 +173,15 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
     ]);
 
-    $this->language = new Select("language", $i18n->t("Language"), $i18n->getSystemLanguages(), $this->user->getLanguageCode());
-    $this->language->required();
+    $this->language = (new Select("language", $i18n->t("Language"), $i18n->getSystemLanguages(), $this->user->getLanguageCode()))->required();
 
     $this->country = new Select("country", $i18n->t("Country"), array_column($i18n->getCountries(I18n::KEY_NAME), I18n::KEY_NAME, I18n::KEY_CODE), $this->user->getCountryCode());
 
     // @todo Should we create groups for continents? They look ugly and each it's already sorted alphabetically.
-    $this->timezone = new Select("timezone", $i18n->t("Time Zone"), $i18n->getTimeZones(), $this->user->timeZoneId);
-    $this->language->required();
+    $this->timezone = (new Select("timezone", $i18n->t("Time Zone"), $i18n->getTimeZones(), $this->user->timeZoneId))->required();
 
     // We don't validate the existens of the user's website (respectively homepage).
-    $this->website = new InputUrl("website", [
-      "title" => $i18n->t("Please enter your website address in this field. The address must start with either HTTP or HTTPS."),
-    ], $this->user->website);
-    $this->website->label = $i18n->t("Website");
+    $this->website = new InputUrl("website", $i18n->t("Website"), $this->user->website);
 
     // @todo Facebook
     //$this->facebook = ?

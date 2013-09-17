@@ -99,10 +99,8 @@ class Registration extends \MovLib\Presentation\Page {
     $this->email->setHelp("<a href='{$i18n->r("/user/login")}'>{$i18n->t("Already have an account?")}</a>", false);
 
     $this->username = new InputText("username", $i18n->t("Username"), null, [
-      "inputmode"   => "verbatim",
       "maxlength"   => User::MAX_LENGTH_NAME,
       "placeholder" => $i18n->t("Enter your desired username"),
-      "title"       => $i18n->t("Please enter your desired username in this field."),
     ]);
     $this->username->required();
 
