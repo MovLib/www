@@ -18,7 +18,7 @@
 namespace MovLib\Presentation;
 
 /**
- * Description of LatestAdditionsTrait
+ * Provides secondary menu points and stylesheets for latest additions presentations.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib

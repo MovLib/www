@@ -68,7 +68,7 @@ class Movies extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       }
       $titleSuffix = (new Lists($titleSuffix, ""))->toCommaSeparatedList();
       if (!empty($titleSuffix)) {
-        $titleSuffix = "({$titleSuffix})";
+        $titleSuffix = " ({$titleSuffix})";
       }
       $displayPoster = $this->movies[$i]->getDisplayPoster();
       $items[] = $this->a(
