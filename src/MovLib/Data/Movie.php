@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\MovieImage;
+use \MovLib\Data\MoviePoster;
 use \MovLib\Exception\MovieException;
 
 /**
@@ -168,7 +170,7 @@ class Movie extends \MovLib\Data\Database {
   private $links;
 
   /**
-   * Sorted numeric array containing the movie's lobby card information as <code>\MovLib\Model\MovieImageModel</code>
+   * Sorted numeric array containing the movie's lobby card information as <code>\MovLib\Data\MovieImage</code>
    * objects.
    *
    * @var array
@@ -178,12 +180,12 @@ class Movie extends \MovLib\Data\Database {
   /**
    * The movie's display poster.
    *
-   * @var \MovLib\Model\MoviePosterModel
+   * @var \MovLib\Data\MoviePoster
    */
   private $displayPoster;
 
   /**
-   * Sorted numeric array containing the movie's photos information as <code>\MovLib\Model\MovieImageModel</code>
+   * Sorted numeric array containing the movie's photos information as <code>\MovLib\Data\MovieImage</code>
    * objects.
    *
    * @var array
@@ -191,7 +193,7 @@ class Movie extends \MovLib\Data\Database {
   private $photos;
 
   /**
-   * Sorted numeric array containing the movie's posters as <code>\MovLib\Model\MoviePosterModel</code> objects.
+   * Sorted numeric array containing the movie's posters as <code>\MovLib\Data\MoviePoster</code> objects.
    *
    * @var array
    */
@@ -244,7 +246,7 @@ class Movie extends \MovLib\Data\Database {
    * If neither ID nor the properties are supplied, an empty movie will be created.
    * If the ID is invalid a <code>\MovLib\Exception\MovieException</code> will be thrown.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @param int $id [optional]
    *   The movie's ID to construct this model from.
    * @param array $properties [optional]
@@ -288,7 +290,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's awards.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Numeric array containing the award information as associative array.
    */
@@ -346,7 +348,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's crew.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Numeric array containing the crew information as associative array.
    */
@@ -391,7 +393,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's countries.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Sorted numeric array containing the ID, ISO code and localized name of the country as associative array.
    */
@@ -458,7 +460,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's genres.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Sorted numeric array containing the ID and localized name of the genre as associative array.
    */
@@ -497,7 +499,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's languages.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Numeric array containing the language information as associative array.
    */
@@ -556,7 +558,7 @@ class Movie extends \MovLib\Data\Database {
    * Get the movie's lobby cards.
    *
    * @return array
-   *   Numeric array containing all the movie's lobby cards as <code>\MovLib\Model\MovieImageModel</code> objects.
+   *   Numeric array containing all the movie's lobby cards as <code>\MovLib\Data\MovieImage</code> objects.
    */
   public function getLobbyCards() {
     if (!$this->lobbyCards) {
@@ -566,7 +568,7 @@ class Movie extends \MovLib\Data\Database {
       );
       $c = count($lobbyCardIds);
       for ($i = 0; $i < $c; ++$i) {
-        $this->lobbyCards[] = new MovieImageModel($this->id, "lobby-card", $lobbyCardIds[$i]["id"]);
+        $this->lobbyCards[] = new MovieImage($this->id, "lobby-card", $lobbyCardIds[$i]["id"]);
       }
     }
     return $this->lobbyCards;
@@ -576,7 +578,7 @@ class Movie extends \MovLib\Data\Database {
    * Get the movie's photos.
    *
    * @return array
-   *   Numeric array containing all the movie's photos as <code>\MovLib\Model\MovieImageModel</code> objects.
+   *   Numeric array containing all the movie's photos as <code>\MovLib\Data\MovieImage</code> objects.
    */
   public function getPhotos() {
     if (!$this->photos) {
@@ -586,7 +588,7 @@ class Movie extends \MovLib\Data\Database {
       );
       $c = count($photoIds);
       for ($i = 0; $i < $c; ++$i) {
-        $this->photos[] = new MovieImageModel($this->id, "photo", $photoIds[$i]["id"]);
+        $this->photos[] = new MovieImage($this->id, "photo", $photoIds[$i]["id"]);
       }
     }
     return $this->photos;
@@ -595,13 +597,13 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's display poster.
    *
-   * @return \MovLib\Model\MoviePosterModel
+   * @return \MovLib\Data\MoviePoster
    *   The movie's display poster.
    */
   public function getDisplayPoster() {
     if (!$this->displayPoster) {
       $posterId = $this->select("SELECT `section_id` AS `id` FROM `posters` WHERE `movie_id` = ? ORDER BY rating DESC LIMIT 1", "d", [ $this->id ]);
-      $this->displayPoster = new MoviePosterModel($this->id, empty($posterId[0]["id"]) ? null : $posterId[0]["id"]);
+      $this->displayPoster = new MoviePoster($this->id, empty($posterId[0]["id"]) ? null : $posterId[0]["id"]);
     }
     return $this->displayPoster;
   }
@@ -610,14 +612,14 @@ class Movie extends \MovLib\Data\Database {
    * Get the movie's posters.
    *
    * @return array
-   *   Numeric array containing all movie's posters as <code>\MovLib\Model\MoviePosterModel</code> objects.
+   *   Numeric array containing all movie's posters as <code>\MovLib\Data\MoviePoster</code> objects.
    */
   public function getPosters() {
     if (!$this->posters) {
       $posterIds = $this->select("SELECT `section_id` AS `id` FROM `posters` WHERE `movie_id` = ? ORDER BY `created` DESC", "d", [ $this->id ]);
       $c = count($posterIds);
       for ($i = 0; $i < $c; ++$i) {
-        $this->posters[] = new MoviePosterModel($this->id, $posterIds[$i]["id"]);
+        $this->posters[] = new MoviePoster($this->id, $posterIds[$i]["id"]);
       }
     }
     return $this->posters;
@@ -626,7 +628,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's relationships to other movies.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Associative array containing the relationship information to other movies as associative array.
    */
@@ -641,7 +643,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's styles.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Sorted numeric array containing the ID and localized name of the genre as associative array.
    */
@@ -681,7 +683,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's taglines.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Numeric array containing the tagline information as associative array.
    */
@@ -710,7 +712,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's display title.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The display title of this movie with fallback to the original title.
    */
@@ -719,7 +721,7 @@ class Movie extends \MovLib\Data\Database {
     if (!$this->displayTitle) {
       $displayTitle = $this->select(
         "SELECT `title` AS `title` FROM `movies_titles` WHERE `movie_id` = ? AND is_display_title = 1 AND `language_id` = ? ORDER BY `title` ASC LIMIT 1",
-        "di", [ $this->id, $i18n->getLanguages(I18nModel::KEY_CODE)[$i18n->languageCode][I18nModel::KEY_ID] ]
+        "di", [ $this->id, $i18n->getLanguages(I18n::KEY_CODE)[$i18n->languageCode][I18n::KEY_ID] ]
       );
       $this->displayTitle = empty($displayTitle[0]["title"]) ? $this->originalTitle : $displayTitle[0]["title"];
     }
@@ -729,7 +731,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's titles.
    *
-   * @global \MovLib\Model\I18nModel $i18n
+   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Numeric array containing the title information as associative array.
    */

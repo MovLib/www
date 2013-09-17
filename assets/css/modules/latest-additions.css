@@ -29,18 +29,18 @@ div.container div.row:first-of-type {
   margin-bottom: 20px;
 }
 
-#movies__latest,
-#movies__latest li,
-#movies__latest p {
+#latest-additions,
+#latest-additions li,
+#latest-additions p {
   margin: 0;
   padding: 0;
 }
 
-#movies__latest {
+#latest-additions {
   list-style: none;
 }
 
-#movies__latest a {
+#latest-additions a {
   background-color: #fff;
   border: 0 none;
   color: #353535;
@@ -49,30 +49,30 @@ div.container div.row:first-of-type {
   transition: background-color 0.4s ease-in-out;
 }
 
-#movies__latest a:hover,
-#movies__latest a:focus {
+#latest-additions a:hover,
+#latest-additions a:focus {
   background-color: #d9edf7;
 }
 
-#movies__latest div {
+#latest-additions div {
   height: 100%;
 }
 
-#movies__latest h2 {
+#latest-additions h2 {
   color: #09c;
   font-size: 25px;
   line-height: 1.46;
   margin: 0;
 }
 
-.movies-list__poster {
+.latest-additions__image {
   float: left;
   line-height: 1;
   text-align: center;
   width: 75px;
 }
 
-.movies-list__info {
+.latest-additions__info {
   border-left: 1px solid #c7c7c7;
   margin-left: 92.5px;
   padding-left: 17.5px;
