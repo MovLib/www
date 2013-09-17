@@ -203,14 +203,18 @@ catch (\MovLib\Exception\UnauthorizedException $e) {
   http_response_code(401);
   header("WWW-Authenticate: MovLib location=\"{$i18n->r("/user/login")}\"");
 
-  $alert = new \MovLib\Presentation\Partial\Alert($e->getMessage());
-  $alert->block = true;
-  $alert->title = $e->getTitle();
-  $alert->severity = \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR;
-
   $login = new \MovLib\Presentation\User\Login();
-  $login->alerts .= $alert;
+  $login->alerts .= $e->getMessage();
   $presentation = $login->getPresentation();
+}
+// A presentation can throw a client exception for various client errors including "not found", "gone", "forbidden" and
+// "bad request". This type of exception has to stop the execution of the main application immediately and present an
+// error page to the user, which includes side effects. The delayed methods still have to be executed.
+catch (\MovLib\Exception\Client\AbstractClientException $e) {
+  http_response_code($e->status);
+  $page = new MovLib\Presentation\Page($e->title);
+  $page->alerts .= $e->alert;
+  $presentation = $page->getPresentation();
 }
 // Because of the finally block many exception thrown at this point are not passed to the custom uncaught exception
 // handler we defined before. I don't have hard evidence that the finally block is the reason, but this problem first
