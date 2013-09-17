@@ -37,15 +37,11 @@ location @gallery_upload {
 # ---------------------------------------------------------------------------------------------------------------------- movies
 
 
-location @movies {
-  set $movlib_presenter "Movies";
-  include sites/conf/fastcgi.conf;
-}
-
 location ^~ <?= $r("/movies") ?> {
 
   location = <?= $r("/movies") ?> {
-    try_files $movlib_cache @movies;
+    set $movlib_presenter "Movies";
+    try_files $movlib_cache @php;
   }
 
   location = <?= $r("/movies") ?>/ {
@@ -63,16 +59,6 @@ location ^~ <?= $r("/movies") ?> {
 # ---------------------------------------------------------------------------------------------------------------------- movie
 
 
-location @movie {
-  set $movlib_presenter "Movie";
-  include sites/conf/fastcgi.conf;
-}
-
-location @release {
-  set $movlib_presenter "Release";
-  include sites/conf/fastcgi.conf;
-}
-
 location ^~ <?= $r("/movie") ?> {
 
   location = <?= $r("/movie") ?> {
@@ -84,8 +70,9 @@ location ^~ <?= $r("/movie") ?> {
   }
 
   location ~ ^<?= $r("/movie") ?>/([0-9]+)$ {
+    set $movlib_presenter "Movie\\Show";
     set $movlib_movie_id $1;
-    try_files $movlib_cache @movie;
+    try_files $movlib_cache @php;
   }
 
   #
@@ -177,9 +164,10 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ ^<?= $r("/movie/{0}/release", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
+    set $movlib_presenter "Release";
     set $movlib_movie_id $1;
     set $movlib_release_id $2;
-    try_files $movlib_cache @release;
+    try_files $movlib_cache @php;
   }
 
   return 404;
@@ -189,15 +177,11 @@ location ^~ <?= $r("/movie") ?> {
 # ---------------------------------------------------------------------------------------------------------------------- persons
 
 
-location @persons {
-  set $movlib_presenter "Persons";
-  include sites/conf/fastcgi.conf;
-}
-
 location ^~ <?= $r("/persons") ?> {
 
   location = <?= $r("/persons") ?> {
-    try_files $movlib_cache @persons;
+    set $movlib_presenter "Persons";
+    try_files $movlib_cache @php;
   }
 
   location = <?= $r("/persons") ?>/ {
@@ -215,11 +199,6 @@ location ^~ <?= $r("/persons") ?> {
 # ---------------------------------------------------------------------------------------------------------------------- person
 
 
-location @person {
-  set $movlib_presenter "Person";
-  include sites/conf/fastcgi.conf;
-}
-
 location ^~ <?= $r("/person") ?> {
 
   location = <?= $r("/person") ?> {
@@ -231,8 +210,9 @@ location ^~ <?= $r("/person") ?> {
   }
 
   location ~ ^<?= $r("/person") ?>/([0-9]+)$ {
+    set $movlib_presenter "Person";
     set $movlib_person_id $1;
-    try_files $movlib_cache @person;
+    try_files $movlib_cache @php;
   }
 
   location ~ ^<?= $r("/person/{0}/photos", [ "([0-9]+)" ]) ?>$ {
@@ -249,10 +229,6 @@ location ^~ <?= $r("/person") ?> {
 # Most user locations to not utilize the cache because they are only accessible for logged in users.
 
 
-location @user {
-  include sites/conf/fastcgi.conf;
-}
-
 location ^~ <?= $r("/user") ?> {
 
   location = <?= $r("/user") ?> {
@@ -262,7 +238,7 @@ location ^~ <?= $r("/user") ?> {
 
   location = <?= $r("/user/login") ?> {
     set $movlib_presenter "User\\Login";
-    try_files $movlib_cache @user;
+    try_files $movlib_cache @php;
   }
 
   location = <?= $r("/user/sign-out") ?> {
@@ -277,7 +253,7 @@ location ^~ <?= $r("/user") ?> {
 
   location = <?= $r("/user/registration") ?> {
     set $movlib_presenter "User\\Registration";
-    try_files $movlib_cache @user;
+    try_files $movlib_cache @php;
   }
 
   location = <?= $r("/user/account-settings") ?> {
@@ -313,7 +289,7 @@ location ^~ <?= $r("/user") ?> {
   location ~ ^<?= $r("/user") ?>/(.+)$ {
     set $movlib_presenter "User\\Profile";
     set $movlib_user_name $1;
-    try_files $movlib_cache @user;
+    try_files $movlib_cache @php;
   }
 
   return 404;
