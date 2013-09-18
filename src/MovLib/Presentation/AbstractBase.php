@@ -147,7 +147,7 @@ abstract class AbstractBase {
   }
 
   /**
-   * Get an image.
+   * Get the image.
    *
    * @param \MovLib\Data\AbstractImage $image
    *   An instance of <code>AbstractImage</code>.
@@ -157,10 +157,14 @@ abstract class AbstractBase {
    *   Additional attributes that should be applied to the image. Please note that <code>"width"</code>,
    *   <code>"height"</code> and <code>"src"</code> are always set and overriden if set before. This is to ensure that
    *   the image really matches the desired style.
+   * @param array $route [optional]
+   *   The route for the anchor to surround the image with.
+   * @param array $anchorAttributes [optional]
+   *   The additional attributes for the anchor.
    * @return string
    *   The image.
    */
-  protected final function getImage($image, $style, array $attributes = null) {
+  protected final function getImage($image, $style, array $attributes = null, $route = null, array $anchorAttributes = null) {
     if ($image->imageExists === true) {
       if (!isset($attributes["alt"])) {
         $attributes["alt"] = "";
@@ -169,7 +173,12 @@ abstract class AbstractBase {
       $attributes["width"]  = $data->width;
       $attributes["height"] = $data->height;
       $attributes["src"]    = $data->uri;
-      return "<img{$this->expandTagAttributes($attributes)}>";
+      $image = "<img{$this->expandTagAttributes($attributes)}>";
+      if ($route) {
+        $anchorAttributes["href"] = $route;
+        $image = "<a{$this->expandTagAttributes($anchorAttributes)}>{$image}</a>";
+      }
+      return $image;
     }
     return "no image";
   }

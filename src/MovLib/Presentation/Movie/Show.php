@@ -66,7 +66,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     global $i18n;
     try {
       $this->movieModel = new Movie($_SERVER["MOVIE_ID"]);
-      $this->title = $this->movieModel->getDisplayTitle();
+      $this->title      = $this->movieModel->getDisplayTitle();
       if (isset($this->movieModel->year)) {
         $this->pageTitle = "{$this->title} <small>({$this->movieModel->year})</small>";
         $this->title .= " ({$this->movieModel->year})";
@@ -87,9 +87,11 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         $posterAlt = $i18n->t("{0} movie poster.", [ $this->title ]);
       }
       $this->headingBefore = "<div class='row'><div class='span span--9' id='movie-show__header'>";
-      $this->headingAfter = "{$this->getHeaderAdditions()}</div>{$this->a(
+      $this->headingAfter = "{$this->getHeaderAdditions()}</div>{$this->getImage(
+        $displayPoster,
+        MoviePoster::IMAGESTYLE_LARGE_FIXED_WIDTH,
+        [ "alt" => $posterAlt ],
         $i18n->r("/movie/{0}/posters", [ $this->movieModel->id ]),
-        $this->getImage($displayPoster, MoviePoster::IMAGESTYLE_LARGE_FIXED_WIDTH, [ "alt" => $posterAlt ]),
         [ "class" => "span span--3", "id" => "movie-show__header__poster" ]
       )}</div>";
     }
@@ -109,11 +111,13 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
           /** @todo Provide commit message with history implementation. */
           "<p>" .
             $i18n->t(
-              "The movie has been deleted. A look at the edit {0}history{1} or {2}discussion{1} will explain why that is the case. Please discuss with the person responsible for this deletion before you restore this entry from its {0}history{1}.",
+              "The movie has been deleted. A look at the edit {0}history{2} or {1}discussion{2} will explain why that " .
+              "is the case. Please discuss with the person responsible for this deletion before you restore this entry " .
+              "from its {0}history{2}.",
               [
                 "<a href='{$i18n->r("/movie/{0}/history", [ $this->movieModel->id ])}'>",
-                "</a>",
                 "<a href='{$i18n->r("/movie/{0}/discussion", [ $this->movieModel->id ])}'>",
+                "</a>",
               ]
             ) .
           "</p>"
@@ -131,9 +135,9 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     // ----------------------------------------------------------------------------------------------------------------- Synopsis
 
     $contents[] = [
-      "id"      =>  "synopsis",
-      "title"   =>  $i18n->t("Synopsis"),
-      "content" =>  $this->movieModel->synopsis
+      "id"      => "synopsis",
+      "title"   => $i18n->t("Synopsis"),
+      "content" => $this->movieModel->synopsis
     ];
 
     // ----------------------------------------------------------------------------------------------------------------- Directors
@@ -144,8 +148,8 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       $directors[$i] = $this->a($i18n->r("/person/{0}", [ $directors[$i]["id"] ]), $directors[$i]["name"]);
     }
     $contents[] = [
-      "id"      =>  "directors",
-      "title"   =>  $i18n->t("Directors"),
+      "id"      => "directors",
+      "title"   => $i18n->t("Directors"),
       "content" => (new Lists($directors, ""))->toHtmlList(),
     ];
 
