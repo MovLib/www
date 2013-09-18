@@ -88,36 +88,4 @@ class StringTest extends PHPUnit_Framework_TestCase {
     $this->assertEquals($expected, String::normalizeLineFeeds($testString));
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Wordwrap
-
-
-  public static function wordwrapTestProvider() {
-    return [
-      [ "âââ_ñññ_ëëë_ôôô_æææ_øøø_äää_üüü_ööö", "âââ_ñññ_ëëë_ôôô_æææ_øøø_äää_üüü_ööö", 10, false ],
-      [ "âââ_ñññ_ëë\në_ôôô_æææ_\nøøø_äää_üü\nü_ööö", "âââ_ñññ_ëëë_ôôô_æææ_øøø_äää_üüü_ööö", 10, true ],
-      [ "âââ ñññ\nëëë ôôô\næææ øøø\näää üüü\nööö", "âââ ñññ ëëë ôôô æææ øøø äää üüü ööö", 10, false ],
-      [ "âââ ñññ\nëëë ôôô\næææ øøø\näää üüü\nööö", "âââ ñññ ëëë ôôô æææ øøø äää üüü ööö", 10, true ],
-      [ "Iñtërnâtiônàlizætiøn_and_then_the_quick_brown_fox_jumped_overly_the_lazy_dog.", "Iñtërnâtiônàlizætiøn_and_then_the_quick_brown_fox_jumped_overly_the_lazy_dog.", 10, false ],
-      [ "Iñtërnâtiô\nnàlizætiøn\n_and_then_\nthe_quick_\nbrown_fox_\njumped_ove\nrly_the_la\nzy_dog.", "Iñtërnâtiônàlizætiøn_and_then_the_quick_brown_fox_jumped_overly_the_lazy_dog.", 10, true ],
-      [
-        "Iñtërnâtiônàlizætiøn_and_then_the_quick_brown_fox_jumped_overly_the_lazy_dog\nand one\nday the\nlazy dog\nhumped the\npoor fox\ndown until\nshe died.",
-        "Iñtërnâtiônàlizætiøn_and_then_the_quick_brown_fox_jumped_overly_the_lazy_dog and one day the lazy dog humped the poor fox down until she died.",
-        10, false
-      ],
-      [
-        "Iñtërnâtiô\nnàlizætiøn\n_and_then_\nthe_quick_\nbrown_fox_\njumped_ove\nrly_the_la\nzy_dog and\none day\nthe lazy\ndog humped\nthe poor\nfox down\nuntil she\ndied.",
-        "Iñtërnâtiônàlizætiøn_and_then_the_quick_brown_fox_jumped_overly_the_lazy_dog and one day the lazy dog humped the poor fox down until she died.",
-        10, true
-      ],
-    ];
-  }
-
-  /**
-   * @dataProvider wordwrapTestProvider
-   */
-  public function testWordwrap($expected, $string, $width, $cut) {
-    $this->assertEquals($expected, String::wordwrap($string, $width, $cut));
-  }
-
 }
