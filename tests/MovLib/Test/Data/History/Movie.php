@@ -65,7 +65,8 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testGetShortName() {
-    $getShortName = new ReflectionMethod("\MovLib\Data\History\Movie", "getShortName");
+    $movie = new Movie(2);
+    $getShortName = new ReflectionMethod($movie, "getShortName");
     $getShortName->setAccessible(true);
     $this->assertEquals("movie", $getShortName->invoke(new Movie(2)));
   }
@@ -80,7 +81,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $movie = new Movie(2);
     $movie->createRepository();
 
-    $hideRepository = new ReflectionMethod("\MovLib\Data\History\Movie", "hideRepository");
+    $hideRepository = new ReflectionMethod($movie, "hideRepository");
     $hideRepository->setAccessible(true);
     $hideRepository->invoke($movie);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/.2");
@@ -94,7 +95,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $movie = new Movie(2);
     $movie->createRepository();
 
-    $hideRepository = new ReflectionMethod("\MovLib\Data\History\Movie", "hideRepository");
+    $hideRepository = new ReflectionMethod($movie, "hideRepository");
     $hideRepository->setAccessible(true);
     $hideRepository->invoke($movie);
     $hideRepository->invoke($movie);
@@ -105,12 +106,12 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $movie->createRepository();
 
     // hide
-    $hideRepository = new ReflectionMethod("\MovLib\Data\History\Movie", "hideRepository");
+    $hideRepository = new ReflectionMethod($movie, "hideRepository");
     $hideRepository->setAccessible(true);
     $hideRepository->invoke($movie);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/.2");
     //unhide
-    $unhideRepository = new ReflectionMethod("\MovLib\Data\History\Movie", "unhideRepository");
+    $unhideRepository = new ReflectionMethod($movie, "unhideRepository");
     $unhideRepository->setAccessible(true);
     $unhideRepository->invoke($movie);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2");
@@ -124,7 +125,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $movie = new Movie(2);
     $movie->createRepository();
 
-    $unhideRepository = new ReflectionMethod("\MovLib\Data\History\Movie", "unhideRepository");
+    $unhideRepository = new ReflectionMethod($movie, "unhideRepository");
     $unhideRepository->setAccessible(true);
     $unhideRepository->invoke($movie);
   }
@@ -133,7 +134,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $movie = new Movie(2);
     $movie->startEditing();
 
-    $reflectionClass = new ReflectionClass('\MovLib\Data\History\Movie');
+    $reflectionClass = new ReflectionClass($movie);
     $reflectionProperty = $reflectionClass->getProperty('commitHash');
     $reflectionProperty->setAccessible(true);
     $this->assertEquals(
@@ -184,19 +185,19 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $movie->createRepository();
 
     // reflected properties
-    $reflectionClass = new ReflectionClass('\MovLib\Data\History\Movie');
+    $reflectionClass = new ReflectionClass($movie);
     $reflectionProperty = $reflectionClass->getProperty('path');
     $reflectionProperty->setAccessible(true);
     $path = $reflectionProperty->getValue($movie);
 
     // reflected methodes
-    $stageAllFiles = new ReflectionMethod("\MovLib\Data\History\Movie", "stageAllFiles");
+    $stageAllFiles = new ReflectionMethod($movie, "stageAllFiles");
     $stageAllFiles->setAccessible(true);
-    $unstageFiles = new ReflectionMethod("\MovLib\Data\History\Movie", "unstageFiles");
+    $unstageFiles = new ReflectionMethod($movie, "unstageFiles");
     $unstageFiles->setAccessible(true);
-    $resetFiles = new ReflectionMethod("\MovLib\Data\History\Movie", "resetFiles");
+    $resetFiles = new ReflectionMethod($movie, "resetFiles");
     $resetFiles->setAccessible(true);
-    $commitFiles = new ReflectionMethod("\MovLib\Data\History\Movie", "commitFiles");
+    $commitFiles = new ReflectionMethod($movie, "commitFiles");
     $commitFiles->setAccessible(true);
 
     // write files
@@ -251,7 +252,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $movie = new Movie(2);
     $movie->createRepository();
 
-    $commitFiles = new ReflectionMethod("\MovLib\Data\History\Movie", "commitFiles");
+    $commitFiles = new ReflectionMethod($movie, "commitFiles");
     $commitFiles->setAccessible(true);
     $commitFiles->invoke($movie, "movie created without files");
   }
@@ -260,11 +261,11 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $movie = new Movie(2);
     $movie->createRepository();
 
-    $stageAllFiles = new ReflectionMethod("\MovLib\Data\History\Movie", "stageAllFiles");
+    $stageAllFiles = new ReflectionMethod($movie, "stageAllFiles");
     $stageAllFiles->setAccessible(true);
-    $getChangedFiles = new ReflectionMethod("\MovLib\Data\History\Movie", "getChangedFiles");
+    $getChangedFiles = new ReflectionMethod($movie, "getChangedFiles");
     $getChangedFiles->setAccessible(true);
-    $commitFiles = new ReflectionMethod("\MovLib\Data\History\Movie", "commitFiles");
+    $commitFiles = new ReflectionMethod($movie, "commitFiles");
     $commitFiles->setAccessible(true);
 
     $movie->writeFiles(["original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42]);
@@ -282,20 +283,65 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testGetLastCommits() {
-    // @todo: implement
+    $movie = new Movie(2);
+    $movie->createRepository();
+
+    $stageAllFiles = new ReflectionMethod($movie, "stageAllFiles");
+    $stageAllFiles->setAccessible(true);
+    $commitFiles = new ReflectionMethod($movie, "commitFiles");
+    $commitFiles->setAccessible(true);
+    $getLastCommits = new ReflectionMethod($movie, "getLastCommits");
+    $getLastCommits->setAccessible(true);
+
+    $movie->writeFiles(["original_title" => "The foobar is a lie"]);
+    $stageAllFiles->invoke($movie);
+    $commitFiles->invoke($movie, "initial commit");
+
+    $movie->writeFiles(["year" => 2001]);
+    $stageAllFiles->invoke($movie);
+    $commitFiles->invoke($movie, "second commit");
+
+    $movie->writeFiles(["runtime" => 300]);
+    $stageAllFiles->invoke($movie);
+    $commitFiles->invoke($movie, "third commit");
+
+    $commits = $getLastCommits->invoke($movie);
+    $this->assertEquals("third commit", $commits[0]["subject"]);
+    $this->assertEquals("second commit", $commits[1]["subject"]);
+    $this->assertEquals("initial commit", $commits[2]["subject"]);
+
+    $oneCommit = $getLastCommits->invoke($movie, 1);
+    $this->assertEquals("third commit", $oneCommit[0]["subject"]);
+    $this->assertCount(1, $oneCommit);
   }
 
   public function testGetLastCommitHash() {
-    // @todo: implement
+    $movie = new Movie(2);
+    $movie->createRepository();
+
+    $stageAllFiles = new ReflectionMethod($movie, "stageAllFiles");
+    $stageAllFiles->setAccessible(true);
+    $commitFiles = new ReflectionMethod($movie, "commitFiles");
+    $commitFiles->setAccessible(true);
+    $getLastCommits = new ReflectionMethod($movie, "getLastCommits");
+    $getLastCommits->setAccessible(true);
+    $getLastCommitHash = new ReflectionMethod($movie, "getLastCommitHash");
+    $getLastCommitHash->setAccessible(true);
+
+    $movie->writeFiles(["original_title" => "The foobar is a lie"]);
+    $stageAllFiles->invoke($movie);
+    $commitFiles->invoke($movie, "initial commit");
+
+    $this->assertEquals($getLastCommits->invoke($movie)[0]["hash"], $getLastCommitHash->invoke($movie));
   }
 
   public function testGetDiffAsHTML() {
     $movie = new Movie(2);
     $movie->createRepository();
 
-    $stageAllFiles = new ReflectionMethod("\MovLib\Data\History\Movie", "stageAllFiles");
+    $stageAllFiles = new ReflectionMethod($movie, "stageAllFiles");
     $stageAllFiles->setAccessible(true);
-    $commitFiles = new ReflectionMethod("\MovLib\Data\History\Movie", "commitFiles");
+    $commitFiles = new ReflectionMethod($movie, "commitFiles");
     $commitFiles->setAccessible(true);
 
     $movie->writeFiles(["original_title" => "The foobar is a lie"]);
@@ -310,6 +356,15 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
       "The<span class='red'>foobar</span><span class='green'>bar</span> is<span class='green'>not</span> a lie",
       $movie->getDiffasHTML("HEAD", "HEAD^1", "original_title")
     );
+  }
+
+  /**
+   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedExceptionMessage startEditing() have to be called bevore saveHistory()!
+   */
+  public function testSaveHistoryWithoutStartEditing() {
+    $movie = new Movie(2);
+    $movie->saveHistory([], "initial commit");
   }
 
 }

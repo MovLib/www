@@ -304,34 +304,39 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     if (!isset($this->commitHash)) {
       throw new HistoryException("startEditing() have to be called bevore saveHistory()!");
     }
+
     $this->hideRepository();
     $this->writeFiles($entitiy);
     $this->stageAllFiles();
-    if ($this->commitHash != $this->getLastCommitHash()) {
-      // If someone else commited in the meantime find intersecting files.
-      $changedSinceStartEditing = $this->getChangedFiles("HEAD", $this->commitHash);
-      $changedFiles = $this->getChangedFiles();
-      $intersection = array_intersect($changedFiles, $changedSinceStartEditing);
-      if (empty($intersection)) {
-        // If there are no intersecting files we can commit normaly.
+
+    try {
+      if ($this->commitHash != $this->getLastCommitHash()) {
+        // If someone else commited in the meantime find intersecting files.
+        $changedSinceStartEditing = $this->getChangedFiles("HEAD", $this->commitHash);
+        $changedFiles = $this->getChangedFiles();
+        $intersection = array_intersect($changedFiles, $changedSinceStartEditing);
+        if (empty($intersection)) {
+          // If there are no intersecting files we can commit normaly.
+          $this->commitFiles($message);
+        } else {
+          // Else we reset the intersecting files.
+          $this->unstageFiles($intersection);
+          $this->resetFiles($intersection);
+          // If there are files left which can be commited do it.
+          if (!empty($this->getChangedFiles())) {
+            $this->commitFiles($message);
+          }
+          // @todo: show intersection to user instead of this exception.
+          throw new HistoryException("Someone else edited the same information about the {$this->type}!");
+        }
+      } else {
         $this->commitFiles($message);
       }
-      else {
-        // Else we reset the intersecting files.
-        $this->unstageFiles($intersection);
-        $this->resetFiles($intersection);
-        // If there are files left which can be commited do it.
-        if (!empty($this->getChangedFiles())) {
-          $this->commitFiles($message);
-        }
-        // @todo: show intersection to user instead of this exception.
-        throw new HistoryException("Someone else edited the same information about the {$this->type}!");
-      }
     }
-    else {
-      $this->commitFiles($message);
+    finally {
+      $this->unhideRepository();
     }
-    $this->unhideRepository();
+
     return $this->getLastCommitHash();
   }
 

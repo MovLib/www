@@ -39,13 +39,8 @@ class Movie extends AbstractHistory {
    *   Associative array with data to store.
    * @return this
    * @throws \MovLib\Exception\FileSystemException
-   * @throws \MovLib\Exception\HistoryException
    */
   public function writeFiles(array $data) {
-    if(empty($data)) {
-      throw new HistoryException("Data cannot be empty!");
-    }
-
     foreach (["original_title", "runtime", "year"] as $offset) {
       if (isset($data[$offset])) {
         $this->writeToFile($offset, $data[$offset]);
