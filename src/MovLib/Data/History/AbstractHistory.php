@@ -57,13 +57,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   protected $path;
 
   /**
-   * Flag which indicates if repository is hidden to prevent access.
-   *
-   * @var boolean
-   */
-  private $repositoryHidden = false;
-
-  /**
    * Entity's short name.
    *
    * @var string
@@ -91,17 +84,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
 
     $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
   }
-
-  /**
-   * Destroy the history model and rename repository if necessary.
-   */
-  public function __destruct() {
-    parent::__destruct();
-    if ($this->repositoryHidden) {
-      $this->unhideRepository();
-    }
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
@@ -143,8 +125,9 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    */
   private function unstageFiles(array $files) {
     $filesToUnstage = implode(" ", $files);
-    exec("cd {$this->path} && git reset HEAD {$filesToUnstage}", $output, $returnVar);
-    if ($returnVar !== 1) { // not 0!
+    exec("cd {$this->path} && git reset --quiet HEAD {$filesToUnstage}", $output, $returnVar);
+    if ($returnVar !== 0) {
+      var_dump($output);
       throw new HistoryException("Error unstaging files!");
     }
     return $this;
@@ -178,14 +161,15 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    */
   private function commitFiles($message) {
     global $session;
+
+    if (empty($this->getDirtyFiles())) {
+      return $this;
+      //throw new HistoryException("No changed files to commit");
+    }
+
     exec("cd {$this->path} && git commit --author='{$session->userId} <>' -m '{$message}'", $output, $returnVar);
     if ($returnVar !== 0) {
-      if (empty($this->getChangedFiles())) {
-        throw new HistoryException("No changed files to commit");
-      }
-      else {
-        throw new HistoryException("Error commiting changes");
-      }
+      throw new HistoryException("Error commiting changes");
     }
     return $this;
   }
@@ -232,18 +216,33 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Get the file names of files that have changed.
    *
-   * @param string $head [optional]
+   * @param string $head
    *   Hash of git commit (newer one).
-   * @param sting $ref [optional]
+   * @param sting $ref
    *   Hash of git commit (older one).
    * @return array
    *   Numeric array of changed files.
    * @throws \MovLib\Exception\HistoryException
    */
-  private function getChangedFiles($head = null, $ref = null) {
+  private function getChangedFiles($head, $ref) {
     exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output, $returnVar);
     if ($returnVar !== 0) {
       throw new HistoryException("There was an error locating changed files");
+    }
+    return $output;
+  }
+
+  /**
+   * Get the file names of files that are dirty.
+   *
+   * @return array
+   *   Numeric array of changed files.
+   * @throws \MovLib\Exception\HistoryException
+   */
+  private function getDirtyFiles() {
+    exec("cd {$this->path} && git diff --name-only HEAD && git ls-files --others", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new HistoryException("There was an error locating dirty files");
     }
     return $output;
   }
@@ -313,29 +312,28 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       if ($this->commitHash != $this->getLastCommitHash()) {
         // If someone else commited in the meantime find intersecting files.
         $changedSinceStartEditing = $this->getChangedFiles("HEAD", $this->commitHash);
-        $changedFiles = $this->getChangedFiles();
+        $changedFiles = $this->getDirtyFiles();
         $intersection = array_intersect($changedFiles, $changedSinceStartEditing);
-        if (empty($intersection)) {
-          // If there are no intersecting files we can commit normaly.
-          $this->commitFiles($message);
-        } else {
-          // Else we reset the intersecting files.
+        // we reset the intersecting files.
+        if (!empty($intersection)) {
           $this->unstageFiles($intersection);
           $this->resetFiles($intersection);
-          // If there are files left which can be commited do it.
-          if (!empty($this->getChangedFiles())) {
-            $this->commitFiles($message);
-          }
+          $this->commitFiles($message);
           // @todo: show intersection to user instead of this exception.
           throw new HistoryException("Someone else edited the same information about the {$this->type}!");
         }
-      } else {
+        // If there are files left which can be commited do it.
+        $this->commitFiles($message);
+      }
+      else {
         $this->commitFiles($message);
       }
     }
-    finally {
+    catch (ErrorException $e) {
       $this->unhideRepository();
+      throw $e;
     }
+    $this->unhideRepository();
 
     return $this->getLastCommitHash();
   }
@@ -349,7 +347,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    */
   private function hideRepository() {
     $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/.{$this->id}";
-    if ($this->repositoryHidden || is_dir($newPath)) {
+    if (is_dir($newPath)) {
       throw new HistoryException("Repository already hidden");
     }
     exec("mv {$this->path} {$newPath}", $output, $returnVar);
@@ -357,7 +355,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       throw new FileSystemException("Error while renaming repository");
     }
     else {
-      $this->repositoryHidden = true;
       $this->path = $newPath;
     }
     return $this;
@@ -372,7 +369,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    */
   private function unhideRepository() {
     $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
-    if ($this->repositoryHidden === false || is_dir($newPath)) {
+    if (is_dir($newPath)) {
       throw new HistoryException("Repository not hidden");
     }
     exec("mv {$this->path} {$newPath}", $output, $returnVar);
@@ -380,7 +377,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       throw new FileSystemException("Error while renaming repository");
     }
     else {
-      $this->repositoryHidden = false;
       $this->path = $newPath;
     }
     return $this;
@@ -434,8 +430,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Create GIT repository.
    *
+   * Creates a directory in which a empty git repository is created.
+   * Then an empty initial commit is made and the commit hash is stored in the database.
+   *
    * @return this
    * @throws \MovLib\Exception\HistoryException
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function createRepository() {
     if (is_dir(($this->path)) === false && mkdir($this->path, 0777, true) === false) {
@@ -445,6 +445,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     if ($returnVar !== 0) {
       throw new HistoryException("Could not initialize GIT repository.");
     }
+    exec("cd {$this->path} && git commit --allow-empty --author='1 <>' -m 'initial commit'", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new HistoryException("Error while initial commit!");
+    }
+
+    $this->query("UPDATE `movies` SET `commit` = ? WHERE `movie_id` = ?", "si", [ $this->getLastCommitHash(), $this->id ]);
 
     return $this;
   }

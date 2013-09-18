@@ -34,14 +34,26 @@ use \ReflectionMethod;
 class MovieTest extends \PHPUnit_Framework_TestCase {
 
   /**
+   * Database
+   *
+   * @var mysqli
+   */
+  static $db;
+
+  /**
    * This methode is called once before all tests.
    */
   public static function setUpBeforeClass() {
-    $db = new mysqli();
-    $db->real_connect();
-    $db->select_db($GLOBALS["movlib"]["default_database"]);
-    $db->query("UPDATE movies SET commit = 'b006169990b07af17d198f6a37efb324ced95fb3' WHERE movie_id = 2");
-    $db->close();
+    static::$db = new mysqli();
+    static::$db->real_connect();
+    static::$db->select_db($GLOBALS["movlib"]["default_database"]);
+  }
+
+  /**
+   * This methode is called once after all tests.
+   */
+  public static function tearDownAfterClass() {
+    static::$db->close();
   }
 
   /**
@@ -132,17 +144,19 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
   public function testStartEditing() {
     $movie = new Movie(2);
+    static::$db->query("UPDATE `movies` SET `commit` = 'b006169990b07af17d198f6a37efb324ced95fb3' WHERE `movie_id` = 2");
+
     $movie->startEditing();
 
     $reflectionClass = new ReflectionClass($movie);
     $reflectionProperty = $reflectionClass->getProperty('commitHash');
     $reflectionProperty->setAccessible(true);
+    $this->assertNotNull($reflectionProperty->getValue($movie));
     $this->assertEquals(
       "b006169990b07af17d198f6a37efb324ced95fb3",
       $reflectionProperty->getValue($movie)
     );
   }
-
 
   public function testWriteFiles() {
     $movie = new Movie(2);
@@ -206,16 +220,16 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     // stage all files
     $stageAllFiles->invoke($movie);
     exec("cd {$path} && git status", $output);
-    $this->assertEquals($output[4], "# Changes to be committed:");
-    $this->assertEquals($output[7], "#	new file:   original_title");
-    $this->assertEquals($output[8], "#	new file:   runtime");
-    $this->assertEquals($output[9], "#	new file:   year");
+    $this->assertEquals("# Changes to be committed:", $output[1]);
+    $this->assertEquals("#	new file:   original_title", $output[4]);
+    $this->assertEquals("#	new file:   runtime", $output[5]);
+    $this->assertEquals("#	new file:   year", $output[6]);
 
     // commit all staged files
     $commitFiles->invoke($movie, "movie created");
     unset($output);
     exec("cd {$path} && git status", $output);
-    $this->assertEquals($output[1], "nothing to commit (working directory clean)");
+    $this->assertEquals("nothing to commit (working directory clean)", $output[1]);
 
     // update files
     $movie->writeFiles(["original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42]);
@@ -224,9 +238,9 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $stageAllFiles->invoke($movie);
     unset($output);
     exec("cd {$path} && git status", $output);
-    $this->assertEquals($output[1], "# Changes to be committed:");
-    $this->assertEquals($output[4], "#	modified:   original_title");
-    $this->assertEquals($output[5], "#	modified:   year");
+    $this->assertEquals("# Changes to be committed:", $output[1]);
+    $this->assertEquals("#	modified:   original_title", $output[4]);
+    $this->assertEquals("#	modified:   year", $output[5]);
 
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2001);
 
@@ -234,27 +248,14 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $unstageFiles->invoke($movie, ["year"]);
     unset($output);
     exec("cd {$path} && git status", $output);
-    $this->assertEquals($output[6], "# Changes not staged for commit:");
-    $this->assertEquals($output[10], "#	modified:   year");
+    $this->assertEquals("# Changes not staged for commit:", $output[6]);
+    $this->assertEquals("#	modified:   year", $output[10]);
 
     // reset year
     $resetFiles->invoke($movie, ["year"]);
     unset($output);
     exec("cd {$path} && git status", $output);
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2000);
-  }
-
-  /**
-   * @expectedException        \MovLib\Exception\HistoryException
-   * @expectedExceptionMessage No changed files to commit
-   */
-  public function testCommitWithoutChangedFiles() {
-    $movie = new Movie(2);
-    $movie->createRepository();
-
-    $commitFiles = new ReflectionMethod($movie, "commitFiles");
-    $commitFiles->setAccessible(true);
-    $commitFiles->invoke($movie, "movie created without files");
   }
 
   public function testGetChangedFiles() {
@@ -265,6 +266,8 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $stageAllFiles->setAccessible(true);
     $getChangedFiles = new ReflectionMethod($movie, "getChangedFiles");
     $getChangedFiles->setAccessible(true);
+    $getDirtyFiles = new ReflectionMethod($movie, "getDirtyFiles");
+    $getDirtyFiles->setAccessible(true);
     $commitFiles = new ReflectionMethod($movie, "commitFiles");
     $commitFiles->setAccessible(true);
 
@@ -274,7 +277,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
     // with unstaged files
     $movie->writeFiles(["original_title" => "The foobar is a lie", "year" => 2002, "runtime" => 42]);
-    $this->assertEquals("original_title year", implode(" ", $getChangedFiles->invoke($movie)));
+    $this->assertEquals("original_title year", implode(" ", $getDirtyFiles->invoke($movie)));
 
     // with 2 commits
     $stageAllFiles->invoke($movie);
@@ -332,7 +335,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $stageAllFiles->invoke($movie);
     $commitFiles->invoke($movie, "initial commit");
 
-    $this->assertEquals($getLastCommits->invoke($movie)[0]["hash"], $getLastCommitHash->invoke($movie));
+    $this->assertEquals($getLastCommitHash->invoke($movie), $getLastCommits->invoke($movie)[0]["hash"]);
   }
 
   public function testGetDiffAsHTML() {
@@ -365,6 +368,55 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   public function testSaveHistoryWithoutStartEditing() {
     $movie = new Movie(2);
     $movie->saveHistory([], "initial commit");
+  }
+
+  public function testSaveHistory() {
+    $movie = new Movie(2);
+    $movie->createRepository();
+    $movie->startEditing();
+
+    $movie->saveHistory(["original_title" => "The foobar is a lie"], "initial commit");
+
+    $this->assertFileExists(("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title"));
+  }
+
+  /**
+   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedExceptionMessage Someone else edited the same information about the movie!
+   */
+  public function testSaveHistoryIfSomeoneElseAlreadyChangedTheSameInformation() {
+    $movieUserOne = new Movie(2);
+    $movieUserTwo = new Movie(2);
+    $movieUserOne->createRepository();
+
+    $movieUserOne->startEditing();
+    $movieUserTwo->startEditing();
+
+    $commitHash = $movieUserOne->saveHistory(["original_title" => "The foobar is a lie"], "initial commit");
+    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+
+    $movieUserTwo->saveHistory(["original_title" => "The bar is not a lie"], "initial commit");
+  }
+
+  /**
+   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedExceptionMessage Someone else edited the same information about the movie!
+   */
+  public function testSaveNotIntersectingFieldsIfSomeoneElseAlreadyChangedAnythingElse() {
+    $movieUserOne = new Movie(2);
+    $movieUserTwo = new Movie(2);
+    $movieUserOne->createRepository();
+
+    $movieUserOne->startEditing();
+    $movieUserTwo->startEditing();
+
+    $commitHash = $movieUserOne->saveHistory(["original_title" => "The foobar is a lie", "year" => 2000], "initial commit");
+    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2000);
+
+    $movieUserTwo->saveHistory(["original_title" => "The bar is not a lie", "year" => 2001], "initial commit");
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2001);
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title", "The foobar is a lie");
   }
 
 }
