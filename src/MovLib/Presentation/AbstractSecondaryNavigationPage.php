@@ -30,15 +30,19 @@ use \MovLib\Presentation\Partial\Navigation;
  */
 abstract class AbstractSecondaryNavigationPage extends \MovLib\Presentation\Page {
 
+
+  protected $navigation;
+
   /**
    * @inheritdoc
    */
   public function getContent() {
     global $i18n;
-    $navigation = new Navigation($this->id, $i18n->t("Secondary Navigation"), $this->getSecondaryNavigationMenuitems());
-    $navigation->attributes["class"] = "secondary-navigation";
-    $navigation->unorderedList = true; // We need the unordered list for styling, check the CSS.
-    return "<div class='container'><div class='row'><aside class='span span--3' role='complementary'>{$navigation}</aside><div class='span span--9'>{$this->getPageContent()}</div></div></div>";
+    $this->navigation = new Navigation($this->id, $i18n->t("Secondary Navigation"), $this->getSecondaryNavigationMenuitems());
+    $this->navigation->attributes["class"] = "secondary-navigation";
+    $this->navigation->unorderedList = true; // We need the unordered list for styling, check the CSS.
+    $pageContent = $this->getPageContent();
+    return "<div class='container'><div class='row'><aside class='span span--3' role='complementary'>{$this->navigation}</aside><div class='span span--9'>{$pageContent}</div></div></div>";
   }
 
   /**
