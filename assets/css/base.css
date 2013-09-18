@@ -467,6 +467,10 @@ a.active[href="#"] {
   cursor: default;
 }
 
+a.img {
+  border: 0 none;
+}
+
 
 /** ==== PARAGRAPHs ====================================================================================================
  * The hr, p, and small tags are considered paragraph elements and should be used as such. For more information have a
