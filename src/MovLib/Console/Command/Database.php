@@ -18,9 +18,6 @@
 namespace MovLib\Console\Command;
 
 use \Locale;
-use \MovLib\Exception\AbstractException;
-use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\FileSystemException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -161,6 +158,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
     $this->mysqli = new mysqli();
     $this->mysqli->real_connect();
     $this->mysqli->select_db($GLOBALS["movlib"]["default_database"]);
+    $this->mysqli->autocommit(false);
   }
 
   /**
@@ -194,7 +192,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
     if (DEV) {
       $this
         ->addOption(self::OPTION_ALL, self::OPTION_SHORTCUT_ALL, InputOption::VALUE_NONE, "Run all migrations and import all seed data (Ignores all other options).")
-        ->addOption(self::OPTION_SEED, self::OPTION_SHORTCUT_SEED, InputOption::VALUE_NONE, "Import seed data file(s).")
+        ->addOption(self::OPTION_SEED, self::OPTION_SHORTCUT_SEED, InputOption::VALUE_OPTIONAL, "Import seed data file(s).")
       ;
     }
   }
@@ -204,7 +202,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     global $argv;
-    $this->setIO($input, $output)->mysqli->autocommit(false);;
+    $this->setIO($input, $output)->mysqli->autocommit(false);
     $options = $this->input->getOptions();
     if ($options[self::OPTION_ALL]) {
       $this->write("Importing schema ...");
@@ -380,6 +378,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
   /**
    * Import all time zones and their translations.
    *
+   * @link https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
    * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\FileSystemException
@@ -400,11 +399,13 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
         unset($systemLanguages[$i18n->defaultLanguageCode]);
       }
       else {
-        $translationPath = "{$this->seedPath}/time_zones/{$languageCode}.json";
-        if (!is_file($translationPath)) {
-          $this->exitOnError("Time zone translation file for '{$languageCode}' is missing!");
+        if (($fileContent = file_get_contents("{$this->seedPath}/time_zones/{$languageCode}.txt")) === false) {
+          $this->exitOnError("Could not read translation file for '{$languageCode}'!");
         }
-        $translations[$languageCode] = json_decode(file_get_contents($translationPath), true);
+        foreach (explode("\n", $fileContent) as $line) {
+          list($zoneId, $translation) = explode(";", $line);
+          $translations[$languageCode][$zoneId] = $translation;
+        }
       }
     }
 

@@ -1,0 +1,419 @@
+Africa/Abidjan;Afrika/Abidjan
+Africa/Accra;Afrika/Accra
+Africa/Addis_Ababa;Afrika/Addis Abeba
+Africa/Algiers;Afrika/Algier
+Africa/Asmara;Afrika/Asmara
+Africa/Bamako;Afrika/Bamako
+Africa/Bangui;Afrika/Bangui
+Africa/Banjul;Afrika/Banjul
+Africa/Bissau;Afrika/Bissau
+Africa/Blantyre;Afrika/Blantyre
+Africa/Brazzaville;Afrika/Brazzaville
+Africa/Bujumbura;Afrika/Bujumbura
+Africa/Cairo;Afrika/Kairo
+Africa/Casablanca;Afrika/Casablanca
+Africa/Ceuta;Afrika/Ceuta
+Africa/Conakry;Afrika/Conakry
+Africa/Dakar;Afrika/Dakar
+Africa/Dar_es_Salaam;Afrika/Daressalam
+Africa/Djibouti;Afrika/Djibouti
+Africa/Douala;Afrika/Douala
+Africa/El_Aaiun;Afrika/El Aaiún
+Africa/Freetown;Afrika/Freetown
+Africa/Gaborone;Afrika/Gaborone
+Africa/Harare;Afrika/Harare
+Africa/Johannesburg;Afrika/Johannesburg
+Africa/Juba;Afrika/Juba
+Africa/Kampala;Afrika/Kampala
+Africa/Khartoum;Afrika/Khartum
+Africa/Kigali;Afrika/Kigali
+Africa/Kinshasa;Afrika/Kinshasa
+Africa/Lagos;Afrika/Lagos
+Africa/Libreville;Afrika/Libreville
+Africa/Lome;Afrika/Lomé
+Africa/Luanda;Afrika/Luanda
+Africa/Lubumbashi;Afrika/Lubumbashi
+Africa/Lusaka;Afrika/Lusaka
+Africa/Malabo;Afrika/Malabo
+Africa/Maputo;Afrika/Maputo
+Africa/Maseru;Afrika/Maseru
+Africa/Mbabane;Afrika/Mbabane
+Africa/Mogadishu;Afrika/Mogadischu
+Africa/Monrovia;Afrika/Monrovia
+Africa/Nairobi;Afrika/Nairobi
+Africa/Ndjamena;Afrika/N’Djamena
+Africa/Niamey;Afrika/Niamey
+Africa/Nouakchott;Afrika/Nouakchott
+Africa/Ouagadougou;Afrika/Ouagadougou
+Africa/Porto-Novo;Afrika/Porto Novo
+Africa/Sao_Tome;Afrika/São Tomé
+Africa/Tripoli;Afrika/Tripolis
+Africa/Tunis;Afrika/Tunis
+Africa/Windhoek;Afrika/Windhoek
+America/Adak;Amerika/Adak
+America/Anchorage;Amerika/Anchorage
+America/Anguilla;Amerika/Anguilla
+America/Antigua;Amerika/Antigua
+America/Araguaina;Amerika/Araguaina
+America/Argentina/Buenos_Aires;Amerika/Argentinien/Buenos Aires
+America/Argentina/Catamarca;Amerika/Argentinien/San Fernando del Valle de Catamarca
+America/Argentina/Cordoba;Amerika/Argentinien/Córdoba
+America/Argentina/Jujuy;Amerika/Argentinien/San Salvador de Jujuy
+America/Argentina/La_Rioja;Amerika/Argentinien/La Rioja
+America/Argentina/Mendoza;Amerika/Argentinien/Mendoza
+America/Argentina/Rio_Gallegos;Amerika/Argentinien/Río Gallegos
+America/Argentina/Salta;Amerika/Argentinien/Salta
+America/Argentina/San_Juan;Amerika/Argentinien/San Juan
+America/Argentina/San_Luis;Amerika/Argentinien/San Luis
+America/Argentina/Tucuman;Amerika/Argentinien/San Miguel de Tucumán
+America/Argentina/Ushuaia;Amerika/Argentinien/Ushuaia
+America/Aruba;Amerika/Aruba
+America/Asuncion;Amerika/Asunción
+America/Atikokan;Amerika/Atikokan
+America/Bahia;Amerika/Bahia
+America/Bahia_Banderas;Amerika/Bahía de Banderas
+America/Barbados;Amerika/Barbados
+America/Belem;Amerika/Belém
+America/Belize;Amerika/Belize
+America/Blanc-Sablon;Amerika/Blanc-Sablon
+America/Boa_Vista;Amerika/Boa Vista
+America/Bogota;Amerika/Bogotá
+America/Boise;Amerika/Boise
+America/Cambridge_Bay;Amerika/Cambridge Bay
+America/Campo_Grande;Amerika/Campo Grande
+America/Cancun;Amerika/Cancun
+America/Caracas;Amerika/Caracas
+America/Cayenne;Amerika/Cayenne
+America/Cayman;Amerika/Kaiman
+America/Chicago;Amerika/Chicago
+America/Chihuahua;Amerika/Chihuahua
+America/Costa_Rica;Amerika/Costa Rica
+America/Creston;Amerika/Creston
+America/Cuiaba;Amerika/Cuiabá
+America/Curacao;Amerika/Curaçao
+America/Danmarkshavn;Amerika/Danmarkshavn
+America/Dawson;Amerika/Dawson
+America/Dawson_Creek;Amerika/Dawson Creek
+America/Denver;Amerika/Denver
+America/Detroit;Amerika/Detroit
+America/Dominica;Amerika/Dominica
+America/Edmonton;Amerika/Edmonton
+America/Eirunepe;Amerika/Eirunepe
+America/El_Salvador;Amerika/El Salvador
+America/Fortaleza;Amerika/Fortaleza
+America/Glace_Bay;Amerika/Glace Bay
+America/Godthab;Amerika/Godthab
+America/Goose_Bay;Amerika/Goose Bay
+America/Grand_Turk;Amerika/Grand Turk
+America/Grenada;Amerika/Grenada
+America/Guadeloupe;Amerika/Guadeloupe
+America/Guatemala;Amerika/Guatemala
+America/Guayaquil;Amerika/Guayaquil
+America/Guyana;Amerika/Guyana
+America/Halifax;Amerika/Halifax
+America/Havana;Amerika/Havana
+America/Hermosillo;Amerika/Hermosillo
+America/Indiana/Indianapolis;Amerika/Indiana/Indianapolis
+America/Indiana/Knox;Amerika/Indiana/Knox
+America/Indiana/Marengo;Amerika/Indiana/Marengo
+America/Indiana/Petersburg;Amerika/Petersburg
+America/Indiana/Tell_City;Amerika/Tell City
+America/Indiana/Vevay;Amerika/Indiana/Vevay
+America/Indiana/Vincennes;Amerika/Vincennes
+America/Indiana/Winamac;Amerika/Winamac
+America/Inuvik;Amerika/Inuvik
+America/Iqaluit;Amerika/Iqaluit
+America/Jamaica;Amerika/Jamaika
+America/Juneau;Amerika/Juneau
+America/Kentucky/Louisville;Amerika/Kentucky/Louisville
+America/Kentucky/Monticello;Amerika/Kentucky/Monticello
+America/Kralendijk;Amerika/Kralendijk
+America/La_Paz;Amerika/La Paz
+America/Lima;Amerika/Lima
+America/Los_Angeles;Amerika/Los Angeles
+America/Lower_Princes;Amerika/Lower Princes
+America/Maceio;Amerika/Maceio
+America/Managua;Amerika/Managua
+America/Manaus;Amerika/Manaus
+America/Marigot;Amerika/Marigot
+America/Martinique;Amerika/Martinique
+America/Matamoros;Amerika/Matamoros
+America/Mazatlan;Amerika/Mazatlán
+America/Menominee;Amerika/Menominee
+America/Merida;Amerika/Mérida
+America/Metlakatla;Amerika/Metlakatla
+America/Mexico_City;Amerika/Mexiko-Stadt
+America/Miquelon;Amerika/Miquelon
+America/Moncton;Amerika/Moncton
+America/Monterrey;Amerika/Monterrey
+America/Montevideo;Amerika/Montevideo
+America/Montreal;Amerika/Montreal
+America/Montserrat;Amerika/Montserrat
+America/Nassau;Amerika/Nassau
+America/New_York;Amerika/New York
+America/Nipigon;Amerika/Nipigon
+America/Nome;Amerika/Nome
+America/Noronha;Amerika/Noronha
+America/North_Dakota/Beulah;Amerika/North Dakota/Beulah
+America/North_Dakota/Center;Amerika/North Dakota/Center
+America/North_Dakota/New_Salem;Amerika/North Dakota/New Salem
+America/Ojinaga;Amerika/Ojinaga
+America/Panama;Amerika/Panama
+America/Pangnirtung;Amerika/Pangnirtung
+America/Paramaribo;Amerika/Paramaribo
+America/Phoenix;Amerika/Phoenix
+America/Port-au-Prince;Amerika/Port-au-Prince
+America/Port_of_Spain;Amerika/Port of Spain
+America/Porto_Velho;Amerika/Porto Velho
+America/Puerto_Rico;Amerika/Puerto Rico
+America/Rainy_River;Amerika/Rainy River
+America/Rankin_Inlet;Amerika/Rankin Inlet
+America/Recife;Amerika/Recife
+America/Regina;Amerika/Regina
+America/Resolute;Amerika/Resolute Bay
+America/Rio_Branco;Amerika/Rio Branco
+America/Santa_Isabel;Amerika/Santa Isabel
+America/Santarem;Amerika/Santarém
+America/Santiago;Amerika/Santiago
+America/Santo_Domingo;Amerika/Santo Domingo
+America/Sao_Paulo;Amerika/São Paulo
+America/Scoresbysund;Amerika/Scoresbysund
+America/Shiprock;Amerika/Shiprock
+America/Sitka;Amerika/Sitka
+America/St_Barthelemy;Amerika/Saint-Barthélemy
+America/St_Johns;Amerika/St. John’s
+America/St_Kitts;Amerika/St. Kitts und Nevis
+America/St_Lucia;Amerika/St. Lucia
+America/St_Thomas;Amerika/Saint Thomas
+America/St_Vincent;Amerika/St. Vincent
+America/Swift_Current;Amerika/Swift Current
+America/Tegucigalpa;Amerika/Tegucigalpa
+America/Thule;Amerika/Thule
+America/Thunder_Bay;Amerika/Thunder Bay
+America/Tijuana;Amerika/Tijuana
+America/Toronto;Amerika/Toronto
+America/Tortola;Amerika/Tortola
+America/Vancouver;Amerika/Vancouver
+America/Whitehorse;Amerika/Whitehorse
+America/Winnipeg;Amerika/Winnipeg
+America/Yakutat;Amerika/Yakutat
+America/Yellowknife;Amerika/Yellowknife
+Antarctica/Casey;Antarktis/Casey
+Antarctica/Davis;Antarktis/Davis
+Antarctica/DumontDUrville;Antarktis/Dumont-d’Urville
+Antarctica/Macquarie;Antarktis/Macquarie
+Antarctica/Mawson;Antarktis/Mawson
+Antarctica/McMurdo;Antarktis/McMurdo
+Antarctica/Palmer;Antarktis/Palmer
+Antarctica/Rothera;Antarktis/Rothera
+Antarctica/South_Pole;Antarktis/Südpol
+Antarctica/Syowa;Antarktis/Shōwa
+Antarctica/Vostok;Antarktis/Vostok
+Arctic/Longyearbyen;Arktis/Longyearbyen
+Asia/Aden;Asien/Aden
+Asia/Almaty;Asien/Almaty
+Asia/Amman;Asien/Amman
+Asia/Anadyr;Asien/Anadyr
+Asia/Aqtau;Asien/Aqtau
+Asia/Aqtobe;Asien/Aqtöbe
+Asia/Ashgabat;Asien/Ashgabat
+Asia/Baghdad;Asien/Bagdad
+Asia/Bahrain;Asien/Bahrain
+Asia/Baku;Asien/Baku
+Asia/Bangkok;Asien/Bangkok
+Asia/Beirut;Asien/Beirut
+Asia/Bishkek;Asien/Bischkek
+Asia/Brunei;Asien/Brunei
+Asia/Choibalsan;Asien/Tschoibalsan
+Asia/Chongqing;Asien/Chongqing
+Asia/Colombo;Asien/Colombo
+Asia/Damascus;Asien/Damaskus
+Asia/Dhaka;Asien/Dhaka
+Asia/Dili;Asien/Dili
+Asia/Dubai;Asien/Dubai
+Asia/Dushanbe;Asien/Duschanbe
+Asia/Gaza;Asien/Gaza
+Asia/Harbin;Asien/Harbin
+Asia/Hebron;Asien/Hebron
+Asia/Ho_Chi_Minh;Asien/Ho-Chi-Minh-Stadt
+Asia/Hong_Kong;Asien/Hongkong
+Asia/Hovd;Asien/Hovd
+Asia/Irkutsk;Asien/Irkutsk
+Asia/Jakarta;Asien/Jakarta
+Asia/Jayapura;Asien/Jayapura
+Asia/Jerusalem;Asien/Jerusalem
+Asia/Kabul;Asien/Kabul
+Asia/Kamchatka;Asien/Kamtschatka
+Asia/Karachi;Asien/Karatschi
+Asia/Kashgar;Asien/Kashgar
+Asia/Kathmandu;Asien/Kathmandu
+Asia/Khandyga;Asien/Chandyga
+Asia/Kolkata;Asien/Kalkutta
+Asia/Krasnoyarsk;Asien/Krasnojarsk
+Asia/Kuala_Lumpur;Asien/Kuala Lumpur
+Asia/Kuching;Asien/Kuching
+Asia/Kuwait;Asien/Kuwait
+Asia/Macau;Asien/Macao
+Asia/Magadan;Asien/Magadan
+Asia/Makassar;Asien/Makassar
+Asia/Manila;Asien/Manila
+Asia/Muscat;Asien/Maskat
+Asia/Nicosia;Asien/Nikosia
+Asia/Novokuznetsk;Asien/Nowokusnezk
+Asia/Novosibirsk;Asien/Nowosibirsk
+Asia/Omsk;Asien/Omsk
+Asia/Oral;Asien/Oral
+Asia/Phnom_Penh;Asien/Phnom Penh
+Asia/Pontianak;Asien/Pontianak
+Asia/Pyongyang;Asien/Pjöngjang
+Asia/Qatar;Asien/Katar
+Asia/Qyzylorda;Asien/Qysylorda
+Asia/Rangoon;Asien/Rangun
+Asia/Riyadh;Asien/Riad
+Asia/Sakhalin;Asien/Sachalin
+Asia/Samarkand;Asien/Samarkand
+Asia/Seoul;Asien/Seoul
+Asia/Shanghai;Asien/Shanghai
+Asia/Singapore;Asien/Singapur
+Asia/Taipei;Asien/Taipeh
+Asia/Tashkent;Asien/Taschkent
+Asia/Tbilisi;Asien/Tiflis
+Asia/Tehran;Asien/Teheran
+Asia/Thimphu;Asien/Thimphu
+Asia/Tokyo;Asien/Tokio
+Asia/Ulaanbaatar;Asien/Ulaanbaatar
+Asia/Urumqi;Asien/Ürümqi
+Asia/Ust-Nera;Asien/Ust-Nera
+Asia/Vientiane;Asien/Vientiane
+Asia/Vladivostok;Asien/Wladiwostok
+Asia/Yakutsk;Asien/Jakutsk
+Asia/Yekaterinburg;Asien/Jekaterinburg
+Asia/Yerevan;Asien/Eriwan
+Atlantic/Azores;Atlantik/Azoren
+Atlantic/Bermuda;Atlantik/Bermuda
+Atlantic/Canary;Atlantik/Kanaren
+Atlantic/Cape_Verde;Atlantik/Kap Verde
+Atlantic/Faroe;Atlantik/Fårö
+Atlantic/Madeira;Atlantik/Madeira
+Atlantic/Reykjavik;Atlantik/Reykjavík
+Atlantic/South_Georgia;Atlantik/Südgeorgien
+Atlantic/St_Helena;Atlantik/St. Helena
+Atlantic/Stanley;Atlantik/Stanley
+Australia/Adelaide;Australien/Adelaide
+Australia/Brisbane;Australien/Brisbane
+Australia/Broken_Hill;Australien/Broken Hill
+Australia/Currie;Australien/Currie
+Australia/Darwin;Australien/Darwin
+Australia/Eucla;Australien/Eucla
+Australia/Hobart;Australien/Hobart
+Australia/Lindeman;Australien/Lindeman
+Australia/Lord_Howe;Australien/Lord-Howe
+Australia/Melbourne;Australien/Melbourne
+Australia/Perth;Australien/Perth
+Australia/Sydney;Australien/Sydney
+Europe/Amsterdam;Europa/Amsterdam
+Europe/Andorra;Europa/Andorra
+Europe/Athens;Europa/Athen
+Europe/Belgrade;Europa/Belgrad
+Europe/Berlin;Europa/Berlin
+Europe/Bratislava;Europa/Bratislava
+Europe/Brussels;Europa/Brüssel
+Europe/Bucharest;Europa/Bukarest
+Europe/Budapest;Europa/Budapest
+Europe/Busingen;Europa/Büsingen am Hochrhein
+Europe/Chisinau;Europa/Kischinau
+Europe/Copenhagen;Europa/Kopenhagen
+Europe/Dublin;Europa/Dublin
+Europe/Gibraltar;Europa/Gibraltar
+Europe/Guernsey;Europa/Guernsey
+Europe/Helsinki;Europa/Helsinki
+Europe/Isle_of_Man;Europa/Isle of Man
+Europe/Istanbul;Europa/Istanbul
+Europe/Jersey;Europa/Jersey
+Europe/Kaliningrad;Europa/Kaliningrad
+Europe/Kiev;Europa/Kiew
+Europe/Lisbon;Europa/Lissabon
+Europe/Ljubljana;Europa/Ljubljana
+Europe/London;Europa/London
+Europe/Luxembourg;Europa/Luxemburg
+Europe/Madrid;Europa/Madrid
+Europe/Malta;Europa/Malta
+Europe/Mariehamn;Europa/Mariehamn
+Europe/Minsk;Europa/Minsk
+Europe/Monaco;Europa/Monaco
+Europe/Moscow;Europa/Moskau
+Europe/Oslo;Europa/Oslo
+Europe/Paris;Europa/Paris
+Europe/Podgorica;Europa/Podgorica
+Europe/Prague;Europa/Prag
+Europe/Riga;Europa/Riga
+Europe/Rome;Europa/Rom
+Europe/Samara;Europa/Samara
+Europe/San_Marino;Europa/San Marino
+Europe/Sarajevo;Europa/Sarajevo
+Europe/Simferopol;Europa/Simferopol
+Europe/Skopje;Europa/Skopje
+Europe/Sofia;Europa/Sofia
+Europe/Stockholm;Europa/Stockholm
+Europe/Tallinn;Europa/Tallinn
+Europe/Tirane;Europa/Tirana
+Europe/Uzhgorod;Europe/Uschhorod
+Europe/Vaduz;Europa/Vaduz
+Europe/Vatican;Europa/Vatikan
+Europe/Vienna;Europa/Wien
+Europe/Vilnius;Europa/Vilnius
+Europe/Volgograd;Europa/Wolgograd
+Europe/Warsaw;Europa/Warschau
+Europe/Zagreb;Europa/Zagreb
+Europe/Zaporozhye;Europa/Saporischschja
+Europe/Zurich;Europa/Zürich
+Indian/Antananarivo;Indien/Antananarivo
+Indian/Chagos;Indien/Chagos
+Indian/Christmas;Indien/Christmas
+Indian/Cocos;Indien/Cocos
+Indian/Comoro;Indien/Comoro
+Indian/Kerguelen;Indien/Kerguelen
+Indian/Mahe;Indien/Mahe
+Indian/Maldives;Indien/Malediven
+Indian/Mauritius;Indien/Mauritius
+Indian/Mayotte;Indien/Mayotte
+Indian/Reunion;Indien/Reunion
+Pacific/Apia;Pazifik/Apia
+Pacific/Auckland;Pazifik/Auckland
+Pacific/Chatham;Pazifik/Chatham
+Pacific/Chuuk;Pazifik/Chuuk
+Pacific/Easter;Pazifik/Osterinsel
+Pacific/Efate;Pazifik/Efate
+Pacific/Enderbury;Pazifik/Enderbury
+Pacific/Fakaofo;Pazifik/Fakaofo
+Pacific/Fiji;Pazifik/Fidschi
+Pacific/Funafuti;Pazifik/Funafuti
+Pacific/Galapagos;Pazifik/Galapagosinseln
+Pacific/Gambier;Pazifik/Gambier
+Pacific/Guadalcanal;Pazifik/Guadalcanal
+Pacific/Guam;Pazifik/Guam
+Pacific/Honolulu;Pazifik/Honolulu
+Pacific/Johnston;Pazifik/Johnston
+Pacific/Kiritimati;Pazifik/Kiritimati
+Pacific/Kosrae;Pazifik/Kosrae
+Pacific/Kwajalein;Pazifik/Kwajalein
+Pacific/Majuro;Pazifik/Majuro
+Pacific/Marquesas;Pazifik/Marquesas
+Pacific/Midway;Pazifik/Midway
+Pacific/Nauru;Pazifik/Nauru
+Pacific/Niue;Pazifik/Niue
+Pacific/Norfolk;Pazifik/Norfolk
+Pacific/Noumea;Pazifik/Nouméa
+Pacific/Pago_Pago;Pazifik/Pago Pago
+Pacific/Palau;Pazifik/Palau
+Pacific/Pitcairn;Pazifik/Pitcairn
+Pacific/Pohnpei;Pazifik/Pohnpei
+Pacific/Port_Moresby;Pazifik/Port Moresby
+Pacific/Rarotonga;Pazifik/Rarotonga
+Pacific/Saipan;Pazifik/Saipan
+Pacific/Tahiti;Pazifik/Tahiti
+Pacific/Tarawa;Pazifik/Tarawa
+Pacific/Tongatapu;Pazifik/Tongatapu
+Pacific/Wake;Pazifik/Wake
+Pacific/Wallis;Pazifik/Wallis
+UTC;GMT
