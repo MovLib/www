@@ -17,6 +17,8 @@
  */
 namespace MovLib\Exception;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * An unauthorized exception might be thrown is a user is not allowed to access some specific content.
  *
@@ -29,13 +31,6 @@ namespace MovLib\Exception;
 class UnauthorizedException extends \MovLib\Exception\AbstractException {
 
   /**
-   * The title.
-   *
-   * @var string
-   */
-  protected $title;
-
-  /**
    * Instantiate new unauthorized exception.
    *
    * @param string $message [optional]
@@ -44,10 +39,14 @@ class UnauthorizedException extends \MovLib\Exception\AbstractException {
   public function __construct($message = null, $title = null) {
     global $i18n;
     parent::__construct("{$title} {$message}");
-    $this->title = empty($title) ? $i18n->t("You must be signed in to access this content.") : $title;
-    if (empty($this->message)) {
-      $this->message = "<p>{$i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/user/register")}'>", "</a>" ])}</p>";
+    $title = empty($title) ? $i18n->t("You must be signed in to access this content.") : $title;
+    if (empty($message)) {
+      $message = "<p>{$i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/user/register")}'>", "</a>" ])}</p>";
     }
+    $this->message = new Alert($message);
+    $this->message->block = true;
+    $this->message->title = $title;
+    $this->message->severity = Alert::SEVERITY_ERROR;
   }
 
   /**
