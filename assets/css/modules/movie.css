@@ -26,28 +26,29 @@
  * @since 0.0.1-dev
  */
 
-body.movieshow-body h2 small {
+body.movie h2 small {
   float: right;
 }
 
-#movie__header {
+#movie-show__header {
   color: #c7c7c7;
 }
 
-#movie__header img {
+#movie-show__header__poster {
   margin-top: 20px;
   margin-bottom: 20px;
+  border: none;
 }
 
-#movie__header h1 {
+#movie-show__header h1 {
   padding-bottom: 0;
 }
 
-#movie__header p {
+#movie-show__header p {
   margin: 0;
 }
 
-#movie__header p:last-of-type {
+#movie-show__header p:last-of-type {
   margin-bottom: 1.39em;
 }
 
@@ -57,7 +58,7 @@ body.movieshow-body h2 small {
   width: 120px;
 }
 
-#movie__header #movie__rating__description {
+#movie-show__header #movie__rating__description {
   margin-bottom: 20px;
 }
 
@@ -98,6 +99,8 @@ body.movieshow-body h2 small {
 
 #movie__rating__back {
   color: #fb3;
+  overflow: hidden;
+  white-space: pre;
   z-index: 1;
 }
 
