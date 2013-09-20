@@ -18,6 +18,8 @@
 namespace MovLib\Data;
 
 use \MovLib\Data\Delayed\Logger;
+use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
+use \MovLib\View\ImageStyle\ResizeImageStyle;
 
 /**
  * Represents a single movie's image (e.g. lobby card).
@@ -29,6 +31,64 @@ use \MovLib\Data\Delayed\Logger;
  * @since 0.0.1-dev
  */
 class MovieImage extends \MovLib\Data\AbstractImage {
+
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Small image style (e.g. for movie listings).
+   *
+   * @var int
+   */
+  const IMAGESTYLE_SMALL = "75x75";
+
+  /**
+   * Large image style with fixed width (e.g. for movie page).
+   *
+   * @var int
+   */
+  const IMAGESTYLE_LARGE_FIXED_WIDTH = "220x";
+
+  /**
+   * Huge image style with fixed width (e.g. for the poster page).
+   *
+   * @var int
+   */
+  const IMAGESTYLE_HUGE_FIXED_WIDTH = "700x";
+
+  /**
+   * The image type for posters.
+   *
+   * @var int
+   */
+  const IMAGETYPE_POSTER = 0;
+
+  /**
+   * The image type for lobby cards.
+   *
+   * @var int
+   */
+  const IMAGETYPE_LOBBYCARD = 1;
+
+  /**
+   * The image type for photos.
+   *
+   * @var int
+   */
+  const IMAGETYPE_PHOTO = 2;
+
+  /**
+   * Associative array to resolve image directories with the type constants.
+   *
+   * @var array
+   */
+  private $imageDirectories = [
+    self::IMAGETYPE_POSTER    => "posters",
+    self::IMAGETYPE_LOBBYCARD => "lobby-cards",
+    self::IMAGETYPE_PHOTO     => "photos",
+  ];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Table properties
@@ -61,6 +121,13 @@ class MovieImage extends \MovLib\Data\AbstractImage {
    * @var int
    */
   public $licenseId;
+
+  /**
+   * The country this poster belongs to as an associative array.
+   *
+   * @var array
+   */
+  public $country;
 
   /**
    * The file size of the image in bytes.
@@ -98,9 +165,9 @@ class MovieImage extends \MovLib\Data\AbstractImage {
   public $description;
 
   /**
-   * The image's type (e.g. "lobby-card").
+   * The image's type (one of the <code>IMAGETYPE_*</code> constants).
    *
-   * @var string
+   * @var int
    */
   public $type;
 
@@ -121,8 +188,8 @@ class MovieImage extends \MovLib\Data\AbstractImage {
    * @global \MovLib\Data\I18n $i18n
    * @param int $movieId
    *   The movie ID this image belongs to.
-   * @param string $type
-   *   The type of the image (e.g. "lobby-card").
+   * @param int $type
+   *   The type of the image (one of the <code>IMAGETYPE_*</code> constants.).
    * @param int $imageId
    *   The ID of the image within the movie images.
    */
@@ -130,7 +197,7 @@ class MovieImage extends \MovLib\Data\AbstractImage {
     global $i18n;
     $this->id = $movieId;
     $this->type = $type;
-    $this->imageDirectory = "movie/{$type}s/{$movieId}";
+    $this->imageDirectory = "movie/{$this->imageDirectories[$type]}/{$movieId}";
     if ($imageId) {
       $result = $this->select(
         "SELECT
@@ -138,6 +205,7 @@ class MovieImage extends \MovLib\Data\AbstractImage {
           `section_id` AS `sectionId`,
           `user_id` AS `userId`,
           `license_id` AS `licenseId`,
+          `country_id` AS `country`,
           `filename` AS `imageName`,
           `width` AS `imageWidth`,
           `height` AS `imageHeight`,
@@ -153,24 +221,36 @@ class MovieImage extends \MovLib\Data\AbstractImage {
         FROM `movies_images`
         WHERE `movie_id` = ?
           AND `section_id` = ?
+          AND `type` = ?
         LIMIT 1",
-        "dd",
-        [ $movieId, $imageId ]
+        "ddi",
+        [ $movieId, $imageId, $type ]
       );
       if (empty($result)) {
         Logger::stack("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", Logger::DEBUG);
       }
       else {
-        $result["description"] = $result["description_localized"] ?: $result["description_en"];
-        unset($result["description_localized"]);
-        unset($result["description_en"]);
+        $result = $result[0];
+        // Get the description for this image (fallback to English).
+        foreach ([ "en", "localized" ] as $v) {
+          if (isset($result["description_{$v}"])) {
+            $result["description"] = $result["description_{$v}"];
+            unset($result["description_{$v}"]);
+          }
+        }
         foreach ($result as $k => $v) {
           $this->{$k} = $v;
         }
+        if ($this->country) {
+          $this->country = $i18n->getCountries()[$this->country];
+        }
         $this->initImage($this->imageName, [
+          new ResizeImageStyle(self::IMAGESTYLE_SMALL),
+          new ResizeImageStyle(self::IMAGESTYLE_LARGE_FIXED_WIDTH),
+          new ResizeImageStyle(self::IMAGESTYLE_HUGE_FIXED_WIDTH),
           new ResizeImageStyle(self::IMAGESTYLE_GALLERY),
           new ResizeImageStyle(self::IMAGESTYLE_DETAILS),
-          new ResizeCropCenterImageStyle(self::IMAGESTYLE_DETAILS_STREAM)
+          new ResizeCropCenterImageStyle(self::IMAGESTYLE_DETAILS_STREAM),
         ]);
       }
     }

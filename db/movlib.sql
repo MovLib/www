@@ -308,56 +308,6 @@ ROW_FORMAT = COMPRESSED;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`posters`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`posters` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.' ,
-  `section_id` BIGINT UNSIGNED NOT NULL COMMENT 'The poster\'s unique ID within the movie.' ,
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this poster.' ,
-  `license_id` INT UNSIGNED NOT NULL COMMENT 'The license\'s unique ID this poster is under.' ,
-  `country_id` INT UNSIGNED NULL COMMENT 'Unique ID of the country the poster was released in.' ,
-  `filename` TINYBLOB NOT NULL COMMENT 'The poster’s filename without extensions.' ,
-  `width` SMALLINT NOT NULL COMMENT 'The poster’s width.' ,
-  `height` SMALLINT NOT NULL COMMENT 'The poster’s height.' ,
-  `size` INT NOT NULL COMMENT 'The poster’s size in Bytes.' ,
-  `ext` VARCHAR(5) NOT NULL COMMENT 'The image’s extension without leading dot.' ,
-  `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The last time this poster was updated.' ,
-  `created` TIMESTAMP NOT NULL COMMENT 'The poster’s creation time.' ,
-  `rating` BIGINT UNSIGNED NOT NULL COMMENT 'The poster’s upvotes.' ,
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The poster’s translatable descriptions.' ,
-  `hash` BINARY(16) NOT NULL COMMENT 'The file\'s modification timestamp (UNIX format) for cache busting.' ,
-  `source` BLOB NOT NULL COMMENT 'The poster\'s source.' ,
-  PRIMARY KEY (`movie_id`, `section_id`) ,
-  INDEX `fk_posters_movies` (`movie_id` ASC) ,
-  INDEX `fk_posters_countries` (`country_id` ASC) ,
-  INDEX `fk_posters_users` (`user_id` ASC) ,
-  INDEX `fk_posters_licenses1_idx` (`license_id` ASC) ,
-  CONSTRAINT `fk_posters_movies`
-    FOREIGN KEY (`movie_id` )
-    REFERENCES `movlib`.`movies` (`movie_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_posters_countries`
-    FOREIGN KEY (`country_id` )
-    REFERENCES `movlib`.`countries` (`country_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_posters_users`
-    FOREIGN KEY (`user_id` )
-    REFERENCES `movlib`.`users` (`user_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_posters_licenses`
-    FOREIGN KEY (`license_id` )
-    REFERENCES `movlib`.`licenses` (`license_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'Extends images table with unique movie’s ID.'
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`persons_photos`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`persons_photos` (
@@ -779,6 +729,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_images` (
   `section_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image\'s unique ID within the movie.' ,
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this movie image.' ,
   `license_id` INT UNSIGNED NOT NULL COMMENT 'The license\'s unique ID this image is under.' ,
+  `country_id` INT UNSIGNED NULL ,
   `filename` TINYBLOB NOT NULL COMMENT 'The movie image’s filename without extensions.' ,
   `width` SMALLINT NOT NULL COMMENT 'The movie image’s width.' ,
   `height` SMALLINT NOT NULL COMMENT 'The movie image’s height.' ,
@@ -788,13 +739,14 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_images` (
   `created` TIMESTAMP NOT NULL COMMENT 'The movie image’s creation time.' ,
   `rating` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image’s upvotes.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The movie image’s translatable descriptions.' ,
-  `type` VARCHAR(50) NOT NULL COMMENT 'The movie image’s type (e.g. “photo”).' ,
+  `type` TINYINT NOT NULL COMMENT 'The movie image’s type (e.g. “photo”).' ,
   `hash` BINARY(16) NOT NULL COMMENT 'The file\'s modification timestamp (UNIX format) for cache busting.' ,
   `source` BLOB NOT NULL COMMENT 'The image\'s source.' ,
   PRIMARY KEY (`movie_id`, `section_id`) ,
   INDEX `fk_posters_movies` (`movie_id` ASC) ,
   INDEX `fk_movies_images_users` (`user_id` ASC) ,
   INDEX `fk_movies_images_licenses1_idx` (`license_id` ASC) ,
+  INDEX `fk_movies_images_countries1_idx` (`country_id` ASC) ,
   CONSTRAINT `fk_movies_images_movies`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )
@@ -808,6 +760,11 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_images` (
   CONSTRAINT `fk_movies_images_licenses`
     FOREIGN KEY (`license_id` )
     REFERENCES `movlib`.`licenses` (`license_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_images_countries1`
+    FOREIGN KEY (`country_id` )
+    REFERENCES `movlib`.`countries` (`country_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'Extends images table with unique movie’s ID.'

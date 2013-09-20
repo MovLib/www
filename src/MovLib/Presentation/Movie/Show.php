@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie;
-use \MovLib\Data\MoviePoster;
+use \MovLib\Data\MovieImage;
 use \MovLib\Data\Rating;
 use \MovLib\Exception\Client\NotFoundException;
 use \MovLib\Exception\MovieException;
@@ -89,7 +89,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       $this->headingBefore = "<div class='row'><div class='span span--9' id='movie-show__header'>";
       $this->headingAfter = "{$this->getHeaderAdditions()}</div>{$this->getImage(
         $displayPoster,
-        MoviePoster::IMAGESTYLE_LARGE_FIXED_WIDTH,
+        MovieImage::IMAGESTYLE_LARGE_FIXED_WIDTH,
         [ "alt" => $posterAlt ],
         $i18n->r("/movie/{0}/posters", [ $this->movieModel->id ]),
         [ "class" => "span span--3", "id" => "movie-show__header__poster" ]

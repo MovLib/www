@@ -18,7 +18,6 @@
 namespace MovLib\Data;
 
 use \MovLib\Data\MovieImage;
-use \MovLib\Data\MoviePoster;
 use \MovLib\Exception\MovieException;
 
 /**
@@ -568,7 +567,7 @@ class Movie extends \MovLib\Data\Database {
       );
       $c = count($lobbyCardIds);
       for ($i = 0; $i < $c; ++$i) {
-        $this->lobbyCards[] = new MovieImage($this->id, "lobby-card", $lobbyCardIds[$i]["id"]);
+        $this->lobbyCards[] = new MovieImage($this->id, MovieImage::IMAGETYPE_LOBBYCARD, $lobbyCardIds[$i]["id"]);
       }
     }
     return $this->lobbyCards;
@@ -588,7 +587,7 @@ class Movie extends \MovLib\Data\Database {
       );
       $c = count($photoIds);
       for ($i = 0; $i < $c; ++$i) {
-        $this->photos[] = new MovieImage($this->id, "photo", $photoIds[$i]["id"]);
+        $this->photos[] = new MovieImage($this->id, MovieImage::IMAGETYPE_PHOTO, $photoIds[$i]["id"]);
       }
     }
     return $this->photos;
@@ -602,8 +601,8 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getDisplayPoster() {
     if (!$this->displayPoster) {
-      $posterId = $this->select("SELECT `section_id` AS `id` FROM `posters` WHERE `movie_id` = ? ORDER BY rating DESC LIMIT 1", "d", [ $this->id ]);
-      $this->displayPoster = new MoviePoster($this->id, empty($posterId[0]["id"]) ? null : $posterId[0]["id"]);
+      $posterId = $this->select("SELECT `section_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY rating DESC LIMIT 1", "di", [ $this->id, MovieImage::IMAGETYPE_POSTER ]);
+      $this->displayPoster = new MovieImage($this->id, MovieImage::IMAGETYPE_POSTER, empty($posterId[0]["id"]) ? null : $posterId[0]["id"]);
     }
     return $this->displayPoster;
   }
@@ -616,10 +615,10 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getPosters() {
     if (!$this->posters) {
-      $posterIds = $this->select("SELECT `section_id` AS `id` FROM `posters` WHERE `movie_id` = ? ORDER BY `created` DESC", "d", [ $this->id ]);
+      $posterIds = $this->select("SELECT `section_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? ORDER BY `created` DESC", "d", [ $this->id ]);
       $c = count($posterIds);
       for ($i = 0; $i < $c; ++$i) {
-        $this->posters[] = new MoviePoster($this->id, $posterIds[$i]["id"]);
+        $this->posters[] = new MovieImage($this->id, MovieImage::IMAGETYPE_POSTER, $posterIds[$i]["id"]);
       }
     }
     return $this->posters;
