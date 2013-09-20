@@ -244,6 +244,17 @@ class MovieImage extends \MovLib\Data\AbstractImage {
         if ($this->country) {
           $this->country = $i18n->getCountries()[$this->country];
         }
+        switch ($type) {
+          case self::IMAGETYPE_POSTER:
+            $this->imageAlt = $i18n->t("movie poster{0}.", [ isset($this->country) ? $i18n->t(" for {0}", [ $this->country["name"] ]) : "" ]);
+            break;
+          case self::IMAGETYPE_LOBBYCARD:
+            $this->imageAlt = $i18n->t("movie lobby card{0}.", [ isset($this->country) ? $i18n->t(" for {0}", [ $this->country["name"] ]) : "" ]);
+            break;
+          case self::IMAGETYPE_PHOTO:
+            $this->imageAlt = $i18n->t("movie photo.");
+            break;
+        }
         $this->initImage($this->imageName, [
           new ResizeImageStyle(self::IMAGESTYLE_SMALL),
           new ResizeImageStyle(self::IMAGESTYLE_LARGE_FIXED_WIDTH),

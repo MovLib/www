@@ -39,6 +39,13 @@ abstract class AbstractImage extends \MovLib\Data\Database {
 
 
   /**
+   * The already translated text for the image's <code>alt</code> attribute.
+   *
+   * @var string
+   */
+  public $imageAlt;
+
+  /**
    * Name of the directory within the uploads directory on the server.
    *
    * @var string
