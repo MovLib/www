@@ -25,15 +25,6 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 
-# ---------------------------------------------------------------------------------------------------------------------- gallery
-
-
-location @gallery_upload {
-  set $movlib_presenter "GalleryUpload";
-  include sites/conf/fastcgi.conf;
-}
-
-
 # ---------------------------------------------------------------------------------------------------------------------- movies
 
 
@@ -80,25 +71,22 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ ^<?= $r("/movie/{0}/posters", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_presenter "Gallery\\MovieGallery";
-    set $movlib_action "movie";
-    set $movlib_id $1;
+    set $movlib_presenter "Movie\\PosterGallery";
+    set $movlib_movie_id $1;
     set $movlib_tab "poster";
     try_files $movlib_cache @php;
   }
 
   location ~ ^<?= $r("/movie/{0}/lobby-cards", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_presenter "Gallery\\MovieGallery";
-    set $movlib_action "movie";
-    set $movlib_id $1;
+    set $movlib_presenter "Movie\\LobbyCardGallery";
+    set $movlib_movie_id $1;
     set $movlib_tab "lobby-card";
     try_files $movlib_cache @php;
   }
 
   location ~ ^<?= $r("/movie/{0}/photos", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_presenter "Gallery\\MovieGallery";
-    set $movlib_action "movie";
-    set $movlib_id $1;
+    set $movlib_presenter "Movie\\PhotoGallery";
+    set $movlib_movie_id $1;
     set $movlib_tab "photo";
     try_files $movlib_cache @php;
   }
@@ -108,24 +96,24 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ ^<?= $r("/movie/{0}/posters/upload", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_action "movie";
-    set $movlib_id $1;
+    set $movlib_presenter "Movie\\PosterUpload";
+    set $movlib_movie_id $1;
     set $movlib_tab "poster";
-    try_files $movlib_cache @gallery_upload;
+    try_files $movlib_cache @php;
   }
 
   location ~ ^<?= $r("/movie/{0}/lobby-cards/upload", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_action "movie";
-    set $movlib_id $1;
+    set $movlib_presenter "Movie\\LobbyCardUpload";
+    set $movlib_movie_id $1;
     set $movlib_tab "lobby-card";
-    try_files $movlib_cache @gallery_upload;
+    try_files $movlib_cache @php;
   }
 
   location ~ ^<?= $r("/movie/{0}/photos/upload", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_action "movie";
-    set $movlib_id $1;
+    set $movlib_presenter "Movie\\PhotoUpload";
+    set $movlib_movie_id $1;
     set $movlib_tab "photo";
-    try_files $movlib_cache @gallery_upload;
+    try_files $movlib_cache @php;
   }
 
   #
@@ -133,27 +121,24 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ ^<?= $r("/movie/{0}/poster", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
-    set $movlib_presenter "Gallery\\MovieGalleryImage";
-    set $movlib_action "movie";
-    set $movlib_id $1;
+    set $movlib_presenter "Gallery\\PosterDetails";
+    set $movlib_movie_id $1;
     set $movlib_image_id $2;
     set $movlib_tab "poster";
     try_files $movlib_cache @php;
   }
 
   location ~ ^<?= $r("/movie/{0}/lobby-card", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
-    set $movlib_presenter "Gallery\\MovieGalleryImage";
-    set $movlib_action "movie";
-    set $movlib_id $1;
+    set $movlib_presenter "Gallery\\LobbyCardDetails";
+    set $movlib_movie_id $1;
     set $movlib_image_id $2;
     set $movlib_tab "lobby-card";
     try_files $movlib_cache @php;
   }
 
   location ~ ^<?= $r("/movie/{0}/photo", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
-    set $movlib_presenter "Gallery\\MovieGalleryImage";
-    set $movlib_action "movie";
-    set $movlib_id $1;
+    set $movlib_presenter "Gallery\\PhotoDetails";
+    set $movlib_movie_id $1;
     set $movlib_image_id $2;
     set $movlib_tab "photo";
     try_files $movlib_cache @php;

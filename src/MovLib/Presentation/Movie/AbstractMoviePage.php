@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\Movie;
+
 /**
  * Provides secondary breadcrumb, menu points and stylesheets for movie presentations.
  *
@@ -26,7 +28,14 @@ namespace MovLib\Presentation\Movie;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-trait MovieTrait {
+abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+  
+  /**
+   * The movie to display.
+   *
+   * @var \MovLib\Data\Movie
+   */
+  protected $model;
 
   /**
    * @inheritdoc
@@ -40,8 +49,16 @@ trait MovieTrait {
    * @inheritdoc
    */
   protected function init($title) {
-    parent::init($title);
     $this->stylesheets[] = "modules/movie.css";
+    return parent::init($title);
+  }
+
+  protected function initMovie() {
+    $this->model = new Movie($_SERVER["MOVIE_ID"]);
+    $this->title = $this->model->getDisplayTitle();
+    if (isset($this->model->year)) {
+      $this->title .= " ({$this->model->year})";
+    }
   }
 
   /**
@@ -50,19 +67,19 @@ trait MovieTrait {
   public function getSecondaryNavigationMenuItems() {
     global $i18n;
     return [
-      [ $i18n->r("/movie/{0}", [ $this->movieModel->id ]), "<i class='icon icon--eye'></i>{$i18n->t("View")}", [
+      [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--eye'></i>{$i18n->t("View")}", [
         "accesskey" => "v",
         "title"     => $i18n->t("View the {0}.", [ $i18n->t("movie") ]),
       ]],
-      [ $i18n->r("/movie/{0}/discussion", [ $this->movieModel->id ]), "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [
+      [ $i18n->r("/movie/{0}/discussion", [ $this->model->id ]), "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [
         "accesskey" => "d",
         "title"     => $i18n->t("Discussion about the {0}.", [ $i18n->t("movie") ])
       ]],
-      [ $i18n->r("/movie/{0}/edit", [ $this->movieModel->id ]), "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [
+      [ $i18n->r("/movie/{0}/edit", [ $this->model->id ]), "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [
         "accesskey" => "e",
         "title"     => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]),
       ]],
-      [ $i18n->r("/movie/{0}/history", [ $this->movieModel->id ]), "<i class='icon icon--history'></i>{$i18n->t("History")}", [
+      [ $i18n->r("/movie/{0}/history", [ $this->model->id ]), "<i class='icon icon--history'></i>{$i18n->t("History")}", [
         "accesskey" => "h",
         "class"     => "separator",
         "title"     => $i18n->t("Past versions of this {0}.", [ $i18n->t("movie") ]),

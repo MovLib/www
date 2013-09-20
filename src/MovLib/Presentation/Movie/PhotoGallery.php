@@ -15,68 +15,40 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter\Gallery;
 
-use \MovLib\Presenter\AbstractPresenter;
-use \MovLib\View\HTML\Gallery\GalleryView;
+namespace MovLib\Presentation\Movie;
 
 /**
- * Base class for all gallery presenter.
+ * The movie's photo gallery.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractGalleryPresenter extends AbstractPresenter {
+class PhotoGallery extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\TraitGallery;
+  use \MovLib\Presentation\Movie\TraitMovieGallery;
 
   /**
-   * The gallery's model.
+   * Instantiate new movie photo gallery presentation.
    *
-   * @var \MovLib\Model\BaseModel
+   * @global \MovLib\Data\I18n $i18n
    */
-  public $model;
-
-  /**
-   * The entity's title.
-   *
-   * @var string
-   */
-  public $title;
-
-  /**
-   * The gallery's title.
-   *
-   * @var string
-   */
-  public $galleryTitle;
-
-  /**
-   * Numeric array containing all image models of this gallery.
-   *
-   * @var array
-   */
-  public $images;
-
-  /**
-   * Get the secondary navigation for this gallery presenter.
-   *
-   * @global \MovLib\Model\I18nModel $i18n
-   * @return array
-   *   The secondary navigation points.
-   */
-  abstract public function getSecondaryNavigationPoints();
-
-  /**
-   * Set the view for this presenter.
-   *
-   * @return this
-   */
-  protected function setView() {
-    new GalleryView($this);
-    return $this;
+  public function __construct() {
+    global $i18n;
+    $this->initMovie();
+    $this->movieTitle = $this->title;
+    $this->title = "{$i18n->t("Photos of")} {$this->movieTitle}";
+    $this->init($this->title);
+    $this->images = $this->model->getLobbyCards();
+    $this->imagesRoute = [ $i18n->t("movie"), $this->model->id, $i18n->t("photo") ];
+    $this->uploadRoute = $i18n->r("/movie/{0}/photos/upload", [ $this->model->id ]);
+    $this->noImagesText = $i18n->t("No Photos for {0}.", [ $this->movieTitle ]);
+    $this->uploadText = $i18n->t("Want to upload your Photos? {0}", [
+        $this->a($this->uploadRoute, "Click here to do so.")
+    ]);
   }
 
 }

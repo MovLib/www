@@ -48,6 +48,13 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
   public $id;
 
   /**
+   * The page's title used in the header.
+   *
+   * @var string
+   */
+  protected $pageTitle;
+
+  /**
    * Numeric array containing all stylesheets within the <code>assets/css/layout</code> path on the server.
    *
    * These stylesheets will be delivered with any request for any page, they represent the most basic styles for our

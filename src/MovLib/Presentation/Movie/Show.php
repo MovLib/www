@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie;
 use \MovLib\Data\MovieImage;
 use \MovLib\Data\Rating;
 use \MovLib\Exception\Client\NotFoundException;
@@ -34,19 +33,11 @@ use \MovLib\Presentation\Partial\Lists;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\Movie\MovieTrait;
+class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The movie to display.
-   *
-   * @var \MovLib\Data\Movie
-   */
-  private $movieModel;
 
   /**
    * The rating of the user.
@@ -65,33 +56,25 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   public function __construct() {
     global $i18n;
     try {
-      $this->movieModel = new Movie($_SERVER["MOVIE_ID"]);
-      $this->title      = $this->movieModel->getDisplayTitle();
-      if (isset($this->movieModel->year)) {
-        $this->pageTitle = "{$this->title} <small>({$this->movieModel->year})</small>";
-        $this->title .= " ({$this->movieModel->year})";
-      }
+      $this->initMovie();
       $this->init($this->title);
-      if ($this->movieModel->deleted === true) {
+      if (isset($this->model->year)) {
+        $this->pageTitle = $this->model->getDisplayTitle() . " <small>({$this->model->year})</small>";
+      }
+      if ($this->model->deleted === true) {
         // Status code for "Gone".
         http_response_code(410);
         return;
       }
       $this->ratingModel = new Rating();
       // Configure headingBefore and headingAfter for the custom movie header.
-      $displayPoster = $this->movieModel->getDisplayPoster();
-      if (isset($displayPoster->country)) {
-        $posterAlt = $i18n->t("{0} movie poster for {1}.", [ $this->title, $displayPoster->country["name"] ]);
-      }
-      else {
-        $posterAlt = $i18n->t("{0} movie poster.", [ $this->title ]);
-      }
+      $displayPoster = $this->model->getDisplayPoster();
       $this->headingBefore = "<div class='row'><div class='span span--9' id='movie-show__header'>";
       $this->headingAfter = "{$this->getHeaderAdditions()}</div>{$this->getImage(
         $displayPoster,
         MovieImage::IMAGESTYLE_LARGE_FIXED_WIDTH,
-        [ "alt" => $posterAlt ],
-        $i18n->r("/movie/{0}/posters", [ $this->movieModel->id ]),
+        [ "alt" => "{$this->title} {$displayPoster->imageAlt}" ],
+        $i18n->r("/movie/{0}/posters", [ $this->model->id ]),
         [ "class" => "span span--3", "id" => "movie-show__header__poster" ]
       )}</div>";
     }
@@ -105,7 +88,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   protected function getPageContent() {
     global $i18n;
-    if ($this->movieModel->deleted === true) {
+    if ($this->model->deleted === true) {
         $gone = new Alert(
           "<p>{$i18n->t("The deletion message is provided below for reference.")}</p>" .
           /** @todo Provide commit message with history implementation. */
@@ -115,8 +98,8 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
               "is the case. Please discuss with the person responsible for this deletion before you restore this entry " .
               "from its {0}history{2}.",
               [
-                "<a href='{$i18n->r("/movie/{0}/history", [ $this->movieModel->id ])}'>",
-                "<a href='{$i18n->r("/movie/{0}/discussion", [ $this->movieModel->id ])}'>",
+                "<a href='{$i18n->r("/movie/{0}/history", [ $this->model->id ])}'>",
+                "<a href='{$i18n->r("/movie/{0}/discussion", [ $this->model->id ])}'>",
                 "</a>",
               ]
             ) .
@@ -137,12 +120,12 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     $contents[] = [
       "id"      => "synopsis",
       "title"   => $i18n->t("Synopsis"),
-      "content" => $this->movieModel->synopsis
+      "content" => $this->model->synopsis
     ];
 
     // ----------------------------------------------------------------------------------------------------------------- Directors
 
-    $directors = $this->movieModel->getDirectors();
+    $directors = $this->model->getDirectors();
     $c = count($directors);
     for ($i = 0; $i < $c; ++$i) {
       $directors[$i] = $this->a($i18n->r("/person/{0}", [ $directors[$i]["id"] ]), $directors[$i]["name"]);
@@ -158,7 +141,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     $contents[] = [
       "id"      => "titles",
       "title"   => $i18n->t("Titles"),
-      "content" => (new Lists(array_column($this->movieModel->getTitles(), "title"), ""))->toHtmlList(),
+      "content" => (new Lists(array_column($this->model->getTitles(), "title"), ""))->toHtmlList(),
     ];
 
     // ----------------------------------------------------------------------------------------------------------------- Taglines
@@ -166,7 +149,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     $contents[] = [
       "id"      => "taglines",
       "title"   => $i18n->t("Taglines"),
-      "content" => (new Lists(array_column($this->movieModel->getTagLines(), "tagline"), ""))->toHtmlList(),
+      "content" => (new Lists(array_column($this->model->getTagLines(), "tagline"), ""))->toHtmlList(),
     ];
 
     // Construct the content from the content array.
@@ -174,7 +157,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     $content = "";
     $c = count($contents);
     for ($i = 0; $i < $c; ++$i) {
-      $this->navigation->menuitems[] = [ "#{$contents[$i]["id"]}", $contents[$i]["title"], [ "title" => $i18n->t("Go to section", [ $contents[$i]["title"] ]) ] ];
+      $this->navigation->menuitems[] = [ "#{$contents[$i]["id"]}", $contents[$i]["title"], [ "title" => $i18n->t("Go to section") ] ];
       if (empty($contents[$i]["content"])) {
         $contents[$i]["content"] = $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [
           $contents[$i]["title"],
@@ -184,7 +167,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       }
       $content .=
         "<div id='{$contents[$i]["id"]}' class='movie-section'>" .
-          "<h2>{$contents[$i]["title"]} <small>{$this->a($i18n->r("/movie/{0}/edit-{1}", [ $this->movieModel->id, $contents[$i]["id"] ]), $i18n->t("Edit"))}</small></h2>" .
+          "<h2>{$contents[$i]["title"]} <small>{$this->a($i18n->r("/movie/{0}/edit-{1}", [ $this->model->id, $contents[$i]["id"] ]), $i18n->t("Edit"))}</small></h2>" .
           $contents[$i]["content"] .
         "</div>"
       ;
@@ -210,12 +193,12 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
 
     // ----------------------------------------------------------------------------------------------------------------- Original title
 
-    $additions .= "<p>{$i18n->t("“{0}” ({1}original title{2})", [ $this->movieModel->originalTitle, "<em>", "</em>" ])}</p>";
+    $additions .= "<p>{$i18n->t("“{0}” ({1}original title{2})", [ $this->model->originalTitle, "<em>", "</em>" ])}</p>";
 
     // ----------------------------------------------------------------------------------------------------------------- Rating form + explanation
 
     // Calculate the width for the rating stars in px.
-    $ratingWidth = ($this->movieModel->rating * 19 + (ceil($this->movieModel->rating) - 1) * 5);
+    $ratingWidth = ($this->model->rating * 19 + (ceil($this->model->rating) - 1) * 5);
     $ratingWidth = $ratingWidth < 0 ? 0 : "{$ratingWidth}px";
 
     // Construct the "Your rating" section for the rating explanation.
@@ -225,14 +208,14 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         [ "<a href='{$i18n->r("/user/login")}' title='{$i18n->t("Click here to log in to your account.")}'>", "</a>" ]
       );
     }
-    elseif (($userRating = $this->ratingModel->getMovieRating($session->userId, $this->movieModel->id))) {
+    elseif (($userRating = $this->ratingModel->getMovieRating($session->userId, $this->model->id))) {
       $userRating = $i18n->t("your rating: ", [ $userRating ]);
     }
     else {
       $userRating = $i18n->t("you haven't rated this movie yet");
     }
     $additions .=
-      "<form action='{$i18n->r("/movie/{0}", [ $this->movieModel->id ])}' id='movie__rating' method='post'>" .
+      "<form action='{$i18n->r("/movie/{0}", [ $this->model->id ])}' id='movie__rating' method='post'>" .
         "<span class='visuallyhidden'>{$i18n->t("Rating")}: </span>" .
         "<div id='movie__rating__back' style='width:{$ratingWidth}'>" .
           "<span>&#xe000;</span>" .
@@ -268,12 +251,12 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         $i18n->t(
           "Rated by {0}{1,number,integer} users{2} with an {3}average rating{4} of {5,number} ({6}).",
           [
-            "<a href='{$i18n->r("/movie/{0}/rating-demographics", [ $this->movieModel->id ])}' title='{$i18n->t("View Rating demographics")}'>",
-            $this->movieModel->votes,
+            "<a href='{$i18n->r("/movie/{0}/rating-demographics", [ $this->model->id ])}' title='{$i18n->t("View Rating demographics")}'>",
+            $this->model->votes,
             "</a>",
             "<a href='{$i18n->r("/help/average-rating")}' title='{$i18n->t("Go to help page: {0}", [ "Average Rating"] )}'>",
             "</a>",
-            $this->movieModel->rating,
+            $this->model->rating,
             $userRating,
           ]) .
       "</p>"
@@ -281,32 +264,32 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
 
     // ----------------------------------------------------------------------------------------------------------------- Countries
 
-    $countries = $this->movieModel->getCountries();
+    $countries = $this->model->getCountries();
     $c = count($countries);
     for ($i = 0; $i < $c; ++$i) {
       $countries[$i] = $this->a($i18n->r("/country/{0}", [ $countries[$i]["code"] ]), $countries[$i]["name"]);
     }
-    $countries = (new Lists($countries, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("countries"), "<a href='{$i18n->r("/movie/{0}/edit", [ $this->movieModel->id ])}'>", "</a>" ])))->toCommaSeparatedList();
+    $countries = (new Lists($countries, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("countries"), "<a href='{$i18n->r("/movie/{0}/edit", [ $this->model->id ])}'>", "</a>" ])))->toCommaSeparatedList();
     $additions .= "<p class='small'><span class='visuallyhidden'>{$i18n->t("Countries")}: </span>{$countries}</p>";
 
     // ----------------------------------------------------------------------------------------------------------------- Runtime, Genres & Styles
 
-    $genres = $this->movieModel->getGenres();
+    $genres = $this->model->getGenres();
     $c = count($genres);
     for ($i = 0; $i < $c; ++$i) {
       $genres[$i] = $this->a($i18n->r("/genre/{0}", [ $genres[$i]["id"] ]), $genres[$i]["name"]);
     }
-    $genres = (new Lists($genres, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("genres"), "<a href='{$i18n->r("/movie/{0}/edit-genres", [ $this->movieModel->id ])}'>", "</a>" ])))->toCommaSeparatedList();
-    $styles = $this->movieModel->getStyles();
+    $genres = (new Lists($genres, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("genres"), "<a href='{$i18n->r("/movie/{0}/edit-genres", [ $this->model->id ])}'>", "</a>" ])))->toCommaSeparatedList();
+    $styles = $this->model->getStyles();
     $c = count($styles);
     for ($i = 0; $i < $c; ++$i) {
       $styles[$i] = $this->a($i18n->r("style/{0}", [ $styles[$i]["id"] ]), $styles[$i]["name"]);
     }
-    $styles = (new Lists($styles, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("styles"), "<a href='{$i18n->r("/movie/{0}/edit-styles", [ $this->movieModel->id ])}'>", "</a>"])))->toCommaSeparatedList();
+    $styles = (new Lists($styles, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("styles"), "<a href='{$i18n->r("/movie/{0}/edit-styles", [ $this->model->id ])}'>", "</a>"])))->toCommaSeparatedList();
 
     $additions .=
       "<p class='small'>" .
-        "<span class='visuallyhidden'>{$i18n->t("Length")}: </span> {$this->movieModel->runtime} {$i18n->t("min.")}" .
+        "<span class='visuallyhidden'>{$i18n->t("Length")}: </span> {$this->model->runtime} {$i18n->t("min.")}" .
         " | <span class='visuallyhidden'>{$i18n->t("Genres")}: </span> {$genres}" .
         " | <span class='visuallyhidden'>{$i18n->t("Styles")}: </span> {$styles}" .
       "</p>"
