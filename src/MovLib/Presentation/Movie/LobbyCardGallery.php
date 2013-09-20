@@ -35,6 +35,7 @@ class LobbyCardGallery extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * Instantiate new movie lobby card gallery presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Exception\Client\NotFoundException
    */
   public function __construct() {
     global $i18n;

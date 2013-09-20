@@ -19,8 +19,6 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\MovieImage;
 use \MovLib\Data\Rating;
-use \MovLib\Exception\Client\NotFoundException;
-use \MovLib\Exception\MovieException;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Lists;
 
@@ -52,35 +50,30 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
   /**
    * Instatiate new movie presentation.
+   *
+   * @throws \MovLib\Exception\Client\NotFoundException
    */
   public function __construct() {
     global $i18n;
-    try {
-      $this->initMovie();
-      $this->init($this->title);
-      if (isset($this->model->year)) {
-        $this->pageTitle = $this->model->getDisplayTitle() . " <small>({$this->model->year})</small>";
-      }
-      if ($this->model->deleted === true) {
-        // Status code for "Gone".
-        http_response_code(410);
-        return;
-      }
-      $this->ratingModel = new Rating();
-      // Configure headingBefore and headingAfter for the custom movie header.
-      $displayPoster = $this->model->getDisplayPoster();
-      $this->headingBefore = "<div class='row'><div class='span span--9' id='movie-show__header'>";
-      $this->headingAfter = "{$this->getHeaderAdditions()}</div>{$this->getImage(
-        $displayPoster,
-        MovieImage::IMAGESTYLE_LARGE_FIXED_WIDTH,
-        [ "alt" => "{$this->title} {$displayPoster->imageAlt}" ],
-        $i18n->r("/movie/{0}/posters", [ $this->model->id ]),
-        [ "class" => "span span--3", "id" => "movie-show__header__poster" ]
-      )}</div>";
+    $this->initMovie();
+    $this->init($this->title);
+    if (isset($this->model->year)) {
+      $this->pageTitle = $this->model->getDisplayTitle() . " <small>({$this->model->year})</small>";
     }
-    catch (MovieException $e) {
-      throw new NotFoundException($e);
+    if ($this->model->deleted === true) {
+      return;
     }
+    $this->ratingModel = new Rating();
+    // Configure headingBefore and headingAfter for the custom movie header.
+    $displayPoster = $this->model->getDisplayPoster();
+    $this->headingBefore = "<div class='row'><div class='span span--9' id='movie-show__header'>";
+    $this->headingAfter = "{$this->getHeaderAdditions()}</div>{$this->getImage(
+      $displayPoster,
+      MovieImage::IMAGESTYLE_LARGE_FIXED_WIDTH,
+      [ "alt" => "{$this->title} {$displayPoster->imageAlt}" ],
+      $i18n->r("/movie/{0}/posters", [ $this->model->id ]),
+      [ "class" => "span span--3", "id" => "movie-show__header__poster" ]
+    )}</div>";
   }
 
   /**
@@ -89,25 +82,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   protected function getPageContent() {
     global $i18n;
     if ($this->model->deleted === true) {
-        $gone = new Alert(
-          "<p>{$i18n->t("The deletion message is provided below for reference.")}</p>" .
-          /** @todo Provide commit message with history implementation. */
-          "<p>" .
-            $i18n->t(
-              "The movie has been deleted. A look at the edit {0}history{2} or {1}discussion{2} will explain why that " .
-              "is the case. Please discuss with the person responsible for this deletion before you restore this entry " .
-              "from its {0}history{2}.",
-              [
-                "<a href='{$i18n->r("/movie/{0}/history", [ $this->model->id ])}'>",
-                "<a href='{$i18n->r("/movie/{0}/discussion", [ $this->model->id ])}'>",
-                "</a>",
-              ]
-            ) .
-          "</p>"
-        );
-        $gone->title = $i18n->t("This Movie has been deleted.");
-        $gone->severity = Alert::SEVERITY_ERROR;
-        return $gone;
+        return $this->getGoneContent();
     }
     // Numeric Array holding all the page's content points in a uniform way.
     // Format:

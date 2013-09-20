@@ -18,6 +18,9 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie;
+use \MovLib\Exception\MovieException;
+use \MovLib\Exception\Client\NotFoundException;
+use \MovLib\Presentation\Partial\Alert;
 
 /**
  * Provides secondary breadcrumb, menu points and stylesheets for movie presentations.
@@ -29,7 +32,7 @@ use \MovLib\Data\Movie;
  * @since 0.0.1-dev
  */
 abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  
+
   /**
    * The movie to display.
    *
@@ -53,12 +56,55 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
     return parent::init($title);
   }
 
+  /**
+   * Initialize the movie model and the title.
+   *
+   * @throws NotFoundException
+   */
   protected function initMovie() {
-    $this->model = new Movie($_SERVER["MOVIE_ID"]);
-    $this->title = $this->model->getDisplayTitle();
-    if (isset($this->model->year)) {
-      $this->title .= " ({$this->model->year})";
+    try {
+      $this->model = new Movie($_SERVER["MOVIE_ID"]);
+      $this->title = $this->model->getDisplayTitle();
+      if (isset($this->model->year)) {
+        $this->title .= " ({$this->model->year})";
+      }
+    } catch (MovieException $e) {
+      throw new NotFoundException($e);
     }
+  }
+
+  /**
+   * Get the gone content for movie pages.
+   *
+   * Please note, that this method will also set the HTTP status code 410 (Gone).
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return \MovLib\Presentation\Partial\Alert
+   */
+  protected function getGoneContent() {
+    global $i18n;
+    // Status code for "Gone".
+    http_response_code(410);
+    $gone = new Alert(
+      "<p>{$i18n->t("The deletion message is provided below for reference.")}</p>" .
+      /** @todo Provide commit message with history implementation. */
+      "<p>" .
+        $i18n->t(
+          "The movie and all its content has been deleted. A look at the edit {0}history{2} or {1}discussion{2} " .
+          "will explain why that is the case. Please discuss with the person responsible for this deletion before " .
+          "you restore this entry from its {0}history{2}.",
+          [
+            "<a href='{$i18n->r("/movie/{0}/history", [ $this->model->id ])}'>",
+            "<a href='{$i18n->r("/movie/{0}/discussion", [ $this->model->id ])}'>",
+            "</a>",
+          ]
+        ) .
+      "</p>" .
+      "<p>{$i18n->t("{0}Please note{1}: The images for this movie have been permanently deleted and cannot be restored.", [ "<strong>", "</strong>" ])}</p>"
+    );
+    $gone->title = $i18n->t("This Movie has been deleted.");
+    $gone->severity = Alert::SEVERITY_ERROR;
+    return $gone;
   }
 
   /**

@@ -121,7 +121,7 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ ^<?= $r("/movie/{0}/poster", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
-    set $movlib_presenter "Gallery\\PosterDetails";
+    set $movlib_presenter "Movie\\PosterDetails";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     set $movlib_tab "poster";
@@ -129,7 +129,7 @@ location ^~ <?= $r("/movie") ?> {
   }
 
   location ~ ^<?= $r("/movie/{0}/lobby-card", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
-    set $movlib_presenter "Gallery\\LobbyCardDetails";
+    set $movlib_presenter "Movie\\LobbyCardDetails";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     set $movlib_tab "lobby-card";
@@ -137,7 +137,7 @@ location ^~ <?= $r("/movie") ?> {
   }
 
   location ~ ^<?= $r("/movie/{0}/photo", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
-    set $movlib_presenter "Gallery\\PhotoDetails";
+    set $movlib_presenter "Movie\\PhotoDetails";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     set $movlib_tab "photo";

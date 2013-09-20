@@ -17,6 +17,9 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Exception\RedirectException;
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * Trait for all movie galleries.
  *
@@ -54,6 +57,33 @@ trait TraitMovieGallery {
   /**
    * @inheritdoc
    */
+  protected function getGoneContent() {
+    global $i18n;
+    throw new RedirectException($i18n->r("/movie/{0}", [ $this->model->id ]), 302);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getImageDetails() {
+    global $i18n;
+    /**
+     * @var \MovLib\Data\MovieImage
+     */
+    $this->image;
+    $details = [];
+    if (empty($this->image->description)) {
+      $this->image->description = new Alert("{$i18n->t("No {0} available, could you provide one?", [ $i18n->t("Description") ])} {$this->a(
+        $this->editRoute, [ $this->model->id, $this->image->sectionId ],
+        $i18n->t("Click here to do so.")
+      )}");
+    }
+    $details[] = [ $i18n->t("Description"), $this->image->description ];
+  }
+
+  /**
+   * @inheritdoc
+   */
   public function getSecondaryNavigationMenuitems() {
     global $i18n;
     $points = [
@@ -63,7 +93,7 @@ trait TraitMovieGallery {
       ]],
     ];
     foreach ([ "posters" => "Posters", "lobby-cards" => "Lobby Card", "photos" => "Photos" ] as $route => $title) {
-      $points[] = [ $i18n->r("/movie/{0}/{$i18n->t("{$route}")}", [ $this->model->id ]), $i18n->t($title), $_SERVER["TAB"] == $route ? [ "class" => "active" ] : null ];
+      $points[] = [ $i18n->r("/movie/{0}/{$i18n->t("{$route}")}", [ $this->model->id ]), $i18n->t($title), "{$_SERVER["TAB"]}s" == $route ? [ "class" => "active" ] : null ];
     }
     return $points;
   }

@@ -267,4 +267,25 @@ class MovieImage extends \MovLib\Data\AbstractImage {
     }
   }
 
+  /**
+   * Get the position and the total count of the image within all the movie's images of that type.
+   *
+   * @return array
+   *  Numeric array containing position and total count.
+   */
+  public function getPositionAndTotalCount() {
+    $sectionIds = $this->select(
+      "SELECT `section_id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY `created` DESC",
+      "di",
+      [ $this->id, $this->type ]
+    );
+    $totalCount = count($sectionIds);
+    for ($i = 0; $i < $totalCount; ++$i) {
+      if ($sectionIds[$i]["section_id"] === $this->sectionId) {
+        break;
+      }
+    }
+    return [ ++$i, $totalCount ];
+  }
+
 }

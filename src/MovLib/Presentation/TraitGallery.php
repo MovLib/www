@@ -21,7 +21,7 @@ use \MovLib\Data\MovieImage;
 use \MovLib\Presentation\Partial\Lists;
 
 /**
- * Base trait for all galleries.
+ * Base trait for all gallery presentations.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -84,10 +84,11 @@ trait TraitGallery {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
    */
   protected function getPageContent() {
-    global $i18n;
+    if ($this->model->deleted === true) {
+      return $this->getGoneContent();
+    }
     $c = count($this->images);
     for ($i = 0; $i < $c; ++$i) {
       $this->imagesRoute[3] = $this->images[$i]->sectionId;

@@ -148,7 +148,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    *
    * @var int
    */
-  const IMAGESTYLE_GALLERY = "140x140";
+  const IMAGESTYLE_GALLERY = "128x128";
 
   /**
    * Image style for the image detail view.
