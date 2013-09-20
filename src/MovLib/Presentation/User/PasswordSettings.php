@@ -36,7 +36,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @since 0.0.1-dev
  */
 class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\User\UserTrait;
+  use \MovLib\Presentation\User\TraitUser;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

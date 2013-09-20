@@ -39,7 +39,7 @@ use \Normalizer;
  * @since 0.0.1-dev
  */
 class Registration extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\User\UserTrait;
+  use \MovLib\Presentation\User\TraitUser;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

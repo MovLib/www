@@ -26,7 +26,7 @@ namespace MovLib\Presentation\User;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-trait UserTrait {
+trait TraitUser {
 
   /**
    * The user we are currently displaying.

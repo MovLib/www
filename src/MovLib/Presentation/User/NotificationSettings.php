@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class NotificationSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\User\UserTrait;
+  use \MovLib\Presentation\User\TraitUser;
 
   /**
    * Instantiate new user notification settings presentation.

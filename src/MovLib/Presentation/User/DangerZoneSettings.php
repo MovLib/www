@@ -40,7 +40,7 @@ use \MovLib\Presentation\Partial\Help;
  * @since 0.0.1-dev
  */
 class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\User\UserTrait;
+  use \MovLib\Presentation\User\TraitUser;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

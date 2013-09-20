@@ -33,7 +33,7 @@ use \MovLib\Presentation\Partial\FormElement\Button;
  * @since 0.0.1-dev
  */
 class Deactivated extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\User\UserTrait;
+  use \MovLib\Presentation\User\TraitUser;
 
   /**
    * The presentation's form.

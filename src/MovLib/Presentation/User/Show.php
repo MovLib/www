@@ -29,7 +29,7 @@ use \MovLib\Data\User;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\User\UserTrait;
+  use \MovLib\Presentation\User\TraitUser;
 
   /**
    * Instantiate new user show presentation.
