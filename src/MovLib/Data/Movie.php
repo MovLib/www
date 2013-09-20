@@ -562,8 +562,8 @@ class Movie extends \MovLib\Data\Database {
   public function getLobbyCards() {
     if (!$this->lobbyCards) {
       $lobbyCardIds = $this->select(
-        "SELECT `section_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = 'lobby-card' ORDER BY `created` DESC",
-        "d", [ $this->id ]
+        "SELECT `section_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY `created` DESC",
+        "di", [ $this->id, MovieImage::IMAGETYPE_LOBBYCARD ]
       );
       $c = count($lobbyCardIds);
       for ($i = 0; $i < $c; ++$i) {
@@ -582,8 +582,8 @@ class Movie extends \MovLib\Data\Database {
   public function getPhotos() {
     if (!$this->photos) {
       $photoIds = $this->select(
-        "SELECT `section_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = 'photo' ORDER BY `created` DESC",
-        "d", [ $this->id ]
+        "SELECT `section_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY `created` DESC",
+        "di", [ $this->id, MovieImage::IMAGETYPE_PHOTO ]
       );
       $c = count($photoIds);
       for ($i = 0; $i < $c; ++$i) {
@@ -596,7 +596,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Get the movie's display poster.
    *
-   * @return \MovLib\Data\MoviePoster
+   * @return \MovLib\Data\MovieImage
    *   The movie's display poster.
    */
   public function getDisplayPoster() {
