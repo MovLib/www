@@ -17,8 +17,6 @@
  */
 namespace MovLib\Data\History;
 
-use \MovLib\Exception\HistoryException;
-
 /**
  * Description of MovieHistoryModel
  *
@@ -36,7 +34,7 @@ class Movie extends AbstractHistory {
    * Write files to repository if offset exists in $data.
    *
    * @param array $data
-   *   Associative array with data to store.
+   *   Associative array with data to store (use file names as keys).
    * @return this
    * @throws \MovLib\Exception\FileSystemException
    */

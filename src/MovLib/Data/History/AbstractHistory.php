@@ -32,7 +32,6 @@ use \ReflectionClass;
  */
 abstract class AbstractHistory extends \MovLib\Data\Database {
 
-
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
   /**
@@ -76,7 +75,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     $this->type = $this->getShortName();
     $this->id = $id;
 
-    // verify if id is valid.
+    // verify if the given id is valid.
     $result = $this->select("SELECT `{$this->type}_id` FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1", "d", [ $this->id ]);
     if (empty($result[0])) {
       throw new HistoryException("Could not find {$this->type} with ID '{$this->id}'!");
@@ -92,7 +91,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * Write files to repository.
    *
    * @param array $data
-   *   Associative array with data to store (use file name as key)
+   *   Associative array with data to store (use file names as keys)
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Exception\FileSystemException
@@ -102,56 +101,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
   /**
-   * Stage all changed files.
-   *
-   * @return this
-   * @throws \MovLib\Exception\HistoryException
-   */
-  private function stageAllFiles() {
-    exec("cd {$this->path} && git add -A", $output, $returnVar);
-    if ($returnVar !== 0) {
-      throw new HistoryException("Error adding files to stage!");
-    }
-    return $this;
-  }
-
-  /**
-   * Unstage files
-   *
-   * @param array $files
-   *   Numeric array containing the file names to unstage.
-   * @return this
-   * @throws \MovLib\Exception\HistoryException
-   */
-  private function unstageFiles(array $files) {
-    $filesToUnstage = implode(" ", $files);
-    exec("cd {$this->path} && git reset --quiet HEAD {$filesToUnstage}", $output, $returnVar);
-    if ($returnVar !== 0) {
-      var_dump($output);
-      throw new HistoryException("Error unstaging files!");
-    }
-    return $this;
-  }
-
-  /**
-   * Reset unstaged files
-   *
-   * @param array $files
-   *   Numeric array containing the file names to be reseted. Only unstaged files can be reseted!
-   * @return this
-   * @throws \MovLib\Exception\HistoryException
-   */
-  private function resetFiles(array $files) {
-    $filesToReset = implode(" ", $files);
-    exec("cd {$this->path} && git checkout -- {$filesToReset}", $output, $returnVar);
-    if ($returnVar !== 0) {
-      throw new HistoryException("Error resetting files!");
-    }
-    return $this;
-  }
-
-  /**
-   * Commit staged files
+   * Commit staged files if there are dirty files.
    *
    * @global \Movlib\Data\Session $session
    * @param string $message
@@ -172,6 +122,69 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       throw new HistoryException("Error commiting changes");
     }
     return $this;
+  }
+
+  /**
+   * Create GIT repository.
+   *
+   * Creates a directory in which a empty git repository is created.
+   * Then an empty initial commit is made and the commit hash is stored in the database.
+   *
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function createRepository() {
+    if (is_dir(($this->path)) === false && mkdir($this->path, 0777, true) === false) {
+      throw new FileSystemException("Could not create directory for GIT repository.");
+    }
+    exec("cd {$this->path} && git init", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new HistoryException("Could not initialize GIT repository.");
+    }
+    exec("cd {$this->path} && git commit --allow-empty --author='1 <>' -m 'initial commit'", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new HistoryException("Error while initial commit!");
+    }
+
+    $this->query("UPDATE `movies` SET `commit` = ? WHERE `movie_id` = ?", "si", [ $this->getLastCommitHash(), $this->id ]);
+
+    return $this;
+  }
+
+  /**
+   * Get the file names of files that have changed between two commits.
+   *
+   * @param string $head
+   *   Hash of git commit (newer one).
+   * @param sting $ref
+   *   Hash of git commit (older one).
+   * @return array
+   *   Numeric array of changed files.
+   * @throws \MovLib\Exception\HistoryException
+   */
+  private function getChangedFiles($head, $ref) {
+    exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new HistoryException("There was an error locating changed files");
+    }
+    return $output;
+  }
+
+  /**
+   * Get the current commit hash of the entity from database.
+   *
+   * @return string
+   *   Commit hash as string.
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\HistoryException
+   */
+  private function getCommitHash() {
+    $result = $this->select("SELECT `commit` FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1", "d", [$this->id]);
+    if (!isset($result[0]["commit"])) {
+      throw new HistoryException("Could not find commit hash of {$this->type} with ID '{$this->id}'!");
+    }
+    return $result[0]["commit"];;
   }
 
   /**
@@ -197,6 +210,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     }
 
     $c = count($output);
+    // the first 5 lines are the header, nothing to do with it.
     for ($i = 5; $i < $c; ++$i) {
       if ($output[$i][0] == " ") {
         $html .= substr($output[$i], 1);
@@ -214,26 +228,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
-   * Get the file names of files that have changed.
-   *
-   * @param string $head
-   *   Hash of git commit (newer one).
-   * @param sting $ref
-   *   Hash of git commit (older one).
-   * @return array
-   *   Numeric array of changed files.
-   * @throws \MovLib\Exception\HistoryException
-   */
-  private function getChangedFiles($head, $ref) {
-    exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output, $returnVar);
-    if ($returnVar !== 0) {
-      throw new HistoryException("There was an error locating changed files");
-    }
-    return $output;
-  }
-
-  /**
-   * Get the file names of files that are dirty.
+   * Get the file names of files that are dirty in current working tree.
    *
    * @return array
    *   Numeric array of changed files.
@@ -265,7 +260,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Returns an array of associative arrays with commits.
    *
-   * @todo Is subject safe?
    * @param int $limit [optional]
    *   The number of commits which should be retrieved.
    * @return array
@@ -287,25 +281,82 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
-   * Remembers the state of the repository when editing starts.
+   * Get the model's short class name (e.g. <em>movie</em> for <em>MovLib\Data\History\Movie</em>).
    *
-   * This methode should be called before editing actually starts. The hash is used to verify if between
-   * <code>startEditing</code> and <code>saveHistory</code> someone else edited the history.
+   * The short name is the name of the current instance of this class without the namespace lowercased.
+   *
+   * @return string
+   *   The short name of the class (lowercase) without the namespace.
+   */
+  private function getShortName() {
+    return strtolower((new ReflectionClass($this))->getShortName());
+  }
+
+  /**
+   * Hide a repository.
    *
    * @return this
+   * @throws \MovLib\Exception\HistoryException
+   * @throws \MovLib\Exception}FileSystemException
    */
-  public function startEditing() {
-    $this->commitHash = $this->getCommitHash();
+  private function hideRepository() {
+    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/.{$this->id}";
+    if (is_dir($newPath)) {
+      throw new HistoryException("Repository already hidden");
+    }
+    exec("mv {$this->path} {$newPath}", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new FileSystemException("Error while renaming repository");
+    }
+    else {
+      $this->path = $newPath;
+    }
     return $this;
   }
 
-  public function saveHistory(array $entitiy, $message) {
+  /**
+   * Reset unstaged files.
+   *
+   * Only unstaged files can be reseted!
+   *
+   * @param array $files
+   *   Numeric array containing the file names to be reseted.
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
+   */
+  private function resetFiles(array $files) {
+    $filesToReset = implode(" ", $files);
+    exec("cd {$this->path} && git checkout -- {$filesToReset}", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new HistoryException("Error resetting files!");
+    }
+    return $this;
+  }
+
+  /**
+   * Commits all changes if possible.
+   *
+   * First the repository is hidden to prevent race conditions. Then the files witch have changed are written. If there
+   * was no other commit since <code>startEditing()</code> everything is commited and the repository is made visible
+   * again. If there was another commit in the meantime, intersecting files are identified. If there are no intersecting
+   * files everything is commited. Otherwise intersecting files are resetet to HEAD and an HistoryException is thrown.
+   *
+   * @param array $entity
+   *   Associative array with data to store (use file names as keys).
+   * @param type $message
+   *   The commit Message.
+   * @return string
+   *   The hash of the current HEAD of the repository.
+   * @throws \MovLib\Exception\HistoryException
+   * @throws \MovLib\Exception\ErrorException
+   */
+  public function saveHistory(array $entity, $message) {
     if (!isset($this->commitHash)) {
       throw new HistoryException("startEditing() have to be called bevore saveHistory()!");
     }
 
     $this->hideRepository();
-    $this->writeFiles($entitiy);
+    $this->writeFiles($entity);
     $this->stageAllFiles();
 
     try {
@@ -339,29 +390,34 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
-   * Hide a repository
+   * Stage all changed files.
    *
    * @return this
    * @throws \MovLib\Exception\HistoryException
-   * @throws \MovLib\Exception}FileSystemException
    */
-  private function hideRepository() {
-    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/.{$this->id}";
-    if (is_dir($newPath)) {
-      throw new HistoryException("Repository already hidden");
-    }
-    exec("mv {$this->path} {$newPath}", $output, $returnVar);
+  private function stageAllFiles() {
+    exec("cd {$this->path} && git add -A", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new FileSystemException("Error while renaming repository");
-    }
-    else {
-      $this->path = $newPath;
+      throw new HistoryException("Error adding files to stage!");
     }
     return $this;
   }
 
   /**
-   * Unhide a repository
+   * Stores the hash of current HEAD of the repository when editing starts.
+   *
+   * This methode should be called before editing actually starts. The hash is used to verify if between
+   * <code>startEditing()</code> and <code>saveHistory()</code> someone else edited the history.
+   *
+   * @return this
+   */
+  public function startEditing() {
+    $this->commitHash = $this->getCommitHash();
+    return $this;
+  }
+
+  /**
+   * Unhide a repository.
    *
    * @return this
    * @throws \MovLib\Exception\HistoryException
@@ -383,6 +439,23 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
+   * Unstage files.
+   *
+   * @param array $files
+   *   Numeric array containing the file names to unstage.
+   * @return this
+   * @throws \MovLib\Exception\HistoryException
+   */
+  private function unstageFiles(array $files) {
+    $filesToUnstage = implode(" ", $files);
+    exec("cd {$this->path} && git reset --quiet HEAD {$filesToUnstage}", $output, $returnVar);
+    if ($returnVar !== 0) {
+      throw new HistoryException("Error unstaging files!");
+    }
+    return $this;
+  }
+
+  /**
    * Write file to repository path.
    *
    * @param string $filename
@@ -396,62 +469,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     if (file_put_contents("{$this->path}/{$filename}", $content) === false) {
       throw new FileSystemException("Error writing to file.");
     }
-    return $this;
-  }
-
-  /**
-   * Get the current commit hash of the entity from DB
-   *
-   * @return string
-   *   Commit hash as string.
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Exception\HistoryException
-   */
-  private function getCommitHash() {
-    $result = $this->select("SELECT `commit` FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1", "d", [$this->id]);
-    if (!isset($result[0]["commit"])) {
-      throw new HistoryException("Could not find commit hash of {$this->type} with ID '{$this->id}'!");
-    }
-    return $result[0]["commit"];;
-  }
-
-  /**
-   * Get the model's short class name (e.g. <em>movie</em> for <em>MovLib\Data\History\Movie</em>).
-   *
-   * The short name is the name of the current instance of this class without the namespace lowercased.
-   *
-   * @return string
-   *   The short name of the class (lowercase) without the namespace.
-   */
-  private function getShortName() {
-    return strtolower((new ReflectionClass($this))->getShortName());
-  }
-
-  /**
-   * Create GIT repository.
-   *
-   * Creates a directory in which a empty git repository is created.
-   * Then an empty initial commit is made and the commit hash is stored in the database.
-   *
-   * @return this
-   * @throws \MovLib\Exception\HistoryException
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function createRepository() {
-    if (is_dir(($this->path)) === false && mkdir($this->path, 0777, true) === false) {
-      throw new FileSystemException("Could not create directory for GIT repository.");
-    }
-    exec("cd {$this->path} && git init", $output, $returnVar);
-    if ($returnVar !== 0) {
-      throw new HistoryException("Could not initialize GIT repository.");
-    }
-    exec("cd {$this->path} && git commit --allow-empty --author='1 <>' -m 'initial commit'", $output, $returnVar);
-    if ($returnVar !== 0) {
-      throw new HistoryException("Error while initial commit!");
-    }
-
-    $this->query("UPDATE `movies` SET `commit` = ? WHERE `movie_id` = ?", "si", [ $this->getLastCommitHash(), $this->id ]);
-
     return $this;
   }
 
