@@ -71,11 +71,15 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   /**
    * @expectedException        \MovLib\Exception\HistoryException
    * @expectedExceptionMessage Could not find movie with ID ''!
+   * @covers \Movlib\Data\History\AbstractHistory::__construct
    */
   public function testWithoutId() {
       new Movie(null);
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::getShortName
+   */
   public function testGetShortName() {
     $movie = new Movie(2);
     $getShortName = new ReflectionMethod($movie, "getShortName");
@@ -83,12 +87,18 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("movie", $getShortName->invoke(new Movie(2)));
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::createRepository
+   */
   public function testCreateRepository() {
     (new Movie(2))->createRepository();
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2");
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/.git/HEAD");
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::hideRepository
+   */
   public function testHideRepository() {
     $movie = new Movie(2);
     $movie->createRepository();
@@ -102,6 +112,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   /**
    * @expectedException        \MovLib\Exception\HistoryException
    * @expectedExceptionMessage Repository already hidden
+   * @covers \Movlib\Data\History\AbstractHistory::hideRepository
    */
   public function testHideRepositoryIfHidden() {
     $movie = new Movie(2);
@@ -113,6 +124,9 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $hideRepository->invoke($movie);
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::unhideRepository
+   */
   public function testUnhideRepository() {
     $movie = new Movie(2);
     $movie->createRepository();
@@ -132,6 +146,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   /**
    * @expectedException        \MovLib\Exception\HistoryException
    * @expectedExceptionMessage Repository not hidden
+   * @covers \Movlib\Data\History\AbstractHistory::unhideRepository
    */
   public function testUnhideRepositoryIfNotHidden() {
     $movie = new Movie(2);
@@ -142,6 +157,10 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $unhideRepository->invoke($movie);
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::startEditing
+   * @covers \Movlib\Data\History\AbstractHistory::getCommitHash
+   */
   public function testStartEditing() {
     $movie = new Movie(2);
     static::$db->query("UPDATE `movies` SET `commit` = 'b006169990b07af17d198f6a37efb324ced95fb3' WHERE `movie_id` = 2");
@@ -158,6 +177,9 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     );
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::writeFiles
+   */
   public function testWriteFiles() {
     $movie = new Movie(2);
     $movie->createRepository();
@@ -194,6 +216,12 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     );
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::stageAllFiles
+   * @covers \Movlib\Data\History\AbstractHistory::unstageFiles
+   * @covers \Movlib\Data\History\AbstractHistory::resetFiles
+   * @covers \Movlib\Data\History\AbstractHistory::commitFiles
+   */
   public function testGitHelperMethodes() {
     $movie = new Movie(2);
     $movie->createRepository();
@@ -258,6 +286,10 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2000);
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::getChangedFiles
+   * @covers \Movlib\Data\History\AbstractHistory::getDirtyFiles
+   */
   public function testGetChangedFiles() {
     $movie = new Movie(2);
     $movie->createRepository();
@@ -285,6 +317,9 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("original_title year", implode(" ", $getChangedFiles->invoke($movie, "HEAD", "HEAD^1")));
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::getLastCommits
+   */
   public function testGetLastCommits() {
     $movie = new Movie(2);
     $movie->createRepository();
@@ -318,6 +353,9 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertCount(1, $oneCommit);
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::getLastCommitHash
+   */
   public function testGetLastCommitHash() {
     $movie = new Movie(2);
     $movie->createRepository();
@@ -338,6 +376,9 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals($getLastCommitHash->invoke($movie), $getLastCommits->invoke($movie)[0]["hash"]);
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::getDiffasHTML
+   */
   public function testGetDiffAsHTML() {
     $movie = new Movie(2);
     $movie->createRepository();
@@ -364,12 +405,16 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   /**
    * @expectedException        \MovLib\Exception\HistoryException
    * @expectedExceptionMessage startEditing() have to be called bevore saveHistory()!
+   * @covers \Movlib\Data\History\AbstractHistory::saveHistory
    */
   public function testSaveHistoryWithoutStartEditing() {
     $movie = new Movie(2);
     $movie->saveHistory([], "initial commit");
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::saveHistory
+   */
   public function testSaveHistory() {
     $movie = new Movie(2);
     $movie->createRepository();
@@ -383,6 +428,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   /**
    * @expectedException        \MovLib\Exception\HistoryException
    * @expectedExceptionMessage Someone else edited the same information about the movie!
+   * @covers \Movlib\Data\History\AbstractHistory::saveHistory
    */
   public function testSaveHistoryIfSomeoneElseAlreadyChangedTheSameInformation() {
     $movieUserOne = new Movie(2);
