@@ -130,13 +130,6 @@ class MovieImage extends \MovLib\Data\AbstractImage {
   public $country;
 
   /**
-   * The file size of the image in bytes.
-   *
-   * @var int
-   */
-  public $size;
-
-  /**
    * The timestamp this image was initially uploaded.
    *
    * @var int
@@ -209,7 +202,7 @@ class MovieImage extends \MovLib\Data\AbstractImage {
           `filename` AS `imageName`,
           `width` AS `imageWidth`,
           `height` AS `imageHeight`,
-          `size`,
+          `size` AS `imageSize`,
           `ext` AS `imageExtension`,
           UNIX_TIMESTAMP(`created`) AS `created`,
           UNIX_TIMESTAMP(`changed`) AS `changed`,
@@ -265,6 +258,19 @@ class MovieImage extends \MovLib\Data\AbstractImage {
         ]);
       }
     }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  public function getImageDetails() {
+    $details = parent::getImageDetails();
+    $details["country"] = $this->country;
+    return $details;
   }
 
   /**

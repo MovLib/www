@@ -75,6 +75,13 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    */
   protected $id;
 
+  /*
+   * Files with conflicts
+   *
+   * ævar array
+   */
+  public $intersectingFiles;
+
   /**
    * The path to the repository.
    *
@@ -137,7 +144,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     global $session;
 
     if (empty($this->getDirtyFiles())) {
-      throw new HistoryException("No changed files to commit", self::E_NOTHING_TO_COMMIT);
+      throw new HistoryException("No changed files to commit!", self::E_NOTHING_TO_COMMIT);
     }
 
     exec("cd {$this->path} && git commit --author='{$session->userId} <>' -m '{$message}'", $output, $returnVar);
@@ -209,7 +216,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
-   * Returns diff between two commits of one file as styled HTML.
+   * Returns diff between two commits of one file.
    *
    * @todo Move to presentation.
    * @param string $head
@@ -218,8 +225,8 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   Hash of git commit (older one).
    * @param string $filename
    *   Name of file in repository.
-   * @return string
-   *   Returns diff of one file as styled HTML.
+   * @return array
+   *   Numeric array with git diff line by line.
    * @throws \MovLib\Exception\HistoryException
    */
   public function getDiffasHTML($head, $ref, $filename) {
@@ -228,23 +235,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       throw new HistoryException("There was an error during 'git diff'");
     }
 
-    $html = "";
-    $c = count($output);
-    // the first 5 lines are the header, nothing to do with it.
-    for ($i = 5; $i < $c; ++$i) {
-      if ($output[$i][0] == " ") {
-        $html .= substr($output[$i], 1);
-      }
-      elseif ($output[$i][0] == "+") {
-        $tmp = substr($output[$i], 1);
-        $html .= "<span class='green'>{$tmp}</span>";
-      }
-      elseif ($output[$i][0] == "-") {
-        $tmp = substr($output[$i], 1);
-        $html .= "<span class='red'>{$tmp}</span>";
-      }
-    }
-    return $html;
+    return $output;
   }
 
   /**
@@ -382,17 +373,15 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
         // If someone else commited in the meantime find intersecting files.
         $changedSinceStartEditing = $this->getChangedFiles("HEAD", $this->commitHash);
         $changedFiles = $this->getDirtyFiles();
-        $intersection = array_intersect($changedFiles, $changedSinceStartEditing);
-        // we reset the intersecting files.
-        if (!empty($intersection)) {
-          $this->unstageFiles($intersection);
-          $this->resetFiles($intersection);
-          $this->commitFiles($message);
-          // @todo: show intersection to user instead of this exception.
-          throw new HistoryException("Someone else edited the same information about the {$this->type}!", self::E_EDITING_CONFLICT);
-        }
+        $this->intersectingFiles = array_intersect($changedFiles, $changedSinceStartEditing);
+        // we reset the all dirty files.
+        $this->unstageFiles($changedFiles);
+        $this->resetFiles($changedFiles);
+        throw new HistoryException("Someone else edited the same information about the {$this->type}!", self::E_EDITING_CONFLICT);
+      } else {
+        $this->intersectingFiles = null;
+        $this->commitFiles($message);
       }
-      $this->commitFiles($message);
     }
     finally {
       $this->unhideRepository();

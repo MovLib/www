@@ -44,7 +44,8 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
   public function setUp() {
     $this->movie = new Movie(2);
-    $this->movie->createRepository();
+    $commitHash = $this->movie->createRepository();
+    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
   }
 
   public static function tearDownAfterClass() {
@@ -56,15 +57,6 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     if(is_dir($path)) {
       exec("rm -rf {$path}");
     }
-  }
-
-  /**
-   * @expectedException \MovLib\Exception\HistoryException
-   * @expectedExceptionMessage Could not find movie with ID ''!
-   * @covers \Movlib\Data\History\AbstractHistory::__construct
-   */
-  public function testWithoutId() {
-    new Movie(null);
   }
 
   /**
@@ -175,7 +167,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $path = get_reflection_property($this->movie, "path")->getValue($this->movie);
 
     // reflected methodes
-    $stageAllFiles = get_reflection_method($this->movie, "stageAllFile");
+    $stageAllFiles = get_reflection_method($this->movie, "stageAllFiles");
 
     // write files
     $this->movie->writeFiles([ "original_title" => "The foobar is a lie", "year" => 2000, "runtime" => 42 ]);
@@ -226,7 +218,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getDirtyFiles
    */
   public function testGetChangedFiles() {
-    $stageAllFiles = get_reflection_method($this->movie, "stageAllFile");
+    $stageAllFiles = get_reflection_method($this->movie, "stageAllFiles");
     $commitFiles = get_reflection_method($this->movie, "commitFiles");
 
     $this->movie->writeFiles([ "original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42 ]);
@@ -249,7 +241,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getLastCommits
    */
   public function testGetLastCommits() {
-    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFile");
+    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");
     $commitFiles    = get_reflection_method($this->movie, "commitFiles");
     $getLastCommits = get_reflection_method($this->movie, "getLastCommits");
 
@@ -281,7 +273,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    */
   public function testGetLastCommitHash() {
     $this->movie->writeFiles(["original_title" => "The foobar is a lie"]);
-    get_reflection_method($this->movie, "stageAllFile")->invoke($this->movie);
+    get_reflection_method($this->movie, "stageAllFiles")->invoke($this->movie);
     get_reflection_method($this->movie, "commitFiles")->invoke($this->movie, "initial commit");
     $this->assertEquals(
       get_reflection_method($this->movie, "getLastCommitHash")->invoke($this->movie),
@@ -293,7 +285,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getDiffasHTML
    */
   public function testGetDiffAsHTML() {
-    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFile");
+    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");
     $commitFiles    = get_reflection_method($this->movie, "commitFiles");
 
     $this->movie->writeFiles(["original_title" => "The foobar is a lie"]);
@@ -304,15 +296,23 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $stageAllFiles->invoke($this->movie);
     $commitFiles->invoke($this->movie, "second commit");
 
-    $this->assertEquals(
-      "The<span class='red'>foobar</span><span class='green'>bar</span> is<span class='green'>not</span> a lie",
-      $this->movie->getDiffasHTML("HEAD", "HEAD^1", "original_title")
-    );
+    $diff = $this->movie->getDiffasHTML("HEAD", "HEAD^1", "original_title");
+    $this->assertEquals(" The", $diff[5]);
+    $this->assertEquals("-foobar", $diff[6]);
+    $this->assertEquals("+bar", $diff[7]);
+    $this->assertEquals("  is", $diff[8]);
+    $this->assertEquals("+not", $diff[9]);
+    $this->assertEquals("  a lie", $diff[10]);
+
+//    $this->assertEquals(
+//      "The<span class='red'>foobar</span><span class='green'>bar</span> is<span class='green'>not</span> a lie",
+//      $this->movie->getDiffasHTML("HEAD", "HEAD^1", "original_title")
+//    );
   }
 
   /**
    * @expectedException \MovLib\Exception\HistoryException
-   * @expectedExceptionMessage startEditing() have to be called bevore saveHistory()!
+   * @expectedExceptionMessage startEditing() has to be called before saveHistory()!
    * @covers \Movlib\Data\History\AbstractHistory::saveHistory
    */
   public function testSaveHistoryWithoutStartEditing() {
@@ -342,23 +342,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
 
     $this->movieUserTwo->saveHistory([ "original_title" => "The bar is not a lie" ], "initial commit");
-  }
 
-  /**
-   * @expectedException \MovLib\Exception\HistoryException
-   * @expectedExceptionMessage Someone else edited the same information about the movie!
-   */
-  public function testSaveNotIntersectingFieldsIfSomeoneElseAlreadyChangedAnythingElse() {
-    $this->movie->startEditing();
-    $this->movieUserOne = $this->movie;
-    $this->movieUserTwo = clone $this->movie;
-
-    $commitHash = $this->movieUserOne->saveHistory([ "original_title" => "The foobar is a lie", "year" => 2000 ], "initial commit");
-    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
-    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2000);
-
-    $this->movieUserTwo->saveHistory([ "original_title" => "The bar is not a lie", "year" => 2001 ], "initial commit");
-    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2001);
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title", "The foobar is a lie");
   }
 

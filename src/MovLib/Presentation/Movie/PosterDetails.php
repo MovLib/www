@@ -15,11 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\MovieImage;
+use \MovLib\Exception\Client\NotFoundException;
+
 /**
- * The movie's lobby card gallery.
+ * Description of PosterDetails
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -27,29 +29,26 @@ namespace MovLib\Presentation\Movie;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class LobbyCardGallery extends \MovLib\Presentation\Movie\AbstractMoviePage {
-  use \MovLib\Presentation\TraitGallery;
+class PosterDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\TraitImageDetails;
   use \MovLib\Presentation\Movie\TraitMovieGallery;
 
   /**
-   * Instantiate new movie lobby card gallery presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @throws \MovLib\Exception\Client\NotFoundException
    */
   public function __construct() {
     global $i18n;
     $this->initMovie();
     $this->entityTitle = $this->title;
-    $this->title = "{$i18n->t("Lobby Cards of")} “{$this->entityTitle}”";
-    $this->init($this->title);
-    $this->images = $this->model->getLobbyCards();
-    $this->imagesRoute = [ $i18n->t("movie"), $this->model->id, $i18n->t("lobby-card") ];
-    $this->uploadRoute = $i18n->r("/movie/{0}/lobby-cards/upload", [ $this->model->id ]);
-    $this->noImagesText = $i18n->t("No Lobby Cards for “{0}”.", [ $this->entityTitle ]);
-    $this->uploadText = $i18n->t("Want to upload your Lobby Cards? {0}", [
-        $this->a($this->uploadRoute, "Click here to do so.")
-    ]);
+    $this->uploadRoute = $i18n->r("/movie/{0}/posters/upload", [ $this->model->id ]);
+    $this->image = new MovieImage($this->model->id, MovieImage::IMAGETYPE_POSTER, $_SERVER["IMAGE_ID"]);
+    if ($this->image->imageExists === false) {
+      throw new NotFoundException("");
+    }
+    $this->editRoute = $i18n->r("/movie/{0}/poster/{1}/edit", [ $this->model->id, $this->image->sectionId ]);
+    list($position, $totalCount) = $this->image->getPositionAndTotalCount();
+    $this->init($i18n->t("Poster {0} of {1} from “{2}”", [ $position, $totalCount, $this->title ]));
+    $this->streamImages = $this->model->getPosters();
   }
 
 }
