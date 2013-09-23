@@ -18,7 +18,7 @@
 namespace MovLib\Exception;
 
 /**
- * A git exception might be thrown if something goes wrong during the execution of a git command.
+ * A history exception might be thrown if something goes wrong during the execution of a git command.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -26,4 +26,20 @@ namespace MovLib\Exception;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryException extends \MovLib\Exception\AbstractException {}
+class HistoryException extends \RuntimeException {
+
+  /**
+   * Instantiate new history exception.
+   *
+   * @param string $message
+   *   The Exception message to throw.
+   * @param int $code [optional]
+   *   The Exception code, defaults to <var>E_ERROR</var>.
+   * @param \Exception $previous [optional]
+   *   The previous exception used for the exception chaining, defaults to <code>NULL</code>.
+   */
+  public function __construct($message, $code = E_ERROR, $previous = null) {
+    parent::__construct($message, $code, $previous);
+  }
+
+}

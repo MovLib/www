@@ -18,9 +18,6 @@
 namespace MovLib\Test\Data\History;
 
 use \MovLib\Data\History\Movie;
-use \mysqli;
-use \ReflectionClass;
-use \ReflectionMethod;
 
 /**
  * Test the Movie.
@@ -33,65 +30,54 @@ use \ReflectionMethod;
  */
 class MovieTest extends \PHPUnit_Framework_TestCase {
 
-  /**
-   * Database
-   *
-   * @var mysqli
-   */
+  /** @var \mysqli */
   static $db;
 
-  /**
-   * This methode is called once before all tests.
-   */
+  /** @var \MovLib\Data\History\Movie */
+  public $movie;
+
   public static function setUpBeforeClass() {
-    static::$db = new mysqli();
+    static::$db = new \mysqli();
     static::$db->real_connect();
     static::$db->select_db($GLOBALS["movlib"]["default_database"]);
   }
 
-  /**
-   * This methode is called once after all tests.
-   */
+  public function setUp() {
+    $this->movie = new Movie(2);
+    $this->movie->createRepository();
+  }
+
   public static function tearDownAfterClass() {
     static::$db->close();
   }
 
-  /**
-   * This methode is called after each test.
-   */
   public function tearDown() {
     $path = "{$_SERVER["DOCUMENT_ROOT"]}/history/movie";
     if(is_dir($path)) {
-      exec("rm -Rf {$path}");
+      exec("rm -rf {$path}");
     }
   }
 
-  // ------------------------------------------------------------------------------------------------------------------- Tests
-
   /**
-   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedException \MovLib\Exception\HistoryException
    * @expectedExceptionMessage Could not find movie with ID ''!
    * @covers \Movlib\Data\History\AbstractHistory::__construct
    */
   public function testWithoutId() {
-      new Movie(null);
+    new Movie(null);
   }
 
   /**
    * @covers \Movlib\Data\History\AbstractHistory::getShortName
    */
   public function testGetShortName() {
-    $movie = new Movie(2);
-    $getShortName = new ReflectionMethod($movie, "getShortName");
-    $getShortName->setAccessible(true);
-    $this->assertEquals("movie", $getShortName->invoke(new Movie(2)));
+    $this->assertEquals("movie", get_reflection_method($this->movie, "getShortName")->invoke($this->movie));
   }
 
   /**
    * @covers \Movlib\Data\History\AbstractHistory::createRepository
    */
   public function testCreateRepository() {
-    (new Movie(2))->createRepository();
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2");
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/.git/HEAD");
   }
@@ -100,61 +86,40 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::hideRepository
    */
   public function testHideRepository() {
-    $movie = new Movie(2);
-    $movie->createRepository();
-
-    $hideRepository = new ReflectionMethod($movie, "hideRepository");
-    $hideRepository->setAccessible(true);
-    $hideRepository->invoke($movie);
+    get_reflection_method($this->movie, "hideRepository")->invoke($this->movie);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/.2");
   }
 
   /**
-   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedException \MovLib\Exception\HistoryException
    * @expectedExceptionMessage Repository already hidden
    * @covers \Movlib\Data\History\AbstractHistory::hideRepository
+   * @depends testHideRepository
    */
   public function testHideRepositoryIfHidden() {
-    $movie = new Movie(2);
-    $movie->createRepository();
-
-    $hideRepository = new ReflectionMethod($movie, "hideRepository");
-    $hideRepository->setAccessible(true);
-    $hideRepository->invoke($movie);
-    $hideRepository->invoke($movie);
+    $f = get_reflection_method($this->movie, "hideRepository");
+    $f->invoke($this->movie);
+    $f->invoke($this->movie);
   }
 
   /**
    * @covers \Movlib\Data\History\AbstractHistory::unhideRepository
    */
   public function testUnhideRepository() {
-    $movie = new Movie(2);
-    $movie->createRepository();
-
-    // hide
-    $hideRepository = new ReflectionMethod($movie, "hideRepository");
-    $hideRepository->setAccessible(true);
-    $hideRepository->invoke($movie);
+    get_reflection_method($this->movie, "hideRepository")->invoke($this->movie);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/.2");
-    //unhide
-    $unhideRepository = new ReflectionMethod($movie, "unhideRepository");
-    $unhideRepository->setAccessible(true);
-    $unhideRepository->invoke($movie);
+
+    get_reflection_method($this->movie, "unhideRepository")->invoke($this->movie);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2");
   }
 
   /**
-   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedException \MovLib\Exception\HistoryException
    * @expectedExceptionMessage Repository not hidden
    * @covers \Movlib\Data\History\AbstractHistory::unhideRepository
    */
   public function testUnhideRepositoryIfNotHidden() {
-    $movie = new Movie(2);
-    $movie->createRepository();
-
-    $unhideRepository = new ReflectionMethod($movie, "unhideRepository");
-    $unhideRepository->setAccessible(true);
-    $unhideRepository->invoke($movie);
+    get_reflection_method($this->movie, "unhideRepository")->invoke($this->movie);
   }
 
   /**
@@ -162,53 +127,36 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getCommitHash
    */
   public function testStartEditing() {
-    $movie = new Movie(2);
     static::$db->query("UPDATE `movies` SET `commit` = 'b006169990b07af17d198f6a37efb324ced95fb3' WHERE `movie_id` = 2");
-
-    $movie->startEditing();
-
-    $reflectionClass = new ReflectionClass($movie);
-    $reflectionProperty = $reflectionClass->getProperty('commitHash');
-    $reflectionProperty->setAccessible(true);
-    $this->assertNotNull($reflectionProperty->getValue($movie));
-    $this->assertEquals(
-      "b006169990b07af17d198f6a37efb324ced95fb3",
-      $reflectionProperty->getValue($movie)
-    );
+    $this->movie->startEditing();
+    $p = get_reflection_property($this->movie, "commitHash");
+    $this->assertNotNull($p->getValue($this->movie));
+    $this->assertEquals("b006169990b07af17d198f6a37efb324ced95fb3", $p->getValue($this->movie));
   }
 
   /**
    * @covers \Movlib\Data\History\AbstractHistory::writeFiles
    */
   public function testWriteFiles() {
-    $movie = new Movie(2);
-    $movie->createRepository();
-
     // wrong offset name
-    $movie->writeFiles(["foo" => "bar"]);
+    $this->movie->writeFiles(["foo" => "bar"]);
     $this->assertFileNotExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/foo");
 
     // offset which should be written to file directly
-    $movie->writeFiles(["original_title" => "The Shawshank Redemption"]);
+    $this->movie->writeFiles(["original_title" => "The Shawshank Redemption"]);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title");
-    $this->assertStringEqualsFile(
-      "{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title",
-      "The Shawshank Redemption"
-    );
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title", "The Shawshank Redemption");
 
     // offset with language prefix which should be written to file directly
-    $movie->writeFiles(["en_synopsis" => "A very short synopsis."]);
+    $this->movie->writeFiles(["en_synopsis" => "A very short synopsis."]);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/en_synopsis");
-    $this->assertStringEqualsFile(
-      "{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/en_synopsis",
-      "A very short synopsis."
-    );
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/en_synopsis", "A very short synopsis.");
 
     // no file should be written if the offset is not set
     $this->assertFileNotExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/de_synopsis");
 
     // offset which should be written to file serialized
-    $movie->writeFiles(["titles" => [["id" => 1, "title" => "foo"], ["id" => 2, "title" => "bar"]]]);
+    $this->movie->writeFiles([ "titles" => [[ "id" => 1, "title" => "foo" ], [ "id" => 2, "title" => "bar" ]] ]);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/titles");
     $this->assertStringEqualsFile(
       "{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/titles",
@@ -223,30 +171,17 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::commitFiles
    */
   public function testGitHelperMethodes() {
-    $movie = new Movie(2);
-    $movie->createRepository();
-
     // reflected properties
-    $reflectionClass = new ReflectionClass($movie);
-    $reflectionProperty = $reflectionClass->getProperty('path');
-    $reflectionProperty->setAccessible(true);
-    $path = $reflectionProperty->getValue($movie);
+    $path = get_reflection_property($this->movie, "path")->getValue($this->movie);
 
     // reflected methodes
-    $stageAllFiles = new ReflectionMethod($movie, "stageAllFiles");
-    $stageAllFiles->setAccessible(true);
-    $unstageFiles = new ReflectionMethod($movie, "unstageFiles");
-    $unstageFiles->setAccessible(true);
-    $resetFiles = new ReflectionMethod($movie, "resetFiles");
-    $resetFiles->setAccessible(true);
-    $commitFiles = new ReflectionMethod($movie, "commitFiles");
-    $commitFiles->setAccessible(true);
+    $stageAllFiles = get_reflection_method($this->movie, "stageAllFile");
 
     // write files
-    $movie->writeFiles(["original_title" => "The foobar is a lie", "year" => 2000, "runtime" => 42]);
+    $this->movie->writeFiles([ "original_title" => "The foobar is a lie", "year" => 2000, "runtime" => 42 ]);
 
     // stage all files
-    $stageAllFiles->invoke($movie);
+    $stageAllFiles->invoke($this->movie);
     exec("cd {$path} && git status", $output);
     $this->assertEquals("# Changes to be committed:", $output[1]);
     $this->assertEquals("#	new file:   original_title", $output[4]);
@@ -254,16 +189,16 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("#	new file:   year", $output[6]);
 
     // commit all staged files
-    $commitFiles->invoke($movie, "movie created");
+    get_reflection_method($this->movie, "commitFiles")->invoke($this->movie, "movie created");
     unset($output);
     exec("cd {$path} && git status", $output);
     $this->assertEquals("nothing to commit (working directory clean)", $output[1]);
 
     // update files
-    $movie->writeFiles(["original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42]);
+    $this->movie->writeFiles([ "original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42 ]);
 
     // stage all files
-    $stageAllFiles->invoke($movie);
+    $stageAllFiles->invoke($this->movie);
     unset($output);
     exec("cd {$path} && git status", $output);
     $this->assertEquals("# Changes to be committed:", $output[1]);
@@ -273,14 +208,14 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2001);
 
     // unstage year
-    $unstageFiles->invoke($movie, ["year"]);
+    get_reflection_method($this->movie, "unstageFiles")->invoke($this->movie, [ "year" ]);
     unset($output);
     exec("cd {$path} && git status", $output);
     $this->assertEquals("# Changes not staged for commit:", $output[6]);
     $this->assertEquals("#	modified:   year", $output[10]);
 
     // reset year
-    $resetFiles->invoke($movie, ["year"]);
+    get_reflection_method($this->movie, "resetFiles")->invoke($this->movie, [ "year" ]);
     unset($output);
     exec("cd {$path} && git status", $output);
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2000);
@@ -291,176 +226,138 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getDirtyFiles
    */
   public function testGetChangedFiles() {
-    $movie = new Movie(2);
-    $movie->createRepository();
+    $stageAllFiles = get_reflection_method($this->movie, "stageAllFile");
+    $commitFiles = get_reflection_method($this->movie, "commitFiles");
 
-    $stageAllFiles = new ReflectionMethod($movie, "stageAllFiles");
-    $stageAllFiles->setAccessible(true);
-    $getChangedFiles = new ReflectionMethod($movie, "getChangedFiles");
-    $getChangedFiles->setAccessible(true);
-    $getDirtyFiles = new ReflectionMethod($movie, "getDirtyFiles");
-    $getDirtyFiles->setAccessible(true);
-    $commitFiles = new ReflectionMethod($movie, "commitFiles");
-    $commitFiles->setAccessible(true);
-
-    $movie->writeFiles(["original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42]);
-    $stageAllFiles->invoke($movie);
-    $commitFiles->invoke($movie, "initial commit");
+    $this->movie->writeFiles([ "original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42 ]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "initial commit");
 
     // with unstaged files
-    $movie->writeFiles(["original_title" => "The foobar is a lie", "year" => 2002, "runtime" => 42]);
-    $this->assertEquals("original_title year", implode(" ", $getDirtyFiles->invoke($movie)));
+    $this->movie->writeFiles([ "original_title" => "The foobar is a lie", "year" => 2002, "runtime" => 42 ]);
+    $dirtyFiles = get_reflection_method($this->movie, "getDirtyFiles")->invoke($this->movie);
+    $this->assertEquals("original_title year", implode(" ", $dirtyFiles));
 
     // with 2 commits
-    $stageAllFiles->invoke($movie);
-    $commitFiles->invoke($movie, "second commit");
-    $this->assertEquals("original_title year", implode(" ", $getChangedFiles->invoke($movie, "HEAD", "HEAD^1")));
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "second commit");
+    $changedFiles = get_reflection_method($this->movie, "getChangedFiles")->invoke($this->movie, "HEAD", "HEAD^1");
+    $this->assertEquals("original_title year", implode(" ", $changedFiles));
   }
 
   /**
    * @covers \Movlib\Data\History\AbstractHistory::getLastCommits
    */
   public function testGetLastCommits() {
-    $movie = new Movie(2);
-    $movie->createRepository();
+    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFile");
+    $commitFiles    = get_reflection_method($this->movie, "commitFiles");
+    $getLastCommits = get_reflection_method($this->movie, "getLastCommits");
 
-    $stageAllFiles = new ReflectionMethod($movie, "stageAllFiles");
-    $stageAllFiles->setAccessible(true);
-    $commitFiles = new ReflectionMethod($movie, "commitFiles");
-    $commitFiles->setAccessible(true);
-    $getLastCommits = new ReflectionMethod($movie, "getLastCommits");
-    $getLastCommits->setAccessible(true);
+    $this->movie->writeFiles([ "original_title" => "The foobar is a lie" ]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "initial commit");
 
-    $movie->writeFiles(["original_title" => "The foobar is a lie"]);
-    $stageAllFiles->invoke($movie);
-    $commitFiles->invoke($movie, "initial commit");
+    $this->movie->writeFiles([ "year" => 2001 ]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "second commit");
 
-    $movie->writeFiles(["year" => 2001]);
-    $stageAllFiles->invoke($movie);
-    $commitFiles->invoke($movie, "second commit");
+    $this->movie->writeFiles([ "runtime" => 300 ]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "third commit");
 
-    $movie->writeFiles(["runtime" => 300]);
-    $stageAllFiles->invoke($movie);
-    $commitFiles->invoke($movie, "third commit");
-
-    $commits = $getLastCommits->invoke($movie);
+    $commits = $getLastCommits->invoke($this->movie);
     $this->assertEquals("third commit", $commits[0]["subject"]);
     $this->assertEquals("second commit", $commits[1]["subject"]);
     $this->assertEquals("initial commit", $commits[2]["subject"]);
 
-    $oneCommit = $getLastCommits->invoke($movie, 1);
+    $oneCommit = $getLastCommits->invoke($this->movie, 1);
     $this->assertEquals("third commit", $oneCommit[0]["subject"]);
     $this->assertCount(1, $oneCommit);
   }
 
   /**
    * @covers \Movlib\Data\History\AbstractHistory::getLastCommitHash
+   * @depends testGetLastCommits
    */
   public function testGetLastCommitHash() {
-    $movie = new Movie(2);
-    $movie->createRepository();
-
-    $stageAllFiles = new ReflectionMethod($movie, "stageAllFiles");
-    $stageAllFiles->setAccessible(true);
-    $commitFiles = new ReflectionMethod($movie, "commitFiles");
-    $commitFiles->setAccessible(true);
-    $getLastCommits = new ReflectionMethod($movie, "getLastCommits");
-    $getLastCommits->setAccessible(true);
-    $getLastCommitHash = new ReflectionMethod($movie, "getLastCommitHash");
-    $getLastCommitHash->setAccessible(true);
-
-    $movie->writeFiles(["original_title" => "The foobar is a lie"]);
-    $stageAllFiles->invoke($movie);
-    $commitFiles->invoke($movie, "initial commit");
-
-    $this->assertEquals($getLastCommitHash->invoke($movie), $getLastCommits->invoke($movie)[0]["hash"]);
+    $this->movie->writeFiles(["original_title" => "The foobar is a lie"]);
+    get_reflection_method($this->movie, "stageAllFile")->invoke($this->movie);
+    get_reflection_method($this->movie, "commitFiles")->invoke($this->movie, "initial commit");
+    $this->assertEquals(
+      get_reflection_method($this->movie, "getLastCommitHash")->invoke($this->movie),
+      get_reflection_method($this->movie, "getLastCommits")->invoke($this->movie)[0]["hash"]
+    );
   }
 
   /**
    * @covers \Movlib\Data\History\AbstractHistory::getDiffasHTML
    */
   public function testGetDiffAsHTML() {
-    $movie = new Movie(2);
-    $movie->createRepository();
+    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFile");
+    $commitFiles    = get_reflection_method($this->movie, "commitFiles");
 
-    $stageAllFiles = new ReflectionMethod($movie, "stageAllFiles");
-    $stageAllFiles->setAccessible(true);
-    $commitFiles = new ReflectionMethod($movie, "commitFiles");
-    $commitFiles->setAccessible(true);
+    $this->movie->writeFiles(["original_title" => "The foobar is a lie"]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "initial commit");
 
-    $movie->writeFiles(["original_title" => "The foobar is a lie"]);
-    $stageAllFiles->invoke($movie);
-    $commitFiles->invoke($movie, "initial commit");
-
-    $movie->writeFiles(["original_title" => "The bar is not a lie"]);
-    $stageAllFiles->invoke($movie);
-    $commitFiles->invoke($movie, "second commit");
+    $this->movie->writeFiles(["original_title" => "The bar is not a lie"]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "second commit");
 
     $this->assertEquals(
       "The<span class='red'>foobar</span><span class='green'>bar</span> is<span class='green'>not</span> a lie",
-      $movie->getDiffasHTML("HEAD", "HEAD^1", "original_title")
+      $this->movie->getDiffasHTML("HEAD", "HEAD^1", "original_title")
     );
   }
 
   /**
-   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedException \MovLib\Exception\HistoryException
    * @expectedExceptionMessage startEditing() have to be called bevore saveHistory()!
    * @covers \Movlib\Data\History\AbstractHistory::saveHistory
    */
   public function testSaveHistoryWithoutStartEditing() {
-    $movie = new Movie(2);
-    $movie->saveHistory([], "initial commit");
+    $this->movie->saveHistory([], "initial commit");
   }
 
   /**
    * @covers \Movlib\Data\History\AbstractHistory::saveHistory
    */
   public function testSaveHistory() {
-    $movie = new Movie(2);
-    $movie->createRepository();
-    $movie->startEditing();
-
-    $movie->saveHistory(["original_title" => "The foobar is a lie"], "initial commit");
-
+    $this->movie->startEditing();
+    $this->movie->saveHistory([ "original_title" => "The foobar is a lie"], "initial commit" );
     $this->assertFileExists(("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title"));
   }
 
   /**
-   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedException \MovLib\Exception\HistoryException
    * @expectedExceptionMessage Someone else edited the same information about the movie!
    * @covers \Movlib\Data\History\AbstractHistory::saveHistory
    */
   public function testSaveHistoryIfSomeoneElseAlreadyChangedTheSameInformation() {
-    $movieUserOne = new Movie(2);
-    $movieUserTwo = new Movie(2);
-    $movieUserOne->createRepository();
+    $this->movie->startEditing();
+    $this->movieUserOne = $this->movie;
+    $this->movieUserTwo = clone $this->movie;
 
-    $movieUserOne->startEditing();
-    $movieUserTwo->startEditing();
-
-    $commitHash = $movieUserOne->saveHistory(["original_title" => "The foobar is a lie"], "initial commit");
+    $commitHash = $this->movieUserOne->saveHistory([ "original_title" => "The foobar is a lie" ], "initial commit");
     static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
 
-    $movieUserTwo->saveHistory(["original_title" => "The bar is not a lie"], "initial commit");
+    $this->movieUserTwo->saveHistory([ "original_title" => "The bar is not a lie" ], "initial commit");
   }
 
   /**
-   * @expectedException        \MovLib\Exception\HistoryException
+   * @expectedException \MovLib\Exception\HistoryException
    * @expectedExceptionMessage Someone else edited the same information about the movie!
    */
   public function testSaveNotIntersectingFieldsIfSomeoneElseAlreadyChangedAnythingElse() {
-    $movieUserOne = new Movie(2);
-    $movieUserTwo = new Movie(2);
-    $movieUserOne->createRepository();
+    $this->movie->startEditing();
+    $this->movieUserOne = $this->movie;
+    $this->movieUserTwo = clone $this->movie;
 
-    $movieUserOne->startEditing();
-    $movieUserTwo->startEditing();
-
-    $commitHash = $movieUserOne->saveHistory(["original_title" => "The foobar is a lie", "year" => 2000], "initial commit");
+    $commitHash = $this->movieUserOne->saveHistory([ "original_title" => "The foobar is a lie", "year" => 2000 ], "initial commit");
     static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2000);
 
-    $movieUserTwo->saveHistory(["original_title" => "The bar is not a lie", "year" => 2001], "initial commit");
+    $this->movieUserTwo->saveHistory([ "original_title" => "The bar is not a lie", "year" => 2001 ], "initial commit");
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/year", 2001);
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/history/movie/2/original_title", "The foobar is a lie");
   }
