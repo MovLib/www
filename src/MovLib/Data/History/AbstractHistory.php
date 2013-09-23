@@ -32,14 +32,41 @@ use \ReflectionClass;
  */
 abstract class AbstractHistory extends \MovLib\Data\Database {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Exception code if nothing is to be commited.
+   *
+   * @var int
+   */
+  const E_NOTHING_TO_COMMIT = 100;
+
+  /**
+   * Exception code if a repository is in use.
+   *
+   * @var int
+   */
+  const E_REPOSITORY_IN_USE = 101;
+
+  /**
+   * Exception code for editing conflicts.
+   *
+   * @var int
+   */
+  const E_EDITING_CONFLICT = 102;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The commit hash.
    *
    * @var string
    */
-  protected $commitHash = null;
+  protected $commitHash;
 
   /**
    * Entity's unique ID (e.g. movie ID).
@@ -47,6 +74,13 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @var int
    */
   protected $id;
+
+  /*
+   * Files with conflicts
+   *
+   * ævar array
+   */
+  public $intersectingFiles;
 
   /**
    * The path to the repository.
@@ -65,6 +99,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
+
   /**
    * Instantiate new history model from given ID.
    *
@@ -74,15 +109,9 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   public function __construct($id) {
     $this->type = $this->getShortName();
     $this->id = $id;
-
-    // verify if the given id is valid.
-    $result = $this->select("SELECT `{$this->type}_id` FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1", "d", [ $this->id ]);
-    if (empty($result[0])) {
-      throw new HistoryException("Could not find {$this->type} with ID '{$this->id}'!");
-    }
-
     $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
   }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
@@ -98,10 +127,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    */
   abstract protected function writeFiles(array $data);
 
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
   /**
-   * Commit staged files if there are dirty files.
+   * Commit staged files.
    *
    * @global \Movlib\Data\Session $session
    * @param string $message
@@ -113,8 +144,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     global $session;
 
     if (empty($this->getDirtyFiles())) {
-      return $this;
-      //throw new HistoryException("No changed files to commit");
+      throw new HistoryException("No changed files to commit!", self::E_NOTHING_TO_COMMIT);
     }
 
     exec("cd {$this->path} && git commit --author='{$session->userId} <>' -m '{$message}'", $output, $returnVar);
@@ -127,10 +157,11 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Create GIT repository.
    *
-   * Creates a directory in which a empty git repository is created.
-   * Then an empty initial commit is made and the commit hash is stored in the database.
+   * Creates a directory in which a empty git repository is created. Then an empty initial commit is made and the commit
+   * hash is stored in the database.
    *
-   * @return this
+   * @return string
+   *   The commit hash.
    * @throws \MovLib\Exception\HistoryException
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -146,10 +177,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     if ($returnVar !== 0) {
       throw new HistoryException("Error while initial commit!");
     }
-
-    $this->query("UPDATE `movies` SET `commit` = ? WHERE `movie_id` = ?", "si", [ $this->getLastCommitHash(), $this->id ]);
-
-    return $this;
+    return $this->getLastCommitHash();
   }
 
   /**
@@ -184,11 +212,11 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     if (!isset($result[0]["commit"])) {
       throw new HistoryException("Could not find commit hash of {$this->type} with ID '{$this->id}'!");
     }
-    return $result[0]["commit"];;
+    return $result[0]["commit"];
   }
 
   /**
-   * Returns diff between two commits of one file as styled HTML.
+   * Returns diff between two commits of one file.
    *
    * @todo Move to presentation.
    * @param string $head
@@ -197,34 +225,17 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   Hash of git commit (older one).
    * @param string $filename
    *   Name of file in repository.
-   * @return string
-   *   Returns diff of one file as styled HTML.
+   * @return array
+   *   Numeric array with git diff line by line.
    * @throws \MovLib\Exception\HistoryException
    */
   public function getDiffasHTML($head, $ref, $filename) {
-    $html = "";
-
     exec("cd {$this->path} && git diff {$ref} {$head} --word-diff='porcelain' {$filename}", $output, $returnVar);
     if ($returnVar !== 0) {
       throw new HistoryException("There was an error during 'git diff'");
     }
 
-    $c = count($output);
-    // the first 5 lines are the header, nothing to do with it.
-    for ($i = 5; $i < $c; ++$i) {
-      if ($output[$i][0] == " ") {
-        $html .= substr($output[$i], 1);
-      }
-      elseif ($output[$i][0] == "+") {
-        $tmp = substr($output[$i], 1);
-        $html .= "<span class='green'>{$tmp}</span>";
-      }
-      elseif ($output[$i][0] == "-") {
-        $tmp = substr($output[$i], 1);
-        $html .= "<span class='red'>{$tmp}</span>";
-      }
-    }
-    return $html;
+    return $output;
   }
 
   /**
@@ -267,7 +278,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\HistoryException
    */
   public function getLastCommits($limit = null) {
-    $limit = isset($limit)? " --max-count={$limit}" : "";
+    $limit = isset($limit) ? " --max-count={$limit}" : "";
     $format = '{"hash":"%H","author_id":%an,"timestamp":%at,"subject":"%s"}';
     exec("cd {$this->path} && git log --format='{$format}'{$limit}", $output, $returnVar);
     if ($returnVar !== 0) {
@@ -281,9 +292,9 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
-   * Get the model's short class name (e.g. <em>movie</em> for <em>MovLib\Data\History\Movie</em>).
+   * Get the model's short class name (e.g. <em>movie</em> for <em>\MovLib\Data\History\Movie</em>).
    *
-   * The short name is the name of the current instance of this class without the namespace lowercased.
+   * The short name is the lowercased name of the current instance of this class without the namespace.
    *
    * @return string
    *   The short name of the class (lowercase) without the namespace.
@@ -302,15 +313,13 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   private function hideRepository() {
     $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/.{$this->id}";
     if (is_dir($newPath)) {
-      throw new HistoryException("Repository already hidden");
+      throw new HistoryException("Repository already hidden", self::E_REPOSITORY_IN_USE);
     }
     exec("mv {$this->path} {$newPath}", $output, $returnVar);
     if ($returnVar !== 0) {
       throw new FileSystemException("Error while renaming repository");
     }
-    else {
-      $this->path = $newPath;
-    }
+    $this->path = $newPath;
     return $this;
   }
 
@@ -336,7 +345,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Commits all changes if possible.
    *
-   * First the repository is hidden to prevent race conditions. Then the files witch have changed are written. If there
+   * First the repository is hidden to prevent race conditions. Then the files which have changed are written. If there
    * was no other commit since <code>startEditing()</code> everything is commited and the repository is made visible
    * again. If there was another commit in the meantime, intersecting files are identified. If there are no intersecting
    * files everything is commited. Otherwise intersecting files are resetet to HEAD and an HistoryException is thrown.
@@ -352,7 +361,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    */
   public function saveHistory(array $entity, $message) {
     if (!isset($this->commitHash)) {
-      throw new HistoryException("startEditing() have to be called bevore saveHistory()!");
+      throw new HistoryException("startEditing() has to be called before saveHistory()!");
     }
 
     $this->hideRepository();
@@ -364,27 +373,19 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
         // If someone else commited in the meantime find intersecting files.
         $changedSinceStartEditing = $this->getChangedFiles("HEAD", $this->commitHash);
         $changedFiles = $this->getDirtyFiles();
-        $intersection = array_intersect($changedFiles, $changedSinceStartEditing);
-        // we reset the intersecting files.
-        if (!empty($intersection)) {
-          $this->unstageFiles($intersection);
-          $this->resetFiles($intersection);
-          $this->commitFiles($message);
-          // @todo: show intersection to user instead of this exception.
-          throw new HistoryException("Someone else edited the same information about the {$this->type}!");
-        }
-        // If there are files left which can be commited do it.
-        $this->commitFiles($message);
-      }
-      else {
+        $this->intersectingFiles = array_intersect($changedFiles, $changedSinceStartEditing);
+        // we reset the all dirty files.
+        $this->unstageFiles($changedFiles);
+        $this->resetFiles($changedFiles);
+        throw new HistoryException("Someone else edited the same information about the {$this->type}!", self::E_EDITING_CONFLICT);
+      } else {
+        $this->intersectingFiles = null;
         $this->commitFiles($message);
       }
     }
-    catch (ErrorException $e) {
+    finally {
       $this->unhideRepository();
-      throw $e;
     }
-    $this->unhideRepository();
 
     return $this->getLastCommitHash();
   }

@@ -18,7 +18,7 @@
 namespace MovLib\Data\History;
 
 /**
- * Description of MovieHistoryModel
+ * Specialized history model for movie models.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -29,33 +29,38 @@ namespace MovLib\Data\History;
 class Movie extends AbstractHistory {
 
   /**
-   * Implementation ob abstract method <code>writeFiles()</code>.
-   *
-   * Write files to repository if offset exists in $data.
-   *
-   * @param array $data
-   *   Associative array with data to store (use file names as keys).
-   * @return this
-   * @throws \MovLib\Exception\FileSystemException
+   * @inheritdoc
    */
   public function writeFiles(array $data) {
-    foreach (["original_title", "runtime", "year"] as $offset) {
-      if (isset($data[$offset])) {
-        $this->writeToFile($offset, $data[$offset]);
+    foreach ([ "original_title", "runtime", "year" ] as $key) {
+      if (isset($data[$key])) {
+        $this->writeToFile($key, $data[$key]);
       }
     }
 
-    foreach ($GLOBALS["movlib"]["locales"] as $language => $value) {
-      if (isset($data["{$language}_synopsis"])) {
-        $this->writeToFile("{$language}_synopsis", $data["{$language}_synopsis"]);
+    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
+      if (isset($data["{$languageCode}_synopsis"])) {
+        $this->writeToFile("{$languageCode}_synopsis", $data["{$languageCode}_synopsis"]);
       }
     }
 
-    $relatedData = ["titles", "taglines", "links", "trailers", "cast", "crew", "awards",
-      "relationships", "genres", "styles", "languages", "countries", "directors"];
-    foreach ($relatedData as $offset) {
-      if (isset($data[$offset])) {
-        $this->writeToFile($offset, serialize($data[$offset]));
+    foreach ([
+      "titles",
+      "taglines",
+      "links",
+      "trailers",
+      "cast",
+      "crew",
+      "awards",
+      "relationships",
+      "genres",
+      "styles",
+      "languages",
+      "countries",
+      "directors"
+    ] as $key) {
+      if (isset($data[$key])) {
+        $this->writeToFile($key, serialize($data[$key]));
       }
     }
 
