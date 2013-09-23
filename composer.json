@@ -8,6 +8,9 @@
     { "name": "Franz Torghele", "email": "ftorghele.mmt-m2012@fh-salzburg.ac.at" }
   ],
   "require": {
+    "ezyang/htmlpurifier": "v4.5.0"
+  },
+  "require-dev": {
     "symfony/console": "2.3.*",
     "phpunit/phpunit": "3.7.*",
     "phpunit/php-invoker": "1.1.*",
