@@ -40,13 +40,13 @@ class LobbyCardGallery extends \MovLib\Presentation\Movie\AbstractMoviePage {
   public function __construct() {
     global $i18n;
     $this->initMovie();
-    $this->movieTitle = $this->title;
-    $this->title = "{$i18n->t("Lobby Cards of")} {$this->movieTitle}";
+    $this->entityTitle = $this->title;
+    $this->title = "{$i18n->t("Lobby Cards of")} “{$this->entityTitle}”";
     $this->init($this->title);
     $this->images = $this->model->getLobbyCards();
     $this->imagesRoute = [ $i18n->t("movie"), $this->model->id, $i18n->t("lobby-card") ];
     $this->uploadRoute = $i18n->r("/movie/{0}/lobby-cards/upload", [ $this->model->id ]);
-    $this->noImagesText = $i18n->t("No Lobby Cards for {0}.", [ $this->movieTitle ]);
+    $this->noImagesText = $i18n->t("No Lobby Cards for “{0}”.", [ $this->entityTitle ]);
     $this->uploadText = $i18n->t("Want to upload your Lobby Cards? {0}", [
         $this->a($this->uploadRoute, "Click here to do so.")
     ]);
