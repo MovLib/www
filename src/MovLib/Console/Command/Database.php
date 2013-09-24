@@ -21,6 +21,7 @@ use \Locale;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
+use \MovLib\Data\History\Movie;
 use \mysqli;
 
 /**
@@ -28,6 +29,7 @@ use \mysqli;
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
@@ -198,6 +200,25 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
   }
 
   /**
+   * Helper function to create history repositories.
+   */
+  private function createRepositories() {
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/history";
+    if(is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
+
+    // Movie repositories
+    if ($result = $this->mysqli->query("SELECT `movie_id` FROM `movies`")) {
+      while ($row = $result->fetch_assoc()) {
+        $history = new Movie($row["movie_id"]);
+        $commitHash = $history->createRepository();
+        $this->mysqli->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = {$row["movie_id"]}");
+      }
+    }
+  }
+
+  /**
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
@@ -233,6 +254,9 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
       empty($options[self::OPTION_SEED]) ? $this->runSeedsInteractive() : $this->importSeeds(true, $options[self::OPTION_SEED]);
     }
     else {
+
+
+
       $this->exitOnError("Not implemented yet!");
     }
   }
@@ -371,6 +395,8 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
       }
     }
     $this->mysqli->query("SET foreign_key_checks = 1");
+
+    $this->createRepositories();
 
     return $this;
   }

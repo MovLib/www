@@ -144,6 +144,12 @@ location ^~ <?= $r("/movie") ?> {
     try_files $movlib_cache @php;
   }
 
+  location ~ ^<?= $r("/movie/{0}/history", [ "([0-9]+)" ]) ?>$ {
+    set $movlib_presenter "Movie\\History";
+    set $movlib_movie_id $1;
+    try_files $movlib_cache @php;
+  }
+
   #
   # Releases
   #

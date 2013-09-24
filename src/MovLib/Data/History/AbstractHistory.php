@@ -69,6 +69,13 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   protected $commitHash;
 
   /**
+   * The directory in which repositories are created.
+   *
+   * @var string
+   */
+  protected $context;
+
+  /**
    * Entity's unique ID (e.g. movie ID).
    *
    * @var int
@@ -105,11 +112,14 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @param int $id
    *   The id of the object to be versioned.
+   * @param string $context [optional]
+   *   The directory in which the repository is found.
    */
-  public function __construct($id) {
+  public function __construct($id, $context = "history") {
+    $this->context = $context;
     $this->type = $this->getShortName();
     $this->id = $id;
-    $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
+    $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/{$this->context}/{$this->type}/{$this->id}";
   }
 
 
@@ -229,7 +239,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   Numeric array with git diff line by line.
    * @throws \MovLib\Exception\HistoryException
    */
-  public function getDiffasHTML($head, $ref, $filename) {
+  public function getDiff($head, $ref, $filename) {
     exec("cd {$this->path} && git diff {$ref} {$head} --word-diff='porcelain' {$filename}", $output, $returnVar);
     if ($returnVar !== 0) {
       throw new HistoryException("There was an error during 'git diff'");
@@ -311,7 +321,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @throws \MovLib\Exception}FileSystemException
    */
   private function hideRepository() {
-    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/.{$this->id}";
+    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/{$this->context}/{$this->type}/.{$this->id}";
     if (is_dir($newPath)) {
       throw new HistoryException("Repository already hidden", self::E_REPOSITORY_IN_USE);
     }
@@ -425,7 +435,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @throws \MovLib\Exception}FileSystemException
    */
   private function unhideRepository() {
-    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$this->type}/{$this->id}";
+    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/{$this->context}/{$this->type}/{$this->id}";
     if (is_dir($newPath)) {
       throw new HistoryException("Repository not hidden");
     }
