@@ -116,13 +116,13 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   The form element's label attributes.
    */
   public function __construct($id, array $attributes = null, $label = null, array $labelAttributes = null) {
-    $this->id = $id;
-    $this->attributes = $attributes;
-    $this->attributes["id"] = $id;
-    $this->attributes["name"] = $id;
+    $this->id                     = $id;
+    $this->attributes             = $attributes;
+    $this->attributes["id"]       = $id;
+    $this->attributes["name"]     = $id;
     $this->attributes["tabindex"] = $this->getTabindex();
-    $this->label = $label;
-    $this->labelAttributes = $labelAttributes;
+    $this->label                  = $label;
+    $this->labelAttributes        = $labelAttributes;
     $this->labelAttributes["for"] = $id;
   }
 

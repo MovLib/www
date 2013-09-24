@@ -40,7 +40,11 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase {
       $actual = $end - $start;
     }
     while ($actual < $timeTarget);
-    $this->assertEquals($GLOBALS["movlib"]["password_cost"], $cost, "Please set password_cost in your movlib.ini to {$cost} (hashing will take {$actual} seconds).");
+    $this->assertGreaterThanOrEqual(
+      $GLOBALS["movlib"]["password_cost"],
+      $cost,
+      "Please set password_cost in your movlib.ini at least to {$cost} (hashing will take {$actual} seconds)."
+    );
   }
 
 }

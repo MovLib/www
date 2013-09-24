@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \Normalizer;
-use \MovLib\Exception\ValidatorException;
+use \MovLib\Presentation\Validation\PlainText;
 
 /**
  * HTML input type text form element.
@@ -49,6 +48,13 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    */
   public $value;
 
+  /**
+   * Instance of the validation class that should be used for validation.
+   *
+   * @var \MovLib\Presentation\Validation\InterfaceValidation
+   */
+  public $validator;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -77,7 +83,8 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @inheritdoc
    */
   public function __toString() {
-    if ($this->value) {
+    // No need to set the value if the value is empty or NULL.
+    if (!empty($this->value)) {
       $this->attributes["value"] = $this->value;
     }
     return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
@@ -91,31 +98,7 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @inheritdoc
    */
   public function validate() {
-    global $i18n;
-
-    // Validate UTF-8 and normalize to NFC.
-    if (preg_match("//u", $this->value) === false || !($this->value = Normalizer::normalize($this->value))) {
-      throw new ValidatorException($i18n->t("The highlighted element contains illegal characters."));
-    }
-
-    // Decode possible entities twice.
-    $this->value = html_entity_decode(html_entity_decode($this->value, ENT_QUOTES), ENT_QUOTES|ENT_HTML5);
-
-    // Strip all possible HTML tags, but allow <> as it's harmless and no problem.
-    $this->value = strip_tags($this->value, "<>");
-
-    // Collapse all kinds of whitespace characters to a single whitespace.
-    if (!($this->value = preg_replace("/\s+/m", " ", $this->value))) {
-      throw new ValidatorException($i18n->t("The highlighted element contains illegal characters."));
-    }
-
-    // Strip low ASCII characters (including line feeds).
-    if (($this->value = filter_var($this->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_REQUIRE_SCALAR)) === false) {
-      throw new ValidatorException($i18n->t("The highlighted element contains illegal characters."));
-    }
-
-    // Finally remove whitespaces at beginning and end and we're done.
-    $this->value = trim($this->value);
+    $this->value = empty($this->validator) ? (new PlainText($this->value))->validate() : $this->validator->set($this->value)->validate();
     return $this;
   }
 

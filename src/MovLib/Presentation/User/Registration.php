@@ -24,10 +24,10 @@ use \MovLib\Presentation\Email\User\Registration as RegistrationEmail;
 use \MovLib\Presentation\Email\User\RegistrationEmailExists;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
-use \Normalizer;
+use \MovLib\Presentation\Partial\FormElement\InputText;
+use \MovLib\Presentation\Validation\Username;
 
 /**
  * User registration presentation.
@@ -92,7 +92,7 @@ class Registration extends \MovLib\Presentation\Page {
     }
 
     // Start rendering the page.
-    $this->init($i18n->t("Registration"));
+    $this->init($i18n->t("Registration"))->user = new User();
 
     $this->email = new InputEmail("email", [ "autofocus" ]);
     $this->email->required();
@@ -103,6 +103,7 @@ class Registration extends \MovLib\Presentation\Page {
       "placeholder" => $i18n->t("Enter your desired username"),
     ]);
     $this->username->required();
+    $this->username->validator = new Username($this->user);
 
     $this->form = new Form($this, [ $this->email, $this->username ]);
     $this->form->attributes["class"] = "span span--6 offset--3";
@@ -146,71 +147,27 @@ class Registration extends \MovLib\Presentation\Page {
    */
   public function validate() {
     global $i18n;
-    $errors = null;
 
-    // Prepare a user for this registration and start validation of the desired username. We have to validate the
-    // original user input from the POST array because the value of the input element was already sanitized and
-    // validated against the most basic requirements. That includes stripping of whitespace, and we don't want that.
-    // It would be confusing for the user if she or he entered " MovLib " as username and the final result is "MovLib";
-    // we need to tell the user about this!
-    $user = new User();
-    if (substr($_POST[$this->username->id], 0, 1) == " ") {
-      $errors[] = $i18n->t("The username cannot begin with a space.");
+    // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
+    // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
+    if ($this->user->checkEmail($this->email->value) === true) {
+      Mailer::stack(new RegistrationEmailExists($this->email->value));
     }
-    if (substr($_POST[$this->username->id], -1) == " ") {
-      $errors[] = $i18n->t("The username cannot end with a space.");
-    }
-    if (strpos($_POST[$this->username->id], "  ") !== false) {
-      $errors[] = $i18n->t("The username cannot contain multiple spaces in a row.");
+    // If this is a vliad new registration generate the authentication token and insert the submitted data into our
+    // temporary database, and of course send out the email with the token.
+    else {
+      $this->user->name = $this->username->value;
+      $this->user->email = $this->email->value;
+      Mailer::stack(new RegistrationEmail($this->user));
     }
 
-    // From this point on we use the sanitized value from the input text form element.
-    if (mb_strlen($this->username->value) > $this->username->attributes["max-length"]) {
-      $errors[] = $i18n->t("The username is too long: it must be {1,number,integer} characters or less.", [ $this->username->attributes["max-length"] ]);
-    }
+    // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
+    $this->accepted = true;
 
-    // The following two checks only make sense if the desired name is valid up to this point.
-    if (!$errors) {
-      // @todo The blacklist's content must be translated along with the routes.
-      $blacklist = json_decode(file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/conf/username-blacklist.json"));
-      $lowercased = mb_strtolower($this->username->value);
-      $c = count($blacklist);
-      for ($i = 0; $i < $c; ++$i) {
-        if ($blacklist[$i] == $lowercased) {
-          $errors[] = $i18n->t("The username {0} is a system reserved word, please choose another one.", [ $this->placeholder($this->username->value) ]);
-          break;
-        }
-      }
-
-      // Only query the database if the name is valid until this point. Doesn't make much sense to check the database for
-      // a user name that is impossible to register.
-      if (!$errors && $user->checkName($this->username->value) === true) {
-        $errors[] = $i18n->t("The username {0} is already taken, please choose another one.", [ $this->placeholder($this->username->value) ]);
-      }
-    }
-
-    if ($this->checkErrors($errors) === false) {
-      // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
-      // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
-      if ($user->checkEmail($this->email->value) === true) {
-        Mailer::stack(new RegistrationEmailExists($this->email->value));
-      }
-      // If this is a vliad new registration generate the authentication token and insert the submitted data into our
-      // temporary database, and of course send out the email with the token.
-      else {
-        $user->name = $this->username->value;
-        $user->email = $this->email->value;
-        Mailer::stack(new RegistrationEmail($user));
-      }
-
-      // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
-      $this->accepted = true;
-
-      $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value)] ));
-      $success->title = $i18n->t("Registration Successful");
-      $success->severity = Alert::SEVERITY_INFO;
-      $this->alerts .= $success;
-    }
+    $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value)] ));
+    $success->title = $i18n->t("Registration Successful");
+    $success->severity = Alert::SEVERITY_INFO;
+    $this->alerts .= $success;
 
     return $this;
   }

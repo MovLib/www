@@ -17,10 +17,10 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ValidatorException;
+use \MovLib\Exception\ValidationException;
 
 /**
- * Description of Select
+ * Represents a HTML select form element.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -53,6 +53,23 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
+  /**
+   * Instantiate new HTML select form element.
+   *
+   * @param string $id
+   *   The form element's global identifier.
+   * @param string $label
+   *   The form element's label content.
+   * @param array $options
+   *   The options of this select element as associative array where the key is the value of the option and the value
+   *   the text, e.g.: <pre>array("value" => "text"); // <option value='value'>text</option></pre>
+   * @param string $value [optional]
+   *   The form element's default value.
+   * @param array $attributes [optional]
+   *   The form element's attributes.
+   * @param array $labelAttributes [optional]
+   *   The form element's label attributes.
+   */
   public function __construct($id, $label, array $options, $value = null, array $attributes = null, array $labelAttributes = null) {
     parent::__construct($id, $attributes, $label, $labelAttributes);
     $this->value = isset($_POST[$this->id]) && isset($options[$_POST[$this->id]]) ? $_POST[$this->id] : $value;
@@ -64,13 +81,20 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public function __toString() {
     global $i18n;
-    $disabled = $this->required === true ? " disabled" : null;
-    $selected = isset($this->value) ? null : " selected";
-    $options = "<option{$disabled}{$selected}>{$i18n->t("Please Select …")}</option>";
+    $options = null;
+
+    // If a select element only has one option to choose from and is required no default option can be present.
+    if ($this->required === false) {
+      $selected = isset($this->value) ? null : " selected";
+      $options .= "<option{$selected}>{$i18n->t("Please Select …")}</option>";
+    }
+
+    // Create HTML option for each option.
     foreach ($this->options as $value => $option) {
       $selected = isset($this->value) && $this->value == $value ? " selected" : null;
       $options .= "<option{$selected} value='{$value}'>{$option}</option>";
     }
+
     return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><select{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
   }
 
@@ -84,7 +108,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
   public function validate() {
     global $i18n;
     if (!isset($this->options[$this->value])) {
-      throw new ValidatorException($i18n->t("The submitted value {0} is not a valid option.", [ $this->placeholder($this->value) ]));
+      throw new ValidationException($i18n->t("The submitted value {0} is not a valid option.", [ $this->placeholder($this->value) ]));
     }
     return $this;
   }

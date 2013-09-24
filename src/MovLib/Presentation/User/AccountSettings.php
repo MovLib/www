@@ -26,9 +26,10 @@ use \MovLib\Presentation\Partial\FormElement\InputFile;
 use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
-use \MovLib\Presentation\Partial\FormElement\InputUrl;
+use \MovLib\Presentation\Partial\FormElement\InputURL;
 use \MovLib\Presentation\Partial\FormElement\Select;
 use \MovLib\Presentation\Partial\FormElement\Textarea;
+use \MovLib\Presentation\Validation\HTML;
 
 /**
  * Allows the user to manage his personalized settings.
@@ -40,7 +41,7 @@ use \MovLib\Presentation\Partial\FormElement\Textarea;
  * @since 0.0.1-dev
  */
 class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\User\UserTrait;
+  use \MovLib\Presentation\User\TraitUser;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -119,7 +120,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
   /**
    * The user's website input url form element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputUrl
+   * @var \MovLib\Presentation\Partial\FormElement\InputURL
    */
   private $website;
 
@@ -160,8 +161,9 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       0 => $i18n->t("Unknown"),
     ]))->setHelp($i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
 
-    $birthdayMax = date(InputDate::RFC3339, (time() - 1.893e8));   //   6 years
-    $birthdayMin = date(InputDate::RFC3339, (time() - 3.78683e9)); // 120 years
+    $time        = time();
+    $birthdayMax = $time - 1.893e8;   //   6 years
+    $birthdayMin = $time - 3.78683e9; // 120 years
     $this->birthday = new InputDate("birthday", $i18n->t("Date of Birth"), [
       "max"   => $birthdayMax,
       "min"   => $birthdayMin,
@@ -172,6 +174,8 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->profile = new Textarea("profile", $i18n->t("About You"), $this->user->profile, [
       "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
     ]);
+    $this->profile->attributes["data-format"]         = HTML::FORMAT_ANCHORS;
+    $this->profile->attributes["data-allow-external"] = true;
 
     $this->language = (new Select("language", $i18n->t("Language"), $i18n->getSystemLanguages(), $this->user->getLanguageCode()))->required();
 
@@ -181,7 +185,8 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->timezone = (new Select("timezone", $i18n->t("Time Zone"), $i18n->getTimeZones(), $this->user->timeZoneId))->required();
 
     // We don't validate the existens of the user's website (respectively homepage).
-    $this->website = new InputUrl("website", $i18n->t("Website"), $this->user->website);
+    $this->website = new InputURL("website", $i18n->t("Website"), $this->user->website);
+    $this->website->attributes["data-allow-external"] = true;
 
     // @todo Facebook
     //$this->facebook = ?

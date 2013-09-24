@@ -15,38 +15,43 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Test\Presentation\Partial\FormElement;
-
-use \MovLib\Presentation\Partial\FormElement\InputEmail;
-use \MovLib\Presentation\Validation\EmailAddress;
+namespace MovLib\Presentation\Validation;
 
 /**
+ * Validation interface.
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputEmailTest extends \PHPUnit_Framework_TestCase {
+interface InterfaceValidation {
 
   /**
-   * @covers InputEmail::__construct
+   * Get the validation classes last value that should be validated or has been validated (depends, if validate() was
+   * called or not).
+   *
+   * @return string
    */
-  public function testConstruct() {
-    $input = new InputEmail();
-    $this->assertEquals("email", $input->attributes["type"]);
-    $this->assertEquals(EmailAddress::MAX_LENGTH, $input->attributes["maxlength"]);
-    $this->assertEquals(EmailAddress::PATTERN, $input->attributes["pattern"]);
-  }
+  public function __toString();
 
   /**
-   * @covers InputEmail::__toString
+   * Set the value that should be validated. This is important for input elements, so they can set their value without
+   * knowing the name of the property containing the value that should be validated.
+   *
+   * @return this
    */
-  public function testToString() {
-    $input = (new InputEmail())->__toString();
-    $this->assertContains("pattern='" . htmlspecialchars(EmailAddress::PATTERN, ENT_QUOTES|ENT_HTML5) . "'", $input);
-    $this->assertContains("maxlength='" . EmailAddress::MAX_LENGTH . "'", $input);
-    $this->assertContains("type='email'", $input);
-  }
+  public function set();
+
+  /**
+   * Validate the value.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return mixed
+   *   The valid value.
+   * @throws \MovLib\Exception\ValidationException
+   */
+  public function validate();
 
 }
