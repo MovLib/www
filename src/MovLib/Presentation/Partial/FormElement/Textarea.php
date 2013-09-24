@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Presentation\Validation\HTML;
+
 /**
  * HTML textarea form element.
  *
@@ -41,6 +43,10 @@ class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractFormElem
    */
   public $value;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
    * Instantiate new input form element of type text.
    *
@@ -57,8 +63,10 @@ class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractFormElem
    */
   public function __construct($id, $label, $value = null, array $attributes = null, array $labelAttributes = null) {
     parent::__construct($id, $attributes, $label, $labelAttributes);
-    $this->attributes["aria-multiline"] = "true";
-    $this->value = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
+    $this->attributes["aria-multiline"]      = "true";
+    $this->attributes["data-allow-external"] = false;
+    $this->attributes["data-format"]         = HTML::FORMAT_BASIC_HTML;
+    $this->value                             = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }
 
   /**
@@ -68,11 +76,15 @@ class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractFormElem
     return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->value}</textarea></p>";
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * @inheritdoc
    */
   public function validate() {
-    global $i18n;
+    $this->value = (new HTML($this->value, $this->attributes["data-format"], $this->attributes["data-allow-external"]))->validate();
     return $this;
   }
 

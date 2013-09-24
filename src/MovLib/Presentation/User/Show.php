@@ -86,8 +86,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         "</div>" .
       "</div>" .
       "<h2>User</h2>{$var[0]}" .
-      "<h2>Session</h2>{$var[1]}" .
-      "<h2>\$GLOBALS</h2>{$var[2]}"
+      "<h2>Session</h2>{$var[1]}"
     ;
   }
 

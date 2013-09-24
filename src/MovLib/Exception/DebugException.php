@@ -70,7 +70,7 @@ class DebugException extends \MovLib\Exception\AbstractException {
    * @return string
    */
   public function __toString() {
-    return $this->mixed;
+    return htmlspecialchars($this->mixed, ENT_QUOTES|ENT_HTML5);
   }
 
 }

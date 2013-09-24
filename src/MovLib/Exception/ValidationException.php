@@ -1,3 +1,5 @@
+<?php
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -13,54 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Exception;
 
 /**
- * Styles exclusive to the image details pages.
+ * A Validation exception might be thrown if a user supplied value doesn't match the applied validation rules.
  *
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-
-#gallery-image--image {
-  text-align: center;
-  background-color: #555;
-  padding: 20px;
-  border: 1px solid #252525;
-}
-
-#gallery-image--stream {
-  background-color: #252525;
-  overflow: hidden;
-  padding: 20px 0;
-}
-
-#gallery-image--stream a {
-  border: none;
-  opacity: 0.7;
-  transition: opacity 0.4s ease-in-out;
-}
-
-#gallery-image--stream img {
-  margin: 0 !important;
-}
-
-#gallery-image--stream a:hover,
-#gallery-image--stream a:focus,
-#gallery-image--stream a.active {
-  opacity: 1;
-}
-
-#gallery-image--stream img {
-  display: inline-block;
-  margin-left: 5px;
-  float: left;
-}
-
-#gallery-image--details dt,
-#gallery-image--details dd {
-  margin-top: 1.39em;
-}
+class ValidationException extends \RuntimeException {}

@@ -1,6 +1,4 @@
-<?php
-
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,36 +13,54 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Test;
 
 /**
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * Styles exclusive to the image details pages.
+ *
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ConfigurationTest extends \PHPUnit_Framework_TestCase {
 
-  /**
-   * @link http://php.net/manual/en/function.password-hash.php
-   */
-  public function testPasswordCost() {
-    $timeTarget = 0.5;
-    $cost = 9;
-    do {
-      $cost++;
-      $start = microtime(true);
-      password_hash("test", PASSWORD_DEFAULT, [ "cost" => $cost ]);
-      $end = microtime(true);
-      $actual = $end - $start;
-    }
-    while ($actual < $timeTarget);
-    $this->assertGreaterThanOrEqual(
-      $GLOBALS["movlib"]["password_cost"],
-      $cost,
-      "Please set password_cost in your movlib.ini at least to {$cost} (hashing will take {$actual} seconds)."
-    );
-  }
+#image-details--image {
+  text-align: center;
+  background-color: #555;
+  padding: 20px;
+  border: 1px solid #252525;
+}
 
+#image-details--stream {
+  background-color: #252525;
+  overflow: hidden;
+  padding: 20px 0;
+}
+
+#image-details--stream a {
+  border: none;
+  opacity: 0.7;
+  transition: opacity 0.4s ease-in-out;
+}
+
+#image-details--stream img {
+  margin: 0 !important;
+}
+
+#image-details--stream a:hover,
+#image-details--stream a:focus,
+#image-details--stream a.active {
+  opacity: 1;
+}
+
+#image-details--stream img {
+  display: inline-block;
+  margin-left: 5px;
+  float: left;
+}
+
+#image-details--details dt,
+#image-details--details dd {
+  margin-top: 1.39em;
 }

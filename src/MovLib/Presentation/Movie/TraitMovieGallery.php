@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \IntlDateFormatter;
+use \MovLib\Data\MovieImage;
 use \MovLib\Exception\RedirectException;
 use \MovLib\Presentation\Partial\Alert;
 
@@ -31,13 +33,6 @@ use \MovLib\Presentation\Partial\Alert;
  */
 trait TraitMovieGallery {
 
-  /**
-   * The movie's title.
-   *
-   * @var string
-   */
-  public $movieTitle;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -50,7 +45,7 @@ trait TraitMovieGallery {
     global $i18n;
     return [
       [ $i18n->r("/movies"), $i18n->t("Movies"), [ "title" => $i18n->t("Have a look at the latest {0} entries at MovLib.", [ $i18n->t("movie") ]) ] ],
-      [ $i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]), $this->movieTitle ],
+      [ $i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]), $this->entityTitle ],
     ];
   }
 
@@ -66,19 +61,34 @@ trait TraitMovieGallery {
    * @inheritdoc
    */
   protected function getImageDetails() {
-    global $i18n;
-    /**
-     * @var \MovLib\Data\MovieImage
-     */
-    $this->image;
-    $details = [];
-    if (empty($this->image->description)) {
-      $this->image->description = new Alert("{$i18n->t("No {0} available, could you provide one?", [ $i18n->t("Description") ])} {$this->a(
-        $this->editRoute, [ $this->model->id, $this->image->sectionId ],
+    global $i18n, $session;
+    $details = $this->image->getImageDetails();
+    if (empty($details["description"])) {
+      $details["description"] = new Alert("{$i18n->t("No {0} available, could you provide one?", [ $i18n->t("Description") ])} {$this->a(
+        $i18n->r("/movie/{0}/{$_SERVER["TAB"]}/{1}/edit", [ $this->model->id, $this->image->sectionId ]),
         $i18n->t("Click here to do so.")
       )}");
     }
-    $details[] = [ $i18n->t("Description"), $this->image->description ];
+    $desc = [[ $i18n->t("Description"), $details["description"] ]];
+    if ($this->image->type !== MovieImage::IMAGETYPE_PHOTO) {
+      if (empty($details["country"])) {
+        $details["country"] = new Alert("{$i18n->t("No {0} available, could you provide one?", [ $i18n->t("Country") ])} {$this->a(
+          $i18n->r("/movie/{0}/{$_SERVER["TAB"]}/{1}/edit", [ $this->model->id, $this->image->sectionId ]),
+          $i18n->t("Click here to do so.")
+        )}");
+      }
+      else {
+        $details["country"] = $this->a($i18n->r("/country/{0}", [ $details["country"]["code"] ]), $details["country"]["name"]);
+      }
+      $desc[] = [ $i18n->t("Country"), $details["country"] ];
+    }
+    $desc[] = [ $i18n->t("Dimensions"), $i18n->t("{0} × {1} pixels", [ $details["imageWidth"], $details["imageHeight"] ]) ];
+    $desc[] = [ $i18n->t("Size"), msgfmt_format_message($i18n->locale, "{0,number,integer}", [ $details["imageSize"] ]) ];
+    $desc[] = [ $i18n->t("User"), $this->a($i18n->r("/user/{0}", [ $details["user"]["name"] ]), $details["user"]["name"]) ];
+    $desc[] = [ $i18n->t("Creation Date"), $i18n->formatDate($details["created"], $session->userTimezone, IntlDateFormatter::MEDIUM) ];
+    $desc[] = [ $i18n->t("Last Update"), $i18n->formatDate($details["changed"], $session->userTimezone, IntlDateFormatter::MEDIUM) ];
+    $desc[] = [ $i18n->t("Source"), $details["source"] ];
+    return $desc;
   }
 
   /**

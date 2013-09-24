@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Partial;
 
 use \MovLib\Exception\ValidatorException;
+use \MovLib\Exception\ValidationException;
 use \MovLib\Presentation\Partial\FormElement\InputHidden;
 
 /**
@@ -166,7 +167,12 @@ class Form extends \MovLib\Presentation\AbstractBase {
         else {
           try {
             $elements[$i]->validate();
-          } catch (ValidatorException $e) {
+          }
+          catch (ValidatorException $e) {
+            $elements[$i]->invalid();
+            $errors[] = $e->getMessage();
+          }
+          catch (ValidationException $e) {
             $elements[$i]->invalid();
             $errors[] = $e->getMessage();
           }

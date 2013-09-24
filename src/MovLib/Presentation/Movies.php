@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Data\MoviePoster;
+use \MovLib\Data\MovieImage;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Lists;
 
@@ -74,7 +74,7 @@ class Movies extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       $items[] = $this->a(
           $i18n->r("/movie/{0}", [ $this->movies[$i]->id ]),
           "<article>" .
-            "<div class='latest-additions__image'>{$this->getImage($displayPoster, MoviePoster::IMAGESTYLE_SMALL, [
+            "<div class='latest-additions__image'>{$this->getImage($displayPoster, MovieImage::IMAGESTYLE_SMALL, [
               "alt" => $i18n->t("{0} movie poster{1}.", [ $title, isset($displayPoster->country)
                 ? $i18n->t(" for {0}", [ $displayPoster->country["name"] ])
                 : ""

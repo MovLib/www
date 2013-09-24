@@ -123,6 +123,13 @@ class Session extends \MovLib\Data\Database {
    */
   public $userName;
 
+  /**
+   * The session's user time zone ID.
+   *
+   * @var string
+   */
+  public $userTimeZoneID;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -171,6 +178,7 @@ class Session extends \MovLib\Data\Database {
         $this->authentication = $_SESSION["authentication"];
         $this->userId         = $_SESSION["user_id"];
         $this->userName       = $_SESSION["user_name"];
+        $this->userTimeZoneID = $_SESSION["user_time_zone_id"];
         if ($this->authentication + 86400 < time()) {
           $this->regenerate();
         }
@@ -384,12 +392,13 @@ class Session extends \MovLib\Data\Database {
 
     // We are initializing this session for a registered user.
     if ($userId > 0) {
-      $result = $this->select("SELECT `name` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ $userId]);
+      $result = $this->select("SELECT `name`, `time_zone_id` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ $userId]);
       if (empty($result[0]["name"])) {
         throw new SessionException("Could not fetch user name for user ID {$userId}.");
       }
-      $this->userId          = $_SESSION["user_id"]   = $userId;
-      $this->userName        = $_SESSION["user_name"] = $result[0]["name"];
+      $this->userId          = $_SESSION["user_id"]           = $userId;
+      $this->userName        = $_SESSION["user_name"]         = $result[0]["name"];
+      $this->userTimeZoneID  = $_SESSION["user_time_zone_id"] = $result[0]["time_zone_id"];
       $this->isAuthenticated = true;
     }
     // Initialize this session for an anonymous user.
@@ -402,8 +411,10 @@ class Session extends \MovLib\Data\Database {
       if (filter_var($this->ipAddress, FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR) === false) {
         throw new SessionException("Empty or invalid IP address (this is more or less impossible, check web server and if behind a proxy check implementation).");
       }
-      $this->userId          = $_SESSION["user_id"]   = $userId;
-      $this->userName        = $_SESSION["user_name"] = $this->ipAddress;
+      $this->userId          = $_SESSION["user_id"]           = $userId;
+      $this->userName        = $_SESSION["user_name"]         = $this->ipAddress;
+      // @todo Guess timezone with JavaScript: https://bitbucket.org/pellepim/jstimezonedetect
+      $this->userTimeZoneID  = $_SESSION["user_time_zone_id"] = ini_get("date.timezone");
       $this->isAuthenticated = false; // Just making sure
     }
 

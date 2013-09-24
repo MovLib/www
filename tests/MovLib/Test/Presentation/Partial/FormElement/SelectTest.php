@@ -98,7 +98,7 @@ class SelectTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers Select::validate
-   * @expectedException \MovLib\Exception\ValidatorException
+   * @expectedException \MovLib\Exception\ValidationException
    */
   public function testInvalid() {
     $_POST["phpunit"] = "phpunit3";

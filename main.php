@@ -40,11 +40,19 @@ $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini
  *
  * @param string $class
  *   Fully qualified class name (automatically passed to this magic function by PHP).
- */
+ *
 function __autoload($class) {
   $class = strtr($class, "\\", "/");
   require "{$_SERVER["DOCUMENT_ROOT"]}/src/{$class}.php";
 }
+ * @todo We should get rid of Composer asap because it slows down our site. But right now we need it for HTMLPurifier
+ *       and we shure need other external stuff soon to meet our deadline. This is okay for now and we'll compensate
+ *       the performance penalty with proper caching.
+ */
+
+// Use Composer for simplified autoloading of vendor stuff and our own stuff.
+$composerAutoloader = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
+$composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src");
 
 /**
  * Transform PHP fatal errors to exceptions.

@@ -114,6 +114,18 @@ abstract class AbstractBase {
   }
 
   /**
+   * Collapse all kinds of whitespace characters to a single space.
+   *
+   * @param string $string
+   *   The string to collapse.
+   * @return string
+   *   The collapsed string.
+   */
+  protected final function collapseWhitespace($string) {
+    return preg_replace("/\s+/m", " ", $string);
+  }
+
+  /**
    * Expand the given attributes array to string.
    *
    * Many page elements aren't easily created by directly typing the string in the source code. Instead the have to go
@@ -139,6 +151,9 @@ abstract class AbstractBase {
           $expanded .= " {$value}";
         }
         else {
+          if (is_bool($value)) {
+            $value = $value ? "true" : "false";
+          }
           $expanded .= " {$name}='{$this->checkPlain($value)}'";
         }
       }

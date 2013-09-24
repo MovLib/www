@@ -95,6 +95,13 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   public $imagePath;
 
   /**
+   * The file size of the image in bytes.
+   *
+   * @var int
+   */
+  public $imageSize;
+
+  /**
    * Associative array containing all image styles and meta data about each image style.
    *
    * @var array
@@ -257,7 +264,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
         $this->details[$prop] = $this->{$prop};
       }
       $this->details["license"] = $this->getLicense($this->licenseId);
-      $this->details["#user"] = new UserModel(UserModel::FROM_ID, $this->userId);
+      $this->details["user"] = (array) (new UserModel(UserModel::FROM_ID, $this->userId));
     }
     return $this->details;
   }
