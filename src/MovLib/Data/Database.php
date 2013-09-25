@@ -62,7 +62,7 @@ class Database {
    *
    * @var \mysqli
    */
-  protected static $mysqli = [];
+  private static $mysqli = [];
 
   /**
    * Total number of rows changed, deleted, or inserted by the last executed statement.
@@ -76,7 +76,7 @@ class Database {
    *
    * @var \mysqli_stmt
    */
-  protected $stmt;
+  private $stmt;
 
   /**
    * Used to cache the reference to <code>stmt_bind_param()</code> function, which allow us to invoke the function with
@@ -104,7 +104,7 @@ class Database {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Final Methods
+  // ------------------------------------------------------------------------------------------------------------------- Protected Final Methods
 
 
   /**
@@ -121,7 +121,7 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function query($query, $types = null, array $params = null, $closeStmt = true) {
+  protected final function query($query, $types = null, array $params = null, $closeStmt = true) {
     $this->prepareAndExecute($query, $types, $params);
     if ($closeStmt === true) {
       $this->close();
@@ -142,7 +142,7 @@ class Database {
    *   The query result as associative array.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function select($query, $types = null, array $params = null) {
+  protected final function select($query, $types = null, array $params = null) {
     $this->prepareAndExecute($query, $types, $params);
     if (($queryResult = $this->stmt->get_result()) === false) {
       $error = $this->stmt->error;
@@ -160,7 +160,7 @@ class Database {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Protected Final Methods
+  // ------------------------------------------------------------------------------------------------------------------- Private Methods
 
 
   /**
@@ -169,7 +169,7 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function close() {
+  private function close() {
     if ($this->stmt->close() === false) {
       $error = $this->stmt->error;
       $errno = $this->stmt->errno;
@@ -185,7 +185,7 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function connect() {
+  private function connect() {
     if (!$this->database) {
       $this->database = $GLOBALS["movlib"]["default_database"];
     }
@@ -219,7 +219,7 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function disconnect() {
+  private function disconnect() {
     // No need to disconnect if we have no connection to this database.
     if (isset(self::$connectionCounter[$this->database])) {
       // Decrement connection counter for this database connection, if there are no instances left using this database
@@ -250,7 +250,7 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function prepareAndExecute($query, $types = null, array $params = null) {
+  private function prepareAndExecute($query, $types = null, array $params = null) {
     if (!isset(self::$mysqli[$this->database])) {
       $this->connect();
     }
