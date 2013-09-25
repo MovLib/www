@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation;
 
+use \MovLib\Data\Users;
+
 /**
  * Description of AbstractHistory
  *
@@ -50,10 +52,10 @@ trait TraitHistory {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
     return
-      "<h2>{$i18n->t("Revision history")}<h2>" .
-      "{$this->getRevisionHistory()}";
+      "<div id='revision-history'>" .
+        $this->getRevisionHistory() .
+      "</div>";
   }
 
   /**
@@ -98,13 +100,38 @@ trait TraitHistory {
     return $html;
   }
 
+  /**
+   * Helper function to build revision history.
+   */
   private function getRevisionHistory() {
+    global $i18n;
     $commits = $this->historyModel->getLastCommits();
+    $userIds = [];
 
-    $html = "";
-    foreach ($commits as $commit) {
-      $html .= "<p>{$commit["subject"]}</p>";
+    $c = count($commits);
+    for ($i = 0; $i < $c; ++$i) {
+      $userIds[] = $commits[$i]["author_id"];
     }
+
+    $users = (new Users())->getUsers($userIds);
+
+    $html =
+      "<h2>{$i18n->t("Revision history")}</h2>" .
+      "<ul>";
+
+    for ($i = 0; $i < $c; ++$i) {
+      $html .=
+        "<li>" .
+          "{$i18n->formatDate($commits[$i]["timestamp"])} " .
+          "by <a href='{$i18n->r("/user/{0}", [ $users[$commits[$i]["author_id"]]["name"] ])}'>" .
+            $i18n->t("{0}", [ $users[$commits[$i]["author_id"]]["name"] ]) .
+          "</a>: " .
+          "{$commits[$i]["subject"]}" .
+        "</li>";
+    }
+
+    $html .= "</ul>";
+
     return $html;
   }
 
