@@ -65,7 +65,7 @@ trait TraitMovieGallery {
     $details = $this->image->getImageDetails();
     if (empty($details["description"])) {
       $details["description"] = new Alert("{$i18n->t("No {0} available, could you provide one?", [ $i18n->t("Description") ])} {$this->a(
-        $i18n->r("/movie/{0}/{$_SERVER["TAB"]}/{1}/edit", [ $this->model->id, $this->image->sectionId ]),
+        $i18n->r("/movie/{0}/{$_SERVER["TAB"]}/{1}/edit", [ $this->model->id, $this->image->imageId ]),
         $i18n->t("Click here to do so.")
       )}");
     }
@@ -73,7 +73,7 @@ trait TraitMovieGallery {
     if ($this->image->type !== MovieImage::IMAGETYPE_PHOTO) {
       if (empty($details["country"])) {
         $details["country"] = new Alert("{$i18n->t("No {0} available, could you provide one?", [ $i18n->t("Country") ])} {$this->a(
-          $i18n->r("/movie/{0}/{$_SERVER["TAB"]}/{1}/edit", [ $this->model->id, $this->image->sectionId ]),
+          $i18n->r("/movie/{0}/{$_SERVER["TAB"]}/{1}/edit", [ $this->model->id, $this->image->imageId ]),
           $i18n->t("Click here to do so.")
         )}");
       }
@@ -85,8 +85,8 @@ trait TraitMovieGallery {
     $desc[] = [ $i18n->t("Dimensions"), $i18n->t("{0} × {1} pixels", [ $details["imageWidth"], $details["imageHeight"] ]) ];
     $desc[] = [ $i18n->t("Size"), msgfmt_format_message($i18n->locale, "{0,number,integer}", [ $details["imageSize"] ]) ];
     $desc[] = [ $i18n->t("User"), $this->a($i18n->r("/user/{0}", [ $details["user"]["name"] ]), $details["user"]["name"]) ];
-    $desc[] = [ $i18n->t("Creation Date"), $i18n->formatDate($details["created"], $session->userTimezone, IntlDateFormatter::MEDIUM) ];
-    $desc[] = [ $i18n->t("Last Update"), $i18n->formatDate($details["changed"], $session->userTimezone, IntlDateFormatter::MEDIUM) ];
+    $desc[] = [ $i18n->t("Creation Date"), $i18n->formatDate($details["created"], $session->userTimeZoneID, IntlDateFormatter::MEDIUM) ];
+    $desc[] = [ $i18n->t("Last Update"), $i18n->formatDate($details["changed"], $session->userTimeZoneID, IntlDateFormatter::MEDIUM) ];
     $desc[] = [ $i18n->t("Source"), $details["source"] ];
     return $desc;
   }

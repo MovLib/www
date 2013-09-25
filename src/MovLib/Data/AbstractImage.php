@@ -260,7 +260,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    */
   public function getImageDetails() {
     if ($this->details === null) {
-      foreach ([ "description", "imageWidth", "imageHeight", "imageSize", "created", "changed", "rating", "source" ] as $prop) {
+      foreach ([ "description", "imageWidth", "imageHeight", "imageSize", "created", "changed", "upvotes", "source" ] as $prop) {
         $this->details[$prop] = $this->{$prop};
       }
       $this->details["license"] = $this->getLicense($this->licenseId);

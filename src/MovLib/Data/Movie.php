@@ -192,9 +192,9 @@ class Movie extends \MovLib\Data\Database {
   private $photos;
 
   /**
-   * Sorted numeric array containing the movie's posters as <code>\MovLib\Data\MoviePoster</code> objects.
+   * The movie posters.
    *
-   * @var array
+   * @var \MovLib\Data\MovieImages
    */
   private $posters;
 
@@ -430,7 +430,7 @@ class Movie extends \MovLib\Data\Database {
           p.`person_id` AS `id`,
           p.`name` AS `name`,
           p.`deleted` AS `deleted`,
-          pp.`section_id` AS `section_id`,
+          pp.`image_id`,
           pp.`filename` AS `filename`,
           pp.`ext` AS `ext`
         FROM `movies_directors` md
@@ -439,7 +439,7 @@ class Movie extends \MovLib\Data\Database {
           LEFT JOIN `persons_photos` pp
             ON p.`person_id` = pp.`person_id`
         WHERE md.`movie_id` = ?
-          ORDER BY `name` ASC, pp.`rating` DESC",
+          ORDER BY `name` ASC, pp.`upvotes` DESC",
         "d",
         [$this->id]
       );
@@ -554,74 +554,19 @@ class Movie extends \MovLib\Data\Database {
   }
 
   /**
-   * Get the movie's lobby cards.
-   *
-   * @return array
-   *   Numeric array containing all the movie's lobby cards as <code>\MovLib\Data\MovieImage</code> objects.
-   */
-  public function getLobbyCards() {
-    if (!$this->lobbyCards) {
-      $lobbyCardIds = $this->select(
-        "SELECT `section_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY `created` DESC",
-        "di", [ $this->id, MovieImage::IMAGETYPE_LOBBYCARD ]
-      );
-      $c = count($lobbyCardIds);
-      for ($i = 0; $i < $c; ++$i) {
-        $this->lobbyCards[] = new MovieImage($this->id, MovieImage::IMAGETYPE_LOBBYCARD, $lobbyCardIds[$i]["id"]);
-      }
-    }
-    return $this->lobbyCards;
-  }
-
-  /**
-   * Get the movie's photos.
-   *
-   * @return array
-   *   Numeric array containing all the movie's photos as <code>\MovLib\Data\MovieImage</code> objects.
-   */
-  public function getPhotos() {
-    if (!$this->photos) {
-      $photoIds = $this->select(
-        "SELECT `section_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY `created` DESC",
-        "di", [ $this->id, MovieImage::IMAGETYPE_PHOTO ]
-      );
-      $c = count($photoIds);
-      for ($i = 0; $i < $c; ++$i) {
-        $this->photos[] = new MovieImage($this->id, MovieImage::IMAGETYPE_PHOTO, $photoIds[$i]["id"]);
-      }
-    }
-    return $this->photos;
-  }
-
-  /**
    * Get the movie's display poster.
    *
+   * @param string $movieTitle [optional]
+   *   The movie title for the alt attribute.
    * @return \MovLib\Data\MovieImage
    *   The movie's display poster.
    */
-  public function getDisplayPoster() {
+  public function getDisplayPoster($movieTitle = "") {
     if (!$this->displayPoster) {
-      $posterId = $this->select("SELECT `section_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY rating DESC LIMIT 1", "di", [ $this->id, MovieImage::IMAGETYPE_POSTER ]);
-      $this->displayPoster = new MovieImage($this->id, MovieImage::IMAGETYPE_POSTER, empty($posterId[0]["id"]) ? null : $posterId[0]["id"]);
+      $posterId = $this->select("SELECT `image_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY `upvotes` DESC LIMIT 1", "di", [ $this->id, MovieImage::IMAGETYPE_POSTER ]);
+      $this->displayPoster = new MovieImage($this->id, MovieImage::IMAGETYPE_POSTER, empty($posterId[0]["id"]) ? null : $posterId[0]["id"], $movieTitle);
     }
     return $this->displayPoster;
-  }
-
-  /**
-   * Get the movie's posters.
-   *
-   * @return array
-   *   Numeric array containing all movie's posters as <code>\MovLib\Data\MoviePoster</code> objects.
-   */
-  public function getPosters() {
-    if (!$this->posters) {
-      $posterIds = $this->select("SELECT `section_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? ORDER BY `created` DESC", "d", [ $this->id ]);
-      $c = count($posterIds);
-      for ($i = 0; $i < $c; ++$i) {
-        $this->posters[] = new MovieImage($this->id, MovieImage::IMAGETYPE_POSTER, $posterIds[$i]["id"]);
-      }
-    }
-    return $this->posters;
   }
 
   /**

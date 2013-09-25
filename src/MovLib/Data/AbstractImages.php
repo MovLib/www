@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,7 +15,6 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
 namespace MovLib\Data;
 
 /**
@@ -27,7 +26,7 @@ namespace MovLib\Data;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class AbstractImages {
+abstract class AbstractImages extends \MovLib\Data\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -39,20 +38,6 @@ class AbstractImages {
    * @var string
    */
   protected $imagesDirectory;
-
-  /**
-   * The URI to the images.
-   *
-   * @var string
-   */
-  protected $imagesUri;
-
-  /**
-   * Numeric array containing the images as associative arrays.
-   *
-   * @var array
-   */
-  public $images;
 
   /**
    * The style for displaying the images.
@@ -70,19 +55,22 @@ class AbstractImages {
    *
    * @param array $images
    * @param \MovLib\View\ImageStyle\AbstractImageStyle $style
+   *   The style to apply to the images.
+   * @return this
    */
-  protected function initImages($style) {
+  protected function initImagePaths($images, $style) {
     $path = "uploads/{$this->imagesDirectory}/{$style->dimensions}/";
     $imagePath = "{$_SERVER["DOCUMENT_ROOT"]}/{$path}";
     $imageUri = "{$GLOBALS["movlib"]["static_domain"]}{$path}";
     $this->style = $style;
     $this->style->path = $imagePath;
-    $c = count($this->images);
+    $c = count($images);
     for ($i = 0; $i < $c; ++$i) {
-      $filename = "{$this->images[$i]["filename"]}.{$this->images[$i]["hash"]}.{$this->images[$i]["ext"]}";
-      $this->images[$i]["path"] = "{$imagePath}{$filename}";
-      $this->images[$i]["uri"] = "{$imageUri}{$filename}";
+      $images[$i]["filename"] = "{$images[$i]["filename"]}.{$images[$i]["hash"]}.{$images[$i]["ext"]}";
+      $images[$i]["path"] = "{$imagePath}{$images[$i]["filename"]}";
+      $images[$i]["src"] = "{$imageUri}{$images[$i]["filename"]}";
     }
+    return $images;
   }
 
 }

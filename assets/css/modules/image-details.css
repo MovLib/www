@@ -25,11 +25,45 @@
  * @since 0.0.1-dev
  */
 
+.imagedetails-pager {
+  bottom: 0;
+  color: #fff;
+  font-size: 50px;
+  opacity: 0.5;
+  position: absolute;
+  top: 0;
+  transition: opacity 0.4s ease-in-out;
+  width: 50px;
+  z-index: 1;
+}
+
+.imagedetails-pager:hover,
+.imagedetails-pager:focus {
+  opacity: 1;
+}
+
+#imagedetails-left,
+#imagedetails-left .icon {
+  left: 0;
+}
+
+#imagedetails-right,
+#imagedetails-right .icon {
+  right: 0;
+}
+
+.imagedetails-pager .icon {
+  position: absolute;
+  top: 50%;
+  margin-top: -36.5px;
+}
+
 #image-details--image {
-  text-align: center;
   background-color: #555;
-  padding: 20px;
   border: 1px solid #252525;
+  padding: 20px;
+  position: relative;
+  text-align: center;
 }
 
 #image-details--stream {

@@ -84,7 +84,7 @@ class MovieImage extends \MovLib\Data\AbstractImage {
    *
    * @var array
    */
-  private $imageDirectories = [
+  public static $imageDirectories = [
     self::IMAGETYPE_POSTER    => "posters",
     self::IMAGETYPE_LOBBYCARD => "lobby-cards",
     self::IMAGETYPE_PHOTO     => "photos",
@@ -106,7 +106,7 @@ class MovieImage extends \MovLib\Data\AbstractImage {
    *
    * @var int
    */
-  public $sectionId;
+  public $imageId;
 
   /**
    * The image's unique user ID.
@@ -148,7 +148,7 @@ class MovieImage extends \MovLib\Data\AbstractImage {
    *
    * @var int
    */
-  public $rating;
+  public $upvotes;
 
   /**
    * The image's description.
@@ -182,20 +182,24 @@ class MovieImage extends \MovLib\Data\AbstractImage {
    * @param int $movieId
    *   The movie ID this image belongs to.
    * @param int $type
-   *   The type of the image (one of the <code>IMAGETYPE_*</code> constants.).
-   * @param int $imageId
+   *   The type of the image (one of the <code>IMAGETYPE_*</code> constants).
+   * @param int $imageId [optional]
    *   The ID of the image within the movie images.
+   * @param string $movieTitle [optional]
+   *   The movie title for the alt attribute.
    */
-  public function __construct($movieId, $type, $imageId = null) {
+  public function __construct($movieId, $type, $imageId = null, $movieTitle = "") {
     global $i18n;
-    $this->id = $movieId;
-    $this->type = $type;
-    $this->imageDirectory = "movie/{$this->imageDirectories[$type]}/{$movieId}";
+    $this->id             = $movieId;
+    $this->type           = $type;
+    $imgDir               = self::$imageDirectories[$type];
+    $this->imageDirectory = "movie/{$imgDir}/{$movieId}";
+
     if ($imageId) {
       $result = $this->select(
         "SELECT
           `movie_id` AS `id`,
-          `section_id` AS `sectionId`,
+          `image_id` AS `imageId`,
           `user_id` AS `userId`,
           `license_id` AS `licenseId`,
           `country_id` AS `country`,
@@ -206,48 +210,51 @@ class MovieImage extends \MovLib\Data\AbstractImage {
           `ext` AS `imageExtension`,
           UNIX_TIMESTAMP(`created`) AS `created`,
           UNIX_TIMESTAMP(`changed`) AS `changed`,
-          `rating`,
-          COLUMN_GET(`dyn_descriptions`, 'en' AS BINARY) AS `description_en`,
-          COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description_localized`,
+          `upvotes`,
+          COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description`,
           `hash` AS `imageHash`,
           `source`
         FROM `movies_images`
         WHERE `movie_id` = ?
-          AND `section_id` = ?
+          AND `image_id` = ?
           AND `type` = ?
         LIMIT 1",
         "ddi",
         [ $movieId, $imageId, $type ]
       );
-      if (empty($result)) {
+
+      if (empty($result[0])) {
         Logger::stack("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", Logger::DEBUG);
       }
       else {
         $result = $result[0];
-        // Get the description for this image (fallback to English).
-        foreach ([ "en", "localized" ] as $v) {
-          if (isset($result["description_{$v}"])) {
-            $result["description"] = $result["description_{$v}"];
-            unset($result["description_{$v}"]);
-          }
+
+        if (empty($result["description"])) {
+          $result["description"] = "";
         }
+
         foreach ($result as $k => $v) {
           $this->{$k} = $v;
         }
+
         if ($this->country) {
           $this->country = $i18n->getCountries()[$this->country];
         }
+
         switch ($type) {
           case self::IMAGETYPE_POSTER:
-            $this->imageAlt = $i18n->t("movie poster{0}.", [ isset($this->country) ? $i18n->t(" for {0}", [ $this->country["name"] ]) : "" ]);
+            $this->imageAlt = "{$movieTitle} {$i18n->t("movie poster{0}.", [ isset($this->country) ? $i18n->t(" for {0}", [ $this->country["name"] ]) : "" ])}";
             break;
+
           case self::IMAGETYPE_LOBBYCARD:
-            $this->imageAlt = $i18n->t("movie lobby card{0}.", [ isset($this->country) ? $i18n->t(" for {0}", [ $this->country["name"] ]) : "" ]);
+            $this->imageAlt = "{$movieTitle} {$i18n->t("movie lobby card{0}.", [ isset($this->country) ? $i18n->t(" for {0}", [ $this->country["name"] ]) : "" ])}";
             break;
+
           case self::IMAGETYPE_PHOTO:
-            $this->imageAlt = $i18n->t("movie photo.");
+            $this->imageAlt = "{$movieTitle} {$i18n->t("movie photo.")}";
             break;
         }
+
         $this->initImage($this->imageName, [
           new ResizeImageStyle(self::IMAGESTYLE_SMALL),
           new ResizeImageStyle(self::IMAGESTYLE_LARGE_FIXED_WIDTH),
@@ -274,24 +281,17 @@ class MovieImage extends \MovLib\Data\AbstractImage {
   }
 
   /**
-   * Get the position and the total count of the image within all the movie's images of that type.
+   * Get the total count of images of the specific type.
    *
-   * @return array
-   *  Numeric array containing position and total count.
+   * @return int
+   *  The total count.
    */
-  public function getPositionAndTotalCount() {
-    $sectionIds = $this->select(
-      "SELECT `section_id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY `created` DESC",
+  public function getTotalCount() {
+    return $this->select(
+      "SELECT COUNT(`image_id`) AS `count` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY `created` DESC",
       "di",
       [ $this->id, $this->type ]
-    );
-    $totalCount = count($sectionIds);
-    for ($i = 0; $i < $totalCount; ++$i) {
-      if ($sectionIds[$i]["section_id"] === $this->sectionId) {
-        break;
-      }
-    }
-    return [ ++$i, $totalCount ];
+    )[0]["count"];
   }
 
 }

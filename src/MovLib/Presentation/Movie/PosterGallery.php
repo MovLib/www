@@ -17,6 +17,10 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\MovieImage;
+use \MovLib\Data\MovieImages;
+use \MovLib\View\ImageStyle\ResizeImageStyle;
+
 /**
  * The movie poster gallery.
  *
@@ -42,8 +46,14 @@ class PosterGallery extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->entityTitle = $this->title;
     $this->title = "{$i18n->t("Posters of")} “{$this->title}”";
     $this->init($this->title);
-    $this->images = $this->model->getPosters();
-    $this->imagesRoute = [ $i18n->t("movie"), $this->model->id, $i18n->t("poster") ];
+    $startId = empty($_GET["last_id"]) ? 0 : $_GET["last_id"];
+    $this->images = (new MovieImages(
+      $this->model->id,
+      MovieImage::IMAGETYPE_POSTER,
+      new ResizeImageStyle(MovieImage::IMAGESTYLE_GALLERY),
+      $i18n->r("/movie/{0}/poster", [ $this->model->id ]),
+      $this->entityTitle)
+    )->getOrderedByCreatedAsc($startId);
     $this->uploadRoute = $i18n->r("/movie/{0}/posters/upload", [ $this->model->id ]);
     $this->noImagesText = $i18n->t("No Posters for “{0}”.", [ $this->entityTitle ]);
     $this->uploadText = $i18n->t("Want to upload your Posters? {0}", [

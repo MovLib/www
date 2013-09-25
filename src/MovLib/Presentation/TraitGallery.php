@@ -89,25 +89,14 @@ trait TraitGallery {
     if ($this->model->deleted === true) {
       return $this->getGoneContent();
     }
-    $c = count($this->images);
-    for ($i = 0; $i < $c; ++$i) {
-      $this->imagesRoute[3] = $this->images[$i]->sectionId;
-      $this->images[$i] = [
-        $this->getImage(
-          $this->images[$i],
-          MovieImage::IMAGESTYLE_GALLERY,
-          [ "alt" => "{$this->title} {$this->images[$i]->imageAlt}" ],
-          "/" . implode("/", $this->imagesRoute)
-        ),
-        [ "class" => "span span--2"]
-      ];
-    }
     return (new Lists(
-      $this->images,
+      $this->getImages($this->images, null, true),
       "<p>{$this->noImagesText}</p>" .
       "<p>{$this->uploadText}</p>",
       [ "id" => "gallery-list"])
-    )->toHtmlList("ol");
+    )->toHtmlList("ol", function ($item) {
+      return "<li class='span span--2'>{$item}</li>";
+    });
   }
 
 }

@@ -54,9 +54,35 @@ trait TraitImageDetails {
   protected $image;
 
   /**
-   * Numeric array containing the stream images as <code>\MovLib\Data\Abstract</code> objects.
+   * The already translated route for images without the image ID portion.
    *
-   * @var array
+   * @var string
+   */
+  protected $imagesRoute;
+
+  /**
+   * The ID of the last image.
+   *
+   * @var int
+   */
+  protected $lastImageId;
+
+  /**
+   * The name pattern with replacement parameters for:
+   * <ul>
+   *   <li>The number of the current image.</li>
+   *   <li>The total count of the images.</li>
+   *   <li>The entity title.</li>
+   * </ul>
+   *
+   * @var string
+   */
+  protected $namePattern;
+
+  /**
+   * The stream images.
+   *
+   * @var \MovLib\Data\AbstractImages
    */
   protected $streamImages;
 
@@ -76,8 +102,12 @@ trait TraitImageDetails {
    */
   protected abstract function getImageDetails();
 
-  protected function getImageStream() {
-    return "";
+  private function pager($direction, $id, $text) {
+    return
+      "<a class='imagedetails-pager' id='imagedetails-{$direction}' href='{$this->imagesRoute}/{$id}'>" .
+        "<i class='icon icon--chevron-{$direction}'></i><span class='visuallyhidden'>{$text}</span>" .
+      "</a>"
+    ;
   }
 
   /**
@@ -89,15 +119,24 @@ trait TraitImageDetails {
     if ($this->model->deleted === true) {
       return $this->getGoneContent();
     }
-    /** @todo Display stream, image and details. */
+
+    $previous = $next = null;
+    if ($this->image->imageId > 1) {
+      $previous = $this->pager("left", ($this->image->imageId - 1), $i18n->t("Previous Image"));
+    }
+    if ($this->image->imageId < $this->lastImageId) {
+      $next = $this->pager("right", ($this->image->imageId + 1), $i18n->t("Next Image"));
+    }
+
+    $this->streamImages = implode("", $this->getImages($this->streamImages, null, true, [ "class" => "span span--1" ]));
     return
-      "<div id='image-details--stream'>{$this->getImageStream()}</div>" .
-      "<div id='image-details--image'>{$this->getImage(
+      "<div id='image-details--stream'>{$this->streamImages}</div>" .
+      "<div id='image-details--image'>{$previous}{$this->getImage(
         $this->image,
         AbstractImage::IMAGESTYLE_DETAILS,
         [ "alt" => "{$this->entityTitle} {$this->image->imageAlt}" ],
         $this->image->imageUri
-      )}</div>" .
+      )}{$next}</div>" .
       (new Lists($this->getImageDetails(), "", [ "class" => "dl--horizontal", "id" => "image-details--description" ]))->toDescriptionList()
     ;
   }

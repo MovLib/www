@@ -15,8 +15,11 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
 namespace MovLib\Presentation\Movie;
+
+use \MovLib\Data\MovieImage;
+use \MovLib\Data\MovieImages;
+use \MovLib\View\ImageStyle\ResizeImageStyle;
 
 /**
  * The movie's lobby card gallery.
@@ -43,8 +46,14 @@ class LobbyCardGallery extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->entityTitle = $this->title;
     $this->title = "{$i18n->t("Lobby Cards of")} “{$this->entityTitle}”";
     $this->init($this->title);
-    $this->images = $this->model->getLobbyCards();
-    $this->imagesRoute = [ $i18n->t("movie"), $this->model->id, $i18n->t("lobby-card") ];
+    $startId = empty($_GET["last_id"]) ? 0 : $_GET["last_id"];
+    $this->images = (new MovieImages(
+      $this->model->id,
+      MovieImage::IMAGETYPE_LOBBYCARD,
+      new ResizeImageStyle(MovieImage::IMAGESTYLE_GALLERY),
+      $i18n->r("/movie/{0}/poster", [ $this->model->id ]),
+      $this->entityTitle)
+    )->getOrderedByCreatedAsc($startId);
     $this->uploadRoute = $i18n->r("/movie/{0}/lobby-cards/upload", [ $this->model->id ]);
     $this->noImagesText = $i18n->t("No Lobby Cards for “{0}”.", [ $this->entityTitle ]);
     $this->uploadText = $i18n->t("Want to upload your Lobby Cards? {0}", [
