@@ -61,9 +61,15 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    * @expectedException \MovLib\Exception\UserException
    */
   public function testAuthenticateDeactivatedUser() {
-    $this->user = new User(User::FROM_ID, 1);
-    $this->user->deactivate();
-    (new Session())->authenticate("richard@fussenegger.info", "test1234");
+    try {
+      $this->user = new User(User::FROM_ID, 1);
+      $this->user->deactivate();
+      (new Session())->authenticate("richard@fussenegger.info", "test1234");
+    }
+    // Rebuild the users, the deactivation purged all data!
+    finally {
+      exec("movcli db -s users");
+    }
   }
 
   /**
