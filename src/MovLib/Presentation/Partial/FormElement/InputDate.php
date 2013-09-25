@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ValidatorException;
+use \MovLib\Exception\ValidationException;
 
 /**
  * HTML input type date form element.
@@ -140,14 +140,14 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\InputText {
     global $i18n;
 
     if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $this->value) === false) {
-      throw new ValidatorException($i18n->t("The submitted date {0} has an invalid format, the format must be {1}yyyy-mm-dd{2}.", [
+      throw new ValidationException($i18n->t("The submitted date {0} has an invalid format, the format must be {1}yyyy-mm-dd{2}.", [
         $this->placeholder($this->value), "<code>", "</code>"
       ]), self::E_FORMAT);
     }
 
     list($year, $month, $day) = explode("-", $this->value);
     if (checkdate($month, $day, $year) === false) {
-      throw new ValidatorException($i18n->t("The submitted date {0} is not valid.", [ $this->placeholder($this->value) ]), self::E_INVALID);
+      throw new ValidationException($i18n->t("The submitted date {0} is not valid.", [ $this->placeholder($this->value) ]), self::E_INVALID);
     }
 
     if ($this->max || $this->min) {

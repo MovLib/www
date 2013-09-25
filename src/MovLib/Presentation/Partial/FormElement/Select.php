@@ -107,7 +107,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public function validate() {
     global $i18n;
-    if (!isset($this->options[$this->value])) {
+    if (array_key_exists($this->value, $this->choices) === false) {
       throw new ValidationException($i18n->t("The submitted value {0} is not a valid option.", [ $this->placeholder($this->value) ]));
     }
     return $this;

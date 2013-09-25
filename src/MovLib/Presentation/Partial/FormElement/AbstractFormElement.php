@@ -210,7 +210,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *
    * @global \MovLib\Data\I18n $i18n
    * @return this
-   * @throws \MovLib\Exception\ValidatorException
+   * @throws \MovLib\Exception\ValidationException
    */
   abstract public function validate();
 

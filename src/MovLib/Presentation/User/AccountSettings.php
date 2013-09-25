@@ -19,14 +19,15 @@ namespace MovLib\Presentation\User;
 
 use \MovLib\Data\I18n;
 use \MovLib\Data\User;
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputDate;
 use \MovLib\Presentation\Partial\FormElement\InputFile;
-use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputURL;
+use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\Select;
 use \MovLib\Presentation\Partial\FormElement\Textarea;
 use \MovLib\Presentation\Validation\HTML;
@@ -235,10 +236,26 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
   /**
    * Validate data that couldn't be auto-validated and update the user's account settings.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @return this
    */
   public function validate() {
-
+    global $i18n;
+    $this->user->realName           = $this->realName->value;
+    $this->user->sex                = $this->sex->value;
+    $this->user->birthday           = $this->birthday->value;
+    $this->user->profile            = $this->profile->value;
+    $this->user->systemLanguageCode = $this->language->value;
+    $this->user->countryId          = $this->country->value;
+    $this->user->timeZoneId         = $this->timezone->value;
+    $this->user->website            = $this->website->value;
+    $this->user->private            = $this->private->value;
+    $this->user->commit();
+    $success = new Alert($i18n->t("Your account settings were updated successfully."));
+    $success->title = $i18n->t("Account Settings Updated Successfully");
+    $success->severity = Alert::SEVERITY_SUCCESS;
+    $this->alerts .= $success;
+    return $this;
   }
 
 }

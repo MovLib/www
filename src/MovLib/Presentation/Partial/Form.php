@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Partial;
 
-use \MovLib\Exception\ValidatorException;
 use \MovLib\Exception\ValidationException;
 use \MovLib\Presentation\Partial\FormElement\InputHidden;
 
@@ -114,7 +113,6 @@ class Form extends \MovLib\Presentation\AbstractBase {
    * @param string $validationCallback [optional]
    *   The name of the method that should be called if the form's auto-validation is completed an no errors were
    *   detected. Defaults to <code>"validate"</code>.
-   * @throws \MovLib\Exception\ValidatorException
    */
   public function __construct($page, array $elements, $id = null, $validationCallback = "validate") {
     global $i18n, $session;
@@ -167,10 +165,6 @@ class Form extends \MovLib\Presentation\AbstractBase {
         else {
           try {
             $elements[$i]->validate();
-          }
-          catch (ValidatorException $e) {
-            $elements[$i]->invalid();
-            $errors[] = $e->getMessage();
           }
           catch (ValidationException $e) {
             $elements[$i]->invalid();
