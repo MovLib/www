@@ -386,8 +386,8 @@ class Session extends \MovLib\Data\Database {
     //       https://github.com/komola/ZendFramework/blob/master/Controller/Request/Http.php#L1054
     $this->id             = session_id();
     $this->csrfToken      = $_SESSION["csrf_token"]     = hash("sha512", openssl_random_pseudo_bytes(1024));
-    $this->ipAddress      = $_SESSION["ip_address"]     = filter_input(INPUT_SERVER, "REMOTE_ADDR", FILTER_SANITIZE_STRING);
-    $this->userAgent      = $_SESSION["user_agent"]     = filter_input(INPUT_SERVER, "HTTP_USER_AGENT", FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
+    $this->ipAddress      = $_SESSION["ip_address"]     = filter_var($_SERVER["REMOTE_ADDR"], FILTER_SANITIZE_STRING);
+    $this->userAgent      = $_SESSION["user_agent"]     = filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
     $this->authentication = $_SESSION["authentication"] = $signIn ? : time();
 
     // We are initializing this session for a registered user.
@@ -451,7 +451,7 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\UserException
    */
   public function passwordNeedsRehash($password, $rawPassword) {
-    if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"]]) === true) {
+    if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]) === true) {
       $user = new User(User::FROM_ID, $this->userId);
       $user->updatePassword($rawPassword);
     }
@@ -511,7 +511,7 @@ class Session extends \MovLib\Data\Database {
    */
   private function start() {
     $sessionData = isset($_SESSION) ? $_SESSION : null;
-    if (session_start() === false) {
+    if (isset($_SERVER["FCGI_ROLE"]) && session_start() === false) {
       throw new MemcachedException("Could not start session (may be Memcached is down?).");
     }
     if ($sessionData) {
@@ -533,7 +533,7 @@ class Session extends \MovLib\Data\Database {
   public function update($oldSessionId) {
     return $this->query(
       "UPDATE `sessions` SET `session_id` = ?, `ip_address` = ?, `user_agent` = ? WHERE `session_id` = ? AND `user_id` = ?",
-      "sissd",
+      "ssssd",
       [ $this->id, inet_pton($this->ipAddress), $this->userAgent, $oldSessionId, $this->userId ]
     );
   }

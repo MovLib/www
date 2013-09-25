@@ -34,57 +34,70 @@ $_SERVER["DOCUMENT_ROOT"] = __DIR__;
 
 $composerAutoloader       = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
 $composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src");
-$composerAutoloader->add("MovLib\Test", "{$_SERVER["DOCUMENT_ROOT"]}/tests");
 
 $i18n                     = new \MovLib\Data\I18n();
 $_SERVER["LANGUAGE_CODE"] = $i18n->defaultLanguageCode;
-
-$session                  = new \MovLib\Data\Session();
-$session->userId          = 1;
-$session->userName        = "Fleshgrinder";
-$session->csrfToken       = "csrf";
-$session->isAuthenticated = true;
-$session->authentication  = time();
 
 $GLOBALS["movlib"]        = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
 
 // The following variables are always available in our environment and set via nginx. We have to create them here on
 // our own because PHPUnit will not invoke nginx.
-$_SERVER["SCHEME"]        = "https";
-$_SERVER["SERVER_NAME"]   = "{$_SERVER["LANGUAGE_CODE"]}.{$GLOBALS["movlib"]["default_domain"]}";
-$_SERVER["SERVER"]        = "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}";
+$_SERVER["SCHEME"]          = "https";
+$_SERVER["SERVER_NAME"]     = "{$_SERVER["LANGUAGE_CODE"]}.{$GLOBALS["movlib"]["default_domain"]}";
+$_SERVER["SERVER"]          = "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}";
+$_SERVER["REMOTE_ADDR"]     = "127.0.0.1";
+$_SERVER["HTTP_USER_AGENT"] = ini_get("user_agent");
 
 // Flag indicating if in development environment.
 define("DEV", strpos($GLOBALS["movlib"]["version"], "-dev") === false ? false : true);
 
-/**
- * Get accessible reflection method of <var>$object</var>.
- *
- * @param stdObject $object
- *   The object containing the method.
- * @param string $method_name
- *   The name of the method.
- * @return \ReflectionMethod
- *   The accessible reflection method.
- */
-function get_reflection_method($object, $method_name) {
-  $f = new \ReflectionMethod($object, $method_name);
-  $f->setAccessible(true);
-  return $f;
-}
 
-/**
- * Get accessible property of <var>$object</var>.
- *
- * @param stdObject $object
- *   The object containing the property.
- * @param string $property_name
- *   The name of the property.
- * @return \ReflectionProperty
- *   The accessible reflection property.
- */
-function get_reflection_property($object, $property_name) {
-  $p = new \ReflectionProperty($object, $property_name);
-  $p->setAccessible(true);
-  return $p;
+// --------------------------------------------------------------------------------------------------------------------- PHPUnit only
+
+
+if (defined("MOVLIB_PHPUNIT")) {
+  $composerAutoloader->add("MovLib\Test", "{$_SERVER["DOCUMENT_ROOT"]}/tests");
+
+  /**
+   * Mock of delayed_register() from main.php
+   */
+  function delayed_register($class, $weight = null, $method = null) {
+    // Do nothing!
+  }
+
+  /**
+   * Get accessible reflection method of <var>$object</var>.
+   *
+   * @param stdObject $object
+   *   The object containing the method.
+   * @param string $method_name
+   *   The name of the method.
+   * @return \ReflectionMethod
+   *   The accessible reflection method.
+   */
+  function get_reflection_method($object, $method_name) {
+    $f = new \ReflectionMethod($object, $method_name);
+    $f->setAccessible(true);
+    return $f;
+  }
+
+  /**
+   * Get accessible property of <var>$object</var>.
+   *
+   * @param stdObject $object
+   *   The object containing the property.
+   * @param string $property_name
+   *   The name of the property.
+   * @return \ReflectionProperty
+   *   The accessible reflection property.
+   */
+  function get_reflection_property($object, $property_name) {
+    $p = new \ReflectionProperty($object, $property_name);
+    $p->setAccessible(true);
+    return $p;
+  }
+
+  // Mock a valid session for various PHPUnit tests.
+  $session = new \MovLib\Data\Session();
+  get_reflection_method($session, "init")->invokeArgs($session, [ 1 ]);
 }

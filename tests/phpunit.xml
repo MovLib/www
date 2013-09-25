@@ -22,6 +22,9 @@
   convertWarningsToExceptions="true"
   stopOnFailure="true"
 >
+  <php>
+    <const name="MOVLIB_PHPUNIT" value="true" />
+  </php>
   <testsuites>
     <testsuite name="all">
       <directory>./MovLib/Tests</directory>
