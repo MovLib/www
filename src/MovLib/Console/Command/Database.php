@@ -21,8 +21,8 @@ use \Locale;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
-use \MovLib\Data\History\Movie;
 use \mysqli;
+use \ReflectionClass;
 
 /**
  * CLI commands for all database related tasks.
@@ -111,6 +111,20 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    */
   const OPTION_SHORTCUT_SEED = "s";
 
+    /**
+   * Option for creating git repositories.
+   *
+   * @var string
+   */
+  const OPTION_GIT = "git";
+
+  /**
+   * Option shortcut for creating git repositories.
+   *
+   * @var string
+   */
+  const OPTION_SHORTCUT_GIT = "g";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -157,10 +171,6 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
     foreach (glob("{$this->seedPath}/*.sql") as $file) {
       $this->seedScripts[basename($file, ".sql")] = $file;
     }
-    $this->mysqli = new mysqli();
-    $this->mysqli->real_connect();
-    $this->mysqli->select_db($GLOBALS["movlib"]["default_database"]);
-    $this->mysqli->autocommit(false);
   }
 
   /**
@@ -195,27 +205,58 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
       $this
         ->addOption(self::OPTION_ALL, self::OPTION_SHORTCUT_ALL, InputOption::VALUE_NONE, "Run all migrations and import all seed data (Ignores all other options).")
         ->addOption(self::OPTION_SEED, self::OPTION_SHORTCUT_SEED, InputOption::VALUE_OPTIONAL, "Import seed data file(s).")
+        ->addOption(self::OPTION_GIT, self::OPTION_SHORTCUT_GIT, InputOption::VALUE_OPTIONAL, "Create history repositories.")
       ;
     }
   }
 
   /**
-   * Helper function to create history repositories.
+   * Create git repositories.
+   *
+   * @param string $type [optional]
+   *   If supplied, only repositories of this type (e.g. movie) are created, otherwise all repositories are created.
+   * @return this
    */
-  private function createRepositories() {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/history";
+  private function git($type = null) {
+    $suportedTypes = [ "movie" ];
+
+    if ($type) {
+      if (!in_array($type, $suportedTypes)) {
+        $suportedTypes = implode(", ", $suportedTypes);
+        $this->exitOnError("Not a valid type.. valid types are {$suportedTypes}");
+      }
+      $this->createRepositories($type);
+    }
+    else {
+      foreach ($suportedTypes as $type) {
+        $this->createRepositories($type);
+      }
+    }
+    return $this;
+  }
+
+  /**
+   * Helper function to (re)create git repositories.
+   *
+   * @param string $type
+   *  All repositories of this type are created.
+   * @return this
+   */
+  private function createRepositories($type) {
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$type}";
     if(is_dir($path)) {
       exec("rm -rf {$path}");
     }
 
-    // Movie repositories
-    if ($result = $this->mysqli->query("SELECT `movie_id` FROM `movies`")) {
+    $class = new ReflectionClass("\\MovLib\\Data\\History\\" . ucfirst($type));
+    if ($result = $this->query("SELECT `{$type}_id` FROM `{$type}s`")) {
       while ($row = $result->fetch_assoc()) {
-        $history = new Movie($row["movie_id"]);
+        $history = $class->newInstance($row["{$type}_id"]);
         $commitHash = $history->createRepository();
-        $this->mysqli->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = {$row["movie_id"]}");
+        $this->query("UPDATE `{$type}s` SET `commit` = '{$commitHash}' WHERE `{$type}_id` = {$row["{$type}_id"]}");
       }
     }
+    return $this;
   }
 
   /**
@@ -223,7 +264,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     global $argv;
-    $this->setIO($input, $output)->mysqli->autocommit(false);
+    $this->setIO($input, $output);
     $options = $this->input->getOptions();
     if ($options[self::OPTION_ALL]) {
       $this->write("Importing schema ...");
@@ -232,7 +273,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
         $this->exitOnError("Could not read schema!");
       }
 
-      $this->mysqli->multi_query($schema);
+      $this->multiQuery($schema);
       do {
         if ($this->mysqli->errno) {
           $this->exitOnError("Could not import schema: {$this->mysqli->error} ({$this->mysqli->errno})");
@@ -247,16 +288,18 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
         ->write("Importing time zone translations ...")
         ->importTimeZones()
         ->importSeeds()
+        ->write("Creating git repositories ...")
+        ->git()
         ->write("All Successfull!", self::MESSAGE_TYPE_INFO)
       ;
     }
     elseif (array_search("--" . self::OPTION_SEED, $argv) || array_search("-" . self::OPTION_SHORTCUT_SEED, $argv)) {
       empty($options[self::OPTION_SEED]) ? $this->runSeedsInteractive() : $this->importSeeds(true, $options[self::OPTION_SEED]);
     }
+    elseif (array_search("--" . self::OPTION_GIT, $argv) || array_search("-" . self::OPTION_SHORTCUT_GIT, $argv)) {
+      empty($options[self::OPTION_GIT]) ? $this->git() : $this->git($options[self::OPTION_GIT]);
+    }
     else {
-
-
-
       $this->exitOnError("Not implemented yet!");
     }
   }
@@ -328,13 +371,13 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
         $query .= "('{$data[$i]}', '{$this->{"_{$table}"}($data[$i], $i18n->defaultLanguageCode)}', {$dynTranslations})";
       }
       $query .= "ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)";
-      if ($this->mysqli->query($query) === false) {
+      if ($this->query($query) === false) {
         $this->exitOnError("Could not import Intl ICU translations for {$table}: {$this->mysqli->error} ({$this->mysqli->errno})");
       }
     }
 
     // Insert the "Silent" language, because it is not present in the languages list of Intl ICU.
-    if ($this->mysqli->query(
+    if ($this->query(
       "INSERT INTO `languages` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ('xx', 'Silent', COLUMN_CREATE('de', 'Stumm')) ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)"
     ) === false) {
       $this->exitOnError("Could not import Intl ICU translations for {$table}: {$this->mysqli->error} ({$this->mysqli->errno})");
@@ -366,7 +409,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
       $successMessage = false;
     }
 
-    $this->mysqli->query("SET foreign_key_checks = 0");
+    $this->query("SET foreign_key_checks = 0");
     foreach ($seeds as $table => $script) {
       $this->write("Importing seed '{$table}' ...");
 
@@ -381,7 +424,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
       }
 
       // Try to execute the script at once.
-      $this->mysqli->multi_query($query);
+      $this->multiQuery($query);
       do {
         if ($this->mysqli->errno) {
           $this->exitOnError("Could not execute seed script for '{$table}': {$this->mysqli->error} ({$this->mysqli->errno})");
@@ -394,9 +437,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
         $this->write("Seed '{$table}' imported successfully!", self::MESSAGE_TYPE_INFO);
       }
     }
-    $this->mysqli->query("SET foreign_key_checks = 1");
-
-    $this->createRepositories();
+    $this->query("SET foreign_key_checks = 1");
 
     return $this;
   }
@@ -457,11 +498,52 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
       $queries .= "('{$enTranslation}', {$dynTranslations})";
     }
 
-    if ($this->mysqli->query($queries) === false) {
+    if ($this->query($queries) === false) {
       $this->exitOnError("Could not import time zone translations!");
     }
 
     return $this;
+  }
+
+  /**
+   * Helper function to connect to DB and query.
+   *
+   * @param string $fn
+   *   The query method which should be used ("query" or "multi_query").
+   * @param string $query
+   *   The query.
+   * @return mixed
+   */
+  private function _query($fn, $query) {
+    if (!$this->mysqli) {
+      $this->mysqli = new mysqli();
+      $this->mysqli->real_connect();
+      $this->mysqli->select_db($GLOBALS["movlib"]["default_database"]);
+      $this->mysqli->autocommit(false);
+    }
+    return $this->mysqli->{$fn}($query);
+  }
+
+  /**
+   * Helper function to multiquery the DB.
+   *
+   * @param string $query
+   *   The uery.
+   * @return mixed
+   */
+  private function multiQuery($query) {
+    return $this->_query("multi_query", $query);
+  }
+
+  /**
+   * Helper function to query the DB.
+   *
+   * @param string $query
+   *   The uery.
+   * @return mixed
+   */
+  private function query($query) {
+    return $this->_query("query", $query);
   }
 
   /**
