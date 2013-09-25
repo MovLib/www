@@ -123,5 +123,11 @@
 	content: "\e012";
 }
 .icon--info-circled:before {
-	content: "\f008";
+	content: "\e013";
+}
+.icon--chevron-left:before {
+	content: "\e014";
+}
+.icon--chevron-right:before {
+	content: "\e015";
 }
