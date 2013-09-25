@@ -26,7 +26,7 @@ SET time_zone = "+00:00";
 -- Dumping data for table `persons_photos`
 --
 
-INSERT INTO `persons_photos` (`person_id`, `section_id`, `user_id`, `license_id`, `filename`, `width`, `height`, `size`, `ext`, `changed`, `created`, `rating`, `dyn_descriptions`, `hash`, `source`) VALUES
+INSERT INTO `persons_photos` (`person_id`, `image_id`, `user_id`, `license_id`, `filename`, `width`, `height`, `size`, `ext`, `changed`, `created`, `upvotes`, `dyn_descriptions`, `hash`, `source`) VALUES
 (1, 1, 1, 1, 'Luc-Besson.1.en', 858, 1087, 239919, 'jpg', '2013-09-16 11:37:18', '2013-09-16 11:37:18', 0, '', 'hash\0\0\0\0\0\0\0\0\0\0\0\0', 'http://commons.wikimedia.org/wiki/File:Luc-Besson-Taken.JPG'),
 (5, 1, 1, 1, 'Frank-Darabont.1.en', 348, 394, 109183, 'jpg', '2013-09-16 11:37:18', '2013-09-16 11:37:18', 0, '', 'hash\0\0\0\0\0\0\0\0\0\0\0\0', 'http://commons.wikimedia.org/wiki/File:Struzan_darabont.jpg');
 COMMIT;
