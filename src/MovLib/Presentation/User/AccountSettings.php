@@ -177,7 +177,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->profile->attributes["data-format"]         = HTML::FORMAT_ANCHORS;
     $this->profile->attributes["data-allow-external"] = true;
 
-    $this->language = (new Select("language", $i18n->t("Language"), $i18n->getSystemLanguages(), $this->user->getLanguageCode()))->required();
+    $this->language = (new Select("language", $i18n->t("Language"), $i18n->getSystemLanguages(), $this->user->systemLanguageCode))->required();
 
     $this->country = new Select("country", $i18n->t("Country"), array_column($i18n->getCountries(I18n::KEY_NAME), I18n::KEY_NAME, I18n::KEY_CODE), $this->user->getCountryCode());
 

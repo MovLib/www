@@ -108,52 +108,6 @@ class User extends \MovLib\Data\AbstractImage {
 
 
   /**
-   * The MySQLi bind param types of the columns.
-   *
-   * @var array
-   */
-  private $types = [
-    self::FROM_ID => "d",
-    self::FROM_EMAIL => "s",
-    self::FROM_NAME => "s",
-  ];
-
-  /**
-   * The user's unique ID, defaults to zero (anonymous user).
-   *
-   * @var int
-   */
-  public $id;
-
-  /**
-   * The user's preferred system language's ID.
-   *
-   * @var int
-   */
-  public $languageId;
-
-  /**
-   * The user's unique name if logged in, otherwise the user's IP address will be used as name.
-   *
-   * @var string
-   */
-  public $name;
-
-  /**
-   * The user's unique mail if logged in.
-   *
-   * @var string
-   */
-  public $email;
-
-  /**
-   * The user's creation time (UNIX timestamp).
-   *
-   * @var int
-   */
-  public $created;
-
-  /**
    * The user's last access (UNIX timestamp).
    *
    * @var int
@@ -161,46 +115,19 @@ class User extends \MovLib\Data\AbstractImage {
   public $access;
 
   /**
-   * The user's last login (UNIX timestamp).
+   * The user's authentication token.
    *
-   * @var int
-   */
-  public $login;
-
-  /**
-   * Flag defining if the user's personal data is private or not.
-   *
-   * @var boolean
-   */
-  public $private;
-
-  /**
-   * Flag defining if the user's profile is deactivated.
-   *
-   * @var boolean
-   */
-  public $deactivated;
-
-  /**
-   * The user's time zone ID (e.g. <code>"Europe/Vienna"</code>).
-   *
+   * @see \MovLib\Data\User::setAuthenticationToken()
    * @var string
    */
-  public $timeZoneId;
+  public $authenticationToken;
 
   /**
-   * The user's edit counter.
+   * The user's birthday (date).
    *
-   * @var int
+   * @var null|int
    */
-  public $edits;
-
-  /**
-   * The user's profile text (in the current display language if available).
-   *
-   * @var string
-   */
-  public $profile;
+  public $birthday;
 
   /**
    * The user's unique country ID.
@@ -210,18 +137,81 @@ class User extends \MovLib\Data\AbstractImage {
   public $countryId;
 
   /**
+   * The user's creation time (UNIX timestamp).
+   *
+   * @var int
+   */
+  public $created;
+
+  /**
+   * Flag defining if the user's profile is deactivated.
+   *
+   * @var boolean
+   */
+  public $deactivated;
+
+  /**
+   * The user's edit counter.
+   *
+   * @var int
+   */
+  public $edits;
+
+  /**
+   * The user's unique mail if logged in.
+   *
+   * @var string
+   */
+  public $email;
+
+  /**
+   * The user's unique ID, defaults to zero (anonymous user).
+   *
+   * @var int
+   */
+  public $id;
+
+  /**
+   * Name of the directory within the uploads directory on the server.
+   *
+   * @var string
+   */
+  public $imageDirectory = "user";
+
+  /**
+   * The user's last login (UNIX timestamp).
+   *
+   * @var int
+   */
+  public $login;
+
+  /**
+   * The user's unique name if logged in, otherwise the user's IP address will be used as name.
+   *
+   * @var string
+   */
+  public $name;
+
+  /**
+   * Flag defining if the user's personal data is private or not.
+   *
+   * @var boolean
+   */
+  public $private;
+
+  /**
+   * The user's profile text (in the current display language if available).
+   *
+   * @var string
+   */
+  public $profile;
+
+  /**
    * The user's real name.
    *
    * @var null|string
    */
   public $realName;
-
-  /**
-   * The user's birthday (date).
-   *
-   * @var null|int
-   */
-  public $birthday;
 
   /**
    * The user's sex according to ISO/IEC 5218.
@@ -240,26 +230,36 @@ class User extends \MovLib\Data\AbstractImage {
   public $sex;
 
   /**
+   * The user's preferred system language's code (e.g. <code>"en"</code>).
+   *
+   * @var string
+   */
+  public $systemLanguageCode;
+
+  /**
+   * The user's time zone ID (e.g. <code>"Europe/Vienna"</code>).
+   *
+   * @var string
+   */
+  public $timeZoneId;
+
+  /**
+   * The MySQLi bind param types of the columns.
+   *
+   * @var array
+   */
+  private $types = [
+    self::FROM_ID => "d",
+    self::FROM_EMAIL => "s",
+    self::FROM_NAME => "s",
+  ];
+
+  /**
    * The user's website.
    *
    * @var null|string
    */
   public $website;
-
-  /**
-   * Name of the directory within the uploads directory on the server.
-   *
-   * @var string
-   */
-  public $imageDirectory = "user";
-
-  /**
-   * The user's authentication token.
-   *
-   * @see \MovLib\Data\User::setAuthenticationToken()
-   * @var string
-   */
-  public $authenticationToken;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -279,11 +279,11 @@ class User extends \MovLib\Data\AbstractImage {
    */
   public function __construct($from = null, $value = null) {
     global $i18n;
-    if (!empty($from) && !empty($value)) {
+    if (isset($from) && isset($value)) {
       $result = $this->select(
         "SELECT
           `user_id` AS `id`,
-          `language_id` AS `languageId`,
+          `system_language_code` AS `systemLanguageCode`,
           `name`,
           `email`,
           UNIX_TIMESTAMP(`created`) AS `created`,
@@ -360,7 +360,7 @@ class User extends \MovLib\Data\AbstractImage {
   public function commit() {
     return $this->query(
       "UPDATE `users` SET
-        `language_id` = ?,
+        `system_language_code` = ?,
         `private` = ?,
         `time_zone_id` = ?,
         `country_id` = ?,
@@ -373,7 +373,7 @@ class User extends \MovLib\Data\AbstractImage {
       WHERE `user_id` = ?",
       "iisississsd",
       [
-        $this->languageId,
+        $this->systemLanguageCode,
         $this->private,
         $this->timeZoneId,
         $this->countryId,
@@ -439,18 +439,6 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
-   * Get the user's preferred ISO 639-1 alpha-2 language code.
-   *
-   * @return string
-   *   The user's preferred system language code.
-   * @throws \MovLib\Data\DatabaseException
-   */
-  public function getLanguageCode() {
-    // All fields are mandatory and if missing something is terribly wrong, therefor we can access the result directly.
-    return $this->select("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` = ? LIMIT 1", "i", [ $this->languageId ])[0]["iso_alpha-2"];
-  }
-
-  /**
    * Get the user's preferred locale.
    *
    * @return string
@@ -458,7 +446,7 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getLocale() {
-    return $GLOBALS["movlib"]["locales"][$this->getLanguageCode()];
+    return $GLOBALS["movlib"]["locales"][$this->systemLanguageCode];
   }
 
   /**
@@ -587,7 +575,7 @@ class User extends \MovLib\Data\AbstractImage {
   public function register($name, $email, $rawPassword) {
     global $i18n;
     $password         = password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
-    $this->languageId = $i18n->getLanguageId();
+    $this->systemLanguage = $i18n->getLanguageId();
     $this->name       = $name;
     $this->email      = $email;
     $this->deactivated    = false;
@@ -595,7 +583,7 @@ class User extends \MovLib\Data\AbstractImage {
     $this->query(
       "INSERT INTO `users` (`language_id`, `name`, `email`, `password`, `created`, `login`, `time_zone_id`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, '')",
       "dssss",
-      [ $this->languageId, $this->name, $this->email, $password, $this->timeZoneId ],
+      [ $this->systemLanguage, $this->name, $this->email, $password, $this->timeZoneId ],
       false
     );
     $this->id = $this->stmt->insert_id;

@@ -139,8 +139,6 @@ class I18n extends \MovLib\Data\Database {
   /**
    * Create new i18n model instance.
    *
-   * @link https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
-   * @global \MovLib\Model\SessionModel $user
    * @param $locale [optional]
    *   The desired locale, if no locale is passed the following procedure is executed:
    *   <ol>
@@ -150,7 +148,6 @@ class I18n extends \MovLib\Data\Database {
    *   </ol>
    */
   public function __construct($locale = null) {
-    global $session;
     // Always export defaults first.
     $this->defaultLocale = Locale::getDefault();
     $this->defaultLanguageCode = "{$this->defaultLocale[0]}{$this->defaultLocale[1]}";

@@ -142,7 +142,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `edits` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The user’s edit counter.' ,
   `dyn_profile` BLOB NOT NULL COMMENT 'The user’s profile text (translatable).' ,
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.' ,
-  `system_language` CHAR(2) NOT NULL ,
+  `system_language_code` CHAR(2) NOT NULL COMMENT 'The user’s preferred system language’s code (e.g. en).' ,
   `country_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.' ,
   `real_name` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.' ,
   `birthday` DATE NULL COMMENT 'The user\'s date of birth.' ,

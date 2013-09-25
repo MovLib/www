@@ -26,7 +26,7 @@ SET time_zone = "+00:00";
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `name`, `email`, `password`, `created`, `access`, `login`, `private`, `deactivated`, `time_zone_id`, `edits`, `dyn_profile`, `sex`, `system_language`, `country_id`, `real_name`, `birthday`, `website`, `facebook`, `google_plus`, `twitter`, `avatar_extension`, `avatar_name`, `avatar_changed`) VALUES
+INSERT INTO `users` (`user_id`, `name`, `email`, `password`, `created`, `access`, `login`, `private`, `deactivated`, `time_zone_id`, `edits`, `dyn_profile`, `sex`, `system_language_code`, `country_id`, `real_name`, `birthday`, `website`, `facebook`, `google_plus`, `twitter`, `avatar_extension`, `avatar_name`, `avatar_changed`) VALUES
 (1, 'Fleshgrinder', 'richard@fussenegger.info', '$2y$10$N/kvo2/A9vAv.8Mkgb4ky.llucBnDaPi5pdW7HPP2OCHV9yDQyjbG', '2013-09-16 11:37:18', '2013-09-16 11:37:18', '2013-09-16 11:37:18', 0, 0, 'Europe/Vienna', 0, '\0\0\0\0\0\0ódeen!Richards deutscher Profiltext.!Richardâ€™s English profile text.', 1, 'en', 12, 'Richard Fussenegger', '1985-06-27', 'http://richard.fussenegger.info/', NULL, NULL, NULL, 'jpg', '3696208974', NULL);
 COMMIT;
 
