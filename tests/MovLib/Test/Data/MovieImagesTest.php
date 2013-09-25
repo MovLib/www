@@ -17,9 +17,9 @@
  */
 namespace MovLib\Test\Data;
 
-use \MovLib\Data\Database;
 use \MovLib\Data\MovieImage;
 use \MovLib\Data\MovieImages;
+use \MovLib\Data\MySQLi as PHPMysqli;
 use \MovLib\View\ImageStyle\ResizeImageStyle;
 
 /**
@@ -72,13 +72,20 @@ class MovieImagesTest extends \PHPUnit_Framework_TestCase {
         $query .= ",\n";
       }
     }
-    $db = new Database();
-    $db->query($query, $types, $params);
+    $mysqli = new PHPMysqli();
+    $stmt = $mysqli->prepare($query);
+    array_unshift($params, $types);
+    $c = count($params);
+    for ($i = 0; $i < $c; ++$i) {
+      $params[$i] = &$params[$i];
+    }
+    call_user_func_array([ $stmt, "bind_param" ], $params);
+    $stmt->execute();
   }
 
   public static function tearDownAfterClass() {
-    $db = new Database();
-    $db->query("DELETE FROM `movies_images` WHERE `movie_id` = 1 AND `type` = " . MovieImage::IMAGETYPE_PHOTO);
+    $mysqli = new PHPMysqli();
+    $mysqli->query("DELETE FROM `movies_images` WHERE `movie_id` = 1 AND `type` = " . MovieImage::IMAGETYPE_PHOTO);
   }
 
   /**
@@ -95,8 +102,8 @@ class MovieImagesTest extends \PHPUnit_Framework_TestCase {
    * @covers \MovLib\Data\MovieImages::initImageProperties
    */
   public function testInitImageProperties() {
-    $db = new Database();
-    $result = $db->select(
+    $mysqli = new PHPMysqli();
+    $queryResult = $mysqli->query(
       "SELECT
         `image_id`,
         `country_id`,
@@ -107,12 +114,15 @@ class MovieImagesTest extends \PHPUnit_Framework_TestCase {
         AND `type` = " . MovieImage::IMAGETYPE_PHOTO . "
         LIMIT 1"
     );
+    $result = null;
+    while ($row = $queryResult->fetch_assoc()){
+      $result[] = $row;
+    }
     $this->assertNotEmpty($result[0]);
     $images = get_reflection_method($this->movieImages, "initImageProperties")->invokeArgs($this->movieImages, [ $result ]);
     $this->assertContains("PHPUnit", $images[0]["alt"]);
     $this->assertContains("photo", $images[0]["alt"]);
     $this->assertEquals("/movie/1/photo/1", $images[0]["uri"]);
-    $this->assertEquals("PHPUnit", $images[0]["description"]);
   }
 
   /**
