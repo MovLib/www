@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Exception\ValidationException;
 use \MovLib\Presentation\Partial\Help;
 
 /**
@@ -144,11 +145,12 @@ class RadioGroup extends \MovLib\Presentation\AbstractBase {
         "label" => $choiceLabel,
       ];
     }
-    if (isset($_POST[$this->id]) && isset($this->choices[$_POST[$this->id]])) {
+    if (isset($_POST[$this->id]) && array_key_exists($_POST[$this->id], $this->choices) === true) {
       $this->choices[$_POST[$this->id]]["attributes"][] = "checked";
+      $this->value = $_POST[$this->id];
     }
     else {
-      $this->choices[$value]["attributes"][] = "checked";
+      $this->choices[$this->value]["attributes"][] = "checked";
     }
     $this->attributes = $attributes;
     $this->attributes["id"] = $id;
@@ -189,10 +191,6 @@ class RadioGroup extends \MovLib\Presentation\AbstractBase {
     $this->attributes["aria-disabled"] = "true";
     $this->attributes[] = "disabled";
     $this->disabled = true;
-    foreach ($this->choices as $value => $choice) {
-      $this->choices[$value]["attributes"]["aria-disabled"] = "true";
-      $this->choices[$value]["attributes"][] = "disabled";
-    }
     return $this;
   }
 
@@ -209,10 +207,6 @@ class RadioGroup extends \MovLib\Presentation\AbstractBase {
   public function invalid() {
     $this->addClass("invalid", $this->attributes);
     $this->attributes["aria-invalid"] = "true";
-    foreach ($this->choices as $value => $choice) {
-      $this->choices[$value]["attributes"]["aria-invalid"] = "true";
-      $this->choices[$value]["attributes"]["class"] = "invalid";
-    }
     return $this;
   }
 
@@ -243,10 +237,13 @@ class RadioGroup extends \MovLib\Presentation\AbstractBase {
    *
    * @global \MovLib\Data\I18n $i18n
    * @return this
-   * @throws \MovLib\Exception\ValidatorException
+   * @throws \MovLib\Exception\ValidationException
    */
   public function validate() {
     global $i18n;
+    if (array_key_exists($_POST[$this->id], $this->choices) === false) {
+      throw new ValidationException($i18n->t("The submitted value {0} is not a valid choice.", [ $this->placeholder($this->value) ]));
+    }
     return $this;
   }
 

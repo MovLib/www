@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Validation;
 
 use \MovLib\Exception\ValidationException;
+use \Normalizer;
 
 /**
  * Validate a string as plain text and UTF-8.
