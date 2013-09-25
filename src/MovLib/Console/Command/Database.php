@@ -232,6 +232,9 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
         $this->createRepositories($type);
       }
     }
+
+    exec("chmod -R 777 {$_SERVER["DOCUMENT_ROOT"]}/history/*");
+
     return $this;
   }
 
@@ -244,11 +247,12 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    */
   private function createRepositories($type) {
     $path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$type}";
-    if(is_dir($path)) {
+    if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
 
-    $class = new ReflectionClass("\\MovLib\\Data\\History\\" . ucfirst($type));
+    $class = ucfirst($type);
+    $class = new ReflectionClass("\\MovLib\\Data\\History\\{$class}");
     if ($result = $this->query("SELECT `{$type}_id` FROM `{$type}s`")) {
       while ($row = $result->fetch_assoc()) {
         $history = $class->newInstance($row["{$type}_id"]);
@@ -288,8 +292,8 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
         ->write("Importing time zone translations ...")
         ->importTimeZones()
         ->importSeeds()
-        ->write("Creating git repositories ...")
-        ->git()
+//        ->write("Creating git repositories ...")
+//        ->git()
         ->write("All Successfull!", self::MESSAGE_TYPE_INFO)
       ;
     }
