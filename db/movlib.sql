@@ -126,26 +126,10 @@ ROW_FORMAT = COMPRESSED;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`languages`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`languages` (
-  `language_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The language’s unique ID.' ,
-  `iso_alpha-2` CHAR(2) NOT NULL COMMENT 'The language’s ISO 639-1 alpha-2 code.' ,
-  `name` TINYTEXT NOT NULL COMMENT 'The language’s unique English name.' ,
-  `dyn_translations` BLOB NOT NULL COMMENT 'The language’s translated name.' ,
-  PRIMARY KEY (`language_id`) ,
-  UNIQUE INDEX `unique_languages_iso_alpha-2` (`iso_alpha-2` ASC) )
-COMMENT = 'Contains all ISO 639-1 alpha-2 languages.'
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`users`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `user_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The user’s unique ID.' ,
-  `language_id` INT UNSIGNED NOT NULL COMMENT 'The user’s language.' ,
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.' ,
   `email` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The user’s unique email address.' ,
   `password` TINYBLOB NOT NULL COMMENT 'The user’s unique password (hashed).' ,
@@ -158,6 +142,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `edits` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The user’s edit counter.' ,
   `dyn_profile` BLOB NOT NULL COMMENT 'The user’s profile text (translatable).' ,
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.' ,
+  `system_language` CHAR(2) NOT NULL ,
   `country_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.' ,
   `real_name` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.' ,
   `birthday` DATE NULL COMMENT 'The user\'s date of birth.' ,
@@ -170,17 +155,11 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `avatar_changed` TIMESTAMP NULL COMMENT 'The timestamp the avatar has been changed.' ,
   PRIMARY KEY (`user_id`) ,
   INDEX `fk_users_countries` (`country_id` ASC) ,
-  INDEX `fk_users_languages` (`language_id` ASC) ,
   UNIQUE INDEX `uq_users_name` (`name` ASC) ,
   UNIQUE INDEX `uq_users_mail` (`email` ASC) ,
   CONSTRAINT `fk_users_countries`
     FOREIGN KEY (`country_id` )
     REFERENCES `movlib`.`countries` (`country_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_users_languages`
-    FOREIGN KEY (`language_id` )
-    REFERENCES `movlib`.`languages` (`language_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 DEFAULT CHARACTER SET = utf8mb4
@@ -470,6 +449,21 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`routes` (
   PRIMARY KEY (`route_id`) ,
   UNIQUE INDEX `uq_routes_route` (`route` ASC) )
 COMMENT = 'Contains all routes (relative URIs).'
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`languages`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `movlib`.`languages` (
+  `language_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The language’s unique ID.' ,
+  `iso_alpha-2` CHAR(2) NOT NULL COMMENT 'The language’s ISO 639-1 alpha-2 code.' ,
+  `name` TINYTEXT NOT NULL COMMENT 'The language’s unique English name.' ,
+  `dyn_translations` BLOB NOT NULL COMMENT 'The language’s translated name.' ,
+  PRIMARY KEY (`language_id`) ,
+  UNIQUE INDEX `unique_languages_iso_alpha-2` (`iso_alpha-2` ASC) )
+COMMENT = 'Contains all ISO 639-1 alpha-2 languages.'
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
