@@ -82,7 +82,7 @@ class Login extends \MovLib\Presentation\Page {
 
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
     if ($session->isAuthenticated === true && $_SERVER["PATH_INFO"] != $routeLogout) {
-      throw new RedirectException($i18n->r("/my"), 302);
+      throw new RedirectException($i18n->r("/my"));
     }
 
     // Start rendering the page.
@@ -109,9 +109,9 @@ class Login extends \MovLib\Presentation\Page {
 
     $this->password = new InputPassword("password");
 
-    $this->form = new Form($this, [ $this->email, $this->password ]);
+    $this->form                       = new Form($this, [ $this->email, $this->password ]);
     $this->form->attributes["action"] = $action;
-    $this->form->attributes["class"] = "span span--6 offset--3";
+    $this->form->attributes["class"]  = "span span--6 offset--3";
 
     $this->form->actionElements[] = new InputSubmit([
       "class" => "button--large button--success",
@@ -124,8 +124,8 @@ class Login extends \MovLib\Presentation\Page {
       $session->destroy();
       $alert = new Alert($i18n->t("We hope to see you again soon."));
       $alert->severity = Alert::SEVERITY_SUCCESS;
-      $alert->title = $i18n->t("You’ve been signed out successfully.");
-      $this->alerts .= $alert;
+      $alert->title    = $i18n->t("You’ve been signed out successfully.");
+      $this->alerts   .= $alert;
     }
 
     // Ensure all views are using the correct path info to render themselves.
@@ -158,19 +158,19 @@ class Login extends \MovLib\Presentation\Page {
 
       // Ensure that the user know's that the log in succeded.
       $success = new Alert($i18n->t("Login was successful."));
-      $success->title = $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]);
+      $success->title    = $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]);
       $success->severity = Alert::SEVERITY_SUCCESS;
-      $session->alerts .= $success;
+      $session->alerts  .= $success;
 
       // Redirect the user to the requested redirect destination and if none was set to the personalized dashboard.
-      throw new RedirectException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"), 302);
+      throw new RedirectException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
     }
     // Never tell the person who's trying to sing in which value was wrong. Both attributes are considered a secret and
     // should never be exposed by our application itself.
     catch (SessionException $e) {
       $error = new Alert($i18n->t("We either don’t know the email address, or the password was wrong."));
       $error->severity = Alert::SEVERITY_ERROR;
-      $this->alerts .= $error;
+      $this->alerts   .= $error;
     }
     // Account has been deactivated!
     catch (UserException $e) {

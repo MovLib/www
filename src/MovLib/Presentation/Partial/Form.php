@@ -134,7 +134,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
     ];
 
     // Validate all attached form elements if we are receiving this form.
-    if (filter_input(INPUT_POST, "form_id") == $this->id) {
+    if (isset($_POST["form_id"]) && $_POST["form_id"] == $this->id) {
       $errors = $mandatoryError = null;
 
       if ($session->validateCsrfToken() === false) {

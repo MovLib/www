@@ -49,11 +49,11 @@ class RedirectException extends \RuntimeException {
    *   The already translated route.
    * @param int $status [optional]
    *   The HTTP redirect status code, one of <code>301</code>, <code>302</code>, or <code>303</code>. Defaults to
-   *   <code>301</code>.
+   *   <code>302</code>.
    * @param \Exception $previous [optional]
    *   The previously thrown exception.
    */
-  public function __construct($route, $status = 301, $previous = null) {
+  public function __construct($route, $status = 302, $previous = null) {
     parent::__construct("Redirecting user to {$route} with status {$status}.", E_NOTICE, $previous);
     if (strpos($route, "http") === false) {
       $route = "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$route}";
