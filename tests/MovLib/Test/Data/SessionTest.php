@@ -184,11 +184,11 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
         }
       }
     }
-    if ($findIt === true && $found === false) {
-      throw new \PHPUnit_Framework_AssertionFailedError("Couldn't find session.");
+    if ($findIt === true) {
+      $this->assertTrue($found, "Couldn't find session!");
     }
-    elseif ($findIt === false && $found === true) {
-      throw new \PHPUnit_Framework_AssertionFailedError("Found session, but it shouldn't be there!");
+    else {
+      $this->assertFalse($found, "Found session, but it shouldn't be there!");
     }
   }
 
