@@ -53,13 +53,21 @@ class PosterDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->lastImageId = $this->image->getTotalCount();
     $this->namePattern = "Poster {0} of {1} from “{2}”";
     $this->init($i18n->t($this->namePattern, [ $this->image->imageId, $this->lastImageId, $this->title ]));
-    $this->streamImages = (new MovieImages(
-      $this->model->id,
-      MovieImage::IMAGETYPE_POSTER,
-      new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
-      $this->imagesRoute,
-      $this->entityTitle
-    ))->getOrderedByCreatedAsc($this->image->imageId, true);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getStreamImages($imageId, $paginationSize) {
+    return
+      (new MovieImages(
+        $this->model->id,
+        MovieImage::IMAGETYPE_POSTER,
+        new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
+        $this->imagesRoute,
+        $this->entityTitle
+      ))->getOrderedByCreatedAsc($imageId, false, $paginationSize)
+    ;
   }
 
 }

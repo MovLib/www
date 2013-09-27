@@ -90,7 +90,7 @@ trait TraitImageDetails {
    * @inheritdoc
    */
   protected function init($title) {
-    $this->stylesheets[] = "modules/image-details.css";
+    $this->stylesheets[] = "modules/imagedetails.css";
     return parent::init($title);
   }
 
@@ -101,6 +101,18 @@ trait TraitImageDetails {
    *   The image details ready for printing a description list with <code>\MovLib\Presentation\Partial\Lists</code>.
    */
   protected abstract function getImageDetails();
+
+  /**
+   * Get the stream images.
+   *
+   * @param int $imageId
+   *   The image ID to start the stream from.
+   * @param int $paginationSize
+   *   The stream pagination size.
+   * @return array
+   *   Numeric array containing the stream images.
+   */
+  protected abstract function getStreamImages($imageId, $paginationSize);
 
   private function pager($direction, $id, $text) {
     return
@@ -128,9 +140,10 @@ trait TraitImageDetails {
       $next = $this->pager("right", ($this->image->imageId + 1), $i18n->t("Next Image"));
     }
 
-    $this->streamImages = implode("", $this->getImages($this->streamImages, null, true, [ "class" => "span span--1" ]));
+    $startId = $this->image->imageId - 5;
+    $streamImages = implode("", $this->getImages($this->getStreamImages($startId, 9), null, true, [ "class" => "span span--1" ]));
     return
-      "<div id='image-details--stream'>{$this->streamImages}</div>" .
+      "<div id='image-details--stream'>{$streamImages}</div>" .
       "<div id='image-details--image'>{$previous}{$this->getImage(
         $this->image,
         AbstractImage::IMAGESTYLE_DETAILS,

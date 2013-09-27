@@ -69,17 +69,16 @@
 #image-details--stream {
   background-color: #252525;
   overflow: hidden;
-  padding: 20px 0;
+  padding: 10px 0;
+  text-align: center;
 }
 
 #image-details--stream a {
   border: none;
   opacity: 0.7;
+  overflow: hidden;
+  position: relative;
   transition: opacity 0.4s ease-in-out;
-}
-
-#image-details--stream img {
-  margin: 0 !important;
 }
 
 #image-details--stream a:hover,
@@ -88,10 +87,42 @@
   opacity: 1;
 }
 
+#image-details--stream a:first-of-type,
+#image-details--stream a:last-of-type {
+  width: 50px;
+}
+
+#image-details--stream a:first-of-type {
+  margin-left: 10px;
+}
+
+#image-details--stream a:first-of-type:after,
+#image-details--stream a:last-of-type:after {
+  bottom: 0;
+  content: "";
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#image-details--stream a:first-of-type:after {
+  background: linear-gradient(to right, #252525, transparent);
+}
+
+#image-details--stream a:last-of-type:after {
+  background: linear-gradient(to left, #252525, transparent);
+}
+
+#image-details--stream a:first-of-type img {
+  left: -10px;
+  position: relative;
+}
+
 #image-details--stream img {
   display: inline-block;
+  margin: 0 !important;
   margin-left: 5px;
-  float: left;
 }
 
 #image-details--details dt,

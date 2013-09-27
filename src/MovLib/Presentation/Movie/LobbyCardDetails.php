@@ -62,4 +62,18 @@ class LobbyCardDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
     ))->getOrderedByCreatedAsc($this->image->imageId, true);
   }
 
+  /**
+   * @inheritdoc
+   */
+  protected function getStreamImages($imageId, $paginationSize) {
+    return
+      (new MovieImages(
+        $this->model->id,
+        MovieImage::IMAGETYPE_LOBBYCARD,
+        new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
+        $this->imagesRoute,
+        $this->entityTitle
+      ))->getOrderedByCreatedAsc($imageId, false, $paginationSize);
+  }
+
 }
