@@ -79,19 +79,19 @@ class URLTest extends \PHPUnit_Framework_TestCase {
 
   public static function dataProviderValid() {
     return [
-      [ "/", "http://{$_SERVER["SERVER_NAME"]}" ],
-      [ "/", "http://{$_SERVER["SERVER_NAME"]}/" ],
-      [ "/", "https://{$_SERVER["SERVER_NAME"]}" ],
-      [ "/", "https://{$_SERVER["SERVER_NAME"]}/" ],
+      [ "http://{$_SERVER["SERVER_NAME"]}/", "http://{$_SERVER["SERVER_NAME"]}" ],
+      [ "http://{$_SERVER["SERVER_NAME"]}/", "http://{$_SERVER["SERVER_NAME"]}/" ],
+      [ "https://{$_SERVER["SERVER_NAME"]}/", "https://{$_SERVER["SERVER_NAME"]}" ],
+      [ "https://{$_SERVER["SERVER_NAME"]}/", "https://{$_SERVER["SERVER_NAME"]}/" ],
       [ "http://wikipedia.org/", "http://wikipedia.org" ],
       [ "https://wikipedia.org/", "https://wikipedia.org" ],
-      [ "/user/login", "http://{$_SERVER["SERVER_NAME"]}/user/login" ],
+      [ "http://{$_SERVER["SERVER_NAME"]}/users/login", "http://{$_SERVER["SERVER_NAME"]}/users/login" ],
       [ "http://www.kawaguchi.science.museum/", "http://www.kawaguchi.science.museum/" ],
       [ "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB", "https://ja.wikipedia.org/wiki/Unix系" ],
       [ "https://en.wikipedia.org/wiki//dev/random", "https://en.wikipedia.org/wiki//dev/random" ],
       [ "http://www.youtube.com/watch?v=5gUKvmOEGCU", "http://www.youtube.com/watch?v=5gUKvmOEGCU" ],
       [ "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB", "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB" ],
-      [ "/user/registration?token=1234567890", "http://{$_SERVER["SERVER_NAME"]}/user/registration?token=1234567890" ],
+      [ "http://{$_SERVER["SERVER_NAME"]}/users/registration?token=1234567890", "http://{$_SERVER["SERVER_NAME"]}/users/registration?token=1234567890" ],
       [
         "https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Component%21Utility%21Url.php/function/Url%3A%3AisValid/8",
         "https://api.drupal.org/api/drupal/core!lib!Drupal!Component!Utility!Url.php/function/Url%3A%3AisValid/8"
@@ -112,7 +112,7 @@ class URLTest extends \PHPUnit_Framework_TestCase {
    * @covers \MovLib\Presentation\Validation\URL::validate
    * @dataProvider dataProviderIllegalParts
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionCode 4
+   * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_ILLEGAL_PARTS
    */
   public function testIllegalParts($url) {
     (new URL($url))->validate();
@@ -123,7 +123,7 @@ class URLTest extends \PHPUnit_Framework_TestCase {
    * @covers \MovLib\Presentation\Validation\URL::validate
    * @dataProvider dataProviderMalformed
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionCode 1
+   * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_MALFORMED
    */
   public function testMalformed($url) {
     (new URL($url))->validate();
@@ -134,7 +134,7 @@ class URLTest extends \PHPUnit_Framework_TestCase {
    * @covers \MovLib\Presentation\Validation\URLvalidate
    * @dataProvider dataProviderMalformedSchemeAndOrHost
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionCode 2
+   * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_SCHEME_OR_HOST_MALFORMED
    */
   public function testMalformedSchemeAndOrHost($url) {
     (new URL($url))->validate();
@@ -145,7 +145,7 @@ class URLTest extends \PHPUnit_Framework_TestCase {
    * @covers \MovLib\Presentation\Validation\URL::validate
    * @dataProvider dataProviderValid
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionCode 3
+   * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_NO_EXTERNAL
    */
   public function testNoExternal($unused, $url) {
     $GLOBALS["movlib"]["default_domain"] = "google.com";
@@ -173,7 +173,7 @@ class URLTest extends \PHPUnit_Framework_TestCase {
    * @covers \MovLib\Presentation\Validation\URL::validate
    * @dataProvider dataProviderReachability
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionCode 5
+   * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_UNREACHABLE
    */
   public function testReachability($url) {
     $urlValidator                    = new URL($url);

@@ -29,6 +29,7 @@ use \ReflectionMethod;
  */
 class PageTest extends \PHPUnit_Framework_TestCase {
 
+  /** @var \MovLib\Presentation\Page */
   public $page;
 
   public static function dataProviderNormalizeLineFeeds() {
@@ -47,6 +48,19 @@ class PageTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * @covers \MovLib\Presentation\Page::__construct
+   * @covers \MovLib\Presentation\Page::init
+   * @covers \MovLib\Presentation\AbstractPage::init
+   */
+  public function testConstruct() {
+    $this->assertEquals([ "page" ], get_reflection_property($this->page, "namespace")->getValue($this->page));
+    $this->assertEquals("page", get_reflection_property($this->page, "bodyClasses")->getValue($this->page));
+    $this->assertEquals("page", get_reflection_property($this->page, "id")->getValue($this->page));
+    $this->assertEquals("PHPUnit", get_reflection_property($this->page, "title")->getValue($this->page));
+    $this->assertContains("<noscript>", $this->page->alerts);
+  }
+
+  /**
    * @covers \MovLib\Presentation\AbstractPage::a
    */
 //  public function testA() {
@@ -59,6 +73,15 @@ class PageTest extends \PHPUnit_Framework_TestCase {
 //  public function testAddClass() {
 //
 //  }
+
+  /**
+   * @covers \MovLib\Presentation\Page::checkErrors
+   */
+  public function checkErrors() {
+    $this->assertFalse($this->page->checkErrors(null));
+    $this->assertTrue($this->page->checkErrors([ "<phpunit>" ]));
+    $this->assertContains("<phpunit>", $this->page->alerts);
+  }
 
   /**
    * @covers \MovLib\Presentation\AbstractPage::checkPlain

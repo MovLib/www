@@ -268,11 +268,6 @@ class URL extends \MovLib\Presentation\AbstractBase {
       $this->checkReachability();
     }
 
-    // Internal links don't contain scheme nor host.
-    if ($this->external === false) {
-      $this->url = str_replace("{$this->parts["scheme"]}://{$_SERVER["SERVER_NAME"]}", "", $this->url);
-    }
-
     return $this->url;
   }
 

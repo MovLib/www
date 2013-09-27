@@ -17,7 +17,7 @@
  */
 namespace MovLib\Test\Data;
 
-use \MovLib\Data\Database;
+use \MovDev\Database;
 use \MovLib\Data\Session;
 use \MovLib\Data\User;
 
@@ -75,7 +75,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers \MovLib\Data\Session::authenticate
    * @expectedException \MovLib\Exception\SessionException
-   * @expectedExceptionMessage Could not find user with email webmaster@movlib.org
+   * @expectedExceptionMessage Could not find user with email
    */
   public function testAuthenticateInvalidEmail() {
     (new Session())->authenticate("webmaster@movlib.org", "test1234");
@@ -84,7 +84,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers \MovLib\Data\Session::authenticate
    * @expectedException \MovLib\Exception\SessionException
-   * @expectedExceptionMessage Invalid password for user with email richard@fussenegger.info
+   * @expectedExceptionMessage Invalid password
    */
   public function testAuthenticateInvalidPassword() {
     (new Session())->authenticate("richard@fussenegger.info", "wrong-password");

@@ -102,12 +102,11 @@ class Page extends \MovLib\Presentation\AbstractPage {
    * @return boolean
    *   Returns <code>TRUE</code> if there were any errors, otherwise <code>FALSE</code>.
    */
-  public function checkErrors($errors) {
+  public function checkErrors(array $errors = null) {
     global $i18n;
     if ($errors) {
       $errors           = implode("<br>", $errors);
       $alert            = new Alert($errors);
-      $alert->block     = true;
       $alert->title     = $i18n->t("Validation Error");
       $alert->severity  = Alert::SEVERITY_ERROR;
       $this->alerts    .= $alert;

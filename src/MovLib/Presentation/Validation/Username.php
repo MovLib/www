@@ -117,7 +117,7 @@ class Username extends \MovLib\Presentation\AbstractBase {
     }
 
     if (mb_strlen($this->username) > User::MAX_LENGTH_NAME) {
-      $errors[] = $i18n->t("The username is too long: it must be {1,number,integer} characters or less.", [ User::MAX_LENGTH_NAME ]);
+      $errors[] = $i18n->t("The username is too long: it must be {0,number,integer} characters or less.", [ User::MAX_LENGTH_NAME ]);
     }
 
     if ($errors) {
