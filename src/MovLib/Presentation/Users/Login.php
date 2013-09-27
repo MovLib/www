@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Presentation\Users;
 
 use \MovLib\Exception\RedirectException;
 use \MovLib\Exception\SessionException;
@@ -36,7 +36,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @since 0.0.1-dev
  */
 class Login extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\User\TraitUser;
+  use \MovLib\Presentation\Users\TraitUsers;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -78,7 +78,7 @@ class Login extends \MovLib\Presentation\Page {
     global $i18n, $session;
 
     // Translate the sign out route, so we can check if the current page is the sign out page.
-    $routeLogout = $i18n->r("/user/sign-out");
+    $routeLogout = $i18n->r("/profile/sign-out");
 
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
     if ($session->isAuthenticated === true && $_SERVER["PATH_INFO"] != $routeLogout) {
@@ -89,7 +89,7 @@ class Login extends \MovLib\Presentation\Page {
     $this->init($i18n->t("Login"));
 
     // Now we also need to know the translated version of the login route.
-    $routeLogin = $action = $i18n->r("/user/login");
+    $routeLogin = $action = $i18n->r("/users/login");
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
@@ -105,7 +105,7 @@ class Login extends \MovLib\Presentation\Page {
     // @todo max-length
     $this->email = new InputEmail("email", [ "autofocus" ]);
     $this->email->required();
-    $this->email->setHelp("<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
+    $this->email->setHelp("<a href='{$i18n->r("/users/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
 
     $this->password = new InputPassword("password");
 
@@ -174,7 +174,7 @@ class Login extends \MovLib\Presentation\Page {
     }
     // Account has been deactivated!
     catch (UserException $e) {
-      throw new RedirectException($i18n->r("/user/deactivated"), 302, $e);
+      throw new RedirectException($i18n->r("/profile/deactivated"), 302, $e);
     }
     return $this;
   }

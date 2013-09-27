@@ -33,9 +33,6 @@ use \MovLib\Data\User;
 class Username extends \MovLib\Presentation\AbstractBase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -76,7 +73,7 @@ class Username extends \MovLib\Presentation\AbstractBase {
    *   The username.
    */
   public function __toString() {
-    return $this->username;
+    return $this->username ?: "";
   }
 
 
@@ -127,17 +124,7 @@ class Username extends \MovLib\Presentation\AbstractBase {
       throw new ValidationException(implode("<br>", $errors));
     }
 
-    // @todo The blacklist's content must be translated along with the routes.
-    $blacklist = json_decode(file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/conf/username-blacklist.json"));
-    $lowercased = mb_strtolower($this->username);
-    $c = count($blacklist);
-    for ($i = 0; $i < $c; ++$i) {
-      if ($blacklist[$i] == $lowercased) {
-        throw new ValidationException($i18n->t("The username {0} is a system reserved word, please choose another one.", [ $this->placeholder($this->username) ]));
-      }
-    }
-
-    if ($this->user->checkName($this->username->value) === true) {
+    if ($this->user->checkName($this->username) === true) {
       throw new ValidationException($i18n->t("The username {0} is already taken, please choose another one.", [ $this->placeholder($this->username) ]));
     }
 

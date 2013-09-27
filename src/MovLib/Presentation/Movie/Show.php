@@ -132,7 +132,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $content = "";
     $c = count($contents);
     for ($i = 0; $i < $c; ++$i) {
-      $this->navigation->menuitems[] = [ "#{$contents[$i]["id"]}", $contents[$i]["title"], [ "title" => $i18n->t("Go to section") ] ];
+      $this->secondaryNavigation->menuitems[] = [ "#{$contents[$i]["id"]}", $contents[$i]["title"], [ "title" => $i18n->t("Go to section") ] ];
       if (empty($contents[$i]["content"])) {
         $contents[$i]["content"] = $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [
           $contents[$i]["title"],
@@ -180,7 +180,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     if ($session->isAuthenticated === false) {
       $userRating = $i18n->t(
         "please {0}log in{1} to rate this movie",
-        [ "<a href='{$i18n->r("/user/login")}' title='{$i18n->t("Click here to log in to your account.")}'>", "</a>" ]
+        [ "<a href='{$i18n->r("/users/login")}' title='{$i18n->t("Click here to log in to your account.")}'>", "</a>" ]
       );
     }
     elseif (($userRating = $this->ratingModel->getMovieRating($session->userId, $this->model->id))) {

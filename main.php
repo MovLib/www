@@ -209,9 +209,9 @@ catch (\MovLib\Exception\UnauthorizedException $e) {
   // The rest is straight forward, set headers, init presentation, ...
   // http://stackoverflow.com/a/1088127/1251219
   http_response_code(401);
-  header("WWW-Authenticate: MovLib location=\"{$i18n->r("/user/login")}\"");
+  header("WWW-Authenticate: MovLib location=\"{$i18n->r("/users/login")}\"");
 
-  $login = new \MovLib\Presentation\User\Login();
+  $login = new \MovLib\Presentation\Users\Login();
   $login->alerts .= $e->getMessage();
   $presentation = $login->getPresentation();
 }

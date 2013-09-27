@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\User;
@@ -36,7 +36,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @since 0.0.1-dev
  */
 class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\User\TraitUser;
+  use \MovLib\Presentation\Profile\TraitProfile;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

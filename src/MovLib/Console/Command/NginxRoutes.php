@@ -64,9 +64,9 @@ class NginxRoutes extends AbstractCommand {
     if (!is_dir($routesDir)) {
       $this->exitOnError("Nginx routes directory is missing from the file system!");
     }
-
-    // Get default language code.
-    $GLOBALS["movcli"]["language_code"] = $i18n->defaultLanguageCode;
+    if (!is_writable($routesDir)) {
+      $this->exitOnError("Nginx routes directory is not writeable!");
+    }
 
     /**
      * This closure will be used within our routes script to translate the strings.
@@ -86,7 +86,7 @@ class NginxRoutes extends AbstractCommand {
 
     // Drop all routes from this server.
     // @todo Translations have to be fetched from the localize server!
-    $i18n->query("TRUNCATE `routes`");
+    (new \MovDev\Database())->query("TRUNCATE `routes`");
 
     // Go through all supported languages and generate the routes.
     foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {

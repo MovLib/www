@@ -561,7 +561,6 @@ class User extends \MovLib\Data\AbstractImage {
    * now the registered new user. This is the desired behavior during our registration process, because we
    * want to display the password settings page within the user's account directly.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $name
    *   The valid unique user's name.
    * @param string $email
@@ -573,17 +572,15 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\SessionException
    */
   public function register($name, $email, $rawPassword) {
-    global $i18n;
-    $password         = password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
-    $this->systemLanguage = $i18n->getLanguageId();
-    $this->name       = $name;
-    $this->email      = $email;
-    $this->deactivated    = false;
-    $this->timeZoneId   = ini_get("date.timezone");
+    $password          = password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
+    $this->name        = $name;
+    $this->email       = $email;
+    $this->deactivated = false;
+    $this->timeZoneId  = ini_get("date.timezone");
     $this->query(
-      "INSERT INTO `users` (`language_id`, `name`, `email`, `password`, `created`, `login`, `time_zone_id`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, '')",
+      "INSERT INTO `users` (`system_language_code`, `name`, `email`, `password`, `created`, `login`, `time_zone_id`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, '')",
       "dssss",
-      [ $this->systemLanguage, $this->name, $this->email, $password, $this->timeZoneId ],
+      [ $_SERVER["LANGUAGE_CODE"], $this->name, $this->email, $password, $this->timeZoneId ],
       false
     );
     $this->id = $this->stmt->insert_id;

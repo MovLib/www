@@ -15,7 +15,7 @@
  */
 
 /**
- * Styles specific to \MovLib\Presentation\User
+ * Styles specific to \MovLib\Presentation\Profile
  *
  * @link http://littlesparkvt.com/flatstrap/base-css.html#buttons
  * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
@@ -25,3 +25,20 @@
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
+
+#profile-sessions th,
+#profile-sessions td {
+  white-space: pre;
+}
+
+#profile-sessions code {
+  background: none;
+  border: 0;
+  padding: 0;
+  white-space: normal;
+}
+
+#profile-deactivated .form-actions,
+#profile-sessions .form-actions {
+  text-align: center;
+}

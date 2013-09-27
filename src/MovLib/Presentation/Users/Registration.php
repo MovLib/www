@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Presentation\Users;
 
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\User;
@@ -39,7 +39,7 @@ use \MovLib\Presentation\Validation\Username;
  * @since 0.0.1-dev
  */
 class Registration extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\User\TraitUser;
+  use \MovLib\Presentation\Profile\TraitProfile;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -96,7 +96,7 @@ class Registration extends \MovLib\Presentation\Page {
 
     $this->email = new InputEmail("email", [ "autofocus" ]);
     $this->email->required();
-    $this->email->setHelp("<a href='{$i18n->r("/user/login")}'>{$i18n->t("Already have an account?")}</a>", false);
+    $this->email->setHelp("<a href='{$i18n->r("/users/login")}'>{$i18n->t("Already have an account?")}</a>", false);
 
     $this->username = new InputText("username", $i18n->t("Username"), null, [
       "maxlength"   => User::MAX_LENGTH_NAME,
@@ -106,7 +106,8 @@ class Registration extends \MovLib\Presentation\Page {
     $this->username->validator = new Username($this->user);
 
     $this->form = new Form($this, [ $this->email, $this->username ]);
-    $this->form->attributes["class"] = "span span--6 offset--3";
+    $this->form->attributes["action"] = $_SERVER["PATH_INFO"];
+    $this->form->attributes["class"]  = "span span--6 offset--3";
 
     $this->form->actionElements[] = new InputSubmit([
       "class" => "button--large button--success",

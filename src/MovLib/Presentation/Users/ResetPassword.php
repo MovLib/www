@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Presentation\Users;
 
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
@@ -100,8 +100,8 @@ class ResetPassword extends \MovLib\Presentation\Page {
   public function validate() {
     global $i18n;
     Mailer::stack(new ResetPasswordEmail($this->email->value));
-    $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
-    $success->title = $i18n->t("Successfully Requested Password Reset");
+    $success           = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
+    $success->title    = $i18n->t("Successfully Requested Password Reset");
     $success->severity = Alert::SEVERITY_SUCCESS;
     $this->alerts .= $success;
     return $this;

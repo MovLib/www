@@ -216,65 +216,105 @@ location ^~ <?= $r("/person") ?> {
 }
 
 
+# ---------------------------------------------------------------------------------------------------------------------- profile
+# Most profile locations to not utilize the cache because they are only accessible for authenticated users.
+
+
+location ^~ <?= $r("/profile") ?> {
+
+  location = <?= $r("/profile") ?> {
+    set $movlib_presenter "Profile\\Show";
+    include sites/conf/fastcgi.conf;
+  }
+
+  location = <?= $r("/profile") ?>/ {
+    return 301 <?= $r("/profile") ?>;
+  }
+
+  # IMPORTANT! You sign out from our profile, but it's actually handled by the login presentation.
+  location = <?= $r("/profile/sign-out") ?> {
+    set $movlib_presenter "Users\\Login";
+    include sites/conf/fastcgi.conf;
+  }
+
+  location = <?= $r("/profile/account-settings") ?> {
+    set $movlib_presenter "Profile\\AccountSettings";
+    include sites/conf/fastcgi.conf;
+  }
+
+  location = <?= $r("/profile/notification-settings") ?> {
+    set $movlib_presenter "Profile\\NotificationSettings";
+    include sites/conf/fastcgi.conf;
+  }
+
+  location = <?= $r("/profile/email-settings") ?> {
+    set $movlib_presenter "Profile\\EmailSettings";
+    include sites/conf/fastcgi.conf;
+  }
+
+  location = <?= $r("/profile/password-settings") ?> {
+    set $movlib_presenter "Profile\\PasswordSettings";
+    include sites/conf/fastcgi.conf;
+  }
+
+  location = <?= $r("/profile/danger-zone-settings") ?> {
+    set $movlib_presenter "Profile\\DangerZoneSettings";
+    include sites/conf/fastcgi.conf;
+  }
+
+  location = <?= $r("/profile/deactivated") ?> {
+    set $movlib_presenter "Profile\\Deactivated";
+    include sites/conf/fastcgi.conf;
+  }
+
+  return 404;
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------- users
+
+
+location ^~ <?= $r("/users") ?> {
+
+  location = <?= $r("/users") ?> {
+    set $movlib_presenter "Users\\Show";
+    try_files $movlib_cache @php;
+  }
+
+  location = <?= $r("/users") ?>/ {
+    return 301 <?= $r("/users") ?>;
+  }
+
+  location = <?= $r("/users/login") ?> {
+    set $movlib_presenter "Users\\Login";
+    try_files $movlib_cache @php;
+  }
+
+  location = <?= $r("/users/registration") ?> {
+    set $movlib_presenter "Users\\Registration";
+    try_files $movlib_cache @php;
+  }
+
+  location = <?= $r("/users/reset-password") ?> {
+    set $movlib_presenter "Users\\ResetPassword";
+    include sites/conf/fastcgi.conf;
+  }
+
+  return 404;
+}
+
+
 # ---------------------------------------------------------------------------------------------------------------------- user
-# Most user locations to not utilize the cache because they are only accessible for logged in users.
 
 
 location ^~ <?= $r("/user") ?> {
 
   location = <?= $r("/user") ?> {
-    set $movlib_presenter "User\\Show";
-    include sites/conf/fastcgi.conf;
+    return 301 <?= $r("/users") ?>;
   }
 
-  location = <?= $r("/user/login") ?> {
-    set $movlib_presenter "User\\Login";
-    try_files $movlib_cache @php;
-  }
-
-  location = <?= $r("/user/sign-out") ?> {
-    set $movlib_presenter "User\\Login";
-    include sites/conf/fastcgi.conf;
-  }
-
-  location = <?= $r("/user/reset-password") ?> {
-    set $movlib_presenter "User\\ResetPassword";
-    include sites/conf/fastcgi.conf;
-  }
-
-  location = <?= $r("/user/registration") ?> {
-    set $movlib_presenter "User\\Registration";
-    try_files $movlib_cache @php;
-  }
-
-  location = <?= $r("/user/account-settings") ?> {
-    set $movlib_presenter "User\\AccountSettings";
-    include sites/conf/fastcgi.conf;
-  }
-
-  location = <?= $r("/user/notification-settings") ?> {
-    set $movlib_presenter "User\\NotificationSettings";
-    include sites/conf/fastcgi.conf;
-  }
-
-  location = <?= $r("/user/email-settings") ?> {
-    set $movlib_presenter "User\\EmailSettings";
-    include sites/conf/fastcgi.conf;
-  }
-
-  location = <?= $r("/user/password-settings") ?> {
-    set $movlib_presenter "User\\PasswordSettings";
-    include sites/conf/fastcgi.conf;
-  }
-
-  location = <?= $r("/user/danger-zone-settings") ?> {
-    set $movlib_presenter "User\\DangerZoneSettings";
-    include sites/conf/fastcgi.conf;
-  }
-
-  location = <?= $r("/user/deactivated") ?> {
-    set $movlib_presenter "User\\Deactivated";
-    include sites/conf/fastcgi.conf;
+  location = <?= $r("/user") ?>/ {
+    return 301 <?= $r("/users") ?>;
   }
 
   location ~ ^<?= $r("/user") ?>/(.+)$ {

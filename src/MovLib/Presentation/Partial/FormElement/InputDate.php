@@ -125,7 +125,7 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\InputText {
     }
     if (!empty($this->attributes["min"])) {
       $this->min = $this->attributes["min"];
-      $this->attributes["max"] = date(self::RFC3339, $this->min);
+      $this->attributes["min"] = date(self::RFC3339, $this->min);
     }
   }
 

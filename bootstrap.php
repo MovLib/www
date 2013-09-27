@@ -51,6 +51,10 @@ $_SERVER["HTTP_USER_AGENT"] = ini_get("user_agent");
 // Flag indicating if in development environment.
 define("DEV", strpos($GLOBALS["movlib"]["version"], "-dev") === false ? false : true);
 
+if (DEV === true) {
+  $composerAutoloader->add("MovDev", "{$_SERVER["DOCUMENT_ROOT"]}/src");
+}
+
 
 // --------------------------------------------------------------------------------------------------------------------- PHPUnit only
 

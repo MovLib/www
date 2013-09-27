@@ -1,3 +1,5 @@
+<?php
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -13,15 +15,25 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Presentation\Users;
 
 /**
- * Styles specific to \MovLib\Presentation\User
+ * Shared methods for pages in the Users namespace.
  *
- * @link http://littlesparkvt.com/flatstrap/base-css.html#buttons
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
+trait TraitUsers {
+
+  /**
+   * @inheritdoc
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [[ $i18n->r("/users"), $i18n->t("Users") ]];
+  }
+
+}

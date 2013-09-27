@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -20,7 +20,7 @@ namespace MovLib\Presentation;
 use \MovLib\Presentation\Partial\Navigation;
 
 /**
- * Description of SecondaryNavigationPage
+ * Base class for page's with secondary navigation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -30,19 +30,25 @@ use \MovLib\Presentation\Partial\Navigation;
  */
 abstract class AbstractSecondaryNavigationPage extends \MovLib\Presentation\Page {
 
-
-  protected $navigation;
+  /**
+   * The navigation instance with the secondary navigation.
+   *
+   * The property allows extending classes to access and alter the secondary navigation.
+   *
+   * @var \MovLib\Presentation\Partial\Navigation
+   */
+  protected $secondaryNavigation;
 
   /**
    * @inheritdoc
    */
   public function getContent() {
     global $i18n;
-    $this->navigation = new Navigation($this->id, $i18n->t("Secondary Navigation"), $this->getSecondaryNavigationMenuitems());
-    $this->navigation->attributes["class"] = "secondary-navigation";
-    $this->navigation->unorderedList = true; // We need the unordered list for styling, check the CSS.
+    $this->secondaryNavigation = new Navigation($this->id, $i18n->t("Secondary Navigation"), $this->getSecondaryNavigationMenuitems());
+    $this->secondaryNavigation->attributes["class"] = "secondary-navigation";
+    $this->secondaryNavigation->unorderedList = true; // We need the unordered list for styling, check the CSS.
     $pageContent = $this->getPageContent();
-    return "<div class='container'><div class='row'><aside class='span span--3' role='complementary'>{$this->navigation}</aside><div class='span span--9'>{$pageContent}</div></div></div>";
+    return "<div class='container'><div class='row'><aside class='span span--3' role='complementary'>{$this->secondaryNavigation}</aside><div class='span span--9'>{$pageContent}</div></div></div>";
   }
 
   /**

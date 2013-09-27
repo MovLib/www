@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Presentation\Profile;
 
 use \IntlDateFormatter;
 use \MovLib\Data\Delayed\Mailer;
@@ -40,7 +40,7 @@ use \MovLib\Presentation\Partial\Help;
  * @since 0.0.1-dev
  */
 class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\User\TraitUser;
+  use \MovLib\Presentation\Profile\TraitProfile;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -162,7 +162,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
 
     return
       "<h2>{$i18n->t("Active Sessions")}</h2>" .
-      "{$this->formSessions->open()}<table class='table-hover' id='user-sessions'>" .
+      "{$this->formSessions->open()}<table class='table-hover' id='profile-sessions'>" .
         "<caption>{$i18n->t(
           "The following table contains a listing of all your active sessions. You can terminate any session by " .
           "clicking on the button to the right. Your current session is highlighted with a yellow background color " .
@@ -189,7 +189,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
   public function deleteSession() {
     global $i18n, $session;
     if ($_POST["session_id"] == $session->id) {
-      throw new RedirectException($i18n->r("/user/sign-out"), 302);
+      throw new RedirectException($i18n->r("/profile/sign-out"), 302);
     }
     else {
       try {
@@ -246,7 +246,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
       $success->title = $i18n->t("Deactivation Successful");
       $success->severity = Alert::SEVERITY_SUCCESS;
       $session->alerts .= $success;
-      throw new RedirectException($i18n->r("/user/sign-out"), 302);
+      throw new RedirectException($i18n->r("/profile/sign-out"), 302);
     }
     return $this;
   }

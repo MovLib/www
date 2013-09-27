@@ -17,7 +17,7 @@
  */
 namespace MovLib\Test\Presentation\Partial\FormElement;
 
-use \MovLib\Presentation\Partial\FormElement\InputText;
+use \MovLib\Presentation\Partial\FormElement\InputPassword;
 
 /**
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -26,35 +26,27 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputTextTest extends \PHPUnit_Framework_TestCase {
+class InputPasswordTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\AbstractFormElement::__construct
-   * @covers \MovLib\Presentation\Partial\FormElement\InputText::__construct
+   * @covers \MovLib\Presentation\Partial\FormElement\InputPassword::__construct
    */
   public function testConstruct() {
-    $inputText = new InputText("phpunit", "PHPUnit");
-
-    // AbstractFormElement tests
-    $this->assertEquals("PHPUnit", $inputText->label);
-    $this->assertEquals("phpunit", $inputText->attributes["id"]);
-    $this->assertEquals("phpunit", $inputText->attributes["name"]);
-    $this->assertEquals("phpunit", $inputText->id);
-    $this->assertEquals("phpunit", $inputText->labelAttributes["for"]);
-    $this->assertTrue(is_int($inputText->attributes["tabindex"]));
-
-    // InputText tests
-    $this->assertEquals("text", $inputText->attributes["type"]);
+    $inputPassword = new InputPassword();
+    $this->assertArrayHasKey("type", $inputPassword->attributes);
+    $this->assertEquals("password", $inputPassword->attributes["type"]);
+    $this->assertEquals("Password", $inputPassword->label);
+    $this->assertTrue($inputPassword->required);
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\InputText::__toString
+   * @covers \MovLib\Presentation\Partial\FormElement\InputPassword::__toString
    */
   public function testToString() {
-    $inputText = (new InputText("phpunit", "PHPUnit"))->__toString();
-    $this->assertContains("<label for='phpunit'>PHPUnit</label>", $inputText);
-    $this->assertContains("id='phpunit'", $inputText);
-    $this->assertContains("name='phpunit'", $inputText);
+    $inputText = (new InputPassword())->__toString();
+    $this->assertContains("<label for='password'>Password</label>", $inputText);
+    $this->assertContains("id='password'", $inputText);
+    $this->assertContains("name='password'", $inputText);
     $this->assertContains("type='text'", $inputText);
     $this->assertRegExpr("/tabindex='[0-9]+'/", $inputText);
   }

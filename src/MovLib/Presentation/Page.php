@@ -253,15 +253,15 @@ class Page extends \MovLib\Presentation\AbstractPage {
 
     if ($session->isAuthenticated === true) {
       $mainMenuitems = [
-        [ $i18n->r("/user"),            $i18n->t("Profile"),    [ "title" => $i18n->t("Go to your personal user page.")                                       ]],
-        [ $i18n->r("/user/watchlist"),  $i18n->t("Watchlist"),  [ "title" => $i18n->t("Have a look at the latest changes of the content your are watching.")  ]],
-        [ $i18n->r("/user/sign-out"),   $i18n->t("Sign Out"),   [ "title" => $i18n->t("Click here to sign out from your current session.")                    ]],
+        [ $i18n->r("/profile"),           $i18n->t("Profile"),    [ "title" => $i18n->t("Go to your personal user page.")                                       ]],
+        [ $i18n->r("/profile/watchlist"), $i18n->t("Watchlist"),  [ "title" => $i18n->t("Have a look at the latest changes of the content your are watching.")  ]],
+        [ $i18n->r("/profile/sign-out"),    $i18n->t("Sign Out"),   [ "title" => $i18n->t("Click here to sign out from your current session.")                    ]],
       ];
     }
     else {
       $mainMenuitems = [
-        [ $i18n->r("/user/registration"), $i18n->t("Registration"), [ "title" => $i18n->t("Click here to sign up for a new account.") ]],
-        [ $i18n->r("/user/login"),        $i18n->t("Login"),        [ "title" => $i18n->t("Click here to sign in to your account.")   ]],
+        [ $i18n->r("/users/registration"), $i18n->t("Registration"), [ "title" => $i18n->t("Click here to sign up for a new account.") ]],
+        [ $i18n->r("/users/login"),        $i18n->t("Login"),        [ "title" => $i18n->t("Click here to sign in to your account.")   ]],
       ];
     }
     $mainNavigation = new Navigation("main", $i18n->t("Main Navigation"), $mainMenuitems);
@@ -379,14 +379,22 @@ class Page extends \MovLib\Presentation\AbstractPage {
    */
   protected function init($title) {
     global $i18n;
-    $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."));
-    $noscript->title = $i18n->t("JavaScript Disabled");
-    $this->alerts .= "<noscript>{$noscript}</noscript>";
+    parent::init($title);
+
+    $noscript         = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."));
+    $noscript->title  = $i18n->t("JavaScript Disabled");
+    $this->alerts    .= "<noscript>{$noscript}</noscript>";
+
+    if (count($this->namespace) > 1) {
+      $this->stylesheets[] = "modules/{$this->namespace[0]}.css";
+    }
+
     if (isset($_COOKIE["alerts"])) {
       $this->alerts .= $_COOKIE["alerts"];
       setcookie("alerts", "", time() - 42000, "/", ini_get("session.cookie_domain"));
     }
-    return parent::init($title);
+
+    return $this;
   }
 
 }

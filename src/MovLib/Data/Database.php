@@ -76,7 +76,7 @@ class Database {
    *
    * @var \mysqli_stmt
    */
-  private $stmt;
+  protected $stmt;
 
   /**
    * Used to cache the reference to <code>stmt_bind_param()</code> function, which allow us to invoke the function with
@@ -121,7 +121,7 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected final function query($query, $types = null, array $params = null, $closeStmt = true) {
+  protected function query($query, $types = null, array $params = null, $closeStmt = true) {
     $this->prepareAndExecute($query, $types, $params);
     if ($closeStmt === true) {
       $this->close();
@@ -142,7 +142,7 @@ class Database {
    *   The query result as associative array.
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected final function select($query, $types = null, array $params = null) {
+  protected function select($query, $types = null, array $params = null) {
     $this->prepareAndExecute($query, $types, $params);
     if (($queryResult = $this->stmt->get_result()) === false) {
       $error = $this->stmt->error;

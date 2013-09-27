@@ -52,14 +52,6 @@ class UserTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers User::getLanguageCode
-   */
-  public function testLanguageCode() {
-    $user = new User(User::FROM_ID, 1);
-    $this->assertEquals("en", $user->getLanguageCode());
-  }
-
-  /**
    * @covers User::setAuthenticationToken
    */
   public function testSetAuthenticationToken() {

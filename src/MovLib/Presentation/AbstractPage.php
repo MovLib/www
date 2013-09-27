@@ -48,6 +48,20 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
   public $id;
 
   /**
+   * Contains the namespace parts as array.
+   *
+   * @var array
+   */
+  protected $namespace;
+
+  /**
+   * Contains the CSS classes of the body element.
+   *
+   * @var array
+   */
+  protected $bodyClasses;
+
+  /**
    * The page's title used in the header.
    *
    * @var string
@@ -134,10 +148,9 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
     }
 
     // Apply additional CSS class if the current request is made from a signed in user.
-    $login = $session->isAuthenticated === true ? " signed-in" : "";
-
-    // Include the complete namespace of this page as class on the body element.
-    $namespace = strpos($this->id, "-") === false ? $this->id : strtr($this->id, "-", " ");
+    if ($session->isAuthenticated === true) {
+      $this->bodyClasses .= " authenticated";
+    }
 
     return
       "<!doctype html>" .
@@ -168,7 +181,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
           "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
         "</head>" .
         // @todo Drop the {$this->id}-body class!
-        "<body id='{$this->id}' class='{$this->id}-body {$namespace}{$login}'>"
+        "<body id='{$this->id}' class='{$this->bodyClasses}'>"
       // Please note that there is no need to include the closing body- nor html-tag with the HTML5 doc-type! We abuse
       // this for our inheritance and other classes can overwrite and extend the most default __toString() method
       // while retaining the global header.
@@ -183,8 +196,12 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
    * @return this
    */
   protected function init($title) {
-    $this->id = strtolower(strtr(substr(get_class($this), 20), "\\", "-"));
-    $this->title = $title;
+    // The substr() removes the \MovLib\Presentation\ part!
+    $className         = strtolower(substr(get_class($this), 20));
+    $this->namespace   = explode("\\", $className);
+    $this->bodyClasses = strtr($className, "\\", " ");
+    $this->id          = strtr($className, "\\", "-");
+    $this->title       = $title;
     return $this;
   }
 
