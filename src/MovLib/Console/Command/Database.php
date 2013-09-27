@@ -21,7 +21,7 @@ use \Locale;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
-use \mysqli;
+use \MovLib\Exception\DatabaseException;
 use \ReflectionClass;
 
 /**
@@ -139,9 +139,9 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
   /**
    * The mysqli connection to the database.
    *
-   * @var \mysqli
+   * @var \MovDev\Database
    */
-  private $mysqli;
+  private $database;
 
   /**
    * The directory containing the seed scripts.
@@ -171,19 +171,15 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
     foreach (glob("{$this->seedPath}/*.sql") as $file) {
       $this->seedScripts[basename($file, ".sql")] = $file;
     }
+    $this->database = new \MovDev\Database();
   }
 
   /**
    * Commit all uncommited changes and close connection.
    */
   public function __destruct() {
-    if ($this->mysqli && !$this->mysqli->errno) {
-      if ($this->mysqli->commit() === false) {
-        $this->exitOnError("FATAL ERROR! Could not commit changes: {$this->mysqli->error} ({$this->mysqli->errno})");
-      }
-      if ($this->mysqli->close() === false) {
-        $this->exitOnError("FATAL ERROR! Could not close connection: {$this->mysqli->error} ({$this->mysqli->errno})");
-      }
+    if ($this->database && $this->database->transactionActive === true) {
+      $this->database->transactionCommit();
     }
   }
 
@@ -277,25 +273,28 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
         $this->exitOnError("Could not read schema!");
       }
 
-      $this->multiQuery($schema);
-      do {
-        if ($this->mysqli->errno) {
-          $this->exitOnError("Could not import schema: {$this->mysqli->error} ({$this->mysqli->errno})");
-        }
-        $this->mysqli->use_result();
+      try {
+        $this->database->transactionStart(MYSQLI_TRANS_START_READ_WRITE);
+        $this->database->queries($schema);
       }
-      while ($this->mysqli->next_result() && $this->mysqli->more_results());
+      catch (DatabaseException $e) {
+        $this->exitOnError("Couldn't import schema!", $e->getTraceAsString());
+      }
 
-      $this
-        ->write("Importing Intl ICU translations for countries and languages ...")
-        ->importIntlTranslations()
-        ->write("Importing time zone translations ...")
-        ->importTimeZones()
-        ->importSeeds()
-//        ->write("Creating git repositories ...")
-//        ->git()
-        ->write("All Successfull!", self::MESSAGE_TYPE_INFO)
-      ;
+      $this->write("Importing Intl ICU translations for countries and languages ...");
+      $this->importIntlTranslations();
+      $this->write("Importing time zone translations ...");
+      $this->importTimeZones();
+      $this->importSeeds();
+//      $this->write("Creating git repositories ...");
+//      $this->git();
+      try {
+        $this->database->transactionCommit();
+      }
+      catch (DatabaseException $e) {
+        $this->exitOnError("Couldn't commit schema and seeds", $e->getTraceAsString());
+      }
+      $this->write("All Successfull!", self::MESSAGE_TYPE_INFO);
     }
     elseif (array_search("--" . self::OPTION_SEED, $argv) || array_search("-" . self::OPTION_SHORTCUT_SEED, $argv)) {
       empty($options[self::OPTION_SEED]) ? $this->runSeedsInteractive() : $this->importSeeds(true, $options[self::OPTION_SEED]);
@@ -321,7 +320,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    */
   private function _countries($countryCode, $locale) {
     global $i18n;
-    return $this->mysqli->real_escape_string(Locale::getDisplayRegion("{$i18n->defaultLanguageCode}-{$countryCode}", $locale));
+    return $this->database->escapeString(Locale::getDisplayRegion("{$i18n->defaultLanguageCode}-{$countryCode}", $locale));
   }
 
   /**
@@ -335,7 +334,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    *   The language's name translated to the desired locale.
    */
   private function _languages($languageCode, $locale) {
-    return $this->mysqli->real_escape_string(Locale::getDisplayLanguage($languageCode, $locale));
+    return $this->database->escapeString(Locale::getDisplayLanguage($languageCode, $locale));
   }
 
   /**
@@ -375,74 +374,84 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
         $query .= "('{$data[$i]}', '{$this->{"_{$table}"}($data[$i], $i18n->defaultLanguageCode)}', {$dynTranslations})";
       }
       $query .= "ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)";
-      if ($this->query($query) === false) {
-        $this->exitOnError("Could not import Intl ICU translations for {$table}: {$this->mysqli->error} ({$this->mysqli->errno})");
+      try {
+        $this->database->query($query);
+      }
+      catch (DatabaseException $e) {
+        $this->exitOnError("Could not import Intl ICU translations for {$table}!", $e->getTraceAsString());
       }
     }
 
     // Insert the "Silent" language, because it is not present in the languages list of Intl ICU.
-    if ($this->query(
-      "INSERT INTO `languages` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ('xx', 'Silent', COLUMN_CREATE('de', 'Stumm')) ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)"
-    ) === false) {
-      $this->exitOnError("Could not import Intl ICU translations for {$table}: {$this->mysqli->error} ({$this->mysqli->errno})");
+    try {
+      $this->database->query("INSERT INTO `languages` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ('xx', 'Silent', COLUMN_CREATE('de', 'Stumm')) ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)");
+    }
+    catch (DatabaseException $e) {
+      $this->exitOnError("Could not import Intl ICU translation for silent language!", $e->getTraceAsString());
     }
 
     return $this;
   }
 
   /**
-   * Import seed scripts.
+   * Import seeds.
    *
-   * @param boolean $truncate [optional]
-   *   Flag to determine, whether the table(s) should be truncated before the inserts or not.
-   *   Defaults to <code>FALSE</code>.
-   * @param string $seedName [optional]
-   *   If supplied, the seed with this name is imported, otherwise all seeds are imported.
    * @return this
    */
-  private function importSeeds($truncate = false, $seedName = null) {
-    if ($seedName) {
-      if (!isset($this->seedScripts[$seedName])) {
-        return $this->write("Invalid seed name '{$seedName}'. Possible choices are: " . implode(", ", array_keys($this->seedScripts)), self::MESSAGE_TYPE_ERROR);
-      }
-      $seeds[$seedName] = $this->seedScripts[$seedName];
-      $successMessage = true;
-    }
-    else {
-      $seeds = $this->seedScripts;
-      $successMessage = false;
-    }
-
-    $this->query("SET foreign_key_checks = 0");
-    foreach ($seeds as $table => $script) {
-      $this->write("Importing seed '{$table}' ...");
-
-      // Try to truncate the table if it was requested.
-      if ($truncate === true && $this->write("Truncating table `{$table}` ...")->mysqli->query("TRUNCATE TABLE `{$table}`") === false) {
-        $this->exitOnError("Could not truncate table '{$table}': {$this->mysqli->error} ({$this->mysqli->errno})");
-      }
-
-      // Try to snatch the script for this table.
-      if (($query = file_get_contents($script)) === false) {
-        $this->exitOnError("Could not read '{$script}'!");
-      }
-
-      // Try to execute the script at once.
-      $this->multiQuery($query);
-      do {
-        if ($this->mysqli->errno) {
-          $this->exitOnError("Could not execute seed script for '{$table}': {$this->mysqli->error} ({$this->mysqli->errno})");
+  private function importSeeds() {
+    try {
+      $queries = null;
+      foreach ($this->seedScripts as $table => $script) {
+        $this->write("Importing seed '{$table}' ...");
+        if (($queries .= file_get_contents($script)) === false) {
+          $this->exitOnError("Could not read '{$script}'!");
         }
-        $this->mysqli->use_result();
       }
-      while ($this->mysqli->next_result() && $this->mysqli->more_results());
-
-      if ($successMessage === true) {
-        $this->write("Seed '{$table}' imported successfully!", self::MESSAGE_TYPE_INFO);
+      if ($queries) {
+        $this->database->queries("SET foreign_key_checks = 0;\n{$queries}\nSET foreign_key_checks = 1;");
       }
     }
-    $this->query("SET foreign_key_checks = 1");
+    catch (DatabaseException $e) {
+      $this->exitOnError("Seeds import failed!", $e->getTraceAsString());
+    }
+    return $this;
+  }
 
+  /**
+   * Import a single seed.
+   *
+   * @param string $name
+   *   The name of the seed to import.
+   * @param boolean $truncate [optional]
+   *   Whetever to truncate the table or not.
+   * @return this
+   */
+  private function importSeed($name, $truncate = true) {
+    if (!isset($this->seedScripts[$name])) {
+      $choices = implode(", ", array_keys($this->seedScripts));
+      return $this->write("Invalid seed name '{$name}'. Possible choices are: {$choices}", self::MESSAGE_TYPE_ERROR);
+    }
+    $this->database->transactionStart()->query("SET foreign_key_checks = 0");
+    $this->write("Importing seed '{$table}' ...");
+    if ($truncate === true) {
+      try {
+        $this->write("Truncating table '{$table}' ...");
+        $this->database->query("TRUNCATE TABLE `{$table}`");
+      }
+      catch (DatabaseException $e) {
+        $this->exitOnError("Couldn't truncate table '{$table}'!", $e->getTraceAsString());
+      }
+    }
+    if (($queries = file_get_contents($this->seedScripts[$name])) === false) {
+      $this->exitOnError("Couldn't read '{$this->seedScripts[$name]}'!");
+    }
+    try {
+      $this->database->queries($queries)->transactionCommit();
+      $this->write("Seed '{$name}' import successful!", $e->getTraceAsString());
+    }
+    catch (DatabaseException $e) {
+      $this->exitOnError("Seed '{$name}' import failed!", $e->getTraceAsString());
+    }
     return $this;
   }
 
@@ -480,7 +489,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
       }
     }
 
-    $queries = "INSERT INTO `messages` (`message`, `dyn_translations`) VALUES\n\t";
+    $query = "INSERT INTO `messages` (`message`, `dyn_translations`) VALUES\n\t";
     for ($i = 0; $i < $c; ++$i) {
       $dynTranslations = null;
       foreach ($systemLanguages as $languageCode => $locale) {
@@ -490,80 +499,25 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
         if ($dynTranslations) {
           $dynTranslations .= ", ";
         }
-        $translation = $this->mysqli->real_escape_string($translations[$languageCode][$timeZoneIds[$i]]);
+        $translation = $this->database->escapeString($translations[$languageCode][$timeZoneIds[$i]]);
         $dynTranslations .= "'{$languageCode}', '{$translation}'";
       }
       $dynTranslations = $dynTranslations ? "COLUMN_CREATE({$dynTranslations})" : "''";
       if ($i !== 0) {
-        $queries .= ",\n\t";
+        $query .= ",\n\t";
       }
-      $zoneId = $this->mysqli->real_escape_string($timeZoneIds[$i]);
-      $enTranslation = $this->mysqli->real_escape_string($translations["en"][$timeZoneIds[$i]]);
-      $queries .= "('{$enTranslation}', {$dynTranslations})";
+      $zoneId = $this->database->escapeString($timeZoneIds[$i]);
+      $enTranslation = $this->database->escapeString($translations["en"][$timeZoneIds[$i]]);
+      $query .= "('{$enTranslation}', {$dynTranslations})";
     }
 
-    if ($this->query($queries) === false) {
-      $this->exitOnError("Could not import time zone translations!");
+    try {
+      $this->database->query($query);
+    }
+    catch (DatabaseException $e) {
+      $this->exitOnError("Could not import time zone translations!", $e->getTraceAsString());
     }
 
-    return $this;
-  }
-
-  /**
-   * Helper function to connect to DB and query.
-   *
-   * @param string $fn
-   *   The query method which should be used ("query" or "multi_query").
-   * @param string $query
-   *   The query.
-   * @return mixed
-   */
-  private function _query($fn, $query) {
-    if (!$this->mysqli) {
-      $this->mysqli = new mysqli();
-      $this->mysqli->real_connect();
-      $this->mysqli->select_db($GLOBALS["movlib"]["default_database"]);
-      $this->mysqli->autocommit(false);
-    }
-    return $this->mysqli->{$fn}($query);
-  }
-
-  /**
-   * Helper function to multiquery the DB.
-   *
-   * @param string $query
-   *   The uery.
-   * @return mixed
-   */
-  private function multiQuery($query) {
-    return $this->_query("multi_query", $query);
-  }
-
-  /**
-   * Helper function to query the DB.
-   *
-   * @param string $query
-   *   The uery.
-   * @return mixed
-   */
-  private function query($query) {
-    return $this->_query("query", $query);
-  }
-
-  /**
-   * Rollback all uncommited changes.
-   *
-   * @return this
-   */
-  public function rollback() {
-    if ($this->mysqli && !$this->mysqli->errno) {
-      if ($this->mysqli->rollback() === false) {
-        $this->exitOnError("FATAL ERROR! Could not rollback changes: {$this->mysqli->error} ({$this->mysqli->errno})");
-      }
-      if ($this->mysqli->close() === false) {
-        $this->exitOnError("FATAL ERROR! Could not close connection: {$this->mysqli->error} ({$this->mysqli->errno})");
-      }
-    }
     return $this;
   }
 
@@ -574,7 +528,7 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    */
   private function runSeedsInteractive() {
     do {
-      $this->importSeeds(true, $this->askWithChoices("Please select a seed to import.", null, array_keys($this->seedScripts)));
+      $this->importSeed($this->askWithChoices("Please select a seed to import.", null, array_keys($this->seedScripts)));
     }
     while ($this->askConfirmation("Do you want to import another seed?"));
     return $this;

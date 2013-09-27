@@ -73,7 +73,7 @@ class Database {
    *
    * @var \mysqli
    */
-  private static $mysqli = [];
+  protected static $mysqli = [];
 
   /**
    * Total number of rows changed, deleted, or inserted by the last executed statement.
@@ -97,6 +97,13 @@ class Database {
    * @var \ReflectionFunction
    */
   private static $stmtBindParam;
+
+  /**
+   * Flag indicating if a transaction is active.
+   *
+   * @var boolean
+   */
+  protected $transactionActive = false;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -182,7 +189,7 @@ class Database {
    */
   protected function tmpSet($data, $ttl = self::TMP_TTL_DAILY) {
     $hash = hash("sha512", openssl_random_pseudo_bytes(1024));
-    $this->query("INSERT INTO `tmp` (`key`, `data`, `ttl`) VALUES (?, ?)", "ss", [ $hash, serialize($data), $ttl ]);
+    $this->query("INSERT INTO `tmp` (`key`, `data`, `ttl`) VALUES (?, ?, ?)", "sss", [ $hash, serialize($data), $ttl ]);
     return $hash;
   }
 
@@ -201,6 +208,73 @@ class Database {
       $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
     }
     return $data;
+  }
+
+  /**
+   * Commit current transaction.
+   *
+   * @param int $flags [optional]
+   *   A bitmask of <var>MYSQLI_TRANS_COR_*</var> constants, defaults to <var>MYSQLI_TRANS_COR_AND_NO_CHAIN</var>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+    if (!isset(self::$mysqli[$this->database]) || $this->transactionActive === false) {
+      throw new DatabaseException("No active transaction, nothing to commit.");
+    }
+    if (self::$mysqli[$this->database]->commit($flags) === false) {
+      $error = self::$mysqli[$this->database]->error;
+      $errno = self::$mysqli[$this->database]->errno;
+      $this->transactionRollback();
+      throw new DatabaseException("Commit failed: {$error} ({$errno})");
+    }
+    $this->transactionActive = false;
+    return $this;
+  }
+
+  /**
+   * Rollback current transaction.
+   *
+   * @param int $flags [optional]
+   *   A bitmask of <var>MYSQLI_TRANS_COR_*</var> constants, defaults to <var>MYSQLI_TRANS_COR_AND_NO_CHAIN</var>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+    if (!isset(self::$mysqli[$this->database]) || $this->transactionActive === false) {
+      throw new DatabaseException("No active transaction, nothing to rollback.");
+    }
+    if (self::$mysqli[$this->database]->rollback($flags) === false) {
+      $error = self::$mysqli[$this->database]->error;
+      $errno = self::$mysqli[$this->database]->errno;
+      throw new DatabaseException("Rollback failed: {$error} ({$errno})");
+    }
+    $this->transactionActive = false;
+    return $this;
+  }
+
+  /**
+   * Start a transaction.
+   *
+   * Executes a SQL native <code>START TRANSACTION</code> against the database and establishes a connection if not
+   * connection is available.
+   *
+   * @param int $flags [optional]
+   *   One of the <var>MYSQLI_TRANS_START_*</var> constants, defaults to <var>MYSQLI_TRANS_START_READ_WRITE</var>.
+   * @return this
+   * @throws \MovLib\Data\DatabaseException
+   */
+  protected function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
+    if (!isset(self::$mysqli[$this->database])) {
+      $this->connect();
+    }
+    if (self::$mysqli[$this->database]->begin_transaction($flags) === false) {
+      $error = self::$mysqli[$this->database]->error;
+      $errno = self::$mysqli[$this->database]->errno;
+      throw new DatabaseException("Could not start transaction: {$error} ({$errno})");
+    }
+    $this->transactionActive = true;
+    return $this;
   }
 
 

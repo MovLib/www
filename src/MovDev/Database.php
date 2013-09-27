@@ -31,6 +31,64 @@ class Database extends \MovLib\Data\Database {
   /**
    * @inheritdoc
    */
+  public $transactionActive = false;
+
+  /**
+   * Escapes special characters in a string for use in an SQL statement, taking into account the current charset of the
+   * connection.
+   *
+   * @param string $str
+   *   The string to be escaped.
+   * @return string
+   *   The esacped string.
+   */
+  public function escapeString($str) {
+    return self::$mysqli[$this->database]->real_escape_string($str);
+  }
+
+  /**
+   * Get the current MySQLi instance.
+   *
+   * @return \mysqli
+   *   The current MySQLi instance.
+   */
+  public function getMySQLi() {
+    return self::$mysqli[$this->database];
+  }
+
+  /**
+   * Execute multiple queries against the database.
+   *
+   * <b>IMPORTANT!</b> You have to properly escape the data in the queries.
+   *
+   * @param string $queries
+   *   Multiple queries to execute.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function queries($queries) {
+    if (!isset(self::$mysqli[$this->database])) {
+      $this->connect();
+    }
+    $error = self::$mysqli[$this->database]->multi_query($queries);
+    do {
+      if ($error === false) {
+        $error = self::$mysqli[$this->database]->error;
+        $errno = self::$mysqli[$this->database]->errno;
+        $this->exitOnError("Execution of multiple queries failed: {$error} ({$errno})");
+      }
+      self::$mysqli[$this->database]->use_result();
+      if ($more = self::$mysqli[$this->database]->more_results()) {
+        $error = self::$mysqli[$this->database]->next_result();
+      }
+    }
+    while ($more);
+    return $this;
+  }
+
+  /**
+   * @inheritdoc
+   */
   public function query($query, $types = null, array $params = null, $closeStmt = true) {
     return parent::query($query, $types, $params, $closeStmt);
   }
@@ -40,6 +98,27 @@ class Database extends \MovLib\Data\Database {
    */
   public function select($query, $types = null, array $params = null) {
     return parent::select($query, $types, $params);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function transactionCommit($flags = null) {
+    return parent::transactionCommit($flags);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function transactionRollback($flags = null){
+    return parent::transactionRollback($flags);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
+    return parent::transactionStart($flags);
   }
 
 }
