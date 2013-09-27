@@ -40,6 +40,17 @@ use \ReflectionFunction;
 class Database {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * TTL value for records in the temporary table that are deleted on a daily basis.
+   *
+   * @var int
+   */
+  const TMP_TTL_DAILY = "@daily";
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -157,6 +168,39 @@ class Database {
     }
     $queryResult->free();
     return $result;
+  }
+
+  /**
+   * Set new record in the temporary table.
+   *
+   * @param mixed $data
+   *   The data to store.
+   * @param string $ttl [optional]
+   *   The time to life for this record, defaults to <var>\MovLib\Data\Database::TMP_TTL_DAILY</var>.
+   * @return string
+   *   The key (hash) of the newly added record.
+   */
+  protected function tmpSet($data, $ttl = self::TMP_TTL_DAILY) {
+    $hash = hash("sha512", openssl_random_pseudo_bytes(1024));
+    $this->query("INSERT INTO `tmp` (`key`, `data`, `ttl`) VALUES (?, ?)", "ss", [ $hash, serialize($data), $ttl ]);
+    return $hash;
+  }
+
+  /**
+   * Get record from the temporary table.
+   *
+   * @param string $key
+   *   The key (hash) of the record.
+   * @return null|mixed
+   *   The data that was previously stored with this hash or <code>NULL</code> if no record was found for the key.
+   */
+  protected function tmpGetAndDelete($key) {
+    $data = $this->select("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $key ]);
+    if (!empty($data[0])) {
+      $data = unserialize($data[0]["data"]);
+      $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
+    }
+    return $data;
   }
 
 

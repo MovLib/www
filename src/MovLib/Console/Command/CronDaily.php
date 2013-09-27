@@ -18,9 +18,8 @@
 namespace MovLib\Console\Command;
 
 use \MovLib\Console\Command\AbstractCommand;
+use \MovLib\Data\Delayed\Logger;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Model\BaseModel;
-use \MovLib\Utility\DelayedLogger;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -39,49 +38,42 @@ use \Symfony\Component\Console\Output\OutputInterface;
 class CronDaily extends AbstractCommand {
 
   /**
-   * Collection of all jobs that should be executed.
-   *
-   * @var array
-   */
-  private $jobs = [];
-
-  /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   public function __construct() {
     parent::__construct("cron-daily");
-    $this->jobs[] = "userActivationLinkGarbageCollection";
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   protected function configure() {
     $this->setDescription("Cron jobs that should run on a daily basis.");
   }
 
   /**
-   * Remove all expired activation links from the temporary database table.
+   * Purge all data from the temporary table with <code>"@daily"</code> time to life entry.
+   *
+   * @return this
    */
-  private function userActivationLinkGarbageCollection() {
+  protected function purgeTemporaryTable() {
     try {
-      (new BaseModel())->query("DELETE FROM `tmp` WHERE COLUMN_EXISTS(`dyn_data`, 'time') = 1 AND DATEDIFF(NOW(), COLUMN_GET(`dyn_data`, 'time' AS DATETIME)) > 0");
-    } catch (DatabaseException $e) {
-      $message = "Cron failed to execute user activation link garbage collection.\n\nDatabaseException Stacktrace:\n {$e->getTraceAsString()}";
-      DelayedLogger::logNow($message, E_ERROR);
+      (new \MovDev\Database())->query("DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, 'created') > 0 AND `ttl` = '@daily'");
+    }
+    catch (DatabaseException $e) {
+      $message = "Cron @daily failed.\n\nDatabaseException Stacktrace:\n {$e->getTraceAsString()}";
+      Logger::stack($message, Logger::FATAL);
       $this->exitOnError($message);
     }
+    return $this;
   }
 
   /**
-   * {@inheritDoc}
+   * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->setIO($input, $output);
-    $c = count($this->jobs);
-    for ($i = 0; $i < $c; ++$i) {
-      call_user_func([ $this, $this->jobs[$i] ]);
-    }
+    $this->purgeTemporaryTable();
   }
 
 }
