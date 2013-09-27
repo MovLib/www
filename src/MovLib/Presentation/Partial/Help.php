@@ -69,8 +69,10 @@ class Help {
    */
   public function __construct($content, $id = null, $popup = true) {
     $this->content = $content;
-    $this->id = $id;
-    $this->popup = $popup;
+    $this->popup   = $popup;
+    if ($id) {
+      $this->id = " id='{$id}-help'";
+    }
   }
 
   /**
@@ -83,15 +85,10 @@ class Help {
    *   Help's string representation.
    */
   public function __toString() {
-    if ($this->id) {
-      $this->id = " id='{$this->id}-help'";
-    }
     if ($this->popup === true) {
       return "<div class='form-help popup-container'$this->id role='note'><i class='icon icon--help-circled'></i><small class='popup'>{$this->content}</small></div>";
     }
-    else {
-      return "<small class='form-help'{$this->id} role='note'>{$this->content}</small>";
-    }
+    return "<small class='form-help'{$this->id} role='note'>{$this->content}</small>";
   }
 
 }
