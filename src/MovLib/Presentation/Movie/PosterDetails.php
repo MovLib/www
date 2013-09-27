@@ -58,7 +58,7 @@ class PosterDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
   /**
    * @inheritdoc
    */
-  protected function getStreamImages($imageId, $paginationSize) {
+  protected function getStreamImages($imageId) {
     return
       (new MovieImages(
         $this->model->id,
@@ -66,7 +66,7 @@ class PosterDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
         new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
         $this->imagesRoute,
         $this->entityTitle
-      ))->getOrderedByCreatedAsc($imageId, false, $paginationSize)
+      ))->getStreamImages($this->image->imageId)
     ;
   }
 

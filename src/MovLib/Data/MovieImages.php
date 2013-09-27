@@ -30,6 +30,17 @@ namespace MovLib\Data;
 class MovieImages extends \MovLib\Data\AbstractImages {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The count of the stream images without the current one.
+   *
+   * @var int
+   */
+  const STREAM_IMAGE_COUNT = 8;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -131,19 +142,12 @@ class MovieImages extends \MovLib\Data\AbstractImages {
    */
   public function getOrderedByCreatedAsc($imageId, $include = false, $paginationSize = null) {
     $paginationSize = $paginationSize ?: $GLOBALS["movlib"]["pagination_size"];
-    if ($include === true) {
-      $operator = ">=";
-    }
-    else {
-      $operator = ">";
-    }
-    return $this->initImageProperties(
-      $this->initImagePaths($this->select(
-        "{$this->query} AND `image_id` {$operator} ? ORDER BY `image_id` ASC LIMIT ?",
-        "didi",
-        [ $this->movieId, $this->type, $imageId, $paginationSize ]
-      ), $this->style)
-    );
+    $operator = $include === true ? ">=" : ">";
+    return $this->initImageProperties($this->select(
+      "{$this->query} AND `image_id` {$operator} ? ORDER BY `image_id` ASC LIMIT ?",
+      "didi",
+      [ $this->movieId, $this->type, $imageId, $paginationSize ]
+    ));
   }
 
   /**
@@ -166,13 +170,11 @@ class MovieImages extends \MovLib\Data\AbstractImages {
     else {
       $operator = "<";
     }
-    return $this->initImageProperties(
-      $this->initImagePaths($this->select(
-        "{$this->query} AND `image_id` {$operator} ? ORDER BY `image_id` DESC LIMIT ?",
-        "didi",
-        [ $this->movieId, $this->type, $imageId, $paginationSize ]
-      ), $this->style)
-    );
+    return $this->initImageProperties($this->select(
+      "{$this->query} AND `image_id` {$operator} ? ORDER BY `image_id` DESC LIMIT ?",
+      "didi",
+      [ $this->movieId, $this->type, $imageId, $paginationSize ]
+    ));
   }
 
   /**
@@ -186,13 +188,32 @@ class MovieImages extends \MovLib\Data\AbstractImages {
    *   The images ordered by upvotes.
    */
   public function getOrderedByUpvotes($lowerBound, $sortOrder = "DESC") {
-    return $this->initImageProperties(
-      $this->initImagePaths($this->select(
-        "{$this->query} ORDER BY `upvotes` {$sortOrder} LIMIT ?, ?",
-        "diii",
-        [ $this->movieId, $this->type, $lowerBound, $GLOBALS["movlib"]["pagination_size"] ]
-      ), $this->style)
-    );
+    return $this->initImageProperties($this->select(
+      "{$this->query} ORDER BY `upvotes` {$sortOrder} LIMIT ?, ?",
+      "diii",
+      [ $this->movieId, $this->type, $lowerBound, $GLOBALS["movlib"]["pagination_size"] ]
+    ));
+  }
+
+  /**
+   * Get the stream images without the current image ID.
+   *
+   * @param int $imageId
+   *   The current image ID.
+   * @return array
+   *   The stream images
+   */
+  public function getStreamImages($imageId) {
+    $lowerBound = $imageId - (self::STREAM_IMAGE_COUNT / 2);
+    $limit = self::STREAM_IMAGE_COUNT;
+    if ($lowerBound <= 0) {
+      $limit += $lowerBound - 1;
+    }
+    return $this->initImageProperties($this->select(
+      "{$this->query} AND `image_id` >= ? AND `image_id` != ? ORDER BY `image_id` ASC LIMIT ?",
+      "diidi",
+      [ $this->movieId, $this->type, $lowerBound, $imageId, $limit ]
+    ));
   }
 
   /**
@@ -206,6 +227,8 @@ class MovieImages extends \MovLib\Data\AbstractImages {
    */
   private function initImageProperties(array $result) {
     global $i18n;
+    $result = $this->initImagePaths($result, $this->style);
+
     switch ($this->type) {
       case MovieImage::IMAGETYPE_POSTER:
         $alt = "{$this->movieTitle} {$i18n->t("movie poster.")}";

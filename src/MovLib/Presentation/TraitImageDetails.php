@@ -19,6 +19,7 @@
 namespace MovLib\Presentation;
 
 use \MovLib\Data\AbstractImage;
+use \MovLib\Data\MovieImages;
 use \MovLib\Presentation\Partial\Lists;
 
 /**
@@ -140,10 +141,34 @@ trait TraitImageDetails {
       $next = $this->pager("right", ($this->image->imageId + 1), $i18n->t("Next Image"));
     }
 
-    $startId = $this->image->imageId - 5;
-    $streamImages = implode("", $this->getImages($this->getStreamImages($startId, 9), null, true, [ "class" => "span span--1" ]));
+    $activeImageIndex = MovieImages::STREAM_IMAGE_COUNT / 2;
+    $stream = array_fill(0, MovieImages::STREAM_IMAGE_COUNT + 1, "<span class='span span--1'></span>");
+    $stream[$activeImageIndex] = $this->getImage(
+      $this->image,
+      AbstractImage::IMAGESTYLE_DETAILS_STREAM,
+      null,
+      $this->image->imageUri,
+      [ "alt" => $this->image->imageAlt, "class" => "active span span--1" ]
+    );
+    $streamImages = $this->getStreamImages($this->image->imageId);
+    for ($i = 0; $i < MovieImages::STREAM_IMAGE_COUNT; ++$i) {
+      if (!isset($streamImages[$i])) {
+        break;
+      }
+      $index = $streamImages[$i]["image_id"] - $this->image->imageId + $activeImageIndex;
+      $gradientClass = null;
+      if ($index === 0) {
+        $gradientClass = "gradient-left ";
+      }
+      elseif ($index === MovieImages::STREAM_IMAGE_COUNT) {
+        $gradientClass = "gradient-right ";
+      }
+      $stream[$index] = "<a class='{$gradientClass}span span--1' href='{$this->imagesRoute}/{$streamImages[$i]["image_id"]}'><img src='{$streamImages[$i]["src"]}'></a>";
+    }
+    $stream = implode("", $stream);
+
     return
-      "<div id='image-details--stream'>{$streamImages}</div>" .
+      "<div id='image-details--stream'>{$stream}</div>" .
       "<div id='image-details--image'>{$previous}{$this->getImage(
         $this->image,
         AbstractImage::IMAGESTYLE_DETAILS,
