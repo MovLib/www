@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Email\User;
+namespace MovLib\Presentation\Email\Users;
 
 /**
  * Description of RegistrationEmail
@@ -38,6 +38,13 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
    * @var \MovLib\Data\User
    */
   private $user;
+
+  /**
+   * The base64 encoded authentication token for this registration.
+   *
+   * @var string
+   */
+  private $token;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -66,7 +73,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
    * @return this
    */
   public function init() {
-    $this->user->setAuthenticationToken()->prepareTemporaryData("ss", [ "name", "email" ], [ $this->user->name, $this->user->email ]);
+    $this->token = base64_encode($this->user->prepareRegistration());
     return $this;
   }
 

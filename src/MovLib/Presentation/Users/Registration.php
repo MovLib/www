@@ -20,8 +20,8 @@ namespace MovLib\Presentation\Users;
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\User;
 use \MovLib\Exception\RedirectException;
-use \MovLib\Presentation\Email\User\Registration as RegistrationEmail;
-use \MovLib\Presentation\Email\User\RegistrationEmailExists;
+use \MovLib\Presentation\Email\Users\Registration as RegistrationEmail;
+use \MovLib\Presentation\Email\Users\RegistrationEmailExists;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
@@ -157,18 +157,18 @@ class Registration extends \MovLib\Presentation\Page {
     // If this is a vliad new registration generate the authentication token and insert the submitted data into our
     // temporary database, and of course send out the email with the token.
     else {
-      $this->user->name = $this->username->value;
+      $this->user->name  = $this->username->value;
       $this->user->email = $this->email->value;
       Mailer::stack(new RegistrationEmail($this->user));
     }
 
     // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
-    $this->accepted = true;
+    $this->accepted    = true;
 
-    $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value)] ));
-    $success->title = $i18n->t("Registration Successful");
+    $success           = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
+    $success->title    = $i18n->t("Registration Successful");
     $success->severity = Alert::SEVERITY_INFO;
-    $this->alerts .= $success;
+    $this->alerts     .= $success;
 
     return $this;
   }
@@ -184,11 +184,10 @@ class Registration extends \MovLib\Presentation\Page {
     global $i18n, $session;
     $errors = null;
     $user = new User();
-    $data = $user->validateAuthenticationToken($errors, $this->id);
 
-    if (!empty($data)) {
+    if (($data = $user->validateToken($errors)) && isset($data["name"]) && isset($data["email"])) {
       $this->username->attributes["value"] = $data["name"];
-      $this->email->attributes["value"] = $data["email"];
+      $this->email->attributes["value"]    = $data["email"];
 
       if ($user->checkName($data["name"]) === true) {
         $this->username->invalid();
@@ -208,7 +207,7 @@ class Registration extends \MovLib\Presentation\Page {
       $user->register($data["name"], $data["email"], $rawPassword);
       $session->authenticate($data["email"], $rawPassword);
       $_SESSION["password"] = $rawPassword;
-      throw new RedirectException($i18n->r("/user/password-settings"), 302);
+      throw new RedirectException($i18n->r("/profile/password-settings"), 302);
     }
 
     return $this;

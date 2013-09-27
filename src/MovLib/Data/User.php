@@ -115,14 +115,6 @@ class User extends \MovLib\Data\AbstractImage {
   public $access;
 
   /**
-   * The user's authentication token.
-   *
-   * @see \MovLib\Data\User::setAuthenticationToken()
-   * @var string
-   */
-  public $authenticationToken;
-
-  /**
    * The user's birthday (date).
    *
    * @var null|int
@@ -450,75 +442,6 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
-   * Helper method to retrieve previously stored data from the temporary database table and directly delete it if the
-   * query returned a result.
-   *
-   * @param string $hash
-   *   The user submitted hash to identify the email change request.
-   * @param array $dynamicData
-   *   Numeric array with numeric arrays, the inner numeric array must be in the following format:
-   *   <ul>
-   *     <li><code>0</code> is the name of the column</li>
-   *     <li><code>1</code> is the data type of the column</li>
-   *   </ul>
-   * @return null|array
-   *   <code>NULL</code> if no record was found, otherwise an associative array consisting of the dynamic columns
-   *   specified in <var>$dynamicData</var>.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  private function getTemporaryData($hash, array $dynamicData) {
-    $select = null;
-    foreach ($dynamicData as $name => $type) {
-      if ($select) {
-        $select .= ", ";
-      }
-      $select .= "COLUMN_GET(`dyn_data`, '{$name}' AS {$type}) AS `{$name}`";
-    }
-    $result = $this->select("SELECT {$select} FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $hash ]);
-    if (!empty($result[0])) {
-      $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $hash ]);
-      return $result[0];
-    }
-  }
-
-  /**
-   * Helper method to insert data into the temporary database table in a consistent format.
-   *
-   * @param string $types
-   *   The type string in <code>\mysqli_stmt::bind_param()</code> syntax.
-   * @param array $dynamicColumns
-   *   Numeric array containing the names of the dynamic columns that should be created.
-   * @param array $params
-   *   Numeric array containing the values for the dynamic columns.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function prepareTemporaryData($types, array $dynamicColumns, array $params) {
-    $columns = null;
-    $c = count($dynamicColumns);
-    for ($i = 0; $i < $c; ++$i) {
-      if ($i !== 0) {
-        $columns .= ", ";
-      }
-      $columns .= "'{$dynamicColumns[$i]}', ?";
-    }
-    array_unshift($params, $this->authenticationToken);
-    return $this->query("INSERT INTO `tmp` (`key`, `dyn_data`) VALUES (?, COLUMN_CREATE({$columns}, 'time', CURRENT_TIMESTAMP))", "s{$types}", $params);
-  }
-
-  /**
-   * Prepare reset password data for existing user account.
-   *
-   * This method must be public for delayed execution.
-   *
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function prepareResetPassword() {
-    return $this->prepareTemporaryData("s", [ "email" ], [ $this->email ]);
-  }
-
-  /**
    * Get random password.
    *
    * Passwords are generated with <i>pwgen</i> and much like the ones KeePass generates by default. Definitely not easy
@@ -538,6 +461,16 @@ class User extends \MovLib\Data\AbstractImage {
    */
   public static function getRandomPassword() {
     return trim(shell_exec("pwgen -cnBv 20 1"));
+  }
+
+  /**
+   * Prepare registration data.
+   *
+   * @return string
+   *   The key of the temporary table record.
+   */
+  public function prepareRegistration() {
+    return $this->tmpSet([ "name" => $this->name, "email" => $this->email ]);
   }
 
   /**
@@ -588,36 +521,6 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
-   * Set an authentication token for this instance.
-   *
-   * Calculates URL-safe SHA-512 hash from highly randomized bytes (full 8-bit range). This kind of token is used for
-   * all actions that require the user to confirm an action via email. This includes but is not limited to: Registration,
-   * Email Change, and Password Change.
-   *
-   * We do not utilize <code>/dev/urandom</code> to generate our random bytes. While it is a perfect source for pseudo
-   * random bytes, the <code>openssl_random_pseudo_bytes()</code> function is a magnitude faster (benchmarks have shown
-   * that it takes approx <i>0.1ms</i> while opening a stream, reading and closing <code>/dev/urandom</code> always was
-   * over <i>1ms</i>) and generates perfect random bytes, especially if we read 1024 bytes.
-   *
-   * Please also note that the statement about PHP always reading 4096 bytes from a stream in the Drupal comment of
-   * <code>\Drupal\Component\Utility\Crypt::randomBytes()</code> is not true, simply check the C implementation:
-   * {@link https://github.com/php/php-src/blob/master/main/streams/streams.c#L703}
-   *
-   * The collision probability of SHA-512 is extremely, extremely low. There is absolutely no need to generate some
-   * special hash based on environment values or anything else. It's impossible to guess the hash and nearly impossible
-   * that the hash collides with another hash. If you still have concerns, read the following:
-   * {@link http://stackoverflow.com/a/4014407/1251219}
-   *
-   * SHA-512 is extremely fast on a 64-bit machine, most of the time close to MD5 and SHA-1.
-   *
-   * @return this
-   */
-  public function setAuthenticationToken() {
-    $this->authenticationToken = hash("sha512", openssl_random_pseudo_bytes(1024));
-    return $this;
-  }
-
-  /**
    * Change the user's email address.
    *
    * @param string $newEmail
@@ -654,43 +557,20 @@ class User extends \MovLib\Data\AbstractImage {
    * @global \MovLib\Data\I18n $i18n
    * @param null $errors
    *   The errors variable used to collect validation error messages.
-   * @param string $type
-   *   The type of authentication token to validate, simply pass the <var>AbstractPage::$id</var>.
    * @return null|array
    *   <code>NULL</code> is returned if no data could be retrieved from the database, otherwise an associative array
    *   with the data from the temporary database table. Please check implementation to check the anatomy of the returned
    *   array.
    */
-  public function validateAuthenticationToken(&$errors, $type) {
+  public function validateToken(&$errors) {
     global $i18n;
     if (empty($_GET["token"]) || strlen($_GET["token"]) !== self::AUTHENTICATION_TOKEN_LENGTH) {
       $errors[] = $i18n->t("The authentication token is invalid, please go back to the mail we sent you and copy the whole link.");
     }
-    else {
-      switch ($type) {
-        case "user-emailsettings":
-          $data = $this->getTemporaryData($_GET["token"], [ "id" => "UNSIGNED", "email" => "BINARY" ]);
-          break;
-
-        case "user-passwordsettings":
-          $data = $this->getTemporaryData($_GET["token"], [ "id" => "UNSIGNED", "password" => "BINARY" ]);
-          break;
-
-        case "user-registration":
-          $data = $this->getTemporaryData($_GET["token"], [ "name" => "BINARY", "email" => "BINARY" ]);
-          break;
-
-        case "user-dangerzonesettings":
-          $data = $this->getTemporaryData($_GET["token"], [ "id" => "UNSIGNED" ]);
-          break;
-      }
-      if (!$data) {
-        $errors[] = $i18n->t("Your authentication token has expired, please fill out the form again.");
-      }
-      else {
-        return $data;
-      }
+    elseif ($data = $this->tmpGetAndDelete($_GET["token"])) {
+      return $data;
     }
+    $errors[] = $i18n->t("Your authentication token has expired, please fill out the form again.");
   }
 
 }
