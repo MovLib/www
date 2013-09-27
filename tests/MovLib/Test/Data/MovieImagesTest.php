@@ -17,9 +17,9 @@
  */
 namespace MovLib\Test\Data;
 
+use \MovDev\Database;
 use \MovLib\Data\MovieImage;
 use \MovLib\Data\MovieImages;
-use \MovLib\Data\MySQLi as PHPMysqli;
 use \MovLib\View\ImageStyle\ResizeImageStyle;
 
 /**
@@ -72,20 +72,13 @@ class MovieImagesTest extends \PHPUnit_Framework_TestCase {
         $query .= ",\n";
       }
     }
-    $mysqli = new PHPMysqli();
-    $stmt = $mysqli->prepare($query);
-    array_unshift($params, $types);
-    $c = count($params);
-    for ($i = 0; $i < $c; ++$i) {
-      $params[$i] = &$params[$i];
-    }
-    call_user_func_array([ $stmt, "bind_param" ], $params);
-    $stmt->execute();
+    $db = new Database();
+    $db->query($query, $types, $params);
   }
 
   public static function tearDownAfterClass() {
-    $mysqli = new PHPMysqli();
-    $mysqli->query("DELETE FROM `movies_images` WHERE `movie_id` = 1 AND `type` = " . MovieImage::IMAGETYPE_PHOTO);
+    $db = new Database();
+    $db->query("DELETE FROM `movies_images` WHERE `movie_id` = 1 AND `type` = " . MovieImage::IMAGETYPE_PHOTO);
   }
 
   /**
@@ -102,23 +95,21 @@ class MovieImagesTest extends \PHPUnit_Framework_TestCase {
    * @covers \MovLib\Data\MovieImages::initImageProperties
    */
   public function testInitImageProperties() {
-    $mysqli = new PHPMysqli();
-    $queryResult = $mysqli->query(
+    $db = new Database();
+    $result = $db->select(
       "SELECT
         `image_id`,
         `country_id`,
-        COLUMN_GET(`dyn_descriptions`, 'en' AS BINARY) AS `description`
+        `filename`,
+        `ext`,
+        COLUMN_GET(`dyn_descriptions`, 'en' AS BINARY) AS `description`,
+        `hash`
       FROM `movies_images`
       WHERE `movie_id` = 1
         AND `image_id` = 1
         AND `type` = " . MovieImage::IMAGETYPE_PHOTO . "
         LIMIT 1"
     );
-    $result = null;
-    while ($row = $queryResult->fetch_assoc()){
-      $result[] = $row;
-    }
-    $this->assertNotEmpty($result[0]);
     $images = get_reflection_method($this->movieImages, "initImageProperties")->invokeArgs($this->movieImages, [ $result ]);
     $this->assertContains("PHPUnit", $images[0]["alt"]);
     $this->assertContains("photo", $images[0]["alt"]);
