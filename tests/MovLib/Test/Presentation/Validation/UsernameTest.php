@@ -63,8 +63,8 @@ class UsernameTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers \MovLib\Presentation\Validation\Username::validate
-   * @expectedException ValidationException
-   * @expectedExceptionMessage The username cannot begin with a space.
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage begin with a space
    */
   public function testValidateSpaceAtBeginning() {
     $this->username->set(" PHPUnit")->validate();
@@ -72,8 +72,8 @@ class UsernameTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers \MovLib\Presentation\Validation\Username::validate
-   * @expectedException ValidationException
-   * @expectedExceptionMessage The username cannot end with a space.
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage end with a space
    */
   public function testValidateSpaceAtEnding() {
     $this->username->set("PHPUnit ")->validate();
@@ -81,8 +81,8 @@ class UsernameTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers \MovLib\Presentation\Validation\Username::validate
-   * @expectedException ValidationException
-   * @expectedExceptionMessage The username cannot contain multiple spaces in a row.
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage cannot contain multiple spaces
    */
   public function testValidateMultipleSpacesInRow() {
     $this->username->set("PHP  Unit")->validate();
@@ -90,8 +90,8 @@ class UsernameTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers \MovLib\Presentation\Validation\Username::validate
-   * @expectedException ValidationException
-   * @expectedExceptionMessage The username is too long: it must be 40 characters or less.
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage The username is too long
    */
   public function testValidateLength() {
     $this->username->set(str_repeat("PHPUnit", 10))->validate();
@@ -99,8 +99,8 @@ class UsernameTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers \MovLib\Presentation\Validation\Username::validate
-   * @expectedException ValidationException
-   * @expectedExceptionMessage The username Fleshgrinder is already taken, please choose another one.
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage already taken
    */
   public function testValidateCheckName() {
     $this->username->set("Fleshgrinder")->validate();
