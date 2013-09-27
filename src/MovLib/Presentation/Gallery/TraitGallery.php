@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation;
+namespace MovLib\Presentation\Gallery;
 
-use \MovLib\Data\MovieImage;
 use \MovLib\Presentation\Partial\Lists;
 
 /**
@@ -73,14 +72,6 @@ trait TraitGallery {
    * @var string
    */
   protected $uploadText;
-
-  /**
-   * @inheritdoc
-   */
-  protected function init($title) {
-    $this->stylesheets[] = "modules/gallery.css";
-    return parent::init($title);
-  }
 
   /**
    * @inheritdoc

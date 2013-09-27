@@ -16,9 +16,10 @@
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
-namespace MovLib\Presentation;
+namespace MovLib\Presentation\ImageDetails;
 
 use \MovLib\Data\AbstractImage;
+use \MovLib\Data\MovieImages;
 use \MovLib\Presentation\Partial\Lists;
 
 /**
@@ -86,14 +87,6 @@ trait TraitImageDetails {
    */
   protected $streamImages;
 
-  /**
-   * @inheritdoc
-   */
-  protected function init($title) {
-    $this->stylesheets[] = "modules/image-details.css";
-    return parent::init($title);
-  }
-
   /*
    * Get the image details.
    *
@@ -101,6 +94,18 @@ trait TraitImageDetails {
    *   The image details ready for printing a description list with <code>\MovLib\Presentation\Partial\Lists</code>.
    */
   protected abstract function getImageDetails();
+
+  /**
+   * Get the stream images.
+   *
+   * @param int $imageId
+   *   The image ID to start the stream from.
+   * @param int $paginationSize
+   *   The stream pagination size.
+   * @return array
+   *   Numeric array containing the stream images.
+   */
+  protected abstract function getStreamImages($imageId, $paginationSize);
 
   private function pager($direction, $id, $text) {
     return
@@ -128,9 +133,34 @@ trait TraitImageDetails {
       $next = $this->pager("right", ($this->image->imageId + 1), $i18n->t("Next Image"));
     }
 
-    $this->streamImages = implode("", $this->getImages($this->streamImages, null, true, [ "class" => "span span--1" ]));
+    $activeImageIndex = MovieImages::STREAM_IMAGE_COUNT / 2;
+    $stream = array_fill(0, MovieImages::STREAM_IMAGE_COUNT + 1, "<span class='span span--1'></span>");
+    $stream[$activeImageIndex] = $this->getImage(
+      $this->image,
+      AbstractImage::IMAGESTYLE_DETAILS_STREAM,
+      null,
+      $this->image->imageUri,
+      [ "alt" => $this->image->imageAlt, "class" => "active span span--1" ]
+    );
+    $streamImages = $this->getStreamImages($this->image->imageId);
+    for ($i = 0; $i < MovieImages::STREAM_IMAGE_COUNT; ++$i) {
+      if (!isset($streamImages[$i])) {
+        break;
+      }
+      $index = $streamImages[$i]["image_id"] - $this->image->imageId + $activeImageIndex;
+      $gradientClass = null;
+      if ($index === 0) {
+        $gradientClass = "gradient-left ";
+      }
+      elseif ($index === MovieImages::STREAM_IMAGE_COUNT) {
+        $gradientClass = "gradient-right ";
+      }
+      $stream[$index] = "<a class='{$gradientClass}span span--1' href='{$this->imagesRoute}/{$streamImages[$i]["image_id"]}'><img src='{$streamImages[$i]["src"]}'></a>";
+    }
+    $stream = implode("", $stream);
+
     return
-      "<div id='image-details--stream'>{$this->streamImages}</div>" .
+      "<div id='image-details--stream'>{$stream}</div>" .
       "<div id='image-details--image'>{$previous}{$this->getImage(
         $this->image,
         AbstractImage::IMAGESTYLE_DETAILS,

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\ImageDetails;
 
 use \MovLib\Data\AbstractImage;
 use \MovLib\Data\MovieImage;
@@ -32,9 +32,9 @@ use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class PosterDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
-  use \MovLib\Presentation\TraitImageDetails;
-  use \MovLib\Presentation\Movie\TraitMovieGallery;
+class MoviePosterDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\ImageDetails\TraitImageDetails;
+  use \MovLib\Presentation\Gallery\TraitMovieGallery;
 
   /**
    * Instantiate new poster details presentation.
@@ -53,13 +53,21 @@ class PosterDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->lastImageId = $this->image->getTotalCount();
     $this->namePattern = "Poster {0} of {1} from “{2}”";
     $this->init($i18n->t($this->namePattern, [ $this->image->imageId, $this->lastImageId, $this->title ]));
-    $this->streamImages = (new MovieImages(
-      $this->model->id,
-      MovieImage::IMAGETYPE_POSTER,
-      new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
-      $this->imagesRoute,
-      $this->entityTitle
-    ))->getOrderedByCreatedAsc($this->image->imageId, true);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getStreamImages($imageId) {
+    return
+      (new MovieImages(
+        $this->model->id,
+        MovieImage::IMAGETYPE_POSTER,
+        new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
+        $this->imagesRoute,
+        $this->entityTitle
+      ))->getStreamImages($this->image->imageId)
+    ;
   }
 
 }

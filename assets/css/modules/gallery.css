@@ -31,14 +31,15 @@
 }
 
 #gallery-list li {
-  border: 1px solid #c7c7c7;
   background-color: #fcfcfc;
-  text-align: center;
+  border: 1px solid #c7c7c7;
+  margin-bottom: 20px;
   padding: 5px;
+  text-align: center;
 }
 
 #gallery-list li a {
+  border: 0 none;
   display: block;
   text-decoration: none;
-  border: 0 none;
 }

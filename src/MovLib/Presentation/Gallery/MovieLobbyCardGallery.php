@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\Gallery;
 
 use \MovLib\Data\MovieImage;
 use \MovLib\Data\MovieImages;
@@ -30,9 +30,9 @@ use \MovLib\View\ImageStyle\ResizeImageStyle;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class LobbyCardGallery extends \MovLib\Presentation\Movie\AbstractMoviePage {
-  use \MovLib\Presentation\TraitGallery;
-  use \MovLib\Presentation\Movie\TraitMovieGallery;
+class MovieLobbyCardGallery extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\Gallery\TraitGallery;
+  use \MovLib\Presentation\Gallery\TraitMovieGallery;
 
   /**
    * Instantiate new movie lobby card gallery presentation.

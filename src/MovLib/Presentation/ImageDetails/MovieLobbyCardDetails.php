@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\ImageDetails;
 
 use \MovLib\Data\AbstractImage;
 use \MovLib\Data\MovieImage;
@@ -24,7 +24,7 @@ use \MovLib\Exception\Client\NotFoundException;
 use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
 
 /**
- * Presentation for photo details.
+ * Presentation for lobby card details.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -32,34 +32,48 @@ use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class PhotoDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
-  use \MovLib\Presentation\TraitImageDetails;
-  use \MovLib\Presentation\Movie\TraitMovieGallery;
+class MovieLobbyCardDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\ImageDetails\TraitImageDetails;
+  use \MovLib\Presentation\Gallery\TraitMovieGallery;
 
   /**
-   * Instantiate new photo details presentation.
+   * Instantiate new poster details presentation.
    */
   public function __construct() {
     global $i18n;
     $this->initMovie();
-    $this->image = new MovieImage($this->model->id, MovieImage::IMAGETYPE_PHOTO, $_SERVER["IMAGE_ID"]);
+    $this->image = new MovieImage($this->model->id, MovieImage::IMAGETYPE_LOBBYCARD, $_SERVER["IMAGE_ID"]);
     if ($this->image->imageExists === false) {
       throw new NotFoundException("");
     }
     $this->entityTitle  = $this->title;
-    $this->imagesRoute  = $i18n->r("/movie/{0}/photo", [ $this->model->id ]);
-    $this->uploadRoute  = $i18n->r("/movie/{0}/photos/upload", [ $this->model->id ]);
-    $this->editRoute    = $i18n->r("/movie/{0}/photo/{1}/edit", [ $this->model->id, $this->image->imageId ]);
+    $this->imagesRoute  = $i18n->r("/movie/{0}/lobby-card", [ $this->model->id ]);
+    $this->uploadRoute  = $i18n->r("/movie/{0}/lobby-cards/upload", [ $this->model->id ]);
+    $this->editRoute    = $i18n->r("/movie/{0}/lobby-card/{1}/edit", [ $this->model->id, $this->image->imageId ]);
     $this->lastImageId = $this->image->getTotalCount();
-    $this->namePattern = "Photo {0} of {1} from “{2}”";
+    $this->namePattern = "Lobby Card {0} of {1} from “{2}”";
     $this->init($i18n->t($this->namePattern, [ $this->image->imageId, $this->lastImageId, $this->title ]));
     $this->streamImages = (new MovieImages(
       $this->model->id,
-      MovieImage::IMAGETYPE_PHOTO,
+      MovieImage::IMAGETYPE_LOBBYCARD,
       new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
       $this->imagesRoute,
       $this->entityTitle
     ))->getOrderedByCreatedAsc($this->image->imageId, true);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getStreamImages($imageId, $paginationSize) {
+    return
+      (new MovieImages(
+        $this->model->id,
+        MovieImage::IMAGETYPE_LOBBYCARD,
+        new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
+        $this->imagesRoute,
+        $this->entityTitle
+      ))->getOrderedByCreatedAsc($imageId, false, $paginationSize);
   }
 
 }

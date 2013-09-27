@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\Gallery;
 
 use \IntlDateFormatter;
 use \MovLib\Data\MovieImage;
@@ -102,7 +102,7 @@ trait TraitMovieGallery {
         "class" => "separator"
       ]],
     ];
-    foreach ([ "posters" => "Posters", "lobby-cards" => "Lobby Card", "photos" => "Photos" ] as $route => $title) {
+    foreach ([ "posters" => "Posters", "lobby-cards" => "Lobby Cards", "photos" => "Photos" ] as $route => $title) {
       $points[] = [ $i18n->r("/movie/{0}/{$i18n->t("{$route}")}", [ $this->model->id ]), $i18n->t($title), "{$_SERVER["TAB"]}s" == $route ? [ "class" => "active" ] : null ];
     }
     return $points;
