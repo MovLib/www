@@ -16,7 +16,7 @@
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
-namespace MovLib\Presentation;
+namespace MovLib\Presentation\ImageDetails;
 
 use \MovLib\Data\AbstractImage;
 use \MovLib\Data\MovieImages;
@@ -86,14 +86,6 @@ trait TraitImageDetails {
    * @var \MovLib\Data\AbstractImages
    */
   protected $streamImages;
-
-  /**
-   * @inheritdoc
-   */
-  protected function init($title) {
-    $this->stylesheets[] = "modules/imagedetails.css";
-    return parent::init($title);
-  }
 
   /*
    * Get the image details.

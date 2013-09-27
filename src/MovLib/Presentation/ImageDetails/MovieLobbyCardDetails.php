@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\ImageDetails;
 
 use \MovLib\Data\AbstractImage;
 use \MovLib\Data\MovieImage;
@@ -32,9 +32,9 @@ use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class LobbyCardDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
-  use \MovLib\Presentation\TraitImageDetails;
-  use \MovLib\Presentation\Movie\TraitMovieGallery;
+class MovieLobbyCardDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\ImageDetails\TraitImageDetails;
+  use \MovLib\Presentation\Gallery\TraitMovieGallery;
 
   /**
    * Instantiate new poster details presentation.

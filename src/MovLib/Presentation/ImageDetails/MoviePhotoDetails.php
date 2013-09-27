@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\ImageDetails;
 
 use \MovLib\Data\AbstractImage;
 use \MovLib\Data\MovieImage;
@@ -24,7 +24,7 @@ use \MovLib\Exception\Client\NotFoundException;
 use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
 
 /**
- * Presentation for poster details.
+ * Presentation for photo details.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -32,42 +32,48 @@ use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class PosterDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
-  use \MovLib\Presentation\TraitImageDetails;
-  use \MovLib\Presentation\Movie\TraitMovieGallery;
+class MoviePhotoDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\ImageDetails\TraitImageDetails;
+  use \MovLib\Presentation\Gallery\TraitMovieGallery;
 
   /**
-   * Instantiate new poster details presentation.
+   * Instantiate new photo details presentation.
    */
   public function __construct() {
     global $i18n;
     $this->initMovie();
-    $this->image = new MovieImage($this->model->id, MovieImage::IMAGETYPE_POSTER, $_SERVER["IMAGE_ID"]);
+    $this->image = new MovieImage($this->model->id, MovieImage::IMAGETYPE_PHOTO, $_SERVER["IMAGE_ID"]);
     if ($this->image->imageExists === false) {
       throw new NotFoundException("");
     }
     $this->entityTitle  = $this->title;
-    $this->imagesRoute  = $i18n->r("/movie/{0}/poster", [ $this->model->id ]);
-    $this->uploadRoute  = $i18n->r("/movie/{0}/posters/upload", [ $this->model->id ]);
-    $this->editRoute    = $i18n->r("/movie/{0}/poster/{1}/edit", [ $this->model->id, $this->image->imageId ]);
+    $this->imagesRoute  = $i18n->r("/movie/{0}/photo", [ $this->model->id ]);
+    $this->uploadRoute  = $i18n->r("/movie/{0}/photos/upload", [ $this->model->id ]);
+    $this->editRoute    = $i18n->r("/movie/{0}/photo/{1}/edit", [ $this->model->id, $this->image->imageId ]);
     $this->lastImageId = $this->image->getTotalCount();
-    $this->namePattern = "Poster {0} of {1} from “{2}”";
+    $this->namePattern = "Photo {0} of {1} from “{2}”";
     $this->init($i18n->t($this->namePattern, [ $this->image->imageId, $this->lastImageId, $this->title ]));
+    $this->streamImages = (new MovieImages(
+      $this->model->id,
+      MovieImage::IMAGETYPE_PHOTO,
+      new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
+      $this->imagesRoute,
+      $this->entityTitle
+    ))->getOrderedByCreatedAsc($this->image->imageId, true);
   }
 
   /**
    * @inheritdoc
    */
-  protected function getStreamImages($imageId) {
+  protected function getStreamImages($imageId, $paginationSize) {
     return
       (new MovieImages(
         $this->model->id,
-        MovieImage::IMAGETYPE_POSTER,
+        MovieImage::IMAGETYPE_PHOTO,
         new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
         $this->imagesRoute,
         $this->entityTitle
-      ))->getStreamImages($this->image->imageId)
-    ;
+      ))->getOrderedByCreatedAsc($imageId, false, $paginationSize);
   }
 
 }

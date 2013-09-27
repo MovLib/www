@@ -162,7 +162,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    *
    * @var int
    */
-  const IMAGESTYLE_DETAILS = "x540";
+  const IMAGESTYLE_DETAILS = "600x";
 
   /**
    * Image style for the image stream in the image detail view.
