@@ -547,7 +547,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`tmp` (
   `key` VARCHAR(255) NOT NULL COMMENT 'The record’s unique key.' ,
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The record’s creation timestamp.' ,
   `data` BLOB NOT NULL COMMENT 'The record’s serialized data.' ,
-  `ttl` TINYTEXT NOT NULL DEFAULT '@daily' COMMENT 'The record’s time to life.' ,
+  `ttl` TINYTEXT NOT NULL COMMENT 'The record’s time to life.' ,
   PRIMARY KEY (`key`) )
 COMMENT = 'Used to store temporary data.'
 ROW_FORMAT = COMPRESSED;
