@@ -183,7 +183,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     if ($returnVar !== 0) {
       throw new HistoryException("Could not initialize GIT repository.");
     }
-    exec("cd {$this->path} && git commit --allow-empty --author='1 <>' -m 'initial commit'", $output, $returnVar);
+    exec("cd {$this->path} && git commit --allow-empty --author='init <>' -m 'initial commit'", $output, $returnVar);
     if ($returnVar !== 0) {
       throw new HistoryException("Error while initial commit!");
     }
@@ -201,7 +201,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   Numeric array of changed files.
    * @throws \MovLib\Exception\HistoryException
    */
-  private function getChangedFiles($head, $ref) {
+  public function getChangedFiles($head, $ref) {
     exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output, $returnVar);
     if ($returnVar !== 0) {
       throw new HistoryException("There was an error locating changed files");
@@ -290,7 +290,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   public function getLastCommits($limit = null) {
     $limit = isset($limit) ? " --max-count={$limit}" : "";
     $format = '{"hash":"%H","author_id":%an,"timestamp":%at,"subject":"%s"}';
-    exec("cd {$this->path} && git log --format='{$format}'{$limit}", $output, $returnVar);
+    exec("cd {$this->path} && git log --format='{$format}'{$limit} --min-parents=1", $output, $returnVar);
     if ($returnVar !== 0) {
       throw new HistoryException("There was an error getting last commits");
     }

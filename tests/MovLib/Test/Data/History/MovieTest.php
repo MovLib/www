@@ -233,8 +233,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     // with 2 commits
     $stageAllFiles->invoke($this->movie);
     $commitFiles->invoke($this->movie, "second commit");
-    $changedFiles = get_reflection_method($this->movie, "getChangedFiles")->invoke($this->movie, "HEAD", "HEAD^1");
-    $this->assertEquals("original_title year", implode(" ", $changedFiles));
+    $this->assertEquals("original_title year", implode(" ", $this->movie->getChangedFiles("HEAD", "HEAD^1")));
   }
 
   /**

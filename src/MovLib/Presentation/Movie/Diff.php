@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Movie;
 
 /**
- * The movie history page.
+ * The movie history diff page.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Movie;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Movie\AbstractMoviePage {
+class Diff extends \MovLib\Presentation\Movie\AbstractMoviePage {
   use \MovLib\Presentation\TraitHistory;
 
 
@@ -58,7 +58,6 @@ class History extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * @inheritdoc
    */
   protected function getPageContent() {
-    return $this->getRevisionHistory();
+    return $this->getDiff();
   }
-
 }

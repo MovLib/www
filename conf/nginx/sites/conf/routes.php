@@ -19,6 +19,7 @@
 #
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # AUTHOR: Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+# AUTHOR: Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
@@ -144,9 +145,20 @@ location ^~ <?= $r("/movie") ?> {
     try_files $movlib_cache @php;
   }
 
+  #
+  # History
+  #
+
   location ~ ^<?= $r("/movie/{0}/history", [ "([0-9]+)" ]) ?>$ {
     set $movlib_presenter "Movie\\History";
     set $movlib_movie_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ '^<?= $r("/movie/{0}/diff", [ "([0-9]+)" ]) ?>/([a-f0-9]{40})$' {
+    set $movlib_presenter "Movie\\Diff";
+    set $movlib_movie_id $1;
+    set $movlib_revision_hash $2;
     try_files $movlib_cache @php;
   }
 

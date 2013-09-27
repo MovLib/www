@@ -17,7 +17,9 @@
  */
 namespace MovLib\Presentation;
 
+use \IntlDateFormatter;
 use \MovLib\Data\Users;
+use \MovLib\Presentation\Partial\Lists;
 
 /**
  * Description of AbstractHistory
@@ -47,23 +49,16 @@ trait TraitHistory {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    return
-      "<div id='revision-history'>" .
-        $this->getRevisionHistory() .
-      "</div>";
-  }
-
   /**
    * @inheritdoc
    */
   protected function init($title) {
     $this->stylesheets[] = "modules/history.css";
     return parent::init($title);
+  }
+
+  private function getDiff() {
+    return "DIFFFFF {$_SERVER["REVISION_HASH"]}";
   }
 
   /**
@@ -116,21 +111,27 @@ trait TraitHistory {
     $users = (new Users())->getUsers($userIds);
 
     $html =
-      "<h2>{$i18n->t("Revision history")}</h2>" .
-      "<ul>";
+      "<div id='revision-history'>" .
+        "<h2>{$i18n->t("Revision history")}</h2>";
 
+    $revisions = [];
     for ($i = 0; $i < $c; ++$i) {
-      $html .=
-        "<li>" .
-          "{$i18n->formatDate($commits[$i]["timestamp"])} " .
-          "by <a href='{$i18n->r("/user/{0}", [ $users[$commits[$i]["author_id"]]["name"] ])}'>" .
-            $i18n->t("{0}", [ $users[$commits[$i]["author_id"]]["name"] ]) .
-          "</a>: " .
-          "{$commits[$i]["subject"]}" .
-        "</li>";
+      $authorName = $users[$commits[$i]["author_id"]]["name"];
+      $revisions[$i] =
+        "{$i18n->formatDate($commits[$i]["timestamp"], null, IntlDateFormatter::MEDIUM, IntlDateFormatter::MEDIUM)} by " .
+        $this->a($i18n->r("/user/{0}", [ $authorName ]), $i18n->t($authorName), [
+            "title" => $i18n->t("Profile of {0}", [ $authorName ])
+        ]) .
+        ": {$commits[$i]["subject"]} " .
+        $this->a($i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]) . "/diff/{$commits[$i]["hash"]}", $i18n->t("Show diff"));
+
+      $changedFiles = $this->historyModel->getChangedFiles($commits[$i]["hash"], "{$commits[$i]["hash"]}^1");
+      $revisions[$i] .= (new Lists($changedFiles, ""))->toHtmlList();
     }
 
-    $html .= "</ul>";
+    $html .=
+        (new Lists($revisions, ""))->toHtmlList() .
+      "</div>";
 
     return $html;
   }
