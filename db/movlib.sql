@@ -544,8 +544,10 @@ SHOW WARNINGS;
 -- Table `movlib`.`tmp`
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`tmp` (
-  `key` VARCHAR(255) NOT NULL COMMENT 'The entry’s unique key.' ,
-  `dyn_data` BLOB NOT NULL COMMENT 'The entry’s dynamic data.' ,
+  `key` VARCHAR(255) NOT NULL COMMENT 'The record’s unique key.' ,
+  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The record’s creation timestamp.' ,
+  `data` BLOB NOT NULL COMMENT 'The record’s serialized data.' ,
+  `ttl` TINYTEXT NOT NULL DEFAULT '@daily' COMMENT 'The record’s time to life.' ,
   PRIMARY KEY (`key`) )
 COMMENT = 'Used to store temporary data.'
 ROW_FORMAT = COMPRESSED;
