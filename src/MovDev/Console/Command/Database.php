@@ -122,6 +122,7 @@ class Database extends \MovLib\Console\Command\Database {
    * @inheritdoc
    */
   protected function configure() {
+    parent::configure();
     $this
       ->addOption(self::OPTION_ALL, self::OPTION_SHORTCUT_ALL, InputOption::VALUE_NONE, "Run all migrations and import all seed data (Ignores all other options).")
       ->addOption(self::OPTION_SEED, self::OPTION_SHORTCUT_SEED, InputOption::VALUE_OPTIONAL, "Import seed data file(s).")
