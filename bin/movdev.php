@@ -18,10 +18,10 @@
  */
 
 /**
- * Executable for *nix systems containing commands for production environment.
+ * Executable for *nix systems containing commands for development environment.
  *
  * <strong>Note!</strong> For global access create a symbolic link to this file in your local bin path, example:
- * <pre># ln -s movcli.php /usr/local/bin/movcli && chmod 755 movcli</pre>
+ * <pre># ln -s movdev.php /usr/local/bin/movdev && chmod 755 movdev</pre>
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -31,4 +31,4 @@
  */
 
 require dirname(__DIR__) . "/bootstrap.php";
-(new \MovLib\Console\Application\MovCli())->run();
+(new \MovDev\Console\Application\MovDev())->run();
