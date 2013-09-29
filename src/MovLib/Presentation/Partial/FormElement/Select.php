@@ -72,8 +72,8 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public function __construct($id, $label, array $options, $value = null, array $attributes = null, array $labelAttributes = null) {
     parent::__construct($id, $attributes, $label, $labelAttributes);
-    $this->value = isset($_POST[$this->id]) && isset($options[$_POST[$this->id]]) ? $_POST[$this->id] : $value;
     $this->options = $options;
+    $this->value   = $value;
   }
 
   /**
@@ -86,12 +86,12 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
     // If a select element only has one option to choose from and is required no default option can be present.
     if ($this->required === false) {
       $selected = isset($this->value) ? null : " selected";
-      $options .= "<option{$selected}>{$i18n->t("Please Select …")}</option>";
+      $options .= "<option{$selected} value=''>{$i18n->t("Please Select …")}</option>";
     }
 
     // Create HTML option for each option.
     foreach ($this->options as $value => $option) {
-      $selected = isset($this->value) && $this->value == $value ? " selected" : null;
+      $selected = $this->value == $value ? " selected" : null;
       $options .= "<option{$selected} value='{$value}'>{$option}</option>";
     }
 
@@ -107,9 +107,10 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public function validate() {
     global $i18n;
-    if (array_key_exists($this->value, $this->choices) === false) {
+    if (!isset($_POST[$this->id]) || !isset($this->options[$_POST[$this->id]])) {
       throw new ValidationException($i18n->t("The submitted value {0} is not a valid option.", [ $this->placeholder($this->value) ]));
     }
+    $this->value = $_POST[$this->id];
     return $this;
   }
 

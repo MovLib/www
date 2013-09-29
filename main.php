@@ -145,7 +145,7 @@ set_exception_handler("uncaught_exception_handler");
  *   The line number within the file.
  */
 function error_all_handler($type, $message, $file, $line) {
-  uncaught_exception_handler(new \MovLib\Exception\ErrorException($type, $message, $file, $line));
+  throw new \MovLib\Exception\ErrorException($type, $message, $file, $line);
 }
 
 // Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.

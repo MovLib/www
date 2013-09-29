@@ -15,26 +15,51 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Partial\FormElement;
+namespace MovLib\Presentation\User;
+
+use \MovLib\Exception\UserException;
+use \MovLib\Data\User;
 
 /**
- * Description of InputFile
+ * Description of Show
  *
- * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
- * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputFile {
+class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+  use \MovLib\Presentation\User\TraitUser;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
+   * The user we are currently displaying.
    *
+   * @var \MovLib\Data\User
    */
-  public function __construct() {
+  protected $user;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  public function __construct() {
+    try {
+      $this->user = new User(User::FROM_NAME, $_SERVER["USER_NAME"]);
+      $this->init($this->checkPlain($this->user->name));
+    }
+    catch (UserException $e) {
+
+    }
+  }
+
+  protected function getPageContent(){
+    global $i18n;
+    return "<pre>" . print_r($this->user, true) . "</pre>";
   }
 
 }

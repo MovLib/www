@@ -241,9 +241,9 @@ class User extends \MovLib\Data\AbstractImage {
    * @var array
    */
   private $types = [
-    self::FROM_ID => "d",
+    self::FROM_ID    => "d",
     self::FROM_EMAIL => "s",
-    self::FROM_NAME => "s",
+    self::FROM_NAME  => "s",
   ];
 
   /**
@@ -291,8 +291,9 @@ class User extends \MovLib\Data\AbstractImage {
           `real_name` AS `realName`,
           `birthday`,
           `website`,
-          `avatar_extension` AS `imageExtension`,
-          `avatar_name` AS `imageHash`
+          `avatar_extension` AS `avatarExtension`,
+          `avatar_name` AS `avatarHash`,
+          `avatar_changed` AS `avatarChanged`
         FROM `users`
           WHERE `{$from}` = ?
         LIMIT 1", $this->types[$from], [ $value ]
@@ -309,7 +310,7 @@ class User extends \MovLib\Data\AbstractImage {
         new ResizeImageStyle(self::IMAGESTYLE_SMALL),
         new ResizeImageStyle(self::IMAGESTYLE_NORMAL),
         new ResizeImageStyle(self::IMAGESTYLE_BIG),
-      ]);
+      ], 512000);
     }
   }
 

@@ -28,6 +28,10 @@ namespace MovLib\Presentation\Profile;
  */
 trait TraitProfile {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The user we are currently displaying.
    *
@@ -48,6 +52,10 @@ trait TraitProfile {
    * @var string
    */
   protected $profileText;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc

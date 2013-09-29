@@ -330,7 +330,7 @@ location ^~ <?= $r("/user") ?> {
   }
 
   location ~ ^<?= $r("/user") ?>/(.+)$ {
-    set $movlib_presenter "User\\Profile";
+    set $movlib_presenter "User\\Show";
     set $movlib_user_name $1;
     try_files $movlib_cache @php;
   }

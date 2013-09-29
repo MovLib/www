@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Partial;
 
 use \MovLib\Exception\ValidationException;
+use \MovLib\Presentation\Partial\FormElement\InputImage;
 use \MovLib\Presentation\Partial\FormElement\InputHidden;
 
 /**
@@ -151,6 +152,15 @@ class Form extends \MovLib\Presentation\AbstractBase {
         // because the array isn't kept as property in the presentation class.
         $this->elements[] = &$elements[$i];
 
+        // Images are special, handle all conditions regarding correct form encoding and error if required at this point
+        // and ensure that the later code is executed normally.
+        if ($elements[$i] instanceof InputImage) {
+          $this->attributes["enctype"] = self::ENCTYPE_BINARY;
+          if (isset($_FILES[$elements[$i]->id]) && $_FILES[$elements[$i]->id]["error"] !== UPLOAD_ERR_NO_FILE) {
+            $_POST[$elements[$i]->id] = true;
+          }
+        }
+
         // A disabled element is not submitted by the browser, therefor we can't check it at all and we don't want to.
         if ($elements[$i]->disabled === true) {
           continue;
@@ -158,9 +168,11 @@ class Form extends \MovLib\Presentation\AbstractBase {
 
         // No need to go through the complete validation process to check if the element is empty or not. Plus it's
         // tedious to re-implement this in each validation method. Directly take care of it here.
-        if (empty($_POST[$elements[$i]->id]) && $elements[$i]->required === true) {
-          $elements[$i]->invalid();
-          $mandatoryError = true;
+        if (empty($_POST[$elements[$i]->id])) {
+          if ($elements[$i]->required === true) {
+            $elements[$i]->invalid();
+            $mandatoryError = true;
+          }
         }
         else {
           try {
@@ -191,6 +203,10 @@ class Form extends \MovLib\Presentation\AbstractBase {
       for ($i = 0; $i < $c; ++$i) {
         // The actual element, not a copy, see comment above.
         $this->elements[] = &$elements[$i];
+
+        if ($elements[$i] instanceof InputImage) {
+          $this->attributes["enctype"] = self::ENCTYPE_BINARY;
+        }
       }
     }
   }

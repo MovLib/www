@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\User;
 
 /**
- * The user trait provides several methods that are shared among user specific presentations.
+ * Shared methods for pages in the User namespace.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -27,5 +27,35 @@ namespace MovLib\Presentation\User;
  * @since 0.0.1-dev
  */
 trait TraitUser {
+
+  /**
+   * @inheritdoc
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [[ $i18n->r("/users"), $i18n->t("Users") ]];
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getSecondaryNavigationMenuitems() {
+    global $i18n;
+    return [
+      [
+        $i18n->r("/user/{0}", [ $_SERVER["USER_NAME"] ]),
+        $this->checkPlain($_SERVER["USER_NAME"]),
+        [ "class" => "separator" ],
+      ],
+      [
+        $i18n->r("/user/{0}/collection", [ $_SERVER["USER_NAME"] ]),
+        $i18n->t("Collection"),
+      ],
+      [
+        $i18n->r("/user/{0}/contact", [ $_SERVER["USER_NAME"] ]),
+        $i18n->t("Contact"),
+      ],
+    ];
+  }
 
 }
