@@ -67,7 +67,7 @@ class Database extends \MovLib\Console\Command\Database {
    */
   const OPTION_SHORTCUT_SEED = "s";
 
-    /**
+  /**
    * Option for creating git repositories.
    *
    * @var string

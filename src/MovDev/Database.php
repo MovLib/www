@@ -17,6 +17,8 @@
  */
 namespace MovDev;
 
+use \MovLib\Exception\DatabaseException;
+
 /**
  * The developer database class allows direct access to all methods from anywhere.
  *
@@ -75,7 +77,7 @@ class Database extends \MovLib\Data\Database {
       if ($error === false) {
         $error = self::$mysqli[$this->database]->error;
         $errno = self::$mysqli[$this->database]->errno;
-        $this->exitOnError("Execution of multiple queries failed: {$error} ({$errno})");
+        throw new DatabaseException("Execution of multiple queries failed: {$error} ({$errno})");
       }
       self::$mysqli[$this->database]->use_result();
       if ($more = self::$mysqli[$this->database]->more_results()) {
