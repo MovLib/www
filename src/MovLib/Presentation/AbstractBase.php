@@ -162,6 +162,28 @@ abstract class AbstractBase {
   }
 
   /**
+   * Format given Bytes to human readable form.
+   *
+   * <b>Example usages with Intl ICU</b>
+   * <pre>$i18n->t("{0,number} {1}", [ $this->formatBytes($bytes) ]);</pre>
+   *
+   * @staticvar array $units
+   *   Available file size units.
+   * @param int $bytes
+   *   The number to format.
+   * @return array
+   *   Numeric array containing the truncated number in offset 0 and the unit in offset 1.
+   */
+  protected final function formatBytes($bytes) {
+    static $units = [ "B", "KB", "MB", "GB", "TB" ];
+    // log(1024) = 6.9314718055995...
+    // count($units) - 1 = 4
+    $pow = min(floor(log($bytes) / 6.9314718055995), 4);
+    $bytes /= (1 << (10 * $pow));
+    return [ round($bytes, 2), $units[$pow] ];
+  }
+
+  /**
    * Get the image.
    *
    * @param \MovLib\Data\AbstractImage $image

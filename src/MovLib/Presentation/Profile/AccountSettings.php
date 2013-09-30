@@ -23,7 +23,7 @@ use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputDate;
-use \MovLib\Presentation\Partial\FormElement\InputFile;
+use \MovLib\Presentation\Partial\FormElement\InputImage;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputURL;
@@ -51,7 +51,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
   /**
    * The user's avatar input file form element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputFile
+   * @var \MovLib\Presentation\Partial\FormElement\InputImage
    */
   private $avatar;
 
@@ -148,8 +148,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     // Start rendering the page.
     $this->init($i18n->t("Account Settings"))->user = new User(User::FROM_ID, $session->userId);
 
-    // @todo Avatar Upload (autofocus?)
-    $this->avatar = new InputFile();
+    $this->avatar = new InputImage($this->user, "avatar", $i18n->t("Avatar"));
 
     $this->realName = new InputText("real_name", $i18n->t("Real Name"), $this->user->realName, [
       "inputmode"   => "latin-name",
@@ -209,6 +208,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     ));
 
     $this->form = new Form($this, [
+      $this->avatar,
       $this->realName,
       $this->sex,
       $this->birthday,

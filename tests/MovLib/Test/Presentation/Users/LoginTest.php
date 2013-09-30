@@ -54,6 +54,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers \MovLib\Presentation\Users\Login::__construct
+   * @covers \MovLib\Presentation\Users\Registration::getContent
    */
   public function testConstruct() {
     global $session;
@@ -73,6 +74,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals([ $inputEmail, $inputPassword ], get_reflection_property($form, "elements")->getValue($form));
 
     $this->assertEquals("/users/login", $_SERVER["PATH_INFO"]);
+    $this->assertContains($form->__toString(), $login->getPresentation());
   }
 
   /**

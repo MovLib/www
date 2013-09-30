@@ -15,17 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Application;
+namespace MovLib\Presentation\User;
 
-use \ReflectionClass;
-use \Symfony\Component\Console\Application;
+use \MovLib\Exception\UserException;
+use \MovLib\Data\User;
 
 /**
- * MovLib Command Line Interface
- *
- * The MovLib command line interface is a Symfony2 Console Application and combines all possible MovLib Symfony2 Console
- * Commands for easy execution. The CLI is used to run several administrative tasks. The MovLib software does not have
- * any administrative backend, instead all such tasks are handled with console applications.
+ * Description of Show
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -33,21 +29,37 @@ use \Symfony\Component\Console\Application;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovCli extends Application {
+class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+  use \MovLib\Presentation\User\TraitUser;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
-   * @inheritdoc
+   * The user we are currently displaying.
+   *
+   * @var \MovLib\Data\User
    */
+  protected $user;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   public function __construct() {
-    parent::__construct("MovCli", $GLOBALS["movlib"]["version"]);
-    foreach (glob("{$_SERVER["DOCUMENT_ROOT"]}/src/MovLib/Console/Command/*.php") as $command) {
-      $command = "\\MovLib\\Console\\Command\\" . basename($command, ".php");
-      $reflectionClass = new ReflectionClass($command);
-      // Make sure we do not include any abstract classes or interfaces.
-      if ($reflectionClass->isInstantiable()) {
-        $this->add(new $command());
-      }
+    try {
+      $this->user = new User(User::FROM_NAME, $_SERVER["USER_NAME"]);
+      $this->init($this->checkPlain($this->user->name));
     }
+    catch (UserException $e) {
+
+    }
+  }
+
+  protected function getPageContent(){
+    global $i18n;
+    return "<pre>" . print_r($this->user, true) . "</pre>";
   }
 
 }

@@ -15,39 +15,25 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Application;
-
-use \ReflectionClass;
-use \Symfony\Component\Console\Application;
+namespace MovLib\Test\Console\Command;
 
 /**
- * MovLib Command Line Interface
- *
- * The MovLib command line interface is a Symfony2 Console Application and combines all possible MovLib Symfony2 Console
- * Commands for easy execution. The CLI is used to run several administrative tasks. The MovLib software does not have
- * any administrative backend, instead all such tasks are handled with console applications.
- *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovCli extends Application {
+class CronDailyTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * @inheritdoc
+   * @covers \MovLib\Console\Command\CronDaily::purgeTemporaryTable
    */
-  public function __construct() {
-    parent::__construct("MovCli", $GLOBALS["movlib"]["version"]);
-    foreach (glob("{$_SERVER["DOCUMENT_ROOT"]}/src/MovLib/Console/Command/*.php") as $command) {
-      $command = "\\MovLib\\Console\\Command\\" . basename($command, ".php");
-      $reflectionClass = new ReflectionClass($command);
-      // Make sure we do not include any abstract classes or interfaces.
-      if ($reflectionClass->isInstantiable()) {
-        $this->add(new $command());
-      }
-    }
+  public function testPurgeTemporaryData() {
+    $stub = $this->getMock("\\MovLib\\Console\\Command\\CronDaily", [ "purgeTemporaryTable" ]);
+    $rm = get_reflection_method($stub, "purgeTemporaryTable");
+    $rm->setAccessible(true);
+    $rm->invoke($stub);
   }
 
 }

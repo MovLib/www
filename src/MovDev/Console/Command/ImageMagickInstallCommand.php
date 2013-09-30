@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command;
+namespace MovDev\Console\Command;
 
-use \MovLib\Console\Command\AbstractInstallCommand;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -30,7 +29,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageMagickInstallCommand extends AbstractInstallCommand {
+class ImageMagickInstallCommand extends \MovDev\Console\Command\AbstractInstallCommand {
 
   /**
    * @inheritdoc

@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 
 /*!
@@ -15,26 +16,19 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Partial\FormElement;
 
 /**
- * Description of InputFile
+ * Executable for *nix systems containing commands for development environment.
  *
- * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
- * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
+ * <strong>Note!</strong> For global access create a symbolic link to this file in your local bin path, example:
+ * <pre># ln -s movdev.php /usr/local/bin/movdev && chmod 755 movdev</pre>
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputFile {
 
-  /**
-   *
-   */
-  public function __construct() {
-
-  }
-
-}
+require dirname(__DIR__) . "/bootstrap.php";
+(new \MovDev\Console\Application\MovDev())->run();

@@ -40,6 +40,17 @@ use \ReflectionFunction;
 class Database {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * TTL value for records in the temporary table that are deleted on a daily basis.
+   *
+   * @var int
+   */
+  const TMP_TTL_DAILY = "@daily";
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -62,7 +73,7 @@ class Database {
    *
    * @var \mysqli
    */
-  private static $mysqli = [];
+  protected static $mysqli = [];
 
   /**
    * Total number of rows changed, deleted, or inserted by the last executed statement.
@@ -86,6 +97,13 @@ class Database {
    * @var \ReflectionFunction
    */
   private static $stmtBindParam;
+
+  /**
+   * Flag indicating if a transaction is active.
+   *
+   * @var boolean
+   */
+  protected $transactionActive = false;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -157,6 +175,106 @@ class Database {
     }
     $queryResult->free();
     return $result;
+  }
+
+  /**
+   * Set new record in the temporary table.
+   *
+   * @param mixed $data
+   *   The data to store.
+   * @param string $ttl [optional]
+   *   The time to life for this record, defaults to <var>\MovLib\Data\Database::TMP_TTL_DAILY</var>.
+   * @return string
+   *   The key (hash) of the newly added record.
+   */
+  protected function tmpSet($data, $ttl = self::TMP_TTL_DAILY) {
+    $hash = hash("sha512", openssl_random_pseudo_bytes(1024));
+    $this->query("INSERT INTO `tmp` (`key`, `data`, `ttl`) VALUES (?, ?, ?)", "sss", [ $hash, serialize($data), $ttl ]);
+    return $hash;
+  }
+
+  /**
+   * Get record from the temporary table.
+   *
+   * @param string $key
+   *   The key (hash) of the record.
+   * @return null|mixed
+   *   The data that was previously stored with this hash or <code>NULL</code> if no record was found for the key.
+   */
+  protected function tmpGetAndDelete($key) {
+    $data = $this->select("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $key ]);
+    if (!empty($data[0])) {
+      $data = unserialize($data[0]["data"]);
+      $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
+    }
+    return $data;
+  }
+
+  /**
+   * Commit current transaction.
+   *
+   * @param int $flags [optional]
+   *   A bitmask of <var>MYSQLI_TRANS_COR_*</var> constants, defaults to <var>MYSQLI_TRANS_COR_AND_NO_CHAIN</var>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+    if (!isset(self::$mysqli[$this->database]) || $this->transactionActive === false) {
+      throw new DatabaseException("No active transaction, nothing to commit.");
+    }
+    if (self::$mysqli[$this->database]->commit($flags) === false) {
+      $error = self::$mysqli[$this->database]->error;
+      $errno = self::$mysqli[$this->database]->errno;
+      $this->transactionRollback();
+      throw new DatabaseException("Commit failed: {$error} ({$errno})");
+    }
+    $this->transactionActive = false;
+    return $this;
+  }
+
+  /**
+   * Rollback current transaction.
+   *
+   * @param int $flags [optional]
+   *   A bitmask of <var>MYSQLI_TRANS_COR_*</var> constants, defaults to <var>MYSQLI_TRANS_COR_AND_NO_CHAIN</var>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+    if (!isset(self::$mysqli[$this->database]) || $this->transactionActive === false) {
+      throw new DatabaseException("No active transaction, nothing to rollback.");
+    }
+    if (self::$mysqli[$this->database]->rollback($flags) === false) {
+      $error = self::$mysqli[$this->database]->error;
+      $errno = self::$mysqli[$this->database]->errno;
+      throw new DatabaseException("Rollback failed: {$error} ({$errno})");
+    }
+    $this->transactionActive = false;
+    return $this;
+  }
+
+  /**
+   * Start a transaction.
+   *
+   * Executes a SQL native <code>START TRANSACTION</code> against the database and establishes a connection if not
+   * connection is available.
+   *
+   * @param int $flags [optional]
+   *   One of the <var>MYSQLI_TRANS_START_*</var> constants, defaults to <var>MYSQLI_TRANS_START_READ_WRITE</var>.
+   * @return this
+   * @throws \MovLib\Data\DatabaseException
+   */
+  protected function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
+    if (!isset(self::$mysqli[$this->database])) {
+      $this->connect();
+    }
+    if (self::$mysqli[$this->database]->begin_transaction($flags) === false) {
+      $error = self::$mysqli[$this->database]->error;
+      $errno = self::$mysqli[$this->database]->errno;
+      throw new DatabaseException("Could not start transaction: {$error} ({$errno})");
+    }
+    $this->transactionActive = true;
+    return $this;
   }
 
 

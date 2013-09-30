@@ -84,6 +84,28 @@ class PageTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * @covers \MovLib\Presentation\AbstractPage::formatBytes
+   */
+  public function formatBytes() {
+    $rm = get_reflection_method($this->page, "formatBytes");
+    $this->assertEquals([ 1, "B" ], $rm->invokeArgs($this->page, 1));
+    $this->assertEquals([ 10, "B" ], $rm->invokeArgs($this->page, 10));
+    $this->assertEquals([ 100, "B" ], $rm->invokeArgs($this->page, 100));
+    $this->assertEquals([ 1, "KB" ], $rm->invokeArgs($this->page, 1024));
+    $this->assertEquals([ 10, "KB" ], $rm->invokeArgs($this->page, 10240));
+    $this->assertEquals([ 100, "KB" ], $rm->invokeArgs($this->page, 102400));
+    $this->assertEquals([ 1, "MB" ], $rm->invokeArgs($this->page, 1024000));
+    $this->assertEquals([ 10, "MB" ], $rm->invokeArgs($this->page, 10240000));
+    $this->assertEquals([ 100, "MB" ], $rm->invokeArgs($this->page, 102400000));
+    $this->assertEquals([ 1, "GB" ], $rm->invokeArgs($this->page, 1024000000));
+    $this->assertEquals([ 10, "GB" ], $rm->invokeArgs($this->page, 10240000000));
+    $this->assertEquals([ 100, "GB" ], $rm->invokeArgs($this->page, 102400000000));
+    $this->assertEquals([ 1, "TB" ], $rm->invokeArgs($this->page, 1024000000000));
+    $this->assertEquals([ 10, "TB" ], $rm->invokeArgs($this->page, 10240000000000));
+    $this->assertEquals([ 100, "TB" ], $rm->invokeArgs($this->page, 102400000000000));
+  }
+
+  /**
    * @covers \MovLib\Presentation\AbstractPage::checkPlain
    */
   public function testCheckPlain() {

@@ -18,7 +18,7 @@
  */
 
 /**
- * Executable for *nix systems.
+ * Executable for *nix systems containing commands for production environment.
  *
  * <strong>Note!</strong> For global access create a symbolic link to this file in your local bin path, example:
  * <pre># ln -s movcli.php /usr/local/bin/movcli && chmod 755 movcli</pre>

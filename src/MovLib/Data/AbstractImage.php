@@ -81,6 +81,13 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   public $imageHeight;
 
   /**
+   * The image's maximum file size in Bytes.
+   *
+   * @var int
+   */
+  public $imageMaxFileSize;
+
+  /**
    * The name of the image.
    *
    * @var string
@@ -114,8 +121,10 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    * @var array
    */
   public $imageSupported = [
-    "image/jpeg" => "jpg",
-    "image/png"  => "png",
+    "types" => [ IMAGETYPE_JPEG, IMAGETYPE_PNG ],
+    "mimes" => [ "image/jpeg", "image/png" ],
+    IMAGETYPE_JPEG => "jpg",
+    IMAGETYPE_PNG  => "png",
   ];
 
   /**
@@ -137,14 +146,14 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    *
    * @var array
    */
-  protected $details;
+  protected $imageDetails;
 
   /**
    * The image's license information as associative array.
    *
    * @var array
    */
-  private $license = null;
+  private $imageLicense;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Common image styles
@@ -177,23 +186,24 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   /**
    * Set paths and URIs for image.
    *
-   * @param string $imageName
+   * @param string $name
    *   The name of the image.
-   * @param array $imageStyles
+   * @param array $styles
    *   The available image styles.
    * @return this
    */
-  protected function initImage($imageName, $imageStyles) {
-    $this->imageName = $imageName;
+  protected function initImage($name, $styles, $maxFileSize = null) {
+    $this->imageName = $name;
+    $this->imageMaxFileSize = $maxFileSize ?: ini_get("upload_max_filesize");
     if (isset($this->imageExtension) && isset($this->imageHash)) {
       $path = "uploads/{$this->imageDirectory}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
       $this->imagePath = "{$_SERVER["DOCUMENT_ROOT"]}/{$path}";
       $this->imageUri = "{$GLOBALS["movlib"]["static_domain"]}{$path}";
-      $c = count($imageStyles);
+      $c = count($styles);
       for ($i = 0; $i < $c; ++$i) {
-        $imageStyles[$i]->sourcePath = $this->imagePath;
-        $imageStyles[$i]->imageUri = $this->imageUri;
-        $this->imageStyles[$imageStyles[$i]->dimensions] = $imageStyles[$i];
+        $styles[$i]->sourcePath = $this->imagePath;
+        $styles[$i]->imageUri = $this->imageUri;
+        $this->imageStyles[$styles[$i]->dimensions] = $styles[$i];
       }
       if (is_file($this->imagePath)) {
         $this->imageExists = true;
@@ -259,14 +269,14 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    *   Associative array containing the image details.
    */
   public function getImageDetails() {
-    if ($this->details === null) {
+    if ($this->imageDetails === null) {
       foreach ([ "description", "imageWidth", "imageHeight", "imageSize", "created", "changed", "upvotes", "source" ] as $prop) {
-        $this->details[$prop] = $this->{$prop};
+        $this->imageDetails[$prop] = $this->{$prop};
       }
-      $this->details["license"] = $this->getLicense($this->licenseId);
-      $this->details["user"] = (array) (new UserModel(UserModel::FROM_ID, $this->userId));
+      $this->imageDetails["license"] = $this->getLicense($this->licenseId);
+      $this->imageDetails["user"] = (array) (new UserModel(UserModel::FROM_ID, $this->userId));
     }
-    return $this->details;
+    return $this->imageDetails;
   }
 
   /**
@@ -280,9 +290,9 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    */
   public function getLicense($licenseId) {
     global $i18n;
-    if (!$this->license) {
+    if (!$this->imageLicense) {
       // Please note, that an image must have a license. Therefore the direct index access is possible.
-      $this->license = $this->select(
+      $this->imageLicense = $this->select(
         "SELECT
           `name`,
           `description`,
@@ -297,12 +307,12 @@ abstract class AbstractImage extends \MovLib\Data\Database {
         WHERE `license_id` = ? LIMIT 1"
         , "i", [ $licenseId ]
       )[0];
-      $this->license["name"] = $this->license["name_localized"] ?: $this->license["name"];
-      $this->license["description"] = $this->license["description_localized"] ?: $this->license["description"];
-      unset($this->license["name_localized"]);
-      unset($this->license["description_localized"]);
+      $this->imageLicense["name"] = $this->imageLicense["name_localized"] ?: $this->imageLicense["name"];
+      $this->imageLicense["description"] = $this->imageLicense["description_localized"] ?: $this->imageLicense["description"];
+      unset($this->imageLicense["name_localized"]);
+      unset($this->imageLicense["description_localized"]);
     }
-    return $this->license;
+    return $this->imageLicense;
   }
 
   /**
