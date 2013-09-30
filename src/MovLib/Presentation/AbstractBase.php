@@ -178,12 +178,8 @@ abstract class AbstractBase {
     static $units = [ "B", "KB", "MB", "GB", "TB" ];
     // log(1024) = 6.9314718055995...
     // count($units) - 1 = 4
-    if (($pow = floor(log($bytes) / 6.9314718055995)) > 4) {
-      $bytes /= (1 << (10 * $pow));
-    }
-    else {
-      $pow = 0;
-    }
+    $pow = min(floor(log($bytes) / 6.9314718055995), 4);
+    $bytes /= (1 << (10 * $pow));
     return [ round($bytes, 2), $units[$pow] ];
   }
 
