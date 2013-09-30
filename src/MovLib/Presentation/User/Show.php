@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Exception\Client\NotFoundException;
+use \MovLib\Exception\RedirectException;
 use \MovLib\Exception\UserException;
 use \MovLib\Data\User;
 
@@ -30,7 +32,6 @@ use \MovLib\Data\User;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\User\TraitUser;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -44,22 +45,70 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   protected $user;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
+  /**
+   * Instantiate new user presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Exception\NotFoundException
+   * @throws \MovLib\Exception\RedirectException
+   */
   public function __construct() {
+    global $i18n;
     try {
       $this->user = new User(User::FROM_NAME, $_SERVER["USER_NAME"]);
+      if (($nameLower = mb_strtolower($this->user->name)) != $_SERVER["USER_NAME"]) {
+        throw new RedirectException($i18n->r("/user/{0}", [ $nameLower ]), 301);
+      }
       $this->init($this->checkPlain($this->user->name));
     }
     catch (UserException $e) {
-
+      throw new NotFoundException("No user with this name.");
     }
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [[ $i18n->r("/users"), $i18n->t("Users") ]];
+  }
+
+  /**
+   * @inheritdoc
+   */
   protected function getPageContent(){
     global $i18n;
     return "<pre>" . print_r($this->user, true) . "</pre>";
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getSecondaryNavigationMenuitems() {
+    global $i18n;
+    return [
+      [
+        $i18n->r("/user/{0}", [ $_SERVER["USER_NAME"] ]),
+        $this->checkPlain($this->user->name),
+        [ "class" => "separator" ],
+      ],
+      [
+        $i18n->r("/user/{0}/collection", [ $_SERVER["USER_NAME"] ]),
+        $i18n->t("Collection"),
+      ],
+      [
+        $i18n->r("/user/{0}/contact", [ $_SERVER["USER_NAME"] ]),
+        $i18n->t("Contact"),
+      ],
+    ];
   }
 
 }
