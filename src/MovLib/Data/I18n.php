@@ -20,6 +20,7 @@ namespace MovLib\Data;
 use \DateTimeZone;
 use \IntlDateFormatter;
 use \Locale;
+use \MessageFormatter;
 use \MovLib\Data\Collator;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Exception\DatabaseException;
@@ -156,19 +157,20 @@ class I18n extends \MovLib\Data\Database {
     // here!
     if (!$locale) {
       // Use language code from subdomain if present.
-      (isset($_SERVER["LANGUAGE_CODE"]) && ($this->locale = $GLOBALS["movlib"]["locales"][$_SERVER["LANGUAGE_CODE"]]))
+      (isset($_SERVER["LANGUAGE_CODE"]) && ($locale = $GLOBALS["movlib"]["locales"][$_SERVER["LANGUAGE_CODE"]]))
       // Use the best matching value from the user's submitted HTTP accept language header.
-      || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && ($locale = Locale::acceptFromHttp($_SERVER["HTTP_ACCEPT_LANGUAGE"])) && isset($GLOBALS["movlib"]["locales"]["{$locale[0]}{$locale[1]}"]) && ($this->locale = $locale));
+      || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && (strlen($localeTmp = $_SERVER["HTTP_ACCEPT_LANGUAGE"]) > 1) && isset($GLOBALS["movlib"]["locales"]["{$localeTmp[0]}{$localeTmp[1]}"]) && ($locale = $GLOBALS["movlib"]["locales"]["{$localeTmp[0]}{$localeTmp[1]}"]));
     }
     // If we still have no locale, use defaults.
-    if (!$this->locale) {
+    if (!$locale) {
       $this->locale = $this->defaultLocale;
       $this->languageCode = $this->defaultLanguageCode;
     }
     // The language code can only be a two-letter code in contrast to the locale which can be a two-letter code or a
     // five-letter code (including separator and country).
     else {
-      $this->languageCode = "{$this->locale[0]}{$this->locale[1]}";
+      $this->locale = $locale;
+      $this->languageCode = "{$locale[0]}{$locale[1]}";
     }
   }
 
@@ -220,6 +222,7 @@ class I18n extends \MovLib\Data\Database {
    *   </ul>
    * @return string
    *   The formatted and translated (if applicable) message.
+   * @throws \IntlException
    */
   public function formatMessage($context, $pattern, $args, $options = null) {
     $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
@@ -243,7 +246,7 @@ class I18n extends \MovLib\Data\Database {
       }
     }
     if ($args) {
-      return msgfmt_format_message($languageCode, $pattern, $args);
+      return MessageFormatter::formatMessage($languageCode, $pattern, $args);
     }
     return $pattern;
   }
@@ -376,7 +379,7 @@ class I18n extends \MovLib\Data\Database {
     foreach ($this->getSystemLanguages() as $languageCode => $displayLanguage) {
       $translatedDisplayLanguage = Locale::getDisplayLanguage($languageCode, $languageCode);
       if ($this->languageCode == $languageCode) {
-        $links[] = [ "#", "<b>{$displayLanguage} ({$translatedDisplayLanguage})</b>", [ "class" => "active" ]];
+        $links[] = [ "#", "<b>{$translatedDisplayLanguage}</b>", [ "class" => "active" ]];
       }
       else {
         $links[] = [
@@ -421,7 +424,7 @@ class I18n extends \MovLib\Data\Database {
    *   Get all time zones in the current locale.
    */
   public function getTimeZones() {
-    $timezones = timezone_identifiers_list();
+    $timezones = DateTimeZone::listIdentifiers();
     $translated = [];
     $c = count($timezones);
     for ($i = 0; $i < $c; ++$i) {
@@ -467,16 +470,10 @@ class I18n extends \MovLib\Data\Database {
    */
   public function insertOrUpdateTranslation($context, $id, $languageCode, $translation) {
     $this->query(
-      "UPDATE `{$context}s` SET `dyn_translations` = COLUMN_ADD(COLUMN_CREATE(?, ?), ?, ?) WHERE `{$context}_id` = ?",
-      "ssssd",
-      [ $languageCode, $translation, $languageCode, $translation, $id ]
+      "UPDATE `{$context}s` SET `dyn_translations` = COLUMN_ADD(`dyn_translations`, ?, ?) WHERE `{$context}_id` = ?",
+      "ssd",
+      [ $languageCode, $translation, $id ]
     );
-    // If affected rows is zero the translation was already present and exactly the same as was asked to update.
-    if ($this->affectedRows === -1) {
-      $exception = new DatabaseException("Could not insert nor update {$languageCode} translation for {$context} with ID '{$id}'");
-      Logger::stack($exception);
-      throw $exception;
-    }
     return $this;
   }
 
