@@ -101,7 +101,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @var string
    */
-  protected $type;
+  public $type;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

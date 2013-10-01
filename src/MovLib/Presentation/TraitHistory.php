@@ -18,6 +18,7 @@
 namespace MovLib\Presentation;
 
 use \IntlDateFormatter;
+use \Locale;
 use \MovLib\Data\Users;
 use \MovLib\Presentation\Partial\Lists;
 
@@ -49,17 +50,6 @@ trait TraitHistory {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-  /**
-   * @inheritdoc
-   */
-  protected function init($title) {
-    $this->stylesheets[] = "modules/history.css";
-    return parent::init($title);
-  }
-
-  private function getDiff() {
-    return "DIFFFFF {$_SERVER["REVISION_HASH"]}";
-  }
 
   /**
    * Returns diff between two commits of one file as styled HTML.
@@ -73,7 +63,7 @@ trait TraitHistory {
    * @return string
    *   Returns diff of one file as styled HTML.
    */
-  private function getDiffAsHTML($head, $ref, $filename) {
+  private function diffToHtml($head, $ref, $filename) {
     $diff = $this->historyModel->getDiff($head, $ref, $filename);
 
     $html = "";
@@ -96,9 +86,82 @@ trait TraitHistory {
   }
 
   /**
-   * Helper function to build revision history.
+   * Formats filenames to be userd in page.
+   *
+   * @param array $fileNames
+   *   Numeric array with filenames.
+   * @global \MovLib\Data\I18n
+   * @return array
+   *  Numeric array with formated file names.
    */
-  private function getRevisionHistory() {
+  private function formatFileNames($fileNames) {
+    global $i18n;
+    $c = count($fileNames);
+    for ($i = 0; $i < $c; ++$i) {
+      if ($fileNames[$i][2] === "_") {
+        $fileNames[$i] = ucwords(str_replace("_", " ", $fileNames[$i]));
+        $language = Locale::getDisplayName(substr($fileNames[$i], 0, 2), $i18n->languageCode);
+        $fileNames[$i] = $i18n->t("{0} ($language)", [ substr($fileNames[$i], 3) ]);
+      }
+      $fileNames[$i] = $i18n->t("{0}", [ ucwords(str_replace("_", " ", $fileNames[$i]))]);
+    }
+    return $fileNames;
+  }
+
+  /**
+   * Helper function to build diff page.
+   *
+   * @global \MovLib\Data\I18n
+   * @return string
+   *   Returns HTML of diff page.
+   */
+  private function getDiffContent() {
+    global $i18n;
+    $html =
+      "<div id='revision-diff'>" .
+        $this->a($i18n->r("/{0}/{1}/history", [ $this->historyModel->type, $_SERVER["MOVIE_ID"] ]),
+          $i18n->t("go back"), [
+            "class" => "pull-right"
+          ]
+        ) .
+        "<h2>{$i18n->t("Difference between revisions")}</h2>";
+
+    $changedFiles = $this->historyModel->getChangedFiles($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^1");
+    $formatedFileNames = $this->formatFileNames($changedFiles);
+
+    $c = count($changedFiles);
+    for ($i = 0; $i < $c; ++$i) {
+       $changedFiles[$i] = $formatedFileNames[$i] .
+       "<div class='well'>" .
+         $this->getDiff($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^1", $changedFiles[$i]) .
+       "</div>";
+    }
+
+    $html .=
+        (new Lists($changedFiles, ""))->toHtmlList() .
+      "</div>";
+
+    return $html;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getPageContent() {
+    if(isset($_SERVER["REVISION_HASH"])) {
+      return $this->getDiffContent();
+    }
+    return $this->getRevisionHistoryContent();
+  }
+
+  /**
+   * Helper function to build revision history.
+   *
+   * @global \MovLib\Data\I18n
+   * @return string
+   *   Returns HTML of revision history.
+   */
+  private function getRevisionHistoryContent() {
     global $i18n;
     $commits = $this->historyModel->getLastCommits();
     $userIds = [];
@@ -108,7 +171,8 @@ trait TraitHistory {
       $userIds[] = $commits[$i]["author_id"];
     }
 
-    $users = (new Users())->getUsers($userIds);
+    //$users = (new Users())->getUsers($userIds);
+    $users = [ 1 => ["name" => "bla"], 2 => ["name" => "alb"]];
 
     $html =
       "<div id='revision-history'>" .
@@ -116,17 +180,22 @@ trait TraitHistory {
 
     $revisions = [];
     for ($i = 0; $i < $c; ++$i) {
-      $authorName = $users[$commits[$i]["author_id"]]["name"];
+      $authorName = $users[ $commits[$i]["author_id"] ]["name"];
       $revisions[$i] =
-        "{$i18n->formatDate($commits[$i]["timestamp"], null, IntlDateFormatter::MEDIUM, IntlDateFormatter::MEDIUM)} by " .
+        $i18n->formatDate($commits[$i]["timestamp"], null, IntlDateFormatter::MEDIUM, IntlDateFormatter::MEDIUM) .
+        $i18n->t(" by ") .
         $this->a($i18n->r("/user/{0}", [ $authorName ]), $i18n->t($authorName), [
-            "title" => $i18n->t("Profile of {0}", [ $authorName ])
+          "title" => $i18n->t("Profile of {0}", [ $authorName ])
         ]) .
         ": {$commits[$i]["subject"]} " .
-        $this->a($i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]) . "/diff/{$commits[$i]["hash"]}", $i18n->t("Show diff"));
+        $this->a($i18n->r("/{0}/{1}/diff/{2}", [ $this->historyModel->type, $_SERVER["MOVIE_ID"], $commits[$i]["hash"] ]),
+          $i18n->t("show diff"), [
+            "class" => "pull-right"
+          ]
+        );
 
       $changedFiles = $this->historyModel->getChangedFiles($commits[$i]["hash"], "{$commits[$i]["hash"]}^1");
-      $revisions[$i] .= (new Lists($changedFiles, ""))->toHtmlList();
+      $revisions[$i] .= (new Lists($this->formatFileNames($changedFiles), ""))->toHtmlList();
     }
 
     $html .=
@@ -134,6 +203,14 @@ trait TraitHistory {
       "</div>";
 
     return $html;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function init($title) {
+    $this->stylesheets[] = "modules/history.css";
+    return parent::init($title);
   }
 
 }

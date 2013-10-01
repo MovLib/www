@@ -24,3 +24,13 @@
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
+
+#revision-diff .red {
+  background-color: #b94a48;
+  color: #f2dede;
+}
+
+#revision-diff .green {
+  background-color: #468847;
+  color: #dff0d8;
+}

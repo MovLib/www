@@ -30,35 +30,41 @@ class History extends \MovLib\Presentation\Movie\AbstractMoviePage {
   use \MovLib\Presentation\TraitHistory;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
   /**
    * Instatiate new movie history presentation.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param string $context [optional]
-   *   The directory in which the repository is found.
    */
-  public function __construct($context = "history") {
+  public function __construct() {
     global $i18n;
     $this->initMovie();
-    $this->init($i18n->t("History of {0}", [$this->title ]));
+    $this->init($i18n->t("History of {0}", [ $this->title ]));
 
-    $this->historyModel = new \MovLib\Data\History\Movie($this->model->id, $context);
+    $this->historyModel = new \MovLib\Data\History\Movie($this->model->id);
   }
 
+  private function getDiff($head, $ref, $filename) {
+    $processAsArray = [
+      "titles",
+      "taglines",
+      "links",
+      "trailers",
+      "cast",
+      "crew",
+      "awards",
+      "relationships",
+      "genres",
+      "styles",
+      "languages",
+      "countries",
+      "directors"
+    ];
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    return $this->getRevisionHistory();
+    if (in_array($filename, $processAsArray)) {
+      $methodeName = "get" . ucfirst($filename);
+      return (new \ReflectionMethod($this, $methodeName))->invoke($this, $head, $ref, $filename);
+    }
+    return $this->diffToHtml($head, $ref, $filename);
   }
 
 }

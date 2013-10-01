@@ -140,6 +140,14 @@
   font: 0/0 a;
 }
 
+.pull-right {
+  float: right !important;
+}
+
+.pull-left {
+  float: left !important;
+}
+
 .clear-fix:after,
 .row:after {
   content: "";
