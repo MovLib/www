@@ -150,13 +150,13 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ ^<?= $r("/movie/{0}/history", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_presenter "Movie\\History";
+    set $movlib_presenter "History\\MovieHistory";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
 
   location ~ '^<?= $r("/movie/{0}/diff", [ "([0-9]+)" ]) ?>/([a-f0-9]{40})$' {
-    set $movlib_presenter "Movie\\History";
+    set $movlib_presenter "History\\MovieHistoryDiff";
     set $movlib_movie_id $1;
     set $movlib_revision_hash $2;
     try_files $movlib_cache @php;

@@ -1,3 +1,5 @@
+<?php
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -13,24 +15,45 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Data;
+
+use \MovLib\Exception\DatabaseException;
 
 /**
- * Styles exclusive to the history pages.
+ * Handling of Genres.
  *
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
+class Genre extends \MovLib\Data\Database {
 
-#revision-diff .red {
-  background-color: #b94a48;
-  color: #f2dede;
-}
 
-#revision-diff .green {
-  background-color: #468847;
-  color: #dff0d8;
+  // ------------------------------------------------------------------------------------------------------------------- Static Methods
+
+  /**
+   * Get array with genre names.
+   *
+   * @param array $ids
+   *   Numeric array containing the desired genre IDs.
+   * @return array
+   *   Array containing the genre names with the genre's unique ID as key.
+   */
+  public function getGenreNames(array $ids) {
+    $ids = array_unique($ids);
+    $c = count($ids);
+    $in = rtrim(str_repeat("?,", $c), ",");
+    $result = $this->select("SELECT `name` FROM `genres` WHERE `genre_id` IN ({$in})",
+      str_repeat("d", $c),
+      $ids
+    );
+    $genreNames = null;
+    for ($i = 0; $i < $c; ++$i) {
+      $genreNames[$ids[$i]] = $result[$i]["name"];
+    }
+    return $genreNames;
+  }
+
 }

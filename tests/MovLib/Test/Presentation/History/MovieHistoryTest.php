@@ -18,7 +18,7 @@
 namespace MovLib\Test\Presentation\Movie;
 
 use \MovLib\Data\History\Movie;
-use \MovLib\Presentation\Movie\History;
+use \MovLib\Presentation\History\MovieHistoryDiff;
 
 /**
  * Test the movie history
@@ -29,7 +29,7 @@ use \MovLib\Presentation\Movie\History;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryTest extends \PHPUnit_Framework_TestCase {
+class MovieHistoryTest extends \PHPUnit_Framework_TestCase {
 
   /** @var \mysqli */
   static $db;
@@ -38,6 +38,11 @@ class HistoryTest extends \PHPUnit_Framework_TestCase {
     static::$db = new \mysqli();
     static::$db->real_connect();
     static::$db->select_db($GLOBALS["movlib"]["default_database"]);
+
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
+    if(is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
 
     $_SERVER["MOVIE_ID"] = 2;
 
@@ -64,13 +69,13 @@ class HistoryTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Movie\History::getDiffAsHTML
+   * @covers \MovLib\Presentation\History\MovieHistory::diffToHtml
    */
-  public function testGetDiffAsHTML() {
-    $historyPage = new History("phpunitrepos");
+  public function testdiffToHtml() {
+    $historyPage = new MovieHistoryDiff("phpunitrepos");
     $this->assertEquals(
       "The<span class='red'>foobar</span><span class='green'>bar</span> is<span class='green'>not</span> a lie",
-      get_reflection_method($historyPage, "getDiffAsHTML")->invoke($historyPage, "HEAD", "HEAD^1", "original_title")
+      get_reflection_method($historyPage, "diffToHtml")->invoke($historyPage, "HEAD", "HEAD^1", "original_title")
     );
   }
 

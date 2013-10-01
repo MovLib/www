@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\History;
 
 /**
  * The movie history page.
@@ -26,39 +26,28 @@ namespace MovLib\Presentation\Movie;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Movie\AbstractMoviePage {
-  use \MovLib\Presentation\TraitHistory;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+class MovieHistory extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\History\TraitHistory;
 
 
   /**
    * Instatiate new movie history presentation.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param string $context [optional]
-   *   The directory in which the repository is found.
    */
   public function __construct($context = "history") {
     global $i18n;
     $this->initMovie();
-    $this->init($i18n->t("History of {0}", [$this->title ]));
+    $this->init($i18n->t("History of {0}", [ $this->title ]));
 
     $this->historyModel = new \MovLib\Data\History\Movie($this->model->id, $context);
   }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
 
   /**
    * @inheritdoc
    */
   protected function getPageContent() {
-    return $this->getRevisionHistory();
+    return $this->getRevisionHistoryContent();
   }
 
 }

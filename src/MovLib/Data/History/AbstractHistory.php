@@ -101,7 +101,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @var string
    */
-  protected $type;
+  public $type;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -226,9 +226,30 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
+   * Returns diff between two commits of an serialized array stored in a file.
+   *
+   * @param string $head
+   *   Hash of git commit (newer one).
+   * @param sting $ref
+   *   Hash of git commit (older one).
+   * @param string $filename
+   *   Name of file in repository.
+   * @return array
+   *   Associative array with added (green) and removed (red) items.
+   */
+  public function getArrayDiff($head, $ref, $filename) {
+    $current = unserialize($this->getFileAtRevision($filename, $head));
+    $old = unserialize($this->getFileAtRevision($filename, $ref));
+
+    if (empty($old) === true) {
+      return [ "green" => $current, "red" => null ];
+    }
+    return [ "green" => array_values(array_diff($current, $old)), "red" => array_values(array_diff($old, $current)) ];
+  }
+
+  /**
    * Returns diff between two commits of one file.
    *
-   * @todo Move to presentation.
    * @param string $head
    *   Hash of git commit (newer one).
    * @param sting $ref
@@ -244,7 +265,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     if ($returnVar !== 0) {
       throw new HistoryException("There was an error during 'git diff'");
     }
-
     return $output;
   }
 
@@ -274,6 +294,29 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     exec("cd {$this->path} && git log --format='%H' --max-count=1", $output, $returnVar);
     if ($returnVar !== 0 || !isset($output[0])) {
       throw new HistoryException("There was an error getting last commit hash from repository");
+    }
+    return $output[0];
+  }
+
+  /**
+   * Get the content of a file at a certain revision.
+   *
+   * @param string $filename
+   *   The file we want the content from.
+   * @param string $ref
+   *   Hash of git commit.
+   * @return string
+   *   The content of a file at a certain revision.
+   * @throws \MovLib\Exception\HistoryException
+   */
+  private function getFileAtRevision($filename, $ref) {
+    exec("cd {$this->path} && git show {$ref}:{$filename}", $output, $returnVar);
+    if ($returnVar === 128) {
+      // filename exists on disk, but not in ref return an empty serialized array.
+      return "";
+    }
+    elseif ($returnVar !== 0 || !isset($output[0])) {
+      throw new HistoryException("There was an error getting '{$filename}' at revision '{$ref}'::::{$returnVar}");
     }
     return $output[0];
   }
