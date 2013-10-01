@@ -28,12 +28,7 @@ use \MovLib\Exception\ValidationException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
-  use \MovLib\Presentation\Partial\FormElement\TraitReadonly;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
   /**
    * The select's options.
@@ -42,38 +37,23 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public $options;
 
-  /**
-   * The select's value.
-   *
-   * @var mixed
-   */
-  public $value;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new HTML select form element.
+   * Instantiate new select input element.
    *
    * @param string $id
    *   The form element's global identifier.
-   * @param string $label
-   *   The form element's label content.
    * @param array $options
-   *   The options of this select element as associative array where the key is the value of the option and the value
-   *   the text, e.g.: <pre>array("value" => "text"); // <option value='value'>text</option></pre>
-   * @param string $value [optional]
+   *   The form element's options.
+   * @param mixed $value [optional]
    *   The form element's default value.
-   * @param array $attributes [optional]
-   *   The form element's attributes.
-   * @param array $labelAttributes [optional]
-   *   The form element's label attributes.
    */
-  public function __construct($id, $label, array $options, $value = null, array $attributes = null, array $labelAttributes = null) {
-    parent::__construct($id, $attributes, $label, $labelAttributes);
+  public function __construct($id, array $options, $value = null) {
+    parent::__construct($id, $value);
     $this->options = $options;
-    $this->value   = $value;
   }
 
   /**
@@ -84,12 +64,11 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
     $options = null;
 
     // If a select element only has one option to choose from and is required no default option can be present.
-    if ($this->required === false) {
+    if (isset($this->attributes["aria-required"])) {
       $selected = isset($this->value) ? null : " selected";
       $options .= "<option{$selected} value=''>{$i18n->t("Please Select …")}</option>";
     }
 
-    // Create HTML option for each option.
     foreach ($this->options as $value => $option) {
       $selected = $this->value == $value ? " selected" : null;
       $options .= "<option{$selected} value='{$value}'>{$option}</option>";
@@ -107,10 +86,18 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public function validate() {
     global $i18n;
-    if (!isset($_POST[$this->id]) || !isset($this->options[$_POST[$this->id]])) {
+
+    if (empty($this->value)) {
+      if (isset($this->attributes["aria-required"])) {
+        throw new ValidationException("The highlighted select element is mandatory.");
+      }
+      return $this;
+    }
+
+    if (!isset($this->options[$this->value])) {
       throw new ValidationException($i18n->t("The submitted value {0} is not a valid option.", [ $this->placeholder($this->value) ]));
     }
-    $this->value = $_POST[$this->id];
+
     return $this;
   }
 

@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Gallery;
 
 use \IntlDateFormatter;
-use \MovLib\Data\MovieImage;
+use \MovLib\Data\Image\Movie as MovieImage;
 use \MovLib\Exception\RedirectException;
 use \MovLib\Presentation\Partial\Alert;
 
@@ -85,8 +85,8 @@ trait TraitMovieGallery {
     $desc[] = [ $i18n->t("Dimensions"), $i18n->t("{0} × {1} pixels", [ $details["imageWidth"], $details["imageHeight"] ]) ];
     $desc[] = [ $i18n->t("Size"), msgfmt_format_message($i18n->locale, "{0,number,integer}", [ $details["imageSize"] ]) ];
     $desc[] = [ $i18n->t("User"), $this->a($i18n->r("/user/{0}", [ $details["user"]["name"] ]), $details["user"]["name"]) ];
-    $desc[] = [ $i18n->t("Creation Date"), $i18n->formatDate($details["created"], $session->userTimeZoneID, IntlDateFormatter::MEDIUM) ];
-    $desc[] = [ $i18n->t("Last Update"), $i18n->formatDate($details["changed"], $session->userTimeZoneID, IntlDateFormatter::MEDIUM) ];
+    $desc[] = [ $i18n->t("Creation Date"), $i18n->formatDate($details["created"], $session->userTimeZoneId, IntlDateFormatter::MEDIUM) ];
+    $desc[] = [ $i18n->t("Last Update"), $i18n->formatDate($details["changed"], $session->userTimeZoneId, IntlDateFormatter::MEDIUM) ];
     $desc[] = [ $i18n->t("Source"), $details["source"] ];
     return $desc;
   }

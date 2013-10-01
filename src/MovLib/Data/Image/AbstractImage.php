@@ -15,14 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Image;
 
-use \MovLib\Exception\ErrorException;
+use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Exception\ImageException;
-use \MovLib\Data\User as UserModel;
 
 /**
- * Contains methods and properties for models that contain images.
+ * Default implementation for image's.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -34,330 +33,197 @@ abstract class AbstractImage extends \MovLib\Data\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
-  // Each property has to have the <code>image*</code> prefix to ensure that no name collisions are possible with
-  // properties of the base or child classes.
 
 
   /**
-   * The already translated text for the image's <code>alt</code> attribute.
+   * The image's changed timestamp.
    *
-   * @var string
+   * @var int
    */
-  public $imageAlt;
+  protected $imageChanged;
 
   /**
-   * Name of the directory within the uploads directory on the server.
-   *
-   * @var string
-   */
-  public $imageDirectory;
-
-  /**
-   * Flag indicating if the image exists.
+   * Flag indicating whetever this image exists or not.
    *
    * @var boolean
    */
   public $imageExists = false;
 
   /**
-   * The image's extension (without dot).
+   * The image's filename.
    *
    * @var string
    */
-  public $imageExtension;
+  protected $imageName;
 
   /**
-   * The image's MD5 file hash.
+   * All available image styles for the concrete image.
    *
-   * @var string
+   * @see \MovLib\Data\Image\AbstractImage::setImageStyles()
+   * @var array
    */
-  public $imageHash;
+  protected $imageStyles;
 
   /**
-   * The image's height.
+   * The image's type, one of the <var>IMAGETYPE_*</var> constants.
    *
    * @var int
    */
-  public $imageHeight;
+  protected $imageType;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Private Properties
+
+
 
   /**
-   * The image's maximum file size in Bytes.
-   *
-   * @var int
-   */
-  public $imageMaxFileSize;
-
-  /**
-   * The name of the image.
+   * The relative path within the <code>uploads</code> directory without leading nor trailing slash.
    *
    * @var string
    */
-  public $imageName;
+  private $directory;
 
   /**
-   * The image's absolute path to the original image.
-   *
-   * @var string
-   */
-  public $imagePath;
-
-  /**
-   * The file size of the image in bytes.
-   *
-   * @var int
-   */
-  public $imageSize;
-
-  /**
-   * Associative array containing all image styles and meta data about each image style.
+   * The image's styles.
    *
    * @var array
    */
-  private $imageStyles = [];
+  private $styles;
 
   /**
-   * The model's supported MIME types plus desired extensions.
+   * All available image widths.
+   *
+   * All are direct matches to the CSS grid classes, you should only use these widths for all of your styles, to ensure
+   * that they always match the grid system. There are special occasions where images will not match the grid system,
+   * they need special attention. For an example of this have a look at the stream images of the various image details
+   * presentations.
    *
    * @var array
    */
-  public $imageSupported = [
-    "types" => [ IMAGETYPE_JPEG, IMAGETYPE_PNG ],
-    "mimes" => [ "image/jpeg", "image/png" ],
-    IMAGETYPE_JPEG => "jpg",
-    IMAGETYPE_PNG  => "png",
+  protected $span = [
+     1 => 70,
+     2 => 140,
+     3 => 220,
+     4 => 300,
+     5 => 380,
+     6 => 460,
+     7 => 540,
+     8 => 620,
+     9 => 700,
+    10 => 780,
+    11 => 860,
+    12 => 940,
   ];
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
   /**
-   * The image's width.
+   * Generate all image styles for this concrete image.
    *
-   * @var int
+   * @return this
    */
-  public $imageWidth;
+  abstract public function generateImageStyles($source, $destination);
 
   /**
-   * The image's URI to the original image.
+   * Move uploaded image to persistent storage.
    *
-   * @var string
+   * @param string $source
+   *   Absolute path to the source image.
+   * @param int $type
+   *   PHP's <var>IMAGETYPE_*</var> constant for this image.
+   * @param mixed $style [optional]
+   *   A presentation class can pass along a style that should be generated right away and not delayed. This can be used
+   *   if the subsequent page load needs the image for display. The generation of this style is optimized for speed and
+   *   might look bad, but the file will be overriden by a better quality image as soon as all the delayed methods are
+   *   executed.
+   * @return this
    */
-  public $imageUri;
+  abstract public function moveUploadedImage($source, $type, $style = null);
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
-   * The image's details as associative array.
+   * Sanitizes a filename, replacing whitespace with dashes and transforming the string to lowercase.
    *
-   * @var array
+   * Removes special characters that are illegal in filenames on certain operating systems and special characters
+   * requiring special escaping to manipulate at the command line. Replaces spaces and consecutive dashes with a single
+   * dash. Trims period, dash und underscore from beginning and end of filename.
+   *
+   * @param string $filename
+   *   The filename to be sanitized.
+   * @return string
+   *   The sanitized filename.
    */
-  protected $imageDetails;
+  protected function filename($filename) {
+    return mb_strtolower(trim(preg_replace("/[\s-]+/", "-", str_replace([ "?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", '"', "&", "$", "#", "*", "(", ")", "|", "~" ], "", $filename)), ".-_"));
+  }
 
   /**
-   * The image's license information as associative array.
+   * Instantiate new image.
    *
-   * @var array
-   */
-  private $imageLicense;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Common image styles
-
-
-  /**
-   * Image style for galleries.
-   *
-   * @var int
-   */
-  const IMAGESTYLE_GALLERY = "128x128";
-
-  /**
-   * Image style for the image detail view.
-   *
-   * @var int
-   */
-  const IMAGESTYLE_DETAILS = "600x";
-
-  /**
-   * Image style for the image stream in the image detail view.
-   *
-   * @var int
-   */
-  const IMAGESTYLE_DETAILS_STREAM = "60x60";
-
-  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
-
-
-  /**
-   * Set paths and URIs for image.
-   *
+   * @param string $directory
+   *   The relative path within the <code>uploads</code> directory without leading nor trailing slash of the original
+   *   image.
    * @param string $name
-   *   The name of the image.
+   *   The image's name.
+   * @param string $type
+   *   The image's type, one of the <var>IMAGETYPE_*</var> constants.
    * @param array $styles
-   *   The available image styles.
-   * @return this
+   *   Associative array containing all supported image styles.
    */
-  protected function initImage($name, $styles, $maxFileSize = null) {
-    $this->imageName = $name;
-    $this->imageMaxFileSize = $maxFileSize ?: ini_get("upload_max_filesize");
-    if (isset($this->imageExtension) && isset($this->imageHash)) {
-      $path = "uploads/{$this->imageDirectory}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
-      $this->imagePath = "{$_SERVER["DOCUMENT_ROOT"]}/{$path}";
-      $this->imageUri = "{$GLOBALS["movlib"]["static_domain"]}{$path}";
-      $c = count($styles);
-      for ($i = 0; $i < $c; ++$i) {
-        $styles[$i]->sourcePath = $this->imagePath;
-        $styles[$i]->imageUri = $this->imageUri;
-        $this->imageStyles[$styles[$i]->dimensions] = $styles[$i];
-      }
-      if (is_file($this->imagePath)) {
-        $this->imageExists = true;
-        $this->generateImageStylePaths();
-      }
-    }
-    return $this;
+  protected function initImage($directory, $name, $type, array $styles) {
+    $this->directory   = "uploads/{$directory}";
+    $this->name        = $name;
+    $this->styles      = $styles;
+    $this->type        = $type;
   }
 
   /**
-   * Generate all paths (and URIs) to the several styles this model supports.
-   *
-   * @return this
-   */
-  protected function generateImageStylePaths() {
-    foreach ($this->imageStyles as $style => $styleObj) {
-      $path = "uploads/{$this->imageDirectory}/{$styleObj->dimensions}/{$this->imageName}.{$this->imageHash}.{$this->imageExtension}";
-      $this->imageStyles[$style]->path = "{$_SERVER["DOCUMENT_ROOT"]}/{$path}";
-      $this->imageStyles[$style]->uri = "{$GLOBALS["movlib"]["static_domain"]}{$path}";
-    }
-    return $this;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Public Methods
-
-
-  /**
-   * Generate all image styles for this image.
-   *
-   * @return this
-   */
-  public function generateImageStyles() {
-    foreach ($this->imageStyles as $style => $styleObj) {
-      $styleObj->convert();
-    }
-    return $this;
-  }
-
-  /**
-   * Get width, height and URI of specified image style.
+   * Get image attributes.
    *
    * @param string $style
-   *   The desired image style's name.
+   *   The desired image style's name, use the class constants of your concrete image.
+   * @param array $attributes
+   *   The (attributes) array containing other data to merge with the image style's attributes.
    * @return array
    *   Associative array containing all image information.
    */
-  public function getImageStyle($style) {
-    if (!isset($this->imageStyles[$style]->width)) {
-      if (!is_file($this->imageStyles[$style]->path)) {
-        $this->generateImageStyles();
-      }
-      list($this->imageStyles[$style]->width, $this->imageStyles[$style]->height) = getimagesize($this->imageStyles[$style]->path);
+  public function getImageStyle($style, array $attributes) {
+    if (!isset($this->styles[$style])) {
+      $this->styles = unserialize($this->styles);
     }
-    return $this->imageStyles[$style];
-  }
-
-
-  /**
-   * Retrieve all the relevant image details including license and user information.
-   *
-   * @return array
-   *   Associative array containing the image details.
-   */
-  public function getImageDetails() {
-    if ($this->imageDetails === null) {
-      foreach ([ "description", "imageWidth", "imageHeight", "imageSize", "created", "changed", "upvotes", "source" ] as $prop) {
-        $this->imageDetails[$prop] = $this->{$prop};
-      }
-      $this->imageDetails["license"] = $this->getLicense($this->licenseId);
-      $this->imageDetails["user"] = (array) (new UserModel(UserModel::FROM_ID, $this->userId));
-    }
-    return $this->imageDetails;
+    return array_merge($attributes, $this->styles[$style]);
   }
 
   /**
-   * Retrieve the license information from the database.
+   * Move uploaded image to persistent storage.
    *
-   * @global \MovLib\Model\I18nModel $i18n
-   * @param int $licenseId
-   *   The license's unique ID.
-   * @return array
-   *   The license information as associative array.
-   */
-  public function getLicense($licenseId) {
-    global $i18n;
-    if (!$this->imageLicense) {
-      // Please note, that an image must have a license. Therefore the direct index access is possible.
-      $this->imageLicense = $this->select(
-        "SELECT
-          `name`,
-          `description`,
-          COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`,
-          COLUMN_GET(`dyn_descriptions`, '{$i18n->languageCode}' AS BINARY) AS `description_localized`,
-          `url`,
-          `abbr`,
-          `icon_extension`,
-          `icon_hash`,
-          `admin`
-        FROM `licenses`
-        WHERE `license_id` = ? LIMIT 1"
-        , "i", [ $licenseId ]
-      )[0];
-      $this->imageLicense["name"] = $this->imageLicense["name_localized"] ?: $this->imageLicense["name"];
-      $this->imageLicense["description"] = $this->imageLicense["description_localized"] ?: $this->imageLicense["description"];
-      unset($this->imageLicense["name_localized"]);
-      unset($this->imageLicense["description_localized"]);
-    }
-    return $this->imageLicense;
-  }
-
-  /**
-   * Validate uploaded image and move to storage.
-   *
-   * @param string $formElementName
-   *   The value of the <code>name</code>-attribute of the <code><file></code>-element of the form.
-   * @return this
-   * @throws \MovLib\Exception\ImageException
-   */
-  public function uploadImage($formElementName) {
-    try {
-      list($width, $height) = getimagesize($_FILES[$formElementName]["tmp_name"]);
-      $ext = $this->imageSupported[$_FILES[$formElementName]["type"]];
-      $hash = filemtime($_FILES[$formElementName]["tmp_name"]);
-      $path = "{$_SERVER["DOCUMENT_ROOT"]}/uploads/{$this->imageDirectory}/{$this->imageName}.{$hash}.{$ext}";
-      // Remove any meta data from the original image before saving to storage.
-      exec("convert {$_FILES[$formElementName]["tmp_name"]} -strip {$path}");
-    } catch (ErrorException $e) {
-      throw new ImageException("Error processing uploaded file.", $e);
-    }
-    if ($this->imageExists === true) {
-      $this->deleteImage();
-    }
-    $this->imageExists    = true;
-    $this->imageExtension = $ext;
-    $this->imageHash      = $hash;
-    $this->imageHeight    = $height;
-    $this->imagePath      = $path;
-    $this->imageWidth     = $width;
-    $this->imageUri       = "{$GLOBALS["movlib"]["static_domain"]}uploads/{$this->imageDirectory}/{$this->imageName}.{$hash}.{$ext}";
-    return $this->generateImageStylePaths()->generateImageStyles();
-  }
-
-  /**
-   * Deletes this image and all its styles from storage.
-   *
+   * @param string $source
+   *   Absolute path to the source image.
+   * @param int $type
+   *   PHP's <var>IMAGETYPE_*</var> constant for this image.
+   * @param string $destination
+   *   The image's destination path.
+   * @param mixed $style [optional]
+   *   A presentation class can pass along a style that should be generated right away and not delayed. This can be used
+   *   if the subsequent page load needs the image for display. The generation of this style is optimized for speed and
+   *   might look bad, but the file will be overriden by a better quality image as soon as all the delayed methods are
+   *   executed.
    * @return this
    */
-  public function deleteImage() {
-    unlink($this->imagePath);
-    foreach ($this->imageStyles as $style => $styleObj) {
-      unlink($styleObj->path);
+  protected function moveUploaded($source, $type, $destination, $style = null) {
+    $this->type = $type;
+    if (!isset($this->imageStyles)) {
+      $this->setImageStyles();
     }
-    $this->imageExists = false;
+    if (isset($style)) {
+      exec("convert {$source} thumbnail {$this->imageStyles[$style]} {$destination} && chmod 777 {$destination}");
+    }
+    DelayedMethodCalls::stack($this, "generateImageStyles", [ $source, $destination ]);
     return $this;
   }
 

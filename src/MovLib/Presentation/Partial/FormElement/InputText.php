@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Presentation\Validation\PlainText;
-
 /**
  * HTML input type text form element.
  *
@@ -34,71 +32,47 @@ use \MovLib\Presentation\Validation\PlainText;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
-  use \MovLib\Presentation\Partial\FormElement\TraitReadonly;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The form element's value.
-   *
-   * @var null|string
-   */
-  public $value;
-
-  /**
-   * Instance of the validation class that should be used for validation.
-   *
-   * @var \MovLib\Presentation\Validation\InterfaceValidation
-   */
-  public $validator;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new input form element of type text.
-   *
-   * @param string $id
-   *   The form element's global identifier.
-   * @param string $label
-   *   The form element's label content.
-   * @param string $value [optional]
-   *   The form element's default value.
-   * @param array $attributes [optional]
-   *   The form element's attributes.
-   * @param array $labelAttributes [optional]
-   *   The form element's label attributes.
-   */
-  public function __construct($id, $label, $value = null, array $attributes = null, array $labelAttributes = null) {
-    parent::__construct($id, $attributes, $label, $labelAttributes);
-    $this->attributes["type"] = "text";
-    $this->value = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
-  }
+class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
   /**
    * @inheritdoc
    */
   public function __toString() {
-    // No need to set the value if the value is empty or NULL.
-    if (!empty($this->value)) {
-      $this->attributes["value"] = $this->value;
-    }
-    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+    $this->attributes["type"] = "text"; // We need it for our CSS styles!
+    return parent::__toString();
   }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * @inheritdoc
    */
   public function validate() {
-    $this->value = empty($this->validator) ? (new PlainText($this->value))->validate() : $this->validator->set($this->value)->validate();
+    global $i18n;
+
+    if (empty($this->value)) {
+      if (isset($this->attributes["aria-required"])) {
+        throw new ValidationException("The highlighted text field is mandatory.");
+      }
+      return $this;
+    }
+
+    // Validate UTF-8 encoding.
+    if (preg_match("//u", $this->value) === false) {
+      throw new ValidationException($i18n->t("The text contains invalid UTF-8 characters."));
+    }
+
+    // Validate NFC form.
+    if ($this->value != Normalizer::normalize($this->value)) {
+      throw new ValidationException($i18n->t("The text contains illegal UTF-8 characters (NFC form)."));
+    }
+
+    // Validate low ASCII characters.
+    if ($this->value != filter_var($this->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_REQUIRE_SCALAR)) {
+      throw new ValidationException($i18n->t("The text contains illegal low ASCII characters."));
+    }
+
+    // Collapse all white space characters and trim the string at beginning and end (no error for this).
+    $this->value = trim($this->collapseWhitespace($this->value));
+
     return $this;
   }
 

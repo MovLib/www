@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Image;
 
 use \MovLib\Data\Delayed\Logger;
 use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
@@ -30,33 +30,39 @@ use \MovLib\View\ImageStyle\ResizeImageStyle;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieImage extends \MovLib\Data\AbstractImage {
-
+class Movie extends \MovLib\Data\Image\AbstractImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
   /**
-   * Small image style (e.g. for movie listings).
+   * Image style for span 1 elements.
    *
    * @var int
    */
-  const IMAGESTYLE_SMALL = "75x75";
+  const IMAGESTYLE_SPAN_1 = 70;
 
   /**
-   * Large image style with fixed width (e.g. for movie page).
+   * Image style for span 2 elements.
    *
    * @var int
    */
-  const IMAGESTYLE_LARGE_FIXED_WIDTH = "220x";
+  const IMAGESTYLE_SPAN_2 = 140;
 
   /**
-   * Huge image style with fixed width (e.g. for the poster page).
+   * Image style for span 3 elements.
    *
    * @var int
    */
-  const IMAGESTYLE_HUGE_FIXED_WIDTH = "700x";
+  const IMAGESTYLE_SPAN_3 = 220;
+
+  /**
+   * Image style for span 9 elements.
+   *
+   * @var int
+   */
+  const IMAGESTYLE_SPAN_9 = 700;
 
   /**
    * The image type for posters.
@@ -79,48 +85,16 @@ class MovieImage extends \MovLib\Data\AbstractImage {
    */
   const IMAGETYPE_PHOTO = 2;
 
-  /**
-   * Associative array to resolve image directories with the type constants.
-   *
-   * @var array
-   */
-  public static $imageDirectories = [
-    self::IMAGETYPE_POSTER    => "posters",
-    self::IMAGETYPE_LOBBYCARD => "lobby-cards",
-    self::IMAGETYPE_PHOTO     => "photos",
-  ];
-
 
   // ------------------------------------------------------------------------------------------------------------------- Table properties
 
 
   /**
-   * The movie's ID this image belongs to.
+   * The timestamp this image was last modified.
    *
    * @var int
    */
-  public $id;
-
-  /**
-   * The ID of the image within the movie's images.
-   *
-   * @var int
-   */
-  public $imageId;
-
-  /**
-   * The image's unique user ID.
-   *
-   * @var int
-   */
-  public $userId;
-
-  /**
-   * The image's license ID.
-   *
-   * @var int
-   */
-  public $licenseId;
+  public $changed;
 
   /**
    * The country this poster belongs to as an associative array.
@@ -137,25 +111,50 @@ class MovieImage extends \MovLib\Data\AbstractImage {
   public $created;
 
   /**
-   * The timestamp this image was last modified.
-   *
-   * @var int
-   */
-  public $changed;
-
-  /**
-   * The overall count of upvotes for this image.
-   *
-   * @var int
-   */
-  public $upvotes;
-
-  /**
    * The image's description.
    *
    * @var string
    */
   public $description;
+
+  /**
+   * The movie's ID this image belongs to.
+   *
+   * @var int
+   */
+  public $id;
+
+  /**
+   * Associative array to resolve image directories with the type constants.
+   *
+   * @var array
+   */
+  public static $imageDirectories = [
+    self::IMAGETYPE_POSTER    => "posters",
+    self::IMAGETYPE_LOBBYCARD => "lobby-cards",
+    self::IMAGETYPE_PHOTO     => "photos",
+  ];
+
+  /**
+   * The ID of the image within the movie's images.
+   *
+   * @var int
+   */
+  public $imageId;
+
+  /**
+   * The image's license ID.
+   *
+   * @var int
+   */
+  public $licenseId;
+
+  /**
+   * The image's source.
+   *
+   * @var string
+   */
+  public $source;
 
   /**
    * The image's type (one of the <code>IMAGETYPE_*</code> constants).
@@ -165,11 +164,18 @@ class MovieImage extends \MovLib\Data\AbstractImage {
   public $type;
 
   /**
-   * The image's source.
+   * The overall count of upvotes for this image.
    *
-   * @var string
+   * @var int
    */
-  public $source;
+  public $upvotes;
+
+  /**
+   * The image's unique user ID.
+   *
+   * @var int
+   */
+  public $userId;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -256,9 +262,9 @@ class MovieImage extends \MovLib\Data\AbstractImage {
         }
 
         $this->initImage($this->imageName, [
-          new ResizeImageStyle(self::IMAGESTYLE_SMALL),
-          new ResizeImageStyle(self::IMAGESTYLE_LARGE_FIXED_WIDTH),
-          new ResizeImageStyle(self::IMAGESTYLE_HUGE_FIXED_WIDTH),
+          new ResizeImageStyle(self::IMAGESTYLE_SPAN_1),
+          new ResizeImageStyle(self::IMAGESTYLE_SPAN_3),
+          new ResizeImageStyle(self::IMAGESTYLE_SPAN_9),
           new ResizeImageStyle(self::IMAGESTYLE_GALLERY),
           new ResizeImageStyle(self::IMAGESTYLE_DETAILS),
           new ResizeCropCenterImageStyle(self::IMAGESTYLE_DETAILS_STREAM),

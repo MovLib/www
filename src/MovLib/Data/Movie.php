@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Data\MovieImage;
+use \MovLib\Data\Image\Movie as MovieImage;
 use \MovLib\Exception\MovieException;
 
 /**

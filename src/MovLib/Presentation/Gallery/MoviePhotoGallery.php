@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Gallery;
 
-use \MovLib\Data\MovieImage;
+use \MovLib\Data\Image\Movie as MovieImage;
 use \MovLib\Data\MovieImages;
 use \MovLib\View\ImageStyle\ResizeImageStyle;
 

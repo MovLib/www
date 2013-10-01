@@ -27,7 +27,6 @@ use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
-use \MovLib\Presentation\Validation\Username;
 
 /**
  * User registration presentation.
@@ -103,7 +102,7 @@ class Registration extends \MovLib\Presentation\Page {
       "placeholder" => $i18n->t("Enter your desired username"),
     ]);
     $this->username->required();
-    $this->username->validator = new Username($this->user);
+    $this->username->validation = new Username($this->user);
 
     $this->form = new Form($this, [ $this->email, $this->username ]);
     $this->form->attributes["action"] = $_SERVER["PATH_INFO"];

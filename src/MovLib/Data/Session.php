@@ -128,7 +128,7 @@ class Session extends \MovLib\Data\Database {
    *
    * @var string
    */
-  public $userTimeZoneID;
+  public $userTimeZoneId;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -178,7 +178,7 @@ class Session extends \MovLib\Data\Database {
         $this->authentication = $_SESSION["authentication"];
         $this->userId         = $_SESSION["user_id"];
         $this->userName       = $_SESSION["user_name"];
-        $this->userTimeZoneID = $_SESSION["user_time_zone_id"];
+        $this->userTimeZoneId = $_SESSION["user_time_zone_id"];
         if ($this->authentication + 86400 < time()) {
           $this->regenerate();
         }
@@ -398,7 +398,7 @@ class Session extends \MovLib\Data\Database {
       }
       $this->userId          = $_SESSION["user_id"]           = $userId;
       $this->userName        = $_SESSION["user_name"]         = $result[0]["name"];
-      $this->userTimeZoneID  = $_SESSION["user_time_zone_id"] = $result[0]["time_zone_id"];
+      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = $result[0]["time_zone_id"];
       $this->isAuthenticated = true;
     }
     // Initialize this session for an anonymous user.
@@ -414,7 +414,7 @@ class Session extends \MovLib\Data\Database {
       $this->userId          = $_SESSION["user_id"]           = $userId;
       $this->userName        = $_SESSION["user_name"]         = $this->ipAddress;
       // @todo Guess timezone with JavaScript: https://bitbucket.org/pellepim/jstimezonedetect
-      $this->userTimeZoneID  = $_SESSION["user_time_zone_id"] = ini_get("date.timezone");
+      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = ini_get("date.timezone");
       $this->isAuthenticated = false; // Just making sure
     }
 

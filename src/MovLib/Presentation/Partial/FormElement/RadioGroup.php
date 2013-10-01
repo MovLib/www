@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Exception\ValidationException;
-use \MovLib\Presentation\Partial\Help;
 
 /**
  * Fieldset with multiple input radio form elements.
@@ -31,18 +30,7 @@ use \MovLib\Presentation\Partial\Help;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RadioGroup extends \MovLib\Presentation\AbstractBase {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The fieldset's attributes.
-   *
-   * @var array
-   */
-  public $attributes;
+class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
   /**
    * The radios in the group.
@@ -52,86 +40,19 @@ class RadioGroup extends \MovLib\Presentation\AbstractBase {
   protected $choices;
 
   /**
-   * Flag indicating if this group is disabled or not.
-   *
-   * @var boolean
-   */
-  public $disabled = false;
-
-  /**
-   * The group's help.
-   *
-   * @see AbstractFormElement::setHelp
-   * @var null|\MovLib\Presentation\Partial\Help
-   */
-  protected $help;
-
-  /**
-   * The group's global identifier.
-   *
-   * The ID is used for the ID and name attributes of the element.
-   *
-   * @var string
-   */
-  public $id;
-
-  /**
-   * The fieldset's legend content.
-   *
-   * @var string
-   */
-  public $legend;
-
-  /**
-   * The fieldset's legend attributes.
-   *
-   * @var array
-   */
-  public $legendAttributes;
-
-  /**
-   * Flag indicating if this element is required or not.
-   *
-   * Always <code>TRUE</code> for a groups only consisting of radio inputs. While the ARIA required attribute has to be
-   * set to false, this has to be set to <code>TRUE</code>. Otherwise the controlling form wouldn't call the validate
-   * method. This implementation currently doesn't support radio groups without values!
-   *
-   * @var boolean
-   */
-  public $required = true;
-
-  /**
-   * The fieldset's value.
-   *
-   * @var mixed
-   */
-  public $value;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
    * Instantiate new fieldset with input form elements of type radio.
    *
    * @param string $id
    *   The fieldset's global identifier.
-   * @param string $legend
-   *   The fieldset's legend content.
    * @param mixed $value
    *   The fieldset's initial value.
    * @param array $choices
    *   Associative array containing the value and label of each radio element, example:
    *   <code>[ "f" => $i18n->t("Female"), "m" => $i18n->t("Male") ]</code>
-   * @param array $attributes [optional]
-   *   Additional attributes for the fieldset. The <code>"id"</code> is always set to <var>$id</var>.
-   * @param array $legendAttributes [optional]
-   *   Additional attributes for the legend. This element has no default attributes.
    */
-  public function __construct($id, $legend, $value, array $choices, array $attributes = null, array $legendAttributes = null) {
+  public function __construct($id, $value, array $choices) {
     $this->id = $id;
-    $this->legend = $legend;
-    $this->value = $value;
+    $this->value = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
     foreach ($choices as $choiceValue => $choiceLabel) {
       $this->choices[$choiceValue] = [
         "attributes" => [
@@ -145,99 +66,29 @@ class RadioGroup extends \MovLib\Presentation\AbstractBase {
         "label" => $choiceLabel,
       ];
     }
-    if (isset($_POST[$this->id]) && array_key_exists($_POST[$this->id], $this->choices) === true) {
-      $this->choices[$_POST[$this->id]]["attributes"][] = "checked";
-      $this->value = $_POST[$this->id];
-    }
-    else {
+    if (isset($this->choices[$this->value])) {
       $this->choices[$this->value]["attributes"][] = "checked";
     }
-    $this->attributes = $attributes;
-    $this->attributes["id"] = $id;
-    $this->attributes["aria-expanded"] = "true";
-    $this->attributes["aria-required"] = "false"; // @todo Do we have support radiogroups without default values?
-    $this->attributes["role"] = "radiogroup";
-    $this->legendAttributes = $legendAttributes;
   }
 
   /**
-   * Get string representation of this fieldset and it's form elements.
-   *
-   * @return string
-   *   String representation of this fieldset and it's form elements.
+   * @inheritdoc
    */
   public function __toString() {
+    $this->attributes["id"] = $this->id;
+    $this->attributes["aria-expanded"] = "true";
+    $this->attributes["aria-required"] = "false"; // @todo Do we need support for radio groups without default values?
+    $this->attributes["role"] = "radiogroup";
     $choices = null;
     foreach ($this->choices as $value => $choice) {
       $choices .= "<label class='radio inline'><input{$this->expandTagAttributes($choice["attributes"])}>{$choice["label"]}</label>";
     }
-    return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend{$this->expandTagAttributes($this->legendAttributes)}>{$this->legend}</legend>{$choices}</fieldset>";
+    return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</legend>{$choices}</fieldset>";
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
-   * Disable this form element.
-   *
-   * Indicates to the browser that this form element is disabled and not available for interaction. No <code>click</code>
-   * events will be fired by this element and its value won't be submitted with the form. Therefor disabled elements are
-   * automatically <b>not</b> validated.
-   *
-   * @return this
-   */
-  public function disable() {
-    $this->attributes["aria-disabled"] = "true";
-    $this->attributes[] = "disabled";
-    $this->disabled = true;
-    return $this;
-  }
-
-  /**
-   * Mark this form element as invalid.
-   *
-   * There is no attribute <code>invalid</code> in HTML, browsers apply the CSS pseudo-class <code>:invalid</code> on
-   * elements that fail their own validations. We use the ARIA attribute <code>aria-invalid</code> and set it to
-   * <code>true</code> to achieve the same goal. For easy CSS selection the class <code>invalid</code> is applied as
-   * well.
-   *
-   * @return this;
-   */
-  public function invalid() {
-    $this->addClass("invalid", $this->attributes);
-    $this->attributes["aria-invalid"] = "true";
-    return $this;
-  }
-
-  /**
-   * Set input's help.
-   *
-   * Automatically instantiates <code>\MovLib\Presentation\Partial\Help</code> and sets the appropriate ARIA attribute
-   * on this input element.
-   *
-   * @todo Is it a good idea to add the ARIA describeby attribute to each radio input?
-   * @param string $content
-   *   The translated help content.
-   * @param boolean $popup [optional]
-   *   Defines the rendering type, defaults to rendering as popup.
-   * @return this
-   */
-  public function setHelp($content, $popup = true) {
-    $this->attributes["aria-describedby"] = "{$this->id}-help";
-    foreach ($this->choices as $value => $choice) {
-      $this->choices[$value]["attributes"]["aria-describedby"] = "{$this->id}-help";
-    }
-    $this->help = new Help($content, $this->id, $popup);
-    return $this;
-  }
-
-  /**
-   * Validate the user submitted data.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return this
-   * @throws \MovLib\Exception\ValidationException
+   * @inheritdoc
    */
   public function validate() {
     global $i18n;

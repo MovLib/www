@@ -33,6 +33,10 @@ use \MovLib\Presentation\Partial\Lists;
  */
 trait TraitImageDetails {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The already translated route for edit actions.
    *
@@ -86,6 +90,10 @@ trait TraitImageDetails {
    * @var \MovLib\Data\AbstractImages
    */
   protected $streamImages;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /*
    * Get the image details.

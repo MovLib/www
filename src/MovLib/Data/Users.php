@@ -41,7 +41,7 @@ class Users extends \MovLib\Data\Database {
     $c = count($userIds);
     $in = rtrim(str_repeat("?,", $c), ",");
     $result = $this->select(
-      "SELECT `user_id` AS `id`, `name`, `avatar_name`, `avatar_extension`, `avatar_changed` FROM `users` WHERE `user_id` IN ({$in})",
+      "SELECT `user_id` AS `id`, `name` FROM `users` WHERE `user_id` IN ({$in})",
       str_repeat("d", $c),
       $userIds
     );

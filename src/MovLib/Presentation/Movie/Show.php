@@ -17,9 +17,8 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\MovieImage;
+use \MovLib\Data\Image\Movie as MovieImage;
 use \MovLib\Data\Rating;
-use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Lists;
 
 /**
@@ -69,7 +68,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->headingBefore = "<div class='row'><div class='span span--9' id='movie-show__header'>";
     $this->headingAfter = "{$this->getHeaderAdditions()}</div>{$this->getImage(
       $displayPoster,
-      MovieImage::IMAGESTYLE_LARGE_FIXED_WIDTH,
+      MovieImage::IMAGESTYLE_SPAN_3,
       [ "alt" => "{$this->title} {$displayPoster->imageAlt}" ],
       $i18n->r("/movie/{0}/posters", [ $this->model->id ]),
       [ "class" => "span span--3", "id" => "movie-show__header__poster" ]
