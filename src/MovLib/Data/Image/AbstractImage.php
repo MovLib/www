@@ -17,9 +17,6 @@
  */
 namespace MovLib\Data\Image;
 
-use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-use \MovLib\Exception\ImageException;
-
 /**
  * Default implementation for image's.
  *
@@ -34,13 +31,17 @@ abstract class AbstractImage extends \MovLib\Data\Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+  protected $imageName;
 
-  /**
-   * The image's changed timestamp.
-   *
-   * @var int
-   */
+  protected $imageWidth;
+
+  protected $imageHeight;
+
+  protected $imageExtension;
+
   protected $imageChanged;
+
+  protected $imageCreated;
 
   /**
    * Flag indicating whetever this image exists or not.
@@ -50,45 +51,15 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   public $imageExists = false;
 
   /**
-   * The image's filename.
+   * All available styles information.
    *
-   * @var string
-   */
-  protected $imageName;
-
-  /**
-   * All available image styles for the concrete image.
-   *
-   * @see \MovLib\Data\Image\AbstractImage::setImageStyles()
    * @var array
    */
   protected $imageStyles;
 
-  /**
-   * The image's type, one of the <var>IMAGETYPE_*</var> constants.
-   *
-   * @var int
-   */
-  protected $imageType;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Private Properties
 
-
-
-  /**
-   * The relative path within the <code>uploads</code> directory without leading nor trailing slash.
-   *
-   * @var string
-   */
-  private $directory;
-
-  /**
-   * The image's styles.
-   *
-   * @var array
-   */
-  private $styles;
 
   /**
    * All available image widths.
@@ -120,31 +91,45 @@ abstract class AbstractImage extends \MovLib\Data\Database {
 
 
   /**
-   * Generate all image styles for this concrete image.
-   *
-   * @return this
-   */
-  abstract public function generateImageStyles($source, $destination);
-
-  /**
-   * Move uploaded image to persistent storage.
+   * Generate a single image style.
    *
    * @param string $source
-   *   Absolute path to the source image.
+   *   The absolute path to the source image.
    * @param int $type
-   *   PHP's <var>IMAGETYPE_*</var> constant for this image.
-   * @param mixed $style [optional]
-   *   A presentation class can pass along a style that should be generated right away and not delayed. This can be used
-   *   if the subsequent page load needs the image for display. The generation of this style is optimized for speed and
-   *   might look bad, but the file will be overriden by a better quality image as soon as all the delayed methods are
-   *   executed.
+   *   The PHP <var>IMAGETYPE_*</var> constant.
    * @return this
    */
-  abstract public function moveUploadedImage($source, $type, $style = null);
+//  abstract public function generateImageStyle($source, $type);
+
+  /**
+   * Move the uploaded image to it's persistent storage and generate all image styles.
+   *
+   * @param string $source
+   *   The absolute path to the source image.
+   * @param int $type
+   *   The PHP <var>IMAGETYPE_*</var> constant.
+   * @param int $width
+   *   The source image's width.
+   * @param int $height
+   *   The source image's height.
+   * @return this
+   */
+//  abstract public function moveUploadedImageAndGenerateStyles($source, $type, $width, $height);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  protected function convert($source, $style, $width, $height = null, $crop = false) {
+    if ($crop === true) {
+      $args = "'{$width}x{$height}>^' -gravity 'Center' -crop '{$width}x{$height}+0+0' +repage";
+    }
+    else {
+      $args = "'{$width}x{$height}>'";
+    }
+    exec("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 75 -resize {$args} '{$this->getImagePath($style)}'");
+    return $this;
+  }
 
   /**
    * Sanitizes a filename, replacing whitespace with dashes and transforming the string to lowercase.
@@ -162,69 +147,31 @@ abstract class AbstractImage extends \MovLib\Data\Database {
     return mb_strtolower(trim(preg_replace("/[\s-]+/", "-", str_replace([ "?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", '"', "&", "$", "#", "*", "(", ")", "|", "~" ], "", $filename)), ".-_"));
   }
 
-  /**
-   * Instantiate new image.
-   *
-   * @param string $directory
-   *   The relative path within the <code>uploads</code> directory without leading nor trailing slash of the original
-   *   image.
-   * @param string $name
-   *   The image's name.
-   * @param string $type
-   *   The image's type, one of the <var>IMAGETYPE_*</var> constants.
-   * @param array $styles
-   *   Associative array containing all supported image styles.
-   */
-  protected function initImage($directory, $name, $type, array $styles) {
-    $this->directory   = "uploads/{$directory}";
-    $this->name        = $name;
-    $this->styles      = $styles;
-    $this->type        = $type;
+  public function getImageStyleAttributes($style, &$attributes) {
+    if (!is_array($this->imageStyles)) {
+      $this->imageStyles = unserialize($this->imageStyles);
+    }
+    return ($attributes += $this->imageStyles[$style]);
   }
 
-  /**
-   * Get image attributes.
-   *
-   * @param string $style
-   *   The desired image style's name, use the class constants of your concrete image.
-   * @param array $attributes
-   *   The (attributes) array containing other data to merge with the image style's attributes.
-   * @return array
-   *   Associative array containing all image information.
-   */
-  public function getImageStyle($style, array $attributes) {
-    if (!isset($this->styles[$style])) {
-      $this->styles = unserialize($this->styles);
-    }
-    return array_merge($attributes, $this->styles[$style]);
+  protected function getImagePath($style = null) {
+    return $this->getImageURI("{$_SERVER["DOCUMENT_ROOT"]}/uploads/", $style);
   }
 
-  /**
-   * Move uploaded image to persistent storage.
-   *
-   * @param string $source
-   *   Absolute path to the source image.
-   * @param int $type
-   *   PHP's <var>IMAGETYPE_*</var> constant for this image.
-   * @param string $destination
-   *   The image's destination path.
-   * @param mixed $style [optional]
-   *   A presentation class can pass along a style that should be generated right away and not delayed. This can be used
-   *   if the subsequent page load needs the image for display. The generation of this style is optimized for speed and
-   *   might look bad, but the file will be overriden by a better quality image as soon as all the delayed methods are
-   *   executed.
-   * @return this
-   */
-  protected function moveUploaded($source, $type, $destination, $style = null) {
-    $this->type = $type;
-    if (!isset($this->imageStyles)) {
-      $this->setImageStyles();
-    }
-    if (isset($style)) {
-      exec("convert {$source} thumbnail {$this->imageStyles[$style]} {$destination} && chmod 777 {$destination}");
-    }
-    DelayedMethodCalls::stack($this, "generateImageStyles", [ $source, $destination ]);
-    return $this;
+  protected function getImageSrc($style = null) {
+    return $this->getImageURI($GLOBALS["movlib"]["static_domain"], $style);
   }
+
+  private function getImageURI($root, $style = null) {
+    if ($style) {
+      $style = ".{$style}";
+    }
+    return "{$root}{$this->imageDirectory}/{$this->imageName}{$style}{$this->imageExtension}";
+  }
+
+//  protected function moveUploadedImage($inputImage) {
+//    exec(escapeshellcmd("convert {$inputImage->path} -strip +repage {$this->getImageURI("{$_SERVER["DOCUMENT_ROOT"]}/uplodas/originals/")} <&- 1<&- 2<&-"));
+//    return $this;
+//  }
 
 }

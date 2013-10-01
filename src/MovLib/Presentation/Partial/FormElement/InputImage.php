@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ValidationException;
 
 /**
@@ -32,6 +33,17 @@ use \MovLib\Exception\ValidationException;
  */
 class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The image instance responsible for storing this image.
+   *
+   * @var \MovLib\Data\Image\AbstractImage
+   */
+  protected $image;
+
   /**
    * Maximum file size.
    *
@@ -41,31 +53,23 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    */
   public $maximumFileSize = 15728640;
 
-  public $path;
 
-  public $width;
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
-  public $height;
-
-  public $type;
-
-  public $size;
-
-  protected $error;
 
   /**
    * Instantiate new input form element of type file.
    *
    * @param string $id
    *   The form element's global unique identifier.
+   * @param \MovLib\Data\Image\AbstractImage $concreteImage
+   *   The abstract image instance that's responsible for this image.
+   * @param int $style [optional]
+   *   An image style that should be generated right away and not delayed.
    */
-  public function __construct($id) {
+  public function __construct($id, $concreteImage) {
     parent::__construct($id);
-    if (isset($_FILES[$this->id])) {
-      $this->error = $_FILES[$this->id]["error"];
-      $this->path  = $_FILES[$this->id]["tmp_name"];
-      $this->size  = $_FILES[$this->id]["size"];
-    }
+    $this->image = $concreteImage;
   }
 
   /**
@@ -75,8 +79,17 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     $this->attributes["accept"]           = "image/jpeg, image/png";
     $this->attributes["data-maxfilesize"] = $this->maximumFileSize;
     $this->attributes["type"]             = "file";
+    foreach ([ "imageMaxHeight" => "maxheight", "imageMaxWidth" => "maxwidth", "imageMinHeight" => "minheight", "imageMinWidth" => "minwidth" ] as $constrain => $attr) {
+      if (isset($this->image->{$constrain})) {
+        $this->attributes["data-{$attr}"] = $this->image->{$constrain};
+      }
+    }
     return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc
@@ -84,27 +97,58 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   public function validate(){
     global $i18n;
 
-    if ($this->error === UPLOAD_ERR_NO_FILE) {
+    // Check if file is present, if not check if it is required.
+    if (empty($_FILES[$this->id]) || $_FILES[$this->id]["error"] === UPLOAD_ERR_NO_FILE) {
       if (isset($this->attributes["aria-required"])) {
         throw new ValidationException($i18n->t("The highlighted image field is required."));
       }
       return $this;
     }
 
-    if ($this->size > $this->maximumFileSize) {
+    // Make sure the file isn't too large.
+    if ($_FILES[$this->id]["size"] > $this->maximumFileSize) {
       throw new ValidationException($i18n->t("The image is too large: it must be {0,number} {1} or less.", $this->formatBytes($this->maximumFileSize)));
     }
 
+    // Gather meta information about the uploaded image, getimagesize() will fail if this isn't a valid image.
     try {
-      list($this->width, $this->height, $this->type) = getimagesize($this->path);
+      list($width, $height, $type) = getimagesize($_FILES[$this->id]["tmp_name"]);
+      assert($width > 0);
+      assert($height > 0);
+      assert($type === IMAGETYPE_JPEG || $type === IMAGETYPE_PNG);
+    }
+    catch (ErrorException $e) {
+      throw new ValidationException($i18n->t("Unsupported image type and/or corrupt image, the following types are supported: JPG and PNG"));
+    }
 
-      if ($this->width === 0 || $this->height === 0 || ($this->type !== IMAGETYPE_JPEG || $this->type !== IMAGETYPE_PNG)) {
-        trigger_error("");
-      }
+    // Check all dimension constrains.
+    $errors = null;
+    if (isset($this->image->imageMaxHeight) && $height > $this->image->imageMaxHeight) {
+      $errors[] = $i18n->t("The iamge is too high: the maximum height is {0} pixel", [ $this->image->imageMaxHeight ]);
     }
-    catch (\MovLib\Exception\ErrorException $e) {
-      throw new ValidationException($i18n->t("Unsupported image type and/or corrupt image, the following types are supported: {0}", [ $this->attributes["accept"] ]));
+    if (isset($this->image->imageMaxWidth) && $width > $this->image->imageMaxWidth) {
+      $errors[] = $i18n->t("The iamge is too broad: the maximum width is {0} pixel", [ $this->image->imageMaxWidth ]);
     }
+    if (isset($this->image->imageMinHeight) && $height < $this->image->imageMinHeight) {
+      $errors[] = $i18n->t("The image is too small: the minimum height is {0} pixel", [ $this->image->imageMinHeight ]);
+    }
+    if (isset($this->image->imageMinWidth) && $width < $this->image->imageMinWidth) {
+      $errors[] = $i18n->t("The image is narrow: the minimum width is {0} pixel", [ $this->image->imageMinWidth ]);
+    }
+    if ($errors) {
+      throw new ValidationException(implode("<br>", $errors));
+    }
+
+    // Do not use image_type_to_extension() because it returns long extensions (jpeg instead of jpg).
+    if ($type === IMAGETYPE_JPEG) {
+      $extension = ".jpg";
+    }
+    if ($type === IMAGETYPE_PNG) {
+      $extension = ".png";
+    }
+
+    // All other styles can be generated after the response was sent to the user.
+    $this->image->moveUploadedImage($_FILES[$this->id]["tmp_name"], $width, $height, $extension);
 
     return $this;
   }

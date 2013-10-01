@@ -43,22 +43,13 @@ class User extends \MovLib\Data\Image\AbstractImage {
   const AUTHENTICATION_TOKEN_LENGTH = 128;
 
   /**
-   * Avatar style for span 3 elements.
-   *
-   * Width and height of this image will be 220 pixels.
-   *
-   * @var string
-   */
-  const IMAGE_STYLE_LARGE = 3;
-
-  /**
    * Avatar style for span 2 elements.
    *
    * Width and height of this image will be 140 pixels.
    *
    * @var string
    */
-  const IMAGE_STYLE_MEDIUM = 2;
+  const IMAGE_STYLE_DEFAULT = 2;
 
   /**
    * Avatar style for span 1 elements.
@@ -169,6 +160,27 @@ class User extends \MovLib\Data\Image\AbstractImage {
   public $id;
 
   /**
+   * The directory where the user image's reside.
+   *
+   * @var string
+   */
+  protected $imageDirectory = "user";
+
+  /**
+   * The avatar's minimum height.
+   *
+   * @var int
+   */
+  public $imageMinHeight;
+
+  /**
+   * The avatar's minimum width.
+   *
+   * @var int
+   */
+  public $imageMinWidth;
+
+  /**
    * The user's last login (UNIX timestamp).
    *
    * @var int
@@ -270,7 +282,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
   public function __construct($from = null, $value = null) {
     global $i18n;
     if (isset($from) && isset($value)) {
-      $result = $this->select(
+      $result = $this->selectAssoc(
         "SELECT
           `user_id` AS `id`,
           `system_language_code` AS `systemLanguageCode`,
@@ -289,23 +301,31 @@ class User extends \MovLib\Data\Image\AbstractImage {
           `real_name` AS `realName`,
           `birthday`,
           `website`,
-          `avatar_changed` AS `imageChanged`,
           `avatar_name` AS `imageName`,
-          `avatar_type` AS `imageType`
+          UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
+          `avatar_extension` AS `imageExtension`
         FROM `users`
-          WHERE `{$from}` = ?
-        LIMIT 1", $this->types[$from], [ $value ]
+        WHERE `{$from}` = ?",
+        $this->types[$from],
+        [ $value ]
       );
 
-      if (empty($result[0])) {
+      if (!$this->affectedRows) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
 
-      foreach ($result[0] as $k => $v) {
+      foreach ($result as $k => $v) {
         $this->{$k} = $v;
       }
+
       settype($this->private, "boolean");
       settype($this->deactivated, "boolean");
+
+      if (isset($this->imageChanged)) {
+        $this->imageExists = true;
+      }
+
+      $this->imageMinHeight = $this->imageMinWidth = $this->span[self::IMAGE_STYLE_DEFAULT];
     }
   }
 
@@ -342,36 +362,42 @@ class User extends \MovLib\Data\Image\AbstractImage {
   /**
    * Update the user model in the database with the data of the current class instance.
    *
-   * @todo Update profile text as well!
    * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function commit() {
     return $this->query(
       "UPDATE `users` SET
+        `birthday`             = ?,
+        `country_id`           = ?,
+        `dyn_profile`          = COLUMN_ADD(`dyn_profile`, ?, ?),
+        `facebook`             = ?,
+        `google_plus`          = ?,
+        `private`              = ?,
+        `real_name`            = ?,
+        `sex`                  = ?,
         `system_language_code` = ?,
-        `private` = ?,
-        `time_zone_id` = ?,
-        `country_id` = ?,
-        `real_name` = ?,
-        `birthday` = ?,
-        `sex` = ?,
-        `website` = ?,
-        `avatar_extension` = ?,
-        `avatar_name` = ?
-      WHERE `user_id` = ?",
-      "iisississsd",
+        `time_zone_id`         = ?,
+        `twitter`              = ?,
+        `website`              = ?
+      WHERE `user_id`          = ?
+        LIMIT 1",
+      "sissssisissssd",
       [
-        $this->systemLanguageCode,
-        $this->private,
-        $this->timeZoneId,
-        $this->countryId,
-        $this->realName,
         $this->birthday,
+        $this->countryId,
+        $_SERVER["LANGUAGE_CODE"],
+        $this->profile,
+        null, // Facebook
+        null, // Google Plus
+        $this->private,
+        $this->realName,
         $this->sex,
+        $this->systemLanguageCode,
+        $this->timeZoneId,
+        null, // Twitter
         $this->website,
-        $this->imageExtension,
-        $this->imageHash,
-        $this->id
+        $this->id,
       ]
     );
   }
@@ -388,29 +414,50 @@ class User extends \MovLib\Data\Image\AbstractImage {
     global $session;
     $sessions = $session->getActiveSessions();
     DelayedMethodCalls::stack($session, "delete", array_column($sessions, "session_id"));
-    return $this
-      ->query(
-        "UPDATE `users` SET
-          `private`           = false,
-          `deactivated`       = true,
-          `time_zone_id`      = ?,
-          `dyn_profile`       = '',
-          `sex`               = 0,
-          `country_id`        = NULL,
-          `real_name`         = NULL,
-          `birthday`          = NULL,
-          `website`           = NULL,
-          `facebook`          = NULL,
-          `google_plus`       = NULL,
-          `twitter`           = NULL,
-          `avatar_extension`  = NULL,
-          `avatar_name`       = NULL,
-          `avatar_changed`    = NULL
-        WHERE `user_id` = ?",
-        "sd",
-        [ ini_get("date.timezone"), $this->id ]
-      )
-    ;
+    return $this->query(
+      "UPDATE `users` SET
+        `private`           = false,
+        `deactivated`       = true,
+        `time_zone_id`      = ?,
+        `dyn_profile`       = '',
+        `sex`               = 0,
+        `country_id`        = NULL,
+        `real_name`         = NULL,
+        `birthday`          = NULL,
+        `website`           = NULL,
+        `facebook`          = NULL,
+        `google_plus`       = NULL,
+        `twitter`           = NULL,
+        `avatar`            = NULL
+      WHERE `user_id` = ?",
+      "sd",
+      [ ini_get("date.timezone"), $this->id ]
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @internal
+   *   The user's avatar is different from other images, we don't keep the original file and directly generate all
+   *   styles (instead of a delayed call to ImageMagick as in other image classes). This is because avatar's are small
+   *   images and not those huge monsters as we get them if someone uploads a poster or lobby card.
+   * @param string $source
+   *   The absolute path to the uploaded image.
+   * @param int $width
+   *   The width of the uploaded image.
+   * @param int $height
+   *   The height of the uploaded image.
+   * @param string $extension
+   *   The file extension of the uploaded image (including the leading dot).
+   * @return this
+   */
+  public function moveUploadedImage($source, $width, $height, $extension) {
+    $this->query("UPDATE `users` SET `avatar_changed` = CURRENT_TIMESTAMP, `avatar_extension` = ? WHERE `user_id` = ?", "sd", [ $extension, $this->id ]);
+    $this->imageExtension = $extension;
+    $this->convert($source, self::IMAGE_STYLE_DEFAULT, $this->span[self::IMAGE_STYLE_DEFAULT], $this->span[self::IMAGE_STYLE_DEFAULT], true);
+    $this->convert($this->getImagePath(self::IMAGE_STYLE_DEFAULT), self::IMAGE_STYLE_SMALL, $this->span[self::IMAGE_STYLE_SMALL]);
+    return $this;
   }
 
   /**
@@ -428,12 +475,13 @@ class User extends \MovLib\Data\Image\AbstractImage {
 
   /**
    * @inheritdoc
+   * @internal
+   *   No need to store this data in our database, the dimensions and paths are fixed and never change. Plus creating
+   *   the src and grabbing the height and width is ultra fast.
    */
-  public function getImageStyle($style, array $attributes) {
-    $extension            = image_type_to_extension($this->imageType);
-    $attributes["height"] = $attributes["width"] = $this->span[$style];
-    $style                = $style === self::IMAGE_STYLE_MEDIUM ? "" : ".{$style}";
-    $attributes["src"]    = "{$GLOBALS["movlib"]["static_domain"]}user/{$this->imageName}{$style}{$extension}?c={$this->imageChanged}";
+  public function getImageStyleAttributes($style, &$attributes) {
+    $attributes["height"] = $attributes["width"]  = $this->span[$style];
+    $attributes["src"]    = "{$GLOBALS["movlib"]["static_domain"]}{$this->imageDirectory}/{$this->imageName}.{$style}{$this->imageExtension}?c={$this->imageChanged}";
     return $attributes;
   }
 
@@ -517,7 +565,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
       [ $this->filename($name), $email, $name, password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]), $_SERVER["LANGUAGE_CODE"] ]
     );
     $this->email = $email;
-    $this->id    = $this->getInsertID();
+    $this->id    = $this->insertId;
     $this->name  = $name;
     return $this;
   }
@@ -566,29 +614,10 @@ class User extends \MovLib\Data\Image\AbstractImage {
     if (empty($_GET["token"]) || strlen($_GET["token"]) !== self::AUTHENTICATION_TOKEN_LENGTH) {
       $errors[] = $i18n->t("The authentication token is invalid, please go back to the mail we sent you and copy the whole link.");
     }
-    elseif ($data = $this->tmpGetAndDelete($_GET["token"])) {
+    elseif (($data = $this->tmpGetAndDelete($_GET["token"]))) {
       return $data;
     }
     $errors[] = $i18n->t("Your authentication token has expired, please fill out the form again.");
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function generateImageStyles($source, $type) {
-    return $this;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function moveUploadedImage($source, $type, $style = null){
-    $this->query(
-      "UPDATE `users` SET `avatar_changed` = CURRENT_TIMESTAMP, `avatar_type` = ? WHERE `user_id` = ?",
-      "sd",
-      [ $type, $this->id ]
-    );
-    return parent::moveUploaded($source, $type, "user/{$this->avatarName}", $style);
   }
 
 }

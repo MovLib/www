@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use \IntlDateFormatter;
 use \MovLib\Data\I18n;
 use \MovLib\Data\User;
 use \MovLib\Presentation\Partial\Alert;
@@ -139,40 +140,28 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
   public function __construct() {
     global $i18n, $session;
 
-    // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
-    $session
-      ->checkAuthorization($i18n->t("You need to sign in to access the danger zone."))
-      ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
-    ;
+    $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
+    $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
-    // Start rendering the page.
-    $this->init($i18n->t("Account Settings"))->user = new User(User::FROM_ID, $session->userId);
-
-    $this->avatar = new InputImage("avatar");
-    $this->realName = new InputText("real_name", $this->user->realName);
-    $this->sex = new RadioGroup("sex", $this->user->sex, [ 2 => $i18n->t("Female"), 1 => $i18n->t("Male"), 0 => $i18n->t("Unknown") ]);
-
-    $this->birthday = new InputDate("birthday", $this->user->birthday);
-    $this->birthday->max = $_SERVER["REQUEST_TIME"] - 1.893e8;   //   6 years
-    $this->birthday->min = $_SERVER["REQUEST_TIME"] - 3.78683e9; // 120 years
-
-    $this->profile = new Textarea("profile", $this->user->profile);
-    $this->profile->attributes["data-format"]         = HTML::FORMAT_ANCHORS;
+    $this->init($i18n->t("Account Settings"));
+    $this->user                                       = new User(User::FROM_ID, $session->userId);
+    $this->avatar                                     = new InputImage("avatar", $this->user);
+    $this->realName                                   = new InputText("real_name", $this->user->realName);
+    $this->sex                                        = new RadioGroup("sex", $this->user->sex, [ 2 => $i18n->t("Female"), 1 => $i18n->t("Male"), 0 => $i18n->t("Unknown") ]);
+    $this->birthday                                   = new InputDate("birthday", $this->user->birthday);
+    $this->birthday->max                              = $_SERVER["REQUEST_TIME"] - 1.893e8;   //   6 years
+    $this->birthday->min                              = $_SERVER["REQUEST_TIME"] - 3.78683e9; // 120 years
+    $this->profile                                    = new Textarea("profile", $this->user->profile);
     $this->profile->attributes["data-allow-external"] = true;
-
-    $this->language = (new Select("language", $i18n->getSystemLanguages(), $this->user->systemLanguageCode))->required();
-
-    $this->country = new Select("country", array_column($i18n->getCountries(I18n::KEY_NAME), I18n::KEY_NAME, I18n::KEY_CODE), $this->user->getCountryCode());
-
-    // @todo Should we create groups for continents? They look ugly and each it's already sorted alphabetically.
-    $this->timezone = (new Select("timezone", $i18n->getTimeZones(), $this->user->timeZoneId))->required();
-
-    // We don't validate the existens of the user's website (respectively homepage).
-    $this->website = new InputURL("website", $this->user->website);
+    $this->profile->attributes["data-format"]         = HTML::FORMAT_ANCHORS;
+    $this->language                                   = new Select("language", $i18n->getSystemLanguages(), $this->user->systemLanguageCode);
+    $this->language->required();
+    $this->country                                    = new Select("country", array_column($i18n->getCountries(I18n::KEY_NAME), I18n::KEY_NAME, I18n::KEY_ID), $this->user->getCountryCode());
+    $this->timezone                                   = new Select("timezone", $i18n->getTimeZones(), $this->user->timeZoneId);
+    $this->timezone->required();
+    $this->website                                    = new InputURL("website", $this->user->website);
     $this->website->attributes["data-allow-external"] = true;
-
-    $this->private = new InputCheckbox("private", $this->user->private);
-
+    $this->private                                    = new InputCheckbox("private", $this->user->private);
     $this->form = new Form($this, [
       $this->avatar,
       $this->realName,
@@ -185,7 +174,6 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->website,
       $this->private,
     ]);
-
     $this->form->actionElements[] = new InputSubmit([
       "class" => "button--large button--success",
       "value" => $i18n->t("Update Account Settings"),
@@ -197,21 +185,29 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
    */
   protected function getPageContent() {
     global $i18n;
+
+    $avatarTitleArgs                           = $this->formatBytes($this->avatar->maximumFileSize);
+    $avatarTitleArgs[]                         = $this->user->imageMinWidth;
+    $this->avatar->attributes["title"]         = $i18n->t(
+      "The image’s minimum dimensions are {2}x{2} pixels, the maximum allowed size for uploads is {0} {1}, image’s " .
+      "that are too large will be converted automatically. Allowed image types are: JPG and PNG", $avatarTitleArgs
+    );
+    $this->avatar->attributes[]                = "autofocus";
     $this->avatar->label                       = $i18n->t("Avatar");
     $this->birthday->attributes["title"]       = $i18n->t("The date must be between {0} (120 years) and {1} (6 years)", [
-      $i18n->formatDate($this->birthday->max, $this->user->timeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
-      $i18n->formatDate($this->birthday->min, $this->user->timeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)
+      $i18n->formatDate($this->birthday->min, $this->user->timeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
+      $i18n->formatDate($this->birthday->max, $this->user->timeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE)
     ]);
     $this->birthday->label                     = $i18n->t("Date of Birth");
     $this->birthday->setHelp($i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
     $this->country->label                      = $i18n->t("Country");
     $this->language->label                     = $i18n->t("Language");
-    $this->private->label = $i18n->t("Keep my data private!");
+    $this->private->label                      = $i18n->t("Keep my data private!");
     $this->private->setHelp($i18n->t(
-      "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
-      "used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data " .
-      "like sex and country, scientists around the world are enabled to research the human interests in movies more " .
-      "closely. Of course your real name won’t be used for anything!"
+        "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
+        "used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data " .
+        "like sex and country, scientists around the world are enabled to research the human interests in movies more " .
+        "closely. Of course your real name won’t be used for anything!"
     ));
     $this->profile->attributes["placeholder"]  = $i18n->t("Tell others about yourself, what do you do, what do you like, …");
     $this->profile->label                      = $i18n->t("About You");
@@ -221,19 +217,20 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->sex->setHelp($i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
     $this->timezone->label                     = $i18n->t("Time Zone");
     $this->website->label                      = $i18n->t("Website");
+    $this->form->attributes["enctype"]         = Form::ENCTYPE_BINARY;
 
     return
       $this->form->open() .
       "<div class='row'>" .
-        "<div class='span span--3'>{$this->getImage($this->user, User::IMAGE_STYLE_LARGE, [
+        "<div class='span span--2'>{$this->getImage($this->user, User::IMAGE_STYLE_DEFAULT, [
           "alt" => $i18n->t("Your current avatar."),
         ])}</div>" .
-        "<div class='span span--6'>{$this->avatar}</div>" .
+        "<div class='span span--7'>{$this->avatar}</div>" .
       "</div>" .
         $this->realName .
         $this->sex .
         $this->birthday .
-        $this->private .
+        $this->profile .
         $this->language .
         $this->country .
         $this->timezone .
@@ -251,16 +248,15 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
    */
   public function validate() {
     global $i18n;
+    $this->user->birthday           = $this->birthday->value;
+    $this->user->countryId          = $this->country->value;
+    $this->user->private            = $this->private->value;
+    $this->user->profile            = $this->profile->value;
     $this->user->realName           = $this->realName->value;
     $this->user->sex                = $this->sex->value;
-    $this->user->birthday           = $this->birthday->value;
-    $this->user->profile            = $this->profile->value;
     $this->user->systemLanguageCode = $this->language->value;
-    $this->user->countryId          = $this->country->value;
     $this->user->timeZoneId         = $this->timezone->value;
     $this->user->website            = $this->website->value;
-    $this->user->private            = $this->private->value;
-    $this->user->setAvatar($this->avatar->value);
     $this->user->commit();
     $success                        = new Alert($i18n->t("Your account settings were updated successfully."));
     $success->title                 = $i18n->t("Account Settings Updated Successfully");

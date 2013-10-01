@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Presentation\Validation\URL;
+use \MovLib\Exception\ValidationException;
 
 /**
  * HTML input type URL form element.
@@ -45,29 +46,24 @@ use \MovLib\Presentation\Validation\URL;
 class InputURL extends \MovLib\Presentation\Partial\FormElement\InputText {
 
   /**
-   * Instantiate new input form element of type url.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $id
-   *   The form element's global identifier.
-   * @param string $label
-   *   The form element's label content.
-   * @param string $value [optional]
-   *   The form element's default value.
-   * @param array $attributes [optional]
-   *   The form element's attributes.
-   * @param array $labelAttributes [optional]
-   *   The form element's label attributes.
+   * @inheritdoc
    */
-  public function __construct($id, $label, $value = null, array $attributes = null, array $labelAttributes = null) {
-    global $i18n;
-    parent::__construct($id, $label, $value, $attributes, $labelAttributes);
+  public function __construct($id, $value = null) {
+    parent::__construct($id, $value);
     $this->attributes["data-allow-external"]     = false;
     $this->attributes["data-check-reachability"] = false;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function __toString() {
+    global $i18n;
     $this->attributes["pattern"]                 = URL::PATTERN;
     $this->attributes["placeholder"]             = "http(s)://";
     $this->attributes["title"]                   = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
     $this->attributes["type"]                    = "url";
+    return parent::__toString();
   }
 
   /**
@@ -79,6 +75,13 @@ class InputURL extends \MovLib\Presentation\Partial\FormElement\InputText {
    * @throws \MovLib\Exception\ValidationException
    */
   public function validate() {
+    global $i18n;
+    if (empty($this->value)) {
+      if (isset($this->attributes["aria-required"])) {
+        throw new ValidationException($i18n->t("The highlighted URL is mandatory."));
+      }
+      return $this;
+    }
     $urlValidator                    = new URL($this->value);
     $urlValidator->allowExternal     = $this->attributes["data-allow-external"];
     $urlValidator->checkReachability = $this->attributes["data-check-reachability"];

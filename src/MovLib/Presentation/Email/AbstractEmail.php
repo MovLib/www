@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Email;
 
 use \MovLib\Exception\MailerException;
+use \MovLib\Data\I18n;
 
 /**
  * Abstract base reference implementation for emails. All email templates have to extend this class in order to work
@@ -121,6 +122,9 @@ abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
    */
   public function getPlain() {
     global $i18n;
+    if (!$i18n) {
+      $i18n = new I18n();
+    }
     return $this->wordwrap("{{$this->getPlainBody()}\n\n--\n{$i18n->t("{0}, the free movie library.", [ $i18n->t("MovLib") ])}\n");
   }
 

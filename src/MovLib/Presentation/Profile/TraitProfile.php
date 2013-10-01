@@ -60,11 +60,14 @@ trait TraitProfile {
   /**
    * @inheritdoc
    */
-  protected function init($title) {
+  protected function init($title = null) {
     global $i18n;
     $this->profileRoute = $i18n->r("/profile");
     $this->profileText  = $i18n->t("Profile");
-    return parent::init($title ?: $this->profileText);
+    if (!$title) {
+      $title = $this->profileText;
+    }
+    return parent::init($title);
   }
 
   /**

@@ -186,7 +186,7 @@ abstract class AbstractBase {
   /**
    * Get the image.
    *
-   * @param \MovLib\Data\AbstractImage $image
+   * @param \MovLib\Data\Image\AbstractImage $image
    *   An instance of <code>AbstractImage</code>.
    * @param string $style
    *   The desired style, must be present within the passed <code>AbstractImage</code> instance.
@@ -206,16 +206,11 @@ abstract class AbstractBase {
       if (!isset($attributes["alt"])) {
         $attributes["alt"] = "";
       }
-      $data = $image->getImageStyle($style);
-      $attributes["width"]  = $data->width;
-      $attributes["height"] = $data->height;
-      $attributes["src"]    = $data->uri;
-      $image = "<img{$this->expandTagAttributes($attributes)}>";
       if ($route) {
-        $anchorAttributes["href"] = $route;
-        $image = "<a{$this->expandTagAttributes($anchorAttributes)}>{$image}</a>";
+        $this->addClass("ia", $anchorAttributes);
+        return "<a{$this->expandTagAttributes($anchorAttributes)}></a>";
       }
-      return $image;
+      return "<img{$this->expandTagAttributes($image->getImageStyleAttributes($style, $attributes))}>";
     }
     return "no image";
   }

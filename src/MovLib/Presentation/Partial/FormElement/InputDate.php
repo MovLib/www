@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \IntlDateFormatter;
 use \MovLib\Exception\ValidationException;
 
 /**
@@ -82,6 +83,14 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
   public function validate() {
     global $i18n, $session;
 
+    if (empty($this->value)) {
+      if (isset($this->attributes["aria-required"])) {
+        throw new ValidationException($i18n->t("The highlighted date is mandatory."));
+      }
+      $this->value = null;
+      return $this;
+    }
+
     if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $this->value) === false) {
       throw new ValidationException($i18n->t("The submitted date {0} has an invalid format, the format must be {1}yyyy-mm-dd{2}.", [
         $this->placeholder($this->value), "<code>", "</code>"
@@ -98,15 +107,15 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
       if ($this->max && $date > $this->max) {
         throw new ValidationException($i18n->t("The submitted date {0} must not be greater than {1}.", [
-          $this->placeholder($this->value),
-          $i18n->formatDate($this->max, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)
+          $i18n->formatDate($this->value, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
+          $i18n->formatDate($this->max, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE)
         ]));
       }
 
       if ($this->min && $date < $this->min) {
         throw new ValidationException($i18n->t("The submitted date {0} must not be less than {1}.", [
-          $this->placeholder($this->value),
-          $i18n->formatDate($this->min, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)
+          $i18n->formatDate($this->value, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
+          $i18n->formatDate($this->min, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE)
         ]));
       }
     }

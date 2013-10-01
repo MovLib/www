@@ -27,4 +27,24 @@ namespace MovLib\Exception;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class DatabaseException extends \MovLib\Exception\AbstractException {}
+class DatabaseException extends \MovLib\Exception\AbstractException {
+
+  /**
+   * Instantiate new DatabaseException.
+   *
+   * @param string $message
+   *   The message explaining the problem.
+   * @param string $mysqliError [optional]
+   *   The error string from MySQLi.
+   * @param int $mysqliErrno [optional]
+   *   The error number from MySQLi.
+   * @param \Exception $previous [optional]
+   *   The previous exception.
+   * @param int $code [optional]
+   *   The exception code.
+   */
+  public function __construct($message, $mysqliError = "none", $mysqliErrno = -1, $previous = null, $code = E_RECOVERABLE_ERROR) {
+    parent::__construct("{$message}: {$mysqliError} ({$mysqliErrno})", $previous, $code);
+  }
+
+}

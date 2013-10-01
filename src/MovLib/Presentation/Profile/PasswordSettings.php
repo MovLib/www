@@ -85,26 +85,9 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     }
 
     $this->init($i18n->t("Password Settings"));
-
-    $this->newPassword = new InputPassword("new-password", [
-      "autofocus",
-      "placeholder" => $i18n->t("Enter your new password"),
-    ], $i18n->t("New Password"));
-    $this->newPassword->setHelp("<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
-
-    $this->newPasswordConfirm = new InputPassword("new-password-confirm", [
-      "placeholder" => $i18n->t("Enter your new password again"),
-    ], $i18n->t("Confirm Password"));
-
-    $this->form = new Form($this, [ $this->newPassword, $this->newPasswordConfirm ]);
-    $this->form->attributes["action"] = $i18n->r("/user/password-settings");
-    $this->form->attributes["autocomplete"] = "off";
-
-    $this->form->actionElements[] = new InputSubmit([
-      "class" => "button--large button--success",
-      "title" => $i18n->t("Click here to request the password change after you filled out all fields."),
-      "value" => $i18n->t("Request Password Change"),
-    ]);
+    $this->newPassword        = new InputPassword("new-password");
+    $this->newPasswordConfirm = new InputPassword("new-password-confirm");
+    $this->form               = new Form($this, [ $this->newPassword, $this->newPasswordConfirm ]);
 
     if (isset($_GET["token"])) {
       $this->validateToken();
@@ -143,6 +126,19 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
       );
       $info->severity = Alert::SEVERITY_INFO;
     }
+    $this->newPassword->attributes[]                     = "autofocus";
+    $this->newPassword->attributes["placeholder"]        = $i18n->t("Enter your new password");
+    $this->newPassword->label                            = $i18n->t("New Password");
+    $this->newPassword->setHelp("<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
+    $this->newPasswordConfirm->attributes["placeholder"] = $i18n->t("Enter your new password again");
+    $this->newPasswordConfirm->label                     = $i18n->t("Confirm Password");
+    $this->form->actionElements[]                        = new InputSubmit([
+      "class" => "button--large button--success",
+      "title" => $i18n->t("Click here to request the password change after you filled out all fields."),
+      "value" => $i18n->t("Request Password Change"),
+    ]);
+    $this->form->attributes["action"]                    = $i18n->r("/user/password-settings");
+    $this->form->attributes["autocomplete"]              = "off";
     return "{$info}{$this->form}";
   }
 

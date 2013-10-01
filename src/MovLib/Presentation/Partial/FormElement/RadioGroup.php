@@ -92,7 +92,7 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractInput 
    */
   public function validate() {
     global $i18n;
-    if (array_key_exists($_POST[$this->id], $this->choices) === false) {
+    if (array_key_exists($this->value, $this->choices) === false) {
       throw new ValidationException($i18n->t("The submitted value {0} is not a valid choice.", [ $this->placeholder($this->value) ]));
     }
     return $this;

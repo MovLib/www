@@ -17,6 +17,9 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Exception\ValidationException;
+use \Normalizer;
+
 /**
  * HTML input type text form element.
  *
@@ -52,6 +55,7 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
       if (isset($this->attributes["aria-required"])) {
         throw new ValidationException("The highlighted text field is mandatory.");
       }
+      $this->value = null;
       return $this;
     }
 

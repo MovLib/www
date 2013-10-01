@@ -61,13 +61,11 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    */
   public function __toString() {
     global $i18n;
-    $options = null;
 
-    // If a select element only has one option to choose from and is required no default option can be present.
-    if (isset($this->attributes["aria-required"])) {
-      $selected = isset($this->value) ? null : " selected";
-      $options .= "<option{$selected} value=''>{$i18n->t("Please Select …")}</option>";
-    }
+    //  The first child option element of a select element with a required attribute and without a multiple attribute,
+    //  and whose size is 1, must have either an empty value attribute, or must have no text content.
+    $selected = empty($this->value) ? " selected" : null;
+    $options  = "<option{$selected} value=''>{$i18n->t("Please Select …")}</option>";
 
     foreach ($this->options as $value => $option) {
       $selected = $this->value == $value ? " selected" : null;
@@ -91,6 +89,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
       if (isset($this->attributes["aria-required"])) {
         throw new ValidationException("The highlighted select element is mandatory.");
       }
+      $this->value = null;
       return $this;
     }
 

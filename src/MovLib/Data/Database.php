@@ -17,9 +17,8 @@
  */
 namespace MovLib\Data;
 
-use \Exception;
+use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Data\Delayed\Logger;
 use \mysqli;
 use \ReflectionFunction;
 
@@ -55,13 +54,6 @@ class Database {
 
 
   /**
-   * Associative array containing the connect count for each database.
-   *
-   * @var array
-   */
-  private static $connectionCounter = [];
-
-  /**
    * Name of the database to which this instance is connected.
    *
    * @var string
@@ -76,11 +68,30 @@ class Database {
   protected static $mysqli = [];
 
   /**
-   * Total number of rows changed, deleted, or inserted by the last executed statement.
+   * The number of affected rows from previous query.
    *
-   * @var int
+   * <b>NOTE</b>
+   * The number indicates the affected rows of the last executed <code>DELETE</code>, <code>INSERT</code>,
+   * <code>UPDATE</code> or <code>REPLACE</code> query. If the last query was a <code>SELECT</code> statement the number
+   * indicates the total count of returned results (same as <code>count($this->select("QUERY"));</code>). If the number
+   * is zero no records have been deleted, inserted, updated, replaced or nothing matched the where clause of the last
+   * select. A negative number indicates that the previous query resulted in an error.
+   *
+   * @return int|string
    */
-  public $affectedRows = 0;
+  protected $affectedRows = -1;
+
+  /**
+   * The <code>AUTO_INCREMENT</code> ID from previous query.
+   *
+   * <b>NOTE</b>
+   * If the last executed query wasn't an <code>INSERT</code> or <code>UPDATE</code> statement or if the modified table
+   * doesn't have a column with the <code>AUTO_INCREMENT</code> attribute, this function will return zero. The ID will
+   * be returned as string if the value is greater than PHP's maximum integer value.
+   *
+   * @return int|string
+   */
+  protected $insertId = 0;
 
   /**
    * The MySQLi statement object for all queries.
@@ -106,58 +117,8 @@ class Database {
   protected $transactionActive = false;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Correctly close the database connections.
-   */
-  public function __destruct() {
-    try {
-      $this->disconnect();
-    } catch (Exception $e) {
-      // Do nothing! If everything worked fine till this point there is no reason to exit the execution of the request.
-      Logger::stack($e);
-    }
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Protected Final Methods
 
-
-  /**
-   * Get the number of affected rows from previous query.
-   *
-   * <b>NOTE</b>
-   * The returned number indicates the affectes rows of the last executed <code>DELETE</code>, <code>INSERT</code>,
-   * <code>UPDATE</code> or <code>REPLACE</code> query. If the last query was a <code>SELECT</code> statement the number
-   * indicates the total count of returned results (same as <code>count($this->select("QUERY"));</code>). If the number
-   * is zero no records have been deleted, inserted, updated, replaced or nothing matched the where clause of the last
-   * select. A negative number indicates that the previous query resulted in an error.
-   *
-   * @link http://www.php.net/manual/mysqli.affected-rows.php
-   * @return int|string
-   *   The number of affected rows from previous query.
-   */
-  protected function getAffectedRows() {
-    return self::$mysqli[$this->database]->affected_rows;
-  }
-
-  /**
-   * Get the <code>AUTO_INCREMENT</code> ID from previous query.
-   *
-   * <b>NOTE</b>
-   * If the last executed query wasn't an <code>INSERT</code> or <code>UPDATE</code> statement or it the modified table
-   * doesn't have a column with the <code>AUTO_INCREMENT</code> attribute, this function will return zero. The ID will
-   * be returned as string if the value is greater than PHP's maximum integer value.
-   *
-   * @link http://www.php.net/manual/mysqli.insert-id.php
-   * @return int|string
-   *   The <code>AUTO_INCREMENT</code> ID from previous query.
-   */
-  protected function getInsertID() {
-    return self::$mysqli[$this->database]->insert_id;
-  }
 
   /**
    * Generic delete, insert, or update query method.
@@ -172,7 +133,9 @@ class Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function query($query, $types = null, array $params = null) {
-    $this->prepareAndExecute($query, $types, $params)->close();
+    $this->prepareAndExecute($query, $types, $params);
+    $this->affectedRows = $this->stmt->affected_rows;
+    $this->insertId     = $this->stmt->insert_id;
     return $this;
   }
 
@@ -186,24 +149,35 @@ class Database {
    * @param array $params [optional]
    *   The parameters to bind.
    * @return array
-   *   The query result as associative array.
+   *   The query results as numeric array with each result as associative array.
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function select($query, $types = null, array $params = null) {
     $this->prepareAndExecute($query, $types, $params);
-    if (($queryResult = $this->stmt->get_result()) === false) {
-      $error = $this->stmt->error;
-      $errno = $this->stmt->errno;
-      $this->close();
-      throw new DatabaseException("Get statement result failed: {$error} ({$errno})");
-    }
-    $this->close();
-    $result = [];
-    while ($row = $queryResult->fetch_assoc()) {
-      $result[] = $row;
-    }
-    $queryResult->free();
-    return $result;
+    $this->affectedRows = $this->stmt->affected_rows;
+    return $this->stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+  }
+
+  /**
+   * Generic select query method for a single row.
+   *
+   * <b>NOTE</b>
+   * <code>LIMIT 1</code> is automatically appended to the query!
+   *
+   * @param string $query
+   *   The query to be executed.
+   * @param string $types [optional]
+   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
+   * @param array $params [optional]
+   *   The parameters to bind.
+   * @return array
+   *   The query result as associative array.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function selectAssoc($query, $types = null, $params = null) {
+    $this->prepareAndExecute("{$query} LIMIT 1", $types, $params);
+    $this->affectedRows = $this->stmt->affected_rows;
+    return $this->stmt->get_result()->fetch_assoc();
   }
 
   /**
@@ -218,7 +192,7 @@ class Database {
    */
   protected function tmpSet($data, $ttl = self::TMP_TTL_DAILY) {
     $hash = hash("sha512", openssl_random_pseudo_bytes(1024));
-    $this->query("INSERT INTO `tmp` (`key`, `data`, `ttl`) VALUES (?, ?, ?)", "sss", [ $hash, serialize($data), $ttl ]);
+    $this->prepareAndExecute("INSERT INTO `tmp` (`key`, `data`, `ttl`) VALUES (?, ?, ?)", "sss", [ $hash, serialize($data), $ttl ]);
     return $hash;
   }
 
@@ -231,12 +205,12 @@ class Database {
    *   The data that was previously stored with this hash or <code>NULL</code> if no record was found for the key.
    */
   protected function tmpGetAndDelete($key) {
-    $data = $this->select("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $key ]);
-    if (!empty($data[0])) {
-      $data = unserialize($data[0]["data"]);
-      $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
+    $this->prepareAndExecute("SELECT `data` FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
+    if ($this->affectedRows > 0) {
+      $this->stmt->bind_result($data);
+      $this->stmt->fetch();
+      return $data;
     }
-    return $data;
   }
 
   /**
@@ -252,10 +226,9 @@ class Database {
       throw new DatabaseException("No active transaction, nothing to commit.");
     }
     if (self::$mysqli[$this->database]->commit($flags) === false) {
-      $error = self::$mysqli[$this->database]->error;
-      $errno = self::$mysqli[$this->database]->errno;
+      $e = new DatabaseException("Commit failed", self::$mysqli[$this->database]->error, self::$mysqli[$this->database]->errno);
       $this->transactionRollback();
-      throw new DatabaseException("Commit failed: {$error} ({$errno})");
+      throw $e;
     }
     $this->transactionActive = false;
     return $this;
@@ -274,9 +247,7 @@ class Database {
       throw new DatabaseException("No active transaction, nothing to rollback.");
     }
     if (self::$mysqli[$this->database]->rollback($flags) === false) {
-      $error = self::$mysqli[$this->database]->error;
-      $errno = self::$mysqli[$this->database]->errno;
-      throw new DatabaseException("Rollback failed: {$error} ({$errno})");
+      throw new DatabaseException("Rollback failed", self::$mysqli[$this->database]->error, self::$mysqli[$this->database]->errno);
     }
     $this->transactionActive = false;
     return $this;
@@ -298,9 +269,7 @@ class Database {
       $this->connect();
     }
     if (self::$mysqli[$this->database]->begin_transaction($flags) === false) {
-      $error = self::$mysqli[$this->database]->error;
-      $errno = self::$mysqli[$this->database]->errno;
-      throw new DatabaseException("Could not start transaction: {$error} ({$errno})");
+      throw new DatabaseException("Could not start transaction", self::$mysqli[$this->database]->error, self::$mysqli[$this->database]->errno);
     }
     $this->transactionActive = true;
     return $this;
@@ -309,22 +278,6 @@ class Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Private Methods
 
-
-  /**
-   * Closes the prepared statement.
-   *
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  private function close() {
-    if ($this->stmt->close() === false) {
-      $error = $this->stmt->error;
-      $errno = $this->stmt->errno;
-      throw new DatabaseException("Closing prepared statement failed: {$error} ({$errno})");
-    }
-    unset($this->stmt);
-    return $this;
-  }
 
   /**
    * Connect to database.
@@ -339,48 +292,21 @@ class Database {
     if (!self::$stmtBindParam) {
       self::$stmtBindParam = new ReflectionFunction("mysqli_stmt_bind_param");
     }
-    if (!isset(self::$connectionCounter[$this->database])) {
-      self::$connectionCounter[$this->database] = 0;
-    }
-    self::$connectionCounter[$this->database]++;
     if (!isset(self::$mysqli[$this->database])) {
       $mysqli = new mysqli();
-      if ($mysqli->real_connect() === false || $mysqli->connect_error) {
-        $error = $mysqli->error;
-        $errno = $mysqli->errno;
-        throw new DatabaseException("Connecting to database server failed: {$error} ({$errno})");
+      try {
+        if ($mysqli->real_connect() === false || $mysqli->connect_error) {
+          throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
+        }
+      }
+      catch (ErrorException $e) {
+        $mysqli->kill($mysqli->thread_id);
+        $mysqli->real_connect();
       }
       if ($mysqli->select_db($GLOBALS["movlib"]["default_database"]) === false) {
-        $error = $mysqli->error;
-        $errno = $mysqli->errno;
-        throw new DatabaseException("Selecting database failed: {$error} ({$errno})");
+        throw new DatabaseException("Selecting database failed", $mysqli->error, $mysqli->errno);
       }
       self::$mysqli[$this->database] = $mysqli;
-    }
-    return $this;
-  }
-
-  /**
-   * Disconnect from database.
-   *
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  private function disconnect() {
-    // No need to disconnect if we have no connection to this database.
-    if (isset(self::$connectionCounter[$this->database])) {
-      // Decrement connection counter for this database connection, if there are no instances left using this database
-      // connection (equality to zero) disconnect.
-      if (--self::$connectionCounter[$this->database] === 0) {
-        if (self::$mysqli[$this->database]->close() === false) {
-          $error = self::$mysqli[$this->database]->error;
-          $errno = self::$mysqli[$this->database]->errno;
-          throw new DatabaseException("Disconnecting from database server failed: {$error} ({$errno})");
-        }
-        // Make sure the array offset is removed entirely from the array. This ensures that any new instance that needs
-        // a connection to this database has to establish a new connection.
-        unset(self::$mysqli[$this->database]);
-      }
     }
     return $this;
   }
@@ -397,35 +323,28 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  private function prepareAndExecute($query, $types = null, array $params = null) {
+  private function prepareAndExecute($query, $types = null, $params = null) {
+    $this->affectedRows = -1;
+    $this->insertId     = 0;
     if (!isset(self::$mysqli[$this->database])) {
       $this->connect();
     }
     if (($this->stmt = self::$mysqli[$this->database]->prepare($query)) === false) {
-      $error = self::$mysqli[$this->database]->error;
-      $errno = self::$mysqli[$this->database]->errno;
-      throw new DatabaseException("Preparation of statement failed: {$error} ({$errno})");
+      throw new DatabaseException("Preparation of statement failed", self::$mysqli[$this->database]->error, self::$mysqli[$this->database]->errno);
     }
     if ($types && $params) {
       $c = count($params);
       $refParams = [ $this->stmt, $types ];
       for ($i = 0; $i < $c; ++$i) {
-        $refParams[$i + 2] = &$params[$i];
+        $refParams[$i + 2] =& $params[$i];
       }
       if (self::$stmtBindParam->invokeArgs($refParams) === false) {
-        $error = $this->stmt->error;
-        $errno = $this->stmt->errno;
-        throw new DatabaseException("Binding parameters to prepared statement failed: {$error} ({$errno})");
+        throw new DatabaseException("Binding parameters to prepared statement failed", $this->stmt->error, $this->stmt->errno);
       }
     }
-    $this->affectedRows = 0;
     if ($this->stmt->execute() === false) {
-      $error = $this->stmt->error;
-      $errno = $this->stmt->errno;
-      $this->close();
-      throw new DatabaseException("Execution of prepared statement failed: {$error} ({$errno})");
+      throw new DatabaseException("Execution of prepared statement failed", $this->stmt->error, $this->stmt->errno);
     }
-    $this->affectedRows = $this->stmt->affected_rows;
     return $this;
   }
 

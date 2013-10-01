@@ -78,28 +78,11 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
       ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
     ;
 
-    // Start rendering the page.
-    $this->init($i18n->t("Email Settings"))->user = new User(User::FROM_ID, $session->userId);
-
-    $this->email = new InputEmail("email", [
-      "autofocus",
-      "placeholder" => $i18n->t("Enter your new email address"),
-    ], $i18n->t("New Email Address"));
+    $this->init($i18n->t("Email Settings"));
+    $this->user  = new User(User::FROM_ID, $session->userId);
+    $this->email = new InputEmail("email");
     $this->email->required();
-    $this->email->setHelp($i18n->t(
-      "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
-      "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to your " .
-      "{0}notification settings{1}.",
-      [ "<a href='{$i18n->r("/user/notification-settings")}'>", "</a>" ]
-    ));
-
-    $this->form = new Form($this, [ $this->email ]);
-
-    $this->form->actionElements[] = new InputSubmit([
-      "class" => "button--large button--success",
-      "title" => $i18n->t("Click here to request the change of your email address after you filled out all fields."),
-      "value" => $i18n->t("Request Email Change"),
-    ]);
+    $this->form  = new Form($this, [ $this->email ]);
 
     if (isset($_GET["token"])) {
       $this->validateToken();
@@ -111,8 +94,23 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    */
   protected function getPageContent() {
     global $i18n;
-    $currentEmail = new Alert($i18n->t("Your current email address is {0}.", [ $this->placeholder($this->user->email) ]));
-    $currentEmail->severity = Alert::SEVERITY_INFO;
+    $currentEmail                           = new Alert($i18n->t("Your current email address is {0}.", [
+      $this->placeholder($this->user->email)
+    ]));
+    $currentEmail->severity                 = Alert::SEVERITY_INFO;
+    $this->email->attributes[]              = "autofocus";
+    $this->email->attributes["placeholder"] = $i18n->t("Enter your new email address");
+    $this->email->label                     = $i18n->t("New Email Address");
+    $this->email->setHelp($i18n->t(
+        "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
+        "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to your " .
+        "{0}notification settings{1}.", [ "<a href='{$i18n->r("/user/notification-settings")}'>", "</a>" ]
+    ));
+    $this->form->actionElements[]           = new InputSubmit([
+      "class" => "button--large button--success",
+      "title" => $i18n->t("Click here to request the change of your email address after you filled out all fields."),
+      "value" => $i18n->t("Request Email Change"),
+    ]);
     return "{$currentEmail}{$this->form}";
   }
 
