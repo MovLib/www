@@ -91,6 +91,15 @@ class UsernameTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers \MovLib\Presentation\Validation\Username::validate
    * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage cannot contain slashes
+   */
+  public function testValidateSlash() {
+    $this->username->set("PHP/Unit")->validate();
+  }
+
+  /**
+   * @covers \MovLib\Presentation\Validation\Username::validate
+   * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage The username is too long
    */
   public function testValidateLength() {

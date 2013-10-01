@@ -329,8 +329,22 @@ location ^~ <?= $r("/user") ?> {
     return 301 <?= $r("/users") ?>;
   }
 
-  location ~ ^<?= $r("/user") ?>/(.+)$ {
+  # A username cannot contain spaces nor slashes. The slashes are very important, otherwise it would be impossible for
+  # us to have routes beneath the user's page.
+  location ~ '^<?= $r("/user") ?>/(((?![ |%20|/]).)+)$' {
     set $movlib_presenter "User\\Show";
+    set $movlib_user_name $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ ^<?= $r("/user") ?>/(.+)/<?= $r("contact") ?>$ {
+    set $movlib_presenter "User\\Contact";
+    set $movlib_user_name $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ ^<?= $r("/user") ?>/(.+)/<?= $r("collection") ?>$ {
+    set $movlib_presenter "User\\Collection";
     set $movlib_user_name $1;
     try_files $movlib_cache @php;
   }

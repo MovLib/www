@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Partial\FormElement;
+namespace MovLib\Presentation\User;
 
 /**
- * Adds readonly capability to form element.
+ * Description of Contact
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,25 +26,27 @@ namespace MovLib\Presentation\Partial\FormElement;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitReadonly {
+class Collection extends \MovLib\Presentation\User\Show {
 
   /**
-   * Flag indicating if this form element is read only or not.
    *
-   * @var boolean
+   * Instantiate new user collection presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Exception\NotFoundException
+   * @throws \MovLib\Exception\RedirectException
    */
-  public $readonly = false;
+  public function __construct(){
+    global $i18n;
+    parent::__construct();
+    $this->title = $i18n->t("Collection of {0}", [ $this->title ]);
+  }
 
   /**
-   * Mark this form element as read only.
-   *
-   * @return this
+   * @inheritdoc
    */
-  public function readyonly() {
-    $this->attributes["aria-readonly"] = "true";
-    $this->attributes[] = "readonly";
-    $this->readonly = true;
-    return $this;
+  protected function getPageContent(){
+    return "";
   }
 
 }

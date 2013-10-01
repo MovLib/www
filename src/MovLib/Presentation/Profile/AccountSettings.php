@@ -148,64 +148,30 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     // Start rendering the page.
     $this->init($i18n->t("Account Settings"))->user = new User(User::FROM_ID, $session->userId);
 
-    $this->avatar = new InputImage($this->user, "avatar", $i18n->t("Avatar"));
+    $this->avatar = new InputImage("avatar");
+    $this->realName = new InputText("real_name", $this->user->realName);
+    $this->sex = new RadioGroup("sex", $this->user->sex, [ 2 => $i18n->t("Female"), 1 => $i18n->t("Male"), 0 => $i18n->t("Unknown") ]);
 
-    $this->realName = new InputText("real_name", $i18n->t("Real Name"), $this->user->realName, [
-      "inputmode"   => "latin-name",
-      "placeholder" => $i18n->t("Enter your real name"),
-    ]);
+    $this->birthday = new InputDate("birthday", $this->user->birthday);
+    $this->birthday->max = $_SERVER["REQUEST_TIME"] - 1.893e8;   //   6 years
+    $this->birthday->min = $_SERVER["REQUEST_TIME"] - 3.78683e9; // 120 years
 
-    $this->sex = (new RadioGroup("sex", $i18n->t("Sex"), $this->user->sex, [
-      2 => $i18n->t("Female"),
-      1 => $i18n->t("Male"),
-      0 => $i18n->t("Unknown"),
-    ]))->setHelp($i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
-
-    $time        = time();
-    $birthdayMax = $time - 1.893e8;   //   6 years
-    $birthdayMin = $time - 3.78683e9; // 120 years
-    $this->birthday = new InputDate("birthday", $i18n->t("Date of Birth"), [
-      "max"   => $birthdayMax,
-      "min"   => $birthdayMin,
-      "title" => $i18n->t("The date must be between {0} (120 years) and {1} (6 years)", [ $birthdayMin, $birthdayMax ]),
-    ], $this->user->birthday);
-    $this->birthday->setHelp($i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
-
-    $this->profile = new Textarea("profile", $i18n->t("About You"), $this->user->profile, [
-      "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
-    ]);
+    $this->profile = new Textarea("profile", $this->user->profile);
     $this->profile->attributes["data-format"]         = HTML::FORMAT_ANCHORS;
     $this->profile->attributes["data-allow-external"] = true;
 
-    $this->language = (new Select("language", $i18n->t("Language"), $i18n->getSystemLanguages(), $this->user->systemLanguageCode))->required();
+    $this->language = (new Select("language", $i18n->getSystemLanguages(), $this->user->systemLanguageCode))->required();
 
-    $this->country = new Select("country", $i18n->t("Country"), array_column($i18n->getCountries(I18n::KEY_NAME), I18n::KEY_NAME, I18n::KEY_CODE), $this->user->getCountryCode());
+    $this->country = new Select("country", array_column($i18n->getCountries(I18n::KEY_NAME), I18n::KEY_NAME, I18n::KEY_CODE), $this->user->getCountryCode());
 
     // @todo Should we create groups for continents? They look ugly and each it's already sorted alphabetically.
-    $this->timezone = (new Select("timezone", $i18n->t("Time Zone"), $i18n->getTimeZones(), $this->user->timeZoneId))->required();
+    $this->timezone = (new Select("timezone", $i18n->getTimeZones(), $this->user->timeZoneId))->required();
 
     // We don't validate the existens of the user's website (respectively homepage).
-    $this->website = new InputURL("website", $i18n->t("Website"), $this->user->website);
+    $this->website = new InputURL("website", $this->user->website);
     $this->website->attributes["data-allow-external"] = true;
 
-    // @todo Facebook
-    //$this->facebook = ?
-
-    // @todo Google Plus
-    //$this->googlePlus = ?
-
-    // @todo Twitter
-    //$this->twitter = ?
-
-    // @todo Private Flag
     $this->private = new InputCheckbox("private", $this->user->private);
-    $this->private->label = $i18n->t("Keep my data private!");
-    $this->private->setHelp($i18n->t(
-      "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
-      "used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data " .
-      "like sex and country, scientists around the world are enabled to research the human interests in movies more " .
-      "closely. Of course your real name won’t be used for anything!"
-    ));
 
     $this->form = new Form($this, [
       $this->avatar,
@@ -230,7 +196,51 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
    * @inheritdoc
    */
   protected function getPageContent() {
-    return $this->form;
+    global $i18n;
+    $this->avatar->label                       = $i18n->t("Avatar");
+    $this->birthday->attributes["title"]       = $i18n->t("The date must be between {0} (120 years) and {1} (6 years)", [
+      $i18n->formatDate($this->birthday->max, $this->user->timeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
+      $i18n->formatDate($this->birthday->min, $this->user->timeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)
+    ]);
+    $this->birthday->label                     = $i18n->t("Date of Birth");
+    $this->birthday->setHelp($i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
+    $this->country->label                      = $i18n->t("Country");
+    $this->language->label                     = $i18n->t("Language");
+    $this->private->label = $i18n->t("Keep my data private!");
+    $this->private->setHelp($i18n->t(
+      "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
+      "used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data " .
+      "like sex and country, scientists around the world are enabled to research the human interests in movies more " .
+      "closely. Of course your real name won’t be used for anything!"
+    ));
+    $this->profile->attributes["placeholder"]  = $i18n->t("Tell others about yourself, what do you do, what do you like, …");
+    $this->profile->label                      = $i18n->t("About You");
+    $this->realName->attributes["placeholder"] = $i18n->t("Entery our real name");
+    $this->realName->label                     = $i18n->t("Real Name");
+    $this->sex->legend                         = $i18n->t("Sex");
+    $this->sex->setHelp($i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
+    $this->timezone->label                     = $i18n->t("Time Zone");
+    $this->website->label                      = $i18n->t("Website");
+
+    return
+      $this->form->open() .
+      "<div class='row'>" .
+        "<div class='span span--3'>{$this->getImage($this->user, User::IMAGE_STYLE_LARGE, [
+          "alt" => $i18n->t("Your current avatar."),
+        ])}</div>" .
+        "<div class='span span--6'>{$this->avatar}</div>" .
+      "</div>" .
+        $this->realName .
+        $this->sex .
+        $this->birthday .
+        $this->private .
+        $this->language .
+        $this->country .
+        $this->timezone .
+        $this->website .
+        $this->private .
+      $this->form->close()
+    ;
   }
 
   /**
@@ -250,11 +260,12 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->user->timeZoneId         = $this->timezone->value;
     $this->user->website            = $this->website->value;
     $this->user->private            = $this->private->value;
+    $this->user->setAvatar($this->avatar->value);
     $this->user->commit();
-    $success = new Alert($i18n->t("Your account settings were updated successfully."));
-    $success->title = $i18n->t("Account Settings Updated Successfully");
-    $success->severity = Alert::SEVERITY_SUCCESS;
-    $this->alerts .= $success;
+    $success                        = new Alert($i18n->t("Your account settings were updated successfully."));
+    $success->title                 = $i18n->t("Account Settings Updated Successfully");
+    $success->severity              = Alert::SEVERITY_SUCCESS;
+    $this->alerts                  .= $success;
     return $this;
   }
 

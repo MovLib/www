@@ -50,13 +50,6 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   public $attributes;
 
   /**
-   * Flag indicating if this element is disabled or not.
-   *
-   * @var boolean
-   */
-  public $disabled = false;
-
-  /**
    * The form element's help.
    *
    * @see AbstractFormElement::setHelp
@@ -92,13 +85,6 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    */
   public $labelAttributes;
 
-  /**
-   * Flag indicating if this element is required or not.
-   *
-   * @var boolean
-   */
-  public $required = false;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -108,21 +94,10 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *
    * @param string $id
    *   The form element's global identifier.
-   * @param array $attributes [optional]
-   *   The form element's attributes.
-   * @param string $label [optional]
-   *   The form element's label content.
-   * @param array $labelAttributes [optional]
-   *   The form element's label attributes.
    */
-  public function __construct($id, array $attributes = null, $label = null, array $labelAttributes = null) {
-    $this->id                     = $id;
-    $this->attributes             = $attributes;
-    $this->attributes["id"]       = $id;
-    $this->attributes["name"]     = $id;
+  public function __construct($id) {
+    $this->id = $this->attributes["id"] = $this->attributes["name"] = $id;
     $this->attributes["tabindex"] = $this->getTabindex();
-    $this->label                  = $label;
-    $this->labelAttributes        = $labelAttributes;
     $this->labelAttributes["for"] = $id;
   }
 
@@ -137,22 +112,6 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Disable this form element.
-   *
-   * Indicates to the browser that this form element is disabled and not available for interaction. No <code>click</code>
-   * events will be fired by this element and its value won't be submitted with the form. Therefor disabled elements are
-   * automatically <b>not</b> validated.
-   *
-   * @return this
-   */
-  public function disable() {
-    $this->attributes["aria-disabled"] = "true";
-    $this->attributes[] = "disabled";
-    $this->disabled = true;
-    return $this;
-  }
 
   /**
    * Mark this form element as invalid.
@@ -182,8 +141,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    */
   public function required() {
     $this->attributes["aria-required"] = "true";
-    $this->attributes[] = "required";
-    $this->required = true;
+    $this->attributes[]                = "required";
     return $this;
   }
 
@@ -201,7 +159,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    */
   public function setHelp($content, $popup = true) {
     $this->attributes["aria-describedby"] = "{$this->id}-help";
-    $this->help = new Help($content, $this->id, $popup);
+    $this->help                           = new Help($content, $this->id, $popup);
     return $this;
   }
 

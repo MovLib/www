@@ -34,39 +34,7 @@ use \MovLib\Exception\ValidationException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputDate extends \MovLib\Presentation\Partial\FormElement\InputText {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Exception code for invalid format.
-   *
-   * @var int
-   */
-  const E_FORMAT = 1;
-
-  /**
-   * Exception code for invalid date.
-   *
-   * @var int
-   */
-  const E_INVALID = 2;
-
-  /**
-   * Exception code for maximum.
-   *
-   * @var int
-   */
-  const E_MAX = 3;
-
-  /**
-   * Exception code for minimum.
-   *
-   * @var int
-   */
-  const E_MIN = 4;
+class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
   /**
    * Full date formatting according to RFC3339.
@@ -80,74 +48,49 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\InputText {
    */
   const RFC3339 = "Y-m-d";
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
   /**
    * The maximum date as timestamp.
    *
    * @var int
    */
-  protected $max;
+  public $max;
 
   /**
    * The minimum date as timestamp.
    *
    * @var int
    */
-  protected $min;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+  public $min;
 
   /**
-   * Instantiate new input form element of type date.
-   *
-   * @param string $id
-   *   The form element's global identifier.
-   * @param string $label
-   *   The form element's label content.
-   * @param array $attributes [optional]
-   *   The form element's attributes.
-   * @param string $value [optional]
-   *   The form element's default value.
-   * @param array $labelAttributes [optional]
-   *   The form element's label attributes.
+   * @inheritdoc
    */
-  public function __construct($id, $label, array $attributes = null, $value = null, array $labelAttributes = null) {
-    parent::__construct($id, $label, $value, $attributes, $labelAttributes);
+  public function __toString() {
     $this->attributes["type"] = "date";
-    if (!empty($this->attributes["max"])) {
-      $this->max = $this->attributes["max"];
+    if ($this->max) {
       $this->attributes["max"] = date(self::RFC3339, $this->max);
     }
-    if (!empty($this->attributes["min"])) {
-      $this->min = $this->attributes["min"];
+    if ($this->min) {
       $this->attributes["min"] = date(self::RFC3339, $this->min);
     }
+    return parent::__toString();
   }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * @inheritdoc
    */
   public function validate() {
-    global $i18n;
+    global $i18n, $session;
 
     if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $this->value) === false) {
       throw new ValidationException($i18n->t("The submitted date {0} has an invalid format, the format must be {1}yyyy-mm-dd{2}.", [
         $this->placeholder($this->value), "<code>", "</code>"
-      ]), self::E_FORMAT);
+      ]));
     }
 
     list($year, $month, $day) = explode("-", $this->value);
     if (checkdate($month, $day, $year) === false) {
-      throw new ValidationException($i18n->t("The submitted date {0} is not valid.", [ $this->placeholder($this->value) ]), self::E_INVALID);
+      throw new ValidationException($i18n->t("The submitted date {0} is not valid.", [ $this->placeholder($this->value) ]));
     }
 
     if ($this->max || $this->min) {
@@ -156,15 +99,15 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\InputText {
       if ($this->max && $date > $this->max) {
         throw new ValidationException($i18n->t("The submitted date {0} must not be greater than {1}.", [
           $this->placeholder($this->value),
-          $this->attributes["max"]
-        ]), self::E_MAX);
+          $i18n->formatDate($this->max, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)
+        ]));
       }
 
       if ($this->min && $date < $this->min) {
         throw new ValidationException($i18n->t("The submitted date {0} must not be less than {1}.", [
           $this->placeholder($this->value),
-          $this->attributes["min"]
-        ]), self::E_MIN);
+          $i18n->formatDate($this->min, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)
+        ]));
       }
     }
 

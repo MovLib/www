@@ -126,6 +126,40 @@ class Database {
 
 
   /**
+   * Get the number of affected rows from previous query.
+   *
+   * <b>NOTE</b>
+   * The returned number indicates the affectes rows of the last executed <code>DELETE</code>, <code>INSERT</code>,
+   * <code>UPDATE</code> or <code>REPLACE</code> query. If the last query was a <code>SELECT</code> statement the number
+   * indicates the total count of returned results (same as <code>count($this->select("QUERY"));</code>). If the number
+   * is zero no records have been deleted, inserted, updated, replaced or nothing matched the where clause of the last
+   * select. A negative number indicates that the previous query resulted in an error.
+   *
+   * @link http://www.php.net/manual/mysqli.affected-rows.php
+   * @return int|string
+   *   The number of affected rows from previous query.
+   */
+  protected function getAffectedRows() {
+    return self::$mysqli[$this->database]->affected_rows;
+  }
+
+  /**
+   * Get the <code>AUTO_INCREMENT</code> ID from previous query.
+   *
+   * <b>NOTE</b>
+   * If the last executed query wasn't an <code>INSERT</code> or <code>UPDATE</code> statement or it the modified table
+   * doesn't have a column with the <code>AUTO_INCREMENT</code> attribute, this function will return zero. The ID will
+   * be returned as string if the value is greater than PHP's maximum integer value.
+   *
+   * @link http://www.php.net/manual/mysqli.insert-id.php
+   * @return int|string
+   *   The <code>AUTO_INCREMENT</code> ID from previous query.
+   */
+  protected function getInsertID() {
+    return self::$mysqli[$this->database]->insert_id;
+  }
+
+  /**
    * Generic delete, insert, or update query method.
    *
    * @param string $query
@@ -134,16 +168,11 @@ class Database {
    *   The type string in <code>\mysqli_stmt::bind_param()</code> syntax.
    * @param array $params [optional]
    *   The parameters to bind.
-   * @param boolean $closeStmt [optional]
-   *   Flag indicating if the <code>\mysqli_stmt</code> instance should be closed or not.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function query($query, $types = null, array $params = null, $closeStmt = true) {
-    $this->prepareAndExecute($query, $types, $params);
-    if ($closeStmt === true) {
-      $this->close();
-    }
+  protected function query($query, $types = null, array $params = null) {
+    $this->prepareAndExecute($query, $types, $params)->close();
     return $this;
   }
 

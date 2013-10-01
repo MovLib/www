@@ -17,11 +17,10 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ValidationException;
 
 /**
- * HTML input type file form element.
+ * HTML input type file form element specialized for image uploads.
  *
  * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
  * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
@@ -32,48 +31,51 @@ use \MovLib\Exception\ValidationException;
  * @since 0.0.1-dev
  */
 class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
-  use \MovLib\Presentation\Partial\FormElement\TraitReadonly;
 
   /**
-   * Abstract image instance.
+   * Maximum file size.
    *
-   * @var \MovLib\Data\AbstractImage
+   * The maximum size an image can have, currently set to 15 MB (value given is in Bytes).
+   *
+   * @var int
    */
-  private $abstractImage;
+  public $maximumFileSize = 15728640;
+
+  public $path;
+
+  public $width;
+
+  public $height;
+
+  public $type;
+
+  public $size;
+
+  protected $error;
 
   /**
    * Instantiate new input form element of type file.
    *
-   * @param \MovLib\Data\AbstractImage $abstractImage
-   *   Abstract image instance.
    * @param string $id
    *   The form element's global unique identifier.
-   * @param string $label
-   *   The form element's label text.
-   * @param array $attributes [optional]
-   *   The form element's attributes.
-   * @param array $labelAttributes [optional]
-   *   The form element's label attributes.
    */
-  public function __construct($abstractImage, $id, $label, array $attributes = null, array $labelAttributes = null) {
-    parent::__construct($id, $attributes, $label, $labelAttributes);
-    $this->attributes["accept"]              = implode(", ", array_column($abstractImage->imageSupported, "mime"));
-    $this->attributes["type"]                = "file";
-    $this->attributes["data-max-file-size"]  = $abstractImage->imageMaxFileSize;
-    $this->abstractImage                     = $abstractImage;
+  public function __construct($id) {
+    parent::__construct($id);
+    if (isset($_FILES[$this->id])) {
+      $this->error = $_FILES[$this->id]["error"];
+      $this->path  = $_FILES[$this->id]["tmp_name"];
+      $this->size  = $_FILES[$this->id]["size"];
+    }
   }
 
   /**
    * @inheritdoc
    */
-  public function __toString(){
-    return
-      "{$this->help}<p>" .
-        "<label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label>" .
-        "<input type='hidden' name='MAX_FILE_SIZE' value='{$this->abstractImage->imageMaxFileSize}'>" .
-        "<input{$this->expandTagAttributes($this->attributes)}>" .
-      "</p>"
-    ;
+  public function __toString() {
+    $this->attributes["accept"]           = "image/jpeg, image/png";
+    $this->attributes["data-maxfilesize"] = $this->maximumFileSize;
+    $this->attributes["type"]             = "file";
+    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
   }
 
   /**
@@ -82,39 +84,28 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   public function validate(){
     global $i18n;
 
+    if ($this->error === UPLOAD_ERR_NO_FILE) {
+      if (isset($this->attributes["aria-required"])) {
+        throw new ValidationException($i18n->t("The highlighted image field is required."));
+      }
+      return $this;
+    }
+
+    if ($this->size > $this->maximumFileSize) {
+      throw new ValidationException($i18n->t("The image is too large: it must be {0,number} {1} or less.", $this->formatBytes($this->maximumFileSize)));
+    }
+
     try {
-      switch ($_FILES[$this->id]["error"]) {
-        case UPLOAD_ERR_OK:
-          break;
+      list($this->width, $this->height, $this->type) = getimagesize($this->path);
 
-        case UPLOAD_ERR_INI_SIZE:
-        case UPLOAD_ERR_FORM_SIZE:
-          throw new ValidationException($i18n->t("The uploaded image is too large: it must be {0,number} {1} or less.", $this->formatBytes($this->abstractImage->imageMaxFileSize)));
-
-        case UPLOAD_ERR_PARTIAL:
-        case UPLOAD_ERR_NO_FILE:
-          throw new ValidationException($i18n->t("The image was not completely uploaded, please try again."));
-
-        default:
-          // @todo We have a serious problem!
-          throw new ValidationException($i18n->t("Unknown error!"));
+      if ($this->width === 0 || $this->height === 0 || ($this->type !== IMAGETYPE_JPEG || $this->type !== IMAGETYPE_PNG)) {
+        trigger_error("");
       }
-
-      list($width, $height, $type) = getimagesize($_FILES[$this->id]["tmp_name"]);
-
-      if ($width === 0 || $height === 0 || !in_array($type, $this->abstractImage->imageSupported["types"]) || !in_array($_FILES[$this->id]["type"], $this->abstractImage->imageSupported["mimes"])) {
-        throw new ValidationException($i18n->t("Unsupported image type and/or corrupt file, the following types are supported: {0}", [ $this->attributes["accept"] ]));
-      }
-
-      if ($_FILES[$this->id]["size"] > $this->abstractImage->imageMaxFileSize) {
-        throw new ValidationException($i18n->t("The uploaded image is too large: it must be {0,number} {1} or less.", $this->formatBytes($this->abstractImage->imageMaxFileSize)));
-      }
-
-      $this->abstractImage->imageMoveToStorage($_FILES[$this->id]["tmp_name"], $width, $height, $type);
     }
-    catch (ErrorException $e) {
-      throw new ValidationException($i18n->t("Unsupported image type and/or corrupt file, the following types are supported: {0}", [ $this->attributes["accept"] ]));
+    catch (\MovLib\Exception\ErrorException $e) {
+      throw new ValidationException($i18n->t("Unsupported image type and/or corrupt image, the following types are supported: {0}", [ $this->attributes["accept"] ]));
     }
+
     return $this;
   }
 

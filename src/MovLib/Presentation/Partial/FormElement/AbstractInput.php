@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -17,34 +17,45 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Presentation\Validation\HTML;
-
 /**
- * HTML textarea form element.
+ * Description of AbstractInput
  *
- * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
+abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
 
   /**
-   * @inheritdoc
+   * The form element's value.
+   *
+   * @var string
    */
-  public function __toString() {
-    $this->attributes["aria-multiline"] = "true";
-    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->value}</textarea></p>";
+  public $value;
+
+  /**
+   * Instantiate new input form element.
+   *
+   * @param string $id
+   *   The form element's global identifier.
+   * @param mixed $value [optional]
+   *   The default value for this concrete input form element.
+   */
+  public function __construct($id, $value = null) {
+    parent::__construct($id);
+    $this->value = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }
 
   /**
    * @inheritdoc
    */
-  public function validate() {
-    $this->value = (new HTML($this->value, $this->attributes["data-format"], $this->attributes["data-allow-external"]))->validate();
-    return $this;
+  public function __toString() {
+    if (!empty($this->value)) {
+      $this->attributes["value"] = $this->value;
+    }
+    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
   }
 
 }

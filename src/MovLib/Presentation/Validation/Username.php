@@ -116,6 +116,10 @@ class Username extends \MovLib\Presentation\AbstractBase {
       $errors[] = $i18n->t("The username cannot contain multiple spaces in a row.");
     }
 
+    if (strpos($this->username, "/") !== false) {
+      $errors[] = $i18n->t("The username cannot contain slashes.");
+    }
+
     if (mb_strlen($this->username) > User::MAX_LENGTH_NAME) {
       $errors[] = $i18n->t("The username is too long: it must be {0,number,integer} characters or less.", [ User::MAX_LENGTH_NAME ]);
     }

@@ -89,14 +89,14 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    *
    * @var string
    */
-  private $migrationPath;
+  protected $migrationPath;
 
   /**
    * The database instance.
    *
    * @var \MovDev\Database
    */
-  private $database;
+  protected $database;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

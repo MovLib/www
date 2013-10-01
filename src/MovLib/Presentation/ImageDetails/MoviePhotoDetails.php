@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\ImageDetails;
 
 use \MovLib\Data\AbstractImage;
-use \MovLib\Data\MovieImage;
+use \MovLib\Data\Image\Movie as MovieImage;
 use \MovLib\Data\MovieImages;
 use \MovLib\Exception\Client\NotFoundException;
 use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;

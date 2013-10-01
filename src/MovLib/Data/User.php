@@ -19,7 +19,6 @@ namespace MovLib\Data;
 
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Exception\UserException;
-use \MovLib\View\ImageStyle\ResizeImageStyle;
 
 /**
  * Retrieve user specific data from the database.
@@ -30,7 +29,7 @@ use \MovLib\View\ImageStyle\ResizeImageStyle;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class User extends \MovLib\Data\AbstractImage {
+class User extends \MovLib\Data\Image\AbstractImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -42,6 +41,33 @@ class User extends \MovLib\Data\AbstractImage {
    * @var int
    */
   const AUTHENTICATION_TOKEN_LENGTH = 128;
+
+  /**
+   * Avatar style for span 3 elements.
+   *
+   * Width and height of this image will be 220 pixels.
+   *
+   * @var string
+   */
+  const IMAGE_STYLE_LARGE = 3;
+
+  /**
+   * Avatar style for span 2 elements.
+   *
+   * Width and height of this image will be 140 pixels.
+   *
+   * @var string
+   */
+  const IMAGE_STYLE_MEDIUM = 2;
+
+  /**
+   * Avatar style for span 1 elements.
+   *
+   * Width and height of this image will be 70 pixels.
+   *
+   * @var string
+   */
+  const IMAGE_STYLE_SMALL = 1;
 
   /**
    * Load the user from ID.
@@ -63,27 +89,6 @@ class User extends \MovLib\Data\AbstractImage {
    * @var string
    */
   const FROM_EMAIL = "email";
-
-  /**
-   * Small image style.
-   *
-   * @var int
-   */
-  const IMAGESTYLE_SMALL = "50x50";
-
-  /**
-   * Normal image style.
-   *
-   * @var int
-   */
-  const IMAGESTYLE_NORMAL = "100x100";
-
-  /**
-   * Big image style.
-   *
-   * @var int
-   */
-  const IMAGESTYLE_BIG = "140x140";
 
   /**
    * Maximum length a username can have.
@@ -162,13 +167,6 @@ class User extends \MovLib\Data\AbstractImage {
    * @var int
    */
   public $id;
-
-  /**
-   * Name of the directory within the uploads directory on the server.
-   *
-   * @var string
-   */
-  public $imageDirectory = "user";
 
   /**
    * The user's last login (UNIX timestamp).
@@ -291,26 +289,23 @@ class User extends \MovLib\Data\AbstractImage {
           `real_name` AS `realName`,
           `birthday`,
           `website`,
-          `avatar_extension` AS `avatarExtension`,
-          `avatar_name` AS `avatarHash`,
-          `avatar_changed` AS `avatarChanged`
+          `avatar_changed` AS `imageChanged`,
+          `avatar_name` AS `imageName`,
+          `avatar_type` AS `imageType`
         FROM `users`
           WHERE `{$from}` = ?
         LIMIT 1", $this->types[$from], [ $value ]
       );
+
       if (empty($result[0])) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
+
       foreach ($result[0] as $k => $v) {
         $this->{$k} = $v;
       }
       settype($this->private, "boolean");
       settype($this->deactivated, "boolean");
-      $this->initImage($this->imageHash, [
-        new ResizeImageStyle(self::IMAGESTYLE_SMALL),
-        new ResizeImageStyle(self::IMAGESTYLE_NORMAL),
-        new ResizeImageStyle(self::IMAGESTYLE_BIG),
-      ], 512000);
     }
   }
 
@@ -432,6 +427,17 @@ class User extends \MovLib\Data\AbstractImage {
   }
 
   /**
+   * @inheritdoc
+   */
+  public function getImageStyle($style, array $attributes) {
+    $extension            = image_type_to_extension($this->imageType);
+    $attributes["height"] = $attributes["width"] = $this->span[$style];
+    $style                = $style === self::IMAGE_STYLE_MEDIUM ? "" : ".{$style}";
+    $attributes["src"]    = "{$GLOBALS["movlib"]["static_domain"]}user/{$this->imageName}{$style}{$extension}?c={$this->imageChanged}";
+    return $attributes;
+  }
+
+  /**
    * Get the user's preferred locale.
    *
    * @return string
@@ -503,21 +509,16 @@ class User extends \MovLib\Data\AbstractImage {
    *   The unhashed user's password.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Exception\SessionException
    */
   public function register($name, $email, $rawPassword) {
-    $password          = password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
-    $this->name        = $name;
-    $this->email       = $email;
-    $this->deactivated = false;
-    $this->timeZoneId  = ini_get("date.timezone");
     $this->query(
-      "INSERT INTO `users` (`system_language_code`, `name`, `email`, `password`, `created`, `login`, `time_zone_id`, `dyn_profile`) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, '')",
-      "dssss",
-      [ $_SERVER["LANGUAGE_CODE"], $this->name, $this->email, $password, $this->timeZoneId ],
-      false
+      "INSERT INTO `users` (`avatar_name`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES (?, '', ?, ?, ?, ?)",
+      "sssss",
+      [ $this->filename($name), $email, $name, password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]), $_SERVER["LANGUAGE_CODE"] ]
     );
-    $this->id = $this->stmt->insert_id;
+    $this->email = $email;
+    $this->id    = $this->getInsertID();
+    $this->name  = $name;
     return $this;
   }
 
@@ -530,9 +531,8 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function updateEmail($newEmail) {
-    $this->query("UPDATE `users` SET `email` = ? WHERE `user_id` = ?", "sd", [ $newEmail, $this->id ]);
     $this->email = $newEmail;
-    return $this;
+    return $this->query("UPDATE `users` SET `email` = ? WHERE `user_id` = ?", "sd", [ $this->email, $this->id ]);
   }
 
   /**
@@ -546,9 +546,7 @@ class User extends \MovLib\Data\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function updatePassword($rawPassword) {
-    $password = password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
-    $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $password, $this->id ]);
-    return $this;
+    return $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]), $this->id ]);
   }
 
   /**
@@ -572,6 +570,25 @@ class User extends \MovLib\Data\AbstractImage {
       return $data;
     }
     $errors[] = $i18n->t("Your authentication token has expired, please fill out the form again.");
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function generateImageStyles($source, $type) {
+    return $this;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function moveUploadedImage($source, $type, $style = null){
+    $this->query(
+      "UPDATE `users` SET `avatar_changed` = CURRENT_TIMESTAMP, `avatar_type` = ? WHERE `user_id` = ?",
+      "sd",
+      [ $type, $this->id ]
+    );
+    return parent::moveUploaded($source, $type, "user/{$this->avatarName}", $style);
   }
 
 }
