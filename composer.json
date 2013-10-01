@@ -15,6 +15,7 @@
     "phpunit/phpunit": "3.7.*",
     "phpunit/php-invoker": "1.1.*",
     "phpunit/dbunit": "1.2.*",
-    "phpmyadmin/phpmyadmin": "dev-STABLE"
+    "phpmyadmin/phpmyadmin": "dev-STABLE",
+    "firephp/firephp-core": "dev-master"
   }
 }
