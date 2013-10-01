@@ -31,7 +31,7 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="5.5.2"
+  VERSION="5.5.4"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
@@ -79,9 +79,7 @@ source ${ID}wget.sh "http://us1.php.net/distributions/" "${NAME}-${VERSION}" ".t
 # ---------------------------------------------------------------------------------------------------------------------- DEVELOPMENT
 #
 # We need PDO for PHPUnit in our development system. Otherwise we can't run any database tests.
-./configure \
-  CFLAGS="-O3 -m64" \
-  CXXFLAGS="-O3 -m64" \
+CFLAGS="-O3 -m64 -DMYSQLI_NO_CHANGE_USER_ON_PCONNECT" CXXFLAGS="-O3 -m64" ./configure \
   --disable-flatfile \
   --disable-inifile \
   --disable-short-tags \

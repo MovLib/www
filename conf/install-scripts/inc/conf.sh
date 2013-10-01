@@ -49,6 +49,13 @@ function msgsuccess() {
   echo -e "${COLOR}${1}${RESET}"
 }
 
+function exitonerror() {
+  if [ $? != 0 ]; then
+    msgerror "Last command failed!"
+    exit 1
+  fi
+}
+
 if [ "$(whoami)" != "root" ]; then
   msgerror "You are using a non-privileged account, exiting!"
   exit 1

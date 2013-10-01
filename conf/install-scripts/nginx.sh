@@ -19,6 +19,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # "nginx" installation script.
 #
+# LINK: http://vincent.bernat.im/en/blog/2011-ssl-perfect-forward-secrecy.html
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -30,7 +31,7 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="1.5.3"
+  VERSION="1.5.6"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
@@ -46,21 +47,26 @@ OPENSSL_VERSION="1.0.1e"
 msginfo "Using OpenSSL version ${OPENSSL_VERSION}!"
 source ${ID}wget.sh "https://www.openssl.org/source/" "openssl-${OPENSSL_VERSION}" ".tar.gz"
 cd ..
-msginfo "Changing to directory: ${SD}${NAME}"
+msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
 
 # Install PCRE
-msginfo "Using PCRE version trunk!"
-svn co svn://vcs.exim.org/pcre/code/trunk pcre
-cd pcre
-msginfo "Changing to directory: ${SD}${NAME}/pcre"
-./autogen.sh
+#msginfo "Using PCRE version trunk!"
+#svn co svn://vcs.exim.org/pcre/code/trunk pcre
+#cd pcre
+#msginfo "Changing to directory: ${SD}${NAME}/pcre"
+#./autogen.sh
+#cd ..
+#msginfo "Changing to directory: ${SD}${NAME}"
+PCRE_VERSION="8.33"
+msginfo "Using PCRE version ${PCRE_VERSION}!"
+source ${ID}wget.sh "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/" "pcre-${PCRE_VERSION}" ".tar.gz"
 cd ..
-msginfo "Changing to directory: ${SD}${NAME}"
+msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
 
 # Install Zlib
 source ${ID}git.sh madler zlib
 cd ..
-msginfo "Changing to directory: ${SD}${NAME}"
+msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
 
 ./configure \
   --user="www-data" \
@@ -80,18 +86,13 @@ msginfo "Changing to directory: ${SD}${NAME}"
   --with-http_gzip_static_module \
   --with-http_ssl_module \
   --with-http_spdy_module \
+  --with-openssl-opt="enable-ec_nistp_64_gcc_128" \
   --with-openssl="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
-#
-# LINK: http://vincent.bernat.im/en/blog/2011-ssl-perfect-forward-secrecy.html
-#
-# ./config enable-ec_nistp_64_gcc_128
-# make depend
-#
   --with-md5="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
   --with-md5-asm \
   --with-sha1="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
   --with-sha1-asm \
-  --with-pcre="/usr/local/src/${NAME}-${VERSION}/pcre" \
+  --with-pcre="/usr/local/src/${NAME}-${VERSION}/pcre-${PCRE_VERSION}" \
   --with-pcre-jit \
   --with-zlib="/usr/local/src/${NAME}-${VERSION}/zlib" \
   --without-http_access_module \
@@ -111,15 +112,17 @@ msginfo "Changing to directory: ${SD}${NAME}"
   --without-http_userid_module \
   --without-http_uwsgi_module
 
+exitonerror
+
 # Create cache directories for nginx.
 mkdir -p /var/cache/nginx/body /var/cache/nginx/fastcgi
 
 # Stop currently running nginx process.
 /etc/init.d/nginx stop
 
-make
-checkinstall make install
-make clean
+make && exitonerror
+checkinstall make install && exitonerror
+make clean && exitonerror
 
 # Remove the default configuration files.
 cd conf
