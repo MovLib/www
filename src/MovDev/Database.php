@@ -18,6 +18,7 @@
 namespace MovDev;
 
 use \MovLib\Exception\DatabaseException;
+use \ReflectionMethod;
 
 /**
  * The developer database class allows direct access to all methods from anywhere.
@@ -70,17 +71,17 @@ class Database extends \MovLib\Data\Database {
    */
   public function queries($queries) {
     if (!isset(self::$mysqli[$this->database])) {
-      $this->connect();
+      $rm = new ReflectionMethod($this, "connect");
+      $rm->setAccessible(true);
+      $rm->invoke($this);
     }
     $error = self::$mysqli[$this->database]->multi_query($queries);
     do {
       if ($error === false) {
-        $error = self::$mysqli[$this->database]->error;
-        $errno = self::$mysqli[$this->database]->errno;
-        throw new DatabaseException("Execution of multiple queries failed: {$error} ({$errno})");
+        throw new DatabaseException("Execution of multiple queries failed", self::$mysqli[$this->database]->error, self::$mysqli[$this->database]->errno);
       }
       self::$mysqli[$this->database]->use_result();
-      if ($more = self::$mysqli[$this->database]->more_results()) {
+      if (($more = self::$mysqli[$this->database]->more_results())) {
         $error = self::$mysqli[$this->database]->next_result();
       }
     }
@@ -100,6 +101,13 @@ class Database extends \MovLib\Data\Database {
    */
   public function select($query, $types = null, array $params = null) {
     return parent::select($query, $types, $params);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function selectAssoc($query, $types = null, $params = null) {
+    parent::selectAssoc($query, $types, $params);
   }
 
   /**

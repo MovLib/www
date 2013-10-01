@@ -191,34 +191,24 @@ class Database extends \MovLib\Console\Command\Database {
     $this->setIO($input, $output);
     $options = $this->input->getOptions();
     if ($options[self::OPTION_ALL]) {
-      $this->write("Importing schema ...");
-
-      if (($schema = file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/db/movlib.sql")) === false) {
-        $this->exitOnError("Could not read schema!");
-      }
-
+      // @link http://dev.mysql.com/doc/refman/5.6/en/implicit-commit.html
+      $this->askConfirmation("Drop schema and delete all data?");
       try {
-        $this->database->transactionStart(MYSQLI_TRANS_START_READ_WRITE);
+        $this->write("Importing schema ...");
+        if (($schema = file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/db/movlib.sql")) === false) {
+          $this->exitOnError("Could not read schema!");
+        }
         $this->database->queries($schema);
+        $this->write("Importing Intl ICU translations for countries and languages ...");
+        $this->importIntlTranslations();
+        $this->write("Importing time zone translations ...");
+        $this->importTimeZones();
+        $this->importSeeds();
+        $this->write("All Successfull!", self::MESSAGE_TYPE_INFO);
       }
       catch (DatabaseException $e) {
         $this->exitOnError("Couldn't import schema!", $e->getTraceAsString());
       }
-
-      $this->write("Importing Intl ICU translations for countries and languages ...");
-      $this->importIntlTranslations();
-      $this->write("Importing time zone translations ...");
-      $this->importTimeZones();
-      $this->importSeeds();
-//      $this->write("Creating git repositories ...");
-//      $this->git();
-      try {
-        $this->database->transactionCommit();
-      }
-      catch (DatabaseException $e) {
-        $this->exitOnError("Couldn't commit schema and seeds", $e->getTraceAsString());
-      }
-      $this->write("All Successfull!", self::MESSAGE_TYPE_INFO);
     }
     elseif (array_search("--" . self::OPTION_SEED, $argv) || array_search("-" . self::OPTION_SHORTCUT_SEED, $argv)) {
       empty($options[self::OPTION_SEED]) ? $this->runSeedsInteractive() : $this->importSeeds(true, $options[self::OPTION_SEED]);
@@ -442,6 +432,16 @@ class Database extends \MovLib\Console\Command\Database {
       $this->exitOnError("Could not import time zone translations!", $e->getTraceAsString());
     }
 
+    return $this;
+  }
+
+  /**
+   * Rollback all changes.
+   *
+   * @return this
+   */
+  protected function rollback() {
+    $this->database->transactionRollback();
     return $this;
   }
 
