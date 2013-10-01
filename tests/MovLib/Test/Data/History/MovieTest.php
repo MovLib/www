@@ -340,4 +340,25 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/original_title", "The foobar is a lie");
   }
 
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::getFileAtRevision
+   */
+  public function testGetFileAtRevision() {
+    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");
+    $commitFiles    = get_reflection_method($this->movie, "commitFiles");
+
+    $this->movie->writeFiles(["original_title" => "The foobar is a lie"]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "initial commit");
+
+    $this->movie->writeFiles(["original_title" => "The bar is not a lie"]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "second commit");
+
+    $this->assertEquals(
+      "The foobar is a lie",
+      get_reflection_method($this->movie, "getFileAtRevision")->invoke($this->movie, "original_title", "HEAD^1")
+    );
+  }
+
 }

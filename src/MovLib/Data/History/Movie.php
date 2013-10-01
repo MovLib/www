@@ -28,6 +28,47 @@ namespace MovLib\Data\History;
  */
 class Movie extends AbstractHistory {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * Names of files with serialized content.
+   *
+   * @var array
+   */
+  public $serializedFiles;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  public function __construct($id, $context = "history") {
+    parent::__construct($id, $context);
+    $this->serializedFiles = [
+      "titles",
+      "taglines",
+      "links",
+      "trailers",
+      "cast",
+      "crew",
+      "awards",
+      "relationships",
+      "genres",
+      "styles",
+      "languages",
+      "countries",
+      "directors",
+    ];
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * @inheritdoc
    */
@@ -44,23 +85,10 @@ class Movie extends AbstractHistory {
       }
     }
 
-    foreach ([
-      "titles",
-      "taglines",
-      "links",
-      "trailers",
-      "cast",
-      "crew",
-      "awards",
-      "relationships",
-      "genres",
-      "styles",
-      "languages",
-      "countries",
-      "directors"
-    ] as $key) {
-      if (isset($data[$key])) {
-        $this->writeToFile($key, serialize($data[$key]));
+    $c = count($this->serializedFiles);
+    for ($i = 0; $i < $c; ++$i) {
+      if (isset($data[$this->serializedFiles[$i]])) {
+        $this->writeToFile($this->serializedFiles[$i], serialize($data[$this->serializedFiles[$i]]));
       }
     }
 

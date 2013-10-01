@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\History;
 
 /**
  * The movie history page.
@@ -26,8 +26,8 @@ namespace MovLib\Presentation\Movie;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class History extends \MovLib\Presentation\Movie\AbstractMoviePage {
-  use \MovLib\Presentation\TraitHistory;
+class MovieHistory extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\History\TraitHistory;
 
 
   /**
@@ -35,36 +35,19 @@ class History extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *
    * @global \MovLib\Data\I18n $i18n
    */
-  public function __construct() {
+  public function __construct($context = "history") {
     global $i18n;
     $this->initMovie();
     $this->init($i18n->t("History of {0}", [ $this->title ]));
 
-    $this->historyModel = new \MovLib\Data\History\Movie($this->model->id);
+    $this->historyModel = new \MovLib\Data\History\Movie($this->model->id, $context);
   }
 
-  private function getDiff($head, $ref, $filename) {
-    $processAsArray = [
-      "titles",
-      "taglines",
-      "links",
-      "trailers",
-      "cast",
-      "crew",
-      "awards",
-      "relationships",
-      "genres",
-      "styles",
-      "languages",
-      "countries",
-      "directors"
-    ];
-
-    if (in_array($filename, $processAsArray)) {
-      $methodeName = "get" . ucfirst($filename);
-      return (new \ReflectionMethod($this, $methodeName))->invoke($this, $head, $ref, $filename);
-    }
-    return $this->diffToHtml($head, $ref, $filename);
+  /**
+   * @inheritdoc
+   */
+  protected function getPageContent() {
+    return $this->getRevisionHistoryContent();
   }
 
 }

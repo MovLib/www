@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation;
+namespace MovLib\Presentation\History;
 
 use \IntlDateFormatter;
 use \Locale;
@@ -109,6 +109,18 @@ trait TraitHistory {
   }
 
   /**
+   * @inheritdoc
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [
+      [ $i18n->r("/movies"), $i18n->t("Movies"), [
+        "title" => $i18n->t("Have a look at the latest {0} entries at MovLib.", [ $i18n->t("movie") ])
+      ]]
+    ];
+  }
+
+  /**
    * Helper function to build diff page.
    *
    * @global \MovLib\Data\I18n
@@ -133,7 +145,7 @@ trait TraitHistory {
     for ($i = 0; $i < $c; ++$i) {
        $changedFiles[$i] = $formatedFileNames[$i] .
        "<div class='well'>" .
-         $this->getDiff($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^1", $changedFiles[$i]) .
+         $this->getDiff($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^", $changedFiles[$i]) .
        "</div>";
     }
 
@@ -142,16 +154,6 @@ trait TraitHistory {
       "</div>";
 
     return $html;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    if(isset($_SERVER["REVISION_HASH"])) {
-      return $this->getDiffContent();
-    }
-    return $this->getRevisionHistoryContent();
   }
 
   /**
@@ -203,14 +205,6 @@ trait TraitHistory {
       "</div>";
 
     return $html;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function init($title) {
-    $this->stylesheets[] = "modules/history.css";
-    return parent::init($title);
   }
 
 }
