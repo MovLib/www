@@ -239,10 +239,27 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     $current = unserialize($this->getFileAtRevision($filename, $head));
     $old = unserialize($this->getFileAtRevision($filename, $ref));
 
+
+
     return [
-     "green" => empty($old) ? $current : array_values(array_diff($current, $old)),
-     "red" => empty($old) ? null : array_values(array_diff($old, $current))
+     "green" => empty($old) ? $current : array_values(array_udiff($current, $old, [ $this, 'getArrayDiffDeepCompare' ])),
+     "red" => empty($old) ? null : array_values(array_udiff($old, $current, [ $this, 'getArrayDiffDeepCompare' ]))
     ];
+  }
+
+  /**
+   * Helper method to deep compare two arrays.
+   */
+  public function getArrayDiffDeepCompare($a, $b) {
+    if (serialize($a) == serialize($b)) {
+      return 0;
+    }
+    elseif (serialize($a) > serialize($b)) {
+      return 1;
+    }
+    else {
+      return -1;
+    }
   }
 
   /**
