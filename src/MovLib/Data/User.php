@@ -310,7 +310,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
         [ $value ]
       );
 
-      if (!$this->affectedRows) {
+      if (empty($result)) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
 
@@ -342,8 +342,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   <code>TRUE</code> if this email address is already in use, otherwise <code>FALSE</code>.
    */
   public function checkEmail($email) {
-    $result = $this->select("SELECT `user_id` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]);
-    return !empty($result[0]);
+    return !empty($this->selectAssoc("SELECT `user_id` FROM `users` WHERE `email` = ?", "s", [ $email ]));
   }
 
   /**
@@ -355,8 +354,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   <code>TRUE</code> if this name is already in use, otherwise <code>FALSE</code>.
    */
   public function checkName($name) {
-    $result = $this->select("SELECT `user_id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $name ]);
-    return !empty($result[0]);
+    return !empty($this->selectAssoc("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $name ]));
   }
 
   /**
@@ -414,25 +412,44 @@ class User extends \MovLib\Data\Image\AbstractImage {
     global $session;
     $sessions = $session->getActiveSessions();
     DelayedMethodCalls::stack($session, "delete", array_column($sessions, "session_id"));
+    $this->deleteImageOriginalAndStyles();
     return $this->query(
       "UPDATE `users` SET
-        `private`           = false,
-        `deactivated`       = true,
-        `time_zone_id`      = ?,
-        `dyn_profile`       = '',
-        `sex`               = 0,
-        `country_id`        = NULL,
-        `real_name`         = NULL,
+        `avatar_changed`    = NULL,
+        `avatar_extension`  = NULL,
         `birthday`          = NULL,
-        `website`           = NULL,
+        `country_id`        = NULL,
+        `deactivated`       = true,
+        `dyn_profile`       = '',
         `facebook`          = NULL,
         `google_plus`       = NULL,
+        `private`           = false,
+        `real_name`         = NULL,
+        `sex`               = 0,
+        `time_zone_id`      = ?,
         `twitter`           = NULL,
-        `avatar`            = NULL
+        `website`           = NULL
       WHERE `user_id` = ?",
       "sd",
       [ ini_get("date.timezone"), $this->id ]
     );
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @internal
+   *   No need to delete the directory, all avatars are in the same directory and at least one is always present.
+   * @return this
+   */
+  protected function deleteImageOriginalAndStyles() {
+    foreach ([ self::IMAGE_STYLE_DEFAULT, self::IMAGE_STYLE_SMALL ] as $style) {
+      $path = $this->getImagePath($style);
+      if (is_file($path)) {
+        unlink($path);
+      }
+    }
+    return $this;
   }
 
   /**
@@ -453,24 +470,13 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @return this
    */
   public function moveUploadedImage($source, $width, $height, $extension) {
-    $this->query("UPDATE `users` SET `avatar_changed` = CURRENT_TIMESTAMP, `avatar_extension` = ? WHERE `user_id` = ?", "sd", [ $extension, $this->id ]);
+    $this->imageChanged   = $_SERVER["REQUEST_TIME"];
     $this->imageExtension = $extension;
+    $this->query("UPDATE `users` SET `avatar_changed` = FROM_UNIXTIME(?), `avatar_extension` = ? WHERE `user_id` = ?", "ssd", [ $this->imageChanged, $this->imageExtension, $this->id ]);
     $this->convert($source, self::IMAGE_STYLE_DEFAULT, $this->span[self::IMAGE_STYLE_DEFAULT], $this->span[self::IMAGE_STYLE_DEFAULT], true);
+    unlink($source);
     $this->convert($this->getImagePath(self::IMAGE_STYLE_DEFAULT), self::IMAGE_STYLE_SMALL, $this->span[self::IMAGE_STYLE_SMALL]);
     return $this;
-  }
-
-  /**
-   * Get the user's country code.
-   *
-   * @return null|string
-   *   The user's country code, or <code>NULL</code> if the user has no country set.
-   * @throws \MovLib\Data\DatabaseException
-   */
-  public function getCountryCode() {
-    if ($this->countryId) {
-      return $this->select("SELECT `iso_alpha-2` FROM `countries` WHERE `country_id` = ? LIMIT 1", "i", [ $this->countryId ])[0]["iso_alpha-2"];
-    }
   }
 
   /**
@@ -479,9 +485,9 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   No need to store this data in our database, the dimensions and paths are fixed and never change. Plus creating
    *   the src and grabbing the height and width is ultra fast.
    */
-  public function getImageStyleAttributes($style, &$attributes) {
+  public function getImageStyleAttributes($style, array &$attributes = []) {
     $attributes["height"] = $attributes["width"]  = $this->span[$style];
-    $attributes["src"]    = "{$GLOBALS["movlib"]["static_domain"]}{$this->imageDirectory}/{$this->imageName}.{$style}{$this->imageExtension}?c={$this->imageChanged}";
+    $attributes["src"]    = "{$GLOBALS["movlib"]["static_domain"]}{$this->imageDirectory}/{$this->imageName}.{$style}.{$this->imageExtension}?c={$this->imageChanged}";
     return $attributes;
   }
 

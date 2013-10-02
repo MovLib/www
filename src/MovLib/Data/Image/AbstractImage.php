@@ -31,16 +31,47 @@ abstract class AbstractImage extends \MovLib\Data\Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The image's name.
+   *
+   * @var string
+   */
   protected $imageName;
 
+  /**
+   * The image's width.
+   *
+   * @var int
+   */
   protected $imageWidth;
 
+  /**
+   * The image's height.
+   *
+   * @var int
+   */
   protected $imageHeight;
 
+  /**
+   * The image's extension.
+   *
+   * @var string
+   */
   protected $imageExtension;
 
+  /**
+   * The image's changed timestamp.
+   *
+   * @var int
+   */
   protected $imageChanged;
 
+  /**
+   * The image's created timestamp.
+   *
+   * @var int
+   */
   protected $imageCreated;
 
   /**
@@ -87,39 +118,28 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   ];
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
-
-
-  /**
-   * Generate a single image style.
-   *
-   * @param string $source
-   *   The absolute path to the source image.
-   * @param int $type
-   *   The PHP <var>IMAGETYPE_*</var> constant.
-   * @return this
-   */
-//  abstract public function generateImageStyle($source, $type);
-
-  /**
-   * Move the uploaded image to it's persistent storage and generate all image styles.
-   *
-   * @param string $source
-   *   The absolute path to the source image.
-   * @param int $type
-   *   The PHP <var>IMAGETYPE_*</var> constant.
-   * @param int $width
-   *   The source image's width.
-   * @param int $height
-   *   The source image's height.
-   * @return this
-   */
-//  abstract public function moveUploadedImageAndGenerateStyles($source, $type, $width, $height);
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+  /**
+   * Convert source image to given width, height, optionally crop and use given style for storage.
+   *
+   * Only images that are big enough will be downscaled, if the source image is too small no conversion is performed.
+   * Instead it's simply copied to the target location (specified by style). If you pass width and height the image will
+   * keep its aspect ratio.
+   *
+   * @param string $source
+   *   Absolute path to the source image for conversion.
+   * @param mixed $style
+   *   The style constant.
+   * @param int $width
+   *   The desired width of the converted image.
+   * @param int $height [optional]
+   *   The desired height of the converted image.
+   * @param boolean $crop [optional]
+   *   If set to <code>TRUE</code> the image will be resized first to width x height and then cropped to the center.
+   * @return this
+   */
   protected function convert($source, $style, $width, $height = null, $crop = false) {
     if ($crop === true) {
       $args = "'{$width}x{$height}>^' -gravity 'Center' -crop '{$width}x{$height}+0+0' +repage";
@@ -128,6 +148,36 @@ abstract class AbstractImage extends \MovLib\Data\Database {
       $args = "'{$width}x{$height}>'";
     }
     exec("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 75 -resize {$args} '{$this->getImagePath($style)}'");
+    return $this;
+  }
+
+  /**
+   * Deletes the original image, all styles and the directory from the persistent storage.
+   *
+   * @return this
+   */
+  protected function deleteImageOriginalAndStyles() {
+    $original = $this->getImagePath();
+    if (is_file($original)) {
+      unlink($original);
+    }
+    $originalDirectory = dirname($original);
+    if (is_dir($originalDirectory)) {
+      exec("rmdir -p {$originalDirectory}");
+    }
+    if (!is_array($this->imageStyles)) {
+      $this->imageStyles = unserialize($this->imageStyles);
+    }
+    foreach ($this->imageStyles as $style => $info) {
+      $style = $this->getImagePath($style);
+      if (is_file($style)) {
+        unlink($style);
+      }
+    }
+    $styleDirectory = dirname($style);
+    if (is_dir($styleDirectory)) {
+      exec("rmdir -p {$styleDirectory}");
+    }
     return $this;
   }
 
@@ -147,26 +197,73 @@ abstract class AbstractImage extends \MovLib\Data\Database {
     return mb_strtolower(trim(preg_replace("/[\s-]+/", "-", str_replace([ "?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", '"', "&", "$", "#", "*", "(", ")", "|", "~" ], "", $filename)), ".-_"));
   }
 
-  public function getImageStyleAttributes($style, &$attributes) {
+  /**
+   * Get the image style's attributes.
+   *
+   * This will add (or override) the width, height and src attributes in the attributes array you pass in.
+   *
+   * @param mixed $style
+   *   The style for which you want the attributes.
+   * @param array $attributes [optional]
+   *   The attributes array you already have.
+   * @return array
+   *   The new or altered attributes array.
+   */
+  public function getImageStyleAttributes($style, array &$attributes = []) {
     if (!is_array($this->imageStyles)) {
       $this->imageStyles = unserialize($this->imageStyles);
     }
     return ($attributes += $this->imageStyles[$style]);
   }
 
+  /**
+   * Get the absolute path to the image.
+   *
+   * @param mixed $style [optional]
+   *   The style for which you want the path, if no style is given (default) the path to the original file is returned.
+   * @return string
+   *   The absolute path to the image.
+   */
   protected function getImagePath($style = null) {
-    return $this->getImageURI("{$_SERVER["DOCUMENT_ROOT"]}/uploads/", $style);
+    $root = "{$_SERVER["DOCUMENT_ROOT"]}/uploads/";
+    if (!$style) {
+      $root .= "originals/";
+    }
+    return $this->getImageURI($root, $style);
   }
 
-  protected function getImageSrc($style = null) {
-    return $this->getImageURI($GLOBALS["movlib"]["static_domain"], $style);
+  /**
+   * Get the absolute (static) URL to the image.
+   *
+   * @param mixed $style [optional]
+   *   The style for which you want the URL, if no style is given (default) the URL to the original file is returned.
+   * @return string
+   *   The absolute (static) URL to the image.
+   */
+  protected function getImageURL($style = null) {
+    $root = $GLOBALS["movlib"]["static_domain"];
+    if (!$style) {
+      $root .= "originals/";
+    }
+    return $this->getImageURI($root, $style);
   }
 
+  /**
+   * Get a URI to the image from given root.
+   *
+   * @param string $root
+   *   The URI root.
+   * @param mixed $style [optional]
+   *   The style for which you want the URI, if no style is given (default) the URI to the original file is returned.
+   *   Note that you have to adapt your root!
+   * @return string
+   *   The absolute URI to the image.
+   */
   private function getImageURI($root, $style = null) {
     if ($style) {
       $style = ".{$style}";
     }
-    return "{$root}{$this->imageDirectory}/{$this->imageName}{$style}{$this->imageExtension}";
+    return "{$root}{$this->imageDirectory}/{$this->imageName}{$style}.{$this->imageExtension}";
   }
 
 //  protected function moveUploadedImage($inputImage) {
