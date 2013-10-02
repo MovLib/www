@@ -209,7 +209,7 @@ class Database extends \MovLib\Console\Command\Database {
         $this->write("All Successfull!", self::MESSAGE_TYPE_INFO);
       }
       catch (DatabaseException $e) {
-        $this->exitOnError("Couldn't import schema!", $e->getTraceAsString());
+        $this->exitOnError([ "Couldn't import schema!", "MariaDB error: {$this->database->getMySQLi()->error} ({$this->database->getMySQLi()->errno})" ]);
       }
     }
     elseif (array_search("--" . self::OPTION_SEED, $argv) || array_search("-" . self::OPTION_SHORTCUT_SEED, $argv)) {
@@ -356,8 +356,10 @@ class Database extends \MovLib\Console\Command\Database {
    * @return this
    */
   private function importSeedUploads() {
-    exec("rm -rf {$_SERVER["DOCUMENT_ROOT"]}/uploads/*");
-    exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/");
+    $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/uploads", "Could not fix permissions on uploads folder!");
+    $this->exec("rm -rf {$_SERVER["DOCUMENT_ROOT"]}/uploads/*", "Could not delete existing files in uploads folder!");
+    $this->exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/", "Could not copy all seed uploads to the uploads folder!");
+    $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/uploads", "Could not fix permissions on uploads folder!");
     return $this;
   }
 

@@ -141,10 +141,10 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
     // Do not use image_type_to_extension() because it returns long extensions (jpeg instead of jpg).
     if ($type === IMAGETYPE_JPEG) {
-      $extension = ".jpg";
+      $extension = "jpg";
     }
     if ($type === IMAGETYPE_PNG) {
-      $extension = ".png";
+      $extension = "png";
     }
 
     // All other styles can be generated after the response was sent to the user.

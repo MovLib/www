@@ -17,7 +17,6 @@
  */
 namespace MovLib\Console\Command;
 
-use \MovLib\Console\Command\AbstractCommand;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -30,7 +29,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class NginxRoutes extends AbstractCommand {
+class NginxRoutes extends \MovLib\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
