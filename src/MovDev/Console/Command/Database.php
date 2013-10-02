@@ -342,6 +342,9 @@ class Database extends \MovLib\Console\Command\Database {
     catch (DatabaseException $e) {
       $this->exitOnError("Seed '{$name}' import failed!", $e->getTraceAsString());
     }
+    if (is_dir("{$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/{$name}")) {
+      exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/{$name}/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/{$name}");
+    }
     return $this;
   }
 
@@ -366,6 +369,7 @@ class Database extends \MovLib\Console\Command\Database {
     catch (DatabaseException $e) {
       $this->exitOnError("Seeds import failed!", $e->getTraceAsString());
     }
+    exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/");
     return $this;
   }
 
