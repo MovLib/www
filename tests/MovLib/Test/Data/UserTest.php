@@ -74,9 +74,9 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
+   * @covers \MovLib\Data\Database::selectAssoc
    * @dataProvider dataProviderTestConstruct
    * @group Database
-   * @group Uploads
    */
   public function testConstruct($from, $value) {
     $user = new User($from, $value);
@@ -89,6 +89,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
+   * @covers \MovLib\Data\Database::selectAssoc
    * @dataProvider dataProviderTestConstructException
    * @expectedException \MovLib\Exception\UserException
    * @group Database
@@ -100,6 +101,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::checkEmail
+   * @covers \MovLib\Data\Database::selectAssoc
    * @group Database
    */
   public function testCheckEmail() {
@@ -110,6 +112,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::checkName
+   * @covers \MovLib\Data\Database::selectAssoc
    * @group Database
    */
   public function testCheckName() {
@@ -120,6 +123,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::commit
+   * @covers \MovLib\Data\Database::query
    * @group Database
    * @group FileSystem
    * @group Uploads
@@ -151,6 +155,9 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::deactivate
+   * @covers ::deleteImageOriginalAndStyles
+   * @covers \MovLib\Data\Database::query
+   * @covers \MovLib\Data\Session::getActiveSessions
    * @group Database
    * @group FileSystem
    * @group Uploads
@@ -181,6 +188,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::deleteImageOriginalAndStyles
+   * @covers \MovLib\Data\Image\AbstractImage::getImagePath
    * @group FileSystem
    * @group Uploads
    */
@@ -206,6 +214,8 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::moveUploadedImage
+   * @covers \MovLib\Data\Image\AbstractImage::convert
+   * @covers \MovLib\Data\Image\AbstractImage::getImagePath
    * @group Database
    * @group FileSystem
    * @group Uploads
