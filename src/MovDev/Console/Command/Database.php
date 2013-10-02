@@ -356,7 +356,7 @@ class Database extends \MovLib\Console\Command\Database {
    * @return this
    */
   private function importSeedUploads() {
-    exec("rm -rf {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/*");
+    exec("rm -rf {$_SERVER["DOCUMENT_ROOT"]}/uploads/*");
     exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/");
     return $this;
   }
