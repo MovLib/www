@@ -156,7 +156,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->profile->attributes["data-format"]         = HTML::FORMAT_ANCHORS;
     $this->language                                   = new Select("language", $i18n->getSystemLanguages(), $this->user->systemLanguageCode);
     $this->language->required();
-    $this->country                                    = new Select("country", array_column($i18n->getCountries(I18n::KEY_NAME), I18n::KEY_NAME, I18n::KEY_ID), $this->user->getCountryCode());
+    $this->country                                    = new Select("country", array_column($i18n->getCountries(I18n::KEY_NAME), I18n::KEY_NAME, I18n::KEY_ID), $this->user->countryId);
     $this->timezone                                   = new Select("timezone", $i18n->getTimeZones(), $this->user->timeZoneId);
     $this->timezone->required();
     $this->website                                    = new InputURL("website", $this->user->website);

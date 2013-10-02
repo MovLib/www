@@ -205,11 +205,10 @@ class Database {
    *   The data that was previously stored with this hash or <code>NULL</code> if no record was found for the key.
    */
   protected function tmpGetAndDelete($key) {
-    $this->prepareAndExecute("SELECT `data` FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
-    if ($this->affectedRows > 0) {
-      $this->stmt->bind_result($data);
-      $this->stmt->fetch();
-      return $data;
+    $data = $this->selectAssoc("SELECT `data` FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
+    if (!empty($data)) {
+      $this->prepareAndExecute("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
+      return unserialize($data["data"]);
     }
   }
 

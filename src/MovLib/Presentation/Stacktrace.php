@@ -56,11 +56,11 @@ class Stacktrace {
       else {
         $stacktrace = $this->formatStacktrace($exception->getTrace());
       }
-
+      $exceptionName = get_class($exception);
       $this->stacktrace =
         "<div class='alert alert--info' role='alert'>" .
           "<div class='container'>" .
-            "<h4 class='alert__title'>Stacktrace</h4>" .
+            "<h4 class='alert__title'>Stacktrace for {$exceptionName}</h4>" .
             "<div class='stacktrace'>" .
               "<div class='stacktrace__title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
               "<table class='stacktrace__table'>{$stacktrace}</table>" .

@@ -17,7 +17,6 @@
  */
 namespace MovLib\Console\Command;
 
-use \Symfony\Component\Console\Command\Command;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -32,7 +31,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractCommand extends Command {
+abstract class AbstractCommand extends \Symfony\Component\Console\Command\Command {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -376,7 +375,7 @@ abstract class AbstractCommand extends Command {
    */
   protected final function setOutput(OutputInterface $output) {
     $this->output = $output;
-    if ($output === OutputInterface::VERBOSITY_VERBOSE) {
+    if ($output->getVerbosity() <= OutputInterface::VERBOSITY_VERBOSE) {
       $this->verbose = true;
     }
     return $this;
