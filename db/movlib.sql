@@ -80,7 +80,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`styles` (
   `dyn_names` BLOB NOT NULL COMMENT 'The style name’s translations.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The style description’s translations.' ,
   PRIMARY KEY (`style_id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) )
+  UNIQUE INDEX `uq_styles_name` (`name` ASC) )
 COMMENT = 'Contains all movie styles.'
 ROW_FORMAT = COMPRESSED;
 
@@ -280,7 +280,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`licenses` (
   `icon_hash` CHAR(10) NULL COMMENT 'The hash of the license icon.' ,
   `admin` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Flag which determines whether this license can be edited by ever user (FALSE - 0) or only by admins (TRUE - 1).\nDefaults to 0.' ,
   PRIMARY KEY (`license_id`) ,
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
+  UNIQUE INDEX `uq_licenses_name` (`name` ASC) )
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_general_ci
 ROW_FORMAT = COMPRESSED;
@@ -310,7 +310,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons_photos` (
   INDEX `fk_persons_photos_persons` (`person_id` ASC) ,
   INDEX `fk_persons_photos_images` (`image_id` ASC) ,
   INDEX `fk_persons_photos_users` (`user_id` ASC) ,
-  INDEX `fk_persons_photos_licenses1_idx` (`license_id` ASC) ,
+  INDEX `fk_persons_photos_licenses` (`license_id` ASC) ,
   CONSTRAINT `fk_persons_photos_persons`
     FOREIGN KEY (`person_id` )
     REFERENCES `movlib`.`persons` (`person_id` )
@@ -355,7 +355,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`companies_images` (
   INDEX `fk_companies_images_companies` (`company_id` ASC) ,
   INDEX `fk_companies_images_images` (`image_id` ASC) ,
   INDEX `fk_companies_images_users` (`user_id` ASC) ,
-  INDEX `fk_companies_images_licenses1_idx` (`license_id` ASC) ,
+  INDEX `fk_companies_images_licenses` (`license_id` ASC) ,
   CONSTRAINT `fk_companies_images_companies`
     FOREIGN KEY (`company_id` )
     REFERENCES `movlib`.`companies` (`company_id` )
@@ -565,7 +565,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`awards` (
   `dyn_names` BLOB NOT NULL COMMENT 'The award’s title translations.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description translations.' ,
   PRIMARY KEY (`award_id`) ,
-  UNIQUE INDEX `uq_jobs_title` (`name` ASC) )
+  UNIQUE INDEX `uq_awards_name` (`name` ASC) )
 COMMENT = 'Contains all job related data.'
 ROW_FORMAT = COMPRESSED;
 
@@ -584,10 +584,10 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   `year` SMALLINT UNSIGNED NOT NULL COMMENT 'The year the award has been given to the movie.' ,
   `won` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag, whether the award has been won (true), or if there was only the nomination (false).' ,
   PRIMARY KEY (`movie_id`, `award_count`) ,
-  INDEX `fk_awards_movies_movies1_idx` (`movie_id` ASC) ,
-  INDEX `fk_awards_movies_awards1_idx` (`award_id` ASC) ,
-  INDEX `fk_persons_awards_persons2_idx` (`person_id` ASC) ,
-  INDEX `fk_persons_awards_companies1_idx` (`company_id` ASC) ,
+  INDEX `fk_awards_movies_movies` (`movie_id` ASC) ,
+  INDEX `fk_awards_movies_awards` (`award_id` ASC) ,
+  INDEX `fk_persons_awards_persons` (`person_id` ASC) ,
+  INDEX `fk_persons_awards_companies` (`company_id` ASC) ,
   CONSTRAINT `fk_movies_awards_awards`
     FOREIGN KEY (`award_id` )
     REFERENCES `movlib`.`awards` (`award_id` )
@@ -621,7 +621,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   `title` BLOB NOT NULL COMMENT 'The movie\'s title.' ,
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.' ,
   `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determine if this title is the display title in the specified language.' ,
-  INDEX `fk_movies_titles_languages1_idx` (`language_id` ASC) ,
+  INDEX `fk_movies_titles_languages` (`language_id` ASC) ,
   INDEX `fk_movies_titles_movies` (`movie_id` ASC) ,
   CONSTRAINT `fk_movies_titles_movies`
     FOREIGN KEY (`movie_id` )
@@ -645,7 +645,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this tagline is in.' ,
   `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.' ,
   `dyn_comments` BLOB NOT NULL COMMENT 'The tagline\'s translatable comment.' ,
-  INDEX `fk_movies_taglines_languages1_idx` (`language_id` ASC) ,
+  INDEX `fk_movies_taglines_languages` (`language_id` ASC) ,
   INDEX `fk_movies_taglines_movies` (`movie_id` ASC) ,
   CONSTRAINT `fk_movies_taglines_movies`
     FOREIGN KEY (`movie_id` )
@@ -685,7 +685,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_links` (
   `title` VARCHAR(100) NULL COMMENT 'The link\'s title attribute.' ,
   `text` VARCHAR(100) NOT NULL COMMENT 'The link\'s display text.' ,
   `url` VARCHAR(255) NOT NULL COMMENT 'The link\'s URL target' ,
-  INDEX `fk_movies_links_languages1_idx` (`language_id` ASC) ,
+  INDEX `fk_movies_links_languages` (`language_id` ASC) ,
   INDEX `fk_movies_links_movies` (`movie_id` ASC) ,
   CONSTRAINT `fk_movies_links_movies`
     FOREIGN KEY (`movie_id` )
@@ -742,8 +742,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_images` (
   PRIMARY KEY (`movie_id`, `image_id`, `type`) ,
   INDEX `fk_posters_movies` (`movie_id` ASC) ,
   INDEX `fk_movies_images_users` (`user_id` ASC) ,
-  INDEX `fk_movies_images_licenses1_idx` (`license_id` ASC) ,
-  INDEX `fk_movies_images_countries1_idx` (`country_id` ASC) ,
+  INDEX `fk_movies_images_licenses` (`license_id` ASC) ,
+  INDEX `fk_movies_images_countries` (`country_id` ASC) ,
   CONSTRAINT `fk_movies_images_movies`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )
@@ -759,7 +759,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_images` (
     REFERENCES `movlib`.`licenses` (`license_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_countries1`
+  CONSTRAINT `fk_movies_images_countries`
     FOREIGN KEY (`country_id` )
     REFERENCES `movlib`.`countries` (`country_id` )
     ON DELETE NO ACTION
@@ -800,7 +800,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`series_seasons` (
   `start_year` SMALLINT NULL COMMENT 'The year the season started airing for the first time.' ,
   `end_year` SMALLINT NULL COMMENT 'The year the season ended for the first time.' ,
   PRIMARY KEY (`series_id`, `seasons_number`) ,
-  INDEX `fk_series_seasons_series1_idx` (`series_id` ASC) ,
+  INDEX `fk_series_seasons_series` (`series_id` ASC) ,
   CONSTRAINT `fk_series_seasons_series`
     FOREIGN KEY (`series_id` )
     REFERENCES `movlib`.`series` (`series_id` )
@@ -820,8 +820,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`series_titles` (
   `title` BLOB NOT NULL COMMENT 'The series´ title.' ,
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.' ,
   `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determines whether this is the title to diplay in the localized site or not.' ,
-  INDEX `fk_series_titles_series1_idx` (`series_id` ASC) ,
-  INDEX `fk_series_titles_languages_idx` (`language_id` ASC) ,
+  INDEX `fk_series_titles_series` (`series_id` ASC) ,
+  INDEX `fk_series_titles_languages` (`language_id` ASC) ,
   CONSTRAINT `fk_series_titles_series`
     FOREIGN KEY (`series_id` )
     REFERENCES `movlib`.`series` (`series_id` )
@@ -848,7 +848,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`seasons_episodes` (
   `original_air_date` DATE NULL COMMENT 'The date the episode was originally aired.' ,
   `original_title` BLOB NOT NULL COMMENT 'The episode´s original title.' ,
   PRIMARY KEY (`series_id`, `seasons_number`, `position`) ,
-  INDEX `fk_seasons_episodes_series_seasons1_idx1` (`series_id` ASC, `seasons_number` ASC) ,
+  INDEX `fk_seasons_episodes_series_seasons` (`series_id` ASC, `seasons_number` ASC) ,
   CONSTRAINT `fk_seasons_episodes_series_seasons`
     FOREIGN KEY (`series_id` , `seasons_number` )
     REFERENCES `movlib`.`series_seasons` (`series_id` , `seasons_number` )
@@ -870,8 +870,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`episodes_titles` (
   `title` BLOB NOT NULL COMMENT 'The episode´s title.' ,
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this episode title.' ,
   `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determine if this episode title is the display title in the specified language.' ,
-  INDEX `fk_episodes_titles_seasons_episodes1_idx` (`series_id` ASC, `seasons_number` ASC, `position` ASC) ,
-  INDEX `fk_episodes_titles_languages1_idx` (`language_id` ASC) ,
+  INDEX `fk_episodes_titles_seasons_episodes` (`series_id` ASC, `seasons_number` ASC, `position` ASC) ,
+  INDEX `fk_episodes_titles_languages` (`language_id` ASC) ,
   CONSTRAINT `fk_episodes_titles_seasons_episodes`
     FOREIGN KEY (`series_id` , `seasons_number` , `position` )
     REFERENCES `movlib`.`seasons_episodes` (`series_id` , `seasons_number` , `position` )
@@ -894,14 +894,14 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`series_genres` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series\' unique ID.' ,
   `genre_id` INT UNSIGNED NOT NULL COMMENT 'The genre\'s unique ID.' ,
   PRIMARY KEY (`series_id`, `genre_id`) ,
-  INDEX `fk_series_genres_genres1_idx` (`genre_id` ASC) ,
-  INDEX `fk_series_genres_series1_idx` (`series_id` ASC) ,
-  CONSTRAINT `fk_series_genres_series1`
+  INDEX `fk_series_genres_genres` (`genre_id` ASC) ,
+  INDEX `fk_series_genres_series` (`series_id` ASC) ,
+  CONSTRAINT `fk_series_genres_series`
     FOREIGN KEY (`series_id` )
     REFERENCES `movlib`.`series` (`series_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_series_genres_genres1`
+  CONSTRAINT `fk_series_genres_genres`
     FOREIGN KEY (`genre_id` )
     REFERENCES `movlib`.`genres` (`genre_id` )
     ON DELETE NO ACTION
@@ -917,14 +917,14 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`series_styles` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series\' unique ID.' ,
   `style_id` INT UNSIGNED NOT NULL COMMENT 'The style\'s unique ID.' ,
   PRIMARY KEY (`series_id`, `style_id`) ,
-  INDEX `fk_series_styles_styles1_idx` (`style_id` ASC) ,
-  INDEX `fk_series_styles_series1_idx` (`series_id` ASC) ,
-  CONSTRAINT `fk_series_styles_series1`
+  INDEX `fk_series_styles_styles` (`style_id` ASC) ,
+  INDEX `fk_series_styles_series` (`series_id` ASC) ,
+  CONSTRAINT `fk_series_styles_series`
     FOREIGN KEY (`series_id` )
     REFERENCES `movlib`.`series` (`series_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_series_styles_styles1`
+  CONSTRAINT `fk_series_styles_styles`
     FOREIGN KEY (`style_id` )
     REFERENCES `movlib`.`styles` (`style_id` )
     ON DELETE NO ACTION
@@ -945,7 +945,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`articles` (
   `admin` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Determines whether the article can be edited by users (FALSE - 0) or not (TRUE - 1). Defaults to FALSE (0).' ,
   `commit` CHAR(40) NULL COMMENT 'The article\'s last commit sha-1 hash.' ,
   PRIMARY KEY (`article_id`) ,
-  UNIQUE INDEX `uq_title` (`title` ASC) )
+  UNIQUE INDEX `uq_articles_title` (`title` ASC) )
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
@@ -986,14 +986,14 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`master_releases` (
   `packaging_id` INT UNSIGNED NULL COMMENT 'The master release´s packaging (Only present if there are more than 1 releases in this master release).' ,
   `commit` CHAR(40) NULL COMMENT 'The master release\'s last commit sha-1 hash.' ,
   PRIMARY KEY (`master_release_id`) ,
-  INDEX `fk_master_releases_countries1_idx` (`country_id` ASC) ,
-  INDEX `fk_master_releases_packaging1_idx` (`packaging_id` ASC) ,
-  CONSTRAINT `fk_master_releases_countries1`
+  INDEX `fk_master_releases_countries` (`country_id` ASC) ,
+  INDEX `fk_master_releases_packaging` (`packaging_id` ASC) ,
+  CONSTRAINT `fk_master_releases_countries`
     FOREIGN KEY (`country_id` )
     REFERENCES `movlib`.`countries` (`country_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_master_releases_packaging1`
+  CONSTRAINT `fk_master_releases_packaging`
     FOREIGN KEY (`packaging_id` )
     REFERENCES `movlib`.`packaging` (`packaging_id` )
     ON DELETE NO ACTION
@@ -1021,7 +1021,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`releases` (
   `bin_type_data` BLOB NOT NULL COMMENT 'The release´s type specific fields in serialized igbinary format.' ,
   INDEX `fk_releases_aspect_ratios` (`aspect_ratio_id` ASC) ,
   PRIMARY KEY (`release_id`) ,
-  INDEX `fk_releases_packaging1_idx` (`packaging_id` ASC) ,
+  INDEX `fk_releases_packaging` (`packaging_id` ASC) ,
   CONSTRAINT `fk_releases_aspect_ratios`
     FOREIGN KEY (`aspect_ratio_id` )
     REFERENCES `movlib`.`aspect_ratios` (`aspect_ratio_id` )
@@ -1032,7 +1032,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`releases` (
     REFERENCES `movlib`.`master_releases` (`master_release_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_releases_packaging1`
+  CONSTRAINT `fk_releases_packaging`
     FOREIGN KEY (`packaging_id` )
     REFERENCES `movlib`.`packaging` (`packaging_id` )
     ON DELETE NO ACTION
@@ -1048,8 +1048,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_releases` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie´s unique ID.' ,
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release´s unique ID that is related to the movie.' ,
   PRIMARY KEY (`movie_id`, `release_id`) ,
-  INDEX `fk_movies_releases_releases1_idx` (`release_id` ASC) ,
-  INDEX `fk_movies_releases_movies1_idx` (`movie_id` ASC) ,
+  INDEX `fk_movies_releases_releases` (`release_id` ASC) ,
+  INDEX `fk_movies_releases_movies` (`movie_id` ASC) ,
   CONSTRAINT `fk_movies_releases_movies1`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )
@@ -1071,8 +1071,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`releases_labels` (
   `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company´s unique ID of the(additional)  label this release is related to.' ,
   `cat_no` TINYBLOB NULL COMMENT 'The release´s catalog number on this label.' ,
   PRIMARY KEY (`release_id`, `company_id`) ,
-  INDEX `fk_releases_companies_companies1_idx` (`company_id` ASC) ,
-  INDEX `fk_releases_companies_releases1_idx` (`release_id` ASC) ,
+  INDEX `fk_releases_labels_companies` (`company_id` ASC) ,
+  INDEX `fk_releases_labels_releases` (`release_id` ASC) ,
   CONSTRAINT `fk_releases_companies_releases`
     FOREIGN KEY (`release_id` )
     REFERENCES `movlib`.`releases` (`release_id` )
@@ -1188,14 +1188,14 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`master_releases_labels` (
   `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company´s unique ID of the label this (master) release is related to.' ,
   `cat_no` TINYBLOB NULL COMMENT 'The master release´s catalog number on this label.' ,
   PRIMARY KEY (`master_release_id`, `company_id`) ,
-  INDEX `fk_master_releases_companies_companies1_idx` (`company_id` ASC) ,
-  INDEX `fk_master_releases_companies_master_releases1_idx` (`master_release_id` ASC) ,
-  CONSTRAINT `fk_master_releases_companies_master_releases1`
+  INDEX `fk_master_releases_labels_companies` (`company_id` ASC) ,
+  INDEX `fk_master_releases_labels_master_releases` (`master_release_id` ASC) ,
+  CONSTRAINT `fk_master_releases_labels_master_releases`
     FOREIGN KEY (`master_release_id` )
     REFERENCES `movlib`.`master_releases` (`master_release_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_master_releases_companies_companies1`
+  CONSTRAINT `fk_master_releases_labels_companies`
     FOREIGN KEY (`company_id` )
     REFERENCES `movlib`.`companies` (`company_id` )
     ON DELETE NO ACTION
@@ -1215,7 +1215,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`awards_categories` (
   `dyn_names` BLOB NOT NULL COMMENT 'The award category’s title translations.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award category’s description translations.' ,
   PRIMARY KEY (`award_id`, `award_category_id`) ,
-  CONSTRAINT `fk_awards_categories_awards1`
+  CONSTRAINT `fk_awards_categories_awards`
     FOREIGN KEY (`award_id` )
     REFERENCES `movlib`.`awards` (`award_id` )
     ON DELETE NO ACTION
@@ -1232,13 +1232,13 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user\'s unique ID.' ,
   `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user\'s rating for this movie (1-5).' ,
   PRIMARY KEY (`movie_id`, `user_id`) ,
-  INDEX `fk_movies_ratings_users1_idx` (`user_id` ASC) ,
-  CONSTRAINT `fk_movies_ratings_movies1`
+  INDEX `fk_movies_ratings_users` (`user_id` ASC) ,
+  CONSTRAINT `fk_movies_ratings_movies`
     FOREIGN KEY (`movie_id` )
     REFERENCES `movlib`.`movies` (`movie_id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_ratings_users1`
+  CONSTRAINT `fk_movies_ratings_users`
     FOREIGN KEY (`user_id` )
     REFERENCES `movlib`.`users` (`user_id` )
     ON DELETE NO ACTION
@@ -1255,9 +1255,9 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_relationships` (
   `movie_id_other` BIGINT UNSIGNED NOT NULL COMMENT 'The second movie\'s unique ID in this relationship.' ,
   `relationship_type_id` BIGINT NOT NULL COMMENT 'The unique ID of the relationship type.' ,
   PRIMARY KEY (`movie_id`, `movie_id_other`, `relationship_type_id`) ,
-  INDEX `fk_movies_relationships_relationship_types1_idx` (`relationship_type_id` ASC) ,
-  INDEX `fk_movies_relationships_movies1_idx` (`movie_id` ASC) ,
-  INDEX `fk_movies_relationships_movies2_idx` (`movie_id_other` ASC) ,
+  INDEX `fk_movies_relationships_relationship_types` (`relationship_type_id` ASC) ,
+  INDEX `fk_movies_relationships_movies` (`movie_id` ASC) ,
+  INDEX `fk_movies_relationships_movies_other` (`movie_id_other` ASC) ,
   CONSTRAINT `fk_movies_relationships_relationship_types`
     FOREIGN KEY (`relationship_type_id` )
     REFERENCES `movlib`.`relationship_types` (`relationship_type_id` )
@@ -1287,8 +1287,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`sessions` (
   `ip_address` BLOB NOT NULL COMMENT 'The session\'s IP address.' ,
   `user_agent` BLOB NOT NULL COMMENT 'The session\'s user agent string.' ,
   PRIMARY KEY (`session_id`) ,
-  INDEX `fk_sessions_users1_idx` (`user_id` ASC) ,
-  CONSTRAINT `fk_sessions_users1`
+  INDEX `fk_sessions_users` (`user_id` ASC) ,
+  CONSTRAINT `fk_sessions_users`
     FOREIGN KEY (`user_id` )
     REFERENCES `movlib`.`users` (`user_id` )
     ON DELETE NO ACTION
