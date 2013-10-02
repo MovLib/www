@@ -111,13 +111,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   public $serializedFiles;
 
   /**
-   * Names of files with serialized arrays containing only IDs as content.
-   *
-   * @var array
-   */
-  public $serializedIdFiles;
-
-  /**
    * Entity's short name.
    *
    * @var string
@@ -246,10 +239,10 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     $current = unserialize($this->getFileAtRevision($filename, $head));
     $old = unserialize($this->getFileAtRevision($filename, $ref));
 
-    if (empty($old) === true) {
-      return [ "green" => $current, "red" => null ];
-    }
-    return [ "green" => array_values(array_diff($current, $old)), "red" => array_values(array_diff($old, $current)) ];
+    return [
+     "green" => empty($old) ? $current : array_values(array_diff($current, $old)),
+     "red" => empty($old) ? null : array_values(array_diff($old, $current))
+    ];
   }
 
   /**
@@ -397,12 +390,10 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       }
     }
 
-    $allSerializedFiles = array_merge($this->serializedFiles, $this->serializedIdFiles);
-
-    $c = count($allSerializedFiles);
+    $c = count($this->serializedFiles);
     for ($i = 0; $i < $c; ++$i) {
-      if (isset($data[$allSerializedFiles[$i]])) {
-        $this->writeToFile($allSerializedFiles[$i], serialize($data[$allSerializedFiles[$i]]));
+      if (isset($data[$this->serializedFiles[$i]])) {
+        $this->writeToFile($this->serializedFiles[$i], serialize($data[$this->serializedFiles[$i]]));
       }
     }
 
