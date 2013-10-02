@@ -34,6 +34,26 @@ class Database extends \MovLib\Data\Database {
   /**
    * @inheritdoc
    */
+  public $affectedRows;
+
+  /**
+   * @inheritdoc
+   */
+  public $database;
+
+  /**
+   * @inheritdoc
+   */
+  public $insertId;
+
+  /**
+   * @inheritdoc
+   */
+  public $stmt;
+
+  /**
+   * @inheritdoc
+   */
   public $transactionActive = false;
 
   /**
@@ -107,7 +127,21 @@ class Database extends \MovLib\Data\Database {
    * @inheritdoc
    */
   public function selectAssoc($query, $types = null, $params = null) {
-    parent::selectAssoc($query, $types, $params);
+    return parent::selectAssoc($query, $types, $params);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function tmpSet($data, $ttl = self::TMP_TTL_DAILY) {
+    return parent::tmpSet($data, $ttl);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function tmpGetAndDelete($key) {
+    return parent::tmpGetAndDelete($key);
   }
 
   /**
