@@ -107,6 +107,13 @@ class Movie extends \MovLib\Data\Database {
    */
   public $synopsis;
 
+  /**
+   * The movie's created timestamp.
+   *
+   * @var int
+   */
+  public $created;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties from other tables
 
@@ -266,7 +273,8 @@ class Movie extends \MovLib\Data\Database {
           `year`,
           `runtime`,
           `rank`,
-          COLUMN_GET(`dyn_synopses`, '{$i18n->languageCode}' AS BINARY) AS `synopsis`
+          COLUMN_GET(`dyn_synopses`, '{$i18n->languageCode}' AS BINARY) AS `synopsis`,
+          UNIX_TIMESTAMP(`created`) AS `created`
         FROM `movies`
         WHERE `movie_id` = ?
           LIMIT 1",
@@ -295,23 +303,28 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getAwards() {
     global $i18n;
-    if (!$this->awards) {
-      $this->awards = $this->select(
-        "SELECT
-          a.`award_id` AS `id`,
-          a.`name` AS `name`,
-          COLUMN_GET(a.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`,
-          ma.`year` AS `year`
-        FROM `movies_awards` ma
-          INNER JOIN `awards` a
-            ON ma.`award_id` = a.`award_id`
-        WHERE ma.`movie_id` = ?
-          ORDER BY `nameLocalized` ASC, `name` ASC",
-        "d",
-        [ $this->id ]
-      );
+    $awards = $this->select(
+      "SELECT
+        a.`award_id` AS `id`,
+        a.`name` AS `name`,
+        COLUMN_GET(a.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`,
+        ma.`year` AS `year`,
+        `won`
+      FROM `movies_awards` ma
+        INNER JOIN `awards` a
+          ON ma.`award_id` = a.`award_id`
+      WHERE ma.`movie_id` = ?
+        ORDER BY `name` ASC",
+      "d",
+      [ $this->id ]
+    );
+    $c = count($awards);
+    $tmpAwards = [];
+    for ($i = 0; $i < $c; ++$i) {
+      settype($awards[$i]["won"], "boolean");
+      $awards[$i]["name"] = empty($awards[$i]["name_localized"]) ? $awards[$i]["name"] : $awards[$i]["name_localized"];
     }
-    return $this->awards;
+    return $awards;
   }
 
   /**
@@ -321,27 +334,25 @@ class Movie extends \MovLib\Data\Database {
    *   Numeric array containing the cast information as associative array.
    */
   public function getCast() {
-    if (!$this->cast) {
-      $this->cast = $this->select(
-        "SELECT
-          p.`person_id` AS `id`,
-          p.`name` AS `name`,
-          p.`deleted` AS `deleted`,
-          mc.`roles`
-        FROM `movies_cast` mc
-          INNER JOIN `persons` p
-            ON mc.`person_id` = p.`person_id`
-        WHERE mc.`movie_id` = ?
-          ORDER BY `name` ASC",
-        "d",
-        [ $this->id ]
-      );
-      $c = count($this->cast);
-      for ($i = 0; $i < $c; ++$i){
-        settype($this->cast[$i]["deleted"], "boolean");
-      }
+    $cast = $this->select(
+      "SELECT
+        p.`person_id` AS `id`,
+        p.`name` AS `name`,
+        p.`deleted` AS `deleted`,
+        mc.`roles`
+      FROM `movies_cast` mc
+        INNER JOIN `persons` p
+          ON mc.`person_id` = p.`person_id`
+      WHERE mc.`movie_id` = ?
+        ORDER BY `name` ASC",
+      "d",
+      [ $this->id ]
+    );
+    $c = count($this->cast);
+    for ($i = 0; $i < $c; ++$i){
+      settype($this->cast[$i]["deleted"], "boolean");
     }
-    return $this->cast;
+    return $cast;
   }
 
   /**

@@ -3,7 +3,7 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright Â© 2013-present {@link http://movlib.org/ MovLib}.
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -27,6 +27,8 @@ use \MovLib\Data\I18n;
 use \MovLib\Exception\DatabaseException;
 
 /**
+ * @coversDefaultClass \MovLib\Data\I18n
+ * @group Database
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright Â© 2013â€“present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -40,20 +42,6 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
 
 
   /**
-   * The default system locale.
-   *
-   * @var string
-   */
-  public $defaultLocale;
-
-  /**
-   * The default system language code.
-   *
-   * @var string
-   */
-  public $defaultLanguageCode;
-
-  /**
    * The I18n object under test.
    *
    * @var \MovLib\Data\I18n
@@ -63,12 +51,6 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
 
   // ------------------------------------------------------------------------------------------------------------------- Magic methods
 
-
-  public function __construct($name = NULL, array $data = array(), $dataName = '') {
-    parent::__construct($name, $data, $dataName);
-    $this->defaultLocale = Locale::getDefault();
-    $this->defaultLanguageCode = "{$this->defaultLocale[0]}{$this->defaultLocale[1]}";
-  }
 
   /**
    * @inheritdoc
@@ -96,10 +78,12 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
    *
    * @return array
    */
-  public function acceptLanguageDataProvider() {
+  public function dataProviderTestConstructAcceptLanguageHeader() {
+    $defaultLocale = \Locale::getDefault();
+    $defaultLanguageCode = "{$defaultLocale[0]}{$defaultLocale[1]}";
     $args = [
-      [ null, $this->defaultLocale, $this->defaultLanguageCode ],
-      [ "xx-XX", $this->defaultLocale, $this->defaultLanguageCode ]
+      [ null, $defaultLocale, $defaultLanguageCode ],
+      [ "xx-XX", $defaultLocale, $defaultLanguageCode ]
     ];
     foreach ($GLOBALS["movlib"]["locales"] as $code => $locale) {
       $args[] = [ $locale, $locale, $code ];
@@ -114,9 +98,11 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
    *
    * @return array
    */
-  public function languageCodeDataProvider() {
+  public function dataProviderTestConstructLanguageCode() {
+    $defaultLocale = \Locale::getDefault();
+    $defaultLanguageCode = "{$defaultLocale[0]}{$defaultLocale[1]}";
     $args = [
-      [ null, $this->defaultLocale, $this->defaultLanguageCode ]
+      [ null, $defaultLocale, $defaultLanguageCode ]
     ];
     foreach ($GLOBALS["movlib"]["locales"] as $code => $locale) {
       $args[] = [ $code, $locale, $code ];
@@ -129,16 +115,14 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
 
 
   /**
-   * Test the constructor using the Accept-Language HTTP header.
-   *
    * @param string $acceptLanguage
    *   The Accept-Language HTTP header.
    * @param string $expectedLocale
    *   The expected locale.
    * @param string $expectedLanguageCode
    *   The expected language code.
-   * @covers \MovLib\Data\I18n::__construct
-   * @dataProvider acceptLanguageDataProvider
+   * @covers ::__construct
+   * @dataProvider dataProviderTestConstructAcceptLanguageHeader
    */
   public function testConstructAcceptLanguageHeader($acceptLanguage, $expectedLocale, $expectedLanguageCode) {
     // Unset the language code offset to ensure the Accept-Language header is used for determining the locale.
@@ -151,16 +135,14 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the constructor using the languaguage code.
-   *
    * @param string $languageCode
    *   The language code.
    * @param string $expectedLocale
    *   The expected locale.
    * @param string $expectedLanguageCode
    *   The expected language code.
-   * @covers \MovLib\Data\I18n::__construct
-   * @dataProvider languageCodeDataProvider
+   * @covers ::__construct
+   * @dataProvider dataProviderTestConstructLanguageCode
    */
   public function testConstructLanguageCode($languageCode, $expectedLocale, $expectedLanguageCode) {
     // Set HTTP_ACCEPT_HEADER to "xx_XX" to verify the weight order of locale retrievals.
@@ -175,7 +157,7 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   /**
    * Test the constuctor with supplied locale.
    *
-   * @covers \MovLib\Data\I18n::__construct
+   * @covers ::__construct
    */
   public function testConstructLocale() {
     $i18n = new I18n("xx_XX");
@@ -188,9 +170,7 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
 
 
   /**
-   * Test the formatDate() method with various input.
-   *
-   * @covers \MovLib\Data\I18n::formatDate
+   * @covers ::formatDate
    */
   public function testFormatDate() {
     $timestamp = time();
@@ -213,9 +193,7 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the formateMessage() method with various input.
-   *
-   * @covers \MovLib\Data\I18n::formatMessage
+   * @covers ::formatMessage
    */
   public function testFormatMessage() {
     // Insert test translations.
@@ -285,10 +263,8 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the r() and t() methods with various input.
-   *
-   * @covers \MovLib\Data\I18n::r
-   * @covers \MovLib\Data\I18n::t
+   * @covers ::r
+   * @covers ::t
    * @depends testFormatMessage
    */
   public function testRAndT() {
@@ -310,10 +286,8 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the getCountries() method with different locales and all keys.
-   *
-   * @covers \MovLib\Data\I18n::getCollator
-   * @covers \MovLib\Data\I18n::getCountries
+   * @covers ::getCollator
+   * @covers ::getCountries
    */
   public function testGetCountries() {
     $countryId = 26;
@@ -360,11 +334,9 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the getLanguages() method with different locales and all keys.
-   *
-   * @covers \MovLib\Data\I18n::getCollator
-   * @covers \MovLib\Data\I18n::getLanguageId
-   * @covers \MovLib\Data\I18n::getLanguages
+   * @covers ::getCollator
+   * @covers ::getLanguageId
+   * @covers ::getLanguages
    */
   public function testGetLanguages() {
     $languageId = 110;
@@ -413,9 +385,7 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the getSystemLanguages() method with different locales.
-   *
-   * @covers \MovLib\Data\I18n::getSystemLanguages
+   * @covers ::getSystemLanguages
    */
   public function testGetSystemLanguages() {
     // English locale.
@@ -434,9 +404,7 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the getSystemLanguageLinks() method with different language codes.
-   *
-   * @covers \MovLib\Data\I18n::getSystemLanguageLinks
+   * @covers ::getSystemLanguageLinks
    * @depends testGetSystemLanguages
    */
   public function testGetSystemLanguageLinks() {
@@ -474,9 +442,7 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the getTimezones() method.
-   *
-   * @covers \MovLib\Data\I18n::getTimezones
+   * @covers ::getTimezones
    */
   public function testGetTimezones() {
     $timezones = $this->i18n->getTimeZones();
@@ -489,9 +455,7 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the insertMessage() method.
-   *
-   * @covers \MovLib\Data\I18n::insertMessage
+   * @covers ::insertMessage
    */
   public function testInsertMessage() {
     $db = new Database();
@@ -515,9 +479,7 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the insertRoute() method.
-   *
-   * @covers \MovLib\Data\I18n::insertRoute
+   * @covers ::insertRoute
    */
   public function testInsertRoute() {
     $db = new Database();
@@ -531,9 +493,7 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * Test the insertOrUpdateTranslation() method.
-   *
-   * @covers \MovLib\Data\I18n::insertOrUpdateTranslation
+   * @covers ::insertOrUpdateTranslation
    * @depends testFormatMessage
    */
   public function testInsertOrUpdateTranslation() {
@@ -543,14 +503,14 @@ class I18nTest extends \PHPUnit_Framework_TestCase {
     $patternTranslated = "{$pattern} insertOrUpdate translated";
 
     // Message context.
-    $id = $db->select("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", [ $pattern ]);
+    $id = $db->select("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", [ $pattern ])[0]["message_id"];
     $this->i18n->insertOrUpdateTranslation("message", $id, $languageCode, $patternTranslated);
     $result = $db->select("SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR(255)) AS `translation` FROM `messages` WHERE `message_id` = ? LIMIT 1", "si", [ $languageCode, $id ]);
     $this->assertNotEmpty($result);
     $this->assertEquals($result[0]["translation"], $patternTranslated);
 
     // Route context.
-    $id = $db->select("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $pattern ]);
+    $id = $db->select("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $pattern ])[0]["route_id"];
     $this->i18n->insertOrUpdateTranslation("route", $id, $languageCode, $patternTranslated);
     $result = $db->select("SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR(255)) AS `translation` FROM `routes` WHERE `route_id` = ? LIMIT 1", "si", [ $languageCode, $id ]);
     $this->assertNotEmpty($result);
