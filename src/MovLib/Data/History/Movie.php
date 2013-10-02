@@ -29,17 +29,6 @@ namespace MovLib\Data\History;
 class Movie extends AbstractHistory {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * Names of files with serialized content.
-   *
-   * @var array
-   */
-  public $serializedFiles;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
@@ -48,51 +37,33 @@ class Movie extends AbstractHistory {
    */
   public function __construct($id, $context = "history") {
     parent::__construct($id, $context);
+    $this->files = [
+      "original_title",
+      "runtime",
+      "year"
+    ];
+    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
+      $this->files[] = "{$languageCode}_synopsis";
+    }
+
     $this->serializedFiles = [
       "titles",
       "taglines",
       "links",
       "trailers",
       "cast",
-      "crew",
       "awards",
       "relationships",
+    ];
+
+    $this->serializedIdFiles = [
+      "directors",
+      "countries",
       "genres",
       "styles",
       "languages",
-      "countries",
-      "directors",
+      "crew"
     ];
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  public function writeFiles(array $data) {
-    foreach ([ "original_title", "runtime", "year" ] as $key) {
-      if (isset($data[$key])) {
-        $this->writeToFile($key, $data[$key]);
-      }
-    }
-
-    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
-      if (isset($data["{$languageCode}_synopsis"])) {
-        $this->writeToFile("{$languageCode}_synopsis", $data["{$languageCode}_synopsis"]);
-      }
-    }
-
-    $c = count($this->serializedFiles);
-    for ($i = 0; $i < $c; ++$i) {
-      if (isset($data[$this->serializedFiles[$i]])) {
-        $this->writeToFile($this->serializedFiles[$i], serialize($data[$this->serializedFiles[$i]]));
-      }
-    }
-
-    return $this;
   }
 
 }

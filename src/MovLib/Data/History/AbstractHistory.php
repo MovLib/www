@@ -76,6 +76,13 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   protected $context;
 
   /**
+   * Names of files with plain text content.
+   *
+   * @var array
+   */
+  public $files;
+
+  /**
    * Entity's unique ID (e.g. movie ID).
    *
    * @var int
@@ -95,6 +102,20 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @var string
    */
   protected $path;
+
+  /**
+   * Names of files with serialized arrays as content.
+   *
+   * @var array
+   */
+  public $serializedFiles;
+
+  /**
+   * Names of files with serialized arrays containing only IDs as content.
+   *
+   * @var array
+   */
+  public $serializedIdFiles;
 
   /**
    * Entity's short name.
@@ -121,22 +142,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     $this->id = $id;
     $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/{$this->context}/{$this->type}/{$this->id}";
   }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
-
-
-  /**
-   * Write files to repository.
-   *
-   * @param array $data
-   *   Associative array with data to store (use file names as keys)
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Exception\FileSystemException
-   */
-  abstract protected function writeFiles(array $data);
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -373,6 +378,34 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       throw new FileSystemException("Error while renaming repository");
     }
     $this->path = $newPath;
+    return $this;
+  }
+
+  /**
+   * Write files to repository.
+   *
+   * @param array $data
+   *   Associative array with data to store (use file names as keys)
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\FileSystemException
+   */
+  private function writeFiles(array $data) {
+    foreach ($this->files as $key) {
+      if (isset($data[$key])) {
+        $this->writeToFile($key, $data[$key]);
+      }
+    }
+
+    $allSerializedFiles = array_merge($this->serializedFiles, $this->serializedIdFiles);
+
+    $c = count($allSerializedFiles);
+    for ($i = 0; $i < $c; ++$i) {
+      if (isset($data[$allSerializedFiles[$i]])) {
+        $this->writeToFile($allSerializedFiles[$i], serialize($data[$allSerializedFiles[$i]]));
+      }
+    }
+
     return $this;
   }
 

@@ -89,10 +89,10 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
       if (!empty($genreIds)) {
         $genreNames = (new Genre())->getGenreNames($genreIds);
         foreach ($genreIds as $id) {
-          $genres[] = "<p>{$this->a($i18n->r("/genre/{0}", [ $id ]), $i18n->t("{0}", [ $genreNames[$id] ]), [
+          $genres[] = $this->a($i18n->r("/genre/{0}", [ $id ]), $i18n->t("{0}", [ $genreNames[$id] ]), [
             "class" => $key,
             "title" => $i18n->t("Description of {0}", [ $genreNames[$id] ])
-          ])}</p>";
+          ]);
         }
       }
     }
@@ -100,7 +100,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
   }
 
   private function getTitles($diff) {
-    
+
   }
 
 }
