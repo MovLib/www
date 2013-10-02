@@ -364,6 +364,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function commit() {
+    global $i18n;
     return $this->query(
       "UPDATE `users` SET
         `birthday`             = ?,
@@ -384,7 +385,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
       [
         $this->birthday,
         $this->countryId,
-        $_SERVER["LANGUAGE_CODE"],
+        $i18n->languageCode,
         $this->profile,
         null, // Facebook
         null, // Google Plus
@@ -449,6 +450,9 @@ class User extends \MovLib\Data\Image\AbstractImage {
         unlink($path);
       }
     }
+    $this->imageExists    = false;
+    $this->imageChanged   = null;
+    $this->imageExtension = null;
     return $this;
   }
 
@@ -471,6 +475,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    */
   public function moveUploadedImage($source, $width, $height, $extension) {
     $this->imageChanged   = $_SERVER["REQUEST_TIME"];
+    $this->imageExists    = true;
     $this->imageExtension = $extension;
     $this->query("UPDATE `users` SET `avatar_changed` = FROM_UNIXTIME(?), `avatar_extension` = ? WHERE `user_id` = ?", "ssd", [ $this->imageChanged, $this->imageExtension, $this->id ]);
     $this->convert($source, self::IMAGE_STYLE_DEFAULT, $this->span[self::IMAGE_STYLE_DEFAULT], $this->span[self::IMAGE_STYLE_DEFAULT], true);
@@ -489,17 +494,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
     $attributes["height"] = $attributes["width"]  = $this->span[$style];
     $attributes["src"]    = "{$GLOBALS["movlib"]["static_domain"]}{$this->imageDirectory}/{$this->imageName}.{$style}.{$this->imageExtension}?c={$this->imageChanged}";
     return $attributes;
-  }
-
-  /**
-   * Get the user's preferred locale.
-   *
-   * @return string
-   *   The user's preferred locale.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getLocale() {
-    return $GLOBALS["movlib"]["locales"][$this->systemLanguageCode];
   }
 
   /**
@@ -541,6 +535,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function reactivate() {
+    $this->deactivated = false;
     return $this->query("UPDATE `users` SET `deactivated` = false WHERE `user_id` = ?", "d", [ $this->id ]);
   }
 
@@ -555,6 +550,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * now the registered new user. This is the desired behavior during our registration process, because we
    * want to display the password settings page within the user's account directly.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @param string $name
    *   The valid unique user's name.
    * @param string $email
@@ -565,10 +561,11 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function register($name, $email, $rawPassword) {
+    global $i18n;
     $this->query(
       "INSERT INTO `users` (`avatar_name`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES (?, '', ?, ?, ?, ?)",
       "sssss",
-      [ $this->filename($name), $email, $name, password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]), $_SERVER["LANGUAGE_CODE"] ]
+      [ $this->filename($name), $email, $name, password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]), $i18n->languageCode ]
     );
     $this->email = $email;
     $this->id    = $this->insertId;
