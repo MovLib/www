@@ -17,10 +17,8 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Exception\DatabaseException;
-
 /**
- * Handling of Genres.
+ * Handling of Languages.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -28,47 +26,48 @@ use \MovLib\Exception\DatabaseException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Genre extends \MovLib\Data\Database {
+class Language extends \MovLib\Data\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Static Methods
 
   /**
-   * Get array with genre names.
+   * Get array with localiced language names.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param array $genreIds
-   *   Numeric array containing the desired genre IDs.
+   * @param array $languageIds
+   *   Numeric array containing the desired language IDs.
    * @return array
-   *   Array containing the genre names with the genre's unique ID as key.
+   *   Array containing the localiced language names with the language's unique ID as key.
    */
-  public function getGenreNames(array $genreIds) {
+  public function getLanguageNames(array $languageIds) {
     global $i18n;
-    $genreIds = array_unique($genreIds);
-    $c = count($genreIds);
+    $languageIds = array_unique($languageIds);
+    $c = count($languageIds);
     $in = rtrim(str_repeat("?,", $c), ",");
 
     if ($i18n->languageCode == "en") {
-      $result = $this->select("SELECT `genre_id`, `name` FROM `genres` WHERE `genre_id` IN ({$in})",
+      $result = $this->select(
+        "SELECT `language_id`, `name` FROM `languages` WHERE `language_id` IN ({$in})",
         str_repeat("d", $c),
-        $genreIds
+        $languageIds
       );
     }
     else {
       $result = $this->select(
-        "SELECT `genre_id`, COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name`, `name` AS `en_name`" .
-          "FROM `genres` WHERE `genre_id` IN ({$in})",
+        "SELECT `language_id`, COLUMN_GET(`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS `name`" .
+          "FROM `languages` WHERE `language_id` IN ({$in})",
           str_repeat("d", $c),
-        $genreIds
+        $languageIds
       );
     }
 
-    $genreNames = [];
+    $languageNames = [];
     $c = count($result);
     for ($i = 0; $i < $c; ++$i) {
-      $genreNames[$result[$i]["genre_id"]] = empty($result[$i]["name"]) ? $result[$i]["en_name"] : $result[$i]["name"];
+      $languageNames[$result[$i]["language_id"]] = $result[$i]["name"];
     }
-    return $genreNames;
+    return $languageNames;
   }
 
 }

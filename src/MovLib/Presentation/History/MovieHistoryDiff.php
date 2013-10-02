@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\History;
 
-use \MovLib\Data\Genre;
 use \MovLib\Presentation\Partial\Lists;
 
 /**
@@ -33,6 +32,9 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
   use \MovLib\Presentation\History\TraitHistory;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
    * Instatiate new movie history diff presentation.
    *
@@ -46,24 +48,9 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->historyModel = new \MovLib\Data\History\Movie($this->model->id, $context);
   }
 
-  /**
-   *
-   * @param string $head
-   *   Hash of git commit (newer one).
-   * @param sting $ref
-   *   Hash of git commit (older one).
-   * @param string $filename
-   *   Name of file in repository.
-   * @return mixed
-   */
-  private function getDiff($head, $ref, $filename) {
-    if (in_array($filename, $this->historyModel->serializedFiles)) {
-      $diff = $this->historyModel->getArrayDiff($head, $ref, $filename);
-      $methodName = ucfirst($filename);
-      return $this->{"get{$methodName}"}($diff);
-    }
-    return $this->diffToHtml($head, $ref, $filename);
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc
@@ -74,33 +61,103 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
   }
 
   /**
-   * Helper function to generate Liste of changed genres.
+   * Helper method to generate Liste of changed items.
    *
    * @global \MovLib\Data\I18n $i18n
    * @param array $diff
-   *   Associative array with added and removed genres.
+   *   Associative array with added and removed items.
+   * @param string $className
+   *   The name of the class (with namespace) to instantiate to get item information.
+   * @param type $methodName
+   *   The name of the method to call for item information.
    * @return \MovLib\Presentation\Partial\Lists
-   *   A HTML List of genres.
+   *   A HTML List of changed items.
    */
-  private function getGenres($diff) {
+  private function getDiffItems($diff, $className, $methodName) {
     global $i18n;
-    $genres = [];
-    foreach ($diff as $key => $genreIds) {
-      if (!empty($genreIds)) {
-        $genreNames = (new Genre())->getGenreNames($genreIds);
-        foreach ($genreIds as $id) {
-          $genres[] = $this->a($i18n->r("/genre/{0}", [ $id ]), $i18n->t("{0}", [ $genreNames[$id] ]), [
-            "class" => $key,
-            "title" => $i18n->t("Description of {0}", [ $genreNames[$id] ])
-          ]);
+    $items = [];
+    foreach ($diff as $key => $itemIds) {
+      if (!empty($itemIds)) {
+        $itemNames = (new $className())->{$methodName}($itemIds);
+        foreach ($itemIds as $id) {
+          if (isset($itemNames[$id])) {
+            $items[] = $this->a($i18n->r("/{0}/{1}", [ strtolower($className), $id ]), $i18n->t("{0}", [ $itemNames[$id] ]), [
+              "class" => $key,
+              "title" => $i18n->t("Description of {0}", [ $itemNames[$id] ])
+            ]);
+          }
         }
       }
     }
-    return (new Lists($genres, ""))->toHtmlList();
+    return (new Lists($items, ""))->toHtmlList();
   }
 
-  private function getTitles($diff) {
 
+  // ------------------------------------------------------------------------------------------------------------------- Diff Methods
+
+
+  private function getCrew($diff) {
+
+  }
+
+  /**
+   * Helper method to generate Liste of changed countries.
+   *
+   * @param array $diff
+   *   Associative array with added and removed items.
+   * @return \MovLib\Presentation\Partial\Lists
+   *   A HTML List of changed countries.
+   */
+  private function getCountries($diff) {
+    return $this->getDiffItems($diff, "\MovLib\Data\Country", "getCountryNames");
+  }
+
+  /**
+   * Helper method to generate Liste of changed directors.
+   *
+   * @param array $diff
+   *   Associative array with added and removed items.
+   * @return \MovLib\Presentation\Partial\Lists
+   *   A HTML List of changed directors.
+   */
+  private function getDirectors($diff) {
+    return $this->getDiffItems($diff, "\MovLib\Data\Person", "getPersonNames");
+  }
+
+  /**
+   * Helper method to generate Liste of changed genres.
+   *
+   * @param array $diff
+   *   Associative array with added and removed items.
+   * @return \MovLib\Presentation\Partial\Lists
+   *   A HTML List of changed genres.
+   */
+  private function getGenres($diff) {
+    return $this->getDiffItems($diff, "\MovLib\Data\Genre", "getGenreNames");
+  }
+
+  /**
+   * Helper method to generate Liste of changed languages.
+   *
+   * @param array $diff
+   *   Associative array with added and removed items.
+   * @return \MovLib\Presentation\Partial\Lists
+   *   A HTML List of changed languages.
+   */
+  private function getLanguages($diff) {
+    return $this->getDiffItems($diff, "\MovLib\Data\Language", "getLanguageNames");
+  }
+
+  /**
+   * Helper method to generate Liste of changed styles.
+   *
+   * @param array $diff
+   *   Associative array with added and removed items.
+   * @return \MovLib\Presentation\Partial\Lists
+   *   A HTML List of changed styles.
+   */
+  private function getStyles($diff) {
+    return $this->getDiffItems($diff, "\MovLib\Data\Style", "getStyleNames");
   }
 
 }

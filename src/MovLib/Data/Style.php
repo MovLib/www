@@ -20,7 +20,7 @@ namespace MovLib\Data;
 use \MovLib\Exception\DatabaseException;
 
 /**
- * Handling of Genres.
+ * Handling of Styles.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -28,47 +28,47 @@ use \MovLib\Exception\DatabaseException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Genre extends \MovLib\Data\Database {
+class Style extends \MovLib\Data\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Static Methods
 
   /**
-   * Get array with genre names.
+   * Get array with style names.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param array $genreIds
-   *   Numeric array containing the desired genre IDs.
+   * @param array $styleIds
+   *   Numeric array containing the desired style IDs.
    * @return array
-   *   Array containing the genre names with the genre's unique ID as key.
+   *   Array containing the style names with the style's unique ID as key.
    */
-  public function getGenreNames(array $genreIds) {
+  public function getStyleNames(array $styleIds) {
     global $i18n;
-    $genreIds = array_unique($genreIds);
-    $c = count($genreIds);
+    $styleIds = array_unique($styleIds);
+    $c = count($styleIds);
     $in = rtrim(str_repeat("?,", $c), ",");
 
     if ($i18n->languageCode == "en") {
-      $result = $this->select("SELECT `genre_id`, `name` FROM `genres` WHERE `genre_id` IN ({$in})",
+      $result = $this->select("SELECT `style_id`, `name` FROM `styles` WHERE `style_id` IN ({$in})",
         str_repeat("d", $c),
-        $genreIds
+        $styleIds
       );
     }
     else {
       $result = $this->select(
-        "SELECT `genre_id`, COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name`, `name` AS `en_name`" .
-          "FROM `genres` WHERE `genre_id` IN ({$in})",
+        "SELECT `style_id`, COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name`, `name` AS `en_name`" .
+          "FROM `styles` WHERE `style_id` IN ({$in})",
           str_repeat("d", $c),
-        $genreIds
+        $styleIds
       );
     }
 
-    $genreNames = [];
+    $styleNames = [];
     $c = count($result);
     for ($i = 0; $i < $c; ++$i) {
-      $genreNames[$result[$i]["genre_id"]] = empty($result[$i]["name"]) ? $result[$i]["en_name"] : $result[$i]["name"];
+      $styleNames[$result[$i]["style_id"]] = empty($result[$i]["name"]) ? $result[$i]["en_name"] : $result[$i]["name"];
     }
-    return $genreNames;
+    return $styleNames;
   }
 
 }

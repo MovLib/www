@@ -18,41 +18,40 @@
 namespace MovLib\Data;
 
 /**
- * Handling of large amounts of user data.
+ * Handling of Persons.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Users extends \MovLib\Data\Database {
+class Person extends \MovLib\Data\Database {
 
-  /**
-   * Get numeric array with basic user information.
+ /**
+   * Get numeric array with person names.
    *
-   * @param array $userIds
-   *   Numeric array containing the desired user IDs.
+   * @param array $personIds
+   *   Numeric array containing the desired person IDs.
    * @return array
-   *   Array containing the users with the user's unique ID as key.
+   *   Array containing the person names with the person's unique ID as key.
    */
-  public function getUsers(array $userIds) {
-    $userIds = array_unique($userIds);
-    $c = count($userIds);
+  public function getPersonNames(array $personIds) {
+   $personIds = array_unique($personIds);
+    $c = count($personIds);
     $in = rtrim(str_repeat("?,", $c), ",");
     $result = $this->select(
-      "SELECT `user_id` AS `id`, `name` FROM `users` WHERE `user_id` IN ({$in})",
+      "SELECT `person_id`, `name` FROM `persons` WHERE `person_id` IN ({$in})",
       str_repeat("d", $c),
-      $userIds
+      $personIds
     );
-    $users = [];
+    $persons = [];
     $c = count($result);
     for ($i = 0; $i < $c; ++$i) {
-      $users[$result[$i]["id"]] = $result[$i];
+      $persons[$result[$i]["person_id"]] = $result[$i]["name"];
     }
 
-    return $users;
+    return $persons;
   }
 
 }
