@@ -204,6 +204,8 @@ class Database extends \MovLib\Console\Command\Database {
         $this->write("Importing time zone translations ...");
         $this->importTimeZones();
         $this->importSeeds();
+        $this->write("Importing uploads ...");
+        $this->importSeedUploads();
         $this->write("All Successfull!", self::MESSAGE_TYPE_INFO);
       }
       catch (DatabaseException $e) {
@@ -212,6 +214,9 @@ class Database extends \MovLib\Console\Command\Database {
     }
     elseif (array_search("--" . self::OPTION_SEED, $argv) || array_search("-" . self::OPTION_SHORTCUT_SEED, $argv)) {
       empty($options[self::OPTION_SEED]) ? $this->importSeedsInteractive() : $this->importSeed($options[self::OPTION_SEED]);
+      $this->write("Importing uploads ...");
+      $this->importSeedUploads();
+      $this->write("All Successfull!", self::MESSAGE_TYPE_INFO);
     }
     elseif (array_search("--" . self::OPTION_GIT, $argv) || array_search("-" . self::OPTION_SHORTCUT_GIT, $argv)) {
       empty($options[self::OPTION_GIT]) ? $this->git() : $this->git($options[self::OPTION_GIT]);
@@ -342,9 +347,17 @@ class Database extends \MovLib\Console\Command\Database {
     catch (DatabaseException $e) {
       $this->exitOnError("Seed '{$name}' import failed!", $e->getTraceAsString());
     }
-    if (is_dir("{$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/{$name}")) {
-      exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/{$name}/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/{$name}");
-    }
+    return $this;
+  }
+
+  /**
+   * Import all seed uploads.
+   *
+   * @return this
+   */
+  private function importSeedUploads() {
+    exec("rm -rf {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/*");
+    exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/");
     return $this;
   }
 
@@ -369,7 +382,6 @@ class Database extends \MovLib\Console\Command\Database {
     catch (DatabaseException $e) {
       $this->exitOnError("Seeds import failed!", $e->getTraceAsString());
     }
-    exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/");
     return $this;
   }
 
