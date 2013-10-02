@@ -28,10 +28,7 @@ namespace MovLib\Data\History;
  */
 class Movie extends AbstractHistory {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
+  
   /**
    * @inheritdoc
    */
@@ -54,9 +51,6 @@ class Movie extends AbstractHistory {
       "cast",
       "awards",
       "relationships",
-    ];
-
-    $this->serializedIdFiles = [
       "directors",
       "countries",
       "genres",

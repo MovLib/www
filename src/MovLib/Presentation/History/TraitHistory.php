@@ -145,7 +145,7 @@ trait TraitHistory {
     for ($i = 0; $i < $c; ++$i) {
        $changedFiles[$i] = $formatedFileNames[$i] .
        "<div class='well well--small'>" .
-         $this->getDiff($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^", $changedFiles[$i]) .
+         $this->getDiffOfFile($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^", $changedFiles[$i]) .
        "</div>";
     }
 
@@ -154,6 +154,27 @@ trait TraitHistory {
       "</div>";
 
     return $html;
+  }
+
+  /**
+   *
+   * @param string $head
+   *   Hash of git commit (newer one).
+   * @param sting $ref
+   *   Hash of git commit (older one).
+   * @param string $filename
+   *   Name of file in repository.
+   * @return string
+   *   Diff between revisions as HTML.
+   */
+  private function getDiffOfFile($head, $ref, $filename) {
+    if (in_array($filename, $this->historyModel->files)) {
+      return $this->diffToHtml($head, $ref, $filename);
+    }
+
+    $diff = $this->historyModel->getArrayDiff($head, $ref, $filename);
+    $methodName = ucfirst($filename);
+    return $this->{"get{$methodName}"}($diff);
   }
 
   /**
