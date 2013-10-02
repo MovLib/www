@@ -211,7 +211,7 @@ class Database extends \MovLib\Console\Command\Database {
       }
     }
     elseif (array_search("--" . self::OPTION_SEED, $argv) || array_search("-" . self::OPTION_SHORTCUT_SEED, $argv)) {
-      empty($options[self::OPTION_SEED]) ? $this->runSeedsInteractive() : $this->importSeeds(true, $options[self::OPTION_SEED]);
+      empty($options[self::OPTION_SEED]) ? $this->importSeedsInteractive() : $this->importSeed($options[self::OPTION_SEED]);
     }
     elseif (array_search("--" . self::OPTION_GIT, $argv) || array_search("-" . self::OPTION_SHORTCUT_GIT, $argv)) {
       empty($options[self::OPTION_GIT]) ? $this->git() : $this->git($options[self::OPTION_GIT]);
@@ -308,6 +308,44 @@ class Database extends \MovLib\Console\Command\Database {
   }
 
   /**
+   * Import a single seed.
+   *
+   * @param string $name
+   *   The name of the seed to import.
+   * @param boolean $truncate [optional]
+   *   Whetever to truncate the table or not.
+   * @return this
+   */
+  private function importSeed($name, $truncate = true) {
+    if (!isset($this->seedScripts[$name])) {
+      $choices = implode(", ", array_keys($this->seedScripts));
+      return $this->write("Invalid seed name '{$name}'. Possible choices are: {$choices}", self::MESSAGE_TYPE_ERROR);
+    }
+    $this->database->transactionStart()->query("SET foreign_key_checks = 0");
+    $this->write("Importing seed '{$name}' ...");
+    if ($truncate === true) {
+      try {
+        $this->write("Truncating table '{$name}' ...");
+        $this->database->query("TRUNCATE TABLE `{$name}`");
+      }
+      catch (DatabaseException $e) {
+        $this->exitOnError("Couldn't truncate table '{$name}'!", $e->getTraceAsString());
+      }
+    }
+    if (($queries = file_get_contents($this->seedScripts[$name])) === false) {
+      $this->exitOnError("Couldn't read '{$this->seedScripts[$name]}'!");
+    }
+    try {
+      $this->database->queries($queries)->transactionCommit();
+      $this->write("Seed '{$name}' import successful!");
+    }
+    catch (DatabaseException $e) {
+      $this->exitOnError("Seed '{$name}' import failed!", $e->getTraceAsString());
+    }
+    return $this;
+  }
+
+  /**
    * Import seeds.
    *
    * @return this
@@ -332,40 +370,15 @@ class Database extends \MovLib\Console\Command\Database {
   }
 
   /**
-   * Import a single seed.
+   * Run seed imports with an interactive dialogue.
    *
-   * @param string $name
-   *   The name of the seed to import.
-   * @param boolean $truncate [optional]
-   *   Whetever to truncate the table or not.
    * @return this
    */
-  private function importSeed($name, $truncate = true) {
-    if (!isset($this->seedScripts[$name])) {
-      $choices = implode(", ", array_keys($this->seedScripts));
-      return $this->write("Invalid seed name '{$name}'. Possible choices are: {$choices}", self::MESSAGE_TYPE_ERROR);
+  private function importSeedsInteractive() {
+    do {
+      $this->importSeed($this->askWithChoices("Please select a seed to import.", null, array_keys($this->seedScripts)));
     }
-    $this->database->transactionStart()->query("SET foreign_key_checks = 0");
-    $this->write("Importing seed '{$table}' ...");
-    if ($truncate === true) {
-      try {
-        $this->write("Truncating table '{$table}' ...");
-        $this->database->query("TRUNCATE TABLE `{$table}`");
-      }
-      catch (DatabaseException $e) {
-        $this->exitOnError("Couldn't truncate table '{$table}'!", $e->getTraceAsString());
-      }
-    }
-    if (($queries = file_get_contents($this->seedScripts[$name])) === false) {
-      $this->exitOnError("Couldn't read '{$this->seedScripts[$name]}'!");
-    }
-    try {
-      $this->database->queries($queries)->transactionCommit();
-      $this->write("Seed '{$name}' import successful!", $e->getTraceAsString());
-    }
-    catch (DatabaseException $e) {
-      $this->exitOnError("Seed '{$name}' import failed!", $e->getTraceAsString());
-    }
+    while ($this->askConfirmation("Do you want to import another seed?"));
     return $this;
   }
 
@@ -441,20 +454,9 @@ class Database extends \MovLib\Console\Command\Database {
    * @return this
    */
   protected function rollback() {
-    $this->database->transactionRollback();
-    return $this;
-  }
-
-  /**
-   * Run seed imports with an interactive dialogue.
-   *
-   * @return this
-   */
-  private function runSeedsInteractive() {
-    do {
-      $this->importSeed($this->askWithChoices("Please select a seed to import.", null, array_keys($this->seedScripts)));
+    if ($this->database->transactionActive === true) {
+      $this->database->transactionRollback();
     }
-    while ($this->askConfirmation("Do you want to import another seed?"));
     return $this;
   }
 
