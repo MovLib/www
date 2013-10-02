@@ -144,7 +144,7 @@ trait TraitHistory {
     $c = count($changedFiles);
     for ($i = 0; $i < $c; ++$i) {
        $changedFiles[$i] = $formatedFileNames[$i] .
-       "<div class='well'>" .
+       "<div class='well well--small'>" .
          $this->getDiff($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^", $changedFiles[$i]) .
        "</div>";
     }
@@ -173,22 +173,27 @@ trait TraitHistory {
       $userIds[] = $commits[$i]["author_id"];
     }
 
-    //$users = (new Users())->getUsers($userIds);
-    $users = [ 1 => ["name" => "bla"], 2 => ["name" => "alb"]];
-
-    $html =
-      "<div id='revision-history'>" .
-        "<h2>{$i18n->t("Revision history")}</h2>";
+    $users = (new Users())->getUsers($userIds);
 
     $revisions = [];
     for ($i = 0; $i < $c; ++$i) {
-      $authorName = $users[ $commits[$i]["author_id"] ]["name"];
-      $revisions[$i] =
-        $i18n->formatDate($commits[$i]["timestamp"], null, IntlDateFormatter::MEDIUM, IntlDateFormatter::MEDIUM) .
-        $i18n->t(" by ") .
-        $this->a($i18n->r("/user/{0}", [ $authorName ]), $i18n->t($authorName), [
-          "title" => $i18n->t("Profile of {0}", [ $authorName ])
-        ]) .
+      $revisions[$i] = $i18n->formatDate(
+        $commits[$i]["timestamp"],
+        null,
+        IntlDateFormatter::MEDIUM,
+        IntlDateFormatter::MEDIUM
+      );
+
+      if (isset($users[ $userIds[$i] ])) {
+        $authorName = $users[ $userIds[$i] ]["name"];
+        $revisions[$i] .=
+          $i18n->t(" by ") .
+          $this->a($i18n->r("/user/{0}", [ $authorName ]), $i18n->t("{0}", [ $authorName ]), [
+            "title" => $i18n->t("Profile of {0}", [ $authorName ])
+          ]);
+      }
+
+      $revisions[$i] .=
         ": {$commits[$i]["subject"]} " .
         $this->a($i18n->r("/{0}/{1}/diff/{2}", [ $this->historyModel->type, $_SERVER["MOVIE_ID"], $commits[$i]["hash"] ]),
           $i18n->t("show diff"), [
@@ -197,14 +202,16 @@ trait TraitHistory {
         );
 
       $changedFiles = $this->historyModel->getChangedFiles($commits[$i]["hash"], "{$commits[$i]["hash"]}^1");
-      $revisions[$i] .= (new Lists($this->formatFileNames($changedFiles), ""))->toHtmlList();
+      $revisions[$i] .= (new Lists($this->formatFileNames($changedFiles), $i18n->t("Nothing changed"), [
+        "class" => "well well--small no-list"
+      ]))->toHtmlList();
     }
 
-    $html .=
-        (new Lists($revisions, ""))->toHtmlList() .
+    return
+      "<div id='revision-history'>" .
+        "<h2>{$i18n->t("Revision history")}</h2>" .
+        (new Lists($revisions, $i18n->t("No revisions found")))->toHtmlList() .
       "</div>";
-
-    return $html;
   }
 
 }
