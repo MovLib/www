@@ -145,8 +145,8 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
 
     $this->init($i18n->t("Account Settings"));
     $this->user                                       = new User(User::FROM_ID, $session->userId);
-    $this->avatar                                     = new InputImage("avatar", $this->user);
     $this->realName                                   = new InputText("real_name", $this->user->realName);
+    $this->avatar                                     = new InputImage("avatar", $this->user);
     $this->sex                                        = new RadioGroup("sex", $this->user->sex, [ 2 => $i18n->t("Female"), 1 => $i18n->t("Male"), 0 => $i18n->t("Unknown") ]);
     $this->birthday                                   = new InputDate("birthday", $this->user->birthday);
     $this->birthday->max                              = $_SERVER["REQUEST_TIME"] - 1.893e8;   //   6 years
@@ -163,8 +163,8 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->website->attributes["data-allow-external"] = true;
     $this->private                                    = new InputCheckbox("private", $this->user->private);
     $this->form = new Form($this, [
-      $this->avatar,
       $this->realName,
+      $this->avatar,
       $this->sex,
       $this->birthday,
       $this->profile,
@@ -186,13 +186,9 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
   protected function getPageContent() {
     global $i18n;
 
-    $avatarTitleArgs                           = $this->formatBytes($this->avatar->maximumFileSize);
-    $avatarTitleArgs[]                         = $this->user->imageMinWidth;
-    $this->avatar->attributes["title"]         = $i18n->t(
-      "The image’s minimum dimensions are {2}x{2} pixels, the maximum allowed size for uploads is {0} {1}, image’s " .
-      "that are too large will be converted automatically. Allowed image types are: JPG and PNG", $avatarTitleArgs
-    );
-    $this->avatar->attributes[]                = "autofocus";
+    $this->realName->attributes["placeholder"] = $i18n->t("Entery our real name");
+    $this->realName->attributes[]              = "autofocus";
+    $this->realName->label                     = $i18n->t("Real Name");
     $this->avatar->label                       = $i18n->t("Avatar");
     $this->birthday->attributes["title"]       = $i18n->t("The date must be between {0} (120 years) and {1} (6 years)", [
       $i18n->formatDate($this->birthday->min, $this->user->timeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
@@ -211,33 +207,29 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     ));
     $this->profile->attributes["placeholder"]  = $i18n->t("Tell others about yourself, what do you do, what do you like, …");
     $this->profile->label                      = $i18n->t("About You");
-    $this->realName->attributes["placeholder"] = $i18n->t("Entery our real name");
-    $this->realName->label                     = $i18n->t("Real Name");
-    $this->sex->legend                         = $i18n->t("Sex");
+    $this->sex->label                          = $i18n->t("Sex");
     $this->sex->setHelp($i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
     $this->timezone->label                     = $i18n->t("Time Zone");
     $this->website->label                      = $i18n->t("Website");
     $this->form->attributes["enctype"]         = Form::ENCTYPE_BINARY;
 
-    return
-      $this->form->open() .
+    return $this->form->open() .
+      $this->realName .
       "<div class='row'>" .
+        "<div class='span span--7'>{$this->avatar}</div>" .
         "<div class='span span--2'>{$this->getImage($this->user, User::IMAGE_STYLE_DEFAULT, [
           "alt" => $i18n->t("Your current avatar."),
         ])}</div>" .
-        "<div class='span span--7'>{$this->avatar}</div>" .
       "</div>" .
-        $this->realName .
-        $this->sex .
-        $this->birthday .
-        $this->profile .
-        $this->language .
-        $this->country .
-        $this->timezone .
-        $this->website .
-        $this->private .
-      $this->form->close()
-    ;
+      $this->sex .
+      $this->birthday .
+      $this->profile .
+      $this->language .
+      $this->country .
+      $this->timezone .
+      $this->website .
+      $this->private .
+    $this->form->close();
   }
 
   /**

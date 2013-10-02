@@ -42,16 +42,18 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   /**
    * The image's width.
    *
+   * @internal Must be public for validation.
    * @var int
    */
-  protected $imageWidth;
+  public $imageWidth;
 
   /**
    * The image's height.
    *
+   * @internal Must be public for validation.
    * @var int
    */
-  protected $imageHeight;
+  public $imageHeight;
 
   /**
    * The image's extension.

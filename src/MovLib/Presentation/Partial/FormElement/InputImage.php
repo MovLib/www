@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Exception\ErrorException;
+use \MovLib\Exception\ImageException;
 use \MovLib\Exception\ValidationException;
 
 /**
@@ -38,6 +39,17 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
 
   /**
+   * Available image extensions.
+   *
+   * @internal We don't use image_type_to_extension() because it uses long extensions (e.g. jpeg instead of jpg).
+   * @var array
+   */
+  private $extensions = [
+    IMAGETYPE_JPEG => "jpg",
+    IMAGETYPE_PNG  => "png",
+  ];
+
+  /**
    * The image instance responsible for storing this image.
    *
    * @var \MovLib\Data\Image\AbstractImage
@@ -52,6 +64,20 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    * @var int
    */
   public $maximumFileSize = 15728640;
+
+  /**
+   * The global minimum height for images.
+   *
+   * @var int
+   */
+  public $minimumHeight = 140;
+
+  /**
+   * The global minimum width for images.
+   *
+   * @var int
+   */
+  public $minimumWidth = 140;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -76,15 +102,17 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    * @inheritdoc
    */
   public function __toString() {
+    global $i18n;
     $this->attributes["accept"]           = "image/jpeg, image/png";
     $this->attributes["data-maxfilesize"] = $this->maximumFileSize;
+    $this->attributes["data-minheight"]   = $this->minimumHeight;
+    $this->attributes["data-minwidth"]    = $this->minimumWidth;
     $this->attributes["type"]             = "file";
-    foreach ([ "imageMaxHeight" => "maxheight", "imageMaxWidth" => "maxwidth", "imageMinHeight" => "minheight", "imageMinWidth" => "minwidth" ] as $constrain => $attr) {
-      if (isset($this->image->{$constrain})) {
-        $this->attributes["data-{$attr}"] = $this->image->{$constrain};
-      }
-    }
-    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+    list($size, $unit) = $this->formatBytes($this->maximumFileSize);
+    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p><small>{$i18n->t(
+      "Image must be larger than {0}x{1} and less than {2} {3}. Allowed image types: JPG and PNG",
+      [ $this->minimumHeight, $this->minimumWidth, $size, $unit ]
+    )}</small>";
   }
 
 
@@ -121,35 +149,31 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
       throw new ValidationException($i18n->t("Unsupported image type and/or corrupt image, the following types are supported: JPG and PNG"));
     }
 
-    // Check all dimension constrains.
-    $errors = null;
-    if (isset($this->image->imageMaxHeight) && $height > $this->image->imageMaxHeight) {
-      $errors[] = $i18n->t("The iamge is too high: the maximum height is {0} pixel", [ $this->image->imageMaxHeight ]);
-    }
-    if (isset($this->image->imageMaxWidth) && $width > $this->image->imageMaxWidth) {
-      $errors[] = $i18n->t("The iamge is too broad: the maximum width is {0} pixel", [ $this->image->imageMaxWidth ]);
-    }
-    if (isset($this->image->imageMinHeight) && $height < $this->image->imageMinHeight) {
-      $errors[] = $i18n->t("The image is too small: the minimum height is {0} pixel", [ $this->image->imageMinHeight ]);
-    }
-    if (isset($this->image->imageMinWidth) && $width < $this->image->imageMinWidth) {
-      $errors[] = $i18n->t("The image is narrow: the minimum width is {0} pixel", [ $this->image->imageMinWidth ]);
-    }
-    if ($errors) {
-      throw new ValidationException(implode("<br>", $errors));
+    // Check dimension constrains.
+    if ($height < $this->minimumHeight || $width < $this->minimumWidth) {
+      throw new ValidationException($i18n->t("The image is too small, it must be larger than {0}x{1} pixels.", [ $this->minimumWidth, $this->minimumHeight ]));
     }
 
-    // Do not use image_type_to_extension() because it returns long extensions (jpeg instead of jpg).
-    if ($type === IMAGETYPE_JPEG) {
-      $extension = "jpg";
-    }
-    if ($type === IMAGETYPE_PNG) {
-      $extension = "png";
+    // An image should only be replaced with another image if the resolution is greater than the previous resolution.
+    // Of course there are situations where this is not the case, we still have to tell the user.
+    //
+    // @internal
+    //   You have to make sure that the user doesn't have to reupload this image in your presentation class by rendering
+    //   a form with a confirmation dialog.
+    // @todo @Richard
+    //   Think about a way to solve this kind of problem once and for all. Maybe with a ConfirmationException which is
+    //   catched in main.php?
+    if ($height < $this->image->imageHeight || $width < $this->image->imageWidth) {
+      throw new ImageException($i18n->t(
+        "New images should have a better quality than already existing images, this includes the resolution. The " .
+        "current image’s resolution is {0}x{1} pixels but yours is {2}x{3}. Please cofirm that your upload has a " .
+        "better quality than the existing on despite the fact of smaller dimensions.",
+        [ $this->image->imageWidth, $this->image->imageHeight, $width, $height ]
+      ));
     }
 
-    // All other styles can be generated after the response was sent to the user.
-    $this->image->moveUploadedImage($_FILES[$this->id]["tmp_name"], $width, $height, $extension);
-
+    // Time to move the image to our persistent storage, all seems valid.
+    $this->image->moveUploadedImage($_FILES[$this->id]["tmp_name"], $width, $height, $this->extensions[$type]);
     return $this;
   }
 
