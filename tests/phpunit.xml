@@ -14,12 +14,14 @@
  You should have received a copy of the GNU Affero General Public License along with MovLib.
  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
 -->
+<!-- coverageHtml="../docs/coverage" -->
 <phpunit
   bootstrap="../bootstrap.php"
-  colors="false"
+  colors="true"
   convertErrorsToExceptions="true"
   convertNoticesToExceptions="true"
   convertWarningsToExceptions="true"
+  forceCoversAnnotation="true"
   stopOnFailure="true"
 >
   <php>
@@ -29,17 +31,11 @@
     <testsuite name="all">
       <directory>./MovLib/Tests</directory>
     </testsuite>
-    <testsuite name="models">
-      <directory>./MovLib/Tests/Model/</directory>
+    <testsuite name="db">
+      <directory>./MovLib/Tests/Data/</directory>
     </testsuite>
-    <testsuite name="presenters">
-      <directory>./MovLib/Tests/Presenter/</directory>
-    </testsuite>
-    <testsuite name="utilies">
-      <directory>./MovLib/Tests/Utility</directory>
-    </testsuite>
-    <testsuite name="htmlviews">
-      <directory>./MovLib/Tests/View/HTML</directory>
+    <testsuite name="web">
+      <directory>./MovLib/Tests/Presentation/</directory>
     </testsuite>
   </testsuites>
 </phpunit>
