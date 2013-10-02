@@ -155,16 +155,16 @@ class Session extends \MovLib\Data\Database {
 
       // We have to try loading the session from our persistent session storage if the session IDs don't match.
       if ($_COOKIE[$this->name] != $this->id) {
-        $result = $this->select("SELECT `user_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", $_COOKIE[$this->name]);
+        $result = $this->selectAssoc("SELECT `user_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication` FROM `sessions` WHERE `session_id` = ?", "s", $_COOKIE[$this->name]);
 
         // This is an old session that requires sign in and it's expired for anonymous users.
-        if (empty($result[0])) {
+        if (empty($result)) {
           $this->destroy();
         }
         // Otherwise we have to initialize this new session with fresh data and update the record in our persistent
         // session storage.
         else {
-          $this->init($result[0]["user_id"], $result[0]["authentication"]);
+          $this->init($result["user_id"], $result["authentication"]);
           DelayedMethodCalls::stack($this, "update", [ $_COOKIE[$this->name] ]);
         }
       }
@@ -207,15 +207,15 @@ class Session extends \MovLib\Data\Database {
    */
   public function authenticate($email, $rawPassword) {
     // Load necessary user data from storage.
-    $result = $this->select("SELECT `user_id`, `name`, `password`, `deactivated` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ]);
+    $result = $this->selectAssoc("SELECT `user_id`, `name`, `password`, `deactivated` FROM `users` WHERE `email` = ?", "s", [ $email ]);
 
     // We couldn't find a user for the given email address if above query's result is empty.
-    if (empty($result[0])) {
+    if (empty($result)) {
       throw new SessionException("Could not find user with email {$email}");
     }
 
     // Validate the submitted password.
-    if (password_verify($rawPassword, $result[0]["password"]) === false) {
+    if (password_verify($rawPassword, $result["password"]) === false) {
       throw new SessionException("Invalid password for user with email {$email}");
     }
 
@@ -227,15 +227,15 @@ class Session extends \MovLib\Data\Database {
     else {
       $this->start();
     }
-    $this->init($result[0]["user_id"]);
+    $this->init($result["user_id"]);
     DelayedMethodCalls::stack($this, "insert");
 
     // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
     //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
     //       have to worry about. Maybe introduce a configuration option for this?
-    DelayedMethodCalls::stack($this, "passwordNeedsRehash", [ $result[0]["password"], $rawPassword ]);
+    DelayedMethodCalls::stack($this, "passwordNeedsRehash", [ $result["password"], $rawPassword ]);
 
-    if ((bool) $result[0]["deactivated"] === true) {
+    if ($result["deactivated"] == true) {
       throw new UserException("Account is deactivated!");
     }
 

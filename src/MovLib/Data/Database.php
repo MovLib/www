@@ -295,13 +295,16 @@ class Database {
     if (!isset(self::$mysqli[$this->database])) {
       $mysqli = new mysqli();
       try {
-        if ($mysqli->real_connect() === false || $mysqli->connect_error) {
-          throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
-        }
+        $mysqli->real_connect();
       }
+      // If we have a broken pipe (e.g. database restart) kill this thread and directly re-connect. If this fails again
+      // (every unlikely) an ErrorException is thrown again and the error_all_handler() can take care of it.
       catch (ErrorException $e) {
         $mysqli->kill($mysqli->thread_id);
         $mysqli->real_connect();
+      }
+      if ($mysqli->connect_error) {
+        throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
       }
       if ($mysqli->select_db($GLOBALS["movlib"]["default_database"]) === false) {
         throw new DatabaseException("Selecting database failed", $mysqli->error, $mysqli->errno);
