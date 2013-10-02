@@ -45,10 +45,11 @@ class Users extends \MovLib\Data\Database {
       str_repeat("d", $c),
       $userIds
     );
-    $users = null;
-    for ($i = 0; $i < $c; ++$i) {
-      $users[$userIds[$i]] = $result[$i];
+    $users = [];
+    foreach ($result as $user) {
+      $users[$user["id"]] = $user;
     }
+
     return $users;
   }
 
