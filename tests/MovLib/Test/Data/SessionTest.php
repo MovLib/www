@@ -22,6 +22,7 @@ use \MovLib\Data\Session;
 use \MovLib\Data\User;
 
 /**
+ * @coversDefaultClass \MovLib\Data\Session
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -30,8 +31,16 @@ use \MovLib\Data\User;
  */
 class SessionTest extends \PHPUnit_Framework_TestCase {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /** @var \MovLib\Data\User */
   public $user;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Fixtures
+
 
   public function tearDown() {
     global $session;
@@ -41,8 +50,12 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
     $session->authentication = time();
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Tests
+
+
   /**
-   * @covers \MovLib\Data\Session::__construct
+   * @covers ::__construct
    */
   public function testConstruct() {
     $session = new Session();
@@ -50,14 +63,14 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Data\Session::authenticate
+   * @covers ::authenticate
    */
   public function testAuthenticate() {
     (new Session())->authenticate("richard@fussenegger.info", "test1234");
   }
 
   /**
-   * @covers \MovLib\Data\Session::authenticate
+   * @covers ::authenticate
    * @expectedException \MovLib\Exception\UserException
    */
   public function testAuthenticateDeactivatedUser() {
@@ -66,14 +79,13 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
       $this->user->deactivate();
       (new Session())->authenticate("richard@fussenegger.info", "test1234");
     }
-    // Rebuild the users, the deactivation purged all data!
     finally {
-      exec("movcli db -s users");
+      exec("movdev db -s users");
     }
   }
 
   /**
-   * @covers \MovLib\Data\Session::authenticate
+   * @covers ::authenticate
    * @expectedException \MovLib\Exception\SessionException
    * @expectedExceptionMessage Could not find user with email
    */
@@ -82,7 +94,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Data\Session::authenticate
+   * @covers ::authenticate
    * @expectedException \MovLib\Exception\SessionException
    * @expectedExceptionMessage Invalid password
    */
@@ -91,7 +103,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Data\Session::checkAuthorization
+   * @covers ::checkAuthorization
    */
   public function testCheckAuthorization() {
     global $session;
@@ -99,7 +111,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Data\Session::checkAuthorization
+   * @covers ::checkAuthorization
    * @expectedException \MovLib\Exception\UnauthorizedException
    * @expectedExceptionMessage PHPUnit
    */
@@ -108,7 +120,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Data\Session::checkAuthorizationTimestamp
+   * @covers ::checkAuthorizationTimestamp
    */
   public function testCheckAuthorizationTimestamp() {
     global $session;
@@ -116,7 +128,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Data\Session::checkAuthorizationTimestamp
+   * @covers ::checkAuthorizationTimestamp
    * @expectedException \MovLib\Exception\UnauthorizedException
    * @expectedExceptionMessage PHPUnit
    */
@@ -127,32 +139,31 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Data\Session::destroy
+   * @covers ::destroy
    */
   //public function testDestroy() {
   // @todo Test with cURL
   //}
 
   /**
-   * @covers \MovLib\Data\Session::init
+   * @covers ::init
    */
   public function testInit() {
     $user    = new User(User::FROM_ID, 1);
     $session = new Session();
-    $time    = time();
-    get_reflection_method($session, "init")->invokeArgs($session, [ 1, $time ]);
+    get_reflection_method($session, "init")->invokeArgs($session, [ 1, $_SERVER["REQUEST_TIME"] ]);
     $this->assertEquals($user->id, $session->userId);
     $this->assertEquals($user->name, $session->userName);
-    $this->assertEquals($user->timeZoneId, $session->userTimeZoneID);
-    $this->assertEquals($time, $session->authentication);
+    $this->assertEquals($user->timeZoneId, $session->userTimeZoneId);
+    $this->assertEquals($_SERVER["REQUEST_TIME"], $session->authentication);
     $this->assertNotEmpty($session->csrfToken);
   }
 
   /**
-   * @covers \MovLib\Data\Session::delete
-   * @covers \MovLib\Data\Session::getActiveSessions
-   * @covers \MovLib\Data\Session::insert
-   * @covers \MovLib\Data\Session::update
+   * @covers ::delete
+   * @covers ::getActiveSessions
+   * @covers ::insert
+   * @covers ::update
    */
   public function testInsertGetActiveSessionsUpdateAndDelete() {
     global $session;
@@ -193,7 +204,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Data\Session::passwordNeedsRehash
+   * @covers ::passwordNeedsRehash
    */
   public function testPasswordNeedsRehash() {
     global $session;
@@ -210,28 +221,28 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Data\Session::regenerate
+   * @covers ::regenerate
    */
   //public function testRegenerate() {
   // @todo Test with cURL
   //}
 
   /**
-   * @covers \MovLib\Data\Session::shutdown
+   * @covers ::shutdown
    */
   //public function testShutdown() {
   // @todo Test with cURL
   //}
 
   /**
-   * @covers \MovLib\Data\Session::start
+   * @covers ::start
    */
   //public function testStart() {
   // @todo Test with cURL
   //}
 
   /**
-   * @covers \MovLib\Data\Session::validateCsrfToken
+   * @covers ::validateCsrfToken
    */
   //public function testValidateCsrfToken() {
   // @todo Test with cURL
