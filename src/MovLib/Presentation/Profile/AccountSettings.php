@@ -21,7 +21,7 @@ use \IntlDateFormatter;
 use \MovLib\Data\I18n;
 use \MovLib\Data\User;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormMultipart;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputDate;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
@@ -162,7 +162,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->website                                    = new InputURL("website", $this->user->website);
     $this->website->attributes["data-allow-external"] = true;
     $this->private                                    = new InputCheckbox("private", $this->user->private);
-    $this->form = new Form($this, [
+    $this->form = new FormMultipart($this, [
       $this->realName,
       $this->avatar,
       $this->sex,
@@ -211,7 +211,6 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->sex->setHelp($i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
     $this->timezone->label                     = $i18n->t("Time Zone");
     $this->website->label                      = $i18n->t("Website");
-    $this->form->attributes["enctype"]         = Form::ENCTYPE_BINARY;
 
     return $this->form->open() .
       $this->realName .

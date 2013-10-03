@@ -54,10 +54,6 @@ class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractInp
    * @inheritdoc
    */
   public function validate() {
-    global $i18n;
-    if (empty($this->value)) {
-      throw new ValidationException($i18n->t("The highlighted password field is mandatory."));
-    }
     return $this;
   }
 

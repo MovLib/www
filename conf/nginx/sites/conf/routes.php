@@ -232,6 +232,12 @@ location ^~ <?= $r("/person") ?> {
 # Most profile locations to not utilize the cache because they are only accessible for authenticated users.
 
 
+location @profile_account_settings {
+  set $movlib_presenter "Profile\\AccountSettings";
+  set $movlib_entity_too_large 1;
+  include sites/conf/fastcgi.conf;
+}
+
 location ^~ <?= $r("/profile") ?> {
 
   location = <?= $r("/profile") ?> {
@@ -250,6 +256,7 @@ location ^~ <?= $r("/profile") ?> {
   }
 
   location = <?= $r("/profile/account-settings") ?> {
+    error_page 413 @profile_account_settings;
     set $movlib_presenter "Profile\\AccountSettings";
     include sites/conf/fastcgi.conf;
   }

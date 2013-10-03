@@ -76,12 +76,6 @@ class InputURL extends \MovLib\Presentation\Partial\FormElement\InputText {
    */
   public function validate() {
     global $i18n;
-    if (empty($this->value)) {
-      if (isset($this->attributes["aria-required"])) {
-        throw new ValidationException($i18n->t("The highlighted URL is mandatory."));
-      }
-      return $this;
-    }
     $urlValidator                    = new URL($this->value);
     $urlValidator->allowExternal     = $this->attributes["data-allow-external"];
     $urlValidator->checkReachability = $this->attributes["data-check-reachability"];

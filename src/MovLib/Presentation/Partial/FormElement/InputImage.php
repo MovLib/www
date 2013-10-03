@@ -63,7 +63,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    *
    * @var int
    */
-  public $maximumFileSize = 15728640;
+  public $maximumFileSize;
 
   /**
    * The global minimum height for images.
@@ -95,7 +95,8 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    */
   public function __construct($id, $concreteImage) {
     parent::__construct($id);
-    $this->image = $concreteImage;
+    $this->image           = $concreteImage;
+    $this->maximumFileSize = ini_get("upload_max_filesize");
   }
 
   /**
@@ -124,19 +125,6 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    */
   public function validate(){
     global $i18n;
-
-    // Check if file is present, if not check if it is required.
-    if (empty($_FILES[$this->id]) || $_FILES[$this->id]["error"] === UPLOAD_ERR_NO_FILE) {
-      if (isset($this->attributes["aria-required"])) {
-        throw new ValidationException($i18n->t("The highlighted image field is required."));
-      }
-      return $this;
-    }
-
-    // Make sure the file isn't too large.
-    if ($_FILES[$this->id]["size"] > $this->maximumFileSize) {
-      throw new ValidationException($i18n->t("The image is too large: it must be {0,number} {1} or less.", $this->formatBytes($this->maximumFileSize)));
-    }
 
     // Gather meta information about the uploaded image, getimagesize() will fail if this isn't a valid image.
     try {

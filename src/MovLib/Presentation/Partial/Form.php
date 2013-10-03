@@ -35,17 +35,6 @@ namespace MovLib\Presentation\Partial;
 class Form extends \MovLib\Presentation\AbstractBase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * The encoding type for <code>"octet/stream"</code> encoding (file uploads; differing MIME types in general).
-   *
-   * @var string
-   */
-  const ENCTYPE_BINARY = "multipart/form-data";
-
-
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -107,9 +96,9 @@ class Form extends \MovLib\Presentation\AbstractBase {
    */
   public function __construct($page, array $elements, $id = null, $validationCallback = "validate") {
     global $i18n, $session;
-    $this->elements                 = $elements;
-    $this->id                       = $id ? : $page->id;
-    $this->hiddenElements          .= "<input name='form_id' type='hidden' value='{$this->id}'>";
+    $this->elements        = $elements;
+    $this->id              = $id ? : $page->id;
+    $this->hiddenElements .= "<input name='form_id' type='hidden' value='{$this->id}'>";
 
     // Any form has to include the CSRF token if a session is active (including anon sessions).
     if (isset($session->csrfToken)) {
@@ -129,18 +118,21 @@ class Form extends \MovLib\Presentation\AbstractBase {
         return;
       }
 
-      // Let each form element validate itself.
-      $errors = null;
+      // Validate all attached form elements.
+      $errors = $mandatoryError = null;
       $c = count($this->elements);
       for ($i = 0; $i < $c; ++$i) {
-        try {
-          $this->elements[$i]->validate();
-        }
-        catch (\MovLib\Exception\ValidationException $e) {
-          $this->elements[$i]->invalid();
-          $errors[] = $e->getMessage();
-        }
+        $this->validate($this->elements[$i], $errors, $mandatoryError);
       }
+
+      // No need to display several error messages about mandatory fields that weren't filled out. One message is more
+      // than enough. Please note that the color is not a problem for accessability, because each mandatory field is
+      // marked with the aria-required-attribute which ensures that clients for handicapped people tell them exactly
+      // which elements are required and which aren't.
+      if ($mandatoryError === true) {
+        $errors[] = $i18n->t("One or more required fields are empty and are highlighted with a red color, please make sure to fill out all required fields.");
+      }
+
       if ($page->checkErrors($errors) === false) {
         $page->{$validationCallback}();
       }
@@ -188,6 +180,36 @@ class Form extends \MovLib\Presentation\AbstractBase {
    */
   public function open() {
     return "<form{$this->expandTagAttributes($this->attributes)}>{$this->hiddenElements}";
+  }
+
+  /**
+   * Validate all attached form elements.
+   *
+   * @param \MovLib\Presentation\Partial\FormElement\AbstractFormElement $formElement
+   *   The form element to validate.
+   * @param null|array $errors
+   *   The errors array to collect all error messages.
+   * @param null|boolean $mandatoryError
+   *   The flag indicating if there is one or more mandatory field emtpy.
+   * @return this
+   */
+  protected function validate($formElement, &$errors, &$mandatoryError) {
+    if (empty($_POST[$formElement->id])) {
+      if (isset($formElement->attributes["aria-required"])) {
+        $formElement->invalid();
+        $mandatoryError = true;
+      }
+    }
+    else {
+      try {
+        $formElement->validate();
+      }
+      catch (\MovLib\Exception\ValidationException $e) {
+        $formElement->invalid();
+        $errors[] = $e->getMessage();
+      }
+    }
+    return $this;
   }
 
 }

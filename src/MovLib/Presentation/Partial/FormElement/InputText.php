@@ -51,14 +51,6 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
   public function validate() {
     global $i18n;
 
-    if (empty($this->value)) {
-      if (isset($this->attributes["aria-required"])) {
-        throw new ValidationException("The highlighted text field is mandatory.");
-      }
-      $this->value = null;
-      return $this;
-    }
-
     // Validate UTF-8 encoding.
     if (preg_match("//u", $this->value) === false) {
       throw new ValidationException($i18n->t("The text contains invalid UTF-8 characters."));

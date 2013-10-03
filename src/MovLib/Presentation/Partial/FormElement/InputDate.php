@@ -37,6 +37,10 @@ use \MovLib\Exception\ValidationException;
  */
 class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * Full date formatting according to RFC3339.
    *
@@ -63,6 +67,10 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    */
   public $min;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
    * @inheritdoc
    */
@@ -77,19 +85,15 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
     return parent::__toString();
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * @inheritdoc
    */
   public function validate() {
     global $i18n, $session;
-
-    if (empty($this->value)) {
-      if (isset($this->attributes["aria-required"])) {
-        throw new ValidationException($i18n->t("The highlighted date is mandatory."));
-      }
-      $this->value = null;
-      return $this;
-    }
 
     if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $this->value) === false) {
       throw new ValidationException($i18n->t("The submitted date {0} has an invalid format, the format must be {1}yyyy-mm-dd{2}.", [

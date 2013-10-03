@@ -84,19 +84,9 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    */
   public function validate() {
     global $i18n;
-
-    if (empty($this->value)) {
-      if (isset($this->attributes["aria-required"])) {
-        throw new ValidationException("The highlighted select element is mandatory.");
-      }
-      $this->value = null;
-      return $this;
-    }
-
     if (!isset($this->options[$this->value])) {
       throw new ValidationException($i18n->t("The submitted value {0} is not a valid option.", [ $this->placeholder($this->value) ]));
     }
-
     return $this;
   }
 

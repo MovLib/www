@@ -60,7 +60,7 @@ class FixPermissions extends \MovLib\Console\Command\AbstractCommand {
     $this->exec("chown -R movdev:www-data '{$directory}'", "Could not change ownership!");
     $this->exec("find '{$directory}' -type d -exec chmod 0770 {} \;", "Could not change directory permissions!");
     $this->exec("find '{$directory}' -type f -exec chmod 0660 {} \;", "Could not change file permissions!");
-    $this->exec("find '{$_SERVER["DOCUMENT_ROOT"]}' -type f -regextype posix-egrep -regex '.*bin/.*(\.php|phpunit)$' -exec chmod 0770 {} \;", "Could not change executable permissions!");
+    $this->exec("find '{$_SERVER["DOCUMENT_ROOT"]}' -type f -regextype posix-egrep -regex '.*(bin|conf)/.*(\.(php|sh)|phpunit)$' -exec chmod 0770 {} \;", "Could not change executable permissions!");
     $this->write("Permissions Fixed!", self::MESSAGE_TYPE_INFO);
   }
 
