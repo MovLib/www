@@ -161,7 +161,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
       throw $e;
     }
     finally {
-      exec("movcli db -s users");
+      exec("movdev db -s users");
     }
   }
 
@@ -169,7 +169,6 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
    * @covers \MovLib\Presentation\Users\Login::validate
    */
   public function testSignOut() {
-    global $session;
     $_SERVER["PATH_INFO"] = "/profile/sign-out";
     $login = new Login();
     $this->assertContains("You’ve been signed out successfully.", $login->alerts);

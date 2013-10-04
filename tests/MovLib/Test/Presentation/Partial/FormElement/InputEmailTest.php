@@ -21,6 +21,7 @@ use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Validation\EmailAddress;
 
 /**
+ * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\InputEmail
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -30,23 +31,48 @@ use \MovLib\Presentation\Validation\EmailAddress;
 class InputEmailTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * @covers InputEmail::__construct
+   * @covers ::__construct
+   * @covers \MovLib\Presentation\Partial\FormElement\AbstractInput::__construct
+   * @covers \MovLib\Presentation\Partial\FormElement\AbstractFormElement::__construct
+   * @group Presentation
    */
   public function testConstruct() {
-    $input = new InputEmail();
-    $this->assertEquals("email", $input->attributes["type"]);
-    $this->assertEquals(EmailAddress::MAX_LENGTH, $input->attributes["maxlength"]);
-    $this->assertEquals(EmailAddress::PATTERN, $input->attributes["pattern"]);
+    $input = new InputEmail("phpunit", "PHPUnit");
+    $attributes = get_reflection_property($input, "attributes")->getValue($input);
+    foreach ([
+      "aria-required" => "true",
+      "id"            => "phpunit",
+      "maxlength"     => 254,
+      "name"          => "phpunit",
+      "pattern"       => InputEmail::PATTERN,
+      "tabindex"      => null,
+      "type"          => "email",
+      0               => "required",
+    ] as $k => $v) {
+      $this->assertArrayHasKey($k, $attributes);
+      if ($v) {
+        $this->assertEquals($v, $attributes[$k]);
+      }
+    }
+    $this->assertTrue(is_int($attributes["tabindex"]));
   }
 
   /**
-   * @covers InputEmail::__toString
+   * @covers ::__toString
+   * @covers \MovLib\Presentation\Partial\FormElement\AbstractInput::__toString
+   * @group Presentation
    */
   public function testToString() {
-    $input = (new InputEmail())->__toString();
-    $this->assertContains("pattern='" . htmlspecialchars(EmailAddress::PATTERN, ENT_QUOTES|ENT_HTML5) . "'", $input);
-    $this->assertContains("maxlength='" . EmailAddress::MAX_LENGTH . "'", $input);
-    $this->assertContains("type='email'", $input);
+    $input = (new InputEmail("phpunit", "PHPUnit"))->__toString();
+    $this->assertContains(" aria-required='true'", $input);
+    $this->assertContains(" id='phpunit'", $input);
+    $this->assertContains(" maxlength='254'", $input);
+    $this->assertContains(" name='phpunit'", $input);
+    $this->assertContains(" pattern='" . htmlspecialchars(EmailAddress::PATTERN, ENT_QUOTES|ENT_HTML5) . "'", $input);
+    $this->assertContains(" required", $input);
+    $this->assertContains(" tabindex='", $input);
+    $this->assertContains(" type='email'", $input);
+    $this->assertContains("<label for='phpunit'>PHPUnit</label>", $input);
   }
 
 }

@@ -50,6 +50,9 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
   public function validate() {
     global $i18n;
 
+    // Collapse all white space characters and trim the string at beginning and end (no error for this).
+    $this->value = trim($this->collapseWhitespace($this->value));
+
     // Validate UTF-8 encoding.
     if (preg_match("//u", $this->value) === false) {
       throw new ValidationException($i18n->t("The text contains invalid UTF-8 characters."));
@@ -64,9 +67,6 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
     if ($this->value != filter_var($this->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_REQUIRE_SCALAR)) {
       throw new ValidationException($i18n->t("The text contains illegal low ASCII characters."));
     }
-
-    // Collapse all white space characters and trim the string at beginning and end (no error for this).
-    $this->value = trim($this->collapseWhitespace($this->value));
 
     return $this;
   }

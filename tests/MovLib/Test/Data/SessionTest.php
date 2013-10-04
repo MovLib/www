@@ -32,21 +32,12 @@ use \MovLib\Data\User;
 class SessionTest extends \PHPUnit_Framework_TestCase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /** @var \MovLib\Data\User */
-  public $user;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
   public function tearDown() {
     global $session;
-    if ($this->user instanceof User) {
-      $this->user->reactivate();
-    }
+    exec("movdev db -s users");
     $session->authentication = time();
   }
 
@@ -74,14 +65,9 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    * @expectedException \MovLib\Exception\UserException
    */
   public function testAuthenticateDeactivatedUser() {
-    try {
-      $this->user = new User(User::FROM_ID, 1);
-      $this->user->deactivate();
-      (new Session())->authenticate("richard@fussenegger.info", "test1234");
-    }
-    finally {
-      exec("movdev db -s users");
-    }
+    $user = new User(User::FROM_ID, 1);
+    $user->deactivate();
+    (new Session())->authenticate("richard@fussenegger.info", "test1234");
   }
 
   /**

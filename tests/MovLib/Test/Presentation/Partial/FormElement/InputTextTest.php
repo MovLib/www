@@ -29,43 +29,56 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  */
 class InputTextTest extends \PHPUnit_Framework_TestCase {
 
-  /**
-   * @covers ::__construct
-   * @covers \MovLib\Presentation\Partial\FormElement\AbstractInput::__construct
-   * @covers \MovLib\Presentation\Partial\FormElement\AbstractFormElement::__construct
-   * @group Presentation
-   */
-  public function testConstruct() {
-    $inputText  = new InputText("phpunit", "PHPUnit", [ "foo" => "bar" ], "Hello World", false);
-    $attributes = get_reflection_property($inputText, "attributes")->getValue($inputText);
-    $help       = get_reflection_property($inputText, "help")->getValue($inputText);
-    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $help);
-    $this->assertArrayHasKey("foo", $attributes);
-    $this->assertArrayHasKey("id", $attributes);
-    $this->assertArrayHasKey("name", $attributes);
-    $this->assertArrayHasKey("tabindex", $attributes);
-    $this->assertArrayHasKey("type", $attributes);
-    $this->assertEquals("Hello World", $help->content);
-    $this->assertEquals("PHPUnit", get_reflection_property($inputText, "label")->getValue($inputText));
-    $this->assertEquals("bar", $attributes["foo"]);
-    $this->assertEquals("phpunit", $attributes["id"]);
-    $this->assertEquals("phpunit", $attributes["name"]);
-    $this->assertEquals("phpunit", get_reflection_property($inputText, "id")->getValue($inputText));
-    $this->assertEquals("text", $attributes["type"]);
-    $this->assertFalse($help->popup);
-    $this->assertTrue(is_int($attributes["tabindex"]));
+
+  // ------------------------------------------------------------------------------------------------------------------- Data Providers
+
+
+  public static function dataProviderValidPlainTextStrings() {
+    return [
+      [ "" ],                           // Valid empty string
+      [ "movlib" ],                     // Valid ASCII
+      [ " movlib ", "movlib" ],         // Valid ASCII which gets trimmed
+      [ "mov < lib" ],                  // Valid ASCII and usage of special HTML character
+      [ "mov < lib > mov" ],            // Valid ASCII and usage of special HTML characters
+      [ "<>'\"&/" ],                    // Valid character sequence
+      [ "\\\";alert('XSS');//" ],       // Valid (standalone) character sequence
+      [ "mov < > lib" ],                // Valid as well
+      [ "κόσμε" ],                      // Valid UTF-8
+      [ "\xc3\xb1" ],                   // Valid 2 Octet Sequence
+      [ "\xe2\x82\xa1" ],               // Valid 3 Octet Sequence
+      [ "\xf0\x90\x8c\xbc" ],           // Valid 4 Octet Sequence
+    ];
   }
 
+  public static function dataProviderInvalidUnicode() {
+    return [
+
+    ];
+  }
+
+  public static function dataProviderInvalidNFCForm() {
+    return [
+
+    ];
+  }
+
+  public static function dataProviderLowASCII() {
+    return [
+
+    ];
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Tests
+
+
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\InputText::__toString
+   * @covers ::validate
+   * @dataProvider dataProviderValidPlainTextStrings
+   * @group Validation
    */
-  public function testToString() {
-    $inputText = (new InputText("phpunit", "PHPUnit"))->__toString();
-    $this->assertContains("<label for='phpunit'>PHPUnit</label>", $inputText);
-    $this->assertContains("id='phpunit'", $inputText);
-    $this->assertContains("name='phpunit'", $inputText);
-    $this->assertContains("type='text'", $inputText);
-    $this->assertRegExp("/tabindex='[0-9]+'/", $inputText);
+  public function testValid($actual, $expected = null) {
+    $this->assertEquals($expected ?: $actual, (new InputText("phpunit", "PHPUnit", [ "value" => $actual ]))->validate());
   }
 
 }
