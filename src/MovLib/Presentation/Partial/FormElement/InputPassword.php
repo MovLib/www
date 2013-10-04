@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ValidationException;
-
 /**
  * HTML input type password form element.
  *
@@ -35,18 +33,18 @@ class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractInp
   /**
    * @inheritdoc
    */
+  protected $attributes = [
+    "aria-required" => "true",
+    "required",
+    "type"          => "password",
+  ];
+
+  /**
+   * @inheritdoc
+   */
   public function __toString() {
-    global $i18n;
-    $this->attributes["aria-required"] = "true";
-    $this->attributes["type"]          = "password";
-    $this->attributes[]                = "required";
-    if (!isset($this->attributes["placeholder"])) {
-      $this->attributes["placeholder"] = $i18n->t("Enter your password");
-    }
-    if (!$this->label) {
-      $this->label = $i18n->t("Password");
-    }
-    unset($this->value); // Ensure value isn't prefilled in output!
+    // Ensure value isn't prefilled in output!
+    unset($this->value);
     return parent::__toString();
   }
 

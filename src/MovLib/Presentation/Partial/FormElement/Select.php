@@ -28,7 +28,11 @@ use \MovLib\Exception\ValidationException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
+class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The select's options.
@@ -37,23 +41,40 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    */
   public $options;
 
+  /**
+   * The selected value.
+   *
+   * @var mixed
+   */
+  public $value;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new select input element.
+   * Instantiate new select form element.
    *
    * @param string $id
-   *   The form element's global identifier.
+   *   The select's global identifier.
+   * @param string $label
+   *   The select's label text.
    * @param array $options
-   *   The form element's options.
+   *   The select's available options as associative array where the key is the content of the option's value-attribute
+   *   and the array's value the option's display text.
    * @param mixed $value [optional]
-   *   The form element's default value.
+   *   The selected option's value, defaults to <code>NULL</code> (no option is selected).
+   * @param array $attributes [optional]
+   *   Additional attributes for the textarea, defaults to <code>NULL</code> (no additional attributes).
+   * @param string $help [optional]
+   *   The textarea's help text, defaults to <code>NULL</code> (no help text).
+   * @param boolean $helpPopup
+   *   Whetever the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
-  public function __construct($id, array $options, $value = null) {
-    parent::__construct($id, $value);
+  public function __construct($id, $label, array $options, $value = null, array $attributes = null, $help = null, $helpPopup = true) {
+    parent::__construct($id, $label, $attributes, $help, $helpPopup);
     $this->options = $options;
+    $this->value   = empty($_POST[$this->id]) ? $value : $_POST[$this->id];
   }
 
   /**
@@ -72,7 +93,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
       $options .= "<option{$selected} value='{$value}'>{$option}</option>";
     }
 
-    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><select{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
+    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><select{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
   }
 
 

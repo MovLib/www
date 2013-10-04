@@ -212,7 +212,7 @@ catch (\MovLib\Exception\UnauthorizedException $e) {
   header("WWW-Authenticate: MovLib location=\"{$i18n->r("/users/login")}\"");
 
   $login = new \MovLib\Presentation\Users\Login();
-  $login->alerts .= $e->getMessage();
+  $login->alerts .= $e->alert;
   $presentation = $login->getPresentation();
 }
 // A presentation can throw a client exception for various client errors including "not found", "gone", "forbidden" and

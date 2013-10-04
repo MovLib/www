@@ -56,6 +56,21 @@ class InputEmail extends \MovLib\Presentation\Partial\FormElement\AbstractInput 
   const PATTERN = "^[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~\.\"(),:;<>@[\]\\\\ ]+@[a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*[a-z0-9_]\.[a-z]{2,6}$";
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * @inheritdoc
+   */
+  protected $attributes = [
+    "aria-required" => "true",
+    "maxlength"     => self::MAX_LENGTH,
+    "pattern"       => self::PATTERN,
+    "required",
+    "type"          => "email",
+  ];
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
@@ -64,20 +79,7 @@ class InputEmail extends \MovLib\Presentation\Partial\FormElement\AbstractInput 
    */
   public function __toString() {
     global $i18n;
-    $this->attributes["aria-required"] = "true";
-    $this->attributes["id"]            = $this->id;
-    $this->attributes["maxlength"]     = self::MAX_LENGTH;
-    $this->attributes["name"]          = $this->id;
-    $this->attributes["pattern"]       = self::PATTERN;
-    $this->attributes["title"]         = $i18n->t("An email address in the format [local]@[host].[tld] with a maximum of {0} characters", [ self::MAX_LENGTH ]);
-    $this->attributes["type"]          = "email";
-    $this->attributes[]                = "required";
-    if (!isset($this->attributes["placeholder"])) {
-      $this->attributes["placeholder"] = $i18n->t("Enter your email address");
-    }
-    if (!$this->label) {
-      $this->label = $i18n->t("Email Address");
-    }
+    $this->attributes["title"] = $i18n->t("An email address in the format [local]@[host].[tld] with a maximum of {0} characters", [ self::MAX_LENGTH ]);
     return parent::__toString();
   }
 
@@ -90,10 +92,6 @@ class InputEmail extends \MovLib\Presentation\Partial\FormElement\AbstractInput 
    */
   public function validate() {
     global $i18n;
-
-    if (empty($this->value)) {
-      throw new ValidationException($i18n->t("The highlighted email field is mandatory."));
-    }
 
     // No need for multi-byte functions, utf-8 is not allowed in emails.
     if (strlen($this->value) > self::MAX_LENGTH) {

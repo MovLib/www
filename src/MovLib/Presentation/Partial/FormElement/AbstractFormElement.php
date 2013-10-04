@@ -47,7 +47,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *
    * @var array
    */
-  public $attributes;
+  protected $attributes = [];
 
   /**
    * The form element's help.
@@ -71,19 +71,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *
    * @var string
    */
-  public $label;
-
-  /**
-   * The form element's label attributes.
-   *
-   * The following attributes are always set:
-   * <ul>
-   *   <li><code>"for"</code> is set to <var>AbstractFormElement::$id</var></li>
-   * </ul>
-   *
-   * @var array
-   */
-  public $labelAttributes;
+  protected $label;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -95,10 +83,15 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * @param string $id
    *   The form element's global identifier.
    */
-  public function __construct($id) {
-    $this->id = $this->attributes["id"] = $this->attributes["name"] = $id;
+  public function __construct($id, $label, array $attributes = [], $help = null, $helpPopup = true) {
+    $this->attributes            += $attributes;
+    $this->id                     = $this->attributes["id"] = $this->attributes["name"] = $id;
     $this->attributes["tabindex"] = $this->getTabindex();
-    $this->labelAttributes["for"] = $id;
+    $this->label                  = $label;
+    if ($help) {
+      $this->attributes["aria-describedby"] = "{$this->id}-help";
+      $this->help                           = new Help($help, $this->id, $helpPopup);
+    }
   }
 
   /**
@@ -142,24 +135,6 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   public function required() {
     $this->attributes["aria-required"] = "true";
     $this->attributes[]                = "required";
-    return $this;
-  }
-
-  /**
-   * Set input's help.
-   *
-   * Automatically instantiates <code>\MovLib\Presentation\Partial\Help</code> and sets the appropriate ARIA attribute
-   * on this input element.
-   *
-   * @param string $content
-   *   The translated help content.
-   * @param boolean $popup [optional]
-   *   Defines the rendering type, defaults to rendering as popup.
-   * @return this
-   */
-  public function setHelp($content, $popup = true) {
-    $this->attributes["aria-describedby"] = "{$this->id}-help";
-    $this->help                           = new Help($content, $this->id, $popup);
     return $this;
   }
 

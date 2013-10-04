@@ -20,13 +20,11 @@ namespace MovLib\Test\Presentation\Users;
 use \MovLib\Data\User;
 use \MovLib\Presentation\Email\Users\Registration as RegistrationEmail;
 use \MovLib\Presentation\Email\Users\RegistrationEmailExists;
-use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\FormElement\InputEmail;
-use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Users\Registration;
-use \MovLib\Presentation\Validation\Username;
 
 /**
+ * @coversDefaultClass \MovLib\Presentation\Users\Registration
+ * @group Presentation
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -35,19 +33,58 @@ use \MovLib\Presentation\Validation\Username;
  */
 class RegistrationTest extends \PHPUnit_Framework_TestCase {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Fixtures
+
+
   public function setUp() {
     global $session;
     $session->isAuthenticated = false;
-    $_SERVER["PATH_INFO"] = "/users/registration";
+    $_SERVER["PATH_INFO"]     = "/users/registration";
   }
 
-  public function tearDown() {
-    unset($_POST);
-    unset($_GET);
+  public static function tearDownAfterClass() {
+    global $session;
+    $session->isAuthenticated = true;
+    parent::tearDownAfterClass();
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Helpers
+
+
+  /**
+   * @coversNothing
+   */
+  public function _testValidateEmail($email) {
+    $_POST["username"] = "PHPUnit";
+    $_POST["email"]    = $email;
+    $_POST["form_id"]  = "users-registration";
+    $registration      = new Registration();
+
+    $this->assertTrue(get_reflection_property($registration, "accepted")->getValue($registration));
+    $this->assertContains("Registration Successful", $registration->alerts);
+    $this->assertNotContains(get_reflection_property($registration, "form")->getValue($registration)->__toString(), $registration->getPresentation());
+
+    return get_reflection_property("\\MovLib\\Data\\Delayed\\Mailer", "emails")->getValue(null);
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Registration::__construct
+   * @coversNothing
+   */
+  public function _testValidateUsername($username) {
+    $_POST["username"] = $username;
+    $_POST["email"]    = "phpunit@movlib.org";
+    $_POST["form_id"]  = "users-registration";
+    return (new Registration())->getPresentation();
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Tests
+
+
+  /**
+   * @covers ::__construct
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /my with status 302.
    */
@@ -65,36 +102,34 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Registration::__construct
-   * @covers \MovLib\Presentation\Users\Registration::getContent
+   * @covers ::__construct
+   * @covers ::getContent
+   * @covers \MovLib\Presentation\Page::getPresentation
+   * @covers \MovLib\Presentation\Page::getWrappedContent
    */
   public function testConstruct() {
-    $registration = new Registration();
+    $registration             = new Registration();
+    $emailInput               = get_reflection_property($registration, "email")->getValue($registration);
+    $usernameInput            = get_reflection_property($registration, "username")->getValue($registration);
+    $usernameAttributes       = get_reflection_property($usernameInput, "attributes")->getValue($usernameInput);
+    $form                     = get_reflection_property($registration, "form")->getValue($registration);
 
-    $inputEmail = get_reflection_property($registration, "email")->getValue($registration);
-    $this->assertTrue($inputEmail instanceof InputEmail);
-    $this->assertTrue($inputEmail->required);
-
-    $inputUsername = get_reflection_property($registration, "username")->getValue($registration);
-    $this->assertTrue($inputUsername instanceof InputText);
-    $this->assertTrue($inputUsername->required);
-    $this->assertTrue($inputUsername->validator instanceof Username);
-
-    $form = get_reflection_property($registration, "form")->getValue($registration);
-    $this->assertTrue($form instanceof Form);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputEmail", $emailInput);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputText", $usernameInput);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Form", $form);
+    $this->assertArrayHasKey("aria-required", $usernameAttributes);
+    $this->assertEquals("true", $usernameAttributes["aria-required"]);
     $this->assertEquals("/users/registration", $form->attributes["action"]);
-    $this->assertEquals([ $inputEmail, $inputUsername ], get_reflection_property($form, "elements")->getValue($form));
-
+    $this->assertEquals([ $emailInput, $usernameInput ], get_reflection_property($form, "elements")->getValue($form));
     $this->assertContains($form->__toString(), $registration->getPresentation());
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Registration::validate
+   * @covers ::validate
    */
-  public function testValidate() {
-    $_POST["email"]    = "phpunit@movlib.org";
+  public function testValidRegistration() {
     $found = false;
-    foreach ($this->_testValidate() as $email) {
+    foreach ($this->_testValidateEmail("phpunit@movlib.org") as $email) {
       if ($email instanceof RegistrationEmail) {
         $found = true;
         $this->assertEquals("phpunit@movlib.org", $email->recipient);
@@ -109,12 +144,11 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Registration::validate
+   * @covers ::validate
    */
-  public function testValidateEmailExists() {
-    $_POST["email"] = "richard@fussenegger.info";
+  public function testEmailExists() {
     $found = false;
-    foreach ($this->_testValidate() as $email) {
+    foreach ($this->_testValidateEmail("richard@fussenegger.info") as $email) {
       if ($email instanceof RegistrationEmailExists) {
         $found = true;
         $this->assertEquals("richard@fussenegger.info", $email->recipient);
@@ -123,24 +157,74 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals("Fleshgrinder", get_reflection_property($email, "name")->getValue($email));
       }
     }
-    $this->assertTrue($found, "Registration email exists email missing from stack!");
-  }
-
-  public function _testValidate() {
-    $_POST["username"] = "PHPUnit";
-    $_POST["form_id"]  = "users-registration";
-
-    $registration = new Registration();
-
-    $this->assertTrue(get_reflection_property($registration, "accepted")->getValue($registration));
-    $this->assertContains("Registration Successful", $registration->alerts);
-    $this->assertNotContains(get_reflection_property($registration, "form")->getValue($registration)->__toString(), $registration->getPresentation());
-
-    return get_reflection_property("\MovLib\Data\Delayed\Mailer", "emails")->getValue(null);
+    $this->assertTrue($found, "Registration email exists email missing from mailer stack!");
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Registration::validateToken
+   * @covers ::validate
+   * @covers ::getContent
+   * @covers \MovLib\Presentation\Page::getPresentation
+   * @covers \MovLib\Presentation\Page::getWrappedContent
+   */
+  public function testUsernameSpaceAtBeginning() {
+    $this->assertContains("begin with a space", $this->_testValidateUsername(" PHPUnit"));
+  }
+
+  /**
+   * @covers ::validate
+   * @covers ::getContent
+   * @covers \MovLib\Presentation\Page::getPresentation
+   * @covers \MovLib\Presentation\Page::getWrappedContent
+   */
+  public function testUsernameSpaceAtEnding() {
+    $this->assertContains("end with a space", $this->_testValidateUsername("PHPUnit "));
+  }
+
+  /**
+   * @covers ::validate
+   * @covers ::getContent
+   * @covers \MovLib\Presentation\Page::getPresentation
+   * @covers \MovLib\Presentation\Page::getWrappedContent
+   */
+  public function testUsernameMultipleSpacesInRow() {
+    $this->assertContains("cannot contain multiple spaces", $this->_testValidateUsername("PHP  Unit"));
+  }
+
+  /**
+   * @covers ::validate
+   * @covers ::getContent
+   * @covers \MovLib\Presentation\Page::getPresentation
+   * @covers \MovLib\Presentation\Page::getWrappedContent
+   */
+  public function testUsernameNoSlashes() {
+    $this->assertContains("cannot contain slashes", $this->_testValidateUsername("PHP/Unit"));
+  }
+
+  /**
+   * @covers ::validate
+   * @covers ::getContent
+   * @covers \MovLib\Presentation\Page::getPresentation
+   * @covers \MovLib\Presentation\Page::getWrappedContent
+   */
+  public function testUsernameLength() {
+    $this->assertContains("too long", $this->_testValidateUsername(str_repeat("PHPUnit", 10)));
+  }
+
+  /**
+   * @covers ::validate
+   * @covers ::getContent
+   * @covers \MovLib\Presentation\Page::getPresentation
+   * @covers \MovLib\Presentation\Page::getWrappedContent
+   */
+  public function testUsernameExists() {
+    $this->assertContains("already taken", $this->_testValidateUsername("Fleshgrinder"));
+  }
+
+  /**
+   * @covers ::validateToken
+   * @covers ::getContent
+   * @covers \MovLib\Presentation\Page::getPresentation
+   * @covers \MovLib\Presentation\Page::getWrappedContent
    */
   public function testValidateTokenEmpty() {
     $_GET["token"] = "";
@@ -149,7 +233,10 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Registration::validateToken
+   * @covers ::validateToken
+   * @covers ::getContent
+   * @covers \MovLib\Presentation\Page::getPresentation
+   * @covers \MovLib\Presentation\Page::getWrappedContent
    */
   public function testValidateTokenLength() {
     $_GET["token"] = "token";
@@ -158,7 +245,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Registration::validateToken
+   * @covers ::validateToken
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /profile/password-settings with status 302.
    */
@@ -166,8 +253,8 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
     $_POST["email"]    = "phpunit@movlib.org";
     $_POST["username"] = "PHPUnit";
     $_POST["form_id"]  = "users-registration";
-    $registration = new Registration();
-    foreach (get_reflection_property("\MovLib\Data\Delayed\Mailer", "emails")->getValue(null) as $email) {
+    new Registration();
+    foreach (get_reflection_property("\\MovLib\\Data\\Delayed\\Mailer", "emails")->getValue(null) as $email) {
       if ($email instanceof RegistrationEmail) {
         $email->init();
         $_GET["token"] = get_reflection_property($email, "token")->getValue($email);
@@ -187,12 +274,15 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Registration::validateToken
+   * @covers ::validateToken
+   * @covers ::getContent
+   * @covers \MovLib\Presentation\Page::getPresentation
+   * @covers \MovLib\Presentation\Page::getWrappedContent
    */
   public function testValidationTokenExpired() {
     $this->testValidateToken();
     $registration = new Registration();
-    $this->assertContains("token has expired", $registration);
+    $this->assertContains("token has expired", $registration->getPresentation());
   }
 
 }

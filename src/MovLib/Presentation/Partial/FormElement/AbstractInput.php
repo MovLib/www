@@ -43,11 +43,13 @@ abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\Ab
    * @param mixed $value [optional]
    *   The default value for this concrete input form element.
    */
-  public function __construct($id, $value = null) {
-    parent::__construct($id);
-    $this->value = $value;
+  public function __construct($id, $label, array $attributes = [], $help = null, $helpPopup = true) {
+    parent::__construct($id, $label, $attributes, $help, $helpPopup);
     if (isset($_POST[$this->id])) {
       $this->value = empty($_POST[$this->id]) ? null : $_POST[$this->id];
+    }
+    elseif (isset($this->attributes["value"])) {
+      $this->value = $this->attributes["value"];
     }
   }
 
@@ -55,10 +57,10 @@ abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\Ab
    * @inheritdoc
    */
   public function __toString() {
-    if (!empty($this->value)) {
-      $this->attributes["value"] = $this->value;
+    if (empty($this->value)) {
+      unset($this->attributes["value"]);
     }
-    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
   }
 
 }

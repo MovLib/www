@@ -30,7 +30,20 @@ use \MovLib\Exception\ValidationException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
+class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * @inheritdoc
+   */
+  protected $attributes = [
+    "aria-expanded" => "true",
+    "aria-required" => "false", // @todo Do we need support for radio groups without default values?
+    "role"          => "radiogroup",
+  ];
 
   /**
    * The radios in the group.
@@ -40,50 +53,50 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractInput 
   protected $choices;
 
   /**
-   * Instantiate new fieldset with input form elements of type radio.
+   * The value of the checked element.
+   *
+   * @var mixed
+   */
+  public $value;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new radio group form elements.
    *
    * @param string $id
-   *   The fieldset's global identifier.
-   * @param mixed $value
-   *   The fieldset's initial value.
+   *   The radio group's global identifier.
+   * @param string $legend
+   *   The radio group's legend text.
    * @param array $choices
-   *   Associative array containing the value and label of each radio element, example:
-   *   <code>[ "f" => $i18n->t("Female"), "m" => $i18n->t("Male") ]</code>
+   *   The radio group's radio form elements as associative array where the array's key is the content of the radio
+   *   input's value-attribute and the array's value the label text for the radio input.
+   * @param mixed $value
+   *   The value of the checked radio input in the group.
+   * @param string $help [optional]
+   *   The radio group's help text, defaults to <code>NULL</code> (no help text).
+   * @param boolean $helpPopup
+   *   Whetever the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
-  public function __construct($id, $value, array $choices) {
-    $this->id = $id;
-    $this->value = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
-    foreach ($choices as $choiceValue => $choiceLabel) {
-      $this->choices[$choiceValue] = [
-        "attributes" => [
-          "id"       => "{$id}-{$choiceValue}",
-          "name"     => $id,
-          "required",
-          "tabindex" => $this->getTabindex(),
-          "type"     => "radio",
-          "value"    => $choiceValue
-        ],
-        "label" => $choiceLabel,
-      ];
-    }
-    if (isset($this->choices[$this->value])) {
-      $this->choices[$this->value]["attributes"][] = "checked";
-    }
+  public function __construct($id, $legend, array $choices, $value, $help = null, $helpPopup = true) {
+    parent::__construct($id, $legend, null, $help, $helpPopup);
+    $this->choices = $choices;
+    $this->value   = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }
 
   /**
    * @inheritdoc
    */
   public function __toString() {
-    $this->attributes["id"] = $this->id;
-    $this->attributes["aria-expanded"] = "true";
-    $this->attributes["aria-required"] = "false"; // @todo Do we need support for radio groups without default values?
-    $this->attributes["role"] = "radiogroup";
     $choices = null;
     foreach ($this->choices as $value => $choice) {
-      $choices .= "<label class='radio inline'><input{$this->expandTagAttributes($choice["attributes"])}>{$choice["label"]}</label>";
+      $checked  = $this->value == $value ? " checked" : null;
+      $choices .= "<label class='radio inline'><input{$checked} id='{$this->id}-{$value}' name='{$this->id}' required tabindex='{$this->attributes["tabindex"]}' type='radio' value='{$value}'>{$choice}</label>";
     }
-    return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</legend>{$choices}</fieldset>";
+    unset($this->attributes["tabindex"]);
+    return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend>{$choices}</fieldset>";
   }
 
 
@@ -92,7 +105,7 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractInput 
    */
   public function validate() {
     global $i18n;
-    if (array_key_exists($this->value, $this->choices) === false) {
+    if (!isset($this->choices[$this->value])) {
       throw new ValidationException($i18n->t("The submitted value {0} is not a valid choice.", [ $this->placeholder($this->value) ]));
     }
     return $this;

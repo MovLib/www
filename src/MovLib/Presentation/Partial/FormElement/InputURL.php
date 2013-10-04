@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Presentation\Validation\URL;
-use \MovLib\Exception\ValidationException;
 
 /**
  * HTML input type URL form element.
@@ -43,27 +42,26 @@ use \MovLib\Exception\ValidationException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputURL extends \MovLib\Presentation\Partial\FormElement\InputText {
+class InputURL extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
   /**
    * @inheritdoc
    */
-  public function __construct($id, $value = null) {
-    parent::__construct($id, $value);
-    $this->attributes["data-allow-external"]     = false;
-    $this->attributes["data-check-reachability"] = false;
-  }
+  protected $attributes = [
+    "data-allow-external"     => false,
+    "data-check-reachability" => false,
+    "pattern"                 => URL::PATTERN,
+    "placeholder"             => "http(s)://",
+    "type"                    => "url",
+  ];
 
   /**
    * @inheritdoc
    */
-  public function __toString() {
+  public function __construct($id, $label, $attributes = null, $help = null, $helpPopup = true) {
     global $i18n;
-    $this->attributes["pattern"]                 = URL::PATTERN;
-    $this->attributes["placeholder"]             = "http(s)://";
-    $this->attributes["title"]                   = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
-    $this->attributes["type"]                    = "url";
-    return parent::__toString();
+    parent::__construct($id, $label, $attributes, $help, $helpPopup);
+    $this->attributes["title"] = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
   }
 
   /**

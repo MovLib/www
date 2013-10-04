@@ -20,6 +20,7 @@ namespace MovLib\Test\Presentation\Partial\FormElement;
 use \MovLib\Presentation\Partial\FormElement\InputText;
 
 /**
+ * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\InputText
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -29,22 +30,30 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
 class InputTextTest extends \PHPUnit_Framework_TestCase {
 
   /**
+   * @covers ::__construct
+   * @covers \MovLib\Presentation\Partial\FormElement\AbstractInput::__construct
    * @covers \MovLib\Presentation\Partial\FormElement\AbstractFormElement::__construct
-   * @covers \MovLib\Presentation\Partial\FormElement\InputText::__construct
+   * @group Presentation
    */
   public function testConstruct() {
-    $inputText = new InputText("phpunit", "PHPUnit");
-
-    // AbstractFormElement tests
-    $this->assertEquals("PHPUnit", $inputText->label);
-    $this->assertEquals("phpunit", $inputText->attributes["id"]);
-    $this->assertEquals("phpunit", $inputText->attributes["name"]);
-    $this->assertEquals("phpunit", $inputText->id);
-    $this->assertEquals("phpunit", $inputText->labelAttributes["for"]);
-    $this->assertTrue(is_int($inputText->attributes["tabindex"]));
-
-    // InputText tests
-    $this->assertEquals("text", $inputText->attributes["type"]);
+    $inputText  = new InputText("phpunit", "PHPUnit", [ "foo" => "bar" ], "Hello World", false);
+    $attributes = get_reflection_property($inputText, "attributes")->getValue($inputText);
+    $help       = get_reflection_property($inputText, "help")->getValue($inputText);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $help);
+    $this->assertArrayHasKey("foo", $attributes);
+    $this->assertArrayHasKey("id", $attributes);
+    $this->assertArrayHasKey("name", $attributes);
+    $this->assertArrayHasKey("tabindex", $attributes);
+    $this->assertArrayHasKey("type", $attributes);
+    $this->assertEquals("Hello World", $help->content);
+    $this->assertEquals("PHPUnit", get_reflection_property($inputText, "label")->getValue($inputText));
+    $this->assertEquals("bar", $attributes["foo"]);
+    $this->assertEquals("phpunit", $attributes["id"]);
+    $this->assertEquals("phpunit", $attributes["name"]);
+    $this->assertEquals("phpunit", get_reflection_property($inputText, "id")->getValue($inputText));
+    $this->assertEquals("text", $attributes["type"]);
+    $this->assertFalse($help->popup);
+    $this->assertTrue(is_int($attributes["tabindex"]));
   }
 
   /**
@@ -56,7 +65,7 @@ class InputTextTest extends \PHPUnit_Framework_TestCase {
     $this->assertContains("id='phpunit'", $inputText);
     $this->assertContains("name='phpunit'", $inputText);
     $this->assertContains("type='text'", $inputText);
-    $this->assertRegExpr("/tabindex='[0-9]+'/", $inputText);
+    $this->assertRegExp("/tabindex='[0-9]+'/", $inputText);
   }
 
 }

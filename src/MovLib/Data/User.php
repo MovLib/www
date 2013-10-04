@@ -52,15 +52,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
   const IMAGE_STYLE_DEFAULT = 2;
 
   /**
-   * Avatar style for span 1 elements.
-   *
-   * Width and height of this image will be 70 pixels.
-   *
-   * @var string
-   */
-  const IMAGE_STYLE_SMALL = 1;
-
-  /**
    * Load the user from ID.
    *
    * @var string
@@ -444,7 +435,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @return this
    */
   protected function deleteImageOriginalAndStyles() {
-    foreach ([ self::IMAGE_STYLE_DEFAULT, self::IMAGE_STYLE_SMALL ] as $style) {
+    foreach ([ self::IMAGE_STYLE_DEFAULT, self::IMAGE_STYLE_THUMBNAIL ] as $style) {
       $path = $this->getImagePath($style);
       if (is_file($path)) {
         unlink($path);
@@ -480,7 +471,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
     $this->query("UPDATE `users` SET `avatar_changed` = FROM_UNIXTIME(?), `avatar_extension` = ? WHERE `user_id` = ?", "ssd", [ $this->imageChanged, $this->imageExtension, $this->id ]);
     $this->convert($source, self::IMAGE_STYLE_DEFAULT, $this->span[self::IMAGE_STYLE_DEFAULT], $this->span[self::IMAGE_STYLE_DEFAULT], true);
     unlink($source);
-    $this->convert($this->getImagePath(self::IMAGE_STYLE_DEFAULT), self::IMAGE_STYLE_SMALL, $this->span[self::IMAGE_STYLE_SMALL]);
+    $this->convert($this->getImagePath(self::IMAGE_STYLE_DEFAULT), self::IMAGE_STYLE_THUMBNAIL, $this->span[self::IMAGE_STYLE_THUMBNAIL]);
     return $this;
   }
 

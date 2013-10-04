@@ -25,6 +25,7 @@ namespace MovLib\Presentation\Partial;
  * validation doesn't make much sense for a GET form, as their parameters are often only used for pagination or similar
  * simple tasks which won't be saved nor affect cirtical parts of our system.
  *
+ * @link https://github.com/MovLib/www/wiki/How-to-create-a-multipart-form
  * @link http://www.w3.org/TR/2013/WD-aria-in-html-20130214/#recommendations-table
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -108,6 +109,13 @@ class Form extends \MovLib\Presentation\AbstractBase {
     // Set default attributes, a dev can override them by accessing the properties directly.
     $this->attributes = [ "action" => $_SERVER["PATH_INFO"], "method" => "post" ];
 
+    if (isset($_SERVER["MULTIPART"])) {
+      $this->attributes["enctype"] = "multipart/form-data";
+      if ($_SERVER["MULTIPART"] == UPLOAD_ERR_INI_SIZE) {
+        $page->checkErrors([ $i18n->t("The image is too large: it must be {0,number} {1} or less.", $this->formatBytes(ini_get("upload_max_filesize"))) ]);
+      }
+    }
+
     // Validate the form if we're receiving it.
     if (isset($_POST["form_id"]) && $_POST["form_id"] == $this->id) {
       // Validate the CSRF token and only continue if it is valid.
@@ -122,7 +130,21 @@ class Form extends \MovLib\Presentation\AbstractBase {
       $errors = $mandatoryError = null;
       $c = count($this->elements);
       for ($i = 0; $i < $c; ++$i) {
-        $this->validate($this->elements[$i], $errors, $mandatoryError);
+        if (empty($_POST[$this->elements[$i]->id]) && (empty($_FILES[$this->elements[$i]->id]) || $_FILES[$this->elements[$i]->id]["error"] === UPLOAD_ERR_NO_FILE)) {
+          if (isset($this->elements[$i]->attributes["aria-required"])) {
+            $this->elements[$i]->invalid();
+            $mandatoryError = true;
+          }
+        }
+        else {
+          try {
+            $this->elements[$i]->validate();
+          }
+          catch (\MovLib\Exception\ValidationException $e) {
+            $this->elements[$i]->invalid();
+            $errors[] = $e->getMessage();
+          }
+        }
       }
 
       // No need to display several error messages about mandatory fields that weren't filled out. One message is more
@@ -180,36 +202,6 @@ class Form extends \MovLib\Presentation\AbstractBase {
    */
   public function open() {
     return "<form{$this->expandTagAttributes($this->attributes)}>{$this->hiddenElements}";
-  }
-
-  /**
-   * Validate all attached form elements.
-   *
-   * @param \MovLib\Presentation\Partial\FormElement\AbstractFormElement $formElement
-   *   The form element to validate.
-   * @param null|array $errors
-   *   The errors array to collect all error messages.
-   * @param null|boolean $mandatoryError
-   *   The flag indicating if there is one or more mandatory field emtpy.
-   * @return this
-   */
-  protected function validate($formElement, &$errors, &$mandatoryError) {
-    if (empty($_POST[$formElement->id])) {
-      if (isset($formElement->attributes["aria-required"])) {
-        $formElement->invalid();
-        $mandatoryError = true;
-      }
-    }
-    else {
-      try {
-        $formElement->validate();
-      }
-      catch (\MovLib\Exception\ValidationException $e) {
-        $formElement->invalid();
-        $errors[] = $e->getMessage();
-      }
-    }
-    return $this;
   }
 
 }

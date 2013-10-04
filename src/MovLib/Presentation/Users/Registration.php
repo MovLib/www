@@ -93,23 +93,21 @@ class Registration extends \MovLib\Presentation\Page {
     // Start rendering the page.
     $this->init($i18n->t("Registration"))->user = new User();
 
-    $this->email = new InputEmail("email", [ "autofocus" ]);
-    $this->email->required();
-    $this->email->setHelp("<a href='{$i18n->r("/users/login")}'>{$i18n->t("Already have an account?")}</a>", false);
+    $this->email = new InputEmail("email", $i18n->t("Email Address"), [
+      "autofocus",
+      "placeholder" => $i18n->t("Enter your email address"),
+    ], "<a href='{$i18n->r("/users/login")}'>{$i18n->t("Already have an account?")}</a>", false);
 
-    $this->username = new InputText("username", $i18n->t("Username"), null, [
-      "maxlength"   => User::MAX_LENGTH_NAME,
+    $this->username = (new InputText("username", $i18n->t("Username"), [
+      "maxlength" => User::MAX_LENGTH_NAME,
       "placeholder" => $i18n->t("Enter your desired username"),
-    ]);
-    $this->username->required();
-    $this->username->validation = new Username($this->user);
+    ]))->required();
 
     $this->form = new Form($this, [ $this->email, $this->username ]);
     $this->form->attributes["action"] = $_SERVER["PATH_INFO"];
     $this->form->attributes["class"]  = "span span--6 offset--3";
 
     $this->form->actionElements[] = new InputSubmit([
-      "class" => "button--large button--success",
       "title" => $i18n->t("Click here to sign up after you filled out all fields"),
       "value" => $i18n->t("Sign Up"),
     ]);
@@ -147,27 +145,56 @@ class Registration extends \MovLib\Presentation\Page {
    */
   public function validate() {
     global $i18n;
+    $errors = null;
+    // We want to validate the original string!
+    $this->username->value = $_POST[$this->username->id];
 
-    // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
-    // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
-    if ($this->user->checkEmail($this->email->value) === true) {
-      Mailer::stack(new RegistrationEmailExists($this->email->value));
-    }
-    // If this is a vliad new registration generate the authentication token and insert the submitted data into our
-    // temporary database, and of course send out the email with the token.
-    else {
-      $this->user->name  = $this->username->value;
-      $this->user->email = $this->email->value;
-      Mailer::stack(new RegistrationEmail($this->user));
+    if (substr($this->username->value, 0, 1) == " ") {
+      $errors[] = $i18n->t("The username cannot begin with a space.");
     }
 
-    // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
-    $this->accepted    = true;
+    if (substr($this->username->value, -1) == " ") {
+      $errors[] = $i18n->t("The username cannot end with a space.");
+    }
 
-    $success           = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
-    $success->title    = $i18n->t("Registration Successful");
-    $success->severity = Alert::SEVERITY_INFO;
-    $this->alerts     .= $success;
+    if (strpos($this->username->value, "  ") !== false) {
+      $errors[] = $i18n->t("The username cannot contain multiple spaces in a row.");
+    }
+
+    if (strpos($this->username->value, "/") !== false) {
+      $errors[] = $i18n->t("The username cannot contain slashes.");
+    }
+
+    if (mb_strlen($this->username->value) > User::MAX_LENGTH_NAME) {
+      $errors[] = $i18n->t("The username is too long: it must be {0,number,integer} characters or less.", [ User::MAX_LENGTH_NAME ]);
+    }
+
+    if (!$errors && $this->user->checkName($this->username->value) === true) {
+      $errors[] = $i18n->t("The username {0} is already taken, please choose another one.", [ $this->placeholder($this->username->value) ]);
+    }
+
+    if ($this->checkErrors($errors) === false) {
+      // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
+      // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
+      if ($this->user->checkEmail($this->email->value) === true) {
+        Mailer::stack(new RegistrationEmailExists($this->email->value));
+      }
+      // If this is a vliad new registration generate the authentication token and insert the submitted data into our
+      // temporary database, and of course send out the email with the token.
+      else {
+        $this->user->name  = $this->username->value;
+        $this->user->email = $this->email->value;
+        Mailer::stack(new RegistrationEmail($this->user));
+      }
+
+      // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
+      $this->accepted    = true;
+
+      $success           = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
+      $success->title    = $i18n->t("Registration Successful");
+      $success->severity = Alert::SEVERITY_INFO;
+      $this->alerts     .= $success;
+    }
 
     return $this;
   }

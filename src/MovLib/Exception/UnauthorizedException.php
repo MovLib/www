@@ -31,6 +31,13 @@ use \MovLib\Presentation\Partial\Alert;
 class UnauthorizedException extends \MovLib\Exception\AbstractException {
 
   /**
+   * The unauthorized exception's alert.
+   *
+   * @var type
+   */
+  public $alert;
+
+  /**
    * Instantiate new unauthorized exception.
    *
    * @param string $message [optional]
@@ -38,24 +45,10 @@ class UnauthorizedException extends \MovLib\Exception\AbstractException {
    */
   public function __construct($message = null, $title = null) {
     global $i18n;
-    parent::__construct("{$title} {$message}");
-    $title = empty($title) ? $i18n->t("You must be signed in to access this content.") : $title;
-    if (empty($message)) {
-      $message = "<p>{$i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/user/register")}'>", "</a>" ])}</p>";
-    }
-    $this->message = new Alert($message);
-    $this->message->block = true;
-    $this->message->title = $title;
-    $this->message->severity = Alert::SEVERITY_ERROR;
-  }
-
-  /**
-   * Get the title.
-   *
-   * @return string
-   */
-  public function getTitle() {
-    return $this->title;
+    parent::__construct("User has to authenticate to view this content.");
+    $this->alert           = new Alert($message ?: "<p>{$i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/user/register")}'>", "</a>" ])}</p>");
+    $this->alert->title    = $title ?: $i18n->t("You must be signed in to access this content.");
+    $this->alert->severity = Alert::SEVERITY_ERROR;
   }
 
 }

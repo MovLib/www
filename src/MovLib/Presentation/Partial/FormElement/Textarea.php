@@ -29,21 +29,72 @@ use \MovLib\Presentation\Validation\HTML;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
+class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * @inheritdoc
    */
-  public function __toString() {
-    $this->attributes["aria-multiline"] = "true";
-    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->value}</textarea></p>";
+  protected $attributes = [
+    "aria-multiline"      => "true",
+    "data-format"         => HTML::FORMAT_BASIC_HTML,
+    "data-allow-external" => false,
+  ];
+
+  /**
+   * The textarea's content.
+   *
+   * @var null|string
+   */
+  public $content;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new textarea form element.
+   *
+   * @param string $id
+   *   The textarea's global identifier.
+   * @param string $label
+   *   The textarea's label text.
+   * @param mixed $content [optional]
+   *   The textarea's content, defaults to <code>NULL</code> (no content).
+   * @param array $attributes [optional]
+   *   Additional attributes for the textarea, defaults to <code>NULL</code> (no additional attributes).
+   * @param string $help [optional]
+   *   The textarea's help text, defaults to <code>NULL</code> (no help text).
+   * @param boolean $helpPopup
+   *   Whetever the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
+   */
+  public function __construct($id, $label, $content = null, array $attributes = null, $help = null, $helpPopup = true) {
+    parent::__construct($id, $label, $attributes, $help, $helpPopup);
+    $this->content = $content;
+    if (isset($_POST[$this->id])) {
+      $this->content = empty($_POST[$this->id]) ? null : $_POST[$this->id];
+    }
   }
 
   /**
    * @inheritdoc
    */
+  public function __toString() {
+    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->content}</textarea></p>";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
   public function validate() {
-    $this->value = (new HTML($this->value, $this->attributes["data-format"], $this->attributes["data-allow-external"]))->validate();
+    $this->content = (new HTML($this->content, $this->attributes["data-format"], $this->attributes["data-allow-external"]))->validate();
     return $this;
   }
 

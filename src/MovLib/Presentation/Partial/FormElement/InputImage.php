@@ -39,6 +39,14 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
 
   /**
+   * @inheritdoc
+   */
+  protected $attributes = [
+    "accept" => "image/jpeg, image/png",
+    "type"   => "file",
+  ];
+
+  /**
    * Available image extensions.
    *
    * @internal We don't use image_type_to_extension() because it uses long extensions (e.g. jpeg instead of jpg).
@@ -90,30 +98,36 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    *   The form element's global unique identifier.
    * @param \MovLib\Data\Image\AbstractImage $concreteImage
    *   The abstract image instance that's responsible for this image.
-   * @param int $style [optional]
-   *   An image style that should be generated right away and not delayed.
+   * @param string $label
+   *   The label test.
+   * @param array $attributes [optional]
+   *   Additional attributes.
    */
-  public function __construct($id, $concreteImage) {
-    parent::__construct($id);
-    $this->image           = $concreteImage;
-    $this->maximumFileSize = ini_get("upload_max_filesize");
+  public function __construct($id, $concreteImage, $label, array $attributes = null) {
+    global $i18n;
+    parent::__construct($id, $label, $attributes, $i18n->t(
+      "Image must be larger than {2}x{3} and less than {0} {1}. Allowed image types: JPG and PNG",
+      $this->formatBytes(ini_get("upload_max_filesize")) + [ 2 => $this->minimumWidth, 3 => $this->minimumHeight ]
+    ));
+    $this->attributes["data-max-filesize"] = $this->maximumFileSize;
+    $this->attributes["data-min-height"]   = $this->minimumHeight;
+    $this->attributes["data-min-width"]    = $this->minimumWidth;
+    $this->image                           = $concreteImage;
   }
 
   /**
    * @inheritdoc
    */
   public function __toString() {
-    global $i18n;
-    $this->attributes["accept"]           = "image/jpeg, image/png";
-    $this->attributes["data-maxfilesize"] = $this->maximumFileSize;
-    $this->attributes["data-minheight"]   = $this->minimumHeight;
-    $this->attributes["data-minwidth"]    = $this->minimumWidth;
-    $this->attributes["type"]             = "file";
-    list($size, $unit) = $this->formatBytes($this->maximumFileSize);
-    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p><small>{$i18n->t(
-      "Image must be larger than {0}x{1} and less than {2} {3}. Allowed image types: JPG and PNG",
-      [ $this->minimumHeight, $this->minimumWidth, $size, $unit ]
-    )}</small>";
+    if ($this->image->imageExists === true) {
+      return
+        "<div class='row'>" .
+          "<div class='span span--1'>{$this->getImage($this->image, \MovLib\Data\Image\AbstractImage::IMAGE_STYLE_THUMBNAIL)}</div>" .
+          "<div class='span span--8'>{$this->help}<label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></div>" .
+        "</div>"
+      ;
+    }
+    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
   }
 
 

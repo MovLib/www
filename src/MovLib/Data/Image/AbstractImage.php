@@ -29,6 +29,17 @@ namespace MovLib\Data\Image;
 abstract class AbstractImage extends \MovLib\Data\Database {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Every image has to have the thumbnail style of 70 pixel width.
+   *
+   * @var int
+   */
+  const IMAGE_STYLE_THUMBNAIL = 1;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 

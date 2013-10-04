@@ -56,7 +56,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
   public static function dataProviderTestGetImageStyleAttributes() {
     return [
       [ User::IMAGE_STYLE_DEFAULT, [ "alt" => "PHPUnit" ] ],
-      [ User::IMAGE_STYLE_SMALL, [ "alt" => "PHPUnit", "height" => 999, "width" => 999, "src" => "https://movlib.org/phpunit.jpg" ] ],
+      [ User::IMAGE_STYLE_THUMBNAIL, [ "alt" => "PHPUnit", "height" => 999, "width" => 999, "src" => "https://movlib.org/phpunit.jpg" ] ],
     ];
   }
 
@@ -199,14 +199,14 @@ class UserTest extends \PHPUnit_Framework_TestCase {
     $rpImageExtension = get_reflection_property($user, "imageExtension");
 
     $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_DEFAULT ])));
-    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_SMALL ])));
+    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_THUMBNAIL ])));
     $this->assertTrue($user->imageExists);
     $this->assertNotEmpty($rpImageChanged->getValue($user));
     $this->assertNotEmpty($rpImageExtension->getValue($user));
 
     get_reflection_method($user, "deleteImageOriginalAndStyles")->invoke($user);
     $this->assertFalse(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_DEFAULT ])));
-    $this->assertFalse(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_SMALL ])));
+    $this->assertFalse(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_THUMBNAIL ])));
     $this->assertFalse($user->imageExists);
     $this->assertNull($rpImageChanged->getValue($user));
     $this->assertNull($rpImageExtension->getValue($user));
@@ -229,7 +229,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
     $user->moveUploadedImage($source, 220, 220, "jpg");
     $this->assertFalse(is_file($source));
     $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_DEFAULT ])));
-    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_SMALL ])));
+    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_THUMBNAIL ])));
     $this->assertTrue($user->imageExists);
     $this->assertEquals($_SERVER["REQUEST_TIME"], get_reflection_property($user, "imageChanged")->getValue($user));
     $this->assertEquals("jpg", get_reflection_property($user, "imageExtension")->getValue($user));

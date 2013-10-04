@@ -32,14 +32,18 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
    * @covers \MovLib\Presentation\Partial\FormElement\InputDate::__construct
    */
   public function testConstruct() {
-    $max       = time();
-    $min       = strtotime("-1 year");
-    $inputDate = new InputDate("phpunit", "PHPUnit", [ "max" => $max, "min" => $min ]);
-    $this->assertEquals("date", $inputDate->attributes["type"]);
+    $max        = time();
+    $min        = strtotime("-1 year");
+    $inputDate  = new InputDate("phpunit", "PHPUnit", [ "max" => $max, "min" => $min ]);
+    $attributes = get_reflection_property($inputDate, "attributes")->getValue($inputDate);
+    $this->assertArrayHasKey("max", $attributes);
+    $this->assertArrayHasKey("min", $attributes);
+    $this->assertArrayHasKey("type", $attributes);
+    $this->assertEquals("date", $attributes["type"]);
     $this->assertEquals($max, get_reflection_property($inputDate, "max")->getValue($inputDate));
     $this->assertEquals($min, get_reflection_property($inputDate, "min")->getValue($inputDate));
-    $this->assertEquals(date("Y-m-d", $max), $inputDate->attributes["max"]);
-    $this->assertEquals(date("Y-m-d", $min), $inputDate->attributes["min"]);
+    $this->assertEquals(date("Y-m-d", $max), $attributes["max"]);
+    $this->assertEquals(date("Y-m-d", $min), $attributes["min"]);
   }
 
   /**

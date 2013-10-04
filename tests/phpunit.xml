@@ -14,16 +14,26 @@
  You should have received a copy of the GNU Affero General Public License along with MovLib.
  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
 -->
-<!-- coverageHtml="../docs/coverage" -->
 <phpunit
   bootstrap="../bootstrap.php"
   colors="true"
   convertErrorsToExceptions="true"
   convertNoticesToExceptions="true"
   convertWarningsToExceptions="true"
-  forceCoversAnnotation="true"
-  stopOnFailure="true"
+  coverageHtml="../docs/coverage"
+  stopOnError="false"
+  stopOnFailure="false"
+  stopOnSkipped="false"
+  stopOnIncomplete="false"
 >
+  <filter>
+    <whitelist processUncoveredFilesFromWhitelist="true">
+      <directory suffix=".php">../src</directory>
+    </whitelist>
+  </filter>
+  <logging>
+    <log type="coverage-html" target="../docs/coverage" charset="UTF-8" highlight="true" lowUpperBound="50" highLowerBound="90" />
+  </logging>
   <php>
     <const name="MOVLIB_PHPUNIT" value="true" />
   </php>

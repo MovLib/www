@@ -102,10 +102,24 @@ class Login extends \MovLib\Presentation\Page {
       $action             .= "?redirect_to={$_GET["redirect_to"]}";
     }
 
-    $this->email                      = new InputEmail("email");
-    $this->password                   = new InputPassword("password");
-    $this->form                       = new Form($this, [ $this->email, $this->password ]);
+    $this->email = new InputEmail("email", $i18n->t("Email Address"), [
+      "autofocus",
+      "placeholder" => $i18n->t("Enter your email address"),
+    ], "<a href='{$i18n->r("/users/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
+
+    $this->password = new InputPassword("password", $i18n->t("Password"), [
+      "placeholder" => $i18n->t("Enter your password"),
+    ]);
+
+    $this->form = new Form($this, [ $this->email, $this->password ]);
     $this->form->attributes["action"] = $action;
+    $this->addClass("span span--6 offset--3", $this->form->attributes);
+
+    $this->form->actionElements[] = new InputSubmit([
+      "class" => "button--large button--success",
+      "title" => $i18n->t("Click here to sign in after you filled out all fields."),
+      "value" => $i18n->t("Sign In"),
+    ]);
 
     // If the user requested to be signed out, do so.
     if ($session->isAuthenticated === true && $_SERVER["PATH_INFO"] == $routeLogout) {
@@ -124,15 +138,6 @@ class Login extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getContent() {
-    global $i18n;
-    $this->email->attributes[] = "autofocus";
-    $this->form->attributes["class"]  = "span span--6 offset--3";
-    $this->email->setHelp("<a href='{$i18n->r("/users/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
-    $this->form->actionElements[] = new InputSubmit([
-      "class" => "button--large button--success",
-      "title" => $i18n->t("Click here to sign in after you filled out all fields."),
-      "value" => $i18n->t("Sign In"),
-    ]);
     return "<div class='container'><div class='row'>{$this->form}</div></div>";
   }
 

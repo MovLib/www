@@ -17,6 +17,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # The routes file that will be translated for each subdomain. Everything within this file has to be in English!
 #
+# LINK: https://github.com/MovLib/www/wiki/How-to-create-a-multipart-form
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # AUTHOR: Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
 # AUTHOR: Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -233,8 +234,8 @@ location ^~ <?= $r("/person") ?> {
 
 
 location @profile_account_settings {
+  set $movlib_multipart 1;
   set $movlib_presenter "Profile\\AccountSettings";
-  set $movlib_entity_too_large 1;
   include sites/conf/fastcgi.conf;
 }
 
@@ -257,6 +258,7 @@ location ^~ <?= $r("/profile") ?> {
 
   location = <?= $r("/profile/account-settings") ?> {
     error_page 413 @profile_account_settings;
+    set $movlib_multipart 0;
     set $movlib_presenter "Profile\\AccountSettings";
     include sites/conf/fastcgi.conf;
   }

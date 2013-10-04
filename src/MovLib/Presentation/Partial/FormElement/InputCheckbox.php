@@ -39,7 +39,7 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
    *
    * @var boolean
    */
-  public $value;
+  public $value = false;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -60,14 +60,9 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
    * @param array $labelAttributes [optional]
    *   The form element's label attributes.
    */
-  public function __construct($id, $label, $value = false, array $attributes = null, array $labelAttributes = null) {
-    parent::__construct($id, $attributes, $label, $labelAttributes);
+  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
+    parent::__construct($id, $label, $attributes, $help, $helpPopup);
     $this->attributes["type"] = "checkbox";
-    $this->value = (bool) isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
-    $this->labelAttributes["class"] = "checkbox";
-    if ($value === true) {
-      $this->attributes[] = "checked";
-    }
   }
 
   /**
@@ -78,7 +73,10 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
    *   The string representation of this form element.
    */
   public function __toString() {
-    return "{$this->help}<p><label{$this->expandTagAttributes($this->labelAttributes)}><input{$this->expandTagAttributes($this->attributes)}>{$this->label}</label></p>";
+    if ($this->value === true) {
+      $this->attributes[] = "checked";
+    }
+    return "{$this->help}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)}>{$this->label}</label></p>";
   }
 
 

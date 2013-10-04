@@ -58,31 +58,30 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    *
    * @var int
    */
-  public $max;
+  protected $max;
 
   /**
    * The minimum date as timestamp.
    *
    * @var int
    */
-  public $min;
+  protected $min;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  /**
-   * @inheritdoc
-   */
-  public function __toString() {
+  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
+    parent::__construct($id, $label, $attributes, $help, $helpPopup);
     $this->attributes["type"] = "date";
-    if ($this->max) {
-      $this->attributes["max"] = date(self::RFC3339, $this->max);
+    if (isset($this->attributes["max"])) {
+      $this->max = $this->attributes["max"];
+      $this->attributes["max"] = date(self::RFC3339, $this->attributes["max"]);
     }
-    if ($this->min) {
-      $this->attributes["min"] = date(self::RFC3339, $this->min);
+    if (isset($this->attributes["min"])) {
+      $this->min = $this->attributes["min"];
+      $this->attributes["min"] = date(self::RFC3339, $this->attributes["min"]);
     }
-    return parent::__toString();
   }
 
 
