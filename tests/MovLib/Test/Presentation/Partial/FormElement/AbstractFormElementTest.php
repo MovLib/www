@@ -82,10 +82,10 @@ class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
   public function testConstructHelp() {
     $formElement = new ConcreteFormElement("phpunit", "PHPUnit", [], "Hello World!");
     $this->assertArrayHasKey("aria-describedby", "phpunit-help");
-    $this->assertEquals("Hello World!", $formElement->help->content);
-    $this->assertEquals("phpunit", $formElement->help->id);
+    $this->assertEquals("Hello World!", get_reflection_property($formElement->help, "content")->getValue($formElement->help));
+    $this->assertContains("phpunit", get_reflection_property($formElement->help, "id")->getValue($formElement->help));
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $formElement->help);
-    $this->assertTrue($formElement->help->popup);
+    $this->assertTrue(get_reflection_property($formElement->help, "popup"));
   }
 
   /**
@@ -93,7 +93,8 @@ class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
    * @group Presentation
    */
   public function testConstructHelpPopup() {
-    $this->assertFalse((new ConcreteFormElement("phpunit", "PHPUnit", [], "Hello World!", false))->help->popup);
+    $formElement = new ConcreteFormElement("phpunit", "PHPUnit", [], "Hello World!", false);
+    $this->assertFalse(get_reflection_property($formElement->help, "popup")->getValue($formElement->help));
   }
 
   /**

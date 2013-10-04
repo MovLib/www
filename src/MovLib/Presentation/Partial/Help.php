@@ -37,21 +37,21 @@ class Help {
    *
    * @var string
    */
-  public $content;
+  protected $content;
 
   /**
    * The help's unique identifier, note that <code>"-help"</code> is <b>always</b> appended to this!
    *
    * @var string
    */
-  public $id;
+  protected $id;
 
   /**
    * Whetever this help is a popup or not, defaults to <code>TRUE</code>.
    *
    * @var boolean
    */
-  public $popup;
+  protected $popup;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
