@@ -211,7 +211,7 @@ class Registration extends \MovLib\Presentation\Page {
       http_response_code(202);
       $success           = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
       $success->title    = $i18n->t("Registration Successful");
-      $success->severity = Alert::SEVERITY_INFO;
+      $success->severity = Alert::SEVERITY_SUCCESS;
       $this->alerts     .= $success;
     }
 

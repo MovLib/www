@@ -118,6 +118,12 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Form", $form);
     $this->assertEquals($_SERVER["PATH_INFO"], $form->attributes["action"]);
     $this->assertEquals([ $inputEmail, $inputPassword ], get_reflection_property($form, "elements")->getValue($form));
+
+    $this->assertArrayHasKey(0, $form->actionElements);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputSubmit", $form->actionElements[0]);
+    $this->assertEquals("Click here to sign in after you filled out all fields", $form->actionElements[0]->attributes["title"]);
+    $this->assertEquals("Sign In", $form->actionElements[0]->attributes["value"]);
+    $this->assertEquals(1, count($form->actionElements));
   }
 
   /**

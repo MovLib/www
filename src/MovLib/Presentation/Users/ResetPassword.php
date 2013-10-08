@@ -75,7 +75,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
     $this->form->attributes["class"] = "span span--6 offset--3";
 
     $this->form->actionElements[] = new InputSubmit([
-      "title" => $i18n->t("Click here to request a password reset for the entered email address."),
+      "title" => $i18n->t("Click here to request a password reset for the entered email address"),
       "value" => $i18n->t("Request Password Reset"),
     ]);
   }
@@ -101,10 +101,11 @@ class ResetPassword extends \MovLib\Presentation\Page {
   public function validate() {
     global $i18n;
     Mailer::stack(new ResetPasswordEmail($this->email->value));
+    http_response_code(202);
     $success           = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
     $success->title    = $i18n->t("Successfully Requested Password Reset");
     $success->severity = Alert::SEVERITY_SUCCESS;
-    $this->alerts .= $success;
+    $this->alerts     .= $success;
     return $this;
   }
 

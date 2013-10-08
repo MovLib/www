@@ -117,7 +117,7 @@ class Login extends \MovLib\Presentation\Page {
 
     $this->form->actionElements[] = new InputSubmit([
       "class" => "button--large button--success",
-      "title" => $i18n->t("Click here to sign in after you filled out all fields."),
+      "title" => $i18n->t("Click here to sign in after you filled out all fields"),
       "value" => $i18n->t("Sign In"),
     ]);
 

@@ -158,7 +158,6 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
     $form = get_reflection_property($registration, "form")->getValue($registration);
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Form", $form);
     $this->assertEquals($_SERVER["PATH_INFO"], $form->attributes["action"]);
-    $this->assertEquals("span span--6 offset--3", $form->attributes["class"]);
     $this->assertEquals([ $inputEmail, $inputUsername, $inputTerms ], get_reflection_property($form, "elements")->getValue($form));
 
     $this->assertArrayHasKey(0, $form->actionElements);
@@ -287,7 +286,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
     $this->assertTrue($found);
     $this->assertTrue(get_reflection_property($registration, "accepted")->getValue($registration));
     $this->assertEquals(202, http_response_code());
-    $this->assertContains(Alert::SEVERITY_INFO, $registration->alerts);
+    $this->assertContains(Alert::SEVERITY_SUCCESS, $registration->alerts);
     $this->assertContains("Registration Successful", $registration->alerts);
     $this->assertContains("An email with further instructions has been sent to <em class='placeholder'>phpunit@movlib.org</em>.", $registration->alerts);
     self::$db->query("DELETE FROM `users` WHERE `email` = ?", "s", [ $_POST["email"] ]);
