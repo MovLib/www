@@ -39,7 +39,7 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  * @since 0.0.1-dev
  */
 class Registration extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\Profile\TraitProfile;
+  use \MovLib\Presentation\Users\TraitUsers;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -81,7 +81,7 @@ class Registration extends \MovLib\Presentation\Page {
   private $username;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
@@ -95,11 +95,11 @@ class Registration extends \MovLib\Presentation\Page {
 
     // If the user is logged in, no need for registration.
     if ($session->isAuthenticated === true) {
-      throw new RedirectException($i18n->r("/my"), 302);
+      throw new RedirectException($i18n->r("/my"));
     }
 
     // Start rendering the page.
-    $this->init($i18n->t("Registration"))->user = new User();
+    $this->init($i18n->t("Registration"));
 
     $this->email = new InputEmail("email", $i18n->t("Email Address"), [
       "autofocus",
@@ -128,6 +128,10 @@ class Registration extends \MovLib\Presentation\Page {
       $this->validateToken();
     }
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc
@@ -159,13 +163,6 @@ class Registration extends \MovLib\Presentation\Page {
     global $i18n;
     $errors = null;
 
-    if ($this->terms->value !== true) {
-      $this->checkErrors([ $i18n->t("You have to agree to the {0}Privacy Policy{2} and {1}Terms of Use{2} to sign up.", [
-        "<a href='{$i18n->r("/privacy-policy")}'>", "<a href='{$i18n->r("/terms-of-use")}'>", "</a>"
-      ]) ]);
-      return $this;
-    }
-
     // We want to validate the original string!
     $this->username->value = $_POST[$this->username->id];
 
@@ -189,27 +186,29 @@ class Registration extends \MovLib\Presentation\Page {
       $errors[] = $i18n->t("The username is too long: it must be {0,number,integer} characters or less.", [ User::MAX_LENGTH_NAME ]);
     }
 
-    if (!$errors && $this->user->checkName($this->username->value) === true) {
+    if (!$errors && ($user = new User()) && $user->checkName($this->username->value) === true) {
       $errors[] = $i18n->t("The username {0} is already taken, please choose another one.", [ $this->placeholder($this->username->value) ]);
     }
 
     if ($this->checkErrors($errors) === false) {
       // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
       // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
-      if ($this->user->checkEmail($this->email->value) === true) {
+      if ($user->checkEmail($this->email->value) === true) {
         Mailer::stack(new RegistrationEmailExists($this->email->value));
       }
       // If this is a vliad new registration generate the authentication token and insert the submitted data into our
       // temporary database, and of course send out the email with the token.
       else {
-        $this->user->name  = $this->username->value;
-        $this->user->email = $this->email->value;
-        Mailer::stack(new RegistrationEmail($this->user));
+        $user->name  = $this->username->value;
+        $user->email = $this->email->value;
+        Mailer::stack(new RegistrationEmail($user));
       }
 
       // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
       $this->accepted    = true;
 
+      // Accepted but further action is required!
+      http_response_code(202);
       $success           = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
       $success->title    = $i18n->t("Registration Successful");
       $success->severity = Alert::SEVERITY_INFO;
@@ -229,22 +228,26 @@ class Registration extends \MovLib\Presentation\Page {
   public function validateToken() {
     global $i18n, $session;
     $errors = null;
-    $user = new User();
+    $user   = new User();
 
     if (($data = $user->validateToken($errors)) && isset($data["name"]) && isset($data["email"])) {
+      // Ensure that the input elements contain the user supplied data if an error occurres.
       $this->username->attributes["value"] = $data["name"];
       $this->email->attributes["value"]    = $data["email"];
 
-      if ($user->checkName($data["name"]) === true) {
-        $this->username->invalid();
-        $errors[] = $i18n->t("Unfortunately in the meantime someone took your desired username {0}, please choose another one.", [ $this->placeholder($data["name"]) ]);
-      }
-
       if ($user->checkEmail($data["email"]) === true) {
+        $this->username->invalid();
         $this->email->invalid();
-        $errors[] = $i18n->t("Seems like you already signed up with this email address, did you {0}forget your password?{1}", [
-          "<a href='{$i18n->r("/user/reset-password")}'>", "</a>"
+        $errors[] = $i18n->t("Seems like you already signed up with this email address, did you {0}forget your password{1}?", [
+          "<a href='{$i18n->r("/users/reset-password")}'>", "</a>"
         ]);
+      }
+      elseif ($user->checkName($data["name"]) === true) {
+        $this->username->invalid();
+        $errors[] = $i18n->t(
+          "Unfortunately in the meantime someone took your desired username {0}, please choose another one.",
+          [ $this->placeholder($data["name"]) ]
+        );
       }
     }
 
