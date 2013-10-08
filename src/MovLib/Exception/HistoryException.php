@@ -26,20 +26,4 @@ namespace MovLib\Exception;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HistoryException extends \RuntimeException {
-
-  /**
-   * Instantiate new history exception.
-   *
-   * @param string $message
-   *   The Exception message to throw.
-   * @param int $code [optional]
-   *   The Exception code, defaults to <var>E_ERROR</var>.
-   * @param \Exception $previous [optional]
-   *   The previous exception used for the exception chaining, defaults to <code>NULL</code>.
-   */
-  public function __construct($message, $code = E_ERROR, $previous = null) {
-    parent::__construct($message, $code, $previous);
-  }
-
-}
+class HistoryException extends \RuntimeException {}

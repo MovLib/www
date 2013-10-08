@@ -56,9 +56,6 @@ class DebugException extends \MovLib\Exception\AbstractException {
     elseif ($method == "print_r") {
       $this->mixed = print_r($mixed, true);
     }
-    elseif (is_array($mixed) || is_object($mixed)) {
-      $this->mixed = call_user_func_array($method, $mixed);
-    }
     else {
       $this->mixed = call_user_func($method, $mixed);
     }

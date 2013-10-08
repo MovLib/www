@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,51 +15,28 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
-namespace MovLib\Exception;
+namespace MovLib\Test\Exception;
 
 /**
- * Description of RedirectException
- *
+ * @coversDefaultClass \MovLib\Exception\AbstractException
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RedirectException extends \RuntimeException {
+class AbstractExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * The redirect's target route.
-   *
-   * @var string
+   * @covers ::__construct
+   * @group Exceptions
    */
-  public $route;
-
-  /**
-   * The redirect's HTTP status code.
-   * @var int
-   */
-  public $status;
-
-  /**
-   * Instantiate new redirect exception.
-   *
-   * @param string $route
-   *   The already translated route.
-   * @param int $status [optional]
-   *   The HTTP redirect status code, one of <code>301</code>, <code>302</code>, or <code>303</code>. Defaults to
-   *   <code>302</code>.
-   * @param \Exception $previous [optional]
-   *   The previously thrown exception.
-   */
-  public function __construct($route, $status = 302, $previous = null) {
-    parent::__construct("Redirecting user to {$route} with status {$status}.", E_NOTICE, $previous);
-    if (strpos($route, "http") === false) {
-      $route = "{$_SERVER["SERVER"]}{$route}";
-    }
-    $this->route = $route;
-    $this->status = $status;
+  public function testConstruct() {
+    $stub = $this->getMockForAbstractClass("\\MovLib\\Exception\\AbstractException", [ "message", new \Exception(), 42 ]);
+    $this->assertInstanceOf("\\RuntimeException", $stub);
+    $this->assertEquals("message", $stub->getMessage());
+    $this->assertEquals(42, $stub->getCode());
+    $this->assertInstanceOf("\\Exception", $stub->getPrevious());
   }
 
 }

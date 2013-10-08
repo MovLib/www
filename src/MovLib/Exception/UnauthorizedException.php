@@ -46,7 +46,9 @@ class UnauthorizedException extends \MovLib\Exception\AbstractException {
   public function __construct($message = null, $title = null) {
     global $i18n;
     parent::__construct("User has to authenticate to view this content.");
-    $this->alert           = new Alert($message ?: "<p>{$i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/user/register")}'>", "</a>" ])}</p>");
+    $this->alert           = new Alert($message ?: $i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [
+      "<a href='{$i18n->r("/user/register")}'>", "</a>"
+    ]));
     $this->alert->title    = $title ?: $i18n->t("You must be signed in to access this content.");
     $this->alert->severity = Alert::SEVERITY_ERROR;
   }
