@@ -36,15 +36,6 @@ class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractFormElem
 
 
   /**
-   * @inheritdoc
-   */
-  protected $attributes = [
-    "aria-multiline"      => "true",
-    "data-format"         => HTML::FORMAT_BASIC_HTML,
-    "data-allow-external" => false,
-  ];
-
-  /**
    * The textarea's content.
    *
    * @var null|string
@@ -73,6 +64,13 @@ class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractFormElem
    */
   public function __construct($id, $label, $content = null, array $attributes = null, $help = null, $helpPopup = true) {
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
+    $this->attributes["aria-multiline"] = "true";
+    if (!isset($this->attributes["data-format"])) {
+      $this->attributes["data-format"] = HTML::FORMAT_BASIC_HTML;
+    }
+    if (!isset($this->attributes["data-allow-external"])) {
+      $this->attributes["data-allow-external"] = false;
+    }
     $this->content = $content;
     if (isset($_POST[$this->id])) {
       $this->content = empty($_POST[$this->id]) ? null : $_POST[$this->id];

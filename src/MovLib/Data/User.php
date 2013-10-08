@@ -40,7 +40,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *
    * @var int
    */
-  const AUTHENTICATION_TOKEN_LENGTH = 128;
+  const AUTHENTICATION_TOKEN_LENGTH = 64;
 
   /**
    * Avatar style for span 2 elements.

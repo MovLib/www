@@ -17,13 +17,12 @@
  */
 namespace MovLib\Test\Presentation\Users;
 
+use \MovLib\Data\Session;
 use \MovLib\Data\User;
 use \MovLib\Presentation\Users\Login;
-use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\FormElement\InputEmail;
-use \MovLib\Presentation\Partial\FormElement\InputPassword;
 
 /**
+ * @coversDefaultClass \MovLib\Presentation\Users\Login
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -32,123 +31,174 @@ use \MovLib\Presentation\Partial\FormElement\InputPassword;
  */
 class LoginTest extends \PHPUnit_Framework_TestCase {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  private static $sessionBackup;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Fixtures
+
+
   public static function setUpBeforeClass() {
+    global $session;
+    self::$sessionBackup  = clone $session;
+    $session              = new Session();
     $_SERVER["PATH_INFO"] = "/users/login";
   }
 
+  public static function tearDownAfterClass() {
+    global $session;
+    $session = self::$sessionBackup;
+    unset($_SERVER["PATH_INFO"]);
+    unset($_POST);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Helpers
+
+
+  private function _testInvalidCredentials() {
+    $_POST["form_id"]  = "users-login";
+    $this->assertContains("We either don’t know the email address, or the password was wrong.", (new Login())->alerts);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Tests
+
+
   /**
-   * @covers \MovLib\Presentation\Users\Login::__construct
+   * @covers ::__construct
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /my with status 302.
+   * @group Presentation
    */
   public function testAuthenticatedRedirect() {
+    global $session;
+    $session = self::$sessionBackup;
     try {
       new Login();
     }
     catch (\MovLib\Exception\RedirectException $e) {
-      $this->assertEquals(302, $e->status);
-      $this->assertEquals("{$_SERVER["SERVER"]}/my", $e->route);
       throw $e;
+    }
+    finally {
+      $session = new Session();
     }
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Login::__construct
-   * @covers \MovLib\Presentation\Users\Registration::getContent
+   * @covers ::__construct
+   * @group Presentation
    */
-  public function testConstruct() {
-    global $session;
-    $session->isAuthenticated = false;
+  public function testFormConfiguration() {
     $login = new Login();
 
     $inputEmail = get_reflection_property($login, "email")->getValue($login);
-    $this->assertTrue($inputEmail instanceof InputEmail);
-    $this->assertTrue($inputEmail->required);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputEmail", $inputEmail);
+    $this->assertEquals("email", get_reflection_property($inputEmail, "id")->getValue($inputEmail));
+    $this->assertEquals("Email Address", get_reflection_property($inputEmail, "label")->getValue($inputEmail));
+    $this->assertTrue(in_array("autofocus", $inputEmail->attributes));
+    $this->assertArrayHasKey("placeholder", $inputEmail->attributes);
+    $this->assertEquals("Enter your email address", $inputEmail->attributes["placeholder"]);
+
+    $help = get_reflection_property($inputEmail, "help")->getValue($inputEmail);
+    $this->assertEquals("<a href='/users/reset-password'>Forgot your password?</a>", get_reflection_property($help, "content")->getValue($help));
+    $this->assertFalse(get_reflection_property($help, "popup")->getValue($help));
 
     $inputPassword = get_reflection_property($login, "password")->getValue($login);
-    $this->assertTrue($inputPassword instanceof InputPassword);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputPassword", $inputPassword);
+    $this->assertEquals("password", get_reflection_property($inputPassword, "id")->getValue($inputPassword));
+    $this->assertEquals("Password", get_reflection_property($inputPassword, "label")->getValue($inputPassword));
+    $this->assertArrayHasKey("placeholder", $inputPassword->attributes);
+    $this->assertEquals("Enter your password", $inputPassword->attributes["placeholder"]);
 
     $form = get_reflection_property($login, "form")->getValue($login);
-    $this->assertTrue($form instanceof Form);
-    $this->assertEquals("/users/login", $form->attributes["action"]);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Form", $form);
+    $this->assertEquals($_SERVER["PATH_INFO"], $form->attributes["action"]);
     $this->assertEquals([ $inputEmail, $inputPassword ], get_reflection_property($form, "elements")->getValue($form));
-
-    $this->assertEquals("/users/login", $_SERVER["PATH_INFO"]);
-    $this->assertContains($form->__toString(), $login->getPresentation());
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Login::validate
+   * @covers ::getContent
+   * @group Presentation
+   */
+  public function testGetContent() {
+    $login   = new Login();
+    $content = get_reflection_method($login, "getContent")->invoke($login);
+    $form    = get_reflection_property($login, "form")->getValue($login);
+    $this->assertEquals("<div class='container'><div class='row'>{$form}</div></div>", $content);
+  }
+
+  /**
+   * @covers ::validate
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /my with status 302.
+   * @group Presentation
+   * @group Validation
    */
-  public function testValidate() {
-    global $session;
-    $session->isAuthenticated = false;
+  public function testValidCredentials() {
     $_POST["email"]    = "richard@fussenegger.info";
-    $_POST["password"] = "test1234";
     $_POST["form_id"]  = "users-login";
-    $this->testAuthenticatedRedirect();
+    $_POST["password"] = "test1234";
+    new Login();
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Login::validate
+   * @covers ::validate
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /profile with status 302.
+   * @group Presentation
+   * @group Validation
    */
-  public function testRedirectTo() {
-    global $session;
-    $session->isAuthenticated = false;
-    $_GET["redirect_to"] = "/profile";
-    $_POST["email"]    = "richard@fussenegger.info";
-    $_POST["password"] = "test1234";
-    $_POST["form_id"]  = "users-login";
-    try {
-      new Login();
-    }
-    catch (\MovLib\Exception\RedirectException $e) {
-      $this->assertEquals(302, $e->status);
-      $this->assertEquals("{$_SERVER["SERVER"]}/profile", $e->route);
-      throw $e;
-    }
-  }
-
-  public function _testWrong() {
-    global $session;
-    $session->isAuthenticated = false;
-    $_POST["form_id"]  = "users-login";
-    $login = new Login();
-    $this->assertContains("We either don’t know the email address, or the password was wrong.", $login->alerts);
+  public function testRedirectToViaGetParameter() {
+    $_GET["redirect_to"] = rawurlencode("/profile");
+    $this->testValidCredentials();
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Login::validate
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\RedirectException
+   * @expectedExceptionMessage Redirecting user to /profile?foo=bar with status 302.
+   * @group Presentation
+   * @group Validation
    */
-  public function testWrongEmail() {
+  public function testRedirectToOnDifferentRoute() {
+    $_SERVER["PATH_INFO"] = $_SERVER["REQUEST_URI"] = "/profile?foo=bar";
+    $this->testValidCredentials();
+  }
+
+  /**
+   * @covers ::validate
+   * @group Presentation
+   * @group Validation
+   */
+  public function testInvalidEmail() {
     $_POST["email"]    = "phpunit@movlib.org";
     $_POST["password"] = "test1234";
-    $this->_testWrong();
+    $this->_testInvalidCredentials();
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Login::validate
+   * @covers ::validate
+   * @group Presentation
+   * @group Validation
    */
-  public function testWrongPassword() {
+  public function testInvalidPassword() {
     $_POST["email"]    = "richard@fussenegger.info";
     $_POST["password"] = "phpunit";
-    $this->_testWrong();
+    $this->_testInvalidCredentials();
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Login::validate
+   * @covers ::validate
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /profile/deactivated with status 302.
+   * @group Presentation
    */
   public function testDeactivated() {
-    global $session;
-    $session->isAuthenticated = false;
-    $user = new User(User::FROM_ID, 1);
-    $user->deactivate();
+    (new User(User::FROM_ID, 1))->deactivate();
     $_POST["email"]    = "richard@fussenegger.info";
     $_POST["password"] = "test1234";
     $_POST["form_id"]  = "users-login";
@@ -156,8 +206,6 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
       new Login();
     }
     catch (\MovLib\Exception\RedirectException $e) {
-      $this->assertEquals(302, $e->status);
-      $this->assertEquals("{$_SERVER["SERVER"]}/profile/deactivated", $e->route);
       throw $e;
     }
     finally {
@@ -166,12 +214,19 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Users\Login::validate
+   * @covers ::__construct
+   * @group Presentation
    */
   public function testSignOut() {
+    global $session;
+    $session              = $this->getMock("\\MovLib\\Data\\Session");
+    get_reflection_method($session, "init")->invokeArgs($session, [ 1 ]);
+    $session->expects($this->once())->method("destroy");
     $_SERVER["PATH_INFO"] = "/profile/sign-out";
-    $login = new Login();
+    $login                = new Login();
+    $this->assertContains("We hope to see you again soon.", $login->alerts);
     $this->assertContains("You’ve been signed out successfully.", $login->alerts);
+    $session              = new Session();
   }
 
 }

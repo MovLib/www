@@ -191,7 +191,8 @@ class Database {
    *   The key (hash) of the newly added record.
    */
   protected function tmpSet($data, $ttl = self::TMP_TTL_DAILY) {
-    $hash = hash("sha512", openssl_random_pseudo_bytes(1024));
+    // We use SHA256 because a SHA512 is too long with 128 characters and considered spam by some email providers.
+    $hash = hash("sha256", openssl_random_pseudo_bytes(1024));
     $this->prepareAndExecute("INSERT INTO `tmp` (`key`, `data`, `ttl`) VALUES (?, ?, ?)", "sss", [ $hash, serialize($data), $ttl ]);
     return $hash;
   }
@@ -291,25 +292,23 @@ class Database {
     if (!self::$stmtBindParam) {
       self::$stmtBindParam = new ReflectionFunction("mysqli_stmt_bind_param");
     }
-    if (!isset(self::$mysqli[$this->database])) {
-      $mysqli = new mysqli();
-      try {
-        $mysqli->real_connect();
-      }
-      // If we have a broken pipe (e.g. database restart) kill this thread and directly re-connect. If this fails again
-      // (every unlikely) an ErrorException is thrown again and the error_all_handler() can take care of it.
-      catch (ErrorException $e) {
-        $mysqli->kill($mysqli->thread_id);
-        $mysqli->real_connect();
-      }
-      if ($mysqli->connect_error) {
-        throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
-      }
-      if ($mysqli->select_db($GLOBALS["movlib"]["default_database"]) === false) {
-        throw new DatabaseException("Selecting database failed", $mysqli->error, $mysqli->errno);
-      }
-      self::$mysqli[$this->database] = $mysqli;
+    $mysqli = new mysqli();
+    try {
+      $mysqli->real_connect();
     }
+    // If we have a broken pipe (e.g. database restart) kill this thread and directly re-connect. If this fails again
+    // (every unlikely) an ErrorException is thrown again and the error_all_handler() can take care of it.
+    catch (ErrorException $e) {
+      $mysqli->kill($mysqli->thread_id);
+      $mysqli->real_connect();
+    }
+    if ($mysqli->connect_error) {
+      throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
+    }
+    if ($mysqli->select_db($GLOBALS["movlib"]["default_database"]) === false) {
+      throw new DatabaseException("Selecting database failed", $mysqli->error, $mysqli->errno);
+    }
+    self::$mysqli[$this->database] = $mysqli;
     return $this;
   }
 

@@ -49,7 +49,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
   public static function setUpBeforeClass() {
     global $session;
     self::$db             = new \MovDev\Database();
-    self::$sessionBackup  = $session;
+    self::$sessionBackup  = clone $session;
     $session              = new Session();
     $_SERVER["PATH_INFO"] = "/users/registration";
   }
@@ -130,6 +130,10 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
     $this->assertArrayHasKey("placeholder", $inputEmail->attributes);
     $this->assertEquals("Enter your email address", $inputEmail->attributes["placeholder"]);
 
+    $help = get_reflection_property($inputEmail, "help")->getValue($inputEmail);
+    $this->assertEquals("<a href='/users/login'>Already have an account?</a>", get_reflection_property($help, "content")->getValue($help));
+    $this->assertFalse(get_reflection_property($help, "popup")->getValue($help));
+
     $inputUsername = get_reflection_property($registration, "username")->getValue($registration);
     $this->assertInstanceOf("\\MovLib\Presentation\\Partial\\FormElement\\InputText", $inputUsername);
     $this->assertEquals("username", get_reflection_property($inputUsername, "id")->getValue($inputUsername));
@@ -155,11 +159,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Form", $form);
     $this->assertEquals($_SERVER["PATH_INFO"], $form->attributes["action"]);
     $this->assertEquals("span span--6 offset--3", $form->attributes["class"]);
-    $formElements = get_reflection_property($form, "elements")->getValue($form);
-    $this->assertTrue(in_array($inputEmail, $formElements));
-    $this->assertTrue(in_array($inputUsername, $formElements));
-    $this->assertTrue(in_array($inputTerms, $formElements));
-    $this->assertEquals(3, count($formElements));
+    $this->assertEquals([ $inputEmail, $inputUsername, $inputTerms ], get_reflection_property($form, "elements")->getValue($form));
 
     $this->assertArrayHasKey(0, $form->actionElements);
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputSubmit", $form->actionElements[0]);

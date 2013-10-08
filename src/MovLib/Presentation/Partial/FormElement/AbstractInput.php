@@ -43,7 +43,7 @@ abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\Ab
    * @param mixed $value [optional]
    *   The default value for this concrete input form element.
    */
-  public function __construct($id, $label, array $attributes = [], $help = null, $helpPopup = true) {
+  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
     if (isset($_POST[$this->id])) {
       $this->value = empty($_POST[$this->id]) ? null : $_POST[$this->id];

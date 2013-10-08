@@ -47,7 +47,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *
    * @var array
    */
-  protected $attributes = [];
+  public $attributes;
 
   /**
    * The form element's help.
@@ -83,8 +83,8 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * @param string $id
    *   The form element's global identifier.
    */
-  public function __construct($id, $label, array $attributes = [], $help = null, $helpPopup = true) {
-    $this->attributes            += $attributes;
+  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
+    $this->attributes             = $attributes;
     $this->id                     = $this->attributes["id"] = $this->attributes["name"] = $id;
     $this->attributes["tabindex"] = $this->getTabindex();
     $this->label                  = $label;

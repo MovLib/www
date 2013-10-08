@@ -39,14 +39,6 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
 
   /**
-   * @inheritdoc
-   */
-  protected $attributes = [
-    "accept" => "image/jpeg, image/png",
-    "type"   => "file",
-  ];
-
-  /**
    * Available image extensions.
    *
    * @internal We don't use image_type_to_extension() because it uses long extensions (e.g. jpeg instead of jpg).
@@ -109,9 +101,11 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
       "Image must be larger than {2}x{3} and less than {0} {1}. Allowed image types: JPG and PNG",
       $this->formatBytes(ini_get("upload_max_filesize")) + [ 2 => $this->minimumWidth, 3 => $this->minimumHeight ]
     ));
+    $this->attributes["accept"]            = "image/jpeg,image/png";
     $this->attributes["data-max-filesize"] = $this->maximumFileSize;
     $this->attributes["data-min-height"]   = $this->minimumHeight;
     $this->attributes["data-min-width"]    = $this->minimumWidth;
+    $this->attributes["type"]              = "file";
     $this->image                           = $concreteImage;
   }
 

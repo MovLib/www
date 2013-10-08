@@ -30,19 +30,6 @@ namespace MovLib\Presentation\Partial\FormElement;
  */
 class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The form element's attributes.
-   *
-   * @var array
-   */
-  protected $attributes = [
-    "type" => "checkbox",
-  ];
-
   /**
    * The form element's value.
    *
@@ -51,11 +38,18 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
   public $value = false;
 
   /**
-   * Get string representation of this form element.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return string
-   *   The string representation of this form element.
+   * @inheritdoc
+   */
+  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
+    parent::__construct($id, $label, $attributes, $help, $helpPopup);
+    $this->attributes["type"] = "checkbox";
+    if (isset($_POST[$this->id])) {
+      $this->value = $_POST[$this->id] == true;
+    }
+  }
+
+  /**
+   * @inheritdoc
    */
   public function __toString() {
     if ($this->value === true) {
@@ -68,7 +62,6 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
    * @inheritdoc
    */
   public function validate() {
-    $this->value = isset($_POST[$this->id]) && $_POST[$this->id] == true;
     return $this;
   }
 

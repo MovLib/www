@@ -98,7 +98,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
   public function __construct($page, array $elements, $id = null, $validationCallback = "validate") {
     global $i18n, $session;
     $this->elements        = $elements;
-    $this->id              = $id ? : $page->id;
+    $this->id              = $id ?: $page->id;
     $this->hiddenElements .= "<input name='form_id' type='hidden' value='{$this->id}'>";
 
     // Any form has to include the CSRF token if a session is active (including anon sessions).

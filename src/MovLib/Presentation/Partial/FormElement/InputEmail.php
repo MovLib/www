@@ -56,31 +56,21 @@ class InputEmail extends \MovLib\Presentation\Partial\FormElement\AbstractInput 
   const PATTERN = "^[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~\.\"(),:;<>@[\]\\\\ ]+@[a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*[a-z0-9_]\.[a-z]{2,6}$";
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * @inheritdoc
-   */
-  protected $attributes = [
-    "aria-required" => "true",
-    "maxlength"     => self::MAX_LENGTH,
-    "pattern"       => self::PATTERN,
-    "required",
-    "type"          => "email",
-  ];
-
-
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
    * @inheritdoc
    */
-  public function __toString() {
+  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
     global $i18n;
-    $this->attributes["title"] = $i18n->t("An email address in the format [local]@[host].[tld] with a maximum of {0} characters", [ self::MAX_LENGTH ]);
-    return parent::__toString();
+    parent::__construct($id, $label, $attributes, $help, $helpPopup);
+    $this->attributes["aria-required"] = "true";
+    $this->attributes["maxlength"]     = self::MAX_LENGTH;
+    $this->attributes["pattern"]       = self::PATTERN;
+    $this->attributes["title"]         = $i18n->t("An email address in the format [local]@[host].[tld] with a maximum of {0} characters", [ self::MAX_LENGTH ]);
+    $this->attributes["type"]          = "email";
+    $this->attributes[]                = "required";
   }
 
 

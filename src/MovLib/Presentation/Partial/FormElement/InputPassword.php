@@ -33,11 +33,12 @@ class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractInp
   /**
    * @inheritdoc
    */
-  protected $attributes = [
-    "aria-required" => "true",
-    "required",
-    "type"          => "password",
-  ];
+  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
+    parent::__construct($id, $label, $attributes, $help, $helpPopup);
+    $this->attributes["aria-required"] = "true";
+    $this->attributes["type"]          = "password";
+    $this->attributes[]                = "required";
+  }
 
   /**
    * @inheritdoc

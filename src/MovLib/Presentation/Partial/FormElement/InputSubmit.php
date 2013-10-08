@@ -30,42 +30,28 @@ namespace MovLib\Presentation\Partial\FormElement;
  */
 class InputSubmit extends \MovLib\Presentation\AbstractBase {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  /**
+   * The form elements attributes.
+   *
+   * @var array
+   */
+  public $attributes;
 
   /**
    * Global identifier to access this element.
    *
    * @var string
    */
-  public $id;
-
-  /**
-   * Array containing all attributes of this form element.
-   *
-   * @var array
-   */
-  public $attributes = [
-    "class" => "button button--large button--success",
-    "type"  => "submit",
-  ];
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
+  public $id = "submit";
 
   /**
    * Instantiate new HTML input form element of type submit.
-   *
-   * @param array $attributes [optional]
-   *   Additional attributes that should be set on this form element, defaults to no additional attributes.
-   * @param string $id
-   *   The global unique identifier of this form element.
    */
-  public function __construct(array $attributes = null, $id = "submit") {
-    $this->id                     = $id;
-    $this->attributes            += $attributes;
+  public function __construct(array $attributes = null) {
+    $this->attributes             = $attributes;
+    $this->attributes["class"]    = "button button--large button--success";
     $this->attributes["tabindex"] = $this->getTabindex();
+    $this->attributes["type"]     = "submit";
   }
 
   /**
@@ -76,9 +62,6 @@ class InputSubmit extends \MovLib\Presentation\AbstractBase {
    *   The string representation of this form element.
    */
   public function __toString() {
-    if (!isset($this->attributes["value"])) {
-      $this->attributes["value"] = $i18n->t("Submit");
-    }
     return "<input{$this->expandTagAttributes($this->attributes)}>";
   }
 

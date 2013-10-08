@@ -165,7 +165,7 @@ class Login extends \MovLib\Presentation\Page {
       $session->alerts  .= $success;
 
       // Redirect the user to the requested redirect destination and if none was set to the personalized dashboard.
-      throw new RedirectException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
+      throw new RedirectException(!empty($_GET["redirect_to"]) ? rawurldecode($_GET["redirect_to"]) : $i18n->r("/my"));
     }
     // Never tell the person who's trying to sing in which value was wrong. Both attributes are considered a secret and
     // should never be exposed by our application itself.
