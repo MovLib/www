@@ -24,6 +24,7 @@ use \MovLib\Presentation\Email\Users\Registration as RegistrationEmail;
 use \MovLib\Presentation\Email\Users\RegistrationEmailExists;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
@@ -45,6 +46,13 @@ class Registration extends \MovLib\Presentation\Page {
 
 
   /**
+   * Flag indicating if this registration attempt was accepted or not.
+   *
+   * @var boolean
+   */
+  private $accepted = false;
+
+  /**
    * The input email form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputEmail
@@ -59,18 +67,18 @@ class Registration extends \MovLib\Presentation\Page {
   private $form;
 
   /**
+   * The input checkbox for accepting the terms of service and privacy policy.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputCheckbox
+   */
+  private $terms;
+
+  /**
    * The input text form element for the username.
    *
    * @var \MovLib\Presentation\Partial\FormElement\AbstractInput
    */
   private $username;
-
-  /**
-   * Flag indicating if this registration attempt was accepted or not.
-   *
-   * @var boolean
-   */
-  private $accepted = false;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -103,7 +111,11 @@ class Registration extends \MovLib\Presentation\Page {
       "placeholder" => $i18n->t("Enter your desired username"),
     ]))->required();
 
-    $this->form = new Form($this, [ $this->email, $this->username ]);
+    $this->terms = (new InputCheckbox("terms", $i18n->t("I accept the {0}Terms of Use{2} and the {1}Privacy Policy{2}.", [
+      "<a href='{$i18n->r("/terms-of-use")}'>", "<a href='{$i18n->t("/privacy-policy")}'>", "</a>"
+    ])))->required();
+
+    $this->form = new Form($this, [ $this->email, $this->username, $this->terms ]);
     $this->form->attributes["action"] = $_SERVER["PATH_INFO"];
     $this->form->attributes["class"]  = "span span--6 offset--3";
 
@@ -146,6 +158,14 @@ class Registration extends \MovLib\Presentation\Page {
   public function validate() {
     global $i18n;
     $errors = null;
+
+    if ($this->terms->value !== true) {
+      $this->checkErrors([ $i18n->t("You have to agree to the {0}Privacy Policy{2} and {1}Terms of Use{2} to sign up.", [
+        "<a href='{$i18n->r("/privacy-policy")}'>", "<a href='{$i18n->r("/terms-of-use")}'>", "</a>"
+      ]) ]);
+      return $this;
+    }
+
     // We want to validate the original string!
     $this->username->value = $_POST[$this->username->id];
 

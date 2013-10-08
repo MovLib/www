@@ -122,7 +122,7 @@ abstract class AbstractBase {
    *   The collapsed string.
    */
   protected final function collapseWhitespace($string) {
-    return preg_replace("/\s+/m", " ", $string);
+    return trim(preg_replace("/\s\s+/m", " ", preg_replace("/[\n\r\t\x{00}\x{0B}]+/m", " ", $string)));
   }
 
   /**
@@ -175,12 +175,19 @@ abstract class AbstractBase {
    *   Numeric array containing the truncated number in offset 0 and the unit in offset 1.
    */
   protected final function formatBytes($bytes) {
-    static $units = [ "B", "KB", "MB", "GB", "TB" ];
-    // log(1024) = 6.9314718055995...
-    // count($units) - 1 = 4
-    $pow = min(floor(log($bytes) / 6.9314718055995), 4);
-    $bytes /= (1 << (10 * $pow));
-    return [ round($bytes, 2), $units[$pow] ];
+    if ($bytes >= 1000000000000) {
+      return [ round($bytes / 1000000000000, 2), "TB" ];
+    }
+    if ($bytes >= 1000000000) {
+      return [ round($bytes / 1000000000, 2), "GB" ];
+    }
+    if ($bytes >= 1000000) {
+      return [ round($bytes / 1000000, 2), "MB" ];
+    }
+    if ($bytes >= 1000) {
+      return [ round($bytes / 1000, 2), "kB" ];
+    }
+    return [ round($bytes, 2), "B" ];
   }
 
   /**

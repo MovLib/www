@@ -127,7 +127,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
     global $i18n;
 
     // Always include the home and the current page, any other breadcrumb trails are up to the extending class.
-    $trail = [[ "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ]]];
+    $trail = [[ "/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ]]];
     $breadcrumbs = $this->getBreadcrumbs();
     $c = count($breadcrumbs);
     for ($i = 0; $i < $c; ++$i) {
@@ -188,34 +188,36 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected function getFooter() {
     global $i18n;
     $displayLanguage = Locale::getDisplayLanguage($_SERVER["LANGUAGE_CODE"], $i18n->locale);
-    $languageLinks = new Navigation("language-links", $i18n->r("Language Links"), $i18n->getSystemLanguageLinks());
+    $languageLinks = new Navigation("language-links", $i18n->t("Language Links"), $i18n->getSystemLanguageLinks());
+    $footerNavigation = new Navigation("footer", $i18n->t("Legal Links"), [
+      [ $i18n->r("/imprint"), $i18n->t("Imprint") ],
+      [ $i18n->r("/privacy-policy"), $i18n->t("Privacy Policy") ],
+      [ $i18n->r("/terms-of-use"), $i18n->t("Terms of Use") ],
+    ]);
+    $footerNavigation->glue = " · ";
     return
       "<footer id='footer'><div class='container'>" .
         "<div class='row'>" .
-          // #footer-copyright
-          "<div id='footer-copyright'>" .
-            "<i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
-              "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
-              [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
-            )}<br>{$i18n->t(
-              "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
-            )}<br>{$i18n->t(
-              "By using this site, you agree to the {0}Terms of Use{1} and {2}Privacy Policy{3}.",
-              [ "<a href='{$i18n->r("/terms-of-use")}'>", "</a>", "<a href='{$i18n->r("/privacy-policy")}'>", "</a>" ]
-            )}" .
-          "</div>" .
-          // #footer-copyright
-          // #footer-links
+        // #footer-copyright
+          "<p id='footer-copyright'><i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
+            "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
+            [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
+          )}<br>{$i18n->t(
+            "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
+          )}</p>" .
+        // #footer-copyright
+        // #footer-links
           "<div id='footer-links'>" .
             "<button class='button button--inverse'>{$i18n->t("Language")}: {$displayLanguage}</button>" .
             "<div class='well'>{$languageLinks}</div>" .
           "</div>" .
-          // #footer-links
+        // #footer-links
         "</div>" .
         "<div class='row' id='footer-logos'>" .
           "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
           "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/github.svg' width='64'></a>" .
         "</div>" .
+        "<div class='row'>{$footerNavigation}</div>" .
       "</div></footer>"
 //      "<script id='js-settings' type='application/json'>" . json_encode($this->scripts) . "</script>"
       // @todo Minify and combine!

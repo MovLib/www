@@ -35,35 +35,20 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
 
 
   /**
+   * The form element's attributes.
+   *
+   * @var array
+   */
+  protected $attributes = [
+    "type" => "checkbox",
+  ];
+
+  /**
    * The form element's value.
    *
    * @var boolean
    */
   public $value = false;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new input checkbox form element.
-   *
-   * @param string $id
-   *   The form element's global identifier.
-   * @param string $label
-   *   The form element's label content.
-   * @param boolean $value [optional]
-   *   The form element's value. Defaults to <code>FALSE</code>. Note that a checkbox can only have to states, either
-   *   <code>TRUE</code> (checked) or <code>FALSE</code> (unchecked).
-   * @param array $attributes [optional]
-   *   The form element's attributes.
-   * @param array $labelAttributes [optional]
-   *   The form element's label attributes.
-   */
-  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
-    parent::__construct($id, $label, $attributes, $help, $helpPopup);
-    $this->attributes["type"] = "checkbox";
-  }
 
   /**
    * Get string representation of this form element.
@@ -78,10 +63,6 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
     }
     return "{$this->help}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)}>{$this->label}</label></p>";
   }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * @inheritdoc
