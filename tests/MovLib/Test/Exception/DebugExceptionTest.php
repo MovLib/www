@@ -61,10 +61,11 @@ class DebugExceptionTest extends \PHPUnit_Framework_TestCase {
    * @group Exceptions
    */
   public function testVarDump() {
-    $debugException = new DebugException($this);
+    $object = new \stdClass();
+    $debugException = new DebugException($object);
     $this->assertInstanceOf("\\RuntimeException", $debugException);
     ob_start();
-    var_dump($this);
+    var_dump($object);
     $dump = ob_get_clean();
     $this->assertEquals(htmlspecialchars($dump, ENT_QUOTES|ENT_HTML5), $debugException->__toString());
   }
@@ -75,8 +76,9 @@ class DebugExceptionTest extends \PHPUnit_Framework_TestCase {
    * @group Exceptions
    */
   public function testPrintR() {
-    $debugException = new DebugException($this, "print_r");
-    $this->assertEquals(htmlspecialchars(print_r($this, true), ENT_QUOTES|ENT_HTML5), $debugException->__toString());
+    $object = new \stdClass();
+    $debugException = new DebugException($object, "print_r");
+    $this->assertEquals(htmlspecialchars(print_r($object, true), ENT_QUOTES|ENT_HTML5), $debugException->__toString());
   }
 
   /**
