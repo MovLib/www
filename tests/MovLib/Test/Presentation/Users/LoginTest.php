@@ -146,6 +146,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * @covers ::__construct
    * @covers ::validate
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /profile with status 302.
@@ -158,6 +159,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * @covers ::__construct
    * @covers ::validate
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /profile?foo=bar with status 302.
