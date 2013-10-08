@@ -308,8 +308,9 @@ class Movie extends \MovLib\Data\Database {
         a.`award_id` AS `id`,
         a.`name` AS `name`,
         COLUMN_GET(a.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`,
-        ma.`year` AS `year`,
-        `won`
+        `ma`.`award_count` AS `award_count`,
+        `ma`.`year` AS `year`,
+        `ma`.`won` AS `won`
       FROM `movies_awards` ma
         INNER JOIN `awards` a
           ON ma.`award_id` = a.`award_id`
@@ -323,8 +324,10 @@ class Movie extends \MovLib\Data\Database {
     for ($i = 0; $i < $c; ++$i) {
       settype($awards[$i]["won"], "boolean");
       $awards[$i]["name"] = empty($awards[$i]["name_localized"]) ? $awards[$i]["name"] : $awards[$i]["name_localized"];
+      $tmpAwards["{$awards[$i]["name"]}{$awards[$i]["award_count"]}"] = $awards[$i];
     }
-    return $awards;
+    $i18n->getCollator()->ksort($tmpAwards);
+    return array_values($tmpAwards);
   }
 
   /**
