@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Email;
 
+use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Exception\MailerException;
 use \MovLib\Data\I18n;
 
@@ -69,7 +70,8 @@ abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
       throw new MailerException("An email recipient cannot contain a comma.");
     }
     $this->recipient = $recipient;
-    $this->subject = $subject;
+    $this->subject   = $subject;
+    Mailer::stack($this);
   }
 
   /**
