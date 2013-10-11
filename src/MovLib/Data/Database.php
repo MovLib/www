@@ -181,39 +181,6 @@ class Database {
   }
 
   /**
-   * Set new record in the temporary table.
-   *
-   * @param mixed $data
-   *   The data to store.
-   * @param string $ttl [optional]
-   *   The time to life for this record, defaults to <var>\MovLib\Data\Database::TMP_TTL_DAILY</var>.
-   * @return string
-   *   The key (hash) of the newly added record.
-   */
-  protected function tmpSet($data, $ttl = self::TMP_TTL_DAILY) {
-    // We use SHA256 because a SHA512 is too long with 128 characters and considered spam by some email providers.
-    $hash = hash("sha256", openssl_random_pseudo_bytes(1024));
-    $this->prepareAndExecute("INSERT INTO `tmp` (`key`, `data`, `ttl`) VALUES (?, ?, ?)", "sss", [ $hash, serialize($data), $ttl ]);
-    return $hash;
-  }
-
-  /**
-   * Get record from the temporary table.
-   *
-   * @param string $key
-   *   The key (hash) of the record.
-   * @return null|mixed
-   *   The data that was previously stored with this hash or <code>NULL</code> if no record was found for the key.
-   */
-  protected function tmpGetAndDelete($key) {
-    $data = $this->selectAssoc("SELECT `data` FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
-    if (!empty($data)) {
-      $this->prepareAndExecute("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
-      return unserialize($data["data"]);
-    }
-  }
-
-  /**
    * Commit current transaction.
    *
    * @param int $flags [optional]
