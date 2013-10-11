@@ -145,7 +145,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `system_language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).' ,
   `avatar_name` VARCHAR(40) NOT NULL COMMENT 'The avatar’s file name.' ,
   `avatar_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The avatar’s file extension.' ,
-  `avatar_changed` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The avatar’s last change timestamp.' ,
+  `avatar_changed` TIMESTAMP NULL DEFAULT NULL COMMENT 'The avatar’s last change timestamp.' ,
   `birthday` DATE NULL COMMENT 'The user\'s date of birth.' ,
   `country_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.' ,
   `real_name` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.' ,
