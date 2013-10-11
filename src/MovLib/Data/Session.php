@@ -126,6 +126,9 @@ class Session extends \MovLib\Data\Database {
   /**
    * The session's user time zone ID.
    *
+   * Defaults to global PHP INI default timezone.
+   *
+   * @see Session::__construct()
    * @var string
    */
   public $userTimeZoneId;
@@ -186,6 +189,9 @@ class Session extends \MovLib\Data\Database {
           $this->isAuthenticated = true;
         }
       }
+    }
+    else {
+      $this->userTimeZoneId = ini_get("date.timezone");
     }
   }
 
