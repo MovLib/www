@@ -38,6 +38,10 @@ class Users extends \MovLib\Data\Database {
    *   Array containing the users with the user's unique ID as key.
    */
   public function getUsers(array $userIds) {
+    if (empty($userIds)) {
+      return [];
+    }
+    
     $userIds = array_unique($userIds);
     $c = count($userIds);
     $in = rtrim(str_repeat("?,", $c), ",");
@@ -51,7 +55,6 @@ class Users extends \MovLib\Data\Database {
     for ($i = 0; $i < $c; ++$i) {
       $users[$result[$i]["id"]] = $result[$i];
     }
-
     return $users;
   }
 

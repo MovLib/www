@@ -285,7 +285,69 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \Movlib\Data\History\AbstractHistory::getDiffAsHTML
+   * @covers \Movlib\Data\History\AbstractHistory::getArrayDiff
+   * @covers \Movlib\Data\History\AbstractHistory::getArrayDiffIdCompare
+   * @covers \Movlib\Data\History\AbstractHistory::getArrayDiffDeepCompare
+   */
+  public function testGetArrayDiff() {
+    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");
+    $commitFiles    = get_reflection_method($this->movie, "commitFiles");
+    $writeFiles     = get_reflection_method($this->movie, "writeFiles");
+
+    // cast with id 1 and 4 in "added"
+    $writeFiles->invoke($this->movie, ["cast" => [["id" => 1, "roles" => "franz"], ["id" => 4, "roles" => "sebastian"]]]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "cast with id 1 and 4");
+
+    $this->assertEquals(1, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
+    $this->assertEquals(4, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][1]["id"]);
+
+    // cast with id 2 in "added"
+    $writeFiles->invoke($this->movie, ["cast" => [
+      ["id" => 1, "roles" => "franz"],
+      ["id" => 2, "roles" => "richard"],
+      ["id" => 4, "roles" => "sebastian"]
+    ]]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "added cast with id 2");
+
+    $this->assertEquals(2, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
+
+    // cast with id 1 in "removed"
+    $writeFiles->invoke($this->movie, ["cast" => [["id" => 2, "roles" => "richard"], ["id" => 4, "roles" => "sebastian"]]]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "removed cast with id 1");
+
+    $this->assertEquals(1, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"][0]["id"]);
+
+    // cast with id 2 in "edited"
+    $writeFiles->invoke($this->movie, ["cast" => [["id" => 2, "roles" => "markus"], ["id" => 4, "roles" => "sebastian"]]]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "edited cast with id 2");
+
+    $this->assertEquals(2, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["id"]);
+    $this->assertEquals("richard", $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["old"]["roles"]);
+    $this->assertEquals("markus", $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["roles"]);
+    $this->assertEquals(false, isset($this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]));
+    $this->assertEquals(false, isset($this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"][0]));
+
+    // cast with id 2 in "edited", 4 is "removed" and 5 is "added"
+    $writeFiles->invoke($this->movie, ["cast" => [
+      ["id" => 2, "roles" => "franz"],
+      ["id" => 5, "roles" => "sebastian"]
+    ]]);
+    $stageAllFiles->invoke($this->movie);
+    $commitFiles->invoke($this->movie, "edited cast with id 2");
+
+    $this->assertEquals(2, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["id"]);
+    $this->assertEquals("markus", $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["old"]["roles"]);
+    $this->assertEquals("franz", $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["roles"]);
+    $this->assertEquals(4, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"][0]["id"]);
+    $this->assertEquals(5, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
+  }
+
+  /**
+   * @covers \Movlib\Data\History\AbstractHistory::getDiff
    */
   public function testGetDiff() {
     $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");

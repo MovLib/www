@@ -44,6 +44,10 @@ class Style extends \MovLib\Data\Database {
    */
   public function getStyleNames(array $styleIds) {
     global $i18n;
+    if (empty($styleIds)) {
+      return [];
+    }
+
     $styleIds = array_unique($styleIds);
     $c = count($styleIds);
     $in = rtrim(str_repeat("?,", $c), ",");

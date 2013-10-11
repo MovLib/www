@@ -42,6 +42,10 @@ class Language extends \MovLib\Data\Database {
    */
   public function getLanguageNames(array $languageIds) {
     global $i18n;
+    if (empty($languageIds)) {
+      return [];
+    }
+
     $languageIds = array_unique($languageIds);
     $c = count($languageIds);
     $in = rtrim(str_repeat("?,", $c), ",");

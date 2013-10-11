@@ -37,7 +37,10 @@ class Person extends \MovLib\Data\Database {
    *   Array containing the person names with the person's unique ID as key.
    */
   public function getPersonNames(array $personIds) {
-   $personIds = array_unique($personIds);
+    if (empty($personIds)) {
+      return [];
+    }
+    $personIds = array_unique($personIds);
     $c = count($personIds);
     $in = rtrim(str_repeat("?,", $c), ",");
     $result = $this->select(

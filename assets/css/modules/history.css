@@ -34,3 +34,7 @@
   background-color: #468847;
   color: #dff0d8;
 }
+
+#revision-diff .property-name {
+  font-weight: bold;
+}

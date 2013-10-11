@@ -42,6 +42,10 @@ class Country extends \MovLib\Data\Database {
    */
   public function getCountryNames(array $countryIds) {
     global $i18n;
+    if (empty($countryIds)) {
+      return [];
+    }
+    
     $countryIds = array_unique($countryIds);
     $c = count($countryIds);
     $in = rtrim(str_repeat("?,", $c), ",");

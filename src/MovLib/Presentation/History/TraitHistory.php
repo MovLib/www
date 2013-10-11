@@ -85,6 +85,36 @@ trait TraitHistory {
     return $html;
   }
 
+  public function diffBetweenStringsToHtml($from, $to) {
+    $from = preg_replace("/(.{1})/", "$1\n", $from);
+    $to = preg_replace("/(.{1})/", "$1\n", $to);
+
+    $diff = xdiff_string_diff($from, $to, strlen($to));
+    $diff = explode("\n", $diff);
+
+    $result = "";
+    foreach ($diff as $word) {
+      if (isset($word[0])) {
+        switch ($word[0]) {
+        case ' ':
+          $result .= substr($word, 1);
+          break;
+        case '+':
+          $tmp = substr($word, 1);
+          $result .= "<span class='green'>{$tmp}</span>";
+          break;
+        case '-':
+          $tmp = substr($word, 1);
+          $result .= "<span class='red'>{$tmp}</span>";
+          break;
+        case '/':
+          break;
+        }
+      }
+    }
+    return $result;
+  }
+
   /**
    * Formats filenames to be userd in page.
    *

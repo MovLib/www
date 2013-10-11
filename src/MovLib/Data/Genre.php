@@ -44,6 +44,10 @@ class Genre extends \MovLib\Data\Database {
    */
   public function getGenreNames(array $genreIds) {
     global $i18n;
+    if (empty($genreIds)) {
+      return [];
+    }
+
     $genreIds = array_unique($genreIds);
     $c = count($genreIds);
     $in = rtrim(str_repeat("?,", $c), ",");

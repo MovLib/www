@@ -173,11 +173,12 @@ class Database extends \MovLib\Console\Command\Database {
 
     $class = ucfirst($type);
     $class = new ReflectionClass("\\MovLib\\Data\\History\\{$class}");
-    if ($result = $this->query("SELECT `{$type}_id` FROM `{$type}s`")) {
-      while ($row = $result->fetch_assoc()) {
-        $history = $class->newInstance($row["{$type}_id"]);
+    if ($result = $this->database->select("SELECT `{$type}_id` FROM `{$type}s`")) {
+      $c = count($result);
+      for ($i = 0; $i < $c; ++$i) {
+        $history = $class->newInstance($result[$i]["{$type}_id"]);
         $commitHash = $history->createRepository();
-        $this->query("UPDATE `{$type}s` SET `commit` = '{$commitHash}' WHERE `{$type}_id` = {$row["{$type}_id"]}");
+        $this->database->query("UPDATE `{$type}s` SET `commit` = '{$commitHash}' WHERE `{$type}_id` = {$result[$i]["{$type}_id"]}");
       }
     }
     return $this;

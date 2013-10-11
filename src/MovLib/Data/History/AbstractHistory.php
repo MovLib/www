@@ -233,29 +233,73 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @param string $filename
    *   Name of file in repository.
    * @return array
-   *   Associative array with added (green) and removed (red) items.
+   *   Associative array with added, removed and edited items.
    */
   public function getArrayDiff($head, $ref, $filename) {
-    $current = unserialize($this->getFileAtRevision($filename, $head));
+    $new = unserialize($this->getFileAtRevision($filename, $head));
     $old = unserialize($this->getFileAtRevision($filename, $ref));
 
+    $added = ($old == false) ? $new : array_udiff($new, $old, [ $this, 'getArrayDiffDeepCompare' ]);
+    $removed = ($old == false) ? [] : array_udiff($old, $new, [ $this, 'getArrayDiffDeepCompare' ]);
 
+    $edited = array_uintersect($added, $removed, [ $this, 'getArrayDiffIdCompare' ]);
+    $c = count($edited);
+    for ($i = 0; $i < $c; ++$i) {
+      $old = [];
+      $e = count($removed);
+      for ($j = 0; $j < $e; ++$j) {
+        if ($removed[$j]['id'] == $edited[$i]['id']) {
+          $old = $removed[$j];
+          break;
+        }
+      }
+      $edited[$i]['old'] = $old;
+    }
+
+    $added = array_udiff($added, $edited, [ $this, 'getArrayDiffIdCompare' ]);
+    $removed = array_udiff($removed, $edited, [ $this, 'getArrayDiffIdCompare' ]);
 
     return [
-     "green" => empty($old) ? $current : array_values(array_udiff($current, $old, [ $this, 'getArrayDiffDeepCompare' ])),
-     "red" => empty($old) ? null : array_values(array_udiff($old, $current, [ $this, 'getArrayDiffDeepCompare' ]))
+     "added" => array_values($added),
+     "removed" => array_values($removed),
+     "edited" => array_values($edited)
     ];
   }
 
   /**
    * Helper method to deep compare two arrays.
    */
-  public function getArrayDiffDeepCompare($a, $b) {
-    if (serialize($a) == serialize($b)) {
-      return 0;
+  private function getArrayDiffIdCompare($a, $b) {
+    if (is_array($a) && is_array($b)) {
+      if ($a['id'] == $b['id']) {
+        return 0;
+      }
+      elseif ($a['id'] > $b['id']) {
+        return 1;
+      }
+      else {
+        return -1;
+      }
     }
-    elseif (serialize($a) > serialize($b)) {
-      return 1;
+    else {
+      return -1;
+    }
+  }
+
+  /**
+   * Helper method to deep compare two arrays.
+   */
+  private function getArrayDiffDeepCompare($a, $b) {
+    if (is_array($a) && is_array($b)) {
+      if (serialize($a) == serialize($b)) {
+        return 0;
+      }
+      elseif (serialize($a) > serialize($b)) {
+        return 1;
+      }
+      else {
+        return -1;
+      }
     }
     else {
       return -1;
@@ -325,13 +369,13 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\HistoryException
    */
   private function getFileAtRevision($filename, $ref) {
-    exec("cd {$this->path} && git show {$ref}:{$filename}", $output, $returnVar);
+    exec("cd {$this->path} && git show {$ref}:{$filename} 2<&-", $output, $returnVar);
     if ($returnVar === 128) {
-      // filename exists on disk, but not in ref return an empty serialized array.
+      // filename exists on disk, but not in ref return an empty string.
       return "";
     }
     elseif ($returnVar !== 0 || !isset($output[0])) {
-      throw new HistoryException("There was an error getting '{$filename}' at revision '{$ref}'::::{$returnVar}");
+      throw new HistoryException("There was an error getting '{$filename}' at revision '{$ref}'");
     }
     return $output[0];
   }
