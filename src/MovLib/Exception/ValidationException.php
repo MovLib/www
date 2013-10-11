@@ -26,4 +26,35 @@ namespace MovLib\Exception;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ValidationException extends \RuntimeException {}
+class ValidationException extends \RuntimeException {
+
+  /**
+   * Instantiate new validation exception.
+   *
+   * @param string|array $message
+   *   The string or numeric array of strings with messages explaining the problem.
+   * @param int $code [optional]
+   *   The exception code, defaults to <code>0</code>.
+   * @param \Exception $previous [optional]
+   *   The previous exception, default to <code>NULL</code>.
+   */
+  public function __construct($message, $code = 0, $previous = null) {
+    parent::__construct(is_array($message) ? implode("<br>", $message) : $message, $code, $previous);
+  }
+
+  /**
+   * Append messages to this exceptions message.
+   *
+   * @param string|array $append
+   *   A string or numeric array of strings containing the message(s) to append to this exceptions message.
+   * @return this
+   */
+  public function appendToMessage($append) {
+    if (is_array($append)) {
+      $append = implode("<br>", $append);
+    }
+    $this->message .= "<br>{$append}";
+    return $this;
+  }
+
+}

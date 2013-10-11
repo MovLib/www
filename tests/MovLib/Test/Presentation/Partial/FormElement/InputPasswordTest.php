@@ -20,6 +20,7 @@ namespace MovLib\Test\Presentation\Partial\FormElement;
 use \MovLib\Presentation\Partial\FormElement\InputPassword;
 
 /**
+ * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\InputPassword
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -28,27 +29,122 @@ use \MovLib\Presentation\Partial\FormElement\InputPassword;
  */
 class InputPasswordTest extends \PHPUnit_Framework_TestCase {
 
+
+  public static function dataProviderWeakPasswords() {
+    return [
+      "test",
+      "testtest",
+      "TEST",
+      "TESTTEST",
+      "test1234",
+      "TEST1234",
+      "iamaverylongpasswordbutnotstrongenough",
+      "IAmAVeryLongPasswordButNotStrongEnough",
+    ];
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Helpers
+
+
+  private function _validate($password = "") {
+    $inputPassword = new InputPassword();
+    $inputPassword->value = $password;
+    return $inputPassword->validate();
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Tests
+
+
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\InputPassword::__construct
+   * @covers ::__construct
+   * @group Presentation
    */
   public function testConstruct() {
-    $inputPassword = new InputPassword();
-    $this->assertArrayHasKey("type", $inputPassword->attributes);
+    $inputPassword = new InputPassword("phpunit", "PHPUnit", [ "foo" => "bar" ]);
+    foreach ([ "foo", "pattern", "placeholder", "title", "type" ] as $key) {
+      $this->assertArrayHasKey($key, $inputPassword->attributes);
+    }
     $this->assertEquals("password", $inputPassword->attributes["type"]);
-    $this->assertEquals("Password", $inputPassword->label);
-    $this->assertTrue($inputPassword->required);
+    $this->assertEquals("bar", $inputPassword->attributes["foo"]);
+    $this->assertTrue(in_array("required", $inputPassword->attributes));
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\InputPassword::__toString
+   * @coversNothing
+   * @dataProvider dataProviderWeakPasswords
+   * @group Validation
+   */
+  public function testPatternInvalid($password) {
+    $pattern = (new InputPassword())->attributes["pattern"];
+    $this->assertFalse((boolean) preg_match("/{$pattern}/", $password));
+  }
+
+  /**
+   * @coversNothing
+   * @group Validation
+   */
+  public function testPatternValid() {
+    $pattern = (new InputPassword())->attributes["pattern"];
+    $this->assertRegExp("/{$pattern}/", "Test1234");
+  }
+
+  /**
+   * @covers ::__toString
+   * @depends testConstruct
+   * @group Presentation
    */
   public function testToString() {
-    $inputText = (new InputPassword())->__toString();
-    $this->assertContains("<label for='password'>Password</label>", $inputText);
-    $this->assertContains("id='password'", $inputText);
-    $this->assertContains("name='password'", $inputText);
-    $this->assertContains("type='text'", $inputText);
-    $this->assertRegExpr("/tabindex='[0-9]+'/", $inputText);
+    $_POST["password"]    = "Test1234";
+    $inputPassword        = new InputPassword("password", "Password", [ "value" => "Test1234" ]);
+    $inputPassword->value = "Test1234";
+    $this->assertNotContains("Test1234", $inputPassword->__toString());
+    unset($_POST);
+  }
+
+  /**
+   * @covers ::validate
+   * @depends testConstruct
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionCode \MovLib\Presentation\Partial\FormElement\InputPassword::E_MANDATORY
+   * @expectedExceptionMessage mandatory
+   * @group Validation
+   */
+  public function testValidateEmpty() {
+    $this->_validate();
+  }
+
+  /**
+   * @covers ::validate
+   * @depends testConstruct
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage too short
+   * @group Validation
+   */
+  public function testValidateTooShort() {
+    $this->_validate("test");
+  }
+
+  /**
+   * @covers ::validate
+   * @dataProvider dataProviderWeakPasswords
+   * @depends testConstruct
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage not complex enough
+   * @group Validation
+   */
+  public function testValidateComplexity($password) {
+    $this->_validate($password);
+  }
+
+  /**
+   * @covers ::validate
+   * @depends testConstruct
+   * @group Validation
+   */
+  public function testValidate() {
+    $this->_validate("Test1234");
   }
 
 }

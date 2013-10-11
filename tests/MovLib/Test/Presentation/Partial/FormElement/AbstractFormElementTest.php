@@ -17,28 +17,6 @@
  */
 namespace MovLib\Test\Presentation\Partial\FormElement;
 
-class ConcreteFormElement extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
-
-  public $attributes = [];
-
-  public $help;
-
-  public $label;
-
-  public function __construct($id, $label, array $attributes = [], $help = null, $helpPopup = true) {
-    parent::__construct($id, $label, $attributes, $help, $helpPopup);
-  }
-
-  public function __toString() {
-    return "";
-  }
-
-  public function validate() {
-    return $this;
-  }
-
-}
-
 /**
  * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\AbstractFormElement
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -54,76 +32,42 @@ class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
    * @group Presentation
    */
   public function testConstruct() {
-    $formElement = new ConcreteFormElement("phpunit", "PHPUnit");
-    $this->assertArrayHasKey("id", $formElement->attributes);
-    $this->assertArrayHasKey("name", $formElement->attributes);
-    $this->assertArrayHasKey("tabindex", $formElement->attributes);
-    $this->assertEquals("PHPUnit", $formElement->label);
-    $this->assertEquals("phpunit", $formElement->attributes["id"]);
-    $this->assertEquals("phpunit", $formElement->attributes["name"]);
-    $this->assertEquals("phpunit", $formElement->id);
-    $this->assertTrue(is_int($formElement->attributes["tabindex"]));
-  }
-
-  /**
-   * @covers ::__construct
-   * @group Presentation
-   */
-  public function testConstructAdditionalAttributes() {
-    $formElement = new ConcreteFormElement("phpunit", "PHPUnit", [ "foo" => "bar" ]);
-    $this->assertArrayHasKey("foo", $formElement->attributes);
-    $this->assertEquals("bar", $formElement->attributes["foo"]);
-  }
-
-  /**
-   * @covers ::__construct
-   * @group Presentation
-   */
-  public function testConstructHelp() {
-    $formElement = new ConcreteFormElement("phpunit", "PHPUnit", [], "Hello World!");
-    $this->assertArrayHasKey("aria-describedby", "phpunit-help");
-    $this->assertEquals("Hello World!", get_reflection_property($formElement->help, "content")->getValue($formElement->help));
-    $this->assertContains("phpunit", get_reflection_property($formElement->help, "id")->getValue($formElement->help));
-    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $formElement->help);
-    $this->assertTrue(get_reflection_property($formElement->help, "popup"));
-  }
-
-  /**
-   * @covers ::__construct
-   * @group Presentation
-   */
-  public function testConstructHelpPopup() {
-    $formElement = new ConcreteFormElement("phpunit", "PHPUnit", [], "Hello World!", false);
-    $this->assertFalse(get_reflection_property($formElement->help, "popup")->getValue($formElement->help));
+    $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement", [ "phpunit", "PHPUnit", [ "foo" => "bar" ]]);
+    foreach ([ "foo", "id", "name", "tabindex" ] as $key) {
+      $this->assertArrayHasKey($key, $stub->attributes);
+    }
+    $this->assertEquals("PHPUnit", get_reflection_property($stub, "label")->getValue($stub));
+    $this->assertEquals("bar", $stub->attributes["foo"]);
+    $this->assertEquals("phpunit", $stub->attributes["id"]);
+    $this->assertEquals("phpunit", $stub->attributes["name"]);
+    $this->assertEquals("phpunit", $stub->id);
+    $this->assertTrue(is_int($this->attributes["tabindex"]));
+    return $stub;
   }
 
   /**
    * @covers ::invalid
+   * @depends testConstruct
    * @group Presentation
    */
-  public function testInvalid() {
-    $formElement = new ConcreteFormElement("phpunit", "PHPUnit");
-    $formElement->invalid();
-    $this->assertArrayHasKey("aria-invalid", $formElement->attributes);
-    $this->assertArrayHasKey("class", $formElement->attributes);
-    $this->assertContains("invalid", $formElement->attributes["class"]);
-    $this->assertEquals("true", $formElement->attributes["aria-invalid"]);
+  public function testInvalid($stub) {
+    $this->assertEquals($stub, $stub->invalid());
+    $this->assertArrayHasKey("aria-invalid", $stub->attributes);
+    $this->assertArrayHasKey("class", $stub->attributes);
+    $this->assertContains("invalid", $stub->attributes["class"]);
+    $this->assertEquals("true", $stub->attributes["aria-invalid"]);
   }
 
   /**
-   * @covers ::required
+   * @covers ::setHelp
+   * @depends testConstruct
    * @group Presentation
    */
-  public function testRequired() {
-    $formElement = new ConcreteFormElement("phpunit", "PHPUnit");
-    $formElement->required();
-    $this->assertArrayHasKey("aria-required", $formElement->attributes);
-    foreach ($formElement->attributes as $k => $v) {
-      if (($found = $v == "required") === true) {
-        break;
-      }
-    }
-    $this->assertTrue($found);
+  public function testSetHelp($stub) {
+    $this->assertEquals($stub, $stub->setHelp("help message", false));
+    $this->assertArrayHasKey("aria-describedby", $stub->attributes);
+    $this->assertEquals("phpunit-help", $stub->attributes["aria-describedby"]);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", get_reflection_property($stub, "help")->getValue($stub));
   }
 
 }

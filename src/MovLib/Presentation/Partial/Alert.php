@@ -96,10 +96,16 @@ class Alert {
    * Instantiate new alert.
    *
    * @param string $message
-   *   The message that should be displayed to the user.
+   *   The alert's translated message.
+   * @param string $title [optional]
+   *   The alert's translated title, defaults to no title.
+   * @param string $severity [optional]
+   *   The alert's severity level, default to no severity which is the CSS default. Use the class constants.
    */
-  public function __construct($message) {
-    $this->message = $message;
+  public function __construct($message, $title = null, $severity = null) {
+    $this->message  = $message;
+    $this->title    = $title;
+    $this->severity = $severity;
   }
 
   /**
@@ -111,10 +117,11 @@ class Alert {
    *   HTML representation of this alert message.
    */
   public function __toString() {
+    $title = null;
     if ($this->title) {
-      $this->title = "<h4 class='alert__title'>{$this->title}</h4>";
+      $title = "<h4 class='alert__title'>{$this->title}</h4>";
     }
-    return "<div class='alert{$this->severity}' role='alert'><div class='container'>{$this->title}{$this->message}</div></div>";
+    return "<div class='alert{$this->severity}' role='alert'><div class='container'>{$title}{$this->message}</div></div>";
   }
 
 }

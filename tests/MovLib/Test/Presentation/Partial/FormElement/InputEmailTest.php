@@ -18,7 +18,6 @@
 namespace MovLib\Test\Presentation\Partial\FormElement;
 
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
-use \MovLib\Presentation\Validation\EmailAddress;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\InputEmail
@@ -30,49 +29,227 @@ use \MovLib\Presentation\Validation\EmailAddress;
  */
 class InputEmailTest extends \PHPUnit_Framework_TestCase {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Data Providers
+
+
+  public static function dataProviderInvalid() {
+    return [
+      // Valid syntax but no DNS record
+      [ "phpunit@123.123.123.x123" ],
+      [ "phpunit@[123.123.123.123]" ],
+      [ "phpunit@[ipv6:::12.34.56.78]" ],
+      [ "phpunit.phpunit@[12.34.56.78]" ],
+      [ "phpunit@[ipv6:1111:2222:3333::4444:5555:6666]" ],
+      [ "phpunit@[ipv6:1111:2222:3333:4444:5555:6666::]" ],
+      [ "phpunit@[ipv6:::1111:2222:3333:4444:5555:6666]" ],
+      [ "phpunit@[ipv6:1111:2222:3333::4444:12.34.56.78]" ],
+      [ "phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777:8888]" ],
+      [ "phpunit@[ipv6:1111:2222:3333:4444:5555:6666:12.34.56.78]" ],
+      [ "x@x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x23456789.x2" ],
+      // Invalid IP address as host
+      [ "phpunit.phpunit@[.12.34.56.78]" ],
+      [ "phpunit.phpunit@[12.34.56.789]" ],
+      [ "phpunit.phpunit@[::12.34.56.78]" ],
+      [ "phpunit.phpunit@[IPv5:::12.34.56.78]" ],
+      [ "phpunit.phpunit@[ipv6:1111:2222:333x::4444:5555]" ],
+      [ "phpunit.phpunit@[ipv6:1111:2222:33333::4444:5555]" ],
+      [ "phpunit.phpunit@[ipv6:1111:2222::3333::4444:5555:6666]" ],
+      [ "phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777]" ],
+      [ "phpunit.phpunit@[ipv6:1111:2222:3333::4444:5555:6666:7777]" ],
+      [ "phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:12.34.56.78]" ],
+      [ "phpunit.phpunit@[ipv6:1111:2222:3333::4444:5555:12.34.56.78]" ],
+      [ "phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777:8888:9999]" ],
+      [ "phpunit.phpunit@[ipv6:1111:2222:3333:4444:5555:6666:7777:12.34.56.78]" ],
+      // No local part at all
+      [ "movlib.org" ],
+      [ "@movlib.org" ],
+      // No host part at all
+      [ "phpunit" ],
+      [ "phpunit.phpunit" ],
+      [ "phpunit.phpunit@" ],
+      // Syntax error in host part
+      [ "phpunit@org" ],
+      [ "phpunit@movlib.123" ],
+      [ "phpunit@movlib.org." ],
+      [ "phpunit@-movlib.org" ],
+      [ "phpunit@movlib-.org" ],
+      [ "phpunit@movlib.org,com" ],
+      // Invalid, just invalid
+      [ "" ],
+      [ "\n" ],
+      [ "#@%^%#$@#$@#.org" ],
+      [ "ハローワールド@movlib.org" ], // hello world
+      [ "phpunit@movlib.org (PHPUnit)" ],
+      [ "PHPUnit PHPUnit <phpunit@movlib.org>" ],
+    ];
+  }
+
+  public static function dataProviderInvalidPHP() {
+    return array_merge(self::dataProviderInvalid(), [
+      // Valid syntax but too long (exactly 255 characters)
+      [ "123456789012345678901234567890123456789012345678901234567890@12345678901234567890123456789012345678901234567890123456789.12345678901234567890123456789012345678901234567890123456789.123456789012345678901234567890123456789012345678901234567890123.movlib.org" ],
+      // Syntax error in local part
+      [ '"\"@movlib.org' ],
+      [ '"""@movlib.org' ],
+      [ '""""@movlib.org' ],
+      [ '"phpunit@movlib.org' ],
+      [ 'phpunit"@movlib.org' ],
+      [ '"(),:;<>[\]@movlib.org' ],
+      [ '"[[ phpunit ]]"@movlib.org' ],
+      [ "phpunit phpunit@movlib.org" ],
+      [ "phpunit@phpunit@movlib.org" ],
+      [ ".phpunit.phpunit@movlib.org" ],
+      [ "phpunit.phpunit.@movlib.org" ],
+      [ "phpunit..phpunit@movlib.org" ],
+      [ "phpunit\@phpunit@movlib.org" ],
+      [ '"phpunit"phpunit"@movlib.org' ],
+      [ '"phpunit phpunit"@movlib.org' ],
+      [ "phpunit\\@phpunit@movlib.org" ],
+      [ 'phpunit\\@phpunit@movlib.org' ],
+      [ 'phpunit\ "phpunit"\ phpunit@movlib.org' ],
+      [ '"phpunit "phpunit" phpunit."@movlib.org' ],
+      [ '"phpunit \"phpunit\" phpunit.@movlib.org' ],
+      [ '"phpunit \"phpunit\"\ phpunit\.@movlib.org' ],
+    ]);
+  }
+
+  public static function dataProviderValid() {
+    return [
+      [ '""@movlib.org' ],
+      [ "+1~1+@movlib.org" ],
+      [ '$a12345@movlib.org' ],
+      [ "phpunit@movlib.org" ],
+      [ "_______@movlib.org" ],
+      [ "_phpunit@movlib.org" ],
+      [ '"phpunit"@movlib.org' ],
+      [ "phpunit@about.museum" ],
+      [ "phpunit@amazon.co.jp" ],
+      [ "0123456789@movlib.org" ],
+      [ "1234567890@movlib.org" ],
+      [ "{_phpunit_}@movlib.org" ],
+      [ "phpunit@dev.movlib.org" ],
+      [ "!abc!xyz%abc@movlib.org" ],
+      [ "phpunit@blue-tomato.com" ],
+      [ "phpunit@fussenegger.info" ],
+      [ "phpunit@api.dev.movlib.org" ],
+      [ "phpunit.phpunit@movlib.org" ],
+      [ "phpunit+phpunit@movlib.org" ],
+      [ "phpunit-phpunit@movlib.org" ],
+      [ "phpunit*phpunit@movlib.org" ],
+      [ 'phpunit."phpunit"@movlib.org' ],
+      [ '"phpunit\phpunit"@movlib.org' ],
+      [ '"phpunit@phpunit"@movlib.org' ],
+      [ '"phpunit\"phpunit"@movlib.org' ],
+      [ '"phpunit\@phpunit"@movlib.org' ],
+      [ '"phpunit\\phpunit"@movlib.org' ],
+      [ '"phpunit\ phpunit"@movlib.org' ],
+      [ '"phpunit.\\phpunit"@movlib.org' ],
+      [ "phpunit/phpunit=phpunit@movlib.org" ],
+      [ 'very.unusual."@".unusual.com@movlib.org' ],
+      [ 'very."(),:;<>[]".very."very@\\\\\\ \"very".unusual@dev.movlib.org' ],
+      [ "phpunit@x23456789012345678901234567890123456789012345678901234567890123.movlib.org" ],
+      // The following address has exactly 254 characters!
+      [ "12345678901234567890123456789012345678901234567890123456789@12345678901234567890123456789012345678901234567890123456789.12345678901234567890123456789012345678901234567890123456789.123456789012345678901234567890123456789012345678901234567890123.movlib.org" ],
+    ];
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Helpers
+
+
+  private function _validate($email = "") {
+    $inputEmail = new InputEmail();
+    $inputEmail->value = $email;
+    return $inputEmail->validate();
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Tests
+
+
   /**
    * @covers ::__construct
-   * @covers \MovLib\Presentation\Partial\FormElement\AbstractInput::__construct
-   * @covers \MovLib\Presentation\Partial\FormElement\AbstractFormElement::__construct
    * @group Presentation
    */
   public function testConstruct() {
-    $input = new InputEmail("phpunit", "PHPUnit");
-    $attributes = get_reflection_property($input, "attributes")->getValue($input);
-    foreach ([
-      "aria-required" => "true",
-      "id"            => "phpunit",
-      "maxlength"     => 254,
-      "name"          => "phpunit",
-      "pattern"       => InputEmail::PATTERN,
-      "tabindex"      => null,
-      "type"          => "email",
-      0               => "required",
-    ] as $k => $v) {
-      $this->assertArrayHasKey($k, $attributes);
-      if ($v) {
-        $this->assertEquals($v, $attributes[$k]);
-      }
+    $inputEmail = new InputEmail("phpunit", "PHPUnit", [ "foo" => "bar" ]);
+    foreach ([ "foo", "maxlength", "pattern", "placeholder", "title", "type" ] as $key) {
+      $this->assertArrayHasKey($key, $inputEmail->attributes);
     }
-    $this->assertTrue(is_int($attributes["tabindex"]));
+    $this->assertEquals(254, $inputEmail->attributes["maxlength"]);
+    $this->assertEquals("email", $inputEmail->attributes["type"]);
+    $this->assertEquals("bar", $inputEmail->attributes["foo"]);
+    $this->assertTrue(in_array("required", $inputEmail->attributes));
   }
 
   /**
-   * @covers ::__toString
-   * @covers \MovLib\Presentation\Partial\FormElement\AbstractInput::__toString
-   * @group Presentation
+   * @coversNothing
+   * @dataProvider dataProviderInvalid
+   * @group Validation
    */
-  public function testToString() {
-    $input = (new InputEmail("phpunit", "PHPUnit"))->__toString();
-    $this->assertContains(" aria-required='true'", $input);
-    $this->assertContains(" id='phpunit'", $input);
-    $this->assertContains(" maxlength='254'", $input);
-    $this->assertContains(" name='phpunit'", $input);
-    $this->assertContains(" pattern='" . htmlspecialchars(EmailAddress::PATTERN, ENT_QUOTES|ENT_HTML5) . "'", $input);
-    $this->assertContains(" required", $input);
-    $this->assertContains(" tabindex='", $input);
-    $this->assertContains(" type='email'", $input);
-    $this->assertContains("<label for='phpunit'>PHPUnit</label>", $input);
+  public function testPatternInvalid($email) {
+    $pattern = strtr((new InputEmail())->attributes["pattern"], "/", "\/");
+    $this->assertFalse((boolean) preg_match("/{$pattern}/", $email));
+  }
+
+  /**
+   * @coversNothing
+   * @dataProvider dataProviderValid
+   * @group Validation
+   */
+  public function testPatternValid($email) {
+    $pattern = strtr((new InputEmail())->attributes["pattern"], "/", "\/");
+    $this->assertRegExp("/{$pattern}/", $email);
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionCode \MovLib\Presentation\Partial\FormElement\InputEmail::E_MANDATORY
+   * @expectedExceptionMessage mandatory
+   * @group Validation
+   */
+  public function testValidateEmpty() {
+    $this->_validate();
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage too long
+   * @group Validation
+   */
+  public function testValidateTooLong() {
+    $this->_validate(str_repeat("a", 255));
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage invalid
+   * @group Validation
+   */
+  public function testValidateSyntax() {
+    $this->_validate("phpunit");
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage unreachable
+   * @group Validation
+   */
+  public function testValidateDNS() {
+    $this->_validate("user@foo.bar");
+  }
+
+  /**
+   * @covers ::validate
+   * @group Validation
+   */
+  public function testValidate() {
+    $this->_validate("phpunit@movlib.org");
   }
 
 }

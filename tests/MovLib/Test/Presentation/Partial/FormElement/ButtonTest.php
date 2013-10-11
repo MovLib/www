@@ -15,51 +15,44 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Test\Presentation\Partial\FormElement;
 
-namespace MovLib\Exception;
+use \MovLib\Presentation\Partial\FormElement\Button;
 
 /**
- * Description of RedirectException
- *
+ * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\Button
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RedirectException extends \RuntimeException {
+class ButtonTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * The redirect's target route.
-   *
-   * @var string
+   * @covers ::__construct
+   * @group Presentation
    */
-  public $route;
+  public function testConstruct() {
+    $button = new Button("phpunit", "<phpunit>");
+    $this->assertEquals("<phpunit>", $button->content);
+  }
 
   /**
-   * The redirect's HTTP status code.
-   * @var int
+   * @covers ::__toString
+   * @group Presentation
    */
-  public $status;
+  public function testToString() {
+    $this->assertRegExp("/^<button[a-z0-9=' ]+><phpunit><\/button>$/", (string) new Button("phpunit", "<phpunit>"));
+  }
 
   /**
-   * Instantiate new redirect exception.
-   *
-   * @param string $route
-   *   The already translated route.
-   * @param int $status [optional]
-   *   The HTTP redirect status code, one of <code>301</code>, <code>302</code>, or <code>303</code>. Defaults to
-   *   <code>302</code>.
-   * @param \Exception $previous [optional]
-   *   The previously thrown exception.
+   * @covers ::validate
+   * @group Validation
    */
-  public function __construct($route, $status = 302, $previous = null) {
-    parent::__construct("Redirecting user to {$route} with status {$status}.", E_NOTICE, $previous);
-    if (strpos($route, "http") === false) {
-      $route = "{$_SERVER["SERVER"]}{$route}";
-    }
-    $this->route = $route;
-    $this->status = $status;
+  public function testValidate() {
+    $button = new Button("phpunit", "<phpunit>");
+    $this->assertEquals($button, $button->validate());
   }
 
 }

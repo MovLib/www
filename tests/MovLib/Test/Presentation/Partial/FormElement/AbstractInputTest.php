@@ -17,24 +17,6 @@
  */
 namespace MovLib\Test\Presentation\Partial\FormElement;
 
-class ConcreteInput extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
-
-  public $attributes = [];
-
-  public function __construct($id, $label, array $attributes = array(), $help = null, $helpPopup = true) {
-    parent::__construct($id, $label, $attributes, $help, $helpPopup);
-  }
-
-  public function __toString() {
-    return parent::__toString();
-  }
-
-  public function validate() {
-    return $this;
-  }
-
-}
-
 /**
  * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\AbstractInput
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -50,37 +32,51 @@ class AbstractInputTest extends \PHPUnit_Framework_TestCase {
    * @group Presentation
    */
   public function testConstruct() {
-    $input = new ConcreteInput("phpunit", "PHPUnit", [ "value" => "phpunit" ]);
-    $this->assertArrayHasKey("value", $input->attributes);
-    $this->assertEquals("phpunit", $input->attributes["value"]);
-    $this->assertEquals("phpunit", $input->value);
+    $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractInput", [ "phpunit", "PHPUnit", [ "value" => "phpunit" ]]);
+    $this->assertEquals("phpunit", $stub->value);
+    return $stub;
   }
 
   /**
    * @covers ::__construct
    * @group Presentation
    */
-  public function testConstructValueViaPost() {
+  public function testConstructValueViaPOST() {
     $_POST["phpunit"] = "phpunit";
-    $this->assertEquals("phpunit", (new ConcreteInput("phpunit", "PHPUnit"))->value);
+    $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractInput", [ "phpunit", "PHPUnit" ]);
+    $this->assertEquals("phpunit", $stub->value);
+    $this->assertEquals("phpunit", $stub->attributes["value"]);
+    return $stub;
   }
 
   /**
    * @covers ::__construct
    * @group Presentation
    */
-  public function testConstructEmptyValueViaPost() {
+  public function testConstructEmptyValueViaPOST() {
     $_POST["phpunit"] = "";
-    $this->assertNull((new ConcreteInput("phpunit", "PHPUnit"))->value);
+    $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractInput", [ "phpunit", "PHPUnit" ]);
+    $this->assertNull($stub->value);
+    $this->assertNull($stub->attributes["value"]);
+    return $stub;
   }
 
   /**
-   * @covers ::__construct
+   * @covers ::__toString
+   * @depends testConstruct
    * @group Presentation
    */
-  public function testConstructPostValueOverPassedValue() {
-    $_POST["phpunit"] = null;
-    $this->assertNull((new ConcreteInput("phpunit", "PHPUnit", [ "value" => "phpunit" ]))->value);
+  public function testToString($stub) {
+    $this->assertContains("value='phpunit'", $stub->__toString());
+  }
+
+  /**
+   * @covers ::__toString
+   * @depends testConstructEmptyValueViaPOST
+   * @group Presentation
+   */
+  public function testToStringEmptyValue($stub) {
+    $this->assertNotContains("value='phpunit'", $stub->__toString());
   }
 
 }

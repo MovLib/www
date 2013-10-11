@@ -94,8 +94,12 @@ class Form extends \MovLib\Presentation\AbstractBase {
    * @param string $validationCallback [optional]
    *   The name of the method that should be called if the form's auto-validation is completed an no errors were
    *   detected. Defaults to <code>"validate"</code>.
+   * @param boolean $autofocus [optional]
+   *   If set to <code>FALSE</code> no form element will get the <code>"autofocus"</code> attribute. Defaults to
+   *   <code>TRUE</code> where the first form element of the form gets the attribute, if any form element is invalid the
+   *   first invalid form element will get the attribute.
    */
-  public function __construct($page, array $elements, $id = null, $validationCallback = "validate") {
+  public function __construct($page, array $elements, $id = null, $validationCallback = "validate", $autofocus = true) {
     global $i18n, $session;
     $this->elements        = $elements;
     $this->id              = $id ?: $page->id;
@@ -109,6 +113,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
     // Set default attributes, a dev can override them by accessing the properties directly.
     $this->attributes = [ "action" => $_SERVER["PATH_INFO"], "method" => "post" ];
 
+    // Configure our form as multipart form if it's configured in the route to be one.
     if (isset($_SERVER["MULTIPART"])) {
       $this->attributes["enctype"] = "multipart/form-data";
       if ($_SERVER["MULTIPART"] == UPLOAD_ERR_INI_SIZE) {
@@ -127,37 +132,33 @@ class Form extends \MovLib\Presentation\AbstractBase {
       }
 
       // Validate all attached form elements.
-      $errors = $mandatoryError = null;
+      $exceptions = null;
       $c = count($this->elements);
       for ($i = 0; $i < $c; ++$i) {
-        if (empty($_POST[$this->elements[$i]->id]) && (empty($_FILES[$this->elements[$i]->id]) || $_FILES[$this->elements[$i]->id]["error"] === UPLOAD_ERR_NO_FILE)) {
-          if (isset($this->elements[$i]->attributes["aria-required"])) {
-            $this->elements[$i]->invalid();
-            $mandatoryError = true;
-          }
+        try {
+          $this->elements[$i]->validate();
         }
-        else {
-          try {
-            $this->elements[$i]->validate();
+        catch (\MovLib\Exception\ValidationException $e) {
+          // Mark this form element as invalid.
+          $this->elements[$i]->invalid();
+
+          // Give it autofocus if it's the first invalid element.
+          if ($autofocus === true) {
+            $this->elements[$i]->attributes[] = "autofocus";
+            $autofocus = false;
           }
-          catch (\MovLib\Exception\ValidationException $e) {
-            $this->elements[$i]->invalid();
-            $errors[] = $e->getMessage();
-          }
+
+          $exceptions[$this->elements[$i]->id] = $e->getMessage();
         }
       }
 
-      // No need to display several error messages about mandatory fields that weren't filled out. One message is more
-      // than enough. Please note that the color is not a problem for accessability, because each mandatory field is
-      // marked with the aria-required-attribute which ensures that clients for handicapped people tell them exactly
-      // which elements are required and which aren't.
-      if ($mandatoryError === true) {
-        $errors[] = $i18n->t("One or more required fields are empty and are highlighted with a red color, please make sure to fill out all required fields.");
-      }
+      // Call the validation callback method and let it handle any errors or continue with the validation process.
+      $page->{$validationCallback}($exceptions);
+    }
 
-      if ($page->checkErrors($errors) === false) {
-        $page->{$validationCallback}();
-      }
+    // If no element is invalid and we have elements give the first element the autofocus attribute.
+    if ($autofocus === true && $this->elements) {
+      $this->elements[0]->attributes[] = "autofocus";
     }
   }
 

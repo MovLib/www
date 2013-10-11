@@ -27,18 +27,11 @@ namespace MovLib\Presentation\Partial\FormElement;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Button extends \MovLib\Presentation\AbstractBase {
+class Button extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The button's attributes array.
-   *
-   * @var array
-   */
-  public $attributes;
 
   /**
    * The button's content.
@@ -46,34 +39,6 @@ class Button extends \MovLib\Presentation\AbstractBase {
    * @var string
    */
   public $content;
-
-  /**
-   * The button's state.
-   *
-   * @var boolean
-   */
-  public $disabled = false;
-
-  /**
-   * The button's global unique identifier.
-   *
-   * @var string
-   */
-  public $id;
-
-  /**
-   * The button's validation status.
-   *
-   * @var boolean
-   */
-  public $valid = true;
-
-  /**
-   * The button's value after validation.
-   *
-   * @var mixed
-   */
-  public $value;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -90,13 +55,8 @@ class Button extends \MovLib\Presentation\AbstractBase {
    *   Additional attributes that should be set on this form element, defaults to no additional attributes.
    */
   public function __construct($id, $content, array $attributes = null) {
-    $this->id = $id;
+    parent::__construct($id, null, $attributes);
     $this->content = $content;
-    $this->attributes = $attributes;
-    $this->attributes["id"] = $id;
-    $this->attributes["name"] = $id;
-    $this->attributes["tabindex"] = $this->getTabindex();
-    $this->addClass("button", $this->attributes);
   }
 
   /**
@@ -114,30 +74,6 @@ class Button extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Disable the button.
-   *
-   * @return this
-   */
-  public function disable() {
-    $this->attributes["aria-disabled"] = "true";
-    $this->attributes[] = "disabled";
-    $this->disabled = true;
-    return $this;
-  }
-
-  /**
-   * Mark button as invalid.
-   *
-   * @return this
-   */
-  public function invalid() {
-    $this->attributes["aria-invalid"] = "true";
-    $this->addClass("invalid", $this->attributes);
-    $this->valid = false;
-    return $this;
-  }
-
-  /**
    * The button's validation method.
    *
    * Buttons can be used within the elements array of a form, but the value is not validated by default because it's
@@ -146,7 +82,6 @@ class Button extends \MovLib\Presentation\AbstractBase {
    * @return this
    */
   public function validate() {
-    $this->value = $_POST[$this->id];
     return $this;
   }
 

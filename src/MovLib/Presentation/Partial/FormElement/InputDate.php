@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \DateTime;
+use \DateTimeZone;
 use \IntlDateFormatter;
 use \MovLib\Exception\ValidationException;
 
@@ -42,18 +44,6 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
 
   /**
-   * Full date formatting according to RFC3339.
-   *
-   * This constant can be used to format the default value, or the min and max attribute. The resulting formatted string
-   * will be in the format <code>"yyyy-mm-dd"</code> (e.g. <code>date(InputDate::RFC3339, time())</code>
-   * becomse <code>2013-06-27</code>).
-   *
-   * @link http://tools.ietf.org/html/rfc3339#section-5.6
-   * @var string
-   */
-  const RFC3339 = "Y-m-d";
-
-  /**
    * The maximum date as timestamp.
    *
    * @var int
@@ -67,20 +57,67 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    */
   protected $min;
 
+  /**
+   * Contains <code>$this->value</code> as timestamp if it's a valid date.
+   *
+   * @var boolean|int
+   */
+  public $timestamp = false;
+
+  /**
+   * The time zone ID, defaults to the time zone ID from the session.
+   *
+   * @var string
+   */
+  public $timeZoneId;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
-    parent::__construct($id, $label, $attributes, $help, $helpPopup);
-    $this->attributes["type"] = "date";
+  /**
+   * Instantiate new input form element of type date.
+   *
+   * @global \MovLib\Data\Session $session
+   * @param string $id
+   *   The date's global unique identifier.
+   * @param string $label
+   *   The date's translated label text.
+   * @param array $attributes [optional]
+   *   The date's additional attributes, the following attributes are set by default:
+   *   <ul>
+   *     <li><code>"id"</code> is set to <var>$id</var></li>
+   *     <li><code>"name"</code> is set to <var>$id</var></li>
+   *     <li><code>"tabindex"</code> is set to the next global tabindex (with <code>getTabindex()</code>)</li>
+   *     <li><code>"type"</code> is set to <code>"date"</code></li>
+   *   </ul>
+   *   You <b>should not</b> override any of the default attributes.
+   * @param string $timeZoneId [optional]
+   *   The time zone ID of this date input, defaults to the session's user time zone ID.
+   */
+  public function __construct($id, $label, array $attributes = null, $timeZoneId = null) {
+    global $session;
+    parent::__construct($id, $label, $attributes);
+    $this->attributes["data-format"] = "Y-m-d";
+    $this->attributes["type"]        = "date";
     if (isset($this->attributes["max"])) {
       $this->max = $this->attributes["max"];
-      $this->attributes["max"] = date(self::RFC3339, $this->attributes["max"]);
+      $this->attributes["max"] = date($this->attributes["data-format"], $this->attributes["max"]);
     }
     if (isset($this->attributes["min"])) {
       $this->min = $this->attributes["min"];
-      $this->attributes["min"] = date(self::RFC3339, $this->attributes["min"]);
+      $this->attributes["min"] = date($this->attributes["data-format"], $this->attributes["min"]);
+    }
+    $this->timeZoneId = $timeZoneId ?: $session->userTimeZoneId;
+    if (isset($this->value)) {
+      $date = DateTime::createFromFormat("!Y-m-d", $this->value, new DateTimeZone($this->timeZoneId));
+      if ($date !== false) {
+        $defaultTimeZoneId = ini_get("date.timezone");
+        if ($this->timeZoneId != $defaultTimeZoneId) {
+          $date->setTimezone(new DateTimeZone($defaultTimeZoneId));
+        }
+        $this->timestamp = $date->getTimestamp();
+      }
     }
   }
 
@@ -94,30 +131,36 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
   public function validate() {
     global $i18n, $session;
 
-    if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $this->value) === false) {
-      throw new ValidationException($i18n->t("The submitted date {0} has an invalid format, the format must be {1}yyyy-mm-dd{2}.", [
-        $this->placeholder($this->value), "<code>", "</code>"
+    if (empty($this->value)) {
+      $this->value = null;
+      if (in_array("required", $this->attributes)) {
+        throw new ValidationException($i18n->t("The “{0}” date is mandatory.", [ $this->label ]), self::E_MANDATORY);
+      }
+      return $this;
+    }
+
+    if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $this->value) == false) {
+      throw new ValidationException($i18n->t("The “{0}” date has an invalid format, the format must be {1}yyyy-mm-dd{2}.", [
+        $this->label, "<code>", "</code>"
       ]));
     }
 
     list($year, $month, $day) = explode("-", $this->value);
     if (checkdate($month, $day, $year) === false) {
-      throw new ValidationException($i18n->t("The submitted date {0} is not valid.", [ $this->placeholder($this->value) ]));
+      throw new ValidationException($i18n->t("The “{0}” date is invalid.", [ $this->label ]));
     }
 
     if ($this->max || $this->min) {
-      $date = strtotime($this->value);
-
-      if ($this->max && $date > $this->max) {
-        throw new ValidationException($i18n->t("The submitted date {0} must not be greater than {1}.", [
-          $i18n->formatDate($this->value, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
+      if ($this->max && $this->timestamp > $this->max) {
+        throw new ValidationException($i18n->t("The date {0} must not be greater than {1}.", [
+          $i18n->formatDate($this->timestamp, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
           $i18n->formatDate($this->max, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE)
         ]));
       }
 
-      if ($this->min && $date < $this->min) {
-        throw new ValidationException($i18n->t("The submitted date {0} must not be less than {1}.", [
-          $i18n->formatDate($this->value, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
+      if ($this->min && $this->timestamp < $this->min) {
+        throw new ValidationException($i18n->t("The date {0} must not be less than {1}.", [
+          $i18n->formatDate($this->timestamp, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
           $i18n->formatDate($this->min, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE)
         ]));
       }

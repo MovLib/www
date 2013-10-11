@@ -63,7 +63,7 @@ $composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src");
  * @link http://stackoverflow.com/a/2146171/1251219 How do I catch a PHP Fatal Error
  */
 function error_fatal_handler() {
-  if ($error = error_get_last()) {
+  if (($error = error_get_last())) {
     // We have to build our own trace, well, at least we can try with the available information.
     $error["trace"] = [
       [ "function" => __FUNCTION__, "line" => __LINE__, "file" => __FILE__ ],
@@ -172,14 +172,9 @@ function delayed_register($class, $weight = 50, $method = "run") {
 }
 
 try {
-  // Instantiate new session object and try to resume any existing session.
-  $session = new \MovLib\Data\Session();
-
-  // Instantiate global i18n object with the current display language.
-  $i18n = new \MovLib\Data\I18n();
-
-  // Instantiate the presenter as set in the nginx route and try to render the presentation.
-  $presenter = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+  $session      = new \MovLib\Data\Session();
+  $i18n         = new \MovLib\Data\I18n();
+  $presenter    = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
   $presentation = (new $presenter())->getPresentation();
 }
 // A presentation can throw a redirect exception for different reasons. An error might have happended that needs the
@@ -191,7 +186,7 @@ try {
 // object oriented code.
 catch (\MovLib\Exception\RedirectException $e) {
   header("Location: {$e->route}", true, $e->status);
-  $title = [ 301 => "Moved Permanently", 302 => "Moved Temporarily", 303 => "See Other" ];
+  $title        = [ 301 => "Moved Permanently", 302 => "Moved Temporarily", 303 => "See Other" ];
   // @todo Do we really have to send this response ourself or is nginx handling this?
   $presentation = "<html><head><title>{$e->status} {$title[$e->status]}</title></head><body bgcolor=\"white\"><center><h1>{$e->status} {$title[$e->status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
 }
@@ -211,18 +206,18 @@ catch (\MovLib\Exception\UnauthorizedException $e) {
   http_response_code(401);
   header("WWW-Authenticate: MovLib location=\"{$i18n->r("/users/login")}\"");
 
-  $login = new \MovLib\Presentation\Users\Login();
+  $login          = new \MovLib\Presentation\Users\Login();
   $login->alerts .= $e->alert;
-  $presentation = $login->getPresentation();
+  $presentation   = $login->getPresentation();
 }
 // A presentation can throw a client exception for various client errors including "not found", "gone", "forbidden" and
 // "bad request". This type of exception has to stop the execution of the main application immediately and present an
 // error page to the user, which includes side effects. The delayed methods still have to be executed.
 catch (\MovLib\Exception\Client\AbstractClientException $e) {
   http_response_code($e->status);
-  $page = new MovLib\Presentation\Page($e->title);
+  $page          = new MovLib\Presentation\Page($e->title);
   $page->alerts .= $e->alert;
-  $presentation = $page->getPresentation();
+  $presentation  = $page->getPresentation();
 }
 // Because of the finally block many exception thrown at this point are not passed to the custom uncaught exception
 // handler we defined before. I don't have hard evidence that the finally block is the reason, but this problem first

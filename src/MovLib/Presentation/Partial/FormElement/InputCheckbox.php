@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Exception\ValidationException;
+
 /**
  * HTML input type checkbox form element.
  *
@@ -35,14 +37,15 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
    *
    * @var boolean
    */
-  public $value = false;
+  public $value;
 
   /**
    * @inheritdoc
    */
-  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
-    parent::__construct($id, $label, $attributes, $help, $helpPopup);
+  public function __construct($id, $label, array $attributes = null, $value = false) {
+    parent::__construct($id, $label, $attributes);
     $this->attributes["type"] = "checkbox";
+    $this->value              = $value;
     if (isset($_POST[$this->id])) {
       $this->value = $_POST[$this->id] == true;
     }
@@ -62,6 +65,10 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
    * @inheritdoc
    */
   public function validate() {
+    global $i18n;
+    if (in_array("required", $this->attributes) && $this->value === false) {
+      throw new ValidationException($i18n->t("The {0} checkbox is mandatory.", [ $this->placeholder($this->label) ]), self::E_MANDATORY);
+    }
     return $this;
   }
 

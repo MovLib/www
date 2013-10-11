@@ -15,43 +15,47 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Validation;
+namespace MovLib\Test\Presentation\Email\Users;
+
+use \MovLib\Presentation\Email\Users\Registration;
 
 /**
- * Validation interface.
- *
+ * @coversDefaultClass \MovLib\Presentation\Email\Users\Registration
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-interface InterfaceValidation {
+class RegistrationTest extends \PHPUnit_Framework_TestCase {
+
+  private function _testMailBody($method) {
+    $this->assertContains(
+      "{$_SERVER["SERVER"]}/users/registration?token=" . rawurlencode(base64_encode("phpunit@movlib.org")),
+      (new Registration("PHPUnit", "phpunit@movlib.org"))->init()->{"get{$method}"}()
+    );
+  }
 
   /**
-   * Get the validation classes last value that should be validated or has been validated (depends, if validate() was
-   * called or not).
-   *
-   * @return string
+   * @covers ::__construct
+   * @covers ::init
+   * @covers ::getHtmlBody
+   * @group Presentation
+   * @group Emails
    */
-  public function __toString();
+  public function testHtml() {
+    $this->_testMailBody("Html");
+  }
 
   /**
-   * Set the value that should be validated. This is important for input elements, so they can set their value without
-   * knowing the name of the property containing the value that should be validated.
-   *
-   * @return this
+   * @covers ::__construct
+   * @covers ::init
+   * @covers ::getPlainBody
+   * @group Presentation
+   * @group Emails
    */
-  public function set();
-
-  /**
-   * Validate the value.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return mixed
-   *   The valid value.
-   * @throws \MovLib\Exception\ValidationException
-   */
-  public function validate();
+  public function testPlain() {
+    $this->_testMailBody("Plain");
+  }
 
 }

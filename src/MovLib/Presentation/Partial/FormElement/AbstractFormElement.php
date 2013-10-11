@@ -32,6 +32,17 @@ use \MovLib\Presentation\Partial\Help;
 abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Mandatory error code for validation.
+   *
+   * @var int
+   */
+  const E_MANDATORY = 1;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -83,15 +94,11 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * @param string $id
    *   The form element's global identifier.
    */
-  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
+  public function __construct($id, $label, array $attributes = null) {
     $this->attributes             = $attributes;
     $this->id                     = $this->attributes["id"] = $this->attributes["name"] = $id;
     $this->attributes["tabindex"] = $this->getTabindex();
     $this->label                  = $label;
-    if ($help) {
-      $this->attributes["aria-describedby"] = "{$this->id}-help";
-      $this->help                           = new Help($help, $this->id, $helpPopup);
-    }
   }
 
   /**
@@ -123,18 +130,17 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Mark this form element as required.
+   * Set the help for this form element.
    *
-   * A form element that is marked as required will also fail during validation if the submitted value is empty.
-   * Browsers supporting this feature will prevent form submission if this element is empty. The attribute is ignored
-   * on input form elements of type <code>hidden</code>, <code>image</code>, <code>submit</code>, <code>reset</code>
-   * and <code>button</code>.
-   *
+   * @param string $text
+   *   The form element's translated help text, defaults to no help text.
+   * @param boolean $helpPopup [optional]
+   *   Whetever the help should be displayed as popup or not, defaults to display as popup.
    * @return this
    */
-  public function required() {
-    $this->attributes["aria-required"] = "true";
-    $this->attributes[]                = "required";
+  public function setHelp($text, $popup = true) {
+    $this->attributes["aria-describedby"] = "{$this->id}-help";
+    $this->help                           = new Help($text, $this->id, $popup);
     return $this;
   }
 

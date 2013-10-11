@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Data\Image\AbstractImage;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\ValidationException;
@@ -56,29 +57,6 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    */
   protected $image;
 
-  /**
-   * Maximum file size.
-   *
-   * The maximum size an image can have, currently set to 15 MB (value given is in Bytes).
-   *
-   * @var int
-   */
-  public $maximumFileSize;
-
-  /**
-   * The global minimum height for images.
-   *
-   * @var int
-   */
-  public $minimumHeight = 140;
-
-  /**
-   * The global minimum width for images.
-   *
-   * @var int
-   */
-  public $minimumWidth = 140;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -88,25 +66,32 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    *
    * @param string $id
    *   The form element's global unique identifier.
-   * @param \MovLib\Data\Image\AbstractImage $concreteImage
-   *   The abstract image instance that's responsible for this image.
    * @param string $label
    *   The label test.
+   * @param \MovLib\Data\Image\AbstractImage $concreteImage
+   *   The abstract image instance that's responsible for this image.
    * @param array $attributes [optional]
    *   Additional attributes.
    */
-  public function __construct($id, $concreteImage, $label, array $attributes = null) {
+  public function __construct($id, $label, $concreteImage, array $attributes = null) {
     global $i18n;
-    parent::__construct($id, $label, $attributes, $i18n->t(
-      "Image must be larger than {2}x{3} and less than {0} {1}. Allowed image types: JPG and PNG",
-      $this->formatBytes(ini_get("upload_max_filesize")) + [ 2 => $this->minimumWidth, 3 => $this->minimumHeight ]
-    ));
+    parent::__construct($id, $label, $attributes);
     $this->attributes["accept"]            = "image/jpeg,image/png";
-    $this->attributes["data-max-filesize"] = $this->maximumFileSize;
-    $this->attributes["data-min-height"]   = $this->minimumHeight;
-    $this->attributes["data-min-width"]    = $this->minimumWidth;
+    $this->attributes["data-max-filesize"] = ini_get("upload_max_filesize");
     $this->attributes["type"]              = "file";
     $this->image                           = $concreteImage;
+    if ($this->image->imageExists === true) {
+      $this->attributes["data-min-height"] = $this->image->imageHeight;
+      $this->attributes["data-min-width"]  = $this->image->imageWidth;
+    }
+    else {
+      $this->attributes["data-min-height"] = $GLOBALS["movlib"]["image_min_height"];
+      $this->attributes["data-min-width"]  = $GLOBALS["movlib"]["image_min_width"];
+    }
+    $helpMessageAttributes = $this->formatBytes($this->attributes["data-max-filesize"]);
+    $helpMessageAttributes[] = $this->attributes["data-min-width"];
+    $helpMessageAttributes[] = $this->attributes["data-min-height"];
+    $this->setHelp($i18n->t("Image must be larger than {2}x{3} and less than {0} {1}. Allowed image types: JPG and PNG", $helpMessageAttributes));
   }
 
   /**
@@ -116,7 +101,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     if ($this->image->imageExists === true) {
       return
         "<div class='row'>" .
-          "<div class='span span--1'>{$this->getImage($this->image, \MovLib\Data\Image\AbstractImage::IMAGE_STYLE_THUMBNAIL)}</div>" .
+          "<div class='span span--1'>{$this->getImage($this->image, AbstractImage::IMAGE_STYLE_THUMBNAIL)}</div>" .
           "<div class='span span--8'>{$this->help}<label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></div>" .
         "</div>"
       ;
@@ -134,6 +119,13 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   public function validate(){
     global $i18n;
 
+    if (empty($_FILES[$this->id])) {
+      if (in_array("required", $this->attributes)) {
+        throw new ValidationException($i18n->t("The “{0}” image field is mandatory.", [ $this->label ]), self::E_MANDATORY);
+      }
+      return $this;
+    }
+
     // Gather meta information about the uploaded image, getimagesize() will fail if this isn't a valid image.
     try {
       list($width, $height, $type) = getimagesize($_FILES[$this->id]["tmp_name"]);
@@ -146,8 +138,11 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     }
 
     // Check dimension constrains.
-    if ($height < $this->minimumHeight || $width < $this->minimumWidth) {
-      throw new ValidationException($i18n->t("The image is too small, it must be larger than {0}x{1} pixels.", [ $this->minimumWidth, $this->minimumHeight ]));
+    if ($height < $this->attributes["data-min-height"] || $width < $this->attributes["data-min-width"]) {
+      throw new ValidationException(
+        $i18n->t("The image is too small, it must be larger than {0}x{1} pixels.",
+        [ $this->attributes["data-min-height"], $this->attributes["data-min-width"] ]
+      ));
     }
 
     // An image should only be replaced with another image if the resolution is greater than the previous resolution.
