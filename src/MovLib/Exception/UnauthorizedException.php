@@ -33,7 +33,7 @@ class UnauthorizedException extends \MovLib\Exception\AbstractException {
   /**
    * The unauthorized exception's alert.
    *
-   * @var type
+   * @var \MovLib\Presentation\Partial\Alert
    */
   public $alert;
 
@@ -41,16 +41,21 @@ class UnauthorizedException extends \MovLib\Exception\AbstractException {
    * Instantiate new unauthorized exception.
    *
    * @param string $message [optional]
-   *   The message that should be displayed to the user. Please note that you cannot change the title of the alert!
+   *   The alert's translated message, defaults to <code>$i18n->t("Please use the form below to sign in or go to the
+   *   {0}registration page to sign up{1}."</code>
+   * @param string $title [optional]
+   *   The alert's translated title, defaults to <code>$i18n->t("You must be signed in to access this content.")</code>.
+   * @param string $severity [optional]
+   *   The alert's severity level, default to <code>Alert::SEVERITY_ERROR</code>.
    */
-  public function __construct($message = null, $title = null) {
+  public function __construct($message = null, $title = null, $severity = Alert::SEVERITY_ERROR) {
     global $i18n;
     parent::__construct("User has to authenticate to view this content.");
-    $this->alert           = new Alert($message ?: $i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [
-      "<a href='{$i18n->r("/user/register")}'>", "</a>"
-    ]));
-    $this->alert->title    = $title ?: $i18n->t("You must be signed in to access this content.");
-    $this->alert->severity = Alert::SEVERITY_ERROR;
+    $this->alert = new Alert(
+      $message ?: $i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/user/register")}'>", "</a>" ]),
+      $title   ?: $i18n->t("You must be signed in to access this content."),
+      $severity
+    );
   }
 
 }

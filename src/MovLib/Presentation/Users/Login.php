@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Users;
 
+use \MovLib\Data\User;
 use \MovLib\Exception\RedirectException;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UserException;
@@ -35,7 +36,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Login extends \MovLib\Presentation\Page {
+class Login extends \MovLib\Presentation\FormPage {
   use \MovLib\Presentation\Users\TraitUsers;
 
 
@@ -47,21 +48,14 @@ class Login extends \MovLib\Presentation\Page {
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
-  private $email;
-
-  /**
-   * The page's form.
-   *
-   * @var \MovLib\Presentation\Partial\Form
-   */
-  private $form;
+  protected $email;
 
   /**
    * The input password form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputPassword
    */
-  private $password;
+  protected $password;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -102,18 +96,12 @@ class Login extends \MovLib\Presentation\Page {
       $action             .= "?redirect_to={$_GET["redirect_to"]}";
     }
 
-    $this->email = new InputEmail("email", $i18n->t("Email Address"), [
-      "autofocus",
-      "placeholder" => $i18n->t("Enter your email address"),
-    ], "<a href='{$i18n->r("/users/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
-
-    $this->password = new InputPassword("password", $i18n->t("Password"), [
-      "placeholder" => $i18n->t("Enter your password"),
-    ]);
-
-    $this->form = new Form($this, [ $this->email, $this->password ]);
+    $this->email                      = new InputEmail();
+    $this->email->setHelp("<a href='{$i18n->r("/users/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
+    $this->password                   = new InputPassword();
+    $this->form                       = new Form($this, [ $this->email, $this->password ]);
     $this->form->attributes["action"] = $action;
-    $this->addClass("span span--6 offset--3", $this->form->attributes);
+    $this->form->attributes["class"]  = "span span--6 offset--3";
 
     $this->form->actionElements[] = new InputSubmit([
       "class" => "button--large button--success",
@@ -124,14 +112,17 @@ class Login extends \MovLib\Presentation\Page {
     // If the user requested to be signed out, do so.
     if ($session->isAuthenticated === true && $_SERVER["PATH_INFO"] == $routeLogout) {
       $session->destroy();
-      $alert           = new Alert($i18n->t("We hope to see you again soon."));
-      $alert->severity = Alert::SEVERITY_SUCCESS;
-      $alert->title    = $i18n->t("You’ve been signed out successfully.");
-      $this->alerts   .= $alert;
+      $this->alerts .= new Alert($i18n->t("We hope to see you again soon."), $i18n->t("You’ve been signed out successfully."), Alert::SEVERITY_SUCCESS);
     }
 
     // Ensure all views are using the correct path info to render themselves.
     $_SERVER["PATH_INFO"] = $routeLogin;
+
+    if (isset($GLOBALS["movlib"]["users-registration"])) {
+      unset($this->email->attributes[array_search("autofocus", $this->email->attributes)]);
+      $this->email->attributes[]    = "readonly";
+      $this->password->attributes[] = "autofocus";
+    }
   }
 
   /**
@@ -153,30 +144,20 @@ class Login extends \MovLib\Presentation\Page {
    * @throws \MovLib\Exception\RedirectException
    * @throws \MovLib\Exception\SessionException
    */
-  public function validate() {
+  public function validate(array $errors = null) {
     global $i18n, $session;
-    try {
-      $session->authenticate($this->email->value, $_POST[$this->password->id]);
-
-      // Ensure that the user know's that sign in succeded.
-      $success           = new Alert($i18n->t("Login was successful."));
-      $success->title    = $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]);
-      $success->severity = Alert::SEVERITY_SUCCESS;
-      $session->alerts  .= $success;
-
-      // Redirect the user to the requested redirect destination and if none was set to the personalized dashboard.
-      throw new RedirectException(!empty($_GET["redirect_to"]) ? rawurldecode($_GET["redirect_to"]) : $i18n->r("/my"));
-    }
-    // Never tell the person who's trying to sing in which value was wrong. Both attributes are considered a secret and
-    // should never be exposed by our application itself.
-    catch (SessionException $e) {
-      $error           = new Alert($i18n->t("We either don’t know the email address, or the password was wrong."));
-      $error->severity = Alert::SEVERITY_ERROR;
-      $this->alerts   .= $error;
-    }
-    // Account has been deactivated!
-    catch (UserException $e) {
-      throw new RedirectException($i18n->r("/profile/deactivated"));
+    if ($this->checkErrors($errors) === false) {
+      try {
+        $session->authenticate($this->email->value, $this->password->value);
+        $session->alerts .= new Alert($i18n->t("Login was successful."), $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]), Alert::SEVERITY_SUCCESS);
+        throw new RedirectException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
+      }
+      catch (SessionException $e) {
+        $this->checkErrors($i18n->t("We either don’t know the email address, or the password was wrong."));
+      }
+      catch (UserException $e) {
+        throw new RedirectException($i18n->r("/profile/deactivated"));
+      }
     }
     return $this;
   }

@@ -36,13 +36,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
-   * Length of the authentication token.
-   *
-   * @var int
-   */
-  const AUTHENTICATION_TOKEN_LENGTH = 64;
-
-  /**
    * Avatar style for span 2 elements.
    *
    * Width and height of this image will be 140 pixels.
@@ -73,22 +66,11 @@ class User extends \MovLib\Data\Image\AbstractImage {
   const FROM_EMAIL = "email";
 
   /**
-   * Maximum length a username can have.
-   *
-   * This length must be the same as it is defined in the database table. We redefine this here in order to validate the
-   * length of the chosen username before attempting to insert it into our database. Be sure to count the strings length
-   * with <code>mb_strlen()</code> because the length is defined per character and not per byte.
+   * Maximum attempts for actions like registration, login, etc..
    *
    * @var int
    */
-  const MAX_LENGTH_NAME = 40;
-
-  /**
-   * Minimum length for a password.
-   *
-   * @var int
-   */
-  const MIN_LENGTH_PASSWORD = 6;
+  const MAXIMUM_ATTEMPTS = 5;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -156,20 +138,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @var string
    */
   protected $imageDirectory = "user";
-
-  /**
-   * The avatar's minimum height.
-   *
-   * @var int
-   */
-  public $imageMinHeight;
-
-  /**
-   * The avatar's minimum width.
-   *
-   * @var int
-   */
-  public $imageMinWidth;
 
   /**
    * The user's last login (UNIX timestamp).
@@ -327,25 +295,21 @@ class User extends \MovLib\Data\Image\AbstractImage {
   /**
    * Check if this email address is already in use.
    *
-   * @param string $email
-   *   The email address to check.
    * @return boolean
    *   <code>TRUE</code> if this email address is already in use, otherwise <code>FALSE</code>.
    */
-  public function checkEmail($email) {
-    return !empty($this->selectAssoc("SELECT `user_id` FROM `users` WHERE `email` = ?", "s", [ $email ]));
+  public function checkEmail() {
+    return !empty($this->selectAssoc("SELECT `user_id` FROM `users` WHERE `email` = ?", "s", [ $this->email ]));
   }
 
   /**
    * Check if this name is already in use.
    *
-   * @param string $name
-   *   The name to check.
    * @return boolean
    *   <code>TRUE</code> if this name is already in use, otherwise <code>FALSE</code>.
    */
-  public function checkName($name) {
-    return !empty($this->selectAssoc("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $name ]));
+  public function checkName() {
+    return !empty($this->selectAssoc("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $this->name ]));
   }
 
   /**
@@ -510,13 +474,71 @@ class User extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
+   * Get the <var>$rawPassword</var> hash.
+   *
+   * @param string $rawPassword
+   *   The user supplied raw password.
+   * @return string
+   *   The <var>$rawPassword</var> hash.
+   */
+  protected function passwordHash($rawPassword) {
+    return password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
+  }
+
+  /**
    * Prepare registration data.
    *
+   * A user exception is thrown if too many registration attempts were made with this email address in the past 24 hours.
+   *
+   * @param string $rawPassword
+   *   The user supplied raw password.
    * @return string
    *   The key of the temporary table record.
+   * @throws \MovLib\Exception\UserException
    */
-  public function prepareRegistration() {
-    return $this->tmpSet([ "name" => $this->name, "email" => $this->email ]);
+  public function prepareRegistration($rawPassword) {
+    $password    = $this->passwordHash($rawPassword);
+    $key         = "registration-{$this->email}";
+    $result      = $this->selectAssoc("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
+    if (!empty($result)) {
+      $data             = unserialize($result["data"]);
+      $data["password"] = $password;
+      if ($result["created"] > 0) {
+        $data["attempts"] = 0;
+      }
+      elseif ($data["attempts"] > self::MAXIMUM_ATTEMPTS) {
+        throw new UserException("Too many registration attempts from this email address.");
+      }
+      $data["attempts"]++;
+      $this->query("UPDATE `tmp` SET `data` = ? WHERE `key` = ?", "ss", [ serialize($data), $key ]);
+    }
+    else {
+      $this->query("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)", "sss", [ serialize([
+        "attempts" => 1,
+        "email"    => $this->email,
+        "name"     => $this->name,
+        "password" => $password,
+      ]), $key, self::TMP_TTL_DAILY ]);
+    }
+    return $this;
+  }
+
+  /**
+   * Get previously stored registration data.
+   *
+   * @return null|array
+   *   Array containing the registration data, or <code>NULL</code> if no data was found.
+   * @throws \MovLib\Exception\UserException
+   */
+  public function getRegistrationData() {
+    $result = $this->selectAssoc("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ?", "s", [ "registration-{$this->email}" ]);
+    if (empty($result) || $result["created"] > 0) {
+      throw new UserException("No data found for this user.");
+    }
+    $data        = unserialize($result["data"]);
+    $this->name  = $data["name"];
+    $this->email = $data["email"];
+    return $data;
   }
 
   /**
@@ -542,25 +564,22 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * want to display the password settings page within the user's account directly.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param string $name
-   *   The valid unique user's name.
-   * @param string $email
-   *   The valid unique user's email address.
-   * @param string $rawPassword
-   *   The unhashed user's password.
+   * @param string $password
+   *   The user's hashed password.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function register($name, $email, $rawPassword) {
+  public function register($password) {
     global $i18n;
-    $this->query(
-      "INSERT INTO `users` (`avatar_name`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES (?, '', ?, ?, ?, ?)",
-      "sssss",
-      [ $this->filename($name), $email, $name, password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]), $i18n->languageCode ]
-    );
-    $this->email = $email;
-    $this->id    = $this->insertId;
-    $this->name  = $name;
+    $this
+      ->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ "registration-{$this->email}" ])
+      ->query(
+        "INSERT INTO `users` (`avatar_name`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES (?, '', ?, ?, ?, ?)",
+        "sssss",
+        [ $this->filename($this->name), $this->email, $this->name, $password, $i18n->languageCode ]
+      )
+    ;
+    $this->id = $this->insertId;
     return $this;
   }
 
@@ -588,30 +607,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function updatePassword($rawPassword) {
-    return $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]), $this->id ]);
-  }
-
-  /**
-   * Helper method to validate a user submitted authentication token and retrieve the associated data from the temporary
-   * database table.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @param null $errors
-   *   The errors variable used to collect validation error messages.
-   * @return null|array
-   *   <code>NULL</code> is returned if no data could be retrieved from the database, otherwise an associative array
-   *   with the data from the temporary database table. Please check implementation to check the anatomy of the returned
-   *   array.
-   */
-  public function validateToken(&$errors) {
-    global $i18n;
-    if (empty($_GET["token"]) || strlen($_GET["token"]) !== self::AUTHENTICATION_TOKEN_LENGTH) {
-      $errors[] = $i18n->t("The authentication token is invalid, please go back to the mail we sent you and copy the whole link.");
-    }
-    elseif (($data = $this->tmpGetAndDelete($_GET["token"]))) {
-      return $data;
-    }
-    $errors[] = $i18n->t("Your authentication token has expired, please fill out the form again.");
+    return $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $this->passwordHash($rawPassword), $this->id ]);
   }
 
 }
