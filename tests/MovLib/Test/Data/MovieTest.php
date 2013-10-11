@@ -50,7 +50,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    *
    * @var int
    */
-  public $movieId = 3;
+  public $movieId = 4;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic methods
@@ -83,6 +83,11 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     // Set created timestamp and synopsis for testing.
     $db = new Database();
     $created = time();
+    $synopsisBackup = $db->select(
+      "SELECT COLUMN_GET(`dyn_synopses`, ? AS BINARY) AS `synopsis` FROM `movies` WHERE `movie_id` = ?",
+      "sd",
+      [ $i18n->languageCode, $this->movieId ]
+    )[0]["synopsis"];
     $synopsis = "PHPUnit synopsis";
     $db->query(
       "UPDATE `movies` SET `created` = FROM_UNIXTIME(?), `dyn_synopses` = COLUMN_ADD(`dyn_synopses`, ?, ?) WHERE `movie_id` = ?",
@@ -91,15 +96,16 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     );
     $movieProperties = [
       "id"            => $this->movieId,
-      "originalTitle" => "Léon",
+      "originalTitle" => "Big Buck Bunny",
       "rating"        => 0,
       "meanRating"    => 0,
       "votes"         => 0,
       "deleted"       => false,
-      "year"          => 1994,
-      "runtime"       => 110,
+      "year"          => 2008,
+      "runtime"       => 10,
       "rank"          => null,
       "synopsis"      => $synopsis,
+      "website"       => "http://www.bigbuckbunny.org/",
       "created"       => $created,
     ];
 
@@ -120,6 +126,12 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     foreach ($movieProperties as $k => $v) {
       $this->assertEquals($v, $movie->{$k});
     }
+
+    $db->query(
+      "UPDATE `movies` SET `created` = FROM_UNIXTIME(?), `dyn_synopses` = COLUMN_ADD(`dyn_synopses`, ?, ?) WHERE `movie_id` = ?",
+      "issd",
+      [ $created, $i18n->languageCode, $synopsisBackup, $this->movieId ]
+    );
   }
 
   /**
@@ -131,12 +143,22 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * Checks if the given getter returns an empty array.
+   *
+   * @param string $getterName
+   *   The method under test.
+   */
+  private function _testEmptyResultArray($getterName) {
+    $result = (new Movie(null, [ "id" => -1 ]))->{"get{$getterName}"}();
+    $this->assertEmpty($result);
+    $this->assertTrue(is_array($result), "{$getterName} not returned as array!");
+  }
+
+  /**
    * @covers ::getAwards
    */
   public function testGetAwardsEmpty() {
-    $awards = (new Movie(1))->getAwards();
-    $this->assertEmpty($awards);
-    $this->assertTrue(is_array($awards), "Awards not returned as array!");
+    $this->_testEmptyResultArray("Awards");
   }
 
   /**
@@ -189,9 +211,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers ::getCountries
    */
   public function testGetCountriesEmpty() {
-    $countries = (new Movie(null, [ "id" => -1 ]))->getCountries();
-    $this->assertEmpty($countries);
-    $this->assertTrue(is_array($countries), "Countries not returned as array!");
+    $this->_testEmptyResultArray("Countries");
   }
 
   /**
@@ -276,6 +296,9 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    */
   public function testGetDisplayTitleWithData() {
     global $i18n;
+    $i18nBackup = $i18n;
+    $i18n = new I18n("de_AT");
+
     $dbTitle = (new Database())->select(
       "SELECT
         `title`
@@ -290,15 +313,15 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
     $this->movie->originalTitle = "PHPUnit";
     $this->assertEquals($dbTitle, $this->movie->getDisplayTitle());
+
+    $i18n = $i18nBackup;
   }
 
   /**
    * @covers ::getGenres
    */
   public function testGetGenresEmpty() {
-    $genres = (new Movie(null, [ "id" => -1 ]))->getGenres();
-    $this->assertEmpty($genres);
-    $this->assertTrue(is_array($genres), "Genres not returned as array!");
+    $this->_testEmptyResultArray("Genres");
   }
 
   /**
@@ -338,6 +361,237 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
       $this->assertEquals($dbGenres[$i], $genres[$i]);
     }
 
+    $i18n = $i18nBackup;
+  }
+
+  /**
+   * @covers ::getLanguages
+   */
+  public function testGetLanguagesEmpty() {
+    $this->_testEmptyResultArray("Languages");
+  }
+
+  /**
+   * @global \MovLib\Data\I18n $i18n
+   * @covers ::getLanguages
+   * @covers \MovLib\Data\I18n::getCollator
+   */
+  public function testGetLanguagesWithData() {
+    global $i18n;
+    $i18nBackup = $i18n;
+    $i18n = new I18n("de_AT");
+
+    $dbLanguages = (new Database())->select(
+      "SELECT
+        `l`.`language_id` AS `id`,
+        `l`.`iso_alpha-2` AS `code`,
+        COLUMN_GET(`l`.`dyn_translations`, ? AS CHAR(255)) AS `name`
+      FROM `movies_languages` `ml`
+        INNER JOIN `languages` `l`
+        ON `ml`.`language_id` = `l`.`language_id`
+      WHERE `ml`.`movie_id` = ?",
+      "sd",
+      [ $i18n->languageCode, $this->movie->id ]
+    );
+    $c = count($dbLanguages);
+    $tmpLanguages = [];
+    for ($i = 0; $i < $c; ++$i) {
+      $tmpLanguages[$dbLanguages[$i]["name"]] = $dbLanguages[$i];
+    }
+    (new Collator("de_AT"))->ksort($tmpLanguages);
+    $dbLanguages = array_values($tmpLanguages);
+
+    $languages = $this->movie->getLanguages();
+    $this->assertCount($c, $languages);
+    for ($i = 0; $i < $c; ++$i) {
+      $this->assertEquals($dbLanguages[$i], $languages[$i]);
+    }
+
+    $i18n = $i18nBackup;
+  }
+
+  /**
+   * @todo Test when implemented.
+   * @covers ::getRelationships
+   */
+  public function testGetRelationshipsEmpty() {
+
+  }
+
+  /**
+   * @todo Test when implemented.
+   * @covers ::getRelationships
+   */
+  public function testGetRelationshipsWithData() {
+
+  }
+
+  /**
+   * @covers ::getStyles
+   */
+  public function testGetStylesEmpty() {
+    $this->_testEmptyResultArray("Styles");
+  }
+
+  /**
+   * @global \MovLib\Data\I18n $i18n
+   * @covers ::getStyles
+   * @covers \MovLib\Data\I18n::getCollator
+   */
+  public function testGetStylesWithData() {
+    global $i18n;
+    $i18nBackup = $i18n;
+    $i18n = new I18n("de_AT");
+
+    $dbStyles = (new Database())->select(
+      "SELECT
+        `s`.`style_id` AS `id`,
+        `s`.`name` AS `name`,
+        COLUMN_GET(`s`.`dyn_names`, ? AS CHAR(255)) AS `name_localized`
+      FROM `movies_styles` `ms`
+        INNER JOIN `styles` `s`
+        ON `ms`.`style_id` = `s`.`style_id`
+      WHERE `ms`.`movie_id` = ?",
+      "sd",
+      [ $i18n->languageCode, $this->movie->id ]
+    );
+    $c = count($dbStyles);
+    $this->assertGreaterThan(0, $c);
+    $tmpStyles = [];
+    for ($i = 0; $i < $c; ++$i) {
+      $dbStyles[$i]["name"] = $dbStyles[$i]["name_localized"] ?: $dbStyles[$i]["name"];
+      $tmpStyles[$dbStyles[$i]["name"]] = $dbStyles[$i];
+    }
+    (new Collator("de_AT"))->ksort($tmpStyles);
+    $dbStyles = array_values($tmpStyles);
+
+    $styles = $this->movie->getStyles();
+    $this->assertCount($c, $styles);
+    for ($i = 0; $i < $c; ++$i) {
+      $this->assertEquals($dbStyles[$i], $styles[$i]);
+    }
+
+    $i18n = $i18nBackup;
+  }
+
+  /**
+   * @covers ::getTagLines
+   */
+  public function testGetTagLinesEmpty() {
+    $this->_testEmptyResultArray("TagLines");
+  }
+
+  /**
+   * @global \MovLib\Data\I18n $i18n
+   * @covers ::getTagLines
+   * @covers \MovLib\Data\I18n::getCollator
+   */
+  public function testGetTagLinesWithData() {
+    global $i18n;
+    $i18nBackup = $i18n;
+    $i18n = new I18n("de_AT");
+    $db = new Database();
+
+    // Insert a test taglines to verify sort order.
+    $db->query(
+      "INSERT INTO `movies_taglines`
+          (`movie_id`, `tagline`, `language_id`, `dyn_comments`)
+        VALUES
+          (?, 'a PHPUnit', 42, ''),
+          (?, 'Z PHPUnit', 42, '')",
+      "dd",
+      [ $this->movie->id, $this->movie->id ]);
+
+    $dbTagLines = $db->select(
+      "SELECT
+        `tagline`,
+        `language_id` AS `language`
+      FROM `movies_taglines`
+      WHERE `movie_id` = ?",
+      "d",
+      [ $this->movie->id ]
+    );
+    $c = count($dbTagLines);
+    $this->assertGreaterThan(0, $c);
+    $tmpTagLines = [];
+    $i18nLanguages = $i18n->getLanguages();
+    for ($i = 0; $i < $c; ++$i) {
+      $dbTagLines[$i]["language"] = $i18nLanguages[$dbTagLines[$i]["language"]];
+      $tmpTagLines["{$dbTagLines[$i]["tagline"]}{$dbTagLines[$i]["language"]["id"]}"] = $dbTagLines[$i];
+    }
+    (new Collator("de_AT"))->ksort($tmpTagLines);
+    $dbTagLines = array_values($tmpTagLines);
+
+    $taglines = $this->movie->getTagLines();
+    $this->assertCount($c, $taglines);
+    for ($i = 0; $i < $c; ++$i) {
+      $this->assertEquals($dbTagLines[$i], $taglines[$i]);
+    }
+
+    // Delete the test taglines again.
+    $db->query("DELETE FROM `movies_taglines` WHERE `movie_id` = ? AND `tagline` LIKE '%PHPUnit%'", "d", [ $this->movie->id ]);
+    $i18n = $i18nBackup;
+  }
+
+  /**
+   * @covers ::getTitles
+   */
+  public function testGetTitlesEmpty() {
+    $this->_testEmptyResultArray("Titles");
+  }
+
+  /**
+   * @global \MovLib\Data\I18n $i18n
+   * @covers ::getTitles
+   * @covers \MovLib\Data\I18n::getCollator
+   */
+  public function testGetTitlesWithData() {
+    global $i18n;
+    $i18nBackup = $i18n;
+    $i18n = new I18n("de_AT");
+    $db = new Database();
+
+    // Insert a test titles to verify sort order.
+    $db->query(
+      "INSERT INTO `movies_titles`
+          (`movie_id`, `title`, `language_id`, `dyn_comments`)
+        VALUES
+          (?, 'a PHPUnit', 42, ''),
+          (?, 'Z PHPUnit', 42, '')",
+      "dd",
+      [ $this->movie->id, $this->movie->id ]);
+
+    $dbTitles = $db->select(
+      "SELECT
+        `title`,
+        COLUMN_GET(`dyn_comments`, ? AS BINARY) AS `comment`,
+        `is_display_title`,
+        `language_id` AS `language`
+      FROM `movies_titles`
+      WHERE `movie_id` = ?",
+      "sd",
+      [ $i18n->languageCode, $this->movie->id ]
+    );
+    $c = count($dbTitles);
+    $this->assertGreaterThan(0, $c);
+    $tmpTitles = [];
+    $i18nLanguages = $i18n->getLanguages();
+    for ($i = 0; $i < $c; ++$i) {
+      $dbTitles[$i]["language"] = $i18nLanguages[$dbTitles[$i]["language"]];
+      settype($dbTitles[$i]["is_display_title"], "boolean");
+      $tmpTitles["{$dbTitles[$i]["title"]}{$dbTitles[$i]["language"]["id"]}"] = $dbTitles[$i];
+    }
+    (new Collator("de_AT"))->ksort($tmpTitles);
+    $dbTitles = array_values($tmpTitles);
+
+    $titles = $this->movie->getTitles();
+    $this->assertCount($c, $titles);
+    for ($i = 0; $i < $c; ++$i) {
+      $this->assertEquals($dbTitles[$i], $titles[$i]);
+    }
+
+    // Delete the test titles again.
+    $db->query("DELETE FROM `movies_titles` WHERE `movie_id` = ? AND `title` LIKE '%PHPUnit%'", "d", [ $this->movie->id ]);
     $i18n = $i18nBackup;
   }
 
