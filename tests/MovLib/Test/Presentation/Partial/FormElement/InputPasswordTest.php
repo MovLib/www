@@ -32,14 +32,14 @@ class InputPasswordTest extends \PHPUnit_Framework_TestCase {
 
   public static function dataProviderWeakPasswords() {
     return [
-      "test",
-      "testtest",
-      "TEST",
-      "TESTTEST",
-      "test1234",
-      "TEST1234",
-      "iamaverylongpasswordbutnotstrongenough",
-      "IAmAVeryLongPasswordButNotStrongEnough",
+      [ "test" ],
+      [ "testtest" ],
+      [ "TEST" ],
+      [ "TESTTEST" ],
+      [ "test1234" ],
+      [ "TEST1234" ],
+      [ "iamaverylongpasswordbutnotstrongenough" ],
+      [ "IAmAVeryLongPasswordButNotStrongEnough" ],
     ];
   }
 
