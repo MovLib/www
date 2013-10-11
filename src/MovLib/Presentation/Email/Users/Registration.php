@@ -73,7 +73,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
    * @return this
    */
   public function init() {
-    $this->token = base64_encode($this->user->prepareRegistration());
+    $this->token = $this->user->prepareRegistration();
     return $this;
   }
 

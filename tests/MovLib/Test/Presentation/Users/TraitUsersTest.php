@@ -15,28 +15,25 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\View\ImageStyle;
+namespace MovLib\Test\Presentation\Users;
 
 /**
- * The image style for image resizes.
- *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @coversDefaultClass \MovLib\Presentation\Users\TraitUsers
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ResizeImageStyle extends AbstractImageStyle {
+class TraitUsersTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * @inheritdoc
+   * @covers ::getBreadcrumbs
+   * @group Presentation
    */
-  public function __construct($dimensions) {
-    parent::__construct($dimensions);
-  }
-
-  protected function getImageMagickOptions() {
-    return "-filter 'Lanczos' -quality 75 -strip -resize '{$this->dimensions}>'";
+  public function testGetBreadcrumbs() {
+    $traitUsers = $this->getObjectForTrait("\\MovLib\\Presentation\\Users\\TraitUsers");
+    $this->assertEquals([[ "/users", "Users" ]], get_reflection_method($traitUsers, "getBreadcrumbs")->invoke($traitUsers));
   }
 
 }

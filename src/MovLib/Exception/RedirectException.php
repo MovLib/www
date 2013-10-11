@@ -56,7 +56,7 @@ class RedirectException extends \RuntimeException {
   public function __construct($route, $status = 302, $previous = null) {
     parent::__construct("Redirecting user to {$route} with status {$status}.", E_NOTICE, $previous);
     if (strpos($route, "http") === false) {
-      $route = "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$route}";
+      $route = "{$_SERVER["SERVER"]}{$route}";
     }
     $this->route = $route;
     $this->status = $status;

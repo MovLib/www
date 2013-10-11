@@ -18,9 +18,9 @@
 namespace MovLib\Test\Presentation;
 
 use \MovLib\Presentation\Page;
-use \ReflectionMethod;
 
 /**
+ * @coversDefaultClass \MovLib\Presentation\Page
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -32,25 +32,14 @@ class PageTest extends \PHPUnit_Framework_TestCase {
   /** @var \MovLib\Presentation\Page */
   public $page;
 
-  public static function dataProviderNormalizeLineFeeds() {
-    return [
-      [ "\n", "\n" ],
-      [ "\n", "\r" ],
-      [ "\n", "\r\n" ],
-      [ "mov\nlib", "mov\nlib" ],
-      [ "mov\nlib", "mov\rlib" ],
-      [ "mov\nlib", "mov\r\nlib" ],
-    ];
-  }
-
   public function setUp() {
     $this->page = new Page("PHPUnit");
   }
 
   /**
-   * @covers \MovLib\Presentation\Page::__construct
-   * @covers \MovLib\Presentation\Page::init
-   * @covers \MovLib\Presentation\AbstractPage::init
+   * @covers ::__construct
+   * @covers ::init
+   * @group Presentation
    */
   public function testConstruct() {
     $this->assertEquals([ "page" ], get_reflection_property($this->page, "namespace")->getValue($this->page));
@@ -61,102 +50,13 @@ class PageTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\AbstractPage::a
-   */
-//  public function testA() {
-//
-//  }
-
-  /**
-   * @covers \MovLib\Presentation\AbstractPage::addClass
-   */
-//  public function testAddClass() {
-//
-//  }
-
-  /**
-   * @covers \MovLib\Presentation\Page::checkErrors
+   * @covers ::checkErrors
+   * @group Presentation
    */
   public function checkErrors() {
     $this->assertFalse($this->page->checkErrors(null));
     $this->assertTrue($this->page->checkErrors([ "<phpunit>" ]));
     $this->assertContains("<phpunit>", $this->page->alerts);
-  }
-
-  /**
-   * @covers \MovLib\Presentation\AbstractPage::formatBytes
-   */
-  public function formatBytes() {
-    $rm = get_reflection_method($this->page, "formatBytes");
-    $this->assertEquals([ 1, "B" ], $rm->invokeArgs($this->page, 1));
-    $this->assertEquals([ 10, "B" ], $rm->invokeArgs($this->page, 10));
-    $this->assertEquals([ 100, "B" ], $rm->invokeArgs($this->page, 100));
-    $this->assertEquals([ 1, "KB" ], $rm->invokeArgs($this->page, 1024));
-    $this->assertEquals([ 10, "KB" ], $rm->invokeArgs($this->page, 10240));
-    $this->assertEquals([ 100, "KB" ], $rm->invokeArgs($this->page, 102400));
-    $this->assertEquals([ 1, "MB" ], $rm->invokeArgs($this->page, 1024000));
-    $this->assertEquals([ 10, "MB" ], $rm->invokeArgs($this->page, 10240000));
-    $this->assertEquals([ 100, "MB" ], $rm->invokeArgs($this->page, 102400000));
-    $this->assertEquals([ 1, "GB" ], $rm->invokeArgs($this->page, 1024000000));
-    $this->assertEquals([ 10, "GB" ], $rm->invokeArgs($this->page, 10240000000));
-    $this->assertEquals([ 100, "GB" ], $rm->invokeArgs($this->page, 102400000000));
-    $this->assertEquals([ 1, "TB" ], $rm->invokeArgs($this->page, 1024000000000));
-    $this->assertEquals([ 10, "TB" ], $rm->invokeArgs($this->page, 10240000000000));
-    $this->assertEquals([ 100, "TB" ], $rm->invokeArgs($this->page, 102400000000000));
-  }
-
-  /**
-   * @covers \MovLib\Presentation\AbstractPage::checkPlain
-   */
-  public function testCheckPlain() {
-    $rm = new ReflectionMethod($this->page, "checkPlain");
-    $rm->setAccessible(true);
-    $this->assertEquals(
-      "test&quot;string&quot;with&lt;html&gt;embedded&lt;script&gt;reserved&apos;&apos;tags&apos;&apos;",
-      $rm->invoke($this->page, "test\"string\"with<html>embedded<script>reserved''tags''")
-    );
-  }
-
-  /**
-   * @covers \MovLib\Presentation\AbstractPage::expandTagAttributes
-   */
-//  public function testExpandTagAttributes() {
-//
-//  }
-
-  /**
-   * @covers \MovLib\Presentation\AbstractPage::getImage
-   */
-//  public function testGetImage() {
-//
-//  }
-
-  /**
-   * @covers \MovLib\Presentation\AbstractPage::getTabindex
-   */
-//  public function testGetTabindex() {
-//    $rm = new ReflectionMethod($this->page, "getTabindex");
-//    $rm->setAccessible(true);
-//    $this->assertEquals(1, $rm->invoke($this->page));
-//  }
-
-  /**
-   * @covers \MovLib\Presentation\AbstractPage::normalizeLineFeeds
-   * @dataProvider dataProviderNormalizeLineFeeds
-   */
-  public function testNormalizeLineFeeds($expected, $testString) {
-    $rm = new ReflectionMethod($this->page, "normalizeLineFeeds");
-    $rm->setAccessible(true);
-    $this->assertEquals($expected, $rm->invoke($this->page, $testString));
-  }
-
-  /**
-   * @covers \MovLib\Presentation\AbstractPage::placeholder
-   */
-  public function testPlaceholder() {
-    $rm = new ReflectionMethod($this->page, "placeholder");
-    $rm->setAccessible(true);
-    $this->assertEquals("<em class='placeholder'>Placeholder &lt;Test&gt;</em>", $rm->invoke($this->page, "Placeholder <Test>"));
   }
 
 }

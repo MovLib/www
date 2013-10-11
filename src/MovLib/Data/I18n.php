@@ -295,11 +295,6 @@ class I18n extends \MovLib\Data\Database {
       );
       $result = $this->select($query);
       foreach ($result as $c) {
-        $c = [
-          self::KEY_ID   => $c[self::KEY_ID],
-          self::KEY_CODE => $c[self::KEY_CODE],
-          self::KEY_NAME => $c[self::KEY_NAME],
-        ];
         $this->countries[self::KEY_ID][$c[self::KEY_ID]] = $c;
         $this->countries[self::KEY_CODE][$c[self::KEY_CODE]] = $c;
         $this->countries[self::KEY_NAME][$c[self::KEY_NAME]] = $c;
@@ -350,11 +345,6 @@ class I18n extends \MovLib\Data\Database {
         self::KEY_ID
       );
       foreach ($this->select($query) as $l) {
-        $l = [
-          self::KEY_ID   => $l[self::KEY_ID],
-          self::KEY_CODE => $l[self::KEY_CODE],
-          self::KEY_NAME => $l[self::KEY_NAME],
-        ];
         $this->languages[self::KEY_ID][$l[self::KEY_ID]] = $l;
         $this->languages[self::KEY_CODE][$l[self::KEY_CODE]] = $l;
         $this->languages[self::KEY_NAME][$l[self::KEY_NAME]] = $l;

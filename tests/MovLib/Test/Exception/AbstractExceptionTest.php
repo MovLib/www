@@ -15,34 +15,28 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presenter;
-
-use \MovLib\Presenter\AbstractPresenter;
-use \MovLib\View\HTML\HomeView;
+namespace MovLib\Test\Exception;
 
 /**
- * Present the home view.
- *
+ * @coversDefaultClass \MovLib\Exception\AbstractException
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HomePresenter extends AbstractPresenter {
+class AbstractExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * Instantiate new home presenter instance.
+   * @covers ::__construct
+   * @group Exceptions
    */
-  public function __construct() {
-    new HomeView($this);
+  public function testConstruct() {
+    $stub = $this->getMockForAbstractClass("\\MovLib\\Exception\\AbstractException", [ "message", new \Exception(), 42 ]);
+    $this->assertInstanceOf("\\RuntimeException", $stub);
+    $this->assertEquals("message", $stub->getMessage());
+    $this->assertEquals(42, $stub->getCode());
+    $this->assertInstanceOf("\\Exception", $stub->getPrevious());
   }
-
-  /**
-   * The home view's breadcrumb is special and constructed in the view itself.
-   *
-   * @see \MovLib\View\HTML\HomeView::getBreadcrumb()
-   */
-  public function getBreadcrumb() {}
 
 }

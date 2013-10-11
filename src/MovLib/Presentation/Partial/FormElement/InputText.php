@@ -40,9 +40,10 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
   /**
    * @inheritdoc
    */
-  protected $attributes = [
-    "type" => "text",
-  ];
+  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
+    parent::__construct($id, $label, $attributes, $help, $helpPopup);
+    $this->attributes["type"] = "text";
+  }
 
   /**
    * @inheritdoc

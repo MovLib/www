@@ -117,7 +117,7 @@ class Login extends \MovLib\Presentation\Page {
 
     $this->form->actionElements[] = new InputSubmit([
       "class" => "button--large button--success",
-      "title" => $i18n->t("Click here to sign in after you filled out all fields."),
+      "title" => $i18n->t("Click here to sign in after you filled out all fields"),
       "value" => $i18n->t("Sign In"),
     ]);
 
@@ -165,7 +165,7 @@ class Login extends \MovLib\Presentation\Page {
       $session->alerts  .= $success;
 
       // Redirect the user to the requested redirect destination and if none was set to the personalized dashboard.
-      throw new RedirectException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
+      throw new RedirectException(!empty($_GET["redirect_to"]) ? rawurldecode($_GET["redirect_to"]) : $i18n->r("/my"));
     }
     // Never tell the person who's trying to sing in which value was wrong. Both attributes are considered a secret and
     // should never be exposed by our application itself.

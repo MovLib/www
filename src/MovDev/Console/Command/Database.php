@@ -192,8 +192,6 @@ class Database extends \MovLib\Console\Command\Database {
     $this->setIO($input, $output);
     $options = $this->input->getOptions();
     if ($options[self::OPTION_ALL]) {
-      // @link http://dev.mysql.com/doc/refman/5.6/en/implicit-commit.html
-      $this->askConfirmation("Drop schema and delete all data?");
       try {
         $this->write("Importing schema ...");
         if (($schema = file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/db/movlib.sql")) === false) {

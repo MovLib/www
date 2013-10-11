@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Oct 11, 2013 at 01:27 PM
+-- Generation Time: Oct 11, 2013 at 01:28 PM
 -- Server version: 10.0.4-MariaDB-1~wheezy-log
 -- PHP Version: 5.5.4
 
@@ -23,21 +23,11 @@ SET time_zone = "+00:00";
 --
 
 --
--- Dumping data for table `styles`
+-- Dumping data for table `movies_styles`
 --
 
-INSERT INTO `styles` (`style_id`, `name`, `description`, `dyn_names`, `dyn_descriptions`) VALUES
-(1, 'Film noir', '', '', ''),
-(2, 'Color film noir', '', '', ''),
-(3, 'Neo-noir', '', '', ''),
-(4, 'Cinema verite', '', '', ''),
-(5, 'Direct Cinema', '', '', ''),
-(6, 'Documentary mode', '', '', ''),
-(7, 'Fly on the wall', '', '', ''),
-(8, 'Tex Murphy', '', '', ''),
-(9, 'Ghost in the Shell films', '', '', ''),
-(10, 'Terminator films', '', '', ''),
-(11, '3D Animation', '', '\0\0\0\0\0de!3D Animation', '');
+INSERT INTO `movies_styles` (`movie_id`, `style_id`) VALUES
+(4, 11);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

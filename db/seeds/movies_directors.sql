@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.0.6
+-- version 4.0.8
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 16, 2013 at 12:19 PM
+-- Generation Time: Oct 11, 2013 at 01:45 PM
 -- Server version: 10.0.4-MariaDB-1~wheezy-log
--- PHP Version: 5.5.2
+-- PHP Version: 5.5.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -28,7 +28,8 @@ SET time_zone = "+00:00";
 
 INSERT INTO `movies_directors` (`movie_id`, `person_id`) VALUES
 (2, 5),
-(3, 1);
+(3, 1),
+(4, 8);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

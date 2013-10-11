@@ -37,15 +37,6 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
 
   /**
-   * @inheritdoc
-   */
-  protected $attributes = [
-    "aria-expanded" => "true",
-    "aria-required" => "false", // @todo Do we need support for radio groups without default values?
-    "role"          => "radiogroup",
-  ];
-
-  /**
    * The radios in the group.
    *
    * @var array
@@ -81,7 +72,11 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    *   Whetever the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
   public function __construct($id, $legend, array $choices, $value, $help = null, $helpPopup = true) {
-    parent::__construct($id, $legend, null, $help, $helpPopup);
+    parent::__construct($id, $legend, [
+      "aria-expanded" => "true",
+      "aria-required" => "false", // @todo Do we need support for radio groups without default values?
+      "role"          => "radiogroup",
+    ], $help, $helpPopup);
     $this->choices = $choices;
     $this->value   = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }

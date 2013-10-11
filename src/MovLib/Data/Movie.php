@@ -108,6 +108,13 @@ class Movie extends \MovLib\Data\Database {
   public $synopsis;
 
   /**
+   * The movie's official website URL.
+   *
+   * @var string
+   */
+  public $website;
+
+  /**
    * The movie's created timestamp.
    *
    * @var int
@@ -117,93 +124,6 @@ class Movie extends \MovLib\Data\Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties from other tables
 
-
-  /**
-   * Numeric array containing the movie's award information as associative array.
-   *
-   * @var array
-   */
-  private $awards;
-
-  /**
-   * Numeric array containing the movie's cast information as associative array.
-   *
-   * @var array
-   */
-  private $cast;
-
-  /**
-   * Numeric array containing the movie's crew information as associative array.
-   *
-   * @var array
-   */
-  private $crew;
-
-  /**
-   * Sorted numeric array containing the movie's countries as associative arrays with ID, ISO code and localized country
-   * name.
-   *
-   * @var array
-   */
-  private $countries;
-
-  /**
-   * Numeric array containing the movie's director information as associative array.
-   *
-   * @var array
-   */
-  private $directors;
-
-  /**
-   * Sorted numeric array containing the movie's genres with the ID and localized name of the genre as associative array.
-   *
-   * @var array
-   */
-  private $genres;
-
-  /**
-   * Numeric array containing the movie's language information as associative array.
-   *
-   * @var array
-   */
-  private $languages;
-
-  /**
-   * Numeric array containing the movie's link information as associative array.
-   *
-   * @var array
-   */
-  private $links;
-
-  /**
-   * Sorted numeric array containing the movie's lobby card information as <code>\MovLib\Data\MovieImage</code>
-   * objects.
-   *
-   * @var array
-   */
-  private $lobbyCards;
-
-  /**
-   * The movie's display poster.
-   *
-   * @var \MovLib\Data\MoviePoster
-   */
-  private $displayPoster;
-
-  /**
-   * Sorted numeric array containing the movie's photos information as <code>\MovLib\Data\MovieImage</code>
-   * objects.
-   *
-   * @var array
-   */
-  private $photos;
-
-  /**
-   * The movie posters.
-   *
-   * @var \MovLib\Data\MovieImages
-   */
-  private $posters;
 
   /**
    * Associative array containing movie's relationships to other movies.
@@ -225,13 +145,6 @@ class Movie extends \MovLib\Data\Database {
    * @var array
    */
   private $taglines;
-
-  /**
-   * The movie's display title.
-   *
-   * @var string
-   */
-  private $displayTitle;
 
   /**
    * Numeric array containing the movie's title information as associative array.
@@ -274,6 +187,7 @@ class Movie extends \MovLib\Data\Database {
           `runtime`,
           `rank`,
           COLUMN_GET(`dyn_synopses`, '{$i18n->languageCode}' AS BINARY) AS `synopsis`,
+          `website`,
           UNIX_TIMESTAMP(`created`) AS `created`
         FROM `movies`
         WHERE `movie_id` = ?
@@ -303,13 +217,14 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getAwards() {
     global $i18n;
-    $awards = $this->select(
+    $dbAwards = $this->select(
       "SELECT
         a.`award_id` AS `id`,
         a.`name` AS `name`,
         COLUMN_GET(a.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`,
-        ma.`year` AS `year`,
-        `won`
+        `ma`.`award_count` AS `award_count`,
+        `ma`.`year` AS `year`,
+        `ma`.`won` AS `won`
       FROM `movies_awards` ma
         INNER JOIN `awards` a
           ON ma.`award_id` = a.`award_id`
@@ -318,23 +233,30 @@ class Movie extends \MovLib\Data\Database {
       "d",
       [ $this->id ]
     );
-    $c = count($awards);
-    $tmpAwards = [];
-    for ($i = 0; $i < $c; ++$i) {
-      settype($awards[$i]["won"], "boolean");
-      $awards[$i]["name"] = empty($awards[$i]["name_localized"]) ? $awards[$i]["name"] : $awards[$i]["name_localized"];
+    if (($c = count($dbAwards)) > 0) {
+      $awardSort = [];
+      for ($i = 0; $i < $c; ++$i) {
+        settype($dbAwards[$i]["won"], "boolean");
+        $dbAwards[$i]["name"] = empty($dbAwards[$i]["name_localized"]) ? $dbAwards[$i]["name"] : $dbAwards[$i]["name_localized"];
+        $awardSort["{$dbAwards[$i]["name"]}{$dbAwards[$i]["award_count"]}"] = $dbAwards[$i];
+      }
+      $i18n->getCollator()->ksort($awardSort);
+      return array_values($awardSort);
     }
-    return $awards;
+    return [];
   }
 
   /**
    * Get the movie's cast.
    *
+   * @todo Move to \MovLib\Data\Persons
+   * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Numeric array containing the cast information as associative array.
    */
   public function getCast() {
-    $cast = $this->select(
+    global $i18n;
+    $dbCast = $this->select(
       "SELECT
         p.`person_id` AS `id`,
         p.`name` AS `name`,
@@ -348,56 +270,60 @@ class Movie extends \MovLib\Data\Database {
       "d",
       [ $this->id ]
     );
-    $c = count($this->cast);
+    $c = count($dbCast);
+    $castSort = [];
     for ($i = 0; $i < $c; ++$i){
-      settype($this->cast[$i]["deleted"], "boolean");
+      settype($dbCast[$i]["deleted"], "boolean");
+      $castSort["{$dbCast[$i]["name"]}{$dbCast[$i]["id"]}"] = $dbCast[$i];
     }
-    return $cast;
+    $i18n->getCollator()->ksort($castSort);
+    return array_values($castSort);
   }
 
   /**
    * Get the movie's crew.
    *
+   * @todo Move to \MovLib\Data\Crew
    * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Numeric array containing the crew information as associative array.
    */
   public function getCrew() {
     global $i18n;
-    if (!$this->crew) {
-      $this->crew = $this->select(
+      $dbCrew = $this->select(
         "SELECT
-          mc.`crew_id` AS `crew_id`,
-          p.`person_id` AS `person_id`,
-          p.`name` AS `person_name`,
-          p.`deleted` AS `person_deleted`,
-          c.`company_id` AS `company_id`,
-          c.`name` AS `company_name`,
-          c.`deleted` AS `company_deleted`,
-          j.`job_id` AS `job_id`,
-          j.`title` AS `job_title`,
-          COLUMN_GET(j.`dyn_titles`, '{$i18n->languageCode}' AS BINARY) AS `job_title_localized`
+          `mc`.`crew_id` AS `crew_id`,
+          `p`.`person_id` AS `person_id`,
+          `p`.`name` AS `person_name`,
+          `p`.`deleted` AS `person_deleted`,
+          `c`.`company_id` AS `company_id`,
+          `c`.`name` AS `company_name`,
+          `c`.`deleted` AS `company_deleted`,
+          `j`.`job_id` AS `job_id`,
+          `j`.`title` AS `job_title`,
+          COLUMN_GET(`j`.`dyn_titles`, ? AS BINARY) AS `job_title_localized`
         FROM `movies_crew` mc
-          INNER JOIN `jobs` j
-            ON mc.`job_id` = j.`job_id`
-          LEFT JOIN `persons` p
-            ON mc.`person_id` = p.`person_id`
-          LEFT JOIN `companies` c
-            ON mc.`company_id` = c.`company_id`
-        WHERE mc.`movie_id` = ?
-          ORDER BY `personName` ASC, `companyName` ASC",
-        "d",
-        [ $this->id ]
+          INNER JOIN `jobs` `j`
+            ON `mc`.`job_id` = `j`.`job_id`
+          LEFT JOIN `persons` `p`
+            ON `mc`.`person_id` = `p`.`person_id`
+          LEFT JOIN `companies` `c`
+            ON `mc`.`company_id` = `c`.`company_id`
+        WHERE `mc`.`movie_id` = ?
+          ORDER BY `person_name` ASC, `company_name` ASC",
+        "sd",
+        [ $i18n->languageCode, $this->id ]
       );
-      $c = count($this->crew);
+      $c = count($dbCrew);
+      $crewSort = [];
       for ($i = 0; $i < $c; ++$i){
-        $this->crew[$i]["job_title"] = $this->crew[$i]["job_title_localized"] ?: $this->crew[$i]["job_title"];
-        unset($this->crew[$i]["job_title_localized"]);
-        settype($this->crew[$i]["personDeleted"], "deleted");
-        settype($this->crew[$i]["companyDeleted"], "deleted");
+        $dbCrew[$i]["job_title"] = $dbCrew[$i]["job_title_localized"] ?: $dbCrew[$i]["job_title"];
+        settype($dbCrew[$i]["person_deleted"], "boolean");
+        settype($dbCrew[$i]["company_deleted"], "boolean");
+        $crewSort["{$dbCrew[$i]["job_title"]}{$dbCrew[$i]["job_id"]}"] = $dbCrew[$i];
       }
-    }
-    return $this->crew;
+      $i18n->getCollator()->ksort($crewSort);
+      return array_values($crewSort);
   }
 
   /**
@@ -409,62 +335,56 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getCountries() {
     global $i18n;
-    if (!$this->countries) {
-      $this->countries = [];
-      $result = $this->select("SELECT `country_id` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ]);
-      $c = count($result);
-      if ($c > 0) {
-        $i18nCountries = $i18n->getCountries();
-        $tmpCountries = [];
-        for ($i = 0; $i < $c; ++$i) {
-          $tmpCountries[ $result[$i]["country_id"] ] = $i18nCountries[ $result[$i]["country_id"] ]["name"];
-        }
-        $i18n->getCollator()->asort($tmpCountries);
-        foreach ($tmpCountries as $id => $name) {
-          $this->countries[] = $i18nCountries[$id];
-        }
+    $countryIds = $this->select("SELECT `country_id` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ]);
+    if (($c = count($countryIds)) > 0) {
+      $i18nCountries = $i18n->getCountries();
+      $countrySort = [];
+      for ($i = 0; $i < $c; ++$i) {
+        $countrySort[ $i18nCountries[ $countryIds[$i]["country_id"] ]["name"] ] = $i18nCountries[ $countryIds[$i]["country_id"] ];
       }
+      $i18n->getCollator()->ksort($countrySort);
+      return array_values($countrySort);
     }
-    return $this->countries;
+    else {
+      return [];
+    }
   }
 
   /**
    * Get the movie's directors.
    *
+   * @todo Move to \MovLib\Data\Persons
    * @return array
    *   Numeric array containing the director information as associative array.
    */
   public function getDirectors() {
-    if ($this->directors === null) {
-      $directorsData = $this->select(
-        "SELECT
-          p.`person_id` AS `id`,
-          p.`name` AS `name`,
-          p.`deleted` AS `deleted`,
-          pp.`image_id`,
-          pp.`filename` AS `filename`,
-          pp.`ext` AS `ext`
-        FROM `movies_directors` md
-          INNER JOIN `persons` p
-            ON md.`person_id` = p.`person_id`
-          LEFT JOIN `persons_photos` pp
-            ON p.`person_id` = pp.`person_id`
-        WHERE md.`movie_id` = ?
-          ORDER BY `name` ASC, pp.`upvotes` DESC",
-        "d",
-        [$this->id]
-      );
-      $count = count($directorsData);
-      $usedIds = [];
-      for ($i = 0; $i < $count; ++$i) {
-        if (!in_array($directorsData[$i]["id"], $usedIds)) {
-          settype($directorsData[$i]["deleted"], "boolean");
-          $this->directors[] = $directorsData[$i];
-          $usedIds[] = $directorsData[$i]["id"];
-        }
+    $directorsData = $this->select(
+      "SELECT
+        p.`person_id` AS `id`,
+        p.`name` AS `name`,
+        p.`deleted` AS `deleted`,
+        pp.`image_id`,
+        pp.`filename` AS `filename`,
+        pp.`ext` AS `ext`
+      FROM `movies_directors` md
+        INNER JOIN `persons` p
+          ON md.`person_id` = p.`person_id`
+        LEFT JOIN `persons_photos` pp
+          ON p.`person_id` = pp.`person_id`
+      WHERE md.`movie_id` = ?
+        ORDER BY `name` ASC, pp.`upvotes` DESC",
+      "d",
+      [$this->id]
+    );
+    $count = count($directorsData);
+    $usedIds = [];
+    for ($i = 0; $i < $count; ++$i) {
+      if (!in_array($directorsData[$i]["id"], $usedIds)) {
+        settype($directorsData[$i]["deleted"], "boolean");
+        $this->directors[] = $directorsData[$i];
+        $usedIds[] = $directorsData[$i]["id"];
       }
     }
-    return $this->directors;
   }
 
   /**
@@ -476,34 +396,26 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getGenres() {
     global $i18n;
-    if (!$this->genres) {
-      $this->genres = [];
-      $result = $this->select(
-        "SELECT
-          `g`.`genre_id`,
-          `g`.`name`,
-          COLUMN_GET(`g`.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`
-        FROM `movies_genres` `mg`
-          INNER JOIN `genres` `g`
-            ON `mg`.`genre_id` = `g`.`genre_id`
-        WHERE `mg`.`movie_id` = ?",
-        "d", [ $this->id ]
-      );
-      if (($c = count($result))) {
-        $tmpGenres = [];
-        for ($i = 0; $i < $c; ++$i) {
-          if (!empty($result[$i]["name_localized"])) {
-            $result[$i]["name"] = $result[$i]["name_localized"];
-          }
-          $tmpGenres[$result[$i]["genre_id"]] = $result[$i]["name"];
-        }
-        $i18n->getCollator()->asort($tmpGenres);
-        foreach ($tmpGenres as $id => $name) {
-          $this->genres[] = [ "id" => $id, "name" => $name ];
-        }
+    $dbGenres = $this->select(
+      "SELECT
+        `g`.`genre_id`,
+        `g`.`name`,
+        COLUMN_GET(`g`.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`
+      FROM `movies_genres` `mg`
+        INNER JOIN `genres` `g`
+          ON `mg`.`genre_id` = `g`.`genre_id`
+      WHERE `mg`.`movie_id` = ?",
+      "d", [ $this->id ]
+    );
+    if (($c = count($dbGenres))) {
+      $tmpGenres = [];
+      for ($i = 0; $i < $c; ++$i) {
+        $dbGenres[$i]["name"] = $dbGenres[$i]["name_localized"] ?: $dbGenres[$i]["name"];
+        $tmpGenres[$dbGenres[$i]["name"]] = $dbGenres[$i];
       }
+      return array_values($tmpGenres);
     }
-    return $this->genres;
+    return [];
   }
 
   /**
@@ -515,53 +427,17 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getLanguages() {
     global $i18n;
-    if (!$this->languages) {
-      $this->languages = [];
-      $result = $this->select("SELECT `language_id` AS `id` FROM `movies_languages` WHERE `movie_id` = ?", "d", [ $this->id ]);
-      if (($c = count($result))) {
-        $i18nLanguages = $i18n->getLanguages();
-        $tmpLanguages = [];
-        for ($i = 0; $i < $c; ++$i) {
-          $tmpLanguages[ $result[$i]["language_id"] ] = $i18nLanguages[ $result[$i]["language_id"] ]["name"];
-        }
-        $i18n->getCollator()->asort($tmpLanguages);
-        foreach ($tmpLanguages as $id => $name) {
-          $this->languages[] = $i18nLanguages[$id];
-        }
+    $languageIds = $this->select("SELECT `language_id` AS `id` FROM `movies_languages` WHERE `movie_id` = ?", "d", [ $this->id ]);
+    if (($c = count($languageIds))) {
+      $i18nLanguages = $i18n->getLanguages();
+      $tmpLanguages = [];
+      for ($i = 0; $i < $c; ++$i) {
+        $tmpLanguages[ $i18nLanguages[$languageIds[$i]["id"]]["name"] ] = $i18nLanguages[ $languageIds[$i]["id"] ];
       }
+      $i18n->getCollator()->ksort($tmpLanguages);
+      return array_values($tmpLanguages);
     }
-    return $this->languages;
-  }
-
-  /**
-   * Get the movie's links.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return array
-   *   Numeric array containing the link information as associative array.
-   */
-  public function getLinks () {
-    global $i18n;
-    if (!$this->links) {
-      $this->links = $this->select(
-        "SELECT
-          `title` AS `title`,
-          `text` AS `text`,
-          `url` AS `URL`,
-          `language_id` AS `language`
-        FROM `movies_links`
-        WHERE `movie_id` = ?",
-        "d",
-        [ $this->id ]
-      );
-      if (($c = count($this->links))) {
-        $i18nLanguages = $i18n->getLanguages();
-        for ($i = 0; $i < $c; ++$i) {
-          $this->links[$i]["language"] = $i18nLanguages[ $this->links[$i]["language"] ];
-        }
-      }
-    }
-    return $this->links;
+    return [];
   }
 
   /**
@@ -573,11 +449,9 @@ class Movie extends \MovLib\Data\Database {
    *   The movie's display poster.
    */
   public function getDisplayPoster($movieTitle = "") {
-    if (!$this->displayPoster) {
-      $posterId = $this->select("SELECT `image_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY `upvotes` DESC LIMIT 1", "di", [ $this->id, MovieImage::IMAGETYPE_POSTER ]);
-      $this->displayPoster = new MovieImage($this->id, MovieImage::IMAGETYPE_POSTER, empty($posterId[0]["id"]) ? null : $posterId[0]["id"], $movieTitle);
-    }
-    return $this->displayPoster;
+    $posterId = $this->select("SELECT `image_id` AS `id` FROM `movies_images` WHERE `movie_id` = ? AND `type` = ? ORDER BY `upvotes` DESC LIMIT 1", "di", [ $this->id, MovieImage::IMAGETYPE_POSTER ]);
+    $displayPoster = new MovieImage($this->id, MovieImage::IMAGETYPE_POSTER, empty($posterId[0]["id"]) ? null : $posterId[0]["id"], $movieTitle);
+    return $displayPoster;
   }
 
   /**
@@ -604,35 +478,27 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getStyles() {
     global $i18n;
-    if (!$this->styles) {
-      $this->styles = [];
-      $result = $this->select(
-        "SELECT
-          `s`.`style_id`,
-          `s`.`name`,
-          COLUMN_GET(`s`.`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name_localized`
-        FROM `movies_styles` `ms`
-          INNER JOIN `styles` `s` ON `ms`.`style_id` = `s`.`style_id`
-        WHERE `ms`.`movie_id` = ?",
-        "d",
-        [ $this->id ]
-      );
-      if (($c = count($result))) {
-        $tmpStyles = [];
-        for ($i = 0; $i < $c; ++$i) {
-          if (!empty($result[$i]["name_localized"])) {
-            $result[$i]["name"] = $result[$i]["name_localized"];
-          }
-          unset($result[$i]["name_localized"]);
-          $tmpStyles[ $result[$i]["style_id"] ] = $result[$i]["name"];
-        }
-        $i18n->getCollator()->asort($tmpStyles);
-        foreach ($tmpStyles as $id => $name) {
-          $this->styles[] = [ "id" => $id, "name" => $name];
-        }
+    $dbStyles = $this->select(
+      "SELECT
+        `s`.`style_id` AS `id`,
+        `s`.`name` AS `name`,
+        COLUMN_GET(`s`.`dyn_names`, ? AS BINARY) AS `name_localized`
+      FROM `movies_styles` `ms`
+        INNER JOIN `styles` `s` ON `ms`.`style_id` = `s`.`style_id`
+      WHERE `ms`.`movie_id` = ?",
+      "sd",
+      [ $i18n->languageCode, $this->id ]
+    );
+    if (($c = count($dbStyles))) {
+      $tmpStyles = [];
+      for ($i = 0; $i < $c; ++$i) {
+        $dbStyles[$i]["name"] = $dbStyles[$i]["name_localized"] ?: $dbStyles[$i]["name"];
+        $tmpStyles[ $dbStyles[$i]["name"] ] = $dbStyles[$i];
       }
+      $i18n->getCollator()->ksort($tmpStyles);
+      return array_values($tmpStyles);
     }
-    return $this->styles;
+    return [];
   }
 
   /**
@@ -644,24 +510,26 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getTagLines() {
     global $i18n;
-    if (!$this->taglines) {
-      $this->taglines = $this->select(
-        "SELECT
-          `tagline` AS `tagline`,
-          `language_id` AS `language`
-        FROM `movies_taglines`
-        WHERE `movie_id` = ?",
-        "d",
-        [ $this->id ]
-      );
-      if (($c = count($this->taglines))) {
-        $i18nLanguages = $i18n->getLanguages();
-        for ($i = 0; $i < $c; ++$i) {
-          $this->taglines[$i]["language"] = $i18nLanguages[ $this->taglines[$i]["language"] ];
-        }
+    $dbTagLines = $this->select(
+      "SELECT
+        `tagline` AS `tagline`,
+        `language_id` AS `language`
+      FROM `movies_taglines`
+      WHERE `movie_id` = ?",
+      "d",
+      [ $this->id ]
+    );
+    if (($c = count($dbTagLines))) {
+      $i18nLanguages = $i18n->getLanguages();
+      $tagLinesSort = [];
+      for ($i = 0; $i < $c; ++$i) {
+        $dbTagLines[$i]["language"] = $i18nLanguages[ $dbTagLines[$i]["language"] ];
+        $tagLinesSort["{$dbTagLines[$i]["tagline"]}{$dbTagLines[$i]["language"]["id"]}"] = $dbTagLines[$i];
       }
+      $i18n->getCollator()->ksort($tagLinesSort);
+      return array_values($tagLinesSort);
     }
-    return $this->taglines;
+    return [];
   }
 
   /**
@@ -673,14 +541,14 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getDisplayTitle() {
     global $i18n;
-    if (!$this->displayTitle) {
-      $displayTitle = $this->select(
-        "SELECT `title` FROM `movies_titles` WHERE `movie_id` = ? AND is_display_title = true AND `language_id` = ? ORDER BY `title` ASC LIMIT 1",
-        "di", [ $this->id, $i18n->getLanguages(I18n::KEY_CODE)[$i18n->languageCode][I18n::KEY_ID] ]
-      );
-      $this->displayTitle = empty($displayTitle[0]["title"]) ? $this->originalTitle : $displayTitle[0]["title"];
+    $displayTitle = $this->select(
+      "SELECT `title` FROM `movies_titles` WHERE `movie_id` = ? AND is_display_title = true AND `language_id` = ? ORDER BY `title` ASC LIMIT 1",
+      "di", [ $this->id, $i18n->getLanguages(I18n::KEY_CODE)[$i18n->languageCode][I18n::KEY_ID] ]
+    );
+    if (empty($displayTitle)) {
+      return $this->originalTitle;
     }
-    return $this->displayTitle;
+    return $displayTitle[0]["title"];
   }
 
   /**
@@ -692,28 +560,28 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getTitles() {
     global $i18n;
-    if (!$this->titles) {
-      $this->titles = $this->select(
-        "SELECT `title` AS `title`,
-          COLUMN_GET(`dyn_comments`, 'en' AS BINARY) AS `comment`,
-          COLUMN_GET(`dyn_comments`, '{$i18n->languageCode}' AS BINARY) AS `commentLocalized`,
-          `is_display_title` AS isDisplayTitle,
-          `language_id` AS `language`
-        FROM `movies_titles`
-        WHERE `movie_id` = ?
-          ORDER BY `title` ASC",
-        "d",
-        [ $this->id ]
-      );
-      if (($c = count($this->titles))){
-        $i18nLanguages = $i18n->getLanguages();
-        for ($i = 0; $i < $c; ++$i) {
-          $this->titles[$i]["language"] = $i18nLanguages[ $this->titles[$i]["language"] ];
-          settype($this->titles[$i]["isDisplayTitle"], "boolean");
-        }
+    $dbTitles = $this->select(
+      "SELECT `title` AS `title`,
+        COLUMN_GET(`dyn_comments`, ? AS BINARY) AS `comment`,
+        `is_display_title`,
+        `language_id` AS `language`
+      FROM `movies_titles`
+      WHERE `movie_id` = ?",
+      "sd",
+      [ $i18n->languageCode, $this->id ]
+    );
+    if (($c = count($dbTitles))){
+      $i18nLanguages = $i18n->getLanguages();
+      $titlesSort = [];
+      for ($i = 0; $i < $c; ++$i) {
+        $dbTitles[$i]["language"] = $i18nLanguages[ $dbTitles[$i]["language"] ];
+        settype($dbTitles[$i]["is_display_title"], "boolean");
+        $titlesSort["{$dbTitles[$i]["title"]}{$dbTitles[$i]["language"]["id"]}"] = $dbTitles[$i];
       }
+      $i18n->getCollator()->ksort($titlesSort);
+      return array_values($titlesSort);
     }
-    return $this->titles;
+    return [];
   }
 
 }

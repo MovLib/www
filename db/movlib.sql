@@ -21,6 +21,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
   `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime in minutes.' ,
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.' ,
   `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.' ,
+  `website` TINYTEXT NULL COMMENT 'The movie\'s official website URL.' ,
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this movie was created.' ,
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.' ,
   PRIMARY KEY (`movie_id`) ,
@@ -145,7 +146,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `system_language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).' ,
   `avatar_name` VARCHAR(40) NOT NULL COMMENT 'The avatar’s file name.' ,
   `avatar_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The avatar’s file extension.' ,
-  `avatar_changed` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The avatar’s last change timestamp.' ,
+  `avatar_changed` TIMESTAMP NULL DEFAULT NULL COMMENT 'The avatar’s last change timestamp.' ,
   `birthday` DATE NULL COMMENT 'The user\'s date of birth.' ,
   `country_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.' ,
   `real_name` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.' ,
@@ -408,6 +409,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.' ,
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.' ,
   `roles` BLOB NULL COMMENT 'The names of the role the person played in the movie.' ,
+  `weight` INT NULL COMMENT 'The weight (display order) of the movie\'s cast.' ,
   PRIMARY KEY (`movie_id`, `person_id`) ,
   INDEX `fk_movies_cast_movies` (`movie_id` ASC) ,
   INDEX `fk_movies_cast_persons` (`person_id` ASC) ,
@@ -546,7 +548,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`tmp` (
   `key` VARCHAR(255) NOT NULL COMMENT 'The record’s unique key.' ,
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The record’s creation timestamp.' ,
+  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The record’s creation timestamp.' ,
   `data` BLOB NOT NULL COMMENT 'The record’s serialized data.' ,
   `ttl` TINYTEXT NOT NULL COMMENT 'The record’s time to life.' ,
   PRIMARY KEY (`key`) )
@@ -672,33 +674,6 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`relationship_types` (
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The relationship type\'s description translations.' ,
   PRIMARY KEY (`relationship_type_id`) ,
   UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`movies_links`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`movies_links` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID.' ,
-  `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID.' ,
-  `title` VARCHAR(100) NULL COMMENT 'The link\'s title attribute.' ,
-  `text` VARCHAR(100) NOT NULL COMMENT 'The link\'s display text.' ,
-  `url` VARCHAR(255) NOT NULL COMMENT 'The link\'s URL target' ,
-  INDEX `fk_movies_links_languages` (`language_id` ASC) ,
-  INDEX `fk_movies_links_movies` (`movie_id` ASC) ,
-  CONSTRAINT `fk_movies_links_movies`
-    FOREIGN KEY (`movie_id` )
-    REFERENCES `movlib`.`movies` (`movie_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_links_languages`
-    FOREIGN KEY (`language_id` )
-    REFERENCES `movlib`.`languages` (`language_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;

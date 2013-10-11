@@ -15,55 +15,30 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Test\Exception;
 
-namespace MovLib\Presenter;
-
-use \MovLib\View\HTML\Error\ExceptionView;
+use \MovLib\Exception\RedirectException;
 
 /**
- * Present an exception to the user.
- *
- * @todo This presenter has to be extend to work for API requestes as well.
+ * @coversDefaultClass \MovLib\Exception\RedirectException
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ExceptionPresenter {
+class RedirectExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   * The current view.
-   *
-   * @var \MovLibe\View\HTML\Error\ExceptionView
+   * @covers ::__construct
+   * @group Exceptions
    */
-  public $view;
-
-  /**
-   * Instantiate new exception presentation.
-   *
-   * @param \Exception $exception
-   *   Any exception that extends PHP's base exception class.
-   */
-  public function __construct($exception) {
-    new ExceptionView($this, $exception);
-  }
-
-  /**
-   * Any error view never has a breadcrumb, we need to implement this to ensure that our interface is equal to the
-   * interface of the abstract presenter, as this method is automatically called.
-   *
-   * @return array
-   */
-  public function getBreadcrumb() {}
-
-  /**
-   * Get the presentation of this presenter.
-   *
-   * @return string
-   */
-  public function __toString() {
-    return $this->view->__toString();
+  public function testConstruct() {
+    $redirectException = new RedirectException("/phpunit", 301);
+    $this->assertInstanceOf("\\RuntimeException", $redirectException);
+    $this->assertEquals("Redirecting user to /phpunit with status 301.", $redirectException->getMessage());
+    $this->assertEquals("{$_SERVER["SERVER"]}/phpunit", $redirectException->route);
+    $this->assertEquals(301, $redirectException->status);
   }
 
 }

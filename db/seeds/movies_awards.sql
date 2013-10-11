@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.0.6
+-- version 4.0.8
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 16, 2013 at 12:19 PM
+-- Generation Time: Oct 11, 2013 at 01:17 PM
 -- Server version: 10.0.4-MariaDB-1~wheezy-log
--- PHP Version: 5.5.2
+-- PHP Version: 5.5.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -73,7 +73,9 @@ INSERT INTO `movies_awards` (`movie_id`, `award_count`, `award_id`, `award_categ
 (3, 7, 3, 5, 1, NULL, 1995, 0),
 (3, 8, 3, 6, NULL, NULL, 1995, 0),
 (3, 9, 3, 7, NULL, NULL, 1995, 0),
-(3, 10, 4, 1, NULL, NULL, 1995, 0);
+(3, 10, 4, 1, NULL, NULL, 1995, 0),
+(4, 1, 27, 1, NULL, NULL, 2008, 0),
+(4, 2, 27, 2, NULL, NULL, 2008, 0);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

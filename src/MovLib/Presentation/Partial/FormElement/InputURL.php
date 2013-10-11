@@ -47,21 +47,19 @@ class InputURL extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
   /**
    * @inheritdoc
    */
-  protected $attributes = [
-    "data-allow-external"     => false,
-    "data-check-reachability" => false,
-    "pattern"                 => URL::PATTERN,
-    "placeholder"             => "http(s)://",
-    "type"                    => "url",
-  ];
-
-  /**
-   * @inheritdoc
-   */
-  public function __construct($id, $label, $attributes = null, $help = null, $helpPopup = true) {
+  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
     global $i18n;
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
-    $this->attributes["title"] = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
+    $this->attributes["pattern"]     = URL::PATTERN;
+    $this->attributes["placeholder"] = "http(s)://";
+    $this->attributes["title"]       = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
+    $this->attributes["type"]        = "url";
+    if (!isset($this->attributes["data-allow-external"])) {
+      $this->attributes["data-allow-external"] = false;
+    }
+    if (!isset($this->attributes["data-check-reachability"])) {
+      $this->attributes["data-check-reachability"] = false;
+    }
   }
 
   /**
