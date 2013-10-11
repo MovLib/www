@@ -45,7 +45,7 @@ class FormPageTest extends \PHPUnit_Framework_TestCase {
   public function testStringErrors() {
     $formPage = new FormPage("PHPUnit");
     $this->assertTrue(get_reflection_method($formPage, "checkErrors")->invokeArgs($formPage, [ "msg" ]));
-    $this->assertContains("msg", $formPage->getPresentation());
+    $this->assertContains("msg", $formPage->alerts);
   }
 
   /**
@@ -55,7 +55,7 @@ class FormPageTest extends \PHPUnit_Framework_TestCase {
   public function testArrayErrors() {
     $formPage = new FormPage("PHPUnit");
     $this->assertTrue(get_reflection_method($formPage, "checkErrors")->invokeArgs($formPage, [[ "assoc" => "msg1", "msg2" ]]));
-    $this->assertContains("msg1<br>msg2", $formPage->getPresentation());
+    $this->assertContains("msg1<br>msg2", $formPage->alerts);
   }
 
   /**
