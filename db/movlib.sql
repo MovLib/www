@@ -409,6 +409,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.' ,
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.' ,
   `roles` BLOB NULL COMMENT 'The names of the role the person played in the movie.' ,
+  `weight` INT NULL COMMENT 'The weight (display order) of the movie\'s cast.' ,
   PRIMARY KEY (`movie_id`, `person_id`) ,
   INDEX `fk_movies_cast_movies` (`movie_id` ASC) ,
   INDEX `fk_movies_cast_persons` (`person_id` ASC) ,
