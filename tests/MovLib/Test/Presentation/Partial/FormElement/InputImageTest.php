@@ -56,9 +56,9 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
   public function testToStringImageExists() {
     $concreteImage = new User(User::FROM_ID, 1);
     $inputImage    = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
-    $this->assertRegExp("/<img[a-z0-9=' ]+>/", $inputImage);
+    $this->assertRegExp("/<img[a-z0-9=' \.\?\/:]+>/", $inputImage);
     $this->assertContains("<label for='phpunit'>PHPUnit</label>", $inputImage);
-    $this->assertRegExp("/<input[a-z0-9=' ]+>/", $inputImage);
+    $this->assertRegExp("/<input[a-z0-9=' \/,-]+>/", $inputImage);
   }
 
   /**
@@ -67,11 +67,11 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    */
   public function testToStringNoImage() {
     $concreteImage = new User(User::FROM_ID, 1);
-    $inputImage    = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
     $concreteImage->imageExists = false;
+    $inputImage    = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
     $this->assertNotContains("<img", $inputImage);
     $this->assertContains("<label for='phpunit'>PHPUnit</label>", $inputImage);
-    $this->assertRegExp("/<input[a-z0-9=' ]+>/", $inputImage);
+    $this->assertRegExp("/<input[a-z0-9=' \/,-]+>/", $inputImage);
   }
 
   /**
@@ -81,8 +81,8 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    * @expectedExceptionMessage mandatory
    * @group Validation
    */
-  public function testValidateNoImage() {
-    (new InputImage("phpunit", "PHPUnit", new User(User::FROM_ID, 1)))->validate();
+  public function testValidateRequired() {
+    (new InputImage("phpunit", "PHPUnit", new User(User::FROM_ID, 1), [ "required" ]))->validate();
   }
 
 }
