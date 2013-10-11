@@ -41,16 +41,16 @@ class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("phpunit", $stub->attributes["id"]);
     $this->assertEquals("phpunit", $stub->attributes["name"]);
     $this->assertEquals("phpunit", $stub->id);
-    $this->assertTrue(is_int($this->attributes["tabindex"]));
+    $this->assertTrue(is_int($stub->attributes["tabindex"]));
     return $stub;
   }
 
   /**
    * @covers ::invalid
-   * @depends testConstruct
    * @group Presentation
    */
-  public function testInvalid($stub) {
+  public function testInvalid() {
+    $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement", [ "phpunit", "PHPUnit" ]);
     $this->assertEquals($stub, $stub->invalid());
     $this->assertArrayHasKey("aria-invalid", $stub->attributes);
     $this->assertArrayHasKey("class", $stub->attributes);
@@ -60,10 +60,10 @@ class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::setHelp
-   * @depends testConstruct
    * @group Presentation
    */
-  public function testSetHelp($stub) {
+  public function testSetHelp() {
+    $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement", [ "phpunit", "PHPUnit" ]);
     $this->assertEquals($stub, $stub->setHelp("help message", false));
     $this->assertArrayHasKey("aria-describedby", $stub->attributes);
     $this->assertEquals("phpunit-help", $stub->attributes["aria-describedby"]);
