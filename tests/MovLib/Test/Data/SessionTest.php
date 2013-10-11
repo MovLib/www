@@ -57,7 +57,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    * @covers ::authenticate
    */
   public function testAuthenticate() {
-    (new Session())->authenticate("richard@fussenegger.info", "test1234");
+    (new Session())->authenticate("richard@fussenegger.info", "Test1234");
   }
 
   /**
@@ -67,7 +67,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   public function testAuthenticateDeactivatedUser() {
     $user = new User(User::FROM_ID, 1);
     $user->deactivate();
-    (new Session())->authenticate("richard@fussenegger.info", "test1234");
+    (new Session())->authenticate("richard@fussenegger.info", "Test1234");
   }
 
   /**
@@ -76,7 +76,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    * @expectedExceptionMessage Could not find user with email
    */
   public function testAuthenticateInvalidEmail() {
-    (new Session())->authenticate("webmaster@movlib.org", "test1234");
+    (new Session())->authenticate("webmaster@movlib.org", "Test1234");
   }
 
   /**
@@ -99,7 +99,6 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::checkAuthorization
    * @expectedException \MovLib\Exception\UnauthorizedException
-   * @expectedExceptionMessage PHPUnit
    */
   public function testCheckAuthorizationException() {
     (new Session())->checkAuthorization("PHPUnit");
@@ -116,7 +115,6 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::checkAuthorizationTimestamp
    * @expectedException \MovLib\Exception\UnauthorizedException
-   * @expectedExceptionMessage PHPUnit
    */
   public function testCheckAuthorizationTimestampException() {
     global $session;
@@ -196,8 +194,8 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
     global $session;
     $db = new Database();
     $hashBefore = $this->_testPasswordNeedsRehash($db);
-    $needsRehash = password_hash("test1234", PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] - 1 ]);
-    $session->passwordNeedsRehash($needsRehash, "test1234");
+    $needsRehash = password_hash("Test1234", PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] - 1 ]);
+    $session->passwordNeedsRehash($needsRehash, "Test1234");
     $this->assertNotEquals($hashBefore, $this->_testPasswordNeedsRehash($db));
     $db->query("UPDATE `users` SET `password` = ? WHERE `user_id` = 1", "s", [ $hashBefore ]);
   }

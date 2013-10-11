@@ -18,7 +18,6 @@
 namespace MovLib\Test\Data;
 
 use \MovDev\Database;
-use \MovLib\Presentation\Partial\FormElement\InputDate;
 use \MovLib\Data\User;
 
 /**
@@ -41,6 +40,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
       [ User::FROM_ID, 1 ],
       [ User::FROM_NAME, "Fleshgrinder" ],
       [ User::FROM_NAME, "fleshgrinder" ],
+      [ User::FROM_NAME, "FlEsHgRiNdEr" ],
       [ User::FROM_NAME, "FLESHGRINDER" ],
     ];
   }
@@ -50,6 +50,15 @@ class UserTest extends \PHPUnit_Framework_TestCase {
       [ User::FROM_EMAIL, "phpunit@movlib.org" ],
       [ User::FROM_ID, -1 ],
       [ User::FROM_NAME, "PHPUnit" ],
+    ];
+  }
+
+  public static function dataProviderTestCheckNameExists() {
+    return [
+      [ "Fleshgrinder" ],
+      [ "fleshgrinder" ],
+      [ "FlEsHgRiNdEr" ],
+      [ "FLESHGRINDER" ],
     ];
   }
 
@@ -73,8 +82,78 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
 
   /**
+   * @covers ::checkEmail
+   * @group Database
+   */
+  public function testCheckEmailExists() {
+    $this->assertTrue((new User(User::FROM_ID, 1))->checkEmail());
+  }
+
+  /**
+   * @covers ::checkEmail
+   * @group Database
+   */
+  public function testCheckEmailNotExists() {
+    $user        = new User();
+    $user->email = "phpunit@movlib.org";
+    $this->assertFalse($user->checkEmail());
+  }
+
+  /**
+   * @covers ::checkName
+   * @dataProvider dataProviderTestCheckNameExists
+   * @group Database
+   */
+  public function testCheckNameExists($name) {
+    // We have to check that the query itself is agnostic to case changes (same as we did in the constructor test).
+    $user       = new User();
+    $user->name = $name;
+    $this->assertTrue($user->checkName());
+  }
+
+  /**
+   * @covers ::checkName
+   * @group Database
+   */
+  public function testCheckNameNotExists() {
+    $user       = new User();
+    $user->name = "PHPUnit";
+    $this->assertFalse($user->checkName());
+  }
+
+  /**
+   * @covers ::commit
+   * @group Database
+   * @group FileSystem
+   * @group Uploads
+   */
+  public function testCommit() {
+    $user = new User(User::FROM_ID, 1);
+    $user->birthday           = "2000-01-01";
+    $user->countryId          = 1;
+    $user->profile            = "PHPUnit";
+    $user->private            = true;
+    $user->realName           = "PHPUnit PHPUnit";
+    $user->sex                = 10;
+    $user->systemLanguageCode = "xx";
+    $user->timeZoneId         = "PHPUnit/PHPUnit";
+    $user->website            = "http://phpunit.net/";
+    $user->commit();
+
+    $user = new User(User::FROM_ID, 1);
+    $this->assertEquals("2000-01-01", $user->birthday);
+    $this->assertEquals(1, $user->countryId);
+    $this->assertEquals("PHPUnit", $user->profile);
+    $this->assertTrue($user->private);
+    $this->assertEquals("PHPUnit PHPUnit", $user->realName);
+    $this->assertEquals(10, $user->sex);
+    $this->assertEquals("xx", $user->systemLanguageCode);
+    $this->assertEquals("PHPUnit/PHPUnit", $user->timeZoneId);
+    $this->assertEquals("http://phpunit.net/", $user->website);
+  }
+
+  /**
    * @covers ::__construct
-   * @covers \MovLib\Data\Database::selectAssoc
    * @dataProvider dataProviderTestConstruct
    * @group Database
    */
@@ -89,75 +168,17 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @covers \MovLib\Data\Database::selectAssoc
    * @dataProvider dataProviderTestConstructException
    * @expectedException \MovLib\Exception\UserException
    * @group Database
-   * @group Uploads
    */
-  public function testConstructException($from, $value) {
+  public function testConstructNoUser($from, $value) {
     new User($from, $value);
-  }
-
-  /**
-   * @covers ::checkEmail
-   * @covers \MovLib\Data\Database::selectAssoc
-   * @group Database
-   */
-  public function testCheckEmail() {
-    $user = new User();
-    $this->assertTrue($user->checkEmail("richard@fussenegger.info"));
-    $this->assertFalse($user->checkEmail("phpunit@movlib.org"));
-  }
-
-  /**
-   * @covers ::checkName
-   * @covers \MovLib\Data\Database::selectAssoc
-   * @group Database
-   */
-  public function testCheckName() {
-    $user = new User();
-    $this->assertTrue($user->checkName("Fleshgrinder"));
-    $this->assertFalse($user->checkName("PHPUnit"));
-  }
-
-  /**
-   * @covers ::commit
-   * @covers \MovLib\Data\Database::query
-   * @group Database
-   * @group FileSystem
-   * @group Uploads
-   */
-  public function testCommit() {
-    $user = new User(User::FROM_ID, 1);
-    $user->birthday           = date(InputDate::RFC3339, $_SERVER["REQUEST_TIME"]);
-    $user->countryId          = 1;
-    $user->profile            = "PHPUnit";
-    $user->private            = true;
-    $user->realName           = "PHPUnit PHPUnit";
-    $user->sex                = 10;
-    $user->systemLanguageCode = "xx";
-    $user->timeZoneId         = "PHPUnit/PHPUnit";
-    $user->website            = "http://phpunit.net/";
-    $user->commit();
-
-    $user = new User(User::FROM_ID, 1);
-    $this->assertEquals(date(InputDate::RFC3339, $_SERVER["REQUEST_TIME"]), $user->birthday);
-    $this->assertEquals(1, $user->countryId);
-    $this->assertEquals("PHPUnit", $user->profile);
-    $this->assertTrue($user->private);
-    $this->assertEquals("PHPUnit PHPUnit", $user->realName);
-    $this->assertEquals(10, $user->sex);
-    $this->assertEquals("xx", $user->systemLanguageCode);
-    $this->assertEquals("PHPUnit/PHPUnit", $user->timeZoneId);
-    $this->assertEquals("http://phpunit.net/", $user->website);
   }
 
   /**
    * @covers ::deactivate
    * @covers ::deleteImageOriginalAndStyles
-   * @covers \MovLib\Data\Database::query
-   * @covers \MovLib\Data\Session::getActiveSessions
    * @group Database
    * @group FileSystem
    * @group Uploads
@@ -182,13 +203,10 @@ class UserTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals(ini_get("date.timezone"), $user->timeZoneId);
     //$this->assertNull($user->twitter);
     $this->assertNull($user->website);
-
-    return $user;
   }
 
   /**
    * @covers ::deleteImageOriginalAndStyles
-   * @covers \MovLib\Data\Image\AbstractImage::getImagePath
    * @group FileSystem
    * @group Uploads
    */
@@ -210,29 +228,6 @@ class UserTest extends \PHPUnit_Framework_TestCase {
     $this->assertFalse($user->imageExists);
     $this->assertNull($rpImageChanged->getValue($user));
     $this->assertNull($rpImageExtension->getValue($user));
-  }
-
-  /**
-   * @covers ::moveUploadedImage
-   * @covers \MovLib\Data\Image\AbstractImage::convert
-   * @covers \MovLib\Data\Image\AbstractImage::getImagePath
-   * @group Database
-   * @group FileSystem
-   * @group Uploads
-   */
-  public function testMoveUploadedImage() {
-    $user           = new User(User::FROM_ID, 1);
-    $rmGetImagePath = get_reflection_method($user, "getImagePath");
-    $source         = tempnam(sys_get_temp_dir(), "phpunit");
-    copy("{$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/user/fleshgrinder.2.jpg", $source);
-    get_reflection_method($user, "deleteImageOriginalAndStyles")->invoke($user);
-    $user->moveUploadedImage($source, 220, 220, "jpg");
-    $this->assertFalse(is_file($source));
-    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_DEFAULT ])));
-    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_THUMBNAIL ])));
-    $this->assertTrue($user->imageExists);
-    $this->assertEquals($_SERVER["REQUEST_TIME"], get_reflection_property($user, "imageChanged")->getValue($user));
-    $this->assertEquals("jpg", get_reflection_property($user, "imageExtension")->getValue($user));
   }
 
   /**
@@ -265,65 +260,169 @@ class UserTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * @covers ::getRegistrationData
+   * @group Database
+   */
+  public function testGetRegistrationData() {
+    $user        = new User();
+    $user->name  = "PHPUnit";
+    $user->email = "phpunit@movlib.org";
+    $user->prepareRegistration("Test1234");
+    $data        = $user->getRegistrationData();
+    foreach ([ "name", "email", "password", "attempts" ] as $key) {
+      $this->assertArrayHasKey($key, $data);
+    }
+    $this->assertEquals("PHPUnit", $data["name"]);
+    $this->assertEquals("phpunit@movlib.org", $data["email"]);
+    $this->assertEquals(1, $data["attempts"]);
+    $this->assertTrue(password_verify("Test1234", $data["password"]));
+    return $user;
+  }
+
+  /**
+   * @covers ::getRegistrationData
+   * @expectedException \MovLib\Exception\UserException
+   * @expectedExceptionMessage No data found
+   * @group Database
+   */
+  public function testGetRegistrationDataExpired() {
+    $user        = new User();
+    $user->name  = "PHPUnit";
+    $user->email = "phpunit@movlib.org";
+    $user->prepareRegistration("Test1234");
+    (new Database())->query("UPDATE `tmp` SET `created` = FROM_UNIXTIME(?) WHERE `key` = ?", "ss", [ strtotime("-25 hours"), "registration-phpunit@movlib.org" ]);
+    $user->getRegistrationData();
+  }
+
+  /**
+   * @covers ::getRegistrationData
+   * @expectedException \MovLib\Exception\UserException
+   * @expectedExceptionMessage No data found
+   * @group Database
+   */
+  public function testGetRegistrationDataNoRecord() {
+    (new User())->getRegistrationData();
+  }
+
+  /**
+   * @covers ::moveUploadedImage
+   * @group Database
+   * @group FileSystem
+   * @group Uploads
+   */
+  public function testMoveUploadedImage() {
+    $user           = new User(User::FROM_ID, 1);
+    $rmGetImagePath = get_reflection_method($user, "getImagePath");
+    $source         = tempnam(sys_get_temp_dir(), "phpunit");
+    copy("{$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/user/fleshgrinder.2.jpg", $source);
+    get_reflection_method($user, "deleteImageOriginalAndStyles")->invoke($user);
+    $user->moveUploadedImage($source, 220, 220, "jpg");
+    $this->assertFalse(is_file($source));
+    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_DEFAULT ])));
+    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_THUMBNAIL ])));
+    $this->assertTrue($user->imageExists);
+    $this->assertEquals($_SERVER["REQUEST_TIME"], get_reflection_property($user, "imageChanged")->getValue($user));
+    $this->assertEquals("jpg", get_reflection_property($user, "imageExtension")->getValue($user));
+  }
+
+  /**
+   * @covers ::passwordHash
+   * @group Database
+   */
+  public function testPasswordHash() {
+    $user = new User();
+    $this->assertTrue(password_verify("Test1234", get_reflection_method($user, "passwordHash")->invokeArgs($user, [ "Test1234" ])));
+  }
+
+  /**
    * @covers ::prepareRegistration
-   * @covers \MovLib\Data\Database::tmpSet
-   * @covers \MovLib\Data\Database::tmpGetAndDelete
-   * @covers \MovDev\Database::tmpGetAndDelete
    * @group Database
    */
   public function testPrepareRegistration() {
     $user        = new User();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
-    $key = $user->prepareRegistration();
+    $this->assertEquals($user, $user->prepareRegistration("Test1234"));
+    (new Database())->query("TRUNCATE TABLE `tmp`");
+  }
+
+  /**
+   * @covers ::prepareRegistration
+   * @expectedException \MovLib\Exception\UserException
+   * @expectedExceptionMessage Too many registration attempts
+   * @group Database
+   */
+  public function testPrepareRegistrationTooManyAttempts() {
+    $user        = new User();
+    $user->name  = "PHPUnit";
+    $user->email = "phpunit@movlib.org";
+    try {
+      while (true) {
+        $user->prepareRegistration("Test1234");
+      }
+    }
+    finally {
+      (new Database())->query("TRUNCATE TABLE `tmp`");
+    }
+  }
+
+  /**
+   * @covers ::prepareRegistration
+   * @group Database
+   */
+  public function testPrepareRegistrationTooManyExpiredAttempts() {
+    $user        = new User();
+    $user->name  = "PHPUnit";
+    $user->email = "phpunit@movlib.org";
     $db          = new Database();
-    $this->assertEquals([ "name" => "PHPUnit", "email" => "phpunit@movlib.org" ], $db->tmpGetAndDelete($key));
-    $this->assertNull($db->tmpGetAndDelete($key));
+    $c           = User::MAXIMUM_ATTEMPTS * 2;
+    $time        = strtotime("-25 hours");
+    $key         = "registration-{$user->email}";
+    for ($i = 0; $i < $c; ++$i) {
+      $user->prepareRegistration("Test1234");
+      $db->query("UPDATE `tmp` SET `created` = FROM_UNIXTIME({$time}) WHERE `key` = '{$key}'");
+    }
+    $db->query("TRUNCATE TABLE `tmp`");
   }
 
   /**
    * @covers ::reactivate
-   * @covers \MovLib\Data\Database::selectAssoc
-   * @covers \MovDev\Database::selectAssoc
-   * @depends testDeactivate
    * @group Database
    */
-  public function testReactivate($user) {
-    $user->reactivate();
+  public function testReactivate() {
+    $user = new User(User::FROM_ID, 1);
+    $user->deactivate()->reactivate();
     $this->assertFalse($user->deactivated);
     $this->assertFalse((bool) (new Database())->selectAssoc("SELECT `deactivated` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["deactivated"]);
   }
 
   /**
    * @covers ::register
-   * @covers \MovLib\Data\Database::query
-   * @covers \MovLib\Data\Database::selectAssoc
-   * @covers \MovDev\Database::selectAssoc
    * @group Database
    */
   public function testRegister() {
     global $i18n;
-    $user = new User();
-
-    $user->register("PHPUnit", "phpunit@movlib.org", "phpunitPassword");
+    $user        = new User();
+    $user->name  = "PHPUnit";
+    $user->email = "phpunit@movlib.org";
+    $user->prepareRegistration("Test1234");
+    $data = $user->getRegistrationData();
+    $user->register($data["password"]);
     $this->assertEquals("PHPUnit", $user->name);
     $this->assertEquals("phpunit@movlib.org", $user->email);
     $this->assertEquals(get_reflection_property($user, "insertId")->getValue($user), $user->id);
 
-    $userData = (new Database())->selectAssoc("SELECT * FROM `users` WHERE `user_id` = ?", "d", [ $user->id ]);
-    $this->assertEmpty($userData["dyn_profile"]);
-    $this->assertEquals("PHPUnit", $userData["name"]);
-    $this->assertEquals("phpunit", $userData["avatar_name"]);
-    $this->assertEquals("phpunit@movlib.org", $userData["email"]);
-    $this->assertEquals($i18n->languageCode, $userData["system_language_code"]);
-    $this->assertRegExp('/^\$[0-9][a-z]\$[0-9]{2}\$.*$/', $userData["password"]);
+    $result = (new Database())->selectAssoc("SELECT * FROM `users` WHERE `user_id` = ?", "d", [ $user->id ]);
+    $this->assertEmpty($result["dyn_profile"]);
+    $this->assertEquals("PHPUnit", $result["name"]);
+    $this->assertEquals("phpunit", $result["avatar_name"]);
+    $this->assertEquals("phpunit@movlib.org", $result["email"]);
+    $this->assertEquals($i18n->languageCode, $result["system_language_code"]);
+    $this->assertTrue(password_verify("Test1234", $result["password"]));
   }
 
   /**
    * @covers ::updateEmail
-   * @covers \MovLib\Data\Database::query
-   * @covers \MovLib\Data\Database::selectAssoc
-   * @covers \MovDev\Database::selectAssoc
    * @group Database
    */
   public function testUpdateEmail() {
@@ -336,96 +435,18 @@ class UserTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::updatePassword
-   * @covers \MovLib\Data\Database::query
-   * @covers \MovLib\Data\Database::selectAssoc
-   * @covers \MovDev\Database::selectAssoc
-   * @covers \MovLib\Data\Session::authenticate
    * @group Database
    */
   public function testUpdatePassword() {
+    $db      = new Database();
     $session = new \MovLib\Data\Session();
-    $session->authenticate("richard@fussenegger.info", "test1234");
-    $oldHash = $this->_testUpdatePassword();
+    $session->authenticate("richard@fussenegger.info", "Test1234");
+    $oldHash = $db->selectAssoc("SELECT `password` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["password"];
     $user = new User(User::FROM_ID, 1);
     $user->updatePassword("phpunitPassword");
     $session->authenticate("richard@fussenegger.info", "phpunitPassword");
-    $newHash = $this->_testUpdatePassword();
+    $newHash = $db->selectAssoc("SELECT `password` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["password"];
     $this->assertNotEquals($oldHash, $newHash);
-  }
-
-  private function _testUpdatePassword() {
-    return (new Database())->selectAssoc("SELECT `password` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["password"];
-  }
-
-  /**
-   * @covers ::validateToken
-   * @covers ::prepareRegistration
-   * @covers \MovLib\Data\Database::tmpSet
-   * @covers \MovLib\Data\Database::tmpGetAndDelete
-   * @group Database
-   */
-  public function testValidateToken() {
-    $user        = new User();
-    $user->name  = "PHPUnit";
-    $user->email = "phpunit@movlib.org";
-    $_GET["token"] = $user->prepareRegistration();
-    $data = $user->validateToken($errors);
-    $this->assertNull($errors);
-    $this->assertEquals([ "name" => "PHPUnit", "email" => "phpunit@movlib.org" ], $data);
-    return $_GET["token"];
-  }
-
-  /**
-   * @covers ::validateToken
-   * @covers ::prepareRegistration
-   * @covers \MovLib\Data\Database::tmpSet
-   * @group Database
-   */
-  public function testValidateTokenNotSet() {
-    $user = new User();
-    $this->assertNull($user->validateToken($errors));
-    $this->assertNotEmpty($errors);
-    $this->assertArrayHasKey(0, $errors);
-    $this->assertContains("invalid", $errors[0]);
-  }
-
-  /**
-   * @covers ::validateToken
-   * @covers ::prepareRegistration
-   * @covers \MovLib\Data\Database::tmpSet
-   * @group Database
-   */
-  public function testValidateTokenEmpty() {
-    $_GET["token"] = "";
-    $this->testValidateTokenNotSet();
-  }
-
-  /**
-   * @covers ::validateToken
-   * @covers ::prepareRegistration
-   * @covers \MovLib\Data\Database::tmpSet
-   * @group Database
-   */
-  public function testValidateTokenToShort() {
-    $_GET["token"] = "phpunitToken";
-    $this->testValidateTokenNotSet();
-  }
-
-  /**
-   * @covers ::validateToken
-   * @covers ::prepareRegistration
-   * @covers \MovLib\Data\Database::tmpSet
-   * @covers \MovLib\Data\Database::tmpGetAndDelete
-   * @depends testValidateToken
-   * @group Database
-   */
-  public function testValidateTokenExpired($token) {
-    $_GET["token"] = $token;
-    $user          = new User();
-    $this->assertNull($user->validateToken($errors));
-    $this->assertNotEmpty($errors);
-    $this->assertArrayHasKey(0, $errors);
-    $this->assertContains("expired", $errors[0]);
   }
 
 }
