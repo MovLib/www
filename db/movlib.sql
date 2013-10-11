@@ -21,6 +21,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`movies` (
   `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime in minutes.' ,
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.' ,
   `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.' ,
+  `website` TINYTEXT NULL COMMENT 'The movie\'s official website URL.' ,
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this movie was created.' ,
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.' ,
   PRIMARY KEY (`movie_id`) ,
@@ -672,33 +673,6 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`relationship_types` (
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The relationship type\'s description translations.' ,
   PRIMARY KEY (`relationship_type_id`) ,
   UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
-ROW_FORMAT = COMPRESSED;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`movies_links`
--- -----------------------------------------------------
-CREATE  TABLE IF NOT EXISTS `movlib`.`movies_links` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID.' ,
-  `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID.' ,
-  `title` VARCHAR(100) NULL COMMENT 'The link\'s title attribute.' ,
-  `text` VARCHAR(100) NOT NULL COMMENT 'The link\'s display text.' ,
-  `url` VARCHAR(255) NOT NULL COMMENT 'The link\'s URL target' ,
-  INDEX `fk_movies_links_languages` (`language_id` ASC) ,
-  INDEX `fk_movies_links_movies` (`movie_id` ASC) ,
-  CONSTRAINT `fk_movies_links_movies`
-    FOREIGN KEY (`movie_id` )
-    REFERENCES `movlib`.`movies` (`movie_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_links_languages`
-    FOREIGN KEY (`language_id` )
-    REFERENCES `movlib`.`languages` (`language_id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
