@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.0.6
+-- version 4.0.8
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 16, 2013 at 12:17 PM
+-- Generation Time: Oct 11, 2013 at 01:12 PM
 -- Server version: 10.0.4-MariaDB-1~wheezy-log
--- PHP Version: 5.5.2
+-- PHP Version: 5.5.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -52,7 +52,8 @@ INSERT INTO `awards` (`award_id`, `name`, `description`, `dyn_names`, `dyn_descr
 (23, 'PEN Center USA West Literary Awards', NULL, '\0\0\0\0\0de!PEN Center USA West Literary Awards', ''),
 (24, 'Screen Actors Guild Award', NULL, '\0\0\0\0\0de!Screen Actors Guild Award', ''),
 (25, 'USC Scripter Award', NULL, '\0\0\0\0\0de!USC Scripter Award', ''),
-(26, 'WGA Award', NULL, '\0\0\0\0\0de!WGA Award', '');
+(26, 'WGA Award', NULL, '\0\0\0\0\0de!WGA Award', ''),
+(27, 'Holland Animation Film Festival', NULL, '\0\0\0\0\0de!Animationsfilm-Festival Holland', '');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.0.6
+-- version 4.0.8
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Sep 16, 2013 at 12:21 PM
+-- Generation Time: Oct 11, 2013 at 01:23 PM
 -- Server version: 10.0.4-MariaDB-1~wheezy-log
--- PHP Version: 5.5.2
+-- PHP Version: 5.5.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -33,7 +33,8 @@ INSERT INTO `persons` (`person_id`, `name`, `deleted`, `born_name`, `birthdate`,
 (4, 'Gary Oldman', 0, NULL, '1958-03-21', NULL, 'GB', 'London', NULL, 1, NULL, '', '', '', NULL),
 (5, 'Frank Darabont', 0, NULL, '1959-01-28', NULL, 'FR', 'Montbéliard', NULL, 1, NULL, '', '', '', NULL),
 (6, 'Tim Robbins', 0, NULL, '1958-10-16', NULL, 'US', 'West Covina, CA', NULL, 1, NULL, '', '', '', NULL),
-(7, 'Morgan Freeman', 0, NULL, '1937-06-01', NULL, 'US', 'Memphis, TN', NULL, 1, NULL, '', '', '', NULL);
+(7, 'Morgan Freeman', 0, NULL, '1937-06-01', NULL, 'US', 'Memphis, TN', NULL, 1, NULL, '', '', '', NULL),
+(8, 'Sacha Goedegebure', 0, NULL, NULL, NULL, 'NL', NULL, NULL, 1, NULL, '', '', '', NULL);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
