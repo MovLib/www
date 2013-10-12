@@ -126,9 +126,9 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    * exclude the first and the last element. Instead it's much more intelligent to simply loop over the additional
    * breadcrumb trails (as it is really implemented). But I hope you get the idea.
    *
-   * @var null
+   * @var null|\Closure
    */
-  public $closure = null;
+  public $closure;
 
   /**
    * Flag indicating if all menuitems should be wrapped in an unordered list.
@@ -184,8 +184,8 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
         $menuitems .= $this->glue;
       }
       $this->menuitems[$i][2]["role"] = "menuitem";
-      if ($this->closure) {
-        $this->closure($this->menuitems[$i], $i, $c);
+      if (is_callable($this->closure)) {
+        call_user_func_array($this->closure, [ &$this->menuitems[$i], $i, $c ]);
       }
       $menuitem = $this->a($this->menuitems[$i][0], $this->menuitems[$i][1], $this->menuitems[$i][2]);
       $menuitems .= ($this->unorderedList === true) ? "<li>{$menuitem}</li>" : $menuitem;
