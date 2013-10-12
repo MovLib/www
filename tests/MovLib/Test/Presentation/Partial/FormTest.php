@@ -22,7 +22,6 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 
 /**
- * @backupStaticAttributes enabled
  * @coversDefaultClass \MovLib\Presentation\Partial\Form
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -58,6 +57,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
 
   protected function setUp() {
+    get_reflection_property("\\MovLib\\Presentation\\AbstractBase", "tabindex")->setValue(1);
     $this->inputEmail             = new InputEmail();
     $this->inputSubmit            = new InputSubmit();
     $this->form                   = new Form($this, [ $this->inputEmail ]);
