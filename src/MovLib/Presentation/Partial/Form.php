@@ -117,7 +117,9 @@ class Form extends \MovLib\Presentation\AbstractBase {
     if (isset($_SERVER["MULTIPART"])) {
       $this->attributes["enctype"] = "multipart/form-data";
       if ($_SERVER["MULTIPART"] == UPLOAD_ERR_INI_SIZE) {
-        $page->checkErrors([ $i18n->t("The image is too large: it must be {0,number} {1} or less.", $this->formatBytes(ini_get("upload_max_filesize"))) ]);
+        $page->{$validationCallback}([
+          "multipart" => $i18n->t("The image is too large: it must be {0,number} {1} or less.", $this->formatBytes(ini_get("upload_max_filesize")))
+        ]);
       }
     }
 
@@ -132,7 +134,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
       }
 
       // Validate all attached form elements.
-      $exceptions = null;
+      $errors = null;
       $c = count($this->elements);
       for ($i = 0; $i < $c; ++$i) {
         try {
@@ -148,12 +150,12 @@ class Form extends \MovLib\Presentation\AbstractBase {
             $autofocus = false;
           }
 
-          $exceptions[$this->elements[$i]->id] = $e->getMessage();
+          $errors[$this->elements[$i]->id] = $e->getMessage();
         }
       }
 
       // Call the validation callback method and let it handle any errors or continue with the validation process.
-      $page->{$validationCallback}($exceptions);
+      $page->{$validationCallback}($errors);
     }
 
     // If no element is invalid and we have elements give the first element the autofocus attribute.
