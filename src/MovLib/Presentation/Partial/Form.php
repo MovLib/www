@@ -125,32 +125,35 @@ class Form extends \MovLib\Presentation\AbstractBase {
 
     // Validate the form if we're receiving it.
     if (isset($_POST["form_id"]) && $_POST["form_id"] == $this->id) {
-      // Validate the CSRF token and only continue if it is valid.
-      if ($session->validateCsrfToken() === false) {
-        $page->checkErrors([$i18n->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
-          "<a href='{$_SERVER["REQUEST_URI"]}'>", "</a>"
-        ])]);
-        return;
-      }
-
-      // Validate all attached form elements.
       $errors = null;
-      $c = count($this->elements);
-      for ($i = 0; $i < $c; ++$i) {
-        try {
-          $this->elements[$i]->validate();
-        }
-        catch (\MovLib\Exception\ValidationException $e) {
-          // Mark this form element as invalid.
-          $this->elements[$i]->invalid();
 
-          // Give it autofocus if it's the first invalid element.
-          if ($autofocus === true) {
-            $this->elements[$i]->attributes[] = "autofocus";
-            $autofocus = false;
+      // Validate the CSRF token and only continue if it is valid.
+      // @todo We have to switch to form/session based CSRF tokens (like Drupal) to mitigate the BREACH attack, also
+      //       regenerate the session ID every 20 minutes (maximum according to OWASP).
+      if ($session->validateCsrfToken() === false) {
+        $errors["csrf"] = $i18n->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
+          "<a href='{$_SERVER["PATH_INFO"]}'>", "</a>"
+        ]);
+      }
+      else {
+        // Validate all attached form elements.
+        $c = count($this->elements);
+        for ($i = 0; $i < $c; ++$i) {
+          try {
+            $this->elements[$i]->validate();
           }
+          catch (\MovLib\Exception\ValidationException $e) {
+            // Mark this form element as invalid.
+            $this->elements[$i]->invalid();
 
-          $errors[$this->elements[$i]->id] = $e->getMessage();
+            // Give it autofocus if it's the first invalid element.
+            if ($autofocus === true) {
+              $this->elements[$i]->attributes[] = "autofocus";
+              $autofocus = false;
+            }
+
+            $errors[$this->elements[$i]->id] = $e->getMessage();
+          }
         }
       }
 

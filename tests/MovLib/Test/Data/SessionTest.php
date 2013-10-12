@@ -260,9 +260,31 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validateCsrfToken
+   * @group Validation
    */
-  //public function testValidateCsrfToken() {
-  // @todo Test with cURL
-  //}
+  public function testValidateCsrfTokenNoSet() {
+    global $session;
+    $this->assertFalse($session->validateCsrfToken());
+  }
+
+  /**
+   * @covers ::validateCsrfToken
+   * @group Validation
+   */
+  public function testValidateCsrfTokenInvalid() {
+    global $session;
+    $_POST["csrf"] = "phpunit";
+    $this->assertFalse($session->validateCsrfToken());
+  }
+
+  /**
+   * @covers ::validateCsrfToken
+   * @group Validation
+   */
+  public function testValidateCsrfToken() {
+    global $session;
+    $_POST["csrf"] = $session->csrfToken;
+    $this->assertTrue($session->validateCsrfToken());
+  }
 
 }

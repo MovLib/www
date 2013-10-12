@@ -470,9 +470,11 @@ class Session extends \MovLib\Data\Database {
    * @return this
    */
   private function regenerate() {
-    session_regenerate_id(true);
-    DelayedMethodCalls::stack($this, "update", [ $this->id ]);
-    $this->id = session_id();
+    if (isset($_SERVER["FCGI_ROLE"])) {
+      session_regenerate_id(true);
+      DelayedMethodCalls::stack($this, "update", [ $this->id ]);
+      $this->id = session_id();
+    }
     return $this;
   }
 
@@ -551,7 +553,7 @@ class Session extends \MovLib\Data\Database {
    *   <code>TRUE</code> if the token is valid, otherwise <code>FALSE</code>.
    */
   public function validateCsrfToken() {
-    if (session_status() === PHP_SESSION_ACTIVE && (!isset($_POST["csrf"]) || $this->csrfToken != $_POST["csrf"])) {
+    if ($this->csrfToken && (!isset($_POST["csrf"]) || $this->csrfToken != $_POST["csrf"])) {
       $this->regenerate();
       return false;
     }

@@ -84,6 +84,63 @@ class FormTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * @covers ::__construct
+   * @group Validation
+   */
+  public function testUploadError() {
+    $_SERVER["MULTIPART"] = UPLOAD_ERR_INI_SIZE;
+    $stub = $this->getMock("\\MovLib\\Presentation\\FormPage", [ "validate" ], [ "PHPUnit" ]);
+    list($number, $unit) = get_reflection_method($stub, "formatBytes")->invokeArgs($stub, [ ini_get("upload_max_filesize") ]);
+    $stub->expects($this->once())->method("validate")->with($this->equalTo([
+      "multipart" => "The image is too large: it must be {$number} {$unit} or less."
+    ]));
+    new Form($stub, []);
+  }
+
+  /**
+   * @covers ::__construct
+   * @group Validation
+   */
+  public function testInvalidCSRF() {
+    $_POST["form_id"] = "phpunit";
+    $stub = $this->getMock("\\MovLib\\Presentation\\FormPage", [ "validate" ], [ "PHPUnit" ]);
+    $stub->expects($this->once())->method("validate")->with($this->equalTo([
+      "csrf" => "The form has become outdated. Copy any unsaved work in the form below and then <a href='/'>reload this page</a>."
+    ]));
+    new Form($stub, [], "phpunit");
+  }
+
+  /**
+   * @covers ::__construct
+   * @group Validation
+   */
+  public function testAutoValidation() {
+    global $session;
+    $_POST["form_id"] = "phpunit";
+    $_POST["csrf"]    = $session->csrfToken;
+    $_POST["email"]   = "phpunit@movlib.org";
+    $stub = $this->getMock("\\MovLib\\Presentation\\FormPage", [ "validate" ], [ "PHPUnit" ]);
+    $stub->expects($this->once())->method("validate")->with($this->equalTo(null));
+    new Form($stub, [ new InputEmail() ], "phpunit");
+  }
+
+  /**
+   * @covers ::__construct
+   * @group Validation
+   */
+  public function testAutoValidationInvalid() {
+    global $session;
+    $_POST["form_id"] = "phpunit";
+    $_POST["csrf"]    = $session->csrfToken;
+    $_POST["email"]   = "root@localhost";
+    $stub = $this->getMock("\\MovLib\\Presentation\\FormPage", [ "validate" ], [ "PHPUnit" ]);
+    $stub->expects($this->once())->method("validate")->with($this->equalTo([
+      "email" => "The email address is invalid."
+    ]));
+    new Form($stub, [ new InputEmail() ], "phpunit");
+  }
+
+  /**
    * @covers ::open
    * @group Presentation
    */
