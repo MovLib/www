@@ -53,6 +53,23 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @group Validation
    */
+  public function testNormalization() {
+    global $session;
+    $date      = date("Y-m-d", $_SERVER["REQUEST_TIME"]);
+    $dateTime  = DateTimeImmutable::createFromFormat("!Y-m-d", $date);
+    $timestamp = $dateTime->getTimestamp();
+    $inputDate = new InputDate("phpunit", "PHPUnit", [
+      "value" => $dateTime->setTimezone(new DateTimeZone($session->userTimeZoneId))->format("Y-m-d"),
+    ]);
+    $inputDate->normalizeDate($session->userTimeZoneId);
+    $this->assertEquals($date, $inputDate->value);
+    $this->assertEquals($timestamp, $inputDate->timestamp);
+  }
+
+  /**
+   * @covers ::validate
+   * @group Validation
+   */
   public function testEmpty() {
     $inputDate = new InputDate("phpunit", "PHPUnit");
     $this->assertEquals($inputDate, $inputDate->validate());
@@ -86,23 +103,6 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
    */
   public function testInvalidDate() {
     (new InputDate("phpunit", "PHPUnit", [ "value" => "2013-02-30" ]))->validate();
-  }
-
-  /**
-   * @covers ::validate
-   * @group Validation
-   */
-  public function testNormalization() {
-    global $session;
-    $date      = date("Y-m-d", $_SERVER["REQUEST_TIME"]);
-    $dateTime  = DateTimeImmutable::createFromFormat("!Y-m-d", $date);
-    $timestamp = $dateTime->getTimestamp();
-    $inputDate = new InputDate("phpunit", "PHPUnit", [
-      "value" => $dateTime->setTimezone(new DateTimeZone($session->userTimeZoneId))->format("Y-m-d"),
-    ]);
-    $inputDate->validate();
-    $this->assertEquals($date, $inputDate->value);
-    $this->assertEquals($timestamp, $inputDate->timestamp);
   }
 
   /**

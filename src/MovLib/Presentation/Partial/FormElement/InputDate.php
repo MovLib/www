@@ -109,6 +109,23 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
 
   /**
+   * Normalize the date from the given <var>$timeZoneId</var> to the default time zone from PHP's global INI file.
+   *
+   * @param string $timeZoneId
+   *   A valid PHP time zone ID.
+   * @return this
+   */
+  public function normalizeDate($timeZoneId) {
+    $defaultTimeZoneId = ini_get("date.timezone");
+    if ($timeZoneId != $defaultTimeZoneId) {
+      $this->timestamp += (new DateTimeZone($defaultTimeZoneId))
+        ->getOffset(DateTime::createFromFormat("!Y-m-d", $this->value, new DateTimeZone($timeZoneId)));
+      $this->value = date($this->attributes["data-format"], $this->timestamp);
+    }
+    return $this;
+  }
+
+  /**
    * @inheritdoc
    */
   public function validate() {
@@ -125,13 +142,6 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
     $dateInfo = date_parse_from_format("Y-m-d", $this->value);
     if ($dateInfo["warning_count"] !== 0 || $dateInfo["error_count"] !== 0) {
       throw new ValidationException($i18n->t("The “{0}” date is invalid.", [ $this->label ]));
-    }
-
-    // Normalize the given date to our default time zone.
-    $defaultTimeZoneId = ini_get("date.timezone");
-    if ($session->userTimeZoneId != $defaultTimeZoneId) {
-      $this->timestamp += (new DateTimeZone($defaultTimeZoneId))
-        ->getOffset(DateTime::createFromFormat("!Y-m-d", $this->value, new DateTimeZone($session->userTimeZoneId)));
     }
 
     if ($this->max || $this->min) {
