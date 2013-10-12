@@ -32,17 +32,6 @@ use \MovLib\Presentation\Partial\Help;
 abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Mandatory error code for validation.
-   *
-   * @var int
-   */
-  const E_MANDATORY = 1;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 

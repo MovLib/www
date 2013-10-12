@@ -19,7 +19,7 @@ namespace MovLib\Presentation;
 
 use \Locale;
 use \MovLib\Data\User;
-use \MovLib\Exception\RedirectException;
+use \MovLib\Exception\Client\RedirectTemporaryException;
 use \MovLib\Presentation\Partial\Navigation;
 
 /**
@@ -65,7 +65,7 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
     // If a signed in user is requesting this page we know where to send her or him.
     if ($session->isAuthenticated === true) {
       $user = new User(User::FROM_ID, $session->userId);
-      throw new RedirectException("{$_SERVER["SCHEME"]}://{$user->getLanguageCode()}.{$_SERVER["SERVER_NAME"]}/");
+      throw new RedirectTemporaryException("{$_SERVER["SCHEME"]}://{$user->getLanguageCode()}.{$_SERVER["SERVER_NAME"]}/");
     }
 
     // If not render the page.

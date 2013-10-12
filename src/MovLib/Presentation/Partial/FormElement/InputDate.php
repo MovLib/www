@@ -60,16 +60,11 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
   /**
    * Contains <code>$this->value</code> as timestamp if it's a valid date.
    *
+   * You shouldn't use this timestamp before a call to <code>$this->validate()</code> if you received the form via POST!
+   *
    * @var boolean|int
    */
   public $timestamp = false;
-
-  /**
-   * The time zone ID, defaults to the time zone ID from the session.
-   *
-   * @var string
-   */
-  public $timeZoneId;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -78,7 +73,6 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
   /**
    * Instantiate new input form element of type date.
    *
-   * @global \MovLib\Data\Session $session
    * @param string $id
    *   The date's global unique identifier.
    * @param string $label
@@ -92,11 +86,8 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    *     <li><code>"type"</code> is set to <code>"date"</code></li>
    *   </ul>
    *   You <b>should not</b> override any of the default attributes.
-   * @param string $timeZoneId [optional]
-   *   The time zone ID of this date input, defaults to the session's user time zone ID.
    */
-  public function __construct($id, $label, array $attributes = null, $timeZoneId = null) {
-    global $session;
+  public function __construct($id, $label, array $attributes = null) {
     parent::__construct($id, $label, $attributes);
     $this->attributes["data-format"] = "Y-m-d";
     $this->attributes["type"]        = "date";
@@ -108,16 +99,8 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
       $this->min = $this->attributes["min"];
       $this->attributes["min"] = date($this->attributes["data-format"], $this->attributes["min"]);
     }
-    $this->timeZoneId = $timeZoneId ?: $session->userTimeZoneId;
     if (isset($this->value)) {
-      $date = DateTime::createFromFormat("!Y-m-d", $this->value, new DateTimeZone($this->timeZoneId));
-      if ($date !== false) {
-        $defaultTimeZoneId = ini_get("date.timezone");
-        if ($this->timeZoneId != $defaultTimeZoneId) {
-          $date->setTimezone(new DateTimeZone($defaultTimeZoneId));
-        }
-        $this->timestamp = $date->getTimestamp();
-      }
+      $this->timestamp = strtotime($this->value);
     }
   }
 
@@ -134,20 +117,21 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
     if (empty($this->value)) {
       $this->value = null;
       if (in_array("required", $this->attributes)) {
-        throw new ValidationException($i18n->t("The “{0}” date is mandatory.", [ $this->label ]), self::E_MANDATORY);
+        throw new ValidationException($i18n->t("The “{0}” date is mandatory.", [ $this->label ]));
       }
       return $this;
     }
 
-    if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $this->value) == false) {
-      throw new ValidationException($i18n->t("The “{0}” date has an invalid format, the format must be {1}yyyy-mm-dd{2}.", [
-        $this->label, "<code>", "</code>"
-      ]));
+    $dateInfo = date_parse_from_format("Y-m-d", $this->value);
+    if ($dateInfo["warning_count"] !== 0 || $dateInfo["error_count"] !== 0) {
+      throw new ValidationException($i18n->t("The “{0}” date is invalid.", [ $this->label ]));
     }
 
-    list($year, $month, $day) = explode("-", $this->value);
-    if (checkdate($month, $day, $year) === false) {
-      throw new ValidationException($i18n->t("The “{0}” date is invalid.", [ $this->label ]));
+    // Normalize the given date to our default time zone.
+    $defaultTimeZoneId = ini_get("date.timezone");
+    if ($session->userTimeZoneId != $defaultTimeZoneId) {
+      $this->timestamp += (new DateTimeZone($defaultTimeZoneId))
+        ->getOffset(DateTime::createFromFormat("!Y-m-d", $this->value, new DateTimeZone($session->userTimeZoneId)));
     }
 
     if ($this->max || $this->min) {

@@ -35,18 +35,17 @@ class InputTextTest extends \PHPUnit_Framework_TestCase {
 
   public static function dataProviderValidPlainTextStrings() {
     return [
-      [ "" ],                           // Valid empty string
-      [ "movlib" ],                     // Valid ASCII
-      [ " movlib ", "movlib" ],         // Valid ASCII which gets trimmed
-      [ "mov < lib" ],                  // Valid ASCII and usage of special HTML character
-      [ "mov < lib > mov" ],            // Valid ASCII and usage of special HTML characters
-      [ "<>'\"&/" ],                    // Valid character sequence
-      [ "\\\";alert('XSS');//" ],       // Valid (standalone) character sequence
-      [ "mov < > lib" ],                // Valid as well
-      [ "κόσμε" ],                      // Valid UTF-8
-      [ "\xc3\xb1" ],                   // Valid 2 Octet Sequence
-      [ "\xe2\x82\xa1" ],               // Valid 3 Octet Sequence
-      [ "\xf0\x90\x8c\xbc" ],           // Valid 4 Octet Sequence
+      [ "" ],                                                          // Valid empty string
+      [ "movlib" ],                                                    // Valid ASCII
+      [ " movlib ", "movlib" ],                                        // Valid ASCII which gets trimmed
+      [ "mov < lib", "mov &lt; lib" ],                                 // Valid ASCII and usage of special HTML character
+      [ "mov < lib > mov", "mov &lt; lib &gt; mov" ],                  // Valid ASCII and usage of special HTML characters
+      [ "<>'\"&/", "&lt;&gt;&apos;&quot;&amp;/" ],                     // Valid character sequence
+      [ "\\\";alert('XSS');//", "\&quot;;alert(&apos;XSS&apos;);//" ], // Valid (standalone) character sequence
+      [ "κόσμε", "κόσμε" ],                                            // Valid UTF-8 but not NFC form
+      [ "\xc3\xb1" ],                                                  // Valid 2 Octet Sequence
+      [ "\xe2\x82\xa1" ],                                              // Valid 3 Octet Sequence
+      [ "\xf0\x90\x8c\xbc" ],                                          // Valid 4 Octet Sequence
     ];
   }
 
@@ -73,12 +72,34 @@ class InputTextTest extends \PHPUnit_Framework_TestCase {
 
 
   /**
+   * @covers ::__construct
+   * @group Presentation
+   */
+  public function testConstruct() {
+    $inputText = new InputText("phpunit", "PHPUnit");
+    $this->assertArrayHasKey("type", $inputText->attributes);
+    $this->assertEquals("text", $inputText->attributes["type"]);
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage mandatory
+   * @group Validation
+   */
+  public function testValidateRequired() {
+    (new InputText("phpunit", "PHPUnit", [ "required" ]))->validate();
+  }
+
+  /**
    * @covers ::validate
    * @dataProvider dataProviderValidPlainTextStrings
    * @group Validation
    */
   public function testValid($actual, $expected = null) {
-    $this->assertEquals($expected ?: $actual, (new InputText("phpunit", "PHPUnit", [ "value" => $actual ]))->validate());
+    $inputText = new InputText("phpunit", "PHPUnit", [ "value" => $actual ]);
+    $this->assertEquals($inputText, $inputText->validate());
+    $this->assertEquals($expected ?: $actual, $inputText->value);
   }
 
 }

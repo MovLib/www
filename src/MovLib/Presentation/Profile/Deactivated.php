@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Exception\RedirectException;
+use \MovLib\Exception\Client\RedirectSeeOtherException as Redirect;
 use \MovLib\Data\User;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -51,11 +51,11 @@ class Deactivated extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n, $session;
     if ($session->isAuthenticated === false) {
-      throw new RedirectException("/", 302);
+      throw new Redirect("/");
     }
     $this->user = new User(User::FROM_ID, $session->userId);
     if ($this->user->deactivated === false) {
-      throw new RedirectException($i18n->r("/my"), 302);
+      throw new Redirect($i18n->r("/my"));
     }
     $this->init($i18n->t("Deactivated"));
     $info = new Alert($i18n->t("Your account has been deactivated, do you wish to activate it again?"));
@@ -97,11 +97,11 @@ class Deactivated extends \MovLib\Presentation\Page {
       $success->title = $i18n->t("Reactivation Successful");
       $success->severity = Alert::SEVERITY_SUCCESS;
       $session->alerts .= $success;
-      throw new RedirectException($i18n->r("/my"), 302);
+      throw new Redirect($i18n->r("/my"));
     }
     else {
       $session->destroy();
-      throw new RedirectException("/", 302);
+      throw new Redirect("/");
     }
     return $this;
   }

@@ -103,7 +103,7 @@ class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractInp
     global $i18n;
 
     if (empty($this->value)) {
-      throw new ValidationException($i18n->t("The password field is mandatory."), self::E_MANDATORY);
+      throw new ValidationException($i18n->t("The highlighted password field is mandatory."));
     }
 
     $errors = null;

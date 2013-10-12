@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\User;
-use \MovLib\Exception\UnauthorizedException;
+use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Presentation\Email\User\EmailChange;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -67,7 +67,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
-   * @throws \MovLib\Exception\UnauthorizedException
+   * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function __construct() {
     global $i18n, $session;
@@ -175,7 +175,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
    * @return this
-   * @throws \MovLib\Exception\UnauthorizedException
+   * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   private function validateToken() {
     global $i18n, $session;

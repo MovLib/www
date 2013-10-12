@@ -21,8 +21,8 @@ use \IntlDateFormatter;
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\User;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\RedirectException;
-use \MovLib\Exception\UnauthorizedException;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
+use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Presentation\Email\User\Deactivation;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -76,7 +76,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
-   * @throws \MovLib\Exception\UnauthorizedException
+   * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function __construct() {
     global $i18n, $session;
@@ -88,7 +88,8 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
     ;
 
     // Start rendering the page.
-    $this->init($i18n->t("Danger Zone Settings"))->user = new User(User::FROM_ID, $session->userId);
+    $this->init($i18n->t("Danger Zone Settings"));
+    $this->user = new User(User::FROM_ID, $session->userId);
 
     // We must instantiate the form before we create the sessions table, otherwise deletions would happen after the
     // table containing the sessions listing was built. Deleted sessions would still be displayed!
@@ -184,12 +185,12 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
    * @return this
-   * @throws \MovLib\Exception\RedirectException
+   * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
   public function deleteSession() {
     global $i18n, $session;
     if ($_POST["session_id"] == $session->id) {
-      throw new RedirectException($i18n->r("/profile/sign-out"), 302);
+      throw new RedirectSeeOtherException($i18n->r("/profile/sign-out"));
     }
     else {
       try {
@@ -228,8 +229,8 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
    * @return this
-   * @throws \MovLib\Exception\RedirectException
-   * @throws \MovLib\Exception\UnauthorizedException
+   * @throws \MovLib\Exception\Client\RedirectSeeOtherException
+   * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   private function validateToken() {
     global $i18n, $session;
@@ -246,7 +247,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
       $success->title = $i18n->t("Deactivation Successful");
       $success->severity = Alert::SEVERITY_SUCCESS;
       $session->alerts .= $success;
-      throw new RedirectException($i18n->r("/profile/sign-out"), 302);
+      throw new RedirectSeeOtherException($i18n->r("/profile/sign-out"));
     }
     return $this;
   }

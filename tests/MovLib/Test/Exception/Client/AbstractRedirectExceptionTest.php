@@ -15,36 +15,27 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Test\Exception\Client;
 
 /**
- * Description of Contact
- *
+ * @coversDefaultClass \MovLib\Exception\Client\AbstractRedirectException
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Collection extends \MovLib\Presentation\User\Show {
+class AbstractRedirectExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   *
-   * Instantiate new user collection presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
+   * @covers ::__construct
+   * @group Presentation
    */
-  public function __construct(){
-    global $i18n;
-    parent::__construct();
-    $this->title = $i18n->t("Collection of {0}", [ $this->title ]);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent(){
-    return "";
+  public function testConstruct() {
+    $stub = $this->getMockForAbstractClass("\\MovLib\\Exception\\Client\\AbstractRedirectException", [ 42, "/phpunit", "phpunit" ]);
+    $this->assertEquals(42, http_response_code());
+    $this->assertEquals("Location: {$_SERVER["SERVER"]}/phpunit", $stub->locationHeader);
+    $this->assertContains("42 phpunit", $stub->presentation);
   }
 
 }

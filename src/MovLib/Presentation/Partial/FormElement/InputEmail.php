@@ -77,7 +77,7 @@ class InputEmail extends \MovLib\Presentation\Partial\FormElement\AbstractInput 
     global $i18n;
 
     if (empty($this->value)) {
-      throw new ValidationException($i18n->t("The email address is mandatory."), self::E_MANDATORY);
+      throw new ValidationException($i18n->t("The email address is mandatory."));
     }
 
     // No need for multi-byte functions, utf-8 is not allowed in emails.

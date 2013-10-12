@@ -23,7 +23,7 @@ use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Data\User;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UserException;
-use \MovLib\Exception\UnauthorizedException;
+use \MovLib\Exception\Client\UnauthorizedException;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -254,7 +254,7 @@ class Session extends \MovLib\Data\Database {
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 401.
    * @return this
-   * @throws \MovLib\Exception\UnauthorizedException
+   * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function checkAuthorization($message) {
     if ($this->isAuthenticated === false) {
@@ -269,7 +269,7 @@ class Session extends \MovLib\Data\Database {
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 401.
    * @return this
-   * @throws \MovLib\Exception\UnauthorizedException
+   * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function checkAuthorizationTimestamp($message) {
     if ($this->isAuthenticated === false || $this->authentication + 3600 < time()) {
@@ -336,9 +336,9 @@ class Session extends \MovLib\Data\Database {
    * @return this
    */
   public function destroy() {
+    // The user is no longer authenticated, keep this line outside of the if for PHPUnit tests.
+    $this->isAuthenticated = false;
     if (session_status() === PHP_SESSION_ACTIVE) {
-      // The user is no longer authenticated!
-      $this->isAuthenticated = false;
       // Remove all data associated with this session.
       session_destroy();
       session_unset();

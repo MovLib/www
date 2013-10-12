@@ -20,7 +20,7 @@ namespace MovLib\Presentation\ImageDetails;
 use \MovLib\Data\AbstractImage;
 use \MovLib\Data\Image\Movie as MovieImage;
 use \MovLib\Data\MovieImages;
-use \MovLib\Exception\Client\NotFoundException;
+use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\View\ImageStyle\ResizeCropCenterImageStyle;
 
 /**
@@ -44,7 +44,7 @@ class MovieLobbyCardDetails extends \MovLib\Presentation\Movie\AbstractMoviePage
     $this->initMovie();
     $this->image = new MovieImage($this->model->id, MovieImage::IMAGETYPE_LOBBYCARD, $_SERVER["IMAGE_ID"]);
     if ($this->image->imageExists === false) {
-      throw new NotFoundException("");
+      throw new ErrorNotFoundException("");
     }
     $this->entityTitle  = $this->title;
     $this->imagesRoute  = $i18n->r("/movie/{0}/lobby-card", [ $this->model->id ]);

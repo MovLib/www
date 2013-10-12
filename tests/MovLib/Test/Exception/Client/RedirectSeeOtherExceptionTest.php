@@ -15,36 +15,40 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Test\Exception\Client;
+
+use \MovLib\Exception\Client\RedirectSeeOtherException as Redirect;
 
 /**
- * Description of Contact
- *
+ * @coversDefaultClass \MovLib\Exception\Client\RedirectSeeOtherException
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Collection extends \MovLib\Presentation\User\Show {
+class RedirectSeeOtherExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   *
-   * Instantiate new user collection presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
+   * @covers ::__construct
+   * @group Presentation
    */
-  public function __construct(){
-    global $i18n;
-    parent::__construct();
-    $this->title = $i18n->t("Collection of {0}", [ $this->title ]);
+  public function testConstruct() {
+    $r = new Redirect("/phpunit");
+    $this->assertEquals(303, http_response_code());
+    $this->assertContains("303 See Other", $r->presentation);
   }
 
   /**
-   * @inheritdoc
+   * @covers ::__construct
+   * @group Presentation
    */
-  protected function getPageContent(){
-    return "";
+  public function testConstructOldClients() {
+    $_SERVER["SERVER_PROTOCOL"] = "HTTP/1.0";
+    $r = new Redirect("/phpunit");
+    $this->assertEquals(302, http_response_code());
+    $this->assertContains("302 Moved Temporarily", $r->presentation);
+    $_SERVER["SERVER_PROTOCOL"] = "HTTP/1.1";
   }
 
 }

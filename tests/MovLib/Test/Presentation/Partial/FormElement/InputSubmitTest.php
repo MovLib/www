@@ -15,30 +15,42 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Test\Exception;
+namespace MovLib\Test\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\RedirectException;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 
 /**
- * @coversDefaultClass \MovLib\Exception\RedirectException
+ * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\InputSubmit
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RedirectExceptionTest extends \PHPUnit_Framework_TestCase {
+class InputSubmitTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Exceptions
+   * @group Presentation
    */
   public function testConstruct() {
-    $redirectException = new RedirectException("/phpunit", 301);
-    $this->assertInstanceOf("\\RuntimeException", $redirectException);
-    $this->assertEquals("Redirecting user to /phpunit with status 301.", $redirectException->getMessage());
-    $this->assertEquals("{$_SERVER["SERVER"]}/phpunit", $redirectException->route);
-    $this->assertEquals(301, $redirectException->status);
+    $inputSubmit = new InputSubmit([ "value" => "phpunit" ]);
+    foreach ([ "class", "id", "tabindex", "type", "value" ] as $key) {
+      $this->assertArrayHasKey($key, $inputSubmit->attributes);
+    }
+    $this->assertEquals("button button--large button--success", $inputSubmit->attributes["class"]);
+    $this->assertEquals("submit", $inputSubmit->attributes["id"]);
+    $this->assertTrue(is_int($inputSubmit->attributes["tabindex"]));
+    $this->assertEquals("submit", $inputSubmit->attributes["type"]);
+    $this->assertEquals("phpunit", $inputSubmit->attributes["value"]);
+  }
+
+  /**
+   * @covers ::__toString
+   * @group Presentation
+   */
+  public function testToString() {
+    $this->assertRegExp("/<input[a-z0-9='\- ]+>/", (string) new InputSubmit([ "value" => "phpunit" ]));
   }
 
 }

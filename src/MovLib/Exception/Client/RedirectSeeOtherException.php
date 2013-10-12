@@ -18,41 +18,29 @@
 namespace MovLib\Exception\Client;
 
 /**
- * Represents the "not found" client error.
+ * Temporarily redirect the user and transform the HTTP method to GET.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class NotFoundException extends \MovLib\Exception\Client\AbstractClientException {
+class RedirectSeeOtherException extends \MovLib\Exception\Client\AbstractRedirectException {
 
   /**
-   * Instantiate new not found exception.
+   * Instantiate new temporary redirect.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $message
-   *   The exception message.
-   * @param \MovLib\Exception\AbstractException $previous
-   *   The previous exception.
-   * @param int $code
-   *   The exception code.
+   * @param string $route
+   *   {@inheritdoc}
    */
-  public function __construct($message, $previous = null, $code = E_NOTICE) {
-    global $i18n;
-    parent::__construct(
-      $message,
-      $previous,
-      $code,
-      $i18n->t("Not found"),
-      $i18n->t("The requested page could not be found."),
-      $i18n->t(
-        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
-      ),
-      404
-    );
+  public function __construct($route) {
+    if ($_SERVER["SERVER_PROTOCOL"] == "HTTP/1.0") {
+      parent::__construct(302, $route, "Moved Temporarily");
+    }
+    else {
+      parent::__construct(303, $route, "See Other");
+    }
   }
 
 }

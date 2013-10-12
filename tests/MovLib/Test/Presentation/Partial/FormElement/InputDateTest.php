@@ -18,6 +18,7 @@
 namespace MovLib\Test\Presentation\Partial\FormElement;
 
 use \DateTime;
+use \DateTimeImmutable;
 use \DateTimeZone;
 use \MovLib\Presentation\Partial\FormElement\InputDate;
 
@@ -36,23 +37,30 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
    * @group Presentation
    */
   public function testConstruct() {
-    $timeZoneId = ini_get("date.timezone");
-    $timestamp  = DateTime::createFromFormat("!Y-m-d", "2013-10-11", new DateTimeZone($timeZoneId))->getTimestamp();
-    $inputDate  = new InputDate("phpunit", "PHPUnit", [ "max" => $timestamp, "min" => $timestamp, "value" => "2013-10-11" ], $timeZoneId);
+    $date      = date("Y-m-d", $_SERVER["REQUEST_TIME"]);
+    $timestamp = DateTime::createFromFormat("!Y-m-d", $date)->getTimestamp();
+    $inputDate = new InputDate("phpunit", "PHPUnit", [ "max" => $timestamp, "min" => $timestamp, "value" => $date ]);
     $this->assertEquals("Y-m-d", $inputDate->attributes["data-format"]);
     $this->assertEquals("date", $inputDate->attributes["type"]);
-    $this->assertEquals($timeZoneId, $inputDate->timeZoneId);
     $this->assertEquals($timestamp, $inputDate->timestamp);
     $this->assertEquals($timestamp, get_reflection_property($inputDate, "max")->getValue($inputDate));
     $this->assertEquals($timestamp, get_reflection_property($inputDate, "min")->getValue($inputDate));
-    $this->assertEquals("2013-10-11", $inputDate->attributes["max"]);
-    $this->assertEquals("2013-10-11", $inputDate->attributes["min"]);
+    $this->assertEquals($date, $inputDate->attributes["max"]);
+    $this->assertEquals($date, $inputDate->attributes["min"]);
+  }
+
+  /**
+   * @covers ::validate
+   * @group Validation
+   */
+  public function testEmpty() {
+    $inputDate = new InputDate("phpunit", "PHPUnit");
+    $this->assertEquals($inputDate, $inputDate->validate());
   }
 
   /**
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionCode \MovLib\Presentation\Partial\FormElement\InputDate::E_MANDATORY
    * @expectedExceptionMessage mandatory
    * @group Validation
    */
@@ -63,7 +71,7 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionMessage invalid format
+   * @expectedExceptionMessage invalid
    * @group Validation
    */
   public function testInvalidFormat() {
@@ -73,11 +81,28 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionMessage is invalid
+   * @expectedExceptionMessage invalid
    * @group Validation
    */
   public function testInvalidDate() {
     (new InputDate("phpunit", "PHPUnit", [ "value" => "2013-02-30" ]))->validate();
+  }
+
+  /**
+   * @covers ::validate
+   * @group Validation
+   */
+  public function testNormalization() {
+    global $session;
+    $date      = date("Y-m-d", $_SERVER["REQUEST_TIME"]);
+    $dateTime  = DateTimeImmutable::createFromFormat("!Y-m-d", $date);
+    $timestamp = $dateTime->getTimestamp();
+    $inputDate = new InputDate("phpunit", "PHPUnit", [
+      "value" => $dateTime->setTimezone(new DateTimeZone($session->userTimeZoneId))->format("Y-m-d"),
+    ]);
+    $inputDate->validate();
+    $this->assertEquals($date, $inputDate->value);
+    $this->assertEquals($timestamp, $inputDate->timestamp);
   }
 
   /**
@@ -105,7 +130,11 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
    * @group Validation
    */
   public function testValid() {
-    $inputDate = new InputDate("phpunit", "PHPUnit", [ "value" => date("Y-m-d", $_SERVER["REQUEST_TIME"]) ]);
+    $inputDate = new InputDate("phpunit", "PHPUnit", [
+      "min"   => strtotime("-1 year"),
+      "max"   => strtotime("+1 year"),
+      "value" => date("Y-m-d", $_SERVER["REQUEST_TIME"]),
+    ]);
     $this->assertEquals($inputDate, $inputDate->validate());
   }
 

@@ -1,4 +1,13 @@
 #!/usr/bin/env php
+### BEGIN INIT INFO
+# Provides:          memcached
+# Required-Start:    $remote_fs $network
+# Required-Stop:     $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts memcached
+# Description:       Starts Memcached databases
+### END INIT INFO
 <?php
 
 /*!

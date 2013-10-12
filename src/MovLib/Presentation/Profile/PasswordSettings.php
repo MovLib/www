@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Data\User;
-use \MovLib\Exception\UnauthorizedException;
+use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;

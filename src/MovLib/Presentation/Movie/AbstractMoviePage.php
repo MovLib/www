@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie;
 use \MovLib\Exception\MovieException;
-use \MovLib\Exception\Client\NotFoundException;
+use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -59,7 +59,7 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
   /**
    * Initialize the movie model and the title.
    *
-   * @throws NotFoundException
+   * @throws ErrorNotFoundException
    */
   protected function initMovie() {
     try {
@@ -69,7 +69,7 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
         $this->title .= " ({$this->model->year})";
       }
     } catch (MovieException $e) {
-      throw new NotFoundException($e);
+      throw new ErrorNotFoundException($e);
     }
   }
 

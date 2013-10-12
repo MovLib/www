@@ -96,7 +96,6 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
    * @return this
-   * @throws \MovLib\Exception\RedirectException
    */
   public function validate() {
     global $i18n;

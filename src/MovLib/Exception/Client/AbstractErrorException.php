@@ -17,65 +17,49 @@
  */
 namespace MovLib\Exception\Client;
 
+use \MovLib\Presentation\Page;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
  * Parent class for all HTTP client presentation errors.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractClientException extends \MovLib\Exception\AbstractException {
+abstract class AbstractErrorException extends \MovLib\Exception\AbstractException {
 
   /**
-   * The alert to display.
+   * The error page for this client exception.
    *
-   * @var \MovLib\Presentation\Partial\Alert
+   * @var \MovLib\Presentation\Page
    */
-  public $alert;
-
-  /**
-   * The title for the resulting error page.
-   *
-   * @var string
-   */
-  public $title;
-
-  /**
-   * The HTTP status code.
-   *
-   * @var int
-   */
-  public $status;
+  public $presentation;
 
   /**
    * Instantiate new client exception.
    *
-   * @param string $message
-   *   The exception message.
-   * @param \MovLib\Exception\AbstractException $previous
-   *   The previous exception.
-   * @param int $code
-   *   The exception code.
+   * @param int $httpResponseCode
+   *   The HTTP response code.
    * @param string $pageTitle
-   *   The already translated title of the resulting error page.
+   *   The error page's translated title.
    * @param string $alertTitle
-   *   The already translated title of the displayed alert.
-   * @param string $alterMessage
-   *   The already translated text of the displayed alert.
-   * @param int $statusCode
-   *   The HTTP status code of the error.
+   *   The alert's translated title.
+   * @param string $alertMessage
+   *   The alert's translated message.
+   * @param \Exception $previous [optional]
+   *   {@inheritdoc}
+   * @param int $code [optional]
+   *   {@inheritdoc}
    */
-  public function __construct($message, $previous, $code, $pageTitle, $alertTitle, $alertMessage, $statusCode) {
-    parent::__construct($message, $previous, $code);
-    $this->title = $pageTitle;
-    $this->alert = new Alert("<p>{$alertMessage}</p>");
-    $this->alert->block = true;
-    $this->alert->title = $alertTitle;
-    $this->alert->severity = Alert::SEVERITY_ERROR;
-    $this->status = $statusCode;
+  public function __construct($httpResponseCode, $pageTitle, $alertTitle, $alertMessage, $previous = null, $code = E_NOTICE) {
+    parent::__construct("Client error '" . get_class($this) . "'", $previous, $code);
+    http_response_code($httpResponseCode);
+    $this->presentation = new Page($pageTitle);
+    $this->presentation->alerts .= new Alert($alertMessage, $alertTitle, Alert::SEVERITY_ERROR);
   }
+
 }

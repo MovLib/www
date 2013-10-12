@@ -36,7 +36,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
-   * @throws \MovLib\Exception\UnauthorizedException
+   * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function __construct() {
     global $i18n, $session;

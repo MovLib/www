@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,36 +15,33 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Test\Exception\Client;
 
 /**
- * Description of Contact
- *
+ * @coversDefaultClass \MovLib\Exception\Client\AbstractErrorException
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Collection extends \MovLib\Presentation\User\Show {
+class AbstractErrorExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
-   *
-   * Instantiate new user collection presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
+   * @covers ::__construct
+   * @group Presentation
    */
-  public function __construct(){
-    global $i18n;
-    parent::__construct();
-    $this->title = $i18n->t("Collection of {0}", [ $this->title ]);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent(){
-    return "";
+  public function testConstruct() {
+    $args = [ 42, "phpunit-pagetitle", "phpunit-alerttitle", "phpunit-alertmessage" ];
+    $stub = $this->getMockForAbstractClass("\\MovLib\\Exception\\Client\\AbstractErrorException", $args);
+    $this->assertEquals(42, http_response_code());
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Page", $stub->presentation);
+    $presentation = $stub->presentation->getPresentation();
+    foreach ($args as $contains) {
+      if (is_string($contains)) {
+        $this->assertContains($contains, $presentation);
+      }
+    }
   }
 
 }

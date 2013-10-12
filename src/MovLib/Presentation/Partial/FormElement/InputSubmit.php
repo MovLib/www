@@ -50,6 +50,7 @@ class InputSubmit extends \MovLib\Presentation\AbstractBase {
   public function __construct(array $attributes = null) {
     $this->attributes             = $attributes;
     $this->attributes["class"]    = "button button--large button--success";
+    $this->attributes["id"]       = $this->id;
     $this->attributes["tabindex"] = $this->getTabindex();
     $this->attributes["type"]     = "submit";
   }

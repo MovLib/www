@@ -33,8 +33,6 @@ class Contact extends \MovLib\Presentation\User\Show {
    * Instantiate new user contact presentation.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @throws \MovLib\Exception\NotFoundException
-   * @throws \MovLib\Exception\RedirectException
    */
   public function __construct(){
     global $i18n;

@@ -18,9 +18,9 @@
 namespace MovLib\Presentation\Users;
 
 use \MovLib\Data\User;
-use \MovLib\Exception\RedirectException;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\UserException;
-use \MovLib\Exception\UnauthorizedException;
+use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\ValidationException;
 use \MovLib\Presentation\Email\Users\Registration as RegistrationEmail;
 use \MovLib\Presentation\Email\Users\RegistrationEmailExists;
@@ -106,13 +106,14 @@ class Registration extends \MovLib\Presentation\FormPage {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
+   * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
   public function __construct() {
     global $i18n, $session;
 
     // If the user is logged in, no need for registration.
     if ($session->isAuthenticated === true) {
-      throw new RedirectException($i18n->r("/my"));
+      throw new RedirectSeeOtherException($i18n->r("/my"));
     }
 
     // Start rendering the page.
@@ -184,7 +185,6 @@ class Registration extends \MovLib\Presentation\FormPage {
    * @param array $errors [optional]
    *   {@inheritdoc}
    * @return this
-   * @throws \MovLib\Exception\RedirectException
    */
   public function validate(array $errors = null) {
     global $i18n;
@@ -287,19 +287,19 @@ class Registration extends \MovLib\Presentation\FormPage {
         throw new ValidationException($i18n->t("The activation token is missing, please go back to the mail we sent you and copy the whole link."));
       }
 
-      $user           = new User();
-      $user->email    = base64_decode($_GET["token"]);
+      $user        = new User();
+      $user->email = base64_decode($_GET["token"]);
 
       if (filter_var($user->email, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
         throw new ValidationException($i18n->t("The activation token is invalid, please go back to the mail we sent you and copy the whole link."));
       }
 
-      // Prefill the email field on the sign in form and let the form know that this is a registration.
-      $_POST["email"]                          = $user->email;
-      $GLOBALS["movlib"]["users-registration"] = true;
-
       if ($user->checkEmail() === true) {
-        throw new UnauthorizedException($i18n->t("Seems like you’ve already activated your account, please sign in."), $i18n->t("Already Activated"), Alert::SEVERITY_INFO);
+        throw new UnauthorizedException(
+          $i18n->t("Seems like you’ve already activated your account, please sign in."),
+          $i18n->t("Already Activated"),
+          Alert::SEVERITY_INFO
+        );
       }
 
       $data = $user->getRegistrationData();
@@ -320,6 +320,13 @@ class Registration extends \MovLib\Presentation\FormPage {
     }
     catch (ValidationException $e) {
       $alert = new Alert($e->getMessage());
+    }
+    catch (UnauthorizedException $e) {
+      unset($e->presentation->email->attributes[array_search("autofocus", $e->presentation->email->attributes)]);
+      $e->presentation->email->attributes["value"] = $user->email;
+      $e->presentation->email->attributes[]        = "readonly";
+      $e->presentation->password->attributes[]     = "autofocus";
+      throw $e;
     }
     catch (UserException $e) {
       $alert = new Alert(

@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Gallery;
 
 use \IntlDateFormatter;
 use \MovLib\Data\Image\Movie as MovieImage;
-use \MovLib\Exception\RedirectException;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -54,7 +54,7 @@ trait TraitMovieGallery {
    */
   protected function getGoneContent() {
     global $i18n;
-    throw new RedirectException($i18n->r("/movie/{0}", [ $this->model->id ]), 302);
+    throw new RedirectSeeOtherException($i18n->r("/movie/{0}", [ $this->model->id ]));
   }
 
   /**

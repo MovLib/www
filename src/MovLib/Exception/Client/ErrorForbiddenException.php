@@ -18,40 +18,32 @@
 namespace MovLib\Exception\Client;
 
 /**
- * Represents the "gone" client error.
+ * Represents the "forbidden" client error.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class GoneException extends \MovLib\Exception\Client\AbstractClientException {
+class ErrorForbiddenException extends \MovLib\Exception\Client\AbstractErrorException {
 
   /**
-   * Instantiate new gone exception.
+   * Instantiate forbidden exception.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param string $message
-   *   The exception message.
-   * @param \MovLib\Exception\AbstractException $previous
-   *   The previous exception.
-   * @param int $code
-   *   The exception code.
    */
-  public function __construct($message, $previous = null, $code = E_NOTICE) {
+  public function __construct() {
     global $i18n;
     parent::__construct(
-      $message,
-      $previous,
-      $code,
-      $i18n->t("Gone"),
-      $i18n->t("The requested page is no longer available."),
+      403,
+      $i18n->t("Forbidden"),
+      $i18n->t("Access to the requested page is forbidden."),
       $i18n->t(
         "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
         [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
-      ),
-      410
+      )
     );
   }
 

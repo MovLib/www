@@ -121,7 +121,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
     if (empty($_FILES[$this->id])) {
       if (in_array("required", $this->attributes)) {
-        throw new ValidationException($i18n->t("The “{0}” image field is mandatory.", [ $this->label ]), self::E_MANDATORY);
+        throw new ValidationException($i18n->t("The “{0}” image field is mandatory.", [ $this->label ]));
       }
       return $this;
     }

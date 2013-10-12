@@ -98,7 +98,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::checkAuthorization
-   * @expectedException \MovLib\Exception\UnauthorizedException
+   * @expectedException \MovLib\Exception\Client\UnauthorizedException
    */
   public function testCheckAuthorizationException() {
     (new Session())->checkAuthorization("PHPUnit");
@@ -114,7 +114,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::checkAuthorizationTimestamp
-   * @expectedException \MovLib\Exception\UnauthorizedException
+   * @expectedException \MovLib\Exception\Client\UnauthorizedException
    */
   public function testCheckAuthorizationTimestampException() {
     global $session;
@@ -141,6 +141,39 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals($user->timeZoneId, $session->userTimeZoneId);
     $this->assertEquals($_SERVER["REQUEST_TIME"], $session->authentication);
     $this->assertNotEmpty($session->csrfToken);
+  }
+
+  /**
+   * @covers ::init
+   * @expectedException \MovLib\Exception\SessionException
+   * @expectedExceptionMessage Could not fetch user name for user ID
+   */
+  public function testInitNoUser() {
+    $session = new Session();
+    get_reflection_method($session, "init")->invokeArgs($session, [ 99999999, $_SERVER["REQUEST_TIME"] ]);
+  }
+
+  /**
+   * @covers ::init
+   */
+  public function testInitAnonymousUser() {
+    $session = new Session();
+    get_reflection_method($session, "init")->invokeArgs($session, [ 0, $_SERVER["REQUEST_TIME"] ]);
+    $this->assertEquals(0, $session->userId);
+    $this->assertEquals($_SERVER["REMOTE_ADDR"], $session->userName);
+    $this->assertEquals(ini_get("date.timezone"), $session->userTimeZoneId);
+    $this->assertFalse($session->isAuthenticated);
+  }
+
+  /**
+   * @covers ::init
+   * @expectedException \MovLib\Exception\SessionException
+   * @expectedExceptionMessage Empty or invalid IP address (this is more or less impossible, check web server and if behind a proxy check implementation).
+   */
+  public function testInitAnonymousUserInvalidIP() {
+    $_SERVER["REMOTE_ADDR"] = "phpunit";
+    $session = new Session();
+    get_reflection_method($session, "init")->invokeArgs($session, [ 0, $_SERVER["REQUEST_TIME"] ]);
   }
 
   /**

@@ -67,7 +67,7 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
   public function validate() {
     global $i18n;
     if (in_array("required", $this->attributes) && $this->value === false) {
-      throw new ValidationException($i18n->t("The {0} checkbox is mandatory.", [ $this->placeholder($this->label) ]), self::E_MANDATORY);
+      throw new ValidationException($i18n->t("The “{0}” checkbox is mandatory.", [ $this->label ]));
     }
     return $this;
   }

@@ -17,8 +17,8 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Exception\Client\NotFoundException;
-use \MovLib\Exception\RedirectException;
+use \MovLib\Exception\Client\ErrorNotFoundException;
+use \MovLib\Exception\Client\RedirectPermanentException;
 use \MovLib\Exception\UserException;
 use \MovLib\Data\User;
 
@@ -53,19 +53,19 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    *
    * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Exception\NotFoundException
-   * @throws \MovLib\Exception\RedirectException
+   * @throws \MovLib\Exception\Client\RedirectPermanentException
    */
   public function __construct() {
     global $i18n;
     try {
       $this->user = new User(User::FROM_NAME, $_SERVER["USER_NAME"]);
       if (($nameLower = mb_strtolower($this->user->name)) != $_SERVER["USER_NAME"]) {
-        throw new RedirectException($i18n->r("/user/{0}", [ $nameLower ]), 301);
+        throw new RedirectPermanentException($i18n->r("/user/{0}", [ $nameLower ]));
       }
       $this->init($this->checkPlain($this->user->name));
     }
     catch (UserException $e) {
-      throw new NotFoundException("No user with this name.");
+      throw new ErrorNotFoundException("No user with this name.");
     }
   }
 

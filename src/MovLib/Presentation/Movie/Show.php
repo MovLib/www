@@ -50,7 +50,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   /**
    * Instatiate new movie presentation.
    *
-   * @throws \MovLib\Exception\Client\NotFoundException
+   * @throws \MovLib\Exception\Client\ErrorNotFoundException
    */
   public function __construct() {
     global $i18n;

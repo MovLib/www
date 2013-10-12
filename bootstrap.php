@@ -42,9 +42,13 @@ $GLOBALS["movlib"]        = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/mov
 
 // The following variables are always available in our environment and set via nginx. We have to create them here on
 // our own because PHPUnit will not invoke nginx.
+$_SERVER["PATH_INFO"]       = "/";
+$_SERVER["REQUEST_URI"]     = "/";
 $_SERVER["SCHEME"]          = "https";
 $_SERVER["SERVER_NAME"]     = "{$_SERVER["LANGUAGE_CODE"]}.{$GLOBALS["movlib"]["default_domain"]}";
 $_SERVER["SERVER"]          = "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}";
+$_SERVER["SERVER_PROTOCOL"] = "HTTP/1.1";
+$_SERVER["SERVER_VERSION"]  = "";
 $_SERVER["REMOTE_ADDR"]     = "127.0.0.1";
 $_SERVER["HTTP_USER_AGENT"] = ini_get("user_agent");
 

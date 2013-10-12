@@ -37,70 +37,42 @@ use \Normalizer;
  */
 class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Exception code for invalid unicode in the string.
-   *
-   * @var int
-   */
-  const E_INVALID_UTF8 = 2;
-
-  /**
-   * Exception code if the string contains low ASCII characters.
-   *
-   * @var int
-   */
-  const E_INVLIAD_LOW_ASCII = 3;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
   /**
    * @inheritdoc
    */
-  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
-    parent::__construct($id, $label, $attributes, $help, $helpPopup);
+  public function __construct($id, $label, array $attributes = null) {
+    parent::__construct($id, $label, $attributes);
     $this->attributes["type"] = "text";
   }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * @inheritdoc
    */
   public function validate() {
     global $i18n;
+
     if (empty($this->value)) {
       $this->value = null;
       if (in_array("required", $this->attributes)) {
-        throw new ValidationException(
-          $i18n->t("The {0} field is mandatory.", [ $this->placeholder($this->label) ]),
-          self::E_MANDATORY
-        );
+        throw new ValidationException($i18n->t("The “{0}” text field is mandatory.", [ $this->label ]));
       }
+      return $this;
     }
-    else {
-      if (preg_match("//u", $this->value) === false) {
-        throw new ValidationException(
-          $i18n->t("The {0} field contains invalid UTF-8 characters.", [ $this->placeholder($this->label) ]),
-          self::E_INVALID_UTF8
-        );
-      }
-      if ($this->value != filter_var($this->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_REQUIRE_SCALAR)) {
-        throw new ValidationException(
-          $i18n->t("The {0} field contains illegal low ASCII characters.", [ $this->placeholder($this->label) ]),
-          self::E_INVLIAD_LOW_ASCII
-        );
-      }
-      // Secure by default: normalize to NFC form and encode any special HTML characters.
-      $this->value = htmlspecialchars(Normalizer::normalize($this->value), ENT_QUOTES|ENT_HTML5);
+
+    if (preg_match("//u", $this->value) === false) {
+      throw new ValidationException($i18n->t("The “{0}” text field contains invalid UTF-8 characters.", [ $this->label ]));
     }
+
+    if (preg_match("/&.*;/i", $this->value) != false) {
+      $this->value = html_entity_decode(html_entity_decode($this->value, ENT_QUOTES|ENT_HTML5), ENT_QUOTES|ENT_HTML5);
+    }
+    $this->value = htmlspecialchars($this->value, ENT_QUOTES|ENT_HTML5);
+
+    if ($this->value != filter_var($this->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_REQUIRE_SCALAR)) {
+      throw new ValidationException($i18n->t("The “{0}” text field contains illegal low ASCII characters.", [ $this->label ]));
+    }
+
+    $this->value = $this->collapseWhitespace(Normalizer::normalize($this->value));
     return $this;
   }
 

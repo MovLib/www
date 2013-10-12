@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation\Users;
 
-use \MovLib\Data\User;
-use \MovLib\Exception\RedirectException;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UserException;
 use \MovLib\Presentation\Partial\Alert;
@@ -41,6 +40,7 @@ class Login extends \MovLib\Presentation\FormPage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
+  // The properties are public to allow classes that throw an UnauthorizedException to manipulate them.
 
 
   /**
@@ -48,14 +48,19 @@ class Login extends \MovLib\Presentation\FormPage {
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
-  protected $email;
+  public $email;
+
+  /**
+   * @inheritdoc
+   */
+  public $form;
 
   /**
    * The input password form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputPassword
    */
-  protected $password;
+  public $password;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -66,7 +71,7 @@ class Login extends \MovLib\Presentation\FormPage {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
-   * @throws \MovLib\Exception\RedirectException
+   * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
   public function __construct() {
     global $i18n, $session;
@@ -76,7 +81,7 @@ class Login extends \MovLib\Presentation\FormPage {
 
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
     if ($session->isAuthenticated === true && $_SERVER["PATH_INFO"] != $routeLogout) {
-      throw new RedirectException($i18n->r("/my"));
+      throw new RedirectSeeOtherException($i18n->r("/my"));
     }
 
     // Start rendering the page.
@@ -117,12 +122,6 @@ class Login extends \MovLib\Presentation\FormPage {
 
     // Ensure all views are using the correct path info to render themselves.
     $_SERVER["PATH_INFO"] = $routeLogin;
-
-    if (isset($GLOBALS["movlib"]["users-registration"])) {
-      unset($this->email->attributes[array_search("autofocus", $this->email->attributes)]);
-      $this->email->attributes[]    = "readonly";
-      $this->password->attributes[] = "autofocus";
-    }
   }
 
   /**
@@ -141,8 +140,7 @@ class Login extends \MovLib\Presentation\FormPage {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
    * @return this
-   * @throws \MovLib\Exception\RedirectException
-   * @throws \MovLib\Exception\SessionException
+   * @throws \MovLib\Exception\Client\RedirectSeeOther
    */
   public function validate(array $errors = null) {
     global $i18n, $session;
@@ -150,13 +148,13 @@ class Login extends \MovLib\Presentation\FormPage {
       try {
         $session->authenticate($this->email->value, $this->password->value);
         $session->alerts .= new Alert($i18n->t("Login was successful."), $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]), Alert::SEVERITY_SUCCESS);
-        throw new RedirectException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
+        throw new RedirectSeeOtherException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
       }
       catch (SessionException $e) {
         $this->checkErrors($i18n->t("We either don’t know the email address, or the password was wrong."));
       }
       catch (UserException $e) {
-        throw new RedirectException($i18n->r("/profile/deactivated"));
+        throw new RedirectSeeOtherException($i18n->r("/profile/deactivated"));
       }
     }
     return $this;

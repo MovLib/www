@@ -18,41 +18,28 @@
 namespace MovLib\Exception\Client;
 
 /**
- * Represents the "forbidden" client error.
+ * Temporarily redirect the user.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * Sends a temporary redirect back to the client, please note that this might preserve the HTTP method (GET, POST). The
+ * {@link http://www.ietf.org/rfc/rfc2616.txt RFC 2616} says that clients should preserve the HTTP method and that any
+ * other behavior is "erroneous".
+ *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ForbiddenException extends \MovLib\Exception\Client\AbstractClientException {
+class RedirectTemporaryException extends \MovLib\Exception\Client\AbstractRedirectException {
 
   /**
-   * Instantiate forbidden exception.
+   * Instantiate new temporary redirect.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $message
-   *   The exception message.
-   * @param \MovLib\Exception\AbstractException $previous
-   *   The previous exception.
-   * @param int $code
-   *   The exception code.
+   * @param string $route
+   *   {@inheritdoc}
    */
-  public function __construct($message, $previous = null, $code = E_NOTICE) {
-    global $i18n;
-    parent::__construct(
-      $message,
-      $previous,
-      $code,
-      $i18n->t("Forbidden"),
-      $i18n->t("Access to the requested page is forbidden."),
-      $i18n->t(
-        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
-      ),
-      400
-    );
+  public function __construct($route) {
+    parent::__construct(302, $route, "Moved Temporarily");
   }
 
 }

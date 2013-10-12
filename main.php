@@ -177,6 +177,12 @@ try {
   $presenter    = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
   $presentation = (new $presenter())->getPresentation();
 }
+// A presentation can throw a client exception for various client errors including "not found", "gone", "forbidden" and
+// "bad request". This type of exception has to stop the execution of the main application immediately and present an
+// error page to the user, which includes side effects. The delayed methods still have to be executed.
+catch (\MovLib\Exception\Client\AbstractErrorException $e) {
+  $presentation = $e->presentation->getPresentation();
+}
 // A presentation can throw a redirect exception for different reasons. An error might have happended that needs the
 // user to be redirected to a different page, or an action was successfully completed and the user should go to a
 // different page to continue. No matter what, the execution of the presentation rendering process has to be terminated
@@ -184,40 +190,16 @@ try {
 // an exception to redirect is the absolutely right way to handle this kind of action. The presentation couldn't comply
 // with it's promise to generate a page, additionally a redirect is producing a side effect and shouldn't be part of our
 // object oriented code.
-catch (\MovLib\Exception\RedirectException $e) {
-  header("Location: {$e->route}", true, $e->status);
-  $title        = [ 301 => "Moved Permanently", 302 => "Moved Temporarily", 303 => "See Other" ];
-  // @todo Do we really have to send this response ourself or is nginx handling this?
-  $presentation = "<html><head><title>{$e->status} {$title[$e->status]}</title></head><body bgcolor=\"white\"><center><h1>{$e->status} {$title[$e->status]}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
+catch (\MovLib\Exception\Client\AbstractRedirectException $e) {
+  header($e->locationHeader);
+  $presentation = $e->presentation;
 }
 // A presentation can throw a unauthorized exception if the current page needs a valid signed in user. This is another
 // exception that has to be in our main application and can't reside in our object oriented code. The current process
 // has to be terminated right away, delayed methods have to executed and this kind of code has side effects.
-catch (\MovLib\Exception\UnauthorizedException $e) {
-  // Ensure any active session is destroyed.
-  $session->destroy();
-
-  // We have to ensure that the login page is going to render the form without any further validation, therefor we have
-  // to reset the request method to GET because we don't know (and don't want to check) the current request method.
-  $_SERVER["REQUEST_METHOD"] = "GET";
-
-  // The rest is straight forward, set headers, init presentation, ...
-  // http://stackoverflow.com/a/1088127/1251219
-  http_response_code(401);
-  header("WWW-Authenticate: MovLib location=\"{$i18n->r("/users/login")}\"");
-
-  $login          = new \MovLib\Presentation\Users\Login();
-  $login->alerts .= $e->alert;
-  $presentation   = $login->getPresentation();
-}
-// A presentation can throw a client exception for various client errors including "not found", "gone", "forbidden" and
-// "bad request". This type of exception has to stop the execution of the main application immediately and present an
-// error page to the user, which includes side effects. The delayed methods still have to be executed.
-catch (\MovLib\Exception\Client\AbstractClientException $e) {
-  http_response_code($e->status);
-  $page          = new MovLib\Presentation\Page($e->title);
-  $page->alerts .= $e->alert;
-  $presentation  = $page->getPresentation();
+catch (\MovLib\Exception\Client\UnauthorizedException $e) {
+  header($e->authenticateHeader);
+  $presentation = $e->presentation->getPresentation();
 }
 // Because of the finally block many exception thrown at this point are not passed to the custom uncaught exception
 // handler we defined before. I don't have hard evidence that the finally block is the reason, but this problem first

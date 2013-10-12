@@ -69,7 +69,6 @@ class InputCheckboxTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionCode \MovLib\Presentation\Partial\FormElement\InputCheckbox::E_MANDATORY
    * @expectedExceptionMessage mandatory
    * @group Validation
    */

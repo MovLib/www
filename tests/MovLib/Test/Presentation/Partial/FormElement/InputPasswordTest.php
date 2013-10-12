@@ -107,7 +107,6 @@ class InputPasswordTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @depends testConstruct
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionCode \MovLib\Presentation\Partial\FormElement\InputPassword::E_MANDATORY
    * @expectedExceptionMessage mandatory
    * @group Validation
    */

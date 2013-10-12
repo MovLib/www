@@ -15,10 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Exception\Client;
 
 /**
- * Description of Contact
+ * Permanently redirect the user.
+ *
+ * Sends a permanent redirect back to the client, please note that this might preserve the HTTP method (GET, POST). The
+ * {@link http://www.ietf.org/rfc/rfc2616.txt RFC 2616} says that clients should preserve the HTTP method and that any
+ * other behavior is "erroneous".
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,25 +30,16 @@ namespace MovLib\Presentation\User;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Collection extends \MovLib\Presentation\User\Show {
+class RedirectPermanentException extends \MovLib\Exception\Client\AbstractRedirectException {
 
   /**
+   * Instantiate new permanent redirect.
    *
-   * Instantiate new user collection presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
+   * @param string $route
+   *   {@inheritdoc}
    */
-  public function __construct(){
-    global $i18n;
-    parent::__construct();
-    $this->title = $i18n->t("Collection of {0}", [ $this->title ]);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent(){
-    return "";
+  public function __construct($route) {
+    parent::__construct(301, $route, "Moved Permanently");
   }
 
 }
