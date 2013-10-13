@@ -223,43 +223,6 @@ abstract class AbstractBase {
   }
 
   /**
-   * Get the images.
-   * @todo Should we check if the image exists?
-   *
-   * @param array $images
-   *   Numeric array containing the image arrays from the database.
-   * @param array $attributes [optional]
-   *   Additional attributes that should be applied to ALL images. Please do not supply <code>"alt"</code>,
-   *   <code>"width"</code>, <code>"height"</code> or <code>"height"</code> here, as they will be set automatically.
-   * @param boolean $link [optional]
-   *   Link the images to their <code>"uri"</code> offset.
-   * @param array $anchorattributes [optional]
-   *   The additional attributes for the anchors.
-   * @return array
-   *   The images.
-   */
-  protected final function getImages(array $images, array $attributes = null, $link = false, array $anchorattributes = null) {
-    $imagesArray = [];
-    $c = count($images);
-    for ($i = 0; $i < $c; ++$i) {
-      $imageAttributes["alt"] = !empty($images[$i]["alt"]) ? $images[$i]["alt"] : "";
-      list($imageAttributes["width"], $imageAttributes["height"]) = getimagesize($images[$i]["path"]);
-      $imageAttributes["src"] = $images[$i]["src"];
-      $attributes = $attributes ?: [];
-      $imageAttributes = array_merge($attributes, $imageAttributes);
-      $image = "<img{$this->expandTagAttributes($imageAttributes)}>";
-
-      if ($link === true) {
-        $anchorattributes["href"] = !empty($images[$i]["uri"]) ? $images[$i]["uri"] : $images[$i]["src"];
-        $image = $this->a($images[$i]["uri"], $image, $anchorattributes);
-      }
-
-      $imagesArray[] = $image;
-    }
-    return $imagesArray;
-  }
-
-  /**
    * Get the next global tabindex.
    *
    * @return int

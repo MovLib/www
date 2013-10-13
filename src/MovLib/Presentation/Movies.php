@@ -18,8 +18,10 @@
 namespace MovLib\Presentation;
 
 use \MovLib\Data\Image\Movie as MovieImage;
+use \MovLib\Data\Movies;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists;
+use \MovLib\Presentation\Partial\Lists\GlueSeparated;
+use \MovLib\Presentation\Partial\Lists\Ordered;
 
 /**
  * The listing for the latest movie additions.
@@ -38,7 +40,7 @@ class Movies extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    *
    * @var array
    */
-  private $movies;
+  protected $movies;
 
   /**
    * Instantiate new latest movies presentation
@@ -47,8 +49,7 @@ class Movies extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   public function __construct() {
     global $i18n;
-    $this->init($i18n->t("Movies"));
-    $this->movies = (new \MovLib\Data\Movies())->getMoviesByCreated();
+    $this->init($i18n->t("Movies"))->movies = (new Movies())->getMoviesByCreated();
   }
 
   /**
@@ -56,40 +57,36 @@ class Movies extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   protected function getPageContent() {
     global $i18n;
-    $alert = new Alert($i18n->t("No movies match your criteria."));
-    $alert->severity = Alert::SEVERITY_INFO;
-    $c = count($this->movies);
-    $items = [];
-    for ($i = 0; $i < $c; ++$i) {
-      $title = $this->movies[$i]->getDisplayTitle();
-      $titleSuffix = array_column($this->movies[$i]->getCountries(), "code");
-      if (isset($this->movies[$i]->year)) {
-        $titleSuffix[] = $this->movies[$i]->year;
+    $list = new Ordered(
+      $this->movies,
+      new Alert($i18n->t("No movies match your criteria."), null, Alert::SEVERITY_INFO),
+      [ "id" => "latest-additions" ]
+    );
+    $list->closure = function (&$movie) {
+      global $i18n;
+      $title = $movie->getDisplayTitle();
+      $poster = $movie->getDisplayPoster();
+      $titleSuffix = new GlueSeparated(array_column($movie->getCountries(), "code"));
+      if ($movie->year) {
+        $titleSuffix->listItems[] = $movie->year;
       }
-      $titleSuffix = (new Lists($titleSuffix, ""))->toCommaSeparatedList();
-      if (!empty($titleSuffix)) {
-        $titleSuffix = " ({$titleSuffix})";
-      }
-      $displayPoster = $this->movies[$i]->getDisplayPoster();
-      $items[] = $this->a(
-          $i18n->r("/movie/{0}", [ $this->movies[$i]->id ]),
-          "<article>" .
-            "<div class='latest-additions__image'>{$this->getImage($displayPoster, MovieImage::IMAGESTYLE_SPAN_1, [
-              "alt" => $i18n->t("{0} movie poster{1}.", [ $title, isset($displayPoster->country)
-                ? $i18n->t(" for {0}", [ $displayPoster->country["name"] ])
-                : ""
-              ]),
-            ])}</div>" .
-            "<div class='latest-additions__info clear-fix'>" .
-              "<h2>{$title}{$titleSuffix}</h2>" .
-              "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $this->movies[$i]->originalTitle ])}</p>" .
-            "</div>" .
-          "</article>",
-          [ "tabindex" => $this->getTabindex() ]
-        )
-      ;
-    }
-    return (new Lists($items, $alert, [ "id" => "latest-additions" ]))->toHtmlList("ol");
+      $titleSuffix->listBefore = " (";
+      $titleSuffix->listAfter  = ")";
+      $movie = $this->a(
+        $i18n->r("/movie/{0}", [ $movie-id ]),
+        "<article>" .
+          "<div class='latest-additions__image'>{$this->getImage($poster, MovieImage::IMAGESTYLE_SPAN_1, [
+            "alt" => $i18n->t("{0} movie poster{1}.", [ $title, $poster->country ? $i18n->t(" for {0}", [ $poster->country["name"] ]) : "" ]),
+          ])}</div>" .
+          "<div class='latest-additions__info clear-fix'>" .
+            "<h2>{$title}{$titleSuffix}</h2>" .
+            "<p>{$i18n->t("“{0}” (<em>original title</em>)", [ $movie->originalTitle ])}</p>" .
+          "</div>" .
+        "</article>",
+        [ "tabindex" => $this->getTabindex() ]
+      );
+    };
+    return $list;
   }
 
 }

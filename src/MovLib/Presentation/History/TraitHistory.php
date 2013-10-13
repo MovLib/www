@@ -180,7 +180,7 @@ trait TraitHistory {
     }
 
     $html .=
-        (new Lists($changedFiles, ""))->toHtmlList() .
+        (new Lists($changedFiles, ""))->getHTML() .
       "</div>";
 
     return $html;
@@ -224,7 +224,7 @@ trait TraitHistory {
       $userIds[] = $commits[$i]["author_id"];
     }
 
-    $users = (new Users())->getUsers($userIds);
+    $users = (new Users())->getUsersById($userIds);
 
     $revisions = [];
     for ($i = 0; $i < $c; ++$i) {
@@ -255,13 +255,13 @@ trait TraitHistory {
       $changedFiles = $this->historyModel->getChangedFiles($commits[$i]["hash"], "{$commits[$i]["hash"]}^1");
       $revisions[$i] .= (new Lists($this->formatFileNames($changedFiles), $i18n->t("Nothing changed"), [
         "class" => "well well--small no-list"
-      ]))->toHtmlList();
+      ]))->getHTML();
     }
 
     return
       "<div id='revision-history'>" .
         "<h2>{$i18n->t("Revision history")}</h2>" .
-        (new Lists($revisions, $i18n->t("No revisions found")))->toHtmlList() .
+        (new Lists($revisions, $i18n->t("No revisions found")))->getHTML() .
       "</div>";
   }
 

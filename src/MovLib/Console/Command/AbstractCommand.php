@@ -25,6 +25,8 @@ use \Symfony\Component\Console\Output\OutputInterface;
  *
  * Provides several utility methods that can be used by other console command classes.
  *
+ * @property \Symfony\Component\Console\Helper\ProgressHelper $progress
+ *   Symfony ProgressHelper.
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -101,6 +103,34 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @var boolean
    */
   protected $verbose = false;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  public function __get($name) {
+    if (isset($this->{$name})) {
+      return $this->{$name};
+    }
+    if (method_exists($this, $name)) {
+      return $this->{$name}();
+    }
+    throw new \RuntimeException;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Private Methods And Properties
+
+
+  private $progress;
+  private function progress() {
+    if (!$this->progress) {
+      $this->progress = $this->getHelperSet()->get("progress");
+      $this->progress->setBarCharacter("<comment>=</comment>");
+      $this->progress->setBarWidth(120);
+    }
+    return $this->progress;
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

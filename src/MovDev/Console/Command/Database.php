@@ -19,6 +19,7 @@ namespace MovDev\Console\Command;
 
 use \Locale;
 use \MovLib\Exception\DatabaseException;
+use \MovLib\Data\User;
 use \ReflectionClass;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
@@ -34,6 +35,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class Database extends \MovLib\Console\Command\Database {
+  use \MovDev\TraitUtilities;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -51,21 +53,21 @@ class Database extends \MovLib\Console\Command\Database {
    *
    * @var string
    */
-  const OPTION_SHORTCUT_ALL = "a";
+  const OPTION_ALL_SHORTCUT = "a";
 
   /**
-   * Option for importing seed(s).
+   * Option to create users.
    *
    * @var string
    */
-  const OPTION_SEED = "seed";
+  const OPTION_CREATE_USERS = "create-users";
 
   /**
-   * Option shortcut for importing seed(s).
+   * Option shortcut for creating users.
    *
    * @var string
    */
-  const OPTION_SHORTCUT_SEED = "s";
+  const OPTION_CREATE_USERS_SHORTCUT = "u";
 
   /**
    * Option for creating git repositories.
@@ -79,7 +81,21 @@ class Database extends \MovLib\Console\Command\Database {
    *
    * @var string
    */
-  const OPTION_SHORTCUT_GIT = "g";
+  const OPTION_GIT_SHORTCUT = "g";
+
+  /**
+   * Option for importing seed(s).
+   *
+   * @var string
+   */
+  const OPTION_SEED = "seed";
+
+  /**
+   * Option shortcut for importing seed(s).
+   *
+   * @var string
+   */
+  const OPTION_SEED_SHORTCUT = "s";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -124,38 +140,11 @@ class Database extends \MovLib\Console\Command\Database {
   protected function configure() {
     parent::configure();
     $this
-      ->addOption(self::OPTION_ALL, self::OPTION_SHORTCUT_ALL, InputOption::VALUE_NONE, "Run all migrations and import all seed data (Ignores all other options).")
-      ->addOption(self::OPTION_SEED, self::OPTION_SHORTCUT_SEED, InputOption::VALUE_OPTIONAL, "Import seed data file(s).")
-      ->addOption(self::OPTION_GIT, self::OPTION_SHORTCUT_GIT, InputOption::VALUE_OPTIONAL, "Create history repositories.")
+      ->addOption(self::OPTION_ALL, self::OPTION_ALL_SHORTCUT, InputOption::VALUE_NONE, "Run all migrations and import all seed data (Ignores all other options).")
+      ->addOption(self::OPTION_CREATE_USERS, self::OPTION_CREATE_USERS_SHORTCUT, InputOption::VALUE_REQUIRED, "Create specified amout of valid random users.")
+      ->addOption(self::OPTION_GIT, self::OPTION_GIT_SHORTCUT, InputOption::VALUE_OPTIONAL, "Create history repositories.")
+      ->addOption(self::OPTION_SEED, self::OPTION_SEED_SHORTCUT, InputOption::VALUE_OPTIONAL, "Import seed data file(s).")
     ;
-  }
-
-  /**
-   * Create git repositories.
-   *
-   * @param string $type [optional]
-   *   If supplied, only repositories of this type (e.g. movie) are created, otherwise all repositories are created.
-   * @return this
-   */
-  private function git($type = null) {
-    $supportedTypes = [ "movie" ];
-
-    if ($type) {
-      if (!in_array($type, $supportedTypes)) {
-        $supportedTypes = implode(", ", $supportedTypes);
-        $this->exitOnError("Not a valid type! valid types are {$supportedTypes}");
-      }
-      $this->createRepositories($type);
-    }
-    else {
-      foreach ($supportedTypes as $type) {
-        $this->createRepositories($type);
-      }
-    }
-
-    exec("chmod -R 777 {$_SERVER["DOCUMENT_ROOT"]}/history/*");
-
-    return $this;
   }
 
   /**
@@ -165,7 +154,7 @@ class Database extends \MovLib\Console\Command\Database {
    *  All repositories of this type are created.
    * @return this
    */
-  private function createRepositories($type) {
+  protected function createRepositories($type) {
     $path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$type}";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
@@ -182,6 +171,95 @@ class Database extends \MovLib\Console\Command\Database {
       }
     }
     return $this;
+  }
+
+  /**
+   * Helper method to generate random user names.
+   *
+   * @return string
+   *   A random user name.
+   */
+  private function _randomUsername() {
+    static $allNames = [];
+    $randomName = "";
+    $characters = array_merge(range("A", "Z"), range("a", "z"), range("0", "9"));
+    $c          = count($characters) - 1;
+    for ($i = 0; $i < 8; ++$i) {
+      $randomName .= $characters[mt_rand(0, $c)];
+    }
+    if (in_array($randomName, $allNames)) {
+      $randomName = $this->_randomUsername();
+    }
+    $allNames[] = $randomName;
+    return $randomName;
+  }
+
+  /**
+   * Create <var>$amount</var> random users.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param int $amount
+   *   The amount of users to generate.
+   * @return this
+   */
+  protected function createUsers($amount) {
+    global $i18n;
+    if (!is_numeric($amount) || $amount <= 0) {
+      $this->createUsers($this->ask("You must enter a positive numeric value!"));
+    }
+
+    $this->write("Preparing to create {$amount} users ...");
+    $user = new User();
+    $insertValues = $insertTypes = $insertParams = $usernamesWithAvatars = null;
+    $this->progress->start($this->output, $amount);
+
+    $this->write("Creating {$amount} random users ...");
+    for ($i = 0; $i < $amount; ++$i) {
+      $username              = $this->_randomUsername();
+      $avatarName            = $this->method($user, "filename", [ $username ]);
+      $allNames[$avatarName] = $username;
+      $insertValues         .= "(?, FROM_UNIXTIME(?), ?, '', ?, ?, ?, '{$i18n->defaultLanguageCode}'),";
+      $insertTypes          .= "ssssss";
+      $insertParams[]        = $avatarName;
+      if ($i % 6 !== 0) {
+        $insertParams[]                    = time();
+        $insertParams[]                    = "jpg";
+        $usernamesWithAvatars[$avatarName] = $username;
+      }
+      else {
+        $insertParams[] = $insertParams[] = null;
+      }
+      $insertParams[] = "{$username}@movlib.org";
+      $insertParams[] = $username;
+      $insertParams[] = $this->method($user, "passwordHash", [ User::getRandomPassword() ]);
+      $this->progress->advance();
+    }
+    $insertValues = rtrim($insertValues, ",");
+    $this->progress->finish();
+
+    $this->write("Inserting users into database ...");
+    $this->database->query("INSERT INTO `users` (`avatar_name`, `avatar_changed`, `avatar_extension`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES {$insertValues}", $insertTypes, $insertParams);
+
+    if (($c = count($usernamesWithAvatars))) {
+      $this->write("Generating avatar images (every 6th user has no avatar) ...");
+      $dim = User::IMAGE_STYLE_SPAN2;
+      $tmp = sys_get_temp_dir() . "/movdev-command-create-users.jpg";
+      $this->exec("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}", "Could not create random avatar!");
+      $this->property($user, "imageExtension", "jpg");
+
+      $this->progress->start($this->output, $c);
+      foreach ($usernamesWithAvatars as $avatarName => $username) {
+        $user->id = $this->database->selectAssoc("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $username ])["user_id"];
+        $this->property($user, "imageName", $avatarName);
+        $this->method($user, "convert", [ $tmp, User::IMAGE_STYLE_SPAN2 ]);
+        $this->method($user, "convert", [ $tmp, User::IMAGE_STYLE_SPAN1 ]);
+        $this->progress->advance();
+      }
+      unlink($tmp);
+      $this->progress->finish();
+    }
+
+    return $this->write("Successfully created {$amount} random users!", self::MESSAGE_TYPE_INFO);
   }
 
   /**
@@ -211,18 +289,49 @@ class Database extends \MovLib\Console\Command\Database {
         $this->exitOnError([ "Couldn't import schema!", "MariaDB error: {$this->database->getMySQLi()->error} ({$this->database->getMySQLi()->errno})" ]);
       }
     }
-    elseif (array_search("--" . self::OPTION_SEED, $argv) || array_search("-" . self::OPTION_SHORTCUT_SEED, $argv)) {
+    elseif ($options[self::OPTION_CREATE_USERS]) {
+      $this->createUsers($options[self::OPTION_CREATE_USERS]);
+    }
+    elseif (array_search("--" . self::OPTION_GIT, $argv) || array_search("-" . self::OPTION_GIT_SHORTCUT, $argv)) {
+      empty($options[self::OPTION_GIT]) ? $this->git() : $this->git($options[self::OPTION_GIT]);
+    }
+    elseif (array_search("--" . self::OPTION_SEED, $argv) || array_search("-" . self::OPTION_SEED_SHORTCUT, $argv)) {
       empty($options[self::OPTION_SEED]) ? $this->importSeedsInteractive() : $this->importSeed($options[self::OPTION_SEED]);
       $this->write("Importing uploads ...");
       $this->importSeedUploads();
       $this->write("All Successfull!", self::MESSAGE_TYPE_INFO);
     }
-    elseif (array_search("--" . self::OPTION_GIT, $argv) || array_search("-" . self::OPTION_SHORTCUT_GIT, $argv)) {
-      empty($options[self::OPTION_GIT]) ? $this->git() : $this->git($options[self::OPTION_GIT]);
-    }
     else {
       $this->exitOnError("Not implemented yet!");
     }
+  }
+
+  /**
+   * Create git repositories.
+   *
+   * @param string $type [optional]
+   *   If supplied, only repositories of this type (e.g. movie) are created, otherwise all repositories are created.
+   * @return this
+   */
+  protected function git($type = null) {
+    $supportedTypes = [ "movie" ];
+
+    if ($type) {
+      if (!in_array($type, $supportedTypes)) {
+        $supportedTypes = implode(", ", $supportedTypes);
+        $this->exitOnError("Not a valid type! valid types are {$supportedTypes}");
+      }
+      $this->createRepositories($type);
+    }
+    else {
+      foreach ($supportedTypes as $type) {
+        $this->createRepositories($type);
+      }
+    }
+
+    exec("chmod -R 777 {$_SERVER["DOCUMENT_ROOT"]}/history/*");
+
+    return $this;
   }
 
   /**
@@ -260,7 +369,7 @@ class Database extends \MovLib\Console\Command\Database {
    *
    * @return this
    */
-  private function importIntlTranslations() {
+  protected function importIntlTranslations() {
     global $i18n;
 
     // Contains all country and basic language codes that our application shall know about.
@@ -320,7 +429,7 @@ class Database extends \MovLib\Console\Command\Database {
    *   Whetever to truncate the table or not.
    * @return this
    */
-  private function importSeed($name, $truncate = true) {
+  protected function importSeed($name, $truncate = true) {
     if (!isset($this->seedScripts[$name])) {
       $choices = implode(", ", array_keys($this->seedScripts));
       return $this->write("Invalid seed name '{$name}'. Possible choices are: {$choices}", self::MESSAGE_TYPE_ERROR);
@@ -354,7 +463,7 @@ class Database extends \MovLib\Console\Command\Database {
    *
    * @return this
    */
-  private function importSeedUploads() {
+  protected function importSeedUploads() {
     $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/uploads", "Could not fix permissions on uploads folder!");
     $this->exec("rm -rf {$_SERVER["DOCUMENT_ROOT"]}/uploads/*", "Could not delete existing files in uploads folder!");
     $this->exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/", "Could not copy all seed uploads to the uploads folder!");
@@ -367,7 +476,7 @@ class Database extends \MovLib\Console\Command\Database {
    *
    * @return this
    */
-  private function importSeeds() {
+  protected function importSeeds() {
     try {
       $queries = null;
       foreach ($this->seedScripts as $table => $script) {
@@ -391,7 +500,7 @@ class Database extends \MovLib\Console\Command\Database {
    *
    * @return this
    */
-  private function importSeedsInteractive() {
+  protected function importSeedsInteractive() {
     do {
       $this->importSeed($this->askWithChoices("Please select a seed to import.", null, array_keys($this->seedScripts)));
     }
@@ -407,7 +516,7 @@ class Database extends \MovLib\Console\Command\Database {
    * @return this
    * @throws \MovLib\Exception\FileSystemException
    */
-  private function importTimeZones() {
+  protected function importTimeZones() {
     global $i18n;
 
     $systemLanguages = $GLOBALS["movlib"]["locales"];

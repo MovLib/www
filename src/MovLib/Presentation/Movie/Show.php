@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\Movie as MovieImage;
 use \MovLib\Data\Rating;
-use \MovLib\Presentation\Partial\Lists;
+use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
  * The movie display page.
@@ -57,7 +57,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->initMovie();
     $this->init($this->title);
     if (isset($this->model->year)) {
-      $this->pageTitle = $this->model->getDisplayTitle() . " <small>({$this->model->year})</small>";
+      $this->pageTitle = "{$this->model->getDisplayTitle()} <small>({$this->model->year})</small>";
     }
     if ($this->model->deleted === true) {
       return;
@@ -81,13 +81,15 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   protected function getPageContent() {
     global $i18n;
     if ($this->model->deleted === true) {
-        return $this->getGoneContent();
+      return $this->getGoneContent();
     }
+
     // Numeric Array holding all the page's content points in a uniform way.
     // Format:
     //   [0] => [ "id" => "first section id",   "title" => "translated title", "content" => "section content" ]
     //   [1] => [ "id" => "second section id",  "title" => "translated title", "content" => "section content" ]
     $contents = [];
+    $editRoute = $i18n->r("/movie/{0}/edit", [ $this->model->id ]);
 
     // ----------------------------------------------------------------------------------------------------------------- Synopsis
 
@@ -99,23 +101,23 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
     // ----------------------------------------------------------------------------------------------------------------- Directors
 
-    $directors = $this->model->getDirectors();
-    $c = count($directors);
-    for ($i = 0; $i < $c; ++$i) {
-      $directors[$i] = $this->a($i18n->r("/person/{0}", [ $directors[$i]["id"] ]), $directors[$i]["name"]);
-    }
-    $contents[] = [
-      "id"      => "directors",
-      "title"   => $i18n->t("Directors"),
-      "content" => (new Lists($directors, ""))->toHtmlList(),
-    ];
+    $list = new Unordered($this->model->getDirectors(), $i18n->t(
+      "No directors assigned yet, {0}add directors{1}?", [ "<a href='{$editRoute}'>", "</a>" ]
+    ));
+    $list->closure = function (&$director) {
+      global $i18n;
+      $director = $this->a($i18n->r("/person/{0}", [ $director["id"] ]), $director["name"]);
+    };
+    $contents[] = [ "id" => "directors", "title" => $i18n->t("Directors"), "content" => $list ];
 
     // ----------------------------------------------------------------------------------------------------------------- Titles
 
     $contents[] = [
       "id"      => "titles",
       "title"   => $i18n->t("Titles"),
-      "content" => (new Lists(array_column($this->model->getTitles(), "title"), ""))->toHtmlList(),
+      "content" => new Unordered(array_column($this->model->getTitles(), "title"), $i18n->t(
+        "No titles assigned yet, {0}add titles{1}?", [ "<a href='{$editRoute}'>", "</a>" ]
+      )),
     ];
 
     // ----------------------------------------------------------------------------------------------------------------- Taglines
@@ -123,28 +125,17 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $contents[] = [
       "id"      => "taglines",
       "title"   => $i18n->t("Taglines"),
-      "content" => (new Lists(array_column($this->model->getTagLines(), "tagline"), ""))->toHtmlList(),
+      "content" => new Unordered(array_column($this->model->getTagLines(), "tagline"), $i18n->t(
+        "No taglines assigned yet, {0}add taglines{1}?", [ "<a href='{$editRoute}'>", "</a>" ]
+      )),
     ];
 
     // Construct the content from the content array.
-
-    $content = "";
-    $c = count($contents);
+    $content = null;
+    $c       = count($contents);
     for ($i = 0; $i < $c; ++$i) {
       $this->secondaryNavigation->menuitems[] = [ "#{$contents[$i]["id"]}", $contents[$i]["title"], [ "title" => $i18n->t("Go to section") ] ];
-      if (empty($contents[$i]["content"])) {
-        $contents[$i]["content"] = $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [
-          $contents[$i]["title"],
-          "<a href='{$i18n->r("/movie/{0}/edit-{1}", [ $contents[$i]["id"] ])}'>",
-          "</a>",
-        ]);
-      }
-      $content .=
-        "<div id='{$contents[$i]["id"]}' class='movie-section'>" .
-          "<h2>{$contents[$i]["title"]} <small>{$this->a($i18n->r("/movie/{0}/edit-{1}", [ $this->model->id, $contents[$i]["id"] ]), $i18n->t("Edit"))}</small></h2>" .
-          $contents[$i]["content"] .
-        "</div>"
-      ;
+      $content .= "<div id='{$contents[$i]["id"]}' class='movie-section'><h2>{$contents[$i]["title"]} <small><a href='{$editRoute}'>{$i18n->t("Edit")}</a></small></h2>{$contents[$i]["content"]}</div>";
     }
     return $content;
   }
@@ -243,7 +234,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     for ($i = 0; $i < $c; ++$i) {
       $countries[$i] = $this->a($i18n->r("/country/{0}", [ $countries[$i]["code"] ]), $countries[$i]["name"]);
     }
-    $countries = (new Lists($countries, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("countries"), "<a href='{$i18n->r("/movie/{0}/edit", [ $this->model->id ])}'>", "</a>" ])))->toCommaSeparatedList();
+    $countries = (new Lists($countries, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("countries"), "<a href='{$i18n->r("/movie/{0}/edit", [ $this->model->id ])}'>", "</a>" ])))->getCommaSeparated();
     $additions .= "<p class='small'><span class='visuallyhidden'>{$i18n->t("Countries")}: </span>{$countries}</p>";
 
     // ----------------------------------------------------------------------------------------------------------------- Runtime, Genres & Styles
@@ -253,13 +244,13 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     for ($i = 0; $i < $c; ++$i) {
       $genres[$i] = $this->a($i18n->r("/genre/{0}", [ $genres[$i]["id"] ]), $genres[$i]["name"]);
     }
-    $genres = (new Lists($genres, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("genres"), "<a href='{$i18n->r("/movie/{0}/edit-genres", [ $this->model->id ])}'>", "</a>" ])))->toCommaSeparatedList();
+    $genres = (new Lists($genres, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("genres"), "<a href='{$i18n->r("/movie/{0}/edit-genres", [ $this->model->id ])}'>", "</a>" ])))->getCommaSeparated();
     $styles = $this->model->getStyles();
     $c = count($styles);
     for ($i = 0; $i < $c; ++$i) {
       $styles[$i] = $this->a($i18n->r("style/{0}", [ $styles[$i]["id"] ]), $styles[$i]["name"]);
     }
-    $styles = (new Lists($styles, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("styles"), "<a href='{$i18n->r("/movie/{0}/edit-styles", [ $this->model->id ])}'>", "</a>"])))->toCommaSeparatedList();
+    $styles = (new Lists($styles, $i18n->t("No {0} assigned yet, {1}add {0}{2}?", [ $i18n->t("styles"), "<a href='{$i18n->r("/movie/{0}/edit-styles", [ $this->model->id ])}'>", "</a>"])))->getCommaSeparated();
 
     $additions .=
       "<p class='small'>" .

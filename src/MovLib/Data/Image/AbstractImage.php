@@ -26,52 +26,24 @@ namespace MovLib\Data\Image;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractImage extends \MovLib\Data\Database {
+abstract class AbstractImage extends \MovLib\Data\Database implements \MovLib\Data\InterfaceImageStyles {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
   /**
-   * Every image has to have the thumbnail style of 70 pixel width.
+   * Image(s) minimum dimensions.
    *
-   * @var int
+   * The global minimum dimensions match the biggest default style. Any uploaded image must have at least these
+   * dimensions.
    */
-  const IMAGE_STYLE_THUMBNAIL = 1;
+  const IMAGE_MIN_HEIGHT = \MovLib\Data\IMAGE_STYLE_SPAN2;
+  const IMAGE_MIN_WIDTH  = \MovLib\Data\IMAGE_STYLE_SPAN2;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The image's name.
-   *
-   * @var string
-   */
-  protected $imageName;
-
-  /**
-   * The image's width.
-   *
-   * @internal Must be public for validation.
-   * @var int
-   */
-  public $imageWidth;
-
-  /**
-   * The image's height.
-   *
-   * @internal Must be public for validation.
-   * @var int
-   */
-  public $imageHeight;
-
-  /**
-   * The image's extension.
-   *
-   * @var string
-   */
-  protected $imageExtension;
 
   /**
    * The image's changed timestamp.
@@ -95,40 +67,41 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   public $imageExists = false;
 
   /**
+   * The image's extension.
+   *
+   * @var string
+   */
+  protected $imageExtension;
+
+  /**
+   * The image's height.
+   *
+   * @internal Must be public for validation.
+   * @var int
+   */
+  public $imageHeight;
+
+  /**
+   * The image's name.
+   *
+   * @var string
+   */
+  protected $imageName;
+
+  /**
    * All available styles information.
    *
    * @var array
    */
   protected $imageStyles;
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Private Properties
-
-
   /**
-   * All available image widths.
+   * The image's width.
    *
-   * All are direct matches to the CSS grid classes, you should only use these widths for all of your styles, to ensure
-   * that they always match the grid system. There are special occasions where images will not match the grid system,
-   * they need special attention. For an example of this have a look at the stream images of the various image details
-   * presentations.
-   *
-   * @var array
+   * @internal Must be public for validation.
+   * @var int
    */
-  protected $span = [
-     1 => 70,
-     2 => 140,
-     3 => 220,
-     4 => 300,
-     5 => 380,
-     6 => 460,
-     7 => 540,
-     8 => 620,
-     9 => 700,
-    10 => 780,
-    11 => 860,
-    12 => 940,
-  ];
+  public $imageWidth;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -145,15 +118,20 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    *   Absolute path to the source image for conversion.
    * @param mixed $style
    *   The style constant.
-   * @param int $width
-   *   The desired width of the converted image.
+   * @param int $width [optional]
+   *   The desired width of the converted image, defaults to using <var>$style</var> as width.
    * @param int $height [optional]
-   *   The desired height of the converted image.
+   *   The desired height of the converted image, defaults to no height which basically means that the height is
+   *   calculated according to the desired <var>$width</var>.
    * @param boolean $crop [optional]
-   *   If set to <code>TRUE</code> the image will be resized first to width x height and then cropped to the center.
+   *   If set to <code>TRUE</code> the image will be resized first to width x height and then cropped to the center,
+   *   defaults to no cropping.
    * @return this
    */
-  protected function convert($source, $style, $width, $height = null, $crop = false) {
+  protected function convert($source, $style, $width = null, $height = null, $crop = false) {
+    if (!$width) {
+      $width = $style;
+    }
     if ($crop === true) {
       $args = "'{$width}x{$height}>^' -gravity 'Center' -crop '{$width}x{$height}+0+0' +repage";
     }

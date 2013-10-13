@@ -175,7 +175,7 @@ trait TraitImageDetails {
         [ "alt" => "{$this->entityTitle} {$this->image->imageAlt}" ],
         $this->image->imageUri
       )}{$next}</div>" .
-      (new Lists($this->getImageDetails(), "", [ "class" => "dl--horizontal", "id" => "image-details--description" ]))->toDescriptionList()
+      (new Lists($this->getImageDetails(), "", [ "class" => "dl--horizontal", "id" => "image-details--description" ]))->getDescriptionList()
     ;
   }
 

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\History;
 
-use \MovLib\Presentation\Partial\Lists;
+use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
  * The movie history page.
@@ -106,43 +106,55 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $added = $this->getDiffItems($diff, "added", $className, $methodName, $itemIds);
     $edited = $this->getDiffItems($diff, "edited", $className, $methodName, $itemIds);
 
-    return (new Lists(array_merge($removed, $added, $edited), ""))->toHtmlList();
+    return new Unordered("", array_merge($removed, $added, $edited));
   }
 
   private function getDiffItems($diff, $case, $className, $methodName, $itemIds) {
     global $i18n;
     $itemNames = (new $className())->{$methodName}($itemIds);
-    $cssClass = ($case == "added") ? "green" : (($case == "removed") ? "red" : null);
-    $listItems = [];
-    $c = count($diff[$case]);
-    for ($i = 0; $i < $c; ++$i) {
-      if (isset($itemNames[$diff[$case][$i]['id']])) {
-        $itemName = $itemNames[$diff[$case][$i]['id']];
+    switch ($case) {
+      case "added":
+        $cssClass = "green";
+        break;
 
-        $propertyList = [];
-        foreach ($diff[$case][0] as $key => $value) {
-          if ($key != 'id' && $key != 'old') {
-            if ($case == 'edited') {
-              $propertyList[] = $i18n->t("<span class='property-name'>{0}: </span>", [ $key ]) .
-              $this->diffBetweenStringsToHtml(
-                $value,
-                $diff[$case][0]['old'][$key]
-              );
-            }
-            else {
-              $propertyList[] = "{$i18n->t("<span class='property-name'>{0}: </span>", [ $key ])} {$value}";
-            }
-          }
+      case "removed":
+        $cssClass = "red";
+        break;
+
+      default:
+        $cssClass = null;
+    }
+
+    $listItems = [];
+    $c         = count($diff[$case]);
+    for ($i = 0; $i < $c; ++$i) {
+      if (!isset($itemNames[$diff[$case][$i]["id"]])) {
+        continue;
+      }
+
+      $itemName = $itemNames[$diff[$case][$i]["id"]];
+      $propertyList = [];
+      foreach ($diff[$case][0] as $key => $value) {
+        if ($key == "id" || $key == "old") {
+          continue;
         }
 
-        $route = explode('\\', strtolower($className))[3];
-        $listItems[] = $this->a($i18n->r("/{0}/{1}", [ $route, $diff[$case][$i]['id'] ]), $i18n->t("{0}", [ $itemName ]), [
+        if ($case == "edited") {
+          $value = $this->diffBetweenStringsToHtml($value, $diff[$case][0]['old'][$key]);
+        }
+        $propertyList[] = "<span class='property-name'>{$i18n->t($key)}:</span> {$value}";
+      }
+
+      $route         = explode("\\", strtolower($className))[3];
+      $unorderedList = new Unordered("", $propertyList, [ "class" => $cssClass ]);
+      $listItems[]   =
+        "{$this->a($i18n->r("/{0}/{1}", [ $route, $diff[$case][$i]['id'] ]), $i18n->t("{0}", [ $itemName ]), [
           "class" => $cssClass,
           "title" => $i18n->t("Information about {0}", [ $itemName ])
-        ]) .
-        (new Lists($propertyList, "", [ "class" => $cssClass ]))->toHtmlList();
-      }
+        ])}{$unorderedList}"
+      ;
     }
+
     return $listItems;
   }
 

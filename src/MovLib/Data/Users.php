@@ -27,7 +27,42 @@ namespace MovLib\Data;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Users extends \MovLib\Data\Database {
+class Users extends \MovLib\Data\Images\AbstractImages {
+  use \MovLib\Data\Image\TraitUser;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The query to fetch the basic user data without <code>WHERE</code> clause.
+   *
+   * @var string
+   */
+  protected $query;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Instantiate new users database object.
+   */
+  public function __construct() {
+    $dim = self::IMAGE_STYLE_SPAN2;
+    $this->query =
+      "SELECT
+        `user_id` AS `id`,
+        `name`,
+        `avatar_name` AS `imageName`,
+        UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
+        `avatar_extension` AS `imageExtension`,
+        `avatar_changed` IS NOT NULL AS `imageExists`,
+        {$dim} AS `imageHeight`,
+        {$dim} AS `imageWidth`
+      FROM `users`"
+    ;
+  }
 
   /**
    * Get numeric array with basic user information.
@@ -36,26 +71,49 @@ class Users extends \MovLib\Data\Database {
    *   Numeric array containing the desired user IDs.
    * @return array
    *   Array containing the users with the user's unique ID as key.
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function getUsers(array $userIds) {
+  public function getUsersById(array $userIds) {
     if (empty($userIds)) {
       return [];
     }
-    
-    $userIds = array_unique($userIds);
-    $c = count($userIds);
-    $in = rtrim(str_repeat("?,", $c), ",");
-    $result = $this->select(
-      "SELECT `user_id` AS `id`, `name` FROM `users` WHERE `user_id` IN ({$in})",
-      str_repeat("d", $c),
-      $userIds
-    );
-    $users = [];
-    $c = count($result);
+    $userIds     = array_unique($userIds);
+    $c           = count($userIds);
+    $in          = rtrim(str_repeat("?,", $c), ",");
+    $result      = $this->select("{$this->query} WHERE `user_id` IN ({$in})", str_repeat("d", $c), $userIds);
+    $users       = [];
+    $c           = count($result);
     for ($i = 0; $i < $c; ++$i) {
       $users[$result[$i]["id"]] = $result[$i];
     }
     return $users;
+  }
+
+  /**
+   * @override
+   */
+  public function getImageStyleAttributes($offset, $style) {
+    return [
+      "alt"    => "",
+      "height" => $style,
+      "src"    => "{$GLOBALS["movlib"]["static_domain"]}{$this->imageDirectory}/{$this->entities[$offset]["imageName"]}.{$style}.{$this->entities[$offset]["imageExtension"]}?c={$this->entities[$offset]["imageChanged"]}",
+      "width"  => $style,
+    ];
+  }
+
+  /**
+   * Get numeric array with basic user information sorted by creation time.
+   *
+   * @param int $lowerBound [optional]
+   *   Lower pagination limit, defaults to <code>0</code>.
+   * @param int $upperBound [optional]
+   *   Upper pagination limit (how many items), defaults to <code>Users::DEFAULT_PAGINATION_SIZE</code>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function orderByCreated($lowerBound = 0, $upperBound = self::DEFAULT_PAGINATION_SIZE) {
+    $this->entities = $this->select("{$this->query} WHERE `deactivated` = false ORDER BY `created` DESC LIMIT ?, ?", "ii", [ $lowerBound, $upperBound ]);
+    return $this;
   }
 
 }

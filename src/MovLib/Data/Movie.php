@@ -560,26 +560,27 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getTitles() {
     global $i18n;
-    $dbTitles = $this->select(
-      "SELECT `title` AS `title`,
+    if (($result = $this->select(
+      "SELECT
+        `title` AS `title`,
         COLUMN_GET(`dyn_comments`, ? AS BINARY) AS `comment`,
         `is_display_title`,
         `language_id` AS `language`
       FROM `movies_titles`
-      WHERE `movie_id` = ?",
+        WHERE `movie_id` = ?",
       "sd",
       [ $i18n->languageCode, $this->id ]
-    );
-    if (($c = count($dbTitles))){
+    ))) {
       $i18nLanguages = $i18n->getLanguages();
-      $titlesSort = [];
+      $titlesSorted  = [];
+      $c             = count($result);
       for ($i = 0; $i < $c; ++$i) {
-        $dbTitles[$i]["language"] = $i18nLanguages[ $dbTitles[$i]["language"] ];
-        settype($dbTitles[$i]["is_display_title"], "boolean");
-        $titlesSort["{$dbTitles[$i]["title"]}{$dbTitles[$i]["language"]["id"]}"] = $dbTitles[$i];
+        $result[$i]["language"] = $i18nLanguages[ $result[$i]["language"] ];
+        settype($result[$i]["is_display_title"], "boolean");
+        $titlesSorted["{$result[$i]["title"]}{$result[$i]["language"]["id"]}"] = $result[$i];
       }
-      $i18n->getCollator()->ksort($titlesSort);
-      return array_values($titlesSort);
+      $i18n->getCollator()->ksort($titlesSorted);
+      return array_values($titlesSorted);
     }
     return [];
   }

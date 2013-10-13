@@ -30,19 +30,11 @@ use \MovLib\Exception\UserException;
  * @since 0.0.1-dev
  */
 class User extends \MovLib\Data\Image\AbstractImage {
+  use \MovLib\Data\Image\TraitUser;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
-
-  /**
-   * Avatar style for span 2 elements.
-   *
-   * Width and height of this image will be 140 pixels.
-   *
-   * @var string
-   */
-  const IMAGE_STYLE_DEFAULT = 2;
 
   /**
    * Load the user from ID.
@@ -131,13 +123,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @var int
    */
   public $id;
-
-  /**
-   * The directory where the user image's reside.
-   *
-   * @var string
-   */
-  protected $imageDirectory = "user";
 
   /**
    * The user's last login (UNIX timestamp).
@@ -262,7 +247,8 @@ class User extends \MovLib\Data\Image\AbstractImage {
           `website`,
           `avatar_name` AS `imageName`,
           UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
-          `avatar_extension` AS `imageExtension`
+          `avatar_extension` AS `imageExtension`,
+          `avatar_changed` IS NOT NULL AS `imageExists`
         FROM `users`
         WHERE `{$from}` = ?",
         $this->types[$from],
@@ -279,12 +265,10 @@ class User extends \MovLib\Data\Image\AbstractImage {
 
       settype($this->private, "boolean");
       settype($this->deactivated, "boolean");
+      settype($this->imageExists, "boolean");
 
-      if (isset($this->imageChanged)) {
-        $this->imageExists = true;
-      }
-
-      $this->imageMinHeight = $this->imageMinWidth = $this->span[self::IMAGE_STYLE_DEFAULT];
+      $this->imageHeight = self::IMAGE_MIN_HEIGHT;
+      $this->imageWidth  = self::IMAGE_MIN_WIDTH;
     }
   }
 
@@ -399,7 +383,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @return this
    */
   protected function deleteImageOriginalAndStyles() {
-    foreach ([ self::IMAGE_STYLE_DEFAULT, self::IMAGE_STYLE_THUMBNAIL ] as $style) {
+    foreach ([ self::IMAGE_STYLE_SPAN2, self::IMAGE_STYLE_SPAN1 ] as $style) {
       $path = $this->getImagePath($style);
       if (is_file($path)) {
         unlink($path);
@@ -419,13 +403,13 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   styles (instead of a delayed call to ImageMagick as in other image classes). This is because avatar's are small
    *   images and not those huge monsters as we get them if someone uploads a poster or lobby card.
    * @param string $source
-   *   The absolute path to the uploaded image.
+   *   {@inheritdoc}
    * @param int $width
-   *   The width of the uploaded image.
+   *   <b>UNUSED</b>
    * @param int $height
-   *   The height of the uploaded image.
+   *   <b>UNUSED</b>
    * @param string $extension
-   *   The file extension of the uploaded image (including the leading dot).
+   *   {@inheritdoc}
    * @return this
    */
   public function moveUploadedImage($source, $width, $height, $extension) {
@@ -433,9 +417,9 @@ class User extends \MovLib\Data\Image\AbstractImage {
     $this->imageExists    = true;
     $this->imageExtension = $extension;
     $this->query("UPDATE `users` SET `avatar_changed` = FROM_UNIXTIME(?), `avatar_extension` = ? WHERE `user_id` = ?", "ssd", [ $this->imageChanged, $this->imageExtension, $this->id ]);
-    $this->convert($source, self::IMAGE_STYLE_DEFAULT, $this->span[self::IMAGE_STYLE_DEFAULT], $this->span[self::IMAGE_STYLE_DEFAULT], true);
+    $this->convert($source, self::IMAGE_STYLE_SPAN2, self::IMAGE_STYLE_SPAN2, self::IMAGE_STYLE_SPAN2, true);
     unlink($source);
-    $this->convert($this->getImagePath(self::IMAGE_STYLE_DEFAULT), self::IMAGE_STYLE_THUMBNAIL, $this->span[self::IMAGE_STYLE_THUMBNAIL]);
+    $this->convert($this->getImagePath(self::IMAGE_STYLE_SPAN2), self::IMAGE_STYLE_SPAN1);
     return $this;
   }
 
@@ -446,7 +430,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   the src and grabbing the height and width is ultra fast.
    */
   public function getImageStyleAttributes($style, array &$attributes = []) {
-    $attributes["height"] = $attributes["width"]  = $this->span[$style];
+    $attributes["height"] = $attributes["width"] = $style;
     $attributes["src"]    = "{$GLOBALS["movlib"]["static_domain"]}{$this->imageDirectory}/{$this->imageName}.{$style}.{$this->imageExtension}?c={$this->imageChanged}";
     return $attributes;
   }
@@ -576,7 +560,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
       ->query(
         "INSERT INTO `users` (`avatar_name`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES (?, '', ?, ?, ?, ?)",
         "sssss",
-        [ $this->filename($this->name), $this->email, $this->name, $password, $i18n->languageCode ]
+        [ $this->filename(html_entity_decode($this->name, ENT_QUOTES|ENT_HTML5)), $this->email, $this->name, $password, $i18n->languageCode ]
       )
     ;
     $this->id = $this->insertId;

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Gallery;
 
-use \MovLib\Presentation\Partial\Lists;
+use \MovLib\Presentation\Partial\Ordered;
 
 /**
  * Base trait for all gallery presentations.
@@ -29,6 +29,10 @@ use \MovLib\Presentation\Partial\Lists;
  * @since 0.0.1-dev
  */
 trait TraitGallery {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * Numeric array containing <code>\MovLib\Data\AbstractImage</code> objects to display.
@@ -73,6 +77,10 @@ trait TraitGallery {
    */
   protected $uploadText;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
    * @inheritdoc
    */
@@ -80,14 +88,12 @@ trait TraitGallery {
     if ($this->model->deleted === true) {
       return $this->getGoneContent();
     }
-    return (new Lists(
-      $this->getImages($this->images, null, true),
-      "<p>{$this->noImagesText}</p>" .
-      "<p>{$this->uploadText}</p>",
-      [ "id" => "gallery-list"])
-    )->toHtmlList("ol", function ($item) {
-      return "<li class='span span--2'>{$item}</li>";
-    });
+    return new Ordered(
+      "<p>{$this->noImagesText}</p><p>{$this->uploadText}</p>",
+      $this->getImages($this->entities, null, true),
+      [ "id" => "gallery-list" ],
+      [ "class" => "span span--2" ]
+    );
   }
 
 }

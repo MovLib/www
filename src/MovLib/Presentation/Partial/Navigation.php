@@ -159,8 +159,8 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
         $menuitems .= $this->glue;
       }
       $this->menuitems[$i][2]["role"] = "menuitem";
-      if (is_callable($this->closure)) {
-        call_user_func_array($this->closure, [ &$this->menuitems[$i], $i, $c ]);
+      if ($this->closure) {
+        $this->menuitems[$i] = call_user_func_array($this->closure, [ $this->menuitems[$i], $i, $c ]);
       }
       $menuitem   = $this->a($this->menuitems[$i][0], $this->menuitems[$i][1], $this->menuitems[$i][2]);
       $menuitems .= ($this->unorderedList === true) ? "<li>{$menuitem}</li>" : $menuitem;

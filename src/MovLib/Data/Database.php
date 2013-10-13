@@ -43,6 +43,13 @@ class Database {
 
 
   /**
+   * The default pagination size.
+   *
+   * @var int
+   */
+  const DEFAULT_PAGINATION_SIZE = 25;
+
+  /**
    * TTL value for records in the temporary table that are deleted on a daily basis.
    *
    * @var int
@@ -52,20 +59,6 @@ class Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * Name of the database to which this instance is connected.
-   *
-   * @var string
-   */
-  protected $database;
-
-  /**
-   * Associative array containing a single MySQLi instance for each database.
-   *
-   * @var \mysqli
-   */
-  protected static $mysqli = [];
 
   /**
    * The number of affected rows from previous query.
@@ -82,6 +75,13 @@ class Database {
   protected $affectedRows = -1;
 
   /**
+   * Name of the database to which this instance is connected.
+   *
+   * @var string
+   */
+  protected $database;
+
+  /**
    * The <code>AUTO_INCREMENT</code> ID from previous query.
    *
    * <b>NOTE</b>
@@ -92,6 +92,13 @@ class Database {
    * @return int|string
    */
   protected $insertId = 0;
+
+  /**
+   * Associative array containing a single MySQLi instance for each database.
+   *
+   * @var \mysqli
+   */
+  protected static $mysqli = [];
 
   /**
    * The MySQLi statement object for all queries.

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Data\Image\AbstractImage;
+use \MovLib\Data\Image\AbstractImage as Image;
 use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\ValidationException;
@@ -85,8 +85,8 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
       $this->attributes["data-min-width"]  = $this->image->imageWidth;
     }
     else {
-      $this->attributes["data-min-height"] = $GLOBALS["movlib"]["image_min_height"];
-      $this->attributes["data-min-width"]  = $GLOBALS["movlib"]["image_min_width"];
+      $this->attributes["data-min-height"] = Image::IMAGE_MIN_HEIGHT;
+      $this->attributes["data-min-width"]  = Image::IMAGE_MIN_WIDTH;
     }
     $helpMessageAttributes = $this->formatBytes($this->attributes["data-max-filesize"]);
     $helpMessageAttributes[] = $this->attributes["data-min-width"];
@@ -101,7 +101,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     if ($this->image->imageExists === true) {
       return
         "<div class='row'>" .
-          "<div class='span span--1'>{$this->getImage($this->image, AbstractImage::IMAGE_STYLE_THUMBNAIL)}</div>" .
+          "<div class='span span--1'>{$this->getImage($this->image, Image::IMAGE_STYLE_SPAN1)}</div>" .
           "<div class='span span--8'>{$this->help}<label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></div>" .
         "</div>"
       ;
