@@ -57,109 +57,8 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    */
   protected function getPageContent() {
     $this->addClass("active", $this->secondaryNavigation->menuitems[3][2]);
-    return $this->getDiffContent();
+    return $this->contentDiffPage();
   }
-
-//  /**
-//   * Helper method to generate Liste of changed items.
-//   *
-//   * @global \MovLib\Data\I18n $i18n
-//   * @param array $diff
-//   *   Associative array with added and removed items.
-//   * @param string $className
-//   *   The name of the class (with namespace) to instantiate to get item information.
-//   * @param type $methodName
-//   *   The name of the method to call for item information.
-//   * @return \MovLib\Presentation\Partial\Lists
-//   *   A HTML List of changed items.
-//   */
-//  private function getDiffItems($diff, $className, $methodName) {
-//    global $i18n;
-//    $items = [];
-//    foreach ($diff as $key => $itemIds) {
-//      if (!empty($itemIds)) {
-//        $itemNames = (new $className())->{$methodName}($itemIds);
-//        foreach ($itemIds as $id) {
-//          if (isset($itemNames[$id])) {
-//            $route = explode('\\', strtolower($className))[3];
-//            $items[] = $this->a($i18n->r("/{0}/{1}", [ $route, $id ]), $i18n->t("{0}", [ $itemNames[$id] ]), [
-//              "class" => ($key == "added") ? "green" : (($key == "removed") ? "red" : null),
-//              "title" => $i18n->t("Description of {0}", [ $itemNames[$id] ])
-//            ]);
-//          }
-//        }
-//      }
-//    }
-//    return (new Lists($items, ""))->toHtmlList();
-//  }
-
-  private function getDiff($diff, $className, $methodName) {
-    global $i18n;
-    $itemIds = [];
-    $allItems = array_merge($diff["added"], $diff["removed"], $diff["edited"]);
-    $c = count($allItems);
-    for ($i = 0; $i < $c; ++$i) {
-      $itemIds[] = $allItems[$i]['id'];
-    }
-
-    $removed = $this->getDiffItems($diff, "removed", $className, $methodName, $itemIds);
-    $added = $this->getDiffItems($diff, "added", $className, $methodName, $itemIds);
-    $edited = $this->getDiffItems($diff, "edited", $className, $methodName, $itemIds);
-
-    return new Unordered(array_merge($removed, $added, $edited), "");
-  }
-
-  private function getDiffItems($diff, $case, $className, $methodName, $itemIds) {
-    global $i18n;
-    $itemNames = (new $className())->{$methodName}($itemIds);
-    switch ($case) {
-      case "added":
-        $cssClass = "green";
-        break;
-
-      case "removed":
-        $cssClass = "red";
-        break;
-
-      default:
-        $cssClass = null;
-    }
-
-    $listItems = [];
-    $c         = count($diff[$case]);
-    for ($i = 0; $i < $c; ++$i) {
-      if (!isset($itemNames[$diff[$case][$i]["id"]])) {
-        continue;
-      }
-
-      $itemName = $itemNames[$diff[$case][$i]["id"]];
-      $propertyList = [];
-      foreach ($diff[$case][0] as $key => $value) {
-        if ($key == "id" || $key == "old") {
-          continue;
-        }
-
-        if ($case == "edited") {
-          $value = $this->diffBetweenStringsToHtml($value, $diff[$case][0]['old'][$key]);
-        }
-        $propertyList[] = "<span class='property-name'>{$i18n->t($key)}:</span> {$value}";
-      }
-
-      $route         = explode("\\", strtolower($className))[3];
-      $unorderedList = new Unordered($propertyList, "", [ "class" => $cssClass ]);
-      $listItems[]   =
-        "{$this->a($i18n->r("/{0}/{1}", [ $route, $diff[$case][$i]['id'] ]), $i18n->t("{0}", [ $itemName ]), [
-          "class" => $cssClass,
-          "title" => $i18n->t("Information about {0}", [ $itemName ])
-        ])}{$unorderedList}"
-      ;
-    }
-
-    return $listItems;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Diff Methods
 
  /**
    * Helper method to generate Liste of changed awards.
@@ -182,7 +81,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed casts.
    */
   private function getCast($diff) {
-    return $this->getDiff($diff, "\MovLib\Data\Person", "getPersonNames");
+    return $this->diffArray($diff, "\MovLib\Data\Person", "getPersonNames");
   }
 
   /**
@@ -194,7 +93,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed countries.
    */
   private function getCountries($diff) {
-    return $this->getDiffItems($diff, "\MovLib\Data\Country", "getCountryNames");
+    return $this->diffIds($diff, "\MovLib\Data\Country", "getCountryNames");
   }
 
   /**
@@ -218,7 +117,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed directors.
    */
   private function getDirectors($diff) {
-    return $this->getDiffItems($diff, "\MovLib\Data\Person", "getPersonNames");
+    return $this->diffIds($diff, "\MovLib\Data\Person", "getPersonNames");
   }
 
   /**
@@ -230,7 +129,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed genres.
    */
   private function getGenres($diff) {
-    return $this->getDiffItems($diff, "\MovLib\Data\Genre", "getGenreNames");
+    return $this->diffIds($diff, "\MovLib\Data\Genre", "getGenreNames");
   }
 
   /**
@@ -242,7 +141,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed languages.
    */
   private function getLanguages($diff) {
-    return $this->getDiffItems($diff, "\MovLib\Data\Language", "getLanguageNames");
+    return $this->diffIds($diff, "\MovLib\Data\Language", "getLanguageNames");
   }
 
   /**
@@ -278,7 +177,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed styles.
    */
   private function getStyles($diff) {
-    return $this->getDiffItems($diff, "\MovLib\Data\Style", "getStyleNames");
+    return $this->diffIds($diff, "\MovLib\Data\Style", "getStyleNames");
   }
 
   /**
