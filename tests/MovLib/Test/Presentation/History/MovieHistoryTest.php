@@ -18,7 +18,7 @@
 namespace MovLib\Test\Presentation\Movie;
 
 use \MovLib\Data\History\Movie;
-use \MovLib\Presentation\History\MovieHistoryDiff;
+use \MovLib\Presentation\History\MovieHistory;
 
 /**
  * Test the movie history
@@ -49,14 +49,6 @@ class MovieHistoryTest extends \PHPUnit_Framework_TestCase {
     $movie = new Movie(2, "phpunitrepos");
     $commitHash = $movie->createRepository();
     static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
-
-    $movie->startEditing();
-    $commitHash = $movie->saveHistory([ "original_title" => "The foobar is a lie" ], "first commit");
-    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
-
-    $movie->startEditing();
-    $commitHash = $movie->saveHistory([ "original_title" => "The bar is not a lie" ], "second commit");
-    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
   }
 
   public static function tearDownAfterClass() {
@@ -69,13 +61,41 @@ class MovieHistoryTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\History\MovieHistory::diffToHtml
+   * @covers \MovLib\Presentation\History\TraitHistory::contentRevisionsPage
    */
-  public function testdiffToHtml() {
-    $historyPage = new MovieHistoryDiff("phpunitrepos");
-    $this->assertEquals(
-      "The<span class='red'>foobar</span><span class='green'>bar</span> is<span class='green'>not</span> a lie",
-      get_reflection_method($historyPage, "diffToHtml")->invoke($historyPage, "HEAD", "HEAD^1", "original_title")
+  public function testContentRevisionsPage() {
+    $movie        = new Movie(2, "phpunitrepos");
+    $historyPage  = new MovieHistory("phpunitrepos");
+
+    $this->assertContains(
+      "No revisions found",
+      get_reflection_method($historyPage, "contentRevisionsPage")->invoke($historyPage)
+    );
+
+    $movie->startEditing();
+    $commitHash = $movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
+    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+
+    $this->assertContains(
+      "added original title",
+      get_reflection_method($historyPage, "contentRevisionsPage")->invoke($historyPage)
+    );
+    $this->assertContains(
+      "<ul><li>Original Title</li></ul>",
+      get_reflection_method($historyPage, "contentRevisionsPage")->invoke($historyPage)
+    );
+
+    $movie->startEditing();
+    $commitHash = $movie->saveHistory([ "original_title" => "The bar is not a lie", "cast" => [1,2,3] ], "edited original title, added cast");
+    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+
+    $this->assertContains(
+      "edited original title, added cast",
+      get_reflection_method($historyPage, "contentRevisionsPage")->invoke($historyPage)
+    );
+    $this->assertContains(
+      "<ul><li>Cast</li><li>Original Title</li></ul>",
+      get_reflection_method($historyPage, "contentRevisionsPage")->invoke($historyPage)
     );
   }
 
