@@ -41,20 +41,22 @@ class Movies extends \MovLib\Data\Database {
    * @return array
    *   Sorted numeric array containing the movie information as <code>\MovLib\Data\Movie</code> objects.
    */
-  public function getMoviesByCreated($lowerBound = 0, $upperBound = 25) {
+  public function getMoviesByCreated($lowerBound = 0, $upperBound = self::DEFAULT_PAGINATION_SIZE) {
     global $i18n;
     $movies = $this->select(
       "SELECT
         `movie_id` AS `id`,
-        `original_title` AS `originalTitle`,
-        `rating` AS `rating`,
-        `mean_rating` AS `meanRating`,
-        `votes`,
-        `deleted`,
-        `year`,
-        `runtime`,
-        `rank`,
-        COLUMN_GET(`dyn_synopses`, '{$i18n->languageCode}' AS BINARY) AS `synopsis`
+          `original_title` AS `originalTitle`,
+          `rating` AS `rating`,
+          `mean_rating` AS `meanRating`,
+          `votes`,
+          `deleted`,
+          `year`,
+          `runtime`,
+          `rank`,
+          COLUMN_GET(`dyn_synopses`, '{$i18n->languageCode}' AS BINARY) AS `synopsis`,
+          `website`,
+          UNIX_TIMESTAMP(`created`) AS `created`
       FROM `movies`
       WHERE `deleted` = 0
       ORDER BY `created` DESC

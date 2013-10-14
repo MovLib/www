@@ -48,7 +48,7 @@ class Collator extends \Collator {
    * @return boolean
    *   Returns <code>TRUE</code> on success or <code>FALSE</code> on failure.
    */
-  public function ksort(&$array, $sort_flags = \Collator::SORT_REGULAR) {
+  public function ksort(array &$array, $sort_flags = \Collator::SORT_REGULAR) {
     $original = $array;
     $sorted = array_keys($array);
     if (!$this->sort($sorted, $sort_flags)) {
