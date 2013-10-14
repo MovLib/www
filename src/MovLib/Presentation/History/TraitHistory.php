@@ -20,7 +20,7 @@ namespace MovLib\Presentation\History;
 use \IntlDateFormatter;
 use \Locale;
 use \MovLib\Data\Users;
-use \MovLib\Presentation\Partial\Lists;
+use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
  * Description of AbstractHistory
@@ -180,7 +180,7 @@ trait TraitHistory {
     }
 
     $html .=
-        (new Lists($changedFiles, ""))->getHTML() .
+        (new Unordered($changedFiles, "")) .
       "</div>";
 
     return $html;
@@ -253,15 +253,15 @@ trait TraitHistory {
         );
 
       $changedFiles = $this->historyModel->getChangedFiles($commits[$i]["hash"], "{$commits[$i]["hash"]}^1");
-      $revisions[$i] .= (new Lists($this->formatFileNames($changedFiles), $i18n->t("Nothing changed"), [
+      $revisions[$i] .= new Unordered($this->formatFileNames($changedFiles), $i18n->t("Nothing changed"), [
         "class" => "well well--small no-list"
-      ]))->getHTML();
+      ]);
     }
 
     return
       "<div id='revision-history'>" .
         "<h2>{$i18n->t("Revision history")}</h2>" .
-        (new Lists($revisions, $i18n->t("No revisions found")))->getHTML() .
+        new Unordered($revisions, $i18n->t("No revisions found")) .
       "</div>";
   }
 

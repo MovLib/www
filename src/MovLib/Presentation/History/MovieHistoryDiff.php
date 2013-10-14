@@ -106,7 +106,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $added = $this->getDiffItems($diff, "added", $className, $methodName, $itemIds);
     $edited = $this->getDiffItems($diff, "edited", $className, $methodName, $itemIds);
 
-    return new Unordered("", array_merge($removed, $added, $edited));
+    return new Unordered(array_merge($removed, $added, $edited), "");
   }
 
   private function getDiffItems($diff, $case, $className, $methodName, $itemIds) {
@@ -146,7 +146,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
       }
 
       $route         = explode("\\", strtolower($className))[3];
-      $unorderedList = new Unordered("", $propertyList, [ "class" => $cssClass ]);
+      $unorderedList = new Unordered($propertyList, "", [ "class" => $cssClass ]);
       $listItems[]   =
         "{$this->a($i18n->r("/{0}/{1}", [ $route, $diff[$case][$i]['id'] ]), $i18n->t("{0}", [ $itemName ]), [
           "class" => $cssClass,
