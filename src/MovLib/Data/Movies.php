@@ -41,7 +41,7 @@ class Movies extends \MovLib\Data\Database {
    * @return array
    *   Sorted numeric array containing the movie information as <code>\MovLib\Data\Movie</code> objects.
    */
-  public function getMoviesByCreated($lowerBound = 0, $upperBound = 25) {
+  public function getMoviesByCreated($lowerBound = 0, $upperBound = self::DEFAULT_PAGINATION_SIZE) {
     global $i18n;
     $movies = $this->select(
       "SELECT
