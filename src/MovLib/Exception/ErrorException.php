@@ -31,7 +31,7 @@ use \MovLib\Data\Delayed\Logger;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorException extends \MovLib\Exception\AbstractException {
+class ErrorException extends \ErrorException {
 
   /**
    * Instantiate new error exception.
@@ -46,7 +46,7 @@ class ErrorException extends \MovLib\Exception\AbstractException {
    *   The line number within the file.
    */
   public function __construct($type, $message, $file, $line) {
-    parent::__construct($message, null, $type);
+    parent::__construct($message, $type, 0, $file, $line);
     $this->file = $file;
     $this->line = $line;
     switch ($type) {
