@@ -90,7 +90,7 @@ class Ordered extends \MovLib\Presentation\Partial\Lists\AbstractList {
         }
         $list .= "<li{$this->expandTagAttributes($this->listItemsAttributes)}>{$this->listItems[$i]}</li>";
       }
-      return "<{$this->tag}>{$list}</{$this->tag}>";
+      return "<{$this->tag}{$this->expandTagAttributes($this->attributes)}>{$list}</{$this->tag}>";
     }
     return $this->noItemsText;
   }

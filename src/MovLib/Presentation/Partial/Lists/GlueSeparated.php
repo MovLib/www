@@ -40,7 +40,7 @@ class GlueSeparated extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *
    * @var string
    */
-  public $glue = ", ";
+  public $glue;
 
   /**
    * String to insert before the list.
@@ -55,6 +55,27 @@ class GlueSeparated extends \MovLib\Presentation\Partial\Lists\AbstractList {
    * @var string
    */
   public $listAfter;
+
+  /**
+   * Instantiate new glue separated list.
+   *
+   * @param mixed $listItems
+   *   The list's items.
+   * @param string $noItemsText [optional]
+   *   The list's translated text if no items are present, defaults to no text.
+   * @param string $glue [optional]
+   *   The glue to connect the list items with, defaults to <code>", "</code>
+   * @param string $listBefore [optional]
+   *   The translated text to display before the list, defaults to no text.
+   * @param string $listAfter [optional]
+   *   The translated text to display before the list, defaults to no text.
+   */
+  public function __construct($listItems, $noItemsText = null, $glue = ", ", $listBefore = null, $listAfter = null) {
+    parent::__construct($listItems, $noItemsText, null);
+    $this->glue = $glue;
+    $this->listBefore = $listBefore;
+    $this->listAfter = $listAfter;
+  }
 
   /**
    * Get the string representation of the glue separated list.
