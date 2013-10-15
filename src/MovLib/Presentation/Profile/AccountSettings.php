@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Profile;
 
 use \IntlDateFormatter;
 use \MovLib\Data\I18n;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
@@ -144,7 +144,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     $this->init($i18n->t("Account Settings"));
-    $this->user = new User(User::FROM_ID, $session->userId);
+    $this->user = new UserExtended(UserExtended::FROM_ID, $session->userId);
 
     $this->realName = new InputText("real_name", $i18n->t("Real Name"), [
       "autofocus",

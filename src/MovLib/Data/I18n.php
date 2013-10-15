@@ -23,7 +23,6 @@ use \Locale;
 use \MessageFormatter;
 use \MovLib\Data\Collator;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-use \MovLib\Exception\DatabaseException;
 
 /**
  * @todo Description of I18nModel

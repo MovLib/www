@@ -90,11 +90,11 @@ abstract class AbstractBase {
    *
    * @param string $class
    *   The CSS class(es) that should be added to the element's attributes array.
-   * @param array $attributes
+   * @param array $attributes [optional]
    *   The attributes array of the element to which the CSS class(es) should be added.
    * @return this
    */
-  protected final function addClass($class, array &$attributes = []) {
+  protected final function addClass($class, array &$attributes = null) {
     $attributes["class"] = empty($attributes["class"]) ? $class : "{$attributes["class"]} {$class}";
     return $this;
   }
@@ -193,33 +193,32 @@ abstract class AbstractBase {
   /**
    * Get the image.
    *
-   * @param \MovLib\Data\Image\AbstractImage $image
-   *   An instance of <code>AbstractImage</code>.
-   * @param string $style
-   *   The desired style, must be present within the passed <code>AbstractImage</code> instance.
+   * @param \MovLib\Data\Image\Style $style
+   *   The desired style object.
+   * @param boolean $route [optional]
+   *   The route to which the image should be linked, default <code>TRUE</code> will use the route from the style
+   *   instance, set it to <code>FALSE</code> for no linking at all and include your own route for custom linking.
    * @param array $attributes [optional]
-   *   Additional attributes that should be applied to the image. Please note that <code>"width"</code>,
-   *   <code>"height"</code> and <code>"src"</code> are always set and overriden if set before. This is to ensure that
-   *   the image really matches the desired style.
-   * @param array $route [optional]
-   *   The route for the anchor to surround the image with.
+   *   Additional attributes that should be applied to the image. Please note that the image specific attributes are
+   *   always overriden by this method, this includes: <code>"src"</code>, <code>"width"</code> and <code>"height"</code>
    * @param array $anchorAttributes [optional]
-   *   The additional attributes for the anchor.
+   *   Additional attributes for the anchor.
    * @return string
    *   The image.
    */
-  protected final function getImage($image, $style, array $attributes = null, $route = null, array $anchorAttributes = null) {
-    if ($image->imageExists === true) {
-      if (!isset($attributes["alt"])) {
-        $attributes["alt"] = "";
-      }
-      if ($route) {
-        $this->addClass("ia", $anchorAttributes);
-        return "<a{$this->expandTagAttributes($anchorAttributes)}></a>";
-      }
-      return "<img{$this->expandTagAttributes($image->getImageStyleAttributes($style, $attributes))}>";
+  protected final function getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null) {
+    if (!isset($attributes["alt"])) {
+      $attributes["alt"] = $style->alt;
     }
-    return "no image";
+    $attributes["src"]    = $style->src;
+    $attributes["width"]  = $style->width;
+    $attributes["height"] = $style->height;
+    $image = "<img{$this->expandTagAttributes($attributes)}>";
+    if ($route !== false) {
+      $anchorAttributes["href"] = $route === true ? $style->route : $route;
+      $image = "<a{$this->expandTagAttributes($anchorAttributes)}>{$image}</a>";
+    }
+    return $image;
   }
 
   /**

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Users;
 
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\UserException;
 use \MovLib\Exception\Client\UnauthorizedException;
@@ -188,7 +188,7 @@ class Registration extends \MovLib\Presentation\FormPage {
    */
   public function validate(array $errors = null) {
     global $i18n;
-    $user           = new User();
+    $user           = new UserExtended();
     $user->name     = $this->username->value;
     $usernameErrors = null;
 
@@ -287,7 +287,7 @@ class Registration extends \MovLib\Presentation\FormPage {
         throw new ValidationException($i18n->t("The activation token is missing, please go back to the mail we sent you and copy the whole link."));
       }
 
-      $user        = new User();
+      $user        = new UserExtended();
       $user->email = base64_decode($_GET["token"]);
 
       if (filter_var($user->email, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {

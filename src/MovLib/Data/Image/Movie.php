@@ -300,4 +300,16 @@ class Movie extends \MovLib\Data\Image\AbstractImage {
     )[0]["count"];
   }
 
+  protected function generateImageStyles($source) {
+
+  }
+
+  public function commit() {
+
+  }
+
+  public function getImageStyle($style = self::IMAGESTYLE_SPAN_2) {
+
+  }
+
 }

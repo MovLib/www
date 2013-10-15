@@ -20,7 +20,7 @@ namespace MovLib\Data;
 use \Memcached;
 use \MemcachedException;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UserException;
 use \MovLib\Exception\Client\UnauthorizedException;
@@ -216,23 +216,18 @@ class Session extends \MovLib\Data\Database {
     $result = $this->selectAssoc("SELECT `user_id`, `name`, `password`, `deactivated` FROM `users` WHERE `email` = ?", "s", [ $email ]);
 
     // We couldn't find a user for the given email address if above query's result is empty.
-    if (empty($result)) {
-      throw new SessionException("Could not find user with email {$email}");
+    if ($this->affectedRows === 0) {
+      throw new SessionException("Could not find user with email {$email}!");
     }
 
     // Validate the submitted password.
     if (password_verify($rawPassword, $result["password"]) === false) {
-      throw new SessionException("Invalid password for user with email {$email}");
+      throw new SessionException("Invalid password for user with email {$email}!");
     }
 
     // My be the user was doing some work as anonymous user and already has a session active. If so generate new session
     // ID and if not generate a completely new session.
-    if (session_status() === PHP_SESSION_ACTIVE) {
-      $this->regenerate();
-    }
-    else {
-      $this->start();
-    }
+    session_status() === PHP_SESSION_ACTIVE ? $this->regenerate() : $this->start();
     $this->init($result["user_id"]);
     DelayedMethodCalls::stack($this, "insert");
 
@@ -281,8 +276,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Deletes this session from our session database.
    *
-   * Must be public for delayed execution.
-   *
+   * @delayed
    * @param string|array $sessionId [optional]
    *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
@@ -430,8 +424,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Insert newly created session into persistent session storage.
    *
-   * Must be public for delayed execution.
-   *
+   * @delayed
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -446,8 +439,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Test after every authentication if the password needs to be rehashed.
    *
-   * This method must be public for delayed execution.
-   *
+   * @delayed
    * @param string $password
    *   The hashed password.
    * @param string $rawPassword
@@ -458,8 +450,7 @@ class Session extends \MovLib\Data\Database {
    */
   public function passwordNeedsRehash($password, $rawPassword) {
     if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]) === true) {
-      $user = new User(User::FROM_ID, $this->userId);
-      $user->updatePassword($rawPassword);
+      (new UserExtended(UserExtended::FROM_ID, $this->userId))->updatePassword($rawPassword);
     }
     return $this;
   }
@@ -531,8 +522,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Update the ID of a session in our persistent session store.
    *
-   * Must be public for delayed execution.
-   *
+   * @delayed
    * @param string $oldSessionId
    *   The old session ID that should be updated.
    * @return this

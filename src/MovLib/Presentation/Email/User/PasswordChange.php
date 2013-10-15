@@ -36,7 +36,7 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * The user who requested the password change.
    *
-   * @var \MovLib\Data\User
+   * @var \MovLib\Data\UserExtended
    */
   private $user;
 
@@ -55,7 +55,7 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
    * Instantiate new user password change email.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param \MovLib\Data\User $user
+   * @param \MovLib\Data\UserExtended $user
    *   The user who requested the password change.
    * @param string $rawPassword
    *   The new unhashed password.

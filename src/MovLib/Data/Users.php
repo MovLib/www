@@ -27,8 +27,7 @@ namespace MovLib\Data;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Users extends \MovLib\Data\Images\AbstractImages {
-  use \MovLib\Data\Image\TraitUser;
+class Users extends \MovLib\Data\Database implements \ArrayAccess, \Countable, \Iterator, \MovLib\Data\Pagination {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -39,30 +38,27 @@ class Users extends \MovLib\Data\Images\AbstractImages {
    *
    * @var string
    */
-  protected $query;
+  protected $query =
+    "SELECT
+      `user_id` AS `id`,
+      `name`,
+      `avatar_name` AS `imageName`,
+      UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
+      `avatar_extension` AS `imageExtension`,
+      `avatar_changed` IS NOT NULL as `imageExists`
+    FROM `users`"
+  ;
+
+  /**
+   * Array containing all users from the last query.
+   *
+   * @var array
+   */
+  protected $users;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Instantiate new users database object.
-   */
-  public function __construct() {
-    $dim = self::IMAGE_STYLE_SPAN2;
-    $this->query =
-      "SELECT
-        `user_id` AS `id`,
-        `name`,
-        `avatar_name` AS `imageName`,
-        UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
-        `avatar_extension` AS `imageExtension`,
-        `avatar_changed` IS NOT NULL AS `imageExists`,
-        {$dim} AS `imageHeight`,
-        {$dim} AS `imageWidth`
-      FROM `users`"
-    ;
-  }
 
   /**
    * Get numeric array with basic user information.
@@ -72,6 +68,7 @@ class Users extends \MovLib\Data\Images\AbstractImages {
    * @return array
    *   Array containing the users with the user's unique ID as key.
    * @throws \MovLib\Exception\DatabaseException
+   * @deprecated since version 0.0.1-dev
    */
   public function getUsersById(array $userIds) {
     if (empty($userIds)) {
@@ -90,30 +87,133 @@ class Users extends \MovLib\Data\Images\AbstractImages {
   }
 
   /**
-   * @override
-   */
-  public function getImageStyleAttributes($offset, $style) {
-    return [
-      "alt"    => "",
-      "height" => $style,
-      "src"    => "{$GLOBALS["movlib"]["static_domain"]}{$this->imageDirectory}/{$this->entities[$offset]["imageName"]}.{$style}.{$this->entities[$offset]["imageExtension"]}?c={$this->entities[$offset]["imageChanged"]}",
-      "width"  => $style,
-    ];
-  }
-
-  /**
-   * Get numeric array with basic user information sorted by creation time.
+   * Order selected users by ID.
    *
-   * @param int $lowerBound [optional]
-   *   Lower pagination limit, defaults to <code>0</code>.
-   * @param int $upperBound [optional]
-   *   Upper pagination limit (how many items), defaults to <code>Users::DEFAULT_PAGINATION_SIZE</code>.
+   * @param array $filter
+   *   Array containing the user IDs to fetch.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function orderByCreated($lowerBound = 0, $upperBound = self::DEFAULT_PAGINATION_SIZE) {
-    $this->entities = $this->select("{$this->query} WHERE `deactivated` = false ORDER BY `created` DESC LIMIT ?, ?", "ii", [ $lowerBound, $upperBound ]);
+  public function orderById(array $filter) {
+    if (!empty($filter)) {
+      $c     = count($filter);
+      $in    = rtrim(str_repeat("?,", $c), ",");
+      $users = $this->getResult("{$this->query} WHERE `user_id` IN ({$in}) ORDER BY `id` ASC", str_repeat("d", $c), $filter);
+      while ($user = $users->fetch_object("\\MovLib\\Data\\User")) {
+        $this->users[] = $user;
+      }
+    }
     return $this;
+  }
+
+  /**
+   * Order by creation time.
+   *
+   * @param int $offset [optional]
+   *   The offset within all users, defaults to <code>0</code>.
+   * @param int $rowCount [optional]
+   *   Defines how many users are fetched from <var>$offset</var>, defaults to <code>Pagination::SPAN8</code>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function orderByCreated($offset = 0, $rowCount = Pagination::SPAN8) {
+    $users = $this->getResult("{$this->query} WHERE `deactivated` = false ORDER BY `created` DESC LIMIT ?, ?", "ii", [ $offset, $rowCount ]);
+    while ($user = $users->fetch_object("\\MovLib\\Data\\User")) {
+      $this->users[] = $user;
+    }
+    return $this;
+  }
+
+  /**
+   * Order by username.
+   *
+   * @param int $offset [optional]
+   *   The offset within all users, defaults to <code>0</code>.
+   * @param int $rowCount [optional]
+   *   Defines how many users are fetched from <var>$offset</var>, defaults to <code>Pagination::SPAN8</code>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function orderByName($offset = 0, $rowCount = Pagination::SPAN8) {
+    $users = $this->getResult("{$this->query} WHERE `deactivated` = false ORDER BY `name` DESC COLLATE `utf8mb4_unicode_cs` LIMIT ?, ?", "ii", [ $offset, $rowCount ]);
+    while ($user = $users->fetch_object("\\MovLib\\Data\\User")) {
+      $this->users[$user->name] = $user;
+    }
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Interface Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  public function count() {
+    return $this->affectedRows;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function current() {
+    return current($this->users);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function key() {
+    return key($this->users);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function next() {
+    return next($this->users);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function rewind() {
+    return reset($this->users);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function valid() {
+    return isset($this->users[key($this->users)]);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function offsetExists($offset) {
+    return isset($this->countries[$offset]);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function &offsetGet($offset) {
+    return $this->countries[$offset];
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function offsetSet($offset, $value) {
+    $this->countries[$offset] = $value;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function offsetUnset($offset) {
+    unset($this->countries[$offset]);
   }
 
 }

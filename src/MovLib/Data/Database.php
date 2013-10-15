@@ -36,18 +36,11 @@ use \ReflectionFunction;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Database {
+class Database extends \MovLib\Data\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
-
-  /**
-   * The default pagination size.
-   *
-   * @var int
-   */
-  const DEFAULT_PAGINATION_SIZE = 25;
 
   /**
    * TTL value for records in the temporary table that are deleted on a daily basis.
@@ -160,9 +153,7 @@ class Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function select($query, $types = null, array $params = null) {
-    $this->prepareAndExecute($query, $types, $params);
-    $this->affectedRows = $this->stmt->affected_rows;
-    return $this->stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    return $this->getResult($query, $types, $params)->fetch_all(MYSQLI_ASSOC);
   }
 
   /**
@@ -182,9 +173,21 @@ class Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function selectAssoc($query, $types = null, $params = null) {
-    $this->prepareAndExecute("{$query} LIMIT 1", $types, $params);
-    $this->affectedRows = $this->stmt->affected_rows;
-    return $this->stmt->get_result()->fetch_assoc();
+    return $this->getResult($query, $types, $params)->fetch_assoc();
+  }
+
+  protected function selectObj($query, $types = null, $params = null, $orderBy = null, $className = null, array $constructorParams = null) {
+    $mysqliResult = $this->getResult($query, $types, $params);
+    $objects = [];
+    while ($object = $mysqliResult->fetch_object($className, $constructorParams)) {
+      if ($orderBy) {
+        $objects[$object->{$orderby}] = $object;
+      }
+      else {
+        $objects[] = $object;
+      }
+    }
+    return $objects;
   }
 
   /**
@@ -284,6 +287,21 @@ class Database {
     }
     self::$mysqli[$this->database] = $mysqli;
     return $this;
+  }
+
+  /**
+   *
+   * @param type $query
+   * @param type $types
+   * @param type $params
+   * @return \mysqli_result
+   * @throws DatabaseException
+   */
+  private function getResult($query, $types = null, $params = null) {
+    $this->prepareAndExecute($query, $types, $params);
+    $mysqliResult       = $this->stmt->get_result();
+    $this->affectedRows = $mysqliResult->num_rows;
+    return $mysqliResult;
   }
 
   /**
