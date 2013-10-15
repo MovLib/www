@@ -55,7 +55,7 @@ trait TraitUtilities {
    *   The return value of the method.
    * @throws \InvalidArgumentException
    */
-  public final function method($object, $name, array $args = null) {
+  public final function invoke($object, $name, array $args = null) {
     if (!is_object($object) || !is_string($name)) {
       throw new \InvalidArgumentException;
     }
@@ -71,7 +71,7 @@ trait TraitUtilities {
   }
 
   /**
-   * Get or set the value of a protected property of <var>$object</var>.
+   * Get the value of a protected property of <var>$object</var>.
    *
    * @param mixed $object
    *   A valid class instance.
@@ -84,21 +84,52 @@ trait TraitUtilities {
    * @return mixed
    *   If acting as getter the value in the property, otherwise <var>$this</var> is returned.
    * @throws \InvalidArgumentException
+   * @throws \ReflectionException
    */
-  public final function property($object, $name, $value = PHP_INT_MAX) {
-    if (!is_object($object) || !is_string($name)) {
+  public final function getProperty($object, $name) {
+    return $this->property($object, $name)->getValue($object);
+  }
+
+  /**
+   * Set the value of a protected property of <var>$object</var>.
+   *
+   * @param string|object $object
+   *   Valid class instance or full class name.
+   * @param string $name
+   *   The name of the property
+   * @param mixed $value
+   *   The value to set.
+   * @return this
+   * @throws \InvalidArgumentException
+   * @throws \ReflectionException
+   */
+  public final function setProperty($object, $name, $value) {
+    $this->property($object, $name)->setValue($object, $value);
+    return $this;
+  }
+
+  /**
+   * Helper method to cache properties and set them accessible.
+   *
+   * @param string|object $object
+   *   Valid class instance or full class name.
+   * @param string $name
+   *   The name of the property
+   * @return \ReflectionProperty
+   *   The property <var>$name</var> from <var>$object</var>.
+   * @throws \InvalidArgumentException
+   * @throws \ReflectionException
+   */
+  private function property($object, $name) {
+    if ((!is_object($object) && !is_string($object)) || !is_string($name)) {
       throw new \InvalidArgumentException;
     }
-    $key = get_class($object) . $name;
+    $key = is_object($object) ? get_class($object) . $name : "{$object}{$name}";
     if (!isset($this->reflectionProperties[$key])) {
       $this->reflectionProperties[$key] = new \ReflectionProperty($object, $name);
       $this->reflectionProperties[$key]->setAccessible(true);
     }
-    if ($value !== PHP_INT_MAX) {
-      $this->reflectionProperties[$key]->setValue($object, $value);
-      return $this;
-    }
-    return $this->reflectionProperties[$key]->getValue($object);
+    return $this->reflectionProperties[$key];
   }
 
 }
