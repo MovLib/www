@@ -282,12 +282,12 @@ class Registration extends \MovLib\Presentation\FormPage {
    */
   public function validateToken() {
     global $i18n;
+    $user = new UserExtended();
     try {
       if (empty($_GET["token"])) {
         throw new ValidationException($i18n->t("The activation token is missing, please go back to the mail we sent you and copy the whole link."));
       }
 
-      $user        = new UserExtended();
       $user->email = base64_decode($_GET["token"]);
 
       if (filter_var($user->email, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
@@ -323,9 +323,10 @@ class Registration extends \MovLib\Presentation\FormPage {
     }
     catch (UnauthorizedException $e) {
       unset($e->presentation->email->attributes[array_search("autofocus", $e->presentation->email->attributes)]);
-      $e->presentation->email->attributes["value"] = $user->email;
-      $e->presentation->email->attributes[]        = "readonly";
-      $e->presentation->password->attributes[]     = "autofocus";
+      $e->presentation->form->hiddenElements             = "<input name='email' type='hidden' value='{$user->email}'>";
+      $e->presentation->email->attributes["placeholder"] = $user->email;
+      $e->presentation->email->attributes[]              = "disabled";
+      $e->presentation->password->attributes[]           = "autofocus";
       throw $e;
     }
     catch (UserException $e) {
