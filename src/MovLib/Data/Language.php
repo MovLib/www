@@ -18,60 +18,35 @@
 namespace MovLib\Data;
 
 /**
- * Handling of Languages.
+ * Represents a single language.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Language extends \MovLib\Data\Database {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Static Methods
+class Language {
 
   /**
-   * Get array with localiced language names.
+   * The language's unique identifier.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @param array $languageIds
-   *   Numeric array containing the desired language IDs.
-   * @return array
-   *   Array containing the localiced language names with the language's unique ID as key.
+   * @var int
    */
-  public function getLanguageNames(array $languageIds) {
-    global $i18n;
-    if (empty($languageIds)) {
-      return [];
-    }
+  public $id;
 
-    $languageIds = array_unique($languageIds);
-    $c = count($languageIds);
-    $in = rtrim(str_repeat("?,", $c), ",");
+  /**
+   * The language's translated name.
+   *
+   * @var string
+   */
+  public $name;
 
-    if ($i18n->languageCode == "en") {
-      $result = $this->select(
-        "SELECT `language_id`, `name` FROM `languages` WHERE `language_id` IN ({$in})",
-        str_repeat("d", $c),
-        $languageIds
-      );
-    }
-    else {
-      $result = $this->select(
-        "SELECT `language_id`, COLUMN_GET(`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS `name`" .
-          "FROM `languages` WHERE `language_id` IN ({$in})",
-          str_repeat("d", $c),
-        $languageIds
-      );
-    }
-
-    $languageNames = [];
-    $c = count($result);
-    for ($i = 0; $i < $c; ++$i) {
-      $languageNames[$result[$i]["language_id"]] = $result[$i]["name"];
-    }
-    return $languageNames;
-  }
+  /**
+   * The language's ISO alpha-2 code.
+   *
+   * @var string
+   */
+  public $code;
 
 }
