@@ -119,28 +119,23 @@ class User extends \MovLib\Data\Image\AbstractImage {
   public function __construct($from = null, $value = null) {
     global $i18n;
     if ($from && $value) {
-      $result = $this->selectAssoc(
+      $stmt = $this->query(
         "SELECT
-          `user_id` AS `id`,
+          `user_id`,
           `name`,
-          `avatar_name` AS `imageName`,
-          UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
-          `avatar_extension` AS `imageExtension`,
-          `avatar_changed` IS NOT NULL AS `imageExists`
+          `avatar_name`,
+          UNIX_TIMESTAMP(`avatar_changed`),
+          `avatar_extension`,
+          `avatar_changed` IS NOT NULL
         FROM `users`
         WHERE `{$from}` = ?",
         $this->types[$from],
         [ $value ]
       );
-
-      if ($this->affectedRows === 0) {
+      $stmt->bind_result($this->id, $this->name, $this->imageName, $this->imageChanged, $this->imageExtension, $this->imageExists);
+      if (!$stmt->fetch()) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
-
-      foreach ($result as $k => $v) {
-        $this->{$k} = $v;
-      }
-
       // The image name already has all unsave characters removed.
       $this->route = $i18n->r("/user/{0}", [ rawurlencode($this->imageName) ]);
     }

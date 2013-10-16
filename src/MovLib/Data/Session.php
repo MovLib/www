@@ -157,19 +157,9 @@ class Session extends \MovLib\Data\Database {
       $this->id = session_id();
 
       // We have to try loading the session from our persistent session storage if the session IDs don't match.
-      if ($_COOKIE[$this->name] != $this->id) {
-        $result = $this->selectAssoc("SELECT `user_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication` FROM `sessions` WHERE `session_id` = ?", "s", $_COOKIE[$this->name]);
-
-        // This is an old session that requires sign in and it's expired for anonymous users.
-        if (empty($result)) {
-          $this->destroy();
-        }
-        // Otherwise we have to initialize this new session with fresh data and update the record in our persistent
-        // session storage.
-        else {
-          $this->init($result["user_id"], $result["authentication"]);
-          DelayedMethodCalls::stack($this, "update", [ $_COOKIE[$this->name] ]);
-        }
+      if ($_COOKIE[$this->name] != $this->id || !($result = $this->query("SELECT `user_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name] ])->get_result()->fetch_assoc())) {
+        $this->init($result["user_id"], $result["authentication"]);
+        DelayedMethodCalls::stack($this, "update", [ $_COOKIE[$this->name] ]);
       }
       // Maybe somebody is trying with a random session ID to get a session?
       elseif (!isset($_SESSION["user_id"])) {
@@ -213,11 +203,8 @@ class Session extends \MovLib\Data\Database {
    */
   public function authenticate($email, $rawPassword) {
     // Load necessary user data from storage.
-    $result = $this->selectAssoc("SELECT `user_id`, `name`, `password`, `deactivated` FROM `users` WHERE `email` = ?", "s", [ $email ]);
-
-    // We couldn't find a user for the given email address if above query's result is empty.
-    if ($this->affectedRows === 0) {
-      throw new SessionException("Could not find user with email {$email}!");
+    if (!($result = $this->query("SELECT `user_id`, `password`, `deactivated` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
+      throw new SessionException("Couldn't find user with email '{$email}'!");
     }
 
     // Validate the submitted password.
@@ -360,11 +347,11 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getActiveSessions() {
-    return $this->select(
+    return $this->query(
       "SELECT `session_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ?",
       "d",
       [ $_SESSION["user_id"] ]
-    );
+    )->get_result()->fetch_all(MYSQLI_ASSOC);
   }
 
   /**
@@ -392,13 +379,12 @@ class Session extends \MovLib\Data\Database {
 
     // We are initializing this session for a registered user.
     if ($userId > 0) {
-      $result = $this->select("SELECT `name`, `time_zone_id` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ $userId]);
-      if (empty($result[0]["name"])) {
-        throw new SessionException("Could not fetch user name for user ID {$userId}.");
+      if (!($result = $this->query("SELECT `name`, `time_zone_id` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ $userId ])->get_result()->fetch_assoc())) {
+        throw new SessionException("Could not fetch user data for user ID {$userId}.");
       }
       $this->userId          = $_SESSION["user_id"]           = $userId;
-      $this->userName        = $_SESSION["user_name"]         = $result[0]["name"];
-      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = $result[0]["time_zone_id"];
+      $this->userName        = $_SESSION["user_name"]         = $result["name"];
+      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = $result["time_zone_id"];
       $this->isAuthenticated = true;
     }
     // Initialize this session for an anonymous user.
