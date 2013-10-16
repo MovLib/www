@@ -108,5 +108,7 @@ if (defined("MOVLIB_PHPUNIT")) {
 
   // Mock a valid session for various PHPUnit tests.
   $session = new \MovLib\Data\Session();
-  (new ReflectionMethod($session, "init"))->invokeArgs($session, [ 1 ]);
+  $init    = new \ReflectionMethod($session, "init");
+  $init->setAccessible(true);
+  $init->invokeArgs($session, [ 1 ]);
 }
