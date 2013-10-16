@@ -18,7 +18,7 @@
 namespace MovLib\Test\Data;
 
 use \MovDev\Database;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 
 /**
  * @coversDefaultClass \MovLib\Data\User
@@ -28,30 +28,11 @@ use \MovLib\Data\User;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserTest extends \PHPUnit_Framework_TestCase {
+class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
-
-  public static function dataProviderTestConstruct() {
-    return [
-      [ User::FROM_EMAIL, "richard@fussenegger.info" ],
-      [ User::FROM_ID, 1 ],
-      [ User::FROM_NAME, "Fleshgrinder" ],
-      [ User::FROM_NAME, "fleshgrinder" ],
-      [ User::FROM_NAME, "FlEsHgRiNdEr" ],
-      [ User::FROM_NAME, "FLESHGRINDER" ],
-    ];
-  }
-
-  public static function dataProviderTestConstructException() {
-    return [
-      [ User::FROM_EMAIL, "phpunit@movlib.org" ],
-      [ User::FROM_ID, -1 ],
-      [ User::FROM_NAME, "PHPUnit" ],
-    ];
-  }
 
   public static function dataProviderTestCheckNameExists() {
     return [
@@ -59,13 +40,6 @@ class UserTest extends \PHPUnit_Framework_TestCase {
       [ "fleshgrinder" ],
       [ "FlEsHgRiNdEr" ],
       [ "FLESHGRINDER" ],
-    ];
-  }
-
-  public static function dataProviderTestGetImageStyleAttributes() {
-    return [
-      [ User::IMAGE_STYLE_DEFAULT, [ "alt" => "PHPUnit" ] ],
-      [ User::IMAGE_STYLE_THUMBNAIL, [ "alt" => "PHPUnit", "height" => 999, "width" => 999, "src" => "https://movlib.org/phpunit.jpg" ] ],
     ];
   }
 
@@ -86,7 +60,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testCheckEmailExists() {
-    $this->assertTrue((new User(User::FROM_ID, 1))->checkEmail());
+    $this->assertTrue((new UserExtended(UserExtended::FROM_ID, 1))->checkEmail());
   }
 
   /**
@@ -94,7 +68,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testCheckEmailNotExists() {
-    $user        = new User();
+    $user        = new UserExtended();
     $user->email = "phpunit@movlib.org";
     $this->assertFalse($user->checkEmail());
   }
@@ -106,7 +80,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    */
   public function testCheckNameExists($name) {
     // We have to check that the query itself is agnostic to case changes (same as we did in the constructor test).
-    $user       = new User();
+    $user       = new UserExtended();
     $user->name = $name;
     $this->assertTrue($user->checkName());
   }
@@ -116,7 +90,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testCheckNameNotExists() {
-    $user       = new User();
+    $user       = new UserExtended();
     $user->name = "PHPUnit";
     $this->assertFalse($user->checkName());
   }
@@ -128,7 +102,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Uploads
    */
   public function testCommit() {
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserExtended(UserExtended::FROM_ID, 1);
     $user->birthday           = "2000-01-01";
     $user->countryId          = 1;
     $user->profile            = "PHPUnit";
@@ -140,7 +114,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
     $user->website            = "http://phpunit.net/";
     $user->commit();
 
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserExtended(UserExtended::FROM_ID, 1);
     $this->assertEquals("2000-01-01", $user->birthday);
     $this->assertEquals(1, $user->countryId);
     $this->assertEquals("PHPUnit", $user->profile);
@@ -153,30 +127,6 @@ class UserTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers ::__construct
-   * @dataProvider dataProviderTestConstruct
-   * @group Database
-   */
-  public function testConstruct($from, $value) {
-    $user = new User($from, $value);
-    $this->assertEquals(1, $user->id);
-    $this->assertEquals("Fleshgrinder", $user->name);
-    $this->assertEquals("richard@fussenegger.info", $user->email);
-    $this->assertTrue(is_bool($user->private));
-    $this->assertTrue(is_bool($user->deactivated));
-  }
-
-  /**
-   * @covers ::__construct
-   * @dataProvider dataProviderTestConstructException
-   * @expectedException \MovLib\Exception\UserException
-   * @group Database
-   */
-  public function testConstructNoUser($from, $value) {
-    new User($from, $value);
-  }
-
-  /**
    * @covers ::deactivate
    * @covers ::deleteImageOriginalAndStyles
    * @group Database
@@ -184,11 +134,11 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Uploads
    */
   public function testDeactivate() {
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserExtended(UserExtended::FROM_ID, 1);
     $user->deactivate();
 
-    $user = new User(User::FROM_ID, 1);
-    $this->assertFalse(is_file(get_reflection_method($user, "getImagePath")->invokeArgs($user, [ User::IMAGE_STYLE_DEFAULT ])));
+    $user = new UserExtended(UserExtended::FROM_ID, 1);
+    $this->assertFalse(is_file(get_reflection_method($user, "getImagePath")->invokeArgs($user, [ UserExtended::IMAGE_STYLE_SPAN_02 ])));
     $this->assertNull(get_reflection_property($user, "imageChanged")->getValue($user));
     $this->assertNull(get_reflection_property($user, "imageExtension")->getValue($user));
     $this->assertNull($user->birthday);
@@ -206,57 +156,11 @@ class UserTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers ::deleteImageOriginalAndStyles
-   * @group FileSystem
-   * @group Uploads
-   */
-  public function testDeleteImageOriginalAndStyles() {
-    $user             = new User(User::FROM_ID, 1);
-    $rmGetImagePath   = get_reflection_method($user, "getImagePath");
-    $rpImageChanged   = get_reflection_property($user, "imageChanged");
-    $rpImageExtension = get_reflection_property($user, "imageExtension");
-
-    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_DEFAULT ])));
-    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_THUMBNAIL ])));
-    $this->assertTrue($user->imageExists);
-    $this->assertNotEmpty($rpImageChanged->getValue($user));
-    $this->assertNotEmpty($rpImageExtension->getValue($user));
-
-    get_reflection_method($user, "deleteImageOriginalAndStyles")->invoke($user);
-    $this->assertFalse(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_DEFAULT ])));
-    $this->assertFalse(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_THUMBNAIL ])));
-    $this->assertFalse($user->imageExists);
-    $this->assertNull($rpImageChanged->getValue($user));
-    $this->assertNull($rpImageExtension->getValue($user));
-  }
-
-  /**
-   * @covers ::getImageStyleAttributes
-   * @dataProvider dataProviderTestGetImageStyleAttributes
-   * @group Presentation
-   */
-  public function testGetImageStyleAttributes($style, $dataProviderAttributes) {
-    $user          = new User(User::FROM_ID, 1);
-    $regExImageURL = preg_quote(get_reflection_method($user, "getImageURL")->invokeArgs($user, [ $style ]));
-    $span          = get_reflection_property($user, "span")->getValue($user);
-    $attributes    = $user->getImageStyleAttributes($style, $dataProviderAttributes);
-    $this->assertEquals($span[$style], $attributes["height"]);
-    $this->assertEquals($span[$style], $attributes["width"]);
-    $this->assertRegExp("#^{$regExImageURL}\?c=[0-9]+$#", $attributes["src"]);
-    $this->assertArrayHasKey("height", $dataProviderAttributes);
-    $this->assertEquals($attributes["height"], $dataProviderAttributes["height"]);
-    $this->assertArrayHasKey("width", $dataProviderAttributes);
-    $this->assertEquals($attributes["width"], $dataProviderAttributes["width"]);
-    $this->assertArrayHasKey("src", $dataProviderAttributes);
-    $this->assertEquals($attributes["src"], $dataProviderAttributes["src"]);
-  }
-
-  /**
    * @covers ::getRandomPassword
    * @group Presentation
    */
   public function testGetRandomPassword() {
-    $this->assertRegExp("/.{20}/", User::getRandomPassword());
+    $this->assertRegExp("/.{20}/", UserExtended::getRandomPassword());
   }
 
   /**
@@ -264,7 +168,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testGetRegistrationData() {
-    $user        = new User();
+    $user        = new UserExtended();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $user->prepareRegistration("Test1234");
@@ -286,7 +190,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testGetRegistrationDataExpired() {
-    $user        = new User();
+    $user        = new UserExtended();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $user->prepareRegistration("Test1234");
@@ -301,28 +205,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testGetRegistrationDataNoRecord() {
-    (new User())->getRegistrationData();
-  }
-
-  /**
-   * @covers ::moveUploadedImage
-   * @group Database
-   * @group FileSystem
-   * @group Uploads
-   */
-  public function testMoveUploadedImage() {
-    $user           = new User(User::FROM_ID, 1);
-    $rmGetImagePath = get_reflection_method($user, "getImagePath");
-    $source         = tempnam(sys_get_temp_dir(), "phpunit");
-    copy("{$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/user/fleshgrinder.2.jpg", $source);
-    get_reflection_method($user, "deleteImageOriginalAndStyles")->invoke($user);
-    $user->moveUploadedImage($source, 220, 220, "jpg");
-    $this->assertFalse(is_file($source));
-    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_DEFAULT ])));
-    $this->assertTrue(is_file($rmGetImagePath->invokeArgs($user, [ User::IMAGE_STYLE_THUMBNAIL ])));
-    $this->assertTrue($user->imageExists);
-    $this->assertEquals($_SERVER["REQUEST_TIME"], get_reflection_property($user, "imageChanged")->getValue($user));
-    $this->assertEquals("jpg", get_reflection_property($user, "imageExtension")->getValue($user));
+    (new UserExtended())->getRegistrationData();
   }
 
   /**
@@ -330,7 +213,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testPasswordHash() {
-    $user = new User();
+    $user = new UserExtended();
     $this->assertTrue(password_verify("Test1234", get_reflection_method($user, "passwordHash")->invokeArgs($user, [ "Test1234" ])));
   }
 
@@ -339,7 +222,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testPrepareRegistration() {
-    $user        = new User();
+    $user        = new UserExtended();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $this->assertEquals($user, $user->prepareRegistration("Test1234"));
@@ -353,7 +236,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testPrepareRegistrationTooManyAttempts() {
-    $user        = new User();
+    $user        = new UserExtended();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     try {
@@ -371,11 +254,11 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testPrepareRegistrationTooManyExpiredAttempts() {
-    $user        = new User();
+    $user        = new UserExtended();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $db          = new Database();
-    $c           = User::MAXIMUM_ATTEMPTS * 2;
+    $c           = UserExtended::MAXIMUM_ATTEMPTS * 2;
     $time        = strtotime("-25 hours");
     $key         = "registration-{$user->email}";
     for ($i = 0; $i < $c; ++$i) {
@@ -390,7 +273,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testReactivate() {
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserExtended(UserExtended::FROM_ID, 1);
     $user->deactivate()->reactivate();
     $this->assertFalse($user->deactivated);
     $this->assertFalse((bool) (new Database())->selectAssoc("SELECT `deactivated` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["deactivated"]);
@@ -402,7 +285,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    */
   public function testRegister() {
     global $i18n;
-    $user        = new User();
+    $user        = new UserExtended();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $user->prepareRegistration("Test1234");
@@ -426,7 +309,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
    * @group Database
    */
   public function testUpdateEmail() {
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserExtended(UserExtended::FROM_ID, 1);
     $this->assertEquals("richard@fussenegger.info", $user->email);
     $user->updateEmail("phpunit@movlib.org");
     $this->assertEquals("phpunit@movlib.org", $user->email);
@@ -442,7 +325,7 @@ class UserTest extends \PHPUnit_Framework_TestCase {
     $session = new \MovLib\Data\Session();
     $session->authenticate("richard@fussenegger.info", "Test1234");
     $oldHash = $db->selectAssoc("SELECT `password` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["password"];
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserExtended(UserExtended::FROM_ID, 1);
     $user->updatePassword("phpunitPassword");
     $session->authenticate("richard@fussenegger.info", "phpunitPassword");
     $newHash = $db->selectAssoc("SELECT `password` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["password"];

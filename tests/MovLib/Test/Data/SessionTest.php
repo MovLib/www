@@ -19,7 +19,7 @@ namespace MovLib\Test\Data;
 
 use \MovDev\Database;
 use \MovLib\Data\Session;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 
 /**
  * @coversDefaultClass \MovLib\Data\Session
@@ -65,7 +65,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    * @expectedException \MovLib\Exception\UserException
    */
   public function testAuthenticateDeactivatedUser() {
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserExtended(UserExtended::FROM_ID, 1);
     $user->deactivate();
     (new Session())->authenticate("richard@fussenegger.info", "Test1234");
   }
@@ -133,7 +133,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    * @covers ::init
    */
   public function testInit() {
-    $user    = new User(User::FROM_ID, 1);
+    $user    = new UserExtended(UserExtended::FROM_ID, 1);
     $session = new Session();
     get_reflection_method($session, "init")->invokeArgs($session, [ 1, $_SERVER["REQUEST_TIME"] ]);
     $this->assertEquals($user->id, $session->userId);
