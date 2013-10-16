@@ -18,7 +18,7 @@
 namespace MovLib\Test\Presentation\Users;
 
 use \MovLib\Data\Session;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Presentation\Email\Users\Registration as RegistrationEmail;
 use \MovLib\Presentation\Email\Users\RegistrationEmailExists;
 use \MovLib\Presentation\Partial\Alert;
