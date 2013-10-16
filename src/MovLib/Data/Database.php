@@ -17,10 +17,10 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\DatabaseException;
-use \mysqli;
+use \MovLib\Exception\ErrorException;
 use \ReflectionFunction;
+use \mysqli;
 
 /**
  * Base class for all database related classes.
@@ -50,55 +50,26 @@ class Database extends \MovLib\Data\AbstractBase {
   const TMP_TTL_DAILY = "@daily";
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  // ------------------------------------------------------------------------------------------------------------------- Protected Properties
 
-
-  /**
-   * The number of affected rows from previous query.
-   *
-   * <b>NOTE</b>
-   * The number indicates the affected rows of the last executed <code>DELETE</code>, <code>INSERT</code>,
-   * <code>UPDATE</code> or <code>REPLACE</code> query. If the last query was a <code>SELECT</code> statement the number
-   * indicates the total count of returned results (same as <code>count($this->select("QUERY"));</code>). If the number
-   * is zero no records have been deleted, inserted, updated, replaced or nothing matched the where clause of the last
-   * select. A negative number indicates that the previous query resulted in an error.
-   *
-   * @return int|string
-   */
-  protected $affectedRows = -1;
 
   /**
    * Name of the database to which this instance is connected.
    *
    * @var string
    */
-  protected $database;
+  protected $database = "movlib";
 
-  /**
-   * The <code>AUTO_INCREMENT</code> ID from previous query.
-   *
-   * <b>NOTE</b>
-   * If the last executed query wasn't an <code>INSERT</code> or <code>UPDATE</code> statement or if the modified table
-   * doesn't have a column with the <code>AUTO_INCREMENT</code> attribute, this function will return zero. The ID will
-   * be returned as string if the value is greater than PHP's maximum integer value.
-   *
-   * @return int|string
-   */
-  protected $insertId = 0;
+
+  // ------------------------------------------------------------------------------------------------------------------- Private Properties
+
 
   /**
    * Associative array containing a single MySQLi instance for each database.
    *
    * @var \mysqli
    */
-  protected static $mysqli = [];
-
-  /**
-   * The MySQLi statement object for all queries.
-   *
-   * @var \mysqli_stmt
-   */
-  protected $stmt;
+  private static $mysqli = [];
 
   /**
    * Used to cache the reference to <code>stmt_bind_param()</code> function, which allow us to invoke the function with
@@ -109,38 +80,12 @@ class Database extends \MovLib\Data\AbstractBase {
    */
   private static $stmtBindParam;
 
-  /**
-   * Flag indicating if a transaction is active.
-   *
-   * @var boolean
-   */
-  protected $transactionActive = false;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Protected Final Methods
 
 
   /**
-   * Generic delete, insert, or update query method.
-   *
-   * @param string $query
-   *   The query to be executed.
-   * @param string $types [optional]
-   *   The type string in <code>\mysqli_stmt::bind_param()</code> syntax.
-   * @param array $params [optional]
-   *   The parameters to bind.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected function query($query, $types = null, array $params = null) {
-    $this->prepareAndExecute($query, $types, $params);
-    $this->affectedRows = $this->stmt->affected_rows;
-    $this->insertId     = $this->stmt->insert_id;
-    return $this;
-  }
-
-  /**
-   * Generic select query method.
+   * Generic query method.
    *
    * @param string $query
    *   The query to be executed.
@@ -148,108 +93,28 @@ class Database extends \MovLib\Data\AbstractBase {
    *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
    * @param array $params [optional]
    *   The parameters to bind.
-   * @return array
-   *   The query results as numeric array with each result as associative array.
+   * @return \mysqli_stmt
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function select($query, $types = null, array $params = null) {
-    return $this->getResult($query, $types, $params)->fetch_all(MYSQLI_ASSOC);
-  }
-
-  /**
-   * Generic select query method for a single row.
-   *
-   * <b>NOTE</b>
-   * <code>LIMIT 1</code> is automatically appended to the query!
-   *
-   * @param string $query
-   *   The query to be executed.
-   * @param string $types [optional]
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $params [optional]
-   *   The parameters to bind.
-   * @return array
-   *   The query result as associative array.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected function selectAssoc($query, $types = null, $params = null) {
-    return $this->getResult($query, $types, $params)->fetch_assoc();
-  }
-
-  protected function selectObj($query, $types = null, $params = null, $orderBy = null, $className = null, array $constructorParams = null) {
-    $mysqliResult = $this->getResult($query, $types, $params);
-    $objects = [];
-    while ($object = $mysqliResult->fetch_object($className, $constructorParams)) {
-      if ($orderBy) {
-        $objects[$object->{$orderby}] = $object;
+  protected function query($query, $types = null, $params = null) {
+    /* @var $stmt \mysqli_stmt */
+    if (($stmt = $this->connect()->prepare($query)) === false) {
+      throw new DatabaseException("Preparation of statement failed");
+    }
+    if ($types && $params) {
+      $refParams = [ $stmt, $types ];
+      $c         = count($params);
+      for ($i = 0, $j = 2; $i < $c; ++$i, ++$j) {
+        $refParams[$j] =& $params[$i];
       }
-      else {
-        $objects[] = $object;
+      if (self::$stmtBindParam->invokeArgs($refParams) === false) {
+        throw new DatabaseException("Binding parameters to prepared statement failed", $stmt->error, $stmt->errno);
       }
     }
-    return $objects;
-  }
-
-  /**
-   * Commit current transaction.
-   *
-   * @param int $flags [optional]
-   *   A bitmask of <var>MYSQLI_TRANS_COR_*</var> constants, defaults to <var>MYSQLI_TRANS_COR_AND_NO_CHAIN</var>.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
-    if (!isset(self::$mysqli[$this->database]) || $this->transactionActive === false) {
-      throw new DatabaseException("No active transaction, nothing to commit.");
+    if ($stmt->execute() === false) {
+      throw new DatabaseException("Execution of prepared statement failed", $stmt->error, $stmt->errno);
     }
-    if (self::$mysqli[$this->database]->commit($flags) === false) {
-      $e = new DatabaseException("Commit failed", self::$mysqli[$this->database]->error, self::$mysqli[$this->database]->errno);
-      $this->transactionRollback();
-      throw $e;
-    }
-    $this->transactionActive = false;
-    return $this;
-  }
-
-  /**
-   * Rollback current transaction.
-   *
-   * @param int $flags [optional]
-   *   A bitmask of <var>MYSQLI_TRANS_COR_*</var> constants, defaults to <var>MYSQLI_TRANS_COR_AND_NO_CHAIN</var>.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
-    if (!isset(self::$mysqli[$this->database]) || $this->transactionActive === false) {
-      throw new DatabaseException("No active transaction, nothing to rollback.");
-    }
-    if (self::$mysqli[$this->database]->rollback($flags) === false) {
-      throw new DatabaseException("Rollback failed", self::$mysqli[$this->database]->error, self::$mysqli[$this->database]->errno);
-    }
-    $this->transactionActive = false;
-    return $this;
-  }
-
-  /**
-   * Start a transaction.
-   *
-   * Executes a SQL native <code>START TRANSACTION</code> against the database and establishes a connection if not
-   * connection is available.
-   *
-   * @param int $flags [optional]
-   *   One of the <var>MYSQLI_TRANS_START_*</var> constants, defaults to <var>MYSQLI_TRANS_START_READ_WRITE</var>.
-   * @return this
-   * @throws \MovLib\Data\DatabaseException
-   */
-  protected function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
-    if (!isset(self::$mysqli[$this->database])) {
-      $this->connect();
-    }
-    if (self::$mysqli[$this->database]->begin_transaction($flags) === false) {
-      throw new DatabaseException("Could not start transaction", self::$mysqli[$this->database]->error, self::$mysqli[$this->database]->errno);
-    }
-    $this->transactionActive = true;
-    return $this;
+    return $stmt;
   }
 
 
@@ -259,86 +124,34 @@ class Database extends \MovLib\Data\AbstractBase {
   /**
    * Connect to database.
    *
-   * @return this
+   * @return \mysqli
    * @throws \MovLib\Exception\DatabaseException
    */
   private function connect() {
-    if (!$this->database) {
-      $this->database = $GLOBALS["movlib"]["default_database"];
-    }
-    if (!self::$stmtBindParam) {
-      self::$stmtBindParam = new ReflectionFunction("mysqli_stmt_bind_param");
-    }
-    $mysqli = new mysqli();
-    try {
-      $mysqli->real_connect();
-    }
-    // If we have a broken pipe (e.g. database restart) kill this thread and directly re-connect. If this fails again
-    // (every unlikely) an ErrorException is thrown again and the error_all_handler() can take care of it.
-    catch (ErrorException $e) {
-      $mysqli->kill($mysqli->thread_id);
-      $mysqli->real_connect();
-    }
-    if ($mysqli->connect_error) {
-      throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
-    }
-    if ($mysqli->select_db($GLOBALS["movlib"]["default_database"]) === false) {
-      throw new DatabaseException("Selecting database failed", $mysqli->error, $mysqli->errno);
-    }
-    self::$mysqli[$this->database] = $mysqli;
-    return $this;
-  }
-
-  /**
-   *
-   * @param type $query
-   * @param type $types
-   * @param type $params
-   * @return \mysqli_result
-   * @throws DatabaseException
-   */
-  private function getResult($query, $types = null, $params = null) {
-    $this->prepareAndExecute($query, $types, $params);
-    $mysqliResult       = $this->stmt->get_result();
-    $this->affectedRows = $mysqliResult->num_rows;
-    return $mysqliResult;
-  }
-
-  /**
-   * Prepare a statement for execution.
-   *
-   * @param string $query
-   *   The query to be executed.
-   * @param string $types [optional]
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $params [optional]
-   *   The parameters to bind.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  private function prepareAndExecute($query, $types = null, $params = null) {
-    $this->affectedRows = -1;
-    $this->insertId     = 0;
     if (!isset(self::$mysqli[$this->database])) {
-      $this->connect();
-    }
-    if (($this->stmt = self::$mysqli[$this->database]->prepare($query)) === false) {
-      throw new DatabaseException("Preparation of statement failed", self::$mysqli[$this->database]->error, self::$mysqli[$this->database]->errno);
-    }
-    if ($types && $params) {
-      $c = count($params);
-      $refParams = [ $this->stmt, $types ];
-      for ($i = 0; $i < $c; ++$i) {
-        $refParams[$i + 2] =& $params[$i];
+      // A cached reflection function is faster than call_user_func_array()!
+      if (!self::$stmtBindParam) {
+        self::$stmtBindParam = new ReflectionFunction("mysqli_stmt_bind_param");
       }
-      if (self::$stmtBindParam->invokeArgs($refParams) === false) {
-        throw new DatabaseException("Binding parameters to prepared statement failed", $this->stmt->error, $this->stmt->errno);
+      $mysqli = new mysqli();
+      try {
+        $mysqli->real_connect();
       }
+      // If we have a broken pipe (e.g. database restart) kill this thread and directly re-connect. If this fails again
+      // (very unlikely) an ErrorException is thrown again and the error andler can take care of it.
+      catch (ErrorException $e) {
+        $mysqli->kill($mysqli->thread_id);
+        $mysqli->real_connect();
+      }
+      if ($mysqli->connect_error) {
+        throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
+      }
+      if ($mysqli->select_db($this->database) === false) {
+        throw new DatabaseException("Selecting database '{$this->database}' failed", $mysqli->error, $mysqli->errno);
+      }
+      self::$mysqli[$this->database] = $mysqli;
     }
-    if ($this->stmt->execute() === false) {
-      throw new DatabaseException("Execution of prepared statement failed", $this->stmt->error, $this->stmt->errno);
-    }
-    return $this;
+    return self::$mysqli[$this->database];
   }
 
 }
