@@ -27,7 +27,7 @@ namespace MovLib\Data;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Users extends \MovLib\Data\Database implements \ArrayAccess, \Countable, \Iterator, \MovLib\Data\Pagination {
+class Users extends \MovLib\Data\DatabaseArrayObject {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -49,42 +49,9 @@ class Users extends \MovLib\Data\Database implements \ArrayAccess, \Countable, \
     FROM `users`"
   ;
 
-  /**
-   * Array containing all users from the last query.
-   *
-   * @var array
-   */
-  protected $users;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Get numeric array with basic user information.
-   *
-   * @param array $userIds
-   *   Numeric array containing the desired user IDs.
-   * @return array
-   *   Array containing the users with the user's unique ID as key.
-   * @throws \MovLib\Exception\DatabaseException
-   * @deprecated since version 0.0.1-dev
-   */
-  public function getUsersById(array $userIds) {
-    if (empty($userIds)) {
-      return [];
-    }
-    $userIds     = array_unique($userIds);
-    $c           = count($userIds);
-    $in          = rtrim(str_repeat("?,", $c), ",");
-    $result      = $this->select("{$this->query} WHERE `user_id` IN ({$in})", str_repeat("d", $c), $userIds);
-    $users       = [];
-    $c           = count($result);
-    for ($i = 0; $i < $c; ++$i) {
-      $users[$result[$i]["id"]] = $result[$i];
-    }
-    return $users;
-  }
 
   /**
    * Order selected users by ID.
@@ -96,11 +63,12 @@ class Users extends \MovLib\Data\Database implements \ArrayAccess, \Countable, \
    */
   public function orderById(array $filter) {
     if (!empty($filter)) {
-      $c     = count($filter);
-      $in    = rtrim(str_repeat("?,", $c), ",");
-      $users = $this->getResult("{$this->query} WHERE `user_id` IN ({$in}) ORDER BY `id` ASC", str_repeat("d", $c), $filter);
-      while ($user = $users->fetch_object("\\MovLib\\Data\\User")) {
-        $this->users[] = $user;
+      $c      = count($filter);
+      $in     = rtrim(str_repeat("?,", $c), ",");
+      $result = $this->query("{$this->query} WHERE `user_id` IN ({$in}) ORDER BY `id` ASC", str_repeat("d", $c), $filter)->get_result();
+      /* @var $user \MovLib\Data\User */
+      while ($user = $result->fetch_object("\\MovLib\\Data\\User")) {
+        $this->objectsArray[] = $user;
       }
     }
     return $this;
@@ -117,9 +85,10 @@ class Users extends \MovLib\Data\Database implements \ArrayAccess, \Countable, \
    * @throws \MovLib\Exception\DatabaseException
    */
   public function orderByCreated($offset = 0, $rowCount = Pagination::SPAN8) {
-    $users = $this->getResult("{$this->query} WHERE `deactivated` = false ORDER BY `created` DESC LIMIT ?, ?", "ii", [ $offset, $rowCount ]);
-    while ($user = $users->fetch_object("\\MovLib\\Data\\User")) {
-      $this->users[] = $user;
+    $result = $this->query("{$this->query} WHERE `deactivated` = false ORDER BY `created` DESC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
+    /* @var $user \MovLib\Data\User */
+    while ($user = $result->fetch_object("\\MovLib\\Data\\User")) {
+      $this->objectsArray[] = $user;
     }
     return $this;
   }
@@ -135,85 +104,12 @@ class Users extends \MovLib\Data\Database implements \ArrayAccess, \Countable, \
    * @throws \MovLib\Exception\DatabaseException
    */
   public function orderByName($offset = 0, $rowCount = Pagination::SPAN8) {
-    $users = $this->getResult("{$this->query} WHERE `deactivated` = false ORDER BY `name` DESC COLLATE `utf8mb4_unicode_cs` LIMIT ?, ?", "ii", [ $offset, $rowCount ]);
-    while ($user = $users->fetch_object("\\MovLib\\Data\\User")) {
-      $this->users[$user->name] = $user;
+    $result = $this->query("{$this->query} WHERE `deactivated` = false ORDER BY `name` DESC COLLATE `utf8mb4_unicode_cs` LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
+    /* @var $user \MovLib\Data\User */
+    while ($user = $result->fetch_object("\\MovLib\\Data\\User")) {
+      $this->objectsArray[$user->name] = $user;
     }
     return $this;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Interface Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  public function count() {
-    return $this->affectedRows;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function current() {
-    return current($this->users);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function key() {
-    return key($this->users);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function next() {
-    return next($this->users);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function rewind() {
-    return reset($this->users);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function valid() {
-    return isset($this->users[key($this->users)]);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetExists($offset) {
-    return isset($this->countries[$offset]);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function &offsetGet($offset) {
-    return $this->countries[$offset];
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetSet($offset, $value) {
-    $this->countries[$offset] = $value;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetUnset($offset) {
-    unset($this->countries[$offset]);
   }
 
 }

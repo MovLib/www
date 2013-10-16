@@ -29,25 +29,7 @@ namespace MovLib\Data;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Countries extends \MovLib\Data\Database implements \ArrayAccess, \Countable, \Iterator {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The basic query for all methods.
-   *
-   * @var string
-   */
-  protected $query;
-
-  /**
-   * The internal array to store the resulting country instances.
-   *
-   * @var array
-   */
-  protected $countries;
+class Countries extends \MovLib\Data\DatabaseArrayObject {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -67,7 +49,7 @@ class Countries extends \MovLib\Data\Database implements \ArrayAccess, \Countabl
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
@@ -80,15 +62,16 @@ class Countries extends \MovLib\Data\Database implements \ArrayAccess, \Countabl
    */
   public function orderByCode(array $filter = null) {
     if ($filter) {
-      $c         = count($filter);
-      $in        = rtrim(str_repeat("?,", $c), ",");
-      $countries = $this->getResult("{$this->query} WHERE `iso_alpha-2` IN({$in}) ORDER BY `iso_alpha-2` ASC", str_repeat("s", $c), $filter);
+      $c      = count($filter);
+      $in     = rtrim(str_repeat("?,", $c), ",");
+      $result = $this->query("{$this->query} WHERE `iso_alpha-2` IN({$in}) ORDER BY `iso_alpha-2` ASC", str_repeat("s", $c), $filter)->get_result();
     }
     else {
-      $countries = $this->getResult("{$this->query} ORDER BY `iso_alpha-2` ASC");
+      $result = $this->query("{$this->query} ORDER BY `iso_alpha-2` ASC")->get_result();
     }
-    while ($country = $countries->fetch_object("\\MovLib\\Data\\Country")) {
-      $this->countries[$country->code] = $country;
+    /* @var $country \MovLib\Data\Country */
+    while ($country = $result->fetch_object("\\MovLib\\Data\\Country")) {
+      $this->objectsArray[$country->code] = $country;
     }
     return $this;
   }
@@ -103,15 +86,16 @@ class Countries extends \MovLib\Data\Database implements \ArrayAccess, \Countabl
    */
   public function orderById(array $filter = null) {
     if ($filter) {
-      $c         = count($filter);
-      $in        = rtrim(str_repeat("?,", $c), ",");
-      $countries = $this->getResult("{$this->query} WHERE `country_id` IN({$in}) ORDER BY `id` ASC", str_repeat("i", $c), $filter);
+      $c      = count($filter);
+      $in     = rtrim(str_repeat("?,", $c), ",");
+      $result = $this->query("{$this->query} WHERE `country_id` IN({$in})", str_repeat("i", $c), $filter)->get_result();
     }
     else {
-      $countries = $this->getResult("{$this->query} ORDER BY `id` ASC");
+      $result = $this->query($this->query)->get_result();
     }
-    while ($country = $countries->fetch_object("\\MovLib\\Data\\Country")) {
-      $this->countries[$country->id] = $country;
+    /* @var $country \MovLib\Data\Country */
+    while ($country = $result->fetch_object("\\MovLib\\Data\\Country")) {
+      $this->objectsArray[$country->id] = $country;
     }
     return $this;
   }
@@ -125,86 +109,13 @@ class Countries extends \MovLib\Data\Database implements \ArrayAccess, \Countabl
    */
   public function orderByName() {
     global $i18n;
-    $countries = $this->getResult($this->query);
-    while ($country = $countries->fetch_object("\\MovLib\\Data\\Country")) {
-      $this->countries[$country->name] = $country;
+    $result = $this->query($this->query)->get_result();
+    /* @var $country \MovLib\Data\Country */
+    while ($country = $result->fetch_object("\\MovLib\\Data\\Country")) {
+      $this->objectsArray[$country->name] = $country;
     }
-    $this->countries = $i18n->getCollator()->ksort($this->countries);
+    $i18n->getCollator()->ksort($this->objectsArray);
     return $this;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Interface Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  public function count() {
-    return $this->affectedRows;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function current() {
-    return current($this->countries);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function key() {
-    return key($this->countries);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function next() {
-    return next($this->countries);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function rewind() {
-    return reset($this->countries);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function valid() {
-    return isset($this->countries[key($this->countries)]);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetExists($offset) {
-    return isset($this->countries[$offset]);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function &offsetGet($offset) {
-    return $this->countries[$offset];
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetSet($offset, $value) {
-    $this->countries[$offset] = $value;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetUnset($offset) {
-    unset($this->countries[$offset]);
   }
 
 }

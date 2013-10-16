@@ -29,25 +29,7 @@ namespace MovLib\Data;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Languages extends \MovLib\Data\Database implements \ArrayAccess, \Countable, \Iterator {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The basic query for all methods.
-   *
-   * @var string
-   */
-  protected $query;
-
-  /**
-   * The internal array to store the resulting language instances.
-   *
-   * @var array
-   */
-  protected $languages;
+class Languages extends \MovLib\Data\DatabaseArrayObject {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -67,7 +49,7 @@ class Languages extends \MovLib\Data\Database implements \ArrayAccess, \Countabl
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
@@ -80,15 +62,16 @@ class Languages extends \MovLib\Data\Database implements \ArrayAccess, \Countabl
    */
   public function orderByCode(array $filter = null) {
     if ($filter) {
-      $c         = count($filter);
-      $in        = rtrim(str_repeat("?,", $c), ",");
-      $languages = $this->getResult("{$this->query} WHERE `iso_alpha-2` IN({$in}) ORDER BY `iso_alpha-2` ASC", str_repeat("s", $c), $filter);
+      $c      = count($filter);
+      $in     = rtrim(str_repeat("?,", $c), ",");
+      $result = $this->query("{$this->query} WHERE `iso_alpha-2` IN({$in}) ORDER BY `iso_alpha-2` ASC", str_repeat("s", $c), $filter)->get_result();
     }
     else {
-      $languages = $this->getResult("{$this->query} ORDER BY `iso_alpha-2` ASC");
+      $result = $this->query("{$this->query} ORDER BY `iso_alpha-2` ASC")->get_result();
     }
-    while ($language = $languages->fetch_object("\\MovLib\\Data\\Language")) {
-      $this->languages[$language->code] = $language;
+    /* @var $language \MovLib\Data\Language */
+    while ($language = $result->fetch_object("\\MovLib\\Data\\Language")) {
+      $this->objectsArray[$language->code] = $language;
     }
     return $this;
   }
@@ -103,15 +86,16 @@ class Languages extends \MovLib\Data\Database implements \ArrayAccess, \Countabl
    */
   public function orderById(array $filter = null) {
     if ($filter) {
-      $c         = count($filter);
-      $in        = rtrim(str_repeat("?,", $c), ",");
-      $languages = $this->getResult("{$this->query} WHERE `language_id` IN({$in}) ORDER BY `id` ASC", str_repeat("i", $c), $filter);
+      $c      = count($filter);
+      $in     = rtrim(str_repeat("?,", $c), ",");
+      $result = $this->query("{$this->query} WHERE `language_id` IN({$in}) ORDER BY `id` ASC", str_repeat("i", $c), $filter)->get_result();
     }
     else {
-      $languages = $this->getResult("{$this->query} ORDER BY `id` ASC");
+      $result = $this->query("{$this->query} ORDER BY `id` ASC")->get_result();
     }
-    while ($language = $languages->fetch_object("\\MovLib\\Data\\Language")) {
-      $this->languages[$language->id] = $language;
+    /* @var $language \MovLib\Data\Language */
+    while ($language = $result->fetch_object("\\MovLib\\Data\\Language")) {
+      $this->objectsArray[$language->id] = $language;
     }
     return $this;
   }
@@ -125,86 +109,13 @@ class Languages extends \MovLib\Data\Database implements \ArrayAccess, \Countabl
    */
   public function orderByName() {
     global $i18n;
-    $languages = $this->getResult($this->query);
-    while ($language = $languages->fetch_object("\\MovLib\\Data\\Language")) {
-      $this->languages[$language->name] = $language;
+    $result = $this->query($this->query)->get_result();
+    /* @var $language \MovLib\Data\Language */
+    while ($language = $result->fetch_object("\\MovLib\\Data\\Language")) {
+      $this->objectsArray[$language->name] = $language;
     }
-    $this->languages = $i18n->getCollator()->ksort($this->languages);
+    $this->objectsArray = $i18n->getCollator()->ksort($this->objectsArray);
     return $this;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Interface Methods
-
-
-  /**
-   * @inheritdoc
-   */
-  public function count() {
-    return $this->affectedRows;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function current() {
-    return current($this->languages);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function key() {
-    return key($this->languages);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function next() {
-    return next($this->languages);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function rewind() {
-    return reset($this->languages);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function valid() {
-    return isset($this->languages[key($this->languages)]);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetExists($offset) {
-    return isset($this->languages[$offset]);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function &offsetGet($offset) {
-    return $this->languages[$offset];
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetSet($offset, $value) {
-    $this->languages[$offset] = $value;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function offsetUnset($offset) {
-    unset($this->languages[$offset]);
   }
 
 }
