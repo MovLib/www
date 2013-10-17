@@ -31,8 +31,7 @@ class RedirectSeeOtherExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $r = new Redirect("/phpunit");
     $this->assertEquals(303, http_response_code());
@@ -41,8 +40,7 @@ class RedirectSeeOtherExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstructOldClients() {
     $_SERVER["SERVER_PROTOCOL"] = "HTTP/1.0";
     $r = new Redirect("/phpunit");

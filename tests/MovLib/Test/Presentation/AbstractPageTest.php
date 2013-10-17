@@ -48,8 +48,7 @@ class AbstractPageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getHeadTitle
-   * @group Presentation
-   */
+    */
   public function testGetHeadTitle() {
     $title = get_reflection_property($this->abstractPage, "title");
     $title->setValue($this->abstractPage, "PHPUnit");
@@ -58,8 +57,7 @@ class AbstractPageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getPresentation
-   * @group Presentation
-   */
+    */
   public function testGetPresentation() {
     get_reflection_property($this->abstractPage, "title")->setValue($this->abstractPage, "PHPUnit");
     get_reflection_property($this->abstractPage, "id")->setValue($this->abstractPage, "phpunit");
@@ -82,8 +80,7 @@ class AbstractPageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::init
-   * @group Presentation
-   */
+    */
   public function testInit() {
     get_reflection_method($this->abstractPage, "init")->invokeArgs($this->abstractPage, [ "PHPUnit" ]);
     //$this->assertEquals([ "abstractpage" ], get_reflection_property($this->abstractPage, "namespace")->getValue($this->abstractPage));

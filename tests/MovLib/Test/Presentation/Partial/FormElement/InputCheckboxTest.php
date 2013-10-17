@@ -31,8 +31,7 @@ class InputCheckboxTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $inputCheckbox = new InputCheckbox("phpunit", "PHPUnit");
     $this->assertArrayHasKey("type", $inputCheckbox->attributes);
@@ -42,8 +41,7 @@ class InputCheckboxTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstructCheckedViaPOST() {
     $_POST["phpunit"] = "on";
     $this->assertTrue((new InputCheckbox("phpunit", "PHPUnit"))->value);
@@ -51,16 +49,14 @@ class InputCheckboxTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToString() {
     $this->assertContains("checked", (string) new InputCheckbox("phpunit", "PHPUnit", null, true));
   }
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testValidate() {
     $_POST["phpunit"] = "on";
     (new InputCheckbox("phpunit", "PHPUnit"))->validate();
@@ -70,8 +66,7 @@ class InputCheckboxTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage mandatory
-   * @group Validation
-   */
+    */
   public function testValidateRequired() {
     (new InputCheckbox("phpunit", "PHPUnit", [ "required" ]))->validate();
   }

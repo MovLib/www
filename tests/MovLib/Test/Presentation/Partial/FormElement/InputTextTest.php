@@ -73,8 +73,7 @@ class InputTextTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $inputText = new InputText("phpunit", "PHPUnit");
     $this->assertArrayHasKey("type", $inputText->attributes);
@@ -85,8 +84,7 @@ class InputTextTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage mandatory
-   * @group Validation
-   */
+    */
   public function testValidateRequired() {
     (new InputText("phpunit", "PHPUnit", [ "required" ]))->validate();
   }
@@ -94,8 +92,7 @@ class InputTextTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::validate
    * @dataProvider dataProviderValidPlainTextStrings
-   * @group Validation
-   */
+    */
   public function testValid($actual, $expected = null) {
     $inputText = new InputText("phpunit", "PHPUnit", [ "value" => $actual ]);
     $this->assertEquals($inputText, $inputText->validate());

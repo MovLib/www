@@ -31,8 +31,7 @@ class AlertTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $alert = new Alert("Hello World!");
     $this->assertEquals("Hello World!", $alert->message);
@@ -42,8 +41,7 @@ class AlertTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToString() {
     $alert = new Alert("Hello World!");
     $this->assertEquals("<div class='alert' role='alert'><div class='container'>Hello World!</div></div>", $alert->__toString());

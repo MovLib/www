@@ -31,8 +31,7 @@ class ErrorForbiddenExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $e = new Error();
     $this->assertEquals(403, http_response_code());

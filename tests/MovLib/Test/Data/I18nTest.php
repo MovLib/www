@@ -84,8 +84,7 @@ class I18nTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
-   * @group i18n
-   */
+    */
   public function testConstructInvalidHTTPAcceptLanguageCode() {
     unset($_SERVER["LANGUAGE_CODE"]);
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = "xx-XX";
@@ -98,8 +97,7 @@ class I18nTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
-   * @group i18n
-   */
+    */
   public function testConstructNoLanguageCodeNoHTTPAcceptLanguageCode() {
     unset($_SERVER["LANGUAGE_CODE"]);
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = null;

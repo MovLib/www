@@ -29,8 +29,7 @@ class AbstractErrorExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $args = [ 42, "phpunit-pagetitle", "phpunit-alerttitle", "phpunit-alertmessage" ];
     $stub = $this->getMockForAbstractClass("\\MovLib\\Exception\\Client\\AbstractErrorException", $args);

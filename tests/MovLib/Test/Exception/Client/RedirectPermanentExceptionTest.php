@@ -31,8 +31,7 @@ class RedirectPermanentExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $r = new Redirect("/phpunit");
     $this->assertEquals(301, http_response_code());

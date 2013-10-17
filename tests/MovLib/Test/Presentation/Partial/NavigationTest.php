@@ -52,8 +52,7 @@ class NavigationTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $this->assertEquals("phpunit", $this->navigation->id);
     $this->assertEquals("PHPUnit", $this->navigation->title);
@@ -62,8 +61,7 @@ class NavigationTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToString() {
     $this->assertEquals(
       "<nav id='phpunit-nav' role='navigation'>" .
@@ -78,8 +76,7 @@ class NavigationTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToStringUnorderedList() {
     $this->navigation->unorderedList = true;
     $this->assertEquals(
@@ -97,8 +94,7 @@ class NavigationTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToStringGlue() {
     $this->navigation->menuitems = [
       [ "/phpunit1", "phpunit-linktext1", [ "title" => "phpunit-title1" ] ],
@@ -120,8 +116,7 @@ class NavigationTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToStringClosure() {
     $this->navigation->closure = function (&$menuitem, $index, $total) {
       $menuitem[0] = "/phpunit{$index}";

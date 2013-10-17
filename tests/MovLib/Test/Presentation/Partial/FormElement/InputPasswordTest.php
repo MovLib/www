@@ -59,8 +59,7 @@ class InputPasswordTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $inputPassword = new InputPassword("phpunit", "PHPUnit", [ "foo" => "bar" ]);
     foreach ([ "foo", "pattern", "placeholder", "title", "type" ] as $key) {
@@ -74,8 +73,7 @@ class InputPasswordTest extends \PHPUnit_Framework_TestCase {
   /**
    * @coversNothing
    * @dataProvider dataProviderWeakPasswords
-   * @group Validation
-   */
+    */
   public function testPatternInvalid($password) {
     $pattern = (new InputPassword())->attributes["pattern"];
     $this->assertFalse((boolean) preg_match("/{$pattern}/", $password));
@@ -83,8 +81,7 @@ class InputPasswordTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @coversNothing
-   * @group Validation
-   */
+    */
   public function testPatternValid() {
     $pattern = (new InputPassword())->attributes["pattern"];
     $this->assertRegExp("/{$pattern}/", "Test1234");
@@ -93,8 +90,7 @@ class InputPasswordTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::__toString
    * @depends testConstruct
-   * @group Presentation
-   */
+    */
   public function testToString() {
     $_POST["password"]    = "Test1234";
     $inputPassword        = new InputPassword("password", "Password", [ "value" => "Test1234" ]);
@@ -108,8 +104,7 @@ class InputPasswordTest extends \PHPUnit_Framework_TestCase {
    * @depends testConstruct
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage mandatory
-   * @group Validation
-   */
+    */
   public function testValidateEmpty() {
     $this->_validate();
   }
@@ -119,8 +114,7 @@ class InputPasswordTest extends \PHPUnit_Framework_TestCase {
    * @depends testConstruct
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage too short
-   * @group Validation
-   */
+    */
   public function testValidateTooShort() {
     $this->_validate("test");
   }
@@ -131,8 +125,7 @@ class InputPasswordTest extends \PHPUnit_Framework_TestCase {
    * @depends testConstruct
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage not complex enough
-   * @group Validation
-   */
+    */
   public function testValidateComplexity($password) {
     $this->_validate($password);
   }
@@ -140,8 +133,7 @@ class InputPasswordTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::validate
    * @depends testConstruct
-   * @group Validation
-   */
+    */
   public function testValidate() {
     $this->_validate("Test1234");
   }

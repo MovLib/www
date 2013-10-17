@@ -72,8 +72,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__construct
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /my with status 302.
-   * @group Presentation
-   */
+    */
   public function testAuthenticatedRedirect() {
     global $session;
     $session = self::$sessionBackup;
@@ -90,8 +89,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testFormConfiguration() {
     $login = new Login();
 
@@ -128,8 +126,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getContent
-   * @group Presentation
-   */
+    */
   public function testGetContent() {
     $login   = new Login();
     $content = get_reflection_method($login, "getContent")->invoke($login);
@@ -141,9 +138,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /my with status 302.
-   * @group Presentation
-   * @group Validation
-   */
+     */
   public function testValidCredentials() {
     $_POST["email"]    = "richard@fussenegger.info";
     $_POST["form_id"]  = "users-login";
@@ -156,9 +151,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /profile with status 302.
-   * @group Presentation
-   * @group Validation
-   */
+     */
   public function testRedirectToViaGetParameter() {
     $_GET["redirect_to"] = rawurlencode("/profile");
     $this->testValidCredentials();
@@ -169,9 +162,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /profile?foo=bar with status 302.
-   * @group Presentation
-   * @group Validation
-   */
+     */
   public function testRedirectToOnDifferentRoute() {
     $_SERVER["PATH_INFO"] = $_SERVER["REQUEST_URI"] = "/profile?foo=bar";
     $this->testValidCredentials();
@@ -179,9 +170,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validate
-   * @group Presentation
-   * @group Validation
-   */
+     */
   public function testInvalidEmail() {
     $_POST["email"]    = "phpunit@movlib.org";
     $_POST["password"] = "test1234";
@@ -190,9 +179,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validate
-   * @group Presentation
-   * @group Validation
-   */
+     */
   public function testInvalidPassword() {
     $_POST["email"]    = "richard@fussenegger.info";
     $_POST["password"] = "phpunit";
@@ -203,8 +190,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /profile/deactivated with status 302.
-   * @group Presentation
-   */
+    */
   public function testDeactivated() {
     (new UserExtended(UserExtended::FROM_ID, 1))->deactivate();
     $_POST["email"]    = "richard@fussenegger.info";
@@ -223,8 +209,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testSignOut() {
     global $session;
     $session              = $this->getMock("\\MovLib\\Data\\Session");

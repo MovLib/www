@@ -74,8 +74,7 @@ class UserTest extends \MovLib\Test\TestCase {
   /**
    * @covers ::__construct
    * @dataProvider dataProviderTestConstruct
-   * @group Database
-   */
+    */
   public function testConstruct($from, $value) {
     $user = new User($from, $value);
     $this->assertEquals(1, $user->id);
@@ -97,17 +96,14 @@ class UserTest extends \MovLib\Test\TestCase {
    * @covers ::__construct
    * @dataProvider dataProviderTestConstructException
    * @expectedException \MovLib\Exception\UserException
-   * @group Database
-   */
+    */
   public function testConstructNoUser($from, $value) {
     new User($from, $value);
   }
 
   /**
    * @covers ::deleteImage
-   * @group FileSystem
-   * @group Uploads
-   */
+     */
   public function testDeleteImage() {
     // Make sure the image exists before attempting to delete it.
     $user = $this->testConstruct(User::FROM_ID, 1);
@@ -123,9 +119,7 @@ class UserTest extends \MovLib\Test\TestCase {
   /**
    * @covers ::getImageStyle
    * @dataProvider dataProviderImageStyles
-   * @group FileSystem
-   * @group Presentation
-   */
+     */
   public function testGetImageStyle($style) {
     $styleObj = (new User(User::FROM_ID, 1))->getImageStyle($style);
     $this->assertInstanceOf("\\MovLib\\Data\\Image\\Style", $styleObj);
@@ -138,10 +132,7 @@ class UserTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::uploadImage
-   * @group Database
-   * @group FileSystem
-   * @group Uploads
-   */
+      */
   public function testUploadImage() {
     $user   = new User(User::FROM_ID, 1);
     $source = tempnam(sys_get_temp_dir(), "phpunit");

@@ -31,8 +31,7 @@ class HelpTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testDefaults() {
     $help = new Help("Hello World!");
     foreach ([ "content", "id", "popup" ] as $property) {
@@ -45,8 +44,7 @@ class HelpTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testIdAndPopup() {
     $help = new Help("Hello World!", "phpunit", false);
     foreach ([ "id", "popup" ] as $property) {
@@ -58,8 +56,7 @@ class HelpTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToStringNoIdPopup() {
     $this->assertEquals(
       "<div class='form-help popup-container' role='note'><i class='icon icon--help-circled'></i><small class='popup'>Hello World!</small></div>",
@@ -69,8 +66,7 @@ class HelpTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToStringIdPopup() {
     $this->assertEquals(
       "<div class='form-help popup-container' id='phpunit-help' role='note'><i class='icon icon--help-circled'></i><small class='popup'>Hello World!</small></div>",
@@ -80,8 +76,7 @@ class HelpTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToStringNoIdNoPopup() {
     $this->assertEquals(
       "<small class='form-help' role='note'>Hello World!</small>",
@@ -91,8 +86,7 @@ class HelpTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToStringIdNoPopup() {
     $this->assertEquals(
       "<small class='form-help' id='phpunit-help' role='note'>Hello World!</small>",

@@ -29,8 +29,7 @@ class AbstractRedirectExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $stub = $this->getMockForAbstractClass("\\MovLib\\Exception\\Client\\AbstractRedirectException", [ 42, "/phpunit", "phpunit" ]);
     $this->assertEquals(42, http_response_code());

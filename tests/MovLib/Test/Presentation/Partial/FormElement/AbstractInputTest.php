@@ -29,8 +29,7 @@ class AbstractInputTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractInput", [ "phpunit", "PHPUnit", [ "value" => "phpunit" ]]);
     $this->assertEquals("phpunit", $stub->value);
@@ -39,8 +38,7 @@ class AbstractInputTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstructValueViaPOST() {
     $_POST["phpunit"] = "phpunit";
     $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractInput", [ "phpunit", "PHPUnit" ]);
@@ -51,8 +49,7 @@ class AbstractInputTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstructEmptyValueViaPOST() {
     $_POST["phpunit"] = "";
     $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractInput", [ "phpunit", "PHPUnit" ]);
@@ -64,8 +61,7 @@ class AbstractInputTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::__toString
    * @depends testConstruct
-   * @group Presentation
-   */
+    */
   public function testToString($stub) {
     $this->assertContains("value='phpunit'", $stub->__toString());
   }
@@ -73,8 +69,7 @@ class AbstractInputTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::__toString
    * @depends testConstructEmptyValueViaPOST
-   * @group Presentation
-   */
+    */
   public function testToStringEmptyValue($stub) {
     $this->assertNotContains("value='phpunit'", $stub->__toString());
   }

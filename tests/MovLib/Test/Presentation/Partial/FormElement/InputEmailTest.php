@@ -170,8 +170,7 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $inputEmail = new InputEmail("phpunit", "PHPUnit", [ "foo" => "bar" ]);
     foreach ([ "foo", "maxlength", "pattern", "placeholder", "title", "type" ] as $key) {
@@ -186,8 +185,7 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
   /**
    * @coversNothing
    * @dataProvider dataProviderInvalid
-   * @group Validation
-   */
+    */
   public function testPatternInvalid($email) {
     $pattern = strtr((new InputEmail())->attributes["pattern"], "/", "\/");
     $this->assertFalse((boolean) preg_match("/{$pattern}/", $email));
@@ -196,8 +194,7 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
   /**
    * @coversNothing
    * @dataProvider dataProviderValid
-   * @group Validation
-   */
+    */
   public function testPatternValid($email) {
     $pattern = strtr((new InputEmail())->attributes["pattern"], "/", "\/");
     $this->assertRegExp("/{$pattern}/", $email);
@@ -207,8 +204,7 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage mandatory
-   * @group Validation
-   */
+    */
   public function testValidateEmpty() {
     $this->_validate();
   }
@@ -217,8 +213,7 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage too long
-   * @group Validation
-   */
+    */
   public function testValidateTooLong() {
     $this->_validate(str_repeat("a", 255));
   }
@@ -227,8 +222,7 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage invalid
-   * @group Validation
-   */
+    */
   public function testValidateSyntax() {
     $this->_validate("phpunit");
   }
@@ -237,16 +231,14 @@ class InputEmailTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage unreachable
-   * @group Validation
-   */
+    */
   public function testValidateDNS() {
     $this->_validate("user@foo.bar");
   }
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testValidate() {
     $this->_validate("phpunit@movlib.org");
   }

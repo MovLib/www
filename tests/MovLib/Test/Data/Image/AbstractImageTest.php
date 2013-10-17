@@ -61,9 +61,7 @@ class AbstractImageTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::convertImage
-   * @group FileSystem
-   * @group Presentation
-   */
+     */
   public function testConvertImageNoDimensionsCropFalse() {
     $path = $this->invoke($this->image, "convertImage", [ self::$tmpImage, Image::IMAGE_STYLE_SPAN_02 ]);
     $this->assertTrue(is_file($path) && is_readable($path) && is_writable($path));
@@ -77,9 +75,7 @@ class AbstractImageTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::convertImage
-   * @group FileSystem
-   * @group Presentation
-   */
+     */
   public function testConvertImageDimensionsCropTrue() {
     $path = $this->invoke($this->image, "convertImage", [ self::$tmpImage, Image::IMAGE_STYLE_SPAN_02, Image::IMAGE_STYLE_SPAN_02, Image::IMAGE_STYLE_SPAN_01, true ]);
     $this->assertTrue(is_file($path) && is_readable($path) && is_writable($path));
@@ -93,9 +89,7 @@ class AbstractImageTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::convertImage
-   * @group FileSystem
-   * @group Presentation
-   * @expectedException \MovLib\Exception\ImageException
+     * @expectedException \MovLib\Exception\ImageException
    */
   public function testConvertImageException() {
     $this->invoke($this->image, "convertImage", [ __FILE__, Image::IMAGE_STYLE_SPAN_02 ]);

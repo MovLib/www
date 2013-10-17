@@ -31,8 +31,7 @@ class StyleTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $expected = [
       "alt"    => "PHPUnit",

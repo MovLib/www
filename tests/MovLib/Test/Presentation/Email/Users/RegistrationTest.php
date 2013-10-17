@@ -40,9 +40,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__construct
    * @covers ::init
    * @covers ::getHtmlBody
-   * @group Presentation
-   * @group Emails
-   */
+     */
   public function testHtml() {
     $this->_testMailBody("Html");
   }
@@ -51,9 +49,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__construct
    * @covers ::init
    * @covers ::getPlainBody
-   * @group Presentation
-   * @group Emails
-   */
+     */
   public function testPlain() {
     $this->_testMailBody("Plain");
   }

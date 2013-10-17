@@ -39,8 +39,7 @@ class PageTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::__construct
    * @covers ::init
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $this->assertEquals([ "page" ], get_reflection_property($this->page, "namespace")->getValue($this->page));
     $this->assertEquals("page", get_reflection_property($this->page, "bodyClasses")->getValue($this->page));
@@ -51,8 +50,7 @@ class PageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::checkErrors
-   * @group Presentation
-   */
+    */
   public function checkErrors() {
     $this->assertFalse($this->page->checkErrors(null));
     $this->assertTrue($this->page->checkErrors([ "<phpunit>" ]));

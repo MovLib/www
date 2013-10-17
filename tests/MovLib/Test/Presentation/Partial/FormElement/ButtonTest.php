@@ -31,8 +31,7 @@ class ButtonTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $button = new Button("phpunit", "<phpunit>");
     $this->assertEquals("<phpunit>", $button->content);
@@ -40,16 +39,14 @@ class ButtonTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToString() {
     $this->assertRegExp("/^<button[a-z0-9=' ]+><phpunit><\/button>$/", (string) new Button("phpunit", "<phpunit>"));
   }
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testValidate() {
     $button = new Button("phpunit", "<phpunit>");
     $this->assertEquals($button, $button->validate());

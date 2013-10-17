@@ -49,8 +49,7 @@ class ResetPasswordTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testFormConfiguration() {
     $resetPassword = new ResetPassword();
 
@@ -75,8 +74,7 @@ class ResetPasswordTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getContent
-   * @group Presentation
-   */
+    */
   public function testGetContent() {
     $resetPassword = new ResetPassword();
     $form          = get_reflection_property($resetPassword, "form")->getValue($resetPassword);
@@ -86,8 +84,7 @@ class ResetPasswordTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validate
-   * @group Presentation
-   */
+    */
   public function testValidate() {
     $_POST["email"]   = "richard@fussenegger.info";
     $_POST["form_id"] = "users-resetpassword";

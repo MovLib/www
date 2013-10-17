@@ -31,8 +31,7 @@ class DatabaseExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Exceptions
-   */
+    */
   public function testConstruct() {
     $databaseException = new DatabaseException("phpunit");
     $this->assertEquals("phpunit: none (-1)", $databaseException->getMessage());

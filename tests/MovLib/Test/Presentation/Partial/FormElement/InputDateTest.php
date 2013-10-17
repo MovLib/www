@@ -34,8 +34,7 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $date      = date("Y-m-d", $_SERVER["REQUEST_TIME"]);
     $timestamp = DateTime::createFromFormat("!Y-m-d", $date)->getTimestamp();
@@ -51,8 +50,7 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testNormalization() {
     global $session;
     $date      = date("Y-m-d", $_SERVER["REQUEST_TIME"]);
@@ -68,8 +66,7 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testEmpty() {
     $inputDate = new InputDate("phpunit", "PHPUnit");
     $this->assertEquals($inputDate, $inputDate->validate());
@@ -79,8 +76,7 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage mandatory
-   * @group Validation
-   */
+    */
   public function testMandatory() {
     (new InputDate("phpunit", "PHPUnit", [ "required" ]))->validate();
   }
@@ -89,8 +85,7 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage invalid
-   * @group Validation
-   */
+    */
   public function testInvalidFormat() {
     (new InputDate("phpunit", "PHPUnit", [ "value" => date("d-M-y", $_SERVER["REQUEST_TIME"]) ]))->validate();
   }
@@ -99,8 +94,7 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage invalid
-   * @group Validation
-   */
+    */
   public function testInvalidDate() {
     (new InputDate("phpunit", "PHPUnit", [ "value" => "2013-02-30" ]))->validate();
   }
@@ -109,8 +103,7 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage greater than
-   * @group Validation
-   */
+    */
   public function testInvalidMax() {
     (new InputDate("phpunit", "PHPUnit", [ "max" => time(), "value" => date("Y-m-d", strtotime("+1 year")) ]))->validate();
   }
@@ -119,16 +112,14 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage less than
-   * @group Validation
-   */
+    */
   public function testInvalidMin() {
     (new InputDate("phpunit", "PHPUnit", [ "min" => time(), "value" => date("Y-m-d", strtotime("-1 year")) ]))->validate();
   }
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testValid() {
     $inputDate = new InputDate("phpunit", "PHPUnit", [
       "min"   => strtotime("-1 year"),

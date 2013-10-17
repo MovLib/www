@@ -52,8 +52,7 @@ class HomeTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $this->assertEquals("MovLib", get_reflection_property($this->home, "title")->getValue($this->home));
     $this->assertTrue(in_array("modules/home.css", get_reflection_property($this->home, "stylesheets")->getValue($this->home)));
@@ -61,8 +60,7 @@ class HomeTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getBreadcrumb
-   * @group Presentation
-   */
+    */
   public function testGetBreadcrumb() {
     $breadcrumb = new Navigation("breadcrumb", "You are here: ", [[ "/", "Home", [ "title" => "Go back to the home page." ] ]]);
     $breadcrumb->attributes["class"] = "container";
@@ -73,8 +71,7 @@ class HomeTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getHeaderLogo
-   * @group Presentation
-   */
+    */
   public function testGetHeaderLogo() {
     $this->assertEquals(
       "<h1 class='span' id='header__logo'><img alt='MovLib, the free movie library.' height='42' id='logo' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib</h1>",
@@ -84,16 +81,14 @@ class HomeTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getHeadTitle
-   * @group Presentation
-   */
+    */
   public function testGetHeadTitle() {
     $this->assertEquals("MovLib, the free movie library.", get_reflection_method($this->home, "getHeadTitle")->invoke($this->home));
   }
 
   /**
    * @covers ::getWrappedContent
-   * @group Presentation
-   */
+    */
   public function testGetWrappedContent() {
     $wrappedContent = get_reflection_method($this->home, "getWrappedContent")->invoke($this->home);
     $this->assertContains("class='home-content'", $wrappedContent);

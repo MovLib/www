@@ -31,8 +31,7 @@ class ErrorBadRequestExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $e = new Error();
     $this->assertEquals(400, http_response_code());

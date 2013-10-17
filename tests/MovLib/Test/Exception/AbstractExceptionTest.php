@@ -29,8 +29,7 @@ class AbstractExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Exceptions
-   */
+    */
   public function testConstruct() {
     $stub = $this->getMockForAbstractClass("\\MovLib\\Exception\\AbstractException", [ "message", new \Exception(), 42 ]);
     $this->assertInstanceOf("\\RuntimeException", $stub);

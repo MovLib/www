@@ -109,8 +109,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__construct
    * @expectedException \MovLib\Exception\RedirectException
    * @expectedExceptionMessage Redirecting user to /my with status 302.
-   * @group Presentation
-   */
+    */
   public function testRedirectIfAuthenticated() {
     global $session;
     try {
@@ -125,8 +124,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::__construct
    * @covers ::getContent
-   * @group Presentation
-   */
+    */
   public function testGetContent() {
     $registration = new Registration();
     $form         = get_reflection_property($registration, "form")->getValue($registration);
@@ -136,8 +134,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::__construct
    * @covers ::getContent
-   * @group Presentation
-   */
+    */
   public function testGetContentValidRegistration() {
     $registration = $this->_getRegistration();
     $form         = get_reflection_property($registration, "form")->getValue($registration);
@@ -148,56 +145,49 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testUsernameSpaceAtBeginning() {
     $this->_testUsername(" PHPUnit", "username cannot begin with a space");
   }
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testUsernameSpaceAtEnd() {
     $this->_testUsername("PHPUnit ", "username cannot end with a space");
   }
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testUsernameMultipleSpaces() {
     $this->_testUsername("PHP  Unit", "username cannot contain multiple spaces in a row");
   }
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testUsernameSlash() {
     $this->_testUsername("PHP/Unit", "username cannot contain slashes");
   }
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testUsernameLength() {
     $this->_testUsername(str_repeat("PHPUnit ", 10), "username is too long");
   }
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testUsernameExists() {
     $this->_testUsername("Fleshgrinder", "username is already taken");
   }
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testTerms() {
     $registration = $this->_getRegistration([ "terms" => "off" ]);
     $this->assertContains("You have to accept the", $registration->getPresentation());
@@ -205,8 +195,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testEmailExists() {
     $this->_getRegistration("PHPUnit", "richard@fussenegger.info");
     $found = false;
@@ -220,8 +209,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testValidRegistration() {
     $registration = $this->_getRegistration();
     $found = false;
@@ -238,8 +226,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validate
-   * @group Validation
-   */
+    */
   public function testTooManyRegistrations() {
     for ($i = 0; $i < 6; ++$i) {
       $registration = $this->_getRegistration();

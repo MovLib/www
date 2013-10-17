@@ -40,8 +40,7 @@ class ErrorExceptionTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::__construct
    * @dataProvider dataProviderTestConstruct
-   * @group Exceptions
-   */
+    */
   public function testConstruct($errorCode) {
     $line = __LINE__;
     $errorException = new ErrorException($errorCode, "phpunit", __FILE__, $line);

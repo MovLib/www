@@ -29,8 +29,7 @@ class TraitUsersTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getBreadcrumbs
-   * @group Presentation
-   */
+    */
   public function testGetBreadcrumbs() {
     $traitUsers = $this->getObjectForTrait("\\MovLib\\Presentation\\Users\\TraitUsers");
     $this->assertEquals([[ "/users", "Users" ]], get_reflection_method($traitUsers, "getBreadcrumbs")->invoke($traitUsers));

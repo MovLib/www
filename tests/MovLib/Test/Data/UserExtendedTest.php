@@ -57,16 +57,14 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::checkEmail
-   * @group Database
-   */
+    */
   public function testCheckEmailExists() {
     $this->assertTrue((new UserExtended(UserExtended::FROM_ID, 1))->checkEmail());
   }
 
   /**
    * @covers ::checkEmail
-   * @group Database
-   */
+    */
   public function testCheckEmailNotExists() {
     $user        = new UserExtended();
     $user->email = "phpunit@movlib.org";
@@ -76,8 +74,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::checkName
    * @dataProvider dataProviderTestCheckNameExists
-   * @group Database
-   */
+    */
   public function testCheckNameExists($name) {
     // We have to check that the query itself is agnostic to case changes (same as we did in the constructor test).
     $user       = new UserExtended();
@@ -87,8 +84,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::checkName
-   * @group Database
-   */
+    */
   public function testCheckNameNotExists() {
     $user       = new UserExtended();
     $user->name = "PHPUnit";
@@ -97,10 +93,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::commit
-   * @group Database
-   * @group FileSystem
-   * @group Uploads
-   */
+      */
   public function testCommit() {
     $user = new UserExtended(UserExtended::FROM_ID, 1);
     $user->birthday           = "2000-01-01";
@@ -129,10 +122,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::deactivate
    * @covers ::deleteImageOriginalAndStyles
-   * @group Database
-   * @group FileSystem
-   * @group Uploads
-   */
+      */
   public function testDeactivate() {
     $user = new UserExtended(UserExtended::FROM_ID, 1);
     $user->deactivate();
@@ -157,16 +147,14 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getRandomPassword
-   * @group Presentation
-   */
+    */
   public function testGetRandomPassword() {
     $this->assertRegExp("/.{20}/", UserExtended::getRandomPassword());
   }
 
   /**
    * @covers ::getRegistrationData
-   * @group Database
-   */
+    */
   public function testGetRegistrationData() {
     $user        = new UserExtended();
     $user->name  = "PHPUnit";
@@ -187,8 +175,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
    * @covers ::getRegistrationData
    * @expectedException \MovLib\Exception\UserException
    * @expectedExceptionMessage No data found
-   * @group Database
-   */
+    */
   public function testGetRegistrationDataExpired() {
     $user        = new UserExtended();
     $user->name  = "PHPUnit";
@@ -202,16 +189,14 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
    * @covers ::getRegistrationData
    * @expectedException \MovLib\Exception\UserException
    * @expectedExceptionMessage No data found
-   * @group Database
-   */
+    */
   public function testGetRegistrationDataNoRecord() {
     (new UserExtended())->getRegistrationData();
   }
 
   /**
    * @covers ::passwordHash
-   * @group Database
-   */
+    */
   public function testPasswordHash() {
     $user = new UserExtended();
     $this->assertTrue(password_verify("Test1234", get_reflection_method($user, "passwordHash")->invokeArgs($user, [ "Test1234" ])));
@@ -219,8 +204,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::prepareRegistration
-   * @group Database
-   */
+    */
   public function testPrepareRegistration() {
     $user        = new UserExtended();
     $user->name  = "PHPUnit";
@@ -233,8 +217,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
    * @covers ::prepareRegistration
    * @expectedException \MovLib\Exception\UserException
    * @expectedExceptionMessage Too many registration attempts
-   * @group Database
-   */
+    */
   public function testPrepareRegistrationTooManyAttempts() {
     $user        = new UserExtended();
     $user->name  = "PHPUnit";
@@ -251,8 +234,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::prepareRegistration
-   * @group Database
-   */
+    */
   public function testPrepareRegistrationTooManyExpiredAttempts() {
     $user        = new UserExtended();
     $user->name  = "PHPUnit";
@@ -270,8 +252,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::reactivate
-   * @group Database
-   */
+    */
   public function testReactivate() {
     $user = new UserExtended(UserExtended::FROM_ID, 1);
     $user->deactivate()->reactivate();
@@ -281,8 +262,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::register
-   * @group Database
-   */
+    */
   public function testRegister() {
     global $i18n;
     $user        = new UserExtended();
@@ -306,8 +286,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::updateEmail
-   * @group Database
-   */
+    */
   public function testUpdateEmail() {
     $user = new UserExtended(UserExtended::FROM_ID, 1);
     $this->assertEquals("richard@fussenegger.info", $user->email);
@@ -318,8 +297,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::updatePassword
-   * @group Database
-   */
+    */
   public function testUpdatePassword() {
     $db      = new Database();
     $session = new \MovLib\Data\Session();

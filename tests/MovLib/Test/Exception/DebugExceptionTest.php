@@ -58,8 +58,7 @@ class DebugExceptionTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::__construct
    * @covers ::__toString
-   * @group Exceptions
-   */
+    */
   public function testVarDump() {
     $object = new \stdClass();
     $debugException = new DebugException($object);
@@ -73,8 +72,7 @@ class DebugExceptionTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::__construct
    * @covers ::__toString
-   * @group Exceptions
-   */
+    */
   public function testPrintR() {
     $object = new \stdClass();
     $debugException = new DebugException($object, "print_r");
@@ -84,8 +82,7 @@ class DebugExceptionTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::__construct
    * @covers ::__toString
-   * @group Exceptions
-   */
+    */
   public function testCallback() {
     $debugException = new DebugException("phpunit", [ $this, "callbackString" ]);
     $this->assertEquals("phpunit", $debugException->__toString());

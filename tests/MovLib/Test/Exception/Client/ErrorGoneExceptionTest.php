@@ -31,8 +31,7 @@ class ErrorGoneExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group
-   */
+    */
   public function testConstruct() {
     $e = new Error();
     $this->assertEquals(410, http_response_code());

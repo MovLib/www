@@ -260,8 +260,7 @@ class SessionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::validateCsrfToken
-   * @group Validation
-   */
+    */
   public function testValidateCsrfTokenNoSet() {
     global $session;
     $this->assertFalse($session->validateCsrfToken());
@@ -269,8 +268,7 @@ class SessionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::validateCsrfToken
-   * @group Validation
-   */
+    */
   public function testValidateCsrfTokenInvalid() {
     global $session;
     $_POST["csrf"] = "phpunit";
@@ -279,8 +277,7 @@ class SessionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::validateCsrfToken
-   * @group Validation
-   */
+    */
   public function testValidateCsrfToken() {
     global $session;
     $_POST["csrf"] = $session->csrfToken;

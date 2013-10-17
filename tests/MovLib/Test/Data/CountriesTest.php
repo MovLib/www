@@ -55,8 +55,7 @@ class CountriesTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::orderByCode
-   * @group Database
-   */
+    */
   public function testOrderByCode() {
     $this->countries->orderByCode();
     foreach (array_column($this->db->query("SELECT `iso_alpha-2` FROM `countries` ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
@@ -66,8 +65,7 @@ class CountriesTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::orderByCode
-   * @group Database
-   */
+    */
   public function testOrderByCodeFilter() {
     $this->countries->orderByCode([ "US", "AT" ]);
     foreach (array_column($this->db->query("SELECT `iso_alpha-2` FROM `countries` WHERE `country_id` IN('US', 'AT') ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
@@ -77,8 +75,7 @@ class CountriesTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::orderById
-   * @group Database
-   */
+    */
   public function testOrderById() {
     $this->countries->orderById();
     foreach (array_column($this->db->query("SELECT `country_id` FROM `countries`")->get_result()->fetch_all(), 0) as $id) {
@@ -88,8 +85,7 @@ class CountriesTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::orderById
-   * @group Database
-   */
+    */
   public function testOrderByIdFilter() {
     $this->countries->orderById([ 1, 2 ]);
     foreach (array_column($this->db->query("SELECT `country_id` FROM `countries` WHERE `country_id` IN (1, 2)")->get_result()->fetch_all(), 0) as $id) {
@@ -99,8 +95,7 @@ class CountriesTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::orderByName
-   * @group Database
-   */
+    */
   public function testOrderByName() {
     global $i18n;
     $this->countries->orderByName();

@@ -31,8 +31,7 @@ class ValidationExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Exceptions
-   */
+    */
   public function testStringConstruct() {
     $validationException = new ValidationException("message");
     $this->assertEquals("message", $validationException->getMessage());
@@ -40,8 +39,7 @@ class ValidationExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Exceptions
-   */
+    */
   public function testArrayConstruct() {
     $validationException = new ValidationException([ "message 1", "message 2" ]);
     $this->assertEquals("message 1<br>message 2", $validationException->getMessage());
@@ -49,8 +47,7 @@ class ValidationExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::appendToMessage
-   * @group Exceptions
-   */
+    */
   public function testAppendStringToMessage() {
     $validationException = new ValidationException("message 1");
     $validationException->appendToMessage("message 2");
@@ -59,8 +56,7 @@ class ValidationExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::appendToMessage
-   * @group Exceptions
-   */
+    */
   public function testAppendArrayToMessage() {
     $validationException = new ValidationException("message 1");
     $validationException->appendToMessage([ "message 2", "message 3" ]);

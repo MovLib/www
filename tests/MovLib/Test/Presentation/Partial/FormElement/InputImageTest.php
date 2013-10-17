@@ -32,8 +32,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $concreteImage = new UserExtended(UserExtended::FROM_ID, 1);
     $inputImage    = new InputImage("phpunit", "PHPUnit", $concreteImage, [ "foo" => "bar" ]);
@@ -52,8 +51,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstructGlobalDimensionConstraints() {
     $concreteImage = new UserExtended();
     $inputImage    = new InputImage("phpunit", "PHPUnit", $concreteImage);
@@ -63,8 +61,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToStringImageExists() {
     $concreteImage = new UserExtended(UserExtended::FROM_ID, 1);
     $inputImage    = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
@@ -75,8 +72,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToStringNoImage() {
     $concreteImage = new UserExtended(UserExtended::FROM_ID, 1);
     $concreteImage->imageExists = false;
@@ -90,8 +86,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionMessage mandatory
-   * @group Validation
-   */
+    */
   public function testValidateRequired() {
     (new InputImage("phpunit", "PHPUnit", new UserExtended(UserExtended::FROM_ID, 1), [ "required" ]))->validate();
   }

@@ -31,8 +31,7 @@ class InputSubmitTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $inputSubmit = new InputSubmit([ "value" => "phpunit" ]);
     foreach ([ "class", "id", "tabindex", "type", "value" ] as $key) {
@@ -47,8 +46,7 @@ class InputSubmitTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__toString
-   * @group Presentation
-   */
+    */
   public function testToString() {
     $this->assertRegExp("/<input[a-z0-9='\- ]+>/", (string) new InputSubmit([ "value" => "phpunit" ]));
   }

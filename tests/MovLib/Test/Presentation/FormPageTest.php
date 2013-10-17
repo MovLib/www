@@ -31,8 +31,7 @@ class FormPageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::checkErrors
-   * @group Presentation
-   */
+    */
   public function testNoErrors() {
     $formPage = new FormPage("PHPUnit");
     $this->assertFalse(get_reflection_method($formPage, "checkErrors")->invoke($formPage));
@@ -40,8 +39,7 @@ class FormPageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::checkErrors
-   * @group Presentation
-   */
+    */
   public function testStringErrors() {
     $formPage = new FormPage("PHPUnit");
     $this->assertTrue(get_reflection_method($formPage, "checkErrors")->invokeArgs($formPage, [ "msg" ]));
@@ -50,8 +48,7 @@ class FormPageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::checkErrors
-   * @group Presentation
-   */
+    */
   public function testArrayErrors() {
     $formPage = new FormPage("PHPUnit");
     $this->assertTrue(get_reflection_method($formPage, "checkErrors")->invokeArgs($formPage, [[ "assoc" => "msg1", "msg2" ]]));
@@ -60,9 +57,7 @@ class FormPageTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::validate
-   * @group Presentation
-   * @group Validation
-   */
+     */
   public function testValidate() {
     $stub = $this->getMock("\\MovLib\\Presentation\\FormPage", [ "checkErrors" ], [ "PHPUnit" ]);
     $stub->expects($this->once())->method("checkErrors");

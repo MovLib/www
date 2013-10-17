@@ -31,8 +31,7 @@ class RedirectTemporaryExceptionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $r = new Redirect("/phpunit");
     $this->assertEquals(302, http_response_code());

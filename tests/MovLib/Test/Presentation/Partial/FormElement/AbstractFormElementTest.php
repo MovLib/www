@@ -29,8 +29,7 @@ class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement", [ "phpunit", "PHPUnit", [ "foo" => "bar" ]]);
     foreach ([ "foo", "id", "name", "tabindex" ] as $key) {
@@ -47,8 +46,7 @@ class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::invalid
-   * @group Presentation
-   */
+    */
   public function testInvalid() {
     $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement", [ "phpunit", "PHPUnit" ]);
     $this->assertEquals($stub, $stub->invalid());
@@ -60,8 +58,7 @@ class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::setHelp
-   * @group Presentation
-   */
+    */
   public function testSetHelp() {
     $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement", [ "phpunit", "PHPUnit" ]);
     $this->assertEquals($stub, $stub->setHelp("help message", false));

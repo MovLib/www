@@ -34,8 +34,7 @@ class UnauthorizedExceptionTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__construct
    * @expectedException \MovLib\Exception\Client\UnauthorizedException
    * @expectedExceptionMessage has to authenticate
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     global $session;
     $sessionBackup = clone $session;

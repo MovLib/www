@@ -70,8 +70,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Presentation
-   */
+    */
   public function testConstruct() {
     global $session;
     $_SERVER["MULTIPART"] = 0;
@@ -85,8 +84,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Validation
-   */
+    */
   public function testUploadError() {
     $_SERVER["MULTIPART"] = UPLOAD_ERR_INI_SIZE;
     $stub = $this->getMock("\\MovLib\\Presentation\\FormPage", [ "validate" ], [ "PHPUnit" ]);
@@ -99,8 +97,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Validation
-   */
+    */
   public function testInvalidCSRF() {
     $_POST["form_id"] = "phpunit";
     $stub = $this->getMock("\\MovLib\\Presentation\\FormPage", [ "validate" ], [ "PHPUnit" ]);
@@ -112,8 +109,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Validation
-   */
+    */
   public function testAutoValidation() {
     global $session;
     $_POST["form_id"] = "phpunit";
@@ -126,8 +122,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::__construct
-   * @group Validation
-   */
+    */
   public function testAutoValidationInvalid() {
     global $session;
     $_POST["form_id"] = "phpunit";
@@ -142,8 +137,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::open
-   * @group Presentation
-   */
+    */
   public function testOpen() {
     global $session;
     $open = $this->form->open();
@@ -153,8 +147,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::close
-   * @group Presentation
-   */
+    */
   public function testClose() {
     $close = $this->form->close();
     $this->assertEquals("<p class='form-actions'>{$this->inputSubmit}</p></form>", $close);
@@ -165,8 +158,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__toString
    * @depends testOpen
    * @depends testClose
-   * @group Presentation
-   */
+    */
   public function testToString() {
     $args = func_get_args();
     $this->inputEmail->attributes[] = "autofocus";
