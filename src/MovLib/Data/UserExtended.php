@@ -324,7 +324,7 @@ class UserExtended extends \MovLib\Data\User {
     $sessions = $session->getActiveSessions();
     DelayedMethodCalls::stack($session, "delete", array_column($sessions, "session_id"));
     $this->deleteImage();
-    return $this->query(
+    $this->query(
       "UPDATE `users` SET
         `avatar_changed`    = NULL,
         `avatar_extension`  = NULL,
@@ -344,6 +344,7 @@ class UserExtended extends \MovLib\Data\User {
       "sd",
       [ ini_get("date.timezone"), $this->id ]
     );
+    return $this;
   }
 
   /**
@@ -406,8 +407,8 @@ class UserExtended extends \MovLib\Data\User {
   public function prepareRegistration($rawPassword) {
     $password    = $this->passwordHash($rawPassword);
     $key         = "registration-{$this->email}";
-    $result      = $this->query("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $key ])->get_result();
-    if (($result = $result->fetch_assoc())) {
+    $result      = $this->query("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $key ])->get_result()->fetch_assoc();
+    if ($result) {
       $data             = unserialize($result["data"]);
       $data["password"] = $password;
       if ($result["created"] > 0) {
@@ -438,8 +439,8 @@ class UserExtended extends \MovLib\Data\User {
    * @throws \MovLib\Exception\UserException
    */
   public function getRegistrationData() {
-    $result = $this->query("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ "registration-{$this->email}" ])->get_result();
-    if (($result = $result->fetch_assoc()) || $result["created"] > 0) {
+    $result = $this->query("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ "registration-{$this->email}" ])->get_result()->fetch_assoc();
+    if (!$result || $result["created"] > 0) {
       throw new UserException("No data found for this user.");
     }
     $data        = unserialize($result["data"]);
@@ -456,7 +457,8 @@ class UserExtended extends \MovLib\Data\User {
    */
   public function reactivate() {
     $this->deactivated = false;
-    return $this->query("UPDATE `users` SET `deactivated` = false WHERE `user_id` = ?", "d", [ $this->id ]);
+    $this->query("UPDATE `users` SET `deactivated` = false WHERE `user_id` = ?", "d", [ $this->id ]);
+    return $this;
   }
 
   /**
@@ -478,15 +480,13 @@ class UserExtended extends \MovLib\Data\User {
    */
   public function register($password) {
     global $i18n;
-    $this
-      ->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ "registration-{$this->email}" ])
-      ->query(
-        "INSERT INTO `users` (`avatar_name`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES (?, '', ?, ?, ?, ?)",
-        "sssss",
-        [ $this->filename(html_entity_decode($this->name, ENT_QUOTES|ENT_HTML5)), $this->email, $this->name, $password, $i18n->languageCode ]
-      )
-    ;
-    $this->id = $this->insertId;
+    $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ "registration-{$this->email}" ]);
+    $stmt = $this->query(
+      "INSERT INTO `users` (`avatar_name`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES (?, '', ?, ?, ?, ?)",
+      "sssss",
+      [ $this->filename(html_entity_decode($this->name, ENT_QUOTES|ENT_HTML5)), $this->email, $this->name, $password, $i18n->languageCode ]
+    );
+    $this->id = $stmt->insert_id;
     return $this;
   }
 
