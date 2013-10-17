@@ -193,7 +193,7 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+  public function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
     if (!isset($this->mysqli) || $this->transactionActive === false) {
       throw new DatabaseException("No active transaction, nothing to commit.");
     }
@@ -213,7 +213,7 @@ class Database {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+  public function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
     if (!isset($this->mysqli) || $this->transactionActive === false) {
       throw new DatabaseException("No active transaction, nothing to rollback.");
     }
@@ -234,7 +234,7 @@ class Database {
    * @return this
    * @throws \MovLib\Data\DatabaseException
    */
-  protected function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
+  public function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
     if (($this->transactionActive = $this->mysqli->begin_transaction($flags)) === false) {
       throw new DatabaseException("Could not start transaction", $this->mysqli->error, $this->mysqli->errno);
     }
