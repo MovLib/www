@@ -21,7 +21,7 @@ use \MovDev\Database;
 
 /**
  * @coversDefaultClass \MovLib\Console\Command\CronDaily
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/

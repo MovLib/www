@@ -43,7 +43,7 @@ class Movies extends \MovLib\Data\Database {
    */
   public function getMoviesByCreated($lowerBound = 0, $upperBound = self::DEFAULT_PAGINATION_SIZE) {
     global $i18n;
-    $movies = $this->select(
+    $result = $this->query(
       "SELECT
         `movie_id` AS `id`,
           `original_title` AS `originalTitle`,
@@ -62,10 +62,11 @@ class Movies extends \MovLib\Data\Database {
       ORDER BY `created` DESC
       LIMIT ?, ?",
       "ii",
-      [ $lowerBound, $upperBound ]);
-    $c = count($movies);
-    for ($i = 0; $i < $c; ++$i) {
-      $movies[$i] = new Movie(null, $movies[$i]);
+      [ $lowerBound, $upperBound ]
+    )->get_result();
+    $movies = [];
+    while ($movie = $result->fetch_object("\\MovLib\\Data\\Movie")) {
+      $movies[] = $movie;
     }
     return $movies;
   }

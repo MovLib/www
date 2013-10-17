@@ -100,7 +100,7 @@ class Country extends \MovLib\Data\Database {
    *   Data to identify the country, see the various <var>FROM_*</var> class constants.
    * @throws \MovLib\Exception\CountryException
    */
-  public function __construct($from, $value) {
+  public function __construct($from = null, $value = null) {
     global $i18n;
     if ($from && $value) {
       $namePart = "";

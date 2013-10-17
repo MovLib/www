@@ -407,7 +407,7 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getGenres() {
     global $i18n;
-    $stmt = $this->query(
+    $result = $this->query(
       "SELECT
         `g`.`genre_id`,
         `g`.`name`,
@@ -417,9 +417,8 @@ class Movie extends \MovLib\Data\Database {
           ON `mg`.`genre_id` = `g`.`genre_id`
       WHERE `mg`.`movie_id` = ?",
       "d", [ $this->id ]
-    );
-    $dbGenres = $stmt->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
+    )->get_result();
+    $dbGenres = $result->fetch_all(MYSQLI_ASSOC);
     if (($c = count($dbGenres))) {
       $tmpGenres = [];
       for ($i = 0; $i < $c; ++$i) {
@@ -441,9 +440,8 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getLanguages() {
     global $i18n;
-    $stmt = $this->query("SELECT `language_id` AS `id` FROM `movies_languages` WHERE `movie_id` = ?", "d", [ $this->id ]);
-    $languageIds = array_column($stmt->fetch_all(MYSQLI_ASSOC), 0);
-    $stmt->close();
+    $result = $this->query("SELECT `language_id` AS `id` FROM `movies_languages` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result();
+    $languageIds = array_column($result->fetch_all(MYSQLI_ASSOC), 0);
     if (($c = count($languageIds))) {
       return (new Languages())->orderById($languageIds);
     }
@@ -489,7 +487,7 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getStyles() {
     global $i18n;
-    $stmt = $this->query(
+    $result = $this->query(
       "SELECT
         `s`.`style_id` AS `id`,
         `s`.`name` AS `name`,
@@ -499,9 +497,8 @@ class Movie extends \MovLib\Data\Database {
       WHERE `ms`.`movie_id` = ?",
       "sd",
       [ $i18n->languageCode, $this->id ]
-    );
-    $dbStyles = $stmt->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
+    )->get_result();
+    $dbStyles = $result->fetch_all(MYSQLI_ASSOC);
     if (($c = count($dbStyles))) {
       $tmpStyles = [];
       for ($i = 0; $i < $c; ++$i) {

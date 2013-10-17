@@ -20,6 +20,7 @@ namespace MovLib\Test\Data;
 use \MovDev\Database;
 use \MovLib\Data\Collator;
 use \MovLib\Data\I18n;
+use \MovLib\Data\Language;
 use \MovLib\Data\Movie;
 use \MovLib\Data\Image\Movie as MovieImage;
 
@@ -223,7 +224,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $i18nBackup = $i18n;
     $i18n = new I18n("de_AT");
 
-    $dbCountries = (new Database())->select(
+    $result = (new Database())->query(
       "SELECT
         `c`.`country_id` AS `id`,
         `c`.`iso_alpha-2` AS `code`,
@@ -234,7 +235,8 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
       WHERE `mc`.`movie_id` = ?",
       "sd",
       [ $i18n->languageCode, $this->movie->id ]
-    );
+    )->get_result();
+    $dbCountries = $result->fetch_all(MYSQLI_ASSOC);
     $c = count($dbCountries);
     $tmpCountries = [];
     for ($i = 0; $i < $c; ++$i) {
@@ -298,7 +300,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $i18nBackup = $i18n;
     $i18n = new I18n("de_AT");
 
-    $dbTitle = (new Database())->select(
+    $stmt = (new Database())->query(
       "SELECT
         `title`
       FROM `movies_titles`
@@ -307,8 +309,11 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
         AND `language_id` = ?
       LIMIT 1",
       "di",
-      [ $this->movie->id, $i18n->getLanguages(I18n::KEY_CODE)[$i18n->languageCode][I18n::KEY_ID] ]
-    )[0]["title"];
+      [ $this->movie->id, (new Language(Language::FROM_CODE, $i18n->languageCode)) ]
+    );
+    $stmt->bind_result($dbTitle);
+    $stmt->fetch();
+    $stmt->close();
 
     $this->movie->originalTitle = "PHPUnit";
     $this->assertEquals($dbTitle, $this->movie->getDisplayTitle());
@@ -333,7 +338,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $i18nBackup = $i18n;
     $i18n = new I18n("de_AT");
 
-    $dbGenres = (new Database())->select(
+    $result = (new Database())->query(
       "SELECT
         `g`.`genre_id`,
         `g`.`name`,
@@ -344,7 +349,8 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
       WHERE `mg`.`movie_id` = ?",
       "d",
       [ $this->movie->id ]
-    );
+    )->get_result();
+    $dbGenres = $result->fetch_all(MYSQLI_ASSOC);
     $c = count($dbGenres);
     $tmpGenres = [];
     for ($i = 0; $i < $c; ++$i) {
@@ -380,7 +386,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $i18nBackup = $i18n;
     $i18n = new I18n("de_AT");
 
-    $dbLanguages = (new Database())->select(
+    $result = (new Database())->query(
       "SELECT
         `l`.`language_id` AS `id`,
         `l`.`iso_alpha-2` AS `code`,
@@ -391,7 +397,8 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
       WHERE `ml`.`movie_id` = ?",
       "sd",
       [ $i18n->languageCode, $this->movie->id ]
-    );
+    )->get_result();
+    $dbLanguages = $result->fetch_all(MYSQLI_ASSOC);
     $c = count($dbLanguages);
     $tmpLanguages = [];
     for ($i = 0; $i < $c; ++$i) {
@@ -442,7 +449,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $i18nBackup = $i18n;
     $i18n = new I18n("de_AT");
 
-    $dbStyles = (new Database())->select(
+    $result = (new Database())->query(
       "SELECT
         `s`.`style_id` AS `id`,
         `s`.`name` AS `name`,
@@ -453,7 +460,8 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
       WHERE `ms`.`movie_id` = ?",
       "sd",
       [ $i18n->languageCode, $this->movie->id ]
-    );
+    )->get_result();
+    $dbStyles = $result->fetch_all(MYSQLI_ASSOC);
     $c = count($dbStyles);
     $this->assertGreaterThan(0, $c);
     $tmpStyles = [];
