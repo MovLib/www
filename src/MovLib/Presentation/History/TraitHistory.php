@@ -242,7 +242,7 @@ trait TraitHistory {
   }
 
   /**
-   * Method to generate Liste of changed items.
+   * Method to generate Liste of changed items representet by their name.
    *
    * Use this method if the diff consists of item IDs only!
    *
@@ -252,7 +252,7 @@ trait TraitHistory {
    * @param string $className
    *   The name of the class (with namespace) to instantiate to get item information.
    * @return \MovLib\Presentation\Partial\Lists\Unordered
-   *   A HTML List of changed items.
+   *   A HTML List of changed items representet by their name.
    */
   private function diffIds($diff, $className) {
     global $i18n;
@@ -261,12 +261,11 @@ trait TraitHistory {
     foreach ($diff as $key => $itemIds) {
       if (!empty($itemIds)) {
         $items = (new $className())->orderById($itemIds);
-        var_dump($items);
         foreach ($itemIds as $id) {
-          if (isset($items[$classNameWithoutNamespace][$id]["name"])) {
-            $listItems[] = $this->a($i18n->r("/{0}/{1}", [ $classNameWithoutNamespace, $id ]), $i18n->t("{0}", [ $items[$id]["name"] ]), [
+          if (isset($items[$id]->name)) {
+            $listItems[] = $this->a($i18n->r("/{0}/{1}", [ $classNameWithoutNamespace, $id ]), $i18n->t("{0}", [ $items[$id]->name ]), [
               "class" => ($key == "added") ? "green" : (($key == "removed") ? "red" : null),
-              "title" => $i18n->t("Description of {0}", [ $items[$id]["name"] ])
+              "title" => $i18n->t("More about {0}", [ $items[$id]->name ])
             ]);
           }
         }
