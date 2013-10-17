@@ -19,7 +19,7 @@ namespace MovLib\Presentation\History;
 
 use \IntlDateFormatter;
 use \Locale;
-use \MovLib\Data\Users;
+use \MovLib\Data\User\Users;
 use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
@@ -112,8 +112,8 @@ trait TraitHistory {
         IntlDateFormatter::MEDIUM
       );
 
-      if (isset($users[ $userIds[$i] ])) {
-        $authorName = $users[ $userIds[$i] ]["name"];
+      if (isset($users[ $userIds[$i] ]->name)) {
+        $authorName = $users[ $userIds[$i] ]->name;
         $revisions[$i] .=
           $i18n->t(" by ") .
           $this->a($i18n->r("/user/{0}", [ $authorName ]), $i18n->t("{0}", [ $authorName ]), [
@@ -256,7 +256,7 @@ trait TraitHistory {
    */
   private function diffIds($diff, $className) {
     global $i18n;
-    $classNameWithoutNamespace = explode('\\', strtolower($className))[3];
+    $classNameWithoutNamespace = array_pop((explode('\\', strtolower($className))));
     $listItems = [];
     foreach ($diff as $key => $itemIds) {
       if (!empty($itemIds)) {

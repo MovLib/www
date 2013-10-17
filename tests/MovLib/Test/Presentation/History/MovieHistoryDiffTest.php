@@ -134,12 +134,13 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers \MovLib\Presentation\History\TraitHistory::diffIds
+   * @covers \Movlib\Data\User\Users::orderById
    */
   public function testDiffIdsWithUsers() {
     $diff = ["added" => [1,3], "removed" => [2], "edited" => []];
     $this->assertEquals(
       "<ul><li><a href='/users/1' class='green' title='More about Fleshgrinder'>Fleshgrinder</a></li><li><a href='/users/3' class='green' title='More about Ravenlord'>Ravenlord</a></li><li><a href='/users/2' class='red' title='More about ftorghele'>ftorghele</a></li></ul>",
-      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Users" ])->__toString()
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\User\Users" ])->__toString()
     );
   }
 
