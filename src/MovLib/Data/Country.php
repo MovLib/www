@@ -17,16 +17,41 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Exception\CountryException;
+
 /**
  * Represents a single country.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Country {
+class Country extends \MovLib\Data\Database {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Load the country from ID.
+   *
+   * @var int
+   */
+  const FROM_ID = "id";
+
+  /**
+   * Load the country from the code.
+   *
+   * @var string
+   */
+  const FROM_CODE = "iso_alpha-2";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The country's unique identifier.
@@ -48,5 +73,55 @@ class Country {
    * @var string
    */
   public $code;
+
+  /**
+   * The MySQLi bind param types of the columns.
+   *
+   * @var array
+   */
+  protected $types = [
+    self::FROM_ID   => "i",
+    self::FROM_CODE => "s"
+  ];
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new country.
+   *
+   * If no <var>$from</var> or <var>$value</var> is given, an empty country model will be created.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $from [optional]
+   *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
+   * @param mixed $value [optional]
+   *   Data to identify the country, see the various <var>FROM_*</var> class constants.
+   * @throws \MovLib\Exception\CountryException
+   */
+  public function __construct($from, $value) {
+    global $i18n;
+    if ($from && $value) {
+      $namePart = "";
+      if ($i18n->languageCode != $i18n->defaultLanguageCode) {
+        $namePart = "COLUMN_GET(`dyn_translations`, '{$i18n->languageCode}' AS CHAR(255)) AS";
+      }
+      $stmt = $this->query(
+        "SELECT
+          `country_id`,
+          `iso_alpha-2`,
+          {$namePart} `name`
+        FROM `countries`
+        WHERE `{$from}` = ?",
+        $this->types[$from],
+        [ $value ]
+      );
+      $stmt->bind_result($this->id, $this->code, $this->name);
+      if (!$stmt->fetch()) {
+        throw new CountryException("No country for {$from} '{$value}'.");
+      }
+    }
+  }
 
 }

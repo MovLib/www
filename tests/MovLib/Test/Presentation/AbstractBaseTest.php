@@ -92,7 +92,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::a
-   * @group Presentation
    */
   public function testAnchor() {
     $_SERVER["PATH_INFO"] = "/phpunit";
@@ -101,7 +100,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::a
-   * @group Presentation
    */
   public function testAnchorPathInfo() {
     $_SERVER["PATH_INFO"] = "/route";
@@ -110,7 +108,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::a
-   * @group Presentation
    */
   public function testAnchorHash() {
     $_SERVER["PATH_INFO"] = "/phpunit";
@@ -119,7 +116,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::addClass
-   * @group Presentation
    */
   public function testAddClassNoClasses() {
     $attributes = [];
@@ -129,7 +125,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::addClass
-   * @group Presentation
    */
   public function testAddClassClasses() {
     $attributes = [ "class" => "foo bar" ];
@@ -139,7 +134,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::collapseWhitespace
-   * @group Presentation
    */
   public function testCollapseWhitespace() {
     $this->assertEquals("p h p u n i t", $this->invoke("collapseWhitespace", [ "    p\nh\rp\tu\x00n\x0Bi \n\r\t\x00\x0Bt    " ]));
@@ -147,7 +141,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::expandTagAttributes
-   * @group Presentation
    */
   public function testExpandTagAttributes() {
     $this->assertEquals(" attr1='phpunit' attr2='true' attr3='false' attr4='&lt;&gt;&amp;' phpunit", $this->invoke("expandTagAttributes", [[
@@ -162,7 +155,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::formatBytes
    * @dataProvider dataProviderFormatBytes
-   * @group Presentation
    */
   public function testFormatBytes($number, $unit, $bytes) {
     $this->assertEquals([ $number, $unit ], $this->invoke("formatBytes", [ $bytes ]));
@@ -170,7 +162,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getImage
-   * @group Presentation
    */
 //  public function testGetImage() {
 //
@@ -178,7 +169,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getImages
-   * @group Presentation
    */
 //  public function testGetImages() {
 //
@@ -186,7 +176,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::getTabindex
-   * @group Presentation
    */
   public function testTabindex() {
     $this->assertInternalType("int", get_reflection_method($this->abstractPage, "getTabindex")->invoke($this->abstractPage));
@@ -195,7 +184,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::normalizeLineFeeds
    * @dataProvider dataProviderNormalizeLineFeeds
-   * @group Presentation
    */
   public function testNormalizeLineFeeds($expected, $input) {
     $this->assertEquals($expected, $this->invoke("normalizeLineFeeds", [ $input ]));
@@ -203,7 +191,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::placeholder
-   * @group Presentation
    */
   public function testPlaceholder() {
     $this->assertEquals("<em class='placeholder'>&lt;PHP&amp;Unit&gt;</em>", $this->invoke("placeholder", [ "<PHP&Unit>" ] ));
