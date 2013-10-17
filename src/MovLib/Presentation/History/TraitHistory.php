@@ -101,7 +101,7 @@ trait TraitHistory {
       $userIds[] = $commits[$i]["author_id"];
     }
 
-    $users = (new Users())->getUsersById($userIds);
+    $users = (new Users())->orderById($userIds);
 
     $revisions = [];
     for ($i = 0; $i < $c; ++$i) {
@@ -251,29 +251,28 @@ trait TraitHistory {
    *   Associative array with added and removed items (only item IDs!).
    * @param string $className
    *   The name of the class (with namespace) to instantiate to get item information.
-   * @param type $methodName
-   *   The name of the method to call for item information.
    * @return \MovLib\Presentation\Partial\Lists\Unordered
    *   A HTML List of changed items.
    */
-  private function diffIds($diff, $className, $methodName) {
+  private function diffIds($diff, $className) {
     global $i18n;
-    $items = [];
+    $classNameWithoutNamespace = explode('\\', strtolower($className))[3];
+    $listItems = [];
     foreach ($diff as $key => $itemIds) {
       if (!empty($itemIds)) {
-        $itemNames = (new $className())->{$methodName}($itemIds);
+        $items = (new $className())->orderById($itemIds);
+        var_dump($items);
         foreach ($itemIds as $id) {
-          if (isset($itemNames[$id])) {
-            $route = explode('\\', strtolower($className))[3];
-            $items[] = $this->a($i18n->r("/{0}/{1}", [ $route, $id ]), $i18n->t("{0}", [ $itemNames[$id] ]), [
+          if (isset($items[$classNameWithoutNamespace][$id]["name"])) {
+            $listItems[] = $this->a($i18n->r("/{0}/{1}", [ $classNameWithoutNamespace, $id ]), $i18n->t("{0}", [ $items[$id]["name"] ]), [
               "class" => ($key == "added") ? "green" : (($key == "removed") ? "red" : null),
-              "title" => $i18n->t("Description of {0}", [ $itemNames[$id] ])
+              "title" => $i18n->t("Description of {0}", [ $items[$id]["name"] ])
             ]);
           }
         }
       }
     }
-    return new Unordered($items, "");
+    return new Unordered($listItems, "");
   }
 
   /**
@@ -346,25 +345,10 @@ trait TraitHistory {
    *   Returns diff of one file as styled HTML.
    */
   private function textDiffOfRevisions($head, $ref, $filename) {
-    $diff = $this->historyModel->diffArray($head, $ref, $filename);
+    $from = $this->historyModel->getFileAtRevision($filename, $ref);
+    $to   = $this->historyModel->getFileAtRevision($filename, $head);
 
-    $html = "";
-    $c = count($diff);
-    // the first 5 lines are the header, nothing to do with it.
-    for ($i = 5; $i < $c; ++$i) {
-      if ($diff[$i][0] == " ") {
-        $html .= substr($diff[$i], 1);
-      }
-      elseif ($diff[$i][0] == "+") {
-        $tmp = substr($diff[$i], 1);
-        $html .= "<span class='green'>{$tmp}</span>";
-      }
-      elseif ($diff[$i][0] == "-") {
-        $tmp = substr($diff[$i], 1);
-        $html .= "<span class='red'>{$tmp}</span>";
-      }
-    }
-    return $html;
+    return $this->textDiffOfStrings($from, $to);
   }
 
   /**
@@ -385,18 +369,29 @@ trait TraitHistory {
     $diff = explode("\n", $diff);
 
     $html = "";
-    foreach ($diff as $word) {
-      if (isset($word[0])) {
-        if ($word[0] == " ") {
-          $html .= substr($word, 1);
+    $added = "";
+    $removed = "";
+    $c = count($diff);
+    for ($i = 0; $i < $c; ++$i) {
+      if (isset($diff[$i][0])) {
+        if ($diff[$i][0] == " ") {
+          $html .= substr($diff[$i], 1);
         }
-        elseif ($word[0] == "+") {
-          $tmp = substr($word, 1);
-          $html .= "<span class='green'>{$tmp}</span>";
+        elseif ($diff[$i][0] == "+") {
+          $added .= substr($diff[$i], 1);
+          if (isset($diff[ $i+1 ][0]) && $diff[ $i+1 ][0] == "+") {
+            continue;
+          }
+          $html .= "<span class='green'>{$added}</span>";
+          $added = "";
         }
-        elseif ($word[0] == "-") {
-          $tmp = substr($word, 1);
-          $html .= "<span class='red'>{$tmp}</span>";
+        elseif ($diff[$i][0] == "-") {
+          $removed .= substr($diff[$i], 1);
+          if (isset($diff[ $i+1 ][0]) && $diff[ $i+1 ][0] == "-") {
+            continue;
+          }
+          $html .= "<span class='red'>{$removed}</span>";
+          $removed = "";
         }
       }
     }

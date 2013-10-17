@@ -28,7 +28,7 @@ use \MovLib\Data\History\Movie;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieTest extends \PHPUnit_Framework_TestCase {
+class MovieTest extends \MovLib\Test\TestCase {
 
   /** @var \mysqli */
   static $db;
@@ -63,7 +63,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getShortName
    */
   public function testGetShortName() {
-    $this->assertEquals("movie", get_reflection_method($this->movie, "getShortName")->invoke($this->movie));
+    $this->assertEquals("movie", $this->invoke($this->movie, "getShortName"));
   }
 
   /**
@@ -78,7 +78,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::hideRepository
    */
   public function testHideRepository() {
-    get_reflection_method($this->movie, "hideRepository")->invoke($this->movie);
+    $this->invoke($this->movie, "hideRepository");
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/.2");
   }
 
@@ -89,19 +89,18 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @depends testHideRepository
    */
   public function testHideRepositoryIfHidden() {
-    $f = get_reflection_method($this->movie, "hideRepository");
-    $f->invoke($this->movie);
-    $f->invoke($this->movie);
+    $this->invoke($this->movie, "hideRepository");
+    $this->invoke($this->movie, "hideRepository");
   }
 
   /**
    * @covers \Movlib\Data\History\AbstractHistory::unhideRepository
    */
   public function testUnhideRepository() {
-    get_reflection_method($this->movie, "hideRepository")->invoke($this->movie);
+    $this->invoke($this->movie, "hideRepository");
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/.2");
 
-    get_reflection_method($this->movie, "unhideRepository")->invoke($this->movie);
+    $this->invoke($this->movie, "unhideRepository");
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2");
   }
 
@@ -111,7 +110,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::unhideRepository
    */
   public function testUnhideRepositoryIfNotHidden() {
-    get_reflection_method($this->movie, "unhideRepository")->invoke($this->movie);
+    $this->invoke($this->movie, "unhideRepository");
   }
 
   /**
@@ -121,27 +120,26 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
   public function testStartEditing() {
     static::$db->query("UPDATE `movies` SET `commit` = 'b006169990b07af17d198f6a37efb324ced95fb3' WHERE `movie_id` = 2");
     $this->movie->startEditing();
-    $p = get_reflection_property($this->movie, "commitHash");
-    $this->assertNotNull($p->getValue($this->movie));
-    $this->assertEquals("b006169990b07af17d198f6a37efb324ced95fb3", $p->getValue($this->movie));
+    $p = $this->getProperty($this->movie, "commitHash");
+    $this->assertNotNull($p);
+    $this->assertEquals("b006169990b07af17d198f6a37efb324ced95fb3", $p);
   }
 
   /**
    * @covers \Movlib\Data\History\AbstractHistory::writeFiles
    */
   public function testWriteFiles() {
-    $writeFiles = get_reflection_method($this->movie, "writeFiles");
     // wrong offset name
-    $writeFiles->invoke($this->movie, ["foo" => "bar"]);
+    $this->invoke($this->movie, "writeFiles", [ ["foo" => "bar"] ]);
     $this->assertFileNotExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/foo");
 
     // offset which should be written to file directly
-    $writeFiles->invoke($this->movie, ["original_title" => "The Shawshank Redemption"]);
+    $this->invoke($this->movie, "writeFiles", [ ["original_title" => "The Shawshank Redemption"] ]);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/original_title");
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/original_title", "The Shawshank Redemption");
 
     // offset with language prefix which should be written to file directly
-    $writeFiles->invoke($this->movie, ["en_synopsis" => "A very short synopsis."]);
+    $this->invoke($this->movie, "writeFiles", [ ["en_synopsis" => "A very short synopsis."] ]);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/en_synopsis");
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/en_synopsis", "A very short synopsis.");
 
@@ -149,7 +147,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertFileNotExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/de_synopsis");
 
     // offset which should be written to file serialized
-    $writeFiles->invoke($this->movie, [ "titles" => [[ "id" => 1, "title" => "foo" ], [ "id" => 2, "title" => "bar" ]] ]);
+    $this->invoke($this->movie, "writeFiles", [ [ "titles" => [[ "id" => 1, "title" => "foo" ], [ "id" => 2, "title" => "bar" ]] ] ]);
     $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/titles");
     $this->assertStringEqualsFile(
       "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/titles",
@@ -165,17 +163,13 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    */
   public function testGitHelperMethodes() {
     // reflected properties
-    $path = get_reflection_property($this->movie, "path")->getValue($this->movie);
-
-    // reflected methodes
-    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");
-    $writeFiles     = get_reflection_method($this->movie, "writeFiles");
+    $path = $this->getProperty($this->movie, "path");
 
     // write files
-    $writeFiles->invoke($this->movie, [ "original_title" => "The foobar is a lie", "year" => 2000, "runtime" => 42 ]);
+    $this->invoke($this->movie, "writeFiles", [ [ "original_title" => "The foobar is a lie", "year" => 2000, "runtime" => 42 ] ]);
 
     // stage all files
-    $stageAllFiles->invoke($this->movie);
+    $this->invoke($this->movie, "stageAllFiles");
     exec("cd {$path} && git status", $output);
     $this->assertEquals("# Changes to be committed:", $output[1]);
     $this->assertEquals("#	new file:   original_title", $output[4]);
@@ -183,16 +177,16 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("#	new file:   year", $output[6]);
 
     // commit all staged files
-    get_reflection_method($this->movie, "commitFiles")->invoke($this->movie, "movie created");
+    $this->invoke($this->movie, "commitFiles", [ "movie created" ]);
     unset($output);
     exec("cd {$path} && git status", $output);
     $this->assertEquals("nothing to commit (working directory clean)", $output[1]);
 
     // update files
-    $writeFiles->invoke($this->movie, [ "original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42 ]);
+    $this->invoke($this->movie, "writeFiles", [ [ "original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42 ] ]);
 
     // stage all files
-    $stageAllFiles->invoke($this->movie);
+    $this->invoke($this->movie, "stageAllFiles");
     unset($output);
     exec("cd {$path} && git status", $output);
     $this->assertEquals("# Changes to be committed:", $output[1]);
@@ -202,14 +196,14 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/year", 2001);
 
     // unstage year
-    get_reflection_method($this->movie, "unstageFiles")->invoke($this->movie, [ "year" ]);
+    $this->invoke($this->movie, "unstageFiles", [ [ "year" ] ]);
     unset($output);
     exec("cd {$path} && git status", $output);
     $this->assertEquals("# Changes not staged for commit:", $output[6]);
     $this->assertEquals("#	modified:   year", $output[10]);
 
     // reset year
-    get_reflection_method($this->movie, "resetFiles")->invoke($this->movie, [ "year" ]);
+    $this->invoke($this->movie, "resetFiles", [ [ "year"] ]);
     unset($output);
     exec("cd {$path} && git status", $output);
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/year", 2000);
@@ -220,22 +214,18 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getDirtyFiles
    */
   public function testGetChangedFiles() {
-    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");
-    $commitFiles    = get_reflection_method($this->movie, "commitFiles");
-    $writeFiles     = get_reflection_method($this->movie, "writeFiles");
-
-    $writeFiles->invoke($this->movie, [ "original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42 ]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "initial commit");
+    $this->invoke($this->movie, "writeFiles", [ [ "original_title" => "The foobar is not a lie", "year" => 2001, "runtime" => 42 ] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "initial commit" ]);
 
     // with unstaged files
-    $writeFiles->invoke($this->movie, [ "original_title" => "The foobar is a lie", "year" => 2002, "runtime" => 42 ]);
-    $dirtyFiles = get_reflection_method($this->movie, "getDirtyFiles")->invoke($this->movie);
+    $this->invoke($this->movie, "writeFiles", [ [ "original_title" => "The foobar is a lie", "year" => 2002, "runtime" => 42 ] ]);
+    $dirtyFiles = $this->invoke($this->movie, "getDirtyFiles");
     $this->assertEquals("original_title year", implode(" ", $dirtyFiles));
 
     // with 2 commits
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "second commit");
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "second commit" ]);
     $this->assertEquals("original_title year", implode(" ", $this->movie->getChangedFiles("HEAD", "HEAD^1")));
   }
 
@@ -243,29 +233,24 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getLastCommits
    */
   public function testGetLastCommits() {
-    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");
-    $commitFiles    = get_reflection_method($this->movie, "commitFiles");
-    $getLastCommits = get_reflection_method($this->movie, "getLastCommits");
-    $writeFiles     = get_reflection_method($this->movie, "writeFiles");
+    $this->invoke($this->movie, "writeFiles", [ [ "original_title" => "The foobar is a lie" ] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "initial commit" ]);
 
-    $writeFiles->invoke($this->movie, [ "original_title" => "The foobar is a lie" ]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "initial commit");
+    $this->invoke($this->movie, "writeFiles", [ [ "year" => 2001 ] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "second commit" ]);
 
-    $writeFiles->invoke($this->movie, [ "year" => 2001 ]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "second commit");
+    $this->invoke($this->movie, "writeFiles", [ [ "runtime" => 300 ] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "third commit" ]);
 
-    $writeFiles->invoke($this->movie, [ "runtime" => 300 ]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "third commit");
-
-    $commits = $getLastCommits->invoke($this->movie);
+    $commits = $this->invoke($this->movie, "getLastCommits");
     $this->assertEquals("third commit", $commits[0]["subject"]);
     $this->assertEquals("second commit", $commits[1]["subject"]);
     $this->assertEquals("initial commit", $commits[2]["subject"]);
 
-    $oneCommit = $getLastCommits->invoke($this->movie, 1);
+    $oneCommit = $commits = $this->invoke($this->movie, "getLastCommits", [ 1 ]);
     $this->assertEquals("third commit", $oneCommit[0]["subject"]);
     $this->assertCount(1, $oneCommit);
   }
@@ -275,12 +260,13 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @depends testGetLastCommits
    */
   public function testGetLastCommitHash() {
-    get_reflection_method($this->movie, "writeFiles")->invoke($this->movie, ["original_title" => "The foobar is a lie"]);
-    get_reflection_method($this->movie, "stageAllFiles")->invoke($this->movie);
-    get_reflection_method($this->movie, "commitFiles")->invoke($this->movie, "initial commit");
+    $this->invoke($this->movie, "writeFiles", [ ["original_title" => "The foobar is a lie"] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "initial commit" ]);
+
     $this->assertEquals(
-      get_reflection_method($this->movie, "getLastCommitHash")->invoke($this->movie),
-      get_reflection_method($this->movie, "getLastCommits")->invoke($this->movie)[0]["hash"]
+      $this->invoke($this->movie, "getLastCommitHash"),
+      $this->invoke($this->movie, "getLastCommits")[0]["hash"]
     );
   }
 
@@ -290,40 +276,45 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getArrayDiffDeepCompare
    */
   public function testGetArrayDiff() {
-    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");
-    $commitFiles    = get_reflection_method($this->movie, "commitFiles");
-    $writeFiles     = get_reflection_method($this->movie, "writeFiles");
-
     // cast with id 1 and 4 in "added"
-    $writeFiles->invoke($this->movie, ["cast" => [["id" => 1, "roles" => "franz"], ["id" => 4, "roles" => "sebastian"]]]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "cast with id 1 and 4");
+    $this->invoke($this->movie, "writeFiles", [ ["cast" => [
+      ["id" => 1, "roles" => "franz"],
+      ["id" => 4, "roles" => "sebastian"]
+    ]] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "cast with id 1 and 4" ]);
 
     $this->assertEquals(1, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
     $this->assertEquals(4, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][1]["id"]);
 
     // cast with id 2 in "added"
-    $writeFiles->invoke($this->movie, ["cast" => [
+    $this->invoke($this->movie, "writeFiles", [ ["cast" => [
       ["id" => 1, "roles" => "franz"],
       ["id" => 2, "roles" => "richard"],
       ["id" => 4, "roles" => "sebastian"]
-    ]]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "added cast with id 2");
+    ]] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "added cast with id 2" ]);
 
     $this->assertEquals(2, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
 
     // cast with id 1 in "removed"
-    $writeFiles->invoke($this->movie, ["cast" => [["id" => 2, "roles" => "richard"], ["id" => 4, "roles" => "sebastian"]]]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "removed cast with id 1");
+    $this->invoke($this->movie, "writeFiles", [ ["cast" => [
+      ["id" => 2, "roles" => "richard"],
+      ["id" => 4, "roles" => "sebastian"]
+    ]] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "removed cast with id 1" ]);
 
     $this->assertEquals(1, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"][0]["id"]);
 
     // cast with id 2 in "edited"
-    $writeFiles->invoke($this->movie, ["cast" => [["id" => 2, "roles" => "markus"], ["id" => 4, "roles" => "sebastian"]]]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "edited cast with id 2");
+    $this->invoke($this->movie, "writeFiles", [ ["cast" => [
+      ["id" => 2, "roles" => "markus"],
+      ["id" => 4, "roles" => "sebastian"]
+    ]] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "edited cast with id 2" ]);
 
     $this->assertEquals(2, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["id"]);
     $this->assertEquals("richard", $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["old"]["roles"]);
@@ -332,43 +323,18 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals(false, isset($this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"][0]));
 
     // cast with id 2 in "edited", 4 is "removed" and 5 is "added"
-    $writeFiles->invoke($this->movie, ["cast" => [
+    $this->invoke($this->movie, "writeFiles", [ ["cast" => [
       ["id" => 2, "roles" => "franz"],
       ["id" => 5, "roles" => "sebastian"]
-    ]]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "edited cast with id 2");
+    ]] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "edited cast with id 2" ]);
 
     $this->assertEquals(2, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["id"]);
     $this->assertEquals("markus", $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["old"]["roles"]);
     $this->assertEquals("franz", $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["roles"]);
     $this->assertEquals(4, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"][0]["id"]);
     $this->assertEquals(5, $this->movie->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
-  }
-
-  /**
-   * @covers \Movlib\Data\History\AbstractHistory::getDiff
-   */
-  public function testGetDiff() {
-    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");
-    $commitFiles    = get_reflection_method($this->movie, "commitFiles");
-    $writeFiles     = get_reflection_method($this->movie, "writeFiles");
-
-    $writeFiles->invoke($this->movie, ["original_title" => "The foobar is a lie"]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "initial commit");
-
-    $writeFiles->invoke($this->movie, ["original_title" => "The bar is not a lie"]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "second commit");
-
-    $diff = $this->movie->getDiff("HEAD", "HEAD^1", "original_title");
-    $this->assertEquals(" The", $diff[5]);
-    $this->assertEquals("-foobar", $diff[6]);
-    $this->assertEquals("+bar", $diff[7]);
-    $this->assertEquals("  is", $diff[8]);
-    $this->assertEquals("+not", $diff[9]);
-    $this->assertEquals("  a lie", $diff[10]);
   }
 
   /**
@@ -411,21 +377,17 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getFileAtRevision
    */
   public function testGetFileAtRevision() {
-    $stageAllFiles  = get_reflection_method($this->movie, "stageAllFiles");
-    $commitFiles    = get_reflection_method($this->movie, "commitFiles");
-    $writeFiles     = get_reflection_method($this->movie, "writeFiles");
+    $this->invoke($this->movie, "writeFiles", [ ["original_title" => "The foobar is a lie"] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "initial commit" ]);
 
-    $writeFiles->invoke($this->movie, ["original_title" => "The foobar is a lie"]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "initial commit");
-
-    $writeFiles->invoke($this->movie, ["original_title" => "The bar is not a lie"]);
-    $stageAllFiles->invoke($this->movie);
-    $commitFiles->invoke($this->movie, "second commit");
+    $this->invoke($this->movie, "writeFiles", [ ["original_title" => "The bar is not a lie"] ]);
+    $this->invoke($this->movie, "stageAllFiles");
+    $this->invoke($this->movie, "commitFiles", [ "second commit" ]);
 
     $this->assertEquals(
       "The foobar is a lie",
-      get_reflection_method($this->movie, "getFileAtRevision")->invoke($this->movie, "original_title", "HEAD^1")
+      $this->movie->getFileAtRevision("original_title", "HEAD^1")
     );
   }
 

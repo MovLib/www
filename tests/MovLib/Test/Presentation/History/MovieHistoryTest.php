@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Test\Presentation\Movie;
+namespace MovLib\Test\Presentation\History;
 
 use \MovLib\Data\History\Movie;
 use \MovLib\Presentation\History\MovieHistory;
@@ -29,7 +29,7 @@ use \MovLib\Presentation\History\MovieHistory;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistoryTest extends \PHPUnit_Framework_TestCase {
+class MovieHistoryTest extends \MovLib\Test\TestCase {
 
   /** @var \mysqli */
   static $db;
@@ -69,7 +69,7 @@ class MovieHistoryTest extends \PHPUnit_Framework_TestCase {
 
     $this->assertContains(
       "No revisions found",
-      get_reflection_method($historyPage, "contentRevisionsPage")->invoke($historyPage)
+      $this->invoke($historyPage, "contentRevisionsPage")
     );
 
     $movie->startEditing();
@@ -78,11 +78,11 @@ class MovieHistoryTest extends \PHPUnit_Framework_TestCase {
 
     $this->assertContains(
       "added original title",
-      get_reflection_method($historyPage, "contentRevisionsPage")->invoke($historyPage)
+      $this->invoke($historyPage, "contentRevisionsPage")
     );
     $this->assertContains(
-      "<ul><li>Original Title</li></ul>",
-      get_reflection_method($historyPage, "contentRevisionsPage")->invoke($historyPage)
+      "<li>Original Title</li>",
+      $this->invoke($historyPage, "contentRevisionsPage")
     );
 
     $movie->startEditing();
@@ -91,11 +91,11 @@ class MovieHistoryTest extends \PHPUnit_Framework_TestCase {
 
     $this->assertContains(
       "edited original title, added cast",
-      get_reflection_method($historyPage, "contentRevisionsPage")->invoke($historyPage)
+      $this->invoke($historyPage, "contentRevisionsPage")
     );
     $this->assertContains(
-      "<ul><li>Cast</li><li>Original Title</li></ul>",
-      get_reflection_method($historyPage, "contentRevisionsPage")->invoke($historyPage)
+      "<li>Cast</li><li>Original Title</li>",
+      $this->invoke($historyPage, "contentRevisionsPage")
     );
   }
 

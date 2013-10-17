@@ -93,7 +93,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed countries.
    */
   private function getCountries($diff) {
-    return $this->diffIds($diff, "\MovLib\Data\Country", "getCountryNames");
+    return $this->diffIds($diff, "\MovLib\Data\Countries");
   }
 
   /**
@@ -117,7 +117,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed directors.
    */
   private function getDirectors($diff) {
-    return $this->diffIds($diff, "\MovLib\Data\Person", "getPersonNames");
+    return $this->diffIds($diff, "\MovLib\Data\Persons");
   }
 
   /**
@@ -129,7 +129,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed genres.
    */
   private function getGenres($diff) {
-    return $this->diffIds($diff, "\MovLib\Data\Genre", "getGenreNames");
+    return $this->diffIds($diff, "\MovLib\Data\Genres");
   }
 
   /**
@@ -141,7 +141,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed languages.
    */
   private function getLanguages($diff) {
-    return $this->diffIds($diff, "\MovLib\Data\Language", "getLanguageNames");
+    return $this->diffIds($diff, "\MovLib\Data\Languages");
   }
 
   /**
@@ -177,7 +177,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed styles.
    */
   private function getStyles($diff) {
-    return $this->diffIds($diff, "\MovLib\Data\Style", "getStyleNames");
+    return $this->diffIds($diff, "\MovLib\Data\Styles");
   }
 
   /**

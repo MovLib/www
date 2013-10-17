@@ -307,27 +307,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
-   * Returns diff between two commits of one file.
-   *
-   * @param string $head
-   *   Hash of git commit (newer one).
-   * @param sting $ref
-   *   Hash of git commit (older one).
-   * @param string $filename
-   *   Name of file in repository.
-   * @return array
-   *   Numeric array with git diff line by line.
-   * @throws \MovLib\Exception\HistoryException
-   */
-  public function getDiff($head, $ref, $filename) {
-    exec("cd {$this->path} && git diff {$ref} {$head} --word-diff='porcelain' {$filename}", $output, $returnVar);
-    if ($returnVar !== 0) {
-      throw new HistoryException("There was an error during 'git diff'");
-    }
-    return $output;
-  }
-
-  /**
    * Get the file names of files that are dirty in current working tree.
    *
    * @return array
@@ -368,7 +347,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   The content of a file at a certain revision.
    * @throws \MovLib\Exception\HistoryException
    */
-  private function getFileAtRevision($filename, $ref) {
+  public function getFileAtRevision($filename, $ref) {
     exec("cd {$this->path} && git show {$ref}:{$filename} 2<&-", $output, $returnVar);
     if ($returnVar === 128) {
       // filename exists on disk, but not in ref return an empty string.
