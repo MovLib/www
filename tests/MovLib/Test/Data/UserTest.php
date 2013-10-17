@@ -64,7 +64,7 @@ class UserTest extends \MovLib\Test\TestCase {
 
 
   public function tearDown() {
-    exec("movdev db -s users");
+    $this->exec("movdev db -s users");
   }
 
 
@@ -80,7 +80,7 @@ class UserTest extends \MovLib\Test\TestCase {
     $user = new User($from, $value);
     $this->assertEquals(1, $user->id);
     foreach ([ User::IMAGE_STYLE_SPAN_01, User::IMAGE_STYLE_SPAN_02 ] as $style) {
-      $this->assertTrue(is_file($this->invoke($user, "getImagePath", [ $style ])));
+      $this->assertFileExists($this->invoke($user, "getImagePath", [ $style ]));
     }
     $this->assertEquals(1380707126, $this->getProperty($user, "imageChanged"));
     $this->assertEquals("jpg", $this->getProperty($user, "imageExtension"));
@@ -113,7 +113,7 @@ class UserTest extends \MovLib\Test\TestCase {
     $user = $this->testConstruct(User::FROM_ID, 1);
     $this->invoke($user, "deleteImage");
     foreach ([ User::IMAGE_STYLE_SPAN_01, User::IMAGE_STYLE_SPAN_02 ] as $style) {
-      $this->assertFalse(is_file($this->invoke($user, "getImagePath", [ $style ])));
+      $this->assertFileNotExists($this->invoke($user, "getImagePath", [ $style ]));
     }
     $this->assertFalse($this->getProperty($user, "imageExists"));
     $this->assertNull($this->getProperty($user, "imageChanged"));
@@ -149,7 +149,7 @@ class UserTest extends \MovLib\Test\TestCase {
     $this->invoke($user, "deleteImage");
     $user->uploadImage($source, "jpg", 220, 220);
     foreach ([ User::IMAGE_STYLE_SPAN_01, User::IMAGE_STYLE_SPAN_02 ] as $style) {
-      $this->assertTrue(is_file($this->invoke($user, "getImagePath", [ $style ])));
+      $this->assertFileExists($this->invoke($user, "getImagePath", [ $style ]));
     }
     $this->assertEquals(1, $this->getProperty($user, "imageExists"));
     $this->assertEquals($_SERVER["REQUEST_TIME"], $this->getProperty($user, "imageChanged"));
