@@ -69,11 +69,20 @@ class CronDaily extends AbstractCommand {
   }
 
   /**
+   * Purge all files from system's temporary folder that are older than one day.
+   *
+   * @return this
+   */
+  protected function purgeTemporaryUploads() {
+    return $this->exec("find /tmp/* -type f -mtime +1 -exec rm {} \;", "Could not purge temporarily uploaded files from tmp folder!");
+  }
+
+  /**
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $this->setIO($input, $output);
-    $this->purgeTemporaryTable();
+    $this->purgeTemporaryTable()->purgeTemporaryUploads();
   }
 
 }

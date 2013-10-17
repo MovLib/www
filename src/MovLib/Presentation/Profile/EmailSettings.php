@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Delayed\Mailer;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Presentation\Email\User\EmailChange;
 use \MovLib\Presentation\Partial\Alert;
@@ -79,7 +79,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     ;
 
     $this->init($i18n->t("Email Settings"));
-    $this->user  = new User(User::FROM_ID, $session->userId);
+    $this->user  = new UserExtended(UserExtended::FROM_ID, $session->userId);
     $this->email = new InputEmail("email");
     $this->email->required();
     $this->form  = new Form($this, [ $this->email ]);

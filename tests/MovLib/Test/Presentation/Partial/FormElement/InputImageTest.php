@@ -17,7 +17,7 @@
  */
 namespace MovLib\Test\Presentation\Partial\FormElement;
 
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
 
 /**
@@ -35,7 +35,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    * @group Presentation
    */
   public function testConstruct() {
-    $concreteImage = new User(User::FROM_ID, 1);
+    $concreteImage = new UserExtended(UserExtended::FROM_ID, 1);
     $inputImage    = new InputImage("phpunit", "PHPUnit", $concreteImage, [ "foo" => "bar" ]);
     foreach ([ "accept", "data-max-filesize", "data-min-height", "data-min-width", "type", "foo" ] as $key) {
       $this->assertArrayHasKey($key, $inputImage->attributes);
@@ -55,7 +55,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    * @group Presentation
    */
   public function testConstructGlobalDimensionConstraints() {
-    $concreteImage = new User();
+    $concreteImage = new UserExtended();
     $inputImage    = new InputImage("phpunit", "PHPUnit", $concreteImage);
     $this->assertEquals($GLOBALS["movlib"]["image_min_height"], $inputImage->attributes["data-min-height"]);
     $this->assertEquals($GLOBALS["movlib"]["image_min_width"], $inputImage->attributes["data-min-width"]);
@@ -66,7 +66,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    * @group Presentation
    */
   public function testToStringImageExists() {
-    $concreteImage = new User(User::FROM_ID, 1);
+    $concreteImage = new UserExtended(UserExtended::FROM_ID, 1);
     $inputImage    = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
     $this->assertRegExp("/<img[a-z0-9=' \.\?\/:]+>/", $inputImage);
     $this->assertContains("<label for='phpunit'>PHPUnit</label>", $inputImage);
@@ -78,7 +78,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    * @group Presentation
    */
   public function testToStringNoImage() {
-    $concreteImage = new User(User::FROM_ID, 1);
+    $concreteImage = new UserExtended(UserExtended::FROM_ID, 1);
     $concreteImage->imageExists = false;
     $inputImage    = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
     $this->assertNotContains("<img", $inputImage);
@@ -93,7 +93,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    * @group Validation
    */
   public function testValidateRequired() {
-    (new InputImage("phpunit", "PHPUnit", new User(User::FROM_ID, 1), [ "required" ]))->validate();
+    (new InputImage("phpunit", "PHPUnit", new UserExtended(UserExtended::FROM_ID, 1), [ "required" ]))->validate();
   }
 
 }

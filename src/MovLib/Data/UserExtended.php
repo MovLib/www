@@ -21,7 +21,10 @@ use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Exception\UserException;
 
 /**
- * Retrieve user specific data from the database.
+ * Extended user.
+ *
+ * The extended user class provides all properties available for a user and several methods for interacting with this
+ * data.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -29,33 +32,11 @@ use \MovLib\Exception\UserException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class User extends \MovLib\Data\Image\AbstractImage {
-  use \MovLib\Data\Image\TraitUser;
+class UserExtended extends \MovLib\Data\User {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
-
-  /**
-   * Load the user from ID.
-   *
-   * @var string
-   */
-  const FROM_ID = "user_id";
-
-  /**
-   * Load the user from name.
-   *
-   * @var string
-   */
-  const FROM_NAME = "name";
-
-  /**
-   * Load the user from mail.
-   *
-   * @var string
-   */
-  const FROM_EMAIL = "email";
 
   /**
    * Maximum attempts for actions like registration, login, etc..
@@ -118,25 +99,11 @@ class User extends \MovLib\Data\Image\AbstractImage {
   public $email;
 
   /**
-   * The user's unique ID, defaults to zero (anonymous user).
-   *
-   * @var int
-   */
-  public $id;
-
-  /**
    * The user's last login (UNIX timestamp).
    *
    * @var int
    */
   public $login;
-
-  /**
-   * The user's unique name if logged in, otherwise the user's IP address will be used as name.
-   *
-   * @var string
-   */
-  public $name;
 
   /**
    * Flag defining if the user's personal data is private or not.
@@ -190,17 +157,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
   public $timeZoneId;
 
   /**
-   * The MySQLi bind param types of the columns.
-   *
-   * @var array
-   */
-  private $types = [
-    self::FROM_ID    => "d",
-    self::FROM_EMAIL => "s",
-    self::FROM_NAME  => "s",
-  ];
-
-  /**
    * The user's website.
    *
    * @var null|string
@@ -212,9 +168,9 @@ class User extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
-   * Instantiate new user data object.
+   * Instantiate new user.
    *
-   * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be instanciated.
+   * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
    *
    * @global \MovLib\Data\I18n $i18n
    * @param string $from [optional]
@@ -225,50 +181,65 @@ class User extends \MovLib\Data\Image\AbstractImage {
    */
   public function __construct($from = null, $value = null) {
     global $i18n;
-    if (isset($from) && isset($value)) {
-      $result = $this->selectAssoc(
+    if ($from && $value) {
+      $stmt = $this->query(
         "SELECT
-          `user_id` AS `id`,
-          `system_language_code` AS `systemLanguageCode`,
+          `user_id`,
+          `system_language_code`,
           `name`,
           `email`,
-          UNIX_TIMESTAMP(`created`) AS `created`,
-          UNIX_TIMESTAMP(`access`) AS `access`,
-          UNIX_TIMESTAMP(`login`) AS `login`,
+          UNIX_TIMESTAMP(`created`),
+          UNIX_TIMESTAMP(`access`),
+          UNIX_TIMESTAMP(`login`),
           `private`,
           `deactivated`,
-          `time_zone_id` AS `timeZoneId`,
+          `time_zone_id`,
           `edits`,
-          COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY) AS `profile`,
+          COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY),
           `sex`,
-          `country_id` AS `countryId`,
-          `real_name` AS `realName`,
+          `country_id`,
+          `real_name`,
           `birthday`,
           `website`,
-          `avatar_name` AS `imageName`,
-          UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
-          `avatar_extension` AS `imageExtension`,
-          `avatar_changed` IS NOT NULL AS `imageExists`
+          `avatar_name`,
+          UNIX_TIMESTAMP(`avatar_changed`),
+          `avatar_extension`,
+          `avatar_changed` IS NOT NULL
         FROM `users`
         WHERE `{$from}` = ?",
         $this->types[$from],
         [ $value ]
       );
-
-      if (empty($result)) {
+      $stmt->bind_result(
+        $this->id,
+        $this->systemLanguageCode,
+        $this->name,
+        $this->email,
+        $this->created,
+        $this->access,
+        $this->login,
+        $this->private,
+        $this->deactivated,
+        $this->timeZoneId,
+        $this->edits,
+        $this->profile,
+        $this->sex,
+        $this->countryId,
+        $this->realName,
+        $this->birthday,
+        $this->website,
+        $this->imageName,
+        $this->imageChanged,
+        $this->imageExtension,
+        $this->imageExists
+      );
+      if (!$stmt->fetch()) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
-
-      foreach ($result as $k => $v) {
-        $this->{$k} = $v;
-      }
-
-      settype($this->private, "boolean");
-      settype($this->deactivated, "boolean");
-      settype($this->imageExists, "boolean");
-
-      $this->imageHeight = self::IMAGE_MIN_HEIGHT;
-      $this->imageWidth  = self::IMAGE_MIN_WIDTH;
+      $this->private     = (boolean) $this->private;
+      $this->deactivated = (boolean) $this->deactivated;
+      // The image name already has all unsave characters removed.
+      $this->route       = $i18n->r("/user/{0}", [ rawurlencode($this->imageName) ]);
     }
   }
 
@@ -283,7 +254,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   <code>TRUE</code> if this email address is already in use, otherwise <code>FALSE</code>.
    */
   public function checkEmail() {
-    return !empty($this->selectAssoc("SELECT `user_id` FROM `users` WHERE `email` = ?", "s", [ $this->email ]));
+    return !empty($this->query("SELECT `user_id` FROM `users` WHERE `email` = ?", "s", [ $this->email ])->get_result()->fetch_row());
   }
 
   /**
@@ -293,7 +264,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   <code>TRUE</code> if this name is already in use, otherwise <code>FALSE</code>.
    */
   public function checkName() {
-    return !empty($this->selectAssoc("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $this->name ]));
+    return !empty($this->query("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $this->name ])->get_result()->fetch_row());
   }
 
   /**
@@ -352,7 +323,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
     global $session;
     $sessions = $session->getActiveSessions();
     DelayedMethodCalls::stack($session, "delete", array_column($sessions, "session_id"));
-    $this->deleteImageOriginalAndStyles();
+    $this->deleteImage();
     return $this->query(
       "UPDATE `users` SET
         `avatar_changed`    = NULL,
@@ -373,54 +344,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
       "sd",
       [ ini_get("date.timezone"), $this->id ]
     );
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @internal
-   *   No need to delete the directory, all avatars are in the same directory and at least one is always present.
-   * @return this
-   */
-  protected function deleteImageOriginalAndStyles() {
-    foreach ([ self::IMAGE_STYLE_SPAN2, self::IMAGE_STYLE_SPAN1 ] as $style) {
-      $path = $this->getImagePath($style);
-      if (is_file($path)) {
-        unlink($path);
-      }
-    }
-    $this->imageExists    = false;
-    $this->imageChanged   = null;
-    $this->imageExtension = null;
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @internal
-   *   The user's avatar is different from other images, we don't keep the original file and directly generate all
-   *   styles (instead of a delayed call to ImageMagick as in other image classes). This is because avatar's are small
-   *   images and not those huge monsters as we get them if someone uploads a poster or lobby card.
-   * @param string $source
-   *   {@inheritdoc}
-   * @param int $width
-   *   <b>UNUSED</b>
-   * @param int $height
-   *   <b>UNUSED</b>
-   * @param string $extension
-   *   {@inheritdoc}
-   * @return this
-   */
-  public function moveUploadedImage($source, $width, $height, $extension) {
-    $this->imageChanged   = $_SERVER["REQUEST_TIME"];
-    $this->imageExists    = true;
-    $this->imageExtension = $extension;
-    $this->query("UPDATE `users` SET `avatar_changed` = FROM_UNIXTIME(?), `avatar_extension` = ? WHERE `user_id` = ?", "ssd", [ $this->imageChanged, $this->imageExtension, $this->id ]);
-    $this->convert($source, self::IMAGE_STYLE_SPAN2, self::IMAGE_STYLE_SPAN2, self::IMAGE_STYLE_SPAN2, true);
-    unlink($source);
-    $this->convert($this->getImagePath(self::IMAGE_STYLE_SPAN2), self::IMAGE_STYLE_SPAN1);
-    return $this;
   }
 
   /**
@@ -465,7 +388,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @return string
    *   The <var>$rawPassword</var> hash.
    */
-  protected function passwordHash($rawPassword) {
+  public function passwordHash($rawPassword) {
     return password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
   }
 
@@ -483,8 +406,8 @@ class User extends \MovLib\Data\Image\AbstractImage {
   public function prepareRegistration($rawPassword) {
     $password    = $this->passwordHash($rawPassword);
     $key         = "registration-{$this->email}";
-    $result      = $this->selectAssoc("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
-    if (!empty($result)) {
+    $result      = $this->query("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $key ])->get_result();
+    if (($result = $result->fetch_assoc())) {
       $data             = unserialize($result["data"]);
       $data["password"] = $password;
       if ($result["created"] > 0) {
@@ -515,8 +438,8 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\UserException
    */
   public function getRegistrationData() {
-    $result = $this->selectAssoc("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ?", "s", [ "registration-{$this->email}" ]);
-    if (empty($result) || $result["created"] > 0) {
+    $result = $this->query("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ "registration-{$this->email}" ])->get_result();
+    if (($result = $result->fetch_assoc()) || $result["created"] > 0) {
       throw new UserException("No data found for this user.");
     }
     $data        = unserialize($result["data"]);

@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Exception\Client\RedirectSeeOtherException as Redirect;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\Button;
@@ -53,7 +53,7 @@ class Deactivated extends \MovLib\Presentation\Page {
     if ($session->isAuthenticated === false) {
       throw new Redirect("/");
     }
-    $this->user = new User(User::FROM_ID, $session->userId);
+    $this->user = new UserExtended(UserExtended::FROM_ID, $session->userId);
     if ($this->user->deactivated === false) {
       throw new Redirect($i18n->r("/my"));
     }
@@ -90,7 +90,7 @@ class Deactivated extends \MovLib\Presentation\Page {
   public function validate() {
     global $i18n, $session;
     if (isset($_POST["activate"])) {
-      (new User(User::FROM_ID, $session->userId))->reactivate();
+      (new UserExtended(UserExtended::FROM_ID, $session->userId))->reactivate();
       $success = new Alert($i18n->t("Your account was successfully reactivated. We are very pleased to see you back {0}!", [
         $this->placeholder($session->userName),
       ]));

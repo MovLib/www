@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Image;
+namespace MovLib\Data;
 
 /**
- * Properties and Methods shared by user image and images.
+ * Constants for pagination row counts of various grid sizes.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,13 +26,12 @@ namespace MovLib\Data\Image;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitUser {
+interface Pagination {
 
-  /**
-   * The path within the uploads directory where the user avatars are stored.
-   *
-   * @var string
-   */
-  public $imageDirectory = "user";
+  const SPAN4  = 4;
+  const SPAN6  = 9;
+  const SPAN8  = 16;
+  const SPAN10 = 25;
+  const SPAN12 = 36;
 
 }

@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Delayed\Mailer;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Partial\Alert;
@@ -119,7 +119,7 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     global $i18n;
     $info = null;
     if (!isset($_SESSION["password"])) {
-      $randomPassword = User::getRandomPassword();
+      $randomPassword = UserExtended::getRandomPassword();
       $info = new Alert(
         "<p>{$i18n->t("Choose a strong password to secure your account. To help you, we generated a password for you:")}</p>" .
         "<p><code>{$randomPassword}</code></p>"
@@ -157,7 +157,7 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
       $this->checkErrors([ $i18n->t("The confirmation password doesn’t match the new password, please try again.") ]);
     }
     else {
-      $user = new User(User::FROM_ID, $session->userId);
+      $user = new UserExtended(UserExtended::FROM_ID, $session->userId);
       Mailer::stack(new PasswordChangeEmail($user, $this->newPassword->value));
 
       // The request has been accepted, but further action is required to complete it.
@@ -187,16 +187,16 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
    */
   public function validateToken() {
     global $i18n, $session;
-    $this->user = new User();
+    $this->user = new UserExtended();
     $data = $this->user->validateAuthenticationToken($errors, $this->id);
     if ($data && $data["id"]) {
       if ($session->isAuthenticated === true && $data["id"] !== $session->id) {
         throw new UnauthorizedException($i18n->t("The authentication token is invalid, please sign in again and request a new token to change your password."));
       }
-      $this->user = new User(User::FROM_ID, $data["id"]);
+      $this->user = new UserExtended(UserExtended::FROM_ID, $data["id"]);
     }
     if (empty($data["password"])) {
-      $data["password"] = User::getRandomPassword();
+      $data["password"] = UserExtended::getRandomPassword();
       $success = new Alert($i18n->t("Your new secret password is {0}.", [ "<code>{$data["password"]}</code>" ]));
       $success->title = $i18n->t("Password Reset Successfully");
     }

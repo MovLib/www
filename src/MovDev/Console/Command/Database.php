@@ -19,7 +19,7 @@ namespace MovDev\Console\Command;
 
 use \Locale;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended as User;
 use \ReflectionClass;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
@@ -162,7 +162,7 @@ class Database extends \MovLib\Console\Command\Database {
 
     $class = ucfirst($type);
     $class = new ReflectionClass("\\MovLib\\Data\\History\\{$class}");
-    if ($result = $this->database->select("SELECT `{$type}_id` FROM `{$type}s`")) {
+    if ($result = $this->database->query("SELECT `{$type}_id` FROM `{$type}s`")->get_result()->fetch_all(MYSQLI_ASSOC)) {
       $c = count($result);
       for ($i = 0; $i < $c; ++$i) {
         $history = $class->newInstance($result[$i]["{$type}_id"]);
@@ -216,8 +216,7 @@ class Database extends \MovLib\Console\Command\Database {
     $this->write("Creating {$amount} random users ...");
     for ($i = 0; $i < $amount; ++$i) {
       $username              = $this->_randomUsername();
-      $avatarName            = $this->method($user, "filename", [ $username ]);
-      $allNames[$avatarName] = $username;
+      $avatarName            = $this->invoke($user, "filename", [ $username ]);
       $insertValues         .= "(?, FROM_UNIXTIME(?), ?, '', ?, ?, ?, '{$i18n->defaultLanguageCode}'),";
       $insertTypes          .= "ssssss";
       $insertParams[]        = $avatarName;
@@ -231,7 +230,7 @@ class Database extends \MovLib\Console\Command\Database {
       }
       $insertParams[] = "{$username}@movlib.org";
       $insertParams[] = $username;
-      $insertParams[] = $this->method($user, "passwordHash", [ User::getRandomPassword() ]);
+      $insertParams[] = $this->invoke($user, "passwordHash", [ User::getRandomPassword() ]);
       $this->progress->advance();
     }
     $insertValues = rtrim($insertValues, ",");
@@ -242,17 +241,19 @@ class Database extends \MovLib\Console\Command\Database {
 
     if (($c = count($usernamesWithAvatars))) {
       $this->write("Generating avatar images (every 6th user has no avatar) ...");
-      $dim = User::IMAGE_STYLE_SPAN2;
+      $dim = User::IMAGE_STYLE_SPAN_02;
       $tmp = sys_get_temp_dir() . "/movdev-command-create-users.jpg";
       $this->exec("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}", "Could not create random avatar!");
-      $this->property($user, "imageExtension", "jpg");
+      $this->setProperty($user, "imageExtension", "jpg");
 
       $this->progress->start($this->output, $c);
       foreach ($usernamesWithAvatars as $avatarName => $username) {
-        $user->id = $this->database->selectAssoc("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $username ])["user_id"];
-        $this->property($user, "imageName", $avatarName);
-        $this->method($user, "convert", [ $tmp, User::IMAGE_STYLE_SPAN2 ]);
-        $this->method($user, "convert", [ $tmp, User::IMAGE_STYLE_SPAN1 ]);
+        $stmt = $this->database->query("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $username ]);
+        $stmt->bind_result($user->id);
+        $stmt->fetch();
+        $this->setProperty($user, "imageName", $avatarName);
+        $this->invoke($user, "convert", [ $tmp, User::IMAGE_STYLE_SPAN_02 ]);
+        $this->invoke($user, "convert", [ $tmp, User::IMAGE_STYLE_SPAN_01 ]);
         $this->progress->advance();
       }
       unlink($tmp);

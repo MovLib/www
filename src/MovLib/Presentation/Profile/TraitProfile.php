@@ -35,7 +35,7 @@ trait TraitProfile {
   /**
    * The user we are currently displaying.
    *
-   * @var \MovLib\Data\User
+   * @var \MovLib\Data\UserExtended
    */
   protected $user;
 

@@ -19,7 +19,7 @@ namespace MovLib\Test\Data;
 
 use \MovDev\Database;
 use \MovLib\Data\Session;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 
 /**
  * @coversDefaultClass \MovLib\Data\Session
@@ -29,7 +29,7 @@ use \MovLib\Data\User;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class SessionTest extends \PHPUnit_Framework_TestCase {
+class SessionTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -37,7 +37,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
 
   public function tearDown() {
     global $session;
-    exec("movdev db -s users");
+    $this->exec("movdev db -s users");
     $session->authentication = time();
   }
 
@@ -49,8 +49,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__construct
    */
   public function testConstruct() {
-    $session = new Session();
-    $this->assertEquals(ini_get("session.name"), get_reflection_property($session, "name")->getValue($session));
+    $this->assertEquals(session_name(), $this->getProperty(new Session(), "name"));
   }
 
   /**
@@ -65,7 +64,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    * @expectedException \MovLib\Exception\UserException
    */
   public function testAuthenticateDeactivatedUser() {
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserExtended(UserExtended::FROM_ID, 1);
     $user->deactivate();
     (new Session())->authenticate("richard@fussenegger.info", "Test1234");
   }
@@ -73,7 +72,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::authenticate
    * @expectedException \MovLib\Exception\SessionException
-   * @expectedExceptionMessage Could not find user with email
+   * @expectedExceptionMessage Couldn't find user with email
    */
   public function testAuthenticateInvalidEmail() {
     (new Session())->authenticate("webmaster@movlib.org", "Test1234");
@@ -133,9 +132,9 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    * @covers ::init
    */
   public function testInit() {
-    $user    = new User(User::FROM_ID, 1);
+    $user    = new UserExtended(UserExtended::FROM_ID, 1);
     $session = new Session();
-    get_reflection_method($session, "init")->invokeArgs($session, [ 1, $_SERVER["REQUEST_TIME"] ]);
+    $this->invoke($session, "init", [ 1, $_SERVER["REQUEST_TIME"] ]);
     $this->assertEquals($user->id, $session->userId);
     $this->assertEquals($user->name, $session->userName);
     $this->assertEquals($user->timeZoneId, $session->userTimeZoneId);
@@ -146,11 +145,10 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::init
    * @expectedException \MovLib\Exception\SessionException
-   * @expectedExceptionMessage Could not fetch user name for user ID
+   * @expectedExceptionMessage Could not fetch user data for user ID
    */
   public function testInitNoUser() {
-    $session = new Session();
-    get_reflection_method($session, "init")->invokeArgs($session, [ 99999999, $_SERVER["REQUEST_TIME"] ]);
+    $this->invoke(new Session(), "init", [ 99999999, $_SERVER["REQUEST_TIME"] ]);
   }
 
   /**
@@ -158,7 +156,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    */
   public function testInitAnonymousUser() {
     $session = new Session();
-    get_reflection_method($session, "init")->invokeArgs($session, [ 0, $_SERVER["REQUEST_TIME"] ]);
+    $this->invoke($session, "init", [ 0, $_SERVER["REQUEST_TIME"] ]);
     $this->assertEquals(0, $session->userId);
     $this->assertEquals($_SERVER["REMOTE_ADDR"], $session->userName);
     $this->assertEquals(ini_get("date.timezone"), $session->userTimeZoneId);
@@ -172,8 +170,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
    */
   public function testInitAnonymousUserInvalidIP() {
     $_SERVER["REMOTE_ADDR"] = "phpunit";
-    $session = new Session();
-    get_reflection_method($session, "init")->invokeArgs($session, [ 0, $_SERVER["REQUEST_TIME"] ]);
+    $this->invoke(new Session(), "init", [ 0, $_SERVER["REQUEST_TIME"] ]);
   }
 
   /**
@@ -188,8 +185,8 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
     $session->insert();
     $this->_testInsertGetActiveSessionsUpdateAndDelete();
     $session->id = md5(openssl_random_pseudo_bytes(1024));
-    get_reflection_property($session, "ipAddress")->setValue($session, "192.168.1.1");
-    get_reflection_property($session, "userAgent")->setValue($session, "PHPUnit");
+    $this->setProperty($session, "ipAddress", "192.168.1.1");
+    $this->setProperty($session, "userAgent", "PHPUnit");
     $session->update($oldSessionId);
     $this->_testInsertGetActiveSessionsUpdateAndDelete();
     $session->delete();
@@ -234,7 +231,10 @@ class SessionTest extends \PHPUnit_Framework_TestCase {
   }
 
   private function _testPasswordNeedsRehash($db) {
-    return $db->select("SELECT `password` FROM `users` WHERE `user_id` = 1 LIMIT 1")[0]["password"];
+    $stmt = $db->query("SELECT `password` FROM `users` WHERE `user_id` = 1 LIMIT 1");
+    $stmt->bind_result($password);
+    $stmt->fetch();
+    return $password;
   }
 
   /**

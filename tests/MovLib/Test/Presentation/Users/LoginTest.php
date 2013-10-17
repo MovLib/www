@@ -18,7 +18,7 @@
 namespace MovLib\Test\Presentation\Users;
 
 use \MovLib\Data\Session;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Presentation\Users\Login;
 
 /**
@@ -206,7 +206,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
    * @group Presentation
    */
   public function testDeactivated() {
-    (new User(User::FROM_ID, 1))->deactivate();
+    (new UserExtended(UserExtended::FROM_ID, 1))->deactivate();
     $_POST["email"]    = "richard@fussenegger.info";
     $_POST["password"] = "test1234";
     $_POST["form_id"]  = "users-login";

@@ -23,7 +23,6 @@ use \Locale;
 use \MessageFormatter;
 use \MovLib\Data\Collator;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-use \MovLib\Exception\DatabaseException;
 
 /**
  * @todo Description of I18nModel
@@ -227,12 +226,12 @@ class I18n extends \MovLib\Data\Database {
   public function formatMessage($context, $pattern, $args, $options = null) {
     $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
     if ($languageCode != $this->defaultLanguageCode) {
-      $result = $this->select(
+      $result = $this->query(
         "SELECT COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1",
         "s",
         [ $pattern ]
-      );
-      if (empty($result[0]["translation"])) {
+      )->get_result()->fetch_assoc();
+      if (empty($result["translation"])) {
         // @todo remove the following lines after the translation extractor has been created. NOTE that routes are
         //       already handled via MovCli. We should also write an extended I18n class for MovCli and move all
         //       methods that aren't needed in this class to the extended version. Many methods are only from interest
@@ -242,7 +241,7 @@ class I18n extends \MovLib\Data\Database {
         }
       }
       else {
-        $pattern = $result[0]["translation"];
+        $pattern = $result["translation"];
       }
     }
     if ($args) {
@@ -266,46 +265,6 @@ class I18n extends \MovLib\Data\Database {
   }
 
   /**
-   * Get array containing all countries.
-   *
-   * The names are translated to the current language of this i18n model instance.
-   *
-   * <em>NOTE:</em> The translations for the countries cannot be empty, we get them from Intl ICU.
-   *
-   * @param string $key
-   *   [Optional] Get array of countries sorted by ID, ISO alpha-2 code, or name. Use the <var>KEY_*</var> class
-   *   constants.
-   * @return array
-   *   Associative array containing all countries in the form:
-   *   <pre>array(
-   *   "id" => $id => array("id" => $id, "code" => $code, "name" => $name),
-   *   "code" => $code => array("id" => $id, "code" => $code, "name" => $name),
-   *   "name" => $name => array("id" => $id, "code" => $code, "name" => $name),
-   *   )</pre>
-   */
-  public function getCountries($key = self::KEY_ID) {
-    if (!$this->countries) {
-      $query = sprintf(
-        "SELECT `country_id` AS `%s`, `iso_alpha-2` AS `%s`, %s`%s` FROM `countries` ORDER BY `%s`",
-        self::KEY_ID,
-        self::KEY_CODE,
-        $this->languageCode == $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ",
-        self::KEY_NAME,
-        self::KEY_ID
-      );
-      $result = $this->select($query);
-      foreach ($result as $c) {
-        $this->countries[self::KEY_ID][$c[self::KEY_ID]] = $c;
-        $this->countries[self::KEY_CODE][$c[self::KEY_CODE]] = $c;
-        $this->countries[self::KEY_NAME][$c[self::KEY_NAME]] = $c;
-      }
-      ksort($this->countries[self::KEY_CODE]);
-      $this->getCollator()->ksort($this->countries[self::KEY_NAME]);
-    }
-    return $this->countries[$key];
-  }
-
-  /**
    * Get the unique ID of the current language.
    *
    * @see \MovLib\Data\I18n::getLanguages()
@@ -313,46 +272,7 @@ class I18n extends \MovLib\Data\Database {
    *   The unique ID of the current language.
    */
   public function getLanguageId() {
-    return $this->select("SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = ? LIMIT 1", "s", [ $this->languageCode ])[0]["language_id"];
-  }
-
-  /**
-   * Get array containing all languages.
-   *
-   * The names are translated to the current language of this i18n model instance.
-   *
-   * <em>NOTE:</em> The translations for the languages cannot be empty, we get them from Intl ICU.
-   *
-   * @param string $key
-   *   [Optional] Get array of languages sorted by ID, ISO alpha-2 code, or name. Use the <var>KEY_*</var> class
-   *   constants.
-   * @return array
-   *   Associative array containing all languages in the form:
-   *   <pre>array(
-   *   "id" => $id => array("id" => $id, "code" => $code, "name" => $name),
-   *   "code" => $code => array("id" => $id, "code" => $code, "name" => $name),
-   *   "name" => $name => array("id" => $id, "code" => $code, "name" => $name),
-   *   )</pre>
-   */
-  public function getLanguages($key = self::KEY_ID) {
-    if (!$this->languages) {
-      $query = sprintf(
-        "SELECT `language_id` AS `%s`, `iso_alpha-2` AS `%s`, %s`%s` FROM `languages` ORDER BY `%s`",
-        self::KEY_ID,
-        self::KEY_CODE,
-        $this->languageCode == $this->defaultLanguageCode ? "" : "COLUMN_GET(`dyn_translations`, '{$this->languageCode}' AS CHAR(255)) AS ",
-        self::KEY_NAME,
-        self::KEY_ID
-      );
-      foreach ($this->select($query) as $l) {
-        $this->languages[self::KEY_ID][$l[self::KEY_ID]] = $l;
-        $this->languages[self::KEY_CODE][$l[self::KEY_CODE]] = $l;
-        $this->languages[self::KEY_NAME][$l[self::KEY_NAME]] = $l;
-      }
-      ksort($this->languages[self::KEY_CODE]);
-      $this->getCollator()->ksort($this->languages[self::KEY_NAME]);
-    }
-    return $this->languages[$key];
+    return $this->query("SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = ? LIMIT 1", "s", [ $this->languageCode ])->get_result()->fetch_assoc()["language_id"];
   }
 
   /**
@@ -435,7 +355,7 @@ class I18n extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function insertMessage($message, $options = null) {
-    if (empty($this->select("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", [ $message ]))) {
+    if (empty($this->query("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", [ $message ])->get_result()->fetch_assoc())) {
       if (!isset($options["comment"])) {
         $options["comment"] = null;
       }
@@ -476,7 +396,7 @@ class I18n extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function insertRoute($route) {
-    if (empty($this->select("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ]))) {
+    if (empty($this->query("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_assoc())) {
       $this->query("INSERT INTO `routes` (`route`, `dyn_translations`) VALUES (?, '')", "s", [ $route ]);
     }
     return $this;

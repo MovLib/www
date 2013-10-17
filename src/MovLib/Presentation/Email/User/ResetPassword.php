@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Email\User;
 
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Exception\MailerException;
 use \MovLib\Exception\UserException;
 
@@ -39,7 +39,7 @@ class ResetPassword extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * The user who requested the password reset.
    *
-   * @var \MovLib\Data\User
+   * @var \MovLib\Data\UserExtended
    */
   private $user;
 
@@ -70,7 +70,7 @@ class ResetPassword extends \MovLib\Presentation\Email\AbstractEmail {
    */
   public function init() {
     try {
-      $this->user = new User(User::FROM_EMAIL, $this->recipient);
+      $this->user = new UserExtended(UserExtended::FROM_EMAIL, $this->recipient);
       $this->user->setAuthenticationToken()->prepareTemporaryData("d", [ "id" ], [ $this->user->id ]);
     }
     catch (UserException $e) {

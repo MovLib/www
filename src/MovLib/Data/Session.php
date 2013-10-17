@@ -20,7 +20,7 @@ namespace MovLib\Data;
 use \Memcached;
 use \MemcachedException;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UserException;
 use \MovLib\Exception\Client\UnauthorizedException;
@@ -157,19 +157,9 @@ class Session extends \MovLib\Data\Database {
       $this->id = session_id();
 
       // We have to try loading the session from our persistent session storage if the session IDs don't match.
-      if ($_COOKIE[$this->name] != $this->id) {
-        $result = $this->selectAssoc("SELECT `user_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication` FROM `sessions` WHERE `session_id` = ?", "s", $_COOKIE[$this->name]);
-
-        // This is an old session that requires sign in and it's expired for anonymous users.
-        if (empty($result)) {
-          $this->destroy();
-        }
-        // Otherwise we have to initialize this new session with fresh data and update the record in our persistent
-        // session storage.
-        else {
-          $this->init($result["user_id"], $result["authentication"]);
-          DelayedMethodCalls::stack($this, "update", [ $_COOKIE[$this->name] ]);
-        }
+      if ($_COOKIE[$this->name] != $this->id || !($result = $this->query("SELECT `user_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name] ])->get_result()->fetch_assoc())) {
+        $this->init($result["user_id"], $result["authentication"]);
+        DelayedMethodCalls::stack($this, "update", [ $_COOKIE[$this->name] ]);
       }
       // Maybe somebody is trying with a random session ID to get a session?
       elseif (!isset($_SESSION["user_id"])) {
@@ -213,26 +203,18 @@ class Session extends \MovLib\Data\Database {
    */
   public function authenticate($email, $rawPassword) {
     // Load necessary user data from storage.
-    $result = $this->selectAssoc("SELECT `user_id`, `name`, `password`, `deactivated` FROM `users` WHERE `email` = ?", "s", [ $email ]);
-
-    // We couldn't find a user for the given email address if above query's result is empty.
-    if (empty($result)) {
-      throw new SessionException("Could not find user with email {$email}");
+    if (!($result = $this->query("SELECT `user_id`, `password`, `deactivated` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
+      throw new SessionException("Couldn't find user with email '{$email}'!");
     }
 
     // Validate the submitted password.
     if (password_verify($rawPassword, $result["password"]) === false) {
-      throw new SessionException("Invalid password for user with email {$email}");
+      throw new SessionException("Invalid password for user with email {$email}!");
     }
 
     // My be the user was doing some work as anonymous user and already has a session active. If so generate new session
     // ID and if not generate a completely new session.
-    if (session_status() === PHP_SESSION_ACTIVE) {
-      $this->regenerate();
-    }
-    else {
-      $this->start();
-    }
+    session_status() === PHP_SESSION_ACTIVE ? $this->regenerate() : $this->start();
     $this->init($result["user_id"]);
     DelayedMethodCalls::stack($this, "insert");
 
@@ -281,8 +263,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Deletes this session from our session database.
    *
-   * Must be public for delayed execution.
-   *
+   * @delayed
    * @param string|array $sessionId [optional]
    *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
@@ -366,11 +347,11 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getActiveSessions() {
-    return $this->select(
+    return $this->query(
       "SELECT `session_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ?",
       "d",
       [ $_SESSION["user_id"] ]
-    );
+    )->get_result()->fetch_all(MYSQLI_ASSOC);
   }
 
   /**
@@ -398,13 +379,12 @@ class Session extends \MovLib\Data\Database {
 
     // We are initializing this session for a registered user.
     if ($userId > 0) {
-      $result = $this->select("SELECT `name`, `time_zone_id` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ $userId]);
-      if (empty($result[0]["name"])) {
-        throw new SessionException("Could not fetch user name for user ID {$userId}.");
+      if (!($result = $this->query("SELECT `name`, `time_zone_id` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ $userId ])->get_result()->fetch_assoc())) {
+        throw new SessionException("Could not fetch user data for user ID {$userId}.");
       }
       $this->userId          = $_SESSION["user_id"]           = $userId;
-      $this->userName        = $_SESSION["user_name"]         = $result[0]["name"];
-      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = $result[0]["time_zone_id"];
+      $this->userName        = $_SESSION["user_name"]         = $result["name"];
+      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = $result["time_zone_id"];
       $this->isAuthenticated = true;
     }
     // Initialize this session for an anonymous user.
@@ -430,8 +410,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Insert newly created session into persistent session storage.
    *
-   * Must be public for delayed execution.
-   *
+   * @delayed
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -446,8 +425,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Test after every authentication if the password needs to be rehashed.
    *
-   * This method must be public for delayed execution.
-   *
+   * @delayed
    * @param string $password
    *   The hashed password.
    * @param string $rawPassword
@@ -458,8 +436,7 @@ class Session extends \MovLib\Data\Database {
    */
   public function passwordNeedsRehash($password, $rawPassword) {
     if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]) === true) {
-      $user = new User(User::FROM_ID, $this->userId);
-      $user->updatePassword($rawPassword);
+      (new UserExtended(UserExtended::FROM_ID, $this->userId))->updatePassword($rawPassword);
     }
     return $this;
   }
@@ -531,8 +508,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Update the ID of a session in our persistent session store.
    *
-   * Must be public for delayed execution.
-   *
+   * @delayed
    * @param string $oldSessionId
    *   The old session ID that should be updated.
    * @return this

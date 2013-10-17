@@ -17,44 +17,90 @@
  */
 namespace MovDev;
 
+use \InvalidArgumentException;
 use \MovLib\Exception\DatabaseException;
-use \ReflectionMethod;
+use \mysqli;
 
 /**
- * The developer database class allows direct access to all methods from anywhere.
+ * The developer database has a pure public interface and many more methods to interact with the database.
  *
+ * @property \mysqli $mysqli The current MySQLi instance.
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Database extends \MovLib\Data\Database {
+class Database {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
-   * @inheritdoc
+   * The current MySQLi instance.
+   *
+   * @var \mysqli
    */
-  public $affectedRows;
+  public $mysqli;
 
   /**
-   * @inheritdoc
-   */
-  public $database;
-
-  /**
-   * @inheritdoc
-   */
-  public $insertId;
-
-  /**
-   * @inheritdoc
-   */
-  public $stmt;
-
-  /**
-   * @inheritdoc
+   * Flag indicating if a transaction is active.
+   *
+   * @var boolean
    */
   public $transactionActive = false;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new developer database object.
+   *
+   * @param string $database
+   *   The name of the database to connect to.
+   * @throws \InvalidArgumentException
+   */
+  public function __construct($database = "movlib") {
+    $this->connect($database);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Establish connection to database.
+   *
+   * @param string $database
+   *   The name of the database to connect to.
+   * @return \mysqli
+   * @throws \InvalidArgumentException
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function connect($database) {
+    if (!is_string($database)) {
+      throw new InvalidArgumentException("Database name must be of type string.");
+    }
+    if (!isset($this->mysqli)) {
+      try {
+        $this->mysqli = new mysqli();
+        $this->mysqli->real_connect();
+      }
+      catch (\ErrorException $e) {
+        $this->mysqli->kill($this->mysqli->thread_id);
+        $this->mysqli->real_connect();
+      }
+      if ($this->mysqli->connect_error) {
+        throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
+      }
+      if ($this->mysqli->select_db($database) === false) {
+        throw new DatabaseException("Selecting database '{$this->database}' failed", $mysqli->error, $mysqli->errno);
+      }
+    }
+    return $this->mysqli;
+  }
 
   /**
    * Escapes special characters in a string for use in an SQL statement, taking into account the current charset of the
@@ -66,17 +112,10 @@ class Database extends \MovLib\Data\Database {
    *   The esacped string.
    */
   public function escapeString($str) {
-    return self::$mysqli[$this->database]->real_escape_string($str);
-  }
-
-  /**
-   * Get the current MySQLi instance.
-   *
-   * @return \mysqli
-   *   The current MySQLi instance.
-   */
-  public function getMySQLi() {
-    return self::$mysqli[$this->database];
+    if (!is_string($str) && !is_numeric($str)) {
+      throw new InvalidArgumentException("Escape variable must be of type string (or integer).");
+    }
+    return $this->mysqli->real_escape_string($str);
   }
 
   /**
@@ -90,19 +129,17 @@ class Database extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function queries($queries) {
-    if (!isset(self::$mysqli[$this->database])) {
-      $rm = new ReflectionMethod($this, "connect");
-      $rm->setAccessible(true);
-      $rm->invoke($this);
+    if (!is_string($queries)) {
+      throw new InvalidArgumentException("Queries must be of type string.");
     }
-    $error = self::$mysqli[$this->database]->multi_query($queries);
+    $error = $this->mysqli->multi_query($queries);
     do {
       if ($error === false) {
-        throw new DatabaseException("Execution of multiple queries failed", self::$mysqli[$this->database]->error, self::$mysqli[$this->database]->errno);
+        throw new DatabaseException("Execution of multiple queries failed", $this->mysqli->error, $this->mysqli->errno);
       }
-      self::$mysqli[$this->database]->use_result();
-      if (($more = self::$mysqli[$this->database]->more_results())) {
-        $error = self::$mysqli[$this->database]->next_result();
+      $this->mysqli->use_result();
+      if (($more = $this->mysqli->more_results())) {
+        $error = $this->mysqli->next_result();
       }
     }
     while ($more);
@@ -110,59 +147,98 @@ class Database extends \MovLib\Data\Database {
   }
 
   /**
-   * @inheritdoc
+   * Generic query method.
+   *
+   * @param string $query
+   *   The query to be executed.
+   * @param string $types [optional]
+   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
+   * @param array $params [optional]
+   *   The parameters to bind.
+   * @return \mysqli_stmt
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function query($query, $types = null, array $params = null, $closeStmt = true) {
-    return parent::query($query, $types, $params, $closeStmt);
+  public function query($query, $types = null, array $params = null) {
+    if (!is_string($query)) {
+      throw new InvalidArgumentException("Query must be of type string.");
+    }
+    /* @var $stmt \mysqli_stmt */
+    if (($stmt = $this->mysqli->prepare($query)) === false) {
+      throw new DatabaseException("Preparation of statement failed");
+    }
+    if ($types && $params) {
+      if (!is_string($types) || empty($params)) {
+        throw new InvalidArgumentException("Types must be of type string and params of type array (not empty).");
+      }
+      $refParams = [ $types ];
+      $c         = count($params);
+      for ($i = 0, $j = 1; $i < $c; ++$i, ++$j) {
+        $refParams[$j] =& $params[$i];
+      }
+      if (call_user_func_array([ $stmt, "bind_param" ], $refParams) === false) {
+        throw new DatabaseException("Binding parameters to prepared statement failed", $stmt->error, $stmt->errno);
+      }
+    }
+    if ($stmt->execute() === false) {
+      throw new DatabaseException("Execution of prepared statement failed", $stmt->error, $stmt->errno);
+    }
+    return $stmt;
   }
 
   /**
-   * @inheritdoc
+   * Commit current transaction.
+   *
+   * @param int $flags [optional]
+   *   A bitmask of <var>MYSQLI_TRANS_COR_*</var> constants, defaults to <var>MYSQLI_TRANS_COR_AND_NO_CHAIN</var>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function select($query, $types = null, array $params = null) {
-    return parent::select($query, $types, $params);
+  public function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+    if (!isset($this->mysqli) || $this->transactionActive === false) {
+      throw new DatabaseException("No active transaction, nothing to commit.");
+    }
+    if (($this->transactionActive = $this->mysqli->commit($flags)) === false) {
+      $e = new DatabaseException("Commit failed", $this->mysqli->error, $this->mysqli->errno);
+      $this->transactionRollback();
+      throw $e;
+    }
+    return $this;
   }
 
   /**
-   * @inheritdoc
+   * Rollback current transaction.
+   *
+   * @param int $flags [optional]
+   *   A bitmask of <var>MYSQLI_TRANS_COR_*</var> constants, defaults to <var>MYSQLI_TRANS_COR_AND_NO_CHAIN</var>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function selectAssoc($query, $types = null, $params = null) {
-    return parent::selectAssoc($query, $types, $params);
+  public function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+    if (!isset($this->mysqli) || $this->transactionActive === false) {
+      throw new DatabaseException("No active transaction, nothing to rollback.");
+    }
+    if (($this->transactionActive = $this->mysqli->rollback($flags)) === false) {
+      throw new DatabaseException("Rollback failed", $this->mysqli->error, $this->mysqli->errno);
+    }
+    return $this;
   }
 
   /**
-   * @inheritdoc
-   */
-  public function tmpSet($data, $ttl = self::TMP_TTL_DAILY) {
-    return parent::tmpSet($data, $ttl);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function tmpGetAndDelete($key) {
-    return parent::tmpGetAndDelete($key);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function transactionCommit($flags = null) {
-    return parent::transactionCommit($flags);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function transactionRollback($flags = null){
-    return parent::transactionRollback($flags);
-  }
-
-  /**
-   * @inheritdoc
+   * Start a transaction.
+   *
+   * Executes a SQL native <code>START TRANSACTION</code> against the database and establishes a connection if not
+   * connection is available.
+   *
+   * @param int $flags [optional]
+   *   One of the <var>MYSQLI_TRANS_START_*</var> constants, defaults to <var>MYSQLI_TRANS_START_READ_WRITE</var>.
+   * @return this
+   * @throws \MovLib\Data\DatabaseException
    */
   public function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
-    return parent::transactionStart($flags);
+    if (($this->transactionActive = $this->mysqli->begin_transaction($flags)) === false) {
+      throw new DatabaseException("Could not start transaction", $this->mysqli->error, $this->mysqli->errno);
+    }
+    return $this;
   }
 
 }

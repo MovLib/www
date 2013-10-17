@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 
 /**
  * User account summary for logged in user's.
@@ -41,7 +41,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   public function __construct() {
     global $i18n, $session;
     $session->checkAuthorization($i18n->t("You must be signed in to view your profile."));
-    $this->init()->user = new User(User::FROM_ID, $session->userId);
+    $this->init()->user = new UserExtended(UserExtended::FROM_ID, $session->userId);
   }
 
   /**
@@ -79,7 +79,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
           "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->user->access, $this->user->timeZoneId)}</dd>" .
         "</dl>" .
         "<div class='span span--2'>" .
-          $this->a($i18n->r("/user/account-settings"), $this->getImage($this->user, User::IMAGE_STYLE_DEFAULT), [
+          $this->a($i18n->r("/user/account-settings"), $this->getImage($this->user, UserExtended::IMAGE_STYLE_DEFAULT), [
             "class" => "change-avatar no-border",
             "title" => "Change your avatar image.",
           ]) .

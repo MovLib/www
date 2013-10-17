@@ -32,16 +32,16 @@ ini_set("display_errors", 1);
 
 $_SERVER["DOCUMENT_ROOT"] = __DIR__;
 
-$composerAutoloader       = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
+$composerAutoloader = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
 $composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src");
 
-$i18n                     = new \MovLib\Data\I18n();
-$_SERVER["LANGUAGE_CODE"] = $i18n->defaultLanguageCode;
-
-$GLOBALS["movlib"]        = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
+new \MovLib\Exception\ConsoleHandlers();
+$GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
+$i18n              = new \MovLib\Data\I18n();
 
 // The following variables are always available in our environment and set via nginx. We have to create them here on
 // our own because PHPUnit will not invoke nginx.
+$_SERVER["LANGUAGE_CODE"]   = $i18n->defaultLanguageCode;
 $_SERVER["PATH_INFO"]       = "/";
 $_SERVER["REQUEST_URI"]     = "/";
 $_SERVER["SCHEME"]          = "https";
@@ -58,7 +58,6 @@ define("DEV", strpos($GLOBALS["movlib"]["version"], "-dev") === false ? false : 
 if (DEV === true) {
   $composerAutoloader->add("MovDev", "{$_SERVER["DOCUMENT_ROOT"]}/src");
 }
-
 
 // --------------------------------------------------------------------------------------------------------------------- PHPUnit only
 
@@ -82,6 +81,7 @@ if (defined("MOVLIB_PHPUNIT")) {
    *   The name of the method.
    * @return \ReflectionMethod
    *   The accessible reflection method.
+   * @deprecated since version 0.0.1-dev
    */
   function get_reflection_method($object, $method_name) {
     $f = new \ReflectionMethod($object, $method_name);
@@ -98,6 +98,7 @@ if (defined("MOVLIB_PHPUNIT")) {
    *   The name of the property.
    * @return \ReflectionProperty
    *   The accessible reflection property.
+   * @deprecated since version 0.0.1-dev
    */
   function get_reflection_property($object, $property_name) {
     $p = new \ReflectionProperty($object, $property_name);
@@ -107,5 +108,7 @@ if (defined("MOVLIB_PHPUNIT")) {
 
   // Mock a valid session for various PHPUnit tests.
   $session = new \MovLib\Data\Session();
-  get_reflection_method($session, "init")->invokeArgs($session, [ 1 ]);
+  $init    = new \ReflectionMethod($session, "init");
+  $init->setAccessible(true);
+  $init->invokeArgs($session, [ 1 ]);
 }

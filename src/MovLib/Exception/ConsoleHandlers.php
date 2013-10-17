@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Exception;
 
 /**
- * Represents a single language.
+ * Registers only the error handler, uncaught exceptions and fatal errors are not tampered with.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -26,27 +26,13 @@ namespace MovLib\Data;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Language {
+class ConsoleHandlers extends \MovLib\Exception\Handlers {
 
   /**
-   * The language's unique identifier.
-   *
-   * @var int
+   * @inheritdoc
    */
-  public $id;
-
-  /**
-   * The language's translated name.
-   *
-   * @var string
-   */
-  public $name;
-
-  /**
-   * The language's ISO alpha-2 code.
-   *
-   * @var string
-   */
-  public $code;
+  public function __construct() {
+    set_error_handler([ $this, "errorHandler" ]);
+  }
 
 }

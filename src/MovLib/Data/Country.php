@@ -18,60 +18,35 @@
 namespace MovLib\Data;
 
 /**
- * Handling of Countries.
+ * Represents a single country.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Country extends \MovLib\Data\Database {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Static Methods
+class Country {
 
   /**
-   * Get array with localiced country names.
+   * The country's unique identifier.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @param array $countryIds
-   *   Numeric array containing the desired country IDs.
-   * @return array
-   *   Array containing the localiced country names with the country's unique ID as key.
+   * @var int
    */
-  public function getCountryNames(array $countryIds) {
-    global $i18n;
-    if (empty($countryIds)) {
-      return [];
-    }
-    
-    $countryIds = array_unique($countryIds);
-    $c = count($countryIds);
-    $in = rtrim(str_repeat("?,", $c), ",");
+  public $id;
 
-    if ($i18n->languageCode == "en") {
-      $result = $this->select(
-        "SELECT `country_id`, `name` FROM `countries` WHERE `country_id` IN ({$in})",
-        str_repeat("d", $c),
-        $countryIds
-      );
-    }
-    else {
-      $result = $this->select(
-        "SELECT `country_id`, COLUMN_GET(`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS `name`" .
-        "FROM `countries` WHERE `country_id` IN ({$in})",
-        str_repeat("d", $c),
-        $countryIds
-      );
-    }
+  /**
+   * The country's translated name.
+   *
+   * @var string
+   */
+  public $name;
 
-    $countryNames = [];
-    $c = count($result);
-    for ($i = 0; $i < $c; ++$i) {
-      $countryNames[$result[$i]["country_id"]] = $result[$i]["name"];
-    }
-    return $countryNames;
-  }
+  /**
+   * The country's ISO alpha-2 code.
+   *
+   * @var string
+   */
+  public $code;
 
 }

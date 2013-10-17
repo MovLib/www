@@ -188,7 +188,7 @@ class MovieTest extends \MovLib\Test\TestCase {
     // stage all files
     $this->invoke($this->movie, "stageAllFiles");
     unset($output);
-    exec("cd {$path} && git status", $output);
+    $this->exec("cd {$path} && git status", $output);
     $this->assertEquals("# Changes to be committed:", $output[1]);
     $this->assertEquals("#	modified:   original_title", $output[4]);
     $this->assertEquals("#	modified:   year", $output[5]);
@@ -198,13 +198,12 @@ class MovieTest extends \MovLib\Test\TestCase {
     // unstage year
     $this->invoke($this->movie, "unstageFiles", [ [ "year" ] ]);
     unset($output);
-    exec("cd {$path} && git status", $output);
+    $this->exec("cd {$path} && git status", $output);
     $this->assertEquals("# Changes not staged for commit:", $output[6]);
     $this->assertEquals("#	modified:   year", $output[10]);
 
     // reset year
     $this->invoke($this->movie, "resetFiles", [ [ "year"] ]);
-    unset($output);
     exec("cd {$path} && git status", $output);
     $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/year", 2000);
   }
@@ -220,8 +219,7 @@ class MovieTest extends \MovLib\Test\TestCase {
 
     // with unstaged files
     $this->invoke($this->movie, "writeFiles", [ [ "original_title" => "The foobar is a lie", "year" => 2002, "runtime" => 42 ] ]);
-    $dirtyFiles = $this->invoke($this->movie, "getDirtyFiles");
-    $this->assertEquals("original_title year", implode(" ", $dirtyFiles));
+    $this->assertEquals("original_title year", implode(" ", $this->invoke($this->movie, "getDirtyFiles")));
 
     // with 2 commits
     $this->invoke($this->movie, "stageAllFiles");

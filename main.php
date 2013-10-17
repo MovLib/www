@@ -32,9 +32,6 @@
  * @since 0.0.1-dev
  */
 
-// Parse global configuration and ensure it's available globally.
-$GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
-
 /**
  * Ultra fast class autoloader.
  *
@@ -53,103 +50,6 @@ function __autoload($class) {
 // Use Composer for simplified autoloading of vendor stuff and our own stuff.
 $composerAutoloader = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
 $composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src");
-
-/**
- * Transform PHP fatal errors to exceptions.
- *
- * This function is not meant to recover after a fatal error occurred. The purpose of this is to ensure that a nice
- * error view is displayed to the user.
- *
- * @link http://stackoverflow.com/a/2146171/1251219 How do I catch a PHP Fatal Error
- */
-function error_fatal_handler() {
-  if (($error = error_get_last())) {
-    // We have to build our own trace, well, at least we can try with the available information.
-    $error["trace"] = [
-      [ "function" => __FUNCTION__, "line" => __LINE__, "file" => __FILE__ ],
-      [ "function" => "<em>unknown</em>", "line" => $error["line"], "file" => $error["file"] ],
-    ];
-
-    // Please note that we HAVE TO use PHP's base exception class at this point, otherwise we can't set our own trace!
-    $exception = new \Exception($error["message"], $error["type"]);
-    $reflectionClass = new \ReflectionClass($exception);
-    foreach ([ "file", "line", "trace" ] as $propertyName) {
-      $reflectionProperty = $reflectionClass->getProperty($propertyName);
-      $reflectionProperty->setAccessible(true);
-      $reflectionProperty->setValue($exception, $error[$propertyName]);
-    }
-
-    // Be sure to log this exception before attempting to render the exception presentation. We don't want to risk any
-    // further errors without having sent out that mail to all developers.
-    \MovLib\Data\Delayed\Logger::stack($exception, \MovLib\Data\Delayed\Logger::FATAL);
-    \MovLib\Data\Delayed\Logger::run();
-
-    // Force display of trace upon fatal errors; a user might be able to tell us how to fix the problem (open source FTW).
-    $GLOBALS["movlib"]["version"] = substr($GLOBALS["movlib"]["version"], strpos($GLOBALS["movlib"]["version"], "-") + 1) . "-dev";
-
-    try {
-      exit((new \MovLib\Presentation\Stacktrace($exception))->getPresentation());
-    }
-    // @todo How about some ASCII art?
-    catch (\Exception $e) {
-      header("content-type: text/plain");
-      print_r($e);
-      exit();
-    }
-  }
-}
-
-// Check for possible fatal errors that are not catchable otherwise.
-register_shutdown_function("error_fatal_handler");
-
-/**
-* This is the outermost place to catch any exception that might have been forgotten somewhere.
-*
-* To ensure that no unexpected behaviour crashes our software any uncaught exception will be caught at this place. An
-* error is logged and, depending on the error, a message is displayed to the user.
-*
-* @global \MovLib\Data\I18n $i18n
-* @param \Exception $exception
-* The uncaught exception.
-*/
-function uncaught_exception_handler($exception) {
-  \MovLib\Data\Delayed\Logger::run();
-  exit((new \MovLib\Presentation\Stacktrace($exception))->getPresentation());
-}
-
-// Set the default exception handler.
-set_exception_handler("uncaught_exception_handler");
-
-/**
- * Global function to convert PHP errors to exceptions.
- *
- * PHP by default mostly throws errors and not exceptions (like Java or Ruby). This user-defined error handler converts
- * these errors to exceptions and allows us to catch them and work with them. All PHP errors are runtime errors, as they
- * only appear by <i>doing</i> something. For more info on the differenciation of various exceptions and what they mean
- * have a look at the great article from Ralph Schindler (linked below).
- *
- * Please also note that this function will not convert all kinds of errors. This is due to the fact that it might not
- * even be registered when an error is raised. For instance if something goes wrong while PHP is bootstraping to start
- * our application, or while compiling this file. Of course such errors are more than fatal and should be observed with
- * another software that is capable of rescuing the PHP process itself.
- *
- * @link http://ralphschindler.com/2010/09/15/exception-best-practices-in-php-5-3
- *   Ralph Schindler: Exception best practices in PHP 5.3
- * @param int $type
- *   The error's type, one of the PHP predefined <var>E_*</var> constants.
- * @param string $message
- *   The error's message.
- * @param string $file
- *   The absolute path to the file where the error was raised.
- * @param int $line
- *   The line number within the file.
- */
-function error_all_handler($type, $message, $file, $line) {
-  throw new \MovLib\Exception\ErrorException($type, $message, $file, $line);
-}
-
-// Do not pass an error type for the all handler, as PHP will invoke it for any and every error this way.
-set_error_handler("error_all_handler");
 
 // Array to collect class names and function names which will be executed after the response was sent to the user.
 $delayed = [];
@@ -172,10 +72,12 @@ function delayed_register($class, $weight = 50, $method = "run") {
 }
 
 try {
-  $session      = new \MovLib\Data\Session();
-  $i18n         = new \MovLib\Data\I18n();
-  $presenter    = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-  $presentation = (new $presenter())->getPresentation();
+  new \MovLib\Exception\Handlers();
+  $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
+  $session           = new \MovLib\Data\Session();
+  $i18n              = new \MovLib\Data\I18n();
+  $presenter         = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+  $presentation      = (new $presenter())->getPresentation();
 }
 // A presentation can throw a client exception for various client errors including "not found", "gone", "forbidden" and
 // "bad request". This type of exception has to stop the execution of the main application immediately and present an
@@ -200,19 +102,6 @@ catch (\MovLib\Exception\Client\AbstractRedirectException $e) {
 catch (\MovLib\Exception\Client\UnauthorizedException $e) {
   header($e->authenticateHeader);
   $presentation = $e->presentation->getPresentation();
-}
-// Because of the finally block many exception thrown at this point are not passed to the custom uncaught exception
-// handler we defined before. I don't have hard evidence that the finally block is the reason, but this problem first
-// was observed after introducing it. Catching the most basic exception type and passing it to our function solves this.
-//
-// Catch software generated exceptions.
-catch (\MovLib\Exception\AbstractException $e) {
-  uncaught_exception_handler($e);
-}
-// Catch PHP generated exceptions and be sure to log them as an error.
-catch (\Exception $e) {
-  \MovLib\Data\Delayed\Logger::stack($e, \MovLib\Data\Delayed\Logger::ERROR);
-  uncaught_exception_handler($e);
 }
 // This is always executed, no matter what happens!
 finally {

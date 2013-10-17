@@ -45,7 +45,7 @@ class ErrorExceptionTest extends \PHPUnit_Framework_TestCase {
   public function testConstruct($errorCode) {
     $line = __LINE__;
     $errorException = new ErrorException($errorCode, "phpunit", __FILE__, $line);
-    $this->assertInstanceOf("\\RuntimeException", $errorException);
+    $this->assertInstanceOf("\\ErrorException", $errorException);
     $this->assertEquals($errorCode, $errorException->getCode());
     $this->assertEquals("phpunit", $errorException->getMessage());
     $this->assertEquals(__FILE__, $errorException->getFile());

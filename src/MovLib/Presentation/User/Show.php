@@ -20,7 +20,7 @@ namespace MovLib\Presentation\User;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Exception\Client\RedirectPermanentException;
 use \MovLib\Exception\UserException;
-use \MovLib\Data\User;
+use \MovLib\Data\UserExtended;
 
 /**
  * Description of Show
@@ -40,7 +40,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   /**
    * The user we are currently displaying.
    *
-   * @var \MovLib\Data\User
+   * @var \MovLib\Data\UserExtended
    */
   protected $user;
 
@@ -58,11 +58,11 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   public function __construct() {
     global $i18n;
     try {
-      $this->user = new User(User::FROM_NAME, $_SERVER["USER_NAME"]);
+      $this->user = new UserExtended(UserExtended::FROM_NAME, $this->checkPlain($_SERVER["USER_NAME"]));
       if (($nameLower = mb_strtolower($this->user->name)) != $_SERVER["USER_NAME"]) {
         throw new RedirectPermanentException($i18n->r("/user/{0}", [ $nameLower ]));
       }
-      $this->init($this->checkPlain($this->user->name));
+      $this->init($this->user->name);
     }
     catch (UserException $e) {
       throw new ErrorNotFoundException("No user with this name.");
@@ -86,7 +86,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   protected function getPageContent(){
     global $i18n;
-    return "<pre>" . print_r($this->user, true) . "</pre>";
+    return "<div class='row'><div class='span span--2 offset--7'>{$this->getImage($this->user, null, null, true)}</div></div><pre class='row'>" . print_r($this->user, true) . "</pre>";
   }
 
   /**
