@@ -9,4 +9,5 @@ Therefor we keep the configuration files within our application for easy deploym
 * The `ssl` folder contains SSL certificates.
 
 ## Weblinks
+* [Calomel: Nginx Secure Web Server https://calomel.org/nginx.html]
 * [Getting IPv6 connectivity under Linux](http://www.pps.univ-paris-diderot.fr/~jch/software/ipv6-connectivity.html)
