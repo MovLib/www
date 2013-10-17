@@ -164,7 +164,7 @@ class Database {
     }
     /* @var $stmt \mysqli_stmt */
     if (($stmt = $this->mysqli->prepare($query)) === false) {
-      throw new DatabaseException("Preparation of statement failed");
+      throw new DatabaseException("Preparation of statement failed", $this->mysqli->error, $this->mysqli->errno);
     }
     if ($types && $params) {
       if (!is_string($types) || empty($params)) {
