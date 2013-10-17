@@ -28,6 +28,10 @@ namespace MovDev;
  */
 trait TraitUtilities {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * Used to cache instantiation of reflection methods.
    *
@@ -41,6 +45,10 @@ trait TraitUtilities {
    * @var array
    */
   private $reflectionProperties;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
 
   /**
    * Call a protected method of <var>$object</var>.
@@ -71,62 +79,94 @@ trait TraitUtilities {
   }
 
   /**
-   * Get the value of a protected property of <var>$object</var>.
+   * Get the value of an inaccessible property of the given object or class.
    *
-   * @param mixed $object
-   *   A valid class instance.
-   * @param string $name
-   *   Case-sensitive full name of the protected property to get or set.
-   * @param mixed $value [optional]
-   *   If a value is passed this method acts as setter, otherwise as getter. Please note that the default value is set
-   *   to <code>PHP_INT_MAX</code> because it's very unlikely that somebody wants to pass that along (unlike
-   *   <code>NULL</code>).
+   * @param string|object $objectOrClassName
+   *   A valid class instance or the full class name.
+   * @param string $propertyName
+   *   Case-sensitive full name of the inaccessible property to get the value from.
    * @return mixed
-   *   If acting as getter the value in the property, otherwise <var>$this</var> is returned.
+   *   The value of the inaccessible property.
    * @throws \InvalidArgumentException
    * @throws \ReflectionException
    */
-  public final function getProperty($object, $name) {
-    return $this->property($object, $name)->getValue($object);
+  public final function getProperty($objectOrClassName, $propertyName) {
+    return $this->property($objectOrClassName, $propertyName)->getValue($objectOrClassName);
   }
 
   /**
-   * Set the value of a protected property of <var>$object</var>.
+   * Get the value of an inaccessible static property of given object or class.
    *
-   * @param string|object $object
-   *   Valid class instance or full class name.
-   * @param string $name
-   *   The name of the property
+   * @param string|object $objectOrClassName
+   *   A valid class instance or the full class name.
+   * @param string $staticPropertyName
+   *   Case-sensitive full name of the inaccessible static property to get the value from.
+   * @return mixed
+   *   The value of the inaccessible static property.
+   * @throws \InvalidArgumentException
+   * @throws \ReflectionException
+   */
+  public final function getStaticProperty($objectOrClassName, $staticPropertyName) {
+    return $this->property($objectOrClassName, $staticPropertyName)->getValue();
+  }
+
+  /**
+   * Set the value of an inaccessible property of the given object or class.
+   *
+   * @param string|object $objectOrClassName
+   *   A valid class instance or the full class name.
+   * @param string $propertyName
+   *   Case-sensitive full name of the inaccessible property to get the value from.
    * @param mixed $value
    *   The value to set.
    * @return this
    * @throws \InvalidArgumentException
    * @throws \ReflectionException
    */
-  public final function setProperty($object, $name, $value) {
-    $this->property($object, $name)->setValue($object, $value);
+  public final function setProperty($objectOrClassName, $propertyName, $value) {
+    $this->property($objectOrClassName, $propertyName)->setValue($objectOrClassName, $value);
     return $this;
   }
 
   /**
+   * Set the value of an inaccessible static property of given object or class.
+   *
+   * @param string|object $objectOrClassName
+   *   A valid class instance or the full class name.
+   * @param string $staticPropertyName
+   *   Case-sensitive full name of the inaccessible static property to get the value from.
+   * @return this
+   * @throws \InvalidArgumentException
+   * @throws \ReflectionException
+   */
+  public final function setStaticProperty($objectOrClassName, $staticPropertyName, $value) {
+    $this->property($objectOrClassName, $staticPropertyName)->setValue($value);
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Private Methods
+
+
+  /**
    * Helper method to cache properties and set them accessible.
    *
-   * @param string|object $object
-   *   Valid class instance or full class name.
-   * @param string $name
-   *   The name of the property
+   * @param string|object $objectOrClassName
+   *   A valid class instance or the full class name.
+   * @param string $propertyName
+   *   Case-sensitive full name of the inaccessible static property to get the value from.
    * @return \ReflectionProperty
    *   The property <var>$name</var> from <var>$object</var>.
    * @throws \InvalidArgumentException
    * @throws \ReflectionException
    */
-  private function property($object, $name) {
-    if ((!is_object($object) && !is_string($object)) || !is_string($name)) {
+  private function property($objectOrClassName, $propertyName) {
+    if ((!is_object($objectOrClassName) && !is_string($objectOrClassName)) || !is_string($propertyName)) {
       throw new \InvalidArgumentException;
     }
-    $key = is_object($object) ? get_class($object) . $name : "{$object}{$name}";
+    $key = is_object($objectOrClassName) ? get_class($objectOrClassName) . $propertyName : "{$objectOrClassName}{$propertyName}";
     if (!isset($this->reflectionProperties[$key])) {
-      $this->reflectionProperties[$key] = new \ReflectionProperty($object, $name);
+      $this->reflectionProperties[$key] = new \ReflectionProperty($objectOrClassName, $propertyName);
       $this->reflectionProperties[$key]->setAccessible(true);
     }
     return $this->reflectionProperties[$key];
