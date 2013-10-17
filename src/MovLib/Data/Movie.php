@@ -349,15 +349,13 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getCountries() {
     global $i18n;
-    $stmt = $this->query("SELECT `country_id` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ]);
-    $countryIds = array_column($stmt->fetch_all(MYSQLI_ASSOC), 0);
-    $stmt->close();
-    if (($c = count($countryIds)) > 0) {
-      return (new Countries())->orderById($countryIds);
+    $name = $i18n->languageCode == $i18n->defaultLanguageCode ? "`c`.`name`" : "COLUMN_GET(`c`.`dyn_translations`, '{$i18n->languageCode}' AS BINARY)";
+    $result = $this->query("SELECT `c`.`country_id` AS `id`, {$name} AS `name`, `c`.`iso_alpha-2` AS `code` FROM `countries` `c` INNER JOIN `movies_countries` `m` ON `m`.`country_id` = `c`.`country_id` WHERE `m`.`movie_id` = ? ORDER BY `c`.`country_id`", "d", [ $this->id ])->get_result();
+    $countries = [];
+    while ($country = $result->fetch_object("\\MovLib\\Data\\Country")) {
+      $countries[$country->id] = $country;
     }
-    else {
-      return [];
-    }
+    return $countries;
   }
 
   /**

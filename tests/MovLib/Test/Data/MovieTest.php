@@ -82,11 +82,11 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     // Set created timestamp and synopsis for testing.
     $db = new Database();
     $created = time();
-    $synopsisBackup = $db->select(
-      "SELECT COLUMN_GET(`dyn_synopses`, ? AS BINARY) AS `synopsis` FROM `movies` WHERE `movie_id` = ?",
+    $synopsisBackup = $db->query(
+      "SELECT COLUMN_GET(`dyn_synopses`, ? AS BINARY) AS `synopsis` FROM `movies` WHERE `movie_id` = ? LIMIT 1",
       "sd",
       [ $i18n->languageCode, $this->movieId ]
-    )[0]["synopsis"];
+    )->get_result()->fetch_row()[0];
     $synopsis = "PHPUnit synopsis";
     $db->query(
       "UPDATE `movies` SET `created` = FROM_UNIXTIME(?), `dyn_synopses` = COLUMN_ADD(`dyn_synopses`, ?, ?) WHERE `movie_id` = ?",
@@ -170,7 +170,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $i18nBackup = $i18n;
     $i18n = new I18n("ja_JP");
     // Retrieve all award names for our test movie and sort them by name.
-    $dbAwards = (new Database())->select(
+    $dbAwards = (new Database())->query(
       "SELECT
         `a`.`name` AS `name`,
         COLUMN_GET(`a`.`dyn_names`, 'ja' AS BINARY) AS `name_localized`,
@@ -181,7 +181,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
         WHERE `ma`.`movie_id` = ?",
       "d",
       [ $this->movie->id ]
-    );
+    )->get_result()->fetch_all(MYSQLI_ASSOC);
     $c = count($dbAwards);
     $tmpDbAwards = [];
     for ($i = 0; $i < $c; ++$i) {
