@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractBase {
+trait TraitUtilities {
 
   /**
    * Execute an external program.

@@ -162,7 +162,7 @@ class Database extends \MovLib\Console\Command\Database {
 
     $class = ucfirst($type);
     $class = new ReflectionClass("\\MovLib\\Data\\History\\{$class}");
-    if ($result = $this->database->select("SELECT `{$type}_id` FROM `{$type}s`")) {
+    if ($result = $this->database->query("SELECT `{$type}_id` FROM `{$type}s`")->get_result()->fetch_all(MYSQLI_ASSOC)) {
       $c = count($result);
       for ($i = 0; $i < $c; ++$i) {
         $history = $class->newInstance($result[$i]["{$type}_id"]);
@@ -248,7 +248,9 @@ class Database extends \MovLib\Console\Command\Database {
 
       $this->progress->start($this->output, $c);
       foreach ($usernamesWithAvatars as $avatarName => $username) {
-        $user->id = $this->database->selectAssoc("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $username ])["user_id"];
+        $stmt = $this->database->query("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $username ]);
+        $stmt->bind_result($user->id);
+        $stmt->fetch();
         $this->setProperty($user, "imageName", $avatarName);
         $this->invoke($user, "convert", [ $tmp, User::IMAGE_STYLE_SPAN_02 ]);
         $this->invoke($user, "convert", [ $tmp, User::IMAGE_STYLE_SPAN_01 ]);

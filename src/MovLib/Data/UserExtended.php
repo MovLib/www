@@ -182,48 +182,64 @@ class UserExtended extends \MovLib\Data\User {
   public function __construct($from = null, $value = null) {
     global $i18n;
     if ($from && $value) {
-      $result = $this->selectAssoc(
+      $stmt = $this->query(
         "SELECT
-          `user_id` AS `id`,
-          `system_language_code` AS `systemLanguageCode`,
+          `user_id`,
+          `system_language_code`,
           `name`,
           `email`,
-          UNIX_TIMESTAMP(`created`) AS `created`,
-          UNIX_TIMESTAMP(`access`) AS `access`,
-          UNIX_TIMESTAMP(`login`) AS `login`,
+          UNIX_TIMESTAMP(`created`),
+          UNIX_TIMESTAMP(`access`),
+          UNIX_TIMESTAMP(`login`),
           `private`,
           `deactivated`,
-          `time_zone_id` AS `timeZoneId`,
+          `time_zone_id`,
           `edits`,
-          COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY) AS `profile`,
+          COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY),
           `sex`,
-          `country_id` AS `countryId`,
-          `real_name` AS `realName`,
+          `country_id`,
+          `real_name`,
           `birthday`,
           `website`,
-          `avatar_name` AS `imageName`,
-          UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
-          `avatar_extension` AS `imageExtension`,
-          `avatar_changed` IS NOT NULL AS `imageExists`
+          `avatar_name`,
+          UNIX_TIMESTAMP(`avatar_changed`),
+          `avatar_extension`,
+          `avatar_changed` IS NOT NULL
         FROM `users`
         WHERE `{$from}` = ?",
         $this->types[$from],
         [ $value ]
       );
-
-      if ($this->affectedRows === 0) {
+      $stmt->bind_result(
+        $this->id,
+        $this->systemLanguageCode,
+        $this->name,
+        $this->email,
+        $this->created,
+        $this->access,
+        $this->login,
+        $this->private,
+        $this->deactivated,
+        $this->timeZoneId,
+        $this->edits,
+        $this->profile,
+        $this->sex,
+        $this->countryId,
+        $this->realName,
+        $this->birthday,
+        $this->website,
+        $this->imageName,
+        $this->imageChanged,
+        $this->imageExtension,
+        $this->imageExists
+      );
+      if (!$stmt->fetch()) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
-
-      foreach ($result as $k => $v) {
-        $this->{$k} = $v;
-      }
-
-      settype($this->private, "boolean");
-      settype($this->deactivated, "boolean");
-
+      $this->private     = (boolean) $this->private;
+      $this->deactivated = (boolean) $this->deactivated;
       // The image name already has all unsave characters removed.
-      $this->route = $i18n->r("/user/{0}", [ rawurlencode($this->imageName) ]);
+      $this->route       = $i18n->r("/user/{0}", [ rawurlencode($this->imageName) ]);
     }
   }
 
@@ -238,7 +254,7 @@ class UserExtended extends \MovLib\Data\User {
    *   <code>TRUE</code> if this email address is already in use, otherwise <code>FALSE</code>.
    */
   public function checkEmail() {
-    return !empty($this->selectAssoc("SELECT `user_id` FROM `users` WHERE `email` = ?", "s", [ $this->email ]));
+    return !empty($this->query("SELECT `user_id` FROM `users` WHERE `email` = ?", "s", [ $this->email ])->get_result()->fetch_row());
   }
 
   /**
@@ -248,7 +264,7 @@ class UserExtended extends \MovLib\Data\User {
    *   <code>TRUE</code> if this name is already in use, otherwise <code>FALSE</code>.
    */
   public function checkName() {
-    return !empty($this->selectAssoc("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $this->name ]));
+    return !empty($this->query("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $this->name ])->get_result()->fetch_row());
   }
 
   /**
@@ -390,8 +406,8 @@ class UserExtended extends \MovLib\Data\User {
   public function prepareRegistration($rawPassword) {
     $password    = $this->passwordHash($rawPassword);
     $key         = "registration-{$this->email}";
-    $result      = $this->selectAssoc("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ?", "s", [ $key ]);
-    if (!empty($result)) {
+    $result      = $this->query("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $key ])->get_result();
+    if (($result = $result->fetch_assoc())) {
       $data             = unserialize($result["data"]);
       $data["password"] = $password;
       if ($result["created"] > 0) {
@@ -422,8 +438,8 @@ class UserExtended extends \MovLib\Data\User {
    * @throws \MovLib\Exception\UserException
    */
   public function getRegistrationData() {
-    $result = $this->selectAssoc("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ?", "s", [ "registration-{$this->email}" ]);
-    if (empty($result) || $result["created"] > 0) {
+    $result = $this->query("SELECT DATEDIFF(CURRENT_TIMESTAMP, `created`) AS `created`, `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ "registration-{$this->email}" ])->get_result();
+    if (($result = $result->fetch_assoc()) || $result["created"] > 0) {
       throw new UserException("No data found for this user.");
     }
     $data        = unserialize($result["data"]);

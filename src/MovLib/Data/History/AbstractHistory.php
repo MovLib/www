@@ -25,6 +25,7 @@ use \ReflectionClass;
  * Abstract base class for all history classes.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
@@ -216,11 +217,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\HistoryException
    */
   private function getCommitHash() {
-    $result = $this->select("SELECT `commit` FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1", "d", [$this->id]);
-    if (!isset($result[0]["commit"])) {
+    $stmt = $this->query("SELECT `commit` FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1", "d", [ $this->id ]);
+    $stmt->bind_result($commitHash);
+    if (!$stmt->fetch()) {
       throw new HistoryException("Could not find commit hash of {$this->type} with ID '{$this->id}'!");
     }
-    return $result[0]["commit"];
+    return $commitHash;
   }
 
   /**

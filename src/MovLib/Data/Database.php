@@ -36,7 +36,8 @@ use \mysqli;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Database extends \MovLib\Data\AbstractBase {
+class Database {
+  use \MovLib\Data\TraitUtilities;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
