@@ -74,7 +74,7 @@ function delayed_register($class, $weight = 50, $method = "run") {
 try {
   new \MovLib\Exception\Handlers();
   $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
-  $session           = new \MovLib\Data\Session();
+  $session           = new \MovLib\Data\User\Session();
   $i18n              = new \MovLib\Data\I18n();
   $presenter         = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
   $presentation      = (new $presenter())->getPresentation();

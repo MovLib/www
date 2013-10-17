@@ -27,7 +27,7 @@ use \MovLib\Exception\ValidationException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ValidationExceptionTest extends \PHPUnit_Framework_TestCase {
+class ValidationExceptionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

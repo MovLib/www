@@ -27,14 +27,14 @@ use \MovLib\Presentation\FormPage;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class FormPageTest extends \PHPUnit_Framework_TestCase {
+class FormPageTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::checkErrors
     */
   public function testNoErrors() {
     $formPage = new FormPage("PHPUnit");
-    $this->assertFalse(get_reflection_method($formPage, "checkErrors")->invoke($formPage));
+    $this->assertFalse($this->invoke($formPage, "checkErrors"));
   }
 
   /**
@@ -42,7 +42,7 @@ class FormPageTest extends \PHPUnit_Framework_TestCase {
     */
   public function testStringErrors() {
     $formPage = new FormPage("PHPUnit");
-    $this->assertTrue(get_reflection_method($formPage, "checkErrors")->invokeArgs($formPage, [ "msg" ]));
+    $this->assertTrue($this->invoke($formPage, "checkErrors", [ "msg" ]));
     $this->assertContains("msg", $formPage->alerts);
   }
 
@@ -51,7 +51,7 @@ class FormPageTest extends \PHPUnit_Framework_TestCase {
     */
   public function testArrayErrors() {
     $formPage = new FormPage("PHPUnit");
-    $this->assertTrue(get_reflection_method($formPage, "checkErrors")->invokeArgs($formPage, [[ "assoc" => "msg1", "msg2" ]]));
+    $this->assertTrue($this->invoke($formPage, "checkErrors", [[ "assoc" => "msg1", "msg2" ]]));
     $this->assertContains("msg1<br>msg2", $formPage->alerts);
   }
 

@@ -32,7 +32,7 @@ use \MovLib\Data\Image\Movie as MovieImage;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieTest extends \PHPUnit_Framework_TestCase {
+class MovieTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -224,7 +224,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $i18nBackup = $i18n;
     $i18n = new I18n("de_AT");
 
-    $result = (new Database())->query(
+    $dbCountries = (new Database())->query(
       "SELECT
         `c`.`country_id` AS `id`,
         `c`.`iso_alpha-2` AS `code`,
@@ -235,8 +235,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
       WHERE `mc`.`movie_id` = ?",
       "sd",
       [ $i18n->languageCode, $this->movie->id ]
-    )->get_result();
-    $dbCountries = $result->fetch_all(MYSQLI_ASSOC);
+    )->get_result()->fetch_all(MYSQLI_ASSOC);
     $c = count($dbCountries);
     $tmpCountries = [];
     for ($i = 0; $i < $c; ++$i) {
@@ -300,7 +299,7 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
     $i18nBackup = $i18n;
     $i18n = new I18n("de_AT");
 
-    $stmt = (new Database())->query(
+    $dbTitle = (new Database())->query(
       "SELECT
         `title`
       FROM `movies_titles`
@@ -309,11 +308,8 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
         AND `language_id` = ?
       LIMIT 1",
       "di",
-      [ $this->movie->id, (new Language(Language::FROM_CODE, $i18n->languageCode)) ]
-    );
-    $stmt->bind_result($dbTitle);
-    $stmt->fetch();
-    $stmt->close();
+      [ $this->movie->id, (new \MovLib\Data\Language(\MovLib\Data\Language::FROM_CODE, $i18n->languageCode))->id ]
+    )->get_result()->fetch_row()[0];
 
     $this->movie->originalTitle = "PHPUnit";
     $this->assertEquals($dbTitle, $this->movie->getDisplayTitle());
@@ -501,38 +497,27 @@ class MovieTest extends \PHPUnit_Framework_TestCase {
 
     // Insert a test taglines to verify sort order.
     $db->query(
-      "INSERT INTO `movies_taglines`
-          (`movie_id`, `tagline`, `language_id`, `dyn_comments`)
-        VALUES
-          (?, 'a PHPUnit', 42, ''),
-          (?, 'Z PHPUnit', 42, '')",
+      "INSERT INTO `movies_taglines` (`movie_id`, `tagline`, `language_id`, `dyn_comments`) VALUES (?, 'a PHPUnit', 42, ''), (?, 'Z PHPUnit', 42, '')",
       "dd",
-      [ $this->movie->id, $this->movie->id ]);
-
-    $dbTagLines = $db->select(
-      "SELECT
-        `tagline`,
-        `language_id` AS `language`
-      FROM `movies_taglines`
-      WHERE `movie_id` = ?",
-      "d",
-      [ $this->movie->id ]
+      [ $this->movie->id, $this->movie->id ]
     );
-    $c = count($dbTagLines);
+
+    $taglines = $db->query("SELECT `tagline`, `language_id` AS `language` FROM `movies_taglines` WHERE `movie_id` = ?", "d", [ $this->movie->id ])->get_result()->fetch_all(MYSQLI_ASSOC);
+    $c = count($taglines);
     $this->assertGreaterThan(0, $c);
     $tmpTagLines = [];
-    $i18nLanguages = $i18n->getLanguages();
+    $languages = (new \MovLib\Data\Languages())->orderById();
     for ($i = 0; $i < $c; ++$i) {
-      $dbTagLines[$i]["language"] = $i18nLanguages[$dbTagLines[$i]["language"]];
-      $tmpTagLines["{$dbTagLines[$i]["tagline"]}{$dbTagLines[$i]["language"]["id"]}"] = $dbTagLines[$i];
+      $taglines[$i]["language"] = $languages[$taglines[$i]["language"]];
+      $tmpTagLines["{$taglines[$i]["tagline"]}{$taglines[$i]["language"]["id"]}"] = $taglines[$i];
     }
     (new Collator("de_AT"))->ksort($tmpTagLines);
-    $dbTagLines = array_values($tmpTagLines);
+    $taglines = array_values($tmpTagLines);
 
-    $taglines = $this->movie->getTagLines();
-    $this->assertCount($c, $taglines);
+    $movieTaglines = $this->movie->getTagLines();
+    $this->assertCount($c, $movieTaglines);
     for ($i = 0; $i < $c; ++$i) {
-      $this->assertEquals($dbTagLines[$i], $taglines[$i]);
+      $this->assertEquals($taglines[$i], $movieTaglines[$i]);
     }
 
     // Delete the test taglines again.

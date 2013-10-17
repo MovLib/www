@@ -26,7 +26,7 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class SelectTest extends \PHPUnit_Framework_TestCase {
+class SelectTest extends \MovLib\Test\TestCase {
 
   public $options = [ "phpunit1" => "PHPUnit 1" ];
 

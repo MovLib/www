@@ -26,7 +26,7 @@ use \MovLib\Presentation\Email\Email;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class TestEmail extends \PHPUnit_Framework_TestCase {
+class TestEmail extends \MovLib\Test\TestCase {
 
   /**
    * @covers \MovLib\Presentation\Email\AbstractEmail::__construct

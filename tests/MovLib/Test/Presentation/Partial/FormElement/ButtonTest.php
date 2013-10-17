@@ -27,7 +27,7 @@ use \MovLib\Presentation\Partial\FormElement\Button;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ButtonTest extends \PHPUnit_Framework_TestCase {
+class ButtonTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

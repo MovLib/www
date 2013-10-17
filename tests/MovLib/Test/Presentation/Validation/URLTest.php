@@ -26,7 +26,7 @@ use \MovLib\Presentation\Validation\URL;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class URLTest extends \PHPUnit_Framework_TestCase {
+class URLTest extends \MovLib\Test\TestCase {
 
   public static function dataProviderAllInvalid() {
     return array_merge(

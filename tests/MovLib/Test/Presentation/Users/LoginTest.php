@@ -17,8 +17,8 @@
  */
 namespace MovLib\Test\Presentation\Users;
 
-use \MovLib\Data\Session;
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\User\Session;
+use \MovLib\Data\User\Full as User;
 use \MovLib\Presentation\Users\Login;
 
 /**
@@ -29,7 +29,7 @@ use \MovLib\Presentation\Users\Login;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class LoginTest extends \PHPUnit_Framework_TestCase {
+class LoginTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -93,29 +93,29 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
   public function testFormConfiguration() {
     $login = new Login();
 
-    $inputEmail = get_reflection_property($login, "email")->getValue($login);
+    $inputEmail = $this->getProperty($login, "email");
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputEmail", $inputEmail);
-    $this->assertEquals("email", get_reflection_property($inputEmail, "id")->getValue($inputEmail));
-    $this->assertEquals("Email Address", get_reflection_property($inputEmail, "label")->getValue($inputEmail));
+    $this->assertEquals("email", $this->getProperty($inputEmail, "id"));
+    $this->assertEquals("Email Address", $this->getProperty($inputEmail, "label"));
     $this->assertTrue(in_array("autofocus", $inputEmail->attributes));
     $this->assertArrayHasKey("placeholder", $inputEmail->attributes);
     $this->assertEquals("Enter your email address", $inputEmail->attributes["placeholder"]);
 
-    $help = get_reflection_property($inputEmail, "help")->getValue($inputEmail);
-    $this->assertEquals("<a href='/users/reset-password'>Forgot your password?</a>", get_reflection_property($help, "content")->getValue($help));
-    $this->assertFalse(get_reflection_property($help, "popup")->getValue($help));
+    $help = $this->getProperty($inputEmail, "help");
+    $this->assertEquals("<a href='/users/reset-password'>Forgot your password?</a>", $this->getProperty($help, "content"));
+    $this->assertFalse($this->getProperty($help, "popup"));
 
-    $inputPassword = get_reflection_property($login, "password")->getValue($login);
+    $inputPassword = $this->getProperty($login, "password");
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputPassword", $inputPassword);
-    $this->assertEquals("password", get_reflection_property($inputPassword, "id")->getValue($inputPassword));
-    $this->assertEquals("Password", get_reflection_property($inputPassword, "label")->getValue($inputPassword));
+    $this->assertEquals("password", $this->getProperty($inputPassword, "id"));
+    $this->assertEquals("Password", $this->getProperty($inputPassword, "label"));
     $this->assertArrayHasKey("placeholder", $inputPassword->attributes);
     $this->assertEquals("Enter your password", $inputPassword->attributes["placeholder"]);
 
-    $form = get_reflection_property($login, "form")->getValue($login);
+    $form = $this->getProperty($login, "form");
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Form", $form);
     $this->assertEquals($_SERVER["PATH_INFO"], $form->attributes["action"]);
-    $this->assertEquals([ $inputEmail, $inputPassword ], get_reflection_property($form, "elements")->getValue($form));
+    $this->assertEquals([ $inputEmail, $inputPassword ], $this->getProperty($form, "elements"));
 
     $this->assertArrayHasKey(0, $form->actionElements);
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputSubmit", $form->actionElements[0]);
@@ -129,8 +129,8 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
     */
   public function testGetContent() {
     $login   = new Login();
-    $content = get_reflection_method($login, "getContent")->invoke($login);
-    $form    = get_reflection_property($login, "form")->getValue($login);
+    $content = $this->invoke($login, "getContent");
+    $form    = $this->getProperty($login, "form");
     $this->assertEquals("<div class='container'><div class='row'>{$form}</div></div>", $content);
   }
 
@@ -192,7 +192,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
    * @expectedExceptionMessage Redirecting user to /profile/deactivated with status 302.
     */
   public function testDeactivated() {
-    (new UserExtended(UserExtended::FROM_ID, 1))->deactivate();
+    (new User(User::FROM_ID, 1))->deactivate();
     $_POST["email"]    = "richard@fussenegger.info";
     $_POST["password"] = "test1234";
     $_POST["form_id"]  = "users-login";
@@ -213,7 +213,7 @@ class LoginTest extends \PHPUnit_Framework_TestCase {
   public function testSignOut() {
     global $session;
     $session              = $this->getMock("\\MovLib\\Data\\Session");
-    get_reflection_method($session, "init")->invokeArgs($session, [ 1 ]);
+    $this->invoke($session, "init", [ 1 ]);
     $session->expects($this->once())->method("destroy");
     $_SERVER["PATH_INFO"] = "/profile/sign-out";
     $login                = new Login();

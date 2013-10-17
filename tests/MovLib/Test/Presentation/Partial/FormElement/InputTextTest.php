@@ -27,7 +27,7 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputTextTest extends \PHPUnit_Framework_TestCase {
+class InputTextTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Data Providers

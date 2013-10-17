@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\User;
 
 use \Memcached;
 use \MemcachedException;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\User\Full as User;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UserException;
 use \MovLib\Exception\Client\UnauthorizedException;
@@ -436,7 +436,7 @@ class Session extends \MovLib\Data\Database {
    */
   public function passwordNeedsRehash($password, $rawPassword) {
     if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]) === true) {
-      (new UserExtended(UserExtended::FROM_ID, $this->userId))->updatePassword($rawPassword);
+      (new User(User::FROM_ID, $this->userId))->updatePassword($rawPassword);
     }
     return $this;
   }

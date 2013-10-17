@@ -15,10 +15,11 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Test\Data;
+namespace MovLib\Test\Data\User;
 
 use \MovDev\Database;
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\User\Full as User;
+use \MovLib\Data\User\Session;
 
 /**
  * @coversDefaultClass \MovLib\Data\User
@@ -28,7 +29,7 @@ use \MovLib\Data\UserExtended;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserExtendedTest extends \MovLib\Test\TestCase {
+class FullTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
@@ -59,14 +60,14 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
    * @covers ::checkEmail
     */
   public function testCheckEmailExists() {
-    $this->assertTrue((new UserExtended(UserExtended::FROM_ID, 1))->checkEmail());
+    $this->assertTrue((new User(User::FROM_ID, 1))->checkEmail());
   }
 
   /**
    * @covers ::checkEmail
     */
   public function testCheckEmailNotExists() {
-    $user        = new UserExtended();
+    $user        = new User();
     $user->email = "phpunit@movlib.org";
     $this->assertFalse($user->checkEmail());
   }
@@ -77,7 +78,7 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
     */
   public function testCheckNameExists($name) {
     // We have to check that the query itself is agnostic to case changes (same as we did in the constructor test).
-    $user       = new UserExtended();
+    $user       = new User();
     $user->name = $name;
     $this->assertTrue($user->checkName());
   }
@@ -86,7 +87,7 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
    * @covers ::checkName
     */
   public function testCheckNameNotExists() {
-    $user       = new UserExtended();
+    $user       = new User();
     $user->name = "PHPUnit";
     $this->assertFalse($user->checkName());
   }
@@ -95,7 +96,7 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
    * @covers ::commit
       */
   public function testCommit() {
-    $user = new UserExtended(UserExtended::FROM_ID, 1);
+    $user = new User(User::FROM_ID, 1);
     $user->birthday           = "2000-01-01";
     $user->countryId          = 1;
     $user->profile            = "PHPUnit";
@@ -107,7 +108,7 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
     $user->website            = "http://phpunit.net/";
     $user->commit();
 
-    $user = new UserExtended(UserExtended::FROM_ID, 1);
+    $user = new User(User::FROM_ID, 1);
     $this->assertEquals("2000-01-01", $user->birthday);
     $this->assertEquals(1, $user->countryId);
     $this->assertEquals("PHPUnit", $user->profile);
@@ -126,11 +127,11 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
    * @covers ::deleteImageOriginalAndStyles
       */
   public function testDeactivate() {
-    $user = new UserExtended(UserExtended::FROM_ID, 1);
+    $user = new User(User::FROM_ID, 1);
     $user->deactivate();
 
-    $user = new UserExtended(UserExtended::FROM_ID, 1);
-    $this->assertFileNotExists($this->invoke($user, "getImagePath", [ UserExtended::IMAGE_STYLE_SPAN_02 ]));
+    $user = new User(User::FROM_ID, 1);
+    $this->assertFileNotExists($this->invoke($user, "getImagePath", [ User::IMAGE_STYLE_SPAN_02 ]));
     $this->assertNull($this->getProperty($user, "imageChanged"));
     $this->assertNull($this->getProperty($user, "imageExtension"));
     $this->assertNull($user->birthday);
@@ -153,14 +154,14 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
    * @covers ::getRandomPassword
     */
   public function testGetRandomPassword() {
-    $this->assertRegExp("/.{20}/", UserExtended::getRandomPassword());
+    $this->assertRegExp("/.{20}/", User::getRandomPassword());
   }
 
   /**
    * @covers ::getRegistrationData
     */
   public function testGetRegistrationData() {
-    $user        = new UserExtended();
+    $user        = new User();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $user->prepareRegistration("Test1234");
@@ -184,7 +185,7 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
     */
   public function testGetRegistrationDataExpired() {
     try {
-      $user        = new UserExtended();
+      $user        = new User();
       $user->name  = "PHPUnit";
       $user->email = "phpunit@movlib.org";
       $user->prepareRegistration("Test1234");
@@ -202,21 +203,21 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
    * @expectedExceptionMessage No data found
     */
   public function testGetRegistrationDataNoRecord() {
-    (new UserExtended())->getRegistrationData();
+    (new User())->getRegistrationData();
   }
 
   /**
    * @covers ::passwordHash
     */
   public function testPasswordHash() {
-    $this->assertTrue(password_verify("Test1234", $this->invoke(new UserExtended(), "passwordHash", [ "Test1234" ])));
+    $this->assertTrue(password_verify("Test1234", $this->invoke(new User(), "passwordHash", [ "Test1234" ])));
   }
 
   /**
    * @covers ::prepareRegistration
     */
   public function testPrepareRegistration() {
-    $user        = new UserExtended();
+    $user        = new User();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $this->assertEquals($user, $user->prepareRegistration("Test1234"));
@@ -229,7 +230,7 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
    * @expectedExceptionMessage Too many registration attempts
     */
   public function testPrepareRegistrationTooManyAttempts() {
-    $user        = new UserExtended();
+    $user        = new User();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     try {
@@ -246,11 +247,11 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
    * @covers ::prepareRegistration
     */
   public function testPrepareRegistrationTooManyExpiredAttempts() {
-    $user        = new UserExtended();
+    $user        = new User();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $db          = new Database();
-    $c           = UserExtended::MAXIMUM_ATTEMPTS * 2;
+    $c           = User::MAXIMUM_ATTEMPTS * 2;
     $time        = strtotime("-25 hours");
     $key         = "registration-{$user->email}";
     for ($i = 0; $i < $c; ++$i) {
@@ -264,7 +265,7 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
    * @covers ::reactivate
     */
   public function testReactivate() {
-    $user = new UserExtended(UserExtended::FROM_ID, 1);
+    $user = new User(User::FROM_ID, 1);
     $user->deactivate()->reactivate();
     $this->assertFalse($user->deactivated);
     $stmt = (new Database())->query("SELECT `deactivated` FROM `users` WHERE `user_id` = ?", "d", [ 1 ]);
@@ -280,7 +281,7 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
   public function testRegister() {
     global $i18n;
     $db          = new Database();
-    $user        = new UserExtended();
+    $user        = new User();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $user->prepareRegistration("Test1234");
@@ -288,7 +289,7 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
     $user->register($data["password"]);
     $this->assertEquals("PHPUnit", $user->name);
     $this->assertEquals("phpunit@movlib.org", $user->email);
-    $this->assertEquals(2, $user->id);
+    $this->assertEquals(4, $user->id);
 
     $result = $db->query("SELECT * FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ $user->id ])->get_result()->fetch_assoc();
     $this->assertEmpty($result["dyn_profile"]);
@@ -307,7 +308,7 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
     */
   public function testUpdateEmail() {
     $db   = new Database();
-    $user = new UserExtended(UserExtended::FROM_ID, 1);
+    $user = new User(User::FROM_ID, 1);
     $this->assertEquals("richard@fussenegger.info", $user->email);
     $user->updateEmail("phpunit@movlib.org");
     $this->assertEquals("phpunit@movlib.org", $user->email);
@@ -323,14 +324,14 @@ class UserExtendedTest extends \MovLib\Test\TestCase {
     */
   public function testUpdatePassword() {
     $db      = new Database();
-    $session = new \MovLib\Data\Session();
+    $session = new Session();
     $session->authenticate("richard@fussenegger.info", "Test1234");
     $stmt    = $db->query("SELECT `password` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ 1 ]);
     $stmt->bind_result($oldHash);
     $stmt->fetch();
     $stmt->close();
 
-    $user    = new UserExtended(UserExtended::FROM_ID, 1);
+    $user    = new User(User::FROM_ID, 1);
     $user->updatePassword("phpunitPassword");
     $session->authenticate("richard@fussenegger.info", "phpunitPassword");
     $stmt    = $db->query("SELECT `password` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ 1 ]);

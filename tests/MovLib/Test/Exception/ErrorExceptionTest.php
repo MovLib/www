@@ -27,7 +27,7 @@ use \MovLib\Exception\ErrorException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorExceptionTest extends \PHPUnit_Framework_TestCase {
+class ErrorExceptionTest extends \MovLib\Test\TestCase {
 
   static function dataProviderTestConstruct() {
     return [
@@ -50,7 +50,7 @@ class ErrorExceptionTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals(__FILE__, $errorException->getFile());
     $this->assertEquals($line, $errorException->getLine());
     $found = false;
-    foreach (get_reflection_property("\\MovLib\\Data\\Delayed\\Logger", "entries")->getValue() as $priority => $entries) {
+    foreach ($this->getStaticProperty("\\MovLib\\Data\\Delayed\\Logger", "entries") as $priority => $entries) {
       foreach ($entries as $entry) {
         if ($entry["entry"] === $errorException) {
           $found = true;

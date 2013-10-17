@@ -18,8 +18,8 @@
 namespace MovLib\Test\Data;
 
 use \MovDev\Database;
-use \MovLib\Data\Session;
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\User\Full as User;
+use \MovLib\Data\User\Session;
 
 /**
  * @coversDefaultClass \MovLib\Data\Session
@@ -64,7 +64,7 @@ class SessionTest extends \MovLib\Test\TestCase {
    * @expectedException \MovLib\Exception\UserException
    */
   public function testAuthenticateDeactivatedUser() {
-    $user = new UserExtended(UserExtended::FROM_ID, 1);
+    $user = new User(User::FROM_ID, 1);
     $user->deactivate();
     (new Session())->authenticate("richard@fussenegger.info", "Test1234");
   }
@@ -132,7 +132,7 @@ class SessionTest extends \MovLib\Test\TestCase {
    * @covers ::init
    */
   public function testInit() {
-    $user    = new UserExtended(UserExtended::FROM_ID, 1);
+    $user    = new User(User::FROM_ID, 1);
     $session = new Session();
     $this->invoke($session, "init", [ 1, $_SERVER["REQUEST_TIME"] ]);
     $this->assertEquals($user->id, $session->userId);
@@ -204,8 +204,8 @@ class SessionTest extends \MovLib\Test\TestCase {
         if ($findIt === true) {
           $this->assertArrayHasKey("authentication", $activeSession);
           $this->assertEquals($session->id, $activeSession["session_id"]);
-          $this->assertEquals(get_reflection_property($session, "userAgent")->getValue($session), $activeSession["user_agent"]);
-          $this->assertEquals(inet_pton(get_reflection_property($session, "ipAddress")->getValue($session)), $activeSession["ip_address"]);
+          $this->assertEquals($this->getProperty($session, "userAgent"), $activeSession["user_agent"]);
+          $this->assertEquals(inet_pton($this->getProperty($session, "ipAddress")), $activeSession["ip_address"]);
         }
       }
     }

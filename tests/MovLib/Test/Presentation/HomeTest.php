@@ -28,7 +28,7 @@ use \MovLib\Presentation\Home;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HomeTest extends \PHPUnit_Framework_TestCase {
+class HomeTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -54,8 +54,8 @@ class HomeTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__construct
     */
   public function testConstruct() {
-    $this->assertEquals("MovLib", get_reflection_property($this->home, "title")->getValue($this->home));
-    $this->assertTrue(in_array("modules/home.css", get_reflection_property($this->home, "stylesheets")->getValue($this->home)));
+    $this->assertEquals("MovLib", $this->getProperty($this->home, "title"));
+    $this->assertTrue(in_array("modules/home.css", $this->getProperty($this->home, "stylesheets")));
   }
 
   /**
@@ -66,7 +66,7 @@ class HomeTest extends \PHPUnit_Framework_TestCase {
     $breadcrumb->attributes["class"] = "container";
     $breadcrumb->glue = " › ";
     $breadcrumb->hideTitle = false;
-    $this->assertEquals($breadcrumb, get_reflection_method($this->home, "getBreadcrumb")->invoke($this->home));
+    $this->assertEquals($breadcrumb, $this->invoke($this->home, "getBreadcrumb"));
   }
 
   /**
@@ -75,7 +75,7 @@ class HomeTest extends \PHPUnit_Framework_TestCase {
   public function testGetHeaderLogo() {
     $this->assertEquals(
       "<h1 class='span' id='header__logo'><img alt='MovLib, the free movie library.' height='42' id='logo' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib</h1>",
-        get_reflection_method($this->home, "getHeaderLogo")->invoke($this->home)
+        $this->invoke($this->home, "getHeaderLogo")
       );
   }
 
@@ -83,14 +83,14 @@ class HomeTest extends \PHPUnit_Framework_TestCase {
    * @covers ::getHeadTitle
     */
   public function testGetHeadTitle() {
-    $this->assertEquals("MovLib, the free movie library.", get_reflection_method($this->home, "getHeadTitle")->invoke($this->home));
+    $this->assertEquals("MovLib, the free movie library.", $this->invoke($this->home, "getHeadTitle"));
   }
 
   /**
    * @covers ::getWrappedContent
     */
   public function testGetWrappedContent() {
-    $wrappedContent = get_reflection_method($this->home, "getWrappedContent")->invoke($this->home);
+    $wrappedContent = $this->invoke($this->home, "getWrappedContent");
     $this->assertContains("class='home-content'", $wrappedContent);
     $this->assertContains("id='home-banner'", $wrappedContent);
     $this->assertContains("id='alerts'", $wrappedContent);

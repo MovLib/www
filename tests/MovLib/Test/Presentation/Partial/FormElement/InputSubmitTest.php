@@ -27,7 +27,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputSubmitTest extends \PHPUnit_Framework_TestCase {
+class InputSubmitTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

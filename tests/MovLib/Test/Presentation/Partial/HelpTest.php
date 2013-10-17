@@ -27,7 +27,7 @@ use \MovLib\Presentation\Partial\Help;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class HelpTest extends \PHPUnit_Framework_TestCase {
+class HelpTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
@@ -35,7 +35,7 @@ class HelpTest extends \PHPUnit_Framework_TestCase {
   public function testDefaults() {
     $help = new Help("Hello World!");
     foreach ([ "content", "id", "popup" ] as $property) {
-      ${$property} = get_reflection_property($help, $property)->getValue($help);
+      ${$property} = $this->getProperty($help, $property);
     }
     $this->assertEquals("Hello World!", $content);
     $this->assertNull($id);
@@ -48,7 +48,7 @@ class HelpTest extends \PHPUnit_Framework_TestCase {
   public function testIdAndPopup() {
     $help = new Help("Hello World!", "phpunit", false);
     foreach ([ "id", "popup" ] as $property) {
-      ${$property} = get_reflection_property($help, $property)->getValue($help);
+      ${$property} = $this->getProperty($help, $property);
     }
     $this->assertEquals(" id='phpunit-help'", $id);
     $this->assertFalse($popup);

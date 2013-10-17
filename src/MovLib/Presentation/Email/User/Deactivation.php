@@ -35,7 +35,7 @@ class Deactivation extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * The user who requested deactivation.
    *
-   * @var \MovLib\Data\UserExtended
+   * @var \MovLib\Data\Full
    */
   private $user;
 
@@ -47,7 +47,7 @@ class Deactivation extends \MovLib\Presentation\Email\AbstractEmail {
    * Instantiate new user deactivation email.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param \MovLib\Data\UserExtended $user
+   * @param \MovLib\Data\Full $user
    *   The user who requested deactivation.
    */
   public function __construct($user) {

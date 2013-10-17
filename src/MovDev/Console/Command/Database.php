@@ -19,7 +19,7 @@ namespace MovDev\Console\Command;
 
 use \Locale;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Data\UserExtended as User;
+use \MovLib\Data\Full as User;
 use \ReflectionClass;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;

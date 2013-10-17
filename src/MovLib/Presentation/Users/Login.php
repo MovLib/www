@@ -70,7 +70,7 @@ class Login extends \MovLib\Presentation\FormPage {
    * Instantiate new user login presentation.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
   public function __construct() {
@@ -138,7 +138,7 @@ class Login extends \MovLib\Presentation\FormPage {
    * dashboard. The session exception is thrown if our system isn't able to start a new session at all.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Exception\Client\RedirectSeeOther
    */

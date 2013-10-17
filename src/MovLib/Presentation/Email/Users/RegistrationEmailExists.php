@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Email\Users;
 
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\User\User;
 
 /**
  * This email template is used if someone tries to register an email address that is already taken by another user. We
@@ -68,7 +68,7 @@ class RegistrationEmailExists extends \MovLib\Presentation\Email\AbstractEmail {
    * @return this
    */
   public function init() {
-    $this->name = (new UserExtended(UserExtended::FROM_EMAIL, $this->recipient))->name;
+    $this->name = (new User(User::FROM_EMAIL, $this->recipient))->name;
     return $this;
   }
 

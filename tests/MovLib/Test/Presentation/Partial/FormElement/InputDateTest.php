@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\FormElement\InputDate;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputDateTest extends \PHPUnit_Framework_TestCase {
+class InputDateTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
@@ -42,8 +42,8 @@ class InputDateTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("Y-m-d", $inputDate->attributes["data-format"]);
     $this->assertEquals("date", $inputDate->attributes["type"]);
     $this->assertEquals($timestamp, $inputDate->timestamp);
-    $this->assertEquals($timestamp, get_reflection_property($inputDate, "max")->getValue($inputDate));
-    $this->assertEquals($timestamp, get_reflection_property($inputDate, "min")->getValue($inputDate));
+    $this->assertEquals($timestamp, $this->getProperty($inputDate, "max"));
+    $this->assertEquals($timestamp, $this->getProperty($inputDate, "min"));
     $this->assertEquals($date, $inputDate->attributes["max"]);
     $this->assertEquals($date, $inputDate->attributes["min"]);
   }

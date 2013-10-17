@@ -25,7 +25,7 @@ namespace MovLib\Test\Exception\Client;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class AbstractErrorExceptionTest extends \PHPUnit_Framework_TestCase {
+class AbstractErrorExceptionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

@@ -27,7 +27,7 @@ use \MovLib\Data\Collator;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class CollatorTest extends \PHPUnit_Framework_TestCase {
+class CollatorTest extends \MovLib\Test\TestCase {
 
   /**
    * Data provider for all valid sort flag combinations of ksort.

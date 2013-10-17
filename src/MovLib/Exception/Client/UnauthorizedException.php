@@ -52,7 +52,7 @@ class UnauthorizedException extends \MovLib\Exception\AbstractException {
    * Instantiate new unauthorized exception.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @param string $message [optional]
    *   The alert's translated message, defaults to <code>$i18n->t("Please use the form below to sign in or go to the
    *   {0}registration page to sign up{1}."</code>

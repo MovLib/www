@@ -36,7 +36,7 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * The user's who requested the email change.
    *
-   * @var \MovLib\Data\UserExtended
+   * @var \MovLib\Data\Full
    */
   private $user;
 
@@ -49,7 +49,7 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
    *
    * @todo Should we send an email to the old address as well?
    * @global \MovLib\Data\I18n $i18n
-   * @param \MovLib\Data\UserExtended $user
+   * @param \MovLib\Data\Full $user
    *   The user who requested an email change.
    * @param string $newEmail
    *   The already validated new email address. The email will be sent to this address. We cannot send the email to the

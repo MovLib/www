@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\User;
 
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Exception\UserException;
@@ -32,7 +32,7 @@ use \MovLib\Exception\UserException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserExtended extends \MovLib\Data\User {
+class Full extends \MovLib\Data\User\User {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -315,7 +315,7 @@ class UserExtended extends \MovLib\Data\User {
    * Set deactivated flag, purge personal data.
    *
    * @todo Delete avatar image!
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Data\DatabaseException
    */

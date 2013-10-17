@@ -27,7 +27,7 @@ use \MovLib\Presentation\Partial\Navigation;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class NavigationTest extends \PHPUnit_Framework_TestCase {
+class NavigationTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -118,11 +118,12 @@ class NavigationTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__toString
     */
   public function testToStringClosure() {
-    $this->navigation->closure = function (&$menuitem, $index, $total) {
-      $menuitem[0] = "/phpunit{$index}";
-      $menuitem[1] = "phpunit-linktext{$index}";
-      $menuitem[2]["title"] = "phpunit-title{$index}";
-      $menuitem[2]["data-total"] = $total;
+    $this->navigation->closure = function ($menuitem, $index, $total) {
+      return [
+        "/phpunit{$index}",
+        "phpunit-linktext{$index}",
+        [ "title" => "phpunit-title{$index}", "data-total" => $total ],
+      ];
     };
     $this->assertEquals(
       "<nav id='phpunit-nav' role='navigation'>" .

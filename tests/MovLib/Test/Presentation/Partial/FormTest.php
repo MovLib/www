@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\FormElement\InputEmail;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class FormTest extends \PHPUnit_Framework_TestCase {
+class FormTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -57,7 +57,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
 
 
   protected function setUp() {
-    get_reflection_property("\\MovLib\\Presentation\\AbstractBase", "tabindex")->setValue(1);
+    $this->setStaticProperty("\\MovLib\\Presentation\\AbstractBase", "tabindex", 1);
     $this->inputEmail             = new InputEmail();
     $this->inputSubmit            = new InputSubmit();
     $this->form                   = new Form($this, [ $this->inputEmail ]);
@@ -76,7 +76,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
     $_SERVER["MULTIPART"] = 0;
     $this->form = new Form($this, [ $this->inputEmail ], "phpunit-id");
     $this->inputEmail->attributes[] = "autofocus";
-    $this->assertEquals([ $this->inputEmail ], get_reflection_property($this->form, "elements")->getValue($this->form));
+    $this->assertEquals([ $this->inputEmail ], $this->getProperty($this->form, "elements"));
     $this->assertEquals("phpunit-id", $this->form->id);
     $this->assertEquals("<input name='form_id' type='hidden' value='phpunit-id'><input name='csrf' type='hidden' value='{$session->csrfToken}'>", $this->form->hiddenElements);
     $this->assertEquals([ "action" => $_SERVER["PATH_INFO"], "method" => "post", "enctype" => "multipart/form-data" ], $this->form->attributes);
@@ -88,7 +88,7 @@ class FormTest extends \PHPUnit_Framework_TestCase {
   public function testUploadError() {
     $_SERVER["MULTIPART"] = UPLOAD_ERR_INI_SIZE;
     $stub = $this->getMock("\\MovLib\\Presentation\\FormPage", [ "validate" ], [ "PHPUnit" ]);
-    list($number, $unit) = get_reflection_method($stub, "formatBytes")->invokeArgs($stub, [ ini_get("upload_max_filesize") ]);
+    list($number, $unit) = $this->invoke($stub, "formatBytes", [ ini_get("upload_max_filesize") ]);
     $stub->expects($this->once())->method("validate")->with($this->equalTo([
       "multipart" => "The image is too large: it must be {$number} {$unit} or less."
     ]));

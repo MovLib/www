@@ -27,7 +27,7 @@ use \MovLib\Exception\DebugException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class DebugExceptionTest extends \PHPUnit_Framework_TestCase {
+class DebugExceptionTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

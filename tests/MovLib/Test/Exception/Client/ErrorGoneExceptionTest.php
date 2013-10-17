@@ -27,7 +27,7 @@ use \MovLib\Exception\Client\ErrorGoneException as Error;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorGoneExceptionTest extends \PHPUnit_Framework_TestCase {
+class ErrorGoneExceptionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

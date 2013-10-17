@@ -25,7 +25,7 @@ namespace MovLib\Test\Presentation;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
+class AbstractBaseTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -77,13 +77,6 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   protected function setUp() {
     $this->abstractPage = $this->getMockForAbstractClass("\\MovLib\\Presentation\\AbstractBase");
-  }
-
-  /**
-   * @coversNothing
-   */
-  private function invoke($fn, array $args = null) {
-    return get_reflection_method($this->abstractPage, $fn)->invokeArgs($this->abstractPage, $args);
   }
 
 
@@ -178,7 +171,7 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
    * @covers ::getTabindex
    */
   public function testTabindex() {
-    $this->assertInternalType("int", get_reflection_method($this->abstractPage, "getTabindex")->invoke($this->abstractPage));
+    $this->assertInternalType("int", $this->invoke($this->abstractPage, "getTabindex"));
   }
 
   /**

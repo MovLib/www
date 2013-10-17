@@ -27,7 +27,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class AlertTest extends \PHPUnit_Framework_TestCase {
+class AlertTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

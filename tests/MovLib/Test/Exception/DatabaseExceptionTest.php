@@ -27,7 +27,7 @@ use \MovLib\Exception\DatabaseException;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class DatabaseExceptionTest extends \PHPUnit_Framework_TestCase {
+class DatabaseExceptionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

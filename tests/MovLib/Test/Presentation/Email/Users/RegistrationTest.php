@@ -27,7 +27,7 @@ use \MovLib\Presentation\Email\Users\Registration;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RegistrationTest extends \PHPUnit_Framework_TestCase {
+class RegistrationTest extends \MovLib\Test\TestCase {
 
   private function _testMailBody($method) {
     $this->assertContains(

@@ -407,7 +407,7 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getGenres() {
     global $i18n;
-    $result = $this->query(
+    $dbGenres = $this->query(
       "SELECT
         `g`.`genre_id`,
         `g`.`name`,
@@ -417,8 +417,7 @@ class Movie extends \MovLib\Data\Database {
           ON `mg`.`genre_id` = `g`.`genre_id`
       WHERE `mg`.`movie_id` = ?",
       "d", [ $this->id ]
-    )->get_result();
-    $dbGenres = $result->fetch_all(MYSQLI_ASSOC);
+    )->get_result()->fetch_all(MYSQLI_ASSOC);
     if (($c = count($dbGenres))) {
       $tmpGenres = [];
       for ($i = 0; $i < $c; ++$i) {
@@ -434,15 +433,15 @@ class Movie extends \MovLib\Data\Database {
    * Get the movie's languages.
    *
    * @todo Move to \MovLib\Data\Languages
+   *       NO!
+   *       This is a specialized query, specialized for movies, this has nothing to do with general languages!
+   *       Please think in object oriented ways and don't let yourself be fooled just because it contains the word "Language"!
    * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Numeric array containing the language information as associative array.
    */
   public function getLanguages() {
-    global $i18n;
-    $result = $this->query("SELECT `language_id` AS `id` FROM `movies_languages` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result();
-    $languageIds = array_column($result->fetch_all(MYSQLI_ASSOC), 0);
-    if (($c = count($languageIds))) {
+    if (($languageIds = array_column($this->query("SELECT `language_id` AS `id` FROM `movies_languages` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result()->fetch_all(MYSQLI_ASSOC), 0))) {
       return (new Languages())->orderById($languageIds);
     }
     return [];
@@ -481,13 +480,18 @@ class Movie extends \MovLib\Data\Database {
    * Get the movie's styles.
    *
    * @todo Move to \MovLib\Data\Styles
+   *       YES! Styles are specific to movies, this could be moved, but it's better to create a \MovLib\Data\Movie\Full
+   *       class that directly fetches all data it needs rather than creating many small objects. It's better to have
+   *       specialized classes rather than many classes that are only usable after composing them together. Of course,
+   *       if we think in pure object oriented ways, this would by correct, but also consider performance. Styles are
+   *       a special case and we might have to have a close look on how to design this (or taglines).
    * @global \MovLib\Data\I18n $i18n
    * @return array
    *   Sorted numeric array containing the ID and localized name of the genre as associative array.
    */
   public function getStyles() {
     global $i18n;
-    $result = $this->query(
+    $dbStyles = $this->query(
       "SELECT
         `s`.`style_id` AS `id`,
         `s`.`name` AS `name`,
@@ -497,18 +501,18 @@ class Movie extends \MovLib\Data\Database {
       WHERE `ms`.`movie_id` = ?",
       "sd",
       [ $i18n->languageCode, $this->id ]
-    )->get_result();
-    $dbStyles = $result->fetch_all(MYSQLI_ASSOC);
-    if (($c = count($dbStyles))) {
-      $tmpStyles = [];
-      for ($i = 0; $i < $c; ++$i) {
-        $dbStyles[$i]["name"] = $dbStyles[$i]["name_localized"] ?: $dbStyles[$i]["name"];
-        $tmpStyles[ $dbStyles[$i]["name"] ] = $dbStyles[$i];
-      }
-      $i18n->getCollator()->ksort($tmpStyles);
-      return array_values($tmpStyles);
+    )->get_result()->fetch_all(MYSQLI_ASSOC);
+    if (!$dbStyles) {
+      return [];
     }
-    return [];
+    $c = count($dbStyles);
+    $tmpStyles = [];
+    for ($i = 0; $i < $c; ++$i) {
+      $dbStyles[$i]["name"] = $dbStyles[$i]["name_localized"] ?: $dbStyles[$i]["name"];
+      $tmpStyles[ $dbStyles[$i]["name"] ] = $dbStyles[$i];
+    }
+    $i18n->getCollator()->ksort($tmpStyles);
+    return array_values($tmpStyles);
   }
 
   /**
@@ -520,19 +524,10 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getTagLines() {
     global $i18n;
-    $stmt = $this->query(
-      "SELECT
-        `tagline` AS `tagline`,
-        `language_id` AS `language`
-      FROM `movies_taglines`
-      WHERE `movie_id` = ?",
-      "d",
-      [ $this->id ]
-    );
-    $dbTagLines = $stmt->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-    if (($c = count($dbTagLines))) {
-      $i18nLanguages = $i18n->getLanguages();
+    // @todo Directly join with languages!
+    if (($dbTagLines = $this->query("SELECT `tagline` AS `tagline`, `language_id` AS `language` FROM `movies_taglines` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result()->fetch_all(MYSQLI_ASSOC))) {
+      $c = count($dbTagLines);
+      $i18nLanguages = (new Languages())->orderById();
       $tagLinesSort = [];
       for ($i = 0; $i < $c; ++$i) {
         $dbTagLines[$i]["language"] = $i18nLanguages[ $dbTagLines[$i]["language"] ];
@@ -558,7 +553,7 @@ class Movie extends \MovLib\Data\Database {
       "di", [ $this->id, (new Language(Language::FROM_CODE, $i18n->languageCode))->id ]
     );
     $stmt->bind_result($displayTitle);
-    if($stmt->fetch() === false) {
+    if ($stmt->fetch() === false) {
       throw new MovieException("Error fetching the display title for movie {$this->id}.");
     }
     if (empty($displayTitle)) {

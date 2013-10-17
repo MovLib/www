@@ -25,7 +25,7 @@ namespace MovLib\Test\Presentation;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class AbstractPageTest extends \PHPUnit_Framework_TestCase {
+class AbstractPageTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -50,24 +50,23 @@ class AbstractPageTest extends \PHPUnit_Framework_TestCase {
    * @covers ::getHeadTitle
     */
   public function testGetHeadTitle() {
-    $title = get_reflection_property($this->abstractPage, "title");
-    $title->setValue($this->abstractPage, "PHPUnit");
-    $this->assertEquals("PHPUnit — MovLib", get_reflection_method($this->abstractPage, "getHeadTitle")->invoke($this->abstractPage));
+    $this->setProperty($this->abstractPage, "title", "PHPUnit");
+    $this->assertEquals("PHPUnit — MovLib", $this->invoke($this->abstractPage, "getHeadTitle"));
   }
 
   /**
    * @covers ::getPresentation
     */
   public function testGetPresentation() {
-    get_reflection_property($this->abstractPage, "title")->setValue($this->abstractPage, "PHPUnit");
-    get_reflection_property($this->abstractPage, "id")->setValue($this->abstractPage, "phpunit");
-    get_reflection_property($this->abstractPage, "bodyClasses")->setValue($this->abstractPage, "phpunit");
+    foreach ([ "title" => "PHPUnit", "id" => "phpunit", "bodyClasses" => "phpunit" ] as $property => $value) {
+      $this->setProperty($this->abstractPage, $property, $value);
+    }
     $presentation = $this->abstractPage->getPresentation();
     $this->assertContains("<!doctype html>", $presentation);
     $this->assertContains("<html dir='ltr' id='nojs' lang='en'>", $presentation);
     $this->assertContains("<head>", $presentation);
     $this->assertContains("<title>PHPUnit — MovLib</title>", $presentation);
-    foreach (get_reflection_property($this->abstractPage, "stylesheets")->getValue($this->abstractPage) as $stylesheet) {
+    foreach ($this->getProperty($this->abstractPage, "stylesheets") as $stylesheet) {
       $this->assertContains("<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/{$stylesheet}'>", $presentation);
     }
     $this->assertContains("<link rel='icon' type='image/svg+xml' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg'>", $presentation);
@@ -82,11 +81,8 @@ class AbstractPageTest extends \PHPUnit_Framework_TestCase {
    * @covers ::init
     */
   public function testInit() {
-    get_reflection_method($this->abstractPage, "init")->invokeArgs($this->abstractPage, [ "PHPUnit" ]);
-    //$this->assertEquals([ "abstractpage" ], get_reflection_property($this->abstractPage, "namespace")->getValue($this->abstractPage));
-    //$this->assertEquals("abstractpage", get_reflection_property($this->abstractPage, "bodyClasses")->getValue($this->abstractPage));
-    //$this->assertEquals("abstractpage", get_reflection_property($this->abstractPage, "id")->getValue($this->abstractPage));
-    $this->assertEquals("PHPUnit", get_reflection_property($this->abstractPage, "title")->getValue($this->abstractPage));
+    $this->invoke($this->abstractPage, "init", [ "PHPUnit" ]);
+    $this->assertEquals("PHPUnit", $this->getProperty($this->abstractPage, "title"));
   }
 
 }

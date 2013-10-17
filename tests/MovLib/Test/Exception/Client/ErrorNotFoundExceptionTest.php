@@ -27,7 +27,7 @@ use \MovLib\Exception\Client\ErrorNotFoundException as Error;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorNotFoundExceptionTest extends \PHPUnit_Framework_TestCase {
+class ErrorNotFoundExceptionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

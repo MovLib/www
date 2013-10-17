@@ -29,7 +29,7 @@ use \MovLib\Presentation\Users\ResetPassword;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ResetPasswordTest extends \PHPUnit_Framework_TestCase {
+class ResetPasswordTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -53,17 +53,17 @@ class ResetPasswordTest extends \PHPUnit_Framework_TestCase {
   public function testFormConfiguration() {
     $resetPassword = new ResetPassword();
 
-    $inputEmail = get_reflection_property($resetPassword, "email")->getValue($resetPassword);
+    $inputEmail = $this->getProperty($resetPassword, "email");
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputEmail", $inputEmail);
-    $this->assertEquals("email", get_reflection_property($inputEmail, "id")->getValue($inputEmail));
-    $this->assertEquals("Email Address", get_reflection_property($inputEmail, "label")->getValue($inputEmail));
+    $this->assertEquals("email", $this->getProperty($inputEmail, "id"));
+    $this->assertEquals("Email Address", $this->getProperty($inputEmail, "label"));
     $this->assertTrue(in_array("autofocus", $inputEmail->attributes));
     $this->assertArrayHasKey("placeholder", $inputEmail->attributes);
     $this->assertEquals("Enter your email address", $inputEmail->attributes["placeholder"]);
 
-    $form = get_reflection_property($resetPassword, "form")->getValue($resetPassword);
+    $form = $this->getProperty($resetPassword, "form");
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Form", $form);
-    $this->assertEquals([ $inputEmail ], get_reflection_property($form, "elements")->getValue($form));
+    $this->assertEquals([ $inputEmail ], $this->getProperty($form, "elements"));
 
     $this->assertArrayHasKey(0, $form->actionElements);
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\FormElement\\InputSubmit", $form->actionElements[0]);
@@ -77,8 +77,8 @@ class ResetPasswordTest extends \PHPUnit_Framework_TestCase {
     */
   public function testGetContent() {
     $resetPassword = new ResetPassword();
-    $form          = get_reflection_property($resetPassword, "form")->getValue($resetPassword);
-    $content       = get_reflection_method($resetPassword, "getContent")->invoke($resetPassword);
+    $form          = $this->getProperty($resetPassword, "form");
+    $content       = $this->invoke($resetPassword, "getContent");
     $this->assertEquals("<div class='container'><div class='row'>{$form}</div></div>", $content);
   }
 
@@ -90,7 +90,7 @@ class ResetPasswordTest extends \PHPUnit_Framework_TestCase {
     $_POST["form_id"] = "users-resetpassword";
     $resetPassword    = new ResetPassword();
     $found = false;
-    foreach (get_reflection_property("\\MovLib\\Data\\Delayed\\Mailer", "emails")->getValue() as $email) {
+    foreach ($this->getStaticProperty("\\MovLib\\Data\\Delayed\\Mailer", "emails") as $email) {
       if (($found = $email instanceof ResetPasswordEmail) === true) {
         break;
       }

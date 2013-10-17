@@ -134,7 +134,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
    * nothing).
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @return string
    */
   public function getPresentation() {

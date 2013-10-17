@@ -80,14 +80,6 @@ class I18n extends \MovLib\Data\Database {
   private $collator;
 
   /**
-   * Associative array that will be filled with all info on all available countries on demand.
-   *
-   * @see \MovLib\Data\I18n::getCountries()
-   * @var array
-   */
-  private $countries;
-
-  /**
    * The system's default language code.
    *
    * @var string
@@ -116,14 +108,6 @@ class I18n extends \MovLib\Data\Database {
    * @var string
    */
   public $languageCode;
-
-  /**
-   * Associative array that will be filled on demand with all info on all available languages.
-   *
-   * @see \MovLib\Data\I18n::getLanguages()
-   * @var array
-   */
-  private $languages;
 
   /**
    * Locale for the current language code, used for Intl ICU related classes and functions (e.g. collators).

@@ -20,7 +20,7 @@ namespace MovLib\Presentation\User;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Exception\Client\RedirectPermanentException;
 use \MovLib\Exception\UserException;
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\Full;
 
 /**
  * Description of Show
@@ -40,7 +40,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   /**
    * The user we are currently displaying.
    *
-   * @var \MovLib\Data\UserExtended
+   * @var \MovLib\Data\Full
    */
   protected $user;
 
@@ -58,7 +58,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   public function __construct() {
     global $i18n;
     try {
-      $this->user = new UserExtended(UserExtended::FROM_NAME, $this->checkPlain($_SERVER["USER_NAME"]));
+      $this->user = new Full(Full::FROM_NAME, $this->checkPlain($_SERVER["USER_NAME"]));
       if (($nameLower = mb_strtolower($this->user->name)) != $_SERVER["USER_NAME"]) {
         throw new RedirectPermanentException($i18n->r("/user/{0}", [ $nameLower ]));
       }

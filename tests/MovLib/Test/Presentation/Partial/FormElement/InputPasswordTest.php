@@ -27,7 +27,7 @@ use \MovLib\Presentation\Partial\FormElement\InputPassword;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputPasswordTest extends \PHPUnit_Framework_TestCase {
+class InputPasswordTest extends \MovLib\Test\TestCase {
 
 
   public static function dataProviderWeakPasswords() {

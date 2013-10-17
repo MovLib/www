@@ -18,16 +18,16 @@
 namespace MovLib\Test\Presentation\Partial\FormElement;
 
 use \MovLib\Presentation\Partial\FormElement\RadioGroup;
-use \MovLib\Presentation\Partial\Help;
 
 /**
+ * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\RadioGroup
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RadioGroupTest extends \PHPUnit_Framework_TestCase {
+class RadioGroupTest extends \MovLib\Test\TestCase {
 
   /** @var \MovLib\Presentation\Partial\FormElement\RadioGroup */
   public $radioGroup;
@@ -37,7 +37,7 @@ class RadioGroupTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\RadioGroup::__construct
+   * @covers ::__construct
    */
   public function testConstruct() {
     $this->assertArrayHasKey("aria-expanded", $this->radioGroup->attributes);
@@ -52,7 +52,7 @@ class RadioGroupTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("radiogroup", $this->radioGroup->attributes["role"]);
     $this->assertEquals("true", $this->radioGroup->attributes["aria-expanded"]);
 
-    $choices = get_reflection_property($this->radioGroup, "choices")->getValue($this->radioGroup);
+    $choices = $this->getProperty($this->radioGroup, "choices");
     $this->assertArrayHasKey("phpunit1", $choices);
     $this->assertArrayHasKey("attributes", $choices["phpunit1"]);
     $this->assertArrayHasKey("label", $choices["phpunit1"]);
@@ -73,7 +73,7 @@ class RadioGroupTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\RadioGroup::__construct
+   * @covers ::__construct
    */
   public function testConstructInvalidPostInput() {
     $_POST["phpunit"] = "phpunit42";
@@ -83,7 +83,7 @@ class RadioGroupTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\RadioGroup::__construct
+   * @covers ::__construct
    */
   public function testConstructValidPostInput() {
     $_POST["phpunit"] = "phpunit1";
@@ -92,7 +92,7 @@ class RadioGroupTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\RadioGroup::__toString
+   * @covers ::__toString
    */
   public function testToString() {
     $radioGroup = $this->radioGroup->__toString();
@@ -106,7 +106,7 @@ class RadioGroupTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\RadioGroup::disable
+   * @covers ::disable
    */
   public function testDisable() {
     $this->radioGroup->disable();
@@ -116,7 +116,7 @@ class RadioGroupTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\RadioGroup::invalid
+   * @covers ::invalid
    */
   public function testInvalid() {
     $this->radioGroup->invalid();
@@ -127,22 +127,22 @@ class RadioGroupTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\RadioGroup::setHelp
+   * @covers ::setHelp
    */
   public function testSetHelp() {
     $this->radioGroup->setHelp("PHPUnit");
     $this->assertArrayHasKey("aria-describedby", $this->radioGroup->attributes);
     $this->assertEquals("phpunit-help", $this->radioGroup->attributes["aria-describedby"]);
-    $choices = get_reflection_property($this->radioGroup, "choices")->getValue($this->radioGroup);
+    $choices = $this->getProperty($this->radioGroup, "choices");
     foreach ($choices as $value => $choice) {
       $this->assertArrayHasKey("aria-describedby", $choice["attributes"]);
       $this->assertEquals("phpunit-help", $choice["attributes"]["aria-describedby"]);
     }
-    $this->assertTrue(get_reflection_property($this->radioGroup, "help")->getValue($this->radioGroup) instanceof Help);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $this->getProperty($this->radioGroup, "help"));
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\RadioGroup::validate
+   * @covers ::validate
    */
   public function testValidate() {
     $_POST["phpunit"] = "phpunit1";
@@ -151,7 +151,7 @@ class RadioGroupTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Partial\FormElement\RadioGroup::validate
+   * @covers ::validate
    * @depends testConstructInvalidPostInput
    * @expectedException \MovLib\Exception\ValidationException
    */

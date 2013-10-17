@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Profile;
 
 use \IntlDateFormatter;
 use \MovLib\Data\Delayed\Mailer;
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\User\Full as User;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\Client\UnauthorizedException;
@@ -89,7 +89,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
 
     // Start rendering the page.
     $this->init($i18n->t("Danger Zone Settings"));
-    $this->user = new UserExtended(UserExtended::FROM_ID, $session->userId);
+    $this->user = new User(User::FROM_ID, $session->userId);
 
     // We must instantiate the form before we create the sessions table, otherwise deletions would happen after the
     // table containing the sessions listing was built. Deleted sessions would still be displayed!

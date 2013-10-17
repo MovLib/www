@@ -245,15 +245,14 @@ class I18nTest extends \MovLib\Test\TestCase {
    * @covers ::formatMessage
    */
   public function testFormatMessageValid() {
-    // Insert test translations.
-    $args = [ "test", 42 ];
-    $pattern = "PHPUnit {0} PHPUnit {1}";
-    $patternFormatted = "PHPUnit test PHPUnit 42";
-    $patternGerman = "{$pattern} Deutsch";
-    $patternGermanFormatted = "{$patternFormatted} Deutsch";
-    $patternTestLanguage = "{$pattern} XX";
+    $args                         = [ "test", 42 ];
+    $pattern                      = "PHPUnit {0} PHPUnit {1}";
+    $patternFormatted             = "PHPUnit test PHPUnit 42";
+    $patternGerman                = "{$pattern} Deutsch";
+    $patternGermanFormatted       = "{$patternFormatted} Deutsch";
+    $patternTestLanguage          = "{$pattern} XX";
     $patternTestLanguageFormatted = "{$patternFormatted} XX";
-    $db = new Database();
+    $db                           = new Database();
     foreach ([ "message", "route" ] as $context) {
       $db->query("INSERT INTO `{$context}s` (`{$context}`, `dyn_translations`) VALUES ('{$pattern}', COLUMN_CREATE('de', '{$patternGerman}', 'xx', '{$patternTestLanguage}'))");
     }
@@ -261,28 +260,22 @@ class I18nTest extends \MovLib\Test\TestCase {
     $this->i18n->languageCode = "de";
 
     // No arguments.
-    $msg = $this->i18n->formatMessage("message", $pattern, null, [ "language_code" => "xx" ]);
-    $this->assertEquals($patternTestLanguage, $msg);
-    $msg = $this->i18n->formatMessage("message", $pattern, null, [ "language_code" => $this->i18n->defaultLanguageCode ]);
-    $this->assertEquals($pattern, $msg);
-    $msg = $this->i18n->formatMessage("message", $pattern, null);
-    $this->assertEquals($patternGerman, $msg);
+    $this->assertEquals($patternTestLanguage, $this->i18n->formatMessage("message", $pattern, null, [ "language_code" => "xx" ]));
+    $this->assertEquals($pattern, $this->i18n->formatMessage("message", $pattern, null, [ "language_code" => $this->i18n->defaultLanguageCode ]));
+    $this->assertEquals($patternGerman, $this->i18n->formatMessage("message", $pattern, null));
 
     // With arguments.
-    $msg = $this->i18n->formatMessage("message", $pattern, $args, [ "language_code" => "xx" ]);
-    $this->assertEquals($patternTestLanguageFormatted, $msg);
-    $msg = $this->i18n->formatMessage("message", $pattern, $args, [ "language_code" => $this->i18n->defaultLanguageCode ]);
-    $this->assertEquals($patternFormatted, $msg);
-    $msg = $this->i18n->formatMessage("message", $pattern, $args);
-    $this->assertEquals($patternGermanFormatted, $msg);
+    $this->assertEquals($patternTestLanguageFormatted, $this->i18n->formatMessage("message", $pattern, $args, [ "language_code" => "xx" ]));
+    $this->assertEquals($patternFormatted, $this->i18n->formatMessage("message", $pattern, $args, [ "language_code" => $this->i18n->defaultLanguageCode ]));
+    $this->assertEquals($patternGermanFormatted, $this->i18n->formatMessage("message", $pattern, $args));
 
     // Non-existent pattern.
     $patternNonExistent = "PHPUnit non-existent";
-    $options = [ "language_code" => "xx" ];
-    $msg = $this->i18n->formatMessage("message", $patternNonExistent, null, $options);
-    $this->assertEquals($patternNonExistent, $msg);
-    $stack = get_reflection_property("\MovLib\Data\Delayed\MethodCalls", "stack")->getValue(null);
-    $c = count($stack);
+    $options            = [ "language_code" => "xx" ];
+    $this->assertEquals($patternNonExistent, $this->i18n->formatMessage("message", $patternNonExistent, null, $options));
+
+    $stack = $this->getStaticProperty("\\MovLib\\Data\\Delayed\\MethodCalls", "stack");
+    $c     = count($stack);
     for ($i = 0; $i < $c; ++$i) {
       if ($stack[$i][0][0] instanceof I18n && $stack[$i][0][1] == "insertMessage" ) {
         $this->assertEquals($patternNonExistent, $stack[$i][1][0]);

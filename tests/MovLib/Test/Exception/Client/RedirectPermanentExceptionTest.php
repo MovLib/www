@@ -27,7 +27,7 @@ use \MovLib\Exception\Client\RedirectPermanentException as Redirect;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RedirectPermanentExceptionTest extends \PHPUnit_Framework_TestCase {
+class RedirectPermanentExceptionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

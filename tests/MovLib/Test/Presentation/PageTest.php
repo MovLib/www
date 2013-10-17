@@ -27,7 +27,7 @@ use \MovLib\Presentation\Page;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class PageTest extends \PHPUnit_Framework_TestCase {
+class PageTest extends \MovLib\Test\TestCase {
 
   /** @var \MovLib\Presentation\Page */
   public $page;
@@ -41,10 +41,14 @@ class PageTest extends \PHPUnit_Framework_TestCase {
    * @covers ::init
    */
   public function testConstruct() {
-    $this->assertEquals([ "page" ], get_reflection_property($this->page, "namespace")->getValue($this->page));
-    $this->assertEquals("page", get_reflection_property($this->page, "bodyClasses")->getValue($this->page));
-    $this->assertEquals("page", get_reflection_property($this->page, "id")->getValue($this->page));
-    $this->assertEquals("PHPUnit", get_reflection_property($this->page, "title")->getValue($this->page));
+    foreach ([
+      "namespace"   => [ "page" ],
+      "bodyClasses" => "page",
+      "id"          => "page",
+      "title"       => "PHPUnit",
+    ] as $property => $value) {
+      $this->assertEquals($value, $this->getProperty($this->page, $property));
+    }
     $this->assertContains("<noscript>", $this->page->alerts);
   }
 

@@ -27,7 +27,7 @@ use \MovLib\Exception\Client\ErrorForbiddenException as Error;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorForbiddenExceptionTest extends \PHPUnit_Framework_TestCase {
+class ErrorForbiddenExceptionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

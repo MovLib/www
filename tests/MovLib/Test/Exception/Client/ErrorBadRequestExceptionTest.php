@@ -27,7 +27,7 @@ use \MovLib\Exception\Client\ErrorBadRequestException as Error;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorBadRequestExceptionTest extends \PHPUnit_Framework_TestCase {
+class ErrorBadRequestExceptionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

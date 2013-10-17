@@ -17,8 +17,8 @@
  */
 namespace MovLib\Test\Presentation\Users;
 
-use \MovLib\Data\Session;
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\User\Session;
+use \MovLib\Data\User\Full as User;
 use \MovLib\Presentation\Email\Users\Registration as RegistrationEmail;
 use \MovLib\Presentation\Email\Users\RegistrationEmailExists;
 use \MovLib\Presentation\Partial\Alert;
@@ -32,7 +32,7 @@ use \MovLib\Presentation\Users\Registration;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class RegistrationTest extends \PHPUnit_Framework_TestCase {
+class RegistrationTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -127,8 +127,8 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
     */
   public function testGetContent() {
     $registration = new Registration();
-    $form         = get_reflection_property($registration, "form")->getValue($registration);
-    $this->assertEquals("<div class='container'><div class='row'>{$form}</div></div>", get_reflection_method($registration, "getContent")->invoke($registration));
+    $form         = $this->getProperty($registration, "form");
+    $this->assertEquals("<div class='container'><div class='row'>{$form}</div></div>", $this->invoke($registration, "getContent"));
   }
 
   /**
@@ -137,8 +137,8 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
     */
   public function testGetContentValidRegistration() {
     $registration = $this->_getRegistration();
-    $form         = get_reflection_property($registration, "form")->getValue($registration);
-    $content      = get_reflection_method($registration, "getContent")->invoke($registration);
+    $form         = $this->getProperty($registration, "form");
+    $content      = $this->invoke($registration, "getContent");
     $this->assertNotContains((string) $form, $content);
     $this->assertContains("Mistyped something?", $content);
   }
@@ -219,7 +219,7 @@ class RegistrationTest extends \PHPUnit_Framework_TestCase {
       }
     }
     $this->assertTrue($found);
-    $this->assertTrue(get_reflection_property($registration, "accepted")->getValue($registration));
+    $this->assertTrue($this->getProperty($registration, "accepted"));
     $this->assertEquals(202, http_response_code());
     $this->assertContains("Registration Successful", $registration->alerts);
   }

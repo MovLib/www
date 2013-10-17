@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Users;
 
-use \MovLib\Data\Users;
+use \MovLib\Data\User\Users;
 use \MovLib\Presentation\Partial\Lists\Images;
 
 /**
@@ -34,7 +34,7 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * The users database instance.
    *
-   * @var \MovLib\Data\Users
+   * @var \MovLib\Data\User\Users
    */
   protected $users;
 

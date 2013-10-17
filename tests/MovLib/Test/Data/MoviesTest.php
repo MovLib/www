@@ -29,7 +29,7 @@ use \MovLib\Data\Movies;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviesTest extends \PHPUnit_Framework_TestCase {
+class MoviesTest extends \MovLib\Test\TestCase {
 
   /**
    * The movies object under test.
@@ -48,7 +48,7 @@ class MoviesTest extends \PHPUnit_Framework_TestCase {
   public function testGetMoviesByCreated() {
     $lowerBound = 0;
     $upperBound = 2;
-    $dbMovies = (new Database())->select(
+    $dbMovies = (new Database())->query(
       "SELECT
         `movie_id`
       FROM `movies`
@@ -57,7 +57,7 @@ class MoviesTest extends \PHPUnit_Framework_TestCase {
       LIMIT ?, ?",
       "ii",
       [ $lowerBound, $upperBound ]
-    );
+    )->get_result()->fetch_all(MYSQLI_ASSOC);
     $c = count($dbMovies);
     for ($i = 0; $i < $c; ++$i) {
       $dbMovies[$i] = new Movie($dbMovies[$i]["movie_id"]);

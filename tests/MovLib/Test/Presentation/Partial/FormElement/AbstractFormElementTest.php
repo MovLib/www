@@ -25,7 +25,7 @@ namespace MovLib\Test\Presentation\Partial\FormElement;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
+class AbstractFormElementTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
@@ -35,7 +35,7 @@ class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
     foreach ([ "foo", "id", "name", "tabindex" ] as $key) {
       $this->assertArrayHasKey($key, $stub->attributes);
     }
-    $this->assertEquals("PHPUnit", get_reflection_property($stub, "label")->getValue($stub));
+    $this->assertEquals("PHPUnit", $this->getProperty($stub, "label"));
     $this->assertEquals("bar", $stub->attributes["foo"]);
     $this->assertEquals("phpunit", $stub->attributes["id"]);
     $this->assertEquals("phpunit", $stub->attributes["name"]);
@@ -64,7 +64,7 @@ class AbstractFormElementTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals($stub, $stub->setHelp("help message", false));
     $this->assertArrayHasKey("aria-describedby", $stub->attributes);
     $this->assertEquals("phpunit-help", $stub->attributes["aria-describedby"]);
-    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", get_reflection_property($stub, "help")->getValue($stub));
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $this->getProperty($stub, "help"));
   }
 
 }

@@ -24,7 +24,7 @@ namespace MovLib\Test;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class ConfigurationTest extends \PHPUnit_Framework_TestCase {
+class ConfigurationTest extends \MovLib\Test\TestCase {
 
   /**
    * @link http://php.net/manual/en/function.password-hash.php

@@ -27,7 +27,7 @@ use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputCheckboxTest extends \PHPUnit_Framework_TestCase {
+class InputCheckboxTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Test\Presentation\Partial\FormElement;
 
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
 
 /**
@@ -28,13 +28,13 @@ use \MovLib\Presentation\Partial\FormElement\InputImage;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputImageTest extends \PHPUnit_Framework_TestCase {
+class InputImageTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
     */
   public function testConstruct() {
-    $concreteImage = new UserExtended(UserExtended::FROM_ID, 1);
+    $concreteImage = new User(User::FROM_ID, 1);
     $inputImage    = new InputImage("phpunit", "PHPUnit", $concreteImage, [ "foo" => "bar" ]);
     foreach ([ "accept", "data-max-filesize", "data-min-height", "data-min-width", "type", "foo" ] as $key) {
       $this->assertArrayHasKey($key, $inputImage->attributes);
@@ -42,18 +42,18 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("image/jpeg,image/png", $inputImage->attributes["accept"]);
     $this->assertEquals(ini_get("upload_max_filesize"), $inputImage->attributes["data-max-filesize"]);
     $this->assertEquals("file", $inputImage->attributes["type"]);
-    $this->assertEquals($concreteImage, get_reflection_property($inputImage, "image")->getValue($inputImage));
+    $this->assertEquals($concreteImage, $this->getProperty($inputImage, "image"));
     $this->assertEquals($concreteImage->imageHeight, $inputImage->attributes["data-min-height"]);
     $this->assertEquals($concreteImage->imageWidth, $inputImage->attributes["data-min-width"]);
     $this->assertEquals("bar", $inputImage->attributes["foo"]);
-    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", get_reflection_property($inputImage, "help")->getValue($inputImage));
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $this->getProperty($inputImage, "help"));
   }
 
   /**
    * @covers ::__construct
     */
   public function testConstructGlobalDimensionConstraints() {
-    $concreteImage = new UserExtended();
+    $concreteImage = new User();
     $inputImage    = new InputImage("phpunit", "PHPUnit", $concreteImage);
     $this->assertEquals($GLOBALS["movlib"]["image_min_height"], $inputImage->attributes["data-min-height"]);
     $this->assertEquals($GLOBALS["movlib"]["image_min_width"], $inputImage->attributes["data-min-width"]);
@@ -63,7 +63,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__toString
     */
   public function testToStringImageExists() {
-    $concreteImage = new UserExtended(UserExtended::FROM_ID, 1);
+    $concreteImage = new User(User::FROM_ID, 1);
     $inputImage    = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
     $this->assertRegExp("/<img[a-z0-9=' \.\?\/:]+>/", $inputImage);
     $this->assertContains("<label for='phpunit'>PHPUnit</label>", $inputImage);
@@ -74,7 +74,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    * @covers ::__toString
     */
   public function testToStringNoImage() {
-    $concreteImage = new UserExtended(UserExtended::FROM_ID, 1);
+    $concreteImage = new User(User::FROM_ID, 1);
     $concreteImage->imageExists = false;
     $inputImage    = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
     $this->assertNotContains("<img", $inputImage);
@@ -88,7 +88,7 @@ class InputImageTest extends \PHPUnit_Framework_TestCase {
    * @expectedExceptionMessage mandatory
     */
   public function testValidateRequired() {
-    (new InputImage("phpunit", "PHPUnit", new UserExtended(UserExtended::FROM_ID, 1), [ "required" ]))->validate();
+    (new InputImage("phpunit", "PHPUnit", new User(User::FROM_ID, 1), [ "required" ]))->validate();
   }
 
 }

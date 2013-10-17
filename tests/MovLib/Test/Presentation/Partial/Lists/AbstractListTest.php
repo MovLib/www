@@ -25,7 +25,7 @@ namespace MovLib\Test\Presentation\Partial\Lists;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class AbstractListTest extends \PHPUnit_Framework_TestCase {
+class AbstractListTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct

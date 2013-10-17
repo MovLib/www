@@ -28,7 +28,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UnauthorizedExceptionTest extends \PHPUnit_Framework_TestCase {
+class UnauthorizedExceptionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
@@ -38,7 +38,7 @@ class UnauthorizedExceptionTest extends \PHPUnit_Framework_TestCase {
   public function testConstruct() {
     global $session;
     $sessionBackup = clone $session;
-    $session = $this->getMock("\\MovLib\\Data\\Session", [ "destroy" ]);
+    $session = $this->getMock("\\MovLib\\Data\\User\\Session", [ "destroy" ]);
     $session->expects($this->once())->method("destroy");
     try {
       $_SERVER["REQUEST_METHOD"] = "POST";

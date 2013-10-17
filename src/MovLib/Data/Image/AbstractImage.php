@@ -113,7 +113,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    *
    * @var boolean
    */
-  protected $imageExists = false;
+  public $imageExists = false;
 
   /**
    * The image's extension.

@@ -25,14 +25,14 @@ namespace MovLib\Test\Presentation\Users;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class TraitUsersTest extends \PHPUnit_Framework_TestCase {
+class TraitUsersTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::getBreadcrumbs
     */
   public function testGetBreadcrumbs() {
     $traitUsers = $this->getObjectForTrait("\\MovLib\\Presentation\\Users\\TraitUsers");
-    $this->assertEquals([[ "/users", "Users" ]], get_reflection_method($traitUsers, "getBreadcrumbs")->invoke($traitUsers));
+    $this->assertEquals([[ "/users", "Users" ]], $this->invoke($traitUsers, "getBreadcrumbs"));
   }
 
 }

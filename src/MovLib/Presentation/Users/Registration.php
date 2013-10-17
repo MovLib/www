@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Users;
 
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\User\Full as User;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\UserException;
 use \MovLib\Exception\Client\UnauthorizedException;
@@ -105,7 +105,7 @@ class Registration extends \MovLib\Presentation\FormPage {
    * Instantiate new user registration presentation.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
   public function __construct() {
@@ -181,14 +181,14 @@ class Registration extends \MovLib\Presentation\FormPage {
    * dashboard.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @param array $errors [optional]
    *   {@inheritdoc}
    * @return this
    */
   public function validate(array $errors = null) {
     global $i18n;
-    $user           = new UserExtended();
+    $user           = new User();
     $user->name     = $this->username->value;
     $usernameErrors = null;
 
@@ -277,12 +277,12 @@ class Registration extends \MovLib\Presentation\FormPage {
    * Validate the submitted authentication token, register, sign in and redirect to password settings.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @return this
    */
   public function validateToken() {
     global $i18n;
-    $user = new UserExtended();
+    $user = new User();
     try {
       if (empty($_GET["token"])) {
         throw new ValidationException($i18n->t("The activation token is missing, please go back to the mail we sent you and copy the whole link."));
@@ -323,9 +323,6 @@ class Registration extends \MovLib\Presentation\FormPage {
     }
     catch (UnauthorizedException $e) {
       unset($e->presentation->email->attributes[array_search("autofocus", $e->presentation->email->attributes)]);
-      $e->presentation->form->hiddenElements             = "<input name='email' type='hidden' value='{$user->email}'>";
-      $e->presentation->email->attributes["placeholder"] = $user->email;
-      $e->presentation->email->attributes[]              = "disabled";
       $e->presentation->password->attributes[]           = "autofocus";
       throw $e;
     }

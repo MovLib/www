@@ -18,7 +18,7 @@
 namespace MovLib\Presentation;
 
 use \Locale;
-use \MovLib\Data\UserExtended;
+use \MovLib\Data\Full;
 use \MovLib\Exception\Client\RedirectTemporaryException;
 use \MovLib\Presentation\Partial\Navigation;
 
@@ -57,14 +57,14 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
    * Instantiate new language selection presentation.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
     global $i18n, $session;
 
     // If a signed in user is requesting this page we know where to send her or him.
     if ($session->isAuthenticated === true) {
-      $user = new UserExtended(UserExtended::FROM_ID, $session->userId);
+      $user = new Full(Full::FROM_ID, $session->userId);
       throw new RedirectTemporaryException("{$_SERVER["SCHEME"]}://{$user->getLanguageCode()}.{$_SERVER["SERVER_NAME"]}/");
     }
 

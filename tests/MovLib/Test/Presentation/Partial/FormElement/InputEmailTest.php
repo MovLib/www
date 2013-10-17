@@ -27,7 +27,7 @@ use \MovLib\Presentation\Partial\FormElement\InputEmail;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputEmailTest extends \PHPUnit_Framework_TestCase {
+class InputEmailTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Data Providers

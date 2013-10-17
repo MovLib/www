@@ -28,7 +28,7 @@ use \MovLib\Data\Image\Movie as MovieImage;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieImages extends \MovLib\Data\AbstractImages {
+class MovieImages {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
