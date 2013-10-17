@@ -28,7 +28,7 @@ use \MovLib\Data\UserExtended;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class UserExtendedTest extends \PHPUnit_Framework_TestCase {
+class UserExtendedTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
@@ -47,8 +47,8 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
-  public function tearDown() {
-    exec("movdev db -s users");
+  public static function tearDownAfterClass() {
+    exec("movdev db -a");
   }
 
 
@@ -117,6 +117,8 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("xx", $user->systemLanguageCode);
     $this->assertEquals("PHPUnit/PHPUnit", $user->timeZoneId);
     $this->assertEquals("http://phpunit.net/", $user->website);
+
+    $this->exec("movdev db -s users");
   }
 
   /**
@@ -128,9 +130,9 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
     $user->deactivate();
 
     $user = new UserExtended(UserExtended::FROM_ID, 1);
-    $this->assertFalse(is_file(get_reflection_method($user, "getImagePath")->invokeArgs($user, [ UserExtended::IMAGE_STYLE_SPAN_02 ])));
-    $this->assertNull(get_reflection_property($user, "imageChanged")->getValue($user));
-    $this->assertNull(get_reflection_property($user, "imageExtension")->getValue($user));
+    $this->assertFileNotExists($this->invoke($user, "getImagePath", [ UserExtended::IMAGE_STYLE_SPAN_02 ]));
+    $this->assertNull($this->getProperty($user, "imageChanged"));
+    $this->assertNull($this->getProperty($user, "imageExtension"));
     $this->assertNull($user->birthday);
     $this->assertNull($user->countryId);
     $this->assertTrue($user->deactivated);
@@ -143,6 +145,8 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals(ini_get("date.timezone"), $user->timeZoneId);
     //$this->assertNull($user->twitter);
     $this->assertNull($user->website);
+
+    $this->exec("movdev db -s users");
   }
 
   /**
@@ -168,7 +172,9 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals("phpunit@movlib.org", $data["email"]);
     $this->assertEquals(1, $data["attempts"]);
     $this->assertTrue(password_verify("Test1234", $data["password"]));
-    return $user;
+
+    (new Database())->query("TRUNCATE TABLE `tmp`");
+    $this->exec("movdev db -s users");
   }
 
   /**
@@ -177,12 +183,17 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
    * @expectedExceptionMessage No data found
     */
   public function testGetRegistrationDataExpired() {
-    $user        = new UserExtended();
-    $user->name  = "PHPUnit";
-    $user->email = "phpunit@movlib.org";
-    $user->prepareRegistration("Test1234");
-    (new Database())->query("UPDATE `tmp` SET `created` = FROM_UNIXTIME(?) WHERE `key` = ?", "ss", [ strtotime("-25 hours"), "registration-phpunit@movlib.org" ]);
-    $user->getRegistrationData();
+    try {
+      $user        = new UserExtended();
+      $user->name  = "PHPUnit";
+      $user->email = "phpunit@movlib.org";
+      $user->prepareRegistration("Test1234");
+      (new Database())->query("UPDATE `tmp` SET `created` = FROM_UNIXTIME(?) WHERE `key` = ?", "ss", [ strtotime("-25 hours"), "registration-phpunit@movlib.org" ]);
+      $user->getRegistrationData();
+    }
+    finally {
+      (new Database())->query("TRUNCATE TABLE `tmp`");
+    }
   }
 
   /**
@@ -198,8 +209,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
    * @covers ::passwordHash
     */
   public function testPasswordHash() {
-    $user = new UserExtended();
-    $this->assertTrue(password_verify("Test1234", get_reflection_method($user, "passwordHash")->invokeArgs($user, [ "Test1234" ])));
+    $this->assertTrue(password_verify("Test1234", $this->invoke(new UserExtended(), "passwordHash", [ "Test1234" ])));
   }
 
   /**
@@ -257,7 +267,11 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
     $user = new UserExtended(UserExtended::FROM_ID, 1);
     $user->deactivate()->reactivate();
     $this->assertFalse($user->deactivated);
-    $this->assertFalse((bool) (new Database())->selectAssoc("SELECT `deactivated` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["deactivated"]);
+    $stmt = (new Database())->query("SELECT `deactivated` FROM `users` WHERE `user_id` = ?", "d", [ 1 ]);
+    $stmt->bind_result($deactivated);
+    $stmt->fetch();
+    $this->assertFalse((boolean) $deactivated);
+    $this->exec("movdev db -s users");
   }
 
   /**
@@ -265,6 +279,7 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
     */
   public function testRegister() {
     global $i18n;
+    $db          = new Database();
     $user        = new UserExtended();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
@@ -273,26 +288,34 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
     $user->register($data["password"]);
     $this->assertEquals("PHPUnit", $user->name);
     $this->assertEquals("phpunit@movlib.org", $user->email);
-    $this->assertEquals(get_reflection_property($user, "insertId")->getValue($user), $user->id);
+    $this->assertEquals(2, $user->id);
 
-    $result = (new Database())->selectAssoc("SELECT * FROM `users` WHERE `user_id` = ?", "d", [ $user->id ]);
+    $result = $db->query("SELECT * FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ $user->id ])->get_result()->fetch_assoc();
     $this->assertEmpty($result["dyn_profile"]);
     $this->assertEquals("PHPUnit", $result["name"]);
     $this->assertEquals("phpunit", $result["avatar_name"]);
     $this->assertEquals("phpunit@movlib.org", $result["email"]);
     $this->assertEquals($i18n->languageCode, $result["system_language_code"]);
     $this->assertTrue(password_verify("Test1234", $result["password"]));
+
+    $db->query("TRUNCATE TABLE `tmp`");
+    $this->exec("movdev db -s users");
   }
 
   /**
    * @covers ::updateEmail
     */
   public function testUpdateEmail() {
+    $db   = new Database();
     $user = new UserExtended(UserExtended::FROM_ID, 1);
     $this->assertEquals("richard@fussenegger.info", $user->email);
     $user->updateEmail("phpunit@movlib.org");
     $this->assertEquals("phpunit@movlib.org", $user->email);
-    $this->assertEquals("phpunit@movlib.org", (new Database())->selectAssoc("SELECT `email` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["email"]);
+    $stmt = $db->query("SELECT `email` FROM `users` WHERE `user_id` = ?", "d", [ 1 ]);
+    $stmt->bind_result($email);
+    $stmt->fetch();
+    $this->assertEquals("phpunit@movlib.org", $email);
+    $this->exec("movdev db -s users");
   }
 
   /**
@@ -302,12 +325,21 @@ class UserExtendedTest extends \PHPUnit_Framework_TestCase {
     $db      = new Database();
     $session = new \MovLib\Data\Session();
     $session->authenticate("richard@fussenegger.info", "Test1234");
-    $oldHash = $db->selectAssoc("SELECT `password` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["password"];
-    $user = new UserExtended(UserExtended::FROM_ID, 1);
+    $stmt    = $db->query("SELECT `password` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ 1 ]);
+    $stmt->bind_result($oldHash);
+    $stmt->fetch();
+    $stmt->close();
+
+    $user    = new UserExtended(UserExtended::FROM_ID, 1);
     $user->updatePassword("phpunitPassword");
     $session->authenticate("richard@fussenegger.info", "phpunitPassword");
-    $newHash = $db->selectAssoc("SELECT `password` FROM `users` WHERE `user_id` = ?", "d", [ 1 ])["password"];
+    $stmt    = $db->query("SELECT `password` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ 1 ]);
+    $stmt->bind_result($newHash);
+    $stmt->fetch();
+    $stmt->close();
+
     $this->assertNotEquals($oldHash, $newHash);
+    $this->exec("movdev db -s users");
   }
 
 }
