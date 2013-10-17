@@ -25,7 +25,6 @@ use \MovLib\Data\Image\Movie as MovieImage;
 
 /**
  * @coversDefaultClass \MovLib\Data\Movie
- * @group Database
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

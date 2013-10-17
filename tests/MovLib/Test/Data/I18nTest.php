@@ -84,7 +84,7 @@ class I18nTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
-    */
+   */
   public function testConstructInvalidHTTPAcceptLanguageCode() {
     unset($_SERVER["LANGUAGE_CODE"]);
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = "xx-XX";
@@ -97,7 +97,7 @@ class I18nTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
-    */
+   */
   public function testConstructNoLanguageCodeNoHTTPAcceptLanguageCode() {
     unset($_SERVER["LANGUAGE_CODE"]);
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = null;
@@ -265,7 +265,7 @@ class I18nTest extends \MovLib\Test\TestCase {
     $this->assertEquals($patternTestLanguage, $msg);
     $msg = $this->i18n->formatMessage("message", $pattern, null, [ "language_code" => $this->i18n->defaultLanguageCode ]);
     $this->assertEquals($pattern, $msg);
-    $msg = $msg = $this->i18n->formatMessage("message", $pattern, null);
+    $msg = $this->i18n->formatMessage("message", $pattern, null);
     $this->assertEquals($patternGerman, $msg);
 
     // With arguments.
@@ -273,7 +273,7 @@ class I18nTest extends \MovLib\Test\TestCase {
     $this->assertEquals($patternTestLanguageFormatted, $msg);
     $msg = $this->i18n->formatMessage("message", $pattern, $args, [ "language_code" => $this->i18n->defaultLanguageCode ]);
     $this->assertEquals($patternFormatted, $msg);
-    $msg = $msg = $this->i18n->formatMessage("message", $pattern, $args);
+    $msg = $this->i18n->formatMessage("message", $pattern, $args);
     $this->assertEquals($patternGermanFormatted, $msg);
 
     // Non-existent pattern.

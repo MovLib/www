@@ -92,7 +92,7 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::a
-    */
+   */
   public function testAnchor() {
     $_SERVER["PATH_INFO"] = "/phpunit";
     $this->assertEquals("<a href='/route' title='PHPUnit'>linktext</a>", $this->invoke("a", [ "/route", "linktext", [ "title" => "PHPUnit" ] ]));
@@ -100,7 +100,7 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::a
-    */
+   */
   public function testAnchorPathInfo() {
     $_SERVER["PATH_INFO"] = "/route";
     $this->assertEquals("<a href='#' class='active'>linktext</a>", $this->invoke("a", [ "/route", "linktext", [ "title" => "PHPUnit" ] ]));
@@ -108,7 +108,7 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::a
-    */
+   */
   public function testAnchorHash() {
     $_SERVER["PATH_INFO"] = "/phpunit";
     $this->assertEquals("<a href='#' class='active'>linktext</a>", $this->invoke("a", [ "#", "linktext", [ "title" => "PHPUnit" ] ]));
@@ -116,7 +116,7 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::addClass
-    */
+   */
   public function testAddClassNoClasses() {
     $attributes = [];
     $this->invoke("addClass", [ "phpunit", &$attributes ]);
@@ -125,7 +125,7 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::addClass
-    */
+   */
   public function testAddClassClasses() {
     $attributes = [ "class" => "foo bar" ];
     $this->invoke("addClass", [ "phpunit", &$attributes ]);
@@ -134,14 +134,14 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @covers ::collapseWhitespace
-    */
+   */
   public function testCollapseWhitespace() {
     $this->assertEquals("p h p u n i t", $this->invoke("collapseWhitespace", [ "    p\nh\rp\tu\x00n\x0Bi \n\r\t\x00\x0Bt    " ]));
   }
 
   /**
    * @covers ::expandTagAttributes
-    */
+   */
   public function testExpandTagAttributes() {
     $this->assertEquals(" attr1='phpunit' attr2='true' attr3='false' attr4='&lt;&gt;&amp;' phpunit", $this->invoke("expandTagAttributes", [[
       "attr1" => "phpunit",
@@ -155,28 +155,28 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::formatBytes
    * @dataProvider dataProviderFormatBytes
-    */
+   */
   public function testFormatBytes($number, $unit, $bytes) {
     $this->assertEquals([ $number, $unit ], $this->invoke("formatBytes", [ $bytes ]));
   }
 
   /**
    * @covers ::getImage
-    */
+   */
 //  public function testGetImage() {
 //
 //  }
 
   /**
    * @covers ::getImages
-    */
+   */
 //  public function testGetImages() {
 //
 //  }
 
   /**
    * @covers ::getTabindex
-    */
+   */
   public function testTabindex() {
     $this->assertInternalType("int", get_reflection_method($this->abstractPage, "getTabindex")->invoke($this->abstractPage));
   }
@@ -184,14 +184,14 @@ class AbstractBaseTest extends \PHPUnit_Framework_TestCase {
   /**
    * @covers ::normalizeLineFeeds
    * @dataProvider dataProviderNormalizeLineFeeds
-    */
+   */
   public function testNormalizeLineFeeds($expected, $input) {
     $this->assertEquals($expected, $this->invoke("normalizeLineFeeds", [ $input ]));
   }
 
   /**
    * @covers ::placeholder
-    */
+   */
   public function testPlaceholder() {
     $this->assertEquals("<em class='placeholder'>&lt;PHP&amp;Unit&gt;</em>", $this->invoke("placeholder", [ "<PHP&Unit>" ] ));
   }
