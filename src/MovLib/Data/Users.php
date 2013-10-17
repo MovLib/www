@@ -68,7 +68,7 @@ class Users extends \MovLib\Data\DatabaseArrayObject {
       $result = $this->query("{$this->query} WHERE `user_id` IN ({$in}) ORDER BY `id` ASC", str_repeat("d", $c), $filter)->get_result();
       /* @var $user \MovLib\Data\User */
       while ($user = $result->fetch_object("\\MovLib\\Data\\User")) {
-        $this->objectsArray[] = $user;
+        $this->objectsArray[$user->id] = $user;
       }
     }
     return $this;

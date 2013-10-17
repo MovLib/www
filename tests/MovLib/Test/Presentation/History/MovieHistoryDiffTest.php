@@ -137,14 +137,9 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
    */
   public function testDiffIdsWithUsers() {
     $diff = ["added" => [1,3], "removed" => [2], "edited" => []];
-
-    $listItems = $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Users" ]);
-
-    var_dump($listItems);
-
     $this->assertEquals(
-      "...",
-      $listItems
+      "<ul><li><a href='/users/1' class='green' title='More about Fleshgrinder'>Fleshgrinder</a></li><li><a href='/users/3' class='green' title='More about Ravenlord'>Ravenlord</a></li><li><a href='/users/2' class='red' title='More about ftorghele'>ftorghele</a></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Users" ])->__toString()
     );
   }
 
