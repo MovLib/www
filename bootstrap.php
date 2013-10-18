@@ -57,6 +57,7 @@ define("DEV", strpos($GLOBALS["movlib"]["version"], "-dev") === false ? false : 
 
 if (DEV === true) {
   $composerAutoloader->add("MovDev", "{$_SERVER["DOCUMENT_ROOT"]}/src");
+  $db = new \MovDev\Database();
 }
 
 // --------------------------------------------------------------------------------------------------------------------- PHPUnit only
