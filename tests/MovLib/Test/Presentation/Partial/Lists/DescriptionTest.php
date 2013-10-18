@@ -28,9 +28,9 @@ namespace MovLib\Test\Presentation\Partial\Lists;
 class DescriptionTest extends \MovLib\Test\TestCase {
 
   /**
-   * @covers ::methodName
+   * @covers ::__toString
    */
-  public function test() {
+  public function testToStringNoAttributes() {
 
   }
 

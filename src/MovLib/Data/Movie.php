@@ -169,11 +169,9 @@ class Movie extends \MovLib\Data\Database {
    * @global \MovLib\Data\I18n $i18n
    * @param int $id [optional]
    *   The movie's ID to construct this model from.
-   * @param array $properties [optional]
-   *   Associative array of properties to initialize the movie with.
    * @throws \MovLib\Exception\MovieException
    */
-  public function __construct($id = null, array $properties = null) {
+  public function __construct($id = null) {
     global $i18n;
     if (isset($id)) {
       $stmt = $this->query("SELECT
@@ -210,7 +208,9 @@ class Movie extends \MovLib\Data\Database {
         $this->created
       );
       $stmt->fetch();
-      $stmt->close();
+      if (!$this->id) {
+        throw new MovieException("No movie found for ID '{$id}'!");
+      }
       $this->deleted = (boolean) $this->deleted;
     }
   }
@@ -350,11 +350,23 @@ class Movie extends \MovLib\Data\Database {
   public function getCountries() {
     global $i18n;
     $name = $i18n->languageCode == $i18n->defaultLanguageCode ? "`c`.`name`" : "COLUMN_GET(`c`.`dyn_translations`, '{$i18n->languageCode}' AS BINARY)";
-    $result = $this->query("SELECT `c`.`country_id` AS `id`, {$name} AS `name`, `c`.`iso_alpha-2` AS `code` FROM `countries` `c` INNER JOIN `movies_countries` `m` ON `m`.`country_id` = `c`.`country_id` WHERE `m`.`movie_id` = ? ORDER BY `c`.`country_id`", "d", [ $this->id ])->get_result();
+    $result = $this->query(
+      "SELECT
+        `c`.`country_id` AS `id`,
+        {$name} AS `name`,
+        `c`.`iso_alpha-2` AS `code`
+      FROM `countries` `c`INNER JOIN `movies_countries` `m`
+        ON `m`.`country_id` = `c`.`country_id`
+      WHERE `m`.`movie_id` = ?
+      ORDER BY `c`.`country_id`",
+      "d",
+      [ $this->id ]
+    )->get_result();
     $countries = [];
     while ($country = $result->fetch_object("\\MovLib\\Data\\Country")) {
-      $countries[$country->id] = $country;
+      $countries[$country->name] = $country;
     }
+    $i18n->getCollator()->ksort($countries);
     return $countries;
   }
 
@@ -441,10 +453,27 @@ class Movie extends \MovLib\Data\Database {
    *   Numeric array containing the language information as associative array.
    */
   public function getLanguages() {
-    if (($languageIds = array_column($this->query("SELECT `language_id` AS `id` FROM `movies_languages` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result()->fetch_all(MYSQLI_ASSOC), 0))) {
-      return (new Languages())->orderById($languageIds);
+    global $i18n;
+    $name = $i18n->languageCode == $i18n->defaultLanguageCode ? "`l`.`name`" : "COLUMN_GET(`l`.`dyn_translations`, '{$i18n->languageCode}' AS BINARY)";
+    $result = $this->query(
+      "SELECT
+        `l`.`language_id` AS `id`,
+        {$name} AS `name`,
+        `l`.`iso_alpha-2` AS `code`
+      FROM `languages` `l`
+      INNER JOIN `movies_languages` `m`
+        ON `m`.`language_id` = `l`.`language_id`
+      WHERE `m`.`movie_id` = ?
+      ORDER BY `l`.`language_id`",
+      "d",
+      [ $this->id ]
+    )->get_result();
+    $languages = [];
+    while ($language = $result->fetch_object("\\MovLib\\Data\\Language")) {
+      $languages[$language->name] = $language;
     }
-    return [];
+    $i18n->getCollator()->ksort($languages);
+    return $languages;
   }
 
   /**
@@ -559,7 +588,7 @@ class Movie extends \MovLib\Data\Database {
     if (empty($displayTitle)) {
       return $this->originalTitle;
     }
-    return $displayTitle[0]["title"];
+    return $displayTitle;
   }
 
   /**
@@ -571,7 +600,7 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getTitles() {
     global $i18n;
-    $stmt = $this->query(
+    $result = $this->query(
       "SELECT
         `title` AS `title`,
         COLUMN_GET(`dyn_comments`, ? AS BINARY) AS `comment`,
@@ -581,16 +610,16 @@ class Movie extends \MovLib\Data\Database {
         WHERE `movie_id` = ?",
       "sd",
       [ $i18n->languageCode, $this->id ]
-    );
-    $result = $stmt->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
-    if (($c = count($result))) {
+    )->get_result();
+    $dbTitles = $result->fetch_all(MYSQLI_ASSOC);
+    $result->close();
+    if (($c = count($dbTitles))) {
       $i18nLanguages = $i18n->getLanguages();
       $titlesSorted  = [];
       for ($i = 0; $i < $c; ++$i) {
-        $result[$i]["language"] = $i18nLanguages[ $result[$i]["language"] ];
-        settype($result[$i]["is_display_title"], "boolean");
-        $titlesSorted["{$result[$i]["title"]}{$result[$i]["language"]["id"]}"] = $result[$i];
+        $dbTitles[$i]["language"] = $i18nLanguages[ $dbTitles[$i]["language"] ];
+        settype($dbTitles[$i]["is_display_title"], "boolean");
+        $titlesSorted["{$dbTitles[$i]["title"]}{$dbTitles[$i]["language"]["id"]}"] = $dbTitles[$i];
       }
       $i18n->getCollator()->ksort($titlesSorted);
       return array_values($titlesSorted);
