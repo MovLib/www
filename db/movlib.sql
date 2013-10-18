@@ -189,6 +189,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons` (
   `dyn_aliases` BLOB NOT NULL COMMENT 'The person’s aliases.' ,
   `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s translatable biographies.' ,
   `dyn_links` BLOB NOT NULL COMMENT 'The person’s external weblinks.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this person was created.' ,
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.' ,
   PRIMARY KEY (`person_id`) )
 COMMENT = 'Contains all person related data.'
@@ -205,6 +206,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`jobs` (
   `description` BLOB NOT NULL COMMENT 'The job’s English description.' ,
   `dyn_titles` BLOB NOT NULL COMMENT 'The job title’s translations.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The job description’s translations.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this job was created.' ,
   PRIMARY KEY (`job_id`) ,
   UNIQUE INDEX `uq_jobs_title` (`title` ASC) )
 COMMENT = 'Contains all job related data.'
@@ -221,6 +223,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`companies` (
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this company was deleted, default is FALSE (0).' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translatable descriptions.' ,
   `dyn_links` BLOB NOT NULL COMMENT 'The company’s external links.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this companies was created.' ,
   PRIMARY KEY (`company_id`) )
 COMMENT = 'Contains all company related data.'
 ROW_FORMAT = COMPRESSED;
@@ -566,6 +569,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`awards` (
   `description` BLOB NULL COMMENT 'The award’s English description.' ,
   `dyn_names` BLOB NOT NULL COMMENT 'The award’s title translations.' ,
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description translations.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this award was created.' ,
   PRIMARY KEY (`award_id`) ,
   UNIQUE INDEX `uq_awards_name` (`name` ASC) )
 COMMENT = 'Contains all job related data.'
@@ -759,6 +763,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`series` (
   `rank` BIGINT UNSIGNED NULL COMMENT 'The series’ global rank.' ,
   `dyn_synopses` BLOB NOT NULL COMMENT 'The series’ translatable synopses.' ,
   `bin_relationships` BLOB NULL COMMENT 'The series´ relations to other series, e.g. sequel.\nStored in igbinary serialized format.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this series was created.' ,
   `commit` CHAR(40) NULL COMMENT 'The series\' last commit sha-1 hash.' ,
   PRIMARY KEY (`series_id`) )
 ENGINE = InnoDB
@@ -774,6 +779,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`series_seasons` (
   `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season´s  number within the series.' ,
   `start_year` SMALLINT NULL COMMENT 'The year the season started airing for the first time.' ,
   `end_year` SMALLINT NULL COMMENT 'The year the season ended for the first time.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this season was created.' ,
   PRIMARY KEY (`series_id`, `seasons_number`) ,
   INDEX `fk_series_seasons_series` (`series_id` ASC) ,
   CONSTRAINT `fk_series_seasons_series`
@@ -822,6 +828,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`seasons_episodes` (
   `episode_number` TINYTEXT NULL COMMENT 'The episodes number within the season (e.g. 01, but also 0102 if it contains two episodes).' ,
   `original_air_date` DATE NULL COMMENT 'The date the episode was originally aired.' ,
   `original_title` BLOB NOT NULL COMMENT 'The episode´s original title.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this episode was created.' ,
   PRIMARY KEY (`series_id`, `seasons_number`, `position`) ,
   INDEX `fk_seasons_episodes_series_seasons` (`series_id` ASC, `seasons_number` ASC) ,
   CONSTRAINT `fk_seasons_episodes_series_seasons`
@@ -960,6 +967,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`master_releases` (
   `release_date` DATE NULL COMMENT 'The date this master release has been published.' ,
   `packaging_id` INT UNSIGNED NULL COMMENT 'The master release´s packaging (Only present if there are more than 1 releases in this master release).' ,
   `commit` CHAR(40) NULL COMMENT 'The master release\'s last commit sha-1 hash.' ,
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this master release was created.' ,
   PRIMARY KEY (`master_release_id`) ,
   INDEX `fk_master_releases_countries` (`country_id` ASC) ,
   INDEX `fk_master_releases_packaging` (`packaging_id` ASC) ,
