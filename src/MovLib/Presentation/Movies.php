@@ -18,7 +18,7 @@
 namespace MovLib\Presentation;
 
 use \MovLib\Data\Image\Movie as MovieImage;
-use \MovLib\Data\Movies;
+use \MovLib\Data\Movies as MoviesModel;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Lists\GlueSeparated;
 use \MovLib\Presentation\Partial\Lists\Ordered;
@@ -49,7 +49,7 @@ class Movies extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   public function __construct() {
     global $i18n;
-    $this->init($i18n->t("Movies"))->movies = (new Movies())->getMoviesByCreated();
+    $this->init($i18n->t("Movies"))->movies = (new MoviesModel())->getMoviesByCreated();
   }
 
   /**
