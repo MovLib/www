@@ -72,7 +72,7 @@ function delayed_register($class, $weight = 50, $method = "run") {
 }
 
 try {
-  new \MovLib\Exception\Handlers();
+  $handlers          = new \MovLib\Exception\Handlers();
   $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
   $session           = new \MovLib\Data\User\Session();
   $i18n              = new \MovLib\Data\I18n();
@@ -102,6 +102,23 @@ catch (\MovLib\Exception\Client\AbstractRedirectException $e) {
 catch (\MovLib\Exception\Client\UnauthorizedException $e) {
   header($e->authenticateHeader);
   $presentation = $e->presentation->getPresentation();
+}
+// Because of the finally block many exception thrown at this point are not passed to the custom uncaught exception
+// handler we defined before. I don't have hard evidence that the finally block is the reason, but this problem first
+// was observed after introducing it. Catching the most basic exception type and passing it to our function solves this.
+//
+// Catch software generated exceptions.
+catch (\MovLib\Exception\AbstractException $e) {
+  $handlers->uncaughtExceptionHandler($e);
+}
+// Catch PHP errors, warnings, etc.
+catch (\ErrorException $e) {
+  $handlers->errorHandler($e->getSeverity(), $e->getMessage(), $e->getFile(), $e->getLine());
+}
+// Catch PHP generated exceptions and be sure to log them as an error.
+catch (\Exception $e) {
+  \MovLib\Data\Delayed\Logger::stack($e, \MovLib\Data\Delayed\Logger::ERROR);
+  $handlers->uncaughtExceptionHandler($e);
 }
 // This is always executed, no matter what happens!
 finally {
