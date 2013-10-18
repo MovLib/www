@@ -124,9 +124,19 @@ class Database extends \MovLib\Console\Command\Database {
    */
   public function __construct(){
     parent::__construct();
+    $this->database = new \MovDev\Database();
     $this->seedPath = "{$_SERVER["DOCUMENT_ROOT"]}/db/seeds";
     foreach (glob("{$this->seedPath}/*.sql") as $file) {
       $this->seedScripts[basename($file, ".sql")] = $file;
+    }
+  }
+
+  /**
+   * Commit all uncommited changes and close connection.
+   */
+  public function __destruct() {
+    if ($this->database && $this->database->transactionActive() === true) {
+      $this->database->transactionCommit();
     }
   }
 
@@ -581,7 +591,7 @@ class Database extends \MovLib\Console\Command\Database {
    * @return this
    */
   protected function rollback() {
-    if ($this->database->transactionActive === true) {
+    if ($this->database->transactionActive() === true) {
       $this->database->transactionRollback();
     }
     return $this;

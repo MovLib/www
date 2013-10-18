@@ -108,16 +108,6 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
   public function __construct() {
     parent::__construct("db");
     $this->migrationPath = "{$_SERVER["DOCUMENT_ROOT"]}/db/migrations";
-    $this->database = new \MovDev\Database();
-  }
-
-  /**
-   * Commit all uncommited changes and close connection.
-   */
-  public function __destruct() {
-    if ($this->database && $this->database->transactionActive === true) {
-      $this->database->transactionCommit();
-    }
   }
 
 

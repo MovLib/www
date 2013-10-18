@@ -38,6 +38,11 @@ class Database {
 
 
   /**
+   *
+   */
+  private $database;
+
+  /**
    * The current MySQLi instance.
    *
    * @var \mysqli
@@ -49,7 +54,7 @@ class Database {
    *
    * @var boolean
    */
-  public $transactionActive = false;
+  private $transactionActive = false;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -63,7 +68,7 @@ class Database {
    * @throws \InvalidArgumentException
    */
   public function __construct($database = "movlib") {
-    $this->connect($database);
+    $this->setDatabase($database);
   }
 
 
@@ -73,16 +78,11 @@ class Database {
   /**
    * Establish connection to database.
    *
-   * @param string $database
-   *   The name of the database to connect to.
    * @return \mysqli
    * @throws \InvalidArgumentException
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function connect($database) {
-    if (!is_string($database)) {
-      throw new InvalidArgumentException("Database name must be of type string.");
-    }
+  public function connect() {
     if (!isset($this->mysqli)) {
       try {
         $this->mysqli = new mysqli();
@@ -95,7 +95,7 @@ class Database {
       if ($this->mysqli->connect_error) {
         throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
       }
-      if ($this->mysqli->select_db($database) === false) {
+      if ($this->mysqli->select_db($this->database) === false) {
         throw new DatabaseException("Selecting database '{$this->database}' failed", $mysqli->error, $mysqli->errno);
       }
     }
@@ -115,7 +115,7 @@ class Database {
     if (!is_string($str) && !is_numeric($str)) {
       throw new InvalidArgumentException("Escape variable must be of type string (or integer).");
     }
-    return $this->mysqli->real_escape_string($str);
+    return $this->connect()->real_escape_string($str);
   }
 
   /**
@@ -132,7 +132,7 @@ class Database {
     if (!is_string($queries)) {
       throw new InvalidArgumentException("Queries must be of type string.");
     }
-    $error = $this->mysqli->multi_query($queries);
+    $error = $this->connect()->multi_query($queries);
     do {
       if ($error === false) {
         throw new DatabaseException("Execution of multiple queries failed", $this->mysqli->error, $this->mysqli->errno);
@@ -163,7 +163,7 @@ class Database {
       throw new InvalidArgumentException("Query must be of type string.");
     }
     /* @var $stmt \mysqli_stmt */
-    if (($stmt = $this->mysqli->prepare($query)) === false) {
+    if (($stmt = $this->connect()->prepare($query)) === false) {
       throw new DatabaseException("Preparation of statement failed", $this->mysqli->error, $this->mysqli->errno);
     }
     if ($types && $params) {
@@ -183,6 +183,30 @@ class Database {
       throw new DatabaseException("Execution of prepared statement failed", $stmt->error, $stmt->errno);
     }
     return $stmt;
+  }
+
+  /**
+   * Set the database to which this instance should connect to.
+   *
+   * @param string $database
+   *   The name of the database.
+   * @throws \InvalidArgumentException
+   */
+  public function setDatabase($database) {
+    if (!is_string($database)) {
+      throw new InvalidArgumentException("Database name must be of type string.");
+    }
+    $this->database = $database;
+  }
+
+  /**
+   * Whetever a transaction is active or not.
+   *
+   * @return boolean
+   *   <code>TRUE</code> if a transaction is active, otherwise <code>FALSE</code>.
+   */
+  public function transactionActive() {
+    return $this->transactionActive;
   }
 
   /**
@@ -235,7 +259,7 @@ class Database {
    * @throws \MovLib\Data\DatabaseException
    */
   public function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
-    if (($this->transactionActive = $this->mysqli->begin_transaction($flags)) === false) {
+    if (($this->transactionActive = $this->connect()->begin_transaction($flags)) === false) {
       throw new DatabaseException("Could not start transaction", $this->mysqli->error, $this->mysqli->errno);
     }
     return $this;
