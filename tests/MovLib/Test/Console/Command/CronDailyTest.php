@@ -17,11 +17,9 @@
  */
 namespace MovLib\Test\Console\Command;
 
-use \MovDev\Database;
-
 /**
  * @coversDefaultClass \MovLib\Console\Command\CronDaily
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
@@ -31,12 +29,12 @@ class CronDailyTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::purgeTemporaryTable
+   * @global \MovDev\Database $db
    */
   public function testPurgeTemporaryData() {
-    $db = new Database();
-    $oldTime = strtotime("-2 days");
-    $db->query("INSERT INTO `tmp` (`key`, `created`, `data`, `ttl`) VALUES ('PHPUnit', FROM_UNIXTIME({$oldTime}), 'PHPUnit', '@daily')");
-    $this->invoke($this->getMock("\\MovLib\\Console\\Command\\CronDaily", [ "purgeTemporaryTable" ]), "purgeTemporaryTable");
+    global $db;
+    $db->query("INSERT INTO `tmp` (`key`, `created`, `data`, `ttl`) VALUES ('phpunit', FROM_UNIXTIME(?), 'PHPUnit', '@daily')", "s", [ strtotime("-2 days") ]);
+    $this->assertTrue($this->exec("movcli cron-daily"));
     $this->assertEmpty($db->query("SELECT `key` FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, 'created') > 0 AND `ttl` = '@daily'")->get_result()->fetch_all());
   }
 
@@ -44,10 +42,10 @@ class CronDailyTest extends \MovLib\Test\TestCase {
    * @covers ::purgeTemporaryUploads
    */
   public function testPurgeTemporaryUploads() {
-    $filename = "/tmp/phpunit-file";
+    $filename = tempnam(ini_get("upload_tmp_dir"), "phpunit");
     touch($filename, strtotime("-2 days"));
-    $this->invoke($this->getMock("\\MovLib\\Console\\Command\\CronDaily", [ "purgeTemporaryUploads" ]), "purgeTemporaryUploads");
-    $this->assertFalse(file_exists($filename));
+    $this->assertTrue($this->exec("movcli cron-daily"));
+    $this->assertFileNotExists($filename);
   }
 
 }

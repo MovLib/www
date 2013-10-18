@@ -18,8 +18,10 @@
 namespace MovLib\Console\Command;
 
 use \MovLib\Console\Command\AbstractCommand;
+use \MovLib\Data\Database;
 use \MovLib\Data\Delayed\Logger;
 use \MovLib\Exception\DatabaseException;
+use \ReflectionMethod;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -57,11 +59,15 @@ class CronDaily extends AbstractCommand {
    * @return this
    */
   protected function purgeTemporaryTable() {
+    $daily = Database::TMP_TTL_DAILY;
     try {
-      (new \MovDev\Database())->query("DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, 'created') > 0 AND `ttl` = '@daily'");
+      $db    = new Database();
+      $query = new ReflectionMethod($db, "query");
+      $query->setAccessible(true);
+      $query->invokeArgs($db, [ "DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, 'created') > 0 AND `ttl` = '{$daily}'" ]);
     }
     catch (DatabaseException $e) {
-      $message = "Cron @daily failed.\n\nDatabaseException Stacktrace:\n {$e->getTraceAsString()}";
+      $message = "Cron {$daily} failed.\n\nDatabaseException Stacktrace:\n {$e->getTraceAsString()}";
       Logger::stack($message, Logger::FATAL);
       $this->exitOnError($message);
     }
@@ -74,7 +80,9 @@ class CronDaily extends AbstractCommand {
    * @return this
    */
   protected function purgeTemporaryUploads() {
-    return $this->exec("find /tmp/* -type f -mtime +1 -exec rm {} \;", "Could not purge temporarily uploaded files from tmp folder!");
+    $tmpDirectory = ini_get("upload_tmp_dir");
+    exec("find {$tmpDirectory} -type f -mtime +1 -exec rm {} \;");
+    return $this;
   }
 
   /**

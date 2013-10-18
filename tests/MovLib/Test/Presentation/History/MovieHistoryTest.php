@@ -31,14 +31,8 @@ use \MovLib\Presentation\History\MovieHistory;
  */
 class MovieHistoryTest extends \MovLib\Test\TestCase {
 
-  /** @var \mysqli */
-  static $db;
-
   public static function setUpBeforeClass() {
-    static::$db = new \mysqli();
-    static::$db->real_connect();
-    static::$db->select_db($GLOBALS["movlib"]["default_database"]);
-
+    global $db;
     $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
     if(is_dir($path)) {
       exec("rm -rf {$path}");
@@ -48,12 +42,10 @@ class MovieHistoryTest extends \MovLib\Test\TestCase {
 
     $movie = new Movie(2, "phpunitrepos");
     $commitHash = $movie->createRepository();
-    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
   }
 
   public static function tearDownAfterClass() {
-    static::$db->close();
-
     $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
     if(is_dir($path)) {
       exec("rm -rf {$path}");
@@ -64,6 +56,7 @@ class MovieHistoryTest extends \MovLib\Test\TestCase {
    * @covers \MovLib\Presentation\History\TraitHistory::contentRevisionsPage
    */
   public function testContentRevisionsPage() {
+    global $db;
     $movie        = new Movie(2, "phpunitrepos");
     $historyPage  = new MovieHistory("phpunitrepos");
 
@@ -74,7 +67,7 @@ class MovieHistoryTest extends \MovLib\Test\TestCase {
 
     $movie->startEditing();
     $commitHash = $movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
-    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
 
     $this->assertContains(
       "added original title",
@@ -87,7 +80,7 @@ class MovieHistoryTest extends \MovLib\Test\TestCase {
 
     $movie->startEditing();
     $commitHash = $movie->saveHistory([ "original_title" => "The bar is not a lie", "cast" => [1,2,3] ], "edited original title, added cast");
-    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
 
     $this->assertContains(
       "edited original title, added cast",

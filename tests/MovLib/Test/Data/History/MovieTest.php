@@ -30,26 +30,14 @@ use \MovLib\Data\History\Movie;
  */
 class MovieTest extends \MovLib\Test\TestCase {
 
-  /** @var \mysqli */
-  static $db;
-
   /** @var \MovLib\Data\History\Movie */
   public $movie;
 
-  public static function setUpBeforeClass() {
-    static::$db = new \mysqli();
-    static::$db->real_connect();
-    static::$db->select_db($GLOBALS["movlib"]["default_database"]);
-  }
-
   public function setUp() {
+    global $db;
     $this->movie = new Movie(2, "phpunitrepos");
     $commitHash = $this->movie->createRepository();
-    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
-  }
-
-  public static function tearDownAfterClass() {
-    static::$db->close();
+    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
   }
 
   public function tearDown() {
@@ -118,7 +106,8 @@ class MovieTest extends \MovLib\Test\TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::getCommitHash
    */
   public function testStartEditing() {
-    static::$db->query("UPDATE `movies` SET `commit` = 'b006169990b07af17d198f6a37efb324ced95fb3' WHERE `movie_id` = 2");
+    global $db;
+    $db->query("UPDATE `movies` SET `commit` = 'b006169990b07af17d198f6a37efb324ced95fb3' WHERE `movie_id` = 2");
     $this->movie->startEditing();
     $p = $this->getProperty($this->movie, "commitHash");
     $this->assertNotNull($p);
@@ -359,12 +348,13 @@ class MovieTest extends \MovLib\Test\TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::saveHistory
    */
   public function testSaveHistoryIfSomeoneElseAlreadyChangedTheSameInformation() {
+    global $db;
     $this->movie->startEditing();
     $this->movieUserOne = $this->movie;
     $this->movieUserTwo = clone $this->movie;
 
     $commitHash = $this->movieUserOne->saveHistory([ "original_title" => "The foobar is a lie" ], "initial commit");
-    static::$db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
 
     $this->movieUserTwo->saveHistory([ "original_title" => "The bar is not a lie" ], "initial commit");
 

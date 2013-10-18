@@ -17,6 +17,7 @@
  */
 namespace MovLib\Test\Presentation\History;
 
+use MovDev\Database;
 use \MovLib\Data\History\Movie;
 use \MovLib\Presentation\History\MovieHistoryDiff;
 
@@ -31,9 +32,6 @@ use \MovLib\Presentation\History\MovieHistoryDiff;
  */
 class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
 
-  /** @var \mysqli */
-  static $db;
-
   /** @var \MovLib\Data\History\Movie */
   private $movie;
 
@@ -41,32 +39,25 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
   private $historyDiffPage;
 
   public static function setUpBeforeClass() {
-    static::$db = new \mysqli();
-    static::$db->real_connect();
-    static::$db->select_db($GLOBALS["movlib"]["default_database"]);
-
     $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
     if(is_dir($path)) {
       exec("rm -rf {$path}");
     }
   }
 
-  public static function tearDownAfterClass() {
-    static::$db->close();
-  }
-
   public function setUp() {
+    global $db;
     $_SERVER["MOVIE_ID"] = 2;
 
     $this->historyDiffPage = new MovieHistoryDiff("phpunitrepos");
 
     $this->movie = new Movie($_SERVER["MOVIE_ID"], "phpunitrepos");
     $_SERVER["REVISION_HASH"] = $this->movie->createRepository();
-    static::$db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
+    $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
 
     $this->movie->startEditing();
     $_SERVER["REVISION_HASH"] = $this->movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
-    static::$db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
+    $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
   }
 
   public function tearDown() {
@@ -96,9 +87,10 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
    * @covers \MovLib\Presentation\History\TraitHistory::textDiffOfStrings
    */
   public function testTextDiff() {
+    global $db;
     $this->movie->startEditing();
     $_SERVER["REVISION_HASH"] = $this->movie->saveHistory([ "original_title" => "The bar is not a lie" ], "added original title");
-    static::$db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
+    $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
 
     $this->assertContains(
       "Original Title",
@@ -142,6 +134,26 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
       "<ul><li><a href='/users/1' class='green' title='More about Fleshgrinder'>Fleshgrinder</a></li><li><a href='/users/3' class='green' title='More about Ravenlord'>Ravenlord</a></li><li><a href='/users/2' class='red' title='More about ftorghele'>ftorghele</a></li></ul>",
       $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\User\Users" ])->__toString()
     );
+  }
+
+  /**
+   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
+   * @covers \Movlib\Data\Counties::orderById
+   */
+  public function testDiffIdsWithCountries() {
+    global $i18n;
+    $diff = ["added" => [1,3], "removed" => [2], "edited" => []];
+    $this->assertEquals(
+      "<ul><li><a href='/countries/1' class='green' title='More about Andorra'>Andorra</a></li><li><a href='/countries/3' class='green' title='More about Afghanistan'>Afghanistan</a></li><li><a href='/countries/2' class='red' title='More about United Arab Emirates'>United Arab Emirates</a></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Countries" ])->__toString()
+    );
+
+    $i18n = new \MovLib\Data\I18n("de-at");
+    $this->assertContains(
+      "Vereinigte Arabische Emirate",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Countries" ])->__toString()
+    );
+    $i18n = new \MovLib\Data\I18n();
   }
 
 }

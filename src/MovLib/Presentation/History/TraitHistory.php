@@ -229,7 +229,7 @@ trait TraitHistory {
         }
       }
 
-      $route         = explode("\\", strtolower($className))[3];
+      $route         = array_pop((explode('\\', strtolower($className))));
       $unorderedList = new Unordered($propertyList, "", [ "class" => $cssClass ]);
       $listItems[]   =
         "{$this->a($i18n->r("/{0}/{1}", [ $route, $diff[$case][$i]['id'] ]), $i18n->t("{0}", [ $itemName ]), [
