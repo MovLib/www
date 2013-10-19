@@ -12,7 +12,7 @@ connection to your website, because the initial handshake will take much more ti
 The process of deploying an SSL certificate for one of your servers is as follows, all commands executed from this
 folder and as root user:
 
-`
+```Bash
 mkdir example.com/www
 # Put your passphrase protected private key in this file and be sure to include an empty line at the end of the file
 editor example.com/www/pass
@@ -22,13 +22,11 @@ openssl rsa -in example.com/www/pass -out example.com/www/key
 wget http://www.startssl.com/certs/ca.pem
 wget http://www.startssl.com/certs/sub.class1.server.ca.pem
 cat example.com/www/crt sub.class1.server.ca.pem > example.com/www/unified.crt
-`
+```
 
 I won’t go into more detail on each step, as it is pretty straight forward and I’ve included some weblinks where you can
 find more info. If you want to know what you have to add to your nginx configuration, check our various server
 configurations in the sites directory.
-
-I’m currently using the following SSL ciphers in my nginx configurations: `ECDH+AES:DH+AES:!ADH:!AECDH:!MD5:!RC4:!AES256`
 
 ## Weblinks
 * [Qualys SSL Labs: SSL Server Test](https://www.ssllabs.com/ssltest/analyze.html)
