@@ -71,7 +71,7 @@ trait TraitUtilities {
    * @return this
    */
   protected function execDetached($command) {
-    exec("{$command} <&- 1<&- 2<&-");
+    exec("{$command} <&- 1<&- 2<&- &");
     return $this;
   }
 
