@@ -60,28 +60,36 @@ abstract class AbstractImage extends \MovLib\Data\Database {
 
 
   /**
-   * Default image widths as class constants.
+   * Default image dimension for preview area of input file elements if the image exists.
    *
-   * The image styles <code>\MovLib\Data\Image\IMAGE_STYLE_SPAN1</code> and <code>\MovLib\Data\Image\IMAGE_STYLE_SPAN2</code>
-   * are always available for every image(s). This is because <code>IMAGE_STYLE_SPAN1</code> is used in
-   * <code>\MovLib\Presentation\Partial\FormElement\InputImage</code> if the image exists to display a very small
-   * preview of the existing image and <code>IMAGE_STYLE_SPAN2</code> is used within any presentation class that
-   * displays the images within a list grid. Each implementing class has decide how it generates these styles (cropped
-   * rectangle, etc.), but they have to be implemented!
-   *
-   * @internal The zero prefixing ensures natural sorting in IDEs.
+   * @see \MovLib\Data\Image\SPAN_01
+   * @var int
    */
-  const IMAGE_STYLE_SPAN_01 = \MovLib\Data\Image\SPAN_01;
-  const IMAGE_STYLE_SPAN_02 = \MovLib\Data\Image\SPAN_02;
+  const IMAGE_STYLE_SPAN_01 = 70;
 
   /**
-   * Image(s) minimum dimensions.
+   * Default image dimension for image listings.
    *
-   * The global minimum dimensions match the biggest default style. Any uploaded image must have at least these
-   * dimensions.
+   * @see \MovLib\Data\Image\SPAN_02
+   * @var int
    */
-  const IMAGE_MIN_HEIGHT = \MovLib\Data\Image\SPAN_02;
-  const IMAGE_MIN_WIDTH  = \MovLib\Data\Image\SPAN_02;
+  const IMAGE_STYLE_SPAN_02 = 140;
+
+  /**
+   * Global minimum height for uploaded images.
+   *
+   * @see \MovLib\Data\Image\SPAN_02
+   * @var int
+   */
+  const IMAGE_MIN_HEIGHT = 140;
+
+  /**
+   * Global minimum width for uploaded images.
+   *
+   * @see \MovLib\Data\Image\SPAN_02
+   * @var int
+   */
+  const IMAGE_MIN_WIDTH = 140;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -128,7 +136,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    * @internal Must be public for validation.
    * @var int
    */
-  protected $imageHeight;
+  public $imageHeight;
 
   /**
    * The image's name.
@@ -164,7 +172,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    * @internal Must be public for validation.
    * @var int
    */
-  protected $imageWidth;
+  public $imageWidth;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -284,7 +292,13 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    */
   protected function getImagePath($style = null) {
     $root = "{$_SERVER["DOCUMENT_ROOT"]}/uploads/";
-    empty($style) ? ($root .= "originals/") : ($style = ".{$style}");
+    if (empty($style)) {
+      $root .= "originals/";
+      $style = null;
+    }
+    else {
+      $style = ".{$style}";
+    }
     return "{$root}{$this->imageDirectory}/{$this->imageName}{$style}.{$this->imageExtension}";
   }
 
@@ -299,7 +313,13 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   protected function getImageURL($style = null) {
     if ($this->imageExists == true) {
       $root = "{$GLOBALS["movlib"]["static_domain"]}uploads/";
-      empty($style) ? ($root .= "originals/") : ($style = ".{$style}");
+      if (empty($style)) {
+        $root .= "originals/";
+        $style = null;
+      }
+      else {
+        $style = ".{$style}";
+      }
       return "{$root}{$this->imageDirectory}/{$this->imageName}{$style}.{$this->imageExtension}?c={$this->imageChanged}";
     }
     return "{$GLOBALS["movlib"]["static_domain"]}img/{$this->imagePlaceholder}";
