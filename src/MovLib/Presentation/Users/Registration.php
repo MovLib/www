@@ -189,7 +189,7 @@ class Registration extends \MovLib\Presentation\FormPage {
   public function validate(array $errors = null) {
     global $i18n;
     $user           = new User();
-    $user->name     = $this->username->value;
+    $user->name     = $_POST[$this->username->id]; // We want to validate the original data again
     $usernameErrors = null;
 
     if ($user->name[0] == " ") {
@@ -203,6 +203,9 @@ class Registration extends \MovLib\Presentation\FormPage {
     if (strpos($user->name, "  ") !== false) {
       $usernameErrors[] = $i18n->t("The username cannot contain multiple spaces in a row.");
     }
+
+    // Switch to sanitized data
+    $user->name = $this->username->value;
 
     if (strpbrk($user->name, $this->usernameIllegalCharacters) !== false) {
       $usernameErrors[] = $i18n->t(
@@ -323,7 +326,7 @@ class Registration extends \MovLib\Presentation\FormPage {
     }
     catch (UnauthorizedException $e) {
       unset($e->presentation->email->attributes[array_search("autofocus", $e->presentation->email->attributes)]);
-      $e->presentation->password->attributes[]           = "autofocus";
+      $e->presentation->password->attributes[] = "autofocus";
       throw $e;
     }
     catch (UserException $e) {

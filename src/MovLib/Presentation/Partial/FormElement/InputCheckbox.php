@@ -47,7 +47,7 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
     $this->attributes["type"] = "checkbox";
     $this->value              = $value;
     if (isset($_POST[$this->id])) {
-      $this->value = $_POST[$this->id] == true;
+      $this->value = (boolean) $_POST[$this->id];
     }
   }
 

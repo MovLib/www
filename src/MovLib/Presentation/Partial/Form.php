@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial;
 
+use \MovLib\Exception\ValidationException;
+
 /**
  * Auto-validating HTML form for POST requests.
  *
@@ -142,7 +144,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
           try {
             $this->elements[$i]->validate();
           }
-          catch (\MovLib\Exception\ValidationException $e) {
+          catch (ValidationException $e) {
             // Mark this form element as invalid.
             $this->elements[$i]->invalid();
 
