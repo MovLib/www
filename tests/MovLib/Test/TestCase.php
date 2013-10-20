@@ -31,4 +31,62 @@ class TestCase extends \PHPUnit_Framework_TestCase {
   use \MovDev\TraitUtilities;
   use \MovLib\Data\TraitUtilities;
 
+  /**
+   * Execute an external program.
+   *
+   * This method behaves the same as PHP's <code>exec()</code> function, the only difference is that it redirects
+   * <code>stderr</code> to <code>stdout</code> and surpresses any output even upon error.
+   *
+   * @see \MovLib\Data\TraitUtilities::exec()
+   * @param string $command
+   *   The external shell program to execute.
+   * @param array $output [optional]
+   *   If the output argument is present, then the specified array will be filled with every line of output from the
+   *   command. Trailing whitespace, such as <code>"\n"</code>, is not included in this array. Note that if the array
+   *   already contains some elements, exec will append to the end of the array. If you do not want the function to
+   *   append elements, call unset on the array before passing it to exec.
+   * @param int $status [optional]
+   *   If present the return status of the executed command will be written to this variable.
+   * @return boolean
+   *   <code>TRUE</code> if the program exited with <code>0</code>, otherwise <code>FALSE</code>
+   */
+  public static function exec($command, &$output = null, &$status = null) {
+    exec("{$command} 2>&1", $output, $status);
+    return $status === 0;
+  }
+
+  /**
+   * Execute an external program in a separate detached thread.
+   *
+   * This method behaves the same as PHP's <code>exec()</code> function, the only differences are that no output is
+   * printed upon error and the executed program will be detached from the current PHP process.
+   *
+   * <b>IMPORTANT</b>
+   * If you rely upon the result of the executed program <b>do not</b> use this method, because you can't predict the
+   * time of completion and any attempt (e.g. <code>ps aux | grep</code> stuff) to do so is extremely messy. If you
+   * need real threading have a look at {@link http://www.php.net/manual/en/book.pthreads.php pthreads}.
+   *
+   * <b>NOTE</b>
+   * All file descriptors are directly closed instead of redirected to <code>/dev/null</code>.
+   *
+   * @link http://stackoverflow.com/questions/222414/asynchronous-shell-exec-in-php
+   * @see \MovLib\Data\TraitUtilities::execDetached()
+   * @param string $command
+   *   The external shell program to execute.
+   * @return this
+   */
+  public static function execDetached($command) {
+    exec("{$command} <&- 1<&- 2<&-");
+  }
+
+  /**
+   * Assert that the method returns itself for chaining.
+   *
+   * @param mixed $actual
+   *   The actual return value of the method.
+   */
+  protected function assertChaining($actual) {
+    $this->assertEquals($this, $actual, "Method deleteImage() should return itself for chaining.");
+  }
+
 }
