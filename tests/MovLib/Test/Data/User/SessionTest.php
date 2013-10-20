@@ -17,7 +17,6 @@
  */
 namespace MovLib\Test\Data;
 
-use \MovDev\Database;
 use \MovLib\Data\User\Full as User;
 use \MovLib\Data\User\Session;
 
@@ -37,8 +36,7 @@ class SessionTest extends \MovLib\Test\TestCase {
 
   public function tearDown() {
     global $session;
-    $this->exec("movdev db -s users");
-    $session->authentication = time();
+    $session->authentication = $_SERVER["REQUEST_TIME"];
   }
 
 
@@ -67,6 +65,7 @@ class SessionTest extends \MovLib\Test\TestCase {
     $user = new User(User::FROM_ID, 1);
     $user->deactivate();
     (new Session())->authenticate("richard@fussenegger.info", "Test1234");
+    $this->exec("movdev db -s users");
   }
 
   /**
@@ -191,6 +190,7 @@ class SessionTest extends \MovLib\Test\TestCase {
     $this->_testInsertGetActiveSessionsUpdateAndDelete();
     $session->delete();
     $this->_testInsertGetActiveSessionsUpdateAndDelete(false);
+    $this->exec("movdev db -s users");
   }
 
   private function _testInsertGetActiveSessionsUpdateAndDelete($findIt = true) {
@@ -219,18 +219,21 @@ class SessionTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::passwordNeedsRehash
+   * @global \MovDev\Database $db
    */
   public function testPasswordNeedsRehash() {
-    global $session;
-    $db = new Database();
+    global $db, $session;
     $hashBefore = $this->_testPasswordNeedsRehash($db);
     $needsRehash = password_hash("Test1234", PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] - 1 ]);
     $session->passwordNeedsRehash($needsRehash, "Test1234");
     $this->assertNotEquals($hashBefore, $this->_testPasswordNeedsRehash($db));
     $db->query("UPDATE `users` SET `password` = ? WHERE `user_id` = 1", "s", [ $hashBefore ]);
+    $this->exec("movdev db -s users");
   }
 
-  private function _testPasswordNeedsRehash($db) {
+  /** @global \MovDev\Database $db */
+  private function _testPasswordNeedsRehash() {
+    global $db;
     $stmt = $db->query("SELECT `password` FROM `users` WHERE `user_id` = 1 LIMIT 1");
     $stmt->bind_result($password);
     $stmt->fetch();

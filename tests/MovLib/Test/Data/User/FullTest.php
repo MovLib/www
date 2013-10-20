@@ -17,7 +17,6 @@
  */
 namespace MovLib\Test\Data\User;
 
-use \MovDev\Database;
 use \MovLib\Data\User\Full as User;
 use \MovLib\Data\User\Session;
 
@@ -49,7 +48,7 @@ class FullTest extends \MovLib\Test\TestCase {
 
 
   public static function tearDownAfterClass() {
-    exec("movdev db -a");
+    exec("movdev db -a"); // Static context, do not use $this
   }
 
 
@@ -159,8 +158,10 @@ class FullTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::getRegistrationData
+   * @global \MovDev\Database $db
     */
   public function testGetRegistrationData() {
+    global $db;
     $user        = new User();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
@@ -174,7 +175,7 @@ class FullTest extends \MovLib\Test\TestCase {
     $this->assertEquals(1, $data["attempts"]);
     $this->assertTrue(password_verify("Test1234", $data["password"]));
 
-    (new Database())->query("TRUNCATE TABLE `tmp`");
+    $db->query("TRUNCATE TABLE `tmp`");
     $this->exec("movdev db -s users");
   }
 
@@ -182,18 +183,20 @@ class FullTest extends \MovLib\Test\TestCase {
    * @covers ::getRegistrationData
    * @expectedException \MovLib\Exception\UserException
    * @expectedExceptionMessage No data found
+   * @global \MovDev\Database $db
     */
   public function testGetRegistrationDataExpired() {
+    global $db;
     try {
       $user        = new User();
       $user->name  = "PHPUnit";
       $user->email = "phpunit@movlib.org";
       $user->prepareRegistration("Test1234");
-      (new Database())->query("UPDATE `tmp` SET `created` = FROM_UNIXTIME(?) WHERE `key` = ?", "ss", [ strtotime("-25 hours"), "registration-phpunit@movlib.org" ]);
+      $db->query("UPDATE `tmp` SET `created` = FROM_UNIXTIME(?) WHERE `key` = ?", "ss", [ strtotime("-25 hours"), "registration-phpunit@movlib.org" ]);
       $user->getRegistrationData();
     }
     finally {
-      (new Database())->query("TRUNCATE TABLE `tmp`");
+      $db->query("TRUNCATE TABLE `tmp`");
     }
   }
 
@@ -215,42 +218,26 @@ class FullTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::prepareRegistration
+   * @global \MovDev\Database $db
     */
   public function testPrepareRegistration() {
+    global $db;
     $user        = new User();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $this->assertEquals($user, $user->prepareRegistration("Test1234"));
-    (new Database())->query("TRUNCATE TABLE `tmp`");
+    $db->query("TRUNCATE TABLE `tmp`");
   }
 
   /**
    * @covers ::prepareRegistration
-   * @expectedException \MovLib\Exception\UserException
-   * @expectedExceptionMessage Too many registration attempts
+   * @global \MovDev\Database $db
     */
-  public function testPrepareRegistrationTooManyAttempts() {
+  public function testPrepareRegistrationExpiredAttempts() {
+    global $db;
     $user        = new User();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
-    try {
-      while (true) {
-        $user->prepareRegistration("Test1234");
-      }
-    }
-    finally {
-      (new Database())->query("TRUNCATE TABLE `tmp`");
-    }
-  }
-
-  /**
-   * @covers ::prepareRegistration
-    */
-  public function testPrepareRegistrationTooManyExpiredAttempts() {
-    $user        = new User();
-    $user->name  = "PHPUnit";
-    $user->email = "phpunit@movlib.org";
-    $db          = new Database();
     $c           = User::MAXIMUM_ATTEMPTS * 2;
     $time        = strtotime("-25 hours");
     $key         = "registration-{$user->email}";
@@ -262,13 +249,36 @@ class FullTest extends \MovLib\Test\TestCase {
   }
 
   /**
+   * @covers ::prepareRegistration
+   * @expectedException \MovLib\Exception\UserException
+   * @expectedExceptionMessage Too many registration attempts
+   * @global \MovDev\Database $db
+    */
+  public function testPrepareRegistrationTooManyAttempts() {
+    global $db;
+    $user        = new User();
+    $user->name  = "PHPUnit";
+    $user->email = "phpunit@movlib.org";
+    try {
+      while (true) {
+        $user->prepareRegistration("Test1234");
+      }
+    }
+    finally {
+      $db->query("TRUNCATE TABLE `tmp`");
+    }
+  }
+
+  /**
    * @covers ::reactivate
+   * @global \MovDev\Database $db
     */
   public function testReactivate() {
+    global $db;
     $user = new User(User::FROM_ID, 1);
     $user->deactivate()->reactivate();
     $this->assertFalse($user->deactivated);
-    $stmt = (new Database())->query("SELECT `deactivated` FROM `users` WHERE `user_id` = ?", "d", [ 1 ]);
+    $stmt = $db->query("SELECT `deactivated` FROM `users` WHERE `user_id` = ?", "d", [ 1 ]);
     $stmt->bind_result($deactivated);
     $stmt->fetch();
     $this->assertFalse((boolean) $deactivated);
@@ -277,10 +287,10 @@ class FullTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::register
+   * @global \MovDev\Database $db
     */
   public function testRegister() {
-    global $i18n;
-    $db          = new Database();
+    global $db, $i18n;
     $user        = new User();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
@@ -305,9 +315,10 @@ class FullTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::updateEmail
+   * @global \MovDev\Database $db
     */
   public function testUpdateEmail() {
-    $db   = new Database();
+    global $db;
     $user = new User(User::FROM_ID, 1);
     $this->assertEquals("richard@fussenegger.info", $user->email);
     $user->updateEmail("phpunit@movlib.org");
@@ -321,9 +332,10 @@ class FullTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::updatePassword
+   * @global \MovDev\Database $db
     */
   public function testUpdatePassword() {
-    $db      = new Database();
+    global $db;
     $session = new Session();
     $session->authenticate("richard@fussenegger.info", "Test1234");
     $stmt    = $db->query("SELECT `password` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ 1 ]);
