@@ -38,8 +38,7 @@ class RegistrationTest extends \MovLib\Test\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  private static $db;
-
+  /** @var \MovLib\Data\User\Session */
   private static $sessionBackup;
 
 
@@ -48,7 +47,6 @@ class RegistrationTest extends \MovLib\Test\TestCase {
 
   public static function setUpBeforeClass() {
     global $session;
-    self::$db             = new \MovDev\Database();
     self::$sessionBackup  = clone $session;
     $session              = new Session();
     $_SERVER["PATH_INFO"] = "/users/registration";
@@ -97,7 +95,11 @@ class RegistrationTest extends \MovLib\Test\TestCase {
    * @return this
    */
   private function _testUsername($username, $contains) {
-    $this->assertContains($contains, $this->_getRegistration([ "username" => $username ])->getPresentation());
+    $this->assertContains(
+      $contains,
+      $this->_getRegistration([ "username" => $username ])->getPresentation(),
+      "Couldn't assert that username validation works correctly."
+    );
     return $this;
   }
 
@@ -107,8 +109,8 @@ class RegistrationTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
-   * @expectedException \MovLib\Exception\RedirectException
-   * @expectedExceptionMessage Redirecting user to /my with status 302.
+   * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
+   * @expectedExceptionMessage Redirecting user to /my with status 303.
     */
   public function testRedirectIfAuthenticated() {
     global $session;
@@ -128,7 +130,11 @@ class RegistrationTest extends \MovLib\Test\TestCase {
   public function testGetContent() {
     $registration = new Registration();
     $form         = $this->getProperty($registration, "form");
-    $this->assertEquals("<div class='container'><div class='row'>{$form}</div></div>", $this->invoke($registration, "getContent"));
+    $this->assertEquals(
+      "<div class='container'><div class='row'>{$form}</div></div>",
+      $this->invoke($registration, "getContent"),
+      "Couldn't assert that registration content contains self-rendered form."
+    );
   }
 
   /**
@@ -140,7 +146,7 @@ class RegistrationTest extends \MovLib\Test\TestCase {
     $form         = $this->getProperty($registration, "form");
     $content      = $this->invoke($registration, "getContent");
     $this->assertNotContains((string) $form, $content);
-    $this->assertContains("Mistyped something?", $content);
+    $this->assertContains("Mistyped something?", $content, "Couldn't assert that valid registration is accepted.");
   }
 
   /**
@@ -167,8 +173,8 @@ class RegistrationTest extends \MovLib\Test\TestCase {
   /**
    * @covers ::validate
     */
-  public function testUsernameSlash() {
-    $this->_testUsername("PHP/Unit", "username cannot contain slashes");
+  public function testUsernameIllegalCharacters() {
+    $this->_testUsername("PHP/Unit", "username cannot contain any of the following characters");
   }
 
   /**
@@ -189,15 +195,15 @@ class RegistrationTest extends \MovLib\Test\TestCase {
    * @covers ::validate
     */
   public function testTerms() {
-    $registration = $this->_getRegistration([ "terms" => "off" ]);
-    $this->assertContains("You have to accept the", $registration->getPresentation());
+    $registration = $this->_getRegistration([ "terms" => "" ]);
+    $this->assertContains("You have to accept the", $registration->getPresentation(), "Couldn't assert that terms have to be accepted.");
   }
 
   /**
    * @covers ::validate
     */
   public function testEmailExists() {
-    $this->_getRegistration("PHPUnit", "richard@fussenegger.info");
+    $this->_getRegistration([ "email" => "richard@fussenegger.info" ]);
     $found = false;
     foreach (get_reflection_property("\\MovLib\\Data\\Delayed\\Mailer", "emails")->getValue() as $email) {
       if (($found = $email instanceof RegistrationEmailExists) === true) {
