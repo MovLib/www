@@ -18,10 +18,10 @@
 namespace MovLib\Data;
 
 /**
- * Default genres implementation.
+ * Default styles implementation.
  *
  * <b>NOTE</b>
- * All genres are always translated to the current global language.
+ * All styles are always translated to the current global language.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -29,23 +29,23 @@ namespace MovLib\Data;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Genres extends \MovLib\Data\DatabaseArrayObject {
+class Styles extends \MovLib\Data\DatabaseArrayObject {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new genres object.
+   * Instantiate new styles object.
    *
    * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
     global $i18n;
     if ($i18n->languageCode != $i18n->defaultLanguageCode) {
-      $this->query = "COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS ";
+      $this->query = "COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `dynName`,";
     }
-    $this->query = "SELECT `genre_id` AS `id`, {$this->query}`name` FROM `genres`";
+    $this->query = "SELECT `style_id` AS `id`, {$this->query} `name` FROM `styles`";
   }
 
 
@@ -53,10 +53,10 @@ class Genres extends \MovLib\Data\DatabaseArrayObject {
 
 
   /**
-   * Order selected genres by ID.
+   * Order selected styles by ID.
    *
    * @param array $filter [optional]
-   *   Array containing all genre IDs to fetch.
+   *   Array containing all style IDs to fetch.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -65,20 +65,21 @@ class Genres extends \MovLib\Data\DatabaseArrayObject {
     if ($filter) {
       $c      = count($filter);
       $in     = rtrim(str_repeat("?,", $c), ",");
-      $result = $this->query("{$this->query} WHERE `genre_id` IN({$in})", str_repeat("i", $c), $filter)->get_result();
+      $result = $this->query("{$this->query} WHERE `style_id` IN({$in}) ORDER BY `style_id` ASC", str_repeat("i", $c), $filter)->get_result();
     }
     else {
       $result = $this->query($this->query)->get_result();
     }
-    /* @var $genre \MovLib\Data\Genre */
-    while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre")) {
-      $this->objectsArray[$genre->id] = $genre;
+    /* @var $style \MovLib\Data\Style */
+    while ($style = $result->fetch_object("\\MovLib\\Data\\Style")) {
+      $style->name = (empty($style->dynName)) ? $style->name : $style->dynName;
+      $this->objectsArray[$style->id] = $style;
     }
     return $this;
   }
 
   /**
-   * Order selected genres by name.
+   * Order selected styles by name.
    *
    * @global \MovLib\Data\I18n $i18n
    * @return this
@@ -87,10 +88,11 @@ class Genres extends \MovLib\Data\DatabaseArrayObject {
   public function orderByName() {
     global $i18n;
     $this->objectsArray = [];
-    $result = $this->query($this->query)->get_result();
-    /* @var $genre \MovLib\Data\Genre */
-    while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre")) {
-      $this->objectsArray[$genre->name] = $genre;
+    $result = $this->query("{$this->query} ORDER BY `style_id` ASC")->get_result();
+    /* @var $style \MovLib\Data\Style */
+    while ($style = $result->fetch_object("\\MovLib\\Data\\Style")) {
+      $style->name = (empty($style->dynName)) ? $style->name : $style->dynName;
+      $this->objectsArray[$style->name] = $style;
     }
     $i18n->getCollator()->ksort($this->objectsArray);
     return $this;

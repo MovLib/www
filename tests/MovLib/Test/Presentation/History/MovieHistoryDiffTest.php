@@ -218,4 +218,28 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
     $i18n = new \MovLib\Data\I18n();
   }
 
+  /**
+   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
+   * @covers \Movlib\Data\User\Styles::orderById
+   */
+  public function testDiffIdsWithStyles() {
+    global $i18n;
+    $diff = ["added" => [1,3], "removed" => [2,4], "edited" => []];
+    $this->assertEquals(
+      "<ul><li><a href='/styles/1' class='green' title='More about Film noir'>Film noir</a></li><li><a href='/styles/3' "
+      . "class='green' title='More about Neo-noir'>Neo-noir</a></li><li><a href='/styles/2' class='red' title='More about "
+      . "Color film noir'>Color film noir</a></li><li><a href='/styles/4' class='red' title='More about Cinema verite'>"
+      . "Cinema verite</a></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Styles" ])->__toString()
+    );
+
+    $i18n = new \MovLib\Data\I18n("de-at");
+    // no translation in db use name (en)
+    $this->assertContains(
+      "Color film noir",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Styles" ])->__toString()
+    );
+    $i18n = new \MovLib\Data\I18n();
+  }
+
 }

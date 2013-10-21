@@ -17,10 +17,8 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Exception\DatabaseException;
-
 /**
- * Handling of Styles.
+ * Handling of one Style.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -31,48 +29,28 @@ use \MovLib\Exception\DatabaseException;
 class Style extends \MovLib\Data\Database {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Static Methods
+ // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
-   * Get array with style names.
+   * The style's unique identifier.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @param array $styleIds
-   *   Numeric array containing the desired style IDs.
-   * @return array
-   *   Array containing the style names with the style's unique ID as key.
+   * @var int
    */
-  public function getStyleNames(array $styleIds) {
-    global $i18n;
-    if (empty($styleIds)) {
-      return [];
-    }
+  public $id;
 
-    $styleIds = array_unique($styleIds);
-    $c = count($styleIds);
-    $in = rtrim(str_repeat("?,", $c), ",");
+  /**
+   * The style's name.
+   *
+   * @var string
+   */
+  public $name;
 
-    if ($i18n->languageCode == "en") {
-      $result = $this->select("SELECT `style_id`, `name` FROM `styles` WHERE `style_id` IN ({$in})",
-        str_repeat("d", $c),
-        $styleIds
-      );
-    }
-    else {
-      $result = $this->select(
-        "SELECT `style_id`, COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `name`, `name` AS `en_name`" .
-          "FROM `styles` WHERE `style_id` IN ({$in})",
-          str_repeat("d", $c),
-        $styleIds
-      );
-    }
-
-    $styleNames = [];
-    $c = count($result);
-    for ($i = 0; $i < $c; ++$i) {
-      $styleNames[$result[$i]["style_id"]] = empty($result[$i]["name"]) ? $result[$i]["en_name"] : $result[$i]["name"];
-    }
-    return $styleNames;
-  }
+  /**
+   * The style's translated name.
+   *
+   * @var string
+   */
+  public $dynName;
 
 }
