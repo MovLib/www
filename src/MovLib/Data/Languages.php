@@ -61,6 +61,7 @@ class Languages extends \MovLib\Data\DatabaseArrayObject {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function orderByCode(array $filter = null) {
+    $this->objectsArray = [];
     if ($filter) {
       $c      = count($filter);
       $in     = rtrim(str_repeat("?,", $c), ",");
@@ -85,6 +86,7 @@ class Languages extends \MovLib\Data\DatabaseArrayObject {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function orderById(array $filter = null) {
+    $this->objectsArray = [];
     if ($filter) {
       $c      = count($filter);
       $in     = rtrim(str_repeat("?,", $c), ",");
@@ -109,12 +111,13 @@ class Languages extends \MovLib\Data\DatabaseArrayObject {
    */
   public function orderByName() {
     global $i18n;
+    $this->objectsArray = [];
     $result = $this->query($this->query)->get_result();
     /* @var $language \MovLib\Data\Language */
     while ($language = $result->fetch_object("\\MovLib\\Data\\Language")) {
       $this->objectsArray[$language->name] = $language;
     }
-    $this->objectsArray = $i18n->getCollator()->ksort($this->objectsArray);
+    $i18n->getCollator()->ksort($this->objectsArray);
     return $this;
   }
 

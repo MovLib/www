@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 /**
- * Handling of Persons.
+ * Handling of one Person.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
@@ -28,33 +28,22 @@ namespace MovLib\Data;
  */
 class Person extends \MovLib\Data\Database {
 
- /**
-   * Get numeric array with person names.
-   *
-   * @param array $personIds
-   *   Numeric array containing the desired person IDs.
-   * @return array
-   *   Array containing the person names with the person's unique ID as key.
-   */
-  public function getPersonNames(array $personIds) {
-    if (empty($personIds)) {
-      return [];
-    }
-    $personIds = array_unique($personIds);
-    $c = count($personIds);
-    $in = rtrim(str_repeat("?,", $c), ",");
-    $result = $this->select(
-      "SELECT `person_id`, `name` FROM `persons` WHERE `person_id` IN ({$in})",
-      str_repeat("d", $c),
-      $personIds
-    );
-    $persons = [];
-    $c = count($result);
-    for ($i = 0; $i < $c; ++$i) {
-      $persons[$result[$i]["person_id"]] = $result[$i]["name"];
-    }
 
-    return $persons;
-  }
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+  
+  /**
+   * The person's unique identifier.
+   *
+   * @var int
+   */
+  public $id;
+
+  /**
+   * The person's name.
+   *
+   * @var string
+   */
+  public $name;
 
 }
