@@ -61,6 +61,7 @@ class Countries extends \MovLib\Data\DatabaseArrayObject {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function orderByCode(array $filter = null) {
+    $this->objectsArray = [];
     if ($filter) {
       $c      = count($filter);
       $in     = rtrim(str_repeat("?,", $c), ",");
@@ -85,6 +86,7 @@ class Countries extends \MovLib\Data\DatabaseArrayObject {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function orderById(array $filter = null) {
+    $this->objectsArray = [];
     if ($filter) {
       $c      = count($filter);
       $in     = rtrim(str_repeat("?,", $c), ",");
@@ -109,6 +111,7 @@ class Countries extends \MovLib\Data\DatabaseArrayObject {
    */
   public function orderByName() {
     global $i18n;
+    $this->objectsArray = [];
     $result = $this->query($this->query)->get_result();
     /* @var $country \MovLib\Data\Country */
     while ($country = $result->fetch_object("\\MovLib\\Data\\Country")) {

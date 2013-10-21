@@ -196,4 +196,26 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
     $i18n = new \MovLib\Data\I18n();
   }
 
+ /**
+   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
+   * @covers \Movlib\Data\User\Languages::orderById
+   */
+  public function testDiffIdsWithLanguages() {
+    global $i18n;
+    $diff = ["added" => [1,3], "removed" => [2,4], "edited" => []];
+    $this->assertEquals(
+      "<ul><li><a href='/languages/1' class='green' title='More about Abkhazian'>Abkhazian</a></li><li><a href='/languages/3' "
+      . "class='green' title='More about Afrikaans'>Afrikaans</a></li><li><a href='/languages/2' class='red' title='More "
+      . "about Afar'>Afar</a></li><li><a href='/languages/4' class='red' title='More about Akan'>Akan</a></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Languages" ])->__toString()
+    );
+
+    $i18n = new \MovLib\Data\I18n("de-at");
+    $this->assertContains(
+      "Abchasisch",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Languages" ])->__toString()
+    );
+    $i18n = new \MovLib\Data\I18n();
+  }
+
 }
