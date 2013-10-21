@@ -142,7 +142,7 @@ class AbstractImageTest extends \MovLib\Test\TestCase {
     foreach ([ $imageOriginal, $imageStyle01, $imageStyle02 ] as $image) {
       touch($image);
     }
-    $this->assertChaining($this->invoke($this->image, "deleteImage"));
+    $this->assertChaining($this->image, $this->invoke($this->image, "deleteImage"));
     $found = false;
     foreach ($this->getStaticProperty("\\MovLib\\Data\\Delayed\\MethodCalls", "stack") as $delayedMethod) {
       if ($delayedMethod[0] == [ $this->image, "commit" ]) {

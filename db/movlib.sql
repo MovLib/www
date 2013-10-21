@@ -165,7 +165,7 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci
+COLLATE = utf8mb4_unicode_ci
 COMMENT = 'Contains all user related data.'
 ROW_FORMAT = COMPRESSED;
 
@@ -176,7 +176,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE  TABLE IF NOT EXISTS `movlib`.`persons` (
   `person_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The person’s unique ID.' ,
-  `name` BLOB NOT NULL COMMENT 'The person’s full name.' ,
+  `name` VARCHAR(255) NOT NULL COMMENT 'The person’s full name.' ,
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this person was deleted, default is FALSE (0).' ,
   `born_name` MEDIUMBLOB NULL COMMENT 'The person’s born name.' ,
   `birthdate` DATE NULL COMMENT 'The person’s date of birth.' ,
@@ -192,6 +192,8 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`persons` (
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this person was created.' ,
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.' ,
   PRIMARY KEY (`person_id`) )
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_unicode_ci
 COMMENT = 'Contains all person related data.'
 ROW_FORMAT = COMPRESSED;
 

@@ -74,7 +74,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
   public function __construct($id, $label, array $options, $value = null, array $attributes = null, $help = null, $helpPopup = true) {
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
     $this->options = $options;
-    $this->value   = empty($_POST[$this->id]) ? $value : $_POST[$this->id];
+    $this->value   = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }
 
   /**
@@ -85,11 +85,12 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
 
     //  The first child option element of a select element with a required attribute and without a multiple attribute,
     //  and whose size is 1, must have either an empty value attribute, or must have no text content.
-    $selected = empty($this->value) ? " selected" : null;
+    $emptyValue = empty($this->value);
+    $selected = $emptyValue ? " selected" : null;
     $options  = "<option{$selected} value=''>{$i18n->t("Please Select …")}</option>";
 
     foreach ($this->options as $value => $option) {
-      $selected = $this->value == $value ? " selected" : null;
+      $selected = !$emptyValue && $this->value == $value ? " selected" : null;
       $options .= "<option{$selected} value='{$value}'>{$option}</option>";
     }
 

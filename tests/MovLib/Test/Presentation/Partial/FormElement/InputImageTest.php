@@ -18,6 +18,7 @@
 namespace MovLib\Test\Presentation\Partial\FormElement;
 
 use \MovLib\Data\User\User;
+use \MovLib\Data\Image\AbstractImage;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
 
 /**
@@ -43,8 +44,6 @@ class InputImageTest extends \MovLib\Test\TestCase {
     $this->assertEquals(ini_get("upload_max_filesize"), $inputImage->attributes["data-max-filesize"]);
     $this->assertEquals("file", $inputImage->attributes["type"]);
     $this->assertEquals($concreteImage, $this->getProperty($inputImage, "image"));
-    $this->assertEquals($concreteImage->imageHeight, $inputImage->attributes["data-min-height"]);
-    $this->assertEquals($concreteImage->imageWidth, $inputImage->attributes["data-min-width"]);
     $this->assertEquals("bar", $inputImage->attributes["foo"]);
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $this->getProperty($inputImage, "help"));
   }
@@ -55,8 +54,8 @@ class InputImageTest extends \MovLib\Test\TestCase {
   public function testConstructGlobalDimensionConstraints() {
     $concreteImage = new User();
     $inputImage    = new InputImage("phpunit", "PHPUnit", $concreteImage);
-    $this->assertEquals($GLOBALS["movlib"]["image_min_height"], $inputImage->attributes["data-min-height"]);
-    $this->assertEquals($GLOBALS["movlib"]["image_min_width"], $inputImage->attributes["data-min-width"]);
+    $this->assertEquals(AbstractImage::IMAGE_MIN_HEIGHT, $inputImage->attributes["data-min-height"]);
+    $this->assertEquals(AbstractImage::IMAGE_MIN_WIDTH, $inputImage->attributes["data-min-width"]);
   }
 
   /**
@@ -65,7 +64,6 @@ class InputImageTest extends \MovLib\Test\TestCase {
   public function testToStringImageExists() {
     $concreteImage = new User(User::FROM_ID, 1);
     $inputImage    = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
-    $this->assertRegExp("/<img[a-z0-9=' \.\?\/:]+>/", $inputImage);
     $this->assertContains("<label for='phpunit'>PHPUnit</label>", $inputImage);
     $this->assertRegExp("/<input[a-z0-9=' \/,-]+>/", $inputImage);
   }

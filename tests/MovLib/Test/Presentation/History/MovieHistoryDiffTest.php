@@ -17,7 +17,6 @@
  */
 namespace MovLib\Test\Presentation\History;
 
-use MovDev\Database;
 use \MovLib\Data\History\Movie;
 use \MovLib\Presentation\History\MovieHistoryDiff;
 
@@ -131,7 +130,9 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
   public function testDiffIdsWithUsers() {
     $diff = ["added" => [1,3], "removed" => [2], "edited" => []];
     $this->assertEquals(
-      "<ul><li><a href='/users/1' class='green' title='More about Fleshgrinder'>Fleshgrinder</a></li><li><a href='/users/3' class='green' title='More about Ravenlord'>Ravenlord</a></li><li><a href='/users/2' class='red' title='More about ftorghele'>ftorghele</a></li></ul>",
+      "<ul><li><a href='/users/1' class='green' title='More about Fleshgrinder'>Fleshgrinder</a></li><li><a "
+      . "href='/users/3' class='green' title='More about Ravenlord'>Ravenlord</a></li><li><a href='/users/2' class='red' "
+      . "title='More about ftorghele'>ftorghele</a></li></ul>",
       $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\User\Users" ])->__toString()
     );
   }
@@ -144,7 +145,9 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
     global $i18n;
     $diff = ["added" => [1,3], "removed" => [2], "edited" => []];
     $this->assertEquals(
-      "<ul><li><a href='/countries/1' class='green' title='More about Andorra'>Andorra</a></li><li><a href='/countries/3' class='green' title='More about Afghanistan'>Afghanistan</a></li><li><a href='/countries/2' class='red' title='More about United Arab Emirates'>United Arab Emirates</a></li></ul>",
+      "<ul><li><a href='/countries/1' class='green' title='More about Andorra'>Andorra</a></li><li><a href='/countries/3' "
+      . "class='green' title='More about Afghanistan'>Afghanistan</a></li><li><a href='/countries/2' class='red' "
+      . "title='More about United Arab Emirates'>United Arab Emirates</a></li></ul>",
       $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Countries" ])->__toString()
     );
 
@@ -152,6 +155,89 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
     $this->assertContains(
       "Vereinigte Arabische Emirate",
       $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Countries" ])->__toString()
+    );
+    $i18n = new \MovLib\Data\I18n();
+  }
+
+  /**
+   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
+   * @covers \Movlib\Data\User\Persons::orderById
+   */
+  public function testDiffIdsWithDirectors() {
+    $diff = ["added" => [1,3], "removed" => [2,4], "edited" => []];
+    $this->assertEquals(
+      "<ul><li><a href='/persons/1' class='green' title='More about Luc Besson'>Luc Besson</a></li><li><a href='/persons/3' "
+      . "class='green' title='More about Natalie Portman'>Natalie Portman</a></li><li><a href='/persons/2' class='red' "
+      . "title='More about Jean Reno'>Jean Reno</a></li><li><a href='/persons/4' class='red' title='More about Gary "
+      . "Oldman'>Gary Oldman</a></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Persons" ])->__toString()
+    );
+  }
+
+  /**
+   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
+   * @covers \Movlib\Data\User\Genres::orderById
+   */
+  public function testDiffIdsWithGenres() {
+    global $i18n;
+    $diff = ["added" => [1,3], "removed" => [2,4], "edited" => []];
+    $this->assertEquals(
+      "<ul><li><a href='/genres/1' class='green' title='More about Action'>Action</a></li><li><a href='/genres/3' class="
+      . "'green' title='More about Animation'>Animation</a></li><li><a href='/genres/2' class='red' title='More about "
+      . "Adventure'>Adventure</a></li><li><a href='/genres/4' class='red' title='More about Biography'>Biography</a></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Genres" ])->__toString()
+    );
+
+    $i18n = new \MovLib\Data\I18n("de-at");
+    $this->assertContains(
+      "Abenteuer",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Genres" ])->__toString()
+    );
+    $i18n = new \MovLib\Data\I18n();
+  }
+
+ /**
+   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
+   * @covers \Movlib\Data\User\Languages::orderById
+   */
+  public function testDiffIdsWithLanguages() {
+    global $i18n;
+    $diff = ["added" => [1,3], "removed" => [2,4], "edited" => []];
+    $this->assertEquals(
+      "<ul><li><a href='/languages/1' class='green' title='More about Abkhazian'>Abkhazian</a></li><li><a href='/languages/3' "
+      . "class='green' title='More about Afrikaans'>Afrikaans</a></li><li><a href='/languages/2' class='red' title='More "
+      . "about Afar'>Afar</a></li><li><a href='/languages/4' class='red' title='More about Akan'>Akan</a></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Languages" ])->__toString()
+    );
+
+    $i18n = new \MovLib\Data\I18n("de-at");
+    $this->assertContains(
+      "Abchasisch",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Languages" ])->__toString()
+    );
+    $i18n = new \MovLib\Data\I18n();
+  }
+
+  /**
+   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
+   * @covers \Movlib\Data\User\Styles::orderById
+   */
+  public function testDiffIdsWithStyles() {
+    global $i18n;
+    $diff = ["added" => [1,3], "removed" => [2,4], "edited" => []];
+    $this->assertEquals(
+      "<ul><li><a href='/styles/1' class='green' title='More about Film noir'>Film noir</a></li><li><a href='/styles/3' "
+      . "class='green' title='More about Neo-noir'>Neo-noir</a></li><li><a href='/styles/2' class='red' title='More about "
+      . "Color film noir'>Color film noir</a></li><li><a href='/styles/4' class='red' title='More about Cinema verite'>"
+      . "Cinema verite</a></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Styles" ])->__toString()
+    );
+
+    $i18n = new \MovLib\Data\I18n("de-at");
+    // no translation in db use name (en)
+    $this->assertContains(
+      "Color film noir",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Styles" ])->__toString()
     );
     $i18n = new \MovLib\Data\I18n();
   }

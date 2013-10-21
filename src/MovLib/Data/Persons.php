@@ -15,40 +15,34 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\User;
-
-use \MovLib\Data\Pagination;
+namespace MovLib\Data;
 
 /**
- * Handling of large amounts of user data.
+ * Handling of large amounts of person data.
  *
- * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class Users extends \MovLib\Data\DatabaseArrayObject {
+class Persons extends \MovLib\Data\DatabaseArrayObject {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The query to fetch the basic user data without <code>WHERE</code> clause.
+   * The query to fetch the basic person data without <code>WHERE</code> clause.
    *
    * @var string
    */
   protected $query =
     "SELECT
-      `user_id` AS `id`,
+      `person_id` AS `id`,
       `name`,
-      `avatar_name` AS `imageName`,
-      UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
-      `avatar_extension` AS `imageExtension`,
-      `avatar_changed` IS NOT NULL as `imageExists`
-    FROM `users`"
+      `created`
+    FROM `persons`"
   ;
 
 
@@ -56,10 +50,10 @@ class Users extends \MovLib\Data\DatabaseArrayObject {
 
 
   /**
-   * Order selected users by ID.
+   * Order selected persons by ID.
    *
    * @param array $filter
-   *   Array containing the user IDs to fetch.
+   *   Array containing the person IDs to fetch.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -68,51 +62,51 @@ class Users extends \MovLib\Data\DatabaseArrayObject {
     if (!empty($filter)) {
       $c      = count($filter);
       $in     = rtrim(str_repeat("?,", $c), ",");
-      $result = $this->query("{$this->query} WHERE `user_id` IN ({$in}) ORDER BY `id` ASC", str_repeat("d", $c), $filter)->get_result();
-      /* @var $user \MovLib\Data\User\User */
-      while ($user = $result->fetch_object("\\MovLib\\Data\\User\\User")) {
-        $this->objectsArray[$user->id] = $user;
+      $result = $this->query("{$this->query} WHERE `person_id` IN ({$in}) ORDER BY `id` ASC", str_repeat("d", $c), $filter)->get_result();
+      /* @var $person \MovLib\Data\Person */
+      while ($person = $result->fetch_object("\\MovLib\\Data\\Person")) {
+        $this->objectsArray[$person->id] = $person;
       }
     }
     return $this;
   }
 
   /**
-   * Order by creation time, newest first.
+   * Order by creation time.
    *
    * @param int $offset [optional]
-   *   The offset within all users, defaults to <code>0</code>.
+   *   The offset within all persons, defaults to <code>0</code>.
    * @param int $rowCount [optional]
-   *   Defines how many users are fetched from <var>$offset</var>, defaults to <code>Pagination::SPAN8</code>.
+   *   Defines how many persons are fetched from <var>$offset</var>, defaults to <code>Pagination::SPAN8</code>.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function orderByNewest($offset = 0, $rowCount = Pagination::SPAN8) {
+  public function orderByCreated($offset = 0, $rowCount = Pagination::SPAN8) {
     $this->objectsArray = [];
-    $result = $this->query("{$this->query} WHERE `deactivated` = false ORDER BY `created` DESC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
-    /* @var $user \MovLib\Data\User\User */
-    while ($user = $result->fetch_object("\\MovLib\\Data\\User\\User")) {
-      $this->objectsArray[] = $user;
+    $result = $this->query("{$this->query} WHERE `deleted` = false ORDER BY `created` ASC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
+    /* @var $person \MovLib\Data\Person */
+    while ($person = $result->fetch_object("\\MovLib\\Data\\Person")) {
+      $this->objectsArray[] = $person;
     }
     return $this;
   }
 
   /**
-   * Order by username.
+   * Order by personname.
    *
    * @param int $offset [optional]
-   *   The offset within all users, defaults to <code>0</code>.
+   *   The offset within all persons, defaults to <code>0</code>.
    * @param int $rowCount [optional]
-   *   Defines how many users are fetched from <var>$offset</var>, defaults to <code>Pagination::SPAN8</code>.
+   *   Defines how many persons are fetched from <var>$offset</var>, defaults to <code>Pagination::SPAN8</code>.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function orderByName($offset = 0, $rowCount = Pagination::SPAN8) {
     $this->objectsArray = [];
-    $result = $this->query("{$this->query} WHERE `deactivated` = false ORDER BY `name` COLLATE `utf8mb4_unicode_ci` ASC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
-    /* @var $user \MovLib\Data\User\User */
-    while ($user = $result->fetch_object("\\MovLib\\Data\\User\\User")) {
-      $this->objectsArray[$user->name] = $user;
+    $result = $this->query("{$this->query} WHERE `deleted` = false ORDER BY `name` COLLATE `utf8mb4_unicode_ci` ASC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
+    /* @var $person \MovLib\Data\Person */
+    while ($person = $result->fetch_object("\\MovLib\\Data\\Person")) {
+      $this->objectsArray[$person->name] = $person;
     }
     return $this;
   }
