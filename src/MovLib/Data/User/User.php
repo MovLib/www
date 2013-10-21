@@ -19,6 +19,7 @@ namespace MovLib\Data\User;
 
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Data\Image\Style;
+use \MovLib\Data\Delayed\Logger;
 use \MovLib\Exception\UserException;
 
 /**
@@ -123,7 +124,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
         "SELECT
           `user_id`,
           `name`,
-          `avatar_name`,
           UNIX_TIMESTAMP(`avatar_changed`),
           `avatar_extension`,
           `avatar_changed` IS NOT NULL
@@ -132,12 +132,12 @@ class User extends \MovLib\Data\Image\AbstractImage {
         $this->types[$from],
         [ $value ]
       );
-      $stmt->bind_result($this->id, $this->name, $this->imageName, $this->imageChanged, $this->imageExtension, $this->imageExists);
+      $stmt->bind_result($this->id, $this->name, $this->imageChanged, $this->imageExtension, $this->imageExists);
       if (!$stmt->fetch()) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
-      // The image name already has all unsave characters removed.
-      $this->route = $i18n->r("/user/{0}", [ rawurlencode($this->imageName) ]);
+      $this->imageName = mb_strtolower($this->name);
+      $this->route     = $i18n->r("/user/{0}", [ rawurlencode($this->imageName) ]);
     }
   }
 
@@ -168,7 +168,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
       foreach ([ self::IMAGE_STYLE_SPAN_01, self::IMAGE_STYLE_SPAN_02 ] as $style) {
         $path = $this->getImagePath($style);
         if (is_file($path) && unlink($path) === false) {
-          throw new File;
+          Logger::stack("Could not delete {$path}!", Logger::ERROR);
         }
       }
       $this->imageExists  = false;

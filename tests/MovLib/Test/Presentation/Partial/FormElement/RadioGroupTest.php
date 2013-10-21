@@ -33,7 +33,7 @@ class RadioGroupTest extends \MovLib\Test\TestCase {
   public $radioGroup;
 
   public function setUp() {
-    $this->radioGroup = new RadioGroup("phpunit", "PHPUnit", "phpunit1", [ "phpunit1" => "PHPUnit 1" ]);
+    $this->radioGroup = new RadioGroup("phpunit", "PHPUnit", [ "phpunit1" => "PHPUnit 1" ], "phpunit1");
   }
 
   /**
@@ -44,7 +44,7 @@ class RadioGroupTest extends \MovLib\Test\TestCase {
     $this->assertArrayHasKey("aria-required", $this->radioGroup->attributes);
     $this->assertArrayHasKey("id", $this->radioGroup->attributes);
     $this->assertArrayHasKey("role", $this->radioGroup->attributes);
-    $this->assertEquals("PHPUnit", $this->radioGroup->legend);
+    $this->assertEquals("PHPUnit", $this->getProperty($this->radioGroup, "label"));
     $this->assertEquals("false", $this->radioGroup->attributes["aria-required"]);
     $this->assertEquals("phpunit", $this->radioGroup->attributes["id"]);
     $this->assertEquals("phpunit", $this->radioGroup->id);
@@ -54,32 +54,7 @@ class RadioGroupTest extends \MovLib\Test\TestCase {
 
     $choices = $this->getProperty($this->radioGroup, "choices");
     $this->assertArrayHasKey("phpunit1", $choices);
-    $this->assertArrayHasKey("attributes", $choices["phpunit1"]);
-    $this->assertArrayHasKey("label", $choices["phpunit1"]);
-    $this->assertEquals("PHPUnit 1", $choices["phpunit1"]["label"]);
-    foreach ([
-      0       => "required",
-      1       => "checked",
-      "id"    => "phpunit-phpunit1",
-      "name"  => "phpunit",
-      "type"  => "radio",
-      "value" => "phpunit1",
-    ] as $k => $v) {
-      $this->assertArrayHasKey($k, $choices["phpunit1"]["attributes"]);
-      $this->assertEquals($v, $choices["phpunit1"]["attributes"][$k]);
-    }
-    $this->assertArrayHasKey("tabindex", $choices["phpunit1"]["attributes"]);
-    $this->assertTrue(is_int($choices["phpunit1"]["attributes"]["tabindex"]));
-  }
-
-  /**
-   * @covers ::__construct
-   */
-  public function testConstructInvalidPostInput() {
-    $_POST["phpunit"] = "phpunit42";
-    $radioGroup = new RadioGroup("phpunit", "PHPUnit", "phpunit2", [ "phpunit1" => "PHPUnit 1", "phpunit2" => "PHPUnit 2" ]);
-    $this->assertEquals("phpunit2", $radioGroup->value);
-    return $radioGroup;
+    $this->assertEquals("PHPUnit 1", $choices["phpunit1"]);
   }
 
   /**
@@ -87,7 +62,7 @@ class RadioGroupTest extends \MovLib\Test\TestCase {
    */
   public function testConstructValidPostInput() {
     $_POST["phpunit"] = "phpunit1";
-    $radioGroup = new RadioGroup("phpunit", "PHPUnit", "phpunit2", [ "phpunit1" => "PHPUnit 1", "phpunit2" => "PHPUnit 2" ]);
+    $radioGroup = new RadioGroup("phpunit", "PHPUnit", [ "phpunit1" => "PHPUnit 1", "phpunit2" => "PHPUnit 2" ], "phpunit2");
     $this->assertEquals("phpunit1", $radioGroup->value);
   }
 
@@ -103,16 +78,6 @@ class RadioGroupTest extends \MovLib\Test\TestCase {
     $this->assertContains("</label>", $radioGroup);
     $this->assertContains("</legend>", $radioGroup);
     $this->assertContains("</fieldset>", $radioGroup);
-  }
-
-  /**
-   * @covers ::disable
-   */
-  public function testDisable() {
-    $this->radioGroup->disable();
-    $this->assertArrayHasKey("aria-disabled", $this->radioGroup->attributes);
-    $this->assertEquals("true", $this->radioGroup->attributes["aria-disabled"]);
-    $this->assertTrue($this->radioGroup->disabled);
   }
 
   /**
@@ -133,11 +98,6 @@ class RadioGroupTest extends \MovLib\Test\TestCase {
     $this->radioGroup->setHelp("PHPUnit");
     $this->assertArrayHasKey("aria-describedby", $this->radioGroup->attributes);
     $this->assertEquals("phpunit-help", $this->radioGroup->attributes["aria-describedby"]);
-    $choices = $this->getProperty($this->radioGroup, "choices");
-    foreach ($choices as $value => $choice) {
-      $this->assertArrayHasKey("aria-describedby", $choice["attributes"]);
-      $this->assertEquals("phpunit-help", $choice["attributes"]["aria-describedby"]);
-    }
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $this->getProperty($this->radioGroup, "help"));
   }
 
@@ -152,11 +112,11 @@ class RadioGroupTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::validate
-   * @depends testConstructInvalidPostInput
    * @expectedException \MovLib\Exception\ValidationException
    */
-  public function testValidateInvalidInput(RadioGroup $radioGroup) {
+  public function testValidateInvalidInput() {
     $_POST["phpunit"] = "phpunit42";
+    $radioGroup = new RadioGroup("phpunit", "PHPUnit", [ "phpunit1" => "PHPUnit 1", "phpunit2" => "PHPUnit 2" ], "phpunit2");
     $radioGroup->validate();
   }
 

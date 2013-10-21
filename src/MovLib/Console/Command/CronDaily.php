@@ -64,7 +64,7 @@ class CronDaily extends AbstractCommand {
       $db    = new Database();
       $query = new ReflectionMethod($db, "query");
       $query->setAccessible(true);
-      $query->invokeArgs($db, [ "DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, 'created') > 0 AND `ttl` = '{$daily}'" ]);
+      $query->invokeArgs($db, [ "DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$daily}'" ]);
     }
     catch (DatabaseException $e) {
       $message = "Cron {$daily} failed.\n\nDatabaseException Stacktrace:\n {$e->getTraceAsString()}";
@@ -81,7 +81,7 @@ class CronDaily extends AbstractCommand {
    */
   protected function purgeTemporaryUploads() {
     $tmpDirectory = ini_get("upload_tmp_dir");
-    exec("find {$tmpDirectory} -type f -mtime +1 -exec rm {} \;");
+    exec("find {$tmpDirectory} -type f -mtime +1 -exec rm {} \\;");
     return $this;
   }
 

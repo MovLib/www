@@ -82,11 +82,15 @@ class TestCase extends \PHPUnit_Framework_TestCase {
   /**
    * Assert that the method returns itself for chaining.
    *
+   * @param mixed $object
+   *   The object the method should return.
    * @param mixed $actual
    *   The actual return value of the method.
+   * @param string $message [optional]
+   *   The error message.
    */
-  protected function assertChaining($actual) {
-    $this->assertEquals($this, $actual, "Method deleteImage() should return itself for chaining.");
+  protected function assertChaining($object, $actual, $message = "Method should return containing object for chaining.") {
+    $this->assertEquals($object, $actual, $message);
   }
 
 }

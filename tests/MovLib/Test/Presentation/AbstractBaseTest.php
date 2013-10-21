@@ -88,7 +88,7 @@ class AbstractBaseTest extends \MovLib\Test\TestCase {
    */
   public function testAnchor() {
     $_SERVER["PATH_INFO"] = "/phpunit";
-    $this->assertEquals("<a href='/route' title='PHPUnit'>linktext</a>", $this->invoke("a", [ "/route", "linktext", [ "title" => "PHPUnit" ] ]));
+    $this->assertEquals("<a href='/route' title='PHPUnit'>linktext</a>", $this->invoke($this->abstractPage, "a", [ "/route", "linktext", [ "title" => "PHPUnit" ] ]));
   }
 
   /**
@@ -96,7 +96,7 @@ class AbstractBaseTest extends \MovLib\Test\TestCase {
    */
   public function testAnchorPathInfo() {
     $_SERVER["PATH_INFO"] = "/route";
-    $this->assertEquals("<a href='#' class='active'>linktext</a>", $this->invoke("a", [ "/route", "linktext", [ "title" => "PHPUnit" ] ]));
+    $this->assertEquals("<a href='#' class='active'>linktext</a>", $this->invoke($this->abstractPage, "a", [ "/route", "linktext", [ "title" => "PHPUnit" ] ]));
   }
 
   /**
@@ -104,7 +104,7 @@ class AbstractBaseTest extends \MovLib\Test\TestCase {
    */
   public function testAnchorHash() {
     $_SERVER["PATH_INFO"] = "/phpunit";
-    $this->assertEquals("<a href='#' class='active'>linktext</a>", $this->invoke("a", [ "#", "linktext", [ "title" => "PHPUnit" ] ]));
+    $this->assertEquals("<a href='#' class='active'>linktext</a>", $this->invoke($this->abstractPage, "a", [ "#", "linktext", [ "title" => "PHPUnit" ] ]));
   }
 
   /**
@@ -112,7 +112,7 @@ class AbstractBaseTest extends \MovLib\Test\TestCase {
    */
   public function testAddClassNoClasses() {
     $attributes = [];
-    $this->invoke("addClass", [ "phpunit", &$attributes ]);
+    $this->invoke($this->abstractPage, "addClass", [ "phpunit", &$attributes ]);
     $this->assertEquals([ "class" => "phpunit" ], $attributes);
   }
 
@@ -121,7 +121,7 @@ class AbstractBaseTest extends \MovLib\Test\TestCase {
    */
   public function testAddClassClasses() {
     $attributes = [ "class" => "foo bar" ];
-    $this->invoke("addClass", [ "phpunit", &$attributes ]);
+    $this->invoke($this->abstractPage, "addClass", [ "phpunit", &$attributes ]);
     $this->assertEquals([ "class" => "foo bar phpunit" ], $attributes);
   }
 
@@ -129,14 +129,14 @@ class AbstractBaseTest extends \MovLib\Test\TestCase {
    * @covers ::collapseWhitespace
    */
   public function testCollapseWhitespace() {
-    $this->assertEquals("p h p u n i t", $this->invoke("collapseWhitespace", [ "    p\nh\rp\tu\x00n\x0Bi \n\r\t\x00\x0Bt    " ]));
+    $this->assertEquals("p h p u n i t", $this->invoke($this->abstractPage, "collapseWhitespace", [ "    p\nh\rp\tu\x00n\x0Bi \n\r\t\x00\x0Bt    " ]));
   }
 
   /**
    * @covers ::expandTagAttributes
    */
   public function testExpandTagAttributes() {
-    $this->assertEquals(" attr1='phpunit' attr2='true' attr3='false' attr4='&lt;&gt;&amp;' phpunit", $this->invoke("expandTagAttributes", [[
+    $this->assertEquals(" attr1='phpunit' attr2='true' attr3='false' attr4='&lt;&gt;&amp;' phpunit", $this->invoke($this->abstractPage, "expandTagAttributes", [[
       "attr1" => "phpunit",
       "attr2" => true,
       "attr3" => false,
@@ -150,7 +150,7 @@ class AbstractBaseTest extends \MovLib\Test\TestCase {
    * @dataProvider dataProviderFormatBytes
    */
   public function testFormatBytes($number, $unit, $bytes) {
-    $this->assertEquals([ $number, $unit ], $this->invoke("formatBytes", [ $bytes ]));
+    $this->assertEquals([ $number, $unit ], $this->invoke($this->abstractPage, "formatBytes", [ $bytes ]));
   }
 
   /**
@@ -179,14 +179,14 @@ class AbstractBaseTest extends \MovLib\Test\TestCase {
    * @dataProvider dataProviderNormalizeLineFeeds
    */
   public function testNormalizeLineFeeds($expected, $input) {
-    $this->assertEquals($expected, $this->invoke("normalizeLineFeeds", [ $input ]));
+    $this->assertEquals($expected, $this->invoke($this->abstractPage, "normalizeLineFeeds", [ $input ]));
   }
 
   /**
    * @covers ::placeholder
    */
   public function testPlaceholder() {
-    $this->assertEquals("<em class='placeholder'>&lt;PHP&amp;Unit&gt;</em>", $this->invoke("placeholder", [ "<PHP&Unit>" ] ));
+    $this->assertEquals("<em class='placeholder'>&lt;PHP&amp;Unit&gt;</em>", $this->invoke($this->abstractPage, "placeholder", [ "<PHP&Unit>" ] ));
   }
 
 }

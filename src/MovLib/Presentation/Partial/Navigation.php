@@ -158,10 +158,10 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
       if ($i !== 0) {
         $menuitems .= $this->glue;
       }
-      $this->menuitems[$i][2]["role"] = "menuitem";
       if ($this->closure) {
         $this->menuitems[$i] = call_user_func_array($this->closure, [ $this->menuitems[$i], $i, $c ]);
       }
+      $this->menuitems[$i][2]["role"] = "menuitem";
       $menuitem   = $this->a($this->menuitems[$i][0], $this->menuitems[$i][1], $this->menuitems[$i][2]);
       $menuitems .= ($this->unorderedList === true) ? "<li>{$menuitem}</li>" : $menuitem;
     }
