@@ -174,4 +174,26 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
     );
   }
 
+  /**
+   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
+   * @covers \Movlib\Data\User\Genres::orderById
+   */
+  public function testDiffIdsWithGenres() {
+    global $i18n;
+    $diff = ["added" => [1,3], "removed" => [2,4], "edited" => []];
+    $this->assertEquals(
+      "<ul><li><a href='/genres/1' class='green' title='More about Action'>Action</a></li><li><a href='/genres/3' class="
+      . "'green' title='More about Animation'>Animation</a></li><li><a href='/genres/2' class='red' title='More about "
+      . "Adventure'>Adventure</a></li><li><a href='/genres/4' class='red' title='More about Biography'>Biography</a></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Genres" ])->__toString()
+    );
+
+    $i18n = new \MovLib\Data\I18n("de-at");
+    $this->assertContains(
+      "Abenteuer",
+      $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Genres" ])->__toString()
+    );
+    $i18n = new \MovLib\Data\I18n();
+  }
+
 }

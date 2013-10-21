@@ -18,24 +18,24 @@
 namespace MovLib\Test\Data;
 
 use \MovDev\Database;
-use \MovLib\Data\Persons;
+use \MovLib\Data\Genres;
 
 /**
- * @coversDefaultClass \MovLib\Data\Persons
+ * @coversDefaultClass \MovLib\Data\Genres
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class PersonsTest extends \MovLib\Test\TestCase {
+class GenresTest extends \MovLib\Test\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Data\Persons */
-  private $persons;
+  /** @var \MovLib\Data\Genges */
+  private $genres;
 
   /** @var \MovDev\Database */
   private $db;
@@ -45,8 +45,8 @@ class PersonsTest extends \MovLib\Test\TestCase {
 
 
   protected function setUp() {
-    $this->persons = new Persons();
-    $this->db      = new Database();
+    $this->genres = new Genres();
+    $this->db     = new Database();
   }
 
 
@@ -57,40 +57,16 @@ class PersonsTest extends \MovLib\Test\TestCase {
    * @covers ::orderById
     */
   public function testOrderById() {
-    $expectedPersons = [
-      [ "id" => 3, "name" => "Natalie Portman" ],
-      [ "id" => 5, "name" => "Frank Darabont" ],
-      [ "id" => 7, "name" => "Morgan Freeman" ]
+    $expectetGenres = [
+      [ "id" => 1, "name" => "Action" ],
+      [ "id" => 4, "name" => "Biography" ],
+      [ "id" => 7, "name" => "Documentary" ],
+      [ "id" => 9, "name" => "Family" ]
     ];
     $index = 0;
-    foreach ($this->persons->orderById([ 5,3,7 ]) as $key => $value) {
-      $this->assertEquals($expectedPersons[$index]["id"], $key);
-      $this->assertEquals($expectedPersons[$index]["name"], $value->name);
-      ++$index;
-    }
-  }
-
-
-  /**
-   * @covers ::orderByCreated
-   */
-  public function testOrderByCreated() {
-    $this->persons->orderByCreated();
-    $index = 0;
-    foreach (array_column($this->db->query("SELECT `name` FROM `persons` ORDER BY created ASC")->get_result()->fetch_all(), 0) as $name) {
-      $this->assertEquals($name, $this->persons[$index]->name);
-      ++$index;
-    }
-  }
-
-  /**
-   * @covers ::orderByCreated
-   */
-  public function testOrderByCreatedWithOffsetAndLimit() {
-    $this->persons->orderByCreated(5,3);
-    $index = 0;
-    foreach (array_column($this->db->query("SELECT `name` FROM `persons` ORDER BY created ASC LIMIT 5, 3")->get_result()->fetch_all(), 0) as $name) {
-      $this->assertEquals($name, $this->persons[$index]->name);
+    foreach ($this->genres->orderById([ 1,7,4,9 ]) as $key => $value) {
+      $this->assertEquals($expectetGenres[$index]["id"], $key);
+      $this->assertEquals($expectetGenres[$index]["name"], $value->name);
       ++$index;
     }
   }
@@ -100,12 +76,12 @@ class PersonsTest extends \MovLib\Test\TestCase {
    */
   public function testOrderByName() {
     global $i18n;
-    $this->persons->orderByName();
+    $this->genres->orderByName();
     /* @var $result \mysqli_result */
-    $result = array_column($this->db->query("SELECT `name` FROM `persons`")->get_result()->fetch_all(), 0);
+    $result = array_column($this->db->query("SELECT `name` FROM `genres`")->get_result()->fetch_all(), 0);
     $i18n->getCollator()->asort($result);
     foreach ($result as $name) {
-      $this->assertEquals($name, $this->persons[$name]->name);
+      $this->assertEquals($name, $this->genres[$name]->name);
     }
   }
 

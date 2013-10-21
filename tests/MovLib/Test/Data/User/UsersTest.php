@@ -17,7 +17,9 @@
  */
 namespace MovLib\Test\Data\User;
 
+use \MovDev\Database;
 use \MovLib\Data\User\Users;
+
 /**
  * @coversDefaultClass \MovLib\Data\User\Users
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -35,12 +37,16 @@ class UsersTest extends \MovLib\Test\TestCase {
   /** @var \MovLib\Data\User\Users */
   private $users;
 
+  /** @var \MovDev\Database */
+  private $db;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
   protected function setUp() {
     $this->users = new Users();
+    $this->db    = new Database();
   }
 
 
@@ -68,14 +74,10 @@ class UsersTest extends \MovLib\Test\TestCase {
    * @covers ::orderByNewest
    */
   public function testOrderByNewest() {
-    $expectedUsers = [
-      "Ravenlord",
-      "ftorghele",
-      "Fleshgrinder"
-    ];
+    $this->users->orderByNewest(0,3);
     $index = 0;
-    foreach ($this->users->orderByNewest() as $value) {
-      $this->assertEquals($expectedUsers[$index], $value->name);
+    foreach (array_column($this->db->query("SELECT `name` FROM `users` ORDER BY user_id DESC LIMIT 3")->get_result()->fetch_all(), 0) as $name) {
+      $this->assertEquals($name, $this->users[$index]->name);
       ++$index;
     }
   }
@@ -84,25 +86,25 @@ class UsersTest extends \MovLib\Test\TestCase {
    * @covers ::orderByNewest
    */
   public function testOrderByNewestWithOffsetAndLimit() {
-    $users = $this->users->orderByNewest(1, 2);
-    $this->assertEquals("ftorghele", $users[0]->name);
-    $this->assertEquals("Fleshgrinder", $users[1]->name);
+    $this->users->orderByNewest(1,2);
+    $index = 0;
+    foreach (array_column($this->db->query("SELECT `name` FROM `users` ORDER BY user_id DESC LIMIT 1, 3")->get_result()->fetch_all(), 0) as $name) {
+      $this->assertEquals($name, $this->users[$index]->name);
+      ++$index;
+    }
   }
 
   /**
    * @covers ::orderByName
    */
   public function testOrderByName() {
-    $expectedUsers = [
-      "Fleshgrinder",
-      "ftorghele",
-      "Ravenlord"
-    ];
-    $index = 0;
-    foreach ($this->users->orderByName() as $key => $value) {
-      $this->assertEquals($expectedUsers[$index], $key);
-      $this->assertEquals($expectedUsers[$index], $value->name);
-      ++$index;
+    global $i18n;
+    $this->users->orderByName();
+    /* @var $result \mysqli_result */
+    $result = array_column($this->db->query("SELECT `name` FROM `users`")->get_result()->fetch_all(), 0);
+    $i18n->getCollator()->asort($result);
+    foreach ($result as $name) {
+      $this->assertEquals($name, $this->users[$name]->name);
     }
   }
 
