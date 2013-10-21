@@ -79,9 +79,3 @@ $cfg["TitleServer"]                           = "@VSERVER@";
 $cfg["TitleDatabase"]                         = "@DATABASE@ / @VSERVER@";
 $cfg["TitleTable"]                            = "@TABLE@ / @DATABASE@ / @VSERVER@";
 $cfg["UploadDir"]                             = "";
-
-// @todo Create subdomain and require authentication via nginx!
-if (!isset($_SERVER["SSL_CLIENT_VERIFY"]) || $_SERVER["SSL_CLIENT_VERIFY"] != "SUCCESS") {
-  http_response_code(401);
-  exit();
-}
