@@ -100,7 +100,10 @@ class Database {
   protected function query($query, $types = null, $params = null) {
     /* @var $stmt \mysqli_stmt */
     if (($stmt = $this->connect()->prepare($query)) === false) {
-      throw new DatabaseException("Preparation of statement failed");
+      throw new DatabaseException("Preparation of statement failed",
+        self::$mysqli[$this->database]->error,
+        self::$mysqli[$this->database]->errno
+      );
     }
     if ($types && $params) {
       $refParams = [ $stmt, $types ];
