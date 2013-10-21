@@ -40,7 +40,7 @@ class Style extends \MovLib\Data\Database {
   public $id;
 
   /**
-   * The style's name.
+   * The style's display name.
    *
    * @var string
    */

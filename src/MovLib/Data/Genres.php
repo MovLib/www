@@ -43,9 +43,9 @@ class Genres extends \MovLib\Data\DatabaseArrayObject {
   public function __construct() {
     global $i18n;
     if ($i18n->languageCode != $i18n->defaultLanguageCode) {
-      $this->query = "COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS ";
+      $this->query = "COLUMN_GET(`dyn_names`, '{$i18n->languageCode}' AS BINARY) AS `dynName`,";
     }
-    $this->query = "SELECT `genre_id` AS `id`, {$this->query}`name` FROM `genres`";
+    $this->query = "SELECT `genre_id` AS `id`, {$this->query} `name` FROM `genres`";
   }
 
 
@@ -72,6 +72,7 @@ class Genres extends \MovLib\Data\DatabaseArrayObject {
     }
     /* @var $genre \MovLib\Data\Genre */
     while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre")) {
+      $genre->name = (empty($genre->dynName)) ? $genre->name : $genre->dynName;
       $this->objectsArray[$genre->id] = $genre;
     }
     return $this;
@@ -90,6 +91,7 @@ class Genres extends \MovLib\Data\DatabaseArrayObject {
     $result = $this->query($this->query)->get_result();
     /* @var $genre \MovLib\Data\Genre */
     while ($genre = $result->fetch_object("\\MovLib\\Data\\Genre")) {
+      $genre->name = (empty($genre->dynName)) ? $genre->name : $genre->dynName;
       $this->objectsArray[$genre->name] = $genre;
     }
     $i18n->getCollator()->ksort($this->objectsArray);

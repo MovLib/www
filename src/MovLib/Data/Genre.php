@@ -40,11 +40,18 @@ class Genre extends \MovLib\Data\Database {
   public $id;
 
   /**
-   * The genre's translated name.
+   * The genre's display name.
    *
    * @var string
    */
   public $name;
+
+  /**
+   * The genre's translated name.
+   *
+   * @var string
+   */
+  public $dynName;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
