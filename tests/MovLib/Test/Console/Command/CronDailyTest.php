@@ -17,6 +17,9 @@
  */
 namespace MovLib\Test\Console\Command;
 
+use \ReflectionMethod;
+use \MovLib\Console\Command\CronDaily;
+
 /**
  * @coversDefaultClass \MovLib\Console\Command\CronDaily
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -31,11 +34,21 @@ class CronDailyTest extends \MovLib\Test\TestCase {
    * @covers ::purgeTemporaryTable
    * @global \MovDev\Database $db
    */
-  public function testPurgeTemporaryData() {
+  public function testPurgeTemporaryTable() {
     global $db;
     $db->query("INSERT INTO `tmp` (`key`, `created`, `data`, `ttl`) VALUES ('phpunit', FROM_UNIXTIME(?), 'PHPUnit', '@daily')", "s", [ strtotime("-2 days") ]);
     $this->assertTrue($this->exec("movcli cron-daily"));
-    $this->assertEmpty($db->query("SELECT `key` FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, 'created') > 0 AND `ttl` = '@daily'")->get_result()->fetch_all());
+    $this->assertEmpty($db->query("SELECT * FROM `tmp` WHERE `key` = 'phpunit'")->get_result()->fetch_all());
+  }
+
+  /**
+   * @covers ::purgeTemporaryTable
+   */
+  public function testPurgeTemporaryTableChaining() {
+    $command = new CronDaily();
+    $method = new ReflectionMethod("\\MovLib\\Console\\Command\\CronDaily", "purgeTemporaryTable");
+    $method->setAccessible(true);
+    $this->assertChaining($command, $method->invoke($command));
   }
 
   /**
@@ -44,8 +57,18 @@ class CronDailyTest extends \MovLib\Test\TestCase {
   public function testPurgeTemporaryUploads() {
     $filename = tempnam(ini_get("upload_tmp_dir"), "phpunit");
     touch($filename, strtotime("-2 days"));
-    $this->assertTrue($this->exec("movcli cron-daily"));
+    $this->assertTrue($this->exec("movcli cron-daily", $output));
     $this->assertFileNotExists($filename);
+  }
+
+  /**
+   * @covers ::purgeTemporaryUploads
+   */
+  public function testPurgeTemporaryUploadsChaining() {
+    $command = new CronDaily();
+    $method = new ReflectionMethod("\\MovLib\\Console\\Command\\CronDaily", "purgeTemporaryUploads");
+    $method->setAccessible(true);
+    $this->assertChaining($command, $method->invoke($command));
   }
 
 }

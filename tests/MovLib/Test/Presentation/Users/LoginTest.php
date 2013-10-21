@@ -70,9 +70,9 @@ class LoginTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
-   * @expectedException \MovLib\Exception\RedirectException
-   * @expectedExceptionMessage Redirecting user to /my with status 302.
-    */
+   * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
+   * @expectedExceptionMessage Redirecting user to /my with status 303.
+   */
   public function testAuthenticatedRedirect() {
     global $session;
     $session = self::$sessionBackup;
@@ -136,21 +136,21 @@ class LoginTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::validate
-   * @expectedException \MovLib\Exception\RedirectException
-   * @expectedExceptionMessage Redirecting user to /my with status 302.
+   * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
+   * @expectedExceptionMessage Redirecting user to /my with status 303.
      */
   public function testValidCredentials() {
     $_POST["email"]    = "richard@fussenegger.info";
     $_POST["form_id"]  = "users-login";
-    $_POST["password"] = "test1234";
-    new Login();
+    $_POST["password"] = "Test1234";
+    (new Login())->validate();
   }
 
   /**
    * @covers ::__construct
    * @covers ::validate
-   * @expectedException \MovLib\Exception\RedirectException
-   * @expectedExceptionMessage Redirecting user to /profile with status 302.
+   * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
+   * @expectedExceptionMessage Redirecting user to /profile with status 303.
      */
   public function testRedirectToViaGetParameter() {
     $_GET["redirect_to"] = rawurlencode("/profile");
@@ -160,8 +160,8 @@ class LoginTest extends \MovLib\Test\TestCase {
   /**
    * @covers ::__construct
    * @covers ::validate
-   * @expectedException \MovLib\Exception\RedirectException
-   * @expectedExceptionMessage Redirecting user to /profile?foo=bar with status 302.
+   * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
+   * @expectedExceptionMessage Redirecting user to /profile?foo=bar with status 303.
      */
   public function testRedirectToOnDifferentRoute() {
     $_SERVER["PATH_INFO"] = $_SERVER["REQUEST_URI"] = "/profile?foo=bar";
@@ -173,7 +173,7 @@ class LoginTest extends \MovLib\Test\TestCase {
      */
   public function testInvalidEmail() {
     $_POST["email"]    = "phpunit@movlib.org";
-    $_POST["password"] = "test1234";
+    $_POST["password"] = "Test1234";
     $this->_testInvalidCredentials();
   }
 
@@ -188,7 +188,7 @@ class LoginTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::validate
-   * @expectedException \MovLib\Exception\RedirectException
+   * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
    * @expectedExceptionMessage Redirecting user to /profile/deactivated with status 302.
     */
   public function testDeactivated() {

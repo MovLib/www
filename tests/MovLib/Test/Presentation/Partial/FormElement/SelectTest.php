@@ -53,15 +53,7 @@ class SelectTest extends \MovLib\Test\TestCase {
   /**
    * @covers Select::__construct
    */
-  public function testInvalidPostExport() {
-    $_POST["phpunit"] = "phpunit2";
-    $this->assertAttributeEquals(null, "value", new Select("phpunit", "PHPUnit", $this->options));
-  }
-
-  /**
-   * @covers Select::__construct
-   */
-  public function testValidPostExport() {
+  public function testPostExport() {
     $_POST["phpunit"] = "phpunit1";
     $this->assertAttributeEquals("phpunit1", "value", new Select("phpunit", "PHPUnit", $this->options));
   }
