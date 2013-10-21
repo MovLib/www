@@ -95,7 +95,7 @@ class Registration extends \MovLib\Presentation\FormPage {
    *
    * @var string
    */
-  protected $usernameIllegalCharacters = "/_@#<>|[]{}";
+  protected $usernameIllegalCharacters = "/_@#<>|()[]{}?\\=:;,'\"&$*~";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -137,7 +137,7 @@ class Registration extends \MovLib\Presentation\FormPage {
 
     $this->terms = new InputCheckbox("terms", $i18n->t(
       "I accept the {0}Privacy Policy{2} and {1}Terms of Use{2}.",
-      [ "<a href='{$i18n->t("/privacy-policy")}'>", "<a href='{$i18n->r("/terms-of-use")}'>", "</a>" ]
+      [ "<a href='{$i18n->t("/privacy-policy")}'><a href='{$i18n->r("/terms-of-use")}'></a>" ]
     ), [ "required" ]);
 
     $this->form                             = new Form($this, [ $this->username, $this->email, $this->password, $this->terms ]);
@@ -167,7 +167,7 @@ class Registration extends \MovLib\Presentation\FormPage {
     if ($this->accepted === true) {
       return "<div class='container'><small>{$i18n->t(
         "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-        [ "<a href='{$_SERVER["PATH_INFO"]}'>", "</a>" ]
+        [ "<a href='{$_SERVER["PATH_INFO"]}'></a>" ]
       )}</small></div>";
     }
     return "<div class='container'><div class='row'>{$this->form}</div></div>"
@@ -233,7 +233,7 @@ class Registration extends \MovLib\Presentation\FormPage {
     if (isset($errors[$this->terms->id])) {
       $errors[$this->terms->id] = $i18n->t(
         "You have to accept the {0}Privacy Policy{2} and {1}Terms of Use{2} to sign up.",
-        [ "<a href='{$i18n->t("/privacy-policy")}'>", "<a href='{$i18n->r("/terms-of-use")}'>", "</a>" ]
+        [ "<a href='{$i18n->t("/privacy-policy")}'><a href='{$i18n->r("/terms-of-use")}'></a>" ]
       );
     }
 
