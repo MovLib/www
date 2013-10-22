@@ -18,7 +18,8 @@
 namespace MovLib\Presentation;
 
 use \Locale;
-use \MovLib\Data\Full;
+use \MovLib\Data\User\Full as User;
+use \MovLib\Data\SystemLanguages;
 use \MovLib\Exception\Client\RedirectTemporaryException;
 use \MovLib\Presentation\Partial\Navigation;
 
@@ -56,53 +57,62 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
   /**
    * Instantiate new language selection presentation.
    *
+   * @global \MovLib\Configuration $config
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $i18n, $session;
+    global $config, $i18n, $session;
 
     // If a signed in user is requesting this page we know where to send her or him.
     if ($session->isAuthenticated === true) {
-      $user = new Full(Full::FROM_ID, $session->userId);
-      throw new RedirectTemporaryException("{$_SERVER["SCHEME"]}://{$user->getLanguageCode()}.{$_SERVER["SERVER_NAME"]}/");
+      $user = new User(User::FROM_ID, $session->userId);
+      throw new RedirectTemporaryException("{$_SERVER["SCHEME"]}://{$user->systemLanguageCode}.{$config->domainDefault}/");
     }
 
     // If not render the page.
     $this->init($i18n->t("Language Selection"));
-    $this->stylesheets[] = "modules/language-selection.css";
-
-    // Construct the languages navigation.
-    $menuitems = [];
-    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
-      $menuitems[] = [
-        "{$_SERVER["SCHEME"]}://{$languageCode}.{$_SERVER["SERVER_NAME"]}/",
-        Locale::getDisplayLanguage($locale, $languageCode),
-        [ "lang" => $languageCode, "rel" => "prefetch", "tabindex" => $this->getTabindex() ],
-      ];
-    }
-    $this->navigation = new Navigation($this->id, $i18n->t("Available Languages"), $menuitems);
+    $this->stylesheets[]                   = "modules/language-selection.css";
+    $this->navigation                      = new Navigation($this->id, $i18n->t("Available Languages"), new SystemLanguages());
     $this->navigation->attributes["class"] = "well well--large";
-    $this->navigation->glue = " / ";
+    $this->navigation->glue                = " / ";
+    $this->navigation->closure             = [ $this, "formatSystemLanguage" ];
+  }
+
+  /**
+   * Format a single system language.
+   *
+   * @global \MovLib\Configuration $config
+   * @param \MovLib\Data\SystemLanguage $systemLanguage
+   *   The system language to format.
+   * @return array
+   */
+  public function formatSystemLanguage($systemLanguage) {
+    global $config;
+    return [
+      "//{$systemLanguage->languageCode}.{$config->domainDefault}/",
+      $systemLanguage->nameNative,
+      [ "lang" => $systemLanguage->languageCode, "rel" => "prefetch", "tabindex" => $this->getTabindex() ],
+    ];
   }
 
   /**
    * @inheritdoc
    */
   public function getPresentation() {
-    global $i18n;
+    global $config, $i18n;
     $html = parent::getPresentation();
     return
       "{$html}<div class='{$this->id}-content' id='content' role='main'><div class='container'>" .
         "<h1 class='clear-fix' id='logo-big'>" .
-          "<img alt='{$i18n->t("MovLib, the free movie library.")}' height='192' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='192'>" .
-          "<span>{$i18n->t("MovLib <small>the <em>free</em> movie library.</small>")}</span>" .
+          "<img alt='MovLib {$i18n->t("logo")}' height='192' src='//{$config->domainStatic}/asset/img/logo/vector.svg' width='192'>" .
+          "<span>MovLib <small>{$i18n->t("the {0}free{1} movie library.", [ "<em>", "</em>" ])}</small></span>" .
         "</h1>" .
         "<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$this->navigation}" .
       "</div></div>" .
       "<footer id='footer'><div class='container'><p>{$i18n->t(
         "Is your language missing from our list? Help us translate {0} to your language. More information can be found at {1}our translation portal{2}.",
-        [ "MovLib", "<a href='{$GLOBALS["movlib"]["localize_domain"]}'>", "</a>" ]
+        [ "MovLib", "<a href='//{$config->domainLocalize}/'>", "</a>" ]
       )}</p></div></footer>"
     ;
   }

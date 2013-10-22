@@ -148,6 +148,15 @@ class Configuration {
   public $siteSlogan = "the free movie library";
 
   /**
+   * Numeric array containing the system locales.
+   *
+   * @see \MovLib\Data\SystemLanguage
+   * @see \MovLib\Data\SystemLanguages
+   * @var array
+   */
+  public $systemLanguages = [ "de_AT", "en_US" ];
+
+  /**
    * The version string.
    *
    * @var string
