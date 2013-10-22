@@ -137,7 +137,7 @@ class Registration extends \MovLib\Presentation\FormPage {
 
     $this->terms = new InputCheckbox("terms", $i18n->t(
       "I accept the {0}Privacy Policy{2} and {1}Terms of Use{2}.",
-      [ "<a href='{$i18n->t("/privacy-policy")}'><a href='{$i18n->r("/terms-of-use")}'></a>" ]
+      [ "<a href='{$i18n->t("/privacy-policy")}'>", "<a href='{$i18n->r("/terms-of-use")}'>", "</a>" ]
     ), [ "required" ]);
 
     $this->form                             = new Form($this, [ $this->username, $this->email, $this->password, $this->terms ]);
