@@ -144,7 +144,6 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   `dyn_profile` BLOB NOT NULL COMMENT 'The user’s profile text (translatable).' ,
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.' ,
   `system_language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).' ,
-  `avatar_name` VARCHAR(40) NOT NULL COMMENT 'The avatar’s file name.' ,
   `avatar_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The avatar’s file extension.' ,
   `avatar_changed` TIMESTAMP NULL DEFAULT NULL COMMENT 'The avatar’s last change timestamp.' ,
   `birthday` DATE NULL COMMENT 'The user\'s date of birth.' ,
@@ -158,7 +157,6 @@ CREATE  TABLE IF NOT EXISTS `movlib`.`users` (
   INDEX `fk_users_countries` (`country_id` ASC) ,
   UNIQUE INDEX `uq_users_name` (`name` ASC) ,
   UNIQUE INDEX `uq_users_email` (`email` ASC) ,
-  UNIQUE INDEX `uq_users_avatar` (`avatar_name` ASC) ,
   CONSTRAINT `fk_users_countries`
     FOREIGN KEY (`country_id` )
     REFERENCES `movlib`.`countries` (`country_id` )
