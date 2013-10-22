@@ -15,39 +15,22 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# ApiGen configuration file.
+# Default robots.txt file; the coverage and doc directories are excluded for search engines because they change to fast
+# and they have to benefit for anyone who's not a developer. Search engines shall index the pages that are useful.
 #
-# LINK: http://apigen.org/
+# LINK: http://www.robotstxt.org/
 # AUTHOR: Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT: © 2013-present, MovLib
 # LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
 # SINCE: 0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-source        :
-              - "./main.php"
-              - "./bootstrap.php"
-              - "./bin"
-              - "./src"
-              - "./tests"
-destination   : "./public/doc"
-extensions    : "php"
-charset       : "UTF-8"
-title         : "MovLib, the free movie library."
-groups        : "namespaces"
-autocomplete  : "classes,constants,functions,methods,properties,classconstants"
-accessLevels  : "public,protected,private"
-internal      : "yes"
-php           : "no"
-tree          : "yes"
-deprecated    : "yes"
-todo          : "yes"
-sourceCode    : "yes"
-colors        : "yes"
-download      : "no"
-report        : "./public/doc/apigen-report.xml"
-wipeout       : "yes"
-quiet         : "no"
-progressbar   : "yes"
-updateCheck   : "yes"
-debug         : "no"
+User-agent: *
+Disallow: /bin/
+Disallow: /cache/
+Disallow: /conf/
+Disallow: /components/
+Disallow: /public/coverage/
+Disallow: /public/doc/
+Disallow: /src/
+Disallow: /test/

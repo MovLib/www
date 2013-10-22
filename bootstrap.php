@@ -26,14 +26,10 @@
  * @since 0.0.1-dev
  */
 
-// The web application catches all errors and exceptions itself and displays the errors to the user or developer. The
-// default setting is therefor to surpress display errors. Re-activate for console and PHPUnit tests.
-ini_set("display_errors", 1);
-
 $_SERVER["DOCUMENT_ROOT"] = __DIR__;
 
 $composerAutoloader = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
-$composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src");
+$composerAutoloader->add("MovLib", "src/");
 
 new \MovLib\Exception\ConsoleHandlers();
 $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
@@ -56,7 +52,7 @@ $_SERVER["HTTP_USER_AGENT"] = ini_get("user_agent");
 define("DEV", strpos($GLOBALS["movlib"]["version"], "-dev") === false ? false : true);
 
 if (DEV === true) {
-  $composerAutoloader->add("MovDev", "{$_SERVER["DOCUMENT_ROOT"]}/src");
+  $composerAutoloader->add("MovDev", "src/");
   $db = new \MovDev\Database();
 }
 
@@ -64,47 +60,13 @@ if (DEV === true) {
 
 
 if (defined("MOVLIB_PHPUNIT")) {
-  $composerAutoloader->add("MovLib\Test", "{$_SERVER["DOCUMENT_ROOT"]}/tests");
+  //$composerAutoloader->add("MovLib\\Test\\", "{$_SERVER["DOCUMENT_ROOT"]}/tests/");
 
   /**
    * Mock of delayed_register() from main.php
    */
   function delayed_register($class, $weight = null, $method = null) {
     // Do nothing!
-  }
-
-  /**
-   * Get accessible reflection method of <var>$object</var>.
-   *
-   * @param stdObject $object
-   *   The object containing the method.
-   * @param string $method_name
-   *   The name of the method.
-   * @return \ReflectionMethod
-   *   The accessible reflection method.
-   * @deprecated since version 0.0.1-dev
-   */
-  function get_reflection_method($object, $method_name) {
-    $f = new \ReflectionMethod($object, $method_name);
-    $f->setAccessible(true);
-    return $f;
-  }
-
-  /**
-   * Get accessible property of <var>$object</var>.
-   *
-   * @param stdObject $object
-   *   The object containing the property.
-   * @param string $property_name
-   *   The name of the property.
-   * @return \ReflectionProperty
-   *   The accessible reflection property.
-   * @deprecated since version 0.0.1-dev
-   */
-  function get_reflection_property($object, $property_name) {
-    $p = new \ReflectionProperty($object, $property_name);
-    $p->setAccessible(true);
-    return $p;
   }
 
   // Mock a valid session for various PHPUnit tests.

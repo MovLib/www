@@ -18,6 +18,7 @@
 namespace MovLib\Presentation;
 
 use \MovLib\Exception\DebugException;
+use \MovLib\Configuration;
 
 /**
  * The stacktrace presentation is used if everything else fails.
@@ -125,39 +126,45 @@ class Stacktrace {
   /**
    * Get presentation as string.
    *
+   * @todo Combine CSS files.
+   * @global \MovLib\Configuration $config
    * @return string
    *   The presentation as string.
    */
   public function getPresentation() {
+    global $config;
+    if (!$config) {
+      $config = new Configuration();
+    }
     return
       "<!doctype html>" .
       "<html dir='ltr' lang='en'>" .
         "<head>" .
           "<title>Internal Server Error — MovLib</title>" .
-          "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/base.css'>" .
-          "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/layout/grid.css'>" .
-          "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/layout/generic.css'>" .
-          "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/layout/header.css'>" .
-          "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/layout/content.css'>" .
-          "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/layout/footer.css'>" .
-          "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/layout/icons.css'>" .
-          "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/layout/alert.css'>" .
-          "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/layout/buttons.css'>" .
-          "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/modules/stacktrace.css'>" .
-          "<link rel='icon' type='image/svg+xml' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg'>" .
-          "<link rel='icon' type='image/png' sizes='256x256' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/256.png'>" .
-          "<link rel='icon' type='image/png' sizes='128x128' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/128.png'>" .
-          "<link rel='icon' type='image/png' sizes='64x64' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/64.png'>" .
-          "<link rel='icon' type='image/png' sizes='32x32' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/32.png'>" .
-          "<link rel='icon' type='image/png' sizes='24x24' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/24.png'>" .
-          "<link rel='icon' type='image/png' sizes='16x16' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/16.png'>" .
+          "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/base.css'>" .
+          "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/layout/grid.css'>" .
+          "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/layout/generic.css'>" .
+          "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/layout/header.css'>" .
+          "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/layout/content.css'>" .
+          "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/layout/footer.css'>" .
+          "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/layout/icons.css'>" .
+          "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/layout/alert.css'>" .
+          "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/layout/buttons.css'>" .
+          "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/modules/stacktrace.css'>" .
+          "<link rel='icon' type='image/svg+xml' href='//{$config->domainStatic}/asset/img/logo/vector.svg'>" .
+          "<link rel='icon' type='image/png' sizes='256x256' href='//{$config->domainStatic}/asset/img/logo/256.png'>" .
+          "<link rel='icon' type='image/png' sizes='128x128' href='//{$config->domainStatic}/asset/img/logo/128.png'>" .
+          "<link rel='icon' type='image/png' sizes='64x64' href='//{$config->domainStatic}/asset/img/logo/64.png'>" .
+          "<link rel='icon' type='image/png' sizes='32x32' href='//{$config->domainStatic}/asset/img/logo/32.png'>" .
+          "<link rel='icon' type='image/png' sizes='24x24' href='//{$config->domainStatic}/asset/img/logo/24.png'>" .
+          "<link rel='icon' type='image/png' sizes='16x16' href='//{$config->domainStatic}/asset/img/logo/16.png'>" .
           "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
         "</head>" .
         "<body class='stacktrace-body' id='stacktrace'>" .
           "<header id='header'>" .
             "<div class='container'>" .
               "<div id='header__logo'>" .
-                "<img alt='MovLib logo' height='42' id='logo' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib" .
+                "<img alt='MovLib logo' height='42' id='logo' src='//{$config->domainStatic}/asset/img/logo/vector.svg' width='42'> MovLib" .
               "</div>" .
             "</div>" .
           "</header>" .

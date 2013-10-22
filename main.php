@@ -49,7 +49,7 @@ function __autoload($class) {
 
 // Use Composer for simplified autoloading of vendor stuff and our own stuff.
 $composerAutoloader = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
-$composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src");
+$composerAutoloader->add("MovLib", "src/");
 
 // Array to collect class names and function names which will be executed after the response was sent to the user.
 $delayed = [];
@@ -72,12 +72,13 @@ function delayed_register($class, $weight = 50, $method = "run") {
 }
 
 try {
-  $handlers          = new \MovLib\Exception\Handlers();
   $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
-  $session           = new \MovLib\Data\User\Session();
-  $i18n              = new \MovLib\Data\I18n();
-  $presenter         = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-  $presentation      = (new $presenter())->getPresentation();
+  $config       = new \MovLib\Configuration();
+  $handlers     = new \MovLib\Exception\Handlers();
+  $session      = new \MovLib\Data\User\Session();
+  $i18n         = new \MovLib\Data\I18n();
+  $presenter    = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+  $presentation = (new $presenter())->getPresentation();
 }
 // A presentation can throw a client exception for various client errors including "not found", "gone", "forbidden" and
 // "bad request". This type of exception has to stop the execution of the main application immediately and present an

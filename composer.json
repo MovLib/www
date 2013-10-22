@@ -1,21 +1,65 @@
 {
   "name": "movlib/www",
   "description": "MovLib, the free movie library.",
+  "homepage": "https://movlib.org/",
+  "keywords": [ "MovLib" ],
   "license": "AGPL-3.0",
+  "minimum-stability": "dev",
+  "type": "project",
   "authors": [
-    { "name": "Richard Fussenegger", "email": "richard@fussenegger.info" },
-    { "name": "Markus Deutschl", "email": "mdeutschl.mmt-m2012@fh-salzburg.ac.at" },
-    { "name": "Franz Torghele", "email": "ftorghele.mmt-m2012@fh-salzburg.ac.at" }
+    {
+      "name": "Richard Fussenegger",
+      "email": "richard@fussenegger.info",
+      "homepage": "http://richard.fussenegger.info",
+      "role": "Lead-Developer"
+    },
+    {
+      "name": "Markus Deutschl",
+      "email": "mdeutschl.mmt-m2012@fh-salzburg.ac.at",
+      "role": "Developer"
+    },
+    {
+      "name": "Franz Torghele",
+      "email": "ftorghele.mmt-m2012@fh-salzburg.ac.at",
+      "role": "Developer"
+    }
   ],
+  "autoload": {
+    "psr-0": { "MovLib": "src/" }
+  },
   "require": {
+    "php": ">=5.5.0",
     "ezyang/htmlpurifier": "v4.5.0"
   },
   "require-dev": {
-    "symfony/console": "2.3.*",
-    "phpunit/phpunit": "3.7.*",
-    "phpunit/php-invoker": "1.1.*",
-    "phpunit/dbunit": "1.2.*",
-    "phpmyadmin/phpmyadmin": "dev-STABLE",
-    "firephp/firephp-core": "dev-master"
+    "apigen/apigen": "3.0.0.*@dev",
+    "firephp/firephp-core": "dev-master",
+    "phpmyadmin/phpmyadmin": "dev-master",
+    "phpunit/phpunit": "3.8.*@dev",
+    "symfony/console": "2.4.*@dev"
+  },
+  "repositories": [
+    {
+      "type": "package",
+      "package": {
+        "name": "nsinopoli/visualphpunit",
+        "version": "2.2.0",
+        "dist": {
+          "url": "https://github.com/NSinopoli/VisualPHPUnit/archive/v2.2.zip",
+          "type": "zip"
+        }
+      }
+    }
+  ],
+  "scripts": {
+    "post-install-cmd": "MovLib\\Tool\\Composer::postInstall",
+    "post-update-cmd": "MovLib\\Tool\\Composer::postUpdate",
+    "post-package-install": "MovLib\\Tool\\Composer::postPackageInstall",
+    "post-package-update": "MovLib\\Tool\\Composer::postPackageUpdate"
+  },
+  "support": {
+    "email": "webmaster@movlib.org",
+    "issues": "https://github.com/MovLib/www/issues",
+    "source": "https://github.com/MovLib/www"
   }
 }

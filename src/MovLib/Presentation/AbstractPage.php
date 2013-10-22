@@ -133,18 +133,19 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
    * <i>__toString() must not throw an exception</i> message would be displayed (fatal error of course, so you get
    * nothing).
    *
+   * @global \MovLib\Configuration $config
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    * @return string
    */
   public function getPresentation() {
-    global $i18n, $session;
+    global $config, $i18n, $session;
 
     // Build a link for each stylesheet of this page.
     $stylesheets = "";
     $c = count($this->stylesheets);
     for ($i = 0; $i < $c; ++$i) {
-      $stylesheets .= "<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/{$this->stylesheets[$i]}'>";
+      $stylesheets .= "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/{$this->stylesheets[$i]}'>";
     }
 
     // Apply additional CSS class if the current request is made from a signed in user.
@@ -170,13 +171,13 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
           $stylesheets .
           // Yes, we could create these in a loop, but why should we implement a loop for static data? Do be honest, I
           // generated it with a loop and simply copied the output here.
-          "<link rel='icon' type='image/svg+xml' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg'>" .
-          "<link rel='icon' type='image/png' sizes='256x256' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/256.png'>" .
-          "<link rel='icon' type='image/png' sizes='128x128' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/128.png'>" .
-          "<link rel='icon' type='image/png' sizes='64x64' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/64.png'>" .
-          "<link rel='icon' type='image/png' sizes='32x32' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/32.png'>" .
-          "<link rel='icon' type='image/png' sizes='24x24' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/24.png'>" .
-          "<link rel='icon' type='image/png' sizes='16x16' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/16.png'>" .
+          "<link rel='icon' type='image/svg+xml' href='//{$config->domainStatic}/asset/img/logo/vector.svg'>" .
+          "<link rel='icon' type='image/png' sizes='256x256' href='//{$config->domainStatic}/asset/img/logo/256.png'>" .
+          "<link rel='icon' type='image/png' sizes='128x128' href='//{$config->domainStatic}/asset/img/logo/128.png'>" .
+          "<link rel='icon' type='image/png' sizes='64x64' href='//{$config->domainStatic}/asset/img/logo/64.png'>" .
+          "<link rel='icon' type='image/png' sizes='32x32' href='//{$config->domainStatic}/asset/img/logo/32.png'>" .
+          "<link rel='icon' type='image/png' sizes='24x24' href='//{$config->domainStatic}/asset/img/logo/24.png'>" .
+          "<link rel='icon' type='image/png' sizes='16x16' href='//{$config->domainStatic}/asset/img/logo/16.png'>" .
           // @todo Add opensearch tag (rel="search").
           "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
         "</head>" .
