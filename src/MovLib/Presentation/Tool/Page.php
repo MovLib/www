@@ -44,11 +44,12 @@ class Page extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getFooter() {
+    global $config;
     $year  = date("Y");
     $links = null;
     foreach ([
-      "Contact" => "mailto:", // @todo Include webmaster email
-      "CA Certificate" => "/assets/ssl/ca.crt",
+      "Contact"        => "mailto:{$config->emailWebmaster}",
+      "CA Certificate" => "//{$config->domainStatic}/asset/ssl/ca.crt",
       "GitHub Project" => "https://github.com/MovLib/tools",
     ] as $text => $href) {
       $links .= " <a target='_blank' href='{$href}'>{$text}</a>";
