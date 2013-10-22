@@ -100,26 +100,26 @@ class Page extends \MovLib\Presentation\AbstractPage {
     global $i18n;
 
     // Always include the home and the current page, any other breadcrumb trails are up to the extending class.
-    $trail = [[ "/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ]]];
+    $trail       = [[ "/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ] ] ];
     $breadcrumbs = $this->getBreadcrumbs();
-    $c = count($breadcrumbs);
+    $c           = count($breadcrumbs);
     for ($i = 0; $i < $c; ++$i) {
       // 0 => route
       // 1 => linktext
       // 2 => attributes
       if (mb_strlen($breadcrumbs[$i][1]) > 25) {
         $breadcrumbs[$i][2]["title"] = $breadcrumbs[$i][1];
-        $breadcrumbs[$i][1] = mb_strimwidth($breadcrumbs[$i][1], 0, 25, $i18n->t("…"));
+        $breadcrumbs[$i][1]          = mb_strimwidth($breadcrumbs[$i][1], 0, 25, $i18n->t("…"));
       }
       $trail[] = $breadcrumbs[$i];
     }
     $trail[] = [ "#", isset($this->breadcrumbTitle) ? $this->breadcrumbTitle : $this->title ];
 
     // Create the actual navigation with the trail we just built.
-    $breadcrumb = new Navigation("breadcrumb", $i18n->t("You are here: "), $trail);
+    $breadcrumb                      = new Navigation("breadcrumb", $i18n->t("You are here: "), $trail);
     $breadcrumb->attributes["class"] = "container";
-    $breadcrumb->glue = " › ";
-    $breadcrumb->hideTitle = false;
+    $breadcrumb->glue                = " › ";
+    $breadcrumb->hideTitle           = false;
 
     // We return the navigation instance itself, this allows an extending class to perform further actions.
     return $breadcrumb;
@@ -154,15 +154,16 @@ class Page extends \MovLib\Presentation\AbstractPage {
   /**
    * Get the reference footer.
    *
+   * @global \MovLib\Configuration $config
    * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The reference footer.
    */
   protected function getFooter() {
-    global $i18n;
-    $displayLanguage = Locale::getDisplayLanguage($_SERVER["LANGUAGE_CODE"], $i18n->locale);
-    $languageLinks = new Navigation("language-links", $i18n->t("Language Links"), $i18n->getSystemLanguageLinks());
-    $footerNavigation = new Navigation("footer", $i18n->t("Legal Links"), [
+    global $config, $i18n;
+    $displayLanguage        = Locale::getDisplayLanguage($_SERVER["LANGUAGE_CODE"], $i18n->locale);
+    $languageLinks          = new Navigation("language-links", $i18n->t("Language Links"), $i18n->getSystemLanguageLinks());
+    $footerNavigation       = new Navigation("footer", $i18n->t("Legal Links"), [
       [ $i18n->r("/imprint"), $i18n->t("Imprint") ],
       [ $i18n->r("/privacy-policy"), $i18n->t("Privacy Policy") ],
       [ $i18n->r("/terms-of-use"), $i18n->t("Terms of Use") ],
@@ -187,8 +188,8 @@ class Page extends \MovLib\Presentation\AbstractPage {
         // #footer-links
         "</div>" .
         "<div class='row' id='footer-logos'>" .
-          "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
-          "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='{$GLOBALS["movlib"]["static_domain"]}img/footer/github.svg' width='64'></a>" .
+          "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='//{$config->domainStatic}/asset/img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
+          "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='//{$config->domainStatic}/asset/img/footer/github.svg' width='64'></a>" .
         "</div>" .
         "<div class='row'>{$footerNavigation}</div>" .
       "</div></footer>"
@@ -210,20 +211,20 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected function getHeader() {
     global $i18n, $session;
 
-    $moviesNavigation = new Navigation("movies-mega", $i18n->t("Movies"), [
-      [ $i18n->r("/movies"),      $i18n->t("Latest movie entries"), [ "title" => $i18n->t("Have a look at the latest movie entries at MovLib.") ]],
-      [ $i18n->r("/movies/new"),  $i18n->t("Create new movie"),     [ "title" => $i18n->t("Add a new movie to the MovLib library.")             ]],
+    $moviesNavigation             = new Navigation("movies-mega", $i18n->t("Movies"), [
+      [ $i18n->r("/movies"), $i18n->t("Latest movie entries"), [ "title" => $i18n->t("Have a look at the latest movie entries at MovLib.") ] ],
+      [ $i18n->r("/movies/new"), $i18n->t("Create new movie"), [ "title" => $i18n->t("Add a new movie to the MovLib library.") ] ],
     ]);
-    $moviesNavigation->hideTitle = false;
+    $moviesNavigation->hideTitle  = false;
 
-    $seriesNavigation = new Navigation("series-mega", $i18n->t("Series"), []);
-    $seriesNavigation->hideTitle = false;
+    $seriesNavigation             = new Navigation("series-mega", $i18n->t("Series"), [ ]);
+    $seriesNavigation->hideTitle  = false;
 
-    $personsNavigation = new Navigation("persons-mega", $i18n->t("Perons"), []);
+    $personsNavigation            = new Navigation("persons-mega", $i18n->t("Perons"), [ ]);
     $personsNavigation->hideTitle = false;
 
-    $otherNavigation = new Navigation("other-mega", $i18n->t("Other"), []);
-    $otherNavigation->hideTitle = false;
+    $otherNavigation              = new Navigation("other-mega", $i18n->t("Other"), [ ]);
+    $otherNavigation->hideTitle   = false;
 
     if ($session->isAuthenticated === true) {
       $mainMenuitems = [
@@ -282,15 +283,16 @@ class Page extends \MovLib\Presentation\AbstractPage {
   /**
    * Get the header logo.
    *
+   * @global \MovLib\Configuration $config
    * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The header logo.
    */
   protected function getHeaderLogo() {
-    global $i18n;
+    global $config, $i18n;
     return
       "<a class='span' href='/' id='header__logo' title='{$i18n->t("Go back to the home page.")}'>" .
-        "<img alt='{$i18n->t("{0}, the free movie library.", [ "MovLib" ])}' height='42' id='logo' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib" .
+        "<img alt='{$i18n->t("{0}, the free movie library.", [ "MovLib" ])}' height='42' id='logo' src='//{$config->domainStatic}/asset/img/logo/vector.svg' width='42'> MovLib" .
       "</a>"
     ;
   }
