@@ -134,7 +134,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     $this->context = $context;
     $this->type = $this->getShortName();
     $this->id = $id;
-    $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/{$this->context}/{$this->type}/{$this->id}";
+    $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/private/{$this->context}/{$this->type}/{$this->id}";
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -404,7 +404,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @throws \MovLib\Exception}FileSystemException
    */
   private function hideRepository() {
-    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/{$this->context}/{$this->type}/.{$this->id}";
+    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/private/{$this->context}/{$this->type}/.{$this->id}";
     if (is_dir($newPath)) {
       throw new HistoryException("Repository already hidden", self::E_REPOSITORY_IN_USE);
     }
@@ -544,7 +544,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @throws \MovLib\Exception}FileSystemException
    */
   private function unhideRepository() {
-    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/{$this->context}/{$this->type}/{$this->id}";
+    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/private/{$this->context}/{$this->type}/{$this->id}";
     if (is_dir($newPath)) {
       throw new HistoryException("Repository not hidden");
     }

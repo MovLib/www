@@ -35,13 +35,19 @@ class MovieTest extends \MovLib\Test\TestCase {
 
   public function setUp() {
     global $db;
+
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
+    if (is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
+
     $this->movie = new Movie(2, "phpunitrepos");
     $commitHash  = $this->movie->createRepository();
     $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
   }
 
   public function tearDown() {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
@@ -58,8 +64,8 @@ class MovieTest extends \MovLib\Test\TestCase {
    * @covers \Movlib\Data\History\AbstractHistory::createRepository
    */
   public function testCreateRepository() {
-    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2");
-    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/.git/HEAD");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/.git/HEAD");
   }
 
   /**
@@ -67,7 +73,7 @@ class MovieTest extends \MovLib\Test\TestCase {
    */
   public function testHideRepository() {
     $this->invoke($this->movie, "hideRepository");
-    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/.2");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/.2");
   }
 
   /**
@@ -86,10 +92,10 @@ class MovieTest extends \MovLib\Test\TestCase {
    */
   public function testUnhideRepository() {
     $this->invoke($this->movie, "hideRepository");
-    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/.2");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/.2");
 
     $this->invoke($this->movie, "unhideRepository");
-    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2");
   }
 
   /**
@@ -120,26 +126,26 @@ class MovieTest extends \MovLib\Test\TestCase {
   public function testWriteFiles() {
     // wrong offset name
     $this->invoke($this->movie, "writeFiles", [ ["foo" => "bar" ] ]);
-    $this->assertFileNotExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/foo");
+    $this->assertFileNotExists("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/foo");
 
     // offset which should be written to file directly
     $this->invoke($this->movie, "writeFiles", [ ["original_title" => "The Shawshank Redemption" ] ]);
-    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/original_title");
-    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/original_title", "The Shawshank Redemption");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/original_title");
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/original_title", "The Shawshank Redemption");
 
     // offset with language prefix which should be written to file directly
     $this->invoke($this->movie, "writeFiles", [ ["en_synopsis" => "A very short synopsis." ] ]);
-    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/en_synopsis");
-    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/en_synopsis", "A very short synopsis.");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/en_synopsis");
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/en_synopsis", "A very short synopsis.");
 
     // no file should be written if the offset is not set
-    $this->assertFileNotExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/de_synopsis");
+    $this->assertFileNotExists("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/de_synopsis");
 
     // offset which should be written to file serialized
     $this->invoke($this->movie, "writeFiles", [ [ "titles" => [[ "id" => 1, "title" => "foo" ], [ "id" => 2, "title" => "bar" ] ] ] ]);
-    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/titles");
+    $this->assertFileExists("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/titles");
     $this->assertStringEqualsFile(
-      "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/titles", 'a:2:{i:0;a:2:{s:2:"id";i:1;s:5:"title";s:3:"foo";}i:1;a:2:{s:2:"id";i:2;s:5:"title";s:3:"bar";}}'
+      "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/titles", 'a:2:{i:0;a:2:{s:2:"id";i:1;s:5:"title";s:3:"foo";}i:1;a:2:{s:2:"id";i:2;s:5:"title";s:3:"bar";}}'
     );
   }
 
@@ -181,7 +187,7 @@ class MovieTest extends \MovLib\Test\TestCase {
     $this->assertEquals("#	modified:   original_title", $output[4]);
     $this->assertEquals("#	modified:   year", $output[5]);
 
-    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/year", 2001);
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/year", 2001);
 
     // unstage year
     $this->invoke($this->movie, "unstageFiles", [ [ "year" ] ]);
@@ -193,7 +199,7 @@ class MovieTest extends \MovLib\Test\TestCase {
     // reset year
     $this->invoke($this->movie, "resetFiles", [ [ "year" ] ]);
     exec("cd {$path} && git status", $output);
-    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/year", 2000);
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/year", 2000);
   }
 
   /**
@@ -337,7 +343,7 @@ class MovieTest extends \MovLib\Test\TestCase {
   public function testSaveHistory() {
     $this->movie->startEditing();
     $this->movie->saveHistory([ "original_title" => "The foobar is a lie" ], "initial commit");
-    $this->assertFileExists(("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/original_title"));
+    $this->assertFileExists(("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/original_title"));
   }
 
   /**
@@ -356,7 +362,7 @@ class MovieTest extends \MovLib\Test\TestCase {
 
     $this->movieUserTwo->saveHistory([ "original_title" => "The bar is not a lie" ], "initial commit");
 
-    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos/movie/2/original_title", "The foobar is a lie");
+    $this->assertStringEqualsFile("{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos/movie/2/original_title", "The foobar is a lie");
   }
 
   /**

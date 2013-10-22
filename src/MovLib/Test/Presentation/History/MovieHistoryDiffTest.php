@@ -37,19 +37,17 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
   /** @var \MovLib\Presentation\History\MovieHistoryDiff */
   private $historyDiffPage;
 
-  public static function setUpBeforeClass() {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
+  public function setUp() {
+    global $db;
+
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
-  }
 
-  public function setUp() {
-    global $db;
     $_SERVER["MOVIE_ID"] = 2;
 
-    $this->historyDiffPage = new MovieHistoryDiff("phpunitrepos");
-
+    $this->historyDiffPage    = new MovieHistoryDiff("phpunitrepos");
     $this->movie              = new Movie($_SERVER["MOVIE_ID"], "phpunitrepos");
     $_SERVER["REVISION_HASH"] = $this->movie->createRepository();
     $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
@@ -57,10 +55,10 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
     $this->movie->startEditing();
     $_SERVER["REVISION_HASH"] = $this->movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
     $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
-  }
+    }
 
   public function tearDown() {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }

@@ -33,7 +33,7 @@ class MovieHistoryTest extends \MovLib\Test\TestCase {
 
   public static function setUpBeforeClass() {
     global $db;
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
@@ -46,11 +46,12 @@ class MovieHistoryTest extends \MovLib\Test\TestCase {
   }
 
   public static function tearDownAfterClass() {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
   }
+ 
 
   /**
    * @covers \MovLib\Presentation\History\TraitHistory::contentRevisionsPage

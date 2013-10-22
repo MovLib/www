@@ -165,7 +165,7 @@ class Database extends \MovLib\Console\Command\Database {
    * @return this
    */
   protected function createRepositories($type) {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/history/{$type}";
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/history/{$type}";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
@@ -294,6 +294,8 @@ class Database extends \MovLib\Console\Command\Database {
         $this->importSeeds();
         $this->write("Importing uploads ...");
         $this->importSeedUploads();
+        $this->write("Creating History Repositories ...");
+        $this->git();
         $this->write("All Successfull!", self::MESSAGE_TYPE_INFO);
       }
       catch (DatabaseException $e) {
@@ -340,7 +342,8 @@ class Database extends \MovLib\Console\Command\Database {
       }
     }
 
-    exec("chmod -R 777 {$_SERVER["DOCUMENT_ROOT"]}/history/*");
+
+    $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/private/history", "Could not fix permissions on history folder!");
 
     return $this;
   }
