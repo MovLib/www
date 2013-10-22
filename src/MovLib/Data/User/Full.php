@@ -393,13 +393,15 @@ class Full extends \MovLib\Data\User\User {
   /**
    * Get the <var>$rawPassword</var> hash.
    *
+   * @global \MovLib\Configuration $config
    * @param string $rawPassword
    *   The user supplied raw password.
    * @return string
    *   The <var>$rawPassword</var> hash.
    */
   public function passwordHash($rawPassword) {
-    return password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]);
+    global $config;
+    return password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $config->passwordCost ]);
   }
 
   /**
