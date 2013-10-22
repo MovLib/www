@@ -47,6 +47,7 @@ class MovieHistory extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * @inheritdoc
    */
   protected function getPageContent() {
+    $this->addClass("active", $this->secondaryNavigation->menuitems[3][2]);
     return $this->contentRevisionsPage();
   }
 

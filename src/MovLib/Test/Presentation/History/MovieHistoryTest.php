@@ -51,7 +51,17 @@ class MovieHistoryTest extends \MovLib\Test\TestCase {
       exec("rm -rf {$path}");
     }
   }
- 
+
+  /**
+   * @covers \MovLib\Presentation\History\TraitHistory::getPageContent
+   */
+  public function testGetPageContent() {
+    $historyPage = new MovieHistory("phpunitrepos");
+    $this->assertContains(
+      "<a href='/movie/2/history' accesskey='h' class='separator active'",
+      $this->invoke($historyPage, "getContent")
+    );
+  }
 
   /**
    * @covers \MovLib\Presentation\History\TraitHistory::contentRevisionsPage

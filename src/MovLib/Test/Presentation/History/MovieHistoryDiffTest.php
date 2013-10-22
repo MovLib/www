@@ -65,6 +65,16 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
   }
 
   /**
+   * @covers \MovLib\Presentation\History\TraitHistory::getPageContent
+   */
+  public function testGetPageContent() {
+    $this->assertContains(
+      "<a href='/movie/2/history' accesskey='h' class='separator active'",
+      $this->invoke($this->historyDiffPage, "getContent")
+    );
+  }
+
+  /**
    * @covers \MovLib\Presentation\History\TraitHistory::contentDiffPage
    * @covers \MovLib\Presentation\History\TraitHistory::textDiffOfRevisions
    */
