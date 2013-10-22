@@ -236,14 +236,14 @@ location ^~ <?= $r("/person") ?> {
 location @profile_account_settings {
   set $movlib_multipart 1;
   set $movlib_presenter "Profile\\AccountSettings";
-  include sites/conf/fastcgi.conf;
+  include sites/conf/fastcgi_params.conf;
 }
 
 location ^~ <?= $r("/profile") ?> {
 
   location = <?= $r("/profile") ?> {
     set $movlib_presenter "Profile\\Show";
-    include sites/conf/fastcgi.conf;
+    include sites/conf/fastcgi_params.conf;
   }
 
   location = <?= $r("/profile") ?>/ {
@@ -253,39 +253,39 @@ location ^~ <?= $r("/profile") ?> {
   # IMPORTANT! You sign out from our profile, but it's actually handled by the login presentation.
   location = <?= $r("/profile/sign-out") ?> {
     set $movlib_presenter "Users\\Login";
-    include sites/conf/fastcgi.conf;
+    include sites/conf/fastcgi_params.conf;
   }
 
   location = <?= $r("/profile/account-settings") ?> {
     error_page 413 @profile_account_settings;
     set $movlib_multipart 0;
     set $movlib_presenter "Profile\\AccountSettings";
-    include sites/conf/fastcgi.conf;
+    include sites/conf/fastcgi_params.conf;
   }
 
   location = <?= $r("/profile/notification-settings") ?> {
     set $movlib_presenter "Profile\\NotificationSettings";
-    include sites/conf/fastcgi.conf;
+    include sites/conf/fastcgi_params.conf;
   }
 
   location = <?= $r("/profile/email-settings") ?> {
     set $movlib_presenter "Profile\\EmailSettings";
-    include sites/conf/fastcgi.conf;
+    include sites/conf/fastcgi_params.conf;
   }
 
   location = <?= $r("/profile/password-settings") ?> {
     set $movlib_presenter "Profile\\PasswordSettings";
-    include sites/conf/fastcgi.conf;
+    include sites/conf/fastcgi_params.conf;
   }
 
   location = <?= $r("/profile/danger-zone-settings") ?> {
     set $movlib_presenter "Profile\\DangerZoneSettings";
-    include sites/conf/fastcgi.conf;
+    include sites/conf/fastcgi_params.conf;
   }
 
   location = <?= $r("/profile/deactivated") ?> {
     set $movlib_presenter "Profile\\Deactivated";
-    include sites/conf/fastcgi.conf;
+    include sites/conf/fastcgi_params.conf;
   }
 
   return 404;
@@ -318,7 +318,7 @@ location ^~ <?= $r("/users") ?> {
 
   location = <?= $r("/users/reset-password") ?> {
     set $movlib_presenter "Users\\ResetPassword";
-    include sites/conf/fastcgi.conf;
+    include sites/conf/fastcgi_params.conf;
   }
 
   return 404;

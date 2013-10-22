@@ -15,40 +15,62 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\History;
+namespace MovLib\Data;
+
+use \Locale;
 
 /**
- * The movie history page.
+ * Represents a single system language.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistory extends \MovLib\Presentation\Movie\AbstractMoviePage {
-  use \MovLib\Presentation\History\TraitHistory;
-
+class SystemLanguage {
 
   /**
-   * Instatiate new movie history presentation.
+   * The system language's ISO alpha-2 code.
+   *
+   * @var string
+   */
+  public $languageCode;
+
+  /**
+   * The system language's locale.
+   *
+   * @var string
+   */
+  public $locale;
+
+  /**
+   * The system language's name in the current display language.
+   *
+   * @var string
+   */
+  public $name;
+
+  /**
+   * The system language's name.
+   *
+   * @var string
+   */
+  public $nameNative;
+
+  /**
+   * Instantiate new system language.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @param string $locale
+   *   This system language's locale.
    */
-  public function __construct($context = "history") {
+  public function __construct($locale) {
     global $i18n;
-    $this->initMovie();
-    $this->init($i18n->t("History of {0}", [ $this->title ]));
-
-    $this->historyModel = new \MovLib\Data\History\Movie($this->model->id, $context);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    $this->addClass("active", $this->secondaryNavigation->menuitems[3][2]);
-    return $this->contentRevisionsPage();
+    $this->languageCode = "{$locale[0]}{$locale[1]}";
+    $this->locale       = $locale;
+    $this->name         = Locale::getDisplayLanguage($this->languageCode, $i18n->locale);
+    $this->nameNative   = Locale::getDisplayLanguage($this->languageCode, $this->locale);
   }
 
 }

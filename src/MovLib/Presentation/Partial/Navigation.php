@@ -136,7 +136,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    *   </ul>
    *   For a more in-depth explanation have a look at {@see AbstractPage::a()}.
    */
-  public function __construct($id, $title, array $menuitems) {
+  public function __construct($id, $title, $menuitems) {
     $this->id        = $id;
     $this->title     = $title;
     $this->menuitems = $menuitems;

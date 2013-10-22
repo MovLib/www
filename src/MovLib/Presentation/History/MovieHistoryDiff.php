@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\History;
 
-use \MovLib\Presentation\Partial\Lists\Unordered;
-
 /**
  * The movie history page.
  *
@@ -81,7 +79,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed casts.
    */
   private function getCast($diff) {
-    return $this->diffArray($diff, "\MovLib\Data\Person", "getPersonNames");
+    return $this->diffArray($diff, "\MovLib\Data\Persons");
   }
 
   /**

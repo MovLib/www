@@ -37,19 +37,17 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
   /** @var \MovLib\Presentation\History\MovieHistoryDiff */
   private $historyDiffPage;
 
-  public static function setUpBeforeClass() {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
+  public function setUp() {
+    global $db;
+
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
-  }
 
-  public function setUp() {
-    global $db;
     $_SERVER["MOVIE_ID"] = 2;
 
-    $this->historyDiffPage = new MovieHistoryDiff("phpunitrepos");
-
+    $this->historyDiffPage    = new MovieHistoryDiff("phpunitrepos");
     $this->movie              = new Movie($_SERVER["MOVIE_ID"], "phpunitrepos");
     $_SERVER["REVISION_HASH"] = $this->movie->createRepository();
     $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
@@ -57,13 +55,23 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
     $this->movie->startEditing();
     $_SERVER["REVISION_HASH"] = $this->movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
     $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
-  }
+    }
 
   public function tearDown() {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/phpunitrepos";
+    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
+  }
+
+  /**
+   * @covers \MovLib\Presentation\History\TraitHistory::getPageContent
+   */
+  public function testGetPageContent() {
+    $this->assertContains(
+      "<a href='/movie/2/history' accesskey='h' class='separator active'",
+      $this->invoke($this->historyDiffPage, "getContent")
+    );
   }
 
   /**
@@ -225,6 +233,29 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
       "Color film noir", $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\Styles" ])->__toString()
     );
     $i18n = new \MovLib\Data\I18n();
+  }
+
+  /**
+   * @covers \MovLib\Presentation\History\TraitHistory::diffArray
+   * @covers \MovLib\Presentation\History\TraitHistory::diffArrayItems
+   * @covers \MovLib\Presentation\History\TraitHistory::textDiffOfStrings
+   * @covers \Movlib\Data\User\Persons::orderById
+   */
+  public function testDiffArrayWithCast() {
+    $diff = ["added" => [
+      ["id" => 4, "roles" => "franz"]
+    ], "removed" => [
+      ["id" => 1, "roles" => "markus"]
+    ], "edited" => [
+      ["id" => 3, "roles" => "Mike", "old" => ["id" => 3, "roles" => "Michael"] ]
+    ]];
+    $this->assertEquals(
+      "<ul><li><a href='/persons/1' class='red' title='Information about Luc Besson'>Luc Besson</a></li><li><a href="
+      . "'/persons/4' class='green' title='Information about Gary Oldman'>Gary Oldman</a></li><li><a href='/persons/3' "
+      . "class='' title='Information about Natalie Portman'>Natalie Portman</a><ul class=''><li><span class='property-name'>"
+      . "roles:</span> Mi<span class='red'>k</span><span class='green'>cha</span>e<span class='green'>l</span></li></ul></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffArray", [ $diff, "\MovLib\Data\Persons" ])->__toString()
+    );
   }
 
 }
