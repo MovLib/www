@@ -67,7 +67,7 @@ abstract class AbstractBase {
   protected final function a($route, $text, array $attributes = null) {
     // Recreate path to make sure we match the actual route and not the currently requested URI which might include
     // GET arguments.
-    if ($route == $_SERVER["PATH_INFO"]) {
+    if ($route == $_SERVER["REQUEST_URI"]) {
       // A hash keeps the anchor element itself valid but removes the link to the current page—perfect!
       $route = "#";
     }

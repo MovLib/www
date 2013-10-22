@@ -80,7 +80,7 @@ class Login extends \MovLib\Presentation\FormPage {
     $routeLogout = $i18n->r("/profile/sign-out");
 
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
-    if ($session->isAuthenticated === true && $_SERVER["PATH_INFO"] != $routeLogout) {
+    if ($session->isAuthenticated === true && $_SERVER["REQUEST_URI"] != $routeLogout) {
       throw new RedirectSeeOtherException($i18n->r("/my"));
     }
 
@@ -93,7 +93,7 @@ class Login extends \MovLib\Presentation\FormPage {
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
-    if ($_SERVER["PATH_INFO"] != $routeLogin && $_SERVER["PATH_INFO"] != $routeLogout) {
+    if ($_SERVER["REQUEST_URI"] != $routeLogin && $_SERVER["REQUEST_URI"] != $routeLogout) {
       if (empty($_GET["redirect_to"])) {
         $_GET["redirect_to"] = $_SERVER["REQUEST_URI"];
       }
@@ -115,13 +115,13 @@ class Login extends \MovLib\Presentation\FormPage {
     ]);
 
     // If the user requested to be signed out, do so.
-    if ($session->isAuthenticated === true && $_SERVER["PATH_INFO"] == $routeLogout) {
+    if ($session->isAuthenticated === true && $_SERVER["REQUEST_URI"] == $routeLogout) {
       $session->destroy();
       $this->alerts .= new Alert($i18n->t("We hope to see you again soon."), $i18n->t("You’ve been signed out successfully."), Alert::SEVERITY_SUCCESS);
     }
 
     // Ensure all views are using the correct path info to render themselves.
-    $_SERVER["PATH_INFO"] = $routeLogin;
+    $_SERVER["REQUEST_URI"] = $routeLogin;
   }
 
   /**

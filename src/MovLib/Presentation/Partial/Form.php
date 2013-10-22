@@ -113,7 +113,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
     }
 
     // Set default attributes, a dev can override them by accessing the properties directly.
-    $this->attributes = [ "action" => $_SERVER["PATH_INFO"], "method" => "post" ];
+    $this->attributes = [ "action" => $_SERVER["REQUEST_URI"], "method" => "post" ];
 
     // Configure our form as multipart form if it's configured in the route to be one.
     if (isset($_SERVER["MULTIPART"])) {
@@ -134,7 +134,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
       //       regenerate the session ID every 20 minutes (maximum according to OWASP).
       if ($session->validateCsrfToken() === false) {
         $errors["csrf"] = $i18n->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
-          "<a href='{$_SERVER["PATH_INFO"]}'>", "</a>"
+          "<a href='{$_SERVER["REQUEST_URI"]}'>", "</a>"
         ]);
       }
       else {

@@ -141,7 +141,7 @@ class Registration extends \MovLib\Presentation\FormPage {
     ), [ "required" ]);
 
     $this->form                             = new Form($this, [ $this->username, $this->email, $this->password, $this->terms ]);
-    $this->form->attributes["action"]       = $_SERVER["PATH_INFO"];
+    $this->form->attributes["action"]       = $_SERVER["REQUEST_URI"];
     $this->form->attributes["autocomplete"] = "off";
     $this->form->attributes["class"]        = "span span--6 offset--3";
 
@@ -167,7 +167,7 @@ class Registration extends \MovLib\Presentation\FormPage {
     if ($this->accepted === true) {
       return "<div class='container'><small>{$i18n->t(
         "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-        [ "<a href='{$_SERVER["PATH_INFO"]}'></a>" ]
+        [ "<a href='{$_SERVER["REQUEST_URI"]}'></a>" ]
       )}</small></div>";
     }
     return "<div class='container'><div class='row'>{$this->form}</div></div>"
