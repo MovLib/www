@@ -29,10 +29,11 @@
 $_SERVER["DOCUMENT_ROOT"] = __DIR__;
 
 $composerAutoloader = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
-$composerAutoloader->add("MovLib", "src/");
+$composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src/");
 
 new \MovLib\Exception\ConsoleHandlers();
 $GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
+$config            = new \MovLib\Configuration();
 $i18n              = new \MovLib\Data\I18n();
 
 // The following variables are always available in our environment and set via nginx. We have to create them here on
@@ -49,10 +50,10 @@ $_SERVER["REMOTE_ADDR"]     = "127.0.0.1";
 $_SERVER["HTTP_USER_AGENT"] = ini_get("user_agent");
 
 // Flag indicating if in development environment.
-define("DEV", strpos($GLOBALS["movlib"]["version"], "-dev") === false ? false : true);
+define("DEV", !$config->production);
 
 if (DEV === true) {
-  $composerAutoloader->add("MovDev", "src/");
+  $composerAutoloader->add("MovDev", "{$_SERVER["DOCUMENT_ROOT"]}/src/");
   $db = new \MovDev\Database();
 }
 
