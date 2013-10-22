@@ -46,19 +46,22 @@ $cfg["Servers"][$i]["controluser"] = "pma";
 $cfg["Servers"][$i]["controlpass"] = "pmapass";
 
 // Advanced Features
-$cfg["Servers"][$i]["pmadb"]           = "phpmyadmin";
-$cfg["Servers"][$i]["bookmarktable"]   = "pma__bookmark";
-$cfg["Servers"][$i]["column_info"]     = "pma__column_info";
-$cfg["Servers"][$i]["designer_coords"] = "pma__designer_coords";
-$cfg["Servers"][$i]["history"]         = "pma__history";
-$cfg["Servers"][$i]["pdf_pages"]       = "pma__pdf_pages";
-$cfg["Servers"][$i]["recent"]          = "pma__recent";
-$cfg["Servers"][$i]["relation"]        = "pma__relation";
-$cfg["Servers"][$i]["table_coords"]    = "pma__table_coords";
-$cfg["Servers"][$i]["table_info"]      = "pma__table_info";
-$cfg["Servers"][$i]["table_uiprefs"]   = "pma__table_uiprefs";
-$cfg["Servers"][$i]["tracking"]        = "pma__tracking";
-$cfg["Servers"][$i]["userconfig"]      = "pma__userconfig";
+$cfg["Servers"][$i]["bookmarktable"]    = "pma__bookmark";
+$cfg["Servers"][$i]["column_info"]      = "pma__column_info";
+$cfg["Servers"][$i]["designer_coords"]  = "pma__designer_coords";
+$cfg["Servers"][$i]["history"]          = "pma__history";
+$cfg["Servers"][$i]["navigationhiding"] = "pma__navigationhiding";
+$cfg["Servers"][$i]["pdf_pages"]        = "pma__pdf_pages";
+$cfg["Servers"][$i]["pmadb"]            = "phpmyadmin";
+$cfg["Servers"][$i]["recent"]           = "pma__recent";
+$cfg["Servers"][$i]["relation"]         = "pma__relation";
+$cfg["Servers"][$i]["table_coords"]     = "pma__table_coords";
+$cfg["Servers"][$i]["table_info"]       = "pma__table_info";
+$cfg["Servers"][$i]["table_uiprefs"]    = "pma__table_uiprefs";
+$cfg["Servers"][$i]["tracking"]         = "pma__tracking";
+$cfg["Servers"][$i]["userconfig"]       = "pma__userconfig";
+$cfg["Servers"][$i]["usergroups"]       = "pma__usergroups";
+$cfg["Servers"][$i]["users"]            = "pma__users";
 
 // End of servers configuration
 $cfg["DefaultLang"]                           = "en";
@@ -71,6 +74,8 @@ $cfg["Export"]["sql_if_not_exists"]           = false;
 $cfg["Export"]["sql_procedure_function"]      = false;
 $cfg["Export"]["sql_relation"]                = true;
 $cfg["Export"]["sql_structure_or_data"]       = "data";
+$cfg["ForceSSL"]                              = true;
+//$cfg["PersistentConnections"]                 = true; // Seems to be causing trouble
 $cfg["SaveDir"]                               = "";
 $cfg["ServerDefault"]                         = 1;
 $cfg["ShowAll"]                               = true;
