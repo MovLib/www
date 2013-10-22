@@ -59,8 +59,17 @@ class Configuration extends \MovLib\Configuration {
 
   /**
    * Instantiate new Tool configuration.
+   *
+   * @global \MovLib\Tool\Database $db
    */
   public function __construct() {
+    global $db;
+
+    // Instantiate new global developer database object if non is available yet.
+    if (!$db) {
+      $db = new \MovLib\Tool\Database();
+    }
+
     // Check whetever the client authenticated against nginx.
     if (!empty($_SERVER["SSL_CLIENT_VERIFY"])) {
       $this->sslClientVerify = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS";
