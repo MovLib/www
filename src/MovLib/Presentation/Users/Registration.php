@@ -83,20 +83,6 @@ class Registration extends \MovLib\Presentation\FormPage {
    */
   protected $username;
 
-  /**
-   * The username's maximum length.
-   *
-   * @var int
-   */
-  protected $usernameMaximumLength = 40;
-
-  /**
-   * The username's disallowed character list.
-   *
-   * @var string
-   */
-  protected $usernameIllegalCharacters = "/_@#<>|()[]{}?\\=:;,'\"&$*~";
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -120,14 +106,14 @@ class Registration extends \MovLib\Presentation\FormPage {
     $this->init($i18n->t("Registration"));
 
     $this->username = new InputText("username", $i18n->t("Username"), [
-      "maxlength"   => $this->usernameMaximumLength,
-      "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote($this->usernameIllegalCharacters, "/") . "].*$).*$",
+      "maxlength"   => User::NAME_MAXIMUM_LENGTH,
+      "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(User::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
       "placeholder" => $i18n->t("Enter your desired username"),
       "required",
       "title"       => $i18n->t(
         "A username must be valid UTF-8, cannot contain spaces at the beginning and end or more than one space in a row, " .
         "it cannot contain any of the following characters {0} and it cannot be longer than {1,number,integer} characters.",
-        [ $this->usernameIllegalCharacters, $this->usernameMaximumLength ]
+        [ User::NAME_ILLEGAL_CHARACTERS, User::NAME_MAXIMUM_LENGTH ]
       ),
     ]);
     $this->username->setHelp("<a href='{$i18n->r("/users/login")}'>{$i18n->t("Already have an account?")}</a>", false);
@@ -207,17 +193,17 @@ class Registration extends \MovLib\Presentation\FormPage {
     // Switch to sanitized data
     $user->name = $this->username->value;
 
-    if (strpbrk($user->name, $this->usernameIllegalCharacters) !== false) {
+    if (strpbrk($user->name, User::NAME_ILLEGAL_CHARACTERS) !== false) {
       $usernameErrors[] = $i18n->t(
         "The username cannot contain any of the following characters: {0}",
-        [ "<code>{$this->checkPlain($this->usernameIllegalCharacters)}</code>" ]
+        [ "<code>{$this->checkPlain(User::NAME_ILLEGAL_CHARACTERS)}</code>" ]
       );
     }
 
-    if (mb_strlen($user->name) > $this->usernameMaximumLength) {
+    if (mb_strlen($user->name) > User::NAME_MAXIMUM_LENGTH) {
       $usernameErrors[] = $i18n->t(
         "The username is too long: it must be {0,number,integer} characters or less.",
-        [ $this->usernameMaximumLength ]
+        [ User::NAME_MAXIMUM_LENGTH ]
       );
     }
 

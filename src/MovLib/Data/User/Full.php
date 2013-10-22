@@ -45,6 +45,15 @@ class Full extends \MovLib\Data\User\User {
    */
   const MAXIMUM_ATTEMPTS = 5;
 
+  /**
+   * Maximum username length (chracter count, not bytes).
+   *
+   * @var int
+   */
+  const NAME_MAXIMUM_LENGTH = 40;
+
+  const NAME_ILLEGAL_CHARACTERS = "/_@#<>|()[]{}?\\=:;,'\"&$*~";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
