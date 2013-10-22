@@ -9,6 +9,7 @@ Desktop.ini
 # ----------------------------------------------------------------------
 !/bin/
 /components/
+/composer.lock
 /conf/movlib.ini
 /public/coverage/
 /public/doc/
