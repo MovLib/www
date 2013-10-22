@@ -156,12 +156,12 @@ trait TraitHistory {
    *   Associative array with added, removed and edited items.
    * @param string $className
    *   The name of the class (with namespace) to instantiate to get item information.
-   * @param type $methodName
+   * @param type $methodName [optional]
    *   The name of the method to call for item information.
    * @return \MovLib\Presentation\Partial\Lists\Unordered
    *   A HTML List of changed items.
    */
-  private function diffArray($diff, $className, $methodName) {
+  private function diffArray($diff, $className, $methodName = "orderById") {
     global $i18n;
     $itemIds = [];
     $allItems = array_merge($diff["added"], $diff["removed"], $diff["edited"]);
@@ -196,7 +196,7 @@ trait TraitHistory {
    */
   private function diffArrayItems($diff, $case, $className, $methodName, $itemIds) {
     global $i18n;
-    $itemNames = (new $className())->{$methodName}($itemIds);
+    $itemInformation = (new $className())->{$methodName}($itemIds);
     switch ($case) {
       case "added":
         $cssClass = "green";
@@ -213,11 +213,11 @@ trait TraitHistory {
     $listItems = [];
     $c = count($diff[$case]);
     for ($i = 0; $i < $c; ++$i) {
-      if (!isset($itemNames[$diff[$case][$i]["id"]])) {
+      if (!isset($itemInformation[$diff[$case][$i]["id"]])) {
         continue;
       }
 
-      $itemName = $itemNames[$diff[$case][$i]["id"]];
+      $itemName = $itemInformation[$diff[$case][$i]["id"]]->name;
       $propertyList = [];
       foreach ($diff[$case][0] as $key => $value) {
         if ($key == "id" || $key == "old" || $case != "edited") {

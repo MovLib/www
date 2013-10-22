@@ -227,4 +227,27 @@ class MovieHistoryDiffTest extends \MovLib\Test\TestCase {
     $i18n = new \MovLib\Data\I18n();
   }
 
+  /**
+   * @covers \MovLib\Presentation\History\TraitHistory::diffArray
+   * @covers \MovLib\Presentation\History\TraitHistory::diffArrayItems
+   * @covers \MovLib\Presentation\History\TraitHistory::textDiffOfStrings
+   * @covers \Movlib\Data\User\Persons::orderById
+   */
+  public function testDiffArrayWithCast() {
+    $diff = ["added" => [
+      ["id" => 4, "roles" => "franz"]
+    ], "removed" => [
+      ["id" => 1, "roles" => "markus"]
+    ], "edited" => [
+      ["id" => 3, "roles" => "Mike", "old" => ["id" => 3, "roles" => "Michael"] ]
+    ]];
+    $this->assertEquals(
+      "<ul><li><a href='/persons/1' class='red' title='Information about Luc Besson'>Luc Besson</a></li><li><a href="
+      . "'/persons/4' class='green' title='Information about Gary Oldman'>Gary Oldman</a></li><li><a href='/persons/3' "
+      . "class='' title='Information about Natalie Portman'>Natalie Portman</a><ul class=''><li><span class='property-name'>"
+      . "roles:</span> Mi<span class='red'>k</span><span class='green'>cha</span>e<span class='green'>l</span></li></ul></li></ul>",
+      $this->invoke($this->historyDiffPage, "diffArray", [ $diff, "\MovLib\Data\Persons" ])->__toString()
+    );
+  }
+
 }
