@@ -29,6 +29,26 @@ use \MovLib\Presentation\Partial\FormElement\InputPassword;
  */
 class InputPasswordTest extends \MovLib\Test\TestCase {
 
+  public function dataProviderValidPasswords() {
+    return [
+      [ "Test1234" ],
+      [ "Pass1worD" ],
+      [ "P1assword" ],
+      [ "1Password" ],
+      [ "1passWord" ],
+      [ "1passworD" ],
+      [ "paSsword1" ],
+      [ "p1aSsword" ],
+      [ "p1assworD" ],
+      [ "ValidPassword123" ],
+      [ "V1alidPassword" ],
+      [ "V1alidPássworD" ],
+      [ "validPassword123" ],
+      [ "v1alidPassword" ],
+      [ "v1alidPassworD" ],
+    ];
+  }
+
   public static function dataProviderWeakPasswords() {
     return [
       [ "test" ],
@@ -42,6 +62,7 @@ class InputPasswordTest extends \MovLib\Test\TestCase {
     ];
   }
 
+
   // ------------------------------------------------------------------------------------------------------------------- Helpers
 
 
@@ -51,7 +72,9 @@ class InputPasswordTest extends \MovLib\Test\TestCase {
     return $inputPassword->validate();
   }
 
+
   // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
   /**
    * @covers ::__construct
@@ -128,10 +151,11 @@ class InputPasswordTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::validate
+   * @dataProvider dataProviderValidPasswords
    * @depends testConstruct
    */
-  public function testValidate() {
-    $this->_validate("Test1234");
+  public function testValidate($password) {
+    $this->_validate($password);
   }
 
 }

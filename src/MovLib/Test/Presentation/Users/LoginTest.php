@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -31,37 +31,50 @@ use \MovLib\Presentation\Users\Login;
  */
 class LoginTest extends \MovLib\Test\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   private static $sessionBackup;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
   public static function setUpBeforeClass() {
     global $session;
-    self::$sessionBackup = clone $session;
-    $session              = new Session();
+    self::$sessionBackup  = clone $session;
     $_SERVER["PATH_INFO"] = "/users/login";
   }
 
+  public function setUp() {
+    global $session;
+    $session = new Session();
+  }
+
   public static function tearDownAfterClass() {
+    unset($_SERVER["PATH_INFO"]);
+  }
+
+  public function tearDown() {
     global $session;
     $session = self::$sessionBackup;
-    unset($_SERVER["PATH_INFO"]);
+    unset($_GET);
     unset($_POST);
   }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Helpers
 
 
   private function _testInvalidCredentials() {
-    $_POST["form_id"] = "users-login";
+    $_POST["form_id"]  = "users-login";
     $this->assertContains("We either don’t know the email address, or the password was wrong.", (new Login())->alerts);
   }
 
+
   // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
   /**
    * @covers ::__construct
@@ -84,7 +97,7 @@ class LoginTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
-   */
+    */
   public function testFormConfiguration() {
     $login = new Login();
 
@@ -121,7 +134,7 @@ class LoginTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::getContent
-   */
+    */
   public function testGetContent() {
     $login   = new Login();
     $content = $this->invoke($login, "getContent");
@@ -133,12 +146,12 @@ class LoginTest extends \MovLib\Test\TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
    * @expectedExceptionMessage Redirecting user to /my with status 303.
-   */
+     */
   public function testValidCredentials() {
     $_POST["email"]    = "richard@fussenegger.info";
     $_POST["form_id"]  = "users-login";
     $_POST["password"] = "Test1234";
-    (new Login())->validate();
+    (new Login());
   }
 
   /**
@@ -146,9 +159,9 @@ class LoginTest extends \MovLib\Test\TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
    * @expectedExceptionMessage Redirecting user to /profile with status 303.
-   */
+     */
   public function testRedirectToViaGetParameter() {
-    $_GET["redirect_to"] = rawurlencode("/profile");
+    $_GET["redirect_to"] = "/profile";
     $this->testValidCredentials();
   }
 
@@ -157,15 +170,17 @@ class LoginTest extends \MovLib\Test\TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
    * @expectedExceptionMessage Redirecting user to /profile?foo=bar with status 303.
-   */
+     */
   public function testRedirectToOnDifferentRoute() {
-    $_SERVER["PATH_INFO"]   = $_SERVER["REQUEST_URI"] = "/profile?foo=bar";
+    $pathInfo = $_SERVER["PATH_INFO"];
+    $_SERVER["PATH_INFO"] = $_SERVER["REQUEST_URI"] = "/profile?foo=bar";
     $this->testValidCredentials();
+    $_SERVER["PATH_INFO"] = $pathInfo;
   }
 
   /**
    * @covers ::validate
-   */
+     */
   public function testInvalidEmail() {
     $_POST["email"]    = "phpunit@movlib.org";
     $_POST["password"] = "Test1234";
@@ -174,22 +189,22 @@ class LoginTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::validate
-   */
+     */
   public function testInvalidPassword() {
     $_POST["email"]    = "richard@fussenegger.info";
-    $_POST["password"] = "phpunit";
+    $_POST["password"] = "WrongPassword123";
     $this->_testInvalidCredentials();
   }
 
   /**
    * @covers ::validate
    * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
-   * @expectedExceptionMessage Redirecting user to /profile/deactivated with status 302.
-   */
+   * @expectedExceptionMessage Redirecting user to /profile/deactivated with status 303.
+    */
   public function testDeactivated() {
     (new User(User::FROM_ID, 1))->deactivate();
     $_POST["email"]    = "richard@fussenegger.info";
-    $_POST["password"] = "test1234";
+    $_POST["password"] = "Test1234";
     $_POST["form_id"]  = "users-login";
     try {
       new Login();
@@ -204,10 +219,10 @@ class LoginTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::__construct
-   */
+    */
   public function testSignOut() {
     global $session;
-    $session              = $this->getMock("\\MovLib\\Data\\Session");
+    $session              = $this->getMock("\\MovLib\\Data\\User\\Session");
     $this->invoke($session, "init", [ 1 ]);
     $session->expects($this->once())->method("destroy");
     $_SERVER["PATH_INFO"] = "/profile/sign-out";

@@ -56,7 +56,6 @@ abstract class AbstractRedirectException extends \MovLib\Exception\AbstractExcep
    *   The redirect's translated payload title.
    */
   public function __construct($httpResponseCode, $route, $title) {
-    $route = rawurldecode($route);
     parent::__construct("Redirecting user to {$route} with status {$httpResponseCode}.");
     if (strpos($route, "http") === false) {
       $route = "{$_SERVER["SERVER"]}{$route}";

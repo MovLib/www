@@ -194,7 +194,7 @@ class RegistrationTest extends \MovLib\Test\TestCase {
   public function testEmailExists() {
     $this->_getRegistration([ "email" => "richard@fussenegger.info" ]);
     $found = false;
-    foreach (get_reflection_property("\\MovLib\\Data\\Delayed\\Mailer", "emails")->getValue() as $email) {
+    foreach ($this->getProperty("\\MovLib\\Data\\Delayed\\Mailer", "emails") as $email) {
       if (($found = $email instanceof RegistrationEmailExists) === true) {
         break;
       }
@@ -208,7 +208,7 @@ class RegistrationTest extends \MovLib\Test\TestCase {
   public function testValidRegistration() {
     $registration = $this->_getRegistration();
     $found        = false;
-    foreach (get_reflection_property("\\MovLib\\Data\\Delayed\\Mailer", "emails")->getValue() as $email) {
+    foreach ($this->getProperty("\\MovLib\\Data\\Delayed\\Mailer", "emails") as $email) {
       if (($found = $email instanceof RegistrationEmail) === true) {
         break;
       }

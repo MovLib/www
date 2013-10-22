@@ -35,6 +35,7 @@ class RedirectSeeOtherException extends \MovLib\Exception\Client\AbstractRedirec
    *   {@inheritdoc}
    */
   public function __construct($route) {
+    $route = rawurldecode($route);
     if ($_SERVER["SERVER_PROTOCOL"] == "HTTP/1.0") {
       parent::__construct(302, $route, "Moved Temporarily");
     }

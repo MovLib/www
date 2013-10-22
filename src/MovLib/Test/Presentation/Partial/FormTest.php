@@ -62,6 +62,10 @@ class FormTest extends \MovLib\Test\TestCase {
     $this->form->actionElements[] = $this->inputSubmit;
   }
 
+  public function tearDown() {
+    unset($_SERVER["MULTIPART"]);
+  }
+
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
   /**

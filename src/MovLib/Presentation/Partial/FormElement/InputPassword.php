@@ -71,7 +71,7 @@ class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractInp
   public function __construct($id = "password", $label = null, array $attributes = null) {
     global $i18n;
     parent::__construct($id, $label ?: $i18n->t("Password"), $attributes);
-    $this->attributes["pattern"]       = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{{$this->minimumPasswordLength}}$";
+    $this->attributes["pattern"]       = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{{$this->minimumPasswordLength},}$";
     $this->attributes["title"]         = $i18n->t(
       "A password must contain lowercase and uppercase letters, numbers, and must be at least {0,number,integer} characters long.",
       [ $this->minimumPasswordLength ]
