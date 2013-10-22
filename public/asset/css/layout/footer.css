@@ -1,0 +1,62 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Global footer styles.
+ *
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link http://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+#footer {
+  clear: both;
+  color: #c7c7c7;
+  font-size: 12px;
+  padding-bottom: 80px;
+}
+
+#footer .row {
+  border-bottom: 1px solid #595959;
+  padding: 40px 0;
+}
+
+#footer .container .row:last-child {
+  border-bottom: none;
+}
+
+#footer-logos {
+  text-align: center;
+}
+
+#footer-logos a {
+  border: none !important;
+  margin-right: 20px;
+  opacity: 0.5;
+  transition: opacity 0.4s ease-out;
+}
+
+#footer-logos a:hover,
+#footer-logos a:focus {
+  opacity: 1;
+}
+
+#footer-logos a:last-child {
+  margin-right: 0;
+}

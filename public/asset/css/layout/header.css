@@ -1,0 +1,239 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Global header styles.
+ *
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link http://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+
+/* ==== HEADER WRAPPER for ALL ====================================================================================== */
+
+
+#header {
+  background-color: #fff;
+  border-bottom: 1px solid #252525;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 999999;
+}
+
+#header > .container {
+  height: 50px;
+  overflow: hidden;
+  position: relative;
+}
+
+
+/* ==== LOGO ======================================================================================================== */
+
+
+#header__logo {
+  border-bottom: 0;
+  color: #656565;
+  display: block;
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 50px;
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-right: 0;
+  padding: 0;
+  position: relative;
+  top: -1px;
+  transition: color 0.4s linear;
+  width: 180px;
+}
+
+#header__logo:hover,
+#header__logo:focus {
+  color: #353535;
+}
+
+#header__logo img {
+  position: relative;
+  top: -4px;
+}
+
+
+/* ==== MAIN NAVIGATION ============================================================================================= */
+
+
+/*
+  Display as table to get rid of the spaces between the menuitems. We want those spaces because otherwise the words are
+  directly next to each other (e.g. "FooBar" instead of "Foo Bar").
+*/
+#main-nav {
+  display: table;
+  height: 50px;
+  float: right;
+  margin: 0;
+  margin-right: 100px;
+  vertical-align: middle;
+}
+
+#main-nav a {
+  border-bottom-width: 5px;
+  color: #656565;
+  display: table-cell;
+  font-size: 12px;
+  height: 50px;
+  padding-top: 22px;
+  text-indent: 10px;
+  width: 100px;
+}
+
+#main-nav a:hover,
+#main-nav a:focus,
+#main-nav a:active,
+#main-nav a.active {
+  color: #09c;
+  border-bottom-color: #09c;
+}
+
+
+/* ==== MEGA NAVIGATION ============================================================================================= */
+
+
+#mega-nav-container .container {
+  position: relative;
+  z-index: 9999999;
+}
+
+#mega-nav {
+  background-color: #252525;
+  color: #fff;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.4s ease-in-out;
+}
+
+#mega-nav .container {
+  position: relative;
+}
+
+#mega-nav h2 {
+  color: #fff;
+}
+
+#mega-nav a {
+  display: block;
+}
+
+#mega-nav a.active {
+  color: #c7c7c7;
+  border-bottom-color: transparent;
+}
+
+#mega-nav > .container,
+#mega-nav-container:hover #mega-nav,
+#mega-nav-container:focus #mega-nav,
+#mega-nav-container:active #mega-nav {
+  height: 200px;
+}
+
+#mega-nav-switch {
+  display: table;
+  height: 50px;
+  width: 50px;
+  position: absolute;
+  right: 0;
+  bottom: -50px;
+}
+
+#mega-nav-switch .button {
+  display: table-cell;
+  vertical-align: middle;
+  font-size: 21.333333px;
+  cursor: pointer;
+}
+
+
+/* ==== BREADCRUMB ================================================================================================== */
+
+
+#breadcrumb-nav,
+#breadcrumb-nav-title {
+  font-size: 12px;
+  margin: 1.39em 0;
+  padding: 0;
+}
+
+/* We have to use both IDs at this point to overwrite the inheritance from the "#mega-nav .container" selector! */
+#mega-nav #breadcrumb-nav {
+  bottom: 0;
+  position: absolute;
+}
+
+#breadcrumb-nav div,
+#breadcrumb-nav-title {
+  display: inline;
+  line-height: 1.46;
+}
+
+#breadcrumb-nav a {
+  display: inline;
+}
+
+
+/* ==== SEARCH FORM ================================================================================================= */
+
+
+#header__search-form {
+  overflow: hidden;
+  margin: 0;
+  position: absolute;
+  right: -610px;
+  top: 0;
+  transition: right 0.5s ease-in-out;
+  width: 710px;
+}
+
+#header__search-form:hover,
+#header__search-form:focus,
+#header__search-form:active {
+  right: 0;
+}
+
+#header__search-form button,
+#header__search-form input {
+  background-color: #252525;
+  border: 0;
+  box-shadow: none;
+  color: #fff;
+  font-size: 24px;
+  height: 50px;
+  line-height: 50px;
+  padding: 0;
+}
+
+#header__search-button {
+  float: left;
+  width: 50px;
+}
+
+#header__search-input {
+  font-weight: 200;
+  width: 660px;
+}

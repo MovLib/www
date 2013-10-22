@@ -1,0 +1,738 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Base consists of reset rules and element defaults.
+ *
+ * Target browsers:
+ *   - Apple Safari ??
+ *   - Microsoft Internet Explorer 9+ (support for 8 and maybe 7 via polyfills and additional stylesheets)
+ *   - Mozilla Firefox 5+
+ *   - Google Chrome 18+
+ *   - Opera Desktop 11+
+ *
+ * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link http://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+
+/* ==== WEB FONTS =================================================================================================== */
+
+/**
+ * {@link http://www.webtype.com/info/articles/fonts-weights/ Best practices for using font-weights}
+ *
+ * [ font-weight: normal;
+ *   100 - Extra Light or Ultra Light
+ *   200 - Light or Thin
+ *   300 - Book or Demi
+ *   400 - Normal or Regular (same as font-weight: normal)
+ *   500 - Medium
+ * ]
+ * [ font-weight: bold;
+ *   600 - Semibold or Demibold
+ *   700 - Bold (same as font-weight: bold)
+ *   800 - Black, Extra Bold or Heavy
+ *   900 - Extra Black, Fat, Poster or Ultra Black
+ * ]
+ *
+ * @link https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight
+ */
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/asset/font/open-sans/OpenSans-Light-webfont.eot");
+  src: url("/asset/font/open-sans/OpenSans-Light-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/OpenSans-Light-webfont.woff") format("woff"),
+       url("/asset/font/open-sans/OpenSans-Light-webfont.ttf") format("truetype"),
+       url("/asset/font/open-sans/OpenSans-Light-webfont.svg#OpenSansLight") format("svg");
+  font-weight: 200;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/asset/font/open-sans/OpenSans-LightItalic-webfont.eot");
+  src: url("/asset/font/open-sans/OpenSans-LightItalic-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/OpenSans-LightItalic-webfont.woff") format("woff"),
+       url("/asset/font/open-sans/OpenSans-LightItalic-webfont.ttf") format("truetype"),
+       url("/asset/font/open-sans/OpenSans-LightItalic-webfont.svg#OpenSansLightItalic") format("svg");
+  font-weight: 200;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/asset/font/open-sans/OpenSans-Regular-webfont.eot");
+  src: url("/asset/font/open-sans/OpenSans-Regular-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/OpenSans-Regular-webfont.woff") format("woff"),
+       url("/asset/font/open-sans/OpenSans-Regular-webfont.ttf") format("truetype"),
+       url("/asset/font/open-sans/OpenSans-Regular-webfont.svg#OpenSansRegular") format("svg")
+  ;
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/asset/font/open-sans/OpenSans-Italic-webfont.eot");
+  src: url("/asset/font/open-sans/OpenSans-Italic-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/OpenSans-Italic-webfont.woff") format("woff"),
+       url("/asset/font/open-sans/OpenSans-Italic-webfont.ttf") format("truetype"),
+       url("/asset/font/open-sans/OpenSans-Italic-webfont.svg#OpenSansItalic") format("svg");
+  font-weight: normal;
+  font-style: italic;
+}
+
+/*
+@font-face {
+  font-family: "Open Sans";
+  src: url("/asset/font/open-sans/OpenSans-Semibold-webfont.eot");
+  src: url("/asset/font/open-sans/OpenSans-Semibold-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/OpenSans-Semibold-webfont.woff") format("woff"),
+       url("/asset/font/open-sans/OpenSans-Semibold-webfont.ttf") format("truetype"),
+       url("/asset/font/open-sans/OpenSans-Semibold-webfont.svg#OpenSansRegular") format("svg")
+  ;
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/asset/font/open-sans/OpenSans-SemiboldItalic-webfont.eot");
+  src: url("/asset/font/open-sans/OpenSans-SemiboldItalic-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/OpenSans-SemiboldItalic-webfont.woff") format("woff"),
+       url("/asset/font/open-sans/OpenSans-SemiboldItalic-webfont.ttf") format("truetype"),
+       url("/asset/font/open-sans/OpenSans-SemiboldItalic-webfont.svg#OpenSansItalic") format("svg");
+  font-weight: 600;
+  font-style: italic;
+}
+*/
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/asset/font/open-sans/OpenSans-Bold-webfont.eot");
+  src: url("/asset/font/open-sans/OpenSans-Bold-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/OpenSans-Bold-webfont.woff") format("woff"),
+       url("/asset/font/open-sans/OpenSans-Bold-webfont.ttf") format("truetype"),
+       url("/asset/font/open-sans/OpenSans-Bold-webfont.svg#OpenSansRegular") format("svg")
+  ;
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/asset/font/open-sans/OpenSans-BoldItalic-webfont.eot");
+  src: url("/asset/font/open-sans/OpenSans-BoldItalic-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/OpenSans-BoldItalic-webfont.woff") format("woff"),
+       url("/asset/font/open-sans/OpenSans-BoldItalic-webfont.ttf") format("truetype"),
+       url("/asset/font/open-sans/OpenSans-BoldItalic-webfont.svg#OpenSansItalic") format("svg");
+  font-weight: bold;
+  font-style: italic;
+}
+
+/*
+@font-face {
+  font-family: "Open Sans";
+  src: url("/asset/font/open-sans/OpenSans-ExtraBold-webfont.eot");
+  src: url("/asset/font/open-sans/OpenSans-ExtraBold-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/OpenSans-ExtraBold-webfont.woff") format("woff"),
+       url("/asset/font/open-sans/OpenSans-ExtraBold-webfont.ttf") format("truetype"),
+       url("/asset/font/open-sans/OpenSans-ExtraBold-webfont.svg#OpenSansRegular") format("svg")
+  ;
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Open Sans";
+  src: url("/asset/font/open-sans/OpenSans-ExtraBoldItalic-webfont.eot");
+  src: url("/asset/font/open-sans/OpenSans-ExtraBoldItalic-webfont.eot?#iefix") format("embedded-opentype"),
+       url("/asset/font/open-sans/OpenSans-ExtraBoldItalic-webfont.woff") format("woff"),
+       url("/asset/font/open-sans/OpenSans-ExtraBoldItalic-webfont.ttf") format("truetype"),
+       url("/asset/font/open-sans/OpenSans-ExtraBoldItalic-webfont.svg#OpenSansItalic") format("svg");
+  font-weight: 800;
+  font-style: italic;
+}
+*/
+
+
+/* ==== NORMALIZE And MORE ========================================================================================== */
+
+
+/*
+  Works for all modern browsers, much more natural to work with, support:
+
+  Chrome (any)         : box-sizing
+  Firefox (any)        : -moz-box-sizing
+  Internet Explorer 8+ : box-sizing
+  Opera 8.5+           : box-sizing
+  Safari 3+            : -webkit-box-sizing
+  Safari 5.1+          : box-sizing
+
+  @link http://paulirish.com/2012/box-sizing-border-box-ftw/ Paul Irish ftw!
+  @link http://css-tricks.com/box-sizing/
+  @link https://developer.mozilla.org/en-US/docs/CSS/box-sizing
+*/
+*,
+:before,
+:after {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+nav,
+section {
+  display: block;
+}
+
+/* Always display vertical scrollbar, avoids different screen width upon page changes. */
+html {
+  overflow-y: scroll;
+}
+
+body {
+  margin: 0;
+  padding-top: 51px; /* @see layout/header.css */
+}
+
+html,
+body {
+  background-color: #252525;
+  height: 100%;
+}
+
+abbr[title] {
+  cursor: help;
+  border-bottom: 1px dotted #656565;
+}
+
+
+/* ==== TYPORGRAPHY ================================================================================================= */
+
+
+html,
+input,
+button,
+select,
+textarea,
+table {
+  -webkit-text-size-adjust: 100%;
+     -moz-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  color: #656565;
+  text-rendering: geometricPrecision;
+/*
+  About the MovLib font stack
+  Our main goal is it to ensure users of Microsoft and Apple computers have the best viewing pleasure. Why not Linux you
+  may ask. The reason is pretty easy, Linux users are most of the time very advanced users who 1) set up their fonts as
+  they like it 2) do not care about the font that is used at all. In general, Linux users do not find a font stack that
+  suits their needs on any popular website. The problem is, that there is no common ground to include fonts. Most users
+  will have Arial installed if they are using a desktop Linux system or a browser that is capable of downloading a font
+  that is specified via the @font-face rule.
+
+  - Open Sans: The default font at MovLib. It is free and open source and deserves our support. We use the complete
+    character set that is available along with Open Sans, to ensure that most text will be rendered with it.
+  - Arial: Main fallback font for browsers who do not support the @font-face rule. Should be installed on nearly every
+    system on this planet.
+  - Meiryo: Very beautiful Japanese font that was released along Windows Vista and Office Mac 2008. More info can be
+    found here: http://en.wikipedia.org/wiki/Meiryo
+  - Microsoft YaHei: Beautiful Chinese font that was release along Windows Vista and is available as update for Windows
+    XP systems. More info can be found here: http://en.wikipedia.org/wiki/Microsoft_YaHei
+  - sans-serif: Fallback if everything else fails.
+
+  More interesting links:
+  - http://www.markboulton.co.uk/journal/five-simple-steps-to-better-typography-part-4
+  - http://www.smashingmagazine.com/2013/05/17/typographic-design-patterns-practices-case-study-2013/
+*/
+  font: normal 14px/1.46 "Open Sans", Arial, Meiryo, "Microsoft Yahei", "MS Yahei", Yahei, sans-serif;
+}
+
+/* Ensure Chinese strings are displayed with the correct font choice. */
+[lang="zh"] {
+  font-family: "Open Sans", Arial, "Microsoft Yahei", "MS Yahei", Yahei, Meiryo, sans-serif;
+}
+
+pre,
+code,
+kbd,
+samp,
+tt,
+var {
+  font: normal 12px/1 Consolas, monospace, serif;
+}
+
+dfn {
+  font-style: italic;
+}
+
+b,
+strong {
+  font-weight: bold;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 200;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #353535;
+  margin: 10px 0;
+}
+
+h1 small,
+h2 small,
+h3 small,
+h4 small,
+h5 small,
+h6 small {
+  color: #656565;
+  display: inline;
+  line-height: 1;
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 40px;
+}
+
+h1 {
+  font-size: 38.5px;
+}
+
+h2 {
+  font-size: 31.5px;
+}
+
+h3 {
+  font-size: 24.5px;
+}
+
+h4 {
+  font-size: 17.5px;
+}
+
+h6 {
+  font-size: 11.9px;
+}
+
+h1 small {
+  font-size: 24.5px;
+}
+
+h2 small {
+  font-size: 17.5px;
+}
+
+h3 small {
+  font-size: 14px;
+}
+
+h4 small {
+  font-size: 14px;
+}
+
+sub,
+sup {
+  font-size: 10.5px;
+}
+
+sub,
+sup {
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -2.625px;
+}
+
+sup {
+  top: -5.25px;
+}
+
+code,
+pre,
+var {
+  background-color: #fbfbfb;
+  border: 1px solid;
+}
+
+code,
+var {
+  border-color: #d4d4d4;
+  padding: 2px 4px;
+  white-space: nowrap;
+}
+
+pre {
+  border-color: #aeaeae;
+  display: block;
+  margin: 0 0 10px;
+  padding: 9.5px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  word-wrap: break-word;
+}
+
+var {
+  color: #d14;
+}
+
+
+/* ==== TEXT SELECTION ============================================================================================== */
+
+
+::-moz-selection {
+  background: #09c;
+  color: #fff;
+}
+
+::selection {
+  background: #09c;
+  color: #fff;
+}
+
+
+/* ==== HYPERLINKS ================================================================================================== */
+
+
+a {
+  transition: 0.4s ease-out;
+  transition-property: color, border-color;
+  border-bottom: 1px solid transparent;
+  color: #09c;
+  text-decoration: none;
+}
+
+a:hover,
+a:focus {
+  border-bottom-color: #09c;
+}
+
+a:focus {
+  outline-offset: -2px;
+  outline: 1px dotted #656565;
+  outline: 5px auto -webkit-focus-ring-color;
+}
+
+a:hover,
+a:active,
+a.active {
+  outline: 0;
+}
+
+a.active[href="#"] {
+  cursor: default;
+}
+
+a.img {
+  border: 0 none;
+}
+
+
+/** ==== PARAGRAPHs ====================================================================================================
+ * The hr, p, and small tags are considered paragraph elements and should be used as such. For more information have a
+ * look at {@link http://html5doctor.com/small-hr-element/}.
+ */
+
+hr {
+  background-color: #e5e5e5;
+  border: 0;
+  height: 1px;
+  padding: 0;
+}
+
+fieldset,
+hr,
+p,
+small {
+  display: block;
+  margin: 1.39em 0;
+}
+
+small {
+  font-size: 0.82em;
+}
+
+
+/* ==== IMAGEs And MEDIA ============================================================================================ */
+
+
+img {
+  -ms-interpolation-mode: bicubic;
+  border: 0;
+  vertical-align: middle;
+}
+
+
+/* ==== FORMs, INPUTs And BUTTONs =================================================================================== */
+
+fieldset {
+  border: 0;
+  padding: 0;
+}
+
+button,
+html button,
+input[type="reset"],
+input[type="submit"] {
+  -webkit-appearance: button;
+}
+
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+button,
+label,
+select,
+input[type="button"],
+input[type="reset"],
+input[type="submit"],
+input[type="radio"],
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+input[type="date"],
+input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="url"],
+select,
+textarea {
+  display: block;
+  margin-bottom: 15px;
+  min-height: 30px;
+  padding: 7px 9px;
+  width: 100%;
+}
+
+label,
+legend {
+  display: block;
+  margin-bottom: 5px;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  margin: 4px 0 0;
+}
+
+input[type="search"] {
+  -webkit-appearance: textfield;
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+input,
+select,
+textarea {
+  border: 1px solid #ccc;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
+  display: inline-block;
+  transition: 0.2s linear;
+  transition-property: border, box-shadow;
+  vertical-align: middle;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(82, 168, 236, 0.8);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+  outline: 0;
+}
+
+input:invalid:not(:empty),
+input.invalid,
+select.invalid,
+textarea:invalid:not(:empty),
+textarea.invalid {
+  border-color: #ee5f5b;
+  outline: 0;
+}
+
+input:focus:invalid:focus:not(:empty),
+input.invalid:focus,
+select.invalid:focus,
+textarea:focus:invalid:focus:not(:empty),
+textarea.invalid:focus {
+  border-color: rgba(233, 50, 45, 0.8);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
+  outline: 0;
+}
+
+input[disabled],
+select[disabled],
+textarea[disabled],
+input[readonly],
+select[readonly],
+textarea[readonly] {
+  background: #eee;
+  cursor: not-allowed;
+}
+
+:-moz-placeholder {
+  color: #888;
+  font-weight: 200;
+  opacity: 1;
+}
+
+input:focus:-moz-placeholder,
+textarea:focus:-moz-placeholder {
+  color: #ccc;
+}
+
+::-moz-placeholder {
+  color: #888;
+  font-weight: 200;
+  opacity: 1;
+}
+
+input:focus::-moz-placeholder,
+textarea:focus::-moz-placeholder {
+  color: #ccc;
+}
+
+:-ms-input-placeholder {
+  color: #888;
+  font-weight: 200;
+}
+
+input:focus:-ms-input-placeholder,
+textarea:focus:-ms-input-placeholder {
+  color: #ccc;
+}
+
+::-webkit-input-placeholder {
+  color: #888;
+  font-weight: 200;
+}
+
+input:focus::-webkit-input-placeholder,
+textarea:focus::-webkit-input-placeholder {
+  color: #ccc;
+}
+
+textarea {
+  min-height: 150px; /* input has 30px, 30 * 5 = 150px (we want people to write a lot). */
+  resize: vertical;
+}
+
+input[type="file"]:focus,
+input[type="radio"]:focus,
+input[type="checkbox"]:focus {
+  outline: thin dotted #353535;
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 #656565;
+}
+
+
+/* ==== TABLES ====================================================================================================== */
+
+table {
+  background-color: transparent;
+  border-collapse: collapse;
+  border-spacing: 0;
+  box-shadow: 0 2.5px 5px #dfdfdf;
+  margin-bottom: 20px;
+  max-width: 100%;
+  width: 100%;
+}
+
+caption {
+  caption-side: top;
+  text-align: left;
+  margin: 1.39em 0; /* same margin as paragraphs */
+}
+
+td {
+  border-top: 1px solid #e5e5e5;
+  padding: 8px;
+  text-align: left;
+}
+
+thead {
+  background-color: #252525;
+  vertical-align: bottom;
+}
+
+th {
+  color: #fff;
+  font-weight: 200;
+  text-align: center;
+  padding: 8px;
+}
+
+
+/* ==== LISTS ======================================================================================================= */
+
+dl {
+  margin-bottom: 20px;
+}
+
+dt,
+dd {
+  line-height: 20px;
+}
+
+dt {
+  font-weight: bold;
+}
+
+dd {
+  margin-left: 10px;
+}
