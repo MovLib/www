@@ -11,15 +11,15 @@ Things one might want to configure as well (to be extended):
 * nginx 1.4+
 * MariaDB 10+
 * PHP 5.5+
-** PEAR, PECL and PHP CLI
-** Memcached
-** libmemcached
-** igbinary
-** ImageMagick
-** pwgen
+  * PEAR, PECL and PHP CLI
+  * Memcached
+  * libmemcached
+  * ImageMagick
+  * pwgen
+  * much more ...
 
 ## Installing ICU
-```
+```Shell
 # cd /usr/local/src
 # svn export http://source.icu-project.org/repos/icu/icu/tags/release-??-?/
 # cd release-??-?
