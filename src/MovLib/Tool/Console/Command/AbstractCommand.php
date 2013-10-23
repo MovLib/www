@@ -25,8 +25,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  *
  * Provides several utility methods that can be used by other console command classes.
  *
- * @property \Symfony\Component\Console\Helper\DialogHelper $dialog
- *   Symfony dialog helper for asking questions etc..
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -152,42 +150,9 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
     $this->setAliases([ $this->getShortcut($name) ]);
   }
 
-  /**
-   * Automatically called by PHP if trying to access an inaccessible property.
-   *
-   * @param string $name
-   *   The name of the inaccessible property.
-   * @return mixed
-   *   The value of the inaccessible property.
-   * @throws \RuntimeException
-   */
-  public function __get($name) {
-    if (isset($this->{$name})) {
-      return $this->{$name};
-    }
-    if (method_exists($this, $name)) {
-      return $this->{$name}();
-    }
-    throw new \RuntimeException;
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Property Getters
 
-
-  /**
-   * Automatically called via <code>__get()</code>.
-   *
-   * @see AbstractCommand::__get()
-   * @return \Symfony\Component\Console\Helper\DialogHelper
-   *   Dialog helper instance.
-   */
-  private function dialog() {
-    if (!$this->dialog) {
-      $this->dialog = $this->getHelperSet()->get("dialog");
-    }
-    return $this->dialog;
-  }
 
   /**
    * Initialize progress helper.
@@ -224,7 +189,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return this
    */
   protected function progressAdvance($steps = 1, $redraw = false) {
-    $this->progress->advance($step, $redraw);
+    $this->progress->advance($steps, $redraw);
     return $this;
   }
 
@@ -408,12 +373,13 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The input options array.
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->input   = $input;
-    $this->output  = $output;
-    $options       = $input->getOptions();
-    $this->input   = !$options["no-interaction"];
-    $this->quiet   = $options["quiet"];
-    $this->verbose = empty($options["verbose"]);
+    $this->dialog      = $this->getHelperSet()->get("dialog");
+    $this->input       = $input;
+    $this->output      = $output;
+    $options           = $input->getOptions();
+    $this->interaction = !$options["no-interaction"];
+    $this->quiet       = $options["quiet"];
+    $this->verbose     = empty($options["verbose"]);
     return $options;
   }
 
