@@ -33,13 +33,6 @@ class Configuration extends \MovLib\Configuration {
 
 
   /**
-   * Absolute path to the document root, same as <code>$_SERVER["DOCUMENT_ROOT"]</code> if called via nginx.
-   *
-   * @var string
-   */
-  public $documentRoot;
-
-  /**
    * The tools domain, without scheme or trailing slash, e.g. <code>"tools.movlib.org"</code>.
    *
    * @var string
@@ -71,9 +64,6 @@ class Configuration extends \MovLib\Configuration {
    */
   public function __construct() {
     global $db;
-
-    // Operating via console, therefor we have to set all server variables that are normally provided by nginx.
-    $this->documentRoot = empty($_SERVER["DOCUMENT_ROOT"]) ? dirname(dirname(dirname(__DIR__))) : $_SERVER["DOCUMENT_ROOT"];
 
     // Instantiate new global developer database object if non is available yet.
     if (!$db) {

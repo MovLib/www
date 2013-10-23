@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command;
 
+use \MovLib\Exception\ConsoleException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -172,9 +173,9 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @param type $max
    */
   protected function progressStart($max = null) {
-    if (!$this->progress) {
-      $this->setProgress();
-    }
+    $this->progress = $this->getHelperSet()->get("progress");
+    $this->progress->setBarCharacter("<comment>=</comment>");
+    $this->progress->setBarWidth(120);
     $this->progress->start($this->output, $max);
     return $this;
   }
@@ -200,6 +201,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    */
   protected function progressFinish() {
     $this->progress->finish();
+    $this->progress = null;
     return $this;
   }
 
@@ -308,56 +310,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    */
   protected final function checkPrivileges() {
     if (posix_getuid() !== 0) {
-      $this->exitOnError("This script must be executed as privileged user (root or sudo).");
-    }
-    return $this;
-  }
-
-  /**
-   * Execute a shell command and surpress output.
-   *
-   * @param string $command
-   *   The command to execute. Note that stderr will automatically be redirected to stdout and only printed in case
-   *   of error inside our error message.
-   * @param string $errorMessage
-   *   The message to display on error.
-   * @param array $options [optional]
-   *   Associative array with options to change the behaviour of this method, available options are:
-   *   <ul>
-   *     <li><code>"exit_on_error"</code> controls what to do if the executed command fails. If set to <code>TRUE</code>
-   *     (default) the command execution will be stopped by calling <code>$this->exitOnError()</code> with the supplied
-   *     error message. If set to <code>FALSE</code> the error message will be printed and the user will be asked if
-   *     execution should be seized or continued.</li>
-   *     <li><code>"return_status"</code> controls what will be returned. If set to <code>FALSE</code> (default) the
-   *     current instance (<code>$this</code>) will be returned. If set to <code>TRUE</code> the exit status of the
-   *     executed command will be returned. This is useful if you have dependencies on the success or failure of this
-   *     command.</li>
-   *   </ul>
-   * @return this|integer
-   *   Depending on <code>$options["return_status"]</code>, defaults to <code>$this</code>.
-   */
-  protected final function exec($command, $errorMessage, array $options = []) {
-    $options = array_merge([
-      "exit_on_error" => true,
-      "return_status" => false,
-    ], $options);
-    exec("{$command} 2>&1", $output, $status);
-    if ($status !== 0) {
-      // The two empty strings will ensure that Symfony inserts linefeeds. If we'd insert them ourselfs the formatting
-      // of the output would be broken.
-      $errorMessage = array_merge([ $errorMessage, "" ], $output, [ "" ]);
-      if ($options["exit_on_error"] === true) {
-        $this->exitOnError($errorMessage);
-      }
-      else {
-        $this->write($errorMessage, self::MESSAGE_TYPE_ERROR);
-        if ($this->askConfirmation("Continue execution?") === false) {
-          $this->exitOnError("As you wish ...");
-        }
-      }
-    }
-    if ($options["return_status"]) {
-      return $status;
+      throw new ConsoleException("This script must be executed as privileged user (root or sudo).");
     }
     return $this;
   }
@@ -381,38 +334,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
     $this->quiet       = $options["quiet"];
     $this->verbose     = empty($options["verbose"]);
     return $options;
-  }
-
-  /**
-   * Display error message, rollback everything and exit program.
-   *
-   * @staticvar boolean $recursion
-   *   Helper variable to keep track of calls to this method. If this method is called more than once, we can not call
-   *   the rollback method of any child class again. We have to asume that something went wrong during the rollback!
-   * @param string $message
-   *   The message that should be displayed to the user.
-   * @param \Exception $exception [optional]
-   *   The exception that occurred, if any. The stacktrace is only printed if the user called the command with the
-   *   verbosity option.
-   */
-  protected final function exitOnError($message, \Exception $exception = null) {
-    static $recursion = false;
-    if (!is_array($message)) {
-      $message = [ $message ];
-    }
-    array_unshift($message, "ERROR!");
-    $message[] = "Rolling back any changes and exiting";
-    if ($this->verbose === true && $exception) {
-      foreach (explode("\n", $exception->getTraceAsString()) as $line) {
-        $message[] = $line;
-      }
-    }
-    $this->write($message, self::MESSAGE_TYPE_ERROR);
-    if (method_exists($this, "rollback") && $recursion === false) {
-      $recursion = true;
-      $this->rollback();
-    }
-    exit(1);
   }
 
   /**
@@ -459,51 +380,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   }
 
   /**
-   * Execute a shell command and display output.
-   *
-   * @param string $command
-   *   The command to execute.
-   * @param string $errorMessage
-   *   The message to display on error.
-   * @param array $options [optional]
-   *   Associative array with options to change the behaviour of this method, available options are:
-   *   <ul>
-   *     <li><code>"exit_on_error"</code> controls what to do if the executed command fails. If set to <code>TRUE</code>
-   *     (default) the command execution will be stopped by calling <code>$this->exitOnError()</code> with the supplied
-   *     error message. If set to <code>FALSE</code> the error message will be printed and the user will be asked if
-   *     execution should be seized or continued.</li>
-   *     <li><code>"return_status"</code> controls what will be returned. If set to <code>FALSE</code> (default) the
-   *     current instance (<code>$this</code>) will be returned. If set to <code>TRUE</code> the exit status of the
-   *     executed command will be returned. This is useful if you have dependencies on the success or failure of this
-   *     command.</li>
-   *   </ul>
-   * @return this|integer
-   *   Depending on <code>$options["return_status"]</code>, defaults to <code>$this</code>.
-   */
-  protected final function system($command, $errorMessage, array $options = []) {
-    $options = array_merge([
-      "exit_on_error" => true,
-      "return_status" => false,
-    ], $options);
-    system($command, $status);
-    if ($status !== 0) {
-      if ($options["exit_on_error"] === true) {
-        $this->exitOnError($errorMessage);
-      }
-      else {
-        $this->write($errorMessage, self::MESSAGE_TYPE_ERROR);
-        if ($this->askConfirmation("Continue execution?") === false) {
-          $this->exitOnError("As you wish ...");
-        }
-      }
-    }
-    if ($options["return_status"]) {
-      return $status;
-    }
-    return $this;
-  }
-
-  /**
    * Helper method for writing and formatting console output.
    *
    * @link http://symfony.com/doc/master/components/console/introduction.html#components-console-coloring
@@ -522,7 +398,9 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
       elseif ($type) {
         $message = "<{$type}>{$message}</{$type}>";
       }
-      $this->output->writeln($message);
+      if (!$this->progress) {
+        $this->output->writeln($message);
+      }
     }
     return $this;
   }

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Development;
 
+use \MovLib\Exception\ImageException;
 use \MovLib\Data\User\Full as User;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -173,7 +174,9 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       $this->write("Generating avatar images (every 6th user has none) ...");
       $dim    = User::IMAGE_STYLE_SPAN_02;
       $tmp    = ini_get("upload_tmp_dir") . "/movdev-command-create-users.jpg";
-      $this->exec("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}", "Couldn't create random avatar!");
+      if ($this->exec("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}") === false) {
+        throw new ImageException("Couldn't create random image with ImageMagick!");
+      }
       $this->setProperty($user, "imageExtension", "jpg");
       $this->progress->start($this->output, $c);
       $in     = rtrim(str_repeat("?,", $c), ",");

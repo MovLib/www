@@ -27,10 +27,24 @@
  * @since 0.0.1-dev
  */
 ini_set("display_errors", true);
-$_SERVER["DOCUMENT_ROOT"] = dirname(__DIR__);
-$composerAutoloader       = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
-$composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src/");
-$config                   = new \MovLib\Tool\Configuration();
-$db                       = new \MovLib\Tool\Database();
-$i18n                     = new \MovLib\Data\I18n();
+
+/**
+ * Bootstrap for console execution.
+ *
+ * @global \MovLib\Tool\Configuration $config
+ * @global \MovLib\Tool\Database $db
+ * @global \MovLib\Data\I18n $i18n
+ */
+function bootstrap() {
+  global $config, $db, $i18n;
+  $root       = dirname(__DIR__);
+  $autoloader = require "{$root}/vendor/autoload.php";
+  $autoloader->add("MovLib", "{$root}/src/");
+  new \MovLib\Exception\ConsoleHandlers();
+  $config     = new \MovLib\Tool\Configuration();
+  $db         = new \MovLib\Tool\Database();
+  $i18n       = new \MovLib\Data\I18n();
+}
+
+bootstrap();
 (new \MovLib\Tool\Console\Application())->run();
