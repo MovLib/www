@@ -55,7 +55,7 @@ class SystemLanguages implements \ArrayAccess, \Countable, \Iterator {
     global $config;
     $c = count($config->systemLanguages);
     for ($i = 0; $i < $c; ++$i) {
-      $this->systemLanguages[] = new SystemLanguage($config->systemLanguages[$i]);
+      $this->systemLanguages[$config->systemLanguages[$i]] = new SystemLanguage($config->systemLanguages[$i]);
     }
   }
 
