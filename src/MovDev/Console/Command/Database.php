@@ -125,7 +125,7 @@ class Database extends \MovLib\Console\Command\Database {
   public function __construct(){
     parent::__construct();
     $this->database = new \MovDev\Database();
-    $this->seedPath = "{$_SERVER["DOCUMENT_ROOT"]}/db/seeds";
+    $this->seedPath = "{$_SERVER["DOCUMENT_ROOT"]}/conf/seed/database/*.sql";
     foreach (glob("{$this->seedPath}/*.sql") as $file) {
       $this->seedScripts[basename($file, ".sql")] = $file;
     }
@@ -283,7 +283,7 @@ class Database extends \MovLib\Console\Command\Database {
     if ($options[self::OPTION_ALL]) {
       try {
         $this->write("Importing schema ...");
-        if (($schema = file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/db/movlib.sql")) === false) {
+        if (($schema = file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/conf/mariadb/movlib.sql")) === false) {
           $this->exitOnError("Could not read schema!");
         }
         $this->database->queries($schema);
@@ -478,10 +478,10 @@ class Database extends \MovLib\Console\Command\Database {
    * @return this
    */
   protected function importSeedUploads() {
-    $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/uploads", "Could not fix permissions on uploads folder!");
-    $this->exec("rm -rf {$_SERVER["DOCUMENT_ROOT"]}/uploads/*", "Could not delete existing files in uploads folder!");
-    $this->exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/", "Could not copy all seed uploads to the uploads folder!");
-    $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/uploads", "Could not fix permissions on uploads folder!");
+    $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/public/upload", "Could not fix permissions on uploads folder!");
+    $this->exec("rm -rf {$_SERVER["DOCUMENT_ROOT"]}/public/upload/*", "Could not delete existing files in uploads folder!");
+    $this->exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/conf/seed/upload/* {$_SERVER["DOCUMENT_ROOT"]}/uploads/", "Could not copy all seed uploads to the uploads folder!");
+    $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/public/upload", "Could not fix permissions on uploads folder!");
     return $this;
   }
 
@@ -546,7 +546,7 @@ class Database extends \MovLib\Console\Command\Database {
         unset($systemLanguages[$i18n->defaultLanguageCode]);
       }
       else {
-        if (($fileContent = file_get_contents("{$this->seedPath}/time_zones/{$languageCode}.txt")) === false) {
+        if (($fileContent = file_get_contents("{$this->seedPath}/conf/seed/database/time_zones_{$languageCode}.txt")) === false) {
           $this->exitOnError("Could not read translation file for '{$languageCode}'!");
         }
         foreach (explode("\n", $fileContent) as $line) {

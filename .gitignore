@@ -10,6 +10,7 @@ Desktop.ini
 !/bin/
 /components/
 /composer.lock
+/conf/mariadb/movlib.mwb.bak
 /conf/movlib.ini
 /public/coverage/
 /public/doc/
