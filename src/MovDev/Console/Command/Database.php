@@ -123,9 +123,10 @@ class Database extends \MovLib\Console\Command\Database {
    * @inheritdoc
    */
   public function __construct(){
+    global $config;
     parent::__construct();
     $this->database = new \MovDev\Database();
-    $this->seedPath = "{$_SERVER["DOCUMENT_ROOT"]}/conf/seed";
+    $this->seedPath = "{$config->documentRoot}/conf/seed";
     foreach (glob("{$this->seedPath}/database/*.sql") as $file) {
       $this->seedScripts[basename($file, ".sql")] = $file;
     }
@@ -152,7 +153,7 @@ class Database extends \MovLib\Console\Command\Database {
     $this
       ->addOption(self::OPTION_ALL, self::OPTION_ALL_SHORTCUT, InputOption::VALUE_NONE, "Run all migrations and import all seed data (Ignores all other options).")
       ->addOption(self::OPTION_CREATE_USERS, self::OPTION_CREATE_USERS_SHORTCUT, InputOption::VALUE_REQUIRED, "Create specified amout of valid random users.")
-      ->addOption(self::OPTION_GIT, self::OPTION_GIT_SHORTCUT, InputOption::VALUE_OPTIONAL, "Create history repositories.")
+//      ->addOption(self::OPTION_GIT, self::OPTION_GIT_SHORTCUT, InputOption::VALUE_OPTIONAL, "Create history repositories.")
       ->addOption(self::OPTION_SEED, self::OPTION_SEED_SHORTCUT, InputOption::VALUE_OPTIONAL, "Import seed data file(s).")
     ;
   }
@@ -165,7 +166,7 @@ class Database extends \MovLib\Console\Command\Database {
    * @return this
    */
   protected function createRepositories($type) {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/history/{$type}";
+    $path = "{$config->documentRoot}/private/history/{$type}";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
@@ -277,13 +278,13 @@ class Database extends \MovLib\Console\Command\Database {
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $argv;
+    global $config, $argv;
     $this->setIO($input, $output);
     $options = $this->input->getOptions();
     if ($options[self::OPTION_ALL]) {
       try {
         $this->write("Importing schema ...");
-        if (($schema = file_get_contents("{$_SERVER["DOCUMENT_ROOT"]}/conf/mariadb/movlib.sql")) === false) {
+        if (($schema = file_get_contents("{$config->documentRoot}/conf/mariadb/movlib.sql")) === false) {
           $this->exitOnError("Could not read schema!");
         }
         $this->database->queries($schema);
@@ -343,7 +344,7 @@ class Database extends \MovLib\Console\Command\Database {
     }
 
 
-    $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/private/history", "Could not fix permissions on history folder!");
+    $this->exec("sudo movcli fixperm {$config->documentRoot}/private/history", "Could not fix permissions on history folder!");
 
     return $this;
   }
@@ -478,10 +479,11 @@ class Database extends \MovLib\Console\Command\Database {
    * @return this
    */
   protected function importSeedUploads() {
-    $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/public/upload", "Could not fix permissions on uploads folder!");
-    $this->exec("rm -rf {$_SERVER["DOCUMENT_ROOT"]}/public/upload/*", "Could not delete existing files in uploads folder!");
-    $this->exec("cp -R {$_SERVER["DOCUMENT_ROOT"]}/conf/seed/upload/* {$_SERVER["DOCUMENT_ROOT"]}/public/upload/", "Could not copy all seed uploads to the uploads folder!");
-    $this->exec("sudo movcli fixperm {$_SERVER["DOCUMENT_ROOT"]}/public/upload", "Could not fix permissions on uploads folder!");
+    global $config;
+    $this->exec("sudo movcli fixperm {$config->documentRoot}/public/upload", "Could not fix permissions on uploads folder!");
+    $this->exec("rm -rf {$config->documentRoot}/public/upload/*", "Could not delete existing files in uploads folder!");
+    $this->exec("cp -R {$config->documentRoot}/conf/seed/upload/* {$config->documentRoot}/public/upload/", "Could not copy all seed uploads to the uploads folder!");
+    $this->exec("sudo movcli fixperm {$config->documentRoot}/public/upload", "Could not fix permissions on uploads folder!");
     return $this;
   }
 

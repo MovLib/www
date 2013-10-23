@@ -39,6 +39,7 @@ class MovCli extends Application {
    * @inheritdoc
    */
   public function __construct() {
+    $_SERVER["DOCUMENT_ROOT"] = dirname(dirname(dirname(dirname(__DIR__))));
     parent::__construct("MovCli", $GLOBALS["movlib"]["version"]);
     foreach (glob("{$_SERVER["DOCUMENT_ROOT"]}/src/MovLib/Console/Command/*.php") as $command) {
       $command = "\\MovLib\\Console\\Command\\" . basename($command, ".php");

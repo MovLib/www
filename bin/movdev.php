@@ -30,5 +30,6 @@
  * @since 0.0.1-dev
  */
 
+ini_set("display_errors", true);
 require dirname(__DIR__) . "/bootstrap.php";
 (new \MovDev\Console\Application\MovDev())->run();
