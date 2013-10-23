@@ -24,7 +24,7 @@
  LINK: http://movlib.org/ movlib.org
  SINCE: 0.0.1-dev
 -->
-<phpunit backupGlobals="false"
+<phpunit backupGlobals="true"
          backupStaticAttributes="false"
          bootstrap="bootstrap.php"
          colors="true"
@@ -51,32 +51,6 @@
   </logging>
   <php>
     <const name="MOVLIB_PHPUNIT" value="true" />
-    <server name="CONTENT_LENGTH" value="" />
-    <server name="CONTENT_TYPE" value="" />
-    <server name="GATEWAY_INTERFACE" value="CGI/1.1" />
-    <server name="HTTPS" value="on" />
-    <server name="HTTP_USER_AGENT" value="" />
-    <server name="LANGUAGE_CODE" value="en" />
-    <server name="PATH_INFO" value="/" />
-    <server name="PATH_TRANSLATED" value="/var/www/" />
-    <server name="QUERY_STRING" value="" />
-    <server name="REDIRECT_STATUS" value="200" />
-    <server name="REMOTE_ADDR" value="" />
-    <server name="REMOTE_PORT" value="" />
-    <server name="REQUEST_BODY" value="" />
-    <server name="REQUEST_BODY_FILE" value="" />
-    <server name="REQUEST_METHOD" value="GET" />
-    <server name="REQUEST_URI" value="/" />
-    <server name="SCHEME" value="https" />
-    <server name="SCRIPT_FILENAME" value="/var/www/main.php" />
-    <server name="SCRIPT_NAME" value="/main.php" />
-    <server name="SERVER" value="https://en.movlib.org" />
-    <server name="SERVER_NAME" value="en.movlib.org" />
-    <server name="SERVER_PROTOCOL" value="HTTP/1.1" />
-    <server name="SERVER_SOFTWARE" value="nginx" />
-    <server name="SERVER_VERSION" value="" />
-    <server name="SSL_CLIENT_VERIFY" value="NONE" />
-    <server name="SSL_SESSION_ID" value="" />
   </php>
   <testsuites>
     <testsuite name="MovLib Test Suite">

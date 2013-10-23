@@ -26,53 +26,62 @@
  * @since 0.0.1-dev
  */
 
-$_SERVER["DOCUMENT_ROOT"] = __DIR__;
+/**
+ * Mock of delayed_register() from main.php
+ */
+function delayed_register($class, $weight = null, $method = null) {}
 
-$composerAutoloader = require "{$_SERVER["DOCUMENT_ROOT"]}/vendor/autoload.php";
-$composerAutoloader->add("MovLib", "{$_SERVER["DOCUMENT_ROOT"]}/src/");
+/**
+ * Wrap the actual bootstrap in a function for better control over global variables.
+ *
+ * @global array $backup
+ * @global \MovLib\Tool\Configuration $config
+ * @global \MovLib\Data\I18n $i18n
+ * @global \MovLib\Data\User\Session $session
+ */
+function bootstrap() {
+  global $backup, $config, $i18n, $session;
+  $documentRoot       = __DIR__;
+  $composerAutoloader = require "{$documentRoot}/vendor/autoload.php";
+  $composerAutoloader->add("MovLib", "{$documentRoot}/src/");
 
-new \MovLib\Exception\ConsoleHandlers();
-$GLOBALS["movlib"] = parse_ini_file("{$_SERVER["DOCUMENT_ROOT"]}/conf/movlib.ini");
-$config            = new \MovLib\Configuration();
-$i18n              = new \MovLib\Data\I18n();
-
-// The following variables are always available in our environment and set via nginx. We have to create them here on
-// our own because PHPUnit will not invoke nginx.
-$_SERVER["LANGUAGE_CODE"]   = $i18n->defaultLanguageCode;
-$_SERVER["PATH_INFO"]       = "/";
-$_SERVER["REQUEST_URI"]     = "/";
-$_SERVER["SCHEME"]          = "https";
-$_SERVER["SERVER_NAME"]     = "{$_SERVER["LANGUAGE_CODE"]}.{$GLOBALS["movlib"]["default_domain"]}";
-$_SERVER["SERVER"]          = "{$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}";
-$_SERVER["SERVER_PROTOCOL"] = "HTTP/1.1";
-$_SERVER["SERVER_VERSION"]  = "";
-$_SERVER["REMOTE_ADDR"]     = "127.0.0.1";
-$_SERVER["HTTP_USER_AGENT"] = ini_get("user_agent");
-
-// Flag indicating if in development environment.
-define("DEV", !$config->production);
-
-if (DEV === true) {
-  $composerAutoloader->add("MovDev", "{$_SERVER["DOCUMENT_ROOT"]}/src/");
-  $db = new \MovDev\Database();
-}
-
-// --------------------------------------------------------------------------------------------------------------------- PHPUnit only
-
-
-if (defined("MOVLIB_PHPUNIT")) {
-  //$composerAutoloader->add("MovLib\\Test\\", "{$_SERVER["DOCUMENT_ROOT"]}/tests/");
-
-  /**
-   * Mock of delayed_register() from main.php
-   */
-  function delayed_register($class, $weight = null, $method = null) {
-    // Do nothing!
-  }
-
-  // Mock a valid session for various PHPUnit tests.
-  $session = new \MovLib\Data\User\Session();
-  $init    = new \ReflectionMethod($session, "init");
+  // @todo get rid of this
+  $GLOBALS["movlib"] = parse_ini_file("{$documentRoot}/conf/movlib.ini");
+  new \MovLib\Exception\ConsoleHandlers();
+  $config            = new \MovLib\Tool\Configuration();
+  $i18n              = new \MovLib\Data\I18n();
+  $session           = new \MovLib\Data\User\Session();
+  $init              = new \ReflectionMethod($session, "init");
   $init->setAccessible(true);
   $init->invokeArgs($session, [ 1 ]);
+
+  $backup = [
+    "config"  => clone $config,
+    "i18n"    => clone $i18n,
+    "session" => clone $session,
+  ];
+
+  foreach ([
+    "LANGUAGE_CODE"   => $i18n->defaultLanguageCode,
+    "REQUEST_URI"     => "/",
+    "SCHEME"          => "https",
+    "SERVER_NAME"     => "{$i18n->defaultLanguageCode}.{$config->domainDefault}",
+    "SERVER"          => "https://{$i18n->defaultLanguageCode}.{$config->domainDefault}",
+    "SERVER_PROTOCOL" => "HTTP/1.1",
+    "SERVER_VERSIOn"  => "",
+    "REMOTE_ADDR"     => "127.0.0.1",
+    "HTTP_USER_AGENT" => ini_get("user_agent"),
+  ] as $k => $v) {
+    if (empty($_SERVER[$k])) {
+      $_SERVER[$k] = $v;
+    }
+  }
+
+  // @todo get rid of this
+  if ($config->production === false) {
+    $composerAutoloader->add("MovDev", "{$documentRoot}/src/");
+  }
 }
+
+// Call the bootstrap function.
+bootstrap();
