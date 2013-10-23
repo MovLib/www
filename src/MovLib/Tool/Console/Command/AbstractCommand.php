@@ -27,8 +27,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  *
  * @property \Symfony\Component\Console\Helper\DialogHelper $dialog
  *   Symfony dialog helper for asking questions etc..
- * @property \Symfony\Component\Console\Helper\ProgressHelper $progress
- *   Display nice progress bar during long script execution.
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -103,6 +101,13 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   protected $input;
 
   /**
+   * <code>FALSE</code> if the user requested no interaction, otherwise <code>TRUE</code>.
+   *
+   * @var boolean
+   */
+  protected $interaction = true;
+
+  /**
    * Symfony progress helper.
    *
    * @see AbstractCommand::progress()
@@ -116,6 +121,13 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @var \Symfony\Component\Console\Output\OutputInterface
    */
   protected $output;
+
+  /**
+   * <code>TRUE</code> if the user requested no output, otherwise <code>FALSE</code>.
+   *
+   * @var boolean
+   */
+  protected $quiet = false;
 
   /**
    * <code>TRUE</code> if the user requested verbose output, otherwise <code>FALSE</code>.
@@ -178,19 +190,52 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   }
 
   /**
-   * Automatically called via <code>__get()</code>.
+   * Initialize progress helper.
    *
-   * @see AbstractCommand::__get()
-   * @return \Symfony\Component\Console\Helper\ProgressHelper
-   *   Progress helper instance.
+   * @return this
    */
-  private function progress() {
+  private function setProgress() {
+    $this->progress = $this->getHelperSet()->get("progress");
+    $this->progress->setBarCharacter("<comment>=</comment>");
+    $this->progress->setBarWidth(120);
+    return $this;
+  }
+
+  /**
+   * Starts the progress output.
+   *
+   * @param type $max
+   */
+  protected function progressStart($max = null) {
     if (!$this->progress) {
-      $this->progress = $this->getHelperSet()->get("progress");
-      $this->progress->setBarCharacter("<comment>=</comment>");
-      $this->progress->setBarWidth(120);
+      $this->setProgress();
     }
-    return $this->progress;
+    $this->progress->start($this->output, $max);
+    return $this;
+  }
+
+  /**
+   * Advance the progress output by <var>$steps</var>.
+   *
+   * @param integer $steps [optional]
+   *   The amount of steps to advance, defaults to <code>1</code>.
+   * @param boolean $redraw [optional]
+   *   Whetever to redraw the progress output or not.
+   * @return this
+   */
+  protected function progressAdvance($steps = 1, $redraw = false) {
+    $this->progress->advance($step, $redraw);
+    return $this;
+  }
+
+  /**
+   * Finishes the progress output.
+   *
+   * @return this
+   */
+  protected function progressFinish() {
+    $this->progress->finish();
+    return $this;
   }
 
 
@@ -228,12 +273,15 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The default answer.
    * @param array $autocomplete [optional]
    *   Autocomplete values for possible answers.
-   * @return string
-   *   The answer.
+   * @return mixed
+   *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   protected final function ask($question, $default = null, array $autocomplete = null) {
-    $defaultDisplay = $default ? " [default: {$default}]" : null;
-    return $this->dialog->ask($this->output, "<question>{$question}</question>{$defaultDisplay} ", $default, $autocomplete);
+    if ($this->interaction === true && $this->quiet === false) {
+      $defaultDisplay = $default ? " [default: {$default}]" : null;
+      return $this->dialog->ask($this->output, "<question>{$question}</question>{$defaultDisplay} ", $default, $autocomplete);
+    }
+    return $default;
   }
 
   /**
@@ -244,11 +292,14 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @param string $default [optional]
    *   The default answer, defaults to <code>TRUE</code>.
    * @return boolean
-   *   The answer.
+   *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   protected final function askConfirmation($question, $default = true) {
-    $defaultDisplay = $default ? "y" : "n";
-    return $this->dialog->askConfirmation($this->output, "<question>{$question}</question> [default: {$defaultDisplay}] ", $default);
+    if ($this->interaction === true && $this->quiet === false) {
+      $defaultDisplay = $default ? "y" : "n";
+      return $this->dialog->askConfirmation($this->output, "<question>{$question}</question> [default: {$defaultDisplay}] ", $default);
+    }
+    return $default;
   }
 
   /**
@@ -262,24 +313,27 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The available choices (also used for autocompletion) as numeric array.
    * @param array $choiceExplanations [optional]
    *   The explanations for the available choices as numeric array..
-   * @return string
-   *   The user's answer.
+   * @return mixed
+   *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   protected final function askWithChoices($text, $default = null, array $choices = null, array $choiceExplanations = null) {
-    $this->write($text, self::MESSAGE_TYPE_COMMENT)->write("Possible choices are:\n", self::MESSAGE_TYPE_COMMENT);
-    if ($choices && $choiceExplanations){
-      $c = count($choices);
-      for ($i = 0; $i < $c; ++$i) {
-        $this->write("{$choices[$i]}: {$choiceExplanations[$i]}");
+    if ($this->interaction === true && $this->quiet === false) {
+      $this->write($text, self::MESSAGE_TYPE_COMMENT)->write("Possible choices are:\n", self::MESSAGE_TYPE_COMMENT);
+      if ($choices && $choiceExplanations){
+        $c = count($choices);
+        for ($i = 0; $i < $c; ++$i) {
+          $this->write("{$choices[$i]}: {$choiceExplanations[$i]}");
+        }
       }
-    }
-    else {
-      $c = count($choices);
-      for ($i = 0; $i < $c; ++$i) {
-        $this->write($choices[$i]);
+      else {
+        $c = count($choices);
+        for ($i = 0; $i < $c; ++$i) {
+          $this->write($choices[$i]);
+        }
       }
+      return $this->write("")->ask("Which one should it be?", $default ?: "none", $choices);
     }
-    return $this->write("")->ask("Which one should it be?", $default ?: "none", $choices);
+    return $default;
   }
 
   /**
@@ -314,7 +368,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *     executed command will be returned. This is useful if you have dependencies on the success or failure of this
    *     command.</li>
    *   </ul>
-   * @return this|int
+   * @return this|integer
    *   Depending on <code>$options["return_status"]</code>, defaults to <code>$this</code>.
    */
   protected final function exec($command, $errorMessage, array $options = []) {
@@ -350,15 +404,17 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The active input instance.
    * @param OutputInterface $output
    *   The active output instance.
-   * @return this
+   * @return array
+   *   The input options array.
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->input = $input;
-    $this->output = $output;
-    if ($output->getVerbosity() <= OutputInterface::VERBOSITY_VERBOSE) {
-      $this->verbose = true;
-    }
-    return $this;
+    $this->input   = $input;
+    $this->output  = $output;
+    $options       = $input->getOptions();
+    $this->input   = !$options["no-interaction"];
+    $this->quiet   = $options["quiet"];
+    $this->verbose = empty($options["verbose"]);
+    return $options;
   }
 
   /**
@@ -455,7 +511,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *     executed command will be returned. This is useful if you have dependencies on the success or failure of this
    *     command.</li>
    *   </ul>
-   * @return this|int
+   * @return this|integer
    *   Depending on <code>$options["return_status"]</code>, defaults to <code>$this</code>.
    */
   protected final function system($command, $errorMessage, array $options = []) {
@@ -493,13 +549,15 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return this
    */
   protected final function write($message, $type = null) {
-    if (is_array($message)) {
-      $message = $this->getHelper("formatter")->formatBlock($message, $type, true);
+    if ($this->quiet === false) {
+      if (is_array($message)) {
+        $message = $this->getHelper("formatter")->formatBlock($message, $type, true);
+      }
+      elseif ($type) {
+        $message = "<{$type}>{$message}</{$type}>";
+      }
+      $this->output->writeln($message);
     }
-    elseif ($type) {
-      $message = "<{$type}>{$message}</{$type}>";
-    }
-    $this->output->writeln($message);
     return $this;
   }
 
