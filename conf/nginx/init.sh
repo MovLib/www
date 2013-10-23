@@ -46,9 +46,6 @@
 # -----------------------------------------------------------------------------
 
 
-# Load the VERBOSE settings and other rcS variables.
-. /lib/init/vars.sh
-
 # Load the LSB log_* functions.
 . /lib/lsb/init-functions
 
@@ -58,20 +55,25 @@
 # -----------------------------------------------------------------------------
 
 
-# The full path to the nginx executable.
-DAEMON="/usr/local/sbin/nginx"
+# The name of the service (must be the first variable).
+NAME="nginx"
 
-# Arguments that should be passed to nginx.
+# Absolute path to the executable.
+DAEMON="/usr/local/sbin/${NAME}"
+
+# Arguments that should be passed to the executable.
 DAEMON_ARGS=""
 
-# See compilation flag --http-client-body-temp-path
-PATH_BODY="/run/shm/nginx/body"
+# Absolute path to the client body temporary directory. See compilation flag
+# --http-client-body-temp-path
+PATH_BODY="/run/shm/${NAME}/body"
 
-# See compilation flag --http-fastcgi-temp-path
-PATH_FCGI="/run/shm/nginx/fastcgi/temp"
+# Absolute path to the FastCGI temporary directory. See compilation flag
+# --http-fastcgi-temp-path
+PATH_FCGI="/run/shm/${NAME}/fastcgi/temp"
 
 # Absolute path to the PID file.
-PIDFILE="/var/run/nginx.pid"
+PIDFILE="/run/${NAME}.pid"
 
 
 # -----------------------------------------------------------------------------
@@ -79,12 +81,19 @@ PIDFILE="/var/run/nginx.pid"
 # -----------------------------------------------------------------------------
 
 
+# Always validate configuration, display problem if any and exit script.
+${DAEMON} -qt
+if [ ${?} -gt 0 ]; then
+  log_failure_msg ${NAME} "invalid configuration"
+  exit 1
+fi
+
 # Check return status of EVERY command
 set -e
 
-# Check if nginx is a file and executable, if not assume it's not installed.
+# Check if ${NAME} is a file and executable, if not assume it's not installed.
 if [ ! -x ${DAEMON} ]; then
-  log_failure_msg "nginx not installed"
+  log_failure_msg ${NAME} "not installed"
   exit 1
 fi
 
@@ -98,10 +107,7 @@ fi
 test -d ${PATH_BODY} || mkdir -p ${PATH_BODY}
 test -d ${FCGI_PATH} || mkdir -p ${FCGI_PATH}
 
-# Always validate configuration, display problem if any and exit script.
-${DAEMON} -qt
-
-# Always check if nginx is already running (used later for proper error messages).
+# Always check if service is already running.
 RUNNING=$(start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON} --test && echo "false" || echo "true")
 
 
@@ -111,25 +117,36 @@ RUNNING=$(start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON
 
 
 ###
-# Starts the nginx service.
+# Reloads the service.
+#
+# RETURN:
+#   0 - successfully reloaded
+#   1 - reloading failed
+###
+reload_service() {
+  start-stop-daemon --stop --signal HUP --quiet --pidfile ${PIDFILE} --exec ${DAEMON}
+}
+
+###
+# Starts the service.
 #
 # RETURN:
 #   0 - successfully started
 #   1 - starting failed
 ###
-start_nginx() {
+start_service() {
   start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON} -- ${DAEMON_ARGS}
 }
 
 ###
-# Stops the nginx service.
+# Stops the service.
 #
 # RETURN:
 #   0 - successfully stopped
 #   1 - stopping failed
 ###
-stop_nginx() {
-  start-stop-daemon --stop --quiet --pidfile ${PIDFILE} --name nginx
+stop_service() {
+  start-stop-daemon --stop --quiet --pidfile ${PIDFILE} --name ${NAME}
 }
 
 ###
@@ -147,62 +164,60 @@ load_ocsp_file() {
 
 case ${1} in
 
-  start)
-    if [ ${RUNNING} = "true" ]; then
-      log_daemon_msg "starting nginx" "already running"
-    else
-      log_daemon_msg "starting nginx"
-      start_nginx || log_end_msg 1
-    fi
-    load_ocsp_file
-    log_end_msg 0
-  ;;
-
-  stop)
+  force-reload|reload)
     if [ ${RUNNING} = "false" ]; then
-      log_daemon_msg "stopping nginx" "not running"
+      log_failure_msg ${NAME} "not running"
     else
-      log_daemon_msg "stopping nginx"
-      stop_nginx || log_end_msg 1
+      log_daemon_msg ${NAME} "reloading configuration"
+      reload_service || log_end_msg 1
+      load_ocsp_file
+      log_end_msg 0
     fi
-    load_ocsp_file
-    log_end_msg 0
   ;;
 
   restart)
     if [ ${RUNNING} = "false" ]; then
-      log_daemon_msg "restarting nginx" "not running"
-      log_end_msg 1
+      log_failure_msg ${NAME} "not running"
     else
-      log_daemon_msg "restarting nginx"
-      stop_nginx || log_end_msg 1
-      sleep 1
-      start_nginx || log_end_msg 1
+      log_daemon_msg ${NAME} "restarting"
+      stop_service || log_end_msg 1
+      sleep 0.1
+      start_service || log_end_msg 1
+      load_ocsp_file
+      log_end_msg 0
     fi
-    load_ocsp_file
-    log_end_msg 0
   ;;
 
-  reload|force-reload)
-    if [ ${RUNNING} = "false" ]; then
-      log_daemon_msg "reloading nginx configuration" "not running"
-      log_end_msg 1
+  start)
+    if [ ${RUNNING} = "true" ]; then
+      log_success_msg ${NAME} "already started"
     else
-      log_daemon_msg "reloading nginx configuration"
-      start-stop-daemon --stop --signal HUP --quiet --pidfile ${PIDFILE} --exec ${DAEMON} || log_end_msg 1
+      log_daemon_msg ${NAME} "starting"
+      start_service || log_end_msg 1
+      load_ocsp_file
+      log_end_msg 0
     fi
-    load_ocsp_file
-    log_end_msg 0
   ;;
 
   status)
-    status_of_proc "${DAEMON}" "nginx" && exit 0 || exit 1
+    status_of_proc ${DAEMON} ${NAME} && exit 0 || exit ${?}
+  ;;
+
+  stop)
+    if [ ${RUNNING} = "false" ]; then
+      log_success_msg ${NAME} "already stopped"
+    else
+      log_daemon_msg ${NAME} "stopping"
+      stop_service && log_end_msg 0 || log_end_msg 1
+    fi
   ;;
 
   *)
-    echo "Usage: ${SCRIPTNAME} (start|stop|restart|reload|force-reload|status}" >&2
+    echo "Usage: ${NAME} {force-reload|reload|restart|start|status|stop}" >&2
     exit 1
   ;;
 
 esac
 :
+
+exit 0

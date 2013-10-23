@@ -31,15 +31,10 @@
 // Make sure any errors are displayed.
 ini_set("display_errors", true);
 
-// Most of the time plain text output is better.
-/**/
-header("content-type: text/plain");
-//*/
-
 // Include the composer autoloader for easy class loading.
 /*/
-$docRoot = dirname(__DIR__);
-$composerAutoloader = "{$docRoot}/vendor/autoload.php";
+$docRoot = dirname(dirname(__DIR__));
+$composerAutoloader = require "{$docRoot}/vendor/autoload.php";
 $composerAutoloader->add("MovLib", "{$docRoot}/src/");
 //*/
 
@@ -73,4 +68,9 @@ f2();
 $time2 += microtime(true);
 
 echo "\n\n{$time1}\t{$time2}\n\n";
+//*/
+
+// Most of the time plain text output is better.
+/**/
+header("content-type: text/plain");
 //*/

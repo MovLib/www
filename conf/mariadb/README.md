@@ -5,7 +5,9 @@ file ends with `conf` to enable syntax highlighting in most editors which do not
 which we created ends with `cnf` (of course).
 
 ## Installation
-Please use the MariaDB repository generation tool: https://downloads.mariadb.org/mariadb/repositories/
+Please use the [MariaDB repository generation tool](https://downloads.mariadb.org/mariadb/repositories/) to install the
+DBMS. If you want to import the seed data execute `movcli db -a` on your server (assuming you have correctly symlinked
+the executable).
 
 ## Available options
 You can get this output from your MariaDB (or MySQL) database by issuing the command `$ mysqld --verbose --help`:
