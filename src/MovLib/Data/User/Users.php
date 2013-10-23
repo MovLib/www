@@ -44,7 +44,6 @@ class Users extends \MovLib\Data\DatabaseArrayObject {
     "SELECT
       `user_id` AS `id`,
       `name`,
-      `avatar_name` AS `imageName`,
       UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
       `avatar_extension` AS `imageExtension`,
       `avatar_changed` IS NOT NULL as `imageExists`

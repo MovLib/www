@@ -294,8 +294,8 @@ class Database extends \MovLib\Console\Command\Database {
         $this->importSeeds();
         $this->write("Importing uploads ...");
         $this->importSeedUploads();
-        $this->write("Creating History Repositories ...");
-        $this->git();
+//        $this->write("Creating History Repositories ...");
+//        $this->git();
         $this->write("All Successfull!", self::MESSAGE_TYPE_INFO);
       }
       catch (DatabaseException $e) {
