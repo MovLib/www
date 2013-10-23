@@ -67,16 +67,19 @@ function bootstrap() {
     }
   }
 
+  $backup = [
+    "config"  => clone $config,
+    "i18n"    => clone $i18n,
+    //"session" => clone $session,
+  ];
+
+  if (defined("MOVLIB_PHPUNIT")) {
   $session           = new \MovLib\Data\User\Session();
   $init              = new \ReflectionMethod($session, "init");
   $init->setAccessible(true);
   $init->invokeArgs($session, [ 1 ]);
-
-  $backup = [
-    "config"  => clone $config,
-    "i18n"    => clone $i18n,
-    "session" => clone $session,
-  ];
+  $backup["session"] = clone $session;
+  }
 
   // @todo get rid of this
   if ($config->production === false) {
