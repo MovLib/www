@@ -52,15 +52,15 @@ function bootstrap() {
   $i18n              = new \MovLib\Data\I18n();
 
   foreach ([
+    "HTTP_USER_AGENT" => ini_get("user_agent"),
     "LANGUAGE_CODE"   => $i18n->defaultLanguageCode,
+    "REMOTE_ADDR"     => "127.0.0.1",
     "REQUEST_URI"     => "/",
     "SCHEME"          => "https",
-    "SERVER_NAME"     => "{$i18n->defaultLanguageCode}.{$config->domainDefault}",
     "SERVER"          => "https://{$i18n->defaultLanguageCode}.{$config->domainDefault}",
+    "SERVER_NAME"     => "{$i18n->defaultLanguageCode}.{$config->domainDefault}",
     "SERVER_PROTOCOL" => "HTTP/1.1",
-    "SERVER_VERSIOn"  => "",
-    "REMOTE_ADDR"     => "127.0.0.1",
-    "HTTP_USER_AGENT" => ini_get("user_agent"),
+    "SERVER_VERSION"  => "",
   ] as $k => $v) {
     if (empty($_SERVER[$k])) {
       $_SERVER[$k] = $v;
