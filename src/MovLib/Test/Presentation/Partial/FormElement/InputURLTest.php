@@ -27,7 +27,7 @@ use \MovLib\Presentation\Partial\FormElement\InputURL;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class InputURLTest extends \MovLib\Test\Presentation\Validation\URLTest {
+class InputURLTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers InputURL::__construct

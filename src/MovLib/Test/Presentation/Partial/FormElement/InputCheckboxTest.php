@@ -29,6 +29,18 @@ use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
  */
 class InputCheckboxTest extends \MovLib\Test\TestCase {
 
+  
+  // ------------------------------------------------------------------------------------------------------------------- Test Fixtures
+
+
+  public function tearDown() {
+    unset($_POST);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Test Methods
+
+
   /**
    * @covers ::__construct
    */

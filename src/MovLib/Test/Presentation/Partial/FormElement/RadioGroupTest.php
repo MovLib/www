@@ -32,9 +32,21 @@ class RadioGroupTest extends \MovLib\Test\TestCase {
   /** @var \MovLib\Presentation\Partial\FormElement\RadioGroup */
   public $radioGroup;
 
+  
+  // ------------------------------------------------------------------------------------------------------------------- Test Fixtures
+
+
   public function setUp() {
     $this->radioGroup = new RadioGroup("phpunit", "PHPUnit", [ "phpunit1" => "PHPUnit 1" ], "phpunit1");
   }
+
+  public function tearDown() {
+    unset($_POST);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Test Methods
+
 
   /**
    * @covers ::__construct

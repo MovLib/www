@@ -173,13 +173,14 @@ class URL extends \MovLib\Presentation\AbstractBase {
   /**
    * Validate the URL with the current options.
    *
+   * @global \MovLib\Configuration $config
    * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The validated URL.
    * @throws \MovLib\Exception\ValidationException
    */
   public function validate() {
-    global $i18n;
+    global $config, $i18n;
 
     // Trim right before validating and not in the constructor, could be the property was set later.
     $this->url = trim($this->url);
@@ -218,7 +219,7 @@ class URL extends \MovLib\Presentation\AbstractBase {
     }
 
     // Check if this is an external URL.
-    if (strpos($this->parts["host"], $GLOBALS["movlib"]["default_domain"]) === false) {
+    if (strpos($this->parts["host"], $config->domainDefault) === false) {
       if ($this->allowExternal === false) {
         throw new ValidationException($i18n->t("External URLs are forbidden in this context."), self::E_NO_EXTERNAL);
       }

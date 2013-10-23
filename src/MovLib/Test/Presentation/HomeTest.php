@@ -66,10 +66,12 @@ class HomeTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::getHeaderLogo
+   * @global \MovLib\Tool\Configuration $config
    */
   public function testGetHeaderLogo() {
+    global $config;
     $this->assertEquals(
-      "<h1 class='span' id='header__logo'><img alt='MovLib, the free movie library.' height='42' id='logo' src='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg' width='42'> MovLib</h1>", $this->invoke($this->home, "getHeaderLogo")
+      "<h1 class='span' id='header__logo'><img alt='MovLib, the free movie library.' height='42' id='logo' src='//{$config->domainStatic}/asset/img/logo/vector.svg' width='42'> MovLib</h1>", $this->invoke($this->home, "getHeaderLogo")
     );
   }
 

@@ -44,7 +44,7 @@ class LoginTest extends \MovLib\Test\TestCase {
   public static function setUpBeforeClass() {
     global $session;
     self::$sessionBackup  = clone $session;
-    $_SERVER["PATH_INFO"] = "/users/login";
+    $_SERVER["PATH_INFO"] = $_SERVER["REQUEST_URI"] = "/users/login";
   }
 
   public function setUp() {
@@ -225,7 +225,7 @@ class LoginTest extends \MovLib\Test\TestCase {
     $session              = $this->getMock("\\MovLib\\Data\\User\\Session");
     $this->invoke($session, "init", [ 1 ]);
     $session->expects($this->once())->method("destroy");
-    $_SERVER["PATH_INFO"] = "/profile/sign-out";
+    $_SERVER["PATH_INFO"] = $_SERVER["REQUEST_URI"] = "/profile/sign-out";
     $login                = new Login();
     $this->assertContains("We hope to see you again soon.", $login->alerts);
     $this->assertContains("You’ve been signed out successfully.", $login->alerts);

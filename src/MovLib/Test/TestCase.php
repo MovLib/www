@@ -27,9 +27,24 @@ namespace MovLib\Test;
  * @link http://movlib.org/
  * @since 0.0.1-dev
  */
-class TestCase extends \PHPUnit_Framework_TestCase {
+abstract class TestCase extends \PHPUnit_Framework_TestCase {
   use \MovDev\TraitUtilities;
   use \MovLib\Data\TraitUtilities;
+
+  /**
+   * Restore all of our global objects after each test.
+   *
+   * @global array $backup
+   * @global \MovLib\Configuration $config
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
+   */
+  public function assertPostConditions() {
+    global $backup, $config, $i18n, $session;
+    foreach ($backup as $k => $v) {
+      ${$k} = clone $v;
+    }
+  }
 
   /**
    * Execute an external program.

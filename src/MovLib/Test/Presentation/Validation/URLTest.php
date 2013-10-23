@@ -144,9 +144,11 @@ class URLTest extends \MovLib\Test\TestCase {
    * @dataProvider dataProviderValid
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_NO_EXTERNAL
+   * @global \MovLib\Tool\Configuration $config
    */
   public function testNoExternal($unused, $url) {
-    $GLOBALS["movlib"]["default_domain"] = "google.com";
+    global $config;
+    $config->domainDefault = "example.com";
     (new URL($url))->validate();
   }
 

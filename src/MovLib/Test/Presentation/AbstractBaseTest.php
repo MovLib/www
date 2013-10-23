@@ -27,7 +27,9 @@ namespace MovLib\Test\Presentation;
  */
 class AbstractBaseTest extends \MovLib\Test\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /** @var \MovLib\Presentation\AbstractBase */
   private $abstractPage;
@@ -89,7 +91,7 @@ class AbstractBaseTest extends \MovLib\Test\TestCase {
    * @covers ::a
    */
   public function testAnchorPathInfo() {
-    $_SERVER["PATH_INFO"] = "/route";
+    $_SERVER["PATH_INFO"] = $_SERVER["REQUEST_URI"] = "/route";
     $this->assertEquals("<a href='#' class='active'>linktext</a>", $this->invoke($this->abstractPage, "a", [ "/route", "linktext", [ "title" => "PHPUnit" ] ]));
   }
 

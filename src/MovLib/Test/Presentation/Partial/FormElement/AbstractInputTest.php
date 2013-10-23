@@ -27,6 +27,18 @@ namespace MovLib\Test\Presentation\Partial\FormElement;
  */
 class AbstractInputTest extends \MovLib\Test\TestCase {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Test Fixtures
+
+
+  public function tearDown() {
+    unset($_POST);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Test Methods
+
+
   /**
    * @covers ::__construct
    */

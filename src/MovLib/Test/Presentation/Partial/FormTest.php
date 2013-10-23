@@ -58,13 +58,15 @@ class FormTest extends \MovLib\Test\TestCase {
     $this->setStaticProperty("\\MovLib\\Presentation\\AbstractBase", "tabindex", 1);
     $this->inputEmail             = new InputEmail();
     $this->inputSubmit            = new InputSubmit();
-    $this->form                   = new Form($this, [ $this->inputEmail ]);
+    $this->form                   = new Form($this, [ $this->inputEmail ], "phpunit", "validationCallbackMock");
     $this->form->actionElements[] = $this->inputSubmit;
   }
 
   public function tearDown() {
     unset($_SERVER["MULTIPART"]);
   }
+
+  public function validationCallbackMock() {}
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
@@ -73,6 +75,7 @@ class FormTest extends \MovLib\Test\TestCase {
    */
   public function testConstruct() {
     global $session;
+    $_SERVER["PATH_INFO"]           = "/";
     $_SERVER["MULTIPART"]           = 0;
     $this->form                     = new Form($this, [ $this->inputEmail ], "phpunit-id");
     $this->inputEmail->attributes[] = "autofocus";

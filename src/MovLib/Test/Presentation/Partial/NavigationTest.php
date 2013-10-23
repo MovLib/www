@@ -41,6 +41,7 @@ class NavigationTest extends \MovLib\Test\TestCase {
 
   protected function setUp() {
     $this->navigation = new Navigation("phpunit", "PHPUnit", [[ "/phpunit", "phpunit-linktext", [ "title" => "phpunit-title" ] ] ]);
+    $_SERVER["REQUEST_URI"] = "/";
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Tests

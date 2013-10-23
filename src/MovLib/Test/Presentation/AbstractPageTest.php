@@ -51,8 +51,10 @@ class AbstractPageTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::getPresentation
+   * @global \MovLib\Tool\Configuration $config
    */
   public function testGetPresentation() {
+    global $config;
     foreach ([ "title" => "PHPUnit", "id" => "phpunit", "bodyClasses" => "phpunit" ] as $property => $value) {
       $this->setProperty($this->abstractPage, $property, $value);
     }
@@ -62,11 +64,11 @@ class AbstractPageTest extends \MovLib\Test\TestCase {
     $this->assertContains("<head>", $presentation);
     $this->assertContains("<title>PHPUnit — MovLib</title>", $presentation);
     foreach ($this->getProperty($this->abstractPage, "stylesheets") as $stylesheet) {
-      $this->assertContains("<link rel='stylesheet' href='{$GLOBALS["movlib"]["static_domain"]}css/{$stylesheet}'>", $presentation);
+      $this->assertContains("<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/{$stylesheet}'>", $presentation);
     }
-    $this->assertContains("<link rel='icon' type='image/svg+xml' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/vector.svg'>", $presentation);
+    $this->assertContains("<link rel='icon' type='image/svg+xml' href='//{$config->domainStatic}/asset/img/logo/vector.svg'>", $presentation);
     foreach ([ 16, 24, 32, 64, 128, 256 ] as $size) {
-      $this->assertContains("<link rel='icon' type='image/png' sizes='{$size}x{$size}' href='{$GLOBALS["movlib"]["static_domain"]}img/logo/{$size}.png'>", $presentation);
+      $this->assertContains("<link rel='icon' type='image/png' sizes='{$size}x{$size}' href='//{$config->domainStatic}/asset/img/logo/{$size}.png'>", $presentation);
     }
     $this->assertContains("</head>", $presentation);
     $this->assertContains("<body id='phpunit' class='phpunit authenticated'>", $presentation);

@@ -30,8 +30,8 @@ class SelectTest extends \MovLib\Test\TestCase {
 
   public $options = [ "phpunit1" => "PHPUnit 1" ];
 
-  public function setUp() {
-    unset($_POST["phpunit"]);
+  public function tearDown() {
+    unset($_POST);
   }
 
   /**

@@ -50,6 +50,7 @@ class InputDateTest extends \MovLib\Test\TestCase {
 
   /**
    * @covers ::validate
+   * @covers ::normalizeDate
    */
   public function testNormalization() {
     global $session;
