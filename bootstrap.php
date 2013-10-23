@@ -50,16 +50,6 @@ function bootstrap() {
   new \MovLib\Exception\ConsoleHandlers();
   $config            = new \MovLib\Tool\Configuration();
   $i18n              = new \MovLib\Data\I18n();
-  $session           = new \MovLib\Data\User\Session();
-  $init              = new \ReflectionMethod($session, "init");
-  $init->setAccessible(true);
-  $init->invokeArgs($session, [ 1 ]);
-
-  $backup = [
-    "config"  => clone $config,
-    "i18n"    => clone $i18n,
-    "session" => clone $session,
-  ];
 
   foreach ([
     "LANGUAGE_CODE"   => $i18n->defaultLanguageCode,
@@ -76,6 +66,17 @@ function bootstrap() {
       $_SERVER[$k] = $v;
     }
   }
+
+  $session           = new \MovLib\Data\User\Session();
+  $init              = new \ReflectionMethod($session, "init");
+  $init->setAccessible(true);
+  $init->invokeArgs($session, [ 1 ]);
+
+  $backup = [
+    "config"  => clone $config,
+    "i18n"    => clone $i18n,
+    "session" => clone $session,
+  ];
 
   // @todo get rid of this
   if ($config->production === false) {
