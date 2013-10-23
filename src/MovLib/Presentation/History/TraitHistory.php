@@ -223,7 +223,14 @@ trait TraitHistory {
         if ($key == "id" || $key == "old" || $case != "edited") {
           continue;
         }
-        $value = $this->textDiffOfStrings($value, $diff[$case][0]['old'][$key]);
+
+        if (substr($key, -3) === "_id") {
+
+        }
+
+
+
+        $value = $this->textDiffOfStrings($value, $diff[$case][0]['old'][$key], true);
         if ($value != $diff[$case][0]['old'][$key]) {
           $propertyList[] = "<span class='property-name'>{$i18n->t($key)}:</span> {$value}";
         }
@@ -323,7 +330,7 @@ trait TraitHistory {
    */
   private function getDiff($head, $ref, $filename) {
     if (in_array($filename, $this->historyModel->files)) {
-      return $this->textDiffOfRevisions($head, $ref, $filename);
+      return $this->textDiffOfRevisions($head, $ref, $filename, true);
     }
 
     $diff = $this->historyModel->getArrayDiff($head, $ref, $filename);
@@ -340,14 +347,16 @@ trait TraitHistory {
    *   Hash of git commit (older one).
    * @param string $filename
    *   Name of file in repository.
+   * @param bool $exact [optional]
+   *   Compare every letter instead every word.
    * @return string
    *   Returns diff of one file as styled HTML.
    */
-  private function textDiffOfRevisions($head, $ref, $filename) {
+  private function textDiffOfRevisions($head, $ref, $filename, $exact) {
     $from = $this->historyModel->getFileAtRevision($filename, $ref);
     $to   = $this->historyModel->getFileAtRevision($filename, $head);
 
-    return $this->textDiffOfStrings($from, $to);
+    return $this->textDiffOfStrings($from, $to, $exact);
   }
 
   /**
@@ -357,12 +366,20 @@ trait TraitHistory {
    *   String (the older one).
    * @param sting $ref
    *   String (the newer one).
+   * @param bool $exact [optional]
+   *   Compare every letter instead every word.
    * @return string
    *   Returns a diff of two strings as styles HTML.
    */
-  private function textDiffOfStrings($from, $to) {
-    $from = preg_replace("/(.{1})/", "$1\n", $from);
-    $to = preg_replace("/(.{1})/", "$1\n", $to);
+  private function textDiffOfStrings($from, $to, $exact = false) {
+    if ($exact) {
+      $from = preg_replace("/(.{1})/", "$1\n", $from);
+      $to = preg_replace("/(.{1})/", "$1\n", $to);
+    }
+    else {
+      $from = str_replace(" ", "\n", $from);
+      $to = str_replace(" ", "\n", $to);
+    }
 
     $diff = xdiff_string_diff($from, $to, strlen($to));
     $diff = explode("\n", $diff);
@@ -391,6 +408,9 @@ trait TraitHistory {
           }
           $html .= "<span class='red'>{$removed}</span>";
           $removed = "";
+        }
+        if ($exact == false) {
+          $html .= " ";
         }
       }
     }

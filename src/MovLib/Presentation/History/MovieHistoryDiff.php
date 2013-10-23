@@ -103,7 +103,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *   A HTML List of changed crew members.
    */
   private function getCrew($diff) {
-    // @todo: implement
+    return $this->diffArray($diff, "\MovLib\Data\Persons");
   }
 
   /**
