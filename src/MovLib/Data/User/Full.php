@@ -210,7 +210,6 @@ class Full extends \MovLib\Data\User\User {
           `real_name`,
           `birthday`,
           `website`,
-          `avatar_name`,
           UNIX_TIMESTAMP(`avatar_changed`),
           `avatar_extension`,
           `avatar_changed` IS NOT NULL
@@ -237,7 +236,6 @@ class Full extends \MovLib\Data\User\User {
         $this->realName,
         $this->birthday,
         $this->website,
-        $this->imageName,
         $this->imageChanged,
         $this->imageExtension,
         $this->imageExists
@@ -245,6 +243,7 @@ class Full extends \MovLib\Data\User\User {
       if (!$stmt->fetch()) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
+      $this->imageName   = mb_strtolower($this->name);
       $this->private     = (boolean) $this->private;
       $this->deactivated = (boolean) $this->deactivated;
       // The image name already has all unsave characters removed.
