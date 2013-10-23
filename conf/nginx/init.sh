@@ -81,12 +81,19 @@ PIDFILE="/run/${NAME}.pid"
 # -----------------------------------------------------------------------------
 
 
+# Always validate configuration, display problem if any and exit script.
+${DAEMON} -qt
+if [ ${?} -gt 0 ]; then
+  log_failure_msg ${NAME} "invalid configuration"
+  exit 1
+fi
+
 # Check return status of EVERY command
 set -e
 
 # Check if ${NAME} is a file and executable, if not assume it's not installed.
 if [ ! -x ${DAEMON} ]; then
-  log_failure_msg "${NAME} not installed"
+  log_failure_msg ${NAME} "not installed"
   exit 1
 fi
 
@@ -99,9 +106,6 @@ fi
 # Create cache directories if the don't exist
 test -d ${PATH_BODY} || mkdir -p ${PATH_BODY}
 test -d ${FCGI_PATH} || mkdir -p ${FCGI_PATH}
-
-# Always validate configuration, display problem if any and exit script.
-${DAEMON} -qt
 
 # Always check if service is already running.
 RUNNING=$(start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON} --test && echo "false" || echo "true")
@@ -162,54 +166,50 @@ case ${1} in
 
   force-reload|reload)
     if [ ${RUNNING} = "false" ]; then
-      log_daemon_msg "reloading ${NAME} configuration" "not running"
-      log_end_msg 1
+      log_failure_msg ${NAME} "not running"
     else
-      log_daemon_msg "reloading ${NAME} configuration"
+      log_daemon_msg ${NAME} "reloading configuration"
       reload_service || log_end_msg 1
+      load_ocsp_file
+      log_end_msg 0
     fi
-    load_ocsp_file
-    log_end_msg 0
   ;;
 
   restart)
     if [ ${RUNNING} = "false" ]; then
-      log_daemon_msg "restarting ${NAME}" "not running"
-      log_end_msg 1
+      log_failure_msg ${NAME} "not running"
     else
-      log_daemon_msg "restarting ${NAME}"
+      log_daemon_msg ${NAME} "restarting"
       stop_service || log_end_msg 1
       sleep 0.1
       start_service || log_end_msg 1
+      load_ocsp_file
+      log_end_msg 0
     fi
-    load_ocsp_file
-    log_end_msg 0
   ;;
 
   start)
     if [ ${RUNNING} = "true" ]; then
-      log_daemon_msg "starting ${NAME}" "already running"
+      log_success_msg ${NAME} "already started"
     else
-      log_daemon_msg "starting ${NAME}"
+      log_daemon_msg ${NAME} "starting"
       start_service || log_end_msg 1
+      load_ocsp_file
+      log_end_msg 0
     fi
-    load_ocsp_file
-    log_end_msg 0
   ;;
 
   status)
-    status_of_proc "${DAEMON}" "${NAME}" && exit 0 || exit ${?}
+    status_of_proc ${DAEMON} ${NAME} && exit 0 || exit ${?}
   ;;
 
   stop)
     if [ ${RUNNING} = "false" ]; then
-      log_daemon_msg "stopping ${NAME}" "already stopped"
+      log_success_msg ${NAME} "already stopped"
     else
-      log_daemon_msg "stopping ${NAME}"
-      stop_service || log_end_msg 1
+      log_daemon_msg ${NAME} "stopping"
+      stop_service && log_end_msg 0 || log_end_msg 1
     fi
-    load_ocsp_file
-    log_end_msg 0
   ;;
 
   *)
@@ -219,3 +219,5 @@ case ${1} in
 
 esac
 :
+
+exit 0
