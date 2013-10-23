@@ -38,8 +38,12 @@ class MovDev extends Application {
    * @inheritdoc
    */
   public function __construct(){
+    global $config;
     parent::__construct("MovDev", $GLOBALS["movlib"]["version"]);
-    foreach (glob("{$_SERVER["DOCUMENT_ROOT"]}/src/MovDev/Console/Command/*.php") as $command) {
+    if (!$config) {
+      $config = new \MovLib\Tool\Configuration();
+    }
+    foreach (glob("{$config->documentRoot}/src/MovDev/Console/Command/*.php") as $command) {
       $command = "\\MovDev\\Console\\Command\\" . basename($command, ".php");
       $reflectionClass = new ReflectionClass($command);
       // Make sure we do not include any abstract classes or interfaces.
