@@ -70,7 +70,7 @@ class Composer {
       $config = new Configuration();
     }
     $this->event      = $event;
-    $this->vendorPath = "{$_SERVER["DOCUMENT_ROOT"]}/{$event->getComposer()->getConfig()->get("vendor-dir")}";
+    $this->vendorPath = "{$config->documentRoot}/{$event->getComposer()->getConfig()->get("vendor-dir")}";
   }
 
 
@@ -87,34 +87,34 @@ class Composer {
   /**
    * Install phpMyAdmin.
    *
-   * @global \MovDev\Database $db
+   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Database $db
    * @param string $fullName
    *   The packages full name including the name and slash.
    */
   public function phpmyadmin($fullName) {
-    global $db;
-    if (!$db) {
-      $db = new Database();
-    }
-    symlink("{$_SERVER["DOCUMENT_ROOT"]}/conf/phpmyadmin/config.inc.php", "{$this->vendorPath}/{$fullName}/config.inc.php");
+    global $config, $db;
+    symlink("{$config->documentRoot}/conf/phpmyadmin/config.inc.php", "{$this->vendorPath}/{$fullName}/config.inc.php");
     $db->queries(file_get_contents("{$this->vendorPath}/{$fullName}/examples/create_table.sql"));
   }
 
   /**
    * Install VisualPHPUnit.
    *
+   * @global \MovLib\Tool\Configuration $config
    * @param string $fullName
    *   The packages full name including the name and slash.
    */
   public function visualphpunit($fullName) {
+    global $config;
     $path = "{$this->vendorPath}/{$fullName}/app";
 
     // The symbolic link is for correct routing.
     symlink("{$path}/public", "{$path}/visualphpunit");
 
     // Replace some vendor files with custom ones.
-    copy("{$_SERVER["DOCUMENT_ROOT"]}/conf/visualphpunit/index.php", "{$path}/public/index.php");
-    copy("{$_SERVER["DOCUMENT_ROOT"]}/conf/visualphpunit/bootstrap.php", "{$path}/config/bootstrap.php");
+    copy("{$config->documentRoot}/conf/visualphpunit/index.php", "{$path}/public/index.php");
+    copy("{$config->documentRoot}/conf/visualphpunit/bootstrap.php", "{$path}/config/bootstrap.php");
   }
 
 
