@@ -43,7 +43,7 @@
   </php>
   <testsuites>
     <testsuite name="MovLib Test Suite">
-      <directory>./src/MovLib/Test</directory>
+      <directory>test</directory>
     </testsuite>
   </testsuites>
 </phpunit>

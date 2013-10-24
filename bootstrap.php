@@ -41,9 +41,10 @@ function delayed_register($class, $weight = null, $method = null) {}
  */
 function bootstrap() {
   global $backup, $config, $i18n, $session;
-  $documentRoot       = __DIR__;
-  $composerAutoloader = require "{$documentRoot}/vendor/autoload.php";
-  $composerAutoloader->add("MovLib", "{$documentRoot}/src/");
+  $documentRoot = __DIR__;
+  $autoload     = require "{$documentRoot}/vendor/autoload.php";
+  $autoload->add("MovLib", "{$documentRoot}/src/");
+  $autoload->add("MovLib", "{$documentRoot}/test/");
 
   // @todo get rid of this
   $GLOBALS["movlib"] = parse_ini_file("{$documentRoot}/conf/movlib.ini");
@@ -52,15 +53,15 @@ function bootstrap() {
   $i18n              = new \MovLib\Data\I18n();
 
   foreach ([
-    "HTTP_USER_AGENT" => ini_get("user_agent"),
-    "LANGUAGE_CODE"   => $i18n->defaultLanguageCode,
-    "REMOTE_ADDR"     => "127.0.0.1",
-    "REQUEST_URI"     => "/",
-    "SCHEME"          => "https",
-    "SERVER"          => "https://{$i18n->defaultLanguageCode}.{$config->domainDefault}",
-    "SERVER_NAME"     => "{$i18n->defaultLanguageCode}.{$config->domainDefault}",
-    "SERVER_PROTOCOL" => "HTTP/1.1",
-    "SERVER_VERSION"  => "",
+  "HTTP_USER_AGENT" => ini_get("user_agent"),
+  "LANGUAGE_CODE"   => $i18n->defaultLanguageCode,
+  "REMOTE_ADDR"     => "127.0.0.1",
+  "REQUEST_URI"     => "/",
+  "SCHEME"          => "https",
+  "SERVER"          => "https://{$i18n->defaultLanguageCode}.{$config->domainDefault}",
+  "SERVER_NAME"     => "{$i18n->defaultLanguageCode}.{$config->domainDefault}",
+  "SERVER_PROTOCOL" => "HTTP/1.1",
+  "SERVER_VERSION"  => "",
   ] as $k => $v) {
     if (empty($_SERVER[$k])) {
       $_SERVER[$k] = $v;
@@ -68,22 +69,22 @@ function bootstrap() {
   }
 
   $backup = [
-    "config"  => clone $config,
-    "i18n"    => clone $i18n,
+    "config" => clone $config,
+    "i18n"   => clone $i18n,
     //"session" => clone $session,
   ];
 
   if (defined("MOVLIB_PHPUNIT")) {
-  $session           = new \MovLib\Data\User\Session();
-  $init              = new \ReflectionMethod($session, "init");
-  $init->setAccessible(true);
-  $init->invokeArgs($session, [ 1 ]);
-  $backup["session"] = clone $session;
+    $session           = new \MovLib\Data\User\Session();
+    $init              = new \ReflectionMethod($session, "init");
+    $init->setAccessible(true);
+    $init->invokeArgs($session, [ 1 ]);
+    $backup["session"] = clone $session;
   }
 
   // @todo get rid of this
   if ($config->production === false) {
-    $composerAutoloader->add("MovDev", "{$documentRoot}/src/");
+    $autoload->add("MovDev", "{$documentRoot}/src/");
   }
 }
 

@@ -8,10 +8,10 @@ Desktop.ini
 # Project Specific
 # ----------------------------------------------------------------------
 !/bin/
-/components/
 /composer.lock
 /conf/mariadb/movlib.mwb.bak
 /conf/movlib.ini
+/public/components/
 /public/coverage/
 /public/doc/
 /vendor/

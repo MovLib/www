@@ -40,10 +40,7 @@
 >
   <filter>
     <whitelist processUncoveredFilesFromWhitelist="true">
-      <directory suffix=".php">./src/</directory>
-      <exclude>
-        <directory>./src/MovLib/Test</directory>
-      </exclude>
+      <directory suffix=".php">src</directory>
     </whitelist>
   </filter>
   <logging>
@@ -54,7 +51,7 @@
   </php>
   <testsuites>
     <testsuite name="MovLib Test Suite">
-      <directory>./src/MovLib/Test</directory>
+      <directory>test</directory>
     </testsuite>
   </testsuites>
 </phpunit>
