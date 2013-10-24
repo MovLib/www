@@ -517,7 +517,7 @@ class I18nTest extends \MovLib\TestCase {
    * @covers ::insertMessage
    */
   public function testInsertMessage() {
-    $db = new Database();
+    global $db;
 
     // With comment.
     $message = "PHPUnit test message";
@@ -560,7 +560,7 @@ class I18nTest extends \MovLib\TestCase {
    * @depends testFormatMessageValid
    */
   public function testInsertOrUpdateTranslationValid() {
-    $db                = new Database();
+    global $db;
     $pattern           = "PHPUnit {0} PHPUnit {1}";
     $languageCode      = "xx";
     $patternTranslated = "{$pattern} insertOrUpdate translated";
