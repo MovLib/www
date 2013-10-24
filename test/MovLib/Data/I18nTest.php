@@ -242,6 +242,7 @@ class I18nTest extends \MovLib\TestCase {
    * @covers ::formatMessage
    */
   public function testFormatMessageValid() {
+    global $db;
     $args                         = [ "test", 42 ];
     $pattern                      = "PHPUnit {0} PHPUnit {1}";
     $patternFormatted             = "PHPUnit test PHPUnit 42";
@@ -249,7 +250,6 @@ class I18nTest extends \MovLib\TestCase {
     $patternGermanFormatted       = "{$patternFormatted} Deutsch";
     $patternTestLanguage          = "{$pattern} XX";
     $patternTestLanguageFormatted = "{$patternFormatted} XX";
-    $db                           = new Database();
     foreach ([ "message", "route" ] as $context) {
       $db->query("INSERT INTO `{$context}s` (`{$context}`, `dyn_translations`) VALUES ('{$pattern}', COLUMN_CREATE('de', '{$patternGerman}', 'xx', '{$patternTestLanguage}'))");
     }
