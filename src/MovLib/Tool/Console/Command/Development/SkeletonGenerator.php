@@ -177,7 +177,7 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
 
     $new = !empty($this->skeletonsNew);
     $ext = !empty($this->skeletonsExtended);
-    if ($new && $ext) {
+    if ($new || $ext) {
       $this->write("Successfully generated all unit test skeletons, report follows:", self::MESSAGE_TYPE_INFO);
       if ($new) {
         $this->write("NEW", self::MESSAGE_TYPE_INFO);
