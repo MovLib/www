@@ -99,6 +99,14 @@ class SkeletonGeneratorTest extends \MovLib\TestCase {
   }
 
   /**
+   * @covers ::generateSkeletons
+   * @todo Implement generateSkeletons
+   */
+  public function testGenerateSkeletons() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
    * @covers ::skeletonExtend
    * @todo Implement skeletonExtend
    */
