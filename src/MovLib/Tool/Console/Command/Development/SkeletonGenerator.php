@@ -110,8 +110,8 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
   public function execute(InputInterface $input, OutputInterface $output) {
     global $autoloader, $config;
     parent::execute($input, $output);
-    $this->write("Generating unit test skeletons for all files in '{$config->documentRoot}/src/' ...");
-    $autoloader->add("MovLib", "{$config->documentRoot}/skeleton");
+    $this->write("Generating unit test skeletons for all files in <info>'{$config->documentRoot}/src/'</info> ...");
+    $autoloader->add("MovLib", "{$config->documentRoot}/test");
 
     // Load template files.
     $this->abstractTemplate = file_get_contents("{$config->documentRoot}/conf/skeleton/abstract.tpl.php");
