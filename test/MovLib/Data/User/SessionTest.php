@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\User\Full as User;
+use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Data\User\Session;
 
 /**
@@ -59,7 +59,7 @@ class SessionTest extends \MovLib\TestCase {
    * @expectedException \MovLib\Exception\UserException
    */
   public function testAuthenticateDeactivatedUser() {
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserFull(UserFull::FROM_ID, 1);
     $user->deactivate();
     (new Session())->authenticate("richard@fussenegger.info", "Test1234");
     $this->exec("movdev db -s users");
@@ -128,7 +128,7 @@ class SessionTest extends \MovLib\TestCase {
    * @covers ::init
    */
   public function testInit() {
-    $user    = new User(User::FROM_ID, 1);
+    $user    = new UserFull(UserFull::FROM_ID, 1);
     $session = new Session();
     $this->invoke($session, "init", [ 1, $_SERVER["REQUEST_TIME"] ]);
     $this->assertEquals($user->id, $session->userId);

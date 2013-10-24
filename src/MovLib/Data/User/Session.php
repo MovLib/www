@@ -20,7 +20,7 @@ namespace MovLib\Data\User;
 use \Memcached;
 use \MemcachedException;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-use \MovLib\Data\User\Full as User;
+use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UserException;
 use \MovLib\Exception\Client\UnauthorizedException;
@@ -436,7 +436,7 @@ class Session extends \MovLib\Data\Database {
    */
   public function passwordNeedsRehash($password, $rawPassword) {
     if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]) === true) {
-      (new User(User::FROM_ID, $this->userId))->updatePassword($rawPassword);
+      (new UserFull(UserFull::FROM_ID, $this->userId))->updatePassword($rawPassword);
     }
     return $this;
   }
