@@ -140,7 +140,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \MovLib\Exception\ErrorException
    * @throws \MovLib\Exception\FileSystemException
    */
-  protected function databaseImport(array $scriptNames = null) {
+  public function databaseImport(array $scriptNames = null) {
     global $db;
     $queries = $scripts = null;
     if (empty($scriptNames)) {
@@ -187,7 +187,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   /**
    * @inheritdoc
    */
-  public function execute(InputInterface $input, OutputInterface $output) {
+  protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
     $all     = true;
     foreach ([ self::OPTION_DATABASE, self::OPTION_HISTORY, self::OPTION_UPLOAD ] as $option) {
@@ -211,7 +211,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \MovLib\Exception\DatabaseExeption
    * @throws \MovLib\Exception\ErrorException
    */
-  protected function importIntlICUCountriesAndLanguages() {
+  public function importIntlICUCountriesAndLanguages() {
     global $db, $i18n;
     $this->write("Importing Intl ICU translations for countries and languages ...");
 
@@ -266,7 +266,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \MovLib\Exception\DatabaseExeption
    * @throws \MovLib\Exception\ErrorException
    */
-  protected function importTimeZones() {
+  public function importTimeZones() {
     global $db, $i18n;
     $this->write("Importing time zone translations ...");
     $systemLanguages = new SystemLanguages();
@@ -340,7 +340,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \MovLib\Exception\DatabaseExeption
    * @throws \InvalidArgumentException
    */
-  protected function intlTranslate($type, $data, $locale) {
+  public function intlTranslate($type, $data, $locale) {
     global $db, $i18n;
     switch ($type) {
       case "countries":
@@ -362,7 +362,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \MovLib\Exception\ErrorException
    * @throws \MovLib\Exception\FileSystemException
    */
-  protected function seedImport() {
+  public function seedImport() {
     global $config, $db;
 
     // Array containing the names of all tasks that should be executed.
@@ -398,7 +398,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \MovLib\Exception\ErrorException
    * @throws \MovLib\Exception\FileSystemException
    */
-  protected function uploadImport(array $directoryNames = null) {
+  public function uploadImport(array $directoryNames = null) {
     global $config;
     $directories           = null;
     $seedUploadDirectory   = "{$this->seedPath}/" . self::OPTION_UPLOAD;

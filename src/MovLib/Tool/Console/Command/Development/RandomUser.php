@@ -124,8 +124,10 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function generateRandomUsers() {
+  public function generateRandomUsers($amount = self::DEFAULT_AMOUNT) {
     global $config, $db, $i18n;
+    $this->setUsernames();
+    $this->setAmount($amount);
     $values          = $params          = $usersWithAvatar = null;
     $this->progress->start($this->output, $this->amount);
     $user            = new User();
@@ -220,12 +222,10 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   /**
    * @inheritdoc
    */
-  public function execute(InputInterface $input, OutputInterface $output) {
+  protected function execute(InputInterface $input, OutputInterface $output) {
     parent::execute($input, $output);
-    $this->setAmount($this->input->getArgument("amount"));
     $this->write("Preparing to generate <comment>{$this->amount}</comment> random users ...");
-    $this->setUsernames();
-    $this->generateRandomUsers();
+    $this->generateRandomUsers($this->input->getArgument("amount"));
     $this->write("Successfully created {$this->amount} of random users!", self::MESSAGE_TYPE_INFO);
     return $this;
   }
@@ -238,12 +238,11 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @return this
    */
   protected function setAmount($amount) {
-    if (!is_numeric($amount) || is_float($amount) || $amount < 1) {
-      $this->setAmount($this->ask("You have to enter a positive integer value!", self::DEFAULT_AMOUNT));
+    do {
+      $amount = $this->ask("You have to enter a positive integer value!", self::DEFAULT_AMOUNT);
     }
-    else {
-      $this->amount = (integer) $amount;
-    }
+    while (!is_numeric($amount) || !is_integer($amount) || $amount < 1);
+    $this->amount = (integer) $amount;
     return $this;
   }
 

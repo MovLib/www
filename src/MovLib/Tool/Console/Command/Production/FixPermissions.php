@@ -30,7 +30,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class FixPermissions extends \MovLib\Tool\Console\Command\Development\AbstractDevelopmentCommand {
+class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
@@ -56,10 +56,23 @@ class FixPermissions extends \MovLib\Tool\Console\Command\Development\AbstractDe
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $config;
     parent::execute($input, $output);
     $this->checkPrivileges();
-    $directory = "{$config->documentRoot}/{$input->getArgument("directory")}";
+    $this->fixPermissions($input->getArgument("directory"));
+  }
+
+  /**
+   * Fix permissions of all directories and files.
+   *
+   * @global \MovLib\Tool\Configuration $config
+   * @param string $directory [optional]
+   *   If given only the directories and files in that directory will be fixed, defaults to empty string which fixes the
+   *   permissions on all directories and files in the document root.
+   * @return this
+   */
+  public function fixPermissions($directory = "") {
+    global $config;
+    $directory = "{$config->documentRoot}/{$directory}";
     $this->write("Fixing permissions on all directories and files in <info>'{$directory}'</info> ...");
     $this->exec("chown -R {$config->phpUser}:{$config->phpGroup} '{$directory}'");
     $this->write("User and group ownership fixed!", self::MESSAGE_TYPE_INFO);
@@ -69,6 +82,7 @@ class FixPermissions extends \MovLib\Tool\Console\Command\Development\AbstractDe
     $this->write("File permissions fixed!", self::MESSAGE_TYPE_INFO);
     $this->exec("find '{$directory}' -type f -regextype posix-egrep -regex '.*(bin/[a-zA-Z0-9\._-]+|conf/.*\.sh)$' -exec chmod 2770 {} \;");
     $this->write("Executable permissions fixed!", self::MESSAGE_TYPE_INFO);
+    return $this;
   }
 
 }

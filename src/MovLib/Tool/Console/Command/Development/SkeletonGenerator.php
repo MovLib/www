@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Development;
 
+use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \RecursiveDirectoryIterator;
 use \RecursiveIteratorIterator;
 use \ReflectionClass;
@@ -104,12 +105,46 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
 
   /**
    * @inheritdoc
+   */
+  protected function execute(InputInterface $input, OutputInterface $output) {
+    parent::execute($input, $output);
+    $this->checkPrivileges();
+    $this->generateSkeletons();
+  }
+
+  /**
+   * Generate a new skeleton or extend an existing one.
+   *
+   * @global \MovLib\Tool\Configuration $config
+   * @param string $file
+   *   Absolute path to the source file.
+   * @return this
+   */
+  protected function generateSkeleton($file) {
+    global $config;
+    $testFile = str_replace([ "/src/", ".php" ], [ "/test/", "Test.php" ], $file);
+    $class    = strtr(str_replace([ "{$config->documentRoot}/src", ".php" ], "", $file), DIRECTORY_SEPARATOR, "\\");
+    if (!class_exists($class) && !trait_exists($class)) {
+      return $this;
+    }
+    $reflector = new ReflectionClass($class);
+    if (is_file($testFile)) {
+      $this->skeletonExtend($reflector, $class, $testFile);
+    }
+    else {
+      $this->skeletonNew($reflector, $class, $testFile);
+    }
+    return $this;
+  }
+
+  /**
+   * Generate all skeletons.
+   *
    * @global \Composer\Autoload\ClassLoader $autoloader
    * @global \MovLib\Tool\Configuration $config
    */
-  public function execute(InputInterface $input, OutputInterface $output) {
+  public function generateSkeletons() {
     global $autoloader, $config;
-    parent::execute($input, $output);
     $this->write("Generating unit test skeletons for all files in <info>'{$config->documentRoot}/src/'</info> ...");
     $autoloader->add("MovLib", "{$config->documentRoot}/test");
 
@@ -137,37 +172,25 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
       $this->progressAdvance();
     }
     $this->progressFinish();
-    $this->exec("sudo movlib fp {$config->documentRoot}/skeleton");
-    $this->write("Successfully generated all unit test skeletons, report follows:", self::MESSAGE_TYPE_INFO);
-    $this->write("NEW", self::MESSAGE_TYPE_INFO);
-    $this->write($this->skeletonsNew);
-    $this->write("EXTENDED", self::MESSAGE_TYPE_INFO);
-    $this->write($this->skeletonsExtended);
-  }
 
-  /**
-   * Generate a new skeleton or extend an existing one.
-   *
-   * @global \MovLib\Tool\Configuration $config
-   * @param string $file
-   *   Absolute path to the source file.
-   * @return this
-   */
-  protected function generateSkeleton($file) {
-    global $config;
-    $testFile = str_replace([ "/src/", ".php" ], [ "/test/", "Test.php" ], $file);
-    $class    = strtr(str_replace([ "{$config->documentRoot}/src", ".php" ], "", $file), DIRECTORY_SEPARATOR, "\\");
-    if (!class_exists($class) && !trait_exists($class)) {
-      return $this;
-    }
-    $reflector = new ReflectionClass($class);
-    if (is_file($testFile)) {
-      $this->skeletonExtend($reflector, $class, $testFile);
+    (new FixPermissions())->fixPermissions("test");
+
+    $new = !empty($this->skeletonsNew);
+    $ext = !empty($this->skeletonsExtended);
+    if ($new && $ext) {
+      $this->write("Successfully generated all unit test skeletons, report follows:", self::MESSAGE_TYPE_INFO);
+      if ($new) {
+        $this->write("NEW", self::MESSAGE_TYPE_INFO);
+        $this->write($this->skeletonsNew);
+      }
+      if ($ext) {
+        $this->write("EXTENDED", self::MESSAGE_TYPE_INFO);
+        $this->write($this->skeletonsExtended);
+      }
     }
     else {
-      $this->skeletonNew($reflector, $class, $testFile);
+      $this->write("All tests are up-to-date, nothing was generated!", self::MESSAGE_TYPE_COMMENT);
     }
-    return $this;
   }
 
   /**
@@ -215,8 +238,8 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
 
     if (!empty($tests)) {
       $existingTest = file_get_contents($testFile);
-      $insertPosition = mb_strrpos($existingTest, "}") - 2;
-      file_put_contents($testFile, mb_substr($existingTest, 0, $insertPosition) . implode("\n\n", $tests) . "\n\n}\n");
+      $insertPosition = mb_strrpos($existingTest, "}") - 1;
+      file_put_contents($testFile, mb_substr($existingTest, 0, $insertPosition) . "\n" . implode("\n\n", $tests) . "\n\n}\n");
       $this->skeletonsExtended[] = $testFile;
     }
 

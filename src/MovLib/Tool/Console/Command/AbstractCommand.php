@@ -156,7 +156,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @param type $max
    */
   protected function progressStart($max = null) {
-    if ($this->quiet === false) {
+    if ($this->output && $this->quiet === false) {
       $this->progress = $this->getHelperSet()->get("progress");
       $this->progress->setBarCharacter("<comment>=</comment>");
       $this->progress->setBarWidth(120);
@@ -175,7 +175,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return this
    */
   protected function progressAdvance($steps = 1, $redraw = false) {
-    if ($this->quiet === false && $this->progress) {
+    if ($this->progress) {
       $this->progress->advance($steps, $redraw);
     }
     return $this;
@@ -187,7 +187,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return this
    */
   protected function progressFinish() {
-    if ($this->quiet === false && $this->progress) {
+    if ($this->progress) {
       $this->progress->finish();
       $this->progress = null;
     }
@@ -216,7 +216,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
      *   The default value (must be null for <code>InputOption::VALUE_REQUIRED</code> or <code>InputOption::VALUE_NONE<code>).
      * @return this
      */
-  public final function addInputOption($name, $mode = null, $description = "", $default = null) {
+  protected final function addInputOption($name, $mode = null, $description = "", $default = null) {
     return $this->addOption($name, $this->getShortcut($name), $mode, $description, $default);
   }
 
@@ -233,7 +233,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   protected final function ask($question, $default = null, array $autocomplete = null) {
-    if ($this->interaction === true && $this->quiet === false) {
+    if ($this->output && $this->dialog && $this->interaction === true && $this->quiet === false) {
       $defaultDisplay = $default ? " [default: {$default}]" : null;
       return $this->dialog->ask($this->output, "<question>{$question}</question>{$defaultDisplay} ", $default, $autocomplete);
     }
@@ -251,7 +251,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   protected final function askConfirmation($question, $default = true) {
-    if ($this->interaction === true && $this->quiet === false) {
+    if ($this->output && $this->dialog && $this->interaction === true && $this->quiet === false) {
       $defaultDisplay = $default ? "y" : "n";
       return $this->dialog->askConfirmation($this->output, "<question>{$question}</question> [default: {$defaultDisplay}] ", $default);
     }
@@ -273,7 +273,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The answer or <var>$default</var> if user requested no interaction or quiet execution.
    */
   protected final function askWithChoices($text, $default = null, array $choices = null, array $choiceExplanations = null) {
-    if ($this->interaction === true && $this->quiet === false) {
+    if ($this->output && $this->interaction === true && $this->quiet === false) {
       $this->write($text, self::MESSAGE_TYPE_COMMENT)->write("Possible choices are:\n", self::MESSAGE_TYPE_COMMENT);
       if ($choices && $choiceExplanations){
         $c = count($choices);
@@ -357,7 +357,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return this
    */
   protected final function write($message, $type = null) {
-    if ($this->quiet === false) {
+    if ($this->output && $this->quiet === false) {
       if (is_array($message)) {
         $message = $this->getHelper("formatter")->formatBlock($message, $type, true);
       }
