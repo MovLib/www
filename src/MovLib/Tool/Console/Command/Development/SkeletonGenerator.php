@@ -204,15 +204,19 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
           }
         }
         if ($testExists === false) {
-          $tests[] = str_replace([ "{methodName}", "{methodTestName}" ], [ $methodName, $methodTestName ], $this->methodTemplate);
+          $tests[] = str_replace(
+            [ "{methodName}", "{methodTestName}" ],
+            [ $methodName, $methodTestName ],
+            $this->methodTemplate
+          );
         }
       }
     }
 
     if (!empty($tests)) {
       $existingTest = file_get_contents($testFile);
-      $insertPosition = strrpos($existingTest, "}") - 2;
-      file_put_contents($testFile, mb_substr($existingTest, 0, $insertPosition) . implode("\n\n", $tests) . "\n\n" . mb_substr($existingTest, $insertPosition));
+      $insertPosition = mb_strrpos($existingTest, "}") - 2;
+      file_put_contents($testFile, mb_substr($existingTest, 0, $insertPosition) . implode("\n\n", $tests) . "\n\n}\n");
       $this->skeletonsExtended[] = $testFile;
     }
 
@@ -237,7 +241,11 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
       if ("\\{$method->getDeclaringClass()->name}" == $class) {
         $methodName     = $method->getName();
         $methodTestName = ucfirst(ltrim($methodName, "_"));
-        $tests[]        = str_replace([ "{methodName}", "{methodTestName}" ], [ $methodName, $methodTestName ], $this->methodTemplate);
+        $tests[]        = str_replace(
+          [ "{methodName}", "{methodTestName}" ],
+          [ $methodName, $methodTestName ],
+          $this->methodTemplate
+        );
       }
     }
 
