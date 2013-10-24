@@ -3,7 +3,7 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -19,8 +19,9 @@ namespace MovLib\Tool\Console\Command\Development;
 
 use \InvalidArgumentException;
 use \Locale;
-use \MovLib\Exception\FileSystemException;
 use \MovLib\Data\SystemLanguages;
+use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\FileSystemException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -31,9 +32,9 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
- * @copyright © 2013–present, MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
- * @link http://movlib.org/
+ * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelopmentCommand {
@@ -100,30 +101,16 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * Instantiate new seed import command.
    *
    * @global \MovLib\Tool\Configuration $config
-   * @throws \DomainException
    */
   public function __construct() {
     global $config;
     parent::__construct("seed-import");
     $this->seedPath = "{$config->documentRoot}{$this->seedPath}";
-    foreach (glob("{$this->seedPath}/" . self::OPTION_DATABASE . "*.sql") as $seedScript) {
+    foreach (glob("{$this->seedPath}/" . self::OPTION_DATABASE . "/*.sql") as $seedScript) {
       $this->databaseScripts[basename($seedScript, ".sql")] = $seedScript;
     }
     foreach (glob("{$this->seedPath}/" . self::OPTION_UPLOAD . "/*", GLOB_ONLYDIR) as $uploadDirectory) {
       $this->uploadDirectories[basename($uploadDirectory)] = $uploadDirectory;
-    }
-  }
-
-  /**
-   * Commit all uncommited changes.
-   *
-   * @global \MovLib\Tool\Database $db
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function __destruct() {
-    global $db;
-    if ($db && $db->transactionActive() === true) {
-      $db->transactionCommit();
     }
   }
 
@@ -132,7 +119,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
 
   /**
-   * Configures the current command.
+   * @inheritdoc
    */
   protected function configure() {
     $this->setDescription("Import the complete seed data or only specific data via options.");
@@ -143,37 +130,75 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   }
 
   /**
-   * Helper function to create history repositories.
+   * Import one or more database seed data.
    *
-   * @global \MovLib\Tool\Configuration $config
    * @global \MovLib\Tool\Database $db
-   * @param string $type
-   *   All repositories of this type are created (e.g. <code>"movie"</code>).
+   * @param array $scriptNames [optional]
+   *   Numeric array containing the database seed data names that should be imported, if left empty (<code>NULL</code>)
+   *   all seed data will be imported.
    * @return this
-   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\ErrorException
+   * @throws \MovLib\Exception\FileSystemException
    */
-  protected function historyImport($type) {
-    global $config, $db;
-    $path = "{$config->documentRoot}/private/history/{$type}";
-    if (is_dir($path) && $this->exec("rm -rf {$path}") === false) {
-      throw new FileSystemException("Couldn't delete old history repositories.");
+  protected function databaseImport(array $scriptNames = null) {
+    global $db;
+    $queries = $scripts = null;
+    if (empty($scriptNames)) {
+      $truncate = false;
+      $scripts = $this->databaseScripts;
     }
-    $class   = new ReflectionClass("\\MovLib\\Data\\History\\" . ucfirst($type));
-    $result  = $db->query("SELECT `{$type}_id` FROM `{$type}s`")->get_result();
-    $queries = null;
-    while ($row = $result->fetch_array()) {
-        $history    = $class->newInstance($row[0]);
-        $commitHash = $db->escapeString($history->createRepository());
-        $queries   .= "UPDATE `{$type}s` SET `commit` = '{$commitHash}' WHERE `{$type}_id` = {$row[0]};";
+    else {
+      $truncate = true;
+      $c = count($scriptNames);
+      for ($i = 0; $i < $c; ++$i) {
+        if (isset($this->databaseScripts[$scriptNames[$i]])) {
+          $scripts[$scriptNames[$i]] = $this->databaseScripts[$scriptNames[$i]];
+        }
+        else {
+          throw new InvalidArgumentException("No script with name '{$scriptNames[$i]}' found!");
+        }
+      }
     }
-    if ($queries) {
-      $db->queries($queries);
+    if (!empty($scripts)) {
+      foreach ($scripts as $table => $script) {
+        $this->write("Importing database data for table '{$table}' ...");
+        if ($truncate === true) {
+          $queries .= "TRUNCATE TABLE `{$table}`;";
+        }
+        if (($queries .= file_get_contents($script)) === false) {
+          throw new FileSystemException("Couldn't read '{$script}'!");
+        }
+      }
     }
-    return $this;
+    if (!empty($queries)) {
+      try {
+        $db->transactionStart();
+        $db->queries("SET foreign_key_checks = 0; {$queries} SET foreign_key_checks = 1;");
+        $db->transactionCommit();
+      }
+      catch (DatabaseException $e) {
+        $db->transactionRollback();
+        throw $e;
+      }
+    }
+    return $this->write("Successfully imported database data for '" . implode("', '", array_keys($scripts)) . "'.", self::MESSAGE_TYPE_INFO);
   }
 
-  protected function databaseImport($name) {
-
+  /**
+   * @inheritdoc
+   */
+  public function execute(InputInterface $input, OutputInterface $output) {
+    $options = parent::execute($input, $output);
+    $all     = true;
+    foreach ([ self::OPTION_DATABASE, self::OPTION_HISTORY, self::OPTION_UPLOAD ] as $option) {
+      if ($options[$option]) {
+        $this->{"{$option}Import"}($options[$option]);
+        $all = false;
+      }
+    }
+    if ($all === true) {
+      $this->seedImport();
+    }
   }
 
   /**
@@ -183,6 +208,8 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return this
+   * @throws \MovLib\Exception\DatabaseExeption
+   * @throws \MovLib\Exception\ErrorException
    */
   protected function importIntlICUCountriesAndLanguages() {
     global $db, $i18n;
@@ -214,8 +241,16 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         $query .= "('{$data[$i]}', '{$this->intlTranslate($table, $data[$i], $i18n->defaultLocale)}', {$dynTranslations}),";
       }
       if (!empty($query)) {
-        $query = rtrim($query, ",") . "ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)";
-        $db->query($query);
+        $query = rtrim($query, ",") . " ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)";
+        try {
+          $db->transactionStart();
+          $db->query($query);
+          $db->transactionCommit();
+        }
+        catch (DatabaseException $e) {
+          $db->transactionRollback();
+          throw $e;
+        }
       }
     }
     return $this->write("Successfully imported Intl ICU translations for countries and languages!", self::MESSAGE_TYPE_INFO);
@@ -228,6 +263,8 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return this
+   * @throws \MovLib\Exception\DatabaseExeption
+   * @throws \MovLib\Exception\ErrorException
    */
   protected function importTimeZones() {
     global $db, $i18n;
@@ -273,7 +310,15 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         $query .= "('{$db->escapeString($translations[$i18n->defaultLocale][$timeZoneIds[$i]])}', {$dynTranslations}),";
       }
       if (!empty($query)) {
-        $db->query(rtrim($query, ","));
+        try {
+          $db->transactionStart();
+          $db->query(rtrim($query, ","));
+          $db->transactionCommit();
+        }
+        catch (DatabaseException $e) {
+          $db->transactionRollback();
+          throw $e;
+        }
       }
     }
     return $this->write("Successfully imported time zone translations!", self::MESSAGE_TYPE_INFO);
@@ -292,6 +337,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    *   The target locale.
    * @return string
    *   The translated <var>$data</var>.
+   * @throws \MovLib\Exception\DatabaseExeption
    * @throws \InvalidArgumentException
    */
   protected function intlTranslate($type, $data, $locale) {
@@ -312,6 +358,9 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @global \MovLib\Tool\Configuration $config
    * @global \MovLib\Tool\Database $db
    * @return this
+   * @throws \MovLib\Exception\DatabaseExeption
+   * @throws \MovLib\Exception\ErrorException
+   * @throws \MovLib\Exception\FileSystemException
    */
   protected function seedImport() {
     global $config, $db;
@@ -319,7 +368,9 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     // Array containing the names of all tasks that should be executed.
     $tasks = [
       "importIntlICUCountriesAndLanguages",
-      "importTimeZones"
+      "importTimeZones",
+      "databaseImport",
+      "uploadImport",
     ];
 
     // The two additional operations are for the schema import itself.
@@ -336,25 +387,41 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     return $this->progressFinish()->write("Successfully imported seed data!", self::MESSAGE_TYPE_INFO);
   }
 
-  protected function uploadImport($name) {
-
-  }
-
   /**
-   * @inherit
+   * Import one ore more upload seed data.
+   *
+   * @global \MovLib\Tool\Configuration $config
+   * @param array $directoryNames [optional]
+   *   Numeric array containing the upload directory data names that should be imported, if left empty (<code>NULL</code>)
+   *   all seed data will be imported.
+   * @return this
+   * @throws \MovLib\Exception\ErrorException
+   * @throws \MovLib\Exception\FileSystemException
    */
-  public function execute(InputInterface $input, OutputInterface $output) {
-    $options = parent::execute($input, $output);
-    $all = true;
-    foreach ([ self::OPTION_DATABASE, self::OPTION_HISTORY, self::OPTION_UPLOAD ] as $option) {
-      if ($options[$option]) {
-        $this->{"{$option}Import"}($options[$option]);
-        $all = false;
+  protected function uploadImport(array $directoryNames = null) {
+    global $config;
+    $directories           = null;
+    $seedUploadDirectory   = "{$this->seedPath}/" . self::OPTION_UPLOAD;
+    $publicUploadDirectory = "{$config->documentRoot}/public/" . self::OPTION_UPLOAD;
+    if (empty($directoryNames)) {
+      $directories = $this->uploadDirectories;
+      $this->exec("rm -rf {$publicUploadDirectory}/*");
+      $this->exec("cp -R {$seedUploadDirectory}/* {$publicUploadDirectory}");
+    }
+    else {
+      $c = count($directoryNames);
+      for ($i = 0; $i < $c; ++$i) {
+        if (isset($this->uploadDirectories[$directoryNames[$i]])) {
+          $directories[$directoryNames[$i]] = $this->uploadDirectories[$directoryNames[$i]];
+          $this->exec("rm -rf {$publicUploadDirectory}/{$directoryNames[$i]}/*");
+          $this->exec("cp -R {$seedUploadDirectory}/* {$publicUploadDirectory}/$directoryNames[$i]");
+        }
+        else {
+          throw new InvalidArgumentException("No directory with name '{$directoryNames[$i]}' found!");
+        }
       }
     }
-    if ($all === true) {
-      $this->seedImport();
-    }
+    return $this->write("Successfully imported upload data for '" . implode("', '", array_keys($directories)) . "'.", self::MESSAGE_TYPE_INFO);
   }
 
 }

@@ -3,7 +3,7 @@
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link http://movlib.org/ MovLib}.
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -27,9 +27,9 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * Provides several utility methods that can be used by other console command classes.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013–present, MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
- * @link http://movlib.org/
+ * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 abstract class AbstractCommand extends \Symfony\Component\Console\Command\Command {
@@ -124,16 +124,11 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   /**
    * <code>TRUE</code> if the user requested no output, otherwise <code>FALSE</code>.
    *
-   * @var boolean
-   */
-  protected $quiet = false;
-
-  /**
-   * <code>TRUE</code> if the user requested verbose output, otherwise <code>FALSE</code>.
+   * Default is true, this allows us to use our commands in other classes and not only via console.
    *
    * @var boolean
    */
-  protected $verbose = false;
+  protected $quiet = true;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -156,27 +151,17 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
 
 
   /**
-   * Initialize progress helper.
-   *
-   * @return this
-   */
-  private function setProgress() {
-    $this->progress = $this->getHelperSet()->get("progress");
-    $this->progress->setBarCharacter("<comment>=</comment>");
-    $this->progress->setBarWidth(120);
-    return $this;
-  }
-
-  /**
    * Starts the progress output.
    *
    * @param type $max
    */
   protected function progressStart($max = null) {
-    $this->progress = $this->getHelperSet()->get("progress");
-    $this->progress->setBarCharacter("<comment>=</comment>");
-    $this->progress->setBarWidth(120);
-    $this->progress->start($this->output, $max);
+    if ($this->quiet === false) {
+      $this->progress = $this->getHelperSet()->get("progress");
+      $this->progress->setBarCharacter("<comment>=</comment>");
+      $this->progress->setBarWidth(120);
+      $this->progress->start($this->output, $max);
+    }
     return $this;
   }
 
@@ -190,7 +175,9 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return this
    */
   protected function progressAdvance($steps = 1, $redraw = false) {
-    $this->progress->advance($steps, $redraw);
+    if ($this->quiet === false && $this->progress) {
+      $this->progress->advance($steps, $redraw);
+    }
     return $this;
   }
 
@@ -200,8 +187,10 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @return this
    */
   protected function progressFinish() {
-    $this->progress->finish();
-    $this->progress = null;
+    if ($this->quiet === false && $this->progress) {
+      $this->progress->finish();
+      $this->progress = null;
+    }
     return $this;
   }
 
@@ -332,7 +321,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
     $options           = $input->getOptions();
     $this->interaction = !$options["no-interaction"];
     $this->quiet       = $options["quiet"];
-    $this->verbose     = empty($options["verbose"]);
+    $this->output->setVerbosity(OutputInterface::VERBOSITY_NORMAL); // Always display exceptions!
     return $options;
   }
 
@@ -354,29 +343,6 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
       $shortcut .= $namePart[0];
     }
     return $shortcut;
-  }
-
-  /**
-   * Check if an optional option is set.
-   *
-   * @global array $argv
-   * @param string $name
-   *   The option's name.
-   * @param mixed $value
-   *   The value of the option will be stored in this variable if set.
-   * @return mixed
-   *   <code>FALSE</code> if the option is not set, otherwise the options value.
-   */
-  protected final function issetOption($name, &$value) {
-    global $argv;
-    if (array_search("--{$name}", $argv) || array_search("-{$this->getShortcut($name)}", $argv)) {
-      $value = $this->input->getOption($name);
-      if (empty($value)) {
-        $value = null;
-      }
-      return true;
-    }
-    return false;
   }
 
   /**
