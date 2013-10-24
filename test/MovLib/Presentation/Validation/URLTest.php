@@ -21,9 +21,9 @@ use \MovLib\Presentation\Validation\URL;
 
 /**
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013–present, MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
- * @link http://movlib.org/
+ * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 class URLTest extends \MovLib\TestCase {
