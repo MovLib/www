@@ -138,11 +138,11 @@ class MovieTest extends \MovLib\TestCase {
    * @covers \MovLib\Data\I18n::getCollator
    */
   public function testGetAwardsWithData() {
-    global $i18n;
+    global $db, $i18n;
     $i18nBackup  = $i18n;
     $i18n        = new I18n("ja_JP");
     // Retrieve all award names for our test movie and sort them by name.
-    $dbAwards    = (new Database())->query(
+    $dbAwards    = $db->query(
         "SELECT
         `a`.`name` AS `name`,
         COLUMN_GET(`a`.`dyn_names`, 'ja' AS BINARY) AS `name_localized`,
@@ -189,11 +189,11 @@ class MovieTest extends \MovLib\TestCase {
    * @covers \MovLib\Data\I18n::getCollator
    */
   public function testGetCountriesWithData() {
-    global $i18n;
+    global $db, $i18n;
     $i18nBackup = $i18n;
     $i18n       = new I18n("de_AT");
 
-    $result      = (new Database())->query(
+    $result      = $db->query(
         "SELECT
         `c`.`country_id` AS `id`,
         `c`.`iso_alpha-2` AS `code`,
@@ -261,11 +261,11 @@ class MovieTest extends \MovLib\TestCase {
    * @covers ::getDisplayTitle
    */
   public function testGetDisplayTitleWithData() {
-    global $i18n;
+    global $db, $i18n;
     $i18nBackup = $i18n;
     $i18n       = new I18n("de_AT");
 
-    $dbTitle = (new Database())->query(
+    $dbTitle = $db->query(
         "SELECT
         `title`
       FROM `movies_titles`
@@ -294,11 +294,11 @@ class MovieTest extends \MovLib\TestCase {
    * @covers \MovLib\Data\I18n::getCollator
    */
   public function testGetGenresWithData() {
-    global $i18n;
+    global $db, $i18n;
     $i18nBackup = $i18n;
     $i18n       = new I18n("de_AT");
 
-    $result    = (new Database())->query(
+    $result    = $db->query(
         "SELECT
         `g`.`genre_id`,
         `g`.`name`,
@@ -340,11 +340,11 @@ class MovieTest extends \MovLib\TestCase {
    * @covers \MovLib\Data\I18n::getCollator
    */
   public function testGetLanguagesWithData() {
-    global $i18n;
+    global $db, $i18n;
     $i18nBackup = $i18n;
     $i18n       = new I18n("de_AT");
 
-    $result      = (new Database())->query(
+    $result      = $db->query(
         "SELECT
         `l`.`language_id` AS `id`,
         `l`.`iso_alpha-2` AS `code`,
@@ -396,11 +396,11 @@ class MovieTest extends \MovLib\TestCase {
    * @covers \MovLib\Data\I18n::getCollator
    */
   public function testGetStylesWithData() {
-    global $i18n;
+    global $db, $i18n;
     $i18nBackup = $i18n;
     $i18n       = new I18n("de_AT");
 
-    $result    = (new Database())->query(
+    $result    = $db->query(
         "SELECT
         `s`.`style_id` AS `id`,
         `s`.`name` AS `name`,
