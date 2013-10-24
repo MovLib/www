@@ -100,4 +100,12 @@ class ResetPasswordTest extends \MovLib\TestCase {
     unset($_POST);
   }
 
+  /**
+   * @covers ::__construct
+   * @todo Implement __construct
+   */
+  public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

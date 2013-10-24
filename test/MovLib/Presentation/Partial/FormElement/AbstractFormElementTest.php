@@ -67,4 +67,20 @@ class AbstractFormElementTest extends \MovLib\TestCase {
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $this->getProperty($stub, "help"));
   }
 
+  /**
+   * @covers ::__toString
+   * @todo Implement __toString
+   */
+  public function testToString() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::validate
+   * @todo Implement validate
+   */
+  public function testValidate() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

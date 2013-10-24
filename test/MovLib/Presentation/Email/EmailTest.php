@@ -77,4 +77,20 @@ class EmailTest extends \MovLib\TestCase {
     $this->assertEquals($expected, (new Email("", "", "", ""))->wordwrap($string, $width, $cut));
   }
 
+  /**
+   * @covers ::getHtmlBody
+   * @todo Implement getHtmlBody
+   */
+  public function testGetHtmlBody() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getPlainBody
+   * @todo Implement getPlainBody
+   */
+  public function testGetPlainBody() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

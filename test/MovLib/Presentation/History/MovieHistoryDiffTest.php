@@ -292,4 +292,116 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
 //    );
   }
 
+  /**
+   * @covers ::__construct
+   * @todo Implement __construct
+   */
+  public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getAwards
+   * @todo Implement getAwards
+   */
+  public function testGetAwards() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getCrew
+   * @todo Implement getCrew
+   */
+  public function testGetCrew() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getLinks
+   * @todo Implement getLinks
+   */
+  public function testGetLinks() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getRelationships
+   * @todo Implement getRelationships
+   */
+  public function testGetRelationships() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getTaglines
+   * @todo Implement getTaglines
+   */
+  public function testGetTaglines() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getTitles
+   * @todo Implement getTitles
+   */
+  public function testGetTitles() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getTrailers
+   * @todo Implement getTrailers
+   */
+  public function testGetTrailers() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getBreadcrumbs
+   * @todo Implement getBreadcrumbs
+   */
+  public function testGetBreadcrumbs() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::contentRevisionsPage
+   * @todo Implement contentRevisionsPage
+   */
+  public function testContentRevisionsPage() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::diffArrayItems
+   * @todo Implement diffArrayItems
+   */
+  public function testDiffArrayItems() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getDiff
+   * @todo Implement getDiff
+   */
+  public function testGetDiff() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::textDiffOfRevisions
+   * @todo Implement textDiffOfRevisions
+   */
+  public function testTextDiffOfRevisions() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::textDiffOfStrings
+   * @todo Implement textDiffOfStrings
+   */
+  public function testTextDiffOfStrings() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

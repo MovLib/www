@@ -40,4 +40,12 @@ class AbstractListTest extends \MovLib\TestCase {
     $this->assertEquals($attributes, $abstractList->attributes);
   }
 
+  /**
+   * @covers ::__toString
+   * @todo Implement __toString
+   */
+  public function testToString() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

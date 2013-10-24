@@ -284,4 +284,36 @@ class SessionTest extends \MovLib\TestCase {
     $this->assertTrue($session->validateCsrfToken());
   }
 
+  /**
+   * @covers ::destroy
+   * @todo Implement destroy
+   */
+  public function testDestroy() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::regenerate
+   * @todo Implement regenerate
+   */
+  public function testRegenerate() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::shutdown
+   * @todo Implement shutdown
+   */
+  public function testShutdown() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::start
+   * @todo Implement start
+   */
+  public function testStart() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

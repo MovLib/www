@@ -150,4 +150,52 @@ class AbstractImageTest extends \MovLib\TestCase {
     }
   }
 
+  /**
+   * @covers ::commit
+   * @todo Implement commit
+   */
+  public function testCommit() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::generateImageStyles
+   * @todo Implement generateImageStyles
+   */
+  public function testGenerateImageStyles() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getImageStyle
+   * @todo Implement getImageStyle
+   */
+  public function testGetImageStyle() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getImagePath
+   * @todo Implement getImagePath
+   */
+  public function testGetImagePath() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getImageURL
+   * @todo Implement getImageURL
+   */
+  public function testGetImageURL() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::uploadImage
+   * @todo Implement uploadImage
+   */
+  public function testUploadImage() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

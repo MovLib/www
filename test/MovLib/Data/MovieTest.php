@@ -542,4 +542,28 @@ class MovieTest extends \MovLib\TestCase {
 //    $i18n = $i18nBackup;
   }
 
+  /**
+   * @covers ::getCast
+   * @todo Implement getCast
+   */
+  public function testGetCast() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getCrew
+   * @todo Implement getCrew
+   */
+  public function testGetCrew() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getDirectors
+   * @todo Implement getDirectors
+   */
+  public function testGetDirectors() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

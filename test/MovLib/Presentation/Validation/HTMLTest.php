@@ -28,4 +28,44 @@ namespace MovLib\Presentation\Validation;
  */
 class HTMLTest {
 
+  /**
+   * @covers ::__construct
+   * @todo Implement __construct
+   */
+  public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::__toString
+   * @todo Implement __toString
+   */
+  public function testToString() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::set
+   * @todo Implement set
+   */
+  public function testSet() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::setFormat
+   * @todo Implement setFormat
+   */
+  public function testSetFormat() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::validate
+   * @todo Implement validate
+   */
+  public function testValidate() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

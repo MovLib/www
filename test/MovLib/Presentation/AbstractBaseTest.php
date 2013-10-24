@@ -185,4 +185,28 @@ class AbstractBaseTest extends \MovLib\TestCase {
     $this->assertEquals("<em class='placeholder'>&lt;PHP&amp;Unit&gt;</em>", $this->invoke($this->abstractPage, "placeholder", [ "<PHP&Unit>" ]));
   }
 
+  /**
+   * @covers ::checkPlain
+   * @todo Implement checkPlain
+   */
+  public function testCheckPlain() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getImage
+   * @todo Implement getImage
+   */
+  public function testGetImage() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getTabindex
+   * @todo Implement getTabindex
+   */
+  public function testGetTabindex() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

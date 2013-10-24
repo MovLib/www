@@ -584,4 +584,28 @@ class I18nTest extends \MovLib\TestCase {
     );
   }
 
+  /**
+   * @covers ::getCollator
+   * @todo Implement getCollator
+   */
+  public function testGetCollator() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getLanguageId
+   * @todo Implement getLanguageId
+   */
+  public function testGetLanguageId() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getTimeZones
+   * @todo Implement getTimeZones
+   */
+  public function testGetTimeZones() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

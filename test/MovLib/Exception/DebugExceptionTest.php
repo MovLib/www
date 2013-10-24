@@ -84,4 +84,20 @@ class DebugExceptionTest extends \MovLib\TestCase {
     $this->assertEquals("phpunit", $debugException->__toString());
   }
 
+  /**
+   * @covers ::__construct
+   * @todo Implement __construct
+   */
+  public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::__toString
+   * @todo Implement __toString
+   */
+  public function testToString() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

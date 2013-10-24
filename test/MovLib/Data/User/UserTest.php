@@ -143,4 +143,20 @@ class UserTest extends \MovLib\TestCase {
     $this->assertEquals("jpg", $this->getProperty($user, "imageExtension"));
   }
 
+  /**
+   * @covers ::commit
+   * @todo Implement commit
+   */
+  public function testCommit() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::generateImageStyles
+   * @todo Implement generateImageStyles
+   */
+  public function testGenerateImageStyles() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

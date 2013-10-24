@@ -53,4 +53,36 @@ class RegistrationTest extends \MovLib\TestCase {
     $this->_testMailBody("Plain");
   }
 
+  /**
+   * @covers ::__construct
+   * @todo Implement __construct
+   */
+  public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::init
+   * @todo Implement init
+   */
+  public function testInit() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getHtmlBody
+   * @todo Implement getHtmlBody
+   */
+  public function testGetHtmlBody() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getPlainBody
+   * @todo Implement getPlainBody
+   */
+  public function testGetPlainBody() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

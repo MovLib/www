@@ -130,4 +130,20 @@ class InputDateTest extends \MovLib\TestCase {
     $this->assertEquals($inputDate, $inputDate->validate());
   }
 
+  /**
+   * @covers ::normalizeDate
+   * @todo Implement normalizeDate
+   */
+  public function testNormalizeDate() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::validate
+   * @todo Implement validate
+   */
+  public function testValidate() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

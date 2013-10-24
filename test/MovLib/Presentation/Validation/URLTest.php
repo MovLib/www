@@ -194,4 +194,44 @@ class URLTest extends \MovLib\TestCase {
     $this->assertEquals($expected, $urlValidator->validate());
   }
 
+  /**
+   * @covers ::__construct
+   * @todo Implement __construct
+   */
+  public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::__toString
+   * @todo Implement __toString
+   */
+  public function testToString() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::set
+   * @todo Implement set
+   */
+  public function testSet() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::validate
+   * @todo Implement validate
+   */
+  public function testValidate() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::checkReachability
+   * @todo Implement checkReachability
+   */
+  public function testCheckReachability() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

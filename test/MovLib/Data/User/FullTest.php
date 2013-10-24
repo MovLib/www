@@ -351,4 +351,20 @@ class FullTest extends \MovLib\TestCase {
     $this->exec("movdev db -s users");
   }
 
+  /**
+   * @covers ::__construct
+   * @todo Implement __construct
+   */
+  public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getImageStyleAttributes
+   * @todo Implement getImageStyleAttributes
+   */
+  public function testGetImageStyleAttributes() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

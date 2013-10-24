@@ -66,4 +66,28 @@ class CronDailyTest extends \MovLib\TestCase {
     $this->assertChaining($command, $method->invoke($command, "purgeTemporaryUploads"));
   }
 
+  /**
+   * @covers ::__construct
+   * @todo Implement __construct
+   */
+  public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::configure
+   * @todo Implement configure
+   */
+  public function testConfigure() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::execute
+   * @todo Implement execute
+   */
+  public function testExecute() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

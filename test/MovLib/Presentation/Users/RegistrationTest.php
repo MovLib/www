@@ -229,4 +229,36 @@ class RegistrationTest extends \MovLib\TestCase {
     $this->assertContains("Too many registration attempts", $registration->getPresentation());
   }
 
+  /**
+   * @covers ::__construct
+   * @todo Implement __construct
+   */
+  public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::validate
+   * @todo Implement validate
+   */
+  public function testValidate() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::validateToken
+   * @todo Implement validateToken
+   */
+  public function testValidateToken() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getBreadcrumbs
+   * @todo Implement getBreadcrumbs
+   */
+  public function testGetBreadcrumbs() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

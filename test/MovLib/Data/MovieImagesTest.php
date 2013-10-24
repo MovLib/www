@@ -72,4 +72,20 @@ class MovieImagesTest extends \PHPUnit_Framework_TestCase {
     );
   }
 
+  /**
+   * @covers ::__construct
+   * @todo Implement __construct
+   */
+  public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::initImageProperties
+   * @todo Implement initImageProperties
+   */
+  public function testInitImageProperties() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

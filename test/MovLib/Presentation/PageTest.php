@@ -61,4 +61,76 @@ class PageTest extends \MovLib\TestCase {
     $this->assertContains("<phpunit>", $this->page->alerts);
   }
 
+  /**
+   * @covers ::getBreadcrumb
+   * @todo Implement getBreadcrumb
+   */
+  public function testGetBreadcrumb() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getBreadcrumbs
+   * @todo Implement getBreadcrumbs
+   */
+  public function testGetBreadcrumbs() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getContent
+   * @todo Implement getContent
+   */
+  public function testGetContent() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getFooter
+   * @todo Implement getFooter
+   */
+  public function testGetFooter() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getHeader
+   * @todo Implement getHeader
+   */
+  public function testGetHeader() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getHeaderLogo
+   * @todo Implement getHeaderLogo
+   */
+  public function testGetHeaderLogo() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getPresentation
+   * @todo Implement getPresentation
+   */
+  public function testGetPresentation() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getWrappedContent
+   * @todo Implement getWrappedContent
+   */
+  public function testGetWrappedContent() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::init
+   * @todo Implement init
+   */
+  public function testInit() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

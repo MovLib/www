@@ -64,4 +64,12 @@ class FormPageTest extends \MovLib\TestCase {
     $stub->validate();
   }
 
+  /**
+   * @covers ::checkErrors
+   * @todo Implement checkErrors
+   */
+  public function testCheckErrors() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }
