@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \MovDev\Database;
 use \MovLib\Data\Countries;
 
 /**
@@ -30,20 +29,19 @@ use \MovLib\Data\Countries;
  */
 class CountriesTest extends \MovLib\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /** @var \MovLib\Data\Countries */
   private $countries;
 
-  /** @var \MovDev\Database */
-  private $db;
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
   protected function setUp() {
     $this->countries = new Countries();
-    $this->db        = new Database();
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
@@ -52,8 +50,9 @@ class CountriesTest extends \MovLib\TestCase {
    * @covers ::orderByCode
    */
   public function testOrderByCode() {
+    global $db;
     $this->countries->orderByCode();
-    foreach (array_column($this->db->query("SELECT `iso_alpha-2` FROM `countries` ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
+    foreach (array_column($db->query("SELECT `iso_alpha-2` FROM `countries` ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
       $this->assertEquals($code, $this->countries[$code]->code);
     }
   }
@@ -62,8 +61,9 @@ class CountriesTest extends \MovLib\TestCase {
    * @covers ::orderByCode
    */
   public function testOrderByCodeFilter() {
+    global $db;
     $this->countries->orderByCode([ "US", "AT" ]);
-    foreach (array_column($this->db->query("SELECT `iso_alpha-2` FROM `countries` WHERE `country_id` IN('US', 'AT') ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
+    foreach (array_column($db->query("SELECT `iso_alpha-2` FROM `countries` WHERE `country_id` IN('US', 'AT') ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
       $this->assertEquals($code, $this->countries[$code]->code);
     }
   }
@@ -72,8 +72,9 @@ class CountriesTest extends \MovLib\TestCase {
    * @covers ::orderById
    */
   public function testOrderById() {
+    global $db;
     $this->countries->orderById();
-    foreach (array_column($this->db->query("SELECT `country_id` FROM `countries`")->get_result()->fetch_all(), 0) as $id) {
+    foreach (array_column($db->query("SELECT `country_id` FROM `countries`")->get_result()->fetch_all(), 0) as $id) {
       $this->assertEquals($id, $this->countries[$id]->id);
     }
   }
@@ -82,8 +83,9 @@ class CountriesTest extends \MovLib\TestCase {
    * @covers ::orderById
    */
   public function testOrderByIdFilter() {
+    global $db;
     $this->countries->orderById([ 1, 2 ]);
-    foreach (array_column($this->db->query("SELECT `country_id` FROM `countries` WHERE `country_id` IN (1, 2)")->get_result()->fetch_all(), 0) as $id) {
+    foreach (array_column($db->query("SELECT `country_id` FROM `countries` WHERE `country_id` IN (1, 2)")->get_result()->fetch_all(), 0) as $id) {
       $this->assertEquals($id, $this->countries[$id]->id);
     }
   }
@@ -92,10 +94,10 @@ class CountriesTest extends \MovLib\TestCase {
    * @covers ::orderByName
    */
   public function testOrderByName() {
-    global $i18n;
+    global $db, $i18n;
     $this->countries->orderByName();
     /* @var $result \mysqli_result */
-    $result = array_column($this->db->query("SELECT `name` FROM `countries`")->get_result()->fetch_all(), 0);
+    $result = array_column($db->query("SELECT `name` FROM `countries`")->get_result()->fetch_all(), 0);
     $i18n->getCollator()->asort($result);
     foreach ($result as $name) {
       $this->assertEquals($name, $this->countries[$name]->name);

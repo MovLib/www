@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \MovDev\Database;
 use \MovLib\Data\Languages;
 
 /**
@@ -30,13 +29,13 @@ use \MovLib\Data\Languages;
  */
 class LanguagesTest extends \MovLib\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /** @var \MovLib\Data\Languages */
   private $languages;
 
-  /** @var \MovDev\Database */
-  private $db;
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
@@ -46,14 +45,17 @@ class LanguagesTest extends \MovLib\TestCase {
     $this->db        = new Database();
   }
 
+
   // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
   /**
    * @covers ::orderByCode
    */
   public function testOrderByCode() {
+    global $db;
     $this->languages->orderByCode();
-    foreach (array_column($this->db->query("SELECT `iso_alpha-2` FROM `languages` ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
+    foreach (array_column($db->query("SELECT `iso_alpha-2` FROM `languages` ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
       $this->assertEquals($code, $this->languages[$code]->code);
     }
   }
@@ -62,8 +64,9 @@ class LanguagesTest extends \MovLib\TestCase {
    * @covers ::orderByCode
    */
   public function testOrderByCodeFilter() {
+    global $db;
     $this->languages->orderByCode([ "US", "AT" ]);
-    foreach (array_column($this->db->query("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` IN('US', 'AT') ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
+    foreach (array_column($db->query("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` IN('US', 'AT') ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
       $this->assertEquals($code, $this->languages[$code]->code);
     }
   }
@@ -72,8 +75,9 @@ class LanguagesTest extends \MovLib\TestCase {
    * @covers ::orderById
    */
   public function testOrderById() {
+    global $db;
     $this->languages->orderById();
-    foreach (array_column($this->db->query("SELECT `language_id` FROM `languages`")->get_result()->fetch_all(), 0) as $id) {
+    foreach (array_column($db->query("SELECT `language_id` FROM `languages`")->get_result()->fetch_all(), 0) as $id) {
       $this->assertEquals($id, $this->languages[$id]->id);
     }
   }
@@ -82,8 +86,9 @@ class LanguagesTest extends \MovLib\TestCase {
    * @covers ::orderById
    */
   public function testOrderByIdFilter() {
+    global $db;
     $this->languages->orderById([ 1, 2 ]);
-    foreach (array_column($this->db->query("SELECT `language_id` FROM `languages` WHERE `language_id` IN (1, 2)")->get_result()->fetch_all(), 0) as $id) {
+    foreach (array_column($db->query("SELECT `language_id` FROM `languages` WHERE `language_id` IN (1, 2)")->get_result()->fetch_all(), 0) as $id) {
       $this->assertEquals($id, $this->languages[$id]->id);
     }
   }
@@ -92,10 +97,10 @@ class LanguagesTest extends \MovLib\TestCase {
    * @covers ::orderByName
    */
   public function testOrderByName() {
-    global $i18n;
+    global $db, $i18n;
     $this->languages->orderByName();
     /* @var $result \mysqli_result */
-    $result = array_column($this->db->query("SELECT `name` FROM `languages`")->get_result()->fetch_all(), 0);
+    $result = array_column($db->query("SELECT `name` FROM `languages`")->get_result()->fetch_all(), 0);
     $i18n->getCollator()->asort($result);
     foreach ($result as $name) {
       //$this->assertEquals($name, $this->languages[$name]->name);

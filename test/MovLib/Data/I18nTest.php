@@ -20,8 +20,8 @@ namespace MovLib\Data;
 use \DateTimeZone;
 use \IntlDateFormatter;
 use \Locale;
-use \MovDev\Database;
 use \MovLib\Data\Collator;
+use \MovLib\Data\SystemLanguages;
 use \MovLib\Data\I18n;
 
 /**
@@ -35,46 +35,53 @@ use \MovLib\Data\I18n;
  */
 class I18nTest extends \MovLib\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-  /**  @var \MovLib\Data\I18n */
-  public $i18n;
+
+  /** @var \MovLib\Data\I18n */
+  protected $i18n;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
-  public function setUp() {
-    $this->i18n = new I18n("en_US");
+  protected function setUp() {
+    $this->i18n = new I18n(Locale::getDefault());
   }
 
   public static function tearDownAfterClass() {
-    $db = new Database();
+    $queries = "";
     foreach ([ "message", "route" ] as $context) {
-      $db->query("DELETE FROM `{$context}s` WHERE `{$context}` LIKE '%PHPUnit%'");
+      $queries .= "DELETE FROM `{$context}s` WHERE `{$context}` LIKE '%PHPUnit%';";
     }
+    (new \MovLib\Tool\Database())->queries($queries);
   }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Data Providers
 
 
   public static function dataProviderTestConstructAcceptLanguageHeaderValid() {
-    $args = [ ];
-    foreach ($GLOBALS["movlib"]["locales"] as $code => $locale) {
-      $args[] = [ $locale, $locale, $code ];
-      $args[] = [ $code, $locale, $code ];
+    $args = [];
+    foreach (new SystemLanguages() as $locale => $systemLanguage) {
+      $args[] = [ $locale, $locale, $systemLanguage->languageCode ];
+      $args[] = [ $systemLanguage->languageCode, $locale, $systemLanguage->languageCode ];
     }
     return $args;
   }
 
   public static function dataProviderTestConstructLanguageCodeValid() {
-    $args = [ ];
-    foreach ($GLOBALS["movlib"]["locales"] as $code => $locale) {
-      $args[] = [ $code, $locale, $code ];
+    $args = [];
+    foreach (new SystemLanguages() as $locale => $systemLanguage) {
+      $args[] = [ $systemLanguage->languageCode, $locale, $systemLanguage->languageCode ];
     }
     return $args;
   }
 
+
   // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
   /**
    * @covers ::__construct
@@ -82,7 +89,7 @@ class I18nTest extends \MovLib\TestCase {
   public function testConstructInvalidHTTPAcceptLanguageCode() {
     unset($_SERVER["LANGUAGE_CODE"]);
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = "xx-XX";
-    $defaultLocale                   = \Locale::getDefault();
+    $defaultLocale                   = Locale::getDefault();
     $defaultLanguageCode             = "{$defaultLocale[0]}{$defaultLocale[1]}";
     $i18n                            = new I18n();
     $this->assertEquals($defaultLocale, $i18n->locale);
@@ -95,7 +102,7 @@ class I18nTest extends \MovLib\TestCase {
   public function testConstructNoLanguageCodeNoHTTPAcceptLanguageCode() {
     unset($_SERVER["LANGUAGE_CODE"]);
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = null;
-    $defaultLocale                   = \Locale::getDefault();
+    $defaultLocale                   = Locale::getDefault();
     $defaultLanguageCode             = "{$defaultLocale[0]}{$defaultLocale[1]}";
     $i18n                            = new I18n();
     $this->assertEquals($defaultLocale, $i18n->locale);
@@ -133,7 +140,7 @@ class I18nTest extends \MovLib\TestCase {
     $acceptLanguage                  = isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) ? $_SERVER["HTTP_ACCEPT_LANGUAGE"] : null;
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = "xx_XX";
 
-    $defaultLocale       = \Locale::getDefault();
+    $defaultLocale       = Locale::getDefault();
     $defaultLanguageCode = "{$defaultLocale[0]}{$defaultLocale[1]}";
 
     $i18n = new I18n();

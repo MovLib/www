@@ -17,12 +17,9 @@
  */
 namespace MovLib\Data;
 
-use \MovDev\Database;
 use \MovLib\Data\Collator;
 use \MovLib\Data\I18n;
-use \MovLib\Data\Language;
 use \MovLib\Data\Movie;
-use \MovLib\Data\Image\Movie as MovieImage;
 
 /**
  * @coversDefaultClass \MovLib\Data\Movie
@@ -34,28 +31,20 @@ use \MovLib\Data\Image\Movie as MovieImage;
  */
 class MovieTest extends \MovLib\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-  /**
-   * The movie data object under test.
-   *
-   * @var \MovLib\Data\Movie
-   */
-  public $movie;
 
-  /**
-   * The ID of the movie under test.
-   *
-   * @var int
-   */
-  public $movieId = 4;
+  /** @var \MovLib\Data\Movie */
+  protected $movie;
+
+  protected $movieId = 4;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic methods
 
-  /**
-   * @inheritdoc
-   */
-  public function setUp() {
+
+  protected function setUp() {
     $this->movie = new Movie($this->movieId);
   }
 
@@ -63,7 +52,7 @@ class MovieTest extends \MovLib\TestCase {
    * @inheritdoc
    */
   public static function tearDownAfterClass() {
-    exec("movdev db -s movies");
+    self::exec("movlib si -d movies");
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Test methods

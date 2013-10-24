@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\User\Full as User;
+use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Data\User\Session;
 
 /**
@@ -55,14 +55,14 @@ class FullTest extends \MovLib\TestCase {
    * @covers ::checkEmail
    */
   public function testCheckEmailExists() {
-    $this->assertTrue((new User(User::FROM_ID, 1))->checkEmail());
+    $this->assertTrue((new UserFull(UserFull::FROM_ID, 1))->checkEmail());
   }
 
   /**
    * @covers ::checkEmail
    */
   public function testCheckEmailNotExists() {
-    $user        = new User();
+    $user        = new UserFull();
     $user->email = "phpunit@movlib.org";
     $this->assertFalse($user->checkEmail());
   }
@@ -73,7 +73,7 @@ class FullTest extends \MovLib\TestCase {
    */
   public function testCheckNameExists($name) {
     // We have to check that the query itself is agnostic to case changes (same as we did in the constructor test).
-    $user       = new User();
+    $user       = new UserFull();
     $user->name = $name;
     $this->assertTrue($user->checkName());
   }
@@ -82,7 +82,7 @@ class FullTest extends \MovLib\TestCase {
    * @covers ::checkName
    */
   public function testCheckNameNotExists() {
-    $user       = new User();
+    $user       = new UserFull();
     $user->name = "PHPUnit";
     $this->assertFalse($user->checkName());
   }
@@ -91,7 +91,7 @@ class FullTest extends \MovLib\TestCase {
    * @covers ::commit
    */
   public function testCommit() {
-    $user                     = new User(User::FROM_ID, 1);
+    $user                     = new UserFull(UserFull::FROM_ID, 1);
     $user->birthday           = "2000-01-01";
     $user->countryId          = 1;
     $user->profile            = "PHPUnit";
@@ -103,7 +103,7 @@ class FullTest extends \MovLib\TestCase {
     $user->website            = "http://phpunit.net/";
     $user->commit();
 
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserFull(UserFull::FROM_ID, 1);
     $this->assertEquals("2000-01-01", $user->birthday);
     $this->assertEquals(1, $user->countryId);
     $this->assertEquals("PHPUnit", $user->profile);
@@ -122,11 +122,11 @@ class FullTest extends \MovLib\TestCase {
    * @covers ::deleteImageOriginalAndStyles
    */
   public function testDeactivate() {
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserFull(UserFull::FROM_ID, 1);
     $user->deactivate();
 
-    $user = new User(User::FROM_ID, 1);
-    $this->assertFileNotExists($this->invoke($user, "getImagePath", [ User::IMAGE_STYLE_SPAN_02 ]));
+    $user = new UserFull(UserFull::FROM_ID, 1);
+    $this->assertFileNotExists($this->invoke($user, "getImagePath", [ UserFull::IMAGE_STYLE_SPAN_02 ]));
     $this->assertNull($this->getProperty($user, "imageChanged"));
     $this->assertNull($this->getProperty($user, "imageExtension"));
     $this->assertNull($user->birthday);
@@ -149,7 +149,7 @@ class FullTest extends \MovLib\TestCase {
    * @covers ::getRandomPassword
    */
   public function testGetRandomPassword() {
-    $this->assertRegExp("/.{20}/", User::getRandomPassword());
+    $this->assertRegExp("/.{20}/", UserFull::getRandomPassword());
   }
 
   /**
@@ -158,7 +158,7 @@ class FullTest extends \MovLib\TestCase {
    */
   public function testGetRegistrationData() {
     global $db;
-    $user        = new User();
+    $user        = new UserFull();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $user->prepareRegistration("Test1234");
@@ -184,7 +184,7 @@ class FullTest extends \MovLib\TestCase {
   public function testGetRegistrationDataExpired() {
     global $db;
     try {
-      $user        = new User();
+      $user        = new UserFull();
       $user->name  = "PHPUnit";
       $user->email = "phpunit@movlib.org";
       $user->prepareRegistration("Test1234");
@@ -202,14 +202,14 @@ class FullTest extends \MovLib\TestCase {
    * @expectedExceptionMessage No data found
    */
   public function testGetRegistrationDataNoRecord() {
-    (new User())->getRegistrationData();
+    (new UserFull())->getRegistrationData();
   }
 
   /**
    * @covers ::passwordHash
    */
   public function testPasswordHash() {
-    $this->assertTrue(password_verify("Test1234", $this->invoke(new User(), "passwordHash", [ "Test1234" ])));
+    $this->assertTrue(password_verify("Test1234", $this->invoke(new UserFull(), "passwordHash", [ "Test1234" ])));
   }
 
   /**
@@ -218,7 +218,7 @@ class FullTest extends \MovLib\TestCase {
    */
   public function testPrepareRegistration() {
     global $db;
-    $user        = new User();
+    $user        = new UserFull();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $this->assertEquals($user, $user->prepareRegistration("Test1234"));
@@ -231,10 +231,10 @@ class FullTest extends \MovLib\TestCase {
    */
   public function testPrepareRegistrationExpiredAttempts() {
     global $db;
-    $user        = new User();
+    $user        = new UserFull();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
-    $c           = User::MAXIMUM_ATTEMPTS * 2;
+    $c           = UserFull::MAXIMUM_ATTEMPTS * 2;
     $time        = strtotime("-25 hours");
     $key         = "registration-{$user->email}";
     for ($i = 0; $i < $c; ++$i) {
@@ -252,7 +252,7 @@ class FullTest extends \MovLib\TestCase {
    */
   public function testPrepareRegistrationTooManyAttempts() {
     global $db;
-    $user        = new User();
+    $user        = new UserFull();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     try {
@@ -271,7 +271,7 @@ class FullTest extends \MovLib\TestCase {
    */
   public function testReactivate() {
     global $db;
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserFull(UserFull::FROM_ID, 1);
     $user->deactivate()->reactivate();
     $this->assertFalse($user->deactivated);
     $stmt = $db->query("SELECT `deactivated` FROM `users` WHERE `user_id` = ?", "d", [ 1 ]);
@@ -287,7 +287,7 @@ class FullTest extends \MovLib\TestCase {
    */
   public function testRegister() {
     global $db, $i18n;
-    $user        = new User();
+    $user        = new UserFull();
     $user->name  = "PHPUnit";
     $user->email = "phpunit@movlib.org";
     $user->prepareRegistration("Test1234");
@@ -315,7 +315,7 @@ class FullTest extends \MovLib\TestCase {
    */
   public function testUpdateEmail() {
     global $db;
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserFull(UserFull::FROM_ID, 1);
     $this->assertEquals("richard@fussenegger.info", $user->email);
     $user->updateEmail("phpunit@movlib.org");
     $this->assertEquals("phpunit@movlib.org", $user->email);
@@ -339,7 +339,7 @@ class FullTest extends \MovLib\TestCase {
     $stmt->fetch();
     $stmt->close();
 
-    $user = new User(User::FROM_ID, 1);
+    $user = new UserFull(UserFull::FROM_ID, 1);
     $user->updatePassword("phpunitPassword");
     $session->authenticate("richard@fussenegger.info", "phpunitPassword");
     $stmt = $db->query("SELECT `password` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ 1 ]);

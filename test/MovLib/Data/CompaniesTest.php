@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \MovDev\Database;
 use \MovLib\Data\Companies;
 
 /**
@@ -30,23 +29,24 @@ use \MovLib\Data\Companies;
  */
 class CompaniesTest extends \MovLib\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /** @var \MovLib\Data\Companies */
   private $companies;
 
-  /** @var \MovDev\Database */
-  private $db;
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
   protected function setUp() {
     $this->companies = new Companies();
-    $this->db        = new Database();
   }
 
+
   // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
   /**
    * @covers ::orderById
@@ -70,10 +70,10 @@ class CompaniesTest extends \MovLib\TestCase {
    * @covers ::orderByName
    */
   public function testOrderByName() {
-    global $i18n;
+    global $db, $i18n;
     $this->companies->orderByName();
     /* @var $result \mysqli_result */
-    $result = array_column($this->db->query("SELECT `name` FROM `companies`")->get_result()->fetch_all(), 0);
+    $result = array_column($db->query("SELECT `name` FROM `companies`")->get_result()->fetch_all(), 0);
     $i18n->getCollator()->asort($result);
     foreach ($result as $name) {
       $this->assertEquals($name, $this->companies[$name]->name);

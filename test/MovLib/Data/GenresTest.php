@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \MovDev\Database;
 use \MovLib\Data\Genres;
 
 /**
@@ -30,20 +29,19 @@ use \MovLib\Data\Genres;
  */
 class GenresTest extends \MovLib\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-  /** @var \MovLib\Data\Genges */
+
+  /** @var \MovLib\Data\Genres */
   private $genres;
 
-  /** @var \MovDev\Database */
-  private $db;
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
   protected function setUp() {
     $this->genres = new Genres();
-    $this->db     = new Database();
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
@@ -70,10 +68,10 @@ class GenresTest extends \MovLib\TestCase {
    * @covers ::orderByName
    */
   public function testOrderByName() {
-    global $i18n;
+    global $db, $i18n;
     $this->genres->orderByName();
     /* @var $result \mysqli_result */
-    $result = array_column($this->db->query("SELECT `name` FROM `genres`")->get_result()->fetch_all(), 0);
+    $result = array_column($db->query("SELECT `name` FROM `genres`")->get_result()->fetch_all(), 0);
     $i18n->getCollator()->asort($result);
     foreach ($result as $name) {
       $this->assertEquals($name, $this->genres[$name]->name);

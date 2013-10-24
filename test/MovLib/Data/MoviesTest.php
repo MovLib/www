@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \MovDev\Database;
 use \MovLib\Data\Movie;
 use \MovLib\Data\Movies;
 
@@ -46,9 +45,10 @@ class MoviesTest extends \MovLib\TestCase {
   }
 
   public function testGetMoviesByCreated() {
+    global $db;
     $lowerBound = 0;
     $upperBound = 2;
-    $dbMovies   = (new Database())->query(
+    $dbMovies   = $db->query(
         "SELECT
         `movie_id`
       FROM `movies`

@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \MovDev\Database;
 use \MovLib\Data\Persons;
 
 /**
@@ -30,13 +29,13 @@ use \MovLib\Data\Persons;
  */
 class PersonsTest extends \MovLib\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /** @var \MovLib\Data\Persons */
   private $persons;
 
-  /** @var \MovDev\Database */
-  private $db;
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
@@ -46,7 +45,9 @@ class PersonsTest extends \MovLib\TestCase {
     $this->db      = new Database();
   }
 
+
   // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
   /**
    * @covers ::orderById
@@ -69,9 +70,10 @@ class PersonsTest extends \MovLib\TestCase {
    * @covers ::orderByCreated
    */
   public function testOrderByCreated() {
+    global $db;
     $this->persons->orderByCreated();
     $index = 0;
-    foreach (array_column($this->db->query("SELECT `name` FROM `persons` ORDER BY created ASC")->get_result()->fetch_all(), 0) as $name) {
+    foreach (array_column($db->query("SELECT `name` FROM `persons` ORDER BY created ASC")->get_result()->fetch_all(), 0) as $name) {
       $this->assertEquals($name, $this->persons[$index]->name);
       ++$index;
     }
@@ -81,9 +83,10 @@ class PersonsTest extends \MovLib\TestCase {
    * @covers ::orderByCreated
    */
   public function testOrderByCreatedWithOffsetAndLimit() {
+    global $db;
     $this->persons->orderByCreated(5, 3);
     $index = 0;
-    foreach (array_column($this->db->query("SELECT `name` FROM `persons` ORDER BY created ASC LIMIT 5, 3")->get_result()->fetch_all(), 0) as $name) {
+    foreach (array_column($db->query("SELECT `name` FROM `persons` ORDER BY created ASC LIMIT 5, 3")->get_result()->fetch_all(), 0) as $name) {
       $this->assertEquals($name, $this->persons[$index]->name);
       ++$index;
     }
@@ -93,10 +96,10 @@ class PersonsTest extends \MovLib\TestCase {
    * @covers ::orderByName
    */
   public function testOrderByName() {
-    global $i18n;
+    global $db, $i18n;
     $this->persons->orderByName();
     /* @var $result \mysqli_result */
-    $result = array_column($this->db->query("SELECT `name` FROM `persons`")->get_result()->fetch_all(), 0);
+    $result = array_column($db->query("SELECT `name` FROM `persons`")->get_result()->fetch_all(), 0);
     $i18n->getCollator()->asort($result);
     foreach ($result as $name) {
       $this->assertEquals($name, $this->persons[$name]->name);

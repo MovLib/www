@@ -28,7 +28,7 @@ namespace MovLib;
  * @since 0.0.1-dev
  */
 abstract class TestCase extends \PHPUnit_Framework_TestCase {
-  use \MovDev\TraitUtilities;
+  use \MovLib\Tool\TraitUtilities;
   use \MovLib\Data\TraitUtilities;
 
   /**
