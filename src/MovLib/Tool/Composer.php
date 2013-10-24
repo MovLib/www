@@ -94,7 +94,7 @@ class Composer {
   public function phpmyadmin($fullName) {
     global $config, $db;
     symlink("{$config->documentRoot}/conf/phpmyadmin/config.inc.php", "{$this->vendorPath}/{$fullName}/config.inc.php");
-    $db->queries(file_get_contents("{$this->vendorPath}/{$fullName}/examples/create_table.sql"));
+    $db->queries(file_get_contents("{$this->vendorPath}/{$fullName}/examples/create_tables.sql"));
   }
 
   /**
