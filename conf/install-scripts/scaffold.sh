@@ -19,10 +19,11 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # DESCRIPTION
 #
-# AUTHOR: name <mail>
-# COPYRIGHT: © 2013-present, MovLib
-# LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
-# SINCE: 0.0.0
+# AUTHOR:     Forename Surname <email@address>
+# COPYRIGHT:  © 2013 MovLib
+# LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
+# LINKE:      https://movlib.org/
+# SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
 # This will import some variables and provide the functions to print colored messages.

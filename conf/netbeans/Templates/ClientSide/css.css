@@ -1,0 +1,16 @@
+<#assign licenseFirst = "/*!">
+<#assign licensePrefix = " *">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+/**
+ * Description of ${name}
+ *
+ * @author ${user}
+ * @copyright © ${date?date?string("yyyy")} ${copyright}
+ * @license ${license_link} ${license_name}
+ * @link ${link}
+ * @since ${version}
+ */
+
+

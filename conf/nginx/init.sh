@@ -37,6 +37,7 @@
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT:  © 2013 MovLib
 # LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
+# LINKE:      https://movlib.org/
 # SINCE:      0.0.1-dev
 # -----------------------------------------------------------------------------
 

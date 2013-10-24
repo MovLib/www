@@ -19,10 +19,11 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # Helper script to download a gzipped tarball, extract and delete it.
 #
-# AUTHOR: Richard Fussenegger <richard@fussenegger.info>
-# COPYRIGHT: © 2013-present, MovLib
-# LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
-# SINCE: 0.0.1-dev
+# AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
+# COPYRIGHT:  © 2013 MovLib
+# LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
+# LINKE:      https://movlib.org/
+# SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
 if [ ! ${#} == 3 ]; then

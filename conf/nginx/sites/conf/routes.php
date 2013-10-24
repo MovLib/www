@@ -17,13 +17,14 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # The routes file that will be translated for each subdomain. Everything within this file has to be in English!
 #
-# LINK: https://github.com/MovLib/www/wiki/How-to-create-a-multipart-form
-# AUTHOR: Richard Fussenegger <richard@fussenegger.info>
-# AUTHOR: Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
-# AUTHOR: Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
-# COPYRIGHT: © 2013-present, MovLib
-# LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
-# SINCE: 0.0.1-dev
+# LINK:       https://github.com/MovLib/www/wiki/How-to-create-a-multipart-form
+# AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
+# AUTHOR:     Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+# AUTHOR:     Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+# COPYRIGHT:  © 2013 MovLib
+# LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
+# LINKE:      https://movlib.org/
+# SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
 
