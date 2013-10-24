@@ -541,9 +541,10 @@ class I18nTest extends \MovLib\TestCase {
    * @covers ::insertRoute
    */
   public function testInsertRoute() {
+    global $db;
     $route = "PHPUnit test route";
     $this->i18n->insertRoute($route);
-    $this->assertNotNull((new Database())->query("SELECT `route` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_all());
+    $this->assertNotNull($db->query("SELECT `route` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_all());
   }
 
   /**
