@@ -62,10 +62,13 @@ class FixPermissions extends \MovLib\Tool\Console\Command\Development\AbstractDe
     $directory = "{$config->documentRoot}/{$input->getArgument("directory")}";
     $this->write("Fixing permissions on all directories and files in <info>'{$directory}'</info> ...");
     $this->exec("chown -R {$config->phpUser}:{$config->phpGroup} '{$directory}'");
+    $this->write("User and group ownership fixed!", self::MESSAGE_TYPE_INFO);
     $this->exec("find '{$directory}' -type d -exec chmod 2770 {} \;");
+    $this->write("Directory permissions fixed!", self::MESSAGE_TYPE_INFO);
     $this->exec("find '{$directory}' -type f -exec chmod 2660 {} \;");
+    $this->write("File permissions fixed!", self::MESSAGE_TYPE_INFO);
     $this->exec("find '{$directory}' -type f -regextype posix-egrep -regex '.*(bin/[a-zA-Z0-9\._-]+|conf/.*\.sh)$' -exec chmod 2770 {} \;");
-    $this->write("Permissions Fixed!", self::MESSAGE_TYPE_INFO);
+    $this->write("Executable permissions fixed!", self::MESSAGE_TYPE_INFO);
   }
 
 }
