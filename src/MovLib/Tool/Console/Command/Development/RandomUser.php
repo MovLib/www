@@ -203,16 +203,15 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   protected function getRandomUsername() {
     $username = null;
 
-    // 1 to 40, all variations are valid!
-    $length   = mt_rand(1, User::NAME_MAXIMUM_LENGTH);
-    for ($i = 0; $i < $length; ++$i) {
-      $username .= $this->characters[mt_rand(0, $this->charactersCount)];
+    do {
+      // 1 to 40, all variations are valid!
+      $length   = mt_rand(1, User::NAME_MAXIMUM_LENGTH);
+      for ($i = 0; $i < $length; ++$i) {
+        $username .= $this->characters[mt_rand(0, $this->charactersCount)];
+      }
     }
-
-    // If this username is already in use call ourself again (recursion) and generate another one.
-    if (in_array($username, $this->usernames)) {
-      $username = $this->getRandomUsername();
-    }
+    // If this username is already in use generate another one.
+    while (in_array($username, $this->username));
 
     $this->usernames[] = $username;
     return $username;
