@@ -81,7 +81,7 @@ class CronDaily extends AbstractCommand {
    */
   protected function purgeTemporaryUploads() {
     $tmpDirectory = ini_get("upload_tmp_dir");
-    exec("find {$tmpDirectory} -type f -mtime +1 -exec rm {} \\;");
+    exec("find {$tmpDirectory} -type f -mtime +1 -exec rm -f {} \\;");
     return $this;
   }
 
