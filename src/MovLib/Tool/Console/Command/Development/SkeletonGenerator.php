@@ -114,10 +114,10 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
     $autoloader->add("MovLib", "{$config->documentRoot}/skeleton");
 
     // Load template files.
-    $this->abstractTemplate = file_get_contents("{$config->documentRoot}/conf/test/abstract.tpl.php");
-    $this->classTemplate    = file_get_contents("{$config->documentRoot}/conf/test/class.tpl.php");
-    $this->methodTemplate   = file_get_contents("{$config->documentRoot}/conf/test/method.tpl.php");
-    $this->traitTemplate    = file_get_contents("{$config->documentRoot}/conf/test/trait.tpl.php");
+    $this->abstractTemplate = file_get_contents("{$config->documentRoot}/conf/skeleton/abstract.tpl.php");
+    $this->classTemplate    = file_get_contents("{$config->documentRoot}/conf/skeleton/class.tpl.php");
+    $this->methodTemplate   = file_get_contents("{$config->documentRoot}/conf/skeleton/method.tpl.php");
+    $this->traitTemplate    = file_get_contents("{$config->documentRoot}/conf/skeleton/trait.tpl.php");
 
     // Collect all source files.
     $files = [];
