@@ -193,8 +193,6 @@ class I18nTest extends \MovLib\TestCase {
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = $acceptLanguage;
   }
 
-  // ------------------------------------------------------------------------------------------------------------------- Method tests
-
   /**
    * @covers ::formatDate
    * @expectedException \Exception
@@ -500,7 +498,7 @@ class I18nTest extends \MovLib\TestCase {
   /**
    * @covers ::getTimezones
    */
-  public function testGetTimezones() {
+  public function testGetTimeZones() {
     $locale              = \Locale::getDefault();
     $this->i18n->locale  = $locale;
     $timeZones           = $this->i18n->getTimeZones();
@@ -597,14 +595,6 @@ class I18nTest extends \MovLib\TestCase {
    * @todo Implement getLanguageId
    */
   public function testGetLanguageId() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getTimeZones
-   * @todo Implement getTimeZones
-   */
-  public function testGetTimeZones() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
