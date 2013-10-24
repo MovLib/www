@@ -31,12 +31,13 @@ ini_set("display_errors", true);
 /**
  * Bootstrap for console execution.
  *
+ * @global \Composer\Autoload\ClassLoader $autoloader
  * @global \MovLib\Tool\Configuration $config
  * @global \MovLib\Tool\Database $db
  * @global \MovLib\Data\I18n $i18n
  */
 function bootstrap() {
-  global $config, $db, $i18n;
+  global $autoloader, $config, $db, $i18n;
   $root       = dirname(__DIR__);
   $autoloader = require "{$root}/vendor/autoload.php";
   $autoloader->add("MovLib", "{$root}/src/");
