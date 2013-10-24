@@ -1,4 +1,5 @@
 #!/usr/bin/env php
+
 ### BEGIN INIT INFO
 # Provides:          memcached
 # Required-Start:    $remote_fs $network
@@ -11,19 +12,19 @@
 <?php
 
 /*!
- *  This file is part of {@link https://github.com/MovLib MovLib}.
+ * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- *  Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
- *  MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
- *  License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
- *  version.
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
  *
- *  MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
- *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
  *
- *  You should have received a copy of the GNU Affero General Public License along with MovLib.
- *  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
 /**
@@ -37,9 +38,9 @@
  */
 
 $daemonname = "memcached";
-$daemon = "/usr/local/bin/{$daemonname}";
-$run = "/run/{$daemonname}/";
-$user = "www-data";
+$daemon     = "/usr/local/bin/{$daemonname}";
+$run        = "/run/{$daemonname}/";
+$user       = "www-data";
 
 if (!file_exists($daemon) || !is_executable($daemon)) {
   exit("{$daemon} does't exist or is not executable, exiting!\n");

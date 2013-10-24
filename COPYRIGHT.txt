@@ -1,5 +1,5 @@
 MovLib — The free movie library.
-Copyright (c) 2012 MovLib authors
+Copyright © 2012 MovLib
 
 MovLib is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as

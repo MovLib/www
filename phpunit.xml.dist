@@ -18,11 +18,11 @@
 <!--
  The PHPUnit XML configuration file with code coverage reporting.
 
- AUTHOR: Richard Fussenegger <richard@fussenegger.info>
- COPYRIGHT: © 2013–present, MovLib
- LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
- LINK: http://movlib.org/ movlib.org
- SINCE: 0.0.1-dev
+ AUTHOR:    Richard Fussenegger <richard@fussenegger.info>
+ COPYRIGHT: © 2013 MovLib
+ LICENSE:   http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ LINK:      https://movlib.org/
+ SINCE:     0.0.1-dev
 -->
 <phpunit backupGlobals="true"
          backupStaticAttributes="false"

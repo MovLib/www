@@ -17,11 +17,12 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # ApiGen configuration file.
 #
-# LINK: http://apigen.org/
-# AUTHOR: Richard Fussenegger <richard@fussenegger.info>
-# COPYRIGHT: © 2013-present, MovLib
-# LICENSE: http://www.gnu.org/licenses/agpl.html AGPL-3.0
-# SINCE: 0.0.1-dev
+# LINK:      http://apigen.org/
+# AUTHOR:    Richard Fussenegger <richard@fussenegger.info>
+# COPYRIGHT: © 2013 MovLib
+# LICENSE:   http://www.gnu.org/licenses/agpl.html AGPL-3.0
+# LINK:      https://movlib.org/
+# SINCE:     0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
 source        :
