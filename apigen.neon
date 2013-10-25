@@ -25,12 +25,7 @@
 # SINCE:     0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-source        :
-              - "./main.php"
-              - "./bootstrap.php"
-              - "./bin"
-              - "./src"
-              - "./test"
+source        : "./src"
 destination   : "./public/doc"
 extensions    : "php"
 charset       : "UTF-8"
