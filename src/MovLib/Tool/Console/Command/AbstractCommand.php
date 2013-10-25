@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command;
 
+use \InvalidArgumentException;
 use \MovLib\Exception\ConsoleException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -155,7 +156,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *
    * @param type $max
    */
-  protected function progressStart($max = null) {
+  protected final function progressStart($max = null) {
     if ($this->output && $this->quiet === false) {
       $this->progress = $this->getHelperSet()->get("progress");
       $this->progress->setBarCharacter("<comment>=</comment>");
@@ -174,7 +175,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   Whetever to redraw the progress output or not.
    * @return this
    */
-  protected function progressAdvance($steps = 1, $redraw = false) {
+  protected final function progressAdvance($steps = 1, $redraw = false) {
     if ($this->progress) {
       $this->progress->advance($steps, $redraw);
     }
@@ -186,7 +187,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *
    * @return this
    */
-  protected function progressFinish() {
+  protected final function progressFinish() {
     if ($this->progress) {
       $this->progress->finish();
       $this->progress = null;
@@ -315,12 +316,20 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   The input options array.
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->dialog      = $this->getHelperSet()->get("dialog");
-    $this->input       = $input;
-    $this->output      = $output;
-    $options           = $input->getOptions();
-    $this->interaction = !$options["no-interaction"];
-    $this->quiet       = $options["quiet"];
+    /* @var $helperSet \Symfony\Component\Console\Helper\HelperSet */
+    if (($helperSet = $this->getHelperSet()) && $helperSet->has("dialog")) {
+      $this->dialog = $helperSet->get("dialog");
+    }
+    $this->input  = $input;
+    $this->output = $output;
+    if (($options = $input->getOptions())) {
+      if (isset($options["no-interaction"])) {
+        $this->interaction = !$options["no-interaction"];
+      }
+      if (isset($options["quiet"])) {
+        $this->quiet = $options["quiet"];
+      }
+    }
     $this->output->setVerbosity(OutputInterface::VERBOSITY_NORMAL); // Always display exceptions!
     return $options;
   }
@@ -336,7 +345,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    */
   protected final function getShortcut($name) {
     if (empty($name)) {
-      throw new \InvalidArgumentException;
+      throw new InvalidArgumentException("Name cannot be empty!");
     }
     $shortcut = null;
     foreach (explode("-", $name) as $namePart) {
