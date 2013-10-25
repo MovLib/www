@@ -43,10 +43,10 @@ class Home extends \MovLib\Presentation\Tool\Page {
   protected function getContent() {
     global $i18n;
     $tools = new Navigation("tools", "Tools", [
-      [ "ApiGen", "{$i18n->t("Have a look at the source code documentation.")} {$i18n->t("Generated once a day.")}", false ],
-      [ "PHPInfo", $i18n->t("Have a look at the current PHP configuration, extensions, etc."), false ],
-      [ "phpMyAdmin", $i18n->t("Easily manage the database via the phpMyAdmin web interface."), true ],
-      [ "Coverage", "{$i18n->t("Have a look at the unit test code coverage reporst.")} {$i18n->t("Generated once a day.")}", false ],
+      [ "ApiGen", "public/doc", "{$i18n->t("Have a look at the source code documentation.")} {$i18n->t("Generated once a day.")}", false ],
+      [ "PHPInfo", "phpinfo", $i18n->t("Have a look at the current PHP configuration, extensions, etc."), false ],
+      [ "phpMyAdmin", "phpmyadmin", $i18n->t("Easily manage the database via the phpMyAdmin web interface."), true ],
+      [ "Coverage", "public/coverage", "{$i18n->t("Have a look at the unit test code coverage reporst.")} {$i18n->t("Generated once a day.")}", false ],
       // @todo Either our tests are broken or VisualPHPUnit is broken ... impossible to get this working.
       //[ "VisualPHPUnit", $i18n->t("Run PHPUnit tests via the VisualPHPUnit web interface."), true ],
     ]);
@@ -65,13 +65,13 @@ class Home extends \MovLib\Presentation\Tool\Page {
    */
   public function formatListItem($tool) {
     global $config;
-    $route = "/" . str_replace(" ", "-", mb_strtolower($tool[0]));
+    $route = "/{$tool[1]}";
     $label = [ "info", "open" ];
-    if ($tool[2] === true) {
-      $route = "//{$config->domainSecureTools}{$route}";
+    if ($tool[3] === true) {
+      $route = "//{$config->domainSecureTools}{$tool[1]}";
       $label = $config->sslClientVerify === true ? [ "success", "verified" ] : [ "danger", "not verified" ];
     }
-    return [ $route, "<span class='label label-{$label[0]} pull-right'>{$label[1]}</span><h4>{$tool[0]}</h4><p>{$tool[1]}</p>", [
+    return [ $route, "<span class='label label-{$label[0]} pull-right'>{$label[1]}</span><h4>{$tool[0]}</h4><p>{$tool[2]}</p>", [
       "class" => "list-group-item"
     ]];
   }
