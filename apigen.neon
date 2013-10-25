@@ -30,7 +30,7 @@ source        :
               - "./bootstrap.php"
               - "./bin"
               - "./src"
-              - "./tests"
+              - "./test"
 destination   : "./public/doc"
 extensions    : "php"
 charset       : "UTF-8"
