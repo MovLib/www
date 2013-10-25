@@ -29,7 +29,7 @@
 /**
  * Mock of delayed_register() from main.php
  */
-function delayed_register($class, $weight = null, $method = null) {}
+function delayed_register() {}
 
 /**
  * Wrap the actual bootstrap in a function for better control over global variables.
@@ -40,15 +40,16 @@ function delayed_register($class, $weight = null, $method = null) {}
  * @global \MovLib\Data\User\Session $session
  */
 call_user_func(function () {
-  global $backup, $config, $i18n, $session;
+  global $backup, $config, $db, $i18n, $session;
   $documentRoot = __DIR__;
   $autoloader   = require "{$documentRoot}/vendor/autoload.php";
   $autoloader->add("MovLib", "{$documentRoot}/src/");
   $autoloader->add("MovLib", "{$documentRoot}/test/");
 
   new \MovLib\Exception\ConsoleHandlers();
-  $config            = new \MovLib\Tool\Configuration();
-  $i18n              = new \MovLib\Data\I18n();
+  $config = new \MovLib\Tool\Configuration();
+  $db     = new \MovLib\Tool\Database();
+  $i18n   = new \MovLib\Data\I18n();
 
   foreach ([
     "HTTP_USER_AGENT" => ini_get("user_agent"),
@@ -66,13 +67,14 @@ call_user_func(function () {
     }
   }
 
-  $session           = new \MovLib\Data\User\Session();
-  $init              = new \ReflectionMethod($session, "init");
+  $session = new \MovLib\Data\User\Session();
+  $init    = new \ReflectionMethod($session, "init");
   $init->setAccessible(true);
   $init->invokeArgs($session, [ 1 ]);
 
   $backup = [
     "config"  => clone $config,
+    "db"      => clone $db,
     "i18n"    => clone $i18n,
     "session" => clone $session,
   ];
