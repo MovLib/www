@@ -232,4 +232,12 @@ class AbstractCommandTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::system
+   * @todo Implement system
+   */
+  public function testSystem() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

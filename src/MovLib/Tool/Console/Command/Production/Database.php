@@ -15,14 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command;
+namespace MovLib\Tool\Console\Command\Production;
 
+use \MovLib\Exception\ConsoleException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * CLI commands for all database related tasks.
+ * CLI command for all database related tasks.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
@@ -32,71 +33,27 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Database extends \MovLib\Console\Command\AbstractCommand {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Option for running a backup.
-   *
-   * @var string
-   */
-  const OPTION_BACKUP = "backup";
-
-  /**
-   * Option shortcut for running a backup.
-   *
-   * @var string
-   */
-  const OPTION_SHORTCUT_BACKUP = "b";
-
-  /**
-   * Option for running migration(s).
-   *
-   * @var string
-   */
-  const OPTION_MIGRATION = "migration";
-
-  /**
-   * Option shortcut for running migration(s).
-   *
-   * @var string
-   */
-  const OPTION_SHORTCUT_MIGRATION = "m";
-
-  /**
-   * Option for running a restore.
-   *
-   * @var string
-   */
-  const OPTION_RESTORE = "restore";
-
-  /**
-   * Option shortcut for running a restore.
-   *
-   * @var string
-   */
-  const OPTION_SHORTCUT_RESTORE = "r";
+class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The directory containing the migration scripts.
+   * The directory where backups are stored.
    *
+   * @see Database::__construct()
    * @var string
    */
-  protected $migrationPath;
+  protected $pathBackup = "/private/backup";
 
   /**
-   * The database instance.
+   * The directory containing the migration scripts.
    *
-   * @var \MovDev\Database
+   * @see Database::__construct()
+   * @var string
    */
-  protected $database;
+  protected $pathMigration = "/conf/migration";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -105,9 +62,12 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
   /**
    * @inheritdoc
    */
-  public function __construct() {
-    parent::__construct("db");
-    $this->migrationPath = "{$_SERVER["DOCUMENT_ROOT"]}/db/migrations";
+  public function __construct(){
+    global $config;
+    parent::__construct("database");
+    $this->setAliases([ "db" ]);
+    $this->pathBackup    = "{$config->documentRoot}{$this->pathBackup}";
+    $this->pathMigration = "{$config->documentRoot}{$this->pathMigration}";
   }
 
 
@@ -118,19 +78,17 @@ class Database extends \MovLib\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   protected function configure() {
-    $this
-      ->setDescription("Execute database tasks.")
-      ->addOption(self::OPTION_BACKUP, self::OPTION_SHORTCUT_BACKUP, InputOption::VALUE_NONE, "Perform a backup of the database (Ignores all other options).")
-      ->addOption(self::OPTION_RESTORE, self::OPTION_SHORTCUT_RESTORE, InputOption::VALUE_NONE, "Perform a backup of the database (Ignores all other options).")
-      ->addOption(self::OPTION_MIGRATION, self::OPTION_SHORTCUT_MIGRATION, InputOption::VALUE_NONE, "Run migration(s).")
-    ;
+    $this->setDescription("Perform various database related tasks.");
+    $this->addInputOption("backup", InputOption::VALUE_NONE, "Create backup of the complete database.");
+    $this->addInputOption("migration", InputOption::VALUE_NONE, "Run all migration scripts.");
   }
 
   /**
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->setIO($input, $output)->exitOnError("Not implemented yet!");
+    parent::execute($input, $output);
+    throw new ConsoleException("Not implemented yet!");
   }
 
 }

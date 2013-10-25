@@ -15,12 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command;
+namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Console\Command\NginxRoutes;
+use \MovLib\Tool\Console\Command\Production\NginxRoutes;
+use \Symfony\Component\Console\Input\StringInput;
+use \Symfony\Component\Console\Output\NullOutput;
 
 /**
- * @coversDefaultClass \MovLib\Console\Command\NginxRoutes
+ * @coversDefaultClass \MovLib\Tool\Console\Command\Production\NginxRoutes
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -33,7 +35,7 @@ class NginxRoutesTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Console\Command\NginxRoutes */
+  /** @var \MovLib\Tool\Console\Command\Production\NginxRoutes */
   protected $nginxRoutes;
 
 
@@ -47,47 +49,49 @@ class NginxRoutesTest extends \MovLib\TestCase {
     $this->nginxRoutes = new NginxRoutes();
   }
 
-  /**
-   * Called after each test.
-   */
-  protected function tearDown() {
-
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Data Provider
-
-
-  public function dataProviderExample() {
-    return [];
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
 
   /**
    * @covers ::__construct
-   * @todo Implement __construct
    */
   public function testConstruct() {
+    $this->assertEquals("nginx-routes", $this->nginxRoutes->getName());
+  }
+
+  /**
+   * @covers ::compileAndTranslateRoutes
+   * @todo Implement compileAndTranslateRoutes
+   */
+  public function testCompileAndTranslateRoutes() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::configure
-   * @todo Implement configure
+   * @covers ::description
    */
   public function testConfigure() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->invoke($this->nginxRoutes, "configure");
+    $this->assertNotEmpty($this->nginxRoutes->getDefinition());
   }
 
   /**
    * @covers ::execute
-   * @todo Implement execute
    */
   public function testExecute() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $nginxRoutes = $this->getMock("\\MovLib\\Tool\\Console\\Command\\Production\\NginxRoutes", [ "execute", "checkPrivileges" ]);
+    $nginxRoutes->expects($this->any())->method("checkPrivileges")->will($this->returnValue($nginxRoutes));
+    $this->invoke($nginxRoutes, "execute", [ new StringInput(""), new NullOutput() ]);
+  }
+
+  /**
+   * @covers ::execute
+   * @expectedException \MovLib\Exception\ConsoleException
+   * @expectedExceptionMessage root
+   */
+  public function testExecuteNoRoot() {
+    $this->invoke($this->nginxRoutes, "execute", [ new StringInput(""), new NullOutput() ]);
   }
 
 }

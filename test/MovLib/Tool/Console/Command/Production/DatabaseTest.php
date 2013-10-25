@@ -15,26 +15,28 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command;
+namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Console\Command\FixPermissions;
+use \MovLib\Tool\Console\Command\Production\Database;
+use \Symfony\Component\Console\Input\StringInput;
+use \Symfony\Component\Console\Output\NullOutput;
 
 /**
- * @coversDefaultClass \MovLib\Console\Command\FixPermissions
+ * @coversDefaultClass \MovLib\Tool\Console\Command\Production\Database
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class FixPermissionsTest extends \MovLib\TestCase {
+class DatabaseTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Console\Command\FixPermissions */
-  protected $fixPermissions;
+  /** @var \MovLib\Tool\Console\Command\Production\Database */
+  protected $database;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,22 +46,7 @@ class FixPermissionsTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->fixPermissions = new FixPermissions();
-  }
-
-  /**
-   * Called after each test.
-   */
-  protected function tearDown() {
-
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Data Provider
-
-
-  public function dataProviderExample() {
-    return [];
+    $this->database = new Database();
   }
 
 
@@ -68,26 +55,26 @@ class FixPermissionsTest extends \MovLib\TestCase {
 
   /**
    * @covers ::__construct
-   * @todo Implement __construct
    */
   public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->assertEquals("database", $this->database->getName());
   }
 
   /**
    * @covers ::configure
-   * @todo Implement configure
    */
   public function testConfigure() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->invoke($this->database, "configure");
+    $this->assertNotEmpty($this->database->getDescription());
   }
 
   /**
    * @covers ::execute
-   * @todo Implement execute
+   * @expectedException \MovLib\Exception\ConsoleException
+   * @expectedExceptionMessage Not implemented yet!
    */
   public function testExecute() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->invoke($this->database, "execute", [ new StringInput(""), new NullOutput() ]);
   }
 
 }

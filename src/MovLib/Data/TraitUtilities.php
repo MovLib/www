@@ -91,4 +91,21 @@ trait TraitUtilities {
     return mb_strtolower(trim(preg_replace("/[\s-]+/", "-", str_replace([ "?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", '"', "&", "$", "#", "*", "(", ")", "|", "~" ], "", $filename)), ".-_"));
   }
 
+  /**
+   * Exectue external program and display output.
+   *
+   * This method behaves the same as PHP's <code>system()</code> function.
+   *
+   * @param string $command
+   *   The external shell program to execute.
+   * @param int $status [optional]
+   *   If present the return status of the executed command will be written to this variable.
+   * @return boolean
+   *   <code>TRUE</code> if the program exited with <code>0</code>, otherwise <code>FALSE</code>.
+   */
+  protected function system($command, &$status = null) {
+    system($command, $status);
+    return $status === 0;
+  }
+
 }
