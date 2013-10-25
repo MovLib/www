@@ -86,6 +86,6 @@ abstract class AbstractList extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The string representation of the list.
    */
-  abstract public function __toString();
+  public abstract function __toString();
 
 }

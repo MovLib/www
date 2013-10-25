@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Email\Users;
 
 /**
- * Description of RegistrationEmail
+ * @todo Description of RegistrationEmail
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

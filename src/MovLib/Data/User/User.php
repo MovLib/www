@@ -23,7 +23,7 @@ use \MovLib\Data\Delayed\Logger;
 use \MovLib\Exception\UserException;
 
 /**
- * Description of TestUser
+ * @todo Description of TestUser
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

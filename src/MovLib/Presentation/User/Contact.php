@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\User;
 
 /**
- * Description of Contact
+ * @todo Description of Contact
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

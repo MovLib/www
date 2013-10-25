@@ -26,11 +26,11 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 source        :
-              - "./main.php"
-              - "./bootstrap.php"
               - "./bin"
+              - "./bootstrap.php"
+              - "./main.php"
               - "./src"
-              - "./tests"
+              - "./test"
 destination   : "./public/doc"
 extensions    : "php"
 charset       : "UTF-8"

@@ -23,7 +23,7 @@ use \MovLib\Exception\UserException;
 use \MovLib\Data\User\Full as User;
 
 /**
- * Description of Show
+ * @todo Description of Show
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

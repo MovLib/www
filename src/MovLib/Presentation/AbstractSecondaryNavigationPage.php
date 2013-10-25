@@ -58,7 +58,7 @@ abstract class AbstractSecondaryNavigationPage extends \MovLib\Presentation\Page
    * @return array
    *   The menuitems for the secondary navigation.
    */
-  abstract protected function getSecondaryNavigationMenuitems();
+  protected abstract function getSecondaryNavigationMenuitems();
 
   /**
    * Get the page's content.
@@ -67,6 +67,6 @@ abstract class AbstractSecondaryNavigationPage extends \MovLib\Presentation\Page
    * @return string
    *   The page's content.
    */
-  abstract protected function getPageContent();
+  protected abstract function getPageContent();
 
 }

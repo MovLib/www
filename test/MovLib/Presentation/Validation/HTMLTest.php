@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Validation;
 
 /**
- * Description of HTMLTest
+ * @todo Description of HTMLTest
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

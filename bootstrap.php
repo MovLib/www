@@ -29,7 +29,7 @@
 /**
  * Mock of delayed_register() from main.php
  */
-function delayed_register($class, $weight = null, $method = null) {}
+function delayed_register() {}
 
 /**
  * Wrap the actual bootstrap in a function for better control over global variables.
@@ -39,54 +39,43 @@ function delayed_register($class, $weight = null, $method = null) {}
  * @global \MovLib\Data\I18n $i18n
  * @global \MovLib\Data\User\Session $session
  */
-function bootstrap() {
-  global $backup, $config, $i18n, $session;
+call_user_func(function () {
+  global $backup, $config, $db, $i18n, $session;
   $documentRoot = __DIR__;
-  $autoloader     = require "{$documentRoot}/vendor/autoload.php";
+  $autoloader   = require "{$documentRoot}/vendor/autoload.php";
   $autoloader->add("MovLib", "{$documentRoot}/src/");
   $autoloader->add("MovLib", "{$documentRoot}/test/");
 
-  // @todo get rid of this
-  $GLOBALS["movlib"] = parse_ini_file("{$documentRoot}/conf/movlib.ini");
   new \MovLib\Exception\ConsoleHandlers();
-  $config            = new \MovLib\Tool\Configuration();
-  $i18n              = new \MovLib\Data\I18n();
+  $config = new \MovLib\Tool\Configuration();
+  $db     = new \MovLib\Tool\Database();
+  $i18n   = new \MovLib\Data\I18n();
 
   foreach ([
-  "HTTP_USER_AGENT" => ini_get("user_agent"),
-  "LANGUAGE_CODE"   => $i18n->defaultLanguageCode,
-  "REMOTE_ADDR"     => "127.0.0.1",
-  "REQUEST_URI"     => "/",
-  "SCHEME"          => "https",
-  "SERVER"          => "https://{$i18n->defaultLanguageCode}.{$config->domainDefault}",
-  "SERVER_NAME"     => "{$i18n->defaultLanguageCode}.{$config->domainDefault}",
-  "SERVER_PROTOCOL" => "HTTP/1.1",
-  "SERVER_VERSION"  => "",
+    "HTTP_USER_AGENT" => ini_get("user_agent"),
+    "LANGUAGE_CODE"   => $i18n->defaultLanguageCode,
+    "REMOTE_ADDR"     => "127.0.0.1",
+    "REQUEST_URI"     => "/",
+    "SCHEME"          => "https",
+    "SERVER"          => "https://{$i18n->defaultLanguageCode}.{$config->domainDefault}",
+    "SERVER_NAME"     => "{$i18n->defaultLanguageCode}.{$config->domainDefault}",
+    "SERVER_PROTOCOL" => "HTTP/1.1",
+    "SERVER_VERSION"  => "",
   ] as $k => $v) {
     if (empty($_SERVER[$k])) {
       $_SERVER[$k] = $v;
     }
   }
 
+  $session = new \MovLib\Data\User\Session();
+  $init    = new \ReflectionMethod($session, "init");
+  $init->setAccessible(true);
+  $init->invokeArgs($session, [ 1 ]);
+
   $backup = [
-    "config" => clone $config,
-    "i18n"   => clone $i18n,
-    //"session" => clone $session,
+    "config"  => clone $config,
+    "db"      => clone $db,
+    "i18n"    => clone $i18n,
+    "session" => clone $session,
   ];
-
-  if (defined("MOVLIB_PHPUNIT")) {
-    $session           = new \MovLib\Data\User\Session();
-    $init              = new \ReflectionMethod($session, "init");
-    $init->setAccessible(true);
-    $init->invokeArgs($session, [ 1 ]);
-    $backup["session"] = clone $session;
-  }
-
-  // @todo get rid of this
-  if ($config->production === false) {
-    $autoloader->add("MovDev", "{$documentRoot}/src/");
-  }
-}
-
-// Call the bootstrap function.
-bootstrap();
+});

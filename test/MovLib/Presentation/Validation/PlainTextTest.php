@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Validation;
 use \MovLib\Presentation\Validation\PlainText;
 
 /**
- * Description of PlainTextTest
+ * @todo Description of PlainTextTest
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

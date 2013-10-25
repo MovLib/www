@@ -81,7 +81,7 @@ abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The translated HTML body of the email.
    */
-  abstract protected function getHtmlBody();
+  protected abstract function getHtmlBody();
 
   /**
    * Get the translated HTML body of the email wrapped with the mail template.

@@ -18,9 +18,10 @@
 namespace MovLib\Presentation\Tool;
 
 use \MovLib\Presentation\Partial\Navigation;
+use \MovLib\Presentation\Partial\Lists\GlueSeparated;
 
 /**
- * Description of Home
+ * @todo Description of Home
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -41,7 +42,8 @@ class Home extends \MovLib\Presentation\Tool\Page {
    * @inheritdoc
    */
   protected function getContent() {
-    global $i18n;
+    global $config, $i18n;
+
     $tools = new Navigation("tools", "Tools", [
       [ "ApiGen", "public/doc", "{$i18n->t("Have a look at the source code documentation.")} {$i18n->t("Generated once a day.")}", false ],
       [ "PHPInfo", "phpinfo", $i18n->t("Have a look at the current PHP configuration, extensions, etc."), false ],
@@ -50,30 +52,28 @@ class Home extends \MovLib\Presentation\Tool\Page {
       // @todo Either our tests are broken or VisualPHPUnit is broken ... impossible to get this working.
       //[ "VisualPHPUnit", $i18n->t("Run PHPUnit tests via the VisualPHPUnit web interface."), true ],
     ]);
-    $tools->closure = [ $this, "formatListItem" ];
-    return "<div class='container'><div class='list-group'>{$tools}</div></div>";
-  }
+    $tools->closure = function ($tool) {
+      global $config;
+      $route = "/{$tool[1]}";
+      $label = [ "info", "open" ];
+      if ($tool[3] === true) {
+        $route = "//{$config->domainSecureTools}{$tool[1]}";
+        $label = $config->sslClientVerify === true ? [ "success", "verified" ] : [ "danger", "not verified" ];
+      }
+      return [ $route, "<span class='label label-{$label[0]} pull-right'>{$label[1]}</span><h4>{$tool[0]}</h4><p>{$tool[2]}</p>", [
+        "class" => "list-group-item"
+      ]];
+    };
 
-  /**
-   * Format tool list item.
-   *
-   * @global \MovLib\Tool\Configuration $config
-   * @param array $tool
-   *   A single tool entry from the Tools Config tools array.
-   * @return string
-   *   The formatted tool list item.
-   */
-  public function formatListItem($tool) {
-    global $config;
-    $route = "/{$tool[1]}";
-    $label = [ "info", "open" ];
-    if ($tool[3] === true) {
-      $route = "//{$config->domainSecureTools}{$tool[1]}";
-      $label = $config->sslClientVerify === true ? [ "success", "verified" ] : [ "danger", "not verified" ];
-    }
-    return [ $route, "<span class='label label-{$label[0]} pull-right'>{$label[1]}</span><h4>{$tool[0]}</h4><p>{$tool[2]}</p>", [
-      "class" => "list-group-item"
-    ]];
+    $devs = new GlueSeparated(glob("{$config->documentRoot}/public/coverage/devs/*", GLOB_ONLYDIR));
+    $devs->closure = function ($listitem) {
+      global $config;
+      $route = str_replace($config->documentRoot, "", $listitem);
+      $text  = basename($listitem);
+      return "<a href='{$route}'>{$text}</a>";
+    };
+
+    return "<div class='container'><div class='list-group'>{$tools}</div><small>{$i18n->t("Developer specific coverage reports:")} {$devs}</small></div>";
   }
 
 }

@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 /**
- * Description of AbstractInput
+ * @todo Description of AbstractInput
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

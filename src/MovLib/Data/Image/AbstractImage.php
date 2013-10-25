@@ -186,7 +186,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    *
    * @return this
    */
-  abstract public function commit();
+  public abstract function commit();
 
   /**
    * Generate all supported image styles.
@@ -195,7 +195,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    *   Absolute path to the uploaded image.
    * @return this
    */
-  abstract protected function generateImageStyles($source);
+  protected abstract function generateImageStyles($source);
 
   /**
    * Get the <var>$style</var> for this image.
@@ -205,7 +205,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    * @return \MovLib\Data\Image\Style
    *   The image's desired style object.
    */
-  abstract public function getImageStyle($style = self::IMAGE_STYLE_SPAN_02);
+  public abstract function getImageStyle($style = self::IMAGE_STYLE_SPAN_02);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
