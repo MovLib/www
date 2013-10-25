@@ -1,15 +1,15 @@
 <#if licenseFirst??>${licenseFirst}</#if>
-${licensePrefix} This file is part of {@link https://github.com/MovLib MovLib}.
+${licensePrefix} This file is part of {@link ${prj.repository} ${prj.name}}.
 ${licensePrefix}
-${licensePrefix} Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+${licensePrefix} Copyright © 2013-present {@link ${prj.website} ${prj.name}}.
 ${licensePrefix}
-${licensePrefix} MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+${licensePrefix} ${prj.name} is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
 ${licensePrefix} License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
 ${licensePrefix} version.
 ${licensePrefix}
-${licensePrefix} MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+${licensePrefix} ${prj.name} is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
 ${licensePrefix} of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 ${licensePrefix}
-${licensePrefix} You should have received a copy of the GNU Affero General Public License along with MovLib.
+${licensePrefix} You should have received a copy of the GNU Affero General Public License along with ${prj.name}.
 ${licensePrefix} If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
 <#if licenseLast??>${licenseLast}</#if>
