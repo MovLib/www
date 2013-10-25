@@ -18,6 +18,7 @@
 namespace MovLib\Tool;
 
 use \MovLib\Tool\Configuration;
+use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Composer\Script\Event;
 
 /**
@@ -77,10 +78,25 @@ class Composer {
 
 
   /**
-   * Fix permissions on all files within the composer vendor folder.
+   * Create symbolic link for apigen executable.
+   *
+   * @global \MovLib\Tool\Configuration $config
+   * @return this
+   */
+  public function apigen() {
+    global $config;
+    $this->symlink("{$this->vendorPath}/bin/apigen.php", "{$config->usrBinaryPath}/apigen");
+    return $this;
+  }
+
+  /**
+   * Fix vendor directory permissions.
+   *
+   * @return this
    */
   public function fixPermissions() {
-    $this->exec("sudo movcli fixperm {$this->vendorPath}");
+    (new FixPermissions())->fixPermissions($this->vendorPath);
+    return $this;
   }
 
   /**
@@ -90,11 +106,25 @@ class Composer {
    * @global \MovLib\Tool\Database $db
    * @param string $fullName
    *   The packages full name including the name and slash.
+   * @return this
    */
   public function phpmyadmin($fullName) {
     global $config, $db;
     symlink("{$config->documentRoot}/conf/phpmyadmin/config.inc.php", "{$this->vendorPath}/{$fullName}/config.inc.php");
     $db->queries(file_get_contents("{$this->vendorPath}/{$fullName}/examples/create_tables.sql"));
+    return $this;
+  }
+
+  /**
+   * Create symbolic link for phpunit executable.
+   *
+   * @global \MovLib\Tool\Configuration $config
+   * @return this
+   */
+  public function phpunit() {
+    global $config;
+    $this->symlink("{$this->vendorPath}/bin/phpunit", "{$config->usrBinaryPath}/phpunit");
+    return $this;
   }
 
   /**
@@ -103,6 +133,7 @@ class Composer {
    * @global \MovLib\Tool\Configuration $config
    * @param string $fullName
    *   The packages full name including the name and slash.
+   * @return this
    */
   public function visualphpunit($fullName) {
     global $config;
@@ -114,6 +145,7 @@ class Composer {
     // Replace some vendor files with custom ones.
     copy("{$config->documentRoot}/conf/visualphpunit/index.php", "{$path}/public/index.php");
     copy("{$config->documentRoot}/conf/visualphpunit/bootstrap.php", "{$path}/config/bootstrap.php");
+    return $this;
   }
 
 
@@ -123,6 +155,7 @@ class Composer {
   /**
    * Automatically called after `composer install` execution.
    *
+   * @global \MovLib\Tool\Configuration $config
    * @param \Composer\Script\Event $event
    *   The event fired by composer.
    */
