@@ -22,7 +22,6 @@ use \IntlDateFormatter;
 use \Locale;
 use \MessageFormatter;
 use \MovLib\Data\Collator;
-use \MovLib\Data\SystemLanguages;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 
 /**
@@ -248,17 +247,6 @@ class I18n extends \MovLib\Data\Database {
       $this->collator = new Collator($this->locale);
     }
     return $this->collator;
-  }
-
-  /**
-   * Get the unique ID of the current language.
-   *
-   * @see \MovLib\Data\I18n::getLanguages()
-   * @return int
-   *   The unique ID of the current language.
-   */
-  public function getLanguageId() {
-    return $this->query("SELECT `language_id` FROM `languages` WHERE `iso_alpha-2` = ? LIMIT 1", "s", [ $this->languageCode ])->get_result()->fetch_assoc()["language_id"];
   }
 
   /**

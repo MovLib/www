@@ -331,17 +331,6 @@ class I18nTest extends \MovLib\TestCase {
   public function testGetCollatorInvalidLocale() {
     $this->i18n->locale = null;
     $this->assertInstanceOf("\\Collator", $this->i18n->getCollator());
-
-  }
-
-  /**
-   * @covers ::getLanguageId
-   */
-  public function testGetLanguageId() {
-    $this->i18n->languageCode = "de";
-    $this->assertEquals(52, $this->i18n->getLanguageId());
-    $this->i18n->languageCode = "zz";
-    $this->assertNull($this->i18n->getLanguageId());
   }
 
   /**
