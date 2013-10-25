@@ -87,9 +87,8 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     $db->transactionStart();
     $db->query("TRUNCATE `routes`");
 
-    /* @var $systemLanguage \MovLib\Data\SystemLanguage */
-    foreach (new SystemLanguages() as $locale => $systemLanguage) {
-      $i18n->languageCode = $systemLanguage->languageCode;
+    foreach (new SystemLanguages() as $languageCode => $locale) {
+      $i18n->languageCode = $languageCode;
 
       // We need output buffering to catch the output of the following require call.
       if (ob_start() === false) {

@@ -33,6 +33,13 @@ class Configuration extends \MovLib\Configuration {
 
 
   /**
+   * Absolute path to the directory where user binaries are linked.
+   *
+   * @var string
+   */
+  public $usrBinaryPath = "/usr/local/bin";
+
+  /**
    * The tools domain, without scheme or trailing slash, e.g. <code>"tools.movlib.org"</code>.
    *
    * @var string

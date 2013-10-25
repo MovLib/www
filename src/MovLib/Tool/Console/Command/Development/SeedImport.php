@@ -212,7 +212,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \MovLib\Exception\ErrorException
    */
   public function importIntlICUCountriesAndLanguages() {
-    global $db, $i18n;
+    global $config, $db, $i18n;
     $this->write("Importing Intl ICU translations for countries and languages ...");
 
     // Contains all country and basic language codes that our application shall know about.
@@ -221,16 +221,15 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       "languages" => [ "ab", "aa", "af", "ak", "sq", "am", "ar", "an", "hy", "as", "av", "ae", "ay", "az", "bm", "ba", "eu", "be", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "ch", "ce", "ny", "zh", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "gl", "ka", "de", "el", "gn", "gu", "ht", "ha", "he", "hz", "hi", "ho", "hu", "ia", "id", "ie", "ga", "ig", "ik", "io", "is", "it", "iu", "ja", "jv", "kl", "kn", "kr", "ks", "kk", "km", "ki", "rw", "ky", "kv", "kg", "ko", "ku", "kj", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "gv", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mh", "mn", "na", "nv", "nb", "nd", "ne", "ng", "nn", "no", "ii", "nr", "oc", "oj", "cu", "om", "or", "os", "pa", "pi", "fa", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "sa", "sc", "sd", "se", "sm", "sg", "sr", "gd", "sn", "si", "sk", "sl", "so", "st", "es", "su", "sw", "ss", "sv", "ta", "te", "tg", "th", "ti", "bo", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "cy", "wo", "fy", "xh", "yi", "yo", "za", "zu" ]
     ];
 
-    $systemLanguages = new SystemLanguages();
+    $systemLanguages = $config->systemLanguages;
     unset($systemLanguages[$i18n->defaultLanguageCode]);
     foreach ($codes as $table => $data) {
       $query = "INSERT INTO `{$table}` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ";
       $c     = count($data);
       for ($i = 0; $i < $c; ++$i) {
         $dynTranslations = null;
-        /* @var $systemLanguage \MovLib\Data\SystemLanguage */
-        foreach ($systemLanguages as $locale => $systemLanguage) {
-          $dynTranslations .= "'{$systemLanguage->languageCode}', '{$this->intlTranslate($table, $data[$i], $locale)}',";
+        foreach ($systemLanguages as $languageCode => $locale) {
+          $dynTranslations .= "'{$languageCode}', '{$this->intlTranslate($table, $data[$i], $locale)}',";
         }
         if (empty($dynTranslations)) {
           $dynTranslations = "''";
@@ -260,6 +259,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * Import all time zones and their translations.
    *
    * @link https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+   * @global \MovLib\Tool\Configuration $config
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return this
@@ -267,26 +267,25 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \MovLib\Exception\ErrorException
    */
   public function importTimeZones() {
-    global $db, $i18n;
+    global $config, $db, $i18n;
     $this->write("Importing time zone translations ...");
     $systemLanguages = new SystemLanguages();
     $timeZoneIds = timezone_identifiers_list();
     $c = count($timeZoneIds);
     $translations = [];
-    /* @var $systemLanguage \MovLib\Data\SystemLanguage */
-    foreach ($systemLanguages as $locale => $systemLanguage) {
-      if ($locale == $i18n->defaultLocale) {
+    foreach ($config->systemLanguages as $languageCode => $locale) {
+      if ($languageCode == $i18n->defaultLocale) {
         // @todo These translations aren't quite correct! Create translation file!
         for ($i = 0; $i < $c; ++$i) {
-          $translations[$locale][$timeZoneIds[$i]] = strtr($timeZoneIds[$i], "_", " ");
+          $translations[$languageCode][$timeZoneIds[$i]] = strtr($timeZoneIds[$i], "_", " ");
         }
-        unset($systemLanguages[$locale]);
+        unset($systemLanguages[$languageCode]);
       }
       else {
-        $fh = fopen("{$this->seedPath}/" . self::OPTION_DATABASE . "/time_zones_{$systemLanguage->languageCode}.txt", "r");
+        $fh = fopen("{$this->seedPath}/" . self::OPTION_DATABASE . "/time_zones_{$languageCode}.txt", "r");
         while (($line = fgets($fh)) !== false) {
           list($timeZoneId, $translation) = explode(";", $line);
-          $translations[$locale][$timeZoneId] = $translation;
+          $translations[$languageCode][$timeZoneId] = $translation;
         }
       }
     }
@@ -294,12 +293,11 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       $query = "INSERT INTO `messages` (`message`, `dyn_translations`) VALUES ";
       for ($i = 0; $i < $c; ++$i) {
         $dynTranslations = null;
-        /* @var $systemLanguage \MovLib\Data\SystemLanguage */
-        foreach ($systemLanguages as $locale => $systemLanguage) {
-          if (empty($translations[$locale][$timeZoneIds[$i]])) {
+        foreach ($systemLanguages as $languageCode => $locale) {
+          if (empty($translations[$languageCode][$timeZoneIds[$i]])) {
             continue;
           }
-          $dynTranslations .= "'{$systemLanguage->languageCode}', '{$db->escapeString($translations[$locale][$timeZoneIds[$i]])}',";
+          $dynTranslations .= "'{$languageCode}', '{$db->escapeString($translations[$languageCode][$timeZoneIds[$i]])}',";
         }
         if (empty($dynTranslations)) {
           $dynTranslations = "''";

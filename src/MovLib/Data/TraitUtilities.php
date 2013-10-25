@@ -92,6 +92,23 @@ trait TraitUtilities {
   }
 
   /**
+   * Create a symbolic link.
+   *
+   * @param string $target
+   *   Link target.
+   * @param string $link
+   *   Link name.
+   * @return boolean
+   *   <code>TRUE</code> if the symbolic link already exists or was successfully create, otherwise <code>FALSE</code>.
+   */
+  protected function symlink($target, $link) {
+    if (!is_link($link)) {
+      return symlink($target, $link);
+    }
+    return true;
+  }
+
+  /**
    * Exectue external program and display output.
    *
    * This method behaves the same as PHP's <code>system()</code> function.

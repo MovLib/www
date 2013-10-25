@@ -53,9 +53,8 @@ class SystemLanguages implements \ArrayAccess, \Countable, \Iterator {
    */
   public function __construct() {
     global $config;
-    $c = count($config->systemLanguages);
-    for ($i = 0; $i < $c; ++$i) {
-      $this->systemLanguages[$config->systemLanguages[$i]] = new SystemLanguage($config->systemLanguages[$i]);
+    foreach ($config->systemLanguages as $languageCode => $locale) {
+      $this->systemLanguages[$languageCode] = new SystemLanguage($locale);
     }
   }
 
