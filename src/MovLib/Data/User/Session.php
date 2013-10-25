@@ -152,7 +152,7 @@ class Session extends \MovLib\Data\Database {
     if (!empty($_COOKIE[$this->name])) {
       // Try to resume the session with the ID from the cookie.
       if (session_start() === false) {
-        throw new MemcachedException("Could not resume session (may be Memcached is down).");
+        throw new MemcachedException("Could not resume session (maybe Memcached is down).");
       }
       $this->id = session_id();
 
@@ -425,6 +425,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Test after every authentication if the password needs to be rehashed.
    *
+   * @global \MovLib\Configuration $config
    * @delayed
    * @param string $password
    *   The hashed password.
@@ -435,7 +436,8 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\UserException
    */
   public function passwordNeedsRehash($password, $rawPassword) {
-    if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] ]) === true) {
+    global $config;
+    if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $config->passwordCost ]) === true) {
       (new UserFull(UserFull::FROM_ID, $this->userId))->updatePassword($rawPassword);
     }
     return $this;

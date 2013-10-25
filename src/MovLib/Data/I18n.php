@@ -25,7 +25,7 @@ use \MovLib\Data\Collator;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 
 /**
- * @todo Description of I18nModel
+ * The i18n model loads and and updated translations and retrieves translated data.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m:2012@fh-salzburg.ac.at>

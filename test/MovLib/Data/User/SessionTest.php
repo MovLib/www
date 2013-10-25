@@ -19,6 +19,7 @@ namespace MovLib\Data\User;
 
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Data\User\Session;
+use \MovLib\Tool\Console\Command\Development\SeedImport;
 
 /**
  * @coversDefaultClass \MovLib\Data\User\Session
@@ -62,7 +63,7 @@ class SessionTest extends \MovLib\TestCase {
     $user = new UserFull(UserFull::FROM_ID, 1);
     $user->deactivate();
     (new Session())->authenticate("richard@fussenegger.info", "Test1234");
-    $this->exec("movdev db -s users");
+    (new SeedImport())->databaseImport([ "users" ]);
   }
 
   /**
@@ -216,16 +217,18 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::passwordNeedsRehash
-   * @global \MovDev\Database $db
+   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\Data\User\Session $session
    */
   public function testPasswordNeedsRehash() {
-    global $db, $session;
+    global $config, $db, $session;
     $hashBefore  = $this->_testPasswordNeedsRehash($db);
-    $needsRehash = password_hash("Test1234", PASSWORD_DEFAULT, [ "cost" => $GLOBALS["movlib"]["password_cost"] - 1 ]);
+    $needsRehash = password_hash("Test1234", PASSWORD_DEFAULT, [ "cost" => $config->passwordCost - 1 ]);
     $session->passwordNeedsRehash($needsRehash, "Test1234");
     $this->assertNotEquals($hashBefore, $this->_testPasswordNeedsRehash($db));
     $db->query("UPDATE `users` SET `password` = ? WHERE `user_id` = 1", "s", [ $hashBefore ]);
-    $this->exec("movdev db -s users");
+    (new SeedImport())->databaseImport([ "users" ]);
   }
 
   /** @global \MovDev\Database $db */
