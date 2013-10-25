@@ -59,6 +59,7 @@ class InstallImageMagick extends \MovLib\Tool\Console\Command\AbstractInstall {
     }
     $this->setVersion($options["version"]);
     $this->installImageMagick();
+    return $options;
   }
 
   /**

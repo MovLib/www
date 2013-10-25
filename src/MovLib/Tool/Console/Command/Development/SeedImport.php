@@ -137,7 +137,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    *   Numeric array containing the database seed data names that should be imported, if left empty (<code>NULL</code>)
    *   all seed data will be imported.
    * @return this
-   * @throws \MovLib\Exception\ErrorException
+   * @throws \ErrorException
    * @throws \MovLib\Exception\FileSystemException
    */
   public function databaseImport(array $scriptNames = null) {
@@ -209,7 +209,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\DatabaseExeption
-   * @throws \MovLib\Exception\ErrorException
+   * @throws \ErrorException
    */
   public function importIntlICUCountriesAndLanguages() {
     global $config, $db, $i18n;
@@ -264,7 +264,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\DatabaseExeption
-   * @throws \MovLib\Exception\ErrorException
+   * @throws \ErrorException
    */
   public function importTimeZones() {
     global $config, $db, $i18n;
@@ -357,7 +357,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @global \MovLib\Tool\Database $db
    * @return this
    * @throws \MovLib\Exception\DatabaseExeption
-   * @throws \MovLib\Exception\ErrorException
+   * @throws \ErrorException
    * @throws \MovLib\Exception\FileSystemException
    */
   public function seedImport() {
@@ -393,7 +393,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    *   Numeric array containing the upload directory data names that should be imported, if left empty (<code>NULL</code>)
    *   all seed data will be imported.
    * @return this
-   * @throws \MovLib\Exception\ErrorException
+   * @throws \ErrorException
    * @throws \MovLib\Exception\FileSystemException
    */
   public function uploadImport(array $directoryNames = null) {

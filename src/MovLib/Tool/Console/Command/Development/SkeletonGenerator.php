@@ -107,9 +107,10 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    parent::execute($input, $output);
+    $options = parent::execute($input, $output);
     $this->checkPrivileges();
     $this->generateSkeletons();
+    return $options;
   }
 
   /**
