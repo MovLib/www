@@ -15,26 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Application;
+namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Console\Application\MovCli;
+use \MovLib\Tool\Console\Command\Production\InstallImageMagick;
 
 /**
- * @coversDefaultClass \MovLib\Console\Application\MovCli
+ * @coversDefaultClass \MovLib\Tool\Console\Command\Production\InstallImageMagick
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovCliTest extends \MovLib\TestCase {
+class InstallImageMagickTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Console\Application\MovCli */
-  protected $movCli;
+  /** @var \MovLib\Tool\Console\Command\Production\InstallImageMagick */
+  protected $installImageMagick;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,7 +44,7 @@ class MovCliTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->movCli = new MovCli();
+    $this->installImageMagick = new InstallImageMagick();
   }
 
   /**
@@ -71,6 +71,30 @@ class MovCliTest extends \MovLib\TestCase {
    * @todo Implement __construct
    */
   public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::configure
+   * @todo Implement configure
+   */
+  public function testConfigure() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::execute
+   * @todo Implement execute
+   */
+  public function testExecute() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::installImageMagick
+   * @todo Implement installImageMagick
+   */
+  public function testInstallImageMagick() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

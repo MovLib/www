@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovDev\Console\Command;
+namespace MovLib\Tool\Console\Command\Production;
 
 use \Symfony\Component\Console\Input\InputInterface;
+use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -29,45 +30,54 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageMagickInstallCommand extends \MovDev\Console\Command\AbstractInstallCommand {
+class InstallImageMagick extends \MovLib\Tool\Console\Command\AbstractInstall {
 
   /**
    * @inheritdoc
    */
   public function __construct() {
-    parent::__construct("install-imagemagick");
+    parent::__construct("install-imagemagick", "ImageMagick");
   }
 
   /**
    * @inheritdoc
    */
   protected function configure() {
-    $this->setDescription("Install latest ImageMagick version.");
+    $this->setDescription("Remove installed ImageMagick and install new version.");
+    $this->addInputOption("version", InputOption::VALUE_REQUIRED, "The ImageMagick version to install.");
   }
 
   /**
    * @inheritdoc
+   * @throws \MovLib\Exception\ConsoleException
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->setIO($input, $output)->checkPrivileges();
-    $this->name = "ImageMagick";
-    $this->version = $this->ask("Please enter the desired ImageMagick version", "6.8.6-9");
-    if ($this->askConfirmation("Install ligjpeg-dev and libpng-dev from Debian repositories?") === true) {
-      $this->system("aptitude update && aptitude install libjpeg-dev libpng-dev", "Could not update and install dependencies via aptitude");
+    $options = parent::execute($input, $output);
+    $this->checkPrivileges();
+    if ($this->askConfirmation("Install ligjpeg-dev and libpng-dev from Debian repositories?") === true && $this->system("aptitude update && aptitude install libjpeg-dev libpng-dev") === false) {
+      throw new ConsoleException("Could not update and install dependencies via aptitude!");
     }
+    $this->setVersion($options["version"]);
+    $this->installImageMagick();
+  }
+
+  /**
+   * Install ImageMagick.
+   *
+   * @return this
+   */
+  protected function installImageMagick() {
+    $name = $this->getInstallationName();
+    $version = $this->getVersion();
+    $nameAndVersion = "{$name}-{$version}";
     $this->uninstall();
-    chdir(self::INSTALL_DIRECTORY);
-    if (!file_exists("{$this->name}-{$this->version}")) {
-      $this->wget("http://www.imagemagick.org/download/{$this->name}-{$this->version}.tar.gz");
+    chdir(self::SOURCE_DIRECTORY);
+    if (!file_exists("{$nameAndVersion}.tar.gz")) {
+      $this->wget("http://www.imagemagick.org/download/{$nameAndVersion}.tar.gz");
+      $this->tar("{$nameAndVersion}.tar.gz");
     }
-    $archive = "{$this->name}-{$this->version}.tar.gz";
-    if (file_exists($archive)) {
-      $this->tar($archive);
-    }
-    chdir("{$this->name}-{$this->version}");
+    chdir($nameAndVersion);
     $this->configureInstallation([
-      'CFLAGS="-O3 -m64 -pthread"',
-      'CXXFLAGS="-O3 -m64 -pthread"',
       "--disable-static",
       "--enable-shared",
       "--with-jpeg",
@@ -97,12 +107,13 @@ class ImageMagickInstallCommand extends \MovDev\Console\Command\AbstractInstallC
       "--without-x",
       "--without-xml",
       "--without-zlib"
-    ]);
+    ], "CFLAGS='-O3 -m64 -pthread' CXXFLAGS='-O3 -m64 -pthread'");
     // The ImageMagick installer fails to create this directory!
     if ($this->version[0] == 6) {
       mkdir("/usr/local/include/ImageMagick-6", 0777, true);
     }
     $this->install();
+    return $this;
   }
 
 }

@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command;
+namespace MovLib\Tool\Console\Command;
+
+use \MovLib\Tool\Console\Command\AbstractInstall;
 
 /**
- * @coversDefaultClass \MovLib\Console\Command\AbstractCommand
+ * @coversDefaultClass \MovLib\Tool\Console\Command\AbstractInstall
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class AbstractCommandTest extends \MovLib\TestCase {
+class AbstractInstallTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Console\Command\AbstractCommand */
-  protected $abstractCommand;
+  /** @var \MovLib\Tool\Console\Command\AbstractInstall */
+  protected $abstractInstall;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -42,7 +44,7 @@ class AbstractCommandTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->abstractCommand = $this->getMockForAbstractClass("\\MovLib\\Console\\Command\\AbstractCommand");
+    $this->abstractInstall = new AbstractInstall();
   }
 
   /**
@@ -65,114 +67,90 @@ class AbstractCommandTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::__get
-   * @todo Implement __get
+   * @covers ::__construct
+   * @todo Implement __construct
    */
-  public function testGet() {
+  public function testConstruct() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::progress
-   * @todo Implement progress
+   * @covers ::configureInstallation
+   * @todo Implement configureInstallation
    */
-  public function testProgress() {
+  public function testConfigureInstallation() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::getDialog
-   * @todo Implement getDialog
+   * @covers ::getInstallationName
+   * @todo Implement getInstallationName
    */
-  public function testGetDialog() {
+  public function testGetInstallationName() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::ask
-   * @todo Implement ask
+   * @covers ::getVersion
+   * @todo Implement getVersion
    */
-  public function testAsk() {
+  public function testGetVersion() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::askConfirmation
-   * @todo Implement askConfirmation
+   * @covers ::git
+   * @todo Implement git
    */
-  public function testAskConfirmation() {
+  public function testGit() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::askWithChoices
-   * @todo Implement askWithChoices
+   * @covers ::install
+   * @todo Implement install
    */
-  public function testAskWithChoices() {
+  public function testInstall() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::checkPrivileges
-   * @todo Implement checkPrivileges
+   * @covers ::setInstallationName
+   * @todo Implement setInstallationName
    */
-  public function testCheckPrivileges() {
+  public function testSetInstallationName() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::exec
-   * @todo Implement exec
+   * @covers ::setVersion
+   * @todo Implement setVersion
    */
-  public function testExec() {
+  public function testSetVersion() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::system
-   * @todo Implement system
+   * @covers ::tar
+   * @todo Implement tar
    */
-  public function testSystem() {
+  public function testTar() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::exitOnError
-   * @todo Implement exitOnError
+   * @covers ::uninstall
+   * @todo Implement uninstall
    */
-  public function testExitOnError() {
+  public function testUninstall() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::write
-   * @todo Implement write
+   * @covers ::wget
+   * @todo Implement wget
    */
-  public function testWrite() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::setInput
-   * @todo Implement setInput
-   */
-  public function testSetInput() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::setIO
-   * @todo Implement setIO
-   */
-  public function testSetIO() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::setOutput
-   * @todo Implement setOutput
-   */
-  public function testSetOutput() {
+  public function testWget() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
