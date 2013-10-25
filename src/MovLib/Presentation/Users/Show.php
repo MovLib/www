@@ -21,7 +21,7 @@ use \MovLib\Data\User\Users;
 use \MovLib\Presentation\Partial\Lists\Images;
 
 /**
- * Description of Show
+ * @todo Description of Show
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

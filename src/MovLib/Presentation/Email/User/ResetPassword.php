@@ -22,7 +22,7 @@ use \MovLib\Exception\MailerException;
 use \MovLib\Exception\UserException;
 
 /**
- * Description of ResetPassword
+ * @todo Description of ResetPassword
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

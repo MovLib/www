@@ -23,7 +23,7 @@ use \MovLib\Data\User\Users;
 use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
- * Description of TraitHistory
+ * @todo Description of TraitHistory
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib

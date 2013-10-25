@@ -9,7 +9,7 @@ namespace ${namespace};
 </#if>
 
 /**
- * Description of ${name}
+ * @todo Description of ${name}
  *
  * @author ${user}
  * @copyright © ${date?date?string("yyyy")} ${prj.name}

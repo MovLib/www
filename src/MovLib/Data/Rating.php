@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 /**
- * Description of RatingModel
+ * @todo Description of RatingModel
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib

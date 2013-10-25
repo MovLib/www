@@ -101,7 +101,7 @@ trait TraitImageDetails {
    * @return array
    *   The image details ready for printing a description list with <code>\MovLib\Presentation\Partial\Lists</code>.
    */
-  protected abstract function getImageDetails();
+  //protected abstract function getImageDetails();
 
   /**
    * Get the stream images.
@@ -113,7 +113,7 @@ trait TraitImageDetails {
    * @return array
    *   Numeric array containing the stream images.
    */
-  protected abstract function getStreamImages($imageId, $paginationSize);
+  //protected abstract function getStreamImages($imageId, $paginationSize);
 
   private function pager($direction, $id, $text) {
     return

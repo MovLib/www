@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Tool;
 use \MovLib\Presentation\Partial\Navigation;
 
 /**
- * Description of Home
+ * @todo Description of Home
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
