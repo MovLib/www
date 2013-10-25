@@ -96,7 +96,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   String representation of this form element.
    */
-  abstract public function __toString();
+  public abstract function __toString();
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -140,6 +140,6 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * @return this
    * @throws \MovLib\Exception\ValidationException
    */
-  abstract public function validate();
+  public abstract function validate();
 
 }
