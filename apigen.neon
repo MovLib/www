@@ -25,7 +25,9 @@
 # SINCE:     0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-source        : "./src"
+source        :
+              - "./main.php"
+              - "./src"
 destination   : "./public/doc"
 extensions    : "php"
 charset       : "UTF-8"
