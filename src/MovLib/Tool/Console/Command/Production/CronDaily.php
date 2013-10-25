@@ -15,20 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Console\Command;
+namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Console\Command\AbstractCommand;
 use \MovLib\Data\Delayed\Logger;
 use \MovLib\Exception\DatabaseException;
-use \ReflectionMethod;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Cron jobs that should run on a daily basis.
  *
- * Add the following line to your crontab after creating the symbolic link to the <code>movcli.php</code> file in your
- * local bin path: <code>@daily movcli cron-daily</code>
+ * Add the following line to your crontab after creating the symbolic link to the <code>movlib.php</code> file in your
+ * local bin path: <code>@daily movlib cron-daily</code>
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -36,7 +34,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class CronDaily extends AbstractCommand {
+class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
@@ -53,42 +51,41 @@ class CronDaily extends AbstractCommand {
   }
 
   /**
-   * Purge all data from the temporary table with <code>"@daily"</code> time to life entry.
+   * @inheritdoc
+   */
+  protected function execute(InputInterface $input, OutputInterface $output) {
+    parent::execute($input, $output);
+    $this->purgeTemporaryTable()->purgeTemporaryUploads();
+  }
+
+  /**
+   * Purge all data from the temporary table.
    *
+   * @global \MovLib\Tool\Database $db
    * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function purgeTemporaryTable() {
-    $daily = \MovLib\Data\Database::TMP_TTL_DAILY;
+    global $db;
     try {
-      $db    = new \MovLib\Tool\Database();
-      $query = new ReflectionMethod($db, "query");
-      $query->setAccessible(true);
-      $query->invokeArgs($db, [ "DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$daily}'" ]);
+      $db->query("DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$db->escapeString(\MovLib\Data\Database::TMP_TTL_DAILY)}'");
     }
     catch (DatabaseException $e) {
-      Logger::stack($e->getMessage(), Logger::FATAL);
+      Logger::stack($e, Logger::FATAL);
       throw $e;
     }
     return $this;
   }
 
   /**
-   * Purge all files from system's temporary folder that are older than one day.
+   * Purge all files from temporary uploads folder.
    *
    * @return this
    */
   public function purgeTemporaryUploads() {
-    $tmpDirectory = ini_get("upload_tmp_dir");
-    $this->exec("find {$tmpDirectory} -type f -mtime +1 -exec rm -f {} \\;");
+    $directory = escapeshellarg(ini_get("upload_tmp_dir"));
+    $this->exec("find {$directory} -type f -mtime +1 -exec rm -f {} \\;");
     return $this;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function execute(InputInterface $input, OutputInterface $output) {
-    $this->setIO($input, $output);
-    $this->purgeTemporaryTable()->purgeTemporaryUploads();
   }
 
 }
