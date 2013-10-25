@@ -4,7 +4,6 @@
   "homepage": "https://movlib.org/",
   "keywords": [ "MovLib" ],
   "license": "AGPL-3.0",
-  "minimum-stability": "dev",
   "type": "project",
   "authors": [
     {
@@ -32,11 +31,11 @@
     "ezyang/htmlpurifier": "v4.5.0"
   },
   "require-dev": {
-    "apigen/apigen": "3.0.0.*@dev",
-    "firephp/firephp-core": "dev-master",
-    "phpmyadmin/phpmyadmin": "dev-master",
-    "phpunit/phpunit": "3.8.*@dev",
-    "symfony/console": "2.4.*@dev"
+    "apigen/apigen": "2.8.0",
+    "firephp/firephp-core": "v0.4.0",
+    "phpmyadmin/phpmyadmin": "dev-STABLE",
+    "phpunit/phpunit": "3.7.28",
+    "symfony/console": "v2.3.5"
   },
   "repositories": [
     {
