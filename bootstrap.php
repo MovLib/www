@@ -39,10 +39,10 @@ function delayed_register($class, $weight = null, $method = null) {}
  * @global \MovLib\Data\I18n $i18n
  * @global \MovLib\Data\User\Session $session
  */
-function bootstrap() {
+call_user_func(function () {
   global $backup, $config, $i18n, $session;
   $documentRoot = __DIR__;
-  $autoloader     = require "{$documentRoot}/vendor/autoload.php";
+  $autoloader   = require "{$documentRoot}/vendor/autoload.php";
   $autoloader->add("MovLib", "{$documentRoot}/src/");
   $autoloader->add("MovLib", "{$documentRoot}/test/");
 
@@ -51,6 +51,10 @@ function bootstrap() {
   new \MovLib\Exception\ConsoleHandlers();
   $config            = new \MovLib\Tool\Configuration();
   $i18n              = new \MovLib\Data\I18n();
+  $session           = new \MovLib\Data\User\Session();
+  $init              = new \ReflectionMethod($session, "init");
+  $init->setAccessible(true);
+  $init->invokeArgs($session, [ 1 ]);
 
   foreach ([
   "HTTP_USER_AGENT" => ini_get("user_agent"),
@@ -71,22 +75,6 @@ function bootstrap() {
   $backup = [
     "config" => clone $config,
     "i18n"   => clone $i18n,
-    //"session" => clone $session,
+    "session" => clone $session,
   ];
-
-  if (defined("MOVLIB_PHPUNIT")) {
-    $session           = new \MovLib\Data\User\Session();
-    $init              = new \ReflectionMethod($session, "init");
-    $init->setAccessible(true);
-    $init->invokeArgs($session, [ 1 ]);
-    $backup["session"] = clone $session;
-  }
-
-  // @todo get rid of this
-  if ($config->production === false) {
-    $autoloader->add("MovDev", "{$documentRoot}/src/");
-  }
-}
-
-// Call the bootstrap function.
-bootstrap();
+});

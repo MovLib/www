@@ -36,7 +36,7 @@ ini_set("display_errors", true);
  * @global \MovLib\Tool\Database $db
  * @global \MovLib\Data\I18n $i18n
  */
-function bootstrap() {
+call_user_func(function () {
   global $autoloader, $config, $db, $i18n;
   $root       = dirname(__DIR__);
   $autoloader = require "{$root}/vendor/autoload.php";
@@ -45,7 +45,7 @@ function bootstrap() {
   $config     = new \MovLib\Tool\Configuration();
   $db         = new \MovLib\Tool\Database();
   $i18n       = new \MovLib\Data\I18n();
-}
+});
 
-bootstrap();
+// Start the console application.
 (new \MovLib\Tool\Console\Application())->run();
