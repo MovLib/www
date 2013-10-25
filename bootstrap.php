@@ -46,35 +46,34 @@ call_user_func(function () {
   $autoloader->add("MovLib", "{$documentRoot}/src/");
   $autoloader->add("MovLib", "{$documentRoot}/test/");
 
-  // @todo get rid of this
-  $GLOBALS["movlib"] = parse_ini_file("{$documentRoot}/conf/movlib.ini");
   new \MovLib\Exception\ConsoleHandlers();
   $config            = new \MovLib\Tool\Configuration();
   $i18n              = new \MovLib\Data\I18n();
-  $session           = new \MovLib\Data\User\Session();
-  $init              = new \ReflectionMethod($session, "init");
-  $init->setAccessible(true);
-  $init->invokeArgs($session, [ 1 ]);
 
   foreach ([
-  "HTTP_USER_AGENT" => ini_get("user_agent"),
-  "LANGUAGE_CODE"   => $i18n->defaultLanguageCode,
-  "REMOTE_ADDR"     => "127.0.0.1",
-  "REQUEST_URI"     => "/",
-  "SCHEME"          => "https",
-  "SERVER"          => "https://{$i18n->defaultLanguageCode}.{$config->domainDefault}",
-  "SERVER_NAME"     => "{$i18n->defaultLanguageCode}.{$config->domainDefault}",
-  "SERVER_PROTOCOL" => "HTTP/1.1",
-  "SERVER_VERSION"  => "",
+    "HTTP_USER_AGENT" => ini_get("user_agent"),
+    "LANGUAGE_CODE"   => $i18n->defaultLanguageCode,
+    "REMOTE_ADDR"     => "127.0.0.1",
+    "REQUEST_URI"     => "/",
+    "SCHEME"          => "https",
+    "SERVER"          => "https://{$i18n->defaultLanguageCode}.{$config->domainDefault}",
+    "SERVER_NAME"     => "{$i18n->defaultLanguageCode}.{$config->domainDefault}",
+    "SERVER_PROTOCOL" => "HTTP/1.1",
+    "SERVER_VERSION"  => "",
   ] as $k => $v) {
     if (empty($_SERVER[$k])) {
       $_SERVER[$k] = $v;
     }
   }
 
+  $session           = new \MovLib\Data\User\Session();
+  $init              = new \ReflectionMethod($session, "init");
+  $init->setAccessible(true);
+  $init->invokeArgs($session, [ 1 ]);
+
   $backup = [
-    "config" => clone $config,
-    "i18n"   => clone $i18n,
+    "config"  => clone $config,
+    "i18n"    => clone $i18n,
     "session" => clone $session,
   ];
 });

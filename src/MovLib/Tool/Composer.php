@@ -81,11 +81,20 @@ class Composer {
    * Create symbolic link for apigen executable.
    *
    * @global \MovLib\Tool\Configuration $config
+   * @param string $fullName
+   *   The packages full name including the name and slash.
    * @return this
    */
-  public function apigen() {
+  public function apigen($fullName) {
     global $config;
     $this->symlink("{$this->vendorPath}/bin/apigen.php", "{$config->usrBinaryPath}/apigen");
+    // @see https://github.com/apigen/apigen/issues/252
+    $patch = "{$this->vendorPath}/{$fullName}/ApiGen/Template.php";
+    file_put_contents($patch, str_replace(
+      "return \TexyHtml::el('code', \$fshl->highlight(\$matches[1]));",
+      "\$content = \$parser->getTexy()->protect(\$fshl->highlight(\$matches[1]), \Texy::CONTENT_MARKUP);\n         return \TexyHtml::el('code', \$content);",
+      file_get_contents($patch)
+    ));
     return $this;
   }
 
