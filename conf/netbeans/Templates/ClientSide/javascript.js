@@ -1,6 +1,7 @@
 <#assign licenseFirst = "/*!">
 <#assign licensePrefix = " *">
 <#assign licenseLast = " */">
+<#import "../Licenses/${project.license}.ftl" as prj>
 <#include "../Licenses/license-${project.license}.txt">
 
 /* jshint browser:true, jquery:true */
@@ -10,10 +11,10 @@
  * Description of ${name}
  *
  * @author ${user}
- * @copyright © ${date?date?string("yyyy")} ${copyright}
- * @license ${license_link} ${license_name}
- * @link ${link}
- * @since ${version}
+ * @copyright © ${date?date?string("yyyy")} ${prj.name}
+ * @license ${prj.licenseLink} ${prj.licenseName}
+ * @link ${prj.website}
+ * @since ${prj.version}
  *
  * @param {jQuery} $
  *   The global jQuery object.
