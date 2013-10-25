@@ -28,10 +28,10 @@ namespace MovLib\Data;
  */
 interface Pagination {
 
-  const SPAN4  = 4;
-  const SPAN6  = 9;
-  const SPAN8  = 16;
-  const SPAN10 = 25;
-  const SPAN12 = 36;
+  const SPAN_04 = 4;
+  const SPAN_06 = 9;
+  const SPAN_08 = 16;
+  const SPAN_10 = 25;
+  const SPAN_12 = 36;
 
 }

@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -21,8 +21,7 @@ use \MovLib\Data\History\Movie;
 use \MovLib\Presentation\History\MovieHistoryDiff;
 
 /**
- * Test the movie history
- *
+ * @coversDefaultClass \MovLib\Presentation\History\MovieHistoryDiff
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -64,9 +63,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     }
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::getPageContent
-   */
   public function testGetPageContent() {
     $this->assertContains(
       "<a href='/movie/2/history' accesskey='h' class='separator active'",
@@ -74,10 +70,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     );
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::contentDiffPage
-   * @covers \MovLib\Presentation\History\TraitHistory::textDiffOfRevisions
-   */
   public function testContentDiffPage() {
     $this->assertContains(
       "Original Title", $this->invoke($this->historyDiffPage, "contentDiffPage")
@@ -87,10 +79,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     );
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::textDiffOfRevisions
-   * @covers \MovLib\Presentation\History\TraitHistory::textDiffOfStrings
-   */
   public function testTextDiff() {
     global $db;
     $this->movie->startEditing();
@@ -112,9 +100,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     );
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::formatFileNames
-   */
   public function testFormatFileNames() {
     $fileNames = [
       "original_title",
@@ -133,10 +118,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     );
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
-   * @covers \Movlib\Data\User\Users::orderById
-   */
   public function testDiffIdsWithUsers() {
     $diff = ["added" => [1, 3 ], "removed" => [2 ], "edited" => [ ] ];
     $this->assertEquals(
@@ -146,11 +127,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     );
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
-   * @covers \MovLib\Presentation\History\TraitHistory::getCountries
-   * @covers \Movlib\Data\Counties::orderById
-   */
   public function testGetCountries() {
     global $i18n;
     $diff = ["added" => [1, 3 ], "removed" => [2 ], "edited" => [ ] ];
@@ -167,11 +143,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     $i18n = new \MovLib\Data\I18n();
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
-   * @covers \MovLib\Presentation\History\TraitHistory::getDirectors
-   * @covers \Movlib\Data\User\Persons::orderById
-   */
   public function testGetDirectors() {
     $diff = ["added" => [1, 3 ], "removed" => [2, 4 ], "edited" => [ ] ];
     $this->assertEquals(
@@ -182,11 +153,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     );
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
-   * @covers \MovLib\Presentation\History\TraitHistory::getGenres
-   * @covers \Movlib\Data\User\Genres::orderById
-   */
   public function testGetGenres() {
     global $i18n;
     $diff = ["added" => [1, 3 ], "removed" => [2, 4 ], "edited" => [ ] ];
@@ -203,11 +169,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     $i18n = new \MovLib\Data\I18n();
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
-   * @covers \MovLib\Presentation\History\TraitHistory::getLanguages
-   * @covers \Movlib\Data\User\Languages::orderById
-   */
   public function testGetLanguages() {
     global $i18n;
     $diff = ["added" => [1, 3 ], "removed" => [2, 4 ], "edited" => [ ] ];
@@ -224,11 +185,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     $i18n = new \MovLib\Data\I18n();
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::diffIds
-   * @covers \MovLib\Presentation\History\TraitHistory::getStyles
-   * @covers \Movlib\Data\User\Styles::orderById
-   */
   public function testGetStyles() {
     global $i18n;
     $diff = ["added" => [1, 3 ], "removed" => [2, 4 ], "edited" => [ ] ];
@@ -247,13 +203,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     $i18n = new \MovLib\Data\I18n();
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::diffArray
-   * @covers \MovLib\Presentation\History\TraitHistory::diffArrayItems
-   * @covers \MovLib\Presentation\History\TraitHistory::getCast
-   * @covers \MovLib\Presentation\History\TraitHistory::textDiffOfStrings
-   * @covers \Movlib\Data\User\Persons::orderById
-   */
   public function testGetCast() {
     $diff = ["added" => [
       ["id" => 4, "roles" => "franz"]
@@ -271,13 +220,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     );
   }
 
-  /**
-   * @covers \MovLib\Presentation\History\TraitHistory::diffArray
-   * @covers \MovLib\Presentation\History\TraitHistory::diffArrayItems
-   * @covers \MovLib\Presentation\History\TraitHistory::getCrew
-   * @covers \MovLib\Presentation\History\TraitHistory::textDiffOfStrings
-   * @covers \Movlib\Data\User\Persons::orderById
-   */
   public function testDiffArrayWithCrew() {
 //    $diff = ["added" => [
 //
@@ -290,6 +232,7 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
 //      "",
 //      $this->invoke($this->historyDiffPage, "getCrew", [ $diff ])->__toString()
 //    );
+    $this->markTestIncomplete();
   }
 
   /**

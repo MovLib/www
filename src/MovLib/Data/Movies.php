@@ -17,8 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Data\Movie;
-
 /**
  * Retrieve several movies from the database for listings.
  *
@@ -28,7 +26,7 @@ use \MovLib\Data\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Data\Database {
+class Movies extends \MovLib\Data\Database implements \MovLib\Data\Pagination {
 
   /**
    * Get a movie list ordered by entry date.
@@ -41,7 +39,7 @@ class Movies extends \MovLib\Data\Database {
    * @return array
    *   Sorted numeric array containing the movie information as <code>\MovLib\Data\Movie</code> objects.
    */
-  public function getMoviesByCreated($lowerBound = 0, $upperBound = self::DEFAULT_PAGINATION_SIZE) {
+  public function getMoviesByCreated($lowerBound = 0, $upperBound = self::SPAN_08) {
     global $i18n;
     $result = $this->query(
       "SELECT

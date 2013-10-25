@@ -81,7 +81,6 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     $this->init($i18n->t("Email Settings"));
     $this->user  = new User(User::FROM_ID, $session->userId);
     $this->email = new InputEmail("email");
-    $this->email->required();
     $this->form  = new Form($this, [ $this->email ]);
 
     if (isset($_GET["token"])) {

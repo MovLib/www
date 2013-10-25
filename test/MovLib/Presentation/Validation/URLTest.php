@@ -20,6 +20,7 @@ namespace MovLib\Presentation\Validation;
 use \MovLib\Presentation\Validation\URL;
 
 /**
+ * @coversDefaultClass \MovLib\Presentation\Validation\URL
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -106,8 +107,8 @@ class URLTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Validation\URL::__construct
-   * @covers \MovLib\Presentation\Validation\URL::validate
+   * @covers ::__construct
+   * @covers ::validate
    * @dataProvider dataProviderIllegalParts
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_ILLEGAL_PARTS
@@ -117,8 +118,8 @@ class URLTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Validation\URL::__construct
-   * @covers \MovLib\Presentation\Validation\URL::validate
+   * @covers ::__construct
+   * @covers ::validate
    * @dataProvider dataProviderMalformed
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_MALFORMED
@@ -128,8 +129,8 @@ class URLTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Validation\URL::__construct
-   * @covers \MovLib\Presentation\Validation\URLvalidate
+   * @covers ::__construct
+   * @covers ::validate
    * @dataProvider dataProviderMalformedSchemeAndOrHost
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_SCHEME_OR_HOST_MALFORMED
@@ -139,8 +140,8 @@ class URLTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Validation\URL::__construct
-   * @covers \MovLib\Presentation\Validation\URL::validate
+   * @covers ::__construct
+   * @covers ::validate
    * @dataProvider dataProviderValid
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_NO_EXTERNAL
@@ -169,8 +170,8 @@ class URLTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Validation\URL::__construct
-   * @covers \MovLib\Presentation\Validation\URL::validate
+   * @covers ::__construct
+   * @covers ::validate
    * @dataProvider dataProviderReachability
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_UNREACHABLE
@@ -183,8 +184,8 @@ class URLTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers \MovLib\Presentation\Validation\URL::__construct
-   * @covers \MovLib\Presentation\Validation\URL::validate
+   * @covers ::__construct
+   * @covers ::validate
    * @dataProvider dataProviderValid
    */
   public function testValid($expected, $url) {

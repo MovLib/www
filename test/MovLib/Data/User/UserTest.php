@@ -20,7 +20,7 @@ namespace MovLib\Data\User;
 use \MovLib\Data\User\User;
 
 /**
- * @coversDefaultClass
+ * @coversDefaultClass \MovLib\Data\User\User
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -28,6 +28,15 @@ use \MovLib\Data\User\User;
  * @since 0.0.1-dev
  */
 class UserTest extends \MovLib\TestCase {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Fixtures
+
+
+  public function tearDown() {
+    $this->exec("movdev db -s users");
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
@@ -58,14 +67,9 @@ class UserTest extends \MovLib\TestCase {
     ];
   }
 
-  // ------------------------------------------------------------------------------------------------------------------- Fixtures
-
-
-  public function tearDown() {
-    $this->exec("movdev db -s users");
-  }
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
   /**
    * @covers ::__construct

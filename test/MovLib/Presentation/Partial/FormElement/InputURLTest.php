@@ -21,6 +21,7 @@ use \MovLib\Presentation\Validation\URL;
 use \MovLib\Presentation\Partial\FormElement\InputURL;
 
 /**
+ * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\InputURL
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -30,9 +31,9 @@ use \MovLib\Presentation\Partial\FormElement\InputURL;
 class InputURLTest extends \MovLib\TestCase {
 
   /**
-   * @covers InputURL::__construct
+   * @covers ::__construct
    */
-  public function testDefaults() {
+  public function testConstruct() {
     $input = new InputURL("phpunit", "PHPUnit");
     $this->assertEquals("http(s)://", $input->attributes["placeholder"]);
     $this->assertEquals("phpunit", $input->id);
@@ -43,9 +44,9 @@ class InputURLTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers InputURL::__toString
+   * @covers ::__toString
    */
-  public function testOutput() {
+  public function testToString() {
     $input = (new InputURL("phpunit", "PHPUnit"))->__toString();
     // The label is very important, any form element has to have a label!
     $this->assertContains("<label for='phpunit'>PHPUnit</label>", $input);
@@ -56,14 +57,6 @@ class InputURLTest extends \MovLib\TestCase {
     $this->assertContains("pattern='" . URL::PATTERN . "'", $input);
     $this->assertContains("placeholder='http(s)://'", $input);
     $this->assertContains("type='url'", $input);
-  }
-
-  /**
-   * @covers ::__construct
-   * @todo Implement __construct
-   */
-  public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**

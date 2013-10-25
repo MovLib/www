@@ -54,7 +54,7 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *
    * @var int
    */
-  public $imageStyle = AbstractImage::IMAGE_STYLE_SPAN2;
+  public $imageStyle = AbstractImage::IMAGE_STYLE_SPAN_02;
 
   /**
    * The list's items attributes.

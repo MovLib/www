@@ -21,7 +21,7 @@ use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Data\User\Session;
 
 /**
- * @coversDefaultClass \MovLib\Data\User
+ * @coversDefaultClass \MovLib\Data\User\Full
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -119,7 +119,6 @@ class FullTest extends \MovLib\TestCase {
 
   /**
    * @covers ::deactivate
-   * @covers ::deleteImageOriginalAndStyles
    */
   public function testDeactivate() {
     $user = new UserFull(UserFull::FROM_ID, 1);

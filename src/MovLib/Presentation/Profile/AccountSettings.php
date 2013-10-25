@@ -178,9 +178,11 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "placeholder"         => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
     ]);
 
-    $this->language = (new Select("language", $i18n->t("System Language"), $i18n->getSystemLanguages(), $this->user->systemLanguageCode))->required();
-    $this->country  = new Select("country", $i18n->t("Country"), array_column($i18n->getCountries(I18n::KEY_NAME), I18n::KEY_NAME, I18n::KEY_ID), $this->user->countryId);
-    $this->timezone = (new Select("time_zone_id", $i18n->t("Time Zone"), $i18n->getTimeZones(), $this->user->timeZoneId))->required();
+    $this->language = new Select("language", $i18n->t("System Language"), $i18n->getSystemLanguages(), $this->user->systemLanguageCode);
+    $countries = new \MovLib\Data\Countries();
+    $countries->orderByName();
+    $this->country  = new Select("country", $i18n->t("Country"), array_column($countries, I18n::KEY_NAME, I18n::KEY_ID), $this->user->countryId);
+    $this->timezone = new Select("time_zone_id", $i18n->t("Time Zone"), $i18n->getTimeZones(), $this->user->timeZoneId);
     $this->website  = new InputURL("website", $i18n->t("Website"), [ "data-allow-external" => true, "value" => $this->user->website ]);
     $this->private  = new InputCheckbox("private", $i18n->t("Keep my data private!"), [ "value" => $this->user->private ], $i18n->t(
       "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .

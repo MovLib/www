@@ -202,7 +202,7 @@ class Movie extends \MovLib\Data\Image\AbstractImage {
     $this->imageDirectory = "movie/{$imgDir}/{$movieId}";
 
     if ($imageId) {
-      $result = $this->select(
+      $result = $this->query(
         "SELECT
           `movie_id` AS `id`,
           `image_id` AS `imageId`,
@@ -227,7 +227,7 @@ class Movie extends \MovLib\Data\Image\AbstractImage {
         LIMIT 1",
         "ddi",
         [ $movieId, $imageId, $type ]
-      );
+      )->get_result()->fetch_assoc();
 
       if (empty($result[0])) {
         Logger::stack("Could not retrieve image (movie id: {$movieId}, image id: {$imageId})!", Logger::DEBUG);

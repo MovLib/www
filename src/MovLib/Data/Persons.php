@@ -81,7 +81,7 @@ class Persons extends \MovLib\Data\DatabaseArrayObject {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function orderByCreated($offset = 0, $rowCount = Pagination::SPAN8) {
+  public function orderByCreated($offset = 0, $rowCount = Pagination::SPAN_08) {
     $this->objectsArray = [];
     $result = $this->query("{$this->query} WHERE `deleted` = false ORDER BY `created` ASC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
     /* @var $person \MovLib\Data\Person */
@@ -101,7 +101,7 @@ class Persons extends \MovLib\Data\DatabaseArrayObject {
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function orderByName($offset = 0, $rowCount = Pagination::SPAN8) {
+  public function orderByName($offset = 0, $rowCount = Pagination::SPAN_08) {
     $this->objectsArray = [];
     $result = $this->query("{$this->query} WHERE `deleted` = false ORDER BY `name` COLLATE `utf8mb4_unicode_ci` ASC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
     /* @var $person \MovLib\Data\Person */

@@ -20,6 +20,7 @@ namespace MovLib\Presentation\Partial\FormElement;
 use \MovLib\Presentation\Partial\FormElement\Select;
 
 /**
+ * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\Select
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -35,23 +36,23 @@ class SelectTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers Select::__construct
+   * @covers ::__construct
    */
-  public function testOptionsAndValueExport() {
+  public function testConstructOptionsAndValueExport() {
     $select = new Select("phpunit", "PHPUnit", $this->options);
     $this->assertAttributeEquals($this->options, "options", $select);
     $this->assertAttributeEquals(null, "value", $select);
   }
 
   /**
-   * @covers Select::__construct
+   * @covers ::__construct
    */
   public function testPassedValueExport() {
     $this->assertAttributeEquals("phpunit1", "value", new Select("phpunit", "PHPUnit", $this->options, "phpunit1"));
   }
 
   /**
-   * @covers Select::__construct
+   * @covers ::__construct
    */
   public function testPostExport() {
     $_POST["phpunit"] = "phpunit1";
@@ -59,7 +60,7 @@ class SelectTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers Select::__construct
+   * @covers ::__construct
    */
   public function testValidPostOverridesPassedValue() {
     $_POST["phpunit"] = "phpunit2";
@@ -68,7 +69,7 @@ class SelectTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers Select::__toString
+   * @covers ::__toString
    */
   public function testToString() {
     $options = timezone_identifiers_list();
@@ -80,38 +81,22 @@ class SelectTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers Select::validate
+   * @covers ::validate
    */
-  public function testValid() {
+  public function testValidate() {
     $_POST["phpunit"] = "phpunit1";
     $select           = new Select("phpunit", "PHPUnit", $this->options);
     $select->validate();
   }
 
   /**
-   * @covers Select::validate
+   * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    */
   public function testInvalid() {
     $_POST["phpunit"] = "phpunit3";
     $select           = new Select("phpunit", "PHPUnit", $this->options);
     $select->validate();
-  }
-
-  /**
-   * @covers ::__construct
-   * @todo Implement __construct
-   */
-  public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::validate
-   * @todo Implement validate
-   */
-  public function testValidate() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
 }

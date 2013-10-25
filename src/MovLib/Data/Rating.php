@@ -39,12 +39,12 @@ class Rating extends \MovLib\Data\Database {
    *   The user's rating for this movie, null if none is present.
    */
   public function getMovieRating($userId, $movieId) {
-    $result = $this->select(
-      "SELECT `user_id`, `movie_id`, `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1",
+    $result = $this->query(
+      "SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1",
       "dd", [ $userId, $movieId ]
-    );
+    )->get_result()->fetch_row();
     if (!empty($result[0])) {
-      return $result[0]["rating"];
+      return $result[0];
     }
   }
 
