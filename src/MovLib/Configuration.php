@@ -61,7 +61,7 @@ class Configuration {
    *
    * @var string
    */
-  public $domainDefault = "movlib.org";
+  public $domainDefault = "alpha.movlib.org";
 
   /**
    * The localize domain, without scheme or trailing slash, e.g. <code>"localize.movlib.org"</code>.
@@ -154,7 +154,7 @@ class Configuration {
    * @see \MovLib\Data\SystemLanguages
    * @var array
    */
-  public $systemLanguages = [ "de_AT", "en_US" ];
+  public $systemLanguages = [ "de" => "de_AT", "en" => "en_US" ];
 
   /**
    * The version string.

@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -20,15 +20,12 @@ namespace MovLib\Data;
 use \DateTimeZone;
 use \IntlDateFormatter;
 use \Locale;
-use \MovLib\Data\Collator;
-use \MovLib\Data\SystemLanguages;
 use \MovLib\Data\I18n;
 
 /**
  * @coversDefaultClass \MovLib\Data\I18n
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
- * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013-present, MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
@@ -42,13 +39,29 @@ class I18nTest extends \MovLib\TestCase {
   /** @var \MovLib\Data\I18n */
   protected $i18n;
 
+  // Formatting parameters and test values.
+  protected $args                         = [ "test", 42 ];
+  protected $pattern                      = "PHPUnit {0} PHPUnit {1}";
+  protected $patternFormatted             = "PHPUnit test PHPUnit 42";
+  protected $patternGerman                = "PHPUnit {0} PHPUnit {1} Deutsch";
+  protected $patternGermanFormatted       = "PHPUnit test PHPUnit 42 Deutsch";
+  protected $patternTestLanguage          = "PHPUnit {0} PHPUnit {1} XX";
+  protected $patternTestLanguageFormatted = "PHPUnit test PHPUnit 42 XX";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
+  /**
+   * Called before each test.
+   */
   protected function setUp() {
     $this->i18n = new I18n(Locale::getDefault());
   }
+
+  /**
+   * Called after all tests.
+   */
 
   public static function tearDownAfterClass() {
     $queries = "";
@@ -59,24 +72,46 @@ class I18nTest extends \MovLib\TestCase {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Data Providers
+  // ------------------------------------------------------------------------------------------------------------------- Helpers
+
+
+  protected function helperInsertTestMessages() {
+    global $db;
+    foreach ([ "message", "route" ] as $context) {
+      $db->query("INSERT INTO `{$context}s`
+        (`{$context}`, `dyn_translations`)
+        VALUES ('{$this->pattern}', COLUMN_CREATE('de', '{$this->patternGerman}', 'xx', '{$this->patternTestLanguage}'))
+        ON DUPLICATE KEY UPDATE `dyn_translations`=VALUES(`dyn_translations`)"
+      );
+    }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
 
   public function dataProviderTestConstructAcceptLanguageHeaderValid() {
     $args = [];
-    foreach (new SystemLanguages() as $locale => $systemLanguage) {
-      $args[] = [ $locale, $locale, $systemLanguage->languageCode ];
-      $args[] = [ $systemLanguage->languageCode, $locale, $systemLanguage->languageCode ];
+    foreach (new SystemLanguages() as $languageCode => $systemLanguage) {
+      $args[] = [ $systemLanguage->locale, $systemLanguage->locale, $languageCode ];
+      $args[] = [ $languageCode, $systemLanguage->locale, $languageCode ];
     }
     return $args;
   }
 
   public function dataProviderTestConstructLanguageCodeValid() {
     $args = [];
-    foreach (new SystemLanguages() as $locale => $systemLanguage) {
-      $args[] = [ $systemLanguage->languageCode, $locale, $systemLanguage->languageCode ];
+    foreach (new SystemLanguages() as $languageCode => $systemLanguage) {
+      $args[] = [ $languageCode, $systemLanguage->locale, $languageCode ];
     }
     return $args;
+  }
+
+  public function dataProviderTestFormatDateInvalidTimestamp() {
+    return [
+      [ null ],
+      [ "Invalid timestamp" ],
+    ];
   }
 
 
@@ -162,20 +197,15 @@ class I18nTest extends \MovLib\TestCase {
    */
   public function testConstructLanguageCodeValid($languageCode, $expectedLocale, $expectedLanguageCode) {
     // Set HTTP_ACCEPT_HEADER to "xx_XX" to verify the weight order of locale retrievals.
-    $acceptLanguage                  = isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) ? $_SERVER["HTTP_ACCEPT_LANGUAGE"] : null;
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = "xx_XX";
 
     $_SERVER["LANGUAGE_CODE"] = $languageCode;
     $i18n                     = new I18n();
     $this->assertEquals($expectedLocale, $i18n->locale);
     $this->assertEquals($expectedLanguageCode, $i18n->languageCode);
-
-    $_SERVER["HTTP_ACCEPT_LANGUAGE"] = $acceptLanguage;
   }
 
   /**
-   * Test the constuctor with supplied locale.
-   *
    * @covers ::__construct
    */
   public function testConstructLocale() {
@@ -195,14 +225,18 @@ class I18nTest extends \MovLib\TestCase {
 
   /**
    * @covers ::formatDate
+   * @dataProvider dataProviderTestFormatDateInvalidTimestamp
+   * @expectedException \IntlException
+   */
+  public function testFormatDateInvalidTimestamp($timestamp) {
+    $this->i18n->formatDate($timestamp);
+  }
+
+  /**
+   * @covers ::formatDate
    * @expectedException \Exception
    */
-  public function testFormatDateInvalid() {
-    // Invalid timestamp values.
-    $this->assertFalse($this->i18n->formatDate(null), "Formatting test null timestamp failed!");
-    $this->assertFalse($this->i18n->formatDate("Invalid timestamp"), "Formatting test invalid timestamp failed!");
-    $this->assertFalse($this->i18n->formatDate(-1), "Formatting test invalid timestamp failed!");
-    // Invalid timezone (should throw Exception).
+  public function testFormatDateInvalidTimeZone() {
     $this->i18n->formatDate(time(), "PHPUnit");
   }
 
@@ -241,32 +275,7 @@ class I18nTest extends \MovLib\TestCase {
   /**
    * @covers ::formatMessage
    */
-  public function testFormatMessageValid() {
-    global $db;
-    $args                         = [ "test", 42 ];
-    $pattern                      = "PHPUnit {0} PHPUnit {1}";
-    $patternFormatted             = "PHPUnit test PHPUnit 42";
-    $patternGerman                = "{$pattern} Deutsch";
-    $patternGermanFormatted       = "{$patternFormatted} Deutsch";
-    $patternTestLanguage          = "{$pattern} XX";
-    $patternTestLanguageFormatted = "{$patternFormatted} XX";
-    foreach ([ "message", "route" ] as $context) {
-      $db->query("INSERT INTO `{$context}s` (`{$context}`, `dyn_translations`) VALUES ('{$pattern}', COLUMN_CREATE('de', '{$patternGerman}', 'xx', '{$patternTestLanguage}'))");
-    }
-    // Set language code to German.
-    $this->i18n->languageCode = "de";
-
-    // No arguments.
-    $this->assertEquals($patternTestLanguage, $this->i18n->formatMessage("message", $pattern, null, [ "language_code" => "xx" ]));
-    $this->assertEquals($pattern, $this->i18n->formatMessage("message", $pattern, null, [ "language_code" => $this->i18n->defaultLanguageCode ]));
-    $this->assertEquals($patternGerman, $this->i18n->formatMessage("message", $pattern, null));
-
-    // With arguments.
-    $this->assertEquals($patternTestLanguageFormatted, $this->i18n->formatMessage("message", $pattern, $args, [ "language_code" => "xx" ]));
-    $this->assertEquals($patternFormatted, $this->i18n->formatMessage("message", $pattern, $args, [ "language_code" => $this->i18n->defaultLanguageCode ]));
-    $this->assertEquals($patternGermanFormatted, $this->i18n->formatMessage("message", $pattern, $args));
-
-    // Non-existent pattern.
+  public function testFormatMessageValidNonExistentPattern() {
     $patternNonExistent = "PHPUnit non-existent";
     $options            = [ "language_code" => "xx" ];
     $this->assertEquals($patternNonExistent, $this->i18n->formatMessage("message", $patternNonExistent, null, $options));
@@ -284,182 +293,59 @@ class I18nTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::r
-   * @covers ::t
-   * @depends testFormatMessageValid
+   * @covers ::formatMessage
    */
-  public function testRAndT() {
-    $pattern = "PHPUnit {0} PHPUnit {1}";
-    $args    = [ "test", 42 ];
-    $options = [ "language_code" => "xx" ];
+  public function testFormatMessageValidWithArguments() {
+    $this->helperInsertTestMessages();
+    // Set language code to German.
+    $this->i18n->languageCode = "de";
+    $this->assertEquals($this->patternTestLanguageFormatted, $this->i18n->formatMessage("message", $this->pattern, $this->args, [ "language_code" => "xx" ]));
+    $this->assertEquals($this->patternFormatted, $this->i18n->formatMessage("message", $this->pattern, $this->args, [ "language_code" => $this->i18n->defaultLanguageCode ]));
+    $this->assertEquals($this->patternGermanFormatted, $this->i18n->formatMessage("message", $this->pattern, $this->args));
+  }
 
-    // With args and options.
-    $this->assertEquals($this->i18n->formatMessage("route", $pattern, $args, $options), $this->i18n->r($pattern, $args, $options));
-    $this->assertEquals($this->i18n->formatMessage("message", $pattern, $args, $options), $this->i18n->t($pattern, $args, $options));
-
-    // With args, without options.
-    $this->assertEquals($this->i18n->formatMessage("route", $pattern, $args), $this->i18n->r($pattern, $args));
-    $this->assertEquals($this->i18n->formatMessage("message", $pattern, $args), $this->i18n->t($pattern, $args));
-
-    // Without args, with options.
-    $this->assertEquals($this->i18n->formatMessage("route", $pattern, null, $options), $this->i18n->r($pattern, null, $options));
-    $this->assertEquals($this->i18n->formatMessage("message", $pattern, null, $options), $this->i18n->t($pattern, null, $options));
-
-    // Without args and options.
-    $this->assertEquals($this->i18n->formatMessage("route", $pattern, null), $this->i18n->r($pattern, null));
-    $this->assertEquals($this->i18n->formatMessage("message", $pattern, null), $this->i18n->t($pattern, null));
+  /**
+   * @covers ::formatMessage
+   */
+  public function testFormatMessageValidWithoutArguments() {
+    $this->helperInsertTestMessages();
+    // Set language code to German.
+    $this->i18n->languageCode = "de";
+    $this->assertEquals($this->patternTestLanguage, $this->i18n->formatMessage("message", $this->pattern, null, [ "language_code" => "xx" ]));
+    $this->assertEquals($this->pattern, $this->i18n->formatMessage("message", $this->pattern, null, [ "language_code" => $this->i18n->defaultLanguageCode ]));
+    $this->assertEquals($this->patternGerman, $this->i18n->formatMessage("message", $this->pattern, null));
   }
 
   /**
    * @covers ::getCollator
-   * @covers ::getCountries
    */
-//  public function testGetCountries() {
-//    $countryId = 26;
-//    $countryCode = "BL";
-//    $countryName = "Saint Barthélemy";
-//    $countryNameGerman = "St. Barthélemy";
-//
-//    // English locale.
-//
-//    // Key ID.
-//    $countries = $this->i18n->getCountries();
-//    $this->assertEquals($countryId, $countries[$countryId]["id"]);
-//    $this->assertEquals($countryCode, $countries[$countryId]["code"]);
-//    $this->assertEquals($countryName, $countries[$countryId]["name"]);
-//    // Key code.
-//    $countries = $this->i18n->getCountries(I18n::KEY_CODE);
-//    $this->assertEquals($countryId, $countries[$countryCode]["id"]);
-//    $this->assertEquals($countryCode, $countries[$countryCode]["code"]);
-//    $this->assertEquals($countryName, $countries[$countryCode]["name"]);
-//    // Key name.
-//    $countries = $this->i18n->getCountries(I18n::KEY_NAME);
-//    $this->assertEquals($countryId, $countries[$countryName]["id"]);
-//    $this->assertEquals($countryCode, $countries[$countryName]["code"]);
-//    $this->assertEquals($countryName, $countries[$countryName]["name"]);
-//
-//    // German locale.
-//    $this->i18n = new I18n("de_AT");
-//    $db = new Database();
-//    $result = $db->select("SELECT `country_id` AS `id`, `iso_alpha-2` AS `code`, COLUMN_GET(`dyn_translations`, 'de' AS CHAR(255)) AS `name` FROM `countries`");
-//    $testCountries = [];
-//    foreach ($result as $country) {
-//      $testCountries["code"][$country["code"]] = $country;
-//      $testCountries["name"][$country["name"]] = $country;
-//    }
-//    ksort($testCountries["code"]);
-//    $collator = new Collator("de_AT");
-//    $collator->ksort($testCountries["name"]);
-//
-//    // Key ID.
-//    $countries = $this->i18n->getCountries();
-//    $this->assertEquals($countryId, $countries[$countryId]["id"]);
-//    $this->assertEquals($countryCode, $countries[$countryId]["code"]);
-//    $this->assertEquals($countryNameGerman, $countries[$countryId]["name"]);
-//    // Key code.
-//    $countries = $this->i18n->getCountries(I18n::KEY_CODE);
-//    $this->assertEquals($countryId, $countries[$countryCode]["id"]);
-//    $this->assertEquals($countryCode, $countries[$countryCode]["code"]);
-//    $this->assertEquals($countryNameGerman, $countries[$countryCode]["name"]);
-//    // Key code sort order.
-//    $this->assertEquals($testCountries["code"], $countries);
-//    // Key name.
-//    $countries = $this->i18n->getCountries(I18n::KEY_NAME);
-//    $this->assertEquals($countryId, $countries[$countryNameGerman]["id"]);
-//    $this->assertEquals($countryCode, $countries[$countryNameGerman]["code"]);
-//    $this->assertEquals($countryNameGerman, $countries[$countryNameGerman]["name"]);
-//    // Key name sort order.
-//    $this->assertEquals($testCountries["name"], $countries);
-//  }
+  public function testGetCollator() {
+    $collator = $this->i18n->getCollator();
+    $this->assertInstanceOf("\\Collator", $collator);
+    $this->assertEquals($collator, $this->i18n->getCollator());
+  }
 
   /**
    * @covers ::getCollator
-   * @covers ::getLanguageId
-   * @covers ::getLanguages
    */
-//  public function testGetLanguages() {
-//    $languageId = 110;
-//    $languageCode = "nb";
-//    $languageName = "Norwegian Bokmål";
-//    $languageNameGerman = "Norwegisch Bokmål";
-//
-//    // English locale.
-//    $this->assertEquals(41, $this->i18n->getLanguageId());
-//
-//    // Key ID.
-//    $languages = $this->i18n->getLanguages();
-//    $this->assertEquals($languageId, $languages[$languageId]["id"]);
-//    $this->assertEquals($languageCode, $languages[$languageId]["code"]);
-//    $this->assertEquals($languageName, $languages[$languageId]["name"]);
-//    // Key code.
-//    $languages = $this->i18n->getLanguages(I18n::KEY_CODE);
-//    $this->assertEquals($languageId, $languages[$languageCode]["id"]);
-//    $this->assertEquals($languageCode, $languages[$languageCode]["code"]);
-//    $this->assertEquals($languageName, $languages[$languageCode]["name"]);
-//    // Key name.
-//    $languages = $this->i18n->getLanguages(I18n::KEY_NAME);
-//    $this->assertEquals($languageId, $languages[$languageName]["id"]);
-//    $this->assertEquals($languageCode, $languages[$languageName]["code"]);
-//    $this->assertEquals($languageName, $languages[$languageName]["name"]);
-//
-//    // German locale.
-//    $this->i18n = new I18n("de_AT");
-//    $this->assertEquals(52, $this->i18n->getLanguageId());
-//    $testLanguages = [];
-//    $db = new Database();
-//    $result = $db->select("SELECT `language_id` AS `id`, `iso_alpha-2` AS `code`, COLUMN_GET(`dyn_translations`, 'de' AS CHAR(255)) AS `name` FROM `languages`");
-//    foreach ($result as $lang) {
-//      $testLanguages["code"][$lang["code"]] = $lang;
-//      $testLanguages["name"][$lang["name"]] = $lang;
-//    }
-//    ksort($testLanguages["code"]);
-//    $collator = new Collator("de_AT");
-//    $collator->ksort($testLanguages["name"]);
-//
-//    // Key ID.
-//    $languages = $this->i18n->getLanguages();
-//    $this->assertEquals($languageId, $languages[$languageId]["id"]);
-//    $this->assertEquals($languageCode, $languages[$languageId]["code"]);
-//    $this->assertEquals($languageNameGerman, $languages[$languageId]["name"]);
-//    // Key code.
-//    $languages = $this->i18n->getLanguages(I18n::KEY_CODE);
-//    $this->assertEquals($languageId, $languages[$languageCode]["id"]);
-//    $this->assertEquals($languageCode, $languages[$languageCode]["code"]);
-//    $this->assertEquals($languageNameGerman, $languages[$languageCode]["name"]);
-//    // Key code sort order.
-//    $this->assertEquals($testLanguages["code"], $languages);
-//    // Key name.
-//    $languages = $this->i18n->getLanguages(I18n::KEY_NAME);
-//    $this->assertEquals($languageId, $languages[$languageNameGerman]["id"]);
-//    $this->assertEquals($languageCode, $languages[$languageNameGerman]["code"]);
-//    $this->assertEquals($languageNameGerman, $languages[$languageNameGerman]["name"]);
-//    // Key name sort order.
-//    $this->assertEquals($testLanguages["name"], $languages);
-//  }
+  public function testGetCollatorInvalidLocale() {
+    $this->i18n->locale = null;
+    $this->assertInstanceOf("\\Collator", $this->i18n->getCollator());
+
+  }
 
   /**
-   * @covers ::getSystemLanguages
+   * @covers ::getLanguageId
    */
-  public function testGetSystemLanguages() {
-    // English locale.
-    $testLocale         = "en_US";
-    $this->i18n->locale = $testLocale;
-    $systemLanguages    = $this->i18n->getSystemLanguages();
-    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
-      $this->assertEquals(Locale::getDisplayLanguage($languageCode, $testLocale), $systemLanguages[$languageCode]);
-    }
-    // German locale.
-    $testLocale         = "de_AT";
-    $this->i18n->locale = $testLocale;
-    $systemLanguages    = $this->i18n->getSystemLanguages();
-    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
-      $this->assertEquals(Locale::getDisplayLanguage($languageCode, $testLocale), $systemLanguages[$languageCode]);
-    }
+  public function testGetLanguageId() {
+    $this->i18n->languageCode = "de";
+    $this->assertEquals(52, $this->i18n->getLanguageId());
+    $this->i18n->languageCode = "zz";
+    $this->assertNull($this->i18n->getLanguageId());
   }
 
   /**
    * @covers ::getSystemLanguageLinks
-   * @depends testGetSystemLanguages
    */
   public function testGetSystemLanguageLinks() {
     $_SERVER["PATH_INFO"] = "";
@@ -496,11 +382,23 @@ class I18nTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::getTimezones
+   * @covers ::getSystemLanguages
+   * @global \MovLib\Tool\Configuration $config
+   */
+  public function testGetSystemLanguages() {
+    global $config;
+    $languages = [];
+    foreach ($config->systemLanguages as $locale) {
+      $languages["{$locale[0]}{$locale[1]}"] = Locale::getDisplayLanguage($locale, $this->i18n->locale);
+    }
+    $this->i18n->getCollator()->asort($languages);
+    $this->assertEquals($languages, $this->i18n->getSystemLanguages());
+  }
+
+  /**
+   * @covers ::getTimeZones
    */
   public function testGetTimeZones() {
-    $locale              = \Locale::getDefault();
-    $this->i18n->locale  = $locale;
     $timeZones           = $this->i18n->getTimeZones();
     $timeZoneIdentifiers = DateTimeZone::listIdentifiers();
     $expectedTimeZones   = [ ];
@@ -508,18 +406,17 @@ class I18nTest extends \MovLib\TestCase {
     for ($i = 0; $i < $c; ++$i) {
       $expectedTimeZones[$timeZoneIdentifiers[$i]] = strtr($timeZoneIdentifiers[$i], "_", " ");
     }
-    $collator = new Collator($locale);
+    $collator = new Collator($this->i18n->locale);
     $collator->asort($expectedTimeZones, Collator::SORT_STRING);
     $this->assertEquals($expectedTimeZones, $timeZones);
   }
 
   /**
    * @covers ::insertMessage
+   * @global \MovLib\Tool\Database $db
    */
-  public function testInsertMessage() {
+  public function testInsertMessageWithComment() {
     global $db;
-
-    // With comment.
     $message = "PHPUnit test message";
     $comment = "PHPUnit comment";
     $this->i18n->insertMessage($message, [ "comment" => $comment ]);
@@ -527,9 +424,15 @@ class I18nTest extends \MovLib\TestCase {
         ->query("SELECT `message`, `comment` FROM `messages` WHERE `message` = ? AND `comment` = ? LIMIT 1", "ss", [ $message, $comment ])
         ->get_result()->fetch_all()
     );
+  }
 
-    // Without comment.
-    $message .= " without comment";
+  /**
+   * @covers ::insertMessage
+   * @global \MovLib\Tool\Database $db
+   */
+  public function testInsertMessageWithoutComment() {
+    global $db;
+    $message = "PHPUnit test message without comment";
     $this->i18n->insertMessage($message);
     $this->assertNotNull($db
         ->query("SELECT `message`, `comment` FROM `messages` WHERE `message` = ? AND `comment` IS NULL LIMIT 1", "s", [ $message ])
@@ -538,18 +441,7 @@ class I18nTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::insertRoute
-   */
-  public function testInsertRoute() {
-    global $db;
-    $route = "PHPUnit test route";
-    $this->i18n->insertRoute($route);
-    $this->assertNotNull($db->query("SELECT `route` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_all());
-  }
-
-  /**
    * @covers ::insertOrUpdateTranslation
-   * @depends testFormatMessageValid
    * @expectedException \MovLib\Exception\DatabaseException
    */
   public function testInsertOrUpdateTranslationInvalidContext() {
@@ -558,7 +450,6 @@ class I18nTest extends \MovLib\TestCase {
 
   /**
    * @covers ::insertOrUpdateTranslation
-   * @depends testFormatMessageValid
    */
   public function testInsertOrUpdateTranslationValid() {
     global $db;
@@ -584,19 +475,35 @@ class I18nTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::getCollator
-   * @todo Implement getCollator
+   * @covers ::insertRoute
    */
-  public function testGetCollator() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+  public function testInsertRoute() {
+    global $db;
+    $route = "PHPUnit test route";
+    $this->i18n->insertRoute($route);
+    $this->assertNotNull($db->query("SELECT `route` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_all());
   }
 
   /**
-   * @covers ::getLanguageId
-   * @todo Implement getLanguageId
+   * @covers ::r
    */
-  public function testGetLanguageId() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+  public function testR() {
+    $options = [ "language_code" => "xx" ];
+    $this->assertEquals($this->i18n->formatMessage("route", $this->pattern, $this->args, $options), $this->i18n->r($this->pattern, $this->args, $options));
+    $this->assertEquals($this->i18n->formatMessage("route", $this->pattern, $this->args), $this->i18n->r($this->pattern, $this->args));
+    $this->assertEquals($this->i18n->formatMessage("route", $this->pattern, null, $options), $this->i18n->r($this->pattern, null, $options));
+    $this->assertEquals($this->i18n->formatMessage("route", $this->pattern, null), $this->i18n->r($this->pattern, null));
+  }
+
+  /**
+   * @covers ::t
+   */
+  public function testT() {
+    $options = [ "language_code" => "xx" ];
+    $this->assertEquals($this->i18n->formatMessage("message", $this->pattern, $this->args, $options), $this->i18n->t($this->pattern, $this->args, $options));
+    $this->assertEquals($this->i18n->formatMessage("message", $this->pattern, $this->args), $this->i18n->t($this->pattern, $this->args));
+    $this->assertEquals($this->i18n->formatMessage("message", $this->pattern, null, $options), $this->i18n->t($this->pattern, null, $options));
+    $this->assertEquals($this->i18n->formatMessage("message", $this->pattern, null), $this->i18n->t($this->pattern, null));
   }
 
 }

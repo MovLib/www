@@ -22,6 +22,7 @@ use \IntlDateFormatter;
 use \Locale;
 use \MessageFormatter;
 use \MovLib\Data\Collator;
+use \MovLib\Data\SystemLanguages;
 use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 
 /**
@@ -123,6 +124,7 @@ class I18n extends \MovLib\Data\Database {
   /**
    * Create new i18n model instance.
    *
+   * @global \MovLib\Configuration $config
    * @param $locale [optional]
    *   The desired locale, if no locale is passed the following procedure is executed:
    *   <ol>
@@ -132,6 +134,7 @@ class I18n extends \MovLib\Data\Database {
    *   </ol>
    */
   public function __construct($locale = null) {
+    global $config;
     // Always export defaults first.
     $this->defaultLocale = Locale::getDefault();
     $this->defaultLanguageCode = "{$this->defaultLocale[0]}{$this->defaultLocale[1]}";
@@ -140,9 +143,9 @@ class I18n extends \MovLib\Data\Database {
     // here!
     if (!$locale) {
       // Use language code from subdomain if present.
-      (isset($_SERVER["LANGUAGE_CODE"]) && ($locale = $GLOBALS["movlib"]["locales"][$_SERVER["LANGUAGE_CODE"]]))
+      (isset($_SERVER["LANGUAGE_CODE"]) && ($locale = $config->systemLanguages[$_SERVER["LANGUAGE_CODE"]]))
       // Use the best matching value from the user's submitted HTTP accept language header.
-      || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && (strlen($localeTmp = $_SERVER["HTTP_ACCEPT_LANGUAGE"]) > 1) && isset($GLOBALS["movlib"]["locales"]["{$localeTmp[0]}{$localeTmp[1]}"]) && ($locale = $GLOBALS["movlib"]["locales"]["{$localeTmp[0]}{$localeTmp[1]}"]));
+      || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && (strlen($localeTmp = $_SERVER["HTTP_ACCEPT_LANGUAGE"]) > 1) && isset($config->systemLanguages["{$localeTmp[0]}{$localeTmp[1]}"]) && ($locale = $config->systemLanguages["{$localeTmp[0]}{$localeTmp[1]}"]));
     }
     // If we still have no locale, use defaults.
     if (!$locale) {
@@ -238,7 +241,6 @@ class I18n extends \MovLib\Data\Database {
    * Get collator for the current locale.
    *
    * @return \MovLib\Data\Collator
-   * @throws \IntlException
    *   If instantiating of the collator failed (e.g. non supported locale).
    */
   public function getCollator() {
@@ -265,10 +267,12 @@ class I18n extends \MovLib\Data\Database {
    * The array can directly be used together with a Navigation partial. The languages are sorted by their name in the
    * current locale and each link's text contains the native name in parentheses.
    *
+   * @global \MovLib\Configuration $config
    * @return array
    *   Sorted array with all system languages translated to the current locale.
    */
   public function getSystemLanguageLinks() {
+    global $config;
     $links = [];
     foreach ($this->getSystemLanguages() as $languageCode => $displayLanguage) {
       $translatedDisplayLanguage = Locale::getDisplayLanguage($languageCode, $languageCode);
@@ -277,7 +281,7 @@ class I18n extends \MovLib\Data\Database {
       }
       else {
         $links[] = [
-          "{$_SERVER["SCHEME"]}://{$languageCode}.{$GLOBALS["movlib"]["default_domain"]}{$_SERVER["PATH_INFO"]}",
+          "{$_SERVER["SCHEME"]}://{$languageCode}.{$config->domainDefault}{$_SERVER["PATH_INFO"]}",
           "{$displayLanguage} ({$translatedDisplayLanguage})",
           [ "lang" => $languageCode, "title" => $this->t("Read this page in {0}.", [ $displayLanguage ]) ]
         ];
@@ -296,13 +300,15 @@ class I18n extends \MovLib\Data\Database {
    *   "de" => "Deutsch",
    * ];</pre>
    *
+   * @global \MovLib\Configuration $config
    * @return array
    *   Sorted associative array with all system languages for the current locale.
    */
   public function getSystemLanguages() {
+    global $config;
     $translated = [];
-    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
-      $translated[$languageCode] = Locale::getDisplayLanguage($languageCode, $this->locale);
+    foreach ($config->systemLanguages as $locale) {
+      $translated["{$locale[0]}{$locale[1]}"] = Locale::getDisplayLanguage($locale, $this->locale);
     }
     $this->getCollator()->asort($translated);
     return $translated;
