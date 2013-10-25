@@ -29,13 +29,13 @@ use \MovLib\Presentation\Validation\URL;
  */
 class URLTest extends \MovLib\TestCase {
 
-  public static function dataProviderAllInvalid() {
+  public function dataProviderAllInvalid() {
     return array_merge(
       self::dataProviderMalformed(), self::dataProviderMalformedSchemeAndOrHost(), self::dataProviderIllegalParts()
     );
   }
 
-  public static function dataProviderIllegalParts() {
+  public function dataProviderIllegalParts() {
     return [
       [ "http://{$_SERVER["SERVER_NAME"]}:80" ],
       [ "http://admin@{$_SERVER["SERVER_NAME"]}/" ],
@@ -44,7 +44,7 @@ class URLTest extends \MovLib\TestCase {
     ];
   }
 
-  public static function dataProviderMalformed() {
+  public function dataProviderMalformed() {
     // Not that easy to find test cases that are seriously malformed, the following won't go through the empty() check,
     // but I wasn't able to find a single string that would cause parse_url() to fail, it always extracts something.
     return [
@@ -54,7 +54,7 @@ class URLTest extends \MovLib\TestCase {
     ];
   }
 
-  public static function dataProviderMalformedSchemeAndOrHost() {
+  public function dataProviderMalformedSchemeAndOrHost() {
     return [
       [ "系" ],
       [ "MovLib" ],
@@ -69,14 +69,14 @@ class URLTest extends \MovLib\TestCase {
     ];
   }
 
-  public static function dataProviderReachability() {
+  public function dataProviderReachability() {
     return [
       [ "http://non-existent-host.com/" ],
       [ "https://{$_SERVER["SERVER_NAME"]}/non/existent/path" ],
     ];
   }
 
-  public static function dataProviderValid() {
+  public function dataProviderValid() {
     return [
       [ "http://{$_SERVER["SERVER_NAME"]}/", "http://{$_SERVER["SERVER_NAME"]}" ],
       [ "http://{$_SERVER["SERVER_NAME"]}/", "http://{$_SERVER["SERVER_NAME"]}/" ],

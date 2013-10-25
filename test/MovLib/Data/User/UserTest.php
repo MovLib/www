@@ -41,7 +41,7 @@ class UserTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
 
-  public static function dataProviderTestConstruct() {
+  public function dataProviderTestConstruct() {
     return [
       [ User::FROM_EMAIL, "richard@fussenegger.info" ],
       [ User::FROM_ID, 1 ],
@@ -52,7 +52,7 @@ class UserTest extends \MovLib\TestCase {
     ];
   }
 
-  public static function dataProviderTestConstructException() {
+  public function dataProviderTestConstructException() {
     return [
       [ User::FROM_EMAIL, "phpunit@movlib.org" ],
       [ User::FROM_ID, -1 ],
@@ -60,7 +60,7 @@ class UserTest extends \MovLib\TestCase {
     ];
   }
 
-  public static function dataProviderImageStyles() {
+  public function dataProviderImageStyles() {
     return [
       [ User::IMAGE_STYLE_SPAN_01 ],
       [ User::IMAGE_STYLE_SPAN_02 ],

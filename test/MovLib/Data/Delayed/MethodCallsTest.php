@@ -58,7 +58,7 @@ class MethodCallsTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
 
-  public static function dataProviderExample() {
+  public function dataProviderExample() {
     return [];
   }
 
@@ -66,7 +66,7 @@ class MethodCallsTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
 
-    /**
+  /**
    * @covers ::run
    * @todo Implement run
    */

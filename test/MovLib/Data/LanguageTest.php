@@ -58,7 +58,7 @@ class LanguageTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
 
-  public static function dataProviderExample() {
+  public function dataProviderExample() {
     return [];
   }
 
@@ -66,7 +66,7 @@ class LanguageTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
 
-    /**
+  /**
    * @covers ::__construct
    * @todo Implement __construct
    */

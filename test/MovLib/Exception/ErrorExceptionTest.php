@@ -29,7 +29,7 @@ use \MovLib\Exception\ErrorException;
  */
 class ErrorExceptionTest extends \MovLib\TestCase {
 
-  static function dataProviderTestConstruct() {
+  function dataProviderTestConstruct() {
     return [
       [ E_ERROR ],
       [ E_WARNING ],

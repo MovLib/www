@@ -56,7 +56,7 @@ class TraitGalleryTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
 
-  public static function dataProviderExample() {
+  public function dataProviderExample() {
     return [];
   }
 
@@ -64,7 +64,7 @@ class TraitGalleryTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
 
-    /**
+  /**
    * @covers ::getPageContent
    * @todo Implement getPageContent
    */

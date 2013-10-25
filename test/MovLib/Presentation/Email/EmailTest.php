@@ -48,7 +48,7 @@ class EmailTest extends \MovLib\TestCase {
     new Email("phpunit1@movlib.org, phpunit2@movlib.org", "", "", "");
   }
 
-  public static function dataProviderWordwrap() {
+  public function dataProviderWordwrap() {
     return [
       [ "âââ_ñññ_ëëë_ôôô_æææ_øøø_äää_üüü_ööö", "âââ_ñññ_ëëë_ôôô_æææ_øøø_äää_üüü_ööö", 10, false ],
       [ "âââ_ñññ_ëë\në_ôôô_æææ_\nøøø_äää_üü\nü_ööö", "âââ_ñññ_ëëë_ôôô_æææ_øøø_äää_üüü_ööö", 10, true ],

@@ -32,7 +32,7 @@ class InputTextTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Data Providers
 
 
-  public static function dataProviderValidPlainTextStrings() {
+  public function dataProviderValidPlainTextStrings() {
     return [
       [ "" ], // Valid empty string
       [ "movlib" ], // Valid ASCII
@@ -48,17 +48,17 @@ class InputTextTest extends \MovLib\TestCase {
     ];
   }
 
-  public static function dataProviderInvalidUnicode() {
+  public function dataProviderInvalidUnicode() {
     return [
     ];
   }
 
-  public static function dataProviderInvalidNFCForm() {
+  public function dataProviderInvalidNFCForm() {
     return [
     ];
   }
 
-  public static function dataProviderLowASCII() {
+  public function dataProviderLowASCII() {
     return [
     ];
   }

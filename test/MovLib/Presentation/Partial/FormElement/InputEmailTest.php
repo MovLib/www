@@ -32,7 +32,7 @@ class InputEmailTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Data Providers
 
 
-  public static function dataProviderInvalid() {
+  public function dataProviderInvalid() {
     return [
       // Valid syntax but no DNS record
       [ "phpunit@123.123.123.x123" ],
@@ -84,7 +84,7 @@ class InputEmailTest extends \MovLib\TestCase {
     ];
   }
 
-  public static function dataProviderInvalidPHP() {
+  public function dataProviderInvalidPHP() {
     return array_merge(self::dataProviderInvalid(), [
       // Valid syntax but too long (exactly 255 characters)
       [ "123456789012345678901234567890123456789012345678901234567890@12345678901234567890123456789012345678901234567890123456789.12345678901234567890123456789012345678901234567890123456789.123456789012345678901234567890123456789012345678901234567890123.movlib.org" ],
@@ -113,7 +113,7 @@ class InputEmailTest extends \MovLib\TestCase {
     ]);
   }
 
-  public static function dataProviderValid() {
+  public function dataProviderValid() {
     return [
       [ '""@movlib.org' ],
       [ "+1~1+@movlib.org" ],

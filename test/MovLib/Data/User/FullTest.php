@@ -33,7 +33,7 @@ class FullTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
 
-  public static function dataProviderTestCheckNameExists() {
+  public function dataProviderTestCheckNameExists() {
     return [
       [ "Fleshgrinder" ],
       [ "fleshgrinder" ],

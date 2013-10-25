@@ -30,7 +30,7 @@ use \MovLib\Presentation\Validation\PlainText;
  */
 class PlainTextTest {
 
-  public static function dataProviderInvalid() {
+  public function dataProviderInvalid() {
     return [
       [ "movlib" ], // Valid ASCII
       [ "mov < lib" ], // Valid ASCII and usage of special HTML character
@@ -45,7 +45,7 @@ class PlainTextTest {
     ];
   }
 
-  public static function dataProviderValid() {
+  public function dataProviderValid() {
     return [
       [ "" ], // Invalid empty string
       [ "\x00" ], // Invalid control character (NULL)

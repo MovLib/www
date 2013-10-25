@@ -62,7 +62,7 @@ class I18nTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Data Providers
 
 
-  public static function dataProviderTestConstructAcceptLanguageHeaderValid() {
+  public function dataProviderTestConstructAcceptLanguageHeaderValid() {
     $args = [];
     foreach (new SystemLanguages() as $locale => $systemLanguage) {
       $args[] = [ $locale, $locale, $systemLanguage->languageCode ];
@@ -71,7 +71,7 @@ class I18nTest extends \MovLib\TestCase {
     return $args;
   }
 
-  public static function dataProviderTestConstructLanguageCodeValid() {
+  public function dataProviderTestConstructLanguageCodeValid() {
     $args = [];
     foreach (new SystemLanguages() as $locale => $systemLanguage) {
       $args[] = [ $systemLanguage->languageCode, $locale, $systemLanguage->languageCode ];

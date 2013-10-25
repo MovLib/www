@@ -17,7 +17,7 @@ class StacktraceTest extends \MovLib\TestCase {
    * This method is called before a test is executed.
    */
   protected function setUp() {
-    /** @todo Implement properly. */
+  /** @todo Implement properly. */
 //    $this->object = new Stacktrace;
   }
 

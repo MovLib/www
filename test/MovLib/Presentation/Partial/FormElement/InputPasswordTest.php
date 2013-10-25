@@ -49,7 +49,7 @@ class InputPasswordTest extends \MovLib\TestCase {
     ];
   }
 
-  public static function dataProviderWeakPasswords() {
+  public function dataProviderWeakPasswords() {
     return [
       [ "test" ],
       [ "testtest" ],
