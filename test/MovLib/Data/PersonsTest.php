@@ -73,7 +73,7 @@ class PersonsTest extends \MovLib\TestCase {
     global $db;
     $this->persons->orderByCreated();
     $index = 0;
-    foreach (array_column($db->query("SELECT `name` FROM `persons` ORDER BY created ASC")->get_result()->fetch_all(), 0) as $name) {
+    foreach (array_column($db->query("SELECT `name` FROM `persons` WHERE `deleted` = false ORDER BY created ASC")->get_result()->fetch_all(), 0) as $name) {
       $this->assertEquals($name, $this->persons[$index]->name);
       ++$index;
     }
@@ -86,7 +86,7 @@ class PersonsTest extends \MovLib\TestCase {
     global $db;
     $this->persons->orderByCreated(5, 3);
     $index = 0;
-    foreach (array_column($db->query("SELECT `name` FROM `persons` ORDER BY created ASC LIMIT 5, 3")->get_result()->fetch_all(), 0) as $name) {
+    foreach (array_column($db->query("SELECT `name` FROM `persons` WHERE `deleted` = false ORDER BY created ASC LIMIT 5, 3")->get_result()->fetch_all(), 0) as $name) {
       $this->assertEquals($name, $this->persons[$index]->name);
       ++$index;
     }

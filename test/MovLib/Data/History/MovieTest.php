@@ -21,7 +21,7 @@ use \MovLib\Data\History\Movie;
 
 /**
  * @coversDefaultClass \MovLib\Data\History\Movie
- * @author Skeleton Generator
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -44,22 +44,13 @@ class MovieTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->movie = new Movie();
+    $this->movie = new Movie(2);
   }
 
   /**
    * Called after each test.
    */
   protected function tearDown() {
-
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Data Provider
-
-
-  public function dataProviderExample() {
-    return [];
   }
 
 
@@ -71,7 +62,10 @@ class MovieTest extends \MovLib\TestCase {
    * @todo Implement __construct
    */
   public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->assertNotEmpty($this->movie->files);
+    $this->assertNotEmpty($this->movie->serializedFiles);
+    $this->assertContains("en_synopsis", $this->movie->files);
+    $this->assertContains("de_synopsis", $this->movie->files);
   }
 
 }

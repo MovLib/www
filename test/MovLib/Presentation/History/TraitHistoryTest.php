@@ -19,7 +19,7 @@ namespace MovLib\Presentation\History;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\History\TraitHistory
- * @author Skeleton Generator
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -42,7 +42,7 @@ class TraitHistoryTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->traitHistory = $this->getMockForAbstractClass("\\MovLib\\Presentation\\History\\TraitHistory");
+    $this->traitHistory = $this->getMockForTrait("\\MovLib\\Presentation\\History\\TraitHistory", [ "phpunitrepos" ], "MovieHistory");
   }
 
   /**
@@ -50,14 +50,6 @@ class TraitHistoryTest extends \MovLib\TestCase {
    */
   protected function tearDown() {
 
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Data Provider
-
-
-  public function dataProviderExample() {
-    return [];
   }
 
 

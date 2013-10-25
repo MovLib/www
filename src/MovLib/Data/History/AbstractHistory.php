@@ -125,16 +125,18 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Instantiate new history model from given ID.
    *
+   * @global \MovLib\Configuration $config
    * @param int $id
    *   The id of the object to be versioned.
    * @param string $context [optional]
    *   The directory in which the repository is found.
    */
   public function __construct($id, $context = "history") {
+    global $config;
     $this->context = $context;
     $this->type = $this->getShortName();
     $this->id = $id;
-    $this->path = "{$_SERVER["DOCUMENT_ROOT"]}/private/{$this->context}/{$this->type}/{$this->id}";
+    $this->path = "{$config->documentRoot}/private/{$this->context}/{$this->type}/{$this->id}";
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -186,7 +188,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     if ($returnVar !== 0) {
       throw new HistoryException("Error while initial commit!");
     }
-    return $this->getLastCommitHash();
+    return $this->getLastCommitHashFromGit();
   }
 
   /**
@@ -216,7 +218,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Exception\HistoryException
    */
-  private function getCommitHash() {
+  private function getCommitHashFromDb() {
     $stmt = $this->query("SELECT `commit` FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1", "d", [ $this->id ]);
     $stmt->bind_result($commitHash);
     if (!$stmt->fetch()) {
@@ -330,7 +332,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   Last commit hash from the repository.
    * @throws HistoryException
    */
-  private function getLastCommitHash() {
+  private function getLastCommitHashFromGit() {
     exec("cd {$this->path} && git log --format='%H' --max-count=1", $output, $returnVar);
     if ($returnVar !== 0 || !isset($output[0])) {
       throw new HistoryException("There was an error getting last commit hash from repository");
@@ -399,12 +401,14 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Hide a repository.
    *
+   * @global \MovLib\Configuration $config
    * @return this
    * @throws \MovLib\Exception\HistoryException
    * @throws \MovLib\Exception}FileSystemException
    */
   private function hideRepository() {
-    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/private/{$this->context}/{$this->type}/.{$this->id}";
+    global $config;
+    $newPath = "{$config->documentRoot}/private/{$this->context}/{$this->type}/.{$this->id}";
     if (is_dir($newPath)) {
       throw new HistoryException("Repository already hidden", self::E_REPOSITORY_IN_USE);
     }
@@ -443,9 +447,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   }
 
   /**
-   * Reset unstaged files.
-   *
-   * Only unstaged files can be reseted!
+   * Reset files.
    *
    * @param array $files
    *   Numeric array containing the file names to be reseted.
@@ -453,6 +455,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\HistoryException
    */
   private function resetFiles(array $files) {
+    $this->unstageFiles($files);
     $filesToReset = implode(" ", $files);
     exec("cd {$this->path} && git checkout -- {$filesToReset}", $output, $returnVar);
     if ($returnVar !== 0) {
@@ -488,13 +491,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     $this->stageAllFiles();
 
     try {
-      if ($this->commitHash != $this->getLastCommitHash()) {
+      if ($this->commitHash != $this->getLastCommitHashFromGit()) {
         // If someone else commited in the meantime find intersecting files.
         $changedSinceStartEditing = $this->getChangedFiles("HEAD", $this->commitHash);
         $changedFiles = $this->getDirtyFiles();
         $this->intersectingFiles = array_intersect($changedFiles, $changedSinceStartEditing);
         // we reset the all dirty files.
-        $this->unstageFiles($changedFiles);
         $this->resetFiles($changedFiles);
         throw new HistoryException("Someone else edited the same information about the {$this->type}!", self::E_EDITING_CONFLICT);
       } else {
@@ -506,7 +508,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       $this->unhideRepository();
     }
 
-    return $this->getLastCommitHash();
+    return $this->getLastCommitHashFromGit();
   }
 
   /**
@@ -532,19 +534,21 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @return this
    */
   public function startEditing() {
-    $this->commitHash = $this->getCommitHash();
+    $this->commitHash = $this->getCommitHashFromDb();
     return $this;
   }
 
   /**
    * Unhide a repository.
    *
+   * @global \MovLib\Configuration $config
    * @return this
    * @throws \MovLib\Exception\HistoryException
    * @throws \MovLib\Exception}FileSystemException
    */
   private function unhideRepository() {
-    $newPath = "{$_SERVER["DOCUMENT_ROOT"]}/private/{$this->context}/{$this->type}/{$this->id}";
+    global $config;
+    $newPath = "{$config->documentRoot}/private/{$this->context}/{$this->type}/{$this->id}";
     if (is_dir($newPath)) {
       throw new HistoryException("Repository not hidden");
     }

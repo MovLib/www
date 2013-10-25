@@ -31,9 +31,9 @@ use \MovLib\Presentation\History\MovieHistory;
  */
 class MovieHistoryTest extends \MovLib\TestCase {
 
-  public static function setUpBeforeClass() {
-    global $db;
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
+  protected function setUp() {
+    global $config, $db;
+    $path = "{$config->documentRoot}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
@@ -46,7 +46,8 @@ class MovieHistoryTest extends \MovLib\TestCase {
   }
 
   public static function tearDownAfterClass() {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
+    global $config;
+    $path = "{$config->documentRoot}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }

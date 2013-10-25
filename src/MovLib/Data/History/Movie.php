@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\History;
 
+use \MovLib\Data\SystemLanguages;
+
 /**
  * Specialized history model for movie models.
  *
@@ -39,8 +41,10 @@ class Movie extends AbstractHistory {
       "runtime",
       "year"
     ];
-    foreach ($GLOBALS["movlib"]["locales"] as $languageCode => $locale) {
-      $this->files[] = "{$languageCode}_synopsis";
+    
+    /* @var $systemLanguage \MovLib\Data\SystemLanguage */
+    foreach (new SystemLanguages() as $systemLanguage) {
+      $this->files[] = "{$systemLanguage->languageCode}_synopsis";
     }
 
     $this->serializedFiles = [

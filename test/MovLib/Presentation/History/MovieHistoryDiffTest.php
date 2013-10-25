@@ -37,9 +37,9 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
   private $historyDiffPage;
 
   public function setUp() {
-    global $db;
+    global $config, $db;
 
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
+    $path = "{$config->documentRoot}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
@@ -57,7 +57,8 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     }
 
   public function tearDown() {
-    $path = "{$_SERVER["DOCUMENT_ROOT"]}/private/phpunitrepos";
+    global $config;
+    $path = "{$config->documentRoot}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }

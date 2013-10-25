@@ -35,15 +35,11 @@ class UsersTest extends \MovLib\TestCase {
   /** @var \MovLib\Data\User\Users */
   private $users;
 
-  /** @var \MovDev\Database */
-  private $db;
-
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
   protected function setUp() {
     $this->users = new Users();
-    $this->db    = new Database();
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
@@ -69,9 +65,10 @@ class UsersTest extends \MovLib\TestCase {
    * @covers ::orderByNewest
    */
   public function testOrderByNewest() {
+    global $db;
     $this->users->orderByNewest(0, 3);
     $index = 0;
-    foreach (array_column($this->db->query("SELECT `name` FROM `users` ORDER BY user_id DESC LIMIT 3")->get_result()->fetch_all(), 0) as $name) {
+    foreach (array_column($db->query("SELECT `name` FROM `users` WHERE `deactivated` = false ORDER BY user_id DESC LIMIT 3")->get_result()->fetch_all(), 0) as $name) {
       $this->assertEquals($name, $this->users[$index]->name);
       ++$index;
     }
@@ -81,9 +78,10 @@ class UsersTest extends \MovLib\TestCase {
    * @covers ::orderByNewest
    */
   public function testOrderByNewestWithOffsetAndLimit() {
+    global $db;
     $this->users->orderByNewest(1, 2);
     $index = 0;
-    foreach (array_column($this->db->query("SELECT `name` FROM `users` ORDER BY user_id DESC LIMIT 1, 3")->get_result()->fetch_all(), 0) as $name) {
+    foreach (array_column($db->query("SELECT `name` FROM `users` WHERE `deactivated` = false ORDER BY user_id DESC LIMIT 1, 3")->get_result()->fetch_all(), 0) as $name) {
       $this->assertEquals($name, $this->users[$index]->name);
       ++$index;
     }
@@ -93,10 +91,10 @@ class UsersTest extends \MovLib\TestCase {
    * @covers ::orderByName
    */
   public function testOrderByName() {
-    global $i18n;
+    global $db, $i18n;
     $this->users->orderByName();
     /* @var $result \mysqli_result */
-    $result = array_column($this->db->query("SELECT `name` FROM `users`")->get_result()->fetch_all(), 0);
+    $result = array_column($db->query("SELECT `name` FROM `users` WHERE `deactivated` = false")->get_result()->fetch_all(), 0);
     $i18n->getCollator()->asort($result);
     foreach ($result as $name) {
       $this->assertEquals($name, $this->users[$name]->name);
