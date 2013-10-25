@@ -11,6 +11,7 @@ Desktop.ini
 /composer.lock
 /conf/mariadb/movlib.mwb.bak
 /conf/movlib.ini
+/private/sandbox/
 /public/components/
 /public/coverage/
 /public/doc/
