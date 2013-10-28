@@ -22,6 +22,7 @@ use \Locale;
 use \MovLib\Data\SystemLanguages;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\FileSystemException;
+use \ReflectionClass;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -128,6 +129,36 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     $this->addInputOption(self::OPTION_DATABASE, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific database data.");
     $this->addInputOption(self::OPTION_UPLOAD, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific upload data.");
   }
+  
+  /**
+   * Helper function to (re)create git repositories.
+   *
+   * @global \MovLib\Configuration $config
+   * @global \MovLib\Tool\Database $db
+   * @param string $type
+   *  All repositories of this type are created.
+   * @return this
+   */
+  protected function createRepositories($type) {
+    global $config, $db;
+
+    $path = "{$config->documentRoot}/private/history/{$type}";
+    if (is_dir($path)) {
+      $this->exec("rm -rf {$path}");
+    }
+
+    $class = ucfirst($type);
+    $class = new ReflectionClass("\\MovLib\\Data\\History\\{$class}");
+    if ($result = $db->query("SELECT `{$type}_id` FROM `{$type}s`")->get_result()->fetch_all(MYSQLI_ASSOC)) {
+      $c = count($result);
+      for ($i = 0; $i < $c; ++$i) {
+        $history = $class->newInstance($result[$i]["{$type}_id"]);
+        $commitHash = $history->createRepository();
+        $db->query("UPDATE `{$type}s` SET `commit` = '{$commitHash}' WHERE `{$type}_id` = {$result[$i]["{$type}_id"]}");
+      }
+    }
+    return $this;
+  }
 
   /**
    * Import one or more database seed data.
@@ -200,6 +231,36 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       $this->seedImport();
     }
   }
+  
+  /**
+   * Create git repositories.
+   *
+   * @param string $type [optional]
+   *   If supplied, only repositories of this type (e.g. movie) are created, otherwise all repositories are created.
+   * @return this
+   */
+  public function historyImport(array $types = null) {
+    $supportedTypes = [ "movie" ];
+    
+    if (empty($types)) {
+      $types = $supportedTypes;
+    }
+    else {
+      $c = count($types);
+      for ($i = 0; $i < $c; ++$i) {
+        if (!in_array($types[$i], $supportedTypes)) {
+          $supportedTypes = implode(", ", $supportedTypes);
+          throw new InvalidArgumentException("No repository type with name '{$types[$i]}' found! Supportet types are  {$supportedTypes}");
+        }
+      }
+    }
+
+    foreach ($types as $type) {
+      $this->createRepositories($type);
+    }
+
+    return $this;
+  }
 
   /**
    * Import the Intl ICU translations for countries and languages.
@@ -269,12 +330,12 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   public function importTimeZones() {
     global $config, $db, $i18n;
     $this->write("Importing time zone translations ...");
-    $systemLanguages = new SystemLanguages();
+    $systemLanguages = $config->systemLanguages;
     $timeZoneIds = timezone_identifiers_list();
     $c = count($timeZoneIds);
     $translations = [];
     foreach ($config->systemLanguages as $languageCode => $locale) {
-      if ($languageCode == $i18n->defaultLocale) {
+      if ($languageCode == $i18n->languageCode) {
         // @todo These translations aren't quite correct! Create translation file!
         for ($i = 0; $i < $c; ++$i) {
           $translations[$languageCode][$timeZoneIds[$i]] = strtr($timeZoneIds[$i], "_", " ");
@@ -289,6 +350,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         }
       }
     }
+    
     if (!empty($translations)) {
       $query = "INSERT INTO `messages` (`message`, `dyn_translations`) VALUES ";
       for ($i = 0; $i < $c; ++$i) {
@@ -305,7 +367,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         else {
           $dynTranslations = "COLUMN_CREATE(" . rtrim($dynTranslations, ",") . ")";
         }
-        $query .= "('{$db->escapeString($translations[$i18n->defaultLocale][$timeZoneIds[$i]])}', {$dynTranslations}),";
+        $query .= "('{$db->escapeString($translations[$i18n->defaultLanguageCode][$timeZoneIds[$i]])}', {$dynTranslations}),";
       }
       if (!empty($query)) {
         try {
