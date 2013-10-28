@@ -17,37 +17,34 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Data\Delayed\Logger;
-use \MovLib\Exception\DatabaseException;
 use \Symfony\Component\Console\Input\InputInterface;
+use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Cron jobs that should run on a daily basis.
+ * Manage various caches of the MovLib software.
  *
- * Add the following line to your crontab after creating the symbolic link to the <code>movlib.php</code> file in your
- * local bin path: <code>@daily movlib cron-daily</code>
- *
+ * @link http://www.linuxatemyram.com/play.html
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
+class CacheInspector extends \MovLib\Tool\Console\Command\AbstractCommand {
 
   /**
    * @inheritdoc
    */
   public function __construct() {
-    parent::__construct("cron-daily");
+    parent::__construct("cache-inspector");
   }
 
   /**
    * @inheritdoc
    */
   protected function configure() {
-    $this->setDescription("Cron jobs that should run on a daily basis.");
+    $this->setDescription("Manage various system caches.");
   }
 
   /**
@@ -55,38 +52,18 @@ class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
-    $this->purgeTemporaryTable()->purgeTemporaryUploads();
+    $foundOption = false;
+    foreach ($options as $option => $value) {
+      $method = "empty" . ucfirst($option) . "Cache";
+      if ($value === true && method_exists($this, $method)) {
+        $this->{$method}();
+        $foundOption = true;
+      }
+    }
+    if ($foundOption === false) {
+      $this->write("Use `movlib --help {$this->getName()}` to list all available options.", self::MESSAGE_TYPE_COMMENT);
+    }
     return $options;
-  }
-
-  /**
-   * Purge all data from the temporary table.
-   *
-   * @global \MovLib\Tool\Database $db
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function purgeTemporaryTable() {
-    global $db;
-    try {
-      $db->query("DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$db->escapeString(\MovLib\Data\Database::TMP_TTL_DAILY)}'");
-    }
-    catch (DatabaseException $e) {
-      Logger::stack($e, Logger::FATAL);
-      throw $e;
-    }
-    return $this;
-  }
-
-  /**
-   * Purge all files from temporary uploads folder.
-   *
-   * @return this
-   */
-  public function purgeTemporaryUploads() {
-    $directory = escapeshellarg(ini_get("upload_tmp_dir"));
-    $this->exec("find {$directory} -type f -mtime +1 -exec rm -f {} \\;");
-    return $this;
   }
 
 }

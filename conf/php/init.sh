@@ -68,6 +68,15 @@ DAEMON_ARGS=""
 # The php-fpm group.
 GROUP="www-data"
 
+# The php-fpm log directory.
+LOG_DIR="/var/log/php-fpm"
+
+# The php-fpm error log.
+LOG_ERROR="error.log"
+
+# The php-fpm slow log.
+LOG_SLOW="slow.log"
+
 # Absolute path to the PID file.
 PIDFILE="/run/${NAME}.pid"
 
@@ -106,6 +115,14 @@ if [ ! -d ${UPLOAD_TMP_DIR} ]; then
   chmod 2770 ${UPLOAD_TMP_DIR}
   chown ${USER}:${GROUP} ${UPLOAD_TMP_DIR}
 fi
+
+if [ ! -d ${LOG_DIR} ]; then
+  mkdir ${LOG_DIR}
+fi
+touch "${LOG_DIR}/${ERROR_LOG}"
+touch "${LOG_DIR}/${SLOW_LOG}"
+chmod 0770 /var/log/php-fpm
+chmod 0660 /var/log/php-fpm/*
 
 # Always check if service is already running.
 RUNNING=$(start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON} --test && echo "false" || echo "true")

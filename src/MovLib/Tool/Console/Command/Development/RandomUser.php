@@ -223,11 +223,11 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    parent::execute($input, $output);
+    $options = parent::execute($input, $output);
     $this->write("Preparing to generate <comment>{$this->amount}</comment> random users ...");
     $this->generateRandomUsers($this->input->getArgument("amount"));
     $this->write("Successfully created {$this->amount} of random users!", self::MESSAGE_TYPE_INFO);
-    return $this;
+    return $options;
   }
 
   /**

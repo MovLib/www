@@ -58,9 +58,10 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    parent::execute($input, $output);
+    $options = parent::execute($input, $output);
     $this->checkPrivileges();
     $this->fixPermissions($input->getArgument("directory"));
+    return $options;
   }
 
   /**

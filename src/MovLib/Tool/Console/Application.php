@@ -35,6 +35,21 @@ use \ReflectionClass;
 class Application extends \Symfony\Component\Console\Application {
   use \MovLib\Tool\TraitUtilities;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * Array used to collect available commands.
+   *
+   * @var array
+   */
+  private $commands = [];
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
    * Instantiate new MovLib CLI application.
    *
@@ -47,7 +62,14 @@ class Application extends \Symfony\Component\Console\Application {
     if ($config->production === false) {
       $this->importCommands("Development");
     }
+    foreach ($this->commands as $shortName => $command) {
+      $this->add(new $command());
+    }
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Imports all instantiable commands from the given directory (subnamespace directory of Command).
@@ -58,10 +80,11 @@ class Application extends \Symfony\Component\Console\Application {
    */
   protected function importCommands($directory) {
     foreach (glob(__DIR__ . "/Command/{$directory}/*.php") as $command) {
-      $command = "\\MovLib\\Tool\\Console\\Command\\{$directory}\\" . basename($command, ".php");
+      $shortName = basename($command, ".php");
+      $command = "\\MovLib\\Tool\\Console\\Command\\{$directory}\\{$shortName}";
       // Make sure we don't include any abstract classes or interfaces.
       if ((new ReflectionClass($command))->isInstantiable()) {
-        $this->add(new $command());
+        $this->commands[$shortName] = $command;
       }
     }
     return $this;

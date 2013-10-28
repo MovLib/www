@@ -48,6 +48,14 @@ trait TraitHistory {
   // ------------------------------------------------------------------------------------------------------------------- Page Content
 
 
+  public function formatDiff($listItem) {
+    return "<div class='well well--small'>{$this->getDiff(
+      $_SERVER["REVISION_HASH"],
+      "{$_SERVER["REVISION_HASH"]}^",
+      $listItem
+    )}</div>";
+  }
+
   /**
    * Helper function to build diff page.
    *
@@ -55,33 +63,18 @@ trait TraitHistory {
    * @return string
    *   Returns HTML of diff page.
    */
-  private function contentDiffPage() {
+  protected function contentDiffPage() {
     global $i18n;
-    $html =
-      "<div id='revision-diff'>" .
-        $this->a($i18n->r("/{0}/{1}/history", [ $this->historyModel->type, $_SERVER["MOVIE_ID"] ]),
-          $i18n->t("go back"), [
-            "class" => "pull-right"
-          ]
-        ) .
-        "<h2>{$i18n->t("Difference between revisions")}</h2>";
+    $list = new Unordered($this->historyModel->getChangedFiles($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^1"));
+    $list->closure = [ $this, "formatDiff" ];
 
-    $changedFiles = $this->historyModel->getChangedFiles($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^1");
-    $formatedFileNames = $this->formatFileNames($changedFiles);
-
-    $c = count($changedFiles);
-    for ($i = 0; $i < $c; ++$i) {
-       $changedFiles[$i] = $formatedFileNames[$i] .
-       "<div class='well well--small'>" .
-         $this->getDiff($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^", $changedFiles[$i]) .
-       "</div>";
-    }
-
-    $html .=
-        (new Unordered($changedFiles, "")) .
-      "</div>";
-
-    return $html;
+    return
+      "<div id='revision-diff'>{$this->a(
+        $i18n->r("/{0}/{1}/history", [ $this->historyModel->type, $this->historyModel->id ]),
+        $i18n->t("go back"),
+        [ "class" => "pull-right" ]
+      )}<h2>{$i18n->t("Difference between revisions")}</h2>{$list}</div>"
+    ;
   }
 
   /**
@@ -91,7 +84,7 @@ trait TraitHistory {
    * @return string
    *   Returns HTML of revision history.
    */
-  private function contentRevisionsPage() {
+  protected function contentRevisionsPage() {
     global $i18n;
     $commits = $this->historyModel->getLastCommits();
     $userIds = [];
@@ -161,7 +154,7 @@ trait TraitHistory {
    * @return \MovLib\Presentation\Partial\Lists\Unordered
    *   A HTML List of changed items.
    */
-  private function diffArray($diff, $className, $methodName = "orderById") {
+  protected function diffArray($diff, $className, $methodName = "orderById") {
     global $i18n;
     $itemIds = [];
     $allItems = array_merge($diff["added"], $diff["removed"], $diff["edited"]);
@@ -194,7 +187,7 @@ trait TraitHistory {
    * @return \MovLib\Presentation\Partial\Lists\Unordered
    *   A HTML List of changed items.
    */
-  private function diffArrayItems($diff, $case, $className, $methodName, $itemIds) {
+  protected function diffArrayItems($diff, $case, $className, $methodName, $itemIds) {
     global $i18n;
     $itemInformation = (new $className())->{$methodName}($itemIds);
     switch ($case) {
@@ -261,7 +254,7 @@ trait TraitHistory {
    * @return \MovLib\Presentation\Partial\Lists\Unordered
    *   A HTML List of changed items representet by their name.
    */
-  private function diffIds($diff, $className) {
+  protected function diffIds($diff, $className) {
     global $i18n;
     $classNameWithoutNamespace = array_pop((explode('\\', strtolower($className))));
     $listItems = [];
@@ -290,7 +283,7 @@ trait TraitHistory {
    * @return array
    *  Numeric array with formated file names.
    */
-  private function formatFileNames($fileNames) {
+  protected function formatFileNames($fileNames) {
     global $i18n;
     $c = count($fileNames);
     for ($i = 0; $i < $c; ++$i) {
@@ -328,7 +321,7 @@ trait TraitHistory {
    * @return string
    *   Diff between revisions as HTML.
    */
-  private function getDiff($head, $ref, $filename) {
+  protected function getDiff($head, $ref, $filename) {
     if (in_array($filename, $this->historyModel->files)) {
       return $this->textDiffOfRevisions($head, $ref, $filename, true);
     }
@@ -352,7 +345,7 @@ trait TraitHistory {
    * @return string
    *   Returns diff of one file as styled HTML.
    */
-  private function textDiffOfRevisions($head, $ref, $filename, $exact) {
+  protected function textDiffOfRevisions($head, $ref, $filename, $exact) {
     $from = $this->historyModel->getFileAtRevision($filename, $ref);
     $to   = $this->historyModel->getFileAtRevision($filename, $head);
 
@@ -371,7 +364,7 @@ trait TraitHistory {
    * @return string
    *   Returns a diff of two strings as styles HTML.
    */
-  private function textDiffOfStrings($from, $to, $exact = false) {
+  protected function textDiffOfStrings($from, $to, $exact = false) {
     if ($exact) {
       $from = preg_replace("/(.{1})/", "$1\n", $from);
       $to = preg_replace("/(.{1})/", "$1\n", $to);
