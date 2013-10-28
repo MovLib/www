@@ -3,7 +3,7 @@
 /* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ * Copyright Ã‚Â© 2013-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -24,7 +24,7 @@ use \MovLib\Tool\Console\Command\Development\SeedImport;
 /**
  * @coversDefaultClass \MovLib\Data\User\Session
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright Ã‚Â© 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
@@ -46,6 +46,30 @@ class SessionTest extends \MovLib\TestCase {
    */
   public function testConstruct() {
     $this->assertEquals(session_name(), $this->getProperty(new Session(), "name"));
+  }
+
+  /**
+   * @covers ::__construct
+   * @todo Test with cURL.
+   */
+  public function testConstructNoUserId() {
+    $this->markTestIncomplete("TODO: Test session construction without user id with cURL.");
+  }
+
+  /**
+   * @covers ::__construct
+   * @todo Test with cURL.
+   */
+  public function testConstructValidSession() {
+    $this->markTestIncomplete("TODO: Test valid session construction with cURL.");
+  }
+
+  /**
+   * @covers ::__construct
+   * @todo Test with cURL.
+   */
+  public function testConstructValidSessionResumeFromPersistentStorage() {
+    $this->markTestIncomplete("TODO: Test valid session resuming with cURL.");
   }
 
   /**
@@ -85,6 +109,22 @@ class SessionTest extends \MovLib\TestCase {
   }
 
   /**
+   * @covers ::authenticate
+   * @todo Test with cURL.
+   */
+  public function testAuthenticateRegenerateAnonymous() {
+    $this->markTestIncomplete("TODO: Test session id regeneration with cURL.");
+  }
+
+  /**
+   * @covers ::authenticate
+   * @todo Test with cURL.
+   */
+  public function testAuthenticateStart() {
+    $this->markTestIncomplete("TODO: Test start of new session with cURL.");
+  }
+
+  /**
    * @covers ::checkAuthorization
    */
   public function testCheckAuthorization() {
@@ -112,7 +152,17 @@ class SessionTest extends \MovLib\TestCase {
    * @covers ::checkAuthorizationTimestamp
    * @expectedException \MovLib\Exception\Client\UnauthorizedException
    */
-  public function testCheckAuthorizationTimestampException() {
+  public function testCheckAuthorizationTimestampExceptionNotAuthenticated() {
+    global $session;
+    $session->isAuthenticated = false;
+    $session->checkAuthorizationTimestamp("PHPUnit");
+  }
+
+  /**
+   * @covers ::checkAuthorizationTimestamp
+   * @expectedException \MovLib\Exception\Client\UnauthorizedException
+   */
+  public function testCheckAuthorizationTimestampExceptionTimeout() {
     global $session;
     $session->authentication = strtotime("-2 hours");
     $session->checkAuthorizationTimestamp("PHPUnit");
@@ -120,10 +170,11 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::destroy
+   * @todo Test with cURL.
    */
-  //public function testDestroy() {
-  // @todo Test with cURL
-  //}
+  public function testDestroy() {
+    $this->markTestIncomplete("TODO: Test Session::destroy() with cURL.");
+  }
 
   /**
    * @covers ::init
@@ -242,24 +293,27 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::regenerate
+   * @todo Test with cURL.
    */
-  //public function testRegenerate() {
-  // @todo Test with cURL
-  //}
+  public function testRegenerate() {
+    $this->markTestIncomplete("TODO: Test Session::regenerate() with cURL.");
+  }
 
   /**
    * @covers ::shutdown
+   * @todo Test with cURL.
    */
-  //public function testShutdown() {
-  // @todo Test with cURL
-  //}
+  public function testShutdown() {
+    $this->markTestIncomplete("TODO: Test Session::shutdown() with cURL.");
+  }
 
   /**
    * @covers ::start
+   * @todo Test with cURL.
    */
-  //public function testStart() {
-  // @todo Test with cURL
-  //}
+  public function testStart() {
+    $this->markTestIncomplete("TODO: Test Session::start() with cURL.");
+  }
 
   /**
    * @covers ::validateCsrfToken
@@ -285,38 +339,6 @@ class SessionTest extends \MovLib\TestCase {
     global $session;
     $_POST["csrf"] = $session->csrfToken;
     $this->assertTrue($session->validateCsrfToken());
-  }
-
-  /**
-   * @covers ::destroy
-   * @todo Implement destroy
-   */
-  public function testDestroy() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::regenerate
-   * @todo Implement regenerate
-   */
-  public function testRegenerate() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::shutdown
-   * @todo Implement shutdown
-   */
-  public function testShutdown() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::start
-   * @todo Implement start
-   */
-  public function testStart() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
 }
