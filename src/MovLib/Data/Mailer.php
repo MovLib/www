@@ -228,8 +228,6 @@ EOT;
    *   The string wrapped at the specified length.
    */
   protected function wordwrap($string, $width = 75, $cut = false) {
-    // Always remove whitespaces at beginning and end, nobody needs them.
-    $string = trim(self::normalizeLineFeeds($string));
     // Use native function if we aren't dealing with a multi-byte string.
     if (strlen($string) === mb_strlen($string)) {
       return wordwrap($string, $width, "\n", $cut);
