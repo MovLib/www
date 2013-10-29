@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Exception\UserException;
 
 /**
@@ -33,26 +32,6 @@ use \MovLib\Exception\UserException;
  * @since 0.0.1-dev
  */
 class Full extends \MovLib\Data\User\User {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Maximum attempts for actions like registration, login, etc..
-   *
-   * @var int
-   */
-  const MAXIMUM_ATTEMPTS = 5;
-
-  /**
-   * Maximum username length (chracter count, not bytes).
-   *
-   * @var int
-   */
-  const NAME_MAXIMUM_LENGTH = 40;
-
-  const NAME_ILLEGAL_CHARACTERS = "/_@#<>|()[]{}?\\=:;,'\"&$*~";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -392,15 +371,15 @@ class Full extends \MovLib\Data\User\User {
   /**
    * Get the <var>$rawPassword</var> hash.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @param string $rawPassword
    *   The user supplied raw password.
    * @return string
    *   The <var>$rawPassword</var> hash.
    */
   public function passwordHash($rawPassword) {
-    global $config;
-    return password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $config->passwordCost ]);
+    global $kernel;
+    return password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $kernel->passwordCost ]);
   }
 
   /**

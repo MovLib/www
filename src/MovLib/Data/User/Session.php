@@ -17,9 +17,6 @@
  */
 namespace MovLib\Data\User;
 
-use \Memcached;
-use \MemcachedException;
-use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UserException;
@@ -140,10 +137,13 @@ class Session extends \MovLib\Data\Database {
   /**
    * Resume existing session if any.
    *
+   * @global \MovLib\Kernel $kernel
    * @throws \MemcachedException
    * @throws \MovLib\Exception\DatabaseException
    */
   public function __construct() {
+    global $kernel;
+
     // Export the session's name to class scope.
     $this->name = session_name();
 
@@ -152,14 +152,14 @@ class Session extends \MovLib\Data\Database {
     if (!empty($_COOKIE[$this->name])) {
       // Try to resume the session with the ID from the cookie.
       if (session_start() === false) {
-        throw new MemcachedException("Could not resume session (maybe Memcached is down).");
+        throw new \MemcachedException("Could not resume session (maybe Memcached is down).");
       }
       $this->id = session_id();
 
       // We have to try loading the session from our persistent session storage if the session IDs don't match.
       if ($_COOKIE[$this->name] != $this->id || !($result = $this->query("SELECT `user_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name] ])->get_result()->fetch_assoc())) {
         $this->init($result["user_id"], $result["authentication"]);
-        DelayedMethodCalls::stack($this, "update", [ $_COOKIE[$this->name] ]);
+        $kernel->delayMethodCall([ $this, "update" ], [ $_COOKIE[$this->name] ]);
       }
       // Maybe somebody is trying with a random session ID to get a session?
       elseif (!isset($_SESSION["user_id"])) {
@@ -192,6 +192,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Authenticate a user.
    *
+   * @global \MovLib\Kernel $kernel
    * @param string $email
    *   The user submitted email address.
    * @param string $rawPassword
@@ -202,6 +203,8 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\SessionException
    */
   public function authenticate($email, $rawPassword) {
+    global $kernel;
+
     // Load necessary user data from storage.
     if (!($result = $this->query("SELECT `user_id`, `password`, `deactivated` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
       throw new SessionException("Couldn't find user with email '{$email}'!");
@@ -216,12 +219,12 @@ class Session extends \MovLib\Data\Database {
     // ID and if not generate a completely new session.
     session_status() === PHP_SESSION_ACTIVE ? $this->regenerate() : $this->start();
     $this->init($result["user_id"]);
-    DelayedMethodCalls::stack($this, "insert");
+    $kernel->delayMethodCall([ $this, "insert" ]);
 
     // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
     //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
     //       have to worry about. Maybe introduce a configuration option for this?
-    DelayedMethodCalls::stack($this, "passwordNeedsRehash", [ $result["password"], $rawPassword ]);
+    $kernel->delayMethodCall([ $this, "passwordNeedsRehash" ], [ $result["password"], $rawPassword ]);
 
     if ($result["deactivated"] == true) {
       throw new UserException("Account is deactivated!");
@@ -285,7 +288,7 @@ class Session extends \MovLib\Data\Database {
       }
     }
     try {
-      $memcached = new Memcached();
+      $memcached = new \Memcached();
       $memcached->addServers($servers);
       if (is_array($sessionId)) {
         $c = count($sessionId);
@@ -301,7 +304,7 @@ class Session extends \MovLib\Data\Database {
         $memcached->delete("{$sessionPrefix}{$sessionId}");
       }
     }
-    catch (MemcachedException $e) {
+    catch (\MemcachedException $e) {
       throw new DatabaseException($e->getMessage(), $e);
     }
     return $this;
@@ -314,21 +317,27 @@ class Session extends \MovLib\Data\Database {
    * the user's user agent to delete this session cookie. As you know, this is something that is up to the user, that's
    * why it's important for us to delete this session from all our storage devices.
    *
+   * @global \MovLib\Kernel $kernel
    * @return this
    */
   public function destroy() {
+    global $kernel;
+
     // The user is no longer authenticated, keep this line outside of the if for PHPUnit tests.
     $this->isAuthenticated = false;
+
+    // If no session is active, nothing has to be done.
     if (session_status() === PHP_SESSION_ACTIVE) {
       // Remove all data associated with this session.
       session_destroy();
       session_unset();
       // Remove the cookie.
-      $cookieParams = session_get_cookie_params();
-      setcookie(session_name(), "", time() - 42000, $cookieParams["path"], $cookieParams["domain"], $cookieParams["secure"], $cookieParams["httponly"]);
+      $cookie = session_get_cookie_params();
+      setcookie(session_name(), "", time() - 42000, $cookie["path"], $cookie["domain"], $cookie["secure"], $cookie["httponly"]);
       // Remove the session ID from our database.
-      DelayedMethodCalls::stack($this, "delete");
+      $kernel->delayMethodCall([ $this, "delete" ]);
     }
+
     return $this;
   }
 
@@ -425,7 +434,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Test after every authentication if the password needs to be rehashed.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @delayed
    * @param string $password
    *   The hashed password.
@@ -436,8 +445,8 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\UserException
    */
   public function passwordNeedsRehash($password, $rawPassword) {
-    global $config;
-    if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $config->passwordCost ]) === true) {
+    global $kernel;
+    if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $kernel->passwordCost ]) === true) {
       (new UserFull(UserFull::FROM_ID, $this->userId))->updatePassword($rawPassword);
     }
     return $this;
@@ -446,14 +455,19 @@ class Session extends \MovLib\Data\Database {
   /**
    * Regenerate session ID and update persistent storage.
    *
+   * @global \MovLib\Kernel $kernel
    * @return this
    */
   private function regenerate() {
+    global $kernel;
+
+    // Do nothing if this method isn't called via nginx!
     if (isset($_SERVER["FCGI_ROLE"])) {
       session_regenerate_id(true);
-      DelayedMethodCalls::stack($this, "update", [ $this->id ]);
+      $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
       $this->id = session_id();
     }
+
     return $this;
   }
 
@@ -499,7 +513,7 @@ class Session extends \MovLib\Data\Database {
   private function start() {
     $sessionData = isset($_SESSION) ? $_SESSION : null;
     if (isset($_SERVER["FCGI_ROLE"]) && session_start() === false) {
-      throw new MemcachedException("Could not start session (may be Memcached is down?).");
+      throw new \MemcachedException("Could not start session (may be Memcached is down?).");
     }
     if ($sessionData) {
       $_SESSION = $sessionData;
