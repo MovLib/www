@@ -446,7 +446,7 @@ class Session extends \MovLib\Data\Database {
    */
   public function passwordNeedsRehash($password, $rawPassword) {
     global $kernel;
-    if (password_needs_rehash($password, PASSWORD_DEFAULT, [ "cost" => $kernel->passwordCost ]) === true) {
+    if (password_needs_rehash($password, PASSWORD_DEFAULT, $kernel->passwordOptions) === true) {
       (new UserFull(UserFull::FROM_ID, $this->userId))->updatePassword($rawPassword);
     }
     return $this;

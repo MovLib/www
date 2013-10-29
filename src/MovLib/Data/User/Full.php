@@ -365,6 +365,7 @@ class Full extends \MovLib\Data\User\User {
    *   The random password.
    */
   public static function getRandomPassword() {
+    MYSQLI_ASSOC;
     return trim(shell_exec("pwgen -cnBv 20 1"));
   }
 
@@ -379,7 +380,7 @@ class Full extends \MovLib\Data\User\User {
    */
   public function passwordHash($rawPassword) {
     global $kernel;
-    return password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $kernel->passwordCost ]);
+    return password_hash($rawPassword, PASSWORD_DEFAULT, $kernel->passwordOptions);
   }
 
   /**

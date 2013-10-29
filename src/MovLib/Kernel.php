@@ -40,20 +40,6 @@ class Kernel {
 
 
   /**
-   * The name of the default database.
-   *
-   * @var string
-   */
-  public $databaseDefault = "movlib";
-
-  /**
-   * The name of the localize database.
-   *
-   * @var string
-   */
-  public $databaseLocalize = "movlib_localize";
-
-  /**
    * Numeric array containing all delayed emails.
    *
    * @var array
@@ -72,7 +58,7 @@ class Kernel {
    *
    * @var string
    */
-  public $documentRoot = "/var/www";
+  public $documentRoot;
 
   /**
    * The API domain, without scheme or trailing slash, e.g. <code>"api.movlib.org"</code>.
@@ -131,11 +117,14 @@ class Kernel {
   public $hostname = "movlib.org";
 
   /**
-   * The password cost for hashing the user passwords.
+   * The password options.
+   *
+   * The current default password is {@see PASSWORD_BCRYPT} which supports <i>salt</i> and <i>cost</i>. We don't use
+   * <i>salt</i> because we want PHP to generate a random one. The cost should be set to something around half a second.
    *
    * @var string
    */
-  public $passwordCost = 13;
+  public $passwordOptions = [ "cost" => 13 ];
 
   /**
    * The user name (for file permissions etc.).
@@ -199,6 +188,21 @@ class Kernel {
    * @var string
    */
   public $siteName = "MovLib";
+
+  /**
+   * The site name including the slogan and punctuation, e.g. <code>"MovLib, the free movie library."</code>.
+   *
+   * @var string
+   */
+  public $siteNameAndSlogan = "MovLib, the free movie library.";
+
+  /**
+   * The site name including the slogan, punctuation and HTML, e.g. <code>"MovLib <small>the <em>free</em> movie
+   * library.</small>"</code>.
+   *
+   * @var string
+   */
+  public $siteNameAndSloganHTML = "MovLib <small>the <em>free</em> movie library.";
 
   /**
    * The site slogan, e.g. <code>"the free movie library"</code>.
@@ -269,6 +273,11 @@ class Kernel {
 
       // Always create an I18n instance for translating any kind of presentation.
       $i18n = new I18n();
+
+      // Translate the slogan variations but not the site name itself.
+      $this->siteNameAndSlogan     = $i18n->t("{0}, the free movie library.", [ $this->siteName ]);
+      $this->siteNameAndSloganHTML = $i18n->t("{0} {1}the {2}free{3} movie library.{4}", [ $this->siteName, "<small>", "<em>", "</em>", "</small>" ]);
+      $this->siteSlogan            = $i18n->t("the free movie library");
 
       // If either the client's IP address or user agent string are invalid or empty abort execution.
       if ($this->remoteAddress === false || $this->userAgent === false) {
