@@ -17,19 +17,16 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Data\SystemLanguage;
-
 /**
  * Contains all system supported languages.
  *
- * @todo Extend and give more information on each language (e.g. directly translated upon instantiation).
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SystemLanguages implements \ArrayAccess, \Countable, \Iterator {
+class SystemLanguages implements \ArrayAccess, \Countable, \Iterator, \Traversable {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -49,12 +46,12 @@ class SystemLanguages implements \ArrayAccess, \Countable, \Iterator {
   /**
    * Get all supported system languages.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $config;
-    foreach ($config->systemLanguages as $languageCode => $locale) {
-      $this->systemLanguages[$languageCode] = new SystemLanguage($locale);
+    global $kernel;
+    foreach ($kernel->systemLanguages as $languageCode => $locale) {
+      $this->systemLanguages[$languageCode] = new \MovLib\Data\SystemLanguage($languageCode);
     }
   }
 

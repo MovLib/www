@@ -17,8 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \Locale;
-
 /**
  * Represents a single system language.
  *
@@ -29,6 +27,17 @@ use \Locale;
  * @since 0.0.1-dev
  */
 class SystemLanguage {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The system language's domain.
+   *
+   * @var string
+   */
+  public $domain;
 
   /**
    * The system language's ISO alpha-2 code.
@@ -58,19 +67,25 @@ class SystemLanguage {
    */
   public $nameNative;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
    * Instantiate new system language.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param string $locale
-   *   This system language's locale.
+   * @global \MovLib\Kernel $kernel
+   * @param string $languageCode
+   *   This system language's language code.
    */
-  public function __construct($locale) {
-    global $i18n;
-    $this->languageCode = "{$locale[0]}{$locale[1]}";
-    $this->locale       = $locale;
-    $this->name         = Locale::getDisplayLanguage($this->languageCode, $i18n->locale);
-    $this->nameNative   = Locale::getDisplayLanguage($this->languageCode, $this->locale);
+  public function __construct($languageCode) {
+    global $i18n, $kernel;
+    $this->domain       = "{$languageCode}.{$kernel->domainDefault}";
+    $this->languageCode = $languageCode;
+    $this->locale       = $kernel->systemLanguages[$languageCode];
+    $this->name         = \Locale::getDisplayLanguage($this->languageCode, $i18n->locale);
+    $this->nameNative   = \Locale::getDisplayLanguage($this->languageCode, $this->locale);
   }
 
 }
