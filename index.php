@@ -15,10 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Email;
 
 /**
- * Default generic implementation of email.
+ * Main PHP script serving all page requests within the MovLib application.
+ *
+ * The main script contains all bootstrap functionaility that every script needs. We do not include another file for the
+ * bootstrap process, simply to keep things easy to understand. But, this file should only contains procedural PHP
+ * extensions and no object-oriented code. Additionally developers should think long and hard if the function they are
+ * going to implement is really needed by every request. If not, move it to some other place that is more appropriate
+ * (like a static class that is automatically loaded if a script needs a method from it).
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,51 +31,5 @@ namespace MovLib\Presentation\Email;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Email extends \MovLib\Presentation\Email\AbstractEmail {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * HTML body of this generic email.
-   *
-   * @var string
-   */
-  public $html;
-
-  /**
-   * Plain text body of this generic email.
-   *
-   * @var string
-   */
-  public $text;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * Instantiate new generic email.
-   */
-  public function __construct($recipient, $subject, $html, $text) {
-    parent::__construct($recipient, $subject);
-    $this->html = $html;
-    $this->text = $text;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getHtmlBody() {
-    return $this->html;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPlainBody() {
-    return $this->text;
-  }
-
-}
+require getcwd() . "/src/MovLib/Kernel.php";
+new \MovLib\Kernel();
