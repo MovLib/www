@@ -48,7 +48,7 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
    *
    * @var \MovLib\Presentation\Partial\Navigation
    */
-  private $navigation;
+  protected $navigation;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -57,17 +57,17 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
   /**
    * Instantiate new language selection presentation.
    *
-   * @global \MovLib\Configuration $config
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $config, $i18n, $session;
+    global $i18n, $kernel, $session;
 
     // If a signed in user is requesting this page we know where to send her or him.
     if ($session->isAuthenticated === true) {
       $user = new User(User::FROM_ID, $session->userId);
-      throw new RedirectTemporaryException("{$_SERVER["SCHEME"]}://{$user->systemLanguageCode}.{$config->domainDefault}/");
+      throw new RedirectTemporaryException("{$kernel->scheme}://{$user->systemLanguageCode}.{$kernel->domainDefault}/");
     }
 
     // If not render the page.
@@ -82,15 +82,15 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
   /**
    * Format a single system language.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @param \MovLib\Data\SystemLanguage $systemLanguage
    *   The system language to format.
    * @return array
    */
   public function formatSystemLanguage($systemLanguage) {
-    global $config;
+    global $kernel;
     return [
-      "//{$systemLanguage->languageCode}.{$config->domainDefault}/",
+      "//{$systemLanguage->languageCode}.{$kernel->domainDefault}/",
       $systemLanguage->nameNative,
       [ "lang" => $systemLanguage->languageCode, "rel" => "prefetch", "tabindex" => $this->getTabindex() ],
     ];
@@ -100,19 +100,19 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
    * @inheritdoc
    */
   public function getPresentation() {
-    global $config, $i18n;
+    global $kernel, $i18n;
     $html = parent::getPresentation();
     return
       "{$html}<div class='{$this->id}-content' id='content' role='main'><div class='container'>" .
         "<h1 class='clear-fix' id='logo-big'>" .
-          "<img alt='MovLib {$i18n->t("logo")}' height='192' src='//{$config->domainStatic}/asset/img/logo/vector.svg' width='192'>" .
-          "<span>MovLib <small>{$i18n->t("the {0}free{1} movie library.", [ "<em>", "</em>" ])}</small></span>" .
+          "<img alt='{$kernel->siteName} {$i18n->t("logo")}' height='192' src='//{$kernel->domainStatic}/asset/img/logo/vector.svg' width='192'>" .
+          "<span>{$kernel->siteName} <small>{$i18n->t("the {0}free{1} movie library.", [ "<em>", "</em>" ])}</small></span>" .
         "</h1>" .
         "<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$this->navigation}" .
       "</div></div>" .
       "<footer id='footer'><div class='container'><p>{$i18n->t(
         "Is your language missing from our list? Help us translate {0} to your language. More information can be found at {1}our translation portal{2}.",
-        [ "MovLib", "<a href='//{$config->domainLocalize}/'>", "</a>" ]
+        [ $kernel->siteName, "<a href='//{$kernel->domainLocalize}/'>", "</a>" ]
       )}</p></div></footer>"
     ;
   }

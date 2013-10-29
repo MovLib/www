@@ -58,14 +58,14 @@ class Kernel {
    *
    * @var array
    */
-  protected $delayedEmails = [];
+  protected $delayedEmails;
 
   /**
    * Numeric array containing all delayed methods.
    *
    * @var array
    */
-  protected $delayedMethods = [];
+  protected $delayedMethods;
 
   /**
    * The absolute path to the document root, e.g. <code>"/var/www"</code>.
@@ -289,7 +289,7 @@ class Kernel {
 
       // Try to create presentation based on the presenter set by nginx.
       $presentationClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-      $presentation      = new $presentationClass();
+      $presentation      = (new $presentationClass())->getPresentation();
     }
     catch (ClientException $e) {
       foreach ($e->headers as $header) {
@@ -298,7 +298,7 @@ class Kernel {
       $presentation = $e->presentation;
     }
     catch (\Exception $e) {
-      $presentation = new Stacktrace($e);
+      $presentation = (new Stacktrace($e))->getPresentation();
     }
     finally {
       // This allows us to lazy start anonymous sessions and send cookies right before sending the response.
@@ -314,23 +314,25 @@ class Kernel {
       // Calculate execution time for response generation and log if it took too long.
       $responseEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
       if ($responseEnd > 0.1) {
-        error_log("SLOW: Response took too long to generate with {$responseEnd} seconds for URI {$_SERVER["SCHEME"]}://{$_SERVER["SERVER_NAME"]}{$_SERVER["REQUEST_URI"]}");
+        error_log("SLOW: Response took too long to generate with {$responseEnd} seconds for URI {$this->scheme}://{$this->hostname}{$this->requestURI}");
       }
 
       // Execute each delayed method.
-      foreach ($this->delayedMethods as list($callable, $params)) {
-        call_user_func_array($callable, $params);
+      if ($this->delayedMethods) {
+        foreach ($this->delayedMethods as list($callable, $params)) {
+          call_user_func_array($callable, $params);
+        }
       }
 
       // Send all delayed emails.
-      foreach ($this->delayedEmails as list($email, $args)) {
-        //(new $email())->send($args);
+      if ($this->delayedEmails) {
+        new Mailer($this->delayedEmails);
       }
 
       // Calculate time for response and delayed generation and log if it took too long.
       $delayedEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
       if ($delayedEnd > 5.0) {
-        error_log("SLOW: Delayed took too long to execute with {$delayedEnd} seconds for URI {$_SERVER["SCHEME"]}://{$_SERVER["SEVER_NAME"]}{$_SERVER["REQUEST_URI"]}");
+        error_log("SLOW: Delayed took too long to execute with {$delayedEnd} seconds for URI {$this->scheme}://{$this->hostname}{$this->requestURI}");
       }
     }
   }
@@ -435,7 +437,7 @@ class Kernel {
       (new Mailer())->send(new FatalErrorEmail($exception));
 
       // Display internal server error page to client.
-      exit(new Stacktrace($exception, true));
+      exit((new Stacktrace($exception, true))->getPresentation());
     }
   }
 
