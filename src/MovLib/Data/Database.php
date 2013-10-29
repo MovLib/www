@@ -18,9 +18,6 @@
 namespace MovLib\Data;
 
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\ErrorException;
-use \ReflectionFunction;
-use \mysqli;
 
 /**
  * Base class for all database related classes.
@@ -135,15 +132,15 @@ class Database {
     if (!isset(self::$mysqli[$this->database])) {
       // A cached reflection function is faster than call_user_func_array()!
       if (!self::$stmtBindParam) {
-        self::$stmtBindParam = new ReflectionFunction("mysqli_stmt_bind_param");
+        self::$stmtBindParam = new \ReflectionFunction("mysqli_stmt_bind_param");
       }
-      $mysqli = new mysqli();
+      $mysqli = new \mysqli();
       try {
         $mysqli->real_connect();
       }
       // If we have a broken pipe (e.g. database restart) kill this thread and directly re-connect. If this fails again
       // (very unlikely) an ErrorException is thrown again and the error andler can take care of it.
-      catch (ErrorException $e) {
+      catch (\ErrorException $e) {
         $mysqli->kill($mysqli->thread_id);
         $mysqli->real_connect();
       }
