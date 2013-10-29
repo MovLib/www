@@ -85,7 +85,7 @@ class Mailer {
       "<html>" .
         "<head>" .
           "<meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>" .
-          "<title>{$this->subject}</title>" .
+          "<title>{$this->email->subject}</title>" .
         "</head>" .
         "<body style='font:\"open sans\",arial,sans-serif'>{$this->email->getHTML()}</body>" .
       "</html>"
