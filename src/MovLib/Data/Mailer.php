@@ -102,7 +102,7 @@ class Mailer {
   protected function getBase64EncodedPlainText() {
     global $kernel;
     return base64_encode($this->wordwrap(
-      "{{$this->email->getPlain()}\n\n--\n{$kernel->siteName}\n"
+      "{{$this->email->getPlainText()}\n\n--\n{$kernel->siteName}\n"
     ));
   }
   
