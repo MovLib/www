@@ -206,7 +206,7 @@ EOT;
     if (method_exists($email, "init")) {
       $email->init();
     }
-    mail($email->getRecipient(), $email->getSubject(), $this->getMessage(), $this->getHeaders(), $this->getParameters());
+    mail($this->getRecipient(), $this->getSubject(), $this->getMessage(), $this->getHeaders(), $this->getParameters());
     return $this;
   }
 
