@@ -24,7 +24,8 @@
     }
   ],
   "autoload": {
-    "psr-0": { "MovLib": "src/" }
+    "psr-0": { "MovLib": "src/" },
+    "psr-0": { "MovLib": "test/" }
   },
   "require": {
     "php": ">=5.5.0",
