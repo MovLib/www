@@ -79,7 +79,7 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * @inheritdoc
    */
-  protected function getHTML() {
+  public function getHTML() {
     global $i18n;
     return
       "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
@@ -95,7 +95,7 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * @inheritdoc
    */
-  protected function getPlainText() {
+  public function getPlainText() {
     global $i18n;
     return <<<EOT
 {$i18n->t("Hi {0}!", [ $this->user->name ])}
