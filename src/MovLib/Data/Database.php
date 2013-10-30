@@ -34,7 +34,6 @@ use \MovLib\Exception\DatabaseException;
  * @since 0.0.1-dev
  */
 class Database {
-  use \MovLib\Data\TraitUtilities;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
