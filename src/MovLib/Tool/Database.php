@@ -118,20 +118,45 @@ class Database {
   /**
    * Execute multiple queries against the database.
    *
-   * <b>IMPORTANT!</b> You have to properly escape the data in the queries.
+   * <b>IMPORTANT!</b>
+   * You have to properly escape the data in the queries.
    *
    * @param string $queries
    *   Multiple queries to execute.
+   * @param boolean $foreignKeyChecks [optional]
+   *   Whether foreign keys should be checked or not during execution, defaults to <code>TRUE</code>.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function queries($queries) {
+  public function queries($queries, $foreignKeyChecks = true) {
+    // Obviously we can only execute string queries.
     if (!is_string($queries)) {
-      throw new \InvalidArgumentException("Queries must be of type string.");
+      $type = gettype($queries);
+      throw new \InvalidArgumentException("Parameter \$queries must be of type string, {$type} given.");
     }
+
+    // Obviously we have to have at least a single query.
+    if (empty($queries)) {
+      throw new \InvalidArgumentException("Parameter \$queries cannot be empty.");
+    }
+
+    // Disallow direct SET on foreign key checks, if one forgets to set it back we have huge problems.
+    if (strpos($queries, "foreign_key_checks") !== false) {
+      throw new \LogicException("Your queries contain 'foreign_key_checks', you shouldn't tamper with this directly because it's dangerous!");
+    }
+
+    // The proper way is to set the parameter to FALSE which will always reset the foreign key checks.
+    if ($foreignKeyChecks === false) {
+      $this->query("SET foreign_key_checks = 0");
+    }
+
+    // Execute the queries and directly consume them.
     $error = $this->connect()->multi_query($queries);
     do {
       if ($error === false) {
+        if ($foreignKeyChecks === false) {
+          $this->query("SET foreign_key_checks = 1");
+        }
         throw new DatabaseException("Execution of multiple queries failed", $this->mysqli->error, $this->mysqli->errno);
       }
       $this->mysqli->use_result();
@@ -140,6 +165,11 @@ class Database {
       }
     }
     while ($more);
+
+    if ($foreignKeyChecks === false) {
+      $this->query("SET foreign_key_checks = 1");
+    }
+
     return $this;
   }
 
