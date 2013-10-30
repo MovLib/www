@@ -17,7 +17,7 @@
  */
 
 /**
- * Bootstrap environment for CLI and PHPUnit.
+ * Initialize kernel for PHPUnit usage.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -25,57 +25,5 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-
-/**
- * Mock of delayed_register() from main.php
- */
-function delayed_register() {}
-
-/**
- * Wrap the actual bootstrap in a function for better control over global variables.
- *
- * @global array $backup
- * @global \MovLib\Tool\Configuration $config
- * @global \MovLib\Data\I18n $i18n
- * @global \MovLib\Data\User\Session $session
- */
-call_user_func(function () {
-  global $backup, $config, $db, $i18n, $session;
-  $documentRoot = __DIR__;
-  $autoloader   = require "{$documentRoot}/vendor/autoload.php";
-  $autoloader->add("MovLib", "{$documentRoot}/src/");
-  $autoloader->add("MovLib", "{$documentRoot}/test/");
-
-  new \MovLib\Exception\ConsoleHandlers();
-  $config = new \MovLib\Tool\Configuration();
-  $db     = new \MovLib\Tool\Database();
-  $i18n   = new \MovLib\Data\I18n();
-
-  foreach ([
-    "HTTP_USER_AGENT" => ini_get("user_agent"),
-    "LANGUAGE_CODE"   => $i18n->defaultLanguageCode,
-    "REMOTE_ADDR"     => "127.0.0.1",
-    "REQUEST_URI"     => "/",
-    "SCHEME"          => "https",
-    "SERVER"          => "https://{$i18n->defaultLanguageCode}.{$config->domainDefault}",
-    "SERVER_NAME"     => "{$i18n->defaultLanguageCode}.{$config->domainDefault}",
-    "SERVER_PROTOCOL" => "HTTP/1.1",
-    "SERVER_VERSION"  => "",
-  ] as $k => $v) {
-    if (empty($_SERVER[$k])) {
-      $_SERVER[$k] = $v;
-    }
-  }
-
-  $session = new \MovLib\Data\User\Session();
-  $init    = new \ReflectionMethod($session, "init");
-  $init->setAccessible(true);
-  $init->invokeArgs($session, [ 1 ]);
-
-  $backup = [
-    "config"  => clone $config,
-    "db"      => clone $db,
-    "i18n"    => clone $i18n,
-    "session" => clone $session,
-  ];
-});
+require __DIR__ . "/vendor/autoload.php";
+(new \MovLib\Tool\Kernel())->initPHPUnit();
