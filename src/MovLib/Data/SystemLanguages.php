@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SystemLanguages implements \ArrayAccess, \Countable, \Iterator, \Traversable {
+class SystemLanguages implements \ArrayAccess, \Countable, \Iterator {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
