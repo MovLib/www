@@ -17,7 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
-use \InvalidArgumentException;
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\ConsoleException;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -67,7 +67,7 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
   /**
    * Fix permissions of all directories and files.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $directory [optional]
    *   If given only the directories and files in that directory will be fixed, defaults to empty string which fixes the
    *   permissions on all directories and files in the document root.
@@ -75,22 +75,22 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @throws \InvalidArgumentException
    */
   public function fixPermissions($directory = "") {
-    global $config;
-    $this->write("Fixing permissions on all directories and files in <info>'{$directory}'</info> ...");
-    if (strpos($directory, $config->documentRoot) === false) {
-      $directory = "{$config->documentRoot}/{$directory}";
+    global $kernel;
+    if (strpos($directory, $kernel->documentRoot) === false) {
+      $directory = "{$kernel->documentRoot}/{$directory}";
     }
     if (!is_dir($directory)) {
-      throw new InvalidArgumentException("Given directory '{$directory}' doesn't exist!");
+      throw new \InvalidArgumentException("Given directory '{$directory}' doesn't exist!");
     }
+    $this->write("Fixing permissions on all directories and files in <info>'{$directory}'</info> ...");
     foreach ([
-      "chown -R {$config->phpUser}:{$config->phpGroup} '{$directory}'" => "User and group ownership fixed!",
+      "chown -R {$kernel->phpUser}:{$kernel->phpGroup} '{$directory}'" => "User and group ownership fixed!",
       "find '{$directory}' -type d -exec chmod 2770 {} \;"             => "Directory permissions fixed!",
       "find '{$directory}' -type f -exec chmod 2660 {} \;"             => "File permissions fixed!",
       "find '{$directory}' -type f -regextype posix-egrep -regex '.*(bin/[a-zA-Z0-9\._-]+|conf/.*\.sh|(/?apigen){3}\.php)$' -exec chmod 2770 {} \;"
         => "Executable permissions fixed!"
     ] as $cmd => $msg) {
-      if ($this->exec($cmd) === false) {
+      if (sh::execute($cmd) === false) {
         throw new ConsoleException("Failed to execute '{$cmd}'!");
       }
       $this->write($msg, self::MESSAGE_TYPE_INFO);

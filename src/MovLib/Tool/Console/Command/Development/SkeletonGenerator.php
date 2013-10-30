@@ -18,9 +18,6 @@
 namespace MovLib\Tool\Console\Command\Development;
 
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
-use \RecursiveDirectoryIterator;
-use \RecursiveIteratorIterator;
-use \ReflectionClass;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -66,6 +63,13 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    * @var string
    */
   protected $traitTemplate;
+
+  /**
+   * Numeric array containing all deleted tests.
+   *
+   * @var array
+   */
+  protected $skeletonsDeleted = [];
 
   /**
    * Numeric array containing extended skeletons.
@@ -116,19 +120,19 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
   /**
    * Generate a new skeleton or extend an existing one.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $file
    *   Absolute path to the source file.
    * @return this
    */
   protected function generateSkeleton($file) {
-    global $config;
+    global $kernel;
     $testFile = str_replace([ "/src/", ".php" ], [ "/test/", "Test.php" ], $file);
-    $class    = strtr(str_replace([ "{$config->documentRoot}/src", ".php" ], "", $file), DIRECTORY_SEPARATOR, "\\");
+    $class    = strtr(str_replace([ "{$kernel->documentRoot}/src", ".php" ], "", $file), DIRECTORY_SEPARATOR, "\\");
     if (!class_exists($class) && !trait_exists($class)) {
       return $this;
     }
-    $reflector = new ReflectionClass($class);
+    $reflector = new \ReflectionClass($class);
     if (is_file($testFile)) {
       $this->skeletonExtend($reflector, $class, $testFile);
     }
@@ -141,56 +145,75 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
   /**
    * Generate all skeletons.
    *
-   * @global \Composer\Autoload\ClassLoader $autoloader
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    */
   public function generateSkeletons() {
-    global $autoloader, $config;
-    $this->write("Generating unit test skeletons for all files in <info>'{$config->documentRoot}/src/'</info> ...");
-    $autoloader->add("MovLib", "{$config->documentRoot}/test");
+    global $kernel;
+    $this->write("Generating unit test skeletons for all files in <info>'{$kernel->documentRoot}/src/'</info> ...");
 
     // Load template files.
-    $this->abstractTemplate = file_get_contents("{$config->documentRoot}/conf/skeleton/abstract.tpl.php");
-    $this->classTemplate    = file_get_contents("{$config->documentRoot}/conf/skeleton/class.tpl.php");
-    $this->methodTemplate   = file_get_contents("{$config->documentRoot}/conf/skeleton/method.tpl.php");
-    $this->traitTemplate    = file_get_contents("{$config->documentRoot}/conf/skeleton/trait.tpl.php");
+    foreach ([ "abstract", "class", "method", "trait" ] as $tpl) {
+      $this->{"{$tpl}Template"} = file_get_contents("{$kernel->documentRoot}/conf/skeleton/{$tpl}.tpl.php");
+    }
 
     // Collect all source files.
     $files = [];
-    /* @var $splFileInfo \SplFileInfo */
-    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator("{$config->documentRoot}/src/MovLib"), RecursiveIteratorIterator::SELF_FIRST) as $splFileInfo) {
-      $realpath = $splFileInfo->getRealPath();
-      if ($splFileInfo->isFile() && strpos($splFileInfo->getBasename(), ".php") !== false) {
-        $files[] = $realpath;
-      }
-    }
+    $this->globRecursive("src/MovLib", function ($realpath) use ($files) {
+      $files[] = $realpath;
+    });
 
     // Generate skeletons for all files.
-    $c = count($files);
-    $this->progressStart($c);
-    for ($i = 0; $i < $c; ++$i) {
-      $this->generateSkeleton($files[$i]);
-      $this->progressAdvance();
-    }
-    $this->progressFinish();
-
-    (new FixPermissions())->fixPermissions("test");
-
-    $new = !empty($this->skeletonsNew);
-    $ext = !empty($this->skeletonsExtended);
-    if ($new || $ext) {
-      $this->write("Successfully generated all unit test skeletons, report follows:", self::MESSAGE_TYPE_INFO);
-      if ($new) {
-        $this->write("NEW", self::MESSAGE_TYPE_INFO);
-        $this->write($this->skeletonsNew);
+    if (($c = count($files))) {
+      $this->progressStart($c);
+      for ($i = 0; $i < $c; ++$i) {
+        $this->generateSkeleton($files[$i]);
+        $this->progressAdvance();
       }
-      if ($ext) {
-        $this->write("EXTENDED", self::MESSAGE_TYPE_INFO);
-        $this->write($this->skeletonsExtended);
+      $this->progressFinish();
+
+      // Fix the permissions on all generated and extended files.
+      (new FixPermissions())->fixPermissions("test");
+    }
+
+    // Remove all tests that aren't needed anymore.
+    $this->globRecursive("test/MovLib", function ($realpath) {
+      if (!is_file(str_replace([ "/test/", "Test.php" ], [ "/src/", ".php" ], $realpath))) {
+        unlink($realpath);
+        $this->skeletonsDeleted[] = $realpath;
+      }
+    });
+
+    $this->write("Sekeleton Generator Report:");
+    $doneSomething = false;
+    foreach ([ "Deleted", "New", "Extended" ] as $action) {
+      if (!empty($this->{"sekeletons{$action}"})) {
+        $this->write(strtoupper($action), self::MESSAGE_TYPE_INFO);
+        $this->write($this->{"sekeletons{$action}"});
+        $doneSomething = true;
       }
     }
-    else {
-      $this->write("All tests are up-to-date, nothing was generated!", self::MESSAGE_TYPE_COMMENT);
+    if ($doneSomething === false) {
+      $this->write("All tests are up-to-date, nothing was deleted, generated or extended!", self::MESSAGE_TYPE_COMMENT);
+    }
+  }
+
+  /**
+   * Recursive glob that finds all php files in the given directory.
+   *
+   * @global \MovLib\Tool\Kernel $kernel
+   * @param string $path
+   *   Relative path to glob within the document root without leading slash.
+   * @param callable $callback
+   *   Callable to call on each iteration.
+   */
+  protected function globRecursive($path, $callback) {
+    global $kernel;
+    /* @var $splFileInfo \SplFileInfo */
+    foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator("{$kernel->documentRoot}/{$path}"), \RecursiveIteratorIterator::SELF_FIRST) as $splFileInfo) {
+      $realpath = $splFileInfo->getRealPath();
+      if ($splFileInfo->isFile() && strpos($splFileInfo->getBasename(), ".php") !== false) {
+        call_user_func($callback, $realpath, $splFileInfo);
+      }
     }
   }
 
@@ -206,7 +229,7 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    * @return this
    */
   protected function skeletonExtend($reflector, $class, $testFile) {
-    $testReflector = new ReflectionClass("{$class}Test");
+    $testReflector = new \ReflectionClass("{$class}Test");
     $testMethods   = [];
     /* @var $testMethod \Reflectionmethod */
     foreach ($testReflector->getMethods() as $testMethod) {

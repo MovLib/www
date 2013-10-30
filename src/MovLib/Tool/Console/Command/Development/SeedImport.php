@@ -17,12 +17,9 @@
  */
 namespace MovLib\Tool\Console\Command\Development;
 
-use \InvalidArgumentException;
-use \Locale;
-use \MovLib\Data\SystemLanguages;
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\FileSystemException;
-use \ReflectionClass;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -79,6 +76,15 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   protected $databaseScripts = [];
 
   /**
+   * Numeric array containing all history supported types.
+   *
+   * @var string
+   */
+  protected $historyTypes = [
+    "movies"
+  ];
+
+  /**
    * Absolute path to the seed path (document root is added in constructor).
    *
    * @see SeedImport::__construct()
@@ -101,12 +107,12 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   /**
    * Instantiate new seed import command.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    */
   public function __construct() {
-    global $config;
+    global $kernel;
     parent::__construct("seed-import");
-    $this->seedPath = "{$config->documentRoot}{$this->seedPath}";
+    $this->seedPath = "{$kernel->documentRoot}{$this->seedPath}";
     foreach (glob("{$this->seedPath}/" . self::OPTION_DATABASE . "/*.sql") as $seedScript) {
       $this->databaseScripts[basename($seedScript, ".sql")] = $seedScript;
     }
@@ -129,36 +135,6 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     $this->addInputOption(self::OPTION_DATABASE, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific database data.");
     $this->addInputOption(self::OPTION_UPLOAD, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific upload data.");
   }
-  
-  /**
-   * Helper function to (re)create git repositories.
-   *
-   * @global \MovLib\Configuration $config
-   * @global \MovLib\Tool\Database $db
-   * @param string $type
-   *  All repositories of this type are created.
-   * @return this
-   */
-  protected function createRepositories($type) {
-    global $config, $db;
-
-    $path = "{$config->documentRoot}/private/history/{$type}";
-    if (is_dir($path)) {
-      $this->exec("rm -rf {$path}");
-    }
-
-    $class = ucfirst($type);
-    $class = new ReflectionClass("\\MovLib\\Data\\History\\{$class}");
-    if ($result = $db->query("SELECT `{$type}_id` FROM `{$type}s`")->get_result()->fetch_all(MYSQLI_ASSOC)) {
-      $c = count($result);
-      for ($i = 0; $i < $c; ++$i) {
-        $history = $class->newInstance($result[$i]["{$type}_id"]);
-        $commitHash = $history->createRepository();
-        $db->query("UPDATE `{$type}s` SET `commit` = '{$commitHash}' WHERE `{$type}_id` = {$result[$i]["{$type}_id"]}");
-      }
-    }
-    return $this;
-  }
 
   /**
    * Import one or more database seed data.
@@ -174,22 +150,23 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   public function databaseImport(array $scriptNames = null) {
     global $db;
     $queries = $scripts = null;
+
     if (empty($scriptNames)) {
       $truncate = false;
-      $scripts = $this->databaseScripts;
+      $scripts  = $this->databaseScripts;
     }
     else {
       $truncate = true;
-      $c = count($scriptNames);
-      for ($i = 0; $i < $c; ++$i) {
-        if (isset($this->databaseScripts[$scriptNames[$i]])) {
-          $scripts[$scriptNames[$i]] = $this->databaseScripts[$scriptNames[$i]];
+      foreach ($scriptNames as $scriptName) {
+        try {
+          $scripts[$scriptName] = $this->databaseScripts[$scriptName];
         }
-        else {
-          throw new InvalidArgumentException("No script with name '{$scriptNames[$i]}' found!");
+        catch (\ErrorException $e) {
+          throw new \InvalidArgumentException("No script with name '{$scriptName}' found!", null, $e);
         }
       }
     }
+
     if (!empty($scripts)) {
       foreach ($scripts as $table => $script) {
         $this->write("Importing database data for table '{$table}' ...");
@@ -201,10 +178,11 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         }
       }
     }
+
     if (!empty($queries)) {
       try {
         $db->transactionStart();
-        $db->queries("SET foreign_key_checks = 0; {$queries} SET foreign_key_checks = 1;");
+        $db->queries($queries, false);
         $db->transactionCommit();
       }
       catch (DatabaseException $e) {
@@ -212,6 +190,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         throw $e;
       }
     }
+
     return $this->write("Successfully imported database data for '" . implode("', '", array_keys($scripts)) . "'.", self::MESSAGE_TYPE_INFO);
   }
 
@@ -231,32 +210,51 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       $this->seedImport();
     }
   }
-  
+
   /**
-   * Create git repositories.
+   * Create history repositories.
    *
+   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $type [optional]
-   *   If supplied, only repositories of this type (e.g. movie) are created, otherwise all repositories are created.
+   *   If supplied, only repositories of this type (e.g. <code>"movie"</code>) are created, otherwise all repositories
+   *   are created.
    * @return this
+   * @throws \InvalidArgumentException
    */
   public function historyImport(array $types = null) {
-    $supportedTypes = [ "movie" ];
-    
+    global $db, $kernel;
+
+    // If no types were specified import all history types.
     if (empty($types)) {
-      $types = $supportedTypes;
-    }
-    else {
-      $c = count($types);
-      for ($i = 0; $i < $c; ++$i) {
-        if (!in_array($types[$i], $supportedTypes)) {
-          $supportedTypes = implode(", ", $supportedTypes);
-          throw new InvalidArgumentException("No repository type with name '{$types[$i]}' found! Supportet types are  {$supportedTypes}");
-        }
-      }
+      $types = $this->historyTypes;
     }
 
     foreach ($types as $type) {
-      $this->createRepositories($type);
+      // Validate given history type.
+      if (!in_array($type, $this->historyTypes)) {
+        $supportedTypes = implode(", ", $this->historyTypes);
+        throw new \InvalidArgumentException("No history type with name '{$type}' found! Supported types are: <info>{$supportedTypes}</info>");
+      }
+
+      // Remove complete history repository if it's present in the file system.
+      $path = "{$kernel->documentRoot}/private/history/{$type}";
+      if (is_dir($path)) {
+        sh::execute("rm -rf '{$path}'");
+      }
+
+      // Creat new repository for each database entry we have.
+      if (($result = $db->query("SELECT `{$type}_id` FROM `{$type}s`")->get_result())) {
+        $class   = new \ReflectionClass("\\MovLib\\Data\\History\\" . ucfirst($type));
+        $queries = null;
+        while ($row = $result->fetch_row()) {
+          $commitHash = $db->escapeString($class->newInstance($row[0])->createRepository());
+          $queries   .= "UPDATE `{$type}s` SET `commit` = '{$commitHash}' WHERE `{$type}_id` = {$row[0]};";
+        }
+        if ($queries) {
+          $db->queries($queries);
+        }
+      }
     }
 
     return $this;
@@ -265,7 +263,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   /**
    * Import the Intl ICU translations for countries and languages.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return this
@@ -273,24 +271,27 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \ErrorException
    */
   public function importIntlICUCountriesAndLanguages() {
-    global $config, $db, $i18n;
+    global $kernel, $db, $i18n;
     $this->write("Importing Intl ICU translations for countries and languages ...");
 
     // Contains all country and basic language codes that our application shall know about.
-    $codes = [
+    $seed = [
       "countries" => [ "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW" ],
       "languages" => [ "ab", "aa", "af", "ak", "sq", "am", "ar", "an", "hy", "as", "av", "ae", "ay", "az", "bm", "ba", "eu", "be", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "ch", "ce", "ny", "zh", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "gl", "ka", "de", "el", "gn", "gu", "ht", "ha", "he", "hz", "hi", "ho", "hu", "ia", "id", "ie", "ga", "ig", "ik", "io", "is", "it", "iu", "ja", "jv", "kl", "kn", "kr", "ks", "kk", "km", "ki", "rw", "ky", "kv", "kg", "ko", "ku", "kj", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "gv", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mh", "mn", "na", "nv", "nb", "nd", "ne", "ng", "nn", "no", "ii", "nr", "oc", "oj", "cu", "om", "or", "os", "pa", "pi", "fa", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "sa", "sc", "sd", "se", "sm", "sg", "sr", "gd", "sn", "si", "sk", "sl", "so", "st", "es", "su", "sw", "ss", "sv", "ta", "te", "tg", "th", "ti", "bo", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "cy", "wo", "fy", "xh", "yi", "yo", "za", "zu" ]
     ];
 
-    $systemLanguages = $config->systemLanguages;
+    // Create local copy of all available system languages and remove the default language from the array, we only have
+    // to translate into other languages than the default language.
+    $systemLanguages = $kernel->systemLanguages;
     unset($systemLanguages[$i18n->defaultLanguageCode]);
-    foreach ($codes as $table => $data) {
-      $query = "INSERT INTO `{$table}` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ";
-      $c     = count($data);
-      for ($i = 0; $i < $c; ++$i) {
+
+    $queries = null;
+    foreach ($seed as $table => $codes) {
+      $queries .= "TRUNCATE TABLE `{$table}`; INSERT INTO `{$table}` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ";
+      foreach ($codes as $code) {
         $dynTranslations = null;
         foreach ($systemLanguages as $languageCode => $locale) {
-          $dynTranslations .= "'{$languageCode}', '{$this->intlTranslate($table, $data[$i], $locale)}',";
+          $dynTranslations .= "'{$languageCode}', '{$this->intlTranslate($table, $code, $locale)}',";
         }
         if (empty($dynTranslations)) {
           $dynTranslations = "''";
@@ -298,21 +299,23 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         else {
           $dynTranslations = "COLUMN_CREATE(" . rtrim($dynTranslations, ",") . ")";
         }
-        $query .= "('{$data[$i]}', '{$this->intlTranslate($table, $data[$i], $i18n->defaultLocale)}', {$dynTranslations}),";
+        $queries .= "('{$code}', '{$this->intlTranslate($table, $code, $i18n->defaultLocale)}', {$dynTranslations}),";
       }
-      if (!empty($query)) {
-        $query = rtrim($query, ",") . " ON DUPLICATE KEY UPDATE `name`=VALUES(`name`), `dyn_translations`=VALUES(`dyn_translations`)";
-        try {
-          $db->transactionStart();
-          $db->query($query);
-          $db->transactionCommit();
-        }
-        catch (DatabaseException $e) {
-          $db->transactionRollback();
-          throw $e;
-        }
+      $queries = rtrim($queries, ",") . ";";
+    }
+
+    if ($queries) {
+      try {
+        $db->transactionStart();
+        $db->queries($queries, false);
+        $db->transactionCommit();
+      }
+      catch (DatabaseException $e) {
+        $db->transactionRollback();
+        throw $e;
       }
     }
+
     return $this->write("Successfully imported Intl ICU translations for countries and languages!", self::MESSAGE_TYPE_INFO);
   }
 
@@ -320,7 +323,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * Import all time zones and their translations.
    *
    * @link https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return this
@@ -328,29 +331,50 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \ErrorException
    */
   public function importTimeZones() {
-    global $config, $db, $i18n;
+    global $kernel, $db, $i18n;
     $this->write("Importing time zone translations ...");
-    $systemLanguages = $config->systemLanguages;
-    $timeZoneIds = timezone_identifiers_list();
-    $c = count($timeZoneIds);
-    $translations = [];
-    foreach ($config->systemLanguages as $languageCode => $locale) {
+
+    $systemLanguages = $kernel->systemLanguages;
+    $timeZoneIds     = timezone_identifiers_list();
+    $c               = count($timeZoneIds);
+    $translations    = [];
+
+    foreach ($kernel->systemLanguages as $languageCode => $locale) {
       if ($languageCode == $i18n->languageCode) {
         // @todo These translations aren't quite correct! Create translation file!
         for ($i = 0; $i < $c; ++$i) {
           $translations[$languageCode][$timeZoneIds[$i]] = strtr($timeZoneIds[$i], "_", " ");
         }
+        // We don't want to to insert the default language into our dynamic columns!
         unset($systemLanguages[$languageCode]);
       }
       else {
         $fh = fopen("{$this->seedPath}/" . self::OPTION_DATABASE . "/time_zones_{$languageCode}.txt", "r");
         while (($line = fgets($fh)) !== false) {
+          if (empty($line)) {
+            continue;
+          }
+          if (strpos($line, ";") === false) {
+            throw new \LogicException("Time zone ID translations file for '{$languageCode}' has invalid syntax.");
+          }
           list($timeZoneId, $translation) = explode(";", $line);
+          if (!in_array($timeZoneId, $timeZoneIds)) {
+            throw new \LogicException("Time zone ID '{$timeZoneId}' from translations for '{$languageCode}' isn't a valid time zone ID.");
+          }
           $translations[$languageCode][$timeZoneId] = $translation;
+        }
+        if (($x = count($translations[$languageCode])) !== $c) {
+          if ($x < $c) {
+            $msg = "are missing translations for at least " . ($c - $x) . " time zone IDs.";
+          }
+          else {
+            $msg = ($x - $c) . " translations too much.";
+          }
+          throw new \LogicException("Time zone ID translations for '{$languageCode}' have {$msg}");
         }
       }
     }
-    
+
     if (!empty($translations)) {
       $query = "INSERT INTO `messages` (`message`, `dyn_translations`) VALUES ";
       for ($i = 0; $i < $c; ++$i) {
@@ -372,7 +396,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       if (!empty($query)) {
         try {
           $db->transactionStart();
-          $db->query(rtrim($query, ","));
+          $db->query(rtrim($query, ",") . " ON DUPLICATE KEY UPDATE `message`=VALUES(`message`), `dyn_translations`=VALUES(`dyn_translations`)");
           $db->transactionCommit();
         }
         catch (DatabaseException $e) {
@@ -381,6 +405,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         }
       }
     }
+
     return $this->write("Successfully imported time zone translations!", self::MESSAGE_TYPE_INFO);
   }
 
@@ -404,18 +429,18 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     global $db, $i18n;
     switch ($type) {
       case "countries":
-        return $db->escapeString(Locale::getDisplayRegion("{$i18n->defaultLanguageCode}-{$data}", $locale));
+        return $db->escapeString(\Locale::getDisplayRegion("{$i18n->defaultLanguageCode}-{$data}", $locale));
 
       case "languages":
-        return $db->escapeString(Locale::getDisplayLanguage($data, $locale));
+        return $db->escapeString(\Locale::getDisplayLanguage($data, $locale));
     }
-    throw new InvalidArgumentException;
+    throw new \InvalidArgumentException;
   }
 
   /**
    * Import all seed data.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @global \MovLib\Tool\Database $db
    * @return this
    * @throws \MovLib\Exception\DatabaseExeption
@@ -423,7 +448,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \MovLib\Exception\FileSystemException
    */
   public function seedImport() {
-    global $config, $db;
+    global $kernel, $db;
 
     // Array containing the names of all tasks that should be executed.
     $tasks = [
@@ -435,7 +460,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     // The two additional operations are for the schema import itself.
     $this->write("Importing all seed data ...")->progressStart(count($tasks) + 2);
-    if (($schema = file_get_contents("{$config->documentRoot}/conf/mariadb/movlib.sql")) === false) {
+    if (($schema = file_get_contents("{$kernel->documentRoot}/conf/mariadb/movlib.sql")) === false) {
       throw new FileSystemException("Couldn't read schema!");
     }
     $this->progressAdvance();
@@ -450,7 +475,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   /**
    * Import one ore more upload seed data.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @param array $directoryNames [optional]
    *   Numeric array containing the upload directory data names that should be imported, if left empty (<code>NULL</code>)
    *   all seed data will be imported.
@@ -459,25 +484,25 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @throws \MovLib\Exception\FileSystemException
    */
   public function uploadImport(array $directoryNames = null) {
-    global $config;
+    global $kernel;
     $directories           = null;
     $seedUploadDirectory   = "{$this->seedPath}/" . self::OPTION_UPLOAD;
-    $publicUploadDirectory = "{$config->documentRoot}/public/" . self::OPTION_UPLOAD;
+    $publicUploadDirectory = "{$kernel->documentRoot}/public/" . self::OPTION_UPLOAD;
     if (empty($directoryNames)) {
       $directories = $this->uploadDirectories;
-      $this->exec("rm -rf {$publicUploadDirectory}/*");
-      $this->exec("cp -R {$seedUploadDirectory}/* {$publicUploadDirectory}");
+      sh::execute("rm -rf {$publicUploadDirectory}/*");
+      sh::execute("cp -R {$seedUploadDirectory}/* {$publicUploadDirectory}");
     }
     else {
       $c = count($directoryNames);
       for ($i = 0; $i < $c; ++$i) {
         if (isset($this->uploadDirectories[$directoryNames[$i]])) {
           $directories[$directoryNames[$i]] = $this->uploadDirectories[$directoryNames[$i]];
-          $this->exec("rm -rf {$publicUploadDirectory}/{$directoryNames[$i]}/*");
-          $this->exec("cp -R {$seedUploadDirectory}/* {$publicUploadDirectory}/$directoryNames[$i]");
+          sh::execute("rm -rf {$publicUploadDirectory}/{$directoryNames[$i]}/*");
+          sh::execute("cp -R {$seedUploadDirectory}/* {$publicUploadDirectory}/$directoryNames[$i]");
         }
         else {
-          throw new InvalidArgumentException("No directory with name '{$directoryNames[$i]}' found!");
+          throw new \InvalidArgumentException("No directory with name '{$directoryNames[$i]}' found!");
         }
       }
     }

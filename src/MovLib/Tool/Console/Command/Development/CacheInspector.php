@@ -17,7 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Development;
 
-use \MovLib\Exception\ConsoleException;
+use \MovLib\Data\UnixShell as sh;
 use \Symfony\Component\Console\Input\InputOption;
 
 /**
@@ -36,20 +36,21 @@ class CacheInspector extends \MovLib\Tool\Console\Command\Production\CacheInspec
    * @inheritdoc
    */
   protected function configure() {
-    global $config;
+    global $kernel;
     parent::configure();
-    if ($config->production === false) {
+    if ($kernel->production === false) {
       $this->addInputOption("disk", InputOption::VALUE_NONE, "Empty the server's disk cache (requires super user privileges).");
     }
   }
 
   public function emptyDiskCache() {
     $this->checkPrivileges();
-    if (!is_file("/proc/sys/vm/drop_caches")) {
-      throw new FileSystemException("Couldn't find '/proc/sys/vm/drop_caches'!");
+    $file = "/proc/sys/vm/drop_caches";
+    if (!is_file($file)) {
+      throw new FileSystemException("Couldn't find '{$file}'!");
     }
-    if ($this->exec("echo 3 | tee /proc/sys/vm/drop_caches") === false) {
-      throw new ConsoleException("Couldn't purge disk cache!");
+    if (sh::execute("echo 3 | tee /proc/sys/vm/drop_caches") === false) {
+      throw new \RuntimeException("Couldn't purge disk cache!");
     }
     $this->write("Purged disk cache!", self::MESSAGE_TYPE_INFO);
     return $this;
