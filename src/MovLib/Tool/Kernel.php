@@ -81,9 +81,6 @@ class Kernel extends \MovLib\Kernel {
     // tampering with any super global (which might destroy other software).
     $this->documentRoot = dirname(dirname(dirname(__DIR__)));
 
-    // Include the composer autoloader.
-    require "{$this->documentRoot}/vendor/autoload.php";
-
     // Transform all PHP errors to exceptions.
     set_error_handler([ $this, "errorHandler" ], -1);
 
