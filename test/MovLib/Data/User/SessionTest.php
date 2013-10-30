@@ -31,6 +31,7 @@ use \MovLib\Tool\Console\Command\Development\SeedImport;
  */
 class SessionTest extends \MovLib\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
@@ -39,7 +40,9 @@ class SessionTest extends \MovLib\TestCase {
     $session->authentication = $_SERVER["REQUEST_TIME"];
   }
 
+
   // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
   /**
    * @covers ::__construct
@@ -201,12 +204,14 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::init
+   * @global \MovLib\Tool\Kernel $kernel
    */
   public function testInitAnonymousUser() {
+    global $kernel;
     $session = new Session();
     $this->invoke($session, "init", [ 0, $_SERVER["REQUEST_TIME"] ]);
     $this->assertEquals(0, $session->userId);
-    $this->assertEquals($_SERVER["REMOTE_ADDR"], $session->userName);
+    $this->assertEquals($kernel->remoteAddress, $session->userName);
     $this->assertEquals(ini_get("date.timezone"), $session->userTimeZoneId);
     $this->assertFalse($session->isAuthenticated);
   }
@@ -215,9 +220,11 @@ class SessionTest extends \MovLib\TestCase {
    * @covers ::init
    * @expectedException \MovLib\Exception\SessionException
    * @expectedExceptionMessage Empty or invalid IP address (this is more or less impossible, check web server and if behind a proxy check implementation).
+   * @global \MovLib\Tool\Kernel $kernel
    */
   public function testInitAnonymousUserInvalidIP() {
-    $_SERVER["REMOTE_ADDR"] = "phpunit";
+    global $kernel;
+    $kernel->remoteAddress = "phpunit";
     $this->invoke(new Session(), "init", [ 0, $_SERVER["REQUEST_TIME"] ]);
   }
 
@@ -239,7 +246,7 @@ class SessionTest extends \MovLib\TestCase {
     $this->_testInsertGetActiveSessionsUpdateAndDelete();
     $session->delete();
     $this->_testInsertGetActiveSessionsUpdateAndDelete(false);
-    $this->exec("movdev db -s users");
+    (new SeedImport())->databaseImport([ "users" ]);
   }
 
   private function _testInsertGetActiveSessionsUpdateAndDelete($findIt = true) {
@@ -268,14 +275,14 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::passwordNeedsRehash
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Configuration $kernel
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\User\Session $session
    */
   public function testPasswordNeedsRehash() {
-    global $config, $db, $session;
+    global $kernel, $db, $session;
     $hashBefore  = $this->_testPasswordNeedsRehash($db);
-    $needsRehash = password_hash("Test1234", PASSWORD_DEFAULT, [ "cost" => $config->passwordCost - 1 ]);
+    $needsRehash = password_hash("Test1234", PASSWORD_DEFAULT, [ "cost" => $kernel->passwordCost - 1 ]);
     $session->passwordNeedsRehash($needsRehash, "Test1234");
     $this->assertNotEquals($hashBefore, $this->_testPasswordNeedsRehash($db));
     $db->query("UPDATE `users` SET `password` = ? WHERE `user_id` = 1", "s", [ $hashBefore ]);
