@@ -117,11 +117,14 @@ class Kernel extends \MovLib\Kernel {
   /**
    * Initialize environment for PHPUnit usage.
    *
+   * @global array $backup
+   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    * @return this
    */
   public function initPHPUnit() {
-    global $session;
+    global $backup, $db, $i18n, $session;
 
     // Most tests rely on a valid session, create one up front.
     $sessionInit = new \ReflectionMethod($session, "init");
@@ -130,6 +133,17 @@ class Kernel extends \MovLib\Kernel {
 
     // Set a user agent string for PHPUnit tests.
     $this->userAgent = ini_get("user_agent");
+
+    // Establish connection to database to ensure that our clone has one.
+    $db->connect();
+
+    // Create backups of our global objects.
+    $backup = [
+      "db"      => clone $db,
+      "i18n"    => clone $i18n,
+      "kernel"  => clone $this,
+      "session" => clone $session,
+    ];
 
     return $this;
   }
