@@ -75,7 +75,7 @@ class RegistrationEmailExists extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * @inheritdoc
    */
-  protected function getHtmlBody() {
+  protected function getHTML() {
     global $i18n;
     return
       "<p>{$i18n->t("Hi {0}!", [ $this->name ])}</p>" .
@@ -89,7 +89,7 @@ class RegistrationEmailExists extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * @inheritdoc
    */
-  protected function getPlainBody() {
+  protected function getPlainText() {
     global $i18n;
     return <<<EOT
 {$i18n->t("Hi {0}!", [ $this->name ])}
