@@ -259,9 +259,9 @@ class Kernel {
 
     try {
       // Initialize environment properties based on variables passed in by nginx.
-      $this->documentRoot  = $_SERVER["DOCUMENT_ROOT"];
-      $this->hostname      = $_SERVER["SERVER_NAME"];
-      $this->protocol      = $_SERVER["SERVER_PROTOCOL"];
+      $this->documentRoot  = $_SERVER["HOME"];
+      $this->hostname      = $_SERVER["HOSTNAME"];
+      $this->protocol      = $_SERVER["PROTOCOL"];
       $this->remoteAddress = filter_var($_SERVER["REMOTE_ADDR"], FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
       $this->requestMethod = $_SERVER["REQUEST_METHOD"];
       $this->requestURI    = $_SERVER["REQUEST_URI"];
