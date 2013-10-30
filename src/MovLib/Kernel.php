@@ -251,8 +251,8 @@ class Kernel {
     // Export ourself to global scope and allow any layer to access the kernel's public properties.
     $kernel = $this;
 
-    // Transform all PHP errors to exceptions.
-    set_error_handler([ $this, "errorHandler" ]);
+    // Transform ALL PHP errors to exceptions.
+    set_error_handler([ $this, "errorHandler" ], -1);
 
     // Catch fatal errors and ensure that something is displayed to the client.
     register_shutdown_function([ $this, "fatalErrorHandler" ]);
