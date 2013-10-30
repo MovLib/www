@@ -127,25 +127,25 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
    * is to only print exactly these elements.
    *
    * Short note on why we are using a method called <code>getPresentation()</code> and not the platform provided
-   * <code>__toString()</code> magic method: any <code>__toString()</code>-method can't throw an execption, which is a
+   * <code>getPresentation()</code> magic method: any <code>getPresentation()</code>-method can't throw an execption, which is a
    * huge problem in the way we are dealing with errors. Everything throws an exception if something goes wrong and if
    * something goes wrong during the rendering process one wouldn't get any stacktrace, instead a generic
-   * <i>__toString() must not throw an exception</i> message would be displayed (fatal error of course, so you get
+   * <i>getPresentation() must not throw an exception</i> message would be displayed (fatal error of course, so you get
    * nothing).
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    * @return string
    */
   public function getPresentation() {
-    global $config, $i18n, $session;
+    global $kernel, $i18n, $session;
 
     // Build a link for each stylesheet of this page.
     $stylesheets = "";
     $c = count($this->stylesheets);
     for ($i = 0; $i < $c; ++$i) {
-      $stylesheets .= "<link rel='stylesheet' href='//{$config->domainStatic}/asset/css/{$this->stylesheets[$i]}'>";
+      $stylesheets .= "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/{$this->stylesheets[$i]}'>";
     }
 
     // Apply additional CSS class if the current request is made from a signed in user.
@@ -171,20 +171,20 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
           $stylesheets .
           // Yes, we could create these in a loop, but why should we implement a loop for static data? Do be honest, I
           // generated it with a loop and simply copied the output here.
-          "<link rel='icon' type='image/svg+xml' href='//{$config->domainStatic}/asset/img/logo/vector.svg'>" .
-          "<link rel='icon' type='image/png' sizes='256x256' href='//{$config->domainStatic}/asset/img/logo/256.png'>" .
-          "<link rel='icon' type='image/png' sizes='128x128' href='//{$config->domainStatic}/asset/img/logo/128.png'>" .
-          "<link rel='icon' type='image/png' sizes='64x64' href='//{$config->domainStatic}/asset/img/logo/64.png'>" .
-          "<link rel='icon' type='image/png' sizes='32x32' href='//{$config->domainStatic}/asset/img/logo/32.png'>" .
-          "<link rel='icon' type='image/png' sizes='24x24' href='//{$config->domainStatic}/asset/img/logo/24.png'>" .
-          "<link rel='icon' type='image/png' sizes='16x16' href='//{$config->domainStatic}/asset/img/logo/16.png'>" .
+          "<link rel='icon' type='image/svg+xml' href='//{$kernel->domainStatic}/asset/img/logo/vector.svg'>" .
+          "<link rel='icon' type='image/png' sizes='256x256' href='//{$kernel->domainStatic}/asset/img/logo/256.png'>" .
+          "<link rel='icon' type='image/png' sizes='128x128' href='//{$kernel->domainStatic}/asset/img/logo/128.png'>" .
+          "<link rel='icon' type='image/png' sizes='64x64' href='//{$kernel->domainStatic}/asset/img/logo/64.png'>" .
+          "<link rel='icon' type='image/png' sizes='32x32' href='//{$kernel->domainStatic}/asset/img/logo/32.png'>" .
+          "<link rel='icon' type='image/png' sizes='24x24' href='//{$kernel->domainStatic}/asset/img/logo/24.png'>" .
+          "<link rel='icon' type='image/png' sizes='16x16' href='//{$kernel->domainStatic}/asset/img/logo/16.png'>" .
           // @todo Add opensearch tag (rel="search").
           "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
         "</head>" .
         // @todo Drop the {$this->id}-body class!
         "<body id='{$this->id}' class='{$this->bodyClasses}'>"
       // Please note that there is no need to include the closing body- nor html-tag with the HTML5 doc-type! We abuse
-      // this for our inheritance and other classes can overwrite and extend the most default __toString() method
+      // this for our inheritance and other classes can overwrite and extend the most default getPresentation() method
       // while retaining the global header.
     ;
   }

@@ -94,7 +94,7 @@ class URL extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Whetever to consider external URLs as valid or not.
+   * Whether to consider external URLs as valid or not.
    *
    * @var boolean
    */
@@ -108,7 +108,7 @@ class URL extends \MovLib\Presentation\AbstractBase {
   public $external = false;
 
   /**
-   * Whetever to check if the URL is reachable or not.
+   * Whether to check if the URL is reachable or not.
    *
    * @var boolean
    */
@@ -152,7 +152,7 @@ class URL extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The URL.
    */
-  public function __toString() {
+  public function getPresentation() {
     return $this->url;
   }
 
@@ -173,14 +173,14 @@ class URL extends \MovLib\Presentation\AbstractBase {
   /**
    * Validate the URL with the current options.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The validated URL.
    * @throws \MovLib\Exception\ValidationException
    */
   public function validate() {
-    global $config, $i18n;
+    global $kernel, $i18n;
 
     // Trim right before validating and not in the constructor, could be the property was set later.
     $this->url = trim($this->url);
@@ -196,7 +196,7 @@ class URL extends \MovLib\Presentation\AbstractBase {
     // A URL must have a scheme and host, otherwise we consider it to be invalid. No support for protocol relative
     // URLs. They often lead to problems for other applications and we're using SSL everywhere, which most other
     // websites aren't using. Therefor we simply don't allow and we have to make sure via the UI that the user is
-    // always pasting absolute URLs (e.g. with the placeholder attribute as you can see above in the __toString()
+    // always pasting absolute URLs (e.g. with the placeholder attribute as you can see above in the getPresentation()
     // method).
     if (empty($this->parts["scheme"]) || empty($this->parts["host"])) {
       $errors[] = $i18n->t("Scheme (protocol) and host are mandatory in a URL.");
@@ -219,7 +219,7 @@ class URL extends \MovLib\Presentation\AbstractBase {
     }
 
     // Check if this is an external URL.
-    if (strpos($this->parts["host"], $config->domainDefault) === false) {
+    if (strpos($this->parts["host"], $kernel->domainDefault) === false) {
       if ($this->allowExternal === false) {
         throw new ValidationException($i18n->t("External URLs are forbidden in this context."), self::E_NO_EXTERNAL);
       }

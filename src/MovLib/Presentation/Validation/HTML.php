@@ -85,7 +85,7 @@ class HTML {
   protected $allowedHTML = "b,br,em,i,p[class]";
 
   /**
-   * Whetever to allow external links or not.
+   * Whether to allow external links or not.
    *
    * @var boolean
    */
@@ -117,7 +117,7 @@ class HTML {
    * @param int $format [optional]
    *   The format to validate against.
    * @param boolean $allowExternal [optional]
-   *   Whetever to allow external URLs or not.
+   *   Whether to allow external URLs or not.
    */
   public function __construct($html = null, $format = self::FORMAT_BASIC_HTML, $allowExternal = false) {
     $this->html = $html;
@@ -130,7 +130,7 @@ class HTML {
    * @return string
    *   The HTML.
    */
-  public function __toString() {
+  public function getPresentation() {
     return $this->html;
   }
 
@@ -154,7 +154,7 @@ class HTML {
    * @param int $format
    *   The format, use the <var>FORMAT_*</var> class constants.
    * @param boolean $allowExternal [optional]
-   *   Whetever to allow external URLs or not.
+   *   Whether to allow external URLs or not.
    * @return this
    */
   public function setFormat($format, $allowExternal = false) {

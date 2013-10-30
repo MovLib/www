@@ -34,9 +34,9 @@ class Page extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function init($title) {
-    global $config;
+    global $kernel;
     parent::init($title);
-    $config = new Configuration();
+    $kernel = new Configuration();
     return $this;
   }
 
@@ -44,18 +44,15 @@ class Page extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getFooter() {
-    global $config;
+    global $kernel, $i18n;
     $year  = date("Y");
-    $links = null;
-    foreach ([
-      "Contact"        => "mailto:{$config->emailWebmaster}",
-      "CA Certificate" => "//{$config->domainStatic}/asset/ssl/ca.crt",
-      "GitHub Project" => "https://github.com/MovLib/tools",
-    ] as $text => $href) {
-      $links .= " <a target='_blank' href='{$href}'>{$text}</a>";
-    }
     return
-      "<footer id='footer'><div class='container'><p>© {$year} MovLib™{$links}</p></div></footer>"
+      "<footer id='footer'><div class='container'><p>" .
+        "© {$year} {$kernel->siteName}™ " .
+        "<a href='mailto:{$kernel->emailWebmaster}'>{$i18n->t("Contact")}</a> " .
+        "<a href='//{$kernel->domainStatic}/asset/ssl/ca.crt'>{$i18n->t("CA Certificate")}</a> " .
+        "<a target='_blank' href='https://github.com/MovLib'>GitHub {$i18n->t("Porject")}</a>" .
+      "</p></div></footer>"
     ;
   }
 
@@ -63,10 +60,10 @@ class Page extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getHeader() {
-    global $config, $i18n;
+    global $kernel;
     return
       "<header id='header'><div class='container'><a href='/' id='header__logo'>" .
-        "<img alt='' height='42' src='{$_SERVER["SCHEME"]}://{$config->domainStatic}/asset/img/logo/tools-vector.svg' width='42'> {$config->siteName}" .
+        "<img alt='' height='42' src='//{$kernel->domainStatic}/asset/img/logo/tools-vector.svg' width='42'> {$kernel->siteName}" .
       "</a></div></header>"
     ;
   }

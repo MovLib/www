@@ -98,12 +98,11 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
   public $hideTitle = true;
 
   /**
-   * Callable that will be called with each menuitem before sending it to <code>$this->a()</code>.
+   * Callable that will be called with each menuitem.
    *
-   * @see \MovLib\Test\Presentation\Partial\Navigation::testToStringClosure()
-   * @var null|\Closure
+   * @var null|callable|\Closure
    */
-  public $closure;
+  public $callback;
 
   /**
    * Flag indicating if all menuitems should be wrapped in an unordered list.
@@ -149,29 +148,35 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    *   The navigation as string.
    */
   public function __toString() {
-    $menuitems = "";
-    if ($this->unorderedList === true) {
-      $menuitems = "<ul class='no-list'>";
-    }
-    $c = count($this->menuitems);
-    for ($i = 0; $i < $c; ++$i) {
-      if ($i !== 0) {
+    $menuitems = null;
+
+    foreach ($this->menuitems as $menuitem) {
+      if ($menuitems) {
         $menuitems .= $this->glue;
       }
-      if ($this->closure) {
-        $this->menuitems[$i] = call_user_func_array($this->closure, [ $this->menuitems[$i], $i, $c ]);
+      if ($this->callback) {
+        $menuitem = call_user_func($this->callback, $menuitem);
       }
-      $this->menuitems[$i][2]["role"] = "menuitem";
-      $menuitem   = $this->a($this->menuitems[$i][0], $this->menuitems[$i][1], $this->menuitems[$i][2]);
-      $menuitems .= ($this->unorderedList === true) ? "<li>{$menuitem}</li>" : $menuitem;
+      if (!empty($menuitem)) {
+        if (is_array($menuitem)) {
+          $menuitem[2]["role"] = "menuitem";
+          $menuitem            = $this->a($menuitem[0], $menuitem[1], $menuitem[2]);
+        }
+        $menuitems .= $this->unorderedList ? "<li>{$menuitem}</li>" : $menuitem;
+      }
     }
-    if ($this->unorderedList === true) {
-      $menuitems .= "</ul>";
+
+    if ($menuitems) {
+      if ($this->unorderedList) {
+        $menuitems = "<ul class='no-list'>{$menuitem}</ul>";
+      }
+      $this->attributes["id"]   = "{$this->id}-nav";
+      $this->attributes["role"] = "navigation";
+      $hideTitle                = $this->hideTitle ? " class='visuallyhidden'" : null;
+      return "<nav{$this->expandTagAttributes($this->attributes)}><h2{$hideTitle} id='{$this->id}-nav-title'>{$this->title}</h2><div role='menu'>{$menuitems}</div></nav>";
     }
-    $this->attributes["id"]   = "{$this->id}-nav";
-    $this->attributes["role"] = "navigation";
-    $this->hideTitle          = ($this->hideTitle === true) ? " class='visuallyhidden'" : "";
-    return "<nav{$this->expandTagAttributes($this->attributes)}><h2{$this->hideTitle} id='{$this->id}-nav-title'>{$this->title}</h2><div role='menu'>{$menuitems}</div></nav>";
+
+    return "";
   }
 
 }

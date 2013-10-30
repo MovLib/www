@@ -117,10 +117,7 @@ class Alert {
    *   HTML representation of this alert message.
    */
   public function __toString() {
-    $title = null;
-    if ($this->title) {
-      $title = "<h4 class='alert__title'>{$this->title}</h4>";
-    }
+    $title = $this->title ? "<h4 class='alert__title'>{$this->title}</h4>" : null;
     return "<div class='alert{$this->severity}' role='alert'><div class='container'>{$title}{$this->message}</div></div>";
   }
 

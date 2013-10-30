@@ -17,8 +17,7 @@
  */
 namespace MovLib\Presentation;
 
-use \Locale;
-use \MovLib\Data\User\Full as User;
+use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Data\SystemLanguages;
 use \MovLib\Exception\Client\RedirectTemporaryException;
 use \MovLib\Presentation\Partial\Navigation;
@@ -66,7 +65,7 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
 
     // If a signed in user is requesting this page we know where to send her or him.
     if ($session->isAuthenticated === true) {
-      $user = new User(User::FROM_ID, $session->userId);
+      $user = new UserFull(UserFull::FROM_ID, $session->userId);
       throw new RedirectTemporaryException("{$kernel->scheme}://{$user->systemLanguageCode}.{$kernel->domainDefault}/");
     }
 
@@ -76,7 +75,7 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
     $this->navigation                      = new Navigation($this->id, $i18n->t("Available Languages"), new SystemLanguages());
     $this->navigation->attributes["class"] = "well well--large";
     $this->navigation->glue                = " / ";
-    $this->navigation->closure             = [ $this, "formatSystemLanguage" ];
+    $this->navigation->callback             = [ $this, "formatSystemLanguage" ];
   }
 
   /**
@@ -106,7 +105,7 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
       "{$html}<div class='{$this->id}-content' id='content' role='main'><div class='container'>" .
         "<h1 class='clear-fix' id='logo-big'>" .
           "<img alt='{$kernel->siteName} {$i18n->t("logo")}' height='192' src='//{$kernel->domainStatic}/asset/img/logo/vector.svg' width='192'>" .
-          "<span>{$kernel->siteName} <small>{$i18n->t("the {0}free{1} movie library.", [ "<em>", "</em>" ])}</small></span>" .
+          "<span>{$kernel->siteNameAndSloganHTML}</span>" .
         "</h1>" .
         "<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$this->navigation}" .
       "</div></div>" .

@@ -124,7 +124,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * @param string $text
    *   The form element's translated help text, defaults to no help text.
    * @param boolean $helpPopup [optional]
-   *   Whetever the help should be displayed as popup or not, defaults to display as popup.
+   *   Whether the help should be displayed as popup or not, defaults to display as popup.
    * @return this
    */
   public function setHelp($text, $popup = true) {

@@ -42,7 +42,7 @@ class Home extends \MovLib\Presentation\Tool\Page {
    * @inheritdoc
    */
   protected function getContent() {
-    global $config, $i18n;
+    global $kernel, $i18n;
 
     $tools = new Navigation("tools", "Tools", [
       [ "ApiGen", "public/doc/", "{$i18n->t("Have a look at the source code documentation.")} {$i18n->t("Generated once a day.")}", false ],
@@ -52,23 +52,23 @@ class Home extends \MovLib\Presentation\Tool\Page {
       // @todo Either our tests are broken or VisualPHPUnit is broken ... impossible to get this working.
       //[ "VisualPHPUnit", $i18n->t("Run PHPUnit tests via the VisualPHPUnit web interface."), true ],
     ]);
-    $tools->closure = function ($tool) {
-      global $config;
+    $tools->callback = function ($tool) {
+      global $kernel;
       $route = "/{$tool[1]}";
       $label = [ "info", "open" ];
       if ($tool[3] === true) {
-        $route = "//{$config->domainSecureTools}{$route}";
-        $label = $config->sslClientVerify === true ? [ "success", "verified" ] : [ "danger", "not verified" ];
+        $route = "//{$kernel->domainSecureTools}{$route}";
+        $label = $kernel->sslClientVerify === true ? [ "success", "verified" ] : [ "danger", "not verified" ];
       }
       return [ $route, "<span class='label label-{$label[0]} pull-right'>{$label[1]}</span><h4>{$tool[0]}</h4><p>{$tool[2]}</p>", [
         "class" => "list-group-item"
       ]];
     };
 
-    $devs = new GlueSeparated(glob("{$config->documentRoot}/public/coverage/devs/*", GLOB_ONLYDIR));
+    $devs = new GlueSeparated(glob("{$kernel->documentRoot}/public/coverage/devs/*", GLOB_ONLYDIR));
     $devs->closure = function ($listitem) {
-      global $config;
-      $route = str_replace($config->documentRoot, "", $listitem);
+      global $kernel;
+      $route = str_replace($kernel->documentRoot, "", $listitem);
       $text  = basename($listitem);
       return "<a href='{$route}'>{$text}</a>";
     };

@@ -76,7 +76,7 @@ class PlainText extends \MovLib\Presentation\AbstractBase {
   public $plainText;
 
   /**
-   * Flag indicating whetever to preserve line feeds for not.
+   * Flag indicating whether to preserve line feeds for not.
    *
    * @var boolean
    */
@@ -105,7 +105,7 @@ class PlainText extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The plain text string.
    */
-  public function __toString() {
+  public function getPresentation() {
     return $this->plainText;
   }
 

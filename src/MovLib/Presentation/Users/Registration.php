@@ -147,13 +147,15 @@ class Registration extends \MovLib\Presentation\FormPage {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   protected function getContent() {
-    global $i18n;
+    global $i18n, $kernel;
     if ($this->accepted === true) {
       return "<div class='container'><small>{$i18n->t(
         "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-        [ "<a href='{$_SERVER["REQUEST_URI"]}'></a>" ]
+        [ "<a href='{$kernel->requestURI}'></a>" ]
       )}</small></div>";
     }
     return "<div class='container'><div class='row'>{$this->form}</div></div>"
