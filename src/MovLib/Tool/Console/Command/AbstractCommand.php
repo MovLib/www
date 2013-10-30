@@ -327,7 +327,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
         $this->quiet = $options["quiet"];
       }
     }
-    $this->output->setVerbosity(OutputInterface::VERBOSITY_NORMAL); // Always display exceptions!
+    $this->output->setVerbosity(OutputInterface::VERBOSITY_DEBUG); // Always display exceptions!
     return $options;
   }
 
