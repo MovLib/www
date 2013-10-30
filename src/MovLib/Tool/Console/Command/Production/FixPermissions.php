@@ -87,7 +87,7 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
       "chown -R {$kernel->phpUser}:{$kernel->phpGroup} '{$directory}'" => "User and group ownership fixed!",
       "find '{$directory}' -type d -exec chmod 2770 {} \;"             => "Directory permissions fixed!",
       "find '{$directory}' -type f -exec chmod 2660 {} \;"             => "File permissions fixed!",
-      "find '{$directory}' -type f -regextype posix-egrep -regex '.*(bin/[a-zA-Z0-9\._-]+|conf/.*\.sh|(/?apigen){3}\.php)[^\.md]$' -exec chmod 2770 {} \;"
+      "find '{$directory}' -type f -regextype posix-egrep -regex '.*(bin/[a-zA-Z0-9\._-]+|bin/.*\.sh|(/?apigen){3}\.php)[^\.md]$' -exec chmod 2770 {} \;"
         => "Executable permissions fixed!"
     ] as $cmd => $msg) {
       if (sh::execute($cmd) === false) {

@@ -158,7 +158,7 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
 
     // Collect all source files.
     $files = [];
-    $this->globRecursive("src/MovLib", function ($realpath) use ($files) {
+    $this->globRecursive("src/MovLib", function ($realpath) use (&$files) {
       $files[] = $realpath;
     });
 
@@ -177,7 +177,7 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
 
     // Remove all tests that aren't needed anymore.
     $this->globRecursive("test/MovLib", function ($realpath) {
-      if (!is_file(str_replace([ "/test/", "Test.php" ], [ "/src/", ".php" ], $realpath))) {
+      if (strpos($realpath, "Test.php") !== false && !is_file(str_replace([ "/test/", "Test.php" ], [ "/src/", ".php" ], $realpath))) {
         unlink($realpath);
         $this->skeletonsDeleted[] = $realpath;
       }
@@ -241,7 +241,7 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
     $tests = [];
     /* @var $method \ReflectionMethod */
     foreach ($reflector->getMethods() as $method) {
-      if ("\\{$method->getDeclaringClass()->name}" == $class) {
+      if ($method->getDeclaringClass() == $reflector) {
         $testExists     = false;
         $methodName     = $method->getName();
         $methodTestName = ucfirst(ltrim($methodName, "_"));
@@ -285,7 +285,7 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
     $tests = [];
     /* @var $method \ReflectionMethod */
     foreach ($reflector->getMethods() as $method) {
-      if ("\\{$method->getDeclaringClass()->name}" == $class) {
+      if ($method->getDeclaringClass() == $reflector) {
         $methodName     = $method->getName();
         $methodTestName = ucfirst(ltrim($methodName, "_"));
         $tests[]        = str_replace(

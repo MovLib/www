@@ -17,7 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command;
 
-use \InvalidArgumentException;
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\ConsoleException;
 
 /**
@@ -88,18 +88,18 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    *
    * @param array $options
    *   Array containing the configure options.
-   * @aparm string $flags
+   * @param string $flags
    *   Flags to set before configuration, e.g. <i>CFLAGS</i>.
    * @return this
    * @throws \MovLib\Exception\ConsoleException
    */
   protected function configureInstallation(array $options = [], $flags = null) {
-    $this->write("Configuring installation of {$this->name} ...");
+    $this->write("Configuring installation of {$this->installationName} ...");
     if (!empty($flags)) {
       $flags .= " ";
     }
-    if ($this->system("{$flags}./configure " . implode(" ", $options)) === false) {
-      throw new ConsoleException("Couldn't configure {$this->name}");
+    if (sh::executeDisplayOutput("{$flags}./configure " . implode(" ", $options)) === false) {
+      throw new ConsoleException("Couldn't configure {$this->installationName}");
     }
     return $this;
   }
@@ -137,10 +137,10 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function git($user, $project) {
     if (!is_string($user) || empty($user) || !is_string($project) || empty($project)) {
-      throw new InvalidArgumentException("User and project must be set to clone a GitHub repository.");
+      throw new \InvalidArgumentException("User and project must be set to clone a GitHub repository.");
     }
     $this->write("Cloning repository {$user}/{$project} ...", self::MESSAGE_TYPE_COMMENT);
-    if ($this->system("git clone git://github.com/{$user}/{$project}.git") === false) {
+    if (sh::executeDisplayOutput("git clone git://github.com/{$user}/{$project}.git") === false) {
       throw new ConsoleException("Couldn't clone GitHub repository: '{$user}/{$project}'");
     }
     return $this;
@@ -153,16 +153,17 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @throws \MovLib\Exception\ConsoleException
    */
   protected function install() {
-    $this->write("Starting installation of {$this->name} ...");
-    if ($this->system("make") === false) {
-      throw new ConsoleException("Couldn't 'make' {$this->name}!");
+    $this->write("Starting installation of {$this->installationName} ...");
+    if (sh::executedisplayoutput("make") === false) {
+      throw new ConsoleException("Couldn't 'make' {$this->installationName}!");
     }
-    if ($this->system("checkinstall make install") === false) {
-      throw new ConsoleException("Couldn't 'checkinstall make install' {$this->name}!");
+    if (sh::executedisplayoutput("checkinstall make install") === false) {
+      throw new ConsoleException("Couldn't 'checkinstall make install' {$this->installationName}!");
     }
-    $this->system("make clean");
-    $this->system("ldconfig");
-    $this->write("Successfully installed {$this->name}-{$this->version}");
+    sh::executeDisplayOutput("make test");
+    sh::executedisplayoutput("make clean");
+    sh::executedisplayoutput("ldconfig");
+    $this->write("Successfully installed {$this->installationName}-{$this->version}");
     return $this;
   }
 
@@ -176,7 +177,7 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function setInstallationName($installationName) {
     if (!is_string($installationName) || empty($installationName)) {
-      throw new InvalidArgumentException("Installation name must be of type string and not empty!");
+      throw new \InvalidArgumentException("Installation name must be of type string and not empty!");
     }
     $this->installationName = $installationName;
     return $this;
@@ -192,7 +193,7 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   public function setVersion($version) {
     if (!is_string($version) || empty($version)) {
-      throw new InvalidArgumentException("Version must be of type string and not empty!");
+      throw new \InvalidArgumentException("Version must be of type string and not empty!");
     }
     $this->version = $version;
     return $this;
@@ -209,14 +210,14 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function tar($path) {
     if (!is_string($path) || !is_dir($path)) {
-      throw new InvalidArgumentException("The given path isn't valid!");
+      throw new \InvalidArgumentException("The given path isn't valid!");
     }
-    $this->write("Extracting source files archive for {$this->name} ...");
-    if ($this->system("tar xzf {$path}") === false) {
+    $this->write("Extracting source files archive for {$this->installationName} ...");
+    if (sh::executedisplayoutput("tar xzf {$path}") === false) {
       throw new ConsoleException("Couldn't extract tar archive: '{$path}'");
     }
-    $this->write("Removing source files archive of {$this->name} ...");
-    if ($this->exec("rm -f {$path}") === false) {
+    $this->write("Removing source files archive of {$this->installationName} ...");
+    if (sh::execute("rm -f {$path}") === false) {
       throw new ConsoleException("Couldn't delete tar archive after extraction: '{$path}'");
     }
     return $this;
@@ -229,11 +230,11 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @throws \MovLib\Exception\ConsoleException
    */
   protected function uninstall() {
-    $this->write("Uninstalling old {$this->name} installation.");
-    if ($this->exec("dpkg -s {$this->name}") === true && $this->system("dpkg -r {$this->name}") === false) {
+    $this->write("Uninstalling old {$this->installationName} installation.");
+    if (sh::execute("dpkg -s {$this->installationName}") === true && sh::executedisplayoutput("dpkg -r {$this->installationName}") === false) {
       throw new ConsoleException("Couldn't uninstall old installation.");
     }
-    if ($this->askConfirmation("Remove old source files?", false) === true && $this->exec("rm -rf " . self::SOURCE_DIRECTORY . "{$this->name}-*") === false) {
+    if ($this->askConfirmation("Remove old source files?", false) === true && sh::execute("rm -rf " . self::SOURCE_DIRECTORY . "{$this->installationName}-*") === false) {
       throw new ConsoleException("Couldn't remove source files.");
     }
     return $this;
@@ -249,11 +250,11 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @throws \MovLib\Exception\ConsoleException
    */
   protected function wget($url) {
-    if (!filter_var($url, FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR|FILTER_FLAG_HOST_REQUIRED)) {
-      throw new InvalidArgumentException("The given URL isn't valid!");
+    if (!filter_var($url, FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED)) {
+      throw new \InvalidArgumentException("The given URL isn't valid!");
     }
-    $this->write("Downloading source files for {$this->name} ...", self::MESSAGE_TYPE_COMMENT);
-    if ($this->system("wget --no-check-certificate {$url}") === false) {
+    $this->write("Downloading source files for {$this->installationName} ...", self::MESSAGE_TYPE_COMMENT);
+    if (sh::executedisplayoutput("wget --no-check-certificate {$url}") === false) {
       throw new ConsoleException("Couldn't download the source files: '{$url}'");
     }
     return $this;

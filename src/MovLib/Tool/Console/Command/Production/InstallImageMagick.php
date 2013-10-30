@@ -17,8 +17,8 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
+use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
-use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -44,7 +44,7 @@ class InstallImageMagick extends \MovLib\Tool\Console\Command\AbstractInstall {
    */
   protected function configure() {
     $this->setDescription("Remove installed ImageMagick and install new version.");
-    $this->addInputOption("version", InputOption::VALUE_REQUIRED, "The ImageMagick version to install.");
+    $this->addArgument("version", InputArgument::REQUIRED, "The ImageMagick version to install.");
   }
 
   /**
@@ -57,19 +57,21 @@ class InstallImageMagick extends \MovLib\Tool\Console\Command\AbstractInstall {
     if ($this->askConfirmation("Install ligjpeg-dev and libpng-dev from Debian repositories?") === true && $this->system("aptitude update && aptitude install libjpeg-dev libpng-dev") === false) {
       throw new ConsoleException("Could not update and install dependencies via aptitude!");
     }
-    $this->setVersion($options["version"]);
-    $this->installImageMagick();
+    $this->installImageMagick($input->getArgument("version"));
     return $options;
   }
 
   /**
    * Install ImageMagick.
    *
+   * @param string $version
+   *   The version to install.
    * @return this
+   * @throws \InvalidArgumentException
    */
-  protected function installImageMagick() {
-    $name = $this->getInstallationName();
-    $version = $this->getVersion();
+  protected function installImageMagick($version) {
+    $this->setVersion($version);
+    $name           = $this->getInstallationName();
     $nameAndVersion = "{$name}-{$version}";
     $this->uninstall();
     chdir(self::SOURCE_DIRECTORY);
