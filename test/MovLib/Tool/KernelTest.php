@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\ImageDetails;
+namespace MovLib\Tool;
+
+use \MovLib\Tool\Kernel;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\ImageDetails\TraitImageDetails
+ * @coversDefaultClass \MovLib\Tool\Kernel
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class TraitImageDetailsTest extends \MovLib\TestCase {
+class KernelTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\ImageDetails\TraitImageDetails */
-  protected $traitImageDetails;
+  /** @var \MovLib\Tool\Kernel */
+  protected $kernel;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -42,7 +44,7 @@ class TraitImageDetailsTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->traitImageDetails = $this->getMockForAbstractClass("\\MovLib\\Presentation\\ImageDetails\\TraitImageDetails");
+    $this->kernel = new Kernel();
   }
 
   /**
@@ -65,18 +67,26 @@ class TraitImageDetailsTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::pager
-   * @todo Implement pager
+   * @covers ::__construct
+   * @todo Implement __construct
    */
-  public function testPager() {
+  public function testConstruct() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::getPageContent
-   * @todo Implement getPageContent
+   * @covers ::initCLI
+   * @todo Implement initCLI
    */
-  public function testGetPageContent() {
+  public function testInitCLI() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::initPHPUnit
+   * @todo Implement initPHPUnit
+   */
+  public function testInitPHPUnit() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

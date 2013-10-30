@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\ImageDetails;
+namespace MovLib\Tool\Console\Command\Development;
+
+use \MovLib\Tool\Console\Command\Development\CacheInspector;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\ImageDetails\TraitImageDetails
+ * @coversDefaultClass \MovLib\Tool\Console\Command\Development\CacheInspector
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class TraitImageDetailsTest extends \MovLib\TestCase {
+class CacheInspectorTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\ImageDetails\TraitImageDetails */
-  protected $traitImageDetails;
+  /** @var \MovLib\Tool\Console\Command\Development\CacheInspector */
+  protected $cacheInspector;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -42,7 +44,7 @@ class TraitImageDetailsTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->traitImageDetails = $this->getMockForAbstractClass("\\MovLib\\Presentation\\ImageDetails\\TraitImageDetails");
+    $this->cacheInspector = new CacheInspector();
   }
 
   /**
@@ -65,18 +67,18 @@ class TraitImageDetailsTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::pager
-   * @todo Implement pager
+   * @covers ::configure
+   * @todo Implement configure
    */
-  public function testPager() {
+  public function testConfigure() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::getPageContent
-   * @todo Implement getPageContent
+   * @covers ::emptyDiskCache
+   * @todo Implement emptyDiskCache
    */
-  public function testGetPageContent() {
+  public function testEmptyDiskCache() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

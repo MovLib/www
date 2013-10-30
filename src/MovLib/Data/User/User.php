@@ -207,7 +207,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   We override the <code>parent::uploadImage()</code> method and can handle everything there, no need to implement
    *   this method like other image instances have to.
    */
-  protected function generateImageStyles() {
+  protected function generateImageStyles($source) {
     return $this;
   }
 
@@ -240,10 +240,14 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   {@inheritdoc}
    * @param string $extension
    *   {@inheritdoc}
+   * @param integer $height
+   *   <b>UNUSED!</b> but kept for compatibility with parent signature.
+   * @param integer $width
+   *   <b>UNUSED!</b> but kept for compatibility with parent signature.
    * @return this
    * @throws \MovLib\Exception\ImageException
    */
-  public function uploadImage($source, $extension) {
+  public function uploadImage($source, $extension, $height, $width) {
     $this->imageChanged   = $_SERVER["REQUEST_TIME"];
     $this->imageExists    = true;
     $this->imageExtension = $extension;

@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\ImageDetails;
+namespace MovLib\Data;
+
+use \MovLib\Data\UnixShell;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\ImageDetails\TraitImageDetails
+ * @coversDefaultClass \MovLib\Data\UnixShell
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class TraitImageDetailsTest extends \MovLib\TestCase {
+class UnixShellTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\ImageDetails\TraitImageDetails */
-  protected $traitImageDetails;
+  /** @var \MovLib\Data\UnixShell */
+  protected $unixShell;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -42,7 +44,7 @@ class TraitImageDetailsTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->traitImageDetails = $this->getMockForAbstractClass("\\MovLib\\Presentation\\ImageDetails\\TraitImageDetails");
+    $this->unixShell = new UnixShell();
   }
 
   /**
@@ -65,18 +67,26 @@ class TraitImageDetailsTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::pager
-   * @todo Implement pager
+   * @covers ::execute
+   * @todo Implement execute
    */
-  public function testPager() {
+  public function testExecute() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::getPageContent
-   * @todo Implement getPageContent
+   * @covers ::executeDetached
+   * @todo Implement executeDetached
    */
-  public function testGetPageContent() {
+  public function testExecuteDetached() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::executeDisplayOutput
+   * @todo Implement executeDisplayOutput
+   */
+  public function testExecuteDisplayOutput() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

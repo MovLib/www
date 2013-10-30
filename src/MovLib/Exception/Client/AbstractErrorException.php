@@ -33,6 +33,13 @@ use \MovLib\Presentation\Partial\Alert;
 abstract class AbstractErrorException extends \MovLib\Exception\AbstractException {
 
   /**
+   * The error page's alert message explaining the error.
+   *
+   * @var \MovLib\Presentation\Partial\Alert
+   */
+  public $alert;
+
+  /**
    * The error page for this client exception.
    *
    * @var \MovLib\Presentation\Page
@@ -59,7 +66,17 @@ abstract class AbstractErrorException extends \MovLib\Exception\AbstractExceptio
     parent::__construct("Client error '" . get_class($this) . "'", $previous, $code);
     http_response_code($httpResponseCode);
     $this->presentation = new Page($pageTitle);
-    $this->presentation->alerts .= new Alert($alertMessage, $alertTitle, Alert::SEVERITY_ERROR);
+    $this->alert        = new Alert($alertMessage, $alertTitle, Alert::SEVERITY_ERROR);
+  }
+
+  /**
+   * Get the error exception's presentation.
+   *
+   * @return string
+   */
+  public function getPresentation() {
+    $this->presentation->alerts .= $this->alert;
+    return $this->presentation->getPresentation();
   }
 
 }

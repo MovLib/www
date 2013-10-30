@@ -35,7 +35,7 @@ abstract class AbstractRedirectException extends \MovLib\Exception\AbstractExcep
    *
    * @var string
    */
-  public $locationHeader;
+  public $header;
 
   /**
    * The payload as per {@link http://www.ietf.org/rfc/rfc2616.txt RFC 2616}.
@@ -61,8 +61,9 @@ abstract class AbstractRedirectException extends \MovLib\Exception\AbstractExcep
       $route = "{$_SERVER["SERVER"]}{$route}";
     }
     http_response_code($httpResponseCode);
-    $this->locationHeader = "Location: {$route}";
-    $this->presentation   = "<html><head><title>{$httpResponseCode} {$title}</title></head><body bgcolor=\"white\"><center><h1>{$httpResponseCode} {$title}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
+    $this->header       = "Location: {$route}";
+    // @todo Isn't this automatically sent by nginx?
+    $this->presentation = "<html><head><title>{$httpResponseCode} {$title}</title></head><body bgcolor=\"white\"><center><h1>{$httpResponseCode} {$title}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
   }
 
 }

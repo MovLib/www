@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\ImageDetails;
+namespace MovLib\Tool\Console\Command\Production;
+
+use \MovLib\Tool\Console\Command\Production\CacheInspector;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\ImageDetails\TraitImageDetails
+ * @coversDefaultClass \MovLib\Tool\Console\Command\Production\CacheInspector
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class TraitImageDetailsTest extends \MovLib\TestCase {
+class CacheInspectorTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\ImageDetails\TraitImageDetails */
-  protected $traitImageDetails;
+  /** @var \MovLib\Tool\Console\Command\Production\CacheInspector */
+  protected $cacheInspector;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -42,7 +44,7 @@ class TraitImageDetailsTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->traitImageDetails = $this->getMockForAbstractClass("\\MovLib\\Presentation\\ImageDetails\\TraitImageDetails");
+    $this->cacheInspector = new CacheInspector();
   }
 
   /**
@@ -65,18 +67,26 @@ class TraitImageDetailsTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::pager
-   * @todo Implement pager
+   * @covers ::__construct
+   * @todo Implement __construct
    */
-  public function testPager() {
+  public function testConstruct() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::getPageContent
-   * @todo Implement getPageContent
+   * @covers ::configure
+   * @todo Implement configure
    */
-  public function testGetPageContent() {
+  public function testConfigure() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::execute
+   * @todo Implement execute
+   */
+  public function testExecute() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

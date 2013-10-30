@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\History;
+namespace MovLib;
+
+use \MovLib\Kernel;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\History\TraitHistory
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @coversDefaultClass \MovLib\Kernel
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class TraitHistoryTest extends \MovLib\TestCase {
+class KernelTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\History\TraitHistory */
-  protected $traitHistory;
+  /** @var \MovLib\Kernel */
+  protected $kernel;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -42,14 +44,7 @@ class TraitHistoryTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    //$this->traitHistory = $this->getMockForTrait("\\MovLib\\Presentation\\History\\TraitHistory", [ "phpunitrepos" ], "MovieHistory");
-  }
-
-  /**
-   * Called after each test.
-   */
-  protected function tearDown() {
-
+    $this->kernel = new Kernel();
   }
 
 
@@ -57,82 +52,70 @@ class TraitHistoryTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::contentDiffPage
-   * @todo Implement contentDiffPage
+   * @covers ::__construct
+   * @todo Implement __construct
    */
-  public function testContentDiffPage() {
+  public function testConstruct() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::contentRevisionsPage
-   * @todo Implement contentRevisionsPage
+   * @covers ::autoload
+   * @todo Implement autoload
    */
-  public function testContentRevisionsPage() {
+  public function testAutoload() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::diffArray
-   * @todo Implement diffArray
+   * @covers ::delayMethodCall
+   * @todo Implement delayMethodCall
    */
-  public function testDiffArray() {
+  public function testDelayMethodCall() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::diffArrayItems
-   * @todo Implement diffArrayItems
+   * @covers ::errorHandler
+   * @todo Implement errorHandler
    */
-  public function testDiffArrayItems() {
+  public function testErrorHandler() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::diffIds
-   * @todo Implement diffIds
+   * @covers ::fatalErrorHandler
+   * @todo Implement fatalErrorHandler
    */
-  public function testDiffIds() {
+  public function testFatalErrorHandler() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::formatFileNames
-   * @todo Implement formatFileNames
+   * @coversNothing
+   * @link http://php.net/function.password-hash.php
    */
-  public function testFormatFileNames() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+  public function testPasswordCost() {
+    $timeTarget = 0.5;
+    $cost       = 9;
+    do {
+      $cost++;
+      $start  = microtime(true);
+      password_hash("test", PASSWORD_DEFAULT, $this->kernel->passwordOptions);
+      $end    = microtime(true);
+      $actual = $end - $start;
+    }
+    while ($actual < $timeTarget);
+    $this->assertGreaterThanOrEqual(
+      $this->kernel->passwordOptions["cost"], $cost, "Please set password cost in the Kernel at least to {$cost} (hashing will take ~{$actual} seconds)."
+    );
   }
 
   /**
-   * @covers ::getBreadcrumbs
-   * @todo Implement getBreadcrumbs
+   * @covers ::sendEmail
+   * @todo Implement sendEmail
    */
-  public function testGetBreadcrumbs() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getDiff
-   * @todo Implement getDiff
-   */
-  public function testGetDiff() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::textDiffOfRevisions
-   * @todo Implement textDiffOfRevisions
-   */
-  public function testTextDiffOfRevisions() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::textDiffOfStrings
-   * @todo Implement textDiffOfStrings
-   */
-  public function testTextDiffOfStrings() {
+  public function testSendEmail() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

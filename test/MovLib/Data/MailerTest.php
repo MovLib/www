@@ -17,22 +17,24 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\Mailer;
+
 /**
- * @coversDefaultClass \MovLib\Data\TraitUtilities
+ * @coversDefaultClass \MovLib\Data\Mailer
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class TraitUtilitiesTest extends \MovLib\TestCase {
+class MailerTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Data\TraitUtilities */
-  protected $traitUtilities;
+  /** @var \MovLib\Data\Mailer */
+  protected $mailer;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -42,7 +44,7 @@ class TraitUtilitiesTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->traitUtilities = $this->getMockForAbstractClass("\\MovLib\\Data\\TraitUtilities");
+    $this->mailer = new Mailer();
   }
 
   /**
@@ -65,26 +67,82 @@ class TraitUtilitiesTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::exec
-   * @todo Implement exec
+   * @covers ::__construct
+   * @todo Implement __construct
    */
-  public function testExec() {
+  public function testConstruct() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::execDetached
-   * @todo Implement execDetached
+   * @covers ::getBase64EncodedHTML
+   * @todo Implement getBase64EncodedHTML
    */
-  public function testExecDetached() {
+  public function testGetBase64EncodedHTML() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::filename
-   * @todo Implement filename
+   * @covers ::getBase64EncodedPlainText
+   * @todo Implement getBase64EncodedPlainText
    */
-  public function testFilename() {
+  public function testGetBase64EncodedPlainText() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getHeaders
+   * @todo Implement getHeaders
+   */
+  public function testGetHeaders() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getMessage
+   * @todo Implement getMessage
+   */
+  public function testGetMessage() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getParameters
+   * @todo Implement getParameters
+   */
+  public function testGetParameters() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getRecipient
+   * @todo Implement getRecipient
+   */
+  public function testGetRecipient() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getSubject
+   * @todo Implement getSubject
+   */
+  public function testGetSubject() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::send
+   * @todo Implement send
+   */
+  public function testSend() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::wordwrap
+   * @todo Implement wordwrap
+   */
+  public function testWordwrap() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
