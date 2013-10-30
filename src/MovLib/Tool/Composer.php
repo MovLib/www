@@ -17,7 +17,8 @@
  */
 namespace MovLib\Tool;
 
-use \MovLib\Tool\Configuration;
+use \MovLib\Data\FileSystem;
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Composer\Script\Event;
 
@@ -33,7 +34,6 @@ use \Composer\Script\Event;
  * @since 0.0.1-dev
  */
 class Composer {
-  use \MovLib\Data\TraitUtilities;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -60,17 +60,18 @@ class Composer {
   /**
    * Instantiate new Composer object.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @param \Composer\Script\Event $event
    *   The fired composer event.
    */
   public function __construct(Event $event) {
-    global $config;
-    if (!$config) {
-      $config = new Configuration();
+    global $kernel;
+    if (!$kernel) {
+      $kernel = new \MovLib\Tool\Kernel();
+      $kernel->initCLI();
     }
     $this->event      = $event;
-    $this->vendorPath = "{$config->documentRoot}/{$event->getComposer()->getConfig()->get("vendor-dir")}";
+    $this->vendorPath = "{$kernel->documentRoot}/{$event->getComposer()->getConfig()->get("vendor-dir")}";
   }
 
 
@@ -80,14 +81,17 @@ class Composer {
   /**
    * Create symbolic link for apigen executable.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $fullName
    *   The packages full name including the name and slash.
    * @return this
    */
   public function apigen($fullName) {
-    global $config;
-    $this->symlink("{$this->vendorPath}/bin/apigen.php", "{$config->usrBinaryPath}/apigen");
+    global $kernel;
+
+    // Create symbolic link for global access.
+    $this->symlink("{$this->vendorPath}/bin/apigen.php", "{$kernel->usrBinaryPath}/apigen");
+
     // @see https://github.com/apigen/apigen/issues/252
     $patch = "{$this->vendorPath}/{$fullName}/ApiGen/Template.php";
     file_put_contents($patch, str_replace(
@@ -95,6 +99,7 @@ class Composer {
       "\$content = \$parser->getTexy()->protect(\$fshl->highlight(\$matches[1]), \Texy::CONTENT_MARKUP);\n         return \TexyHtml::el('code', \$content);",
       file_get_contents($patch)
     ));
+
     return $this;
   }
 
@@ -111,49 +116,64 @@ class Composer {
   /**
    * Install phpMyAdmin.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @global \MovLib\Tool\Database $db
    * @param string $fullName
    *   The packages full name including the name and slash.
    * @return this
    */
   public function phpmyadmin($fullName) {
-    global $config, $db;
-    symlink("{$config->documentRoot}/conf/phpmyadmin/config.inc.php", "{$this->vendorPath}/{$fullName}/config.inc.php");
+    global $kernel, $db;
+
+    // Create symbolic link to our phpMyAdmin configuration.
+    $this->symlink("{$kernel->documentRoot}/conf/phpmyadmin/config.inc.php", "{$this->vendorPath}/{$fullName}/config.inc.php");
+
+    // Create all tables for the advanced phpMyAdmin features.
     $db->queries(file_get_contents("{$this->vendorPath}/{$fullName}/examples/create_tables.sql"));
+
     return $this;
   }
 
   /**
    * Create symbolic link for phpunit executable.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @return this
    */
   public function phpunit() {
-    global $config;
-    $this->symlink("{$this->vendorPath}/bin/phpunit", "{$config->usrBinaryPath}/phpunit");
+    global $kernel;
+    return $this->symlink("{$this->vendorPath}/bin/phpunit", "{$kernel->usrBinaryPath}/phpunit");
+  }
+
+  /**
+   * Check if symbolic link exists, if not create it.
+   *
+   * @param string $target
+   *   Absolute path to the symbolic links target.
+   * @param string $link
+   *   Absolute path to the symbolic link.
+   * @return this
+   */
+  protected function symlink($target, $link) {
+    if (!is_link($link)) {
+      symlink($target, $link);
+    }
     return $this;
   }
 
   /**
    * Install VisualPHPUnit.
    *
-   * @global \MovLib\Tool\Configuration $config
-   * @param string $fullName
-   *   The packages full name including the name and slash.
+   * @global \MovLib\Tool\Kernel $kernel
    * @return this
    */
-  public function visualphpunit($fullName) {
-    global $config;
-    $path = "{$this->vendorPath}/{$fullName}/app";
-
-    // The symbolic link is for correct routing.
-    symlink("{$path}/public", "{$path}/visualphpunit");
+  public function visualphpunit() {
+    global $kernel;
 
     // Replace some vendor files with custom ones.
-    copy("{$config->documentRoot}/conf/visualphpunit/index.php", "{$path}/public/index.php");
-    copy("{$config->documentRoot}/conf/visualphpunit/bootstrap.php", "{$path}/config/bootstrap.php");
+    copy("{$kernel->documentRoot}/conf/visualphpunit/index.php", "{$path}/public/index.php");
+    copy("{$kernel->documentRoot}/conf/visualphpunit/bootstrap.php", "{$path}/config/bootstrap.php");
+
     return $this;
   }
 
@@ -164,7 +184,6 @@ class Composer {
   /**
    * Automatically called after `composer install` execution.
    *
-   * @global \MovLib\Tool\Configuration $config
    * @param \Composer\Script\Event $event
    *   The event fired by composer.
    */

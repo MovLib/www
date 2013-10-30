@@ -17,14 +17,11 @@
  */
 namespace MovLib\Tool;
 
-use \InvalidArgumentException;
 use \MovLib\Exception\DatabaseException;
-use \mysqli;
 
 /**
  * The developer database has a pure public interface and many more methods to interact with the database.
  *
- * @property \mysqli $mysqli The current MySQLi instance.
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -85,7 +82,7 @@ class Database {
   public function connect() {
     if (!isset($this->mysqli)) {
       try {
-        $this->mysqli = new mysqli();
+        $this->mysqli = new \mysqli();
         $this->mysqli->real_connect();
       }
       catch (\ErrorException $e) {
@@ -113,7 +110,7 @@ class Database {
    */
   public function escapeString($str) {
     if (!is_string($str) && !is_numeric($str)) {
-      throw new InvalidArgumentException("Escape variable must be of type string (or integer).");
+      throw new \InvalidArgumentException("Escape variable must be of type string (or number).");
     }
     return $this->connect()->real_escape_string($str);
   }
@@ -130,7 +127,7 @@ class Database {
    */
   public function queries($queries) {
     if (!is_string($queries)) {
-      throw new InvalidArgumentException("Queries must be of type string.");
+      throw new \InvalidArgumentException("Queries must be of type string.");
     }
     $error = $this->connect()->multi_query($queries);
     do {
@@ -160,7 +157,7 @@ class Database {
    */
   public function query($query, $types = null, array $params = null) {
     if (!is_string($query)) {
-      throw new InvalidArgumentException("Query must be of type string.");
+      throw new \InvalidArgumentException("Query must be of type string.");
     }
     /* @var $stmt \mysqli_stmt */
     if (($stmt = $this->connect()->prepare($query)) === false) {
@@ -168,7 +165,7 @@ class Database {
     }
     if ($types && $params) {
       if (!is_string($types) || empty($params)) {
-        throw new InvalidArgumentException("Types must be of type string and params of type array (not empty).");
+        throw new \InvalidArgumentException("Types must be of type string and params of type array (not empty).");
       }
       $refParams = [ $types ];
       $c         = count($params);
@@ -194,13 +191,13 @@ class Database {
    */
   public function setDatabase($database) {
     if (!is_string($database)) {
-      throw new InvalidArgumentException("Database name must be of type string.");
+      throw new \InvalidArgumentException("Database name must be of type string.");
     }
     $this->database = $database;
   }
 
   /**
-   * Whetever a transaction is active or not.
+   * Whether a transaction is active or not.
    *
    * @return boolean
    *   <code>TRUE</code> if a transaction is active, otherwise <code>FALSE</code>.
