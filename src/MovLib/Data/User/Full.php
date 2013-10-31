@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\User;
 
+use \MovLib\Data\FileSystem as fs;
 use \MovLib\Exception\UserException;
 
 /**
@@ -474,7 +475,7 @@ class Full extends \MovLib\Data\User\User {
     $stmt = $this->query(
       "INSERT INTO `users` (`avatar_name`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES (?, '', ?, ?, ?, ?)",
       "sssss",
-      [ $this->filename(html_entity_decode($this->name, ENT_QUOTES|ENT_HTML5)), $this->email, $this->name, $password, $i18n->languageCode ]
+      [ fs::sanitizeFilename($this->name), $this->email, $this->name, $password, $i18n->languageCode ]
     );
     $this->id = $stmt->insert_id;
     return $this;

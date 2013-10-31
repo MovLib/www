@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Users;
 
-use \MovLib\Data\User\Full as User;
+use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\UserException;
 use \MovLib\Exception\Client\UnauthorizedException;
@@ -90,12 +90,13 @@ class Registration extends \MovLib\Presentation\FormPage {
   /**
    * Instantiate new user registration presentation.
    *
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
   public function __construct() {
-    global $i18n, $session;
+    global $kernel, $i18n, $session;
 
     // If the user is logged in, no need for registration.
     if ($session->isAuthenticated === true) {
@@ -106,14 +107,14 @@ class Registration extends \MovLib\Presentation\FormPage {
     $this->init($i18n->t("Registration"));
 
     $this->username = new InputText("username", $i18n->t("Username"), [
-      "maxlength"   => User::NAME_MAXIMUM_LENGTH,
-      "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(User::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
+      "maxlength"   => UserFull::NAME_MAXIMUM_LENGTH,
+      "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(UserFull::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
       "placeholder" => $i18n->t("Enter your desired username"),
       "required",
       "title"       => $i18n->t(
         "A username must be valid UTF-8, cannot contain spaces at the beginning and end or more than one space in a row, " .
         "it cannot contain any of the following characters {0} and it cannot be longer than {1,number,integer} characters.",
-        [ User::NAME_ILLEGAL_CHARACTERS, User::NAME_MAXIMUM_LENGTH ]
+        [ UserFull::NAME_ILLEGAL_CHARACTERS, UserFull::NAME_MAXIMUM_LENGTH ]
       ),
     ]);
     $this->username->setHelp("<a href='{$i18n->r("/users/login")}'>{$i18n->t("Already have an account?")}</a>", false);
@@ -127,7 +128,7 @@ class Registration extends \MovLib\Presentation\FormPage {
     ), [ "required" ]);
 
     $this->form                             = new Form($this, [ $this->username, $this->email, $this->password, $this->terms ]);
-    $this->form->attributes["action"]       = $_SERVER["REQUEST_URI"];
+    $this->form->attributes["action"]       = $kernel->requestURI;
     $this->form->attributes["autocomplete"] = "off";
     $this->form->attributes["class"]        = "span span--6 offset--3";
 
@@ -168,15 +169,15 @@ class Registration extends \MovLib\Presentation\FormPage {
    * The redirect exception is thrown if the supplied data is valid. The user will be redirected to her or his personal
    * dashboard.
    *
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @param array $errors [optional]
    *   {@inheritdoc}
    * @return this
    */
   public function validate(array $errors = null) {
-    global $i18n;
-    $user           = new User();
+    global $kernel, $i18n;
+    $user           = new UserFull();
     $user->name     = $_POST[$this->username->id]; // We want to validate the original data again
     $usernameErrors = null;
 
@@ -195,17 +196,17 @@ class Registration extends \MovLib\Presentation\FormPage {
     // Switch to sanitized data
     $user->name = $this->username->value;
 
-    if (strpbrk($user->name, User::NAME_ILLEGAL_CHARACTERS) !== false) {
+    if (strpbrk($user->name, UserFull::NAME_ILLEGAL_CHARACTERS) !== false) {
       $usernameErrors[] = $i18n->t(
         "The username cannot contain any of the following characters: {0}",
-        [ "<code>{$this->checkPlain(User::NAME_ILLEGAL_CHARACTERS)}</code>" ]
+        [ "<code>{$this->checkPlain(UserFull::NAME_ILLEGAL_CHARACTERS)}</code>" ]
       );
     }
 
-    if (mb_strlen($user->name) > User::NAME_MAXIMUM_LENGTH) {
+    if (mb_strlen($user->name) > UserFull::NAME_MAXIMUM_LENGTH) {
       $usernameErrors[] = $i18n->t(
         "The username is too long: it must be {0,number,integer} characters or less.",
-        [ User::NAME_MAXIMUM_LENGTH ]
+        [ UserFull::NAME_MAXIMUM_LENGTH ]
       );
     }
 
@@ -232,13 +233,13 @@ class Registration extends \MovLib\Presentation\FormPage {
         // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
         // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
         if ($user->checkEmail() === true) {
-          new RegistrationEmailExists($this->email->value);
+          $kernel->sendEmail(new RegistrationEmailExists($user->email));
         }
         // If this is a vliad new registration generate the authentication token and insert the submitted data into our
         // temporary database, and of course send out the email with the token.
         else {
           $user->prepareRegistration($this->password->value);
-          new RegistrationEmail($user->name, $user->email);
+          $kernel->sendEmail(new RegistrationEmail($user->name, $user->email));
         }
 
         // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
@@ -273,7 +274,7 @@ class Registration extends \MovLib\Presentation\FormPage {
    */
   public function validateToken() {
     global $i18n;
-    $user = new User();
+    $user = new UserFull();
     try {
       if (empty($_GET["token"])) {
         throw new ValidationException($i18n->t("The activation token is missing, please go back to the mail we sent you and copy the whole link."));

@@ -20,6 +20,7 @@ namespace MovLib;
 use \MovLib\Data\I18n;
 use \MovLib\Data\Mailer;
 use \MovLib\Data\User\Session;
+use \MovLib\Exception\Client\AbstractClientException;
 use \MovLib\Exception\Client\ErrorForbiddenException;
 use \MovLib\Presentation\Email\FatalErrorEmail;
 use \MovLib\Presentation\Stacktrace;
@@ -259,9 +260,9 @@ class Kernel {
 
     try {
       // Initialize environment properties based on variables passed in by nginx.
-      $this->documentRoot  = $_SERVER["HOME"];
-      $this->hostname      = $_SERVER["HOSTNAME"];
-      $this->protocol      = $_SERVER["PROTOCOL"];
+      $this->documentRoot  = $_SERVER["DOCUMENT_ROOT"];
+      $this->hostname      = $_SERVER["SERVER_NAME"];
+      $this->protocol      = $_SERVER["SERVER_PROTOCOL"];
       $this->remoteAddress = filter_var($_SERVER["REMOTE_ADDR"], FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
       $this->requestMethod = $_SERVER["REQUEST_METHOD"];
       $this->requestURI    = $_SERVER["REQUEST_URI"];
@@ -269,7 +270,23 @@ class Kernel {
       $this->userAgent     = filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
 
       // Configure the autoloader.
-      spl_autoload_register([ $this, "autoload" ], true);
+      if ($this->production === true) {
+        spl_autoload_register([ $this, "autoload" ], true);
+      }
+      else {
+        try {
+          require "{$this->documentRoot}/vendor/autoload.php";
+        }
+        catch (\ErrorException $e) {
+          // Only react on real problems, the vendor supplied stuff often raises DEPRECATED or STRICT errors we don't
+          // care about (because we can't fix them).
+          switch ($e->getSeverity()) {
+            case E_ERROR:
+            case E_WARNING:
+              throw $e;
+          }
+        }
+      }
 
       // Always create an I18n instance for translating any kind of presentation.
       $i18n = new I18n();
@@ -300,18 +317,18 @@ class Kernel {
       $presentationClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
       $presentation      = (new $presentationClass())->getPresentation();
     }
-    catch (ClientException $e) {
-      foreach ($e->headers as $header) {
-        header($header);
-      }
-      $presentation = $e->presentation;
+    catch (AbstractClientException $clientException) {
+      $presentation = $clientException->getPresentation();
     }
-    catch (\Exception $e) {
-      $presentation = (new Stacktrace($e))->getPresentation();
+    catch (\Exception $exception) {
+      error_log($exception);
+      $presentation = (new Stacktrace($exception))->getPresentation();
     }
     finally {
       // This allows us to lazy start anonymous sessions and send cookies right before sending the response.
-      $session->shutdown();
+      if ($session) {
+        $session->shutdown();
+      }
 
       // Render the presentation.
       echo $presentation;
@@ -453,14 +470,12 @@ class Kernel {
   /**
    * Send email after response was sent to the client.
    *
-   * @param string $email
-   *   The full class name of the email that should be sent.
-   * @param array $args [optional]
-   *   The arguments that should be passed to the constructor of the email.
+   * @param \MovLib\Presentation\Email\AbstractEmail $email
+   *   The email to send.
    * @return this
    */
-  public function sendEmail($email, array $args = null) {
-    $this->delayedEmails[] = [ $email, $args ];
+  public function sendEmail($email) {
+    $this->delayedEmails[] = $email;
     return $this;
   }
 

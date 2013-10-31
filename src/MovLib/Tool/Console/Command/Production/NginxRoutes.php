@@ -63,9 +63,9 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Check if routes folder is present.
-    $routesDirectory = "{$kernel->documentRoot}/conf/nginx/sites/conf/routes";
+    $routesDirectory = "/etc/nginx/sites/conf/routes";
     if (!is_dir($routesDirectory)) {
-      mkdir($routesDirectory);
+      throw new FileSystemException("The nginx routes directory is missing!");
     }
 
     /**
@@ -86,7 +86,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     // Drop all routes from this server.
     $db->transactionStart();
-    $db->query("TRUNCATE `routes`");
+    $db->query("TRUNCATE TABLE `routes`");
 
     foreach ($kernel->systemLanguages as $languageCode => $locale) {
       $i18n->languageCode = $languageCode;
@@ -105,9 +105,11 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
 
       // ... and write it to the target directory.
-      if (file_put_contents("{$routesDirectory}{$i18n->languageCode}.conf", $routes[$i18n->languageCode]) === false) {
+      if (file_put_contents("{$routesDirectory}/{$i18n->languageCode}.conf", $routes[$i18n->languageCode]) === false) {
         throw new FileSystemException("Could not write translated routes file to nginx routes directory.");
       }
+
+      $this->write("Written routing file for '{$i18n->languageCode}' ...");
     }
 
     $db->transactionCommit();

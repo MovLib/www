@@ -29,30 +29,16 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class UnauthorizedException extends \MovLib\Exception\AbstractException {
+class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientException {
 
-  /**
-   * The WWW authenticate header.
-   *
-   * This <b>must</b> be sent in main because it has side effects!
-   *
-   * @link http://stackoverflow.com/a/1088127/1251219
-   * @var string
-   */
-  public $authenticateHeader;
 
-  /**
-   * The login presentation.
-   *
-   * @var \MovLib\Presentation\Users\Login
-   */
-  public $presentation;
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new unauthorized exception.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @param string $message [optional]
    *   The alert's translated message, defaults to <code>$i18n->t("Please use the form below to sign in or go to the
    *   {0}registration page to sign up{1}."</code>
@@ -62,24 +48,44 @@ class UnauthorizedException extends \MovLib\Exception\AbstractException {
    *   The alert's severity level, default to <code>Alert::SEVERITY_ERROR</code>.
    */
   public function __construct($message = null, $title = null, $severity = Alert::SEVERITY_ERROR) {
-    global $i18n, $session;
+    global $i18n;
     parent::__construct("User has to authenticate to view this content.");
+    if (!$message) {
+      $message = $i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/users/registration")}'>", "</a>" ]);
+    }
+    if (!$title) {
+      $title = $i18n->t("You must be signed in to access this content.");
+    }
+    $this->presentation->alerts .= new Alert($message, $title, $severity);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
+   */
+  public function getPresentation() {
+    global $kernel, $i18n, $session;
+
+    // Ensure that the login form won't auto-validate any POST data.
+    $kernel->requestMethod = "GET";
+
     // Ensure any active session is destroyed.
     $session->destroy();
 
-    // We have to ensure that the login page is going to render the form without any further validation, therefor we have
-    // to reset the request method to GET because we don't know (and don't want to check) the current request method.
-    $_SERVER["REQUEST_METHOD"] = "GET";
-    unset($_POST);
+    // Read the following: http://stackoverflow.com/a/1088127/1251219
+    header("WWW-Authenticate: MovLib loation='{$i18n->r("/users/login")}'", true, 401);
 
-    http_response_code(401);
-    $this->authenticateHeader    = "WWW-Authenticate: MovLib location=\"{$i18n->r("/users/login")}\"";
-    $this->presentation          = new Login();
-    $this->presentation->alerts .= new Alert(
-      $message ?: $i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/user/register")}'>", "</a>" ]),
-      $title   ?: $i18n->t("You must be signed in to access this content."),
-      $severity
-    );
+    // Instantiate the login page and add the alert message to the presentation.
+    $login          = new Login();
+    $login->alerts .= $this->alert;
+
+    return $login->getPresentation();
   }
 
 }

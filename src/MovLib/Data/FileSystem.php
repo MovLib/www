@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,9 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
+namespace MovLib\Data;
 
 /**
+ * Provides various static methods related to file system actions.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -25,4 +26,22 @@ namespace MovLib\Exception\Client;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ClientException extends \RuntimeException {}
+class FileSystem {
+
+  /**
+   * Sanitizes a filename, replacing whitespace with dashes and transforming the string to lowercase.
+   *
+   * Removes special characters that are illegal in filenames on certain operating systems and special characters
+   * requiring special escaping to manipulate at the command line. Replaces spaces and consecutive dashes with a single
+   * dash. Trims period, dash und underscore from beginning and end of filename.
+   *
+   * @param string $filename
+   *   The filename to be sanitized.
+   * @return string
+   *   The sanitized filename.
+   */
+  public static function sanitizeFilename($filename) {
+    return mb_strtolower(trim(preg_replace("/[\s-]+/", "-", str_replace([ "?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", '"', "&", "$", "#", "*", "(", ")", "|", "~" ], "", $filename)), ".-_"));
+  }
+
+}

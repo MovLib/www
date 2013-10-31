@@ -27,4 +27,4 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class UserException extends \MovLib\Exception\AbstractException {}
+class UserException extends \RuntimeException {}

@@ -26,4 +26,4 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ConsoleException extends \MovLib\Exception\AbstractException {}
+class ConsoleException extends \RuntimeException {}
