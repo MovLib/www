@@ -212,7 +212,7 @@ abstract class AbstractBase {
     if (!isset($attributes["alt"])) {
       $attributes["alt"] = $style->alt;
     }
-    $attributes["src"]    = rawurlencode($style->src);
+    $attributes["src"]    = $style->src;
     $attributes["width"]  = $style->width;
     $attributes["height"] = $style->height;
     $image = "<img{$this->expandTagAttributes($attributes)}>";

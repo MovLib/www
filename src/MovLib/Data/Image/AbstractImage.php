@@ -325,7 +325,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
       $url = "private/upload/{$this->imageDirectory}/{$this->imageName}.{$this->imageExtension}";
     }
     else {
-      $url = "public/upload/{$this->imageDirectory}/{$this->imageName}.{$style}.{$this->imageExtension}?c={$this->imageChanged}";
+      $url = "upload/{$this->imageDirectory}/{$this->imageName}.{$style}.{$this->imageExtension}?c={$this->imageChanged}";
     }
     return "//{$kernel->domainStatic}/{$url}";
   }

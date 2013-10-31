@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\FileSystem as fs;
 use \MovLib\Exception\UserException;
 
 /**
@@ -223,6 +222,7 @@ class Full extends \MovLib\Data\User\User {
       if (!$stmt->fetch()) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
+      $stmt->close();
       $this->imageName   = mb_strtolower($this->name);
       $this->private     = (boolean) $this->private;
       $this->deactivated = (boolean) $this->deactivated;

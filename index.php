@@ -31,5 +31,5 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-require getcwd() . "/src/MovLib/Kernel.php";
+require "{$_SERVER["DOCUMENT_ROOT"]}/src/MovLib/Kernel.php";
 new \MovLib\Kernel();

@@ -168,7 +168,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
 
     if ($menuitems) {
       if ($this->unorderedList) {
-        $menuitems = "<ul class='no-list'>{$menuitem}</ul>";
+        $menuitems = "<ul class='no-list'>{$menuitems}</ul>";
       }
       $this->attributes["id"]   = "{$this->id}-nav";
       $this->attributes["role"] = "navigation";
