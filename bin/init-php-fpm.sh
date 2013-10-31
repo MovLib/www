@@ -1,12 +1,12 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          ${NAME}
+# Provides:          php-fpm
 # Required-Start:    $remote_fs $network
 # Required-Stop:     $remote_fs $network
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: starts ${NAME}
+# Short-Description: starts php-fpm
 # Description:       Starts PHP FastCGI Process Manager Daemon
 ### END INIT INFO
 
@@ -30,7 +30,7 @@
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
-# ${NAME} Linux Standards Base compliant init script.
+# php-fpm Linux Standards Base compliant init script.
 #
 # LINK:       https://wiki.debian.org/LSBInitScripts
 # AUTHOR:     Ondrej Sury <ondrej@debian.org>
@@ -59,6 +59,12 @@
 # The name of the service (must be the first variable).
 NAME="php-fpm"
 
+# The name of the directory for the PID file.
+PID_DIR_NAME="php"
+
+# The name of the PID file.
+PID_NAME="fpm"
+
 # Absolute path to the executable.
 DAEMON="/usr/local/sbin/${NAME}"
 
@@ -78,7 +84,7 @@ LOG_ERROR="error.log"
 LOG_SLOW="slow.log"
 
 # Absolute path to the PID file.
-PIDFILE="/run/${NAME}.pid"
+PIDFILE="/run/${PID_DIR_NAME}/${PID_NAME}.pid"
 
 # Absolute path to the upload temporary directory.
 UPLOAD_TMP_DIR="/tmp/${NAME}"
@@ -126,6 +132,12 @@ chmod 0660 /var/log/php-fpm/*
 
 # Always check if service is already running.
 RUNNING=$(start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON} --test && echo "false" || echo "true")
+
+# Create the directory for PID and socket files, if it doesn't exist.
+if [ ! -d /run/${PID_DIR_NAME} ]; then
+  mkdir /run/${PID_DIR_NAME}
+  chown ${USER}:${GROUP} /run/${PID_DIR_NAME}
+fi
 
 
 # -----------------------------------------------------------------------------
