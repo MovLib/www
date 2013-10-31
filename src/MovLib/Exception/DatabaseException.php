@@ -43,8 +43,8 @@ class DatabaseException extends \RuntimeException {
    * @param int $code [optional]
    *   The exception code.
    */
-  public function __construct($message, $mysqliError = "none", $mysqliErrno = -1, $previous = null, $code = E_RECOVERABLE_ERROR) {
-    parent::__construct("{$message}: {$mysqliError} ({$mysqliErrno})", $previous, $code);
+  public function __construct($message, $mysqliError = "none", $mysqliErrno = -1, $code = 0, $previous = null) {
+    parent::__construct("{$message}: {$mysqliError} ({$mysqliErrno})", $code, $previous);
   }
 
 }
