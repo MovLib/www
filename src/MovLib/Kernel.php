@@ -452,14 +452,12 @@ class Kernel {
   /**
    * Send email after response was sent to the client.
    *
-   * @param string $email
-   *   The full class name of the email that should be sent.
-   * @param array $args [optional]
-   *   The arguments that should be passed to the constructor of the email.
+   * @param \MovLib\Presentation\Email\AbstractEmail $email
+   *   The email to send.
    * @return this
    */
-  public function sendEmail($email, array $args = null) {
-    $this->delayedEmails[] = [ $email, $args ];
+  public function sendEmail($email) {
+    $this->delayedEmails[] = [ $email ];
     return $this;
   }
 
