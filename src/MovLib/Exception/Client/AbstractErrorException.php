@@ -30,21 +30,38 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractErrorException extends \MovLib\Exception\AbstractException {
+abstract class AbstractErrorException extends \MovLib\Exception\Client\AbstractClientException {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The error page's alert message explaining the error.
    *
+   * @internal
+   *   Keep this public and allow instantiating classes to override the alert's properties.
    * @var \MovLib\Presentation\Partial\Alert
    */
   public $alert;
 
   /**
-   * The error page for this client exception.
+   * The HTTP response code.
    *
-   * @var \MovLib\Presentation\Page
+   * @var integer
    */
-  public $presentation;
+  protected $responseCode;
+
+  /**
+   * The presentation's title.
+   *
+   * @var string
+   */
+  protected $title;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new client exception.
@@ -57,26 +74,26 @@ abstract class AbstractErrorException extends \MovLib\Exception\AbstractExceptio
    *   The alert's translated title.
    * @param string $alertMessage
    *   The alert's translated message.
-   * @param \Exception $previous [optional]
-   *   {@inheritdoc}
-   * @param int $code [optional]
-   *   {@inheritdoc}
    */
-  public function __construct($httpResponseCode, $pageTitle, $alertTitle, $alertMessage, $previous = null, $code = E_NOTICE) {
-    parent::__construct("Client error '" . get_class($this) . "'", $previous, $code);
-    http_response_code($httpResponseCode);
-    $this->presentation = new Page($pageTitle);
+  public function __construct($httpResponseCode, $pageTitle, $alertTitle, $alertMessage) {
+    parent::__construct("Client error '" . get_class($this) . "'");
     $this->alert        = new Alert($alertMessage, $alertTitle, Alert::SEVERITY_ERROR);
+    $this->responseCode = $httpResponseCode;
+    $this->title        = $pageTitle;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * Get the error exception's presentation.
-   *
-   * @return string
+   * @inheritdoc
    */
   public function getPresentation() {
-    $this->presentation->alerts .= $this->alert;
-    return $this->presentation->getPresentation();
+    http_response_code($this->responseCode);
+    $page          = new Page($this->title);
+    $page->alerts .= $this->alert;
+    return $page->getPresentation();
   }
 
 }

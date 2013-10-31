@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -18,6 +18,7 @@
 namespace MovLib\Exception\Client;
 
 /**
+ * Base class for all client exceptions.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -25,4 +26,13 @@ namespace MovLib\Exception\Client;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ClientException extends \RuntimeException {}
+abstract class AbstractClientException extends \RuntimeException {
+
+  /**
+   * Get the exceptions presentation.
+   *
+   * @return string
+   */
+  public abstract function getPresentation();
+
+}

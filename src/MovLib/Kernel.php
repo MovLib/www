@@ -20,6 +20,7 @@ namespace MovLib;
 use \MovLib\Data\I18n;
 use \MovLib\Data\Mailer;
 use \MovLib\Data\User\Session;
+use \MovLib\Exception\Client\AbstractClientException;
 use \MovLib\Exception\Client\ErrorForbiddenException;
 use \MovLib\Presentation\Email\FatalErrorEmail;
 use \MovLib\Presentation\Stacktrace;
@@ -300,14 +301,12 @@ class Kernel {
       $presentationClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
       $presentation      = (new $presentationClass())->getPresentation();
     }
-    catch (ClientException $e) {
-      foreach ($e->headers as $header) {
-        header($header);
-      }
-      $presentation = $e->presentation;
+    catch (AbstractClientException $clientException) {
+      $presentation = $clientException->getPresentation();
     }
-    catch (\Exception $e) {
-      $presentation = (new Stacktrace($e))->getPresentation();
+    catch (\Exception $exception) {
+      error_log($exception);
+      $presentation = (new Stacktrace($exception))->getPresentation();
     }
     finally {
       // This allows us to lazy start anonymous sessions and send cookies right before sending the response.

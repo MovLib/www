@@ -26,4 +26,4 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class FileSystemException extends \MovLib\Exception\AbstractException {}
+class FileSystemException extends \RuntimeException {}

@@ -27,7 +27,7 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DatabaseException extends \MovLib\Exception\AbstractException {
+class DatabaseException extends \RuntimeException {
 
   /**
    * Instantiate new DatabaseException.

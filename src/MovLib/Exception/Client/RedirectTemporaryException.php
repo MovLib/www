@@ -35,11 +35,18 @@ class RedirectTemporaryException extends \MovLib\Exception\Client\AbstractRedire
   /**
    * Instantiate new temporary redirect.
    *
+   * @global \MovLib\Kernel $kernel
    * @param string $route
    *   {@inheritdoc}
    */
   public function __construct($route) {
-    parent::__construct(302, $route, "Moved Temporarily");
+    global $kernel;
+    if ($kernel->protocol == "HTTP/1.0") {
+      parent::__construct(302, $route, "Moved Temporarily");
+    }
+    else {
+      parent::__construct(307, $route, "Temporary Redirect");
+    }
   }
 
 }

@@ -26,4 +26,4 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SessionException extends \MovLib\Exception\AbstractException {}
+class SessionException extends \RuntimeException {}
