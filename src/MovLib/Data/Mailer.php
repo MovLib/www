@@ -30,18 +30,18 @@ use \MovLib\Presentation\Email\AbstractEmail;
  * @since 0.0.1-dev
  */
 class Mailer {
-  
-  
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
-  
-  
+
+
   /**
    * The email we are currently sending.
    *
    * @var \MovLib\Presentation\Email\AbstractEmail
    */
   protected $email;
-  
+
   /**
    * The current email's unique message ID.
    *
@@ -49,10 +49,10 @@ class Mailer {
    */
   protected $messageID;
 
-  
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-  
-  
+
+
   /**
    * Instantiate new mailer system.
    *
@@ -67,10 +67,10 @@ class Mailer {
     }
   }
 
-  
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-  
+
   /**
    * Get the base64 encoded HTML message.
    *
@@ -91,7 +91,7 @@ class Mailer {
       "</html>"
     );
   }
-  
+
   /**
    * Get the base64 encoded plain text message.
    *
@@ -105,7 +105,19 @@ class Mailer {
       "{{$this->email->getPlainText()}\n\n--\n{$kernel->siteName}\n"
     ));
   }
-  
+
+  /**
+   * Get the default from name.
+   *
+   * @global \MovLib\Kernel $kernel
+   * @return string
+   *   The default from name.
+   */
+  protected function getFromName() {
+    global $kernel;
+    return mb_encode_mimeheader($kernel->siteNameAndSlogan);
+  }
+
   /**
    * Get the additional email headers.
    *
@@ -115,11 +127,10 @@ class Mailer {
    */
   protected function getHeaders() {
     global $kernel;
-    $fromName = mb_encode_mimeheader($kernel->siteName);
     $headers  = <<<EOT
 Content-Type: multipart/alternative;
 \tboundary="{$this->messageID}"
-From: "{$fromName}" <{$kernel->emailFrom}>"
+From: "{$this->getFromName()}" <{$kernel->emailFrom}>
 Message-ID: <{$this->messageID}@{$kernel->domainDefault}>
 MIME-Version: 1.0
 EOT;
@@ -182,7 +193,7 @@ EOT;
     }
     return $this->email->recipient;
   }
-  
+
   /**
    * Get the MIME header encoded subject.
    *
@@ -191,8 +202,8 @@ EOT;
    */
   protected function getSubject() {
     return mb_encode_mimeheader($this->email->subject);
-  }  
-  
+  }
+
   /**
    * Send the given email.
    *
