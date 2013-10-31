@@ -17,8 +17,6 @@
  */
 namespace MovLib\Tool;
 
-use \MovLib\Data\FileSystem;
-use \MovLib\Data\UnixShell as sh;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Composer\Script\Event;
 
