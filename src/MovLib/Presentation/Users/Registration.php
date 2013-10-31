@@ -156,7 +156,7 @@ class Registration extends \MovLib\Presentation\FormPage {
     if ($this->accepted === true) {
       return "<div class='container'><small>{$i18n->t(
         "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-        [ "<a href='{$kernel->requestURI}'></a>" ]
+        [ "<a href='{$kernel->requestURI}'>", "</a>" ]
       )}</small></div>";
     }
     return "<div class='container'><div class='row'>{$this->form}</div></div>"
@@ -314,8 +314,8 @@ class Registration extends \MovLib\Presentation\FormPage {
       $alert = new Alert($e->getMessage());
     }
     catch (UnauthorizedException $e) {
-      unset($e->presentation->email->attributes[array_search("autofocus", $e->presentation->email->attributes)]);
-      $e->presentation->password->attributes[] = "autofocus";
+      unset($e->loginPresentation->email->attributes[array_search("autofocus", $e->loginPresentation->email->attributes)]);
+      $e->loginPresentation->password->attributes[] = "autofocus";
       throw $e;
     }
     catch (UserException $e) {

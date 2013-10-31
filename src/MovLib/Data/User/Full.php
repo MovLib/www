@@ -473,9 +473,9 @@ class Full extends \MovLib\Data\User\User {
     global $i18n;
     $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ "registration-{$this->email}" ]);
     $stmt = $this->query(
-      "INSERT INTO `users` (`avatar_name`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES (?, '', ?, ?, ?, ?)",
-      "sssss",
-      [ fs::sanitizeFilename($this->name), $this->email, $this->name, $password, $i18n->languageCode ]
+      "INSERT INTO `users` (`dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES ('', ?, ?, ?, ?)",
+      "ssss",
+      [ $this->email, $this->name, $password, $i18n->languageCode ]
     );
     $this->id = $stmt->insert_id;
     return $this;

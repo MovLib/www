@@ -36,9 +36,24 @@ class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientExcep
 
 
   /**
+   * The login presentation.
+   *
+   * @internal
+   *   Keep this public and allow altering of the presentation by throwing class.
+   * @var \MovLib\Presentation\Users\Login
+   */
+  public $loginPresentation;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
    * Instantiate new unauthorized exception.
    *
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
    * @param string $message [optional]
    *   The alert's translated message, defaults to <code>$i18n->t("Please use the form below to sign in or go to the
    *   {0}registration page to sign up{1}."</code>
@@ -48,15 +63,23 @@ class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientExcep
    *   The alert's severity level, default to <code>Alert::SEVERITY_ERROR</code>.
    */
   public function __construct($message = null, $title = null, $severity = Alert::SEVERITY_ERROR) {
-    global $i18n;
+    global $kernel, $i18n, $session;
     parent::__construct("User has to authenticate to view this content.");
+
+    // Ensure that the login form won't auto-validate any POST data.
+    $kernel->requestMethod = "GET";
+
+    // Use translated defaults if nothing else is provided.
     if (!$message) {
       $message = $i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/users/registration")}'>", "</a>" ]);
     }
     if (!$title) {
       $title = $i18n->t("You must be signed in to access this content.");
     }
-    $this->presentation->alerts .= new Alert($message, $title, $severity);
+
+    // Instantiate the login page and add the alert message to the presentation.
+    $this->loginPresentation          = new Login();
+    $this->loginPresentation->alerts .= new Alert($message, $title, $severity);
   }
 
 
@@ -65,15 +88,11 @@ class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientExcep
 
   /**
    * @inheritdoc
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    */
   public function getPresentation() {
-    global $kernel, $i18n, $session;
-
-    // Ensure that the login form won't auto-validate any POST data.
-    $kernel->requestMethod = "GET";
+    global $i18n, $session;
 
     // Ensure any active session is destroyed.
     $session->destroy();
@@ -81,11 +100,7 @@ class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientExcep
     // Read the following: http://stackoverflow.com/a/1088127/1251219
     header("WWW-Authenticate: MovLib loation='{$i18n->r("/users/login")}'", true, 401);
 
-    // Instantiate the login page and add the alert message to the presentation.
-    $login          = new Login();
-    $login->alerts .= $this->alert;
-
-    return $login->getPresentation();
+    return $this->loginPresentation->getPresentation();
   }
 
 }
