@@ -103,11 +103,16 @@ class Kernel extends \MovLib\Kernel {
   /**
    * Initialize environment for CLI usage.
    *
+   * @param boolean $composer [optional]
+   *   Should be set to <code>TRUE</code> if composer is involved.
    * @return this
    */
-  public function initCLI() {
+  public function initCLI($composer = false) {
     ini_set("display_errors", true);
-
+    // There are too many PHP errors that might occurr and break composer!
+    if ($composer) {
+      restore_error_handler();
+    }
     return $this;
   }
 
