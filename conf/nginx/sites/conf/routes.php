@@ -23,7 +23,7 @@
 # AUTHOR:     Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
 # COPYRIGHT:  © 2013 MovLib
 # LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
-# LINKE:      https://movlib.org/
+# LINK:       https://movlib.org/
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
