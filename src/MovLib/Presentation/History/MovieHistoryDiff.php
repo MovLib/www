@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\History;
 
+use \MovLib\Data\History\Movie;
+
 /**
  * The movie history page.
  *
@@ -26,8 +28,9 @@ namespace MovLib\Presentation\History;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
+class MovieHistoryDiff extends \MovLib\Presentation\History\AbstractHistory {
   use \MovLib\Presentation\History\TraitHistory;
+  use \MovLib\Presentation\Movie\TraitMoviePage;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -43,7 +46,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->initMovie();
     $this->init($i18n->t("History of {0}", [ $this->title ]));
 
-    $this->historyModel = new \MovLib\Data\History\Movie($this->model->id, $context);
+    $this->historyModel = new Movie($this->model->id, $context);
   }
 
 
@@ -55,7 +58,7 @@ class MovieHistoryDiff extends \MovLib\Presentation\Movie\AbstractMoviePage {
    */
   protected function getPageContent() {
     $this->addClass("active", $this->secondaryNavigation->menuitems[3][2]);
-    return $this->contentDiffPage();
+    return $this->diffPage();
   }
 
  /**

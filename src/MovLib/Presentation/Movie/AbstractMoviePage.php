@@ -17,9 +17,6 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie;
-use \MovLib\Exception\MovieException;
-use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -32,13 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-
-  /**
-   * The movie to display.
-   *
-   * @var \MovLib\Data\Movie
-   */
-  protected $model;
+  use \MovLib\Presentation\Movie\TraitMoviePage;
 
   /**
    * @inheritdoc
@@ -54,23 +45,6 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
   protected function init($title) {
     $this->stylesheets[] = "modules/movie.css";
     return parent::init($title);
-  }
-
-  /**
-   * Initialize the movie model and the title.
-   *
-   * @throws ErrorNotFoundException
-   */
-  protected function initMovie() {
-    try {
-      $this->model = new Movie($_SERVER["MOVIE_ID"]);
-      $this->title = $this->model->getDisplayTitle();
-      if (isset($this->model->year)) {
-        $this->title .= " ({$this->model->year})";
-      }
-    } catch (MovieException $e) {
-      throw new ErrorNotFoundException($e);
-    }
   }
 
   /**
@@ -105,32 +79,6 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
     $gone->title = $i18n->t("This Movie has been deleted.");
     $gone->severity = Alert::SEVERITY_ERROR;
     return $gone;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function getSecondaryNavigationMenuItems() {
-    global $i18n;
-    return [
-      [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--eye'></i>{$i18n->t("View")}", [
-        "accesskey" => "v",
-        "title"     => $i18n->t("View the {0}.", [ $i18n->t("movie") ]),
-      ]],
-      [ $i18n->r("/movie/{0}/discussion", [ $this->model->id ]), "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [
-        "accesskey" => "d",
-        "title"     => $i18n->t("Discussion about the {0}.", [ $i18n->t("movie") ])
-      ]],
-      [ $i18n->r("/movie/{0}/edit", [ $this->model->id ]), "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [
-        "accesskey" => "e",
-        "title"     => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]),
-      ]],
-      [ $i18n->r("/movie/{0}/history", [ $this->model->id ]), "<i class='icon icon--history'></i>{$i18n->t("History")}", [
-        "accesskey" => "h",
-        "class"     => "separator",
-        "title"     => $i18n->t("Past versions of this {0}.", [ $i18n->t("movie") ]),
-      ]]
-    ];
   }
 
 }

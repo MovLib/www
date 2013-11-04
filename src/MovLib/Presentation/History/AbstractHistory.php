@@ -19,7 +19,7 @@ namespace MovLib\Presentation\History;
 
 use \IntlDateFormatter;
 use \MovLib\Data\User\Users;
-use \MovLib\Presentation\Partial\Lists\Unordered; 
+use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
  * Description of AbstractHistory
@@ -32,14 +32,44 @@ use \MovLib\Presentation\Partial\Lists\Unordered;
  */
 abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   
+  public function formatDiff($listItem) {
+    return "<div class='well well--small'>{$this->getDiff(
+      $_SERVER["REVISION_HASH"],
+      "{$_SERVER["REVISION_HASH"]}^",
+      $listItem
+    )}</div>";
+  }
   
   /**
-   * @inheritdoc
+   * Helper function to build diff page.
+   *
    * @global \MovLib\Data\I18n
+   * @return string
+   *   Returns HTML of diff page.
    */
-  protected function getPageContent() {
+  protected function diffPage() {
     global $i18n;
-    
+    $list = new Unordered($this->historyModel->getChangedFiles($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^1"));
+    $list->closure = [ $this, "formatDiff" ];
+
+    return
+      "<div id='revision-diff'>{$this->a(
+        $i18n->r("/{0}/{1}/history", [ $this->historyModel->type, $this->historyModel->id ]),
+        $i18n->t("go back"),
+        [ "class" => "pull-right" ]
+      )}<h2>{$i18n->t("Difference between revisions")}</h2>{$list}</div>"
+    ;
+  }
+
+  /**
+   * Helper function to build revision history.
+   *
+   * @global \MovLib\Data\I18n
+   * @return string
+   *   Returns HTML of revision history.
+   */
+  protected function revisionsPage() {
+    global $i18n;
     $commits = $this->historyModel->getLastCommits();
     $userIds = [];
 
@@ -61,25 +91,20 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
 
       if (isset($users[ $userIds[$i] ]->name)) {
         $authorName = $users[ $userIds[$i] ]->name;
-        $revisions[$i] .=  $i18n->t(" by ");
         $revisions[$i] .=
-          $this->a(
-            $i18n->r("/user/{0}", [ $authorName ]), 
-            $authorName, 
-            [ "title" => $i18n->t("Profile of {0}", [ $authorName ]) ]
-          );
-        echo $revisions[$i];
-       
+          $i18n->t(" by ") .
+          $this->a($i18n->r("/user/{0}", [ $authorName ]), $i18n->t("{0}", [ $authorName ]), [
+            "title" => $i18n->t("Profile of {0}", [ $authorName ])
+          ]);
       }
 
       $revisions[$i] .=
         ": {$commits[$i]["subject"]} " .
-        $this->a($i18n->r("/{0}/{1}/diff/{2}", [ $this->historyModel->type, $this->historyModel->id, $commits[$i]["hash"] ]),
+        $this->a($i18n->r("/{0}/{1}/diff/{2}", [ $this->historyModel->type, $_SERVER["MOVIE_ID"], $commits[$i]["hash"] ]),
           $i18n->t("show diff"), [
             "class" => "pull-right"
           ]
         );
-        
 
       $changedFiles = $this->historyModel->getChangedFiles($commits[$i]["hash"], "{$commits[$i]["hash"]}^1");
       $revisions[$i] .= new Unordered($this->formatFileNames($changedFiles), $i18n->t("Nothing changed"), [

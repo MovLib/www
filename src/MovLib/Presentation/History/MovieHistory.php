@@ -26,8 +26,9 @@ namespace MovLib\Presentation\History;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistory extends \MovLib\Presentation\Movie\AbstractMoviePage {
+class MovieHistory extends \MovLib\Presentation\History\AbstractHistory {
   use \MovLib\Presentation\History\TraitHistory;
+  use \MovLib\Presentation\Movie\TraitMoviePage;
 
 
   /**
@@ -48,7 +49,7 @@ class MovieHistory extends \MovLib\Presentation\Movie\AbstractMoviePage {
    */
   protected function getPageContent() {
     $this->addClass("active", $this->secondaryNavigation->menuitems[3][2]);
-    return $this->contentRevisionsPage();
+    return $this->revisionsPage();
   }
 
 }

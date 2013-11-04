@@ -178,7 +178,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
    */
   protected function getFooter() {
     global $kernel, $i18n;
-    $displayLanguage        = \Locale::getDisplayLanguage($_SERVER["LANGUAGE_CODE"], $i18n->locale);
+    $displayLanguage        = \Locale::getDisplayLanguage($i18n->languageCode, $i18n->locale);
     $languageLinks          = new Navigation("language-links", $i18n->t("Language Links"), new SystemLanguages(false));
     $languageLinks->callback = [ $this, "formatFooterSystemLanguage" ];
     $footerNavigation       = new Navigation("footer", $i18n->t("Legal Links"), [

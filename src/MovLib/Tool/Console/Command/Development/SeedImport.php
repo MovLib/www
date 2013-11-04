@@ -244,12 +244,13 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       }
 
       // Creat new repository for each database entry we have.
-      if (($result = $db->query("SELECT `{$type}_id` FROM `{$type}s`")->get_result())) {
-        $class   = new \ReflectionClass("\\MovLib\\Data\\History\\" . ucfirst($type));
+      $typeSingular = substr($type, 0, -1);
+      if (($result = $db->query("SELECT `{$typeSingular}_id` FROM `{$type}`")->get_result())) {
+        $class   = new \ReflectionClass("\\MovLib\\Data\\History\\" . ucfirst($typeSingular));
         $queries = null;
         while ($row = $result->fetch_row()) {
           $commitHash = $db->escapeString($class->newInstance($row[0])->createRepository());
-          $queries   .= "UPDATE `{$type}s` SET `commit` = '{$commitHash}' WHERE `{$type}_id` = {$row[0]};";
+          $queries   .= "UPDATE `{$type}` SET `commit` = '{$commitHash}' WHERE `{$typeSingular}_id` = {$row[0]};";
         }
         if ($queries) {
           $db->queries($queries);

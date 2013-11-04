@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie;
+use \MovLib\Exception\MovieException;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 
 /**
@@ -30,6 +31,13 @@ use \MovLib\Exception\Client\ErrorNotFoundException;
  * @since 0.0.1-dev
  */
 trait TraitMoviePage {
+  
+  /**
+   * The movie to display.
+   *
+   * @var \MovLib\Data\Movie
+   */
+  protected $model;
 
  /**
    * Initialize the movie model and the title.

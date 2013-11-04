@@ -88,7 +88,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @var int
    */
-  protected $id;
+  public $id;
 
   /*
    * Files with conflicts
@@ -125,19 +125,20 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Instantiate new history model from given ID.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @param int $id
    *   The id of the object to be versioned.
    * @param string $context [optional]
    *   The directory in which the repository is found.
    */
   public function __construct($id, $context = "history") {
-    global $config;
+    global $kernel;
     $this->context = $context;
     $this->type = $this->getShortName();
     $this->id = $id;
-    $this->path = "{$config->documentRoot}/private/{$this->context}/{$this->type}/{$this->id}";
+    $this->path = "{$kernel->documentRoot}/private/{$this->context}/{$this->type}/{$this->id}";
   }
+  
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 

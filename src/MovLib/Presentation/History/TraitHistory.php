@@ -17,9 +17,7 @@
  */
 namespace MovLib\Presentation\History;
 
-use \IntlDateFormatter;
 use \Locale;
-use \MovLib\Data\User\Users;
 use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
@@ -45,99 +43,8 @@ trait TraitHistory {
   protected $historyModel;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Page Content
-
-
-  public function formatDiff($listItem) {
-    return "<div class='well well--small'>{$this->getDiff(
-      $_SERVER["REVISION_HASH"],
-      "{$_SERVER["REVISION_HASH"]}^",
-      $listItem
-    )}</div>";
-  }
-
-  /**
-   * Helper function to build diff page.
-   *
-   * @global \MovLib\Data\I18n
-   * @return string
-   *   Returns HTML of diff page.
-   */
-  protected function contentDiffPage() {
-    global $i18n;
-    $list = new Unordered($this->historyModel->getChangedFiles($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^1"));
-    $list->closure = [ $this, "formatDiff" ];
-
-    return
-      "<div id='revision-diff'>{$this->a(
-        $i18n->r("/{0}/{1}/history", [ $this->historyModel->type, $this->historyModel->id ]),
-        $i18n->t("go back"),
-        [ "class" => "pull-right" ]
-      )}<h2>{$i18n->t("Difference between revisions")}</h2>{$list}</div>"
-    ;
-  }
-
-  /**
-   * Helper function to build revision history.
-   *
-   * @global \MovLib\Data\I18n
-   * @return string
-   *   Returns HTML of revision history.
-   */
-  protected function contentRevisionsPage() {
-    global $i18n;
-    $commits = $this->historyModel->getLastCommits();
-    $userIds = [];
-
-    $c = count($commits);
-    for ($i = 0; $i < $c; ++$i) {
-      $userIds[] = $commits[$i]["author_id"];
-    }
-
-    $users = (new Users())->orderById($userIds);
-
-    $revisions = [];
-    for ($i = 0; $i < $c; ++$i) {
-      $revisions[$i] = $i18n->formatDate(
-        $commits[$i]["timestamp"],
-        null,
-        IntlDateFormatter::MEDIUM,
-        IntlDateFormatter::MEDIUM
-      );
-
-      if (isset($users[ $userIds[$i] ]->name)) {
-        $authorName = $users[ $userIds[$i] ]->name;
-        $revisions[$i] .=
-          $i18n->t(" by ") .
-          $this->a($i18n->r("/user/{0}", [ $authorName ]), $i18n->t("{0}", [ $authorName ]), [
-            "title" => $i18n->t("Profile of {0}", [ $authorName ])
-          ]);
-      }
-
-      $revisions[$i] .=
-        ": {$commits[$i]["subject"]} " .
-        $this->a($i18n->r("/{0}/{1}/diff/{2}", [ $this->historyModel->type, $_SERVER["MOVIE_ID"], $commits[$i]["hash"] ]),
-          $i18n->t("show diff"), [
-            "class" => "pull-right"
-          ]
-        );
-
-      $changedFiles = $this->historyModel->getChangedFiles($commits[$i]["hash"], "{$commits[$i]["hash"]}^1");
-      $revisions[$i] .= new Unordered($this->formatFileNames($changedFiles), $i18n->t("Nothing changed"), [
-        "class" => "well well--small no-list"
-      ]);
-    }
-
-    return
-      "<div id='revision-history'>" .
-        "<h2>{$i18n->t("Revision history")}</h2>" .
-        new Unordered($revisions, $i18n->t("No revisions found")) .
-      "</div>";
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  
 
   /**
    * Method to generate Liste of changed items.
@@ -325,10 +232,11 @@ trait TraitHistory {
     if (in_array($filename, $this->historyModel->files)) {
       return $this->textDiffOfRevisions($head, $ref, $filename, true);
     }
-
-    $diff = $this->historyModel->getArrayDiff($head, $ref, $filename);
-    $methodName = ucfirst($filename);
-    return $this->{"get{$methodName}"}($diff);
+    else if (in_array($filename, $this->historyModel->serializedFiles)) {
+      $diff = $this->historyModel->getArrayDiff($head, $ref, $filename);
+      $methodName = ucfirst($filename);
+      return $this->{"get{$methodName}"}($diff);
+    }
   }
 
   /**
