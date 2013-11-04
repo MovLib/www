@@ -35,7 +35,8 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Login extends \MovLib\Presentation\FormPage {
+class Login extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Users\TraitUsers;
 
 
@@ -49,11 +50,6 @@ class Login extends \MovLib\Presentation\FormPage {
    * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
   public $email;
-
-  /**
-   * @inheritdoc
-   */
-  public $form;
 
   /**
    * The input password form element.

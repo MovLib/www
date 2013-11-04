@@ -41,7 +41,8 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Registration extends \MovLib\Presentation\FormPage {
+class Registration extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Users\TraitUsers;
 
 

@@ -36,16 +36,23 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * The user who requested the password change.
    *
-   * @var \MovLib\Data\Full
+   * @var \MovLib\Data\User\Full
    */
-  private $user;
+  protected $user;
 
   /**
-   * the user's new unhashed password.
+   * The user's new unhashed password.
    *
    * @var string
    */
-  private $rawPassword;
+  protected $rawPassword;
+
+  /**
+   * The user's unique link to confirm the password change.
+   *
+   * @var string
+   */
+  protected $link;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -61,9 +68,7 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
    *   The new unhashed password.
    */
   public function __construct($user, $rawPassword) {
-    global $i18n;
-    parent::__construct($user->email, $i18n->t("Requested Password Change"));
-    $this->user = $user;
+    $this->user        = $user;
     $this->rawPassword = $rawPassword;
   }
 
@@ -74,22 +79,28 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * Initialize email properties.
    *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @return this
    */
   public function init() {
-    $this->user->setAuthenticationToken()->prepareTemporaryData("ds", [ "id", "password" ], [ $this->user->id, $this->rawPassword ]);
+    global $i18n, $kernel;
+    $this->recipient = $this->user->email;
+    $this->subject   = $i18n->t("Requested Password Change");
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token=" . $this->user->preparePasswordChange($this->rawPassword);
     return $this;
   }
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
    */
   public function getHTML() {
     global $i18n;
     return
       "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
       "<p>{$i18n->t("You (or someone else) requested to change your account’s password.")} {$i18n->t("You may now confirm this action by {0}clicking this link{1}.", [
-        "<a href='{$_SERVER["SERVER"]}{$i18n->r("/user/password-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}'>",
+        "<a href='{$this->link}'>",
         "</a>"
       ])}</p>" .
       "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old password.")}<br>" .
@@ -99,6 +110,7 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
    */
   public function getPlainText() {
     global $i18n;
@@ -107,7 +119,7 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
 
 {$i18n->t("You (or someone else) requested to change your account’s password.")} {$i18n->t("You may now confirm this action by clicking the following link or copying and pasting it to your browser:")}
 
-{$_SERVER["SERVER"]}{$i18n->r("/user/password-settings")}?{$i18n->t("token")}={$this->user->authenticationToken}
+{$this->link}
 
 {$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above, you won’t be able to sign in with your old password.")}
 {$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}

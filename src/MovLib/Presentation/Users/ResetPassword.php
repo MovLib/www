@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Users;
 
-use \MovLib\Data\Delayed\Mailer;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -34,6 +33,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @since 0.0.1-dev
  */
 class ResetPassword extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitFormPage;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -45,13 +45,6 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
   private $email;
-
-  /**
-   * The page's form element.
-   *
-   * @var \MovLib\Presentation\Partial\Form;
-   */
-  private $form;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -93,18 +86,23 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * The redirect exception is thrown if the supplied data is valid. The user will be redirected to her or his personal
    * dashboard.
    *
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @param array $errors [optional]
+   *   {@inheritdoc}
    * @return this
    */
-  public function validate() {
-    global $i18n;
-    Mailer::stack(new ResetPasswordEmail($this->email->value));
-    http_response_code(202);
-    $success           = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]));
-    $success->title    = $i18n->t("Successfully Requested Password Reset");
-    $success->severity = Alert::SEVERITY_SUCCESS;
-    $this->alerts     .= $success;
+  public function validate(array $errors = null) {
+    global $kernel, $i18n;
+    if ($this->checkErrors($errors) === false) {
+      $kernel->sendEmail(new ResetPasswordEmail($this->email->value));
+      http_response_code(202);
+      $this->alerts .= new Alert(
+        $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]),
+        $i18n->t("Successfully Requested Password Reset"),
+        Alert::SEVERITY_SUCCESS
+      );
+    }
     return $this;
   }
 

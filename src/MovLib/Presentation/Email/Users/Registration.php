@@ -40,11 +40,11 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
   protected $username;
 
   /**
-   * The user's base64 encoded email address.
+   * The user's unique link to activate the account.
    *
    * @var string
    */
-  protected $token;
+  protected $link;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -79,7 +79,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
   public function init() {
     global $i18n, $kernel;
     $this->subject = $i18n->t("Welcome to {0}!", [ $kernel->siteName ]);
-    $this->token   = rawurlencode(base64_encode($this->recipient));
+    $this->link    = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/users/registration")}?token=" . rawurlencode(base64_encode($this->recipient));
     return $this;
   }
 
@@ -94,7 +94,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
       "<p>{$i18n->t("Hi {0}!", [ $this->username ])}</p>" .
       "<p>{$i18n->t("Thank you for registering at {0}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
         $kernel->siteName,
-        "<a href='{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/users/registration")}?token={$this->token}'>",
+        "<a href='{$this->link}'>",
         "</a>"
       ])}</p>" .
       "<p>{$i18n->t("This link can only be used once within the next 24 hours.")}<br>" .
@@ -119,7 +119,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
 
 {$i18n->t("Thank your for registering at {0}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ $kernel->siteName ])}
 
-{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/users/registration")}?token={$this->token}
+{$this->link}
 
 {$i18n->t("This link can only be used once within the next 24 hours.")}
 {$i18n->t("You will be able to sign in with the following data:")}

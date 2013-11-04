@@ -28,7 +28,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class FormPage extends \MovLib\Presentation\Page {
+trait TraitFormPage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

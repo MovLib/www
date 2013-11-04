@@ -94,6 +94,13 @@ class Full extends \MovLib\Data\User\User {
   public $login;
 
   /**
+   * The user's hashed password.
+   *
+   * @var string
+   */
+  protected $password;
+
+  /**
    * Flag defining if the user's personal data is private or not.
    *
    * @var boolean
@@ -179,6 +186,7 @@ class Full extends \MovLib\Data\User\User {
           UNIX_TIMESTAMP(`created`),
           UNIX_TIMESTAMP(`access`),
           UNIX_TIMESTAMP(`login`),
+          `password`,
           `private`,
           `deactivated`,
           `time_zone_id`,
@@ -205,6 +213,7 @@ class Full extends \MovLib\Data\User\User {
         $this->created,
         $this->access,
         $this->login,
+        $this->password,
         $this->private,
         $this->deactivated,
         $this->timeZoneId,
@@ -385,6 +394,36 @@ class Full extends \MovLib\Data\User\User {
   }
 
   /**
+   * Verify the user's password.
+   *
+   * @param string $rawPassword
+   *   The user supplied raw password.
+   * @return boolean
+   *   Returns <code>TRUE</code> if the password and hash match, or <code>FALSE</code> otherwise.
+   */
+  public function passwordVerify($rawPassword) {
+    return password_verify($rawPassword, $this->password);
+  }
+
+  /**
+   * Prepare password change for this user.
+   *
+   * @param string $rawPassword
+   *   The unhashed new password.
+   * @return string
+   *   The key of the temporar table record.
+   */
+  public function preparePasswordChange($rawPassword) {
+    $password = $this->passwordHash($rawPassword);
+    $key      = hash("sha256", openssl_random_pseudo_bytes(1024));
+    $this->query("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)", "sss", [ serialize([
+      "user_id"      => $this->id,
+      "new_password" => $password,
+    ]), $key, self::TMP_TTL_DAILY]);
+    return $key;
+  }
+
+  /**
    * Prepare registration data.
    *
    * A user exception is thrown if too many registration attempts were made with this email address in the past 24 hours.
@@ -497,15 +536,24 @@ class Full extends \MovLib\Data\User\User {
   /**
    * Change the user's password.
    *
-   * This method must be public for delayed execution!
-   *
-   * @param string $rawPassword
-   *   The new unhashed password.
+   * @param string $token
+   *   The user token from the URL.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\UserException
    */
-  public function updatePassword($rawPassword) {
-    return $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $this->passwordHash($rawPassword), $this->id ]);
+  public function changePassword($token) {
+    $result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $token ]);
+    if (empty($result)) {
+      throw new DatabaseException("Couldn't find change password data for token '{$token}'.");
+    }
+    $data = unserialize($result["data"]);
+    if (empty($data["user_id"]) || empty($data["new_password"]) || $data["user_id"] !== $this->id) {
+      throw new UserException("The stored data for the change password token '{$token}' doesn't match the current session data.");
+    }
+    $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $token ]);
+    $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $data["new_password"], $this->id ]);
+    return $this;
   }
 
 }
