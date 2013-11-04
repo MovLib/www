@@ -32,10 +32,20 @@ use \MovLib\Presentation\Partial\Lists\GlueSeparated;
 class Home extends \MovLib\Presentation\Tool\Page {
 
   /**
+   * Whether the client has verified via PKCS #12 certificate or not.
+   *
+   * @var boolean
+   */
+  protected $sslClientVerified = false;
+
+  /**
    * Instantiate new tools homepage.
    */
   public function __construct() {
     $this->init("Tools");
+    if (!empty($_SERVER["SSL_CLIENT_VERIFY"])) {
+      $this->sslClientVerified = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS";
+    }
   }
 
   /**
@@ -58,7 +68,7 @@ class Home extends \MovLib\Presentation\Tool\Page {
       $label = [ "info", "open" ];
       if ($tool[3] === true) {
         $route = "//{$kernel->domainSecureTools}{$route}";
-        $label = $kernel->sslClientVerify === true ? [ "success", "verified" ] : [ "danger", "not verified" ];
+        $label = $this->sslClientVerified === true ? [ "success", "verified" ] : [ "danger", "not verified" ];
       }
       return [ $route, "<span class='label label-{$label[0]} pull-right'>{$label[1]}</span><h4>{$tool[0]}</h4><p>{$tool[2]}</p>", [
         "class" => "list-group-item"

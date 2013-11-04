@@ -83,11 +83,25 @@ class Kernel {
   public $domainLocalize = "localize.movlib.org";
 
   /**
+   * The secure tools domain, without scheme or trailing slash, e.g. <code>"secure.tools.movlib.org"</code>.
+   *
+   * @var string
+   */
+  public $domainSecureTools = "secure.tools.movlib.org";
+
+  /**
    * The static domain, without scheme or trailing slash, e.g. <code>"static.movlib.org"</code>.
    *
    * @var string
    */
   public $domainStatic = "alpha.movlib.org";
+
+  /**
+   * The tools domain, without scheme or trailing slash, e.g. <code>"tools.movlib.org"</code>.
+   *
+   * @var string
+   */
+  public $domainTools = "tools.movlib.org";
 
   /**
    * The developer mailinglist email address.

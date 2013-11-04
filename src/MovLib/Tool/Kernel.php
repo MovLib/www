@@ -41,27 +41,6 @@ class Kernel extends \MovLib\Kernel {
    */
   public $usrBinaryPath = "/usr/local/bin";
 
-  /**
-   * The tools domain, without scheme or trailing slash, e.g. <code>"tools.movlib.org"</code>.
-   *
-   * @var string
-   */
-  public $domainTools = "tools.movlib.org";
-
-  /**
-   * The secure tools domain, without scheme or trailing slash, e.g. <code>"secure.tools.movlib.org"</code>.
-   *
-   * @var string
-   */
-  public $domainSecureTools = "secure.tools.movlib.org";
-
-  /**
-   * Flag indicating if the client has authenticated via certificate.
-   *
-   * @var boolean
-   */
-  public $sslClientVerify = false;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -89,11 +68,6 @@ class Kernel extends \MovLib\Kernel {
     $i18n    = new \MovLib\Data\I18n();
     $kernel  = $this;
     $session = new \MovLib\Data\User\Session();
-
-    // Check whether the client authenticated against nginx.
-    if (!empty($_SERVER["SSL_CLIENT_VERIFY"])) {
-      $this->sslClientVerify = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS";
-    }
   }
 
 
