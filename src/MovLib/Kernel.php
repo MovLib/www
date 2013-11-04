@@ -263,6 +263,8 @@ class Kernel {
       $this->documentRoot  = $_SERVER["DOCUMENT_ROOT"];
       $this->hostname      = $_SERVER["SERVER_NAME"];
       $this->protocol      = $_SERVER["SERVER_PROTOCOL"];
+      // @todo If we're ever going to use proxy servers this code has to be changed!
+      //       https://github.com/komola/ZendFramework/blob/master/Controller/Request/Http.php#L1054
       $this->remoteAddress = filter_var($_SERVER["REMOTE_ADDR"], FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
       $this->requestMethod = $_SERVER["REQUEST_METHOD"];
       $this->requestURI    = $_SERVER["REQUEST_URI"];
