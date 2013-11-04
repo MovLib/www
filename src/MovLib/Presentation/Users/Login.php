@@ -66,17 +66,15 @@ class Login extends \MovLib\Presentation\Page {
    * Instantiate new user login presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
   public function __construct() {
-    global $i18n, $session;
-
-    // Translate the sign out route, so we can check if the current page is the sign out page.
-    $routeLogout = $i18n->r("/profile/sign-out");
+    global $i18n, $kernel, $session;
 
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
-    if ($session->isAuthenticated === true && $_SERVER["REQUEST_URI"] != $routeLogout) {
+    if ($session->isAuthenticated === true) {
       throw new RedirectSeeOtherException($i18n->r("/my"));
     }
 
@@ -89,13 +87,16 @@ class Login extends \MovLib\Presentation\Page {
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
-    if ($_SERVER["REQUEST_URI"] != $routeLogin && $_SERVER["REQUEST_URI"] != $routeLogout) {
+    if ($kernel->requestURI != $routeLogin) {
       if (empty($_GET["redirect_to"])) {
-        $_GET["redirect_to"] = $_SERVER["REQUEST_URI"];
+        $_GET["redirect_to"] = $kernel->requestURI;
       }
       $_GET["redirect_to"] = rawurlencode($_GET["redirect_to"]);
       $action             .= "?redirect_to={$_GET["redirect_to"]}";
     }
+
+    // Ensure all views are using the correct path info to render themselves.
+    $kernel->requestURI = $routeLogin;
 
     $this->email                      = new InputEmail();
     $this->email->setHelp("<a href='{$i18n->r("/users/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
@@ -109,15 +110,6 @@ class Login extends \MovLib\Presentation\Page {
       "title" => $i18n->t("Click here to sign in after you filled out all fields"),
       "value" => $i18n->t("Sign In"),
     ]);
-
-    // If the user requested to be signed out, do so.
-    if ($session->isAuthenticated === true && $_SERVER["REQUEST_URI"] == $routeLogout) {
-      $session->destroy();
-      $this->alerts .= new Alert($i18n->t("We hope to see you again soon."), $i18n->t("You’ve been signed out successfully."), Alert::SEVERITY_SUCCESS);
-    }
-
-    // Ensure all views are using the correct path info to render themselves.
-    $_SERVER["REQUEST_URI"] = $routeLogin;
   }
 
   /**
@@ -143,7 +135,11 @@ class Login extends \MovLib\Presentation\Page {
     if ($this->checkErrors($errors) === false) {
       try {
         $session->authenticate($this->email->value, $this->password->value);
-        $session->alerts .= new Alert($i18n->t("Login was successful."), $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]), Alert::SEVERITY_SUCCESS);
+        $session->alerts .= new Alert(
+          $i18n->t("Login was successful."),
+          $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]),
+          Alert::SEVERITY_SUCCESS
+        );
         throw new RedirectSeeOtherException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
       }
       catch (SessionException $e) {

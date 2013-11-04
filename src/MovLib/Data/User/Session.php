@@ -315,7 +315,9 @@ class Session extends \MovLib\Data\Database {
     // If no session is active, nothing has to be done.
     if (session_status() === PHP_SESSION_ACTIVE) {
       // Remove all data associated with this session.
-      session_destroy();
+      if (session_destroy() === false) {
+        throw new SessionException("Couldn't destroy data associated with this session.");
+      }
       session_unset();
       // Remove the cookie.
       $cookie = session_get_cookie_params();

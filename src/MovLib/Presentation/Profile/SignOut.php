@@ -15,13 +15,13 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
+namespace MovLib\Presentation\Profile;
+
+use \MovLib\Exception\Client\RedirectSeeOtherException;
+use \MovLib\Presentation\Partial\Alert;
 
 /**
- * Temporarily redirect the user and transform the HTTP method to GET.
- *
- * This redirect should be used if the requested operation has completed and the client should continue elsewhere while
- * transforming the request method to GET.
+ * Sign the current user out and redirect to login presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -29,23 +29,26 @@ namespace MovLib\Exception\Client;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class RedirectSeeOtherException extends \MovLib\Exception\Client\AbstractRedirectException {
+class SignOut {
 
   /**
-   * Instantiate new see other redirect.
+   * Instantiate new sign out presentation.
    *
-   * @global \MovLib\Kernel $kernel
-   * @param string $route
-   *   {@inheritdoc}
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
+   * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
-  public function __construct($route) {
-    global $kernel;
-    if ($kernel->protocol == "HTTP/1.0") {
-      parent::__construct(302, $route, "Moved Temporarily");
+  public function __construct() {
+    global $i18n, $session;
+    if ($session->isAuthenticated === true) {
+      $session->destroy();
+      $session->alerts .= new Alert(
+        $i18n->t("We hope to see you again soon."),
+        $i18n->t("Sign Out Successfull"),
+        Alert::SEVERITY_SUCCESS
+      );
     }
-    else {
-      parent::__construct(303, $route, "See Other");
-    }
+    throw new RedirectSeeOtherException($i18n->r("/users/login"));
   }
 
 }

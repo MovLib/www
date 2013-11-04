@@ -251,9 +251,8 @@ location ^~ <?= $r("/profile") ?> {
     return 301 <?= $r("/profile") ?>;
   }
 
-  # IMPORTANT! You sign out from our profile, but it's actually handled by the login presentation.
   location = <?= $r("/profile/sign-out") ?> {
-    set $movlib_presenter "Users\\Login";
+    set $movlib_presenter "Profile\\SignOut";
     include sites/conf/fastcgi_params.conf;
   }
 
