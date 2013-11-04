@@ -49,23 +49,15 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n, $session;
-    ob_start();
-    var_dump($this->user);
-    $var[] = ob_get_clean();
-    ob_start();
-    var_dump($session);
-    $var[] = ob_get_clean();
-    ob_start();
-    var_dump($GLOBALS);
-    $var[] = ob_get_clean();
-    for ($i = 0; $i < 3; ++$i) {
-      $var[$i] = highlight_string("<?php\n\n{$var[$i]}\n?>", true);
-      $var[$i] = str_replace(
-        [ "<code>", "</code>" ],
-        [ "<pre style='whitespace:normal'>", "</pre>" ],
-        $var[$i]
-      );
+    global $kernel, $i18n, $session;
+    $var = [];
+    $delayedMethods = new \ReflectionProperty($kernel, "delayedMethods");
+    $delayedMethods->setAccessible(true);
+    $delayedMethods = $delayedMethods->getValue($kernel);
+    foreach ([ $this->user, $session, $kernel, $delayedMethods ] as $obj) {
+      ob_start();
+      var_dump($obj);
+      $var[] = $this->checkPlain(ob_get_clean());
     }
     return
       "<h2>{$i18n->t("Your Account Summary")}</h2>" .
@@ -86,8 +78,10 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
           ]) .
         "</div>" .
       "</div>" .
-      "<h2>User</h2>{$var[0]}" .
-      "<h2>Session</h2>{$var[1]}"
+      "<h2>User</h2><pre>{$var[0]}</pre>" .
+      "<h2>Session</h2><pre>{$var[1]}</pre>" .
+      "<h2>Kernel</h2><pre>{$var[2]}</pre>" .
+      "<h2>Delayed Methods</h2><pre>{$var[3]}</pre>"
     ;
   }
 
