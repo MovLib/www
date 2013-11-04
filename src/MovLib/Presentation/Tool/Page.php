@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Tool;
 
-use \MovLib\Tool\Configuration;
-
 /**
  * Reference implementation for tools pages.
  *
@@ -29,16 +27,6 @@ use \MovLib\Tool\Configuration;
  * @since 0.0.1-dev
  */
 class Page extends \MovLib\Presentation\Page {
-
-  /**
-   * @inheritdoc
-   */
-  protected function init($title) {
-    global $kernel;
-    parent::init($title);
-    $kernel = new Configuration();
-    return $this;
-  }
 
   /**
    * @inheritdoc

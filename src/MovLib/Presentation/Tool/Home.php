@@ -48,7 +48,7 @@ class Home extends \MovLib\Presentation\Tool\Page {
       [ "ApiGen", "public/doc/", "{$i18n->t("Have a look at the source code documentation.")} {$i18n->t("Generated once a day.")}", false ],
       [ "PHPInfo", "phpinfo", $i18n->t("Have a look at the current PHP configuration, extensions, etc."), false ],
       [ "phpMyAdmin", "phpmyadmin/", $i18n->t("Easily manage the database via the phpMyAdmin web interface."), true ],
-      [ "Coverage", "public/coverage/", "{$i18n->t("Have a look at the unit test code coverage reporst.")} {$i18n->t("Generated once a day.")}", false ],
+      [ "Coverage", "public/coverage/", "{$i18n->t("Have a look at the unit test code coverage reports.")} {$i18n->t("Generated once a day.")}", false ],
       // @todo Either our tests are broken or VisualPHPUnit is broken ... impossible to get this working.
       //[ "VisualPHPUnit", $i18n->t("Run PHPUnit tests via the VisualPHPUnit web interface."), true ],
     ]);
