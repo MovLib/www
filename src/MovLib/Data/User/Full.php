@@ -543,11 +543,11 @@ class Full extends \MovLib\Data\User\User {
    * @throws \MovLib\Exception\UserException
    */
   public function changePassword($token) {
-    $result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $token ]);
+    $result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $token ])->get_result()->fetch_row();
     if (empty($result)) {
       throw new DatabaseException("Couldn't find change password data for token '{$token}'.");
     }
-    $data = unserialize($result["data"]);
+    $data = unserialize($result[0]);
     if (empty($data["user_id"]) || empty($data["new_password"]) || $data["user_id"] !== $this->id) {
       throw new UserException("The stored data for the change password token '{$token}' doesn't match the current session data.");
     }
