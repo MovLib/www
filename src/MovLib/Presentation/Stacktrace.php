@@ -42,12 +42,12 @@ class Stacktrace {
    * @var \Exception
    */
   protected $exception;
-  
+
   /**
    * The title.
-   * 
+   *
    * This is the name of the exception for which we generated the stacktrace.
-   * 
+   *
    * @see Stacktrace::__construct()
    * @var string
    */
@@ -235,16 +235,16 @@ class Stacktrace {
     for ($i = 0; $i < $c; ++$i) {
       $line       = $this->formatLineNumber($stacktrace[$i]);
       $class      = $this->formatClassName($stacktrace[$i]);
+      $function   = $this->formatFunction($stacktrace[$i]);
       $type       = $this->formatFunctionType($stacktrace[$i]);
       $args       = $this->formatFunctionArguments($stacktrace[$i]);
       $file       = $this->formatFileName($stacktrace[$i]);
-      // The function is the only offset that is available in any stacktrace entry.
       $formatted .=
         "<tr class='stacktrace__tr'>" .
           "<td class='stacktrace__td stacktrace__line-number'>{$line}</td>" .
           "<td class='stacktrace__td'>" .
             "<div class='stacktrace__line-container'>{$class}{$type}" .
-              "<span class='stacktrace__function'>{$stacktrace[$i]["function"]}</span>({$args})" .
+              "<span class='stacktrace__function'>{$function}</span>({$args})" .
               "<span class='stacktrace__file'>{$file}</span>" .
             "</div>" .
           "</td>" .
@@ -253,7 +253,22 @@ class Stacktrace {
     }
     return $formatted;
   }
-  
+
+  /**
+   * Format the stacktrace entry's function name.
+   *
+   * @param array $stacktrce
+   *   The stacktrace entry.
+   * @return string
+   *   The stacktrace entry's function name.
+   */
+  protected function formatFunction(array &$stacktrce) {
+    if (empty($stacktrce["function"])) {
+      return "<em>unknown</em>";
+    }
+    return (string) $stacktrce["function"];
+  }
+
   /**
    * Format the stacktrace entry's function type.
    *
