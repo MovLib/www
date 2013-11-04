@@ -147,7 +147,6 @@ America/Miquelon;Amerika/Miquelon
 America/Moncton;Amerika/Moncton
 America/Monterrey;Amerika/Monterrey
 America/Montevideo;Amerika/Montevideo
-America/Montreal;Amerika/Montreal
 America/Montserrat;Amerika/Montserrat
 America/Nassau;Amerika/Nassau
 America/New_York;Amerika/New York
@@ -178,7 +177,6 @@ America/Santiago;Amerika/Santiago
 America/Santo_Domingo;Amerika/Santo Domingo
 America/Sao_Paulo;Amerika/São Paulo
 America/Scoresbysund;Amerika/Scoresbysund
-America/Shiprock;Amerika/Shiprock
 America/Sitka;Amerika/Sitka
 America/St_Barthelemy;Amerika/Saint-Barthélemy
 America/St_Johns;Amerika/St. John’s
@@ -206,7 +204,6 @@ Antarctica/Mawson;Antarktis/Mawson
 Antarctica/McMurdo;Antarktis/McMurdo
 Antarctica/Palmer;Antarktis/Palmer
 Antarctica/Rothera;Antarktis/Rothera
-Antarctica/South_Pole;Antarktis/Südpol
 Antarctica/Syowa;Antarktis/Shōwa
 Antarctica/Vostok;Antarktis/Vostok
 Arctic/Longyearbyen;Arktis/Longyearbyen

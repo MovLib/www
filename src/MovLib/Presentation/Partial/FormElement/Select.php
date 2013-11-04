@@ -69,7 +69,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    * @param string $help [optional]
    *   The textarea's help text, defaults to <code>NULL</code> (no help text).
    * @param boolean $helpPopup
-   *   Whetever the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
+   *   Whether the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
   public function __construct($id, $label, array $options, $value = null, array $attributes = null, $help = null, $helpPopup = true) {
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
@@ -86,8 +86,8 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
     //  The first child option element of a select element with a required attribute and without a multiple attribute,
     //  and whose size is 1, must have either an empty value attribute, or must have no text content.
     $emptyValue = empty($this->value);
-    $selected = $emptyValue ? " selected" : null;
-    $options  = "<option{$selected} value=''>{$i18n->t("Please Select …")}</option>";
+    $selected   = $emptyValue ? " selected" : null;
+    $options    = "<option{$selected} value=''>{$i18n->t("Please Select …")}</option>";
 
     foreach ($this->options as $value => $option) {
       $selected = !$emptyValue && $this->value == $value ? " selected" : null;

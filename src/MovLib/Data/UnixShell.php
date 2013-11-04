@@ -18,7 +18,11 @@
 namespace MovLib\Data;
 
 /**
- * Various utility methods and constants shared among all Data instances.
+ * Interface to the Unix shell of the server.
+ *
+ * This class provides several methods to interact with other installed software on the server directly via shell. The
+ * methods are mainly wrapper around the usual PHP functions and ensure that the command behave like normal function
+ * calls by returning booleans that indicate success or failure.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,7 +30,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitUtilities {
+class UnixShell {
 
   /**
    * Execute an external program.
@@ -46,7 +50,7 @@ trait TraitUtilities {
    * @return boolean
    *   <code>TRUE</code> if the program exited with <code>0</code>, otherwise <code>FALSE</code>
    */
-  protected function exec($command, &$output = null, &$status = null) {
+  public static function execute($command, &$output = null, &$status = null) {
     exec("{$command} 2>&1", $output, $status);
     return $status === 0;
   }
@@ -70,42 +74,9 @@ trait TraitUtilities {
    *   The external shell program to execute.
    * @return this
    */
-  protected function execDetached($command) {
+  public static function executeDetached($command) {
     exec("{$command} <&- 1<&- 2<&- &");
     return $this;
-  }
-
-  /**
-   * Sanitizes a filename, replacing whitespace with dashes and transforming the string to lowercase.
-   *
-   * Removes special characters that are illegal in filenames on certain operating systems and special characters
-   * requiring special escaping to manipulate at the command line. Replaces spaces and consecutive dashes with a single
-   * dash. Trims period, dash und underscore from beginning and end of filename.
-   *
-   * @param string $filename
-   *   The filename to be sanitized.
-   * @return string
-   *   The sanitized filename.
-   */
-  protected function filename($filename) {
-    return mb_strtolower(trim(preg_replace("/[\s-]+/", "-", str_replace([ "?", "[", "]", "/", "\\", "=", "<", ">", ":", ";", ",", "'", '"', "&", "$", "#", "*", "(", ")", "|", "~" ], "", $filename)), ".-_"));
-  }
-
-  /**
-   * Create a symbolic link.
-   *
-   * @param string $target
-   *   Link target.
-   * @param string $link
-   *   Link name.
-   * @return boolean
-   *   <code>TRUE</code> if the symbolic link already exists or was successfully create, otherwise <code>FALSE</code>.
-   */
-  protected function symlink($target, $link) {
-    if (!is_link($link)) {
-      return symlink($target, $link);
-    }
-    return true;
   }
 
   /**
@@ -120,7 +91,7 @@ trait TraitUtilities {
    * @return boolean
    *   <code>TRUE</code> if the program exited with <code>0</code>, otherwise <code>FALSE</code>.
    */
-  protected function system($command, &$status = null) {
+  public static function executeDisplayOutput($command, &$status = null) {
     system($command, $status);
     return $status === 0;
   }

@@ -40,8 +40,7 @@ const SPAN_10 = 780;
 const SPAN_11 = 860;
 const SPAN_12 = 940;
 
-use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-use \MovLib\Exception\FileSystemException;
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\ImageException;
 
 /**
@@ -117,7 +116,7 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   protected $imageDirectory = "";
 
   /**
-   * Flag indicating whetever this image exists or not.
+   * Flag indicating whether this image exists or not.
    *
    * @var boolean
    */
@@ -238,9 +237,14 @@ abstract class AbstractImage extends \MovLib\Data\Database {
     if (!$width) {
       $width = $style;
     }
-    $args = $crop === true ? "'{$width}x{$height}>^' -gravity 'Center' -crop '{$width}x{$height}+0+0' +repage" : "'{$width}x{$height}>'";
+    if ($crop === true) {
+      $args = "'{$width}x{$height}>^' -gravity 'Center' -crop '{$width}x{$height}+0+0' +repage";
+    }
+    else {
+      $args = "'{$width}x{$height}>'";
+    }
     $destination = $this->getImagePath($style);
-    if ($this->exec("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 75 -resize {$args} '{$destination}'") === false) {
+    if (sh::execute("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 75 -resize {$args} '{$destination}'") === false) {
       throw new ImageException("Could not convert '{$source}' to '{$style}'!");
     }
     list($this->imageStyles[$style]["width"], $this->imageStyles[$style]["height"]) = getimagesize($destination);
@@ -248,34 +252,38 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   }
 
   /**
-   * Deletes the original image, all styles and the directory from the persistent storage.
+   * Deletes the original image, all styles and the directory (if empty) from the persistent storage.
    *
+   * @global \MovLib\Kernel $kernel
    * @return this
-   * @throws \MovLib\Exception\FileSystemException
    */
   protected function deleteImage() {
-    if ($this->imageExists == true) {
-      if (!is_array($this->imageStyles)) {
-        $this->imageStyles = unserialize($this->imageStyles);
-      }
-      // Add the original file to the styles array (DRY), this is why getImagePath() and getImageURL() check with empty()
-      // against their parameter.
-      $this->imageStyles[""] = null;
-      foreach ($this->imageStyles as $styleName => $styleInfo) {
-        $path = $this->getImagePath($styleName);
-        if (is_file($path) && unlink($path) !== false) {
-          // Recursive deletion of all directories which silently fails upon the first non-empty directory.
-          $dir = dirname($path);
-          if (is_dir($dir)) {
-            $this->exec("rmdir -p {$dir}");
-          }
-        }
-        else {
-          throw new FileSystemException("Could not delete image {$path}!");
-        }
-      }
-      DelayedMethodCalls::stack($this, "commit");
+    global $kernel;
+
+    // Unserialize the styles if they are still serialized.
+    if (!is_array($this->imageStyles)) {
+      $this->imageStyles = unserialize($this->imageStyles);
     }
+
+    // Add the original file to the styles array (DRY), this is why getImagePath() and getImageURL() check with empty()
+    // against their parameter.
+    $this->imageStyles[""] = null;
+    foreach ($this->imageStyles as $styleName => $styleInfo) {
+      try {
+        $imagePath = $this->getImagePath($styleName);
+        unlink($imagePath);
+
+        // Silently fail if attempting to delete a non-empty directory.
+        $imageDirectory = dirname($imagePath);
+        sh::executeDetached("rmdir -p '{$imageDirectory}'");
+      }
+      catch (\ErrorException $e) {
+        error_log($e);
+      }
+    }
+    $kernel->delayMethodCall([ $this, "commit" ]);
+
+    $this->imageExists = false;
     return $this;
   }
 
@@ -285,49 +293,47 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    * <b>NOTE</b>
    * This method will always return the absolute path to the image, no matter if it exists or not.
    *
+   * @global \MovLib\Kernel $kernel
    * @param mixed $style [optional]
    *   The style for which you want the path, if no style is given (default) the path to the original file is returned.
    * @return string
    *   The absolute path to the image.
    */
   protected function getImagePath($style = null) {
-    $root = "{$_SERVER["DOCUMENT_ROOT"]}/uploads/";
+    global $kernel;
     if (empty($style)) {
-      $root .= "originals/";
-      $style = null;
+      $path = "private/upload/{$this->imageDirectory}/{$this->imageName}.{$this->imageExtension}";
     }
     else {
-      $style = ".{$style}";
+      $path = "public/upload/{$this->imageDirectory}/{$this->imageName}.{$style}.{$this->imageExtension}";
     }
-    return "{$root}{$this->imageDirectory}/{$this->imageName}{$style}.{$this->imageExtension}";
+    return "{$kernel->documentRoot}/{$path}";
   }
 
   /**
    * Get the absolute (static) URL to the image.
    *
+   * @global \MovLib\Kernel $kernel
    * @param mixed $style [optional]
    *   The style for which you want the URL, if no style is given (default) the URL to the original file is returned.
    * @return string
    *   The absolute (static) URL to the image.
    */
   protected function getImageURL($style = null) {
-    if ($this->imageExists == true) {
-      $root = "{$GLOBALS["movlib"]["static_domain"]}uploads/";
-      if (empty($style)) {
-        $root .= "originals/";
-        $style = null;
-      }
-      else {
-        $style = ".{$style}";
-      }
-      return "{$root}{$this->imageDirectory}/{$this->imageName}{$style}.{$this->imageExtension}?c={$this->imageChanged}";
+    global $kernel;
+    if (empty($style)) {
+      $url = "private/upload/{$this->imageDirectory}/{$this->imageName}.{$this->imageExtension}";
     }
-    return "{$GLOBALS["movlib"]["static_domain"]}img/{$this->imagePlaceholder}";
+    else {
+      $url = "upload/{$this->imageDirectory}/{$this->imageName}.{$style}.{$this->imageExtension}?c={$this->imageChanged}";
+    }
+    return "//{$kernel->domainStatic}/{$url}";
   }
 
   /**
    * Upload the <var>$source</var> as this image, overriding the existing image.
    *
+   * @global \MovLib\Kernel $kernel
    * @param string $source
    *   Absolute path to the uploaded image.
    * @param string $extension
@@ -339,16 +345,18 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    * @return this
    */
   public function uploadImage($source, $extension, $height, $width) {
+    global $kernel;
     $this->imageChanged   = $this->imageCreated = $_SERVER["REQUEST_TIME"];
     $this->imageExists    = true;
     $this->imageExtension = $extension;
     $this->imageHeight    = $height;
     $this->imageWidth     = $width;
-    $this->execDetached("convert '{$source}' -strip +repage '{$this->getImagePath()}'")->generateImageStyles($source);
+    sh::executeDetached("convert '{$source}' -strip +repage '{$this->getImagePath()}'");
+    $this->generateImageStyles($source);
     if (!isset($this->imageStyles[self::IMAGE_STYLE_SPAN_01]) || !isset($this->imageStyles[self::IMAGE_STYLE_SPAN_02])) {
       throw new ImageException("Every image instance has to generate the default styles!");
     }
-    DelayedMethodCalls::stack($this, "commit");
+    $kernel->delayMethodCall([ $this, "commit" ]);
     return $this;
   }
 

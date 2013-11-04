@@ -1,13 +1,13 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          ${NAME}
-# Required-Start:    $remote_fs $network
-# Required-Stop:     $remote_fs $network
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: starts ${NAME}
-# Description:       Starts PHP FastCGI Process Manager Daemon
+# Provides:           memcached-session
+# Required-Start:     $local_fs $remote_fs $network $syslog $named
+# Required-Stop:      $local_fs $remote_fs $network $syslog $named
+# Default-Start:      2 3 4 5
+# Default-Stop:       0 1 6
+# Short-Description:  memcached-session LSB init script
+# Description:        memcached-session Linux Standards Base compliant init script.
 ### END INIT INFO
 
 # -----------------------------------------------------------------------------
@@ -30,14 +30,14 @@
 # -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
-# ${NAME} Linux Standards Base compliant init script.
+# memcached-session Linux Standards Base compliant init script.
 #
 # LINK:       https://wiki.debian.org/LSBInitScripts
-# AUTHOR:     Ondrej Sury <ondrej@debian.org>
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
+# AUTHOR:     Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
 # COPYRIGHT:  © 2013 MovLib
 # LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
-# LINK:       https://movlib.org/
+# LINKE:      https://movlib.org/
 # SINCE:      0.0.1-dev
 # -----------------------------------------------------------------------------
 
@@ -56,35 +56,41 @@
 # -----------------------------------------------------------------------------
 
 
-# The name of the service (must be the first variable).
-NAME="php-fpm"
+# The name of the server (must be the first variable).
+NAME="session"
 
-# Absolute path to the executable.
-DAEMON="/usr/local/sbin/${NAME}"
+# The name of the service.
+SERVICE_NAME="memcached-${NAME}"
 
-# Arguments that should be passed to the executable.
-DAEMON_ARGS=""
+# The user listening on the socket.
+USER="www-data"
 
-# The php-fpm group.
+# The group listening on the socket.
 GROUP="www-data"
 
-# The php-fpm log directory.
-LOG_DIR="/var/log/php-fpm"
+# The amount of memory in MB.
+MEMORY=64
 
-# The php-fpm error log.
-LOG_ERROR="error.log"
+# The number of threads to run.
+THREADS=1
 
-# The php-fpm slow log.
-LOG_SLOW="slow.log"
+# Name of the executable.
+EXE="memcached"
+
+# Absolute path to the executable.
+DAEMON="/usr/local/bin/${EXE}"
+
+# Absolute path to the PID and socket directory.
+PATH_DIR="/run/${EXE}"
+
+# Absolute path to the listening socket of the memcached instance.
+PATH_SOCKET="${PATH_DIR}/${NAME}.sock"
 
 # Absolute path to the PID file.
-PIDFILE="/run/${NAME}.pid"
+PIDFILE="${PATH_DIR}/${NAME}.pid"
 
-# Absolute path to the upload temporary directory.
-UPLOAD_TMP_DIR="/tmp/${NAME}"
-
-# The php-fpm user.
-USER="www-data"
+# Arguments that should be passed to the executable.
+DAEMON_ARGS="-m ${MEMORY} -t ${THREADS} -d -r -u www-data -s ${PATH_SOCKET} -P ${PIDFILE}"
 
 
 # -----------------------------------------------------------------------------
@@ -92,57 +98,35 @@ USER="www-data"
 # -----------------------------------------------------------------------------
 
 
-# Validate the configuration file.
-FPM_ERROR=$(${DAEMON} ${DAEMON_ARGS} -t 2>&1 | grep -cs "ERROR")
-if [ ${FPM_ERROR} -gt 0 ]; then
-  ${DAEMON} ${DAEMON_ARGS} -t
-  log_failure_msg ${NAME} "invalid configuration"
-  exit 1
-fi
-
 # Check return status of EVERY command
 set -e
 
-# Check if we have a file and that it's executable, if not assume it's not installed.
+# Check if ${SERVICE_NAME} is a file and executable, if not assume it's not installed.
 if [ ! -x ${DAEMON} ]; then
-  log_failure_msg ${NAME} "not installed"
+  log_failure_msg ${SERVICE_NAME} "not installed"
   exit 1
 fi
 
-# Create the temporary upload directory if it's missing.
-if [ ! -d ${UPLOAD_TMP_DIR} ]; then
-  mkdir -p ${UPLOAD_TMP_DIR}
-  chmod 2770 ${UPLOAD_TMP_DIR}
-  chown ${USER}:${GROUP} ${UPLOAD_TMP_DIR}
+# This script is only accessible for root (sudo).
+if [ $(id -u) != 0 ]; then
+  log_failure_msg "super user only!"
+  exit 1
 fi
-
-if [ ! -d ${LOG_DIR} ]; then
-  mkdir ${LOG_DIR}
-fi
-touch "${LOG_DIR}/${ERROR_LOG}"
-touch "${LOG_DIR}/${SLOW_LOG}"
-chmod 0770 /var/log/php-fpm
-chmod 0660 /var/log/php-fpm/*
 
 # Always check if service is already running.
 RUNNING=$(start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON} --test && echo "false" || echo "true")
+
+# Create the directory for PID and socket files, if it doesn't exist.
+if [ ! -d ${PATH_DIR} ]; then
+  mkdir ${PATH_DIR}
+  chown ${USER}:${GROUP} ${PATH_DIR}
+fi
 
 
 # -----------------------------------------------------------------------------
 #                                                                     Functions
 # -----------------------------------------------------------------------------
 
-
-###
-# Reloads the service.
-#
-# RETURN:
-#   0 - successfully reloaded
-#   1 - reloading failed
-###
-reload_service() {
-  start-stop-daemon --stop --signal USR2 --quiet --pidfile ${PIDFILE} --exec ${DAEMON}
-}
 
 ###
 # Starts the service.
@@ -161,9 +145,14 @@ start_service() {
 # RETURN:
 #   0 - successfully stopped
 #   1 - stopping failed
+#   2 - deletion of PID and/or socket failed
 ###
 stop_service() {
-  start-stop-daemon --stop --quiet --pidfile ${PIDFILE} --name ${NAME}
+  start-stop-daemon --stop --quiet --pidfile ${PIDFILE} --name ${EXE}
+  if [ ${?} -eq 0 ]; then
+    rm -f ${PIDFILE} ${PATH_SOCKET} && return 0 || return 2
+  fi
+  return 1
 }
 
 
@@ -174,21 +163,17 @@ stop_service() {
 
 case ${1} in
 
-  force-reload|reload)
+  force-reload|reload|restart)
     if [ ${RUNNING} = "false" ]; then
-      log_failure_msg ${NAME} "not running"
+      log_failure_msg ${SERVICE_NAME} "not running"
     else
-      log_daemon_msg ${NAME} "reloading configuration"
-      reload_service && log_end_msg 0 || log_end_msg 1
-    fi
-  ;;
-
-  restart)
-    if [ ${RUNNING} = "false" ]; then
-      log_success_msg ${NAME} "not running"
-    else
-      log_daemon_msg ${NAME} "restarting"
-      stop_service || log_end_msg 1
+      log_daemon_msg ${SERVICE_NAME} "restarting"
+      stop_service
+      case ${?} in
+        1) log_failure_msg ${SERVICE_NAME} "couldn't stop" ;;
+        2) log_failure_msg ${SERVICE_NAME} "couldn't delete PID and/or socket" ;;
+      esac
+      :
       sleep 0.1
       start_service && log_end_msg 0 || log_end_msg 1
     fi
@@ -196,28 +181,34 @@ case ${1} in
 
   start)
     if [ ${RUNNING} = "true" ]; then
-      log_success_msg ${NAME} "already started"
+      log_success_msg ${SERVICE_NAME} "already started"
     else
-      log_daemon_msg ${NAME} "starting"
+      log_daemon_msg ${SERVICE_NAME} "starting"
       start_service && log_end_msg 0 || log_end_msg 1
     fi
   ;;
 
+  status)
+    status_of_proc ${DAEMON} ${SERVICE_NAME} && exit 0 || exit ${?}
+  ;;
+
   stop)
     if [ ${RUNNING} = "false" ]; then
-      log_success_msg ${NAME} "already stopped"
+      log_success_msg ${SERVICE_NAME} "already stopped"
     else
-      log_daemon_msg ${NAME} "stopping"
-      stop_service && log_end_msg 0 || log_end_msg 1
+      log_daemon_msg ${SERVICE_NAME} "stopping"
+      stop_service && log_end_msg 0 && exit 0
+      case ${?} in
+        1) log_failure_msg ${SERVICE_NAME} "couldn't stop" ;;
+        2) log_failure_msg ${SERVICE_NAME} "couldn't delete PID and/or socket" ;;
+        *) log_failure_msg ${SERVICE_NAME} "unknown error" ;;
+      esac
+      :
     fi
   ;;
 
-  status)
-    status_of_proc ${DAEMON} ${NAME} && exit 0 || exit ${?}
-  ;;
-
   *)
-    echo "Usage: ${NAME} {force-reload|reload|restart|start|status|stop}" >&2
+    echo "Usage: ${SERVICE_NAME} {force-reload|reload|restart|start|status|stop}" >&2
     exit 1
   ;;
 

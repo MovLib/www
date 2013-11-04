@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Email\Users;
 
 /**
- * @todo Description of RegistrationEmail
+ * Email template that is sent to clients after successfull registration.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -53,16 +53,14 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * Create registration email for activation of account.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @param string $username
    *   The user's name.
    * @param string $email
    *   The user's email address.
    */
   public function __construct($username, $email) {
-    global $i18n;
-    parent::__construct($email, $i18n->t("Welcome to {0}!", [ "MovLib" ]));
-    $this->username = $username;
+    $this->recipient = $email;
+    $this->username  = $username;
   }
 
 
@@ -72,24 +70,31 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * Initialize properties for email.
    *
+   * @internal
+   *   We base64 encode the email address because it looks akward having your own email address as part of a URL.
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @return this
    */
   public function init() {
-    // We base64 encode the email address because it looks akward having your own email address as part of a URL.
-    $this->token = rawurlencode(base64_encode($this->recipient));
+    global $i18n, $kernel;
+    $this->subject = $i18n->t("Welcome to {0}!", [ $kernel->siteName ]);
+    $this->token   = rawurlencode(base64_encode($this->recipient));
     return $this;
   }
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
-  protected function getHtmlBody() {
-    global $i18n;
+  public function getHTML() {
+    global $i18n, $kernel;
     return
       "<p>{$i18n->t("Hi {0}!", [ $this->username ])}</p>" .
       "<p>{$i18n->t("Thank you for registering at {0}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
-        "MovLib",
-        "<a href='{$_SERVER["SERVER"]}{$i18n->r("/users/registration")}?token={$this->token}'>",
+        $kernel->siteName,
+        "<a href='{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/users/registration")}?token={$this->token}'>",
         "</a>"
       ])}</p>" .
       "<p>{$i18n->t("This link can only be used once within the next 24 hours.")}<br>" .
@@ -104,15 +109,17 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
-  protected function getPlainBody() {
-    global $i18n;
+  public function getPlainText() {
+    global $i18n, $kernel;
     return <<<EOT
 {$i18n->t("Hi {0}!", [ $this->username ])}
 
-{$i18n->t("Thank your for registering at {0}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ "MovLib" ])}
+{$i18n->t("Thank your for registering at {0}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ $kernel->siteName ])}
 
-{$_SERVER["SERVER"]}{$i18n->r("/users/registration")}?token={$this->token}
+{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/users/registration")}?token={$this->token}
 
 {$i18n->t("This link can only be used once within the next 24 hours.")}
 {$i18n->t("You will be able to sign in with the following data:")}

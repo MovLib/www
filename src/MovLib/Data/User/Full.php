@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
 use \MovLib\Exception\UserException;
 
 /**
@@ -33,26 +32,6 @@ use \MovLib\Exception\UserException;
  * @since 0.0.1-dev
  */
 class Full extends \MovLib\Data\User\User {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Maximum attempts for actions like registration, login, etc..
-   *
-   * @var int
-   */
-  const MAXIMUM_ATTEMPTS = 5;
-
-  /**
-   * Maximum username length (chracter count, not bytes).
-   *
-   * @var int
-   */
-  const NAME_MAXIMUM_LENGTH = 40;
-
-  const NAME_ILLEGAL_CHARACTERS = "/_@#<>|()[]{}?\\=:;,'\"&$*~";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -243,6 +222,7 @@ class Full extends \MovLib\Data\User\User {
       if (!$stmt->fetch()) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
+      $stmt->close();
       $this->imageName   = mb_strtolower($this->name);
       $this->private     = (boolean) $this->private;
       $this->deactivated = (boolean) $this->deactivated;
@@ -386,21 +366,22 @@ class Full extends \MovLib\Data\User\User {
    *   The random password.
    */
   public static function getRandomPassword() {
+    MYSQLI_ASSOC;
     return trim(shell_exec("pwgen -cnBv 20 1"));
   }
 
   /**
    * Get the <var>$rawPassword</var> hash.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @param string $rawPassword
    *   The user supplied raw password.
    * @return string
    *   The <var>$rawPassword</var> hash.
    */
   public function passwordHash($rawPassword) {
-    global $config;
-    return password_hash($rawPassword, PASSWORD_DEFAULT, [ "cost" => $config->passwordCost ]);
+    global $kernel;
+    return password_hash($rawPassword, PASSWORD_DEFAULT, $kernel->passwordOptions);
   }
 
   /**
@@ -492,9 +473,9 @@ class Full extends \MovLib\Data\User\User {
     global $i18n;
     $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ "registration-{$this->email}" ]);
     $stmt = $this->query(
-      "INSERT INTO `users` (`avatar_name`, `dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES (?, '', ?, ?, ?, ?)",
-      "sssss",
-      [ $this->filename(html_entity_decode($this->name, ENT_QUOTES|ENT_HTML5)), $this->email, $this->name, $password, $i18n->languageCode ]
+      "INSERT INTO `users` (`dyn_profile`, `email`, `name`, `password`, `system_language_code`) VALUES ('', ?, ?, ?, ?)",
+      "ssss",
+      [ $this->email, $this->name, $password, $i18n->languageCode ]
     );
     $this->id = $stmt->insert_id;
     return $this;

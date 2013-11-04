@@ -18,6 +18,8 @@
 namespace MovLib;
 
 /**
+ * Extended PHPUnit Framework TestCase
+ *
  * Extension of default PHPUnit Framework TestCase for MovLib providing several useful methods for easy testing of our
  * application.
  *
@@ -28,70 +30,43 @@ namespace MovLib;
  * @since 0.0.1-dev
  */
 abstract class TestCase extends \PHPUnit_Framework_TestCase {
-  use \MovLib\Tool\TraitUtilities;
-  use \MovLib\Data\TraitUtilities;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
-   * Restore all of our global objects after each test.
+   * Used to cache instantiation of reflection methods.
+   *
+   * @var array
+   */
+  private $reflectionMethods;
+
+  /**
+   * Used to cache instantiation of reflection properties.
+   *
+   * @var array
+   */
+  private $reflectionProperties;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Public Methods
+
+
+  /**
+   * Restore global objects to initial state.
    *
    * @global array $backup
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\Tool\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    */
   public function assertPostConditions() {
-    global $backup, $config, $i18n, $session;
-    foreach ($backup as $k => $v) {
-      ${$k} = clone $v;
+    global $backup, $db, $kernel, $i18n, $session;
+    foreach ($backup as $name => $object) {
+      ${$name} = clone $object;
     }
-  }
-
-  /**
-   * Execute an external program.
-   *
-   * This method behaves the same as PHP's <code>exec()</code> function, the only difference is that it redirects
-   * <code>stderr</code> to <code>stdout</code> and surpresses any output even upon error.
-   *
-   * @see \MovLib\Data\TraitUtilities::exec()
-   * @param string $command
-   *   The external shell program to execute.
-   * @param array $output [optional]
-   *   If the output argument is present, then the specified array will be filled with every line of output from the
-   *   command. Trailing whitespace, such as <code>"\n"</code>, is not included in this array. Note that if the array
-   *   already contains some elements, exec will append to the end of the array. If you do not want the function to
-   *   append elements, call unset on the array before passing it to exec.
-   * @param int $status [optional]
-   *   If present the return status of the executed command will be written to this variable.
-   * @return boolean
-   *   <code>TRUE</code> if the program exited with <code>0</code>, otherwise <code>FALSE</code>
-   */
-  public static function exec($command, &$output = null, &$status = null) {
-    exec("{$command} 2>&1", $output, $status);
-    return $status === 0;
-  }
-
-  /**
-   * Execute an external program in a separate detached thread.
-   *
-   * This method behaves the same as PHP's <code>exec()</code> function, the only differences are that no output is
-   * printed upon error and the executed program will be detached from the current PHP process.
-   *
-   * <b>IMPORTANT</b>
-   * If you rely upon the result of the executed program <b>do not</b> use this method, because you can't predict the
-   * time of completion and any attempt (e.g. <code>ps aux | grep</code> stuff) to do so is extremely messy. If you
-   * need real threading have a look at {@link http://www.php.net/manual/en/book.pthreads.php pthreads}.
-   *
-   * <b>NOTE</b>
-   * All file descriptors are directly closed instead of redirected to <code>/dev/null</code>.
-   *
-   * @link http://stackoverflow.com/questions/222414/asynchronous-shell-exec-in-php
-   * @see \MovLib\Data\TraitUtilities::execDetached()
-   * @param string $command
-   *   The external shell program to execute.
-   * @return this
-   */
-  public static function execDetached($command) {
-    exec("{$command} <&- 1<&- 2<&-");
   }
 
   /**
@@ -104,8 +79,130 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase {
    * @param string $message [optional]
    *   The error message.
    */
-  protected function assertChaining($object, $actual, $message = "Method should return containing object for chaining.") {
+  protected function assertChaining($object, $actual, $message = "Method should return its own instance for chaining.") {
     $this->assertEquals($object, $actual, $message);
+  }
+
+  /**
+   * Call a protected method of <var>$object</var>.
+   *
+   * @param mixed $object
+   *   A valid class instance.
+   * @param string $name
+   *   Case-sensitive full name of the protected method to call.
+   * @param array $args [optional]
+   *   Arguments are passed along to the method, defaults to no arguments.
+   * @return mixed
+   *   The return value of the method.
+   * @throws \InvalidArgumentException
+   */
+  public final function invoke($object, $name, array $args = null) {
+    if (!is_object($object) || !is_string($name)) {
+      throw new \InvalidArgumentException;
+    }
+    $key = get_class($object) . $name;
+    if (!isset($this->reflectionMethods[$key])) {
+      $this->reflectionMethods[$key] = new \ReflectionMethod($object, $name);
+      $this->reflectionMethods[$key]->setAccessible(true);
+    }
+    if ($args) {
+      return $this->reflectionMethods[$key]->invokeArgs($object, $args);
+    }
+    return $this->reflectionMethods[$key]->invoke($object);
+  }
+
+  /**
+   * Get the value of an inaccessible property of the given object or class.
+   *
+   * @param string|object $objectOrClassName
+   *   A valid class instance or the full class name.
+   * @param string $propertyName
+   *   Case-sensitive full name of the inaccessible property to get the value from.
+   * @return mixed
+   *   The value of the inaccessible property.
+   * @throws \InvalidArgumentException
+   * @throws \ReflectionException
+   */
+  public final function getProperty($objectOrClassName, $propertyName) {
+    return $this->property($objectOrClassName, $propertyName)->getValue($objectOrClassName);
+  }
+
+  /**
+   * Get the value of an inaccessible static property of given object or class.
+   *
+   * @param string|object $objectOrClassName
+   *   A valid class instance or the full class name.
+   * @param string $staticPropertyName
+   *   Case-sensitive full name of the inaccessible static property to get the value from.
+   * @return mixed
+   *   The value of the inaccessible static property.
+   * @throws \InvalidArgumentException
+   * @throws \ReflectionException
+   */
+  public final function getStaticProperty($objectOrClassName, $staticPropertyName) {
+    return $this->property($objectOrClassName, $staticPropertyName)->getValue();
+  }
+
+  /**
+   * Set the value of an inaccessible property of the given object or class.
+   *
+   * @param string|object $objectOrClassName
+   *   A valid class instance or the full class name.
+   * @param string $propertyName
+   *   Case-sensitive full name of the inaccessible property to get the value from.
+   * @param mixed $value
+   *   The value to set.
+   * @return this
+   * @throws \InvalidArgumentException
+   * @throws \ReflectionException
+   */
+  public final function setProperty($objectOrClassName, $propertyName, $value) {
+    $this->property($objectOrClassName, $propertyName)->setValue($objectOrClassName, $value);
+    return $this;
+  }
+
+  /**
+   * Set the value of an inaccessible static property of given object or class.
+   *
+   * @param string|object $objectOrClassName
+   *   A valid class instance or the full class name.
+   * @param string $staticPropertyName
+   *   Case-sensitive full name of the inaccessible static property to get the value from.
+   * @return this
+   * @throws \InvalidArgumentException
+   * @throws \ReflectionException
+   */
+  public final function setStaticProperty($objectOrClassName, $staticPropertyName, $value) {
+    $this->property($objectOrClassName, $staticPropertyName)->setValue($value);
+    return $this;
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Private Methods
+
+
+  /**
+   * Helper method to cache properties and set them accessible.
+   *
+   * @param string|object $objectOrClassName
+   *   A valid class instance or the full class name.
+   * @param string $propertyName
+   *   Case-sensitive full name of the inaccessible static property to get the value from.
+   * @return \ReflectionProperty
+   *   The property <var>$name</var> from <var>$object</var>.
+   * @throws \InvalidArgumentException
+   * @throws \ReflectionException
+   */
+  private function property($objectOrClassName, $propertyName) {
+    if ((!is_object($objectOrClassName) && !is_string($objectOrClassName)) || !is_string($propertyName)) {
+      throw new \InvalidArgumentException;
+    }
+    $key = is_object($objectOrClassName) ? get_class($objectOrClassName) . $propertyName : "{$objectOrClassName}{$propertyName}";
+    if (!isset($this->reflectionProperties[$key])) {
+      $this->reflectionProperties[$key] = new \ReflectionProperty($objectOrClassName, $propertyName);
+      $this->reflectionProperties[$key]->setAccessible(true);
+    }
+    return $this->reflectionProperties[$key];
   }
 
 }

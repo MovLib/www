@@ -17,9 +17,9 @@
  */
 namespace MovLib\Presentation;
 
+use \MovLib\Data\SystemLanguages;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Navigation;
-use \Locale;
 
 /**
  * A simple page without any content.
@@ -88,6 +88,23 @@ class Page extends \MovLib\Presentation\AbstractPage {
 
   // ------------------------------------------------------------------------------------------------------------------- Protected Methods
 
+
+  /**
+   * Format system language for footer system language links.
+   *
+   * @see \MovLib\Presentation\Partial\Navigation::__toString()
+   * @todo This won't work for all kinds of links we have, how can we solve this?
+   * @global \MovLib\Kernel $kernel
+   * @param \MovLib\Data\SystemLanguage $systemLanguage
+   *   The system language to format.
+   * @return array
+   *   Array for navigation.
+   */
+  public function formatFooterSystemLanguage($systemLanguage) {
+    global $kernel;
+    return [ "//{$systemLanguage->domain}{$kernel->requestURI}", "{$systemLanguage->name} ({$systemLanguage->nameNative})" ];
+  }
+
   /**
    * Get the breadcrumb navigation.
    *
@@ -154,15 +171,16 @@ class Page extends \MovLib\Presentation\AbstractPage {
   /**
    * Get the reference footer.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The reference footer.
    */
   protected function getFooter() {
-    global $config, $i18n;
-    $displayLanguage        = Locale::getDisplayLanguage($_SERVER["LANGUAGE_CODE"], $i18n->locale);
-    $languageLinks          = new Navigation("language-links", $i18n->t("Language Links"), $i18n->getSystemLanguageLinks());
+    global $kernel, $i18n;
+    $displayLanguage        = \Locale::getDisplayLanguage($_SERVER["LANGUAGE_CODE"], $i18n->locale);
+    $languageLinks          = new Navigation("language-links", $i18n->t("Language Links"), new SystemLanguages(false));
+    $languageLinks->callback = [ $this, "formatFooterSystemLanguage" ];
     $footerNavigation       = new Navigation("footer", $i18n->t("Legal Links"), [
       [ $i18n->r("/imprint"), $i18n->t("Imprint") ],
       [ $i18n->r("/privacy-policy"), $i18n->t("Privacy Policy") ],
@@ -188,8 +206,8 @@ class Page extends \MovLib\Presentation\AbstractPage {
         // #footer-links
         "</div>" .
         "<div class='row' id='footer-logos'>" .
-          "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='//{$config->domainStatic}/asset/img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
-          "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='//{$config->domainStatic}/asset/img/footer/github.svg' width='64'></a>" .
+          "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='//{$kernel->domainStatic}/asset/img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
+          "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='//{$kernel->domainStatic}/asset/img/footer/github.svg' width='64'></a>" .
         "</div>" .
         "<div class='row'>{$footerNavigation}</div>" .
       "</div></footer>"
@@ -203,17 +221,18 @@ class Page extends \MovLib\Presentation\AbstractPage {
   /**
    * Get the reference header, including logo, navigations and search form.
    *
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
    * @return string
    *   The reference header.
    */
   protected function getHeader() {
-    global $i18n, $session;
+    global $kernel, $i18n, $session;
 
     $moviesNavigation             = new Navigation("movies-mega", $i18n->t("Movies"), [
-      [ $i18n->r("/movies"), $i18n->t("Latest movie entries"), [ "title" => $i18n->t("Have a look at the latest movie entries at MovLib.") ] ],
-      [ $i18n->r("/movies/new"), $i18n->t("Create new movie"), [ "title" => $i18n->t("Add a new movie to the MovLib library.") ] ],
+      [ $i18n->r("/movies"), $i18n->t("Latest movie entries"), [ "title" => $i18n->t("Have a look at the latest movie entries at {0}.", [ $kernel->siteName ]) ] ],
+      [ $i18n->r("/movies/new"), $i18n->t("Create new movie"), [ "title" => $i18n->t("Add a new movie to the {0} library.", [ $kernel->siteName ]) ] ],
     ]);
     $moviesNavigation->hideTitle  = false;
 
@@ -230,7 +249,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
       $mainMenuitems = [
         [ $i18n->r("/profile"),           $i18n->t("Profile"),    [ "title" => $i18n->t("Go to your personal user page.")                                       ]],
         [ $i18n->r("/profile/watchlist"), $i18n->t("Watchlist"),  [ "title" => $i18n->t("Have a look at the latest changes of the content your are watching.")  ]],
-        [ $i18n->r("/profile/sign-out"),    $i18n->t("Sign Out"),   [ "title" => $i18n->t("Click here to sign out from your current session.")                    ]],
+        [ $i18n->r("/profile/sign-out"),  $i18n->t("Sign Out"),   [ "title" => $i18n->t("Click here to sign out from your current session.")                    ]],
       ];
     }
     else {
@@ -266,7 +285,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
             // Render the header search, this is not an instance of form because it would make things complicated.
             "<form action='{$i18n->t("/search")}' class='span' id='header__search-form' method='post' role='search'>" .
               "<input type='hidden' name='form_id' value='header-search'>" .
-              "<label class='visuallyhidden' for='header__search-input'>{$i18n->t("Search the MovLib database.")}</label>" .
+              "<label class='visuallyhidden' for='header__search-input'>{$i18n->t("Search the {0} database.", [ $kernel->siteName ])}</label>" .
               "<input accesskey='f' id='header__search-input' name='searchterm' required tabindex='{$this->getTabindex()}' title='{$i18n->t(
                 "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
               )}' type='search'>" .
@@ -283,16 +302,16 @@ class Page extends \MovLib\Presentation\AbstractPage {
   /**
    * Get the header logo.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The header logo.
    */
   protected function getHeaderLogo() {
-    global $config, $i18n;
+    global $kernel, $i18n;
     return
       "<a class='span' href='/' id='header__logo' title='{$i18n->t("Go back to the home page.")}'>" .
-        "<img alt='{$i18n->t("{0}, the free movie library.", [ "MovLib" ])}' height='42' id='logo' src='//{$config->domainStatic}/asset/img/logo/vector.svg' width='42'> MovLib" .
+        "<img alt='{$kernel->siteName}' height='42' id='logo' src='//{$kernel->domainStatic}/asset/img/logo/vector.svg' width='42'> {$kernel->siteName}" .
       "</a>"
     ;
   }

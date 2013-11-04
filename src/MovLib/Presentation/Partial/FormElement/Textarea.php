@@ -60,7 +60,7 @@ class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractFormElem
    * @param string $help [optional]
    *   The textarea's help text, defaults to <code>NULL</code> (no help text).
    * @param boolean $helpPopup
-   *   Whetever the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
+   *   Whether the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
   public function __construct($id, $label, $content = null, array $attributes = null, $help = null, $helpPopup = true) {
     parent::__construct($id, $label, $attributes, $help, $helpPopup);

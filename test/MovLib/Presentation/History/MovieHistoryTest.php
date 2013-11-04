@@ -35,8 +35,8 @@ class MovieHistoryTest extends \MovLib\TestCase {
 
   
   protected function setUp() {
-    global $config, $db;
-    $path = "{$config->documentRoot}/private/phpunitrepos";
+    global $kernel, $db;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
@@ -49,8 +49,8 @@ class MovieHistoryTest extends \MovLib\TestCase {
   }
 
   protected function tearDown() {
-    global $config;
-    $path = "{$config->documentRoot}/private/phpunitrepos";
+    global $kernel;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }

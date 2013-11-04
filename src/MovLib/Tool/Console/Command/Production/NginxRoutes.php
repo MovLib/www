@@ -17,7 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Data\SystemLanguages;
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\ConsoleException;
 use \MovLib\Exception\FileSystemException;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
@@ -45,26 +45,27 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
   /**
    * Compiles and translates nginx routes for all servers.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return this
    */
   public function compileAndTranslateRoutes() {
-    global $config, $db, $i18n;
+    global $kernel, $db, $i18n;
+
     $this->write("Starting to translate and compile nginx routes ...");
     $currentLanguageCode = $i18n->languageCode;
 
     // Check if routes file is present.
-    $routesFile = "{$config->documentRoot}/conf/nginx/sites/conf/routes.php";
+    $routesFile = "{$kernel->documentRoot}/conf/nginx/sites/conf/routes.php";
     if (!is_file($routesFile)) {
       throw new FileSystemException("Routes file missing from storage!");
     }
 
     // Check if routes folder is present.
-    $routesDirectory = "{$config->documentRoot}/conf/nginx/sites/conf/routes";
+    $routesDirectory = "/etc/nginx/sites/conf/routes";
     if (!is_dir($routesDirectory)) {
-      mkdir($routesDirectory);
+      throw new FileSystemException("The nginx routes directory is missing!");
     }
 
     /**
@@ -85,9 +86,9 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     // Drop all routes from this server.
     $db->transactionStart();
-    $db->query("TRUNCATE `routes`");
+    $db->query("TRUNCATE TABLE `routes`");
 
-    foreach (new SystemLanguages() as $languageCode => $locale) {
+    foreach ($kernel->systemLanguages as $languageCode => $locale) {
       $i18n->languageCode = $languageCode;
 
       // We need output buffering to catch the output of the following require call.
@@ -104,19 +105,21 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
 
       // ... and write it to the target directory.
-      if (file_put_contents("{$routesDirectory}{$i18n->languageCode}.conf", $routes[$i18n->languageCode]) === false) {
+      if (file_put_contents("{$routesDirectory}/{$i18n->languageCode}.conf", $routes[$i18n->languageCode]) === false) {
         throw new FileSystemException("Could not write translated routes file to nginx routes directory.");
       }
+
+      $this->write("Written routing file for '{$i18n->languageCode}' ...");
     }
 
     $db->transactionCommit();
 
-    if ($this->exec("service nginx reload") === false) {
+    if (sh::executeDisplayOutput("service nginx reload") === false) {
       throw new ConsoleException("Couldn't reload nginx!");
     }
 
     // Make sure all files have the correct permissions.
-    (new FixPermissions())->fixPermissions("{$config->documentRoot}/conf/nginx");
+    (new FixPermissions())->fixPermissions("{$kernel->documentRoot}/conf/nginx");
     $i18n->languageCode = $currentLanguageCode;
     return $this->write("Successfully translated and compiled routes, plus reloaded nginx!", self::MESSAGE_TYPE_INFO);
   }

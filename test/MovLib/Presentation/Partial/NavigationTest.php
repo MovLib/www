@@ -111,7 +111,7 @@ class NavigationTest extends \MovLib\TestCase {
    * @covers ::__toString
    */
   public function testToStringClosure() {
-    $this->navigation->closure = function ($menuitem, $index, $total) {
+    $this->navigation->callback = function ($menuitem, $index, $total) {
       return [
         "/phpunit{$index}",
         "phpunit-linktext{$index}",

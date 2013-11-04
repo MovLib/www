@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Tool;
+
+use \MovLib\Tool\Kernel;
 
 /**
- * @coversDefaultClass \MovLib\Data\TraitUtilities
+ * @coversDefaultClass \MovLib\Tool\Kernel
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class TraitUtilitiesTest extends \MovLib\TestCase {
+class KernelTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Data\TraitUtilities */
-  protected $traitUtilities;
+  /** @var \MovLib\Tool\Kernel */
+  protected $kernel;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -42,7 +44,7 @@ class TraitUtilitiesTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->traitUtilities = $this->getMockForAbstractClass("\\MovLib\\Data\\TraitUtilities");
+    $this->kernel = new Kernel();
   }
 
   /**
@@ -65,26 +67,26 @@ class TraitUtilitiesTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::exec
-   * @todo Implement exec
+   * @covers ::__construct
+   * @todo Implement __construct
    */
-  public function testExec() {
+  public function testConstruct() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::execDetached
-   * @todo Implement execDetached
+   * @covers ::initCLI
+   * @todo Implement initCLI
    */
-  public function testExecDetached() {
+  public function testInitCLI() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::filename
-   * @todo Implement filename
+   * @covers ::initPHPUnit
+   * @todo Implement initPHPUnit
    */
-  public function testFilename() {
+  public function testInitPHPUnit() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

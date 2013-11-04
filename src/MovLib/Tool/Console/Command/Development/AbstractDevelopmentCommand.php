@@ -17,8 +17,6 @@
  */
 namespace MovLib\Tool\Console\Command\Development;
 
-use \DomainException;
-
 /**
  * Base class for all development commands.
  *
@@ -33,16 +31,16 @@ abstract class AbstractDevelopmentCommand extends \MovLib\Tool\Console\Command\A
   /**
    * Instantiate new development CLI command.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $name
    *   The command name.
    * @throws \DomainException
    */
   public function __construct($name) {
-    global $config;
+    global $kernel;
     parent::__construct($name);
-    if ($config->production === true) {
-      throw new DomainException("This command is only available in development environments!");
+    if ($kernel->production === true) {
+      throw new \DomainException("This command is only available in development environments!");
     }
   }
 

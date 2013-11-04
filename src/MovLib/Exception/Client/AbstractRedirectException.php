@@ -26,28 +26,41 @@ namespace MovLib\Exception\Client;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractRedirectException extends \MovLib\Exception\AbstractException {
+abstract class AbstractRedirectException extends \MovLib\Exception\Client\AbstractClientException {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
-   * The redirect's location header string.
+   * The HTTP status code.
    *
-   * This <b>must</b> be sent in main because it has side effects!
+   * @var integer
+   */
+  protected $responseCode;
+
+  /**
+   * The HTTP location route.
    *
    * @var string
    */
-  public $locationHeader;
+  protected $locationRoute;
 
   /**
-   * The payload as per {@link http://www.ietf.org/rfc/rfc2616.txt RFC 2616}.
+   * The redirect title.
    *
-   * @todo Do we really have to send this response ourself or is nginx handling this?
-   * @var int
+   * @var string
    */
-  public $presentation;
+  protected $title;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new redirect exception.
    *
+   * @global \MovLib\Kernel $kernel
    * @param int $httpResponseCode
    *   The redirect's status code.
    * @param string $route
@@ -56,13 +69,33 @@ abstract class AbstractRedirectException extends \MovLib\Exception\AbstractExcep
    *   The redirect's translated payload title.
    */
   public function __construct($httpResponseCode, $route, $title) {
+    global $kernel;
     parent::__construct("Redirecting user to {$route} with status {$httpResponseCode}.");
-    if (strpos($route, "http") === false) {
-      $route = "{$_SERVER["SERVER"]}{$route}";
+    $this->responseCode  = $httpResponseCode;
+    $this->locationRoute = $route;
+    $this->title         = $title;
+    if (strpos($this->locationRoute, "http") === false) {
+      $route = "{$kernel->scheme}://{$kernel->hostname}{$route}";
     }
-    http_response_code($httpResponseCode);
-    $this->locationHeader = "Location: {$route}";
-    $this->presentation   = "<html><head><title>{$httpResponseCode} {$title}</title></head><body bgcolor=\"white\"><center><h1>{$httpResponseCode} {$title}</h1></center><hr><center>nginx/{$_SERVER["SERVER_VERSION"]}</center></body></html>";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  public function getPresentation() {
+    http_response_code($this->responseCode);
+    header("Location: {$this->locationRoute}");
+    return
+      "<!doctype html>" .
+      "<html>" .
+      "<head><title>{$this->responseCode} {$this->title}</title></head>" .
+      "<body style='text-align:center'><h1>{$this->responseCode} {$this->title}</h1><hr>{$_SERVER["SERVER_SOFTWARE"]}</body>" .
+      "</html>"
+    ;
   }
 
 }

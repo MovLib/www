@@ -15,26 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Delayed;
+namespace MovLib\Data;
 
-use \MovLib\Data\Delayed\Logger;
+use \MovLib\Data\UnixShell;
 
 /**
- * @coversDefaultClass \MovLib\Data\Delayed\Logger
+ * @coversDefaultClass \MovLib\Data\UnixShell
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class LoggerTest extends \MovLib\TestCase {
+class UnixShellTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Data\Delayed\Logger */
-  protected $logger;
+  /** @var \MovLib\Data\UnixShell */
+  protected $unixShell;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,7 +44,7 @@ class LoggerTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->logger = new Logger();
+    $this->unixShell = new UnixShell();
   }
 
   /**
@@ -67,18 +67,26 @@ class LoggerTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::run
-   * @todo Implement run
+   * @covers ::execute
+   * @todo Implement execute
    */
-  public function testRun() {
+  public function testExecute() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::stack
-   * @todo Implement stack
+   * @covers ::executeDetached
+   * @todo Implement executeDetached
    */
-  public function testStack() {
+  public function testExecuteDetached() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::executeDisplayOutput
+   * @todo Implement executeDisplayOutput
+   */
+  public function testExecuteDisplayOutput() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

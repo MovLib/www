@@ -17,17 +17,11 @@
  */
 namespace MovLib\Data;
 
-use \DateTimeZone;
-use \IntlDateFormatter;
-use \Locale;
-use \MessageFormatter;
-use \MovLib\Data\Collator;
-use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-
 /**
  * The i18n model loads and and updated translations and retrieves translated data.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Franz Torghele <ftorghele.mmt-m:2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -35,37 +29,6 @@ use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
  * @since 0.0.1-dev
  */
 class I18n extends \MovLib\Data\Database {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Return array sorted by ID.
-   *
-   * @see \MovLib\Data\I18n::getLanguages()
-   * @see \MovLib\Data\I18n::getCountries()
-   * @var string
-   */
-  const KEY_ID = "id";
-
-  /**
-   * Return array sorted by ISO alpha-2 code.
-   *
-   * @see \MovLib\Data\I18n::getLanguages()
-   * @see \MovLib\Data\I18n::getCountries()
-   * @var string
-   */
-  const KEY_CODE = "code";
-
-  /**
-   * Return array sorted by name.
-   *
-   * @see \MovLib\Data\I18n::getLanguages()
-   * @see \MovLib\Data\I18n::getCountries()
-   * @var string
-   */
-  const KEY_NAME = "name";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -77,7 +40,7 @@ class I18n extends \MovLib\Data\Database {
    * @see \MovLib\Data\I18n::getCollator()
    * @var \MovLib\Data\Collator
    */
-  private $collator;
+  protected $collator;
 
   /**
    * The system's default language code.
@@ -123,7 +86,7 @@ class I18n extends \MovLib\Data\Database {
   /**
    * Create new i18n model instance.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @param $locale [optional]
    *   The desired locale, if no locale is passed the following procedure is executed:
    *   <ol>
@@ -133,28 +96,28 @@ class I18n extends \MovLib\Data\Database {
    *   </ol>
    */
   public function __construct($locale = null) {
-    global $config;
+    global $kernel;
     // Always export defaults first.
-    $this->defaultLocale = Locale::getDefault();
+    $this->defaultLocale       = \Locale::getDefault();
     $this->defaultLanguageCode = "{$this->defaultLocale[0]}{$this->defaultLocale[1]}";
     // To understand the following code it's important to understand comparison operations and assignments. If you don't
     // understand the following code be sure to read more about both these topics before attempting to change anything
     // here!
     if (!$locale) {
       // Use language code from subdomain if present.
-      (isset($_SERVER["LANGUAGE_CODE"]) && ($locale = $config->systemLanguages[$_SERVER["LANGUAGE_CODE"]]))
+      (isset($_SERVER["LANGUAGE_CODE"]) && ($locale = $kernel->systemLanguages[$_SERVER["LANGUAGE_CODE"]]))
       // Use the best matching value from the user's submitted HTTP accept language header.
-      || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && (strlen($localeTmp = $_SERVER["HTTP_ACCEPT_LANGUAGE"]) > 1) && isset($config->systemLanguages["{$localeTmp[0]}{$localeTmp[1]}"]) && ($locale = $config->systemLanguages["{$localeTmp[0]}{$localeTmp[1]}"]));
+      || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && (strlen($localeTmp = $_SERVER["HTTP_ACCEPT_LANGUAGE"]) > 1) && isset($kernel->systemLanguages["{$localeTmp[0]}{$localeTmp[1]}"]) && ($locale = $kernel->systemLanguages["{$localeTmp[0]}{$localeTmp[1]}"]));
     }
     // If we still have no locale, use defaults.
     if (!$locale) {
-      $this->locale = $this->defaultLocale;
+      $this->locale       = $this->defaultLocale;
       $this->languageCode = $this->defaultLanguageCode;
     }
     // The language code can only be a two-letter code in contrast to the locale which can be a two-letter code or a
     // five-letter code (including separator and country).
     else {
-      $this->locale = $locale;
+      $this->locale       = $locale;
       $this->languageCode = "{$locale[0]}{$locale[1]}";
     }
   }
@@ -182,15 +145,17 @@ class I18n extends \MovLib\Data\Database {
    * @throws \Exception
    *   If the supplied timezone is not recognised as a valid timezone.
    */
-  public function formatDate($timestamp, $timezone = null, $datetype = IntlDateFormatter::LONG, $timetype = IntlDateFormatter::LONG) {
-    $timezone = $timezone ?: ini_get("date.timezone");
-    $fmt = new IntlDateFormatter($this->locale, $datetype, $timetype, new DateTimeZone($timezone));
-    return $fmt->format($timestamp);
+  public function formatDate($timestamp, $timezone = null, $datetype = \IntlDateFormatter::LONG, $timetype = \IntlDateFormatter::LONG) {
+    if (!$timezone) {
+      $timezone = ini_get("date.timezone");
+    }
+    return (new \IntlDateFormatter($this->locale, $datetype, $timetype, new \DateTimeZone($timezone)))->format($timestamp);
   }
 
   /**
    * Format the given message and translate it to the display locale.
    *
+   * @global \MovLib\Kernel $kernel
    * @param string $context
    *   The context in which we should translate the message.
    * @param string $pattern
@@ -210,6 +175,7 @@ class I18n extends \MovLib\Data\Database {
    * @throws \IntlException
    */
   public function formatMessage($context, $pattern, $args, $options = null) {
+    global $kernel;
     $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
     if ($languageCode != $this->defaultLanguageCode) {
       $result = $this->query(
@@ -223,7 +189,7 @@ class I18n extends \MovLib\Data\Database {
         //       methods that aren't needed in this class to the extended version. Many methods are only from interest
         //       for that extended version (e.g. everything that has to do with inserting, updating and deleting).
         if ($context === "message") {
-          DelayedMethodCalls::stack($this, "insertMessage", [ $pattern, $options ]);
+          $kernel->delayMethodCall([ $this, "insertMessage" ], [ $pattern, $options ]);
         }
       }
       else {
@@ -231,7 +197,7 @@ class I18n extends \MovLib\Data\Database {
       }
     }
     if ($args) {
-      return MessageFormatter::formatMessage($languageCode, $pattern, $args);
+      return \MessageFormatter::formatMessage($languageCode, $pattern, $args);
     }
     return $pattern;
   }
@@ -244,82 +210,9 @@ class I18n extends \MovLib\Data\Database {
    */
   public function getCollator() {
     if (!$this->collator) {
-      $this->collator = new Collator($this->locale);
+      $this->collator = new \MovLib\Data\Collator($this->locale);
     }
     return $this->collator;
-  }
-
-  /**
-   * Get sorted array with all system languages translated to the current locale.
-   *
-   * The array can directly be used together with a Navigation partial. The languages are sorted by their name in the
-   * current locale and each link's text contains the native name in parentheses.
-   *
-   * @global \MovLib\Configuration $config
-   * @return array
-   *   Sorted array with all system languages translated to the current locale.
-   */
-  public function getSystemLanguageLinks() {
-    global $config;
-    $links = [];
-    foreach ($this->getSystemLanguages() as $languageCode => $displayLanguage) {
-      $translatedDisplayLanguage = Locale::getDisplayLanguage($languageCode, $languageCode);
-      if ($this->languageCode == $languageCode) {
-        $links[] = [ "#", "<b>{$translatedDisplayLanguage}</b>", [ "class" => "active" ]];
-      }
-      else {
-        $links[] = [
-          "{$_SERVER["SCHEME"]}://{$languageCode}.{$config->domainDefault}{$_SERVER["PATH_INFO"]}",
-          "{$displayLanguage} ({$translatedDisplayLanguage})",
-          [ "lang" => $languageCode, "title" => $this->t("Read this page in {0}.", [ $displayLanguage ]) ]
-        ];
-      }
-    }
-    return $links;
-  }
-
-  /**
-   * Get sorted associative array with all system languages translated to the current locale.
-   *
-   * The returned array has the ISO alpha-2 code as key and the value is the translated language's display name.
-   * <b>Example for locale <code>"de_AT"</code>:</b>
-   * <pre>[
-   *   "en" => "Englisch",
-   *   "de" => "Deutsch",
-   * ];</pre>
-   *
-   * @global \MovLib\Configuration $config
-   * @return array
-   *   Sorted associative array with all system languages for the current locale.
-   */
-  public function getSystemLanguages() {
-    global $config;
-    $translated = [];
-    foreach ($config->systemLanguages as $locale) {
-      $translated["{$locale[0]}{$locale[1]}"] = Locale::getDisplayLanguage($locale, $this->locale);
-    }
-    $this->getCollator()->asort($translated);
-    return $translated;
-  }
-
-  /**
-   * Get all time zones in the current locale.
-   *
-   * The returned array is associative and the keys are the time zone IDs (e.g. <code>"Europe/Vienna"</code>) and the
-   * values the translated string in the current locale.
-   *
-   * @return array
-   *   Get all time zones in the current locale.
-   */
-  public function getTimeZones() {
-    $timezones = DateTimeZone::listIdentifiers();
-    $translated = [];
-    $c = count($timezones);
-    for ($i = 0; $i < $c; ++$i) {
-      $translated[$timezones[$i]] = $this->t(strtr($timezones[$i], "_", " "));
-    }
-    $this->getCollator()->asort($translated, Collator::SORT_STRING);
-    return $translated;
   }
 
   /**

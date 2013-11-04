@@ -17,14 +17,11 @@
  */
 namespace MovLib\Tool;
 
-use \InvalidArgumentException;
 use \MovLib\Exception\DatabaseException;
-use \mysqli;
 
 /**
  * The developer database has a pure public interface and many more methods to interact with the database.
  *
- * @property \mysqli $mysqli The current MySQLi instance.
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -85,7 +82,7 @@ class Database {
   public function connect() {
     if (!isset($this->mysqli)) {
       try {
-        $this->mysqli = new mysqli();
+        $this->mysqli = new \mysqli();
         $this->mysqli->real_connect();
       }
       catch (\ErrorException $e) {
@@ -113,7 +110,7 @@ class Database {
    */
   public function escapeString($str) {
     if (!is_string($str) && !is_numeric($str)) {
-      throw new InvalidArgumentException("Escape variable must be of type string (or integer).");
+      throw new \InvalidArgumentException("Escape variable must be of type string (or number).");
     }
     return $this->connect()->real_escape_string($str);
   }
@@ -121,20 +118,45 @@ class Database {
   /**
    * Execute multiple queries against the database.
    *
-   * <b>IMPORTANT!</b> You have to properly escape the data in the queries.
+   * <b>IMPORTANT!</b>
+   * You have to properly escape the data in the queries.
    *
    * @param string $queries
    *   Multiple queries to execute.
+   * @param boolean $foreignKeyChecks [optional]
+   *   Whether foreign keys should be checked or not during execution, defaults to <code>TRUE</code>.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function queries($queries) {
+  public function queries($queries, $foreignKeyChecks = true) {
+    // Obviously we can only execute string queries.
     if (!is_string($queries)) {
-      throw new InvalidArgumentException("Queries must be of type string.");
+      $type = gettype($queries);
+      throw new \InvalidArgumentException("Parameter \$queries must be of type string, {$type} given.");
     }
+
+    // Obviously we have to have at least a single query.
+    if (empty($queries)) {
+      throw new \InvalidArgumentException("Parameter \$queries cannot be empty.");
+    }
+
+    // Disallow direct SET on foreign key checks, if one forgets to set it back we have huge problems.
+    if (strpos($queries, "foreign_key_checks") !== false) {
+      throw new \LogicException("Your queries contain 'foreign_key_checks', you shouldn't tamper with this directly because it's dangerous!");
+    }
+
+    // The proper way is to set the parameter to FALSE which will always reset the foreign key checks.
+    if ($foreignKeyChecks === false) {
+      $this->query("SET foreign_key_checks = 0");
+    }
+
+    // Execute the queries and directly consume them.
     $error = $this->connect()->multi_query($queries);
     do {
       if ($error === false) {
+        if ($foreignKeyChecks === false) {
+          $this->query("SET foreign_key_checks = 1");
+        }
         throw new DatabaseException("Execution of multiple queries failed", $this->mysqli->error, $this->mysqli->errno);
       }
       $this->mysqli->use_result();
@@ -143,6 +165,11 @@ class Database {
       }
     }
     while ($more);
+
+    if ($foreignKeyChecks === false) {
+      $this->query("SET foreign_key_checks = 1");
+    }
+
     return $this;
   }
 
@@ -160,7 +187,7 @@ class Database {
    */
   public function query($query, $types = null, array $params = null) {
     if (!is_string($query)) {
-      throw new InvalidArgumentException("Query must be of type string.");
+      throw new \InvalidArgumentException("Query must be of type string.");
     }
     /* @var $stmt \mysqli_stmt */
     if (($stmt = $this->connect()->prepare($query)) === false) {
@@ -168,7 +195,7 @@ class Database {
     }
     if ($types && $params) {
       if (!is_string($types) || empty($params)) {
-        throw new InvalidArgumentException("Types must be of type string and params of type array (not empty).");
+        throw new \InvalidArgumentException("Types must be of type string and params of type array (not empty).");
       }
       $refParams = [ $types ];
       $c         = count($params);
@@ -194,13 +221,13 @@ class Database {
    */
   public function setDatabase($database) {
     if (!is_string($database)) {
-      throw new InvalidArgumentException("Database name must be of type string.");
+      throw new \InvalidArgumentException("Database name must be of type string.");
     }
     $this->database = $database;
   }
 
   /**
-   * Whetever a transaction is active or not.
+   * Whether a transaction is active or not.
    *
    * @return boolean
    *   <code>TRUE</code> if a transaction is active, otherwise <code>FALSE</code>.

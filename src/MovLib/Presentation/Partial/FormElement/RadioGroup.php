@@ -69,7 +69,7 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    * @param string $help [optional]
    *   The radio group's help text, defaults to <code>NULL</code> (no help text).
    * @param boolean $helpPopup
-   *   Whetever the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
+   *   Whether the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
   public function __construct($id, $legend, array $choices, $value, $help = null, $helpPopup = true) {
     parent::__construct($id, $legend, [

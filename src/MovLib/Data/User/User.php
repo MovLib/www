@@ -58,6 +58,27 @@ class User extends \MovLib\Data\Image\AbstractImage {
    */
   const FROM_EMAIL = "email";
 
+  /**
+   * Maximum attempts for actions like registration, login, ...
+   *
+   * @var integer
+   */
+  const MAXIMUM_ATTEMPTS = 5;
+
+  /**
+   * Maximum username length (chracter count, not bytes).
+   *
+   * @var integer
+   */
+  const NAME_MAXIMUM_LENGTH = 40;
+
+  /**
+   * Characters which aren't allowed within a username.
+   *
+   * @var string
+   */
+  const NAME_ILLEGAL_CHARACTERS = "/_@#<>|()[]{}?\\=:;,'\"&$*~";
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -65,7 +86,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
   /**
    * The user's unique ID.
    *
-   * @var int
+   * @var integer
    */
   public $id;
 
@@ -136,8 +157,8 @@ class User extends \MovLib\Data\Image\AbstractImage {
       if (!$stmt->fetch()) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
-      $this->imageName = mb_strtolower($this->name);
-      $this->route     = $i18n->r("/user/{0}", [ rawurlencode($this->imageName) ]);
+      $this->imageName = rawurlencode($this->name);
+      $this->route     = $i18n->r("/user/{0}", [ $this->imageName ]);
     }
   }
 
@@ -146,7 +167,9 @@ class User extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
-   * @inheritdoc
+   * Commit the current state of the object to the database.
+   *
+   * @return this
    */
   public function commit() {
     return $this->query(
@@ -157,7 +180,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
-   * {@inheritdoc}
+   * Delete the user's avatar image and all styles of it.
    *
    * @internal
    *   No need to delete the directory, all avatars are in the same directory and at least one is always present.
@@ -217,10 +240,10 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   {@inheritdoc}
    * @param string $extension
    *   {@inheritdoc}
-   * @param int $height
-   *   <b>UNUSED</b>
-   * @param int $width
-   *   <b>UNUSED</b>
+   * @param integer $height
+   *   <b>UNUSED!</b> but kept for compatibility with parent signature.
+   * @param integer $width
+   *   <b>UNUSED!</b> but kept for compatibility with parent signature.
    * @return this
    * @throws \MovLib\Exception\ImageException
    */
@@ -229,7 +252,10 @@ class User extends \MovLib\Data\Image\AbstractImage {
     $this->imageExists    = true;
     $this->imageExtension = $extension;
     // Generate the span1 style from the converted span2 image (better quality and performance).
-    $this->convertImage($this->convertImage($source, self::IMAGE_STYLE_SPAN_02, self::IMAGE_STYLE_SPAN_02, self::IMAGE_STYLE_SPAN_02, true), self::IMAGE_STYLE_SPAN_01);
+    $this->convertImage(
+      $this->convertImage($source, self::IMAGE_STYLE_SPAN_02, self::IMAGE_STYLE_SPAN_02, self::IMAGE_STYLE_SPAN_02, true),
+      self::IMAGE_STYLE_SPAN_01
+    );
     DelayedMethodCalls::stack($this, "commit");
     return $this;
   }

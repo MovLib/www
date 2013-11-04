@@ -15,26 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception;
+namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Exception\Handlers;
+use \MovLib\Tool\Console\Command\Production\CacheInspector;
 
 /**
- * @coversDefaultClass \MovLib\Exception\Handlers
+ * @coversDefaultClass \MovLib\Tool\Console\Command\Production\CacheInspector
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class HandlersTest extends \MovLib\TestCase {
+class CacheInspectorTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Exception\Handlers */
-  protected $handlers;
+  /** @var \MovLib\Tool\Console\Command\Production\CacheInspector */
+  protected $cacheInspector;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,7 +44,7 @@ class HandlersTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->handlers = new Handlers();
+    $this->cacheInspector = new CacheInspector();
   }
 
   /**
@@ -75,26 +75,18 @@ class HandlersTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::errorHandler
-   * @todo Implement errorHandler
+   * @covers ::configure
+   * @todo Implement configure
    */
-  public function testErrorHandler() {
+  public function testConfigure() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::fatalErrorHandler
-   * @todo Implement fatalErrorHandler
+   * @covers ::execute
+   * @todo Implement execute
    */
-  public function testFatalErrorHandler() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::uncaughtExceptionHandler
-   * @todo Implement uncaughtExceptionHandler
-   */
-  public function testUncaughtExceptionHandler() {
+  public function testExecute() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

@@ -17,8 +17,6 @@
  */
 namespace MovLib\Tool\Console;
 
-use \ReflectionClass;
-
 /**
  * MovLib Command Line Interface
  *
@@ -33,7 +31,6 @@ use \ReflectionClass;
  * @since 0.0.1-dev
  */
 class Application extends \Symfony\Component\Console\Application {
-  use \MovLib\Tool\TraitUtilities;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -53,15 +50,23 @@ class Application extends \Symfony\Component\Console\Application {
   /**
    * Instantiate new MovLib CLI application.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    */
   public function __construct() {
-    global $config;
-    parent::__construct("MovLib Command Line Interface (CLI)", $config->version);
+    global $kernel;
+
+    // Call the Symfony console constructor.
+    parent::__construct("MovLib Command Line Interface (CLI)", $kernel->version);
+
+    // Always include production commands.
     $this->importCommands("Production");
-    if ($config->production === false) {
+
+    // Only include development commands if the flag is set to false.
+    if ($kernel->production === false) {
       $this->importCommands("Development");
     }
+
+    // This loop allows development commands to override / extend production commands.
     foreach ($this->commands as $shortName => $command) {
       $this->add(new $command());
     }
@@ -81,12 +86,14 @@ class Application extends \Symfony\Component\Console\Application {
   protected function importCommands($directory) {
     foreach (glob(__DIR__ . "/Command/{$directory}/*.php") as $command) {
       $shortName = basename($command, ".php");
-      $command = "\\MovLib\\Tool\\Console\\Command\\{$directory}\\{$shortName}";
-      // Make sure we don't include any abstract classes or interfaces.
-      if ((new ReflectionClass($command))->isInstantiable()) {
+      $command   = "\\MovLib\\Tool\\Console\\Command\\{$directory}\\{$shortName}";
+
+      // Make sure we don't include any abstract classes, interfaces or traits.
+      if ((new \ReflectionClass($command))->isInstantiable()) {
         $this->commands[$shortName] = $command;
       }
     }
+
     return $this;
   }
 

@@ -69,7 +69,7 @@ class NginxRoutesTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::description
+   * @covers ::configure
    */
   public function testConfigure() {
     $this->invoke($this->nginxRoutes, "configure");

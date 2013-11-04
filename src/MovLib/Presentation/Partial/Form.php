@@ -85,6 +85,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new form.
    *
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
    * @param \MovLib\Presentation\Page $page
@@ -102,7 +103,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
    *   first invalid form element will get the attribute.
    */
   public function __construct($page, array $elements, $id = null, $validationCallback = "validate", $autofocus = true) {
-    global $i18n, $session;
+    global $kernel, $i18n, $session;
     $this->elements        = $elements;
     $this->id              = $id ?: $page->id;
     $this->hiddenElements .= "<input name='form_id' type='hidden' value='{$this->id}'>";
@@ -113,7 +114,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
     }
 
     // Set default attributes, a dev can override them by accessing the properties directly.
-    $this->attributes = [ "action" => $_SERVER["REQUEST_URI"], "method" => "post" ];
+    $this->attributes = [ "action" => $kernel->requestURI, "method" => "post" ];
 
     // Configure our form as multipart form if it's configured in the route to be one.
     if (isset($_SERVER["MULTIPART"])) {
@@ -134,7 +135,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
       //       regenerate the session ID every 20 minutes (maximum according to OWASP).
       if ($session->validateCsrfToken() === false) {
         $errors["csrf"] = $i18n->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
-          "<a href='{$_SERVER["REQUEST_URI"]}'>", "</a>"
+          "<a href='{$kernel->requestURI}'>", "</a>"
         ]);
       }
       else {

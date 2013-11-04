@@ -18,7 +18,7 @@
  */
 
 /**
- * Bootstrap environment for command line interface.
+ * Initialize kernel for CLI usage and start application.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,26 +26,6 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-ini_set("display_errors", true);
-
-/**
- * Bootstrap for console execution.
- *
- * @global \Composer\Autoload\ClassLoader $autoloader
- * @global \MovLib\Tool\Configuration $config
- * @global \MovLib\Tool\Database $db
- * @global \MovLib\Data\I18n $i18n
- */
-call_user_func(function () {
-  global $autoloader, $config, $db, $i18n;
-  $root       = dirname(__DIR__);
-  $autoloader = require "{$root}/vendor/autoload.php";
-  $autoloader->add("MovLib", "{$root}/src/");
-  new \MovLib\Exception\ConsoleHandlers();
-  $config     = new \MovLib\Tool\Configuration();
-  $db         = new \MovLib\Tool\Database();
-  $i18n       = new \MovLib\Data\I18n();
-});
-
-// Start the console application.
+require dirname(__DIR__) . "/vendor/autoload.php";
+(new \MovLib\Tool\Kernel())->initCLI();
 (new \MovLib\Tool\Console\Application())->run();

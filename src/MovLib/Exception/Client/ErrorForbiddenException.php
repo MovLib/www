@@ -33,18 +33,18 @@ class ErrorForbiddenException extends \MovLib\Exception\Client\AbstractErrorExce
    * Instantiate forbidden exception.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @param string $message [optional]
+   *   Explain why access to this resource is forbidden.
    */
-  public function __construct() {
+  public function __construct($message = null) {
     global $i18n;
-    parent::__construct(
-      403,
-      $i18n->t("Forbidden"),
-      $i18n->t("Access to the requested page is forbidden."),
-      $i18n->t(
+    if (!$message) {
+      $message = $i18n->t(
         "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
         [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
-      )
-    );
+      );
+    }
+    parent::__construct(403, $i18n->t("Forbidden"), $i18n->t("Access to the requested page is forbidden."), $message);
   }
 
 }

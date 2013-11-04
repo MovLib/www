@@ -17,8 +17,6 @@
  */
 namespace MovLib\Tool;
 
-use \MovLib\Tool\Configuration;
-
 /**
  * @coversDefaultClass \MovLib\Tool\Configuration
  * @author Skeleton Generator
@@ -29,49 +27,16 @@ use \MovLib\Tool\Configuration;
  */
 class ConfigurationTest extends \MovLib\TestCase {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /** @var \MovLib\Tool\Configuration */
-  protected $configuration;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Fixtures
-
-
-  /**
-   * Called before each test.
-   */
-  protected function setUp() {
-    $this->configuration = new Configuration();
-  }
-
-  /**
-   * Called after each test.
-   */
-  protected function tearDown() {
-
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Data Provider
-
-
-  public function dataProviderExample() {
-    return [];
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Tests
-
-
   /**
    * @covers ::__construct
-   * @todo Implement __construct
    */
   public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    global $db;
+    $db = null;
+    $_SERVER["SSL_CLIENT_VERIFY"] = "SUCCESS";
+    $kerneluration = new \MovLib\Tool\Configuration();
+    $this->assertInstanceOf("\\MovLib\\Tool\\Database", $db);
+    $this->assertTrue($kerneluration->sslClientVerify);
   }
 
 }

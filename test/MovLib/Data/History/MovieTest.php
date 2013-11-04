@@ -47,12 +47,6 @@ class MovieTest extends \MovLib\TestCase {
     $this->movie = new Movie(2);
   }
 
-  /**
-   * Called after each test.
-   */
-  protected function tearDown() {
-  }
-
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
 

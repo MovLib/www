@@ -22,7 +22,7 @@
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT:  © 2013 MovLib
 # LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
-# LINKE:      https://movlib.org/
+# LINK:       https://movlib.org/
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="5.5.4"
+  VERSION="5.5.6"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 

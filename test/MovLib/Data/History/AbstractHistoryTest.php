@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\History;
 
+use \MovLib\Data\UnixShell as sh;
+
 /**
  * @coversDefaultClass \MovLib\Data\History\AbstractHistory
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -33,7 +35,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
 
   /** @var \MovLib\Data\History\AbstractHistory */
   protected $abstractHistory;
-  
+
   /** @var String */
   protected $commitHash;
 
@@ -43,19 +45,22 @@ class AbstractHistoryTest extends \MovLib\TestCase {
   
   /**
    * Called before each test.
+   *
+   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function setUp() {
-    global $config, $db;
+    global $db, $kernel;
 
-    $path = "{$config->documentRoot}/private/phpunitrepos";
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
     if (is_dir($path)) {
-      $this->exec("rm -rf {$path}");
+      sh::execute("rm -rf '{$path}'");
     }
 
-    $this->abstractHistory = $this->getMockForAbstractClass("\\MovLib\\Data\\History\\AbstractHistory", [2, "phpunitrepos"], "Movie");
-    $this->commitHash  = $this->abstractHistory->createRepository();
+    $this->abstractHistory = $this->getMockForAbstractClass("\\MovLib\\Data\\History\\AbstractHistory", [ 2, "phpunitrepos" ], "Movie");
+    $this->commitHash      = $this->abstractHistory->createRepository();
     $db->query("UPDATE `movies` SET `commit` = '{$this->commitHash}' WHERE `movie_id` = 2");
-    
+
     $this->abstractHistory->files = [
       "original_title",
       "runtime",
@@ -63,7 +68,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
       "de_synopsis",
       "en_synopsis"
     ];
-    
+
     $this->abstractHistory->serializedFiles = [
       "titles",
       "taglines",
@@ -85,10 +90,10 @@ class AbstractHistoryTest extends \MovLib\TestCase {
    * Called after each test.
    */
   protected function tearDown() {
-    global $config;
-    $path = "{$config->documentRoot}/private/phpunitrepos";
+    global $kernel;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
     if (is_dir($path)) {
-      $this->exec("rm -rf {$path}");
+      sh::execute("rm -rf '{$path}'");
     }
   }
 
@@ -114,7 +119,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
     $this->invoke($this->abstractHistory, "writeFiles", [ [ "original_title" => "The foobar is a lie" ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "movie created" ]);
-    $this->exec("cd {$this->getProperty($this->abstractHistory, "path")} && git status", $output);
+    sh::execute("cd '{$this->getProperty($this->abstractHistory, "path")}' && git status", $output);
     $this->assertEquals("nothing to commit (working directory clean)", $output[1]);
   }
 
@@ -123,9 +128,9 @@ class AbstractHistoryTest extends \MovLib\TestCase {
    * @todo Implement createRepository
    */
   public function testCreateRepository() {
-    global $config;
-    $this->assertFileExists("{$config->documentRoot}/private/phpunitrepos/movie/2");
-    $this->assertFileExists("{$config->documentRoot}/private/phpunitrepos/movie/2/.git/HEAD");
+    global $kernel;
+    $this->assertFileExists("{$kernel->documentRoot}/private/phpunitrepos/movie/2");
+    $this->assertFileExists("{$kernel->documentRoot}/private/phpunitrepos/movie/2/.git/HEAD");
   }
 
   /**
@@ -140,7 +145,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
     $this->invoke($this->abstractHistory, "writeFiles", [ [ "original_title" => "The foobar is a lie", "year" => 2002, "runtime" => 42 ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "second commit" ]);
-    
+
     $this->assertEquals("original_title year", implode(" ", $this->invoke($this->abstractHistory, "getChangedFiles", [ "HEAD", "HEAD^1" ])));
   }
 
@@ -223,15 +228,15 @@ class AbstractHistoryTest extends \MovLib\TestCase {
     $a = [ "id" => 4, "foo" => "bar" ];
     $b = [ "id" => 5, "foo" => "bar" ];
     $this->assertEquals(-1, $this->invoke($this->abstractHistory, "getArrayDiffIdCompare", [ $a, $b ]));
-    
+
     $a = [ "id" => 5, "foo" => "bar" ];
     $b = [ "id" => 5, "foo" => "bar" ];
     $this->assertEquals(0, $this->invoke($this->abstractHistory, "getArrayDiffIdCompare", [ $a, $b ]));
-    
+
     $a = [ "id" => 5, "foo" => "bar" ];
     $b = [ "id" => 4, "foo" => "bar" ];
     $this->assertEquals(1, $this->invoke($this->abstractHistory, "getArrayDiffIdCompare", [ $a, $b ]));
-    
+
     $this->assertEquals(-1, $this->invoke($this->abstractHistory, "getArrayDiffIdCompare", [ 1, $b ]));
     $this->assertEquals(-1, $this->invoke($this->abstractHistory, "getArrayDiffIdCompare", [ $a, 1 ]));
   }
@@ -244,15 +249,15 @@ class AbstractHistoryTest extends \MovLib\TestCase {
     $a = [ "foo" => "aaaa" ];
     $b = [ "foo" => "bbbb" ];
     $this->assertEquals(-1, $this->invoke($this->abstractHistory, "getArrayDiffDeepCompare", [ $a, $b ]));
-    
+
     $a = [ "foo" => "aaaa" ];
     $b = [ "foo" => "aaaa" ];
     $this->assertEquals(0, $this->invoke($this->abstractHistory, "getArrayDiffDeepCompare", [ $a, $b ]));
-    
+
     $a = [ "foo" => "bbbb" ];
     $b = [ "foo" => "aaaa" ];
     $this->assertEquals(1, $this->invoke($this->abstractHistory, "getArrayDiffDeepCompare", [ $a, $b ]));
-    
+
     $this->assertEquals(-1, $this->invoke($this->abstractHistory, "getArrayDiffDeepCompare", [ 1, $b ]));
     $this->assertEquals(-1, $this->invoke($this->abstractHistory, "getArrayDiffDeepCompare", [ $a, 1 ]));
   }
@@ -282,7 +287,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
     $this->invoke($this->abstractHistory, "commitFiles", [ "initial commit" ]);
 
     $this->assertEquals("", $this->abstractHistory->getFileAtRevision("original_title", "HEAD^1"));
-    
+
     $this->invoke($this->abstractHistory, "writeFiles", [ ["original_title" => "The bar is not a lie" ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "second commit" ]);
@@ -327,15 +332,15 @@ class AbstractHistoryTest extends \MovLib\TestCase {
    * @covers ::hideRepository
    */
   public function testHideRepository() {
-    global $config;
+    global $kernel;
     $this->invoke($this->abstractHistory, "hideRepository");
-    $this->assertFileExists("{$config->documentRoot}/private/phpunitrepos/movie/.2");
+    $this->assertFileExists("{$kernel->documentRoot}/private/phpunitrepos/movie/.2");
   }
-  
+
   /**
-   * @expectedException        \MovLib\Exception\HistoryException
-   * @expectedExceptionMessage Repository already hidden
    * @covers ::hideRepository
+   * @expectedException \MovLib\Exception\HistoryException
+   * @expectedExceptionMessage Repository already hidden
    */
   public function testHideRepositoryIfHidden() {
     $this->invoke($this->abstractHistory, "hideRepository");
@@ -346,29 +351,29 @@ class AbstractHistoryTest extends \MovLib\TestCase {
    * @covers ::writeFiles
    */
   public function testWriteFiles() {
-    global $config;
+    global $kernel;
      // wrong offset name
     $this->invoke($this->abstractHistory, "writeFiles", [ ["foo" => "bar" ] ]);
-    $this->assertFileNotExists("{$config->documentRoot}/private/phpunitrepos/movie/2/foo");
+    $this->assertFileNotExists("{$kernel->documentRoot}/private/phpunitrepos/movie/2/foo");
 
     // offset which should be written to file directly
     $this->invoke($this->abstractHistory, "writeFiles", [ ["original_title" => "The Shawshank Redemption" ] ]);
-    $this->assertFileExists("{$config->documentRoot}/private/phpunitrepos/movie/2/original_title");
-    $this->assertStringEqualsFile("{$config->documentRoot}/private/phpunitrepos/movie/2/original_title", "The Shawshank Redemption");
+    $this->assertFileExists("{$kernel->documentRoot}/private/phpunitrepos/movie/2/original_title");
+    $this->assertStringEqualsFile("{$kernel->documentRoot}/private/phpunitrepos/movie/2/original_title", "The Shawshank Redemption");
 
     // offset with language prefix which should be written to file directly
     $this->invoke($this->abstractHistory, "writeFiles", [ ["en_synopsis" => "A very short synopsis." ] ]);
-    $this->assertFileExists("{$config->documentRoot}/private/phpunitrepos/movie/2/en_synopsis");
-    $this->assertStringEqualsFile("{$config->documentRoot}/private/phpunitrepos/movie/2/en_synopsis", "A very short synopsis.");
+    $this->assertFileExists("{$kernel->documentRoot}/private/phpunitrepos/movie/2/en_synopsis");
+    $this->assertStringEqualsFile("{$kernel->documentRoot}/private/phpunitrepos/movie/2/en_synopsis", "A very short synopsis.");
 
     // no file should be written if the offset is not set
-    $this->assertFileNotExists("{$config->documentRoot}/private/phpunitrepos/movie/2/de_synopsis");
+    $this->assertFileNotExists("{$kernel->documentRoot}/private/phpunitrepos/movie/2/de_synopsis");
 
     // offset which should be written to file serialized
     $this->invoke($this->abstractHistory, "writeFiles", [ [ "titles" => [[ "id" => 1, "title" => "foo" ], [ "id" => 2, "title" => "bar" ] ] ] ]);
-    $this->assertFileExists("{$config->documentRoot}/private/phpunitrepos/movie/2/titles");
+    $this->assertFileExists("{$kernel->documentRoot}/private/phpunitrepos/movie/2/titles");
     $this->assertStringEqualsFile(
-      "{$config->documentRoot}/private/phpunitrepos/movie/2/titles", 'a:2:{i:0;a:2:{s:2:"id";i:1;s:5:"title";s:3:"foo";}i:1;a:2:{s:2:"id";i:2;s:5:"title";s:3:"bar";}}'
+      "{$kernel->documentRoot}/private/phpunitrepos/movie/2/titles", 'a:2:{i:0;a:2:{s:2:"id";i:1;s:5:"title";s:3:"foo";}i:1;a:2:{s:2:"id";i:2;s:5:"title";s:3:"bar";}}'
     );
   }
 
@@ -376,7 +381,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
    * @covers ::resetFiles
    */
   public function testResetFiles() {
-    global $config;
+    global $kernel;
     $this->invoke($this->abstractHistory, "writeFiles", [ [ "original_title" => "The foobar is a lie" ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "initial commit" ]);
@@ -385,19 +390,19 @@ class AbstractHistoryTest extends \MovLib\TestCase {
     $this->invoke($this->abstractHistory, "stageAllFiles");
 
     $this->invoke($this->abstractHistory, "resetFiles", [ [ "original_title" ] ]);
-    $this->assertStringEqualsFile("{$config->documentRoot}/private/phpunitrepos/movie/2/original_title", "The foobar is a lie");
+    $this->assertStringEqualsFile("{$kernel->documentRoot}/private/phpunitrepos/movie/2/original_title", "The foobar is a lie");
   }
 
   /**
    * @covers ::saveHistory
    */
   public function testSaveHistory() {
-    global $config;
+    global $kernel;
     $this->abstractHistory->startEditing();
     $this->abstractHistory->saveHistory([ "original_title" => "The foobar is a lie" ], "initial commit");
-    $this->assertFileExists(("{$config->documentRoot}/private/phpunitrepos/movie/2/original_title"));
+    $this->assertFileExists(("{$kernel->documentRoot}/private/phpunitrepos/movie/2/original_title"));
   }
-  
+
   /**
    * @expectedException        \MovLib\Exception\HistoryException
    * @expectedExceptionMessage startEditing() has to be called before saveHistory()!
@@ -413,7 +418,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
    * @covers ::saveHistory
    */
   public function testSaveHistoryIfSomeoneElseAlreadyChangedTheSameInformation() {
-    global $config, $db;
+    global $kernel, $db;
     $this->abstractHistory->startEditing();
     $this->movieUserOne = $this->abstractHistory;
     $this->movieUserTwo = clone $this->abstractHistory;
@@ -423,7 +428,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
 
     $this->movieUserTwo->saveHistory([ "original_title" => "The bar is not a lie" ], "initial commit");
 
-    $this->assertStringEqualsFile("{$config->documentRoot}/private/phpunitrepos/movie/2/original_title", "The foobar is a lie");
+    $this->assertStringEqualsFile("{$kernel->documentRoot}/private/phpunitrepos/movie/2/original_title", "The foobar is a lie");
   }
 
   /**
@@ -432,8 +437,8 @@ class AbstractHistoryTest extends \MovLib\TestCase {
   public function testStageAllFiles() {
     $this->invoke($this->abstractHistory, "writeFiles", [ [ "original_title" => "The foobar is a lie", "year" => 2000, "runtime" => 42 ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
-    
-    $this->exec("cd {$this->getProperty($this->abstractHistory, "path")} && git status", $output);
+
+    sh::execute("cd '{$this->getProperty($this->abstractHistory, "path")}' && git status", $output);
     $this->assertEquals("# Changes to be committed:", $output[1]);
     $this->assertEquals("#	new file:   original_title", $output[4]);
     $this->assertEquals("#	new file:   runtime", $output[5]);
@@ -456,14 +461,14 @@ class AbstractHistoryTest extends \MovLib\TestCase {
    * @covers ::unhideRepository
    */
   public function testUnhideRepository() {
-    global $config;
+    global $kernel;
     $this->invoke($this->abstractHistory, "hideRepository");
-    $this->assertFileExists("{$config->documentRoot}/private/phpunitrepos/movie/.2");
+    $this->assertFileExists("{$kernel->documentRoot}/private/phpunitrepos/movie/.2");
 
     $this->invoke($this->abstractHistory, "unhideRepository");
-    $this->assertFileExists("{$config->documentRoot}/private/phpunitrepos/movie/2");
+    $this->assertFileExists("{$kernel->documentRoot}/private/phpunitrepos/movie/2");
   }
-  
+
   /**
    * @expectedException        \MovLib\Exception\HistoryException
    * @expectedExceptionMessage Repository not hidden
@@ -480,8 +485,8 @@ class AbstractHistoryTest extends \MovLib\TestCase {
     $this->invoke($this->abstractHistory, "writeFiles", [ [ "year" => 2000 ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "unstageFiles", [ [ "year" ] ]);
-    
-    $this->exec("cd {$this->getProperty($this->abstractHistory, "path")} && git status", $output);
+
+    sh::execute("cd '{$this->getProperty($this->abstractHistory, "path")}' && git status", $output);
     $this->assertEquals("# Untracked files:", $output[1]);
     $this->assertEquals("#	year", $output[4]);
   }

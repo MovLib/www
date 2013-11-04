@@ -17,7 +17,6 @@
  */
 namespace MovLib\Tool\Console\Command;
 
-use \InvalidArgumentException;
 use \MovLib\Exception\ConsoleException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -34,8 +33,6 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 abstract class AbstractCommand extends \Symfony\Component\Console\Command\Command {
-  use \MovLib\Data\TraitUtilities;
-  use \MovLib\Tool\TraitUtilities;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -172,7 +169,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * @param integer $steps [optional]
    *   The amount of steps to advance, defaults to <code>1</code>.
    * @param boolean $redraw [optional]
-   *   Whetever to redraw the progress output or not.
+   *   Whether to redraw the progress output or not.
    * @return this
    */
   protected final function progressAdvance($steps = 1, $redraw = false) {
@@ -330,7 +327,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
         $this->quiet = $options["quiet"];
       }
     }
-    $this->output->setVerbosity(OutputInterface::VERBOSITY_NORMAL); // Always display exceptions!
+    $this->output->setVerbosity(OutputInterface::VERBOSITY_DEBUG); // Always display exceptions!
     return $options;
   }
 
@@ -345,7 +342,7 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    */
   protected final function getShortcut($name) {
     if (empty($name)) {
-      throw new InvalidArgumentException("Name cannot be empty!");
+      throw new \InvalidArgumentException("Name cannot be empty!");
     }
     $shortcut = null;
     foreach (explode("-", $name) as $namePart) {

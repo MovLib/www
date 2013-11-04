@@ -17,12 +17,11 @@
  */
 namespace MovLib\Presentation\History;
 
-use \MovLib\Data\History\Movie;
 use \MovLib\Presentation\History\MovieHistoryDiff;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\History\MovieHistoryDiff
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -30,217 +29,56 @@ use \MovLib\Presentation\History\MovieHistoryDiff;
  */
 class MovieHistoryDiffTest extends \MovLib\TestCase {
 
-  /** @var \MovLib\Data\History\Movie */
-  private $movie;
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /** @var \MovLib\Presentation\History\MovieHistoryDiff */
-  private $historyDiffPage;
+  protected $movieHistoryDiff;
 
-  public function setUp() {
-    global $config, $db;
 
-    $path = "{$config->documentRoot}/private/phpunitrepos";
-    if (is_dir($path)) {
-      exec("rm -rf {$path}");
-    }
+  // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
-    $_SERVER["MOVIE_ID"] = 2;
 
-    $this->historyDiffPage    = new MovieHistoryDiff("phpunitrepos");
-    $this->movie              = new Movie($_SERVER["MOVIE_ID"], "phpunitrepos");
-    $_SERVER["REVISION_HASH"] = $this->movie->createRepository();
-    $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
-
-    $this->movie->startEditing();
-    $_SERVER["REVISION_HASH"] = $this->movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
-    $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
-    }
-
-  public function tearDown() {
-    global $config;
-    $path = "{$config->documentRoot}/private/phpunitrepos";
-    if (is_dir($path)) {
-      exec("rm -rf {$path}");
-    }
+  /**
+   * Called before each test.
+   */
+  protected function setUp() {
+    $this->movieHistoryDiff = new MovieHistoryDiff();
   }
 
-  public function testGetPageContent() {
-    $this->assertContains(
-      "<a href='/movie/2/history' accesskey='h' class='separator active'",
-      $this->invoke($this->historyDiffPage, "getContent")
-    );
+  /**
+   * Called after each test.
+   */
+  protected function tearDown() {
+
   }
 
-  public function testContentDiffPage() {
-    $this->assertContains(
-      "Original Title", $this->invoke($this->historyDiffPage, "contentDiffPage")
-    );
-    $this->assertContains(
-      "<span class='green'>The foobar is a lie</span>", $this->invoke($this->historyDiffPage, "contentDiffPage")
-    );
+
+  // ------------------------------------------------------------------------------------------------------------------- Data Provider
+
+
+  public function dataProviderExample() {
+    return [];
   }
 
-  public function testTextDiff() {
-    global $db;
-    $this->movie->startEditing();
-    $_SERVER["REVISION_HASH"] = $this->movie->saveHistory([ "original_title" => "The bar is not a lie" ], "added original title");
-    $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
 
-    $this->assertContains(
-      "Original Title", $this->invoke($this->historyDiffPage, "contentDiffPage")
-    );
-    $this->assertContains(
-      "The <span class='red'>foo</span>bar is <span class='green'>not </span>a lie", $this->invoke($this->historyDiffPage, "contentDiffPage")
-    );
+  // ------------------------------------------------------------------------------------------------------------------- Tests
 
-    $from = "The bar is not a lie";
-    $to   = "The foobar is a lie";
-    $this->assertContains(
-      "The <span class='red'>bar</span> <span class='green'>foobar</span> is <span class='red'>not</span> a lie",
-      $this->invoke($this->historyDiffPage, "textDiffOfStrings", [$from, $to])
-    );
-  }
-
-  public function testFormatFileNames() {
-    $fileNames = [
-      "original_title",
-      "cast",
-      "de_synopsis",
-      "en_comment"
-    ];
-
-    $this->assertEquals(
-      [
-      "Original Title",
-      "Cast",
-      "Synopsis (German)",
-      "Comment (English)"
-      ], $this->invoke($this->historyDiffPage, "formatFileNames", [ $fileNames ])
-    );
-  }
-
-  public function testDiffIdsWithUsers() {
-    $diff = ["added" => [1, 3 ], "removed" => [2 ], "edited" => [ ] ];
-    $this->assertEquals(
-      "<ul><li><a href='/users/1' class='green' title='More about Fleshgrinder'>Fleshgrinder</a></li><li><a "
-      . "href='/users/3' class='green' title='More about Ravenlord'>Ravenlord</a></li><li><a href='/users/2' class='red' "
-      . "title='More about ftorghele'>ftorghele</a></li></ul>", $this->invoke($this->historyDiffPage, "diffIds", [ $diff, "\MovLib\Data\User\Users" ])->__toString()
-    );
-  }
-
-  public function testGetCountries() {
-    global $i18n;
-    $diff = ["added" => [1, 3 ], "removed" => [2 ], "edited" => [ ] ];
-    $this->assertEquals(
-      "<ul><li><a href='/countries/1' class='green' title='More about Andorra'>Andorra</a></li><li><a href='/countries/3' "
-      . "class='green' title='More about Afghanistan'>Afghanistan</a></li><li><a href='/countries/2' class='red' "
-      . "title='More about United Arab Emirates'>United Arab Emirates</a></li></ul>", $this->invoke($this->historyDiffPage, "getCountries", [ $diff ])->__toString()
-    );
-
-    $i18n = new \MovLib\Data\I18n("de-at");
-    $this->assertContains(
-      "Vereinigte Arabische Emirate", $this->invoke($this->historyDiffPage, "getCountries", [ $diff ])->__toString()
-    );
-    $i18n = new \MovLib\Data\I18n();
-  }
-
-  public function testGetDirectors() {
-    $diff = ["added" => [1, 3 ], "removed" => [2, 4 ], "edited" => [ ] ];
-    $this->assertEquals(
-      "<ul><li><a href='/persons/1' class='green' title='More about Luc Besson'>Luc Besson</a></li><li><a href='/persons/3' "
-      . "class='green' title='More about Natalie Portman'>Natalie Portman</a></li><li><a href='/persons/2' class='red' "
-      . "title='More about Jean Reno'>Jean Reno</a></li><li><a href='/persons/4' class='red' title='More about Gary "
-      . "Oldman'>Gary Oldman</a></li></ul>", $this->invoke($this->historyDiffPage, "getDirectors", [ $diff ])->__toString()
-    );
-  }
-
-  public function testGetGenres() {
-    global $i18n;
-    $diff = ["added" => [1, 3 ], "removed" => [2, 4 ], "edited" => [ ] ];
-    $this->assertEquals(
-      "<ul><li><a href='/genres/1' class='green' title='More about Action'>Action</a></li><li><a href='/genres/3' class="
-      . "'green' title='More about Animation'>Animation</a></li><li><a href='/genres/2' class='red' title='More about "
-      . "Adventure'>Adventure</a></li><li><a href='/genres/4' class='red' title='More about Biography'>Biography</a></li></ul>", $this->invoke($this->historyDiffPage, "getGenres", [ $diff ])->__toString()
-    );
-
-    $i18n = new \MovLib\Data\I18n("de-at");
-    $this->assertContains(
-      "Abenteuer", $this->invoke($this->historyDiffPage, "getGenres", [ $diff ])->__toString()
-    );
-    $i18n = new \MovLib\Data\I18n();
-  }
-
-  public function testGetLanguages() {
-    global $i18n;
-    $diff = ["added" => [1, 3 ], "removed" => [2, 4 ], "edited" => [ ] ];
-    $this->assertEquals(
-      "<ul><li><a href='/languages/1' class='green' title='More about Abkhazian'>Abkhazian</a></li><li><a href='/languages/3' "
-      . "class='green' title='More about Afrikaans'>Afrikaans</a></li><li><a href='/languages/2' class='red' title='More "
-      . "about Afar'>Afar</a></li><li><a href='/languages/4' class='red' title='More about Akan'>Akan</a></li></ul>", $this->invoke($this->historyDiffPage, "getLanguages", [ $diff ])->__toString()
-    );
-
-    $i18n = new \MovLib\Data\I18n("de-at");
-    $this->assertContains(
-      "Abchasisch", $this->invoke($this->historyDiffPage, "getLanguages", [ $diff ])->__toString()
-    );
-    $i18n = new \MovLib\Data\I18n();
-  }
-
-  public function testGetStyles() {
-    global $i18n;
-    $diff = ["added" => [1, 3 ], "removed" => [2, 4 ], "edited" => [ ] ];
-    $this->assertEquals(
-      "<ul><li><a href='/styles/1' class='green' title='More about Film noir'>Film noir</a></li><li><a href='/styles/3' "
-      . "class='green' title='More about Neo-noir'>Neo-noir</a></li><li><a href='/styles/2' class='red' title='More about "
-      . "Color film noir'>Color film noir</a></li><li><a href='/styles/4' class='red' title='More about Cinema verite'>"
-      . "Cinema verite</a></li></ul>", $this->invoke($this->historyDiffPage, "getStyles", [ $diff ])->__toString()
-    );
-
-    $i18n = new \MovLib\Data\I18n("de-at");
-    // no translation in db use name (en)
-    $this->assertContains(
-      "Color film noir", $this->invoke($this->historyDiffPage, "getStyles", [ $diff ])->__toString()
-    );
-    $i18n = new \MovLib\Data\I18n();
-  }
-
-  public function testGetCast() {
-    $diff = ["added" => [
-      ["id" => 4, "roles" => "franz"]
-    ], "removed" => [
-      ["id" => 1, "roles" => "markus"]
-    ], "edited" => [
-      ["id" => 3, "roles" => "Mike", "old" => ["id" => 3, "roles" => "Michael"] ]
-    ]];
-    $this->assertEquals(
-      "<ul><li><a href='/persons/1' class='red' title='Information about Luc Besson'>Luc Besson</a></li><li><a href="
-      . "'/persons/4' class='green' title='Information about Gary Oldman'>Gary Oldman</a></li><li><a href='/persons/3' "
-      . "class='' title='Information about Natalie Portman'>Natalie Portman</a><ul class=''><li><span class='property-name'>"
-      . "roles:</span> Mi<span class='red'>k</span><span class='green'>cha</span>e<span class='green'>l</span></li></ul></li></ul>",
-      $this->invoke($this->historyDiffPage, "getCast", [ $diff ])->__toString()
-    );
-  }
-
-  public function testDiffArrayWithCrew() {
-//    $diff = ["added" => [
-//
-//    ], "removed" => [
-//
-//    ], "edited" => [
-//
-//    ]];
-//    $this->assertEquals(
-//      "",
-//      $this->invoke($this->historyDiffPage, "getCrew", [ $diff ])->__toString()
-//    );
-    $this->markTestIncomplete();
-  }
 
   /**
    * @covers ::__construct
    * @todo Implement __construct
    */
   public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getPageContent
+   * @todo Implement getPageContent
+   */
+  public function testGetPageContent() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
@@ -253,10 +91,50 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
   }
 
   /**
+   * @covers ::getCast
+   * @todo Implement getCast
+   */
+  public function testGetCast() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getCountries
+   * @todo Implement getCountries
+   */
+  public function testGetCountries() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
    * @covers ::getCrew
    * @todo Implement getCrew
    */
   public function testGetCrew() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getDirectors
+   * @todo Implement getDirectors
+   */
+  public function testGetDirectors() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getGenres
+   * @todo Implement getGenres
+   */
+  public function testGetGenres() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getLanguages
+   * @todo Implement getLanguages
+   */
+  public function testGetLanguages() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
@@ -273,6 +151,14 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
    * @todo Implement getRelationships
    */
   public function testGetRelationships() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getStyles
+   * @todo Implement getStyles
+   */
+  public function testGetStyles() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
@@ -309,6 +195,14 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
   }
 
   /**
+   * @covers ::contentDiffPage
+   * @todo Implement contentDiffPage
+   */
+  public function testContentDiffPage() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
    * @covers ::contentRevisionsPage
    * @todo Implement contentRevisionsPage
    */
@@ -317,10 +211,34 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
   }
 
   /**
+   * @covers ::diffArray
+   * @todo Implement diffArray
+   */
+  public function testDiffArray() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
    * @covers ::diffArrayItems
    * @todo Implement diffArrayItems
    */
   public function testDiffArrayItems() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::diffIds
+   * @todo Implement diffIds
+   */
+  public function testDiffIds() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::formatFileNames
+   * @todo Implement formatFileNames
+   */
+  public function testFormatFileNames() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

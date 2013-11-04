@@ -65,22 +65,6 @@ class TraitImageDetailsTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::getImageDetails
-   * @todo Implement getImageDetails
-   */
-  public function testGetImageDetails() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getStreamImages
-   * @todo Implement getStreamImages
-   */
-  public function testGetStreamImages() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
    * @covers ::pager
    * @todo Implement pager
    */

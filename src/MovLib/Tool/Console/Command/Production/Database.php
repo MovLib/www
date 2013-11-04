@@ -63,11 +63,11 @@ class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   public function __construct(){
-    global $config;
+    global $kernel;
     parent::__construct("database");
     $this->setAliases([ "db" ]);
-    $this->pathBackup    = "{$config->documentRoot}{$this->pathBackup}";
-    $this->pathMigration = "{$config->documentRoot}{$this->pathMigration}";
+    $this->pathBackup    = "{$kernel->documentRoot}{$this->pathBackup}";
+    $this->pathMigration = "{$kernel->documentRoot}{$this->pathMigration}";
   }
 
 

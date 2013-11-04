@@ -15,26 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data\Delayed;
+namespace MovLib\Tool\Console\Command\Development;
 
-use \MovLib\Data\Delayed\MethodCalls;
+use \MovLib\Tool\Console\Command\Development\CacheInspector;
 
 /**
- * @coversDefaultClass \MovLib\Data\Delayed\MethodCalls
+ * @coversDefaultClass \MovLib\Tool\Console\Command\Development\CacheInspector
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MethodCallsTest extends \MovLib\TestCase {
+class CacheInspectorTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Data\Delayed\MethodCalls */
-  protected $methodCalls;
+  /** @var \MovLib\Tool\Console\Command\Development\CacheInspector */
+  protected $cacheInspector;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,7 +44,7 @@ class MethodCallsTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->methodCalls = new MethodCalls();
+    $this->cacheInspector = new CacheInspector();
   }
 
   /**
@@ -67,18 +67,18 @@ class MethodCallsTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::run
-   * @todo Implement run
+   * @covers ::configure
+   * @todo Implement configure
    */
-  public function testRun() {
+  public function testConfigure() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::stack
-   * @todo Implement stack
+   * @covers ::emptyDiskCache
+   * @todo Implement emptyDiskCache
    */
-  public function testStack() {
+  public function testEmptyDiskCache() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

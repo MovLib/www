@@ -54,6 +54,7 @@ abstract class AbstractBase {
    * need that. Please use common sense. In general you should simply create the anchor element instead of calling this
    * method.
    *
+   * @global \MovLib\Kernel $kernel
    * @link http://www.nngroup.com/articles/avoid-within-page-links/ Avoid Within-Page Links
    * @param string $route
    *   The original English route.
@@ -65,9 +66,10 @@ abstract class AbstractBase {
    *   The internal link ready for print.
    */
   protected final function a($route, $text, array $attributes = null) {
+    global $kernel;
     // Recreate path to make sure we match the actual route and not the currently requested URI which might include
     // GET arguments.
-    if ($route == $_SERVER["REQUEST_URI"]) {
+    if ($route == $kernel->requestURI) {
       // A hash keeps the anchor element itself valid but removes the link to the current page—perfect!
       $route = "#";
     }
@@ -110,7 +112,7 @@ abstract class AbstractBase {
    *   The <var>$text</var> with encoded HTML special characters.
    */
   protected final function checkPlain($text) {
-    return htmlspecialchars($text, ENT_QUOTES|ENT_HTML5);
+    return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
   }
 
   /**
@@ -210,7 +212,7 @@ abstract class AbstractBase {
     if (!isset($attributes["alt"])) {
       $attributes["alt"] = $style->alt;
     }
-    $attributes["src"]    = rawurlencode($style->src);
+    $attributes["src"]    = $style->src;
     $attributes["width"]  = $style->width;
     $attributes["height"] = $style->height;
     $image = "<img{$this->expandTagAttributes($attributes)}>";

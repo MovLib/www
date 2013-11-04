@@ -17,7 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Data\Delayed\Logger;
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\DatabaseException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -72,7 +72,7 @@ class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
       $db->query("DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$db->escapeString(\MovLib\Data\Database::TMP_TTL_DAILY)}'");
     }
     catch (DatabaseException $e) {
-      Logger::stack($e, Logger::FATAL);
+      error_log($e);
       throw $e;
     }
     return $this;
@@ -84,8 +84,8 @@ class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @return this
    */
   public function purgeTemporaryUploads() {
-    $directory = escapeshellarg(ini_get("upload_tmp_dir"));
-    $this->exec("find {$directory} -type f -mtime +1 -exec rm -f {} \\;");
+    $directory = ini_get("upload_tmp_dir");
+    sh::execute("find '{$directory}' -type f -mtime +1 -exec rm -f {} \\;");
     return $this;
   }
 

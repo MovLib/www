@@ -27,4 +27,4 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class I18nException extends \MovLib\Exception\AbstractException {}
+class I18nException extends \RuntimeException {}

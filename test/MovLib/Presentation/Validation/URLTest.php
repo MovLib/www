@@ -145,11 +145,11 @@ class URLTest extends \MovLib\TestCase {
    * @dataProvider dataProviderValid
    * @expectedException \MovLib\Exception\ValidationException
    * @expectedExceptionCode \MovLib\Presentation\Validation\URL::E_NO_EXTERNAL
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Configuration $kernel
    */
   public function testNoExternal($unused, $url) {
-    global $config;
-    $config->domainDefault = "example.com";
+    global $kernel;
+    $kernel->domainDefault = "example.com";
     (new URL($url))->validate();
   }
 

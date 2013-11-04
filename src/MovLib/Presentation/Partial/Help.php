@@ -47,7 +47,7 @@ class Help {
   protected $id;
 
   /**
-   * Whetever this help is a popup or not, defaults to <code>TRUE</code>.
+   * Whether this help is a popup or not, defaults to <code>TRUE</code>.
    *
    * @var boolean
    */
@@ -65,14 +65,12 @@ class Help {
    * @param string $id [optional]
    *   The help's unique identifier, note that <code>"-help"</code> is <b>always</b> appended to this!
    * @param boolean $popup [optional]
-   *   Whetever this help is a popup or not, defaults to <code>TRUE</code>.
+   *   Whether this help is a popup or not, defaults to <code>TRUE</code>.
    */
   public function __construct($content, $id = null, $popup = true) {
     $this->content = $content;
+    $this->id      = $id;
     $this->popup   = $popup;
-    if ($id) {
-      $this->id = " id='{$id}-help'";
-    }
   }
 
   /**
@@ -85,10 +83,11 @@ class Help {
    *   Help's string representation.
    */
   public function __toString() {
+    $id = $this->id ? " id='{$this->id}-help'" : null;
     if ($this->popup === true) {
-      return "<div class='form-help popup-container'$this->id role='note'><i class='icon icon--help-circled'></i><small class='popup'>{$this->content}</small></div>";
+      return "<div class='form-help popup-container'$id role='note'><i class='icon icon--help-circled'></i><small class='popup'>{$this->content}</small></div>";
     }
-    return "<small class='form-help'{$this->id} role='note'>{$this->content}</small>";
+    return "<small class='form-help'{$id} role='note'>{$this->content}</small>";
   }
 
 }

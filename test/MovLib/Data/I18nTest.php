@@ -17,9 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \DateTimeZone;
-use \IntlDateFormatter;
-use \Locale;
 use \MovLib\Data\I18n;
 
 /**
@@ -56,7 +53,7 @@ class I18nTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->i18n = new I18n(Locale::getDefault());
+    $this->i18n = new I18n(\Locale::getDefault());
   }
 
   /**
@@ -87,7 +84,7 @@ class I18nTest extends \MovLib\TestCase {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Data Provider
+  // ------------------------------------------------------------------------------------------------------------------- Data Providers
 
 
   public function dataProviderTestConstructAcceptLanguageHeaderValid() {
@@ -124,7 +121,7 @@ class I18nTest extends \MovLib\TestCase {
   public function testConstructInvalidHTTPAcceptLanguageCode() {
     unset($_SERVER["LANGUAGE_CODE"]);
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = "xx-XX";
-    $defaultLocale                   = Locale::getDefault();
+    $defaultLocale                   = \Locale::getDefault();
     $defaultLanguageCode             = "{$defaultLocale[0]}{$defaultLocale[1]}";
     $i18n                            = new I18n();
     $this->assertEquals($defaultLocale, $i18n->locale);
@@ -137,7 +134,7 @@ class I18nTest extends \MovLib\TestCase {
   public function testConstructNoLanguageCodeNoHTTPAcceptLanguageCode() {
     unset($_SERVER["LANGUAGE_CODE"]);
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = null;
-    $defaultLocale                   = Locale::getDefault();
+    $defaultLocale                   = \Locale::getDefault();
     $defaultLanguageCode             = "{$defaultLocale[0]}{$defaultLocale[1]}";
     $i18n                            = new I18n();
     $this->assertEquals($defaultLocale, $i18n->locale);
@@ -175,7 +172,7 @@ class I18nTest extends \MovLib\TestCase {
     $acceptLanguage                  = isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) ? $_SERVER["HTTP_ACCEPT_LANGUAGE"] : null;
     $_SERVER["HTTP_ACCEPT_LANGUAGE"] = "xx_XX";
 
-    $defaultLocale       = Locale::getDefault();
+    $defaultLocale       = \Locale::getDefault();
     $defaultLanguageCode = "{$defaultLocale[0]}{$defaultLocale[1]}";
 
     $i18n = new I18n();
@@ -247,11 +244,11 @@ class I18nTest extends \MovLib\TestCase {
     $timestamp = time();
 
     // No timezone supplied.
-    $formatter = new IntlDateFormatter($this->i18n->locale, IntlDateFormatter::LONG, IntlDateFormatter::LONG, new DateTimeZone(ini_get("date.timezone")));
+    $formatter = new \IntlDateFormatter($this->i18n->locale, \IntlDateFormatter::LONG, \IntlDateFormatter::LONG, new \DateTimeZone(ini_get("date.timezone")));
     $this->assertEquals($formatter->format($timestamp), $this->i18n->formatDate($timestamp));
 
     // Valid timezone supplied.
-    $formatter = new IntlDateFormatter($this->i18n->locale, IntlDateFormatter::LONG, IntlDateFormatter::LONG, new DateTimeZone("Europe/Vienna"));
+    $formatter = new \IntlDateFormatter($this->i18n->locale, \IntlDateFormatter::LONG, \IntlDateFormatter::LONG, new \DateTimeZone("Europe/Vienna"));
     $this->assertEquals($formatter->format($timestamp), $this->i18n->formatDate($timestamp, "Europe/Vienna"));
   }
 
@@ -372,13 +369,13 @@ class I18nTest extends \MovLib\TestCase {
 
   /**
    * @covers ::getSystemLanguages
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Configuration $kernel
    */
   public function testGetSystemLanguages() {
-    global $config;
+    global $kernel;
     $languages = [];
-    foreach ($config->systemLanguages as $locale) {
-      $languages["{$locale[0]}{$locale[1]}"] = Locale::getDisplayLanguage($locale, $this->i18n->locale);
+    foreach ($kernel->systemLanguages as $locale) {
+      $languages["{$locale[0]}{$locale[1]}"] = \Locale::getDisplayLanguage($locale, $this->i18n->locale);
     }
     $this->i18n->getCollator()->asort($languages);
     $this->assertEquals($languages, $this->i18n->getSystemLanguages());
@@ -389,8 +386,8 @@ class I18nTest extends \MovLib\TestCase {
    */
   public function testGetTimeZones() {
     $timeZones           = $this->i18n->getTimeZones();
-    $timeZoneIdentifiers = DateTimeZone::listIdentifiers();
-    $expectedTimeZones   = [ ];
+    $timeZoneIdentifiers = \DateTimeZone::listIdentifiers();
+    $expectedTimeZones   = [];
     $c                   = count($timeZoneIdentifiers);
     for ($i = 0; $i < $c; ++$i) {
       $expectedTimeZones[$timeZoneIdentifiers[$i]] = strtr($timeZoneIdentifiers[$i], "_", " ");

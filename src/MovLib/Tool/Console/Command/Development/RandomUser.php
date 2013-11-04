@@ -17,8 +17,9 @@
  */
 namespace MovLib\Tool\Console\Command\Development;
 
+use \MovLib\Data\UnixShell as sh;
+use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\ImageException;
-use \MovLib\Data\User\Full as User;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -118,19 +119,19 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   /**
    * Generate the desired amount of random users.
    *
-   * @global \MovLib\Tool\Configuration $config
+   * @global \MovLib\Tool\Kernel $kernel
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function generateRandomUsers($amount = self::DEFAULT_AMOUNT) {
-    global $config, $db, $i18n;
+    global $kernel, $db, $i18n;
     $this->setUsernames();
     $this->setAmount($amount);
     $values          = $params          = $usersWithAvatar = null;
     $this->progress->start($this->output, $this->amount);
-    $user            = new User();
+    $user            = new UserFull();
     $min             = strtotime("-1 year");
     $max             = time();
 
@@ -148,7 +149,7 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         $params[] = $params[] = null;
       }
       $params[] = $created;
-      $params[] = "{$name}@{$config->domainDefault}";
+      $params[] = "{$name}@{$kernel->domainDefault}";
       $params[] = $name;
       $params[] = $this->invoke($user, "passwordHash", [ $name ]);
       $this->progress->advance();
@@ -174,9 +175,9 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     if (($c = count($usersWithAvatar))) {
       $this->write("Generating avatar images (every 6th user has none) ...");
-      $dim    = User::IMAGE_STYLE_SPAN_02;
+      $dim    = UserFull::IMAGE_STYLE_SPAN_02;
       $tmp    = ini_get("upload_tmp_dir") . "/movdev-command-create-users.jpg";
-      if ($this->exec("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}") === false) {
+      if (sh::execute("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}") === false) {
         throw new ImageException("Couldn't create random image with ImageMagick!");
       }
       $this->setProperty($user, "imageExtension", "jpg");
@@ -185,8 +186,8 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       $result = $db->query("SELECT `user_id`, `name` FROM `users` WHERE `name` IN ({$in})", str_repeat("s", $c), $usersWithAvatar)->get_result();
       while ($row = $result->fetch_assoc()) {
         $this->setProperty($user, "imageName", $row["name"]);
-        $this->invoke($user, "convertImage", [ $tmp, User::IMAGE_STYLE_SPAN_02 ]);
-        $this->invoke($user, "convertImage", [ $tmp, User::IMAGE_STYLE_SPAN_01 ]);
+        $this->invoke($user, "convertImage", [ $tmp, UserFull::IMAGE_STYLE_SPAN_02 ]);
+        $this->invoke($user, "convertImage", [ $tmp, UserFull::IMAGE_STYLE_SPAN_01 ]);
         $this->progress->advance();
       }
       unlink($tmp);
@@ -206,8 +207,8 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     $username = null;
 
     do {
-      // 1 to 40, all variations are valid!
-      $length   = mt_rand(1, User::NAME_MAXIMUM_LENGTH);
+      // 1 to NAME_MAXIMUM_LENGTH, all variations are valid!
+      $length   = mt_rand(1, UserFull::NAME_MAXIMUM_LENGTH);
       for ($i = 0; $i < $length; ++$i) {
         $username .= $this->characters[mt_rand(0, $this->charactersCount)];
       }
@@ -257,9 +258,10 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    */
   protected function setUsernames() {
     global $db;
-    $result = $db->query("SELECT `name` FROM `users`")->get_result();
-    while ($user = $result->fetch_row()) {
-      $this->usernames[] = $user[0];
+    if (($result = $db->query("SELECT `name` FROM `users`")->get_result())) {
+      while ($user = $result->fetch_row()) {
+        $this->usernames[] = $user[0];
+      }
     }
     return $this;
   }

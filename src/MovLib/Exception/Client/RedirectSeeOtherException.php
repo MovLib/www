@@ -29,14 +29,15 @@ namespace MovLib\Exception\Client;
 class RedirectSeeOtherException extends \MovLib\Exception\Client\AbstractRedirectException {
 
   /**
-   * Instantiate new temporary redirect.
+   * Instantiate new see other redirect.
    *
+   * @global \MovLib\Kernel $kernel
    * @param string $route
    *   {@inheritdoc}
    */
   public function __construct($route) {
-    $route = rawurldecode($route);
-    if ($_SERVER["SERVER_PROTOCOL"] == "HTTP/1.0") {
+    global $kernel;
+    if ($kernel->protocol == "HTTP/1.0") {
       parent::__construct(302, $route, "Moved Temporarily");
     }
     else {
