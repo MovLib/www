@@ -178,21 +178,13 @@ class I18n extends \MovLib\Data\Database {
     global $kernel;
     $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
     if ($languageCode != $this->defaultLanguageCode) {
-      $result = $this->query(
-        "SELECT COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1",
-        "s",
-        [ $pattern ]
-      )->get_result()->fetch_assoc();
-      if (empty($result["translation"])) {
-        // @todo remove the following lines after the translation extractor has been created. NOTE that routes are
-        //       already handled via MovCli. We should also write an extended I18n class for MovCli and move all
-        //       methods that aren't needed in this class to the extended version. Many methods are only from interest
-        //       for that extended version (e.g. everything that has to do with inserting, updating and deleting).
+      // @todo Create translation extractor or use xgettext
+      if (!($result = $this->query("SELECT COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ])->get_result()->fetch_assoc())) {
         if ($context === "message") {
           $kernel->delayMethodCall([ $this, "insertMessage" ], [ $pattern, $options ]);
         }
       }
-      else {
+      elseif (!empty($result["translation"])) {
         $pattern = $result["translation"];
       }
     }
