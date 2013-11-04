@@ -75,15 +75,6 @@ class Session extends \MovLib\Data\Database {
   public $id;
 
   /**
-   * The session's IP address.
-   *
-   * This value is only available if this session was newly initialized!
-   *
-   * @var string
-   */
-  private $ipAddress;
-
-  /**
    * The user's authentication status.
    *
    * @var boolean
@@ -96,15 +87,6 @@ class Session extends \MovLib\Data\Database {
    * @var string
    */
   private $name;
-
-  /**
-   * The session's user agent string.
-   *
-   * This value is only available if this session was newly initialized!
-   *
-   * @var string
-   */
-  private $userAgent;
 
   /**
    * The session's user ID.
@@ -172,9 +154,13 @@ class Session extends \MovLib\Data\Database {
         $this->userId         = $_SESSION["user_id"];
         $this->userName       = $_SESSION["user_name"];
         $this->userTimeZoneId = $_SESSION["user_time_zone_id"];
-        if ($this->authentication + 86400 < time()) {
+
+        // Regenerate the session ID at least every 20 minutes (OWASP recommendation).
+        if ($this->authentication + 1200 < $_SERVER["REQUEST_TIME"]) {
           $this->regenerate();
         }
+
+        // If the stored user ID is greather than 0 it's a known user.
         if ($this->userId > 0) {
           $this->isAuthenticated = true;
         }
@@ -257,7 +243,7 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function checkAuthorizationTimestamp($message) {
-    if ($this->isAuthenticated === false || $this->authentication + 3600 < time()) {
+    if ($this->isAuthenticated === false || $this->authentication + 3600 < $_SERVER["REQUEST_TIME"]) {
       throw new UnauthorizedException($message);
     }
     return $this;
@@ -333,7 +319,7 @@ class Session extends \MovLib\Data\Database {
       session_unset();
       // Remove the cookie.
       $cookie = session_get_cookie_params();
-      setcookie(session_name(), "", time() - 42000, $cookie["path"], $cookie["domain"], $cookie["secure"], $cookie["httponly"]);
+      setcookie(session_name(), "", $_SERVER["REQUEST_TIME"] - 42000, $cookie["path"], $cookie["domain"], $cookie["secure"], $cookie["httponly"]);
       // Remove the session ID from our database.
       $kernel->delayMethodCall([ $this, "delete" ]);
     }
@@ -366,6 +352,7 @@ class Session extends \MovLib\Data\Database {
   /**
    * Initialize session with default data.
    *
+   * @global \MovLib\Kernel $kernel
    * @param int $userId [optional]
    *   The ID of the user for wish we should initialize a session. Zero is used if no value is passed, this will
    *   initialize the session for an anonymous user.
@@ -375,16 +362,26 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\SessionException
    */
   private function init($userId = 0, $signIn = null) {
-    // IP address and user agent string are only used within the danger zone settings to display them to the user. We
-    // don't validate them and the session isn't bound to them.
-    //
-    // @todo If we're ever going to use proxy servers this code has to be changed!
-    //       https://github.com/komola/ZendFramework/blob/master/Controller/Request/Http.php#L1054
+    global $kernel;
+
+    // We might be changing from an anonymous session to a signed in session while a form is submitted (e.g. the login
+    // form is visited by an anonymous user with an active anonymous session and the form is submitted with the CSRF
+    // token) therefore we have to validate the CSRF token. If the token is invalid at this point, reject creation of
+    // a new session (which might result in elevated privileges).
+    if ($this->validateCsrfToken() === false) {
+      return $this;
+    }
+
     $this->id             = session_id();
     $this->csrfToken      = $_SESSION["csrf_token"]     = hash("sha512", openssl_random_pseudo_bytes(1024));
-    $this->ipAddress      = $_SESSION["ip_address"]     = filter_var($_SERVER["REMOTE_ADDR"], FILTER_SANITIZE_STRING);
-    $this->userAgent      = $_SESSION["user_agent"]     = filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW);
-    $this->authentication = $_SESSION["authentication"] = $signIn ? : time();
+    $this->authentication = $_SESSION["authentication"] = $signIn ? : $_SERVER["REQUEST_TIME"];
+
+    // Update the (already validated) post submitted CSRF token to the newly generated one. This is important, because
+    // any submitted form will validate the token automatically again, but this would result in an invalid form because
+    // we just created a new session with a new CSRF token for this client.
+    if (isset($_POST["csrf"])) {
+      $_POST["csrf"] = $this->csrfToken;
+    }
 
     // We are initializing this session for a registered user.
     if ($userId > 0) {
@@ -398,16 +395,8 @@ class Session extends \MovLib\Data\Database {
     }
     // Initialize this session for an anonymous user.
     else {
-      // At this stage we validate the IP address because we'll use it as global display name for this anonymous user.
-      // This will be stored in our database as the name for this anonymous user, therefor we have to have a valid IP
-      // address!
-      //
-      // http://stackoverflow.com/a/5092951/1251219
-      if (filter_var($this->ipAddress, FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR) === false) {
-        throw new SessionException("Empty or invalid IP address (this is more or less impossible, check web server and if behind a proxy check implementation).");
-      }
       $this->userId          = $_SESSION["user_id"]           = $userId;
-      $this->userName        = $_SESSION["user_name"]         = $this->ipAddress;
+      $this->userName        = $_SESSION["user_name"]         = $kernel->remoteAddress;
       // @todo Guess timezone with JavaScript: https://bitbucket.org/pellepim/jstimezonedetect
       $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = ini_get("date.timezone");
       $this->isAuthenticated = false; // Just making sure
@@ -420,14 +409,16 @@ class Session extends \MovLib\Data\Database {
    * Insert newly created session into persistent session storage.
    *
    * @delayed
+   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function insert() {
+    global $kernel;
     return $this->query(
       "INSERT INTO `sessions` (`session_id`, `user_id`, `user_agent`, `ip_address`, `authentication`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
       "sdssi",
-      [ $this->id, $this->userId, $this->userAgent, inet_pton($this->ipAddress), $this->authentication ]
+      [ $this->id, $this->userId, $kernel->userAgent, inet_pton($kernel->remoteAddress), $this->authentication ]
     );
   }
 
@@ -525,16 +516,18 @@ class Session extends \MovLib\Data\Database {
    * Update the ID of a session in our persistent session store.
    *
    * @delayed
+   * @global \MovLib\Kernel $kernel
    * @param string $oldSessionId
    *   The old session ID that should be updated.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function update($oldSessionId) {
+    global $kernel;
     return $this->query(
       "UPDATE `sessions` SET `session_id` = ?, `ip_address` = ?, `user_agent` = ? WHERE `session_id` = ? AND `user_id` = ?",
       "ssssd",
-      [ $this->id, inet_pton($this->ipAddress), $this->userAgent, $oldSessionId, $this->userId ]
+      [ $this->id, inet_pton($kernel->remoteAddress), $kernel->userAgent, $oldSessionId, $this->userId ]
     );
   }
 
@@ -545,7 +538,7 @@ class Session extends \MovLib\Data\Database {
    *   <code>TRUE</code> if the token is valid, otherwise <code>FALSE</code>.
    */
   public function validateCsrfToken() {
-    if ($this->csrfToken && (!isset($_POST["csrf"]) || $this->csrfToken != $_POST["csrf"])) {
+    if ($this->csrfToken && (empty($_POST["csrf"]) || $this->csrfToken != $_POST["csrf"])) {
       $this->regenerate();
       return false;
     }
