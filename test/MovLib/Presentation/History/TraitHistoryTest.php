@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\History;
 
+use \MovLib\Data\History\Movie;
+
 /**
  * @coversDefaultClass \MovLib\Presentation\History\TraitHistory
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -30,7 +32,9 @@ class TraitHistoryTest extends \MovLib\TestCase {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
+  /** @var \MovLib\Data\History\Movie */
+  protected $movie;
+  
   /** @var \MovLib\Presentation\History\TraitHistory */
   protected $traitHistory;
 
@@ -41,35 +45,76 @@ class TraitHistoryTest extends \MovLib\TestCase {
   /**
    * Called before each test.
    */
-  protected function setUp() {
-    $this->traitHistory = $this->getMockForTrait("\\MovLib\\Presentation\\History\\TraitHistory", [ "phpunitrepos" ], "MovieHistory");
+   protected function setUp() {
+    global $config, $db;
+    $path = "{$config->documentRoot}/private/phpunitrepos";
+    if (is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
+
+    $_SERVER["MOVIE_ID"] = 2;
+
+    $this->movie = new Movie(2, "phpunitrepos");
+    $commitHash  = $this->movie->createRepository();
+    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+    
+    $this->traitHistory = $this->getMockForTrait("\\MovLib\\Presentation\\History\\TraitHistory", [], "MovieHistory");
+    $this->setProperty($this->traitHistory, "historyModel", $this->movie);    
   }
 
-  /**
-   * Called after each test.
-   */
   protected function tearDown() {
-
+    global $config;
+    $path = "{$config->documentRoot}/private/phpunitrepos";
+    if (is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
   }
 
-
+  
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
-
+  
   /**
    * @covers ::contentDiffPage
    * @todo Implement contentDiffPage
    */
   public function testContentDiffPage() {
     $this->markTestIncomplete("This test has not been implemented yet.");
+    
   }
 
   /**
    * @covers ::contentRevisionsPage
-   * @todo Implement contentRevisionsPage
    */
   public function testContentRevisionsPage() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    global $db;
+
+    $this->assertContains(
+      "No revisions found", $this->invoke($this->traitHistory, "contentRevisionsPage")
+    );
+
+    $this->movie->startEditing();
+    $commitHash = $this->movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
+    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+
+    $this->assertContains(
+      "added original title", $this->invoke($this->traitHistory, "contentRevisionsPage")
+    );
+    $this->assertContains(
+      "<li>Original Title</li>", $this->invoke($this->traitHistory, "contentRevisionsPage")
+    );
+
+    $this->movie->startEditing();
+    $commitHash = $this->movie->saveHistory([ "original_title" => "The bar is not a lie", "cast" => [1, 2, 3 ] ], "edited original title, added cast");
+    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+
+    $this->assertContains(
+      "edited original title, added cast", $this->invoke($this->traitHistory, "contentRevisionsPage")
+    );
+    $this->assertContains(
+      "<li>Cast</li><li>Original Title</li>", $this->invoke($this->traitHistory, "contentRevisionsPage")
+    );
+    
   }
 
   /**

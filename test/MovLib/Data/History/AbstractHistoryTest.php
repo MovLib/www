@@ -40,7 +40,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
-
+  
   /**
    * Called before each test.
    */
