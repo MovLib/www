@@ -15,40 +15,32 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\History;
+namespace MovLib\Data;
 
 /**
- * The movie history page.
+ * Extended date time zone class with more utility methods to handle time zones.
  *
- * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistory extends \MovLib\Presentation\History\AbstractHistory {
-  use \MovLib\Presentation\Movie\TraitMoviePage;
-
+class DateTimeZone extends \DateTimeZone {
 
   /**
-   * Instatiate new movie history presentation.
+   * Get all sorted and translated time zone identifiers.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @return array
+   *   Associative array containing all sorted and translated time zone identifiers. The key is the time zone identifier
+   *   and the value the translation for the currently active language. The array is sorted by value.
    */
-  public function __construct($context = "history") {
+  public static function getTranslatedIdentifiers() {
     global $i18n;
-    $this->initMovie();
-    $this->init($i18n->t("History of {0}", [ $this->title ]));
-
-    $this->historyModel = new \MovLib\Data\History\Movie($this->model->id, $context);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    $this->addClass("active", $this->secondaryNavigation->menuitems[3][2]);
-    return $this->revisionsPage();
+    $directory = __DIR__;
+    require "{$directory}/TimeZoneTranslations/{$i18n->languageCode}.php";
+    return $translatedTimeZoneIdentifiers;
   }
 
 }

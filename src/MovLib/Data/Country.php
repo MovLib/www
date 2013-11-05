@@ -124,4 +124,21 @@ class Country extends \MovLib\Data\Database {
     }
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Callback for select form elements for consistent formatting.
+   *
+   * @param string $value
+   *   The select option's value attribute.
+   * @param \MovLib\Data\Country $option
+   *   The select option's text value.
+   */
+  public function selectCallback(&$value, &$option) {
+    $value  = $this->id;
+    $option = $this->name;
+  }
+
 }

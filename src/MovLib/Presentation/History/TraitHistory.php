@@ -32,17 +32,6 @@ use \MovLib\Presentation\Partial\Lists\Unordered;
 trait TraitHistory {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The history model to display.
-   *
-   * @var \MovLib\Data\History\AbstractHistory
-   */
-  protected $historyModel;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
   
 
@@ -190,7 +179,7 @@ trait TraitHistory {
    * @return array
    *  Numeric array with formated file names.
    */
-  protected function formatFileNames($fileNames) {
+  protected function formatFileNames(array $fileNames) {
     global $i18n;
     $c = count($fileNames);
     for ($i = 0; $i < $c; ++$i) {
@@ -219,6 +208,7 @@ trait TraitHistory {
   /**
    * Calls the right diff methode.
    *
+   * @global \MovLib\Data\I18n
    * @param string $head
    *   Hash of git commit (newer one).
    * @param sting $ref
@@ -229,6 +219,7 @@ trait TraitHistory {
    *   Diff between revisions as HTML.
    */
   protected function getDiff($head, $ref, $filename) {
+    global $i18n;
     if (in_array($filename, $this->historyModel->files)) {
       return $this->textDiffOfRevisions($head, $ref, $filename, true);
     }
@@ -236,6 +227,9 @@ trait TraitHistory {
       $diff = $this->historyModel->getArrayDiff($head, $ref, $filename);
       $methodName = ucfirst($filename);
       return $this->{"get{$methodName}"}($diff);
+    }
+    else {
+      return $i18n->t("Nothing changed");
     }
   }
 

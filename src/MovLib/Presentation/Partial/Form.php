@@ -90,7 +90,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
    * @global \MovLib\Data\Session $session
    * @param \MovLib\Presentation\Page $page
    *   The page instance this form is attached to.
-   * @param array $elements
+   * @param array $elements [optional]
    *   Form elements that should be attached to this form and auto-validated.
    * @param string $id [optional]
    *   The global identifier of this form. If no value is supplied the identifier of the passed page is used.
@@ -102,7 +102,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
    *   <code>TRUE</code> where the first form element of the form gets the attribute, if any form element is invalid the
    *   first invalid form element will get the attribute.
    */
-  public function __construct($page, array $elements, $id = null, $validationCallback = "validate", $autofocus = true) {
+  public function __construct($page, array $elements = [], $id = null, $validationCallback = "validate", $autofocus = true) {
     global $kernel, $i18n, $session;
     $this->elements        = $elements;
     $this->id              = $id ?: $page->id;

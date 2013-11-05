@@ -17,9 +17,10 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \IntlDateFormatter;
-use \MovLib\Data\I18n;
-use \MovLib\Data\User\Full as User;
+use \MovLib\Data\Countries;
+use \MovLib\Data\DateTimeZone;
+use \MovLib\Data\SystemLanguages;
+use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
@@ -43,6 +44,7 @@ use \MovLib\Presentation\Validation\HTML;
  * @since 0.0.1-dev
  */
 class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+  use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Profile\TraitProfile;
 
 
@@ -69,13 +71,6 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
    * @var \MovLib\Presentation\Partial\FormElement\Select
    */
   private $country;
-
-  /**
-   * The presentation's form.
-   *
-   * @var \MovLib\Presentation\Partial\Form
-   */
-  private $form;
 
   /**
    * The user's language select form element.
@@ -134,25 +129,25 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
    * Instantiate new user account settings presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\Session $session
    * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function __construct() {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
 
     $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     $this->init($i18n->t("Account Settings"));
-    $this->user = new User(User::FROM_ID, $session->userId);
+    $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
 
     $this->realName = new InputText("real_name", $i18n->t("Real Name"), [
-      "autofocus",
       "placeholder" => $i18n->t("Entery our real name"),
       "value"       => $this->user->realName,
     ]);
 
-    $this->avatar = new InputImage("avatar", $this->user, $i18n->t("Avatar"));
+    $this->avatar = new InputImage("avatar", $i18n->t("Avatar"), $this->user);
 
     $this->sex = new RadioGroup("sex", $i18n->t("Sex"), [
       2 => $i18n->t("Female"),
@@ -166,8 +161,8 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "max"   => $birthdayMax,
       "min"   => $birthdayMin,
       "title" => $i18n->t("The date must be between {0} (120 years) and {1} (6 years)", [
-        $i18n->formatDate($birthdayMin, $this->user->timeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
-        $i18n->formatDate($birthdayMax, $this->user->timeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE)
+        $i18n->formatDate($birthdayMin, $this->user->timeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
+        $i18n->formatDate($birthdayMax, $this->user->timeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)
       ]),
       "value" => $this->user->birthday,
     ], $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
@@ -178,11 +173,9 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "placeholder"         => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
     ]);
 
-    $this->language = new Select("language", $i18n->t("System Language"), $i18n->getSystemLanguages(), $this->user->systemLanguageCode);
-    $countries = new \MovLib\Data\Countries();
-    $countries->orderByName();
-    $this->country  = new Select("country", $i18n->t("Country"), array_column($countries, I18n::KEY_NAME, I18n::KEY_ID), $this->user->countryId);
-    $this->timezone = new Select("time_zone_id", $i18n->t("Time Zone"), $i18n->getTimeZones(), $this->user->timeZoneId);
+    $this->language = new Select("language", $i18n->t("System Language"), (new SystemLanguages())->orderByName(), $this->user->systemLanguageCode);
+    $this->country  = new Select("country", $i18n->t("Country"), (new Countries())->orderByName(), $this->user->countryId);
+    $this->timezone = new Select("time_zone_id", $i18n->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneId);
     $this->website  = new InputURL("website", $i18n->t("Website"), [ "data-allow-external" => true, "value" => $this->user->website ]);
     $this->private  = new InputCheckbox("private", $i18n->t("Keep my data private!"), [ "value" => $this->user->private ], $i18n->t(
       "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
@@ -203,8 +196,8 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->website,
       $this->private,
     ]);
+
     $this->form->actionElements[] = new InputSubmit([
-      "class" => "button--large button--success",
       "value" => $i18n->t("Update Account Settings"),
     ]);
   }

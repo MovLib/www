@@ -73,12 +73,8 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     global $i18n, $kernel, $session;
 
     // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
-    if (!isset($_GET["token"])) {
-      $session
-        ->checkAuthorization($i18n->t("You need to sign in to change your password."))
-        ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
-      ;
-    }
+    $session->checkAuthorization($i18n->t("You need to sign in to change your password."));
+    $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     // Translate and set the page title.
     $this->init($i18n->t("Password Settings"));

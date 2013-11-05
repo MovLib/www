@@ -61,4 +61,28 @@ class Collator extends \Collator {
     return true;
   }
 
+  /**
+   * Sorts an array by object property, maintaining key to object correlations. This is useful for arrays containing
+   * objects as values.
+   *
+   * @todo Pretty stupid and fast forward approach.
+   * @param array $array
+   *   The array with the objects.
+   * @param string $propertyName
+   *   The name of the object property that should be used for sorting.
+   * @return array
+   *   The sorted array.
+   */
+  public function osort(&$array, $propertyName) {
+    $sorted = null;
+    foreach ($array as $k => $v) {
+      $sorted[$k] = $v->{$propertyName};
+    }
+    $this->asort($sorted);
+    foreach ($sorted as $k => $v) {
+      $sorted[$k] = $array[$k];
+    }
+    return $sorted;
+  }
+
 }
