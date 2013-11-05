@@ -270,7 +270,9 @@ class Kernel {
     set_error_handler([ $this, "errorHandler" ], -1);
 
     // Catch fatal errors and ensure that something is displayed to the client.
-    register_shutdown_function([ $this, "fatalErrorHandler" ]);
+    if (isset($_SERVER["FCGI_ROLE"])) {
+      register_shutdown_function([ $this, "fatalErrorHandler" ]);
+    }
 
     try {
       // Initialize environment properties based on variables passed in by nginx.
@@ -349,7 +351,9 @@ class Kernel {
 
       // Special function that is only available with php-fpm, this sends the previously rendered presentation to the
       // client but execution of this script will continue below this function call.
-      fastcgi_finish_request();
+      if (isset($_SERVER["FCGI_ROLE"])) {
+        fastcgi_finish_request();
+      }
 
       // Calculate execution time for response generation and log if it took too long.
       $responseEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
