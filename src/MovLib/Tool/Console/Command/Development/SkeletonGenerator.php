@@ -132,12 +132,15 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
     if (!class_exists($class) && !trait_exists($class)) {
       return $this;
     }
+    if (strpos($class, "Presentation\History\AbstractHistory") === false) {
+      return $this;
+    }
     $reflector = new \ReflectionClass($class);
     if (is_file($testFile)) {
-      $this->skeletonExtend($reflector, $class, $testFile);
+      $this->skeletonExtend($reflector, $class, $testFile, $file);
     }
     else {
-      $this->skeletonNew($reflector, $class, $testFile);
+      $this->skeletonNew($reflector, $class, $testFile, $file);
     }
     return $this;
   }
@@ -226,23 +229,25 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    *   Full class name, e.g. <code>"\Foo\Bar"</code>.
    * @param string $testFile
    *   Absolute path to the test file.
+   * @param string $file
+   *   Absolute path to the file.
    * @return this
    */
-  protected function skeletonExtend($reflector, $class, $testFile) {
+  protected function skeletonExtend($reflector, $class, $testFile, $file) {
     $testReflector = new \ReflectionClass("{$class}Test");
     $testMethods   = [];
-    /* @var $testMethod \Reflectionmethod */
+    /* @var $testMethod \ReflectionMethod */
     foreach ($testReflector->getMethods() as $testMethod) {
       if ($testMethod->getDeclaringClass() === $testReflector) {
         $testMethods[] = $testMethod;
       }
     }
 
-    $classContent = \ReflectionClass::export($class, true);
+    $classContent = file_get_contents($file);
     $tests = [];
     /* @var $method \ReflectionMethod */
     foreach ($reflector->getMethods() as $method) {
-      if ($method->getDeclaringClass() === $reflector && strpos($classContent, $method->getName()) !== false) {
+      if ($method->getDeclaringClass() == $reflector && strpos($classContent, "function {$method->getName()}") !== false) {
         $testExists     = false;
         $methodName     = $method->getName();
         $methodTestName = ucfirst(ltrim($methodName, "_"));
@@ -280,14 +285,18 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    *   Full class name, e.g. <code>"\Foo\Bar"</code>.
    * @param string $testFile
    *   Absolute path to the test file.
+   * @param string $file
+   *   Absolute path to the file.
    * @return this
    */
-  protected function skeletonNew($reflector, $class, $testFile) {
-    $classContent = \ReflectionClass::export($class, true);
+  protected function skeletonNew($reflector, $class, $testFile, $file) {
+    $classContent = file_get_contents($file);
     $tests = [];
+    $this->progressFinish();
+    echo PHP_EOL;
     /* @var $method \ReflectionMethod */
     foreach ($reflector->getMethods() as $method) {
-      if ($method->getDeclaringClass() === $reflector && strpos($classContent, $method->getName()) !== false) {
+      if ($method->getDeclaringClass() == $reflector && strpos($classContent, "function {$method->getName()}") !== false) {
         $methodName     = $method->getName();
         $methodTestName = ucfirst(ltrim($methodName, "_"));
         $tests[]        = str_replace(

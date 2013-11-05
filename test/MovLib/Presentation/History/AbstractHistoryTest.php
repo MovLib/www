@@ -15,24 +15,24 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool;
+namespace MovLib\Presentation\History;
 
 /**
- * @coversDefaultClass \MovLib\Tool\TraitUtilities
+ * @coversDefaultClass \MovLib\Presentation\History\AbstractHistory
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class TraitUtilitiesTest extends \MovLib\TestCase {
+class AbstractHistoryTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Tool\TraitUtilities */
-  protected $traitUtilities;
+  /** @var \MovLib\Presentation\History\AbstractHistory */
+  protected $abstractHistory;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -42,7 +42,7 @@ class TraitUtilitiesTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->traitUtilities = $this->getMockForAbstractClass("\\MovLib\\Tool\\TraitUtilities");
+    $this->abstractHistory = $this->getMockForAbstractClass("\\MovLib\\Presentation\\History\\AbstractHistory");
   }
 
   /**
@@ -65,50 +65,42 @@ class TraitUtilitiesTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::invoke
-   * @todo Implement invoke
+   * @covers ::formatChangedFile
+   * @todo Implement formatChangedFile
    */
-  public function testInvoke() {
+  public function testFormatChangedFile() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::getProperty
-   * @todo Implement getProperty
+   * @covers ::formatDiff
+   * @todo Implement formatDiff
    */
-  public function testGetProperty() {
+  public function testFormatDiff() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::getStaticProperty
-   * @todo Implement getStaticProperty
+   * @covers ::formatRevision
+   * @todo Implement formatRevision
    */
-  public function testGetStaticProperty() {
+  public function testFormatRevision() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::setProperty
-   * @todo Implement setProperty
+   * @covers ::diffPage
+   * @todo Implement diffPage
    */
-  public function testSetProperty() {
+  public function testDiffPage() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::setStaticProperty
-   * @todo Implement setStaticProperty
+   * @covers ::revisionsPage
+   * @todo Implement revisionsPage
    */
-  public function testSetStaticProperty() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::property
-   * @todo Implement property
-   */
-  public function testProperty() {
+  public function testRevisionsPage() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
