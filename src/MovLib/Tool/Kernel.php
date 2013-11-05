@@ -55,6 +55,7 @@ class Kernel extends \MovLib\Kernel {
    */
   public function __construct() {
     global $db, $i18n, $kernel, $session;
+    ini_set("display_errors", true);
 
     // The tool kernel has to ensure that the document root is always set to the actual MovLib document root without
     // tampering with any super global (which might destroy other software).
@@ -82,7 +83,6 @@ class Kernel extends \MovLib\Kernel {
    * @return this
    */
   public function initCLI($composer = false) {
-    ini_set("display_errors", true);
     // There are too many PHP errors that might occurr and break composer!
     if ($composer) {
       restore_error_handler();
