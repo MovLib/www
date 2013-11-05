@@ -88,4 +88,23 @@ class SystemLanguage {
     $this->nameNative   = \Locale::getDisplayLanguage($this->languageCode, $this->locale);
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Callback for select form elements for consistent formatting.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $value
+   *   The select option's value attribute.
+   * @param \MovLib\Data\SystemLanguage $option
+   *   The select option's text value.
+   */
+  public function selectCallback(&$value, &$option) {
+    global $i18n;
+    $value  = $this->languageCode;
+    $option = $this->languageCode == $i18n->languageCode ? $this->name : "{$this->name} ({$this->nameNative})";
+  }
+
 }

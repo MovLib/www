@@ -59,7 +59,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    *   The select's global identifier.
    * @param string $label
    *   The select's label text.
-   * @param array $options
+   * @param array|\ArrayAccess $options
    *   The select's available options as associative array where the key is the content of the option's value-attribute
    *   and the array's value the option's display text.
    * @param mixed $value [optional]
@@ -71,7 +71,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    * @param boolean $helpPopup
    *   Whether the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
-  public function __construct($id, $label, array $options, $value = null, array $attributes = null, $help = null, $helpPopup = true) {
+  public function __construct($id, $label, $options, $value = null, array $attributes = null, $help = null, $helpPopup = true) {
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
     $this->options = $options;
     $this->value   = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
@@ -82,7 +82,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public function __toString() {
     global $i18n;
-
+try{
     //  The first child option element of a select element with a required attribute and without a multiple attribute,
     //  and whose size is 1, must have either an empty value attribute, or must have no text content.
     $emptyValue = empty($this->value);
@@ -90,11 +90,15 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
     $options    = "<option{$selected} value=''>{$i18n->t("Please Select …")}</option>";
 
     foreach ($this->options as $value => $option) {
+      if (is_object($option)) {
+        $option->selectCallback($value, $option);
+      }
       $selected = !$emptyValue && $this->value == $value ? " selected" : null;
       $options .= "<option{$selected} value='{$value}'>{$option}</option>";
     }
 
     return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><select{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
+}catch(\Exception $e){return"<pre>{$e}</pre>";}
   }
 
 

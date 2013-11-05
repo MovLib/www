@@ -60,6 +60,18 @@ class SystemLanguages implements \ArrayAccess, \Countable, \Iterator {
 
 
   /**
+   * Order the system languages by their names.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return this
+   */
+  public function orderByName() {
+    global $i18n;
+    $i18n->getCollator()->osort($this->systemLanguages, "name");
+    return $this;
+  }
+
+  /**
    * @inheritdoc
    */
   public function count() {

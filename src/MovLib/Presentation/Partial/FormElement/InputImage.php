@@ -92,15 +92,17 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    * @inheritdoc
    */
   public function __toString() {
+    try{
     if ($this->image->imageExists === true) {
       return
         "<div class='row'>" .
-          "<div class='span span--1'>{$this->getImage($this->image, Image::IMAGE_STYLE_SPAN1)}</div>" .
+          "<div class='span span--1'>{$this->getImage($this->image->getImageStyle(Image::IMAGE_STYLE_SPAN_01))}</div>" .
           "<div class='span span--8'>{$this->help}<label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></div>" .
         "</div>"
       ;
     }
     return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+    }catch(\Exception $e){return "<pre>{$e}</pre>";}
   }
 
 
