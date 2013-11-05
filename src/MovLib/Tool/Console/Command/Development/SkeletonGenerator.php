@@ -186,9 +186,9 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
     $this->write("Sekeleton Generator Report:");
     $doneSomething = false;
     foreach ([ "Deleted", "New", "Extended" ] as $action) {
-      if (!empty($this->{"sekeletons{$action}"})) {
+      if (!empty($this->{"skeletons{$action}"})) {
         $this->write(strtoupper($action), self::MESSAGE_TYPE_INFO);
-        $this->write($this->{"sekeletons{$action}"});
+        $this->write($this->{"skeletons{$action}"});
         $doneSomething = true;
       }
     }

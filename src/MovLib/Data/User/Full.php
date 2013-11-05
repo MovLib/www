@@ -363,14 +363,15 @@ class Full extends \MovLib\Data\User\User {
    * Set deactivated flag, purge personal data.
    *
    * @todo Delete avatar image!
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Data\DatabaseException
    */
   public function deactivate() {
-    global $session;
+    global $kernel, $session;
     $sessions = $session->getActiveSessions();
-    DelayedMethodCalls::stack($session, "delete", array_column($sessions, "session_id"));
+    $kernel->delayMethodCall([ $session, "delete" ], array_column($sessions, "session_id"));
     $this->deleteImage();
     $this->query(
       "UPDATE `users` SET

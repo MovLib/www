@@ -183,11 +183,13 @@ class User extends \MovLib\Data\Image\AbstractImage {
   /**
    * Delete the user's avatar image and all styles of it.
    *
+   * @global \MovLib\Kernel $kernel
    * @internal
    *   No need to delete the directory, all avatars are in the same directory and at least one is always present.
    * @return this
    */
   protected function deleteImage() {
+    global $kernel;
     if ($this->imageExists == true) {
       foreach ([ self::IMAGE_STYLE_SPAN_01, self::IMAGE_STYLE_SPAN_02 ] as $style) {
         $path = $this->getImagePath($style);
@@ -197,7 +199,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
       }
       $this->imageExists  = false;
       $this->imageChanged = $this->imageExtension = $this->imageStylesCache = null;
-      DelayedMethodCalls::stack($this, "commit");
+      $kernel->delayMethodCall([ $this, "commit" ]);
     }
     return $this;
   }
