@@ -18,6 +18,8 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\UserException;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Partial\Alert;
@@ -63,13 +65,14 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
   /**
    * Instantiate new user password settings presentation.
    *
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
 
+    // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
     if (!isset($_GET["token"])) {
       $session
         ->checkAuthorization($i18n->t("You need to sign in to change your password."))
@@ -77,26 +80,32 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
       ;
     }
 
+    // Translate and set the page title.
     $this->init($i18n->t("Password Settings"));
 
+    // First field to enter the new password.
     $this->newPassword = new InputPassword("new-password", $i18n->t("New Password"), [
       "placeholder" => $i18n->t("Enter your new password"),
     ]);
     $this->newPassword->setHelp("<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
 
+    // Second field to enter the new password for confirmation.
     $this->newPasswordConfirm = new InputPassword("new-password-confirm", $i18n->t("Confirm Password"), [
       "placeholder" => $i18n->t("Enter your new password again"),
     ]);
 
+    // Initialize the actual form of this page.
     $this->form = new Form($this, [ $this->newPassword, $this->newPasswordConfirm ]);
     $this->form->attributes["autocomplete"] = "off";
 
+    // The submit button.
     $this->form->actionElements[] = new InputSubmit([
       "title" => $i18n->t("Click here to request the password change after you filled out all fields."),
       "value" => $i18n->t("Request Password Change"),
     ]);
 
-    if (isset($_GET["token"])) {
+    // Validate the token if the page was requested via GET and a token is actually present.
+    if ($kernel->requestMethod == "GET" && isset($_GET["token"])) {
       $this->validateToken();
     }
   }

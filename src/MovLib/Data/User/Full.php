@@ -245,23 +245,73 @@ class Full extends \MovLib\Data\User\User {
 
 
   /**
+   * Change the user's email address.
+   *
+   * @param string $token
+   *   The user token from the URL.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\UserException
+   */
+  public function changeEmail($token) {
+    $result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $token ])->get_result()->fetch_row();
+    if (empty($result)) {
+      throw new DatabaseException("Couldn't find change email data for token '{$token}'.");
+    }
+    $data = unserialize($result[0]);
+    if (empty($data["user_id"]) || empty($data["new_email"]) || $data["user_id"] !== $this->id) {
+      throw new UserException("The stored data for the change email token '{$token}' doesn't match the current's user data.");
+    }
+    $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $token ]);
+    $this->query("UPDATE `users` SET `email` = ? WHERE `user_id` = ?", "sd", [ $data["new_email"], $this->id ]);
+    return $this;
+  }
+
+  /**
+   * Change the user's password.
+   *
+   * @param string $token
+   *   The user token from the URL.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Exception\UserException
+   */
+  public function changePassword($token) {
+    $result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $token ])->get_result()->fetch_row();
+    if (empty($result)) {
+      throw new DatabaseException("Couldn't find change password data for token '{$token}'.");
+    }
+    $data = unserialize($result[0]);
+    if (empty($data["user_id"]) || empty($data["new_password"]) || $data["user_id"] !== $this->id) {
+      throw new UserException("The stored data for the change password token '{$token}' doesn't match the current's user data.");
+    }
+    $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $token ]);
+    $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $data["new_password"], $this->id ]);
+    return $this;
+  }
+
+  /**
    * Check if this email address is already in use.
    *
+   * @param string $email
+   *   The email address to look up.
    * @return boolean
    *   <code>TRUE</code> if this email address is already in use, otherwise <code>FALSE</code>.
    */
-  public function checkEmail() {
-    return !empty($this->query("SELECT `user_id` FROM `users` WHERE `email` = ?", "s", [ $this->email ])->get_result()->fetch_row());
+  public function checkEmail($email) {
+    return !empty($this->query("SELECT `user_id` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_row());
   }
 
   /**
    * Check if this name is already in use.
    *
+   * @param string $username
+   *   The username to look up.
    * @return boolean
    *   <code>TRUE</code> if this name is already in use, otherwise <code>FALSE</code>.
    */
-  public function checkName() {
-    return !empty($this->query("SELECT `user_id` FROM `users` WHERE `name` = ?", "s", [ $this->name ])->get_result()->fetch_row());
+  public function checkName($username) {
+    return !empty($this->query("SELECT `user_id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $username ])->get_result()->fetch_row());
   }
 
   /**
@@ -406,12 +456,29 @@ class Full extends \MovLib\Data\User\User {
   }
 
   /**
+   * Prepare email change for this user.
+   *
+   * @param string $newEmail
+   *   The valid new email address.
+   * @return string
+   *   The key of the temporary table record.
+   */
+  public function prepareEmailChange($newEmail) {
+    $key = hash("sha256", openssl_random_pseudo_bytes(1024));
+    $this->query("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)", "sss", [ serialize([
+      "user_id"   => $this->id,
+      "new_email" => $newEmail,
+    ]), $key, self::TMP_TTL_DAILY ]);
+    return $key;
+  }
+
+  /**
    * Prepare password change for this user.
    *
    * @param string $rawPassword
    *   The unhashed new password.
    * @return string
-   *   The key of the temporar table record.
+   *   The key of the temporary table record.
    */
   public function preparePasswordChange($rawPassword) {
     $password = $this->passwordHash($rawPassword);
@@ -531,29 +598,6 @@ class Full extends \MovLib\Data\User\User {
   public function updateEmail($newEmail) {
     $this->email = $newEmail;
     return $this->query("UPDATE `users` SET `email` = ? WHERE `user_id` = ?", "sd", [ $this->email, $this->id ]);
-  }
-
-  /**
-   * Change the user's password.
-   *
-   * @param string $token
-   *   The user token from the URL.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Exception\UserException
-   */
-  public function changePassword($token) {
-    $result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $token ])->get_result()->fetch_row();
-    if (empty($result)) {
-      throw new DatabaseException("Couldn't find change password data for token '{$token}'.");
-    }
-    $data = unserialize($result[0]);
-    if (empty($data["user_id"]) || empty($data["new_password"]) || $data["user_id"] !== $this->id) {
-      throw new UserException("The stored data for the change password token '{$token}' doesn't match the current session data.");
-    }
-    $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $token ]);
-    $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $data["new_password"], $this->id ]);
-    return $this;
   }
 
 }
