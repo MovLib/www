@@ -174,7 +174,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    */
   public function commit() {
     return $this->query(
-      "UPDATE `users` SET `avatar_changed` = ?, `avatar_extension` = ? WHERE `user_id` = ?",
+      "UPDATE `users` SET `avatar_changed` = FROM_UNIXTIME(?), `avatar_extension` = ? WHERE `user_id` = ?",
       "ssd",
       [ $this->imageChanged, $this->imageExtension, $this->id ]
     );
@@ -234,7 +234,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
   /**
    * {@inheritdoc}
    *
-   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @internal
    *   The user's avatar is different from other images, we don't keep the original file and directly generate all
    *   styles (instead of a delayed call to ImageMagick as in other image classes). This is because avatar's are small
@@ -251,6 +251,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\ImageException
    */
   public function uploadImage($source, $extension, $height, $width) {
+    global $kernel;
     $this->imageChanged   = $_SERVER["REQUEST_TIME"];
     $this->imageExists    = true;
     $this->imageExtension = $extension;
@@ -259,7 +260,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
       $this->convertImage($source, self::IMAGE_STYLE_SPAN_02, self::IMAGE_STYLE_SPAN_02, self::IMAGE_STYLE_SPAN_02, true),
       self::IMAGE_STYLE_SPAN_01
     );
-    DelayedMethodCalls::stack($this, "commit");
     return $this;
   }
 

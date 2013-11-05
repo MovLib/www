@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Data\Image\AbstractImage as Image;
-use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\ValidationException;
 
@@ -115,11 +114,31 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   public function validate(){
     global $i18n;
 
-    if (empty($_FILES[$this->id])) {
+    if (empty($_FILES[$this->id]) || $_FILES[$this->id]["error"] === UPLOAD_ERR_NO_FILE) {
       if (in_array("required", $this->attributes)) {
         throw new ValidationException($i18n->t("The “{0}” image field is mandatory.", [ $this->label ]));
       }
       return $this;
+    }
+
+    if ($_FILES[$this->id]["error"] !== UPLOAD_ERR_OK) {
+      switch ($_FILES[$this->id]["error"]) {
+        case UPLOAD_ERR_INI_SIZE:
+        case UPLOAD_ERR_FORM_SIZE:
+          throw new ValidationException("The uploaded image is too large, it must be {0,number,integer} {1} or smaller.", [
+            $this->formatBytes($this->attributes["data-max-filesize"])
+          ]);
+
+        case UPLOAD_ERR_PARTIAL:
+          throw new ValidationException("The uploaded image wasn’t completely uploaded, please try again.");
+
+        case UPLOAD_ERR_NO_TMP_DIR:
+        case UPLOAD_ERR_CANT_WRITE:
+        case UPLOAD_ERR_EXTENSION:
+          $e = new ValidationException("There was an unknown problem while processing your upload, please try again.", $_FILES[$this->id]["error"]);
+          error_log($e);
+          throw $e;
+      }
     }
 
     // Gather meta information about the uploaded image, getimagesize() will fail if this isn't a valid image.
@@ -129,7 +148,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
       assert($height > 0);
       assert($type === IMAGETYPE_JPEG || $type === IMAGETYPE_PNG);
     }
-    catch (ErrorException $e) {
+    catch (\ErrorException $e) {
       throw new ValidationException($i18n->t("Unsupported image type and/or corrupt image, the following types are supported: JPG and PNG"));
     }
 
@@ -160,7 +179,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     }
 
     // Time to move the image to our persistent storage, all seems valid.
-    $this->image->moveUploadedImage($_FILES[$this->id]["tmp_name"], $width, $height, $this->extensions[$type]);
+    $this->image->uploadImage($_FILES[$this->id]["tmp_name"], $this->extensions[$type], $height, $width);
     return $this;
   }
 

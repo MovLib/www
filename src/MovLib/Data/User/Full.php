@@ -325,6 +325,8 @@ class Full extends \MovLib\Data\User\User {
     global $i18n;
     return $this->query(
       "UPDATE `users` SET
+        `avatar_changed`       = FROM_UNIXTIME(?),
+        `avatar_extension`     = ?,
         `birthday`             = ?,
         `country_id`           = ?,
         `dyn_profile`          = COLUMN_ADD(`dyn_profile`, ?, ?),
@@ -339,8 +341,10 @@ class Full extends \MovLib\Data\User\User {
         `website`              = ?
       WHERE `user_id`          = ?
         LIMIT 1",
-      "sissssisissssd",
+      "sssissssisissssd",
       [
+        $this->imageChanged,
+        $this->imageExtension,
         $this->birthday,
         $this->countryId,
         $i18n->languageCode,
