@@ -82,7 +82,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public function __toString() {
     global $i18n;
-try{
+
     //  The first child option element of a select element with a required attribute and without a multiple attribute,
     //  and whose size is 1, must have either an empty value attribute, or must have no text content.
     $emptyValue = empty($this->value);
@@ -98,7 +98,6 @@ try{
     }
 
     return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><select{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
-}catch(\Exception $e){return"<pre>{$e}</pre>";}
   }
 
 
@@ -110,9 +109,11 @@ try{
    */
   public function validate() {
     global $i18n;
+
     if (!isset($this->options[$this->value])) {
       throw new ValidationException($i18n->t("The submitted value {0} is not a valid option.", [ $this->placeholder($this->value) ]));
     }
+
     return $this;
   }
 

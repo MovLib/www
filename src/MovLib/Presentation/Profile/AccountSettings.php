@@ -167,14 +167,14 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "value" => $this->user->birthday,
     ], $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
 
-    $this->profile  = new Textarea("profile", $i18n->t("About You"), $this->user->profile, [
-      "data-allow-external" => true,
-      "data-form"           => HTML::FORMAT_ANCHORS,
-      "placeholder"         => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
-    ]);
+//    $this->profile  = new Textarea("profile", $i18n->t("About You"), $this->user->profile, [
+//      "data-allow-external" => true,
+//      "data-form"           => HTML::FORMAT_ANCHORS,
+//      "placeholder"         => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
+//    ]);
 
     $this->language = new Select("language", $i18n->t("System Language"), (new SystemLanguages())->orderByName(), $this->user->systemLanguageCode);
-    $this->country  = new Select("country", $i18n->t("Country"), (new Countries())->orderByName(), $this->user->countryId);
+    $this->country  = new Select("country", $i18n->t("Country"), (new Countries())->orderByName()->reindex("id"), $this->user->countryId);
     $this->timezone = new Select("time_zone_id", $i18n->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneId);
     $this->website  = new InputURL("website", $i18n->t("Website"), [ "data-allow-external" => true, "value" => $this->user->website ]);
     $this->private  = new InputCheckbox("private", $i18n->t("Keep my data private!"), [ "value" => $this->user->private ], $i18n->t(
@@ -189,7 +189,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->avatar,
       $this->sex,
       $this->birthday,
-      $this->profile,
+//      $this->profile,
       $this->language,
       $this->country,
       $this->timezone,
@@ -213,24 +213,29 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
    * Validate data that couldn't be auto-validated and update the user's account settings.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @param array $errors
+   *   {@inheritdoc}
    * @return this
    */
-  public function validate() {
+  public function validate(array $errors = null) {
     global $i18n;
-    $this->user->birthday           = $this->birthday->value;
-    $this->user->countryId          = $this->country->value;
-    $this->user->private            = $this->private->value;
-    $this->user->profile            = $this->profile->content;
-    $this->user->realName           = $this->realName->value;
-    $this->user->sex                = $this->sex->value;
-    $this->user->systemLanguageCode = $this->language->value;
-    $this->user->timeZoneId         = $this->timezone->value;
-    $this->user->website            = $this->website->value;
-    $this->user->commit();
-    $success                        = new Alert($i18n->t("Your account settings were updated successfully."));
-    $success->title                 = $i18n->t("Account Settings Updated Successfully");
-    $success->severity              = Alert::SEVERITY_SUCCESS;
-    $this->alerts                  .= $success;
+    if ($this->checkErrors($errors) === false) {
+      $this->user->birthday           = $this->birthday->value;
+      $this->user->countryId          = $this->country->value;
+      $this->user->private            = $this->private->value;
+//      $this->user->profile            = $this->profile->content;
+      $this->user->realName           = $this->realName->value;
+      $this->user->sex                = $this->sex->value;
+      $this->user->systemLanguageCode = $this->language->value;
+      $this->user->timeZoneId         = $this->timezone->value;
+      $this->user->website            = $this->website->value;
+      $this->user->commit();
+      $this->alerts                  .= new Alert(
+        $i18n->t("Your account settings were updated successfully."),
+        $i18n->t("Account Settings Updated Successfully"),
+        Alert::SEVERITY_SUCCESS
+      );
+    }
     return $this;
   }
 

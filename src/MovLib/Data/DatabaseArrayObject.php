@@ -80,6 +80,24 @@ class DatabaseArrayObject extends \MovLib\Data\Database implements \ArrayAccess,
   }
 
   /**
+   * Re-index the internal array.
+   *
+   * @param mixed $key
+   *   The column to use as the index/keys for the returned array. This value may be the integer key of the column, or
+   *   it may be the string key name.
+   * @return this
+   * @throws \ErrorException
+   */
+  public function reindex($key) {
+    $copy = $this->objectsArray;
+    unset($this->objectsArray);
+    foreach ($copy as $object) {
+      $this->objectsArray[$object->{$key}] = $object;
+    }
+    return $this;
+  }
+
+  /**
    * @inheritdoc
    */
   public function rewind() {
