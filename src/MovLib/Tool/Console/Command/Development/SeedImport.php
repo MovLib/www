@@ -321,96 +321,6 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   }
 
   /**
-   * Import all time zones and their translations.
-   *
-   * @link https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-   * @global \MovLib\Tool\Kernel $kernel
-   * @global \MovLib\Tool\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @return this
-   * @throws \MovLib\Exception\DatabaseExeption
-   * @throws \ErrorException
-   */
-  public function importTimeZones() {
-    global $kernel, $db, $i18n;
-    $this->write("Importing time zone translations ...");
-
-    $systemLanguages = $kernel->systemLanguages;
-    $timeZoneIds     = timezone_identifiers_list();
-    $c               = count($timeZoneIds);
-    $translations    = [];
-
-    foreach ($kernel->systemLanguages as $languageCode => $locale) {
-      if ($languageCode == $i18n->languageCode) {
-        // @todo These translations aren't quite correct! Create translation file!
-        for ($i = 0; $i < $c; ++$i) {
-          $translations[$languageCode][$timeZoneIds[$i]] = strtr($timeZoneIds[$i], "_", " ");
-        }
-        // We don't want to to insert the default language into our dynamic columns!
-        unset($systemLanguages[$languageCode]);
-      }
-      else {
-        $fh = fopen("{$this->seedPath}/" . self::OPTION_DATABASE . "/time_zones_{$languageCode}.txt", "r");
-        while (($line = fgets($fh)) !== false) {
-          if (empty($line)) {
-            continue;
-          }
-          if (strpos($line, ";") === false) {
-            throw new \LogicException("Time zone ID translations file for '{$languageCode}' has invalid syntax.");
-          }
-          list($timeZoneId, $translation) = explode(";", $line);
-          if (!in_array($timeZoneId, $timeZoneIds)) {
-            throw new \LogicException("Time zone ID '{$timeZoneId}' from translations for '{$languageCode}' isn't a valid time zone ID.");
-          }
-          $translations[$languageCode][$timeZoneId] = $translation;
-        }
-        if (($x = count($translations[$languageCode])) !== $c) {
-          if ($x < $c) {
-            $msg = "are missing translations for at least " . ($c - $x) . " time zone IDs.";
-          }
-          else {
-            $msg = ($x - $c) . " translations too much.";
-          }
-          throw new \LogicException("Time zone ID translations for '{$languageCode}' have {$msg}");
-        }
-      }
-    }
-
-    if (!empty($translations)) {
-      $query = "INSERT INTO `messages` (`message`, `dyn_translations`) VALUES ";
-      for ($i = 0; $i < $c; ++$i) {
-        $dynTranslations = null;
-        foreach ($systemLanguages as $languageCode => $locale) {
-          if (empty($translations[$languageCode][$timeZoneIds[$i]])) {
-            continue;
-          }
-          $dynTranslations .= "'{$languageCode}', '{$db->escapeString($translations[$languageCode][$timeZoneIds[$i]])}',";
-        }
-        if (empty($dynTranslations)) {
-          $dynTranslations = "''";
-        }
-        else {
-          $dynTranslations = "COLUMN_CREATE(" . rtrim($dynTranslations, ",") . ")";
-        }
-        $query .= "('{$db->escapeString($translations[$i18n->defaultLanguageCode][$timeZoneIds[$i]])}', {$dynTranslations}),";
-      }
-      if (!empty($query)) {
-        try {
-          $db->transactionStart();
-          $db->query(rtrim($query, ",") . " ON DUPLICATE KEY UPDATE `message`=VALUES(`message`), `dyn_translations`=VALUES(`dyn_translations`)");
-          $db->transactionCommit();
-        }
-        catch (DatabaseException $e) {
-          $db->transactionRollback();
-          throw $e;
-        }
-      }
-    }
-
-    return $this->write("Successfully imported time zone translations!", self::MESSAGE_TYPE_INFO);
-  }
-
-  /**
    * Translate the given <var>$data</var> with Intl ICU.
    *
    * @global \MovLib\Tool\Database $db
@@ -454,7 +364,6 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     // Array containing the names of all tasks that should be executed.
     $tasks = [
       "importIntlICUCountriesAndLanguages",
-      "importTimeZones",
       "databaseImport",
       "uploadImport",
     ];

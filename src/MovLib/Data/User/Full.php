@@ -232,7 +232,8 @@ class Full extends \MovLib\Data\User\User {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
       $stmt->close();
-      $this->imageName   = mb_strtolower($this->name);
+      $this->imageExists = (boolean) $this->imageExists;
+      $this->imageName   = rawurlencode($this->name);
       $this->private     = (boolean) $this->private;
       $this->deactivated = (boolean) $this->deactivated;
       // The image name already has all unsave characters removed.
@@ -362,14 +363,15 @@ class Full extends \MovLib\Data\User\User {
    * Set deactivated flag, purge personal data.
    *
    * @todo Delete avatar image!
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Data\DatabaseException
    */
   public function deactivate() {
-    global $session;
+    global $kernel, $session;
     $sessions = $session->getActiveSessions();
-    DelayedMethodCalls::stack($session, "delete", array_column($sessions, "session_id"));
+    $kernel->delayMethodCall([ $session, "delete" ], array_column($sessions, "session_id"));
     $this->deleteImage();
     $this->query(
       "UPDATE `users` SET

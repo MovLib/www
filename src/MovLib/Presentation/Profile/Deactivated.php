@@ -17,8 +17,8 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Exception\Client\RedirectSeeOtherException as Redirect;
-use \MovLib\Data\User\Full as User;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
+use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\Button;
@@ -33,14 +33,8 @@ use \MovLib\Presentation\Partial\FormElement\Button;
  * @since 0.0.1-dev
  */
 class Deactivated extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Profile\TraitProfile;
-
-  /**
-   * The presentation's form.
-   *
-   * @var \MovLib\Presentation\Partial\Form
-   */
-  private $form;
 
   /**
    * Instantiate new user deactivated presentation.
@@ -50,19 +44,30 @@ class Deactivated extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n, $session;
+
+    // Redirect the user to the home page if not authenticated.
     if ($session->isAuthenticated === false) {
-      throw new Redirect("/");
+      throw new RedirectSeeOtherException("/");
     }
-    $this->user = new User(User::FROM_ID, $session->userId);
+
+    // Instantiate new full user object and check if this user is really deactivated, if not redirect to dashboard.
+    $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
     if ($this->user->deactivated === false) {
       throw new Redirect($i18n->r("/my"));
     }
+
+    // Translate and set the page title.
     $this->init($i18n->t("Deactivated"));
-    $info = new Alert($i18n->t("Your account has been deactivated, do you wish to activate it again?"));
-    $info->title = $i18n->t("Account Deactivated");
-    $info->severity = Alert::SEVERITY_INFO;
-    $this->alerts .= $info;
-    $this->form = new Form($this, []);
+
+    // Let the user know why we are displaying this page.
+    $this->alerts .= new Alert(
+      $i18n->t("Your account has been deactivated, do you wish to activate it again?"),
+      $i18n->t("Account Deactivated"),
+      Alert::SEVERITY_INFO
+    );
+
+    // The page form to re-activate the account.
+    $this->form = new Form($this);
     $this->form->actionElements[] = new Button("activate", "Yes", [
       "class" => "button--success button--large",
       "title" => $i18n->t("Click here if you wish to reactivate your account."),
@@ -85,24 +90,29 @@ class Deactivated extends \MovLib\Presentation\Page {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
+   * @param array $errors [optional]
+   *   {@inheritdoc}
    * @return this
    */
-  public function validate() {
+  public function validate(array $errors = null) {
     global $i18n, $session;
+
     if (isset($_POST["activate"])) {
-      (new User(User::FROM_ID, $session->userId))->reactivate();
-      $success = new Alert($i18n->t("Your account was successfully reactivated. We are very pleased to see you back {0}!", [
-        $this->placeholder($session->userName),
-      ]));
-      $success->title = $i18n->t("Reactivation Successful");
-      $success->severity = Alert::SEVERITY_SUCCESS;
-      $session->alerts .= $success;
-      throw new Redirect($i18n->r("/my"));
+      (new UserFull(UserFull::FROM_ID, $session->userId))->reactivate();
+      $session->alerts = new Alert(
+        $i18n->t("Your account was successfully reactivated. We are very pleased to see you back {0}!", [
+          $this->placeholder($session->userName),
+        ]),
+        $i18n->t("Reactivation Successful"),
+        Alert::SEVERITY_SUCCESS
+      );
+      throw new RedirectSeeOtherException($i18n->r("/my"));
     }
     else {
       $session->destroy();
-      throw new Redirect("/");
+      throw new RedirectSeeOtherException($i18n->r("/users/login"));
     }
+
     return $this;
   }
 

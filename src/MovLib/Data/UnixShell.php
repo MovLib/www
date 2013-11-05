@@ -72,11 +72,9 @@ class UnixShell {
    * @link http://stackoverflow.com/questions/222414/asynchronous-shell-exec-in-php
    * @param string $command
    *   The external shell program to execute.
-   * @return this
    */
   public static function executeDetached($command) {
     exec("{$command} <&- 1<&- 2<&- &");
-    return $this;
   }
 
   /**
