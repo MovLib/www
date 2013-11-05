@@ -17,9 +17,11 @@
  */
 namespace MovLib\Presentation\History;
 
+use \MovLib\Data\History\Movie;
+
 /**
  * @coversDefaultClass \MovLib\Presentation\History\AbstractHistory
- * @author Skeleton Generator
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -33,6 +35,9 @@ class AbstractHistoryTest extends \MovLib\TestCase {
 
   /** @var \MovLib\Presentation\History\AbstractHistory */
   protected $abstractHistory;
+  
+  /** @var string */
+  protected $commitHash;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -41,15 +46,34 @@ class AbstractHistoryTest extends \MovLib\TestCase {
   /**
    * Called before each test.
    */
-  protected function setUp() {
-    $this->abstractHistory = $this->getMockForAbstractClass("\\MovLib\\Presentation\\History\\AbstractHistory");
+ protected function setUp() {
+    global $kernel, $db, $i18n;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
+    if (is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
+
+    $movie = new Movie(2, "phpunitrepos");
+    $this->commitHash = $movie->createRepository();  
+    $db->query("UPDATE `movies` SET `commit` = '{$this->commitHash}' WHERE `movie_id` = 2");
+    
+    $movie->startEditing();
+    $this->commitHash = $movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
+    $db->query("UPDATE `movies` SET `commit` = '{$this->commitHash}' WHERE `movie_id` = 2");
+    
+    $this->abstractHistory = $this->getMockForAbstractClass("\\MovLib\\Presentation\\History\\AbstractHistory", [ "phpunitrepos" ], "MovieHistory");
+    $this->setProperty($this->abstractHistory, "historyModel", $movie);
+    
+    $_SERVER["MOVIE_ID"] = 2;
+    $_SERVER["REVISION_HASH"] = $this->commitHash;
   }
 
-  /**
-   * Called after each test.
-   */
   protected function tearDown() {
-
+    global $kernel;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
+    if (is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
   }
 
 
@@ -63,45 +87,66 @@ class AbstractHistoryTest extends \MovLib\TestCase {
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
-
   /**
    * @covers ::formatChangedFile
-   * @todo Implement formatChangedFile
    */
   public function testFormatChangedFile() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->setProperty($this->abstractHistory, "revisionItemHash", $this->commitHash);
+    $this->assertContains(
+      "<a href='/movie/2/diff/{$this->commitHash}#Original Title'>Original Title</a>",
+      $this->invoke($this->abstractHistory, "formatChangedFile", [ "Original Title" ])
+    );
   }
-
+  
   /**
    * @covers ::formatDiff
-   * @todo Implement formatDiff
    */
   public function testFormatDiff() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->assertContains(
+      "<a id='Original Title'>Original Title</a><div class='well well--small'><span class='green'>The foobar is a lie</span></div>",
+      $this->invoke($this->abstractHistory, "formatDiff", [ "original_title" ])
+    );
   }
 
   /**
    * @covers ::formatRevision
-   * @todo Implement formatRevision
    */
   public function testFormatRevision() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $revisionItem = [
+      "author_id"   => 1,
+      "author_name" => "Fleshgrinder",
+      "hash"        => $this->commitHash,
+      "timestamp"   => 1383664598,
+      "subject"     => "added original title"
+    ];
+    
+    $this->assertContains(
+      "<a href='/movie/2/diff/{$this->commitHash}'>diff</a> | Nov 5, 2013, 3:16:38 PM by <a href='/user/Fleshgrinder' "
+      . "title='Profile of Fleshgrinder'>Fleshgrinder</a>: added original title<ul class='well well--small no-list'><li>"
+      . "<a href='/movie/2/diff/{$this->commitHash}#Original Title'>Original Title</a>",
+      $this->invoke($this->abstractHistory, "formatRevision", [ $revisionItem ])
+    );
   }
 
   /**
    * @covers ::diffPage
-   * @todo Implement diffPage
    */
   public function testDiffPage() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->assertContains("Difference between revisions", $this->invoke($this->abstractHistory, "diffPage"));
+    $this->assertContains("Original Title", $this->invoke($this->abstractHistory, "diffPage"));
+    $this->assertContains(
+      "<div id='revision-diff'><a href='/movie/2/history' class='pull-right'>go back</a><h2>Difference between revisions"
+      . "</h2><ul><li>", $this->invoke($this->abstractHistory, "diffPage")
+    );
   }
 
   /**
    * @covers ::revisionsPage
-   * @todo Implement revisionsPage
    */
   public function testRevisionsPage() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->assertContains(
+      "<div id='revision-history'><h2>Revision history</h2>", $this->invoke($this->abstractHistory, "revisionsPage")
+    );
   }
 
 }

@@ -34,54 +34,6 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Data\History\Movie */
-  private $movie;
-
-  /** @var \MovLib\Presentation\History\MovieHistoryDiff */
-  private $historyDiffPage;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Fixtures
-
-
-  public function setUp() {
-    global $kernel, $db;
-
-    $path = "{$kernel->documentRoot}/private/phpunitrepos";
-    if (is_dir($path)) {
-      exec("rm -rf {$path}");
-    }
-
-    $_SERVER["MOVIE_ID"] = 2;
-
-    $this->historyDiffPage    = new MovieHistoryDiff("phpunitrepos");
-    $this->movie              = new Movie($_SERVER["MOVIE_ID"], "phpunitrepos");
-    $_SERVER["REVISION_HASH"] = $this->movie->createRepository();
-    $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
-
-    $this->movie->startEditing();
-    $_SERVER["REVISION_HASH"] = $this->movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
-    $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
-  }
-
-  public function tearDown() {
-    global $kernel;
-    $path = "{$kernel->documentRoot}/private/phpunitrepos";
-    if (is_dir($path)) {
-      exec("rm -rf {$path}");
-    }
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Tests
-
-
-  public function testGetPageContent() {
-    $this->assertContains(
-      "<a href='/movie/2/history' accesskey='h' class='separator active'",
-      $this->invoke($this->historyDiffPage, "getContent")
-    );
-  }
 
   public function testContentDiffPage() {
     $this->assertContains(
@@ -92,45 +44,8 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     );
   }
 
-  public function testTextDiff() {
-    global $db;
-    $this->movie->startEditing();
-    $_SERVER["REVISION_HASH"] = $this->movie->saveHistory([ "original_title" => "The bar is not a lie" ], "added original title");
-    $db->query("UPDATE `movies` SET `commit` = '{$_SERVER["REVISION_HASH"]}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
 
-    $this->assertContains(
-      "Original Title", $this->invoke($this->historyDiffPage, "contentDiffPage")
-    );
-    $this->assertContains(
-      "The <span class='red'>foo</span>bar is <span class='green'>not </span>a lie", $this->invoke($this->historyDiffPage, "contentDiffPage")
-    );
-
-    $from = "The bar is not a lie";
-    $to   = "The foobar is a lie";
-    $this->assertContains(
-      "The <span class='red'>bar</span> <span class='green'>foobar</span> is <span class='red'>not</span> a lie",
-      $this->invoke($this->historyDiffPage, "textDiffOfStrings", [$from, $to])
-    );
-  }
-
-  public function testFormatFileNames() {
-    $fileNames = [
-      "original_title",
-      "cast",
-      "de_synopsis",
-      "en_comment"
-    ];
-
-    $this->assertEquals(
-      [
-      "Original Title",
-      "Cast",
-      "Synopsis (German)",
-      "Comment (English)"
-      ], $this->invoke($this->historyDiffPage, "formatFileNames", [ $fileNames ])
-    );
-  }
-
+ 
   public function testDiffIdsWithUsers() {
     $diff = ["added" => [1, 3 ], "removed" => [2 ], "edited" => [ ] ];
     $this->assertEquals(

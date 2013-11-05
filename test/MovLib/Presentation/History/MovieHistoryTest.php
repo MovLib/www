@@ -79,4 +79,20 @@ class MovieHistoryTest extends \MovLib\TestCase {
     );
   }
   
+  /**
+   * @covers ::getSecondaryNavigationMenuItems
+   * @todo Implement getSecondaryNavigationMenuItems
+   */
+  public function testGetSecondaryNavigationMenuItems() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::initMovie
+   * @todo Implement initMovie
+   */
+  public function testInitMovie() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

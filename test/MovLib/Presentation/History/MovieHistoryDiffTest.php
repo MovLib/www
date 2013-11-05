@@ -21,7 +21,7 @@ use \MovLib\Presentation\History\MovieHistoryDiff;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\History\MovieHistoryDiff
- * @author Skeleton Generator
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -263,6 +263,22 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
    * @todo Implement textDiffOfStrings
    */
   public function testTextDiffOfStrings() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getSecondaryNavigationMenuItems
+   * @todo Implement getSecondaryNavigationMenuItems
+   */
+  public function testGetSecondaryNavigationMenuItems() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::initMovie
+   * @todo Implement initMovie
+   */
+  public function testInitMovie() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

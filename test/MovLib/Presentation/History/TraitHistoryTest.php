@@ -37,6 +37,9 @@ class TraitHistoryTest extends \MovLib\TestCase {
   
   /** @var \MovLib\Presentation\History\TraitHistory */
   protected $traitHistory;
+  
+  /** @var string */
+  protected $commitHash;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -46,25 +49,29 @@ class TraitHistoryTest extends \MovLib\TestCase {
    * Called before each test.
    */
    protected function setUp() {
-    global $config, $db;
-    $path = "{$config->documentRoot}/private/phpunitrepos";
+    global $kernel, $db, $i18n;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
 
-    $_SERVER["MOVIE_ID"] = 2;
-
     $this->movie = new Movie(2, "phpunitrepos");
-    $commitHash  = $this->movie->createRepository();
-    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+    $this->commitHash = $this->movie->createRepository();  
+    $db->query("UPDATE `movies` SET `commit` = '{$this->commitHash}' WHERE `movie_id` = 2");
     
-    $this->traitHistory = $this->getMockForTrait("\\MovLib\\Presentation\\History\\TraitHistory", [], "MovieHistory");
-    $this->setProperty($this->traitHistory, "historyModel", $this->movie);    
+    $this->movie->startEditing();
+    $this->commitHash = $this->movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
+    $db->query("UPDATE `movies` SET `commit` = '{$this->commitHash}' WHERE `movie_id` = 2");
+        
+    $_SERVER["MOVIE_ID"] = 2;
+    $_SERVER["REVISION_HASH"] = $this->commitHash;
+    
+    $this->traitHistory = new \MovLib\Presentation\History\MovieHistory("phpunitrepos"); 
   }
 
   protected function tearDown() {
-    global $config;
-    $path = "{$config->documentRoot}/private/phpunitrepos";
+    global $kernel;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
     if (is_dir($path)) {
       exec("rm -rf {$path}");
     }
@@ -73,49 +80,6 @@ class TraitHistoryTest extends \MovLib\TestCase {
   
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
-  
-  /**
-   * @covers ::contentDiffPage
-   * @todo Implement contentDiffPage
-   */
-  public function testContentDiffPage() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-    
-  }
-
-  /**
-   * @covers ::contentRevisionsPage
-   */
-  public function testContentRevisionsPage() {
-    global $db;
-
-    $this->assertContains(
-      "No revisions found", $this->invoke($this->traitHistory, "contentRevisionsPage")
-    );
-
-    $this->movie->startEditing();
-    $commitHash = $this->movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
-    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
-
-    $this->assertContains(
-      "added original title", $this->invoke($this->traitHistory, "contentRevisionsPage")
-    );
-    $this->assertContains(
-      "<li>Original Title</li>", $this->invoke($this->traitHistory, "contentRevisionsPage")
-    );
-
-    $this->movie->startEditing();
-    $commitHash = $this->movie->saveHistory([ "original_title" => "The bar is not a lie", "cast" => [1, 2, 3 ] ], "edited original title, added cast");
-    $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
-
-    $this->assertContains(
-      "edited original title, added cast", $this->invoke($this->traitHistory, "contentRevisionsPage")
-    );
-    $this->assertContains(
-      "<li>Cast</li><li>Original Title</li>", $this->invoke($this->traitHistory, "contentRevisionsPage")
-    );
-    
-  }
 
   /**
    * @covers ::diffArray
@@ -143,10 +107,23 @@ class TraitHistoryTest extends \MovLib\TestCase {
 
   /**
    * @covers ::formatFileNames
-   * @todo Implement formatFileNames
    */
   public function testFormatFileNames() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $fileNames = [
+      "original_title",
+      "cast",
+      "de_synopsis",
+      "en_comment"
+    ];
+
+    $this->assertEquals(
+      [
+      "Original Title",
+      "Cast",
+      "Synopsis (German)",
+      "Comment (English)"
+      ], $this->invoke($this->traitHistory, "formatFileNames", [ $fileNames ])
+    );
   }
 
   /**
@@ -167,18 +144,29 @@ class TraitHistoryTest extends \MovLib\TestCase {
 
   /**
    * @covers ::textDiffOfRevisions
-   * @todo Implement textDiffOfRevisions
    */
   public function testTextDiffOfRevisions() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    global $db;
+    $this->movie->startEditing();
+    $this->commitHash = $this->movie->saveHistory([ "original_title" => "The bar is not a lie" ], "added original title");
+    $db->query("UPDATE `movies` SET `commit` = '{$this->commitHash}' WHERE `movie_id` = {$_SERVER["MOVIE_ID"]}");
+
+    $this->assertContains(
+      "The <span class='red'>foo</span>bar is <span class='green'>not </span>a lie",
+      $this->invoke($this->traitHistory, "textDiffOfRevisions", [ $this->commitHash, "{$this->commitHash}^1", "original_title", true ])
+    );
   }
 
   /**
    * @covers ::textDiffOfStrings
-   * @todo Implement textDiffOfStrings
    */
   public function testTextDiffOfStrings() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $from = "The bar is not a lie";
+    $to   = "The foobar is a lie";
+    $this->assertContains(
+      "The <span class='red'>bar</span> <span class='green'>foobar</span> is <span class='red'>not</span> a lie",
+      $this->invoke($this->traitHistory, "textDiffOfStrings", [$from, $to])
+    );
   }
 
 }

@@ -44,7 +44,7 @@ class Database {
    *
    * @var \mysqli
    */
-  public $mysqli;
+  public static $mysqli;
 
   /**
    * Flag indicating if a transaction is active.
@@ -80,23 +80,23 @@ class Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function connect() {
-    if (!isset($this->mysqli)) {
+    if (!isset(self::$mysqli)) {
       try {
-        $this->mysqli = new \mysqli();
-        $this->mysqli->real_connect();
+        self::$mysqli = new \mysqli();
+        self::$mysqli->real_connect();
       }
       catch (\ErrorException $e) {
-        $this->mysqli->kill($this->mysqli->thread_id);
-        $this->mysqli->real_connect();
+        self::$mysqli->kill(self::$mysqli->thread_id);
+        self::$mysqli->real_connect();
       }
-      if ($this->mysqli->connect_error) {
+      if (self::$mysqli->connect_error) {
         throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
       }
-      if ($this->mysqli->select_db($this->database) === false) {
+      if (self::$mysqli->select_db($this->database) === false) {
         throw new DatabaseException("Selecting database '{$this->database}' failed", $mysqli->error, $mysqli->errno);
       }
     }
-    return $this->mysqli;
+    return self::$mysqli;
   }
 
   /**
@@ -157,11 +157,11 @@ class Database {
         if ($foreignKeyChecks === false) {
           $this->query("SET foreign_key_checks = 1");
         }
-        throw new DatabaseException("Execution of multiple queries failed", $this->mysqli->error, $this->mysqli->errno);
+        throw new DatabaseException("Execution of multiple queries failed", self::$mysqli->error, self::$mysqli->errno);
       }
-      $this->mysqli->use_result();
-      if (($more = $this->mysqli->more_results())) {
-        $error = $this->mysqli->next_result();
+      self::$mysqli->use_result();
+      if (($more = self::$mysqli->more_results())) {
+        $error = self::$mysqli->next_result();
       }
     }
     while ($more);
@@ -191,7 +191,7 @@ class Database {
     }
     /* @var $stmt \mysqli_stmt */
     if (($stmt = $this->connect()->prepare($query)) === false) {
-      throw new DatabaseException("Preparation of statement failed", $this->mysqli->error, $this->mysqli->errno);
+      throw new DatabaseException("Preparation of statement failed", self::$mysqli->error, self::$mysqli->errno);
     }
     if ($types && $params) {
       if (!is_string($types) || empty($params)) {
@@ -245,11 +245,11 @@ class Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
-    if (!isset($this->mysqli) || $this->transactionActive === false) {
+    if (!isset(self::$mysqli) || $this->transactionActive === false) {
       throw new DatabaseException("No active transaction, nothing to commit.");
     }
-    if (($this->transactionActive = $this->mysqli->commit($flags)) === false) {
-      $e = new DatabaseException("Commit failed", $this->mysqli->error, $this->mysqli->errno);
+    if (($this->transactionActive = self::$mysqli->commit($flags)) === false) {
+      $e = new DatabaseException("Commit failed", self::$mysqli->error, self::$mysqli->errno);
       $this->transactionRollback();
       throw $e;
     }
@@ -265,11 +265,11 @@ class Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
-    if (!isset($this->mysqli) || $this->transactionActive === false) {
+    if (!isset(self::$mysqli) || $this->transactionActive === false) {
       throw new DatabaseException("No active transaction, nothing to rollback.");
     }
-    if (($this->transactionActive = $this->mysqli->rollback($flags)) === false) {
-      throw new DatabaseException("Rollback failed", $this->mysqli->error, $this->mysqli->errno);
+    if (($this->transactionActive = self::$mysqli->rollback($flags)) === false) {
+      throw new DatabaseException("Rollback failed", self::$mysqli->error, self::$mysqli->errno);
     }
     return $this;
   }
@@ -287,7 +287,7 @@ class Database {
    */
   public function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
     if (($this->transactionActive = $this->connect()->begin_transaction($flags)) === false) {
-      throw new DatabaseException("Could not start transaction", $this->mysqli->error, $this->mysqli->errno);
+      throw new DatabaseException("Could not start transaction", self::$mysqli->error, self::$mysqli->errno);
     }
     return $this;
   }

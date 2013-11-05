@@ -402,14 +402,14 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Hide a repository.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \MovLib\Exception\HistoryException
    * @throws \MovLib\Exception}FileSystemException
    */
   private function hideRepository() {
-    global $config;
-    $newPath = "{$config->documentRoot}/private/{$this->context}/{$this->type}/.{$this->id}";
+    global $kernel;
+    $newPath = "{$kernel->documentRoot}/private/{$this->context}/{$this->type}/.{$this->id}";
     if (is_dir($newPath)) {
       throw new HistoryException("Repository already hidden", self::E_REPOSITORY_IN_USE);
     }
@@ -542,14 +542,14 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   /**
    * Unhide a repository.
    *
-   * @global \MovLib\Configuration $config
+   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \MovLib\Exception\HistoryException
    * @throws \MovLib\Exception}FileSystemException
    */
   private function unhideRepository() {
-    global $config;
-    $newPath = "{$config->documentRoot}/private/{$this->context}/{$this->type}/{$this->id}";
+    global $kernel;
+    $newPath = "{$kernel->documentRoot}/private/{$this->context}/{$this->type}/{$this->id}";
     if (is_dir($newPath)) {
       throw new HistoryException("Repository not hidden");
     }

@@ -80,10 +80,17 @@ class GenresTest extends \MovLib\TestCase {
 
   /**
    * @covers ::__construct
-   * @todo Implement __construct
    */
   public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    global $i18n;
+    $this->assertNotNull($this->getProperty($this->genres, "query"));
+    $this->assertNotContains("dynName", $this->getProperty($this->genres, "query"));
+    
+    $i18n = new \MovLib\Data\I18n("de-at");
+    $this->genres = new Genres();
+    $this->assertContains("dynName", $this->getProperty($this->genres, "query"));
+    $i18n = new \MovLib\Data\I18n();
+    $this->genres = new Genres();
   }
 
 }

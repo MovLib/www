@@ -103,16 +103,23 @@ class LanguagesTest extends \MovLib\TestCase {
     $result = array_column($db->query("SELECT `name` FROM `languages`")->get_result()->fetch_all(), 0);
     $i18n->getCollator()->asort($result);
     foreach ($result as $name) {
-      //$this->assertEquals($name, $this->languages[$name]->name);
+      $this->assertEquals($name, $this->languages[$name]->name);
     }
   }
 
   /**
    * @covers ::__construct
-   * @todo Implement __construct
    */
   public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    global $i18n;
+    $this->assertNotNull($this->getProperty($this->languages, "query"));
+    $this->assertNotContains("dyn_translations", $this->getProperty($this->languages, "query"));
+    
+    $i18n = new \MovLib\Data\I18n("de-at");
+    $this->languages = new Languages();
+    $this->assertContains("dyn_translations", $this->getProperty($this->languages, "query"));
+    $i18n = new \MovLib\Data\I18n();
+    $this->languages = new Languages();
   }
 
 }

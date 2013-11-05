@@ -82,10 +82,17 @@ class StylesTest extends \MovLib\TestCase {
 
   /**
    * @covers ::__construct
-   * @todo Implement __construct
    */
   public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    global $i18n;
+    $this->assertNotNull($this->getProperty($this->styles, "query"));
+    $this->assertNotContains("dyn_names", $this->getProperty($this->styles, "query"));
+    
+    $i18n = new \MovLib\Data\I18n("de-at");
+    $this->styles = new Styles();
+    $this->assertContains("dyn_names", $this->getProperty($this->styles, "query"));
+    $i18n = new \MovLib\Data\I18n();
+    $this->styles = new Styles();
   }
 
 }

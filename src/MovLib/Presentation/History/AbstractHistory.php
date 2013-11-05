@@ -49,7 +49,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
    *
    * @var string
    */
-  private $revisionItemHash;
+  protected $revisionItemHash;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -121,7 +121,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
         null,
         IntlDateFormatter::MEDIUM,
         IntlDateFormatter::MEDIUM
-      )} {$i18n->t(" by ")} {$this->a($i18n->r("/user/{0}", [  $revisionItem["author_name"] ]),
+      )} {$i18n->t("by")} {$this->a($i18n->r("/user/{0}", [  $revisionItem["author_name"] ]),
         $i18n->t("{0}", [ $revisionItem["author_name"] ]),
         [ "title" => $i18n->t("Profile of {0}", [ $revisionItem["author_name"] ]) ]
       )}: {$revisionItem["subject"]}{$list}";
