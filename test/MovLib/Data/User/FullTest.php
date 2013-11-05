@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\User;
 
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Data\User\Session;
 
@@ -46,7 +47,7 @@ class FullTest extends \MovLib\TestCase {
 
 
   public static function tearDownAfterClass() {
-    exec("movdev db -a"); // Static context, do not use $this
+    sh::execute("movlib si");
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
@@ -114,7 +115,7 @@ class FullTest extends \MovLib\TestCase {
     $this->assertEquals("PHPUnit/PHPUnit", $user->timeZoneId);
     $this->assertEquals("http://phpunit.net/", $user->website);
 
-    $this->exec("movdev db -s users");
+    sh::execute("movlib si -d users");
   }
 
   /**
@@ -141,7 +142,7 @@ class FullTest extends \MovLib\TestCase {
     //$this->assertNull($user->twitter);
     $this->assertNull($user->website);
 
-    $this->exec("movdev db -s users");
+    sh::execute("movlib si -d users");
   }
 
   /**
@@ -171,7 +172,7 @@ class FullTest extends \MovLib\TestCase {
     $this->assertTrue(password_verify("Test1234", $data["password"]));
 
     $db->query("TRUNCATE TABLE `tmp`");
-    $this->exec("movdev db -s users");
+    sh::execute("movlib si -d users");
   }
 
   /**
@@ -277,7 +278,7 @@ class FullTest extends \MovLib\TestCase {
     $stmt->bind_result($deactivated);
     $stmt->fetch();
     $this->assertFalse((boolean) $deactivated);
-    $this->exec("movdev db -s users");
+    sh::execute("movlib si -d users");
   }
 
   /**
@@ -305,7 +306,7 @@ class FullTest extends \MovLib\TestCase {
     $this->assertTrue(password_verify("Test1234", $result["password"]));
 
     $db->query("TRUNCATE TABLE `tmp`");
-    $this->exec("movdev db -s users");
+    sh::execute("movlib si -d users");
   }
 
   /**
@@ -322,7 +323,7 @@ class FullTest extends \MovLib\TestCase {
     $stmt->bind_result($email);
     $stmt->fetch();
     $this->assertEquals("phpunit@movlib.org", $email);
-    $this->exec("movdev db -s users");
+    sh::execute("movlib si -d users");
   }
 
   /**
@@ -347,7 +348,7 @@ class FullTest extends \MovLib\TestCase {
     $stmt->close();
 
     $this->assertNotEquals($oldHash, $newHash);
-    $this->exec("movdev db -s users");
+    sh::execute("movlib si -d users");
   }
 
   /**

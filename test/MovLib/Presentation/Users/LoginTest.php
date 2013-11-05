@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Users;
 
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\Session;
 use \MovLib\Data\User\Full as User;
 use \MovLib\Presentation\Users\Login;
@@ -213,7 +214,7 @@ class LoginTest extends \MovLib\TestCase {
       throw $e;
     }
     finally {
-      exec("movdev db -s users");
+      sh::execute("movlib si -d users");
     }
   }
 

@@ -20,6 +20,7 @@ namespace MovLib\Data;
 use \MovLib\Data\Collator;
 use \MovLib\Data\I18n;
 use \MovLib\Data\Movie;
+use \MovLib\Data\UnixShell as sh;
 
 /**
  * @coversDefaultClass \MovLib\Data\Movie
@@ -52,7 +53,7 @@ class MovieTest extends \MovLib\TestCase {
    * @inheritdoc
    */
   public static function tearDownAfterClass() {
-    self::exec("movlib si -d movies");
+    sh::execute("movlib si -d movies");
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Test methods

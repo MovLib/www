@@ -111,18 +111,19 @@ class NavigationTest extends \MovLib\TestCase {
    * @covers ::__toString
    */
   public function testToStringClosure() {
-    $this->navigation->callback = function ($menuitem, $index, $total) {
+    $this->navigation->callback = function ($menuitem) {
+      static $index = 0;
       return [
         "/phpunit{$index}",
         "phpunit-linktext{$index}",
-        [ "title" => "phpunit-title{$index}", "data-total" => $total ],
+        [ "title" => "phpunit-title" . $index++ ],
       ];
     };
     $this->assertEquals(
       "<nav id='phpunit-nav' role='navigation'>" .
       "<h2 class='visuallyhidden' id='phpunit-nav-title'>PHPUnit</h2>" .
       "<div role='menu'>" .
-      "<a href='/phpunit0' title='phpunit-title0' data-total='1' role='menuitem'>phpunit-linktext0</a>" .
+      "<a href='/phpunit0' title='phpunit-title0' role='menuitem'>phpunit-linktext0</a>" .
       "</div>" .
       "</nav>", (string) $this->navigation
     );

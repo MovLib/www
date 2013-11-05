@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\User;
 
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\User;
 
 /**
@@ -34,7 +35,7 @@ class UserTest extends \MovLib\TestCase {
 
 
   public function tearDown() {
-    $this->exec("movdev db -s users");
+    sh::execute("movlib si -d users");
   }
 
 

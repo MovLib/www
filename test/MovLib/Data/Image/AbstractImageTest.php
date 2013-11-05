@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\Image;
 
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\Image\AbstractImage as Image;
 
 /**
@@ -46,8 +47,8 @@ class AbstractImageTest extends \MovLib\TestCase {
     self::$dirOriginal = "{$_SERVER["DOCUMENT_ROOT"]}/uploads/originals/phpunit/";
     self::$dirStyles = "{$_SERVER["DOCUMENT_ROOT"]}/uploads/phpunit/";
     self::$tmpImage = tempnam(ini_get("upload_tmp_dir"), "phpunit") . ".jpg";
-    self::exec("convert -size 500x500 xc: +noise Random " . self::$tmpImage);
-    self::exec("mkdir -p '" . self::$dirOriginal . "' '" . self::$dirStyles . "'");
+    sh::execute("convert -size 500x500 xc: +noise Random " . self::$tmpImage);
+    sh::execute("mkdir -p '" . self::$dirOriginal . "' '" . self::$dirStyles . "'");
   }
 
   protected function setUp() {
@@ -58,11 +59,11 @@ class AbstractImageTest extends \MovLib\TestCase {
   }
 
   protected function tearDown() {
-    $this->exec("rm -r '" . self::$dirOriginal . "*' '" . self::$dirStyles . "*'");
+    sh::execute("rm -r '" . self::$dirOriginal . "*' '" . self::$dirStyles . "*'");
   }
 
   public static function tearDownAfterClass() {
-    self::execDetached("rm -r '" . self::$dirOriginal . "' '" . self::$dirStyles . "'");
+    sh::executeDetached("rm -r '" . self::$dirOriginal . "' '" . self::$dirStyles . "'");
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Tests

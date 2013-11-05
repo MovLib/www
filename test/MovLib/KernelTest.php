@@ -44,7 +44,18 @@ class KernelTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
+    $_SERVER["DOCUMENT_ROOT"]   = dirname(dirname(__DIR__));
+    $_SERVER["SERVER_NAME"]     = "movlib.org";
+    $_SERVER["SERVER_PROTOCOL"] = "HTTP/1.1";
+    $_SERVER["REMOTE_ADDR"]     = "127.0.0.1";
+    $_SERVER["REQUEST_METHOD"]  = "GET";
+    $_SERVER["REQUEST_URI"]     = "/";
+    $_SERVER["SCHEME"]          = "https";
+    $_SERVER["HTTP_USER_AGENT"] = ini_get("user_agent");
+    $_SERVER["PRESENTER"]       = "Home";
+    ob_start();
     $this->kernel = new Kernel();
+    ob_clean();
   }
 
 

@@ -15,26 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception;
+namespace MovLib\Presentation\Email;
 
-use \MovLib\Exception\ConsoleHandlers;
+use \MovLib\Presentation\Email\FatalErrorEmail;
 
 /**
- * @coversDefaultClass \MovLib\Exception\ConsoleHandlers
+ * @coversDefaultClass \MovLib\Presentation\Email\FatalErrorEmail
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ConsoleHandlersTest extends \MovLib\TestCase {
+class FatalErrorEmailTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Exception\ConsoleHandlers */
-  protected $consoleHandlers;
+  /** @var \MovLib\Presentation\Email\FatalErrorEmail */
+  protected $fatalErrorEmail;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,7 +44,7 @@ class ConsoleHandlersTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->consoleHandlers = new ConsoleHandlers();
+    $this->fatalErrorEmail = new FatalErrorEmail();
   }
 
   /**
@@ -71,6 +71,22 @@ class ConsoleHandlersTest extends \MovLib\TestCase {
    * @todo Implement __construct
    */
   public function testConstruct() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getHTML
+   * @todo Implement getHTML
+   */
+  public function testGetHTML() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getPlainText
+   * @todo Implement getPlainText
+   */
+  public function testGetPlainText() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

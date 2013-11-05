@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Users;
 
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\Session;
 use \MovLib\Data\User\Full as User;
 use \MovLib\Presentation\Email\Users\Registration as RegistrationEmail;
@@ -55,7 +56,7 @@ class RegistrationTest extends \MovLib\TestCase {
     unset($_SERVER["PATH_INFO"]);
     unset($_POST);
     unset($_GET);
-    exec("movdev db -a");
+    sh::execute("movlib si");
   }
 
   // ------------------------------------------------------------------------------------------------------------------- Helpers
