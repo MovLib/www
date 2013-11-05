@@ -17,6 +17,9 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \DOMDocument;
+use \DOMText;
+use \MovLib\Exception\ValidationException;
 use \MovLib\Presentation\Validation\HTML;
 
 /**
@@ -36,11 +39,18 @@ class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractFormElem
 
 
   /**
-   * The textarea's content.
+   * The textarea's raw content.
    *
    * @var null|string
    */
-  public $content;
+  protected $content;
+
+  /**
+   * The textarea's encoded content.
+   *
+   * @var null|string
+   */
+  public $value;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -90,9 +100,53 @@ class Textarea extends \MovLib\Presentation\Partial\FormElement\AbstractFormElem
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
    */
   public function validate() {
-    $this->content = (new HTML($this->content, $this->attributes["data-format"], $this->attributes["data-allow-external"]))->validate();
+    global $i18n;
+    try {
+      $dom = new DOMDocument();
+      $dom->loadHTML("<meta charset='utf-8'>{$this->content}", LIBXML_NOENT);
+      $level = -1;
+      $nodes   = [ $level => [ $dom->getElementsByTagName("body")->item(0) ] ];
+      $endTags = [];
+      do {
+        while (!empty($nodes[$level])) {
+          /* @var $node \DOMNode */
+          $node = array_shift($nodes[$level]);
+          if ($level >= 0) {
+            // If text node, sanitize text and simply append to sanitized content.
+            if ($node instanceof DOMText) {
+              $this->value = "{$this->value}{$this->checkPlain($node->wholeText)}";
+            }
+            else {
+              // Sanitize tag and attributes + append to sanitized content.
+              $this->value = "{$this->value}<{$node->tagName}>";
+              // Stack end tag, if needed.
+              $endTags[$level][] = "</{$node->tagName}>";
+            }
+          }
+          // If we have children, stack them on the nodes array and increase level.
+          if ($node->hasChildNodes()) {
+            $level++;
+            foreach ($node->childNodes as $childNode) {
+              $nodes[$level][] = $childNode;
+            }
+          }
+        }
+        $level--;
+        if ($level >= 0 && isset($endTags[$level])) {
+          while ($endTag = array_pop($endTags[$level])) {
+            $this->value = "{$this->value}{$endTag}";
+          }
+        }
+      }
+      while ($level >= 0);
+    }
+    catch (\ErrorException $e) {
+      throw new ValidationException($i18n->t("Invalid HTML. Please correct your input and submit your work again."));
+    }
+    $this->value = htmlspecialchars($this->value);
     return $this;
   }
 
