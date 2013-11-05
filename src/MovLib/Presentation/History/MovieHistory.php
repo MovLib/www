@@ -27,7 +27,6 @@ namespace MovLib\Presentation\History;
  * @since 0.0.1-dev
  */
 class MovieHistory extends \MovLib\Presentation\History\AbstractHistory {
-  use \MovLib\Presentation\History\TraitHistory;
   use \MovLib\Presentation\Movie\TraitMoviePage;
 
 

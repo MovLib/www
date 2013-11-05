@@ -31,9 +31,60 @@ use \MovLib\Presentation\Partial\Lists\Unordered;
  * @since 0.0.1-dev
  */
 abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+  use \MovLib\Presentation\History\TraitHistory;
   
+  
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The history model to display.
+   *
+   * @var \MovLib\Data\History\AbstractHistory
+   */
+  protected $historyModel;
+  
+  /**
+   * Current revision item hash to be used in closure.
+   *
+   * @var string
+   */
+  private $revisionItemHash;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+  
+  /**
+   * Helper mothod to format changes file.
+   * 
+   * @global \MovLib\Data\I18n
+   * @param string $listItem
+   *   Name of the changed file.
+   * @return string
+   *   Returns one changed file for formatRevision().
+   */
+  public function formatChangedFile($listItem) {
+    global $i18n;
+    return $this->a($i18n->r("/{0}/{1}/diff/{2}#{3}", [
+        $this->historyModel->type,
+        $this->historyModel->id,
+        $this->revisionItemHash,
+        $listItem
+      ]), $listItem
+    );
+  }  
+  
+  /**
+   * Helper mothod to format diff items.
+   * 
+   * @param string $listItem
+   *   Name of the list item.
+   * @return string
+   *   Returns one list item for diff page.
+   */
   public function formatDiff($listItem) {
-    return "<div class='well well--small'>{$this->getDiff(
+    $displayItem = $this->formatFileNames([$listItem])[0];
+    return "<a id='$displayItem'>{$displayItem}</a><div class='well well--small'>{$this->getDiff(
       $_SERVER["REVISION_HASH"],
       "{$_SERVER["REVISION_HASH"]}^",
       $listItem
@@ -41,7 +92,43 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
   }
   
   /**
-   * Helper function to build diff page.
+   * Helper mothod to format revision items.
+   * 
+   * @global \MovLib\Data\I18n
+   * @param string $revisionItem
+   *   Name of the revision item.
+   * @return string
+   *   Returns one revision item for revision page.
+   */
+  public function formatRevision($revisionItem) {
+    global $i18n;
+    $this->revisionItemHash = $revisionItem["hash"];
+    $changedFiles = $this->historyModel->getChangedFiles($revisionItem["hash"], "{$revisionItem["hash"]}^1");
+    $list = new Unordered($this->formatFileNames($changedFiles), $i18n->t("Nothing changed"), [
+      "class" => "well well--small no-list"
+    ]);
+    $list->closure = [ $this, "formatChangedFile" ];
+    
+    return
+      "{$this->a(
+        $i18n->r("/{0}/{1}/diff/{2}", [
+          $this->historyModel->type,
+          $this->historyModel->id,
+          $revisionItem["hash"]
+        ]), $i18n->t("diff")
+      )} | {$i18n->formatDate(
+        $revisionItem["timestamp"],
+        null,
+        IntlDateFormatter::MEDIUM,
+        IntlDateFormatter::MEDIUM
+      )} {$i18n->t(" by ")} {$this->a($i18n->r("/user/{0}", [  $revisionItem["author_name"] ]),
+        $i18n->t("{0}", [ $revisionItem["author_name"] ]),
+        [ "title" => $i18n->t("Profile of {0}", [ $revisionItem["author_name"] ]) ]
+      )}: {$revisionItem["subject"]}{$list}";
+  }
+  
+  /**
+   * Method to build diff page.
    *
    * @global \MovLib\Data\I18n
    * @return string
@@ -49,7 +136,9 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
    */
   protected function diffPage() {
     global $i18n;
-    $list = new Unordered($this->historyModel->getChangedFiles($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^1"));
+    $list = new Unordered($this->historyModel->getChangedFiles($_SERVER["REVISION_HASH"], "{$_SERVER["REVISION_HASH"]}^1"),
+      $i18n->t("Nothing changed")
+    );
     $list->closure = [ $this, "formatDiff" ];
 
     return
@@ -71,52 +160,21 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
   protected function revisionsPage() {
     global $i18n;
     $commits = $this->historyModel->getLastCommits();
+    
     $userIds = [];
-
     $c = count($commits);
     for ($i = 0; $i < $c; ++$i) {
       $userIds[] = $commits[$i]["author_id"];
     }
-
     $users = (new Users())->orderById($userIds);
-
-    $revisions = [];
     for ($i = 0; $i < $c; ++$i) {
-      $revisions[$i] = $i18n->formatDate(
-        $commits[$i]["timestamp"],
-        null,
-        IntlDateFormatter::MEDIUM,
-        IntlDateFormatter::MEDIUM
-      );
-
-      if (isset($users[ $userIds[$i] ]->name)) {
-        $authorName = $users[ $userIds[$i] ]->name;
-        $revisions[$i] .=
-          $i18n->t(" by ") .
-          $this->a($i18n->r("/user/{0}", [ $authorName ]), $i18n->t("{0}", [ $authorName ]), [
-            "title" => $i18n->t("Profile of {0}", [ $authorName ])
-          ]);
-      }
-
-      $revisions[$i] .=
-        ": {$commits[$i]["subject"]} " .
-        $this->a($i18n->r("/{0}/{1}/diff/{2}", [ $this->historyModel->type, $_SERVER["MOVIE_ID"], $commits[$i]["hash"] ]),
-          $i18n->t("show diff"), [
-            "class" => "pull-right"
-          ]
-        );
-
-      $changedFiles = $this->historyModel->getChangedFiles($commits[$i]["hash"], "{$commits[$i]["hash"]}^1");
-      $revisions[$i] .= new Unordered($this->formatFileNames($changedFiles), $i18n->t("Nothing changed"), [
-        "class" => "well well--small no-list"
-      ]);
+      $commits[$i]["author_name"] = isset($users[ $commits[$i]["author_id"] ]) ? $users[ $commits[$i]["author_id"] ]->name : "";
     }
+    
+    $list = new Unordered($commits, $i18n->t("No revisions found"));
+    $list->closure = [ $this, "formatRevision" ];
 
-    return
-      "<div id='revision-history'>" .
-        "<h2>{$i18n->t("Revision history")}</h2>" .
-        new Unordered($revisions, $i18n->t("No revisions found")) .
-      "</div>";
+    return "<div id='revision-history'><h2>{$i18n->t("Revision history")}</h2>{$list}</div>";
   }
 
 }
