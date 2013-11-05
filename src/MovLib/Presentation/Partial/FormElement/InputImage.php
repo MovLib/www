@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Data\Image\AbstractImage as Image;
-use \MovLib\Exception\ErrorException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\ValidationException;
 
@@ -149,7 +148,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
       assert($height > 0);
       assert($type === IMAGETYPE_JPEG || $type === IMAGETYPE_PNG);
     }
-    catch (ErrorException $e) {
+    catch (\ErrorException $e) {
       throw new ValidationException($i18n->t("Unsupported image type and/or corrupt image, the following types are supported: JPG and PNG"));
     }
 
@@ -180,7 +179,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     }
 
     // Time to move the image to our persistent storage, all seems valid.
-    $this->image->moveUploadedImage($_FILES[$this->id]["tmp_name"], $width, $height, $this->extensions[$type]);
+    $this->image->uploadImage($_FILES[$this->id]["tmp_name"], $this->extensions[$type], $height, $width);
     return $this;
   }
 

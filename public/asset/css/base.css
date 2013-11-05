@@ -218,14 +218,14 @@ html {
 }
 
 body {
-  margin: 0;
   padding-top: 51px; /* @see layout/header.css */
+  margin: 0;
 }
 
 html,
 body {
-  background-color: #252525;
   height: 100%;
+  background-color: #252525;
 }
 
 abbr[title] {
@@ -243,12 +243,6 @@ button,
 select,
 textarea,
 table {
-  -webkit-text-size-adjust: 100%;
-     -moz-text-size-adjust: 100%;
-      -ms-text-size-adjust: 100%;
-  -webkit-font-smoothing: antialiased;
-  color: #656565;
-  text-rendering: geometricPrecision;
 /*
   About the MovLib font stack
   Our main goal is it to ensure users of Microsoft and Apple computers have the best viewing pleasure. Why not Linux you
@@ -273,6 +267,12 @@ table {
   - http://www.smashingmagazine.com/2013/05/17/typographic-design-patterns-practices-case-study-2013/
 */
   font: normal 14px/1.46 "Open Sans", Arial, Meiryo, "Microsoft Yahei", "MS Yahei", Yahei, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #656565;
+  text-rendering: geometricPrecision;
+  -webkit-text-size-adjust: 100%;
+     -moz-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
 }
 
 /* Ensure Chinese strings are displayed with the correct font choice. */
@@ -314,8 +314,8 @@ h3,
 h4,
 h5,
 h6 {
-  color: #353535;
   margin: 10px 0;
+  color: #353535;
 }
 
 h1 small,
@@ -324,10 +324,10 @@ h3 small,
 h4 small,
 h5 small,
 h6 small {
-  color: #656565;
   display: inline;
-  line-height: 1;
   margin: 0;
+  line-height: 1;
+  color: #656565;
 }
 
 h1,
@@ -379,8 +379,8 @@ sup {
 
 sub,
 sup {
-  line-height: 0;
   position: relative;
+  line-height: 0;
   vertical-align: baseline;
 }
 
@@ -401,19 +401,19 @@ var {
 
 code,
 var {
-  border-color: #d4d4d4;
   padding: 2px 4px;
   white-space: nowrap;
+  border-color: #d4d4d4;
 }
 
 pre {
-  border-color: #aeaeae;
   display: block;
-  margin: 0 0 10px;
   padding: 9.5px;
-  white-space: pre-wrap;
+  margin: 0 0 10px;
   word-break: break-all;
   word-wrap: break-word;
+  white-space: pre-wrap;
+  border-color: #aeaeae;
 }
 
 var {
@@ -425,13 +425,13 @@ var {
 
 
 ::-moz-selection {
-  background: #09c;
   color: #fff;
+  background: #09c;
 }
 
 ::selection {
-  background: #09c;
   color: #fff;
+  background: #09c;
 }
 
 
@@ -439,11 +439,11 @@ var {
 
 
 a {
-  transition: 0.4s ease-out;
-  transition-property: color, border-color;
-  border-bottom: 1px solid transparent;
   color: #09c;
   text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: 0.4s ease-out;
+  transition-property: color, border-color;
 }
 
 a:hover,
@@ -452,9 +452,9 @@ a:focus {
 }
 
 a:focus {
-  outline-offset: -2px;
   outline: 1px dotted #656565;
   outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
 }
 
 a:hover,
@@ -478,10 +478,10 @@ a.img {
  */
 
 hr {
-  background-color: #e5e5e5;
-  border: 0;
   height: 1px;
   padding: 0;
+  background-color: #e5e5e5;
+  border: 0;
 }
 
 fieldset,
@@ -501,17 +501,17 @@ small {
 
 
 img {
-  -ms-interpolation-mode: bicubic;
-  border: 0;
   vertical-align: middle;
+  border: 0;
+  -ms-interpolation-mode: bicubic;
 }
 
 
 /* ==== FORMs, INPUTs And BUTTONs =================================================================================== */
 
 fieldset {
-  border: 0;
   padding: 0;
+  border: 0;
 }
 
 button,
@@ -523,8 +523,8 @@ input[type="submit"] {
 
 button::-moz-focus-inner,
 input::-moz-focus-inner {
-  border: 0;
   padding: 0;
+  border: 0;
 }
 
 button,
@@ -546,10 +546,10 @@ input[type="url"],
 select,
 textarea {
   display: block;
-  margin-bottom: 15px;
+  width: 100%;
   min-height: 30px;
   padding: 7px 9px;
-  width: 100%;
+  margin-bottom: 15px;
 }
 
 label,
@@ -575,39 +575,35 @@ input[type="search"]::-webkit-search-cancel-button {
 input,
 select,
 textarea {
+  display: inline-block;
+  vertical-align: middle;
   border: 1px solid #ccc;
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
-  display: inline-block;
   transition: 0.2s linear;
   transition-property: border, box-shadow;
-  vertical-align: middle;
 }
 
 input:focus,
 select:focus,
 textarea:focus {
   border-color: rgba(82, 168, 236, 0.8);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
   outline: 0;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
 }
 
 input:invalid:not(:empty),
-input.invalid,
-select.invalid,
-textarea:invalid:not(:empty),
-textarea.invalid {
+.invalid,
+textarea:invalid:not(:empty) {
   border-color: #ee5f5b;
   outline: 0;
 }
 
 input:focus:invalid:focus:not(:empty),
-input.invalid:focus,
-select.invalid:focus,
-textarea:focus:invalid:focus:not(:empty),
-textarea.invalid:focus {
+.invalid:focus,
+textarea:focus:invalid:focus:not(:empty) {
   border-color: rgba(233, 50, 45, 0.8);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
   outline: 0;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
 }
 
 input[disabled],
@@ -616,13 +612,13 @@ textarea[disabled],
 input[readonly],
 select[readonly],
 textarea[readonly] {
-  background: #eee;
   cursor: not-allowed;
+  background: #eee;
 }
 
 :-moz-placeholder {
-  color: #888;
   font-weight: 200;
+  color: #888;
   opacity: 1;
 }
 
@@ -632,8 +628,8 @@ textarea:focus:-moz-placeholder {
 }
 
 ::-moz-placeholder {
-  color: #888;
   font-weight: 200;
+  color: #888;
   opacity: 1;
 }
 
@@ -643,8 +639,8 @@ textarea:focus::-moz-placeholder {
 }
 
 :-ms-input-placeholder {
-  color: #888;
   font-weight: 200;
+  color: #888;
 }
 
 input:focus:-ms-input-placeholder,
@@ -653,8 +649,8 @@ textarea:focus:-ms-input-placeholder {
 }
 
 ::-webkit-input-placeholder {
-  color: #888;
   font-weight: 200;
+  color: #888;
 }
 
 input:focus::-webkit-input-placeholder,
@@ -684,37 +680,37 @@ select:-moz-focusring {
 /* ==== TABLES ====================================================================================================== */
 
 table {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 20px;
   background-color: transparent;
   border-collapse: collapse;
   border-spacing: 0;
   box-shadow: 0 2.5px 5px #dfdfdf;
-  margin-bottom: 20px;
-  max-width: 100%;
-  width: 100%;
 }
 
 caption {
-  caption-side: top;
-  text-align: left;
   margin: 1.39em 0; /* same margin as paragraphs */
+  text-align: left;
+  caption-side: top;
 }
 
 td {
-  border-top: 1px solid #e5e5e5;
   padding: 8px;
   text-align: left;
+  border-top: 1px solid #e5e5e5;
 }
 
 thead {
-  background-color: #252525;
   vertical-align: bottom;
+  background-color: #252525;
 }
 
 th {
-  color: #fff;
-  font-weight: 200;
-  text-align: center;
   padding: 8px;
+  font-weight: 200;
+  color: #fff;
+  text-align: center;
 }
 
 

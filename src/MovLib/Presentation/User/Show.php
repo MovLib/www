@@ -86,7 +86,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   protected function getPageContent(){
     global $i18n;
-    return "<div class='row'><div class='span span--2 offset--7'>{$this->getImage($this->user, null, null, true)}</div></div><pre class='row'>" . print_r($this->user, true) . "</pre>";
+    return "<div class='row'><div class='span span--2 offset--7'>{$this->getImage($this->user->getImageStyle())}</div></div><pre class='row'>" . print_r($this->user, true) . "</pre>";
   }
 
   /**
