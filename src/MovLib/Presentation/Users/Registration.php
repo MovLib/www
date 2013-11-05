@@ -211,7 +211,7 @@ class Registration extends \MovLib\Presentation\Page {
       );
     }
 
-    if (!$usernameErrors && $user->checkName() === true) {
+    if (!$usernameErrors && $user->checkName($user->name) === true) {
       $usernameErrors[] = $i18n->t("The username is already taken, please choose another one.");
     }
 
@@ -233,7 +233,7 @@ class Registration extends \MovLib\Presentation\Page {
 
         // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
         // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
-        if ($user->checkEmail() === true) {
+        if ($user->checkEmail($user->email) === true) {
           $kernel->sendEmail(new RegistrationEmailExists($user->email));
         }
         // If this is a vliad new registration generate the authentication token and insert the submitted data into our
@@ -287,7 +287,7 @@ class Registration extends \MovLib\Presentation\Page {
         throw new ValidationException($i18n->t("The activation token is invalid, please go back to the mail we sent you and copy the whole link."));
       }
 
-      if ($user->checkEmail() === true) {
+      if ($user->checkEmail($user->email) === true) {
         throw new UnauthorizedException(
           $i18n->t("Seems like you’ve already activated your account, please sign in."),
           $i18n->t("Already Activated"),
@@ -296,7 +296,7 @@ class Registration extends \MovLib\Presentation\Page {
       }
 
       $data = $user->getRegistrationData();
-      if ($user->checkName() === true) {
+      if ($user->checkName($user->name) === true) {
         $this->username->attributes["value"] = $user->name;
         $this->email->attributes["value"]    = $user->email;
         $this->terms->attributes[]           = "checked"; // No problem, the user already accepted them!
