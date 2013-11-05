@@ -233,15 +233,16 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
     $testMethods   = [];
     /* @var $testMethod \Reflectionmethod */
     foreach ($testReflector->getMethods() as $testMethod) {
-      if ("\\{$testMethod->getDeclaringClass()->name}" == "{$class}Test" && strpos($testMethod->getName(), "test") !== false) {
+      if ($testMethod->getDeclaringClass() === $testReflector) {
         $testMethods[] = $testMethod;
       }
     }
 
+    $classContent = \ReflectionClass::export($class, true);
     $tests = [];
     /* @var $method \ReflectionMethod */
     foreach ($reflector->getMethods() as $method) {
-      if ($method->getDeclaringClass() == $reflector) {
+      if ($method->getDeclaringClass() === $reflector && strpos($classContent, $method->getName()) !== false) {
         $testExists     = false;
         $methodName     = $method->getName();
         $methodTestName = ucfirst(ltrim($methodName, "_"));
@@ -282,10 +283,11 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    * @return this
    */
   protected function skeletonNew($reflector, $class, $testFile) {
+    $classContent = \ReflectionClass::export($class, true);
     $tests = [];
     /* @var $method \ReflectionMethod */
     foreach ($reflector->getMethods() as $method) {
-      if ($method->getDeclaringClass() == $reflector) {
+      if ($method->getDeclaringClass() === $reflector && strpos($classContent, $method->getName()) !== false) {
         $methodName     = $method->getName();
         $methodTestName = ucfirst(ltrim($methodName, "_"));
         $tests[]        = str_replace(

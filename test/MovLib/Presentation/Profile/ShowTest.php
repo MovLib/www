@@ -82,28 +82,4 @@ class ShowTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
-  /**
-   * @covers ::getSecondaryNavigationMenuitems
-   * @todo Implement getSecondaryNavigationMenuitems
-   */
-  public function testGetSecondaryNavigationMenuitems() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getBreadcrumbs
-   * @todo Implement getBreadcrumbs
-   */
-  public function testGetBreadcrumbs() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::init
-   * @todo Implement init
-   */
-  public function testInit() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
 }
