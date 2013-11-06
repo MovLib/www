@@ -26,21 +26,21 @@ namespace MovLib\Presentation\Email\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Deactivation extends \MovLib\Presentation\Email\AbstractEmail {
+class Deletion extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The user who requested deactivation.
+   * The user who requested deletion.
    *
    * @var \MovLib\Data\User\Full
    */
   protected $user;
 
   /**
-   * The user's unique link to confirm the deactivation.
+   * The user's unique link to confirm the deletion.
    *
    * @var string
    */
@@ -51,10 +51,10 @@ class Deactivation extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   /**
-   * Instantiate new user deactivation email.
+   * Instantiate new user deletion email.
    *
    * @param \MovLib\Data\Full $user
-   *   The user who requested deactivation.
+   *   The user who requested deletion.
    */
   public function __construct($user) {
     $this->user = $user;
@@ -74,8 +74,8 @@ class Deactivation extends \MovLib\Presentation\Email\AbstractEmail {
   public function init() {
     global $i18n, $kernel;
     $this->recipient = $this->user->email;
-    $this->subject   = $i18n->t("Reqeusted Deactivation");
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token=" . $this->user->prepareDeactivation();
+    $this->subject   = $i18n->t("Reqeusted Deletion");
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token=" . $this->user->prepareDeletion();
     return $this;
   }
 
@@ -86,11 +86,15 @@ class Deactivation extends \MovLib\Presentation\Email\AbstractEmail {
     global $i18n;
     return
       "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
-      "<p>{$i18n->t("You (or someone else) requested to deactivate your account.")} {$i18n->t("You may now confirm this action by {0}clicking this link{1}.", [
+      "<p>{$i18n->t("You (or someone else) requested to delete your account.")} {$i18n->t("You may now confirm this action by {0}clicking this link{1}.", [
         "<a href='{$this->link}'>",
         "</a>"
       ])}</p>" .
-      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above your account will be deactivated and hidden from other users.")}<br>" .
+      "<p>{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t(
+        "Once you click the link above your account will be deleted and all your personal data will be purged. " .
+        "Please note that you won’t be able to sign in anymore and there is no possibility to reclaim your account " .
+        "later on."
+      )}<br>" .
       "{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
     ;
   }
@@ -107,7 +111,11 @@ class Deactivation extends \MovLib\Presentation\Email\AbstractEmail {
 
 {$this->link}
 
-{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t("Once you click the link above your account will be deactivated and hidden from other users.")}
+{$i18n->t("This link can only be used once within the next 24 hours.")} {$i18n->t(
+  "Once you click the link above your account will be deleted and all your personal data will be purged. " .
+  "Please note that you won’t be able to sign in anymore and there is no possibility to reclaim your account " .
+  "later on."
+)}
 {$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}
 EOT;
   }

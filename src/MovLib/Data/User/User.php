@@ -17,9 +17,8 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\Delayed\MethodCalls as DelayedMethodCalls;
-use \MovLib\Data\Image\Style;
 use \MovLib\Data\Delayed\Logger;
+use \MovLib\Data\Image\Style;
 use \MovLib\Exception\UserException;
 
 /**
@@ -42,7 +41,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *
    * @var string
    */
-  const FROM_ID = "user_id";
+  const FROM_ID = "id";
 
   /**
    * Load the user from name.
@@ -143,11 +142,11 @@ class User extends \MovLib\Data\Image\AbstractImage {
     if ($from && $value) {
       $stmt = $this->query(
         "SELECT
-          `user_id`,
+          `id`,
           `name`,
-          UNIX_TIMESTAMP(`avatar_changed`),
-          `avatar_extension`,
-          `avatar_changed` IS NOT NULL
+          UNIX_TIMESTAMP(`imageChanged`),
+          `imageExtension`,
+          `imageChanged` IS NOT NULL
         FROM `users`
         WHERE `{$from}` = ?",
         $this->types[$from],
@@ -174,7 +173,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    */
   public function commit() {
     return $this->query(
-      "UPDATE `users` SET `avatar_changed` = FROM_UNIXTIME(?), `avatar_extension` = ? WHERE `user_id` = ?",
+      "UPDATE `users` SET `imageChanged` = FROM_UNIXTIME(?), `imageExtension` = ? WHERE `id` = ?",
       "ssd",
       [ $this->imageChanged, $this->imageExtension, $this->id ]
     );
@@ -234,7 +233,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
   /**
    * {@inheritdoc}
    *
-   * @global \MovLib\Kernel $kernel
    * @internal
    *   The user's avatar is different from other images, we don't keep the original file and directly generate all
    *   styles (instead of a delayed call to ImageMagick as in other image classes). This is because avatar's are small
@@ -251,7 +249,6 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\ImageException
    */
   public function uploadImage($source, $extension, $height, $width) {
-    global $kernel;
     $this->imageChanged   = $_SERVER["REQUEST_TIME"];
     $this->imageExists    = true;
     $this->imageExtension = $extension;

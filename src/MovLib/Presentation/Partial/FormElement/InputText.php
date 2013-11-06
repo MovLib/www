@@ -59,20 +59,27 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
       return $this;
     }
 
+    // Validate that the input string is valid UTF-8.
     if (preg_match("//u", $this->value) === false) {
       throw new ValidationException($i18n->t("The “{0}” text field contains invalid UTF-8 characters.", [ $this->label ]));
     }
 
-    if (preg_match("/&.*;/i", $this->value) != false) {
-      $this->value = html_entity_decode(html_entity_decode($this->value, ENT_QUOTES|ENT_HTML5), ENT_QUOTES|ENT_HTML5);
+    // Double decode ANY encoded HTML entity.
+    if (preg_match("/&.+;/i", $this->value) != false) {
+      $this->value = html_entity_decode(html_entity_decode($this->value, ENT_QUOTES | ENT_HTML5), ENT_QUOTES | ENT_HTML5);
     }
-    $this->value = htmlspecialchars($this->value, ENT_QUOTES|ENT_HTML5);
 
-    if ($this->value != filter_var($this->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW|FILTER_REQUIRE_SCALAR)) {
+    // Only encode characters with a special purpose in HTML.
+    $this->value = $this->checkPlain($this->value);
+
+    // Let PHP validate the string again and strip any low special ASCII characters (e.g. NULL byte).
+    if ($this->value != filter_var($this->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_REQUIRE_SCALAR)) {
       throw new ValidationException($i18n->t("The “{0}” text field contains illegal low ASCII characters.", [ $this->label ]));
     }
 
+    // Collapse all whitespace characters to single space and normalize Unicode to NFC form.
     $this->value = $this->collapseWhitespace(Normalizer::normalize($this->value));
+
     return $this;
   }
 

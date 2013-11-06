@@ -67,4 +67,23 @@ class InputURLTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::validate
+   */
+  public function testValidateEmpty() {
+    $value = "";
+    $_POST["phpunit"] = $value;
+    $input = new InputURL("phpunit", "PHPUnit");
+    $input->validate();
+    $this->assertEquals($value, $input->value);
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   */
+  public function testValidateEmptyRequired() {
+    (new InputURL("phpunit", "PHPUnit", [ "required" => "required" ]))->validate();
+  }
+
 }

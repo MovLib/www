@@ -130,39 +130,36 @@ SHOW WARNINGS;
 -- Table `movlib`.`users`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users` (
-  `user_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The user’s unique ID.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The user’s unique ID.',
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.',
   `email` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The user’s unique email address.',
   `password` TINYBLOB NOT NULL COMMENT 'The user’s unique password (hashed).',
   `access` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s creation datetime.',
   `login` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last login.',
-  `private` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.',
   `deactivated` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE if this account was deleted or blocked, default is FALSE.',
-  `time_zone_id` VARCHAR(30) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'UTC' COMMENT 'User’s time zone ID.',
   `edits` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The user’s edit counter.',
-  `dyn_profile` BLOB NOT NULL COMMENT 'The user’s profile text (translatable).',
+  `private` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.',
+  `profile` BLOB NOT NULL COMMENT 'The user’s profile text (translatable).',
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.',
-  `system_language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).',
-  `avatar_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The avatar’s file extension.',
-  `avatar_changed` TIMESTAMP NULL DEFAULT NULL COMMENT 'The avatar’s last change timestamp.',
+  `systemLanguageCode` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).',
+  `timeZoneId` VARCHAR(30) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'UTC' COMMENT 'User’s time zone ID.',
+  `countryId` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.',
   `birthday` DATE NULL COMMENT 'The user\'s date of birth.',
-  `country_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.',
-  `real_name` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.',
+  `imageChanged` TIMESTAMP NULL DEFAULT NULL COMMENT 'The avatar’s last change timestamp.',
+  `imageExtension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The avatar’s file extension.',
+  `realName` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.',
   `website` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s website URL.',
-  `facebook` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s Facebook data.',
-  `google_plus` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s Google+ data.',
-  `twitter` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s Twitter data.',
-  PRIMARY KEY (`user_id`),
-  INDEX `fk_users_countries` (`country_id` ASC),
+  PRIMARY KEY (`id`),
+  INDEX `fk_users_countries` (`countryId` ASC),
   UNIQUE INDEX `uq_users_name` (`name` ASC),
   UNIQUE INDEX `uq_users_email` (`email` ASC),
   CONSTRAINT `fk_users_countries`
-    FOREIGN KEY (`country_id`)
+    FOREIGN KEY (`countryId`)
     REFERENCES `movlib`.`countries` (`country_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-DEFAULT CHARACTER SET = utf8mb4
+ENGINE = InnoDB
 COMMENT = 'Contains all user related data.'
 ROW_FORMAT = COMPRESSED;
 
@@ -319,7 +316,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_photos_users`
     FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_photos_licenses`
@@ -364,7 +361,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies_images` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_companies_images_users`
     FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_companies_images_licenses`
@@ -389,7 +386,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`ratings` (
   INDEX `fk_ratings_users` (`user_id` ASC),
   CONSTRAINT `fk_ratings_users`
     FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_ratings_movies`
@@ -727,7 +724,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_images_users`
     FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_images_licenses`
@@ -1220,7 +1217,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_ratings_users`
     FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -1270,7 +1267,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`sessions` (
   INDEX `fk_sessions_users` (`user_id` ASC),
   CONSTRAINT `fk_sessions_users`
     FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB

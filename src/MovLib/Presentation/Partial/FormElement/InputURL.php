@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Exception\ValidationException;
 use \MovLib\Presentation\Validation\URL;
 
 /**
@@ -72,6 +73,12 @@ class InputURL extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    */
   public function validate() {
     global $i18n;
+    if (empty($this->value)) {
+      if (array_key_exists("required", $this->attributes)) {
+        throw new ValidationException($i18n->t("The “{0}” URL field is mandatory.", [ $this->label ]));
+      }
+      return $this;
+    }
     $urlValidator                    = new URL($this->value);
     $urlValidator->allowExternal     = $this->attributes["data-allow-external"];
     $urlValidator->checkReachability = $this->attributes["data-check-reachability"];

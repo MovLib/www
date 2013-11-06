@@ -179,8 +179,8 @@ class Full extends \MovLib\Data\User\User {
     if ($from && $value) {
       $stmt = $this->query(
         "SELECT
-          `user_id`,
-          `system_language_code`,
+          `id`,
+          `systemLanguageCode`,
           `name`,
           `email`,
           UNIX_TIMESTAMP(`created`),
@@ -189,17 +189,17 @@ class Full extends \MovLib\Data\User\User {
           `password`,
           `private`,
           `deactivated`,
-          `time_zone_id`,
+          `timeZoneId`,
           `edits`,
-          COLUMN_GET(`dyn_profile`, '{$i18n->languageCode}' AS BINARY),
+          COLUMN_GET(`profile`, '{$i18n->languageCode}' AS BINARY),
           `sex`,
-          `country_id`,
-          `real_name`,
+          `countryId`,
+          `realName`,
           `birthday`,
           `website`,
-          UNIX_TIMESTAMP(`avatar_changed`),
-          `avatar_extension`,
-          `avatar_changed` IS NOT NULL
+          UNIX_TIMESTAMP(`imageChanged`),
+          `imageExtension`,
+          `imageChanged` IS NOT NULL
         FROM `users`
         WHERE `{$from}` = ?",
         $this->types[$from],
@@ -245,6 +245,14 @@ class Full extends \MovLib\Data\User\User {
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
+  protected function change($token) {
+    $result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $token ])->get_result()->fetch_row();
+    if (empty($result)) {
+      throw new DatabaseException("Couldn't find data for token '{$token}'.");
+    }
+    return unserialize($result[0]);
+  }
+
   /**
    * Change the user's email address.
    *
@@ -255,11 +263,7 @@ class Full extends \MovLib\Data\User\User {
    * @throws \MovLib\Exception\UserException
    */
   public function changeEmail($token) {
-    $result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $token ])->get_result()->fetch_row();
-    if (empty($result)) {
-      throw new DatabaseException("Couldn't find change email data for token '{$token}'.");
-    }
-    $data = unserialize($result[0]);
+    $data = $this->change($token);
     if (empty($data["user_id"]) || empty($data["new_email"]) || $data["user_id"] !== $this->id) {
       throw new UserException("The stored data for the change email token '{$token}' doesn't match the current's user data.");
     }
@@ -461,6 +465,20 @@ class Full extends \MovLib\Data\User\User {
     return password_verify($rawPassword, $this->password);
   }
 
+  protected function prepare(array $data) {
+    $key = hash("sha256", openssl_random_pseudo_bytes(1024));
+    $this->query("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)", "sss", [ serialize($data), $key, self::TMP_TTL_DAILY ]);
+    return $key;
+  }
+
+  public function prepareDeactivation() {
+    return $this->prepare([ "user_id" => $this->id, "deactivation" => true ]);
+  }
+
+  public function prepareDeletion() {
+    return $this->prepare([ "user_id" => $this->id, "deletion" => true ]);
+  }
+
   /**
    * Prepare email change for this user.
    *
@@ -470,12 +488,7 @@ class Full extends \MovLib\Data\User\User {
    *   The key of the temporary table record.
    */
   public function prepareEmailChange($newEmail) {
-    $key = hash("sha256", openssl_random_pseudo_bytes(1024));
-    $this->query("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)", "sss", [ serialize([
-      "user_id"   => $this->id,
-      "new_email" => $newEmail,
-    ]), $key, self::TMP_TTL_DAILY ]);
-    return $key;
+    return $this->prepare([ "user_id" => $this->id, "new_email" => $newEmail ]);
   }
 
   /**
@@ -487,13 +500,7 @@ class Full extends \MovLib\Data\User\User {
    *   The key of the temporary table record.
    */
   public function preparePasswordChange($rawPassword) {
-    $password = $this->passwordHash($rawPassword);
-    $key      = hash("sha256", openssl_random_pseudo_bytes(1024));
-    $this->query("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)", "sss", [ serialize([
-      "user_id"      => $this->id,
-      "new_password" => $password,
-    ]), $key, self::TMP_TTL_DAILY]);
-    return $key;
+    return $this->prepare([ "user_id" => $this->id, "new_password" => $this->passwordHash($rawPassword) ]);
   }
 
   /**
@@ -603,7 +610,8 @@ class Full extends \MovLib\Data\User\User {
    */
   public function updateEmail($newEmail) {
     $this->email = $newEmail;
-    return $this->query("UPDATE `users` SET `email` = ? WHERE `user_id` = ?", "sd", [ $this->email, $this->id ]);
+    $this->query("UPDATE `users` SET `email` = ? WHERE `user_id` = ?", "sd", [ $this->email, $this->id ]);
+    return $this;
   }
 
 }
