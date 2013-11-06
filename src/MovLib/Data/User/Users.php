@@ -42,11 +42,11 @@ class Users extends \MovLib\Data\DatabaseArrayObject {
    */
   protected $query =
     "SELECT
-      `user_id` AS `id`,
+      `id`,
       `name`,
-      UNIX_TIMESTAMP(`avatar_changed`) AS `imageChanged`,
-      `avatar_extension` AS `imageExtension`,
-      `avatar_changed` IS NOT NULL as `imageExists`
+      UNIX_TIMESTAMP(`imageChanged`) AS `imageChanged`,
+      `imageExtension`,
+      `imageChanged` IS NOT NULL AS `imageExists`
     FROM `users`"
   ;
 
@@ -67,7 +67,7 @@ class Users extends \MovLib\Data\DatabaseArrayObject {
     if (!empty($filter)) {
       $c      = count($filter);
       $in     = rtrim(str_repeat("?,", $c), ",");
-      $result = $this->query("{$this->query} WHERE `user_id` IN ({$in}) ORDER BY `id` ASC", str_repeat("d", $c), $filter)->get_result();
+      $result = $this->query("{$this->query} WHERE `id` IN ({$in}) ORDER BY `id` ASC", str_repeat("d", $c), $filter)->get_result();
       /* @var $user \MovLib\Data\User\User */
       while ($user = $result->fetch_object("\\MovLib\\Data\\User\\User")) {
         $this->objectsArray[$user->id] = $user;
@@ -108,7 +108,7 @@ class Users extends \MovLib\Data\DatabaseArrayObject {
    */
   public function orderByName($offset = 0, $rowCount = Pagination::SPAN_08) {
     $this->objectsArray = [];
-    $result = $this->query("{$this->query} WHERE `deactivated` = false ORDER BY `name` COLLATE `utf8mb4_unicode_ci` ASC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
+    $result = $this->query("{$this->query} WHERE `deactivated` = false ORDER BY `name` ASC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
     /* @var $user \MovLib\Data\User\User */
     while ($user = $result->fetch_object("\\MovLib\\Data\\User\\User")) {
       $this->objectsArray[$user->name] = $user;

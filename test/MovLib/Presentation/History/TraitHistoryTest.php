@@ -69,6 +69,9 @@ class TraitHistoryTest extends \MovLib\TestCase {
     $this->traitHistory = new \MovLib\Presentation\History\MovieHistory("phpunitrepos"); 
   }
 
+  /**
+   * Called after each test.
+   */
   protected function tearDown() {
     global $kernel;
     $path = "{$kernel->documentRoot}/private/phpunitrepos";
@@ -86,7 +89,7 @@ class TraitHistoryTest extends \MovLib\TestCase {
    * @todo Implement diffArray
    */
   public function testDiffArray() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->markTestIncomplete("This test has not been implemented yet."); 
   }
 
   /**

@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\User;
 
-use \MovDev\Database;
 use \MovLib\Data\User\Users;
 
 /**
@@ -68,7 +67,7 @@ class UsersTest extends \MovLib\TestCase {
     global $db;
     $this->users->orderByNewest(0, 3);
     $index = 0;
-    foreach (array_column($db->query("SELECT `name` FROM `users` WHERE `deactivated` = false ORDER BY user_id DESC LIMIT 3")->get_result()->fetch_all(), 0) as $name) {
+    foreach (array_column($db->query("SELECT `name` FROM `users` WHERE `deactivated` = false ORDER BY id DESC LIMIT 3")->get_result()->fetch_all(), 0) as $name) {
       $this->assertEquals($name, $this->users[$index]->name);
       ++$index;
     }
@@ -81,7 +80,7 @@ class UsersTest extends \MovLib\TestCase {
     global $db;
     $this->users->orderByNewest(1, 2);
     $index = 0;
-    foreach (array_column($db->query("SELECT `name` FROM `users` WHERE `deactivated` = false ORDER BY user_id DESC LIMIT 1, 3")->get_result()->fetch_all(), 0) as $name) {
+    foreach (array_column($db->query("SELECT `name` FROM `users` WHERE `deactivated` = false ORDER BY id DESC LIMIT 1, 3")->get_result()->fetch_all(), 0) as $name) {
       $this->assertEquals($name, $this->users[$index]->name);
       ++$index;
     }

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\History;
 
+use \MovLib\Data\History\Movie;
 use \MovLib\Presentation\History\MovieHistoryDiff;
 
 /**
@@ -32,9 +33,15 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
+  
+  /** @var \MovLib\Data\History\Movie */
+  protected $movie;
+  
   /** @var \MovLib\Presentation\History\MovieHistoryDiff */
   protected $movieHistoryDiff;
+  
+  /** @var string */
+  protected $commitHash;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,14 +51,35 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->movieHistoryDiff = new MovieHistoryDiff();
+    global $kernel, $db;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
+    if (is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
+
+    $this->movie = new Movie(2, "phpunitrepos");
+    $this->commitHash = $this->movie->createRepository();  
+    $db->query("UPDATE `movies` SET `commit` = '{$this->commitHash}' WHERE `movie_id` = 2");
+    
+    $this->movie->startEditing();
+    $this->commitHash = $this->movie->saveHistory([ "original_title" => "The foobar is a lie" ], "added original title");
+    $db->query("UPDATE `movies` SET `commit` = '{$this->commitHash}' WHERE `movie_id` = 2");
+        
+    $_SERVER["MOVIE_ID"] = 2;
+    $_SERVER["REVISION_HASH"] = $this->commitHash;
+    
+    $this->movieHistoryDiff = new MovieHistoryDiff("phpunitrepos");
   }
 
   /**
    * Called after each test.
    */
   protected function tearDown() {
-
+    global $kernel;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
+    if (is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
   }
 
 
@@ -68,18 +96,19 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
 
   /**
    * @covers ::__construct
-   * @todo Implement __construct
    */
   public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->assertEquals("History of The Shawshank Redemption (1994)", $this->getProperty($this->movieHistoryDiff, "title"));
   }
 
   /**
    * @covers ::getPageContent
-   * @todo Implement getPageContent
    */
   public function testGetPageContent() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->assertContains(
+      "<a href='/movie/2/history' accesskey='h' class='separator active'",
+      $this->invoke($this->movieHistoryDiff, "getContent")
+    );
   }
 
   /**
@@ -185,101 +214,5 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
   public function testGetTrailers() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
-
-  /**
-   * @covers ::getBreadcrumbs
-   * @todo Implement getBreadcrumbs
-   */
-  public function testGetBreadcrumbs() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::contentDiffPage
-   * @todo Implement contentDiffPage
-   */
-  public function testContentDiffPage() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::contentRevisionsPage
-   * @todo Implement contentRevisionsPage
-   */
-  public function testContentRevisionsPage() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::diffArray
-   * @todo Implement diffArray
-   */
-  public function testDiffArray() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::diffArrayItems
-   * @todo Implement diffArrayItems
-   */
-  public function testDiffArrayItems() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::diffIds
-   * @todo Implement diffIds
-   */
-  public function testDiffIds() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::formatFileNames
-   * @todo Implement formatFileNames
-   */
-  public function testFormatFileNames() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getDiff
-   * @todo Implement getDiff
-   */
-  public function testGetDiff() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::textDiffOfRevisions
-   * @todo Implement textDiffOfRevisions
-   */
-  public function testTextDiffOfRevisions() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::textDiffOfStrings
-   * @todo Implement textDiffOfStrings
-   */
-  public function testTextDiffOfStrings() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getSecondaryNavigationMenuItems
-   * @todo Implement getSecondaryNavigationMenuItems
-   */
-  public function testGetSecondaryNavigationMenuItems() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::initMovie
-   * @todo Implement initMovie
-   */
-  public function testInitMovie() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
+  
 }

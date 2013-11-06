@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\History\Movie;
+
 /**
  * @coversDefaultClass \MovLib\Presentation\Movie\TraitMoviePage
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
@@ -42,22 +44,29 @@ class TraitMoviePageTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->traitMoviePage = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Movie\\TraitMoviePage");
+    global $kernel, $db, $i18n;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
+    if (is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
+
+    $movie = new Movie(2, "phpunitrepos");
+    $movie->createRepository();  
+        
+    $_SERVER["MOVIE_ID"] = 2;
+    
+    $this->traitMoviePage = new \MovLib\Presentation\History\MovieHistory("phpunitrepos"); 
   }
 
   /**
    * Called after each test.
    */
   protected function tearDown() {
-
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Data Provider
-
-
-  public function dataProviderExample() {
-    return [];
+    global $kernel;
+    $path = "{$kernel->documentRoot}/private/phpunitrepos";
+    if (is_dir($path)) {
+      exec("rm -rf {$path}");
+    }
   }
 
 
@@ -66,18 +75,19 @@ class TraitMoviePageTest extends \MovLib\TestCase {
 
   /**
    * @covers ::initMovie
-   * @todo Implement initMovie
    */
   public function testInitMovie() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->assertNotNull($this->getProperty($this->traitMoviePage, "model"));
+    $this->assertAttributeInstanceOf("\\MovLib\\Data\\Movie", "model", $this->traitMoviePage);
+    $this->assertEquals("History of The Shawshank Redemption (1994)", $this->getProperty($this->traitMoviePage, "title"));
   }
 
   /**
    * @covers ::getSecondaryNavigationMenuItems
-   * @todo Implement getSecondaryNavigationMenuItems
    */
   public function testGetSecondaryNavigationMenuItems() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->assertNotNull($this->invoke($this->traitMoviePage, "getSecondaryNavigationMenuItems"));
+    $this->assertEquals(4, count($this->invoke($this->traitMoviePage, "getSecondaryNavigationMenuItems")));
   }
 
 }

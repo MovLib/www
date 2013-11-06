@@ -30,10 +30,19 @@ use \MovLib\Presentation\History\MovieHistory;
  */
 class MovieHistoryTest extends \MovLib\TestCase {
   
-  
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /** @var \MovLib\Presentation\History\MovieHistoryDiff */
+  protected $movieHistory;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
-  
+
+  /**
+   * Called before each test.
+   */  
   protected function setUp() {
     global $kernel, $db;
     $path = "{$kernel->documentRoot}/private/phpunitrepos";
@@ -46,8 +55,13 @@ class MovieHistoryTest extends \MovLib\TestCase {
     $movie      = new Movie(2, "phpunitrepos");
     $commitHash = $movie->createRepository();
     $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
+    
+    $this->movieHistory = new MovieHistory("phpunitrepos");
   }
-
+  
+  /**
+   * Called after each test.
+   */
   protected function tearDown() {
     global $kernel;
     $path = "{$kernel->documentRoot}/private/phpunitrepos";
@@ -64,35 +78,17 @@ class MovieHistoryTest extends \MovLib\TestCase {
    * @covers ::__construct
    */
   public function testConstruct() {
-    $historyPage = new MovieHistory("phpunitrepos");
-    $this->assertEquals("History of The Shawshank Redemption (1994)", $this->getProperty($historyPage, "title"));
+    $this->assertEquals("History of The Shawshank Redemption (1994)", $this->getProperty($this->movieHistory, "title"));
   }
 
   /**
    * @covers ::getPageContent
    */
   public function testGetPageContent() {
-    $historyPage = new MovieHistory("phpunitrepos");
     $this->assertContains(
       "<a href='/movie/2/history' accesskey='h' class='separator active'",
-      $this->invoke($historyPage, "getContent")
+      $this->invoke($this->movieHistory, "getContent")
     );
-  }
-  
-  /**
-   * @covers ::getSecondaryNavigationMenuItems
-   * @todo Implement getSecondaryNavigationMenuItems
-   */
-  public function testGetSecondaryNavigationMenuItems() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::initMovie
-   * @todo Implement initMovie
-   */
-  public function testInitMovie() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
 }
