@@ -32,7 +32,6 @@ use \MovLib\Presentation\Partial\FormElement\InputURL;
 use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\Select;
 use \MovLib\Presentation\Partial\FormElement\Textarea;
-use \MovLib\Presentation\Validation\HTML;
 
 /**
  * Allows the user to manage his personalized settings.
@@ -56,70 +55,70 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputImage
    */
-  private $avatar;
+  protected $avatar;
 
   /**
    * The user's birthday input date form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputDate
    */
-  private $birthday;
+  protected $birthday;
 
   /**
    * The user's country select form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\Select
    */
-  private $country;
+  protected $country;
 
   /**
    * The user's language select form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\Select
    */
-  private $language;
+  protected $language;
 
   /**
    * The user's private input checkbox form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputCheckbox
    */
-  private $private;
+  protected $private;
 
   /**
    * The user's profile textarea form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\Textarea
    */
-  private $profile;
+  protected $profile;
 
   /**
    * The user's real name input text form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputText
    */
-  private $realName;
+  protected $realName;
 
   /**
    * The user's sex input radio form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\RadioGroup
    */
-  private $sex;
+  protected $sex;
 
   /**
    * The user's timezone select form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\Select
    */
-  private $timezone;
+  protected $timezone;
 
   /**
    * The user's website input url form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputURL
    */
-  private $website;
+  protected $website;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
