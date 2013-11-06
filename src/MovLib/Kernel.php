@@ -43,14 +43,14 @@ class Kernel {
   /**
    * Numeric array containing all delayed emails.
    *
-   * @var array
+   * @var null|array
    */
   protected $delayedEmails;
 
   /**
    * Numeric array containing all delayed methods.
    *
-   * @var array
+   * @var null|array
    */
   protected $delayedMethods;
 

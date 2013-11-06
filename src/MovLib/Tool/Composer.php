@@ -65,8 +65,7 @@ class Composer {
   public function __construct(Event $event) {
     global $kernel;
     if (!$kernel) {
-      $kernel = new \MovLib\Tool\Kernel();
-      $kernel->initCLI(true);
+      $kernel = new \MovLib\Tool\Kernel(true);
     }
     $this->event      = $event;
     $this->vendorPath = "{$kernel->documentRoot}/{$event->getComposer()->getConfig()->get("vendor-dir")}";

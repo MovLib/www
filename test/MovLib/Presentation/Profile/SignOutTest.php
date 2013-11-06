@@ -15,24 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Email;
+namespace MovLib\Presentation\Profile;
+
+use \MovLib\Presentation\Profile\SignOut;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\Email\AbstractEmail
+ * @coversDefaultClass \MovLib\Presentation\Profile\SignOut
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class AbstractEmailTest extends \MovLib\TestCase {
+class SignOutTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Email\AbstractEmail */
-  protected $abstractEmail;
+  /** @var \MovLib\Presentation\Profile\SignOut */
+  protected $signOut;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -42,7 +44,7 @@ class AbstractEmailTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->abstractEmail = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Email\\AbstractEmail");
+    $this->signOut = new SignOut();
   }
 
   /**
@@ -69,22 +71,6 @@ class AbstractEmailTest extends \MovLib\TestCase {
    * @todo Implement __construct
    */
   public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getHTML
-   * @todo Implement getHTML
-   */
-  public function testGetHTML() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getPlainText
-   * @todo Implement getPlainText
-   */
-  public function testGetPlainText() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

@@ -26,4 +26,4 @@
  * @since 0.0.1-dev
  */
 require __DIR__ . "/vendor/autoload.php";
-(new \MovLib\Tool\Kernel())->initPHPUnit();
+new \MovLib\TestKernel();

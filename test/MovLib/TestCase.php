@@ -17,6 +17,9 @@
  */
 namespace MovLib;
 
+use \MovLib\Presentation\Page;
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * Extended PHPUnit Framework TestCase
  *
@@ -54,19 +57,23 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase {
 
 
   /**
-   * Restore global objects to initial state.
+   * Assert that the presentation contains an alert message with the given alert severity and contains the given text.
    *
-   * @global array $backup
-   * @global \MovLib\Tool\Database $db
-   * @global \MovLib\Tool\Kernel $kernel
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
+   * @param \MovLib\Presentation\Page $page
+   *   The object that should contain the alert message.
+   * @param string $contains
+   *   The text the alert message should contain.
+   * @param string $severity [optional]
+   *   The severity levelt he alert message should have, defaults to <code>Alert::SEVERITY_ERROR</code>.
+   * @param string $message [optional]
+   *   The error message if the alert message isn't present, has the wrong severity or doesn't contain the text.
    */
-  public function assertPostConditions() {
-    global $backup, $db, $kernel, $i18n, $session;
-    foreach ($backup as $name => $object) {
-      ${$name} = clone $object;
-    }
+  protected function assertPresentationContainsAlert(Page $page, $contains, $severity = Alert::SEVERITY_ERROR, $message = "The presentation doesn't contain the desired alert message.") {
+    $this->assertTag([
+      "tag"        => "div",
+      "content"    => $contains,
+      "attributes" => [ "class" => trim($severity) ]
+    ], $page->alerts, $message, true);
   }
 
   /**
@@ -81,6 +88,24 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase {
    */
   protected function assertChaining($object, $actual, $message = "Method should return its own instance for chaining.") {
     $this->assertEquals($object, $actual, $message);
+  }
+
+  /**
+   * Restore global objects to initial state.
+   *
+   * @global array $backup
+   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\TestKernel $kernel
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
+   */
+  public function assertPostConditions() {
+    global $backup, $db, $kernel, $i18n, $session;
+    foreach ($backup as $name => $object) {
+      ${$name} = clone $object;
+    }
+    $kernel->delayedEmails  = null;
+    $kernel->delayedMethods = null;
   }
 
   /**

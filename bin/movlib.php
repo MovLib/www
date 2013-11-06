@@ -27,5 +27,5 @@
  * @since 0.0.1-dev
  */
 require dirname(__DIR__) . "/vendor/autoload.php";
-(new \MovLib\Tool\Kernel())->initCLI();
+new \MovLib\Tool\Kernel();
 (new \MovLib\Tool\Console\Application())->run();

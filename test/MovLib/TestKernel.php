@@ -15,12 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Tool;
+namespace MovLib;
 
 /**
- * The tool kernel extends the default kernel and is targeted towards console, PHPUnit, or mixed execution.
- *
- * Mixed execution refers to interaction with other vendor software installed via composer.
+ * The PHPUnit kernel.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,52 +26,66 @@ namespace MovLib\Tool;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Kernel extends \MovLib\Kernel {
+class TestKernel extends \MovLib\Tool\Kernel {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Absolute path to the directory where user binaries are linked.
+   * Numeric array containing all delayed emails.
    *
-   * @var string
+   * The test kernel exposes this property for easy access in our tests. Furthermore the content of this property is
+   * reset after each test.
+   *
+   * @var null|array
    */
-  public $usrBinaryPath = "/usr/local/bin";
+  public $delayedEmails;
+
+  /**
+   * Numeric array containing all delayed methods.
+   *
+   * The test kernel exposes this property for easy access in our tests. Furthermore the content of this property is
+   * reset after each test.
+   *
+   * @var null|array
+   */
+  public $delayedMethods;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new Tool configuration.
+   * Instantiate new test kernel.
    *
+   * @global array $backup
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Tool\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
-   * @param boolean $composer [optional]
-   *   Set this to <code>TRUE</code> if composer is in use.
    */
-  public function __construct($composer = false) {
-    global $db, $i18n, $kernel, $session;
-    ini_set("display_errors", true);
+  public function __construct() {
+    global $backup, $db, $i18n, $session;
+    parent::__construct();
 
-    // The tool kernel has to ensure that the document root is always set to the actual MovLib document root without
-    // tampering with any super global (which might destroy other software).
-    $this->documentRoot = dirname(dirname(dirname(__DIR__)));
+    // Most tests rely on a valid session, create one up front.
+    $sessionInit = new \ReflectionMethod($session, "init");
+    $sessionInit->setAccessible(true);
+    $sessionInit->invokeArgs($session, [ 1 ]);
 
-    // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied
-    // software is casting various deprecated or strict errors.
-    if ($composer === false) {
-      set_error_handler([ $this, "errorHandler" ], -1);
-    }
+    // Set a user agent string for PHPUnit tests.
+    $this->userAgent = ini_get("user_agent");
 
-    // Create global object instances.
-    $db      = new \MovLib\Tool\Database();
-    $i18n    = new \MovLib\Data\I18n();
-    $kernel  = $this;
-    $session = new \MovLib\Data\User\Session();
+    // Establish connection to database to ensure that our clone has one.
+    $db->connect();
+
+    // Create backups of our global objects.
+    $backup = [
+      "db"      => clone $db,
+      "i18n"    => clone $i18n,
+      "kernel"  => clone $this,
+      "session" => clone $session,
+    ];
   }
 
 }

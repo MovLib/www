@@ -138,7 +138,7 @@ class Registration extends \MovLib\Presentation\Page {
       "value" => $i18n->t("Sign Up"),
     ]);
 
-    if (isset($_GET["token"])) {
+    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
       $this->validateToken();
     }
   }
@@ -154,14 +154,15 @@ class Registration extends \MovLib\Presentation\Page {
    */
   protected function getContent() {
     global $i18n, $kernel;
+
     if ($this->accepted === true) {
       return "<div class='container'><small>{$i18n->t(
         "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
         [ "<a href='{$kernel->requestURI}'>", "</a>" ]
       )}</small></div>";
     }
-    return "<div class='container'><div class='row'>{$this->form}</div></div>"
-    ;
+
+    return "<div class='container'><div class='row'>{$this->form}</div></div>";
   }
 
   /**
@@ -277,10 +278,6 @@ class Registration extends \MovLib\Presentation\Page {
     global $i18n;
     $user = new UserFull();
     try {
-      if (empty($_GET["token"])) {
-        throw new ValidationException($i18n->t("The activation token is missing, please go back to the mail we sent you and copy the whole link."));
-      }
-
       $user->email = base64_decode($_GET["token"]);
 
       if (filter_var($user->email, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {

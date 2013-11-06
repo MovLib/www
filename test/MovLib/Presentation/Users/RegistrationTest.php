@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -17,17 +17,15 @@
  */
 namespace MovLib\Presentation\Users;
 
-use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\Session;
-use \MovLib\Data\User\Full as User;
-use \MovLib\Presentation\Email\Users\Registration as RegistrationEmail;
-use \MovLib\Presentation\Email\Users\RegistrationEmailExists;
+use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Users\Registration;
+use \MovLib\Tool\Console\Command\Development\SeedImport;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\Users\Registration
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -35,230 +33,287 @@ use \MovLib\Presentation\Users\Registration;
  */
 class RegistrationTest extends \MovLib\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-  /** @var \MovLib\Data\User\Session */
-  private static $sessionBackup;
+
+  /** @var \MovLib\Presentation\Users\Registration */
+  protected $registration;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
-  public static function setUpBeforeClass() {
-    global $session;
-    self::$sessionBackup = clone $session;
-    $session              = new Session();
-    $_SERVER["PATH_INFO"] = "/users/registration";
+  /**
+   * Called before each test.
+   * @global \MovLib\TestKernel $kernel
+   * @global \MovLib\Data\User\Session $session
+   */
+  protected function setUp() {
+    global $kernel, $session;
+    $kernel->requestMethod = "GET";
+    $kernel->requestURI    = "/users/registration";
+    $session               = new Session();
+    $this->registration    = new Registration();
   }
 
+  /**
+   * Called after all tests have been executed.
+   */
   public static function tearDownAfterClass() {
-    global $session;
-    $session = self::$sessionBackup;
-    unset($_SERVER["PATH_INFO"]);
-    unset($_POST);
-    unset($_GET);
-    sh::execute("movlib si");
+    (new SeedImport())->databaseImport([ "users" ]);
   }
 
-  // ------------------------------------------------------------------------------------------------------------------- Helpers
 
-  /**
-   * Get registration instance with <var>$post</var> exported to <var>$_POST</var>.
-   *
-   * @param array $post [optional]
-   *   Overrides default <var>$_POST</var> values.
-   * @return \MovLib\Presentation\Users\Registration
-   *   The created instance.
-   */
-  private function _getRegistration(array $post = [ ]) {
-    unset($_POST);
-    $_POST = array_merge([
-      "username" => "PHPUnit",
-      "email"    => "phpunit@movlib.org",
-      "password" => "Test1234",
-      "terms"    => "on",
-      "form_id"  => "users-registration",
-      ], $post);
-    return new Registration();
+  // ------------------------------------------------------------------------------------------------------------------- Data Provider
+
+
+  public function dataProviderUsernamesIllegalCharacters() {
+    return [
+      [ "PHP/Unit" ],
+      [ "PHP_Unit" ],
+      [ "PHP@Unit" ],
+      [ "PHP#Unit" ],
+      [ "PHP<Unit" ],
+      [ "PHP>Unit" ],
+      [ "PHP|Unit" ],
+      [ "PHP(Unit" ],
+      [ "PHP)Unit" ],
+      [ "PHP[Unit" ],
+      [ "PHP]Unit" ],
+      [ "PHP{Unit" ],
+      [ "PHP}Unit" ],
+      [ "PHP?Unit" ],
+      [ "PHP\\Unit" ],
+      [ "PHP=Unit" ],
+      [ "PHP:Unit" ],
+      [ "PHP;Unit" ],
+      [ "PHP,Unit" ],
+      [ "PHP'Unit" ],
+      [ 'PHP"Unit' ],
+      [ "PHP&Unit" ],
+      [ 'PHP$Unit' ],
+      [ "PHP*Unit" ],
+      [ "PHP~Unit" ],
+      [ "PHP&amp;Unit" ],
+      [ "PHP&gt;Unit" ],
+      [ "PHP&lt;Unit" ],
+      [ "PHP&quot;Unit" ],
+      // @todo Extend with more test data!
+    ];
   }
 
-  /**
-   * Helper method to test the various username tests.
-   *
-   * @param string $username
-   *   The username to test.
-   * @param string $contains
-   *   The string that should be part of the presentation.
-   * @return this
-   */
-  private function _testUsername($username, $contains) {
-    $this->assertContains(
-      $contains, $this->_getRegistration([ "username" => $username ])->getPresentation(), "Couldn't assert that username validation works correctly."
-    );
-    return $this;
-  }
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
   /**
    * @covers ::__construct
    * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
    * @expectedExceptionMessage Redirecting user to /my with status 303.
+   * @global \MovLib\Data\User\Session $session
    */
-  public function testRedirectIfAuthenticated() {
+  public function testConstruct() {
     global $session;
-    try {
-      $session = self::$sessionBackup;
-      new Registration();
-    }
-    finally {
-      $session = new Session();
-    }
+    $session->isAuthenticated = true;
+    new Registration();
   }
 
   /**
    * @covers ::__construct
+   */
+  public function testConstructToken() {
+    $_GET["token"] = "phpunit";
+    new Registration();
+  }
+
+  /**
    * @covers ::getContent
+   * @global \MovLib\TestKernel $kernel
    */
   public function testGetContent() {
-    $registration = new Registration();
-    $form         = $this->getProperty($registration, "form");
-    $this->assertEquals(
-      "<div class='container'><div class='row'>{$form}</div></div>", $this->invoke($registration, "getContent"), "Couldn't assert that registration content contains self-rendered form."
-    );
+    global $kernel;
+    $actual = $this->invoke(new Registration(), "getContent");
+    $this->assertTag([ "tag" => "form", "attributes" => [ "autocomplete" => "off" ]], $actual);
+    $this->assertTag([ "tag" => "input", "id" => "username" ], $actual);
+    $this->assertTag([ "tag" => "input", "id" => "email" ], $actual);
+    $this->assertTag([ "tag" => "input", "id" => "password" ], $actual);
+    $this->assertTag([ "tag" => "input", "id" => "terms" ], $actual);
+    $this->assertNotTag([ "tag" => "small", "content" => "Mistyped something" ], $actual);
+    $this->assertNotTag([ "tag" => "a", "attributes" => [ "href" => $kernel->requestURI ] ], $actual);
   }
 
   /**
-   * @covers ::__construct
    * @covers ::getContent
+   * @global \MovLib\TestKernel $kernel
    */
-  public function testGetContentValidRegistration() {
-    $registration = $this->_getRegistration();
-    $form         = $this->getProperty($registration, "form");
-    $content      = $this->invoke($registration, "getContent");
-    $this->assertNotContains((string) $form, $content);
-    $this->assertContains("Mistyped something?", $content, "Couldn't assert that valid registration is accepted.");
+  public function testGetContentAccepted() {
+    global $kernel;
+    $this->setProperty($this->registration, "accepted", true);
+    $actual = $this->invoke($this->registration, "getContent");
+    $this->assertTag([ "tag" => "small", "content" => "Mistyped something" ], $actual);
+    $this->assertTag([ "tag" => "a", "attributes" => [ "href" => $kernel->requestURI ] ], $actual);
+    $this->assertNotTag([ "tag" => "form" ], $actual);
+  }
+
+  /**
+   * @covers ::validate
+   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\TestKernel $kernel
+   */
+  public function testValidate() {
+    global $db, $kernel;
+
+    // Setup
+    $kernel->requestMethod = "POST";
+    $testData = [
+      "username" => "PHPUnit",
+      "email"    => "phpunit@movlib.org",
+      "password" => "PHPUnitPassword1234",
+      "terms"    => true,
+    ];
+    foreach ($testData as $name => $value) {
+      $_POST[$name] = $value;
+      $this->getProperty($this->registration, $name)->value = $value;
+    }
+    $this->registration->validate();
+
+    $result = $db->query("SELECT `data` FROM `tmp` WHERE `key` = 'registration-phpunit@movlib.org' LIMIT 1")->get_result()->fetch_assoc();
+    $this->assertArrayHasKey("data", $result);
+    $data = unserialize($result["data"]);
+    $this->assertEquals(1, $data["attempts"]);
+    $this->assertEquals("phpunit@movlib.org", $data["email"]);
+    $this->assertEquals("PHPUnit", $data["name"]);
+    $this->assertTrue(password_verify("PHPUnitPassword1234", $data["password"]));
+
+    $this->assertArrayHasKey(0, $kernel->delayedEmails);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Email\\Users\\Registration", $kernel->delayedEmails[0]);
+
+    $this->assertEquals(202, http_response_code());
+
+    $this->assertPresentationContainsAlert($this->registration, "Registration Successful", Alert::SEVERITY_SUCCESS);
+
+    // Teardown
+    $db->query("DELETE FROM `tmp` WHERE `key` = 'registration-phpunit@movlib.org'");
   }
 
   /**
    * @covers ::validate
    */
-  public function testUsernameSpaceAtBeginning() {
-    $this->_testUsername(" PHPUnit", "username cannot begin with a space");
+  public function testUsernameSpaceBeginning() {
+    $_POST["username"]  = " PHPUnit";
+    $this->registration->validate();
+    $this->assertPresentationContainsAlert($this->registration, "The username cannot begin with a space.");
   }
 
   /**
    * @covers ::validate
    */
-  public function testUsernameSpaceAtEnd() {
-    $this->_testUsername("PHPUnit ", "username cannot end with a space");
+  public function testUsernameSpaceEnding() {
+    $_POST["username"] = "PHPUnit ";
+    $this->registration->validate();
+    $this->assertPresentationContainsAlert($this->registration, "The username cannot end with a space.");
   }
 
   /**
    * @covers ::validate
    */
-  public function testUsernameMultipleSpaces() {
-    $this->_testUsername("PHP  Unit", "username cannot contain multiple spaces in a row");
+  public function testUsernameSpacesInRow() {
+    $_POST["username"] = "PHP  Unit";
+    $this->registration->validate();
+    $this->assertPresentationContainsAlert($this->registration, "The username cannot contain multiple spaces in a row.");
+  }
+
+  /**
+   * @covers ::validate
+   * @dataProvider dataProviderUsernamesIllegalCharacters
+   */
+  public function testUsernameIllegalCharacters($username) {
+    $_POST["username"] = $username;
+    $inputUsername = $this->getProperty($this->registration, "username");
+    $inputUsername->value = $username;
+    $inputUsername->validate();
+    $this->registration->validate();
+    $this->assertPresentationContainsAlert($this->registration, "The username cannot contain any of the following characters:");
   }
 
   /**
    * @covers ::validate
    */
-  public function testUsernameIllegalCharacters() {
-    $this->_testUsername("PHP/Unit", "username cannot contain any of the following characters");
-  }
-
-  /**
-   * @covers ::validate
-   */
-  public function testUsernameLength() {
-    $this->_testUsername(str_repeat("PHPUnit ", 10), "username is too long");
+  public function testUsernameTooLong() {
+    $this->getProperty($this->registration, "username")->value = $_POST["username"] = str_repeat("PHPUnit", User::NAME_MAXIMUM_LENGTH * 2);
+    $this->registration->validate();
+    $this->assertPresentationContainsAlert($this->registration, "The username is too long: it must be");
   }
 
   /**
    * @covers ::validate
    */
   public function testUsernameExists() {
-    $this->_testUsername("Fleshgrinder", "username is already taken");
+    $this->getProperty($this->registration, "username")->value = $_POST["username"] = "Fleshgrinder";
+    $this->registration->validate();
+    $this->assertPresentationContainsAlert($this->registration, "The username is already taken, please choose another one.");
   }
 
   /**
    * @covers ::validate
    */
   public function testTerms() {
-    $registration = $this->_getRegistration([ "terms" => "" ]);
-    $this->assertContains("You have to accept the", $registration->getPresentation(), "Couldn't assert that terms have to be accepted.");
+    $this->getProperty($this->registration, "username")->value = $_POST["username"] = "PHPUnit";
+    $errors["terms"] = "terms not accepted";
+    $this->registration->validate($errors);
+    $this->assertPresentationContainsAlert($this->registration, "You have to accept the");
   }
 
   /**
    * @covers ::validate
+   * @global \MovLib\TestKernel $kernel
    */
   public function testEmailExists() {
-    $this->_getRegistration([ "email" => "richard@fussenegger.info" ]);
-    $found = false;
-    foreach ($this->getProperty("\\MovLib\\Data\\Delayed\\Mailer", "emails") as $email) {
-      if (($found = $email instanceof RegistrationEmailExists) === true) {
-        break;
-      }
-    }
-    $this->assertTrue($found);
+    global $kernel;
+    $this->getProperty($this->registration, "username")->value = $_POST["username"] = "PHPUnit";
+    $this->getProperty($this->registration, "email")->value = "richard@fussenegger.info";
+    $this->registration->validate();
+    $this->assertArrayHasKey(0, $kernel->delayedEmails);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Email\\Users\\RegistrationEmailExists", $kernel->delayedEmails[0]);
   }
 
   /**
    * @covers ::validate
+   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\TestKernel $kernel
    */
-  public function testValidRegistration() {
-    $registration = $this->_getRegistration();
-    $found        = false;
-    foreach ($this->getProperty("\\MovLib\\Data\\Delayed\\Mailer", "emails") as $email) {
-      if (($found = $email instanceof RegistrationEmail) === true) {
-        break;
-      }
-    }
-    $this->assertTrue($found);
-    $this->assertTrue($this->getProperty($registration, "accepted"));
-    $this->assertEquals(202, http_response_code());
-    $this->assertContains("Registration Successful", $registration->alerts);
-  }
+  public function testTooManyRegistrationAttempts() {
+    global $db, $kernel;
 
-  /**
-   * @covers ::validate
-   */
-  public function testTooManyRegistrations() {
-    for ($i = 0; $i < 6; ++$i) {
-      $registration = $this->_getRegistration();
+    // Setup
+    $kernel->requestMethod = "POST";
+    $testData = [
+      "username" => "PHPUnit",
+      "email"    => "phpunit@movlib.org",
+      "password" => "PHPUnitPassword1234",
+      "terms"    => true,
+    ];
+    foreach ($testData as $name => $value) {
+      $_POST[$name] = $value;
+      $this->getProperty($this->registration, $name)->value = $value;
     }
-    $this->assertContains("Too many registration attempts", $registration->getPresentation());
+
+    for ($i = 0; $i <= User::MAXIMUM_ATTEMPTS + 1; ++$i) {
+      $this->registration->validate();
+    }
+    $this->assertPresentationContainsAlert($this->registration, "Too many registration attempts with this email address. Please wait 24 hours before trying again.");
+
+    // Teardown
+    $db->query("TRUNCATE TABLE `tmp`");
   }
 
   /**
    * @covers ::__construct
-   * @todo Implement __construct
-   */
-  public function testConstruct() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::validate
-   * @todo Implement validate
-   */
-  public function testValidate() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
    * @covers ::validateToken
    * @todo Implement validateToken
    */
   public function testValidateToken() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getBreadcrumbs
-   * @todo Implement getBreadcrumbs
-   */
-  public function testGetBreadcrumbs() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
