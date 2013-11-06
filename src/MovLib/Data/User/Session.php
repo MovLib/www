@@ -192,7 +192,7 @@ class Session extends \MovLib\Data\Database {
     global $kernel;
 
     // Load necessary user data from storage.
-    if (!($result = $this->query("SELECT `user_id`, `password`, `deactivated` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
+    if (!($result = $this->query("SELECT `id`, `password`, `deactivated` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
       throw new SessionException("Couldn't find user with email '{$email}'!");
     }
 
@@ -204,7 +204,7 @@ class Session extends \MovLib\Data\Database {
     // My be the user was doing some work as anonymous user and already has a session active. If so generate new session
     // ID and if not generate a completely new session.
     session_status() === PHP_SESSION_ACTIVE ? $this->regenerate() : $this->start();
-    $this->init($result["user_id"]);
+    $this->init($result["id"]);
     $kernel->delayMethodCall([ $this, "insert" ]);
 
     // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
@@ -387,12 +387,12 @@ class Session extends \MovLib\Data\Database {
 
     // We are initializing this session for a registered user.
     if ($userId > 0) {
-      if (!($result = $this->query("SELECT `name`, `time_zone_id` FROM `users` WHERE `user_id` = ? LIMIT 1", "d", [ $userId ])->get_result()->fetch_assoc())) {
+      if (!($result = $this->query("SELECT `name`, `timeZoneId` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $userId ])->get_result()->fetch_assoc())) {
         throw new SessionException("Could not fetch user data for user ID {$userId}.");
       }
       $this->userId          = $_SESSION["user_id"]           = $userId;
       $this->userName        = $_SESSION["user_name"]         = $result["name"];
-      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = $result["time_zone_id"];
+      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = $result["timeZoneId"];
       $this->isAuthenticated = true;
     }
     // Initialize this session for an anonymous user.

@@ -22,10 +22,10 @@ use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Presentation\Email\User\Deactivation;
+use \MovLib\Presentation\Email\User\Deletion;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\Button;
-use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\Help;
 
 /**
@@ -245,8 +245,19 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
   public function validate(array $errors = null) {
     global $i18n, $kernel;
 
-    // Send email with further instructions.
-    $kernel->sendEmail(new Deactivation($this->user));
+    // Nothing to do!
+    if (!isset($_POST["deactivate"]) && !isset($_POST["delete"])) {
+      return $this;
+    }
+
+    if (isset($_POST["deactivate"])) {
+      $kernel->sendEmail(new Deactivation($this->user));
+      $title = $i18n->t("Successfully Requested Deactivation");
+    }
+    else {
+      $kernel->sendEmail(new Deletion($this->user));
+      $title = $i18n->t("Successfully Requested Deletion");
+    }
 
     // The request was accepted but needs further action.
     http_response_code(202);
@@ -254,7 +265,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
     // Let the user know where to find the instructions to complete the request.
     $this->alerts .= new Alert(
       $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
-      $i18n->t("Successfully Requested Deactivation"),
+      $title,
       Alert::SEVERITY_SUCCESS
     );
 
