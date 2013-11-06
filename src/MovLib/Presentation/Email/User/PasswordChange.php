@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Email\User;
 
+use \MovLib\Data\Temporary;
+
 /**
  * This email template is used if a user requests a password change.
  *
@@ -87,7 +89,11 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
     global $i18n, $kernel;
     $this->recipient = $this->user->email;
     $this->subject   = $i18n->t("Requested Password Change");
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token=" . $this->user->preparePasswordChange($this->rawPassword);
+    $token           = (new Temporary())->set([
+      "user_id"      => $this->user->id,
+      "new_password" => $this->user->passwordHash($this->rawPassword),
+    ]);
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token={$token}";
     return $this;
   }
 

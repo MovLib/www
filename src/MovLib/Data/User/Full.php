@@ -245,56 +245,6 @@ class Full extends \MovLib\Data\User\User {
   // ------------------------------------------------------------------------------------------------------------------- Public Methods
 
 
-  protected function change($token) {
-    $result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $token ])->get_result()->fetch_row();
-    if (empty($result)) {
-      throw new DatabaseException("Couldn't find data for token '{$token}'.");
-    }
-    return unserialize($result[0]);
-  }
-
-  /**
-   * Change the user's email address.
-   *
-   * @param string $token
-   *   The user token from the URL.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Exception\UserException
-   */
-  public function changeEmail($token) {
-    $data = $this->change($token);
-    if (empty($data["user_id"]) || empty($data["new_email"]) || $data["user_id"] !== $this->id) {
-      throw new UserException("The stored data for the change email token '{$token}' doesn't match the current's user data.");
-    }
-    $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $token ]);
-    $this->query("UPDATE `users` SET `email` = ? WHERE `user_id` = ?", "sd", [ $data["new_email"], $this->id ]);
-    return $this;
-  }
-
-  /**
-   * Change the user's password.
-   *
-   * @param string $token
-   *   The user token from the URL.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Exception\UserException
-   */
-  public function changePassword($token) {
-    $result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $token ])->get_result()->fetch_row();
-    if (empty($result)) {
-      throw new DatabaseException("Couldn't find change password data for token '{$token}'.");
-    }
-    $data = unserialize($result[0]);
-    if (empty($data["user_id"]) || empty($data["new_password"]) || $data["user_id"] !== $this->id) {
-      throw new UserException("The stored data for the change password token '{$token}' doesn't match the current's user data.");
-    }
-    $this->query("DELETE FROM `tmp` WHERE `key` = ?", "s", [ $token ]);
-    $this->query("UPDATE `users` SET `password` = ? WHERE `user_id` = ?", "sd", [ $data["new_password"], $this->id ]);
-    return $this;
-  }
-
   /**
    * Check if this email address is already in use.
    *
@@ -304,7 +254,7 @@ class Full extends \MovLib\Data\User\User {
    *   <code>TRUE</code> if this email address is already in use, otherwise <code>FALSE</code>.
    */
   public function checkEmail($email) {
-    return !empty($this->query("SELECT `user_id` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_row());
+    return !empty($this->query("SELECT `id` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_row());
   }
 
   /**
@@ -316,7 +266,7 @@ class Full extends \MovLib\Data\User\User {
    *   <code>TRUE</code> if this name is already in use, otherwise <code>FALSE</code>.
    */
   public function checkName($username) {
-    return !empty($this->query("SELECT `user_id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $username ])->get_result()->fetch_row());
+    return !empty($this->query("SELECT `id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $username ])->get_result()->fetch_row());
   }
 
   /**
@@ -329,79 +279,36 @@ class Full extends \MovLib\Data\User\User {
     global $i18n;
     return $this->query(
       "UPDATE `users` SET
-        `avatar_changed`       = FROM_UNIXTIME(?),
-        `avatar_extension`     = ?,
-        `birthday`             = ?,
-        `country_id`           = ?,
-        `dyn_profile`          = COLUMN_ADD(`dyn_profile`, ?, ?),
-        `facebook`             = ?,
-        `google_plus`          = ?,
-        `private`              = ?,
-        `real_name`            = ?,
-        `sex`                  = ?,
-        `system_language_code` = ?,
-        `time_zone_id`         = ?,
-        `twitter`              = ?,
-        `website`              = ?
-      WHERE `user_id`          = ?
+        `birthday`           = ?,
+        `countryId`          = ?,
+        `imageChanged`       = FROM_UNIXTIME(?),
+        `imageExtension`     = ?,
+        `private`            = ?,
+        `profile`            = COLUMN_ADD(`dyn_profile`, ?, ?),
+        `realName`           = ?,
+        `sex`                = ?,
+        `systemLanguageCode` = ?,
+        `timeZoneId`         = ?,
+        `website`            = ?
+      WHERE `id` = ?
         LIMIT 1",
-      "sssissssisissssd",
+      "sississsisssd",
       [
-        $this->imageChanged,
-        $this->imageExtension,
         $this->birthday,
         $this->countryId,
+        $this->imageChanged,
+        $this->imageExtension,
+        $this->private,
         $i18n->languageCode,
         $this->profile,
-        null, // Facebook
-        null, // Google Plus
-        $this->private,
         $this->realName,
         $this->sex,
         $this->systemLanguageCode,
         $this->timeZoneId,
-        null, // Twitter
         $this->website,
         $this->id,
       ]
     );
-  }
-
-  /**
-   * Set deactivated flag, purge personal data.
-   *
-   * @todo Delete avatar image!
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
-   * @return this
-   * @throws \MovLib\Data\DatabaseException
-   */
-  public function deactivate() {
-    global $kernel, $session;
-    $sessions = $session->getActiveSessions();
-    $kernel->delayMethodCall([ $session, "delete" ], array_column($sessions, "session_id"));
-    $this->deleteImage();
-    $this->query(
-      "UPDATE `users` SET
-        `avatar_changed`    = NULL,
-        `avatar_extension`  = NULL,
-        `birthday`          = NULL,
-        `country_id`        = NULL,
-        `deactivated`       = true,
-        `dyn_profile`       = '',
-        `facebook`          = NULL,
-        `google_plus`       = NULL,
-        `private`           = false,
-        `real_name`         = NULL,
-        `sex`               = 0,
-        `time_zone_id`      = ?,
-        `twitter`           = NULL,
-        `website`           = NULL
-      WHERE `user_id` = ?",
-      "sd",
-      [ ini_get("date.timezone"), $this->id ]
-    );
-    return $this;
   }
 
   /**
@@ -454,6 +361,17 @@ class Full extends \MovLib\Data\User\User {
   }
 
   /**
+   * Change the user's password.
+   *
+   * @param string $password
+   *   The new hashed password.
+   * @return this
+   */
+  public function passwordUpdate($password) {
+    return $this->query("UPDATE `users` SET `password` = ? WHERE `id` = ?", "sd", [ $password, $this->id ]);
+  }
+
+  /**
    * Verify the user's password.
    *
    * @param string $rawPassword
@@ -463,44 +381,6 @@ class Full extends \MovLib\Data\User\User {
    */
   public function passwordVerify($rawPassword) {
     return password_verify($rawPassword, $this->password);
-  }
-
-  protected function prepare(array $data) {
-    $key = hash("sha256", openssl_random_pseudo_bytes(1024));
-    $this->query("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)", "sss", [ serialize($data), $key, self::TMP_TTL_DAILY ]);
-    return $key;
-  }
-
-  public function prepareDeactivation() {
-    return $this->prepare([ "user_id" => $this->id, "deactivation" => true ]);
-  }
-
-  public function prepareDeletion() {
-    return $this->prepare([ "user_id" => $this->id, "deletion" => true ]);
-  }
-
-  /**
-   * Prepare email change for this user.
-   *
-   * @param string $newEmail
-   *   The valid new email address.
-   * @return string
-   *   The key of the temporary table record.
-   */
-  public function prepareEmailChange($newEmail) {
-    return $this->prepare([ "user_id" => $this->id, "new_email" => $newEmail ]);
-  }
-
-  /**
-   * Prepare password change for this user.
-   *
-   * @param string $rawPassword
-   *   The unhashed new password.
-   * @return string
-   *   The key of the temporary table record.
-   */
-  public function preparePasswordChange($rawPassword) {
-    return $this->prepare([ "user_id" => $this->id, "new_password" => $this->passwordHash($rawPassword) ]);
   }
 
   /**
@@ -597,20 +477,6 @@ class Full extends \MovLib\Data\User\User {
       [ $this->email, $this->name, $password, $i18n->languageCode ]
     );
     $this->id = $stmt->insert_id;
-    return $this;
-  }
-
-  /**
-   * Change the user's email address.
-   *
-   * @param string $newEmail
-   *   The already validated new email address.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function updateEmail($newEmail) {
-    $this->email = $newEmail;
-    $this->query("UPDATE `users` SET `email` = ? WHERE `user_id` = ?", "sd", [ $this->email, $this->id ]);
     return $this;
   }
 

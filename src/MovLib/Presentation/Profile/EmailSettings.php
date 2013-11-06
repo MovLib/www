@@ -17,10 +17,11 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\UserException;
-use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Presentation\Email\User\EmailChange;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -175,18 +176,16 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    * Validate the submitted authentication token and update the user's email address.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   protected function validateToken() {
-    global $i18n;
+    global $i18n, $kernel;
+    $tmp = new Temporary();
+
     try {
-      $this->user->changeEmail($_GET["token"]);
-      $this->alerts .= new Alert(
-        $i18n->t("Your email address was successfully changed. Please use your new email address to sign in from now on."),
-        $i18n->t("Email Changed Successfully"),
-        Alert::SEVERITY_SUCCESS
-      );
+      $data = $tmp->get($_GET["token"]);
     }
     catch (DatabaseException $e) {
       $this->alerts .= new Alert(
@@ -195,9 +194,22 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
         Alert::SEVERITY_ERROR
       );
     }
-    catch (UserException $e) {
+
+    if ($data["user_id"] !== $this->user->id) {
       throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your email address."));
     }
+
+    $this->user->email = $data["new_email"];
+
+    $kernel->delayMethodCall([ $this->user, "commit" ]);
+    $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
+
+    $this->alerts .= new Alert(
+      $i18n->t("Your email address was successfully changed. Please use your new email address to sign in from now on."),
+      $i18n->t("Email Changed Successfully"),
+      Alert::SEVERITY_SUCCESS
+    );
+
     return $this;
   }
 

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\DatabaseException;
@@ -186,19 +187,16 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
    * Validate the submitted authentication token and update the user's password.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\Session $session
    * @return this
    */
   protected function validateToken() {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
+    $tmp = new Temporary();
+
     try {
-      $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
-      $this->user->changePassword($_GET["token"]);
-      $this->alerts .= new Alert(
-        $i18n->t("Your password was successfully changed. Please use your new password to sign in from now on."),
-        $i18n->t("Password Changed Successfully"),
-        Alert::SEVERITY_SUCCESS
-      );
+      $data = $tmp->get($_GET["token"]);
     }
     catch (DatabaseException $e) {
       $this->alerts .= new Alert(
@@ -207,9 +205,20 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
         Alert::SEVERITY_ERROR
       );
     }
-    catch (UserException $e) {
+
+    if ($data["user_id"] !== $session->userId) {
       throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your password."));
     }
+
+    $kernel->delayMethodCall([ new UserFull(UserFull::FROM_ID, $session->userId), "passwordUpdate" ], [ $data["new_password"] ]);
+    $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
+
+    $this->alerts .= new Alert(
+      $i18n->t("Your password was successfully changed. Please use your new password to sign in from now on."),
+      $i18n->t("Password Changed Successfully"),
+      Alert::SEVERITY_SUCCESS
+    );
+
     return $this;
   }
 
