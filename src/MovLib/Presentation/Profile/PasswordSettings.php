@@ -18,9 +18,9 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\UserException;
-use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -83,7 +83,7 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     $this->newPassword = new InputPassword("new-password", $i18n->t("New Password"), [
       "placeholder" => $i18n->t("Enter your new password"),
     ]);
-    $this->newPassword->setHelp("<a href='{$i18n->r("/user/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
+    $this->newPassword->setHelp("<a href='{$i18n->r("/users/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
 
     // Second field to enter the new password for confirmation.
     $this->newPasswordConfirm = new InputPassword("new-password-confirm", $i18n->t("Confirm Password"), [
@@ -101,7 +101,7 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     ]);
 
     // Validate the token if the page was requested via GET and a token is actually present.
-    if ($kernel->requestMethod == "GET" && isset($_GET["token"])) {
+    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
       $this->validateToken();
     }
   }
@@ -189,7 +189,7 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
    * @global \MovLib\Data\Session $session
    * @return this
    */
-  public function validateToken() {
+  protected function validateToken() {
     global $i18n, $session;
     try {
       $this->user = new UserFull(UserFull::FROM_ID, $session->userId);

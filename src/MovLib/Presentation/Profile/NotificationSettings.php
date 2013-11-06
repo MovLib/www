@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Data\User\Full as User;
+use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -43,7 +43,7 @@ class NotificationSettings extends \MovLib\Presentation\AbstractSecondaryNavigat
     global $i18n, $session;
     $session->checkAuthorization($i18n->t("You must be signed in to change your notification settings."));
     $this->init($i18n->t("Notification Settings"));
-    $this->user = new User(User::FROM_ID, $session->userId);
+    $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
   }
 
   /**
@@ -51,10 +51,11 @@ class NotificationSettings extends \MovLib\Presentation\AbstractSecondaryNavigat
    */
   protected function getPageContent() {
     global $i18n;
-    $alert = new Alert($i18n->t("The notification system isn’t implemented yet."));
-    $alert->title = $i18n->t("Check back later");
-    $alert->severity = Alert::SEVERITY_INFO;
-    return $alert;
+    return new Alert(
+      $i18n->t("The notification system isn’t implemented yet."),
+      $i18n->t("Check back later"),
+      Alert::SEVERITY_INFO
+    );
   }
 
 }

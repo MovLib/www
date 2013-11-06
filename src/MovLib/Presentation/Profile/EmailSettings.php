@@ -83,7 +83,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     $this->email->setHelp($i18n->t(
         "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
         "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to your " .
-        "{0}notification settings{1}.", [ "<a href='{$i18n->r("/profile/notification-settings")}'>", "</a>" ]
+        "{0}notification settings{1}.", [ "<a href='{$this->routeNotificationSettings}'>", "</a>" ]
     ));
 
         // Initialize the actual form of this page.
@@ -96,7 +96,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     ]);
 
     // Validate the token if the page was requested via GET and a token is actually present.
-    if ($kernel->requestMethod == "GET" && isset($_GET["token"])) {
+    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
       $this->validateToken();
     }
   }
@@ -178,7 +178,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    * @return this
    * @throws \MovLib\Exception\Client\UnauthorizedException
    */
-  private function validateToken() {
+  protected function validateToken() {
     global $i18n;
     try {
       $this->user->changeEmail($_GET["token"]);

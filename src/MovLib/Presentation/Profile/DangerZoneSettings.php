@@ -17,9 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \IntlDateFormatter;
-use \MovLib\Data\Delayed\Mailer;
-use \MovLib\Data\User\Full as User;
+use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\Client\UnauthorizedException;
@@ -40,6 +38,7 @@ use \MovLib\Presentation\Partial\Help;
  * @since 0.0.1-dev
  */
 class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+  use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Profile\TraitProfile;
 
 
@@ -47,25 +46,32 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
 
 
   /**
+   * The deactivate button.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\Button
+   */
+  protected $buttonDeactivate;
+
+  /**
+   * The delete button.
+   *
+   * @var \MovLib\Presentation\Partial\FormEelement\Button
+   */
+  protected $buttonDelete;
+
+  /**
    * The form for the sessions listing.
    *
    * @var \MovLib\Presentation\Partial\Form
    */
-  private $formSessions;
-
-  /**
-   * The form to deactivate an account.
-   *
-   * @var \MovLib\Presentation\Partial\Form
-   */
-  private $formDeactivate;
+  protected $formSessions;
 
   /**
    * String buffer used to construct the table with the session listing.
    *
    * @var string
    */
-  private $sessionsTable;
+  protected $sessionsTable;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -75,62 +81,62 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    * Instantiate new user danger zone settings presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\Session $session
    * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function __construct() {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
 
     // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
-    $session
-      ->checkAuthorization($i18n->t("You need to sign in to access the danger zone."))
-      ->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."))
-    ;
+    $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
+    $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     // Start rendering the page.
     $this->init($i18n->t("Danger Zone Settings"));
-    $this->user = new User(User::FROM_ID, $session->userId);
+    $this->user         = new UserFull(UserFull::FROM_ID, $session->userId);
 
     // We must instantiate the form before we create the sessions table, otherwise deletions would happen after the
     // table containing the sessions listing was built. Deleted sessions would still be displayed!
     $this->formSessions = new Form($this, [], "sessions", "deleteSession");
-    $buttonText = $i18n->t("Terminate");
-    $buttonTitle = $i18n->t("Terminate this session, the associated user agent will be signed out immediately.");
-    $sessions = $session->getActiveSessions();
-    $c = count($sessions);
+    $buttonText         = $i18n->t("Terminate");
+    $buttonTitle        = $i18n->t("Terminate this session, the associated user agent will be signed out immediately.");
+
+    $sessions           = $session->getActiveSessions();
+    $c                  = count($sessions);
     for ($i = 0; $i < $c; ++$i) {
-      $sessions[$i]["authentication"] = $i18n->formatDate($sessions[$i]["authentication"], $this->user->timeZoneId, IntlDateFormatter::SHORT, IntlDateFormatter::SHORT);
-      $sessions[$i]["ip_address"] = inet_ntop($sessions[$i]["ip_address"]);
-      $active = null;
-      $button = new Button("session_id", $buttonText, [
+      $sessions[$i]["authentication"] = $i18n->formatDate($sessions[$i]["authentication"], $this->user->timeZoneId, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
+      $sessions[$i]["ip_address"]     = inet_ntop($sessions[$i]["ip_address"]);
+      $active                         = null;
+      $button                         = new Button("session_id", $buttonText, [
         "class" => "button--danger",
         "type"  => "submit",
         "value" => $sessions[$i]["session_id"],
         "title" => $buttonTitle,
       ]);
       unset($button->attributes["id"]);
+
       if ($sessions[$i]["session_id"] == $session->id) {
-        $active = " class='warning'";
+        $active                      = " class='warning'";
         $button->attributes["title"] = $i18n->t("If you click this button your active session is terminated and you’ll be signed out!");
-        $button->content = $i18n->t("Sign Out");
+        $button->content             = $i18n->t("Sign Out");
       }
+
       $this->sessionsTable .=
         "<tr{$active}>" .
-          "<td>{$sessions[$i]["authentication"]}</td>" .
-          "<td class='small'><code>{$this->checkPlain($sessions[$i]["user_agent"])}</code></td>" .
-          "<td><code>{$sessions[$i]["ip_address"]}</code></td>" .
-          "<td class='form-actions'>{$button}</td>" .
+        "<td>{$sessions[$i]["authentication"]}</td>" .
+        "<td class='small'><code>{$this->checkPlain($sessions[$i]["user_agent"])}</code></td>" .
+        "<td><code>{$sessions[$i]["ip_address"]}</code></td>" .
+        "<td class='form-actions'>{$button}</td>" .
         "</tr>"
       ;
     }
 
-    $this->formDeactivate = new Form($this, [], "deactivate", "validateDeactivation");
-    $this->formDeactivate->actionElements[] = new InputSubmit([
-      "class" => "button--danger",
-      "value" => $i18n->t("Request Deactivation"),
-    ]);
+    $this->form             = new Form($this);
+    $this->buttonDeactivate = new Button("deactivate", $i18n->t("Deactivate"), [ "class" => "button--large button--warning" ]);
+    $this->buttonDelete     = new Button("delete", $i18n->t("Delete"), [ "class" => "button--large button--danger" ]);
 
-    if (isset($_GET["token"])) {
+    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
       $this->validateToken();
     }
   }
@@ -157,8 +163,8 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
       "If you want to deactivate your account, for whatever reason, click the button below. All your {0}personal data{1} " .
       "will be purged from our system and you are signed out. To reactivate your account, simply sign in again with " .
       "your email address and secret password (of course you’ll have to re-enter your personal data).",
-      [ "<a href='{$i18n->r("/user/account-settings")}'>", "</a>" ]
-    )}</p>{$this->formDeactivate}");
+      [ "<a href='{$this->routeAccountSettings}'>", "</a>" ]
+    )}</p>{$this->form}");
     $deactivate->severity = Alert::SEVERITY_ERROR;
 
     return
@@ -170,12 +176,27 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
           "and the button reads “sign out” instead of “terminate”. If you have the feeling that some sessions that are " .
           "listed weren’t initiated by you, terminate them and consider to {0}set a new password{1} to ensure that " .
           "nobody else has access to your account.",
-          [ "<a href='{$i18n->r("/user/password-settings")}'>", "</a>" ]
+          [ "<a href='{$this->routePasswordSettings}'>", "</a>" ]
         )}</caption>" .
         "<thead><tr><th>{$i18n->t("Sign In Time")}</th><th>{$i18n->t("User Agent")}</th><th>{$i18n->t("IP address")}</th><th></th></tr></thead>" .
         "<tbody>{$this->sessionsTable}</tbody>" .
       "</table>{$this->formSessions->close()}" .
-      "<h2>{$i18n->t("Deactivate Account")}</h2>{$deactivate}"
+      "<h2>{$i18n->t("Deactivate / Delete Account")}</h2>" .
+      $this->form->open() .
+        "<p>{$i18n->t("If you want to deactivate or delete your account—for whatever reason—click one of the buttons below.")}</p>" .
+        "<p>{$i18n->t(
+          "We keep all your personal data and make your account inaccessible if you choose to deactivate it. You can " .
+          "sign in with your email address and password later on to reactivate your account."
+        )}</p>" .
+        "<p>{$this->buttonDeactivate}</p>" .
+        "<p>{$i18n->t(
+          "We purge all your personal data from our system if you choose to delete your account. Please note that all " .
+          "your contributions and your username will stay in our system and you’ll never be able to reclaim your " .
+          "account. This is because your email address will be purged as well and afterwards there’s no possibility to " .
+          "reactivate your account."
+        )}</p>" .
+        "<p>{$this->buttonDelete}</p>" .
+      $this->form->close()
     ;
   }
 
@@ -189,17 +210,26 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    */
   public function deleteSession() {
     global $i18n, $session;
+
+    // Nothing to do if we have no session ID.
+    if (empty($_POST["session_id"])) {
+      return $this;
+    }
+
+    // Delete own session means sign out.
     if ($_POST["session_id"] == $session->id) {
-      throw new RedirectSeeOtherException($i18n->r("/profile/sign-out"));
+      $session->destroy();
+      throw new RedirectSeeOtherException($i18n->r("/users/login"));
     }
-    else {
-      try {
-        $session->delete($_POST["session_id"]);
-      }
-      catch (DatabaseException $e) {
-        $this->checkErrors([ $i18n->t("The submitted session ID was invalid.") ]);
-      }
+
+    // Delete the session from Memcached and our persistent storage.
+    try {
+      $session->delete($_POST["session_id"]);
     }
+    catch (DatabaseException $e) {
+      $this->checkErrors([ $i18n->t("The submitted session ID was invalid.") ]);
+    }
+
     return $this;
   }
 
@@ -207,19 +237,34 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    * Delete all personal data and sign out the user.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @param array $errors [optional]
+   *   {@inheritdoc}
    * @return $this
    */
-  public function validateDeactivation() {
-    global $i18n;
-    Mailer::stack(new Deactivation($this->user));
+  public function validate(array $errors = null) {
+    global $i18n, $kernel;
+
+    // Send email with further instructions.
+    $kernel->sendEmail(new Deactivation($this->user));
+
+    // The request was accepted but needs further action.
     http_response_code(202);
-    $success = new Alert($i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]));
-    $success->title = $i18n->t("Successfully Requested Deactivation");
-    $success->severity = Alert::SEVERITY_SUCCESS;
-    $info = new Alert($i18n->t("You have to follow the link that we just sent to you via email to complete this action."));
-    $info->title = $i18n->t("Important!");
-    $info->severity = Alert::SEVERITY_INFO;
-    $this->alerts .= "{$success}{$info}";
+
+    // Let the user know where to find the instructions to complete the request.
+    $this->alerts .= new Alert(
+      $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
+      $i18n->t("Successfully Requested Deactivation"),
+      Alert::SEVERITY_SUCCESS
+    );
+
+    // Make sure the user really understand what to do.
+    $this->alerts .= new Alert(
+      $i18n->t("You have to follow the link that we just sent to you via email to complete this action."),
+      $i18n->t("Important!"),
+      Alert::SEVERITY_INFO
+    );
+
     return $this;
   }
 
@@ -232,7 +277,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    * @throws \MovLib\Exception\Client\UnauthorizedException
    */
-  private function validateToken() {
+  protected function validateToken() {
     global $i18n, $session;
     $data = $this->user->validateAuthenticationToken($errors, $this->id);
     if ($data && $data["id"] !== $session->userId) {
