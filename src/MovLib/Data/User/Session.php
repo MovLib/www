@@ -18,9 +18,9 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\SessionException;
 use \MovLib\Exception\UserException;
-use \MovLib\Exception\Client\UnauthorizedException;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -457,8 +457,8 @@ class Session extends \MovLib\Data\Database {
     // Do nothing if this method isn't called via nginx!
     if (isset($_SERVER["FCGI_ROLE"])) {
       session_regenerate_id(true);
-      $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
       $this->id = session_id();
+      $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
     }
 
     return $this;
