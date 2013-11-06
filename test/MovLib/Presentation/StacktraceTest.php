@@ -56,4 +56,52 @@ class StacktraceTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::formatFunctionArguments
+   * @todo Implement formatFunctionArguments
+   */
+  public function testFormatFunctionArguments() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::formatClassName
+   * @todo Implement formatClassName
+   */
+  public function testFormatClassName() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::formatFileName
+   * @todo Implement formatFileName
+   */
+  public function testFormatFileName() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::formatLineNumber
+   * @todo Implement formatLineNumber
+   */
+  public function testFormatLineNumber() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::formatFunction
+   * @todo Implement formatFunction
+   */
+  public function testFormatFunction() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::formatFunctionType
+   * @todo Implement formatFunctionType
+   */
+  public function testFormatFunctionType() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

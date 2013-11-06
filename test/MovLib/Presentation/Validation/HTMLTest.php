@@ -68,4 +68,12 @@ class HTMLTest {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::getPresentation
+   * @todo Implement getPresentation
+   */
+  public function testGetPresentation() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

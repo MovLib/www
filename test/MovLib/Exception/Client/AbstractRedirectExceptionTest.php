@@ -37,4 +37,12 @@ class AbstractRedirectExceptionTest extends \MovLib\TestCase {
     $this->assertContains("42 phpunit", $stub->presentation);
   }
 
+  /**
+   * @covers ::getPresentation
+   * @todo Implement getPresentation
+   */
+  public function testGetPresentation() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

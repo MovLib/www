@@ -82,4 +82,12 @@ class CollatorTest extends \MovLib\TestCase {
     }
   }
 
+  /**
+   * @covers ::osort
+   * @todo Implement osort
+   */
+  public function testOsort() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

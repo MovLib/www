@@ -154,4 +154,28 @@ class ComposerTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::apigen
+   * @todo Implement apigen
+   */
+  public function testApigen() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::phpunit
+   * @todo Implement phpunit
+   */
+  public function testPhpunit() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::symlink
+   * @todo Implement symlink
+   */
+  public function testSymlink() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

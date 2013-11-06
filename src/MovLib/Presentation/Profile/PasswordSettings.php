@@ -21,7 +21,6 @@ use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\UserException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;

@@ -133,4 +133,12 @@ class PageTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::formatFooterSystemLanguage
+   * @todo Implement formatFooterSystemLanguage
+   */
+  public function testFormatFooterSystemLanguage() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

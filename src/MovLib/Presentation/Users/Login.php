@@ -81,7 +81,7 @@ class Login extends \MovLib\Presentation\Page {
     // Start rendering the page.
     $this->init($i18n->t("Login"));
 
-    // Now we also need to know the translated version of the login route.
+    // We need to know the translated version of the login route for comparison.
     $routeLogin = $action = $i18n->r("/users/login");
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build

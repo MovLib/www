@@ -146,4 +146,12 @@ class DatabaseArrayObjectTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::reindex
+   * @todo Implement reindex
+   */
+  public function testReindex() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

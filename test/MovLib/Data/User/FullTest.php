@@ -367,4 +367,20 @@ class FullTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::passwordUpdate
+   * @todo Implement passwordUpdate
+   */
+  public function testPasswordUpdate() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::passwordVerify
+   * @todo Implement passwordVerify
+   */
+  public function testPasswordVerify() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

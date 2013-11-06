@@ -98,4 +98,20 @@ class ResetPasswordTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::getHTML
+   * @todo Implement getHTML
+   */
+  public function testGetHTML() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getPlainText
+   * @todo Implement getPlainText
+   */
+  public function testGetPlainText() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

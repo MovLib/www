@@ -77,6 +77,9 @@ class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientExcep
       $title = $i18n->t("You must be signed in to access this content.");
     }
 
+    // Ensure any active session is destroyed.
+    $session->destroy();
+
     // Instantiate the login page and add the alert message to the presentation.
     $this->loginPresentation          = new Login();
     $this->loginPresentation->alerts .= new Alert($message, $title, $severity);
@@ -89,13 +92,9 @@ class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientExcep
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    */
   public function getPresentation() {
-    global $i18n, $session;
-
-    // Ensure any active session is destroyed.
-    $session->destroy();
+    global $i18n;
 
     // Read the following: http://stackoverflow.com/a/1088127/1251219
     header("WWW-Authenticate: MovLib loation='{$i18n->r("/users/login")}'", true, 401);

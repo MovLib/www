@@ -74,4 +74,12 @@ class CountryTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::selectCallback
+   * @todo Implement selectCallback
+   */
+  public function testSelectCallback() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

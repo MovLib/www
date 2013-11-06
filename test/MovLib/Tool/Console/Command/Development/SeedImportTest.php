@@ -138,4 +138,12 @@ class SeedImportTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::historyImport
+   * @todo Implement historyImport
+   */
+  public function testHistoryImport() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

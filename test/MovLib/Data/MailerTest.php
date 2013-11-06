@@ -146,4 +146,12 @@ class MailerTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::getFromName
+   * @todo Implement getFromName
+   */
+  public function testGetFromName() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }

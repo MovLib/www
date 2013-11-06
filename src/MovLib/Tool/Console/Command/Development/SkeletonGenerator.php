@@ -112,8 +112,13 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
+
+    // We need to fix the permissions after generating the skeletons, therefor we need elevated privileges.
     $this->checkPrivileges();
+
+    // If we have them, generate the skeletons.
     $this->generateSkeletons();
+
     return $options;
   }
 
@@ -127,21 +132,37 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    */
   protected function generateSkeleton($file) {
     global $kernel;
+
+    // Every test file has the same path as the source file, the only reside in a different directory. All source files
+    // are in "src" and all test files in "test", therefore we have to replace that portion of the part. Every test
+    // file ends on Test, this is per convention from PHPUnit, therefor we simply replace the ".php" file extension,
+    // prefix it with "Test" and we have the absolute path to the test file.
     $testFile = str_replace([ "/src/", ".php" ], [ "/test/", "Test.php" ], $file);
+
+    // We have to remove the document root and "src" portion and the file extension to get the fully qualified class
+    // name and of course we have to replace the directory separator with the PHP namespace separator.
     $class    = strtr(str_replace([ "{$kernel->documentRoot}/src", ".php" ], "", $file), DIRECTORY_SEPARATOR, "\\");
+
+    // Check if we are really dealing with a (abstract) class or a trait, otherwise there's no need for a skeleton.
     if (!class_exists($class) && !trait_exists($class)) {
       return $this;
     }
-    if (strpos($class, "Presentation\History\AbstractHistory") === false) {
-      return $this;
-    }
+
+    // Create a reflection of this particular class, in order to easily gather information about it. We also need the
+    // real source code to make absolutely sure that the method is really declared in this class (traits are a real
+    // problem because they are reported as declared in the using class by the reflector).
     $reflector = new \ReflectionClass($class);
+    $source    = file_get_contents($file);
+
+    // We might have to extend the existing test if we already have a test file.
     if (is_file($testFile)) {
-      $this->skeletonExtend($reflector, $class, $testFile, $file);
+      $this->skeletonExtend($reflector, $class, $source, $testFile);
     }
+    // If not, generate a totally new skeleton for this source file.
     else {
-      $this->skeletonNew($reflector, $class, $testFile, $file);
+      $this->skeletonNew($reflector, $class, $source, $testFile);
     }
+
     return $this;
   }
 
@@ -187,6 +208,8 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
     });
 
     $this->write("Sekeleton Generator Report:");
+
+    // Let's find out if we did anything.
     $doneSomething = false;
     foreach ([ "Deleted", "New", "Extended" ] as $action) {
       if (!empty($this->{"skeletons{$action}"})) {
@@ -195,9 +218,13 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
         $doneSomething = true;
       }
     }
+
+    // If we haven't done anything, tell the client.
     if ($doneSomething === false) {
       $this->write("All tests are up-to-date, nothing was deleted, generated or extended!", self::MESSAGE_TYPE_COMMENT);
     }
+
+    return $this;
   }
 
   /**
@@ -224,52 +251,83 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    * Extend an existing test.
    *
    * @param \ReflectionClass $reflector
-   *   Reflector of the class for which we should generate a skeleton.
+   *   Reflector of the class for which we should extend the test.
    * @param string $class
    *   Full class name, e.g. <code>"\Foo\Bar"</code>.
+   * @param string $source
+   *   The source code of the class for which we should extend the test.
    * @param string $testFile
    *   Absolute path to the test file.
-   * @param string $file
-   *   Absolute path to the file.
    * @return this
    */
-  protected function skeletonExtend($reflector, $class, $testFile, $file) {
+  protected function skeletonExtend($reflector, $class, $source, $testFile) {
+    // Create a reflector for the existing test class.
     $testReflector = new \ReflectionClass("{$class}Test");
+
+    // Go through all existing test methods and store them in an associative array for later comparison.
     $testMethods   = [];
     /* @var $testMethod \ReflectionMethod */
     foreach ($testReflector->getMethods() as $testMethod) {
-      if ($testMethod->getDeclaringClass() === $testReflector) {
+      if ($testMethod->getDeclaringClass() == $testReflector) {
         $testMethods[] = $testMethod;
       }
     }
 
-    $classContent = file_get_contents($file);
     $tests = [];
     /* @var $method \ReflectionMethod */
     foreach ($reflector->getMethods() as $method) {
-      if ($method->getDeclaringClass() == $reflector && strpos($classContent, "function {$method->getName()}") !== false) {
-        $testExists     = false;
-        $methodName     = $method->getName();
+      $methodName = $method->getName();
+
+      // Make absolutely sure that this method is declared in this class. First we simply ask the reflector which covers
+      // almost all inheritance scenarios, but we also have to check the source code itself in case this class makes use
+      // of a trait, because the reflector will report that the class is declaring the method in this case.
+      if ($method->getDeclaringClass() == $reflector && strpos($source, "function {$methodName}") !== false) {
+        // We asume that this test isn't implemented yet.
+        $testExists = false;
+
+        // Build the test method name, we have to remove all underlines and make the first characters uppercased. Any
+        // test method has the format "testMethodName" (this includes tests for magic stuff like "__construct" becomes
+        // "testConstruct").
         $methodTestName = ucfirst(ltrim($methodName, "_"));
+
+        // We can't utilize a simple array search because the test method might have additional information appended to
+        // its name (e.g. "testMyMethodInvalidInput"). This is why we utilize the strpos() function to check if any
+        // test method is declared containing the name of this method.
         foreach ($testMethods as $testMethod) {
           if (strpos($testMethod, $methodTestName) !== false) {
             $testExists = true;
+            break;
           }
         }
+
+        // We create a test method skeleton for this method if the above code doesn't find any matching test.
         if ($testExists === false) {
-          $tests[] = str_replace(
-            [ "{methodName}", "{methodTestName}" ],
-            [ $methodName, $methodTestName ],
-            $this->methodTemplate
-          );
+          $tests[] = str_replace([ "{methodName}", "{methodTestName}" ], [ $methodName, $methodTestName ], $this->methodTemplate);
         }
       }
     }
 
+    // Check if we have any new tests that we should extend this test case with.
     if (!empty($tests)) {
-      $existingTest = file_get_contents($testFile);
-      $insertPosition = mb_strrpos($existingTest, "}") - 1;
-      file_put_contents($testFile, mb_substr($existingTest, 0, $insertPosition) . "\n" . implode("\n\n", $tests) . "\n\n}\n");
+      // Snatch the source code of the existing test.
+      $existingTestCase = file_get_contents($testFile);
+
+      // Put some space between each test method for readability, according to our coding standards this is a single
+      // blank line (plus one line feed for the closing "}" of the test method before).
+      $tests = implode("\n\n", $tests);
+
+      // Search for the last occurence of "}", which always marks the end of the class. It's very important to use the
+      // multibyte function at this point because ALL our source files are in UTF-8.
+      $insertPosition = mb_strrpos($existingTestCase, "}") - 1;
+
+      // Now we insert the new test method exactly before the end of the existing test case and create the new extended
+      // test case.
+      $extendedTestCase = mb_substr($existingTestCase, 0, $insertPosition) . "\n{$tests}\n\n}\n";
+
+      // Straight forward, override the existing test file with the extended test case code.
+      file_put_contents($testFile, $extendedTestCase);
+
+      // Stack this test file for the final report.
       $this->skeletonsExtended[] = $testFile;
     }
 
@@ -283,27 +341,21 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
    *   Reflector of the class for which we should generate a skeleton.
    * @param string $class
    *   Full class name, e.g. <code>"\Foo\Bar"</code>.
+   * @param string $source
+   *   The source code of the class for which we should generate a skeleton.
    * @param string $testFile
    *   Absolute path to the test file.
-   * @param string $file
-   *   Absolute path to the file.
    * @return this
    */
-  protected function skeletonNew($reflector, $class, $testFile, $file) {
-    $classContent = file_get_contents($file);
+  protected function skeletonNew($reflector, $class, $source, $testFile) {
     $tests = [];
-    $this->progressFinish();
-    echo PHP_EOL;
     /* @var $method \ReflectionMethod */
     foreach ($reflector->getMethods() as $method) {
-      if ($method->getDeclaringClass() == $reflector && strpos($classContent, "function {$method->getName()}") !== false) {
-        $methodName     = $method->getName();
+      $methodName = $method->getName();
+
+      if ($method->getDeclaringClass() == $reflector && strpos($source, "function {$methodName}") !== false) {
         $methodTestName = ucfirst(ltrim($methodName, "_"));
-        $tests[]        = str_replace(
-          [ "{methodName}", "{methodTestName}" ],
-          [ $methodName, $methodTestName ],
-          $this->methodTemplate
-        );
+        $tests[] = str_replace([ "{methodName}", "{methodTestName}" ], [ $methodName, $methodTestName ], $this->methodTemplate);
       }
     }
 

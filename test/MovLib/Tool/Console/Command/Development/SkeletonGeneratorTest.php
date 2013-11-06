@@ -122,4 +122,12 @@ class SkeletonGeneratorTest extends \MovLib\TestCase {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
+  /**
+   * @covers ::globRecursive
+   * @todo Implement globRecursive
+   */
+  public function testGlobRecursive() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
 }
