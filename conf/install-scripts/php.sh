@@ -31,7 +31,7 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="5.5.6"
+  VERSION="5.5.5"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
@@ -72,6 +72,7 @@ source ${ID}wget.sh "http://us1.php.net/distributions/" "${NAME}-${VERSION}" ".t
 #  --with-openssl \
 #  --with-pcre-regex \
 #  --with-pear \
+#  --with-tidy \
 #  --with-zend-vm="GOTO" \
 #  --with-zlib \
 #  --without-sqlite3
@@ -108,6 +109,7 @@ CFLAGS="-O3 -m64 -DMYSQLI_NO_CHANGE_USER_ON_PCONNECT" CXXFLAGS="-O3 -m64" ./conf
   --with-openssl \
   --with-pcre-regex \
   --with-pear \
+  --with-tidy \
   --with-zend-vm="GOTO" \
   --with-zlib
 source ${ID}install.sh
