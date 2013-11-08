@@ -103,26 +103,6 @@ class KernelTest extends \MovLib\TestCase {
   }
 
   /**
-   * @coversNothing
-   * @link http://php.net/function.password-hash.php
-   */
-  public function testPasswordCost() {
-    $timeTarget = 0.5;
-    $cost       = 9;
-    do {
-      $cost++;
-      $start  = microtime(true);
-      password_hash("test", PASSWORD_DEFAULT, $this->kernel->passwordOptions);
-      $end    = microtime(true);
-      $actual = $end - $start;
-    }
-    while ($actual < $timeTarget);
-    $this->assertGreaterThanOrEqual(
-      $this->kernel->passwordOptions["cost"], $cost, "Please set password cost in the Kernel at least to {$cost} (hashing will take ~{$actual} seconds)."
-    );
-  }
-
-  /**
    * @covers ::sendEmail
    * @todo Implement sendEmail
    */
