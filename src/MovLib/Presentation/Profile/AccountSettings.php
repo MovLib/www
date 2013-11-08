@@ -31,7 +31,7 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputURL;
 use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\Select;
-use \MovLib\Presentation\Partial\FormElement\Textarea;
+use \MovLib\Presentation\Partial\FormElement\InputHTML;
 
 /**
  * Allows the user to manage his personalized settings.
@@ -88,7 +88,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
   /**
    * The user's profile textarea form element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\Textarea
+   * @var \MovLib\Presentation\Partial\FormElement\InputHTML
    */
   protected $profile;
 
@@ -166,11 +166,10 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "value" => $this->user->birthday,
     ], $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
 
-//    $this->profile  = new Textarea("profile", $i18n->t("About You"), $this->user->profile, [
-//      "data-allow-external" => true,
-//      "data-form"           => HTML::FORMAT_ANCHORS,
-//      "placeholder"         => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
-//    ]);
+    $this->profile  = new InputHTML("profile", $i18n->t("About You"), $this->user->profile, [
+      "data-allow-external" => true,
+      "placeholder"         => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
+    ]);
 
     $this->language = new Select("language", $i18n->t("System Language"), (new SystemLanguages())->orderByName(), $this->user->systemLanguageCode);
     $this->country  = new Select("country", $i18n->t("Country"), (new Countries())->orderByName()->reindex("id"), $this->user->countryId);
@@ -188,7 +187,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->avatar,
       $this->sex,
       $this->birthday,
-//      $this->profile,
+      $this->profile,
       $this->language,
       $this->country,
       $this->timezone,
@@ -222,7 +221,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->user->birthday           = $this->birthday->value;
       $this->user->countryId          = $this->country->value;
       $this->user->private            = $this->private->value;
-//      $this->user->profile            = $this->profile->content;
+      $this->user->profile            = $this->profile->content;
       $this->user->realName           = $this->realName->value;
       $this->user->sex                = $this->sex->value;
       $this->user->systemLanguageCode = $this->language->value;

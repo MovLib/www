@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Presentation\Partial\FormElement\Textarea;
+use \MovLib\Presentation\Partial\FormElement\InputHTML;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\Textarea
@@ -33,7 +33,7 @@ class TextareaTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Partial\FormElement\Textarea */
+  /** @var \MovLib\Presentation\Partial\FormElement\InputHTML */
   protected $textarea;
 
 
@@ -44,7 +44,7 @@ class TextareaTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->textarea = new Textarea();
+    $this->textarea = new InputHTML();
   }
 
   /**
