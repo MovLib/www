@@ -94,7 +94,6 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend>{$choices}</fieldset>";
   }
 
-
   /**
    * @inheritdoc
    */
