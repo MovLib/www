@@ -544,11 +544,14 @@ SHOW WARNINGS;
 -- Table `movlib`.`tmp`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`tmp` (
-  `key` VARCHAR(255) NOT NULL COMMENT 'The record’s unique key.',
+  `key` VARCHAR(255) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The record’s unique key.',
+  `event` TINYTEXT CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL,
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The record’s creation timestamp.',
   `data` BLOB NOT NULL COMMENT 'The record’s serialized data.',
-  `ttl` TINYTEXT NOT NULL COMMENT 'The record’s time to life.',
-  PRIMARY KEY (`key`))
+  `ttl` VARCHAR(16) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The record’s time to life.',
+  PRIMARY KEY (`key`),
+  INDEX `created` (`created` ASC),
+  INDEX `cron` (`ttl` ASC))
 COMMENT = 'Used to store temporary data.'
 ROW_FORMAT = COMPRESSED;
 
