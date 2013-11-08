@@ -137,9 +137,9 @@ class Kernel {
    * The current default password is {@see PASSWORD_BCRYPT} which supports <i>salt</i> and <i>cost</i>. We don't use
    * <i>salt</i> because we want PHP to generate a random one. The cost should be set to something around half a second.
    *
-   * @var string
+   * @var array
    */
-  public $passwordOptions = [ "cost" => 13 ];
+  public $passwordOptions = [ "cost" => 12 ];
 
   /**
    * The user name (for file permissions etc.).
