@@ -76,9 +76,6 @@ class TestKernel extends \MovLib\Tool\Kernel {
     // Set a user agent string for PHPUnit tests.
     $this->userAgent = ini_get("user_agent");
 
-    // Establish connection to database to ensure that our clone has one.
-    $db->connect();
-
     // Create backups of our global objects.
     $backup = [
       "db"      => clone $db,
