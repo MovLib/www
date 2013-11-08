@@ -92,7 +92,6 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *   The string representation of the images.
    */
   public function __toString() {
-    try {
     if (($c = count($this->listItems->entities))) {
       $list = null;
       for ($i = 0; $i < $c; ++$i) {
@@ -114,9 +113,6 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
       return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
     }
     return $this->noItemsText;
-    } catch (\Exception $e) {
-      return "<pre class='container'>" . print_r($e, true) . "</pre>";
-    }
   }
 
 }
