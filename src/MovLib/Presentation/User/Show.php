@@ -51,16 +51,16 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   /**
    * Instantiate new user presentation.
    *
-   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Exception\NotFoundException
    * @throws \MovLib\Exception\Client\RedirectPermanentException
    */
   public function __construct() {
-    global $i18n;
+    global $kernel;
     try {
       $this->user = new User(User::FROM_NAME, $this->checkPlain($_SERVER["USER_NAME"]));
-      if (($nameLower = mb_strtolower($this->user->name)) != $_SERVER["USER_NAME"]) {
-        throw new RedirectPermanentException($i18n->r("/user/{0}", [ $nameLower ]));
+      if ($this->user->route != $kernel->requestURI) {
+        throw new RedirectPermanentException($this->user->route);
       }
       $this->init($this->user->name);
     }
@@ -96,8 +96,8 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     global $i18n;
     return [
       [
-        $i18n->r("/user/{0}", [ $_SERVER["USER_NAME"] ]),
-        $this->checkPlain($this->user->name),
+        $this->user->route,
+        $this->user->name,
         [ "class" => "separator" ],
       ],
       [

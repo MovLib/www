@@ -84,17 +84,6 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::authenticate
-   * @expectedException \MovLib\Exception\UserException
-   */
-  public function testAuthenticateDeactivatedUser() {
-    $user = new UserFull(UserFull::FROM_ID, 1);
-    $user->deactivate();
-    (new Session())->authenticate("richard@fussenegger.info", "Test1234");
-    (new SeedImport())->databaseImport([ "users" ]);
-  }
-
-  /**
-   * @covers ::authenticate
    * @expectedException \MovLib\Exception\SessionException
    * @expectedExceptionMessage Couldn't find user with email
    */

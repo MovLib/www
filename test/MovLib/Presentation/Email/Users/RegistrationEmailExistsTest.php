@@ -83,22 +83,6 @@ class RegistrationEmailExistsTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::getHtmlBody
-   * @todo Implement getHtmlBody
-   */
-  public function testGetHtmlBody() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getPlainBody
-   * @todo Implement getPlainBody
-   */
-  public function testGetPlainBody() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
    * @covers ::getHTML
    * @todo Implement getHTML
    */

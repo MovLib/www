@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -21,7 +21,7 @@ use \MovLib\Presentation\Email\Users\Registration;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\Email\Users\Registration
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -29,29 +29,42 @@ use \MovLib\Presentation\Email\Users\Registration;
  */
 class RegistrationTest extends \MovLib\TestCase {
 
-  private function _testMailBody($method) {
-    $this->assertContains(
-      "{$_SERVER["SERVER"]}/users/registration?token=" . rawurlencode(base64_encode("phpunit@movlib.org")), (new Registration("PHPUnit", "phpunit@movlib.org"))->init()->{"get{$method}"}()
-    );
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /** @var \MovLib\Presentation\Email\Users\Registration */
+  protected $registration;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Fixtures
+
+
+  /**
+   * Called before each test.
+   */
+  protected function setUp() {
+    $this->registration = new Registration();
   }
 
   /**
-   * @covers ::__construct
-   * @covers ::init
-   * @covers ::getHtmlBody
+   * Called after each test.
    */
-  public function testHtml() {
-    $this->_testMailBody("Html");
+  protected function tearDown() {
+
   }
 
-  /**
-   * @covers ::__construct
-   * @covers ::init
-   * @covers ::getPlainBody
-   */
-  public function testPlain() {
-    $this->_testMailBody("Plain");
+
+  // ------------------------------------------------------------------------------------------------------------------- Data Provider
+
+
+  public function dataProviderExample() {
+    return [];
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Tests
+
 
   /**
    * @covers ::__construct
@@ -66,22 +79,6 @@ class RegistrationTest extends \MovLib\TestCase {
    * @todo Implement init
    */
   public function testInit() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getHtmlBody
-   * @todo Implement getHtmlBody
-   */
-  public function testGetHtmlBody() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getPlainBody
-   * @todo Implement getPlainBody
-   */
-  public function testGetPlainBody() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

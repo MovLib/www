@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
@@ -111,7 +112,11 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
    */
   protected function getPageContent() {
     global $i18n;
-    $randomPassword = UserFull::getRandomPassword();
+
+    // Generate a KeePass like random password for the user.
+    sh::execute("pwgen -cnBv 20 1", $randomPassword);
+    $randomPassword = trim($randomPassword[0]);
+
     $info = new Alert(
       "<p>{$i18n->t("Choose a strong password to secure your account.")} {$i18n->t("A password must contain lowercase and uppercase letters, numbers, and must be at least {0,number,integer} characters long.", [
         $this->newPassword->minimumPasswordLength
@@ -119,6 +124,7 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
       $i18n->t("Tip"),
       Alert::SEVERITY_INFO
     );
+
     return "{$info}{$this->form}";
   }
 
@@ -150,7 +156,7 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
       $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
 
       // The new password shouldn't be the same as the old password.
-      if ($this->user->passwordVerify($this->newPassword->value) === true) {
+      if ($this->user->verifyPassword($this->newPassword->value) === true) {
         $this->newPassword->invalid();
         $this->newPasswordConfirm->invalid();
         $errors[] = $i18n->t("Your new password equals your existing password, please enter a new one.");

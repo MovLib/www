@@ -47,13 +47,6 @@ class Session extends \MovLib\Data\Database {
 
 
   /**
-   * Alert messages that should be displayed to the user on the next pageview.
-   *
-   * @var string
-   */
-  public $alerts = "";
-
-  /**
    * Timestamp this session was first authenticated.
    *
    * @var int
@@ -191,8 +184,9 @@ class Session extends \MovLib\Data\Database {
   public function authenticate($email, $rawPassword) {
     global $kernel;
 
-    // Load necessary user data from storage.
-    if (!($result = $this->query("SELECT `id`, `password`, `deactivated` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
+    // Load necessary user data from storage (if we have any).
+    $result = $this->query("SELECT `id`, `password` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc();
+    if (!$result) {
       throw new SessionException("Couldn't find user with email '{$email}'!");
     }
 
@@ -211,10 +205,6 @@ class Session extends \MovLib\Data\Database {
     //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
     //       have to worry about. Maybe introduce a configuration option for this?
     $kernel->delayMethodCall([ $this, "passwordNeedsRehash" ], [ $result["password"], $rawPassword ]);
-
-    if ($result["deactivated"] == true) {
-      throw new UserException("Account is deactivated!");
-    }
 
     return $this;
   }
@@ -315,13 +305,12 @@ class Session extends \MovLib\Data\Database {
     // If no session is active, nothing has to be done.
     if (session_status() === PHP_SESSION_ACTIVE) {
       // Remove all data associated with this session.
-      if (session_destroy() === false) {
-        throw new SessionException("Couldn't destroy data associated with this session.");
-      }
       session_unset();
+      session_destroy();
       // Remove the cookie.
       $cookie = session_get_cookie_params();
-      setcookie(session_name(), "", $_SERVER["REQUEST_TIME"] - 42000, $cookie["path"], $cookie["domain"], $cookie["secure"], $cookie["httponly"]);
+      setcookie($this->name, "", 1, $cookie["path"], $cookie["domain"], $cookie["secure"], $cookie["httponly"]);
+      session_write_close();
       // Remove the session ID from our database.
       $kernel->delayMethodCall([ $this, "delete" ]);
     }
@@ -440,7 +429,9 @@ class Session extends \MovLib\Data\Database {
   public function passwordNeedsRehash($password, $rawPassword) {
     global $kernel;
     if (password_needs_rehash($password, PASSWORD_DEFAULT, $kernel->passwordOptions) === true) {
-      (new UserFull(UserFull::FROM_ID, $this->userId))->updatePassword($rawPassword);
+      $user     = new UserFull(UserFull::FROM_ID, $this->userId);
+      $password = $user->hashPassword($rawPassword);
+      $user->updatePassword($password);
     }
     return $this;
   }
@@ -472,25 +463,21 @@ class Session extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\SessionException
    */
   public function shutdown() {
-    // Store alert messages as cookie instead of storing them on our server. This will only increase network traffic by
-    // a few bytes instead of wasting our RAM. Plus the alert message is stored until the user closes the user agent,
-    // instead of the Memcached lifetime for session entries.
-    if (!empty($this->alerts)) {
-      setcookie("alerts", $this->alerts, 0, "/", ini_get("session.cookie_domain"));
-    }
+    $status = session_status();
 
     // Only start a session for this anonymous user if there is any data that we need to remember and if no session is
     // already active (which is the case if this request was made by an authenticated user).
-    if (session_status() === PHP_SESSION_NONE && !empty($_SESSION)) {
+    if ($status === PHP_SESSION_NONE && !empty($_SESSION)) {
+      error_log(print_r($_SESSION, true));
       // Tell the user agent to delete this cookie on it's own shutdown (e.g. closing browser).
       session_set_cookie_params(0);
       $this->start()->init();
     }
 
-    // Save session data to Memcached before sending the response to the user. No matter if we just started as session
+    // Save session data to Memcached before sending the response to the user. No matter if we just started a session
     // in the code above or we already have an active user session. This ensures that the session lock is released for
     // this session and the next request can resume this session.
-    if (session_status() === PHP_SESSION_ACTIVE) {
+    if ($status === PHP_SESSION_ACTIVE) {
       session_write_close();
     }
 
@@ -504,13 +491,19 @@ class Session extends \MovLib\Data\Database {
    * @throws \MemcachedException
    */
   private function start() {
+    // Create backup of existing session data (if any).
     $sessionData = isset($_SESSION) ? $_SESSION : null;
+
+    // Start new session (if exeution was started by nginx).
     if (isset($_SERVER["FCGI_ROLE"]) && session_start() === false) {
       throw new \MemcachedException("Could not start session (may be Memcached is down?).");
     }
+
+    // Restore session data.
     if ($sessionData) {
-      $_SESSION = $sessionData;
+      $_SESSION += $sessionData;
     }
+
     return $this;
   }
 

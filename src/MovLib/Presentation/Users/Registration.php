@@ -17,9 +17,10 @@
  */
 namespace MovLib\Presentation\Users;
 
+use \MovLib\Data\Memcached;
+use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\UserException;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\ValidationException;
 use \MovLib\Presentation\Email\Users\Registration as RegistrationEmail;
@@ -229,39 +230,33 @@ class Registration extends \MovLib\Presentation\Page {
     }
 
     if ($this->checkErrors($errors) === false) {
-      try {
-        $user->email = $this->email->value;
-
-        // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
-        // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
-        if ($user->checkEmail($user->email) === true) {
-          $kernel->sendEmail(new RegistrationEmailExists($user->email));
-        }
-        // If this is a vliad new registration generate the authentication token and insert the submitted data into our
-        // temporary database, and of course send out the email with the token.
-        else {
-          $user->prepareRegistration($this->password->value);
-          $kernel->sendEmail(new RegistrationEmail($user->name, $user->email));
-        }
-
-        // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
-        $this->accepted = true;
-
-        // Accepted but further action is required!
-        http_response_code(202);
-        $this->alerts .= new Alert(
-          $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]),
-          $i18n->t("Registration Successful"),
-          Alert::SEVERITY_SUCCESS
-        );
+      $user->email    = $this->email->value;
+      $user->password = $user->hashPassword($this->password->value);
+      if ((new Memcached())->isRemoteAddressFlooding("registration") === true) {
+        $this->checkErrors($i18n->t("Too many registration attempts from this IP address. Please wait 1 hour before trying again."));
       }
-      catch (UserException $e) {
-        $this->alerts .= new Alert(
-          $i18n->t("Too many registration attempts with this email address. Please wait 24 hours before trying again."),
-          $i18n->t("Validation Error"),
-          Alert::SEVERITY_ERROR
-        );
+
+      // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
+      // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
+      if ($user->checkEmail($user->email) === true) {
+        $kernel->sendEmail(new RegistrationEmailExists($user->email));
       }
+      // If this is a vliad new registration generate the authentication token and insert the submitted data into our
+      // temporary database, and of course send out the email with the token.
+      else {
+        $kernel->sendEmail(new RegistrationEmail($user));
+      }
+
+      // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
+      $this->accepted = true;
+
+      // Accepted but further action is required!
+      http_response_code(202);
+      $this->alerts .= new Alert(
+        $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]),
+        $i18n->t("Registration Successful"),
+        Alert::SEVERITY_SUCCESS
+      );
     }
 
     return $this;
@@ -271,19 +266,33 @@ class Registration extends \MovLib\Presentation\Page {
    * Validate the submitted authentication token, register, sign in and redirect to password settings.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
+   * @global \MovLib\Kernel $kernel
    * @return this
    */
   public function validateToken() {
-    global $i18n;
-    $user = new UserFull();
+    global $i18n, $kernel;
     try {
-      $user->email = base64_decode($_GET["token"]);
-
-      if (filter_var($user->email, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
+      // The token is the base64 encoded email address of the user, decode and validate as email before attempting to
+      // load the user from the temporary table.
+      if (($email = base64_decode($_GET["token"])) === false || filter_var($email, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR) === false) {
         throw new ValidationException($i18n->t("The activation token is invalid, please go back to the mail we sent you and copy the whole link."));
       }
 
+      // Email is valid, try to load the user from the temporary database.
+      $tmp  = new Temporary();
+      $user = $tmp->get("registration{$email}");
+      if (!($user instanceof UserFull)) {
+        throw new ValidationException(
+          "<p>{$i18n->t("We couldn’t find any registration data for your token.")}</p>" .
+          "<ul>" .
+            "<li>{$i18n->t("The token might have expired, remember that you only have 24 hours to activate your account.")}</li>" .
+            "<li>{$i18n->t("The token might be invalid, check the email again we’ve sent you and be sure to copy the whole link.")}</li>" .
+            "<li>{$i18n->t("You can also just fill out the form again and we send you a new token.")}</li>" .
+          "</ul>"
+        );
+      }
+
+      // Check if the email is already activated.
       if ($user->checkEmail($user->email) === true) {
         throw new UnauthorizedException(
           $i18n->t("Seems like you’ve already activated your account, please sign in."),
@@ -292,7 +301,7 @@ class Registration extends \MovLib\Presentation\Page {
         );
       }
 
-      $data = $user->getRegistrationData();
+      // Check if the username was taken in the meantime.
       if ($user->checkName($user->name) === true) {
         $this->username->attributes["value"] = $user->name;
         $this->email->attributes["value"]    = $user->email;
@@ -301,7 +310,16 @@ class Registration extends \MovLib\Presentation\Page {
         throw new ValidationException($i18n->t("Unfortunately in the meantime someone took your desired username, please choose another one."));
       }
 
-      $user->register($data["password"]);
+      // Register the new account (this can't be done delayed because the user needs to validate directly after the
+      // redirect) and register the deletion of the temporary database entry.
+      $user->register();
+      $kernel->delayMethodCall([ $tmp, "delete" ], [ "registration{$user->email}" ]);
+
+      // The user has to sign in, this makes sure that the person is really who she or he claims to be. The password is
+      // entered by the user during registration and never displayed anywhere to anyone (plus we hash it right away in
+      // the validate method of this class, so even we have no clue what it is). Even if somebody was able to activate
+      // an account for another person (man in the middle; very unlikely) she or he couldn't access that new account
+      // because that person would also need the secret password.
       throw new UnauthorizedException(
         $i18n->t("Your account has been activated, please sign in with your email address and your secret password."),
         $i18n->t("Hi there {0}!", [ $user->name ]),
@@ -309,27 +327,17 @@ class Registration extends \MovLib\Presentation\Page {
       );
     }
     catch (ValidationException $e) {
-      $alert = new Alert($e->getMessage());
+      $this->checkErrors($e->getMessage());
     }
     catch (UnauthorizedException $e) {
-      unset($e->loginPresentation->email->attributes[array_search("autofocus", $e->loginPresentation->email->attributes)]);
-      $e->loginPresentation->password->attributes[] = "autofocus";
+      if (isset($user) && isset($user->email)) {
+        $e->loginPresentation->email->attributes["value"] = $user->email;
+        unset($e->loginPresentation->email->attributes[array_search("autofocus", $e->loginPresentation->email->attributes)]);
+        $e->loginPresentation->password->attributes[]     = "autofocus";
+      }
       throw $e;
     }
-    catch (UserException $e) {
-      $alert = new Alert(
-        "<p>{$i18n->t("We couldn’t find any registration data for your token.")}</p>" .
-        "<ul>" .
-          "<li>{$i18n->t("The token might have expired, remember that you only have 24 hours to activate your account.")}</li>" .
-          "<li>{$i18n->t("The token might be invalid, check the email again we’ve sent you and be sure to copy the whole link.")}</li>" .
-          "<li>{$i18n->t("You can also just fill out the form again and we send you a new token.")}</li>" .
-        "</ul>"
-      );
-    }
 
-    $alert->title    = $i18n->t("Validation Error");
-    $alert->severity = Alert::SEVERITY_ERROR;
-    $this->alerts   .= $alert;
     return $this;
   }
 

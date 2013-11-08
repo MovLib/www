@@ -83,7 +83,7 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
   public function init() {
     global $i18n, $kernel;
     $this->subject = $i18n->t("Requested Email Change");
-    $token         = (new Temporary())->set([ "user_id" => $this->user->id, "new_email" => $this->recipient ]);
+    $token         = (new Temporary())->set("email-change", [ "user_id" => $this->user->id, "new_email" => $this->recipient ]);
     $this->link    = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token={$token}";
     return $this;
   }

@@ -91,7 +91,7 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
     $this->subject   = $i18n->t("Requested Password Change");
     $token           = (new Temporary())->set([
       "user_id"      => $this->user->id,
-      "new_password" => $this->user->passwordHash($this->rawPassword),
+      "new_password" => $this->user->hashPassword($this->rawPassword),
     ]);
     $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token={$token}";
     return $this;

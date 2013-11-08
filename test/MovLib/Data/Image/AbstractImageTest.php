@@ -30,6 +30,7 @@ use \MovLib\Data\Image\AbstractImage as Image;
  */
 class AbstractImageTest extends \MovLib\TestCase {
 
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -39,6 +40,7 @@ class AbstractImageTest extends \MovLib\TestCase {
 
   /** @var \MovLib\Data\Image\AbstractImage */
   private $image;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
@@ -66,25 +68,9 @@ class AbstractImageTest extends \MovLib\TestCase {
     sh::executeDetached("rm -r '" . self::$dirOriginal . "' '" . self::$dirStyles . "'");
   }
 
+
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
-  /**
-   * We need this for 100% coverage.
-   */
-  public function testConstants() {
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_01);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_02);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_03);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_04);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_05);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_06);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_07);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_08);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_09);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_10);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_11);
-    $this->assertNotEmpty(\MovLib\Data\Image\SPAN_12);
-  }
 
   /**
    * @covers ::convertImage

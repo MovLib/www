@@ -27,6 +27,7 @@ namespace MovLib\Data\Image;
  *
  * @internal The zero prefixing ensures natural sorting in IDEs.
  */
+// @codeCoverageIgnoreStart
 const SPAN_01 = 70;
 const SPAN_02 = 140;
 const SPAN_03 = 220;
@@ -39,6 +40,7 @@ const SPAN_09 = 700;
 const SPAN_10 = 780;
 const SPAN_11 = 860;
 const SPAN_12 = 940;
+// @codeCoverageIgnoreEnd
 
 use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\ImageException;

@@ -47,13 +47,13 @@ class Temporary extends \MovLib\Data\Database {
    *
    * @param string $key
    *   The key of the record to get.
-   * @return array
-   *   The unserialized data array that was previously stored.
+   * @return mixed
+   *   The unserialized data of the record that was previously stored or <code>FALSE</code> if nothing was found.
    * @throws DatabaseException
    */
   public function get($key) {
     if (!($result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $key ])->get_result()->fetch_row())) {
-      throw new DatabaseException("Couldn't find temporary record for key '{$key}'.");
+      return false;
     }
     return unserialize($result[0]);
   }
@@ -61,21 +61,39 @@ class Temporary extends \MovLib\Data\Database {
   /**
    * Create new record in the tmp table.
    *
-   * @param array $data
+   * @param mixed $data
    *   The data that should be stored in the table.
-   * @param string $ttl [optional]
-   *   The cron interval in which this entry should be deleted.
    * @param string $key [optional]
    *   The <var>$key</var> can be used to override the generation of a hash as key.
+   * @param string $ttl [optional]
+   *   The cron interval in which this entry should be deleted.
    * @return string
    *   The key of the newly created entry.
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function set(array $data, $ttl = self::TMP_TTL_DAILY, $key = null) {
+  public function set($data, $key = null, $ttl = self::TMP_TTL_DAILY) {
     if (!$key) {
       $key = hash("sha256", openssl_random_pseudo_bytes(1024));
     }
-    $this->query("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)", "sss", [serialize($data), $key, $ttl ]);
+    $this->query("INSERT INTO `tmp` (`data`, `key`, `ttl`) VALUES (?, ?, ?)", "sss", [ serialize($data), $key, $ttl ]);
     return $key;
+  }
+
+  /**
+   * Update existing record in the tmp table.
+   *
+   * @param string $key [optional]
+   *   The <var>$key</var> can be used to override the generation of a hash as key.
+   * @param mixed $data
+   *   The record's data.
+   * @param string $ttl [optional]
+   *   The cron interval in which this entry should be deleted.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function update($key, $data, $ttl = self::TMP_TTL_DAILY) {
+    $this->query("UPDATE `tmp` SET `created` = CURRENT_TIMESTAMP, `data` = ?, `ttl` = ?  WHERE `key` = ?", "sss", [ serialize($data), $ttl, $key ]);
+    return $this;
   }
 
 }

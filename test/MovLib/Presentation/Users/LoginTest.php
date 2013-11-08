@@ -198,27 +198,6 @@ class LoginTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::validate
-   * @expectedException \MovLib\Exception\Client\RedirectSeeOtherException
-   * @expectedExceptionMessage Redirecting user to /profile/deactivated with status 303.
-    */
-  public function testDeactivated() {
-    (new User(User::FROM_ID, 1))->deactivate();
-    $_POST["email"]    = "richard@fussenegger.info";
-    $_POST["password"] = "Test1234";
-    $_POST["form_id"]  = "users-login";
-    try {
-      new Login();
-    }
-    catch (\MovLib\Exception\RedirectException $e) {
-      throw $e;
-    }
-    finally {
-      sh::execute("movlib si -d users");
-    }
-  }
-
-  /**
    * @covers ::__construct
     */
   public function testSignOut() {

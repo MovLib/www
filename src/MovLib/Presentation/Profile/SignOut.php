@@ -35,14 +35,15 @@ class SignOut {
    * Instantiate new sign out presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
   public function __construct() {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
     if ($session->isAuthenticated === true) {
       $session->destroy();
-      $session->alerts .= new Alert(
+      $kernel->alerts .= new Alert(
         $i18n->t("We hope to see you again soon."),
         $i18n->t("Sign Out Successfull"),
         Alert::SEVERITY_SUCCESS

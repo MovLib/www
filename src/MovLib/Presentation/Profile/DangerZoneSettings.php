@@ -280,31 +280,12 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
   }
 
   /**
-   * Validate the submitted authentication token and deactivate the user's account.
+   * Validate the submitted authentication token and delete the user's account.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @todo Implement account deletion (update database scheme to allow NULL on email).
    * @return this
-   * @throws \MovLib\Exception\Client\RedirectSeeOtherException
-   * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   protected function validateToken() {
-    global $i18n, $session;
-    $data = $this->user->validateAuthenticationToken($errors, $this->id);
-    if ($data && $data["id"] !== $session->userId) {
-      throw new UnauthorizedException($i18n->t("The authentication token is invalid, please sign in again and request a new token to deactivate your account."));
-    }
-    if ($this->checkErrors($errors) === false) {
-      $this->user->deactivate();
-      $success = new Alert(
-        "<p>{$i18n->t("Your account has been successfully deactivated and all your personal data has been purged from our system.")}</p>" .
-        "<p>{$i18n->t("To reactivate your account, simply sign in with your email address and secret password.")}</p>"
-      );
-      $success->title = $i18n->t("Deactivation Successful");
-      $success->severity = Alert::SEVERITY_SUCCESS;
-      $session->alerts .= $success;
-      throw new RedirectSeeOtherException($i18n->r("/profile/sign-out"));
-    }
     return $this;
   }
 

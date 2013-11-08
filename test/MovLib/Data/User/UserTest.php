@@ -17,8 +17,8 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\User;
+use \MovLib\Tool\Console\Command\Development\SeedImport;
 
 /**
  * @coversDefaultClass \MovLib\Data\User\User
@@ -31,21 +31,33 @@ use \MovLib\Data\User\User;
 class UserTest extends \MovLib\TestCase {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /** @var \MovLib\Presentation\User\User */
+  protected $user;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
-  public function tearDown() {
-    sh::execute("movlib si -d users");
+  /**
+   * Called before each test.
+   */
+  protected function setUp() {
+    $this->user = new User(User::FROM_ID, 1);
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
 
+  /**
+   * @internal No ID test necessary, {@see UserTest::setUp()}!
+   */
   public function dataProviderTestConstruct() {
     return [
       [ User::FROM_EMAIL, "richard@fussenegger.info" ],
-      [ User::FROM_ID, 1 ],
       [ User::FROM_NAME, "Fleshgrinder" ],
       [ User::FROM_NAME, "fleshgrinder" ],
       [ User::FROM_NAME, "FlEsHgRiNdEr" ],
@@ -73,24 +85,19 @@ class UserTest extends \MovLib\TestCase {
 
 
   /**
+   * @covers ::commit
+   * @todo Implement commit
+   */
+  public function testCommit() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
    * @covers ::__construct
    * @dataProvider dataProviderTestConstruct
    */
   public function testConstruct($from, $value) {
-    $user = new User($from, $value);
-    $this->assertEquals(1, $user->id);
-    foreach ([ User::IMAGE_STYLE_SPAN_01, User::IMAGE_STYLE_SPAN_02 ] as $style) {
-      $this->assertFileExists($this->invoke($user, "getImagePath", [ $style ]));
-    }
-    $this->assertEquals(1380707126, $this->getProperty($user, "imageChanged"));
-    $this->assertEquals("jpg", $this->getProperty($user, "imageExtension"));
-    $this->assertEquals(1, $this->getProperty($user, "imageExists"));
-    $this->assertEquals("user", $this->getProperty($user, "imageDirectory"));
-    $this->assertEquals("fleshgrinder", $this->getProperty($user, "imageName"));
-    $this->assertEquals("Fleshgrinder", $user->name);
-    $this->assertEquals("/user/fleshgrinder", $user->route);
-    $this->assertEquals([ "user_id" => "d", "email" => "s", "name" => "s" ], $this->getProperty($user, "types"));
-    return $user;
+    $this->assertEquals(1, (new User($from, $value))->id);
   }
 
   /**
@@ -106,54 +113,14 @@ class UserTest extends \MovLib\TestCase {
    * @covers ::deleteImage
    */
   public function testDeleteImage() {
-    // Make sure the image exists before attempting to delete it.
-    $user = $this->testConstruct(User::FROM_ID, 1);
-    $this->invoke($user, "deleteImage");
+    $this->invoke($this->user, "deleteImage");
     foreach ([ User::IMAGE_STYLE_SPAN_01, User::IMAGE_STYLE_SPAN_02 ] as $style) {
-      $this->assertFileNotExists($this->invoke($user, "getImagePath", [ $style ]));
+      $this->assertFileNotExists($this->invoke($this->user, "getImagePath", [ $style ]));
     }
-    $this->assertFalse($this->getProperty($user, "imageExists"));
-    $this->assertNull($this->getProperty($user, "imageChanged"));
-    $this->assertNull($this->getProperty($user, "imageExtension"));
-  }
-
-  /**
-   * @covers ::getImageStyle
-   * @dataProvider dataProviderImageStyles
-   */
-  public function testGetImageStyle($style) {
-    $styleObj = (new User(User::FROM_ID, 1))->getImageStyle($style);
-    $this->assertInstanceOf("\\MovLib\\Data\\Image\\Style", $styleObj);
-    $this->assertEquals("Avatar image of Fleshgrinder.", $styleObj->alt);
-    $this->assertEquals("{$GLOBALS["movlib"]["static_domain"]}uploads/user/fleshgrinder.{$style}.jpg?c=1380707126", $styleObj->src);
-    $this->assertEquals($style, $styleObj->height);
-    $this->assertEquals($style, $styleObj->width);
-    $this->assertEquals("/user/fleshgrinder", $styleObj->route);
-  }
-
-  /**
-   * @covers ::uploadImage
-   */
-  public function testUploadImage() {
-    $user   = new User(User::FROM_ID, 1);
-    $source = tempnam(sys_get_temp_dir(), "phpunit");
-    copy("{$_SERVER["DOCUMENT_ROOT"]}/db/seeds/uploads/user/fleshgrinder." . User::IMAGE_STYLE_SPAN_02 . ".jpg", $source);
-    $this->invoke($user, "deleteImage");
-    $user->uploadImage($source, "jpg", 220, 220);
-    foreach ([ User::IMAGE_STYLE_SPAN_01, User::IMAGE_STYLE_SPAN_02 ] as $style) {
-      $this->assertFileExists($this->invoke($user, "getImagePath", [ $style ]));
-    }
-    $this->assertEquals(1, $this->getProperty($user, "imageExists"));
-    $this->assertEquals($_SERVER["REQUEST_TIME"], $this->getProperty($user, "imageChanged"));
-    $this->assertEquals("jpg", $this->getProperty($user, "imageExtension"));
-  }
-
-  /**
-   * @covers ::commit
-   * @todo Implement commit
-   */
-  public function testCommit() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    $this->assertFalse($this->user->imageExists);
+    $this->assertNull($this->getProperty($this->user, "imageChanged"));
+    $this->assertNull($this->getProperty($this->user, "imageExtension"));
+    (new SeedImport())->uploadImport([ "user" ]);
   }
 
   /**
@@ -162,6 +129,40 @@ class UserTest extends \MovLib\TestCase {
    */
   public function testGenerateImageStyles() {
     $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getImageStyle
+   * @dataProvider dataProviderImageStyles
+   * @global \MovLib\TestKernel $kernel
+   */
+  public function testGetImageStyle($style) {
+    global $kernel;
+    $styleObj = $this->user->getImageStyle($style);
+    $this->assertInstanceOf("\\MovLib\\Data\\Image\\Style", $styleObj);
+    $this->assertEquals("Avatar image of Fleshgrinder.", $styleObj->alt);
+    $this->assertEquals("//{$kernel->domainStatic}/upload/user/Fleshgrinder.{$style}.jpg?c=" . $this->getProperty($this->user, "imageChanged"), $styleObj->src);
+    $this->assertEquals($style, $styleObj->height);
+    $this->assertEquals($style, $styleObj->width);
+    $this->assertEquals("/user/Fleshgrinder", $styleObj->route);
+  }
+
+  /**
+   * @covers ::uploadImage
+   * @global \MovLib\TestKernel $kernel
+   */
+  public function testUploadImage() {
+    global $kernel;
+    $source = tempnam(sys_get_temp_dir(), "phpunit");
+    copy("{$kernel->documentRoot}/conf/seed/upload/user/{$this->getProperty($this->user, "imageName")}." . User::IMAGE_STYLE_SPAN_02 . ".jpg", $source);
+    $this->invoke($this->user, "deleteImage");
+    $this->user->uploadImage($source, "jpg", 220, 220);
+    foreach ([ User::IMAGE_STYLE_SPAN_01, User::IMAGE_STYLE_SPAN_02 ] as $style) {
+      $this->assertFileExists($this->invoke($this->user, "getImagePath", [ $style ]));
+    }
+    $this->assertEquals(1, $this->getProperty($this->user, "imageExists"));
+    $this->assertEquals($_SERVER["REQUEST_TIME"], $this->getProperty($this->user, "imageChanged"));
+    $this->assertEquals("jpg", $this->getProperty($this->user, "imageExtension"));
   }
 
 }

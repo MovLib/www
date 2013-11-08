@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Email\Users;
 
+use \MovLib\Data\Temporary;
+
 /**
  * Email template that is sent to clients after successfull registration.
  *
@@ -33,11 +35,18 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   /**
-   * The user's name.
+   * The user's <b>raw</b> password.
    *
    * @var string
    */
-  protected $username;
+  protected $rawPassword;
+
+  /**
+   * The user's name.
+   *
+   * @var \MovLib\Data\User\Full
+   */
+  protected $user;
 
   /**
    * The user's unique link to activate the account.
@@ -53,14 +62,11 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * Create registration email for activation of account.
    *
-   * @param string $username
-   *   The user's name.
-   * @param string $email
-   *   The user's email address.
+   * @param \MovLib\Data\User\Full $user
+   *   The user instance.
    */
-  public function __construct($username, $email) {
-    $this->recipient = $email;
-    $this->username  = $username;
+  public function __construct($user) {
+    $this->user = $user;
   }
 
 
@@ -78,8 +84,18 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
    */
   public function init() {
     global $i18n, $kernel;
-    $this->subject = $i18n->t("Welcome to {0}!", [ $kernel->siteName ]);
-    $this->link    = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/users/registration")}?token=" . rawurlencode(base64_encode($this->recipient));
+    $this->recipient = $this->user->email;
+    $this->subject   = $i18n->t("Welcome to {0}!", [ $kernel->siteName ]);
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/users/registration")}?token=" . rawurlencode(base64_encode($this->recipient));
+    $key             = "registration{$this->user->email}";
+    $tmp             = new Temporary();
+    $user            = $tmp->get($key);
+    if ($user === false) {
+      $tmp->set($key, $this->user);
+    }
+    elseif ($user != $this->user) {
+      $tmp->update($key, $this->user);
+    }
     return $this;
   }
 
@@ -91,7 +107,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
   public function getHTML() {
     global $i18n, $kernel;
     return
-      "<p>{$i18n->t("Hi {0}!", [ $this->username ])}</p>" .
+      "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
       "<p>{$i18n->t("Thank you for registering at {0}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
         $kernel->siteName,
         "<a href='{$this->link}'>",
@@ -100,7 +116,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
       "<p>{$i18n->t("This link can only be used once within the next 24 hours.")}<br>" .
       "{$i18n->t("You will be able to sign in with the following data:")}</p>" .
       "<table>" .
-        "<tr><td>{$i18n->t("Email Address")}:</td><td>{$this->recipient}</td><tr>" .
+        "<tr><td>{$i18n->t("Email Address")}:</td><td>{$this->user->email}</td><tr>" .
         "<tr><td>{$i18n->t("Password")}:</td><td><em>{$i18n->t("Your secret password")}</em></td></tr>" .
       "</table>" .
       "<p>{$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}</p>"
@@ -115,7 +131,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
   public function getPlainText() {
     global $i18n, $kernel;
     return <<<EOT
-{$i18n->t("Hi {0}!", [ $this->username ])}
+{$i18n->t("Hi {0}!", [ $this->user->name ])}
 
 {$i18n->t("Thank your for registering at {0}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ $kernel->siteName ])}
 
@@ -124,7 +140,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
 {$i18n->t("This link can only be used once within the next 24 hours.")}
 {$i18n->t("You will be able to sign in with the following data:")}
 
-{$i18n->t("Email Address")}:  '{$this->recipient}'
+{$i18n->t("Email Address")}:  '{$this->user->email}'
 {$i18n->t("Password")}:       '{$i18n->t("Your secret password")}'
 
 {$i18n->t("If it wasn’t you who requested this action simply ignore this message.")}

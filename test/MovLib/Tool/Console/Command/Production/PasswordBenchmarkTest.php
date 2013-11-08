@@ -15,26 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Email\User;
+namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Presentation\Email\User\Deactivation;
+use \MovLib\Tool\Console\Command\Production\PasswordBenchmark;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\Email\User\Deactivation
+ * @coversDefaultClass \MovLib\Tool\Console\Command\Production\PasswordBenchmark
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DeactivationTest extends \MovLib\TestCase {
+class PasswordBenchmarkTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Email\User\Deactivation */
-  protected $deactivation;
+  /** @var \MovLib\Tool\Console\Command\Production\PasswordBenchmark */
+  protected $passwordBenchmark;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,7 +44,7 @@ class DeactivationTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->deactivation = new Deactivation();
+    $this->passwordBenchmark = new PasswordBenchmark();
   }
 
   /**
@@ -75,42 +75,18 @@ class DeactivationTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::init
-   * @todo Implement init
+   * @covers ::configure
+   * @todo Implement configure
    */
-  public function testInit() {
+  public function testConfigure() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::getHtmlBody
-   * @todo Implement getHtmlBody
+   * @covers ::execute
+   * @todo Implement execute
    */
-  public function testGetHtmlBody() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getPlainBody
-   * @todo Implement getPlainBody
-   */
-  public function testGetPlainBody() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getHTML
-   * @todo Implement getHTML
-   */
-  public function testGetHTML() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getPlainText
-   * @todo Implement getPlainText
-   */
-  public function testGetPlainText() {
+  public function testExecute() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

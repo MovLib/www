@@ -75,6 +75,14 @@ class ComposerTest extends \MovLib\TestCase {
   }
 
   /**
+   * @covers ::apigen
+   * @todo Implement apigen
+   */
+  public function testApigen() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
    * @covers ::fixPermissions
    * @todo Implement fixPermissions
    */
@@ -87,6 +95,22 @@ class ComposerTest extends \MovLib\TestCase {
    * @todo Implement phpmyadmin
    */
   public function testPhpmyadmin() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::phpunit
+   * @todo Implement phpunit
+   */
+  public function testPhpunit() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::symlink
+   * @todo Implement symlink
+   */
+  public function testSymlink() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
@@ -127,54 +151,6 @@ class ComposerTest extends \MovLib\TestCase {
    * @todo Implement postUpdate
    */
   public function testPostUpdate() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::exec
-   * @todo Implement exec
-   */
-  public function testExec() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::execDetached
-   * @todo Implement execDetached
-   */
-  public function testExecDetached() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::filename
-   * @todo Implement filename
-   */
-  public function testFilename() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::apigen
-   * @todo Implement apigen
-   */
-  public function testApigen() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::phpunit
-   * @todo Implement phpunit
-   */
-  public function testPhpunit() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::symlink
-   * @todo Implement symlink
-   */
-  public function testSymlink() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

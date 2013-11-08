@@ -15,26 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Partial\FormElement;
+namespace MovLib\Presentation\Email\User;
 
-use \MovLib\Presentation\Partial\FormElement\InputHTML;
+use \MovLib\Presentation\Email\User\Deletion;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\Partial\FormElement\Textarea
+ * @coversDefaultClass \MovLib\Presentation\Email\User\Deletion
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class TextareaTest extends \MovLib\TestCase {
+class DeletionTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Partial\FormElement\InputHTML */
-  protected $textarea;
+  /** @var \MovLib\Presentation\Email\User\Deletion */
+  protected $deletion;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,7 +44,7 @@ class TextareaTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->textarea = new InputHTML();
+    $this->deletion = new Deletion();
   }
 
   /**
@@ -75,18 +75,26 @@ class TextareaTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::__toString
-   * @todo Implement __toString
+   * @covers ::init
+   * @todo Implement init
    */
-  public function testToString() {
+  public function testInit() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::validate
-   * @todo Implement validate
+   * @covers ::getHTML
+   * @todo Implement getHTML
    */
-  public function testValidate() {
+  public function testGetHTML() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getPlainText
+   * @todo Implement getPlainText
+   */
+  public function testGetPlainText() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

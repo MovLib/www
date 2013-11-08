@@ -15,26 +15,26 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Profile;
+namespace MovLib\Data;
 
-use \MovLib\Presentation\Profile\Deactivated;
+use \MovLib\Data\Temporary;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\Profile\Deactivated
+ * @coversDefaultClass \MovLib\Data\Temporary
  * @author Skeleton Generator
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DeactivatedTest extends \MovLib\TestCase {
+class TemporaryTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Profile\Deactivated */
-  protected $deactivated;
+  /** @var \MovLib\Data\Temporary */
+  protected $temporary;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,7 +44,7 @@ class DeactivatedTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->deactivated = new Deactivated();
+    $this->temporary = new Temporary();
   }
 
   /**
@@ -67,50 +67,34 @@ class DeactivatedTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::__construct
-   * @todo Implement __construct
+   * @covers ::delete
+   * @todo Implement delete
    */
-  public function testConstruct() {
+  public function testDelete() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::getContent
-   * @todo Implement getContent
+   * @covers ::get
+   * @todo Implement get
    */
-  public function testGetContent() {
+  public function testGet() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::validate
-   * @todo Implement validate
+   * @covers ::set
+   * @todo Implement set
    */
-  public function testValidate() {
+  public function testSet() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
   /**
-   * @covers ::getBreadcrumbs
-   * @todo Implement getBreadcrumbs
+   * @covers ::update
+   * @todo Implement update
    */
-  public function testGetBreadcrumbs() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::init
-   * @todo Implement init
-   */
-  public function testInit() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
-   * @covers ::getSecondaryNavigationMenuitems
-   * @todo Implement getSecondaryNavigationMenuitems
-   */
-  public function testGetSecondaryNavigationMenuitems() {
+  public function testUpdate() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 

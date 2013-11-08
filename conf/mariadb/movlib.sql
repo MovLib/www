@@ -132,7 +132,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The user’s unique ID.',
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.',
-  `email` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The user’s unique email address.',
+  `email` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s unique email address.',
   `password` TINYBLOB NOT NULL COMMENT 'The user’s unique password (hashed).',
   `access` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s creation datetime.',
@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   PRIMARY KEY (`id`),
   INDEX `fk_users_countries` (`countryId` ASC),
   UNIQUE INDEX `uq_users_name` (`name` ASC),
-  UNIQUE INDEX `uq_users_email` (`email` ASC),
+  INDEX `users_email` (`email` ASC),
   CONSTRAINT `fk_users_countries`
     FOREIGN KEY (`countryId`)
     REFERENCES `movlib`.`countries` (`country_id`)
@@ -545,7 +545,6 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`tmp` (
   `key` VARCHAR(255) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The record’s unique key.',
-  `event` TINYTEXT CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL,
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The record’s creation timestamp.',
   `data` BLOB NOT NULL COMMENT 'The record’s serialized data.',
   `ttl` VARCHAR(16) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The record’s time to life.',

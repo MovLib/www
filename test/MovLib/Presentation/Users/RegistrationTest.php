@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Users;
 
+use \MovLib\Data\Memcached;
 use \MovLib\Data\User\Session;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\Alert;
@@ -176,21 +177,12 @@ class RegistrationTest extends \MovLib\TestCase {
       $_POST[$name] = $value;
       $this->getProperty($this->registration, $name)->value = $value;
     }
+
+    // Test
     $this->registration->validate();
-
-    $result = $db->query("SELECT `data` FROM `tmp` WHERE `key` = 'registration-phpunit@movlib.org' LIMIT 1")->get_result()->fetch_assoc();
-    $this->assertArrayHasKey("data", $result);
-    $data = unserialize($result["data"]);
-    $this->assertEquals(1, $data["attempts"]);
-    $this->assertEquals("phpunit@movlib.org", $data["email"]);
-    $this->assertEquals("PHPUnit", $data["name"]);
-    $this->assertTrue(password_verify("PHPUnitPassword1234", $data["password"]));
-
     $this->assertArrayHasKey(0, $kernel->delayedEmails);
     $this->assertInstanceOf("\\MovLib\\Presentation\\Email\\Users\\Registration", $kernel->delayedEmails[0]);
-
     $this->assertEquals(202, http_response_code());
-
     $this->assertPresentationContainsAlert($this->registration, "Registration Successful", Alert::SEVERITY_SUCCESS);
 
     // Teardown
@@ -280,11 +272,10 @@ class RegistrationTest extends \MovLib\TestCase {
 
   /**
    * @covers ::validate
-   * @global \MovLib\Tool\Database $db
    * @global \MovLib\TestKernel $kernel
    */
-  public function testTooManyRegistrationAttempts() {
-    global $db, $kernel;
+  public function testValidateRemoteAddressFlooding() {
+    global $kernel;
 
     // Setup
     $kernel->requestMethod = "POST";
@@ -299,22 +290,78 @@ class RegistrationTest extends \MovLib\TestCase {
       $this->getProperty($this->registration, $name)->value = $value;
     }
 
-    for ($i = 0; $i <= User::MAXIMUM_ATTEMPTS + 1; ++$i) {
+    // Test
+    for ($i = 0; $i <= Memcached::FLOODING_IP_MAX; ++$i) {
       $this->registration->validate();
     }
-    $this->assertPresentationContainsAlert($this->registration, "Too many registration attempts with this email address. Please wait 24 hours before trying again.");
+    $this->assertPresentationContainsAlert($this->registration, "Too many registration attempts from this IP address. Please wait 1 hour before trying again.");
 
     // Teardown
-    $db->query("TRUNCATE TABLE `tmp`");
+    (new Memcached())->delete("{$this->getProperty($this->registration, "id")}{$kernel->remoteAddress}");
   }
 
   /**
-   * @covers ::__construct
    * @covers ::validateToken
-   * @todo Implement validateToken
+   * @expectedException \MovLib\Exception\Client\UnauthorizedException
+   * @expectedExceptionMessage User has to authenticate to view this content.
+   * @global \MovLib\Tool\Database $db
+   * @global \MovLib\TestKernel $kernel
    */
   public function testValidateToken() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    global $db, $kernel;
+
+    // Setup
+    $kernel->requestMethod = "POST";
+    $testData = [
+      "username" => "PHPUnit",
+      "email"    => "phpunit@movlib.org",
+      "password" => "PHPUnitPassword1234",
+      "terms"    => true,
+    ];
+    foreach ($testData as $name => $value) {
+      $_POST[$name] = $value;
+      $this->getProperty($this->registration, $name)->value = $value;
+    }
+    $this->registration->validate();
+    $_GET["token"] = base64_encode("phpunit@movlib.org");
+
+    // Test
+    try {
+      $this->registration->validateToken();
+    }
+    finally {
+      // Teardown
+      $stmt = $db->query("DELETE FROM `users` WHERE `email` = 'phpunit@movlib.org'");
+      $this->assertEquals(1, $stmt->affected_rows);
+    }
+  }
+
+  /**
+   * @covers ::validateToken
+   */
+  public function testValidateTokenNotBase64Encoded() {
+    $_GET["token"] = "not-encoded";
+    $this->registration->validateToken();
+    $this->assertPresentationContainsAlert($this->registration, "The activation token is invalid, please go back to the mail we sent you and copy the whole link.");
+  }
+
+  /**
+   * @covers ::validate
+   */
+  public function testValidateTokenInvalidEmail() {
+    $_GET["token"] = base64_encode("invalid-email");
+    $this->registration->validateToken();
+    $this->assertPresentationContainsAlert($this->registration, "The activation token is invalid, please go back to the mail we sent you and copy the whole link.");
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\Client\UnauthorizedException
+   * @expectedExceptionMessage User has to authenticate to view this content.
+   */
+  public function testValidateTokenAlreadyActivated() {
+    $_GET["token"] = base64_encode("richard@fussenegger.info");
+    $this->registration->validateToken();
   }
 
 }

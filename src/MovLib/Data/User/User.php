@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\Delayed\Logger;
 use \MovLib\Data\Image\Style;
 use \MovLib\Exception\UserException;
 
@@ -153,7 +152,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
         [ $value ]
       );
       $stmt->bind_result($this->id, $this->name, $this->imageChanged, $this->imageExtension, $this->imageExists);
-      if (!$stmt->fetch()) {
+      if (!$stmt->fetch() && $stmt->close()) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
       $this->imageExists = (boolean) $this->imageExists;

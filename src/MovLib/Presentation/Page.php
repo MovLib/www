@@ -368,12 +368,14 @@ class Page extends \MovLib\Presentation\AbstractPage {
    * The reference implementation extends the abstract class by creating the noscript alert that advises any user with
    * disabled JavaScript to activate it, additionally any alerts saved in the user's session will be set as well.
    *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @param string $title
    *   The already translated title of this page.
    * @return this
    */
   protected function init($title) {
-    global $i18n;
+    global $i18n, $kernel;
     parent::init($title);
 
     $noscript         = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."));
@@ -386,7 +388,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
 
     if (isset($_COOKIE["alerts"])) {
       $this->alerts .= $_COOKIE["alerts"];
-      setcookie("alerts", "", time() - 42000, "/", ini_get("session.cookie_domain"));
+      setcookie("alerts", "", 1, "/", $kernel->domainDefault);
     }
 
     return $this;

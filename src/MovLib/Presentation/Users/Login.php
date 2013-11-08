@@ -126,16 +126,17 @@ class Login extends \MovLib\Presentation\Page {
    * dashboard. The session exception is thrown if our system isn't able to start a new session at all.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Exception\Client\RedirectSeeOther
    */
   public function validate(array $errors = null) {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
     if ($this->checkErrors($errors) === false) {
       try {
         $session->authenticate($this->email->value, $this->password->value);
-        $session->alerts .= new Alert(
+        $kernel->alerts .= new Alert(
           $i18n->t("Login was successful."),
           $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]),
           Alert::SEVERITY_SUCCESS

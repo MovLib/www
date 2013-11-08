@@ -204,14 +204,6 @@ class URLTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::__toString
-   * @todo Implement __toString
-   */
-  public function testToString() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
    * @covers ::set
    * @todo Implement set
    */

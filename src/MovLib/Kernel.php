@@ -41,6 +41,13 @@ class Kernel {
 
 
   /**
+   * Alert messages that should be displayed to the user on the next pageview.
+   *
+   * @var string
+   */
+  public $alerts;
+
+  /**
    * Numeric array containing all delayed emails.
    *
    * @var null|array
@@ -341,6 +348,14 @@ class Kernel {
       $presentation = (new Stacktrace($exception))->getPresentation();
     }
     finally {
+      // Set alert messages for next page view. No need for secure nor HTTP only, alerts never contain sensitive data.
+      // Instead of storing alert messages on our server we send them to the client, this will only increase network
+      // traffic by a few bytes. Plus the alert message is stored until the user closes the agent, it's very unlikely
+      // that such an alert is still from interest on the next user agent session.
+      if ($this->alerts) {
+        setcookie("alerts", "{$this->alerts}", 0, "/", $this->domainDefault);
+      }
+
       // This allows us to lazy start anonymous sessions and send cookies right before sending the response.
       if ($session) {
         $session->shutdown();
@@ -357,7 +372,7 @@ class Kernel {
 
       // Calculate execution time for response generation and log if it took too long.
       $responseEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
-      if ($responseEnd > 0.1) {
+      if ($responseEnd > 0.75) {
         error_log("SLOW: Response took too long to generate with {$responseEnd} seconds for URI {$this->scheme}://{$this->hostname}{$this->requestURI}");
       }
 
