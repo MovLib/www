@@ -47,7 +47,7 @@ class Database {
   const TMP_TTL_DAILY = "@daily";
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Protected Properties
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
@@ -56,10 +56,6 @@ class Database {
    * @var string
    */
   protected $database = "movlib";
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Private Properties
-
 
   /**
    * Associative array containing a single MySQLi instance for each database.
@@ -78,47 +74,7 @@ class Database {
   private static $stmtBindParam;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Protected Final Methods
-
-
-  /**
-   * Generic query method.
-   *
-   * @param string $query
-   *   The query to be executed.
-   * @param string $types [optional]
-   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
-   * @param array $params [optional]
-   *   The parameters to bind.
-   * @return \mysqli_stmt
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected function query($query, $types = null, $params = null) {
-    /* @var $stmt \mysqli_stmt */
-    if (($stmt = $this->connect()->prepare($query)) === false) {
-      throw new DatabaseException("Preparation of statement failed",
-        self::$mysqli[$this->database]->error,
-        self::$mysqli[$this->database]->errno
-      );
-    }
-    if ($types && $params) {
-      $refParams = [ $stmt, $types ];
-      $c         = count($params);
-      for ($i = 0, $j = 2; $i < $c; ++$i, ++$j) {
-        $refParams[$j] =& $params[$i];
-      }
-      if (self::$stmtBindParam->invokeArgs($refParams) === false) {
-        throw new DatabaseException("Binding parameters to prepared statement failed", $stmt->error, $stmt->errno);
-      }
-    }
-    if ($stmt->execute() === false) {
-      throw new DatabaseException("Execution of prepared statement failed", $stmt->error, $stmt->errno);
-    }
-    return $stmt;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Private Methods
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
@@ -127,7 +83,7 @@ class Database {
    * @return \mysqli
    * @throws \MovLib\Exception\DatabaseException
    */
-  private function connect() {
+  protected final function connect() {
     if (!isset(self::$mysqli[$this->database])) {
       // A cached reflection function is faster than call_user_func_array()!
       if (!self::$stmtBindParam) {
@@ -152,6 +108,42 @@ class Database {
       self::$mysqli[$this->database] = $mysqli;
     }
     return self::$mysqli[$this->database];
+  }
+
+  /**
+   * Generic query method.
+   *
+   * @param string $query
+   *   The query to be executed.
+   * @param string $types [optional]
+   *   The type string in <code>\mysqli_stmt::bind_param</code> syntax.
+   * @param array $params [optional]
+   *   The parameters to bind.
+   * @return \mysqli_stmt
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function query($query, $types = null, array $params = null) {
+    /* @var $stmt \mysqli_stmt */
+    if (($stmt = $this->connect()->prepare($query)) === false) {
+      throw new DatabaseException("Preparation of statement failed",
+        self::$mysqli[$this->database]->error,
+        self::$mysqli[$this->database]->errno
+      );
+    }
+    if ($types && $params) {
+      $refParams = [ $stmt, $types ];
+      $c         = count($params);
+      for ($i = 0, $j = 2; $i < $c; ++$i, ++$j) {
+        $refParams[$j] =& $params[$i];
+      }
+      if (self::$stmtBindParam->invokeArgs($refParams) === false) {
+        throw new DatabaseException("Binding parameters to prepared statement failed", $stmt->error, $stmt->errno);
+      }
+    }
+    if ($stmt->execute() === false) {
+      throw new DatabaseException("Execution of prepared statement failed", $stmt->error, $stmt->errno);
+    }
+    return $stmt;
   }
 
 }

@@ -28,23 +28,11 @@ use \MovLib\Exception\DatabaseException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Database {
+class Database extends \MovLib\Data\Database {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   *
-   */
-  private $database;
-
-  /**
-   * The current MySQLi instance.
-   *
-   * @var \mysqli
-   */
-  public static $mysqli;
 
   /**
    * Flag indicating if a transaction is active.
@@ -54,50 +42,8 @@ class Database {
   private $transactionActive = false;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new developer database object.
-   *
-   * @param string $database
-   *   The name of the database to connect to.
-   * @throws \InvalidArgumentException
-   */
-  public function __construct($database = "movlib") {
-    $this->setDatabase($database);
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Establish connection to database.
-   *
-   * @return \mysqli
-   * @throws \InvalidArgumentException
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function connect() {
-    if (!isset(self::$mysqli)) {
-      try {
-        self::$mysqli = new \mysqli();
-        self::$mysqli->real_connect();
-      }
-      catch (\ErrorException $e) {
-        self::$mysqli->kill(self::$mysqli->thread_id);
-        self::$mysqli->real_connect();
-      }
-      if (self::$mysqli->connect_error) {
-        throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
-      }
-      if (self::$mysqli->select_db($this->database) === false) {
-        throw new DatabaseException("Selecting database '{$this->database}' failed", $mysqli->error, $mysqli->errno);
-      }
-    }
-    return self::$mysqli;
-  }
 
   /**
    * Escapes special characters in a string for use in an SQL statement, taking into account the current charset of the
@@ -151,17 +97,18 @@ class Database {
     }
 
     // Execute the queries and directly consume them.
-    $error = $this->connect()->multi_query($queries);
+    $mysqli = $this->connect();
+    $error  = $mysqli->multi_query($queries);
     do {
       if ($error === false) {
         if ($foreignKeyChecks === false) {
           $this->query("SET foreign_key_checks = 1");
         }
-        throw new DatabaseException("Execution of multiple queries failed", self::$mysqli->error, self::$mysqli->errno);
+        throw new DatabaseException("Execution of multiple queries failed", $mysqli->error, $mysqli->errno);
       }
-      self::$mysqli->use_result();
-      if (($more = self::$mysqli->more_results())) {
-        $error = self::$mysqli->next_result();
+      $mysqli->use_result();
+      if (($more = $mysqli->more_results())) {
+        $error = $mysqli->next_result();
       }
     }
     while ($more);
@@ -186,30 +133,7 @@ class Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function query($query, $types = null, array $params = null) {
-    if (!is_string($query)) {
-      throw new \InvalidArgumentException("Query must be of type string.");
-    }
-    /* @var $stmt \mysqli_stmt */
-    if (($stmt = $this->connect()->prepare($query)) === false) {
-      throw new DatabaseException("Preparation of statement failed", self::$mysqli->error, self::$mysqli->errno);
-    }
-    if ($types && $params) {
-      if (!is_string($types) || empty($params)) {
-        throw new \InvalidArgumentException("Types must be of type string and params of type array (not empty).");
-      }
-      $refParams = [ $types ];
-      $c         = count($params);
-      for ($i = 0, $j = 1; $i < $c; ++$i, ++$j) {
-        $refParams[$j] =& $params[$i];
-      }
-      if (call_user_func_array([ $stmt, "bind_param" ], $refParams) === false) {
-        throw new DatabaseException("Binding parameters to prepared statement failed", $stmt->error, $stmt->errno);
-      }
-    }
-    if ($stmt->execute() === false) {
-      throw new DatabaseException("Execution of prepared statement failed", $stmt->error, $stmt->errno);
-    }
-    return $stmt;
+    return parent::query($query, $types, $params);
   }
 
   /**
@@ -245,11 +169,12 @@ class Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
-    if (!isset(self::$mysqli) || $this->transactionActive === false) {
+    if ($this->transactionActive === false) {
       throw new DatabaseException("No active transaction, nothing to commit.");
     }
-    if (($this->transactionActive = self::$mysqli->commit($flags)) === false) {
-      $e = new DatabaseException("Commit failed", self::$mysqli->error, self::$mysqli->errno);
+    $mysqli = $this->connect();
+    if (($this->transactionActive = $mysqli->commit($flags)) === false) {
+      $e = new DatabaseException("Commit failed", $mysqli->error, $mysqli->errno);
       $this->transactionRollback();
       throw $e;
     }
@@ -265,11 +190,12 @@ class Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
-    if (!isset(self::$mysqli) || $this->transactionActive === false) {
+    if ($this->transactionActive === false) {
       throw new DatabaseException("No active transaction, nothing to rollback.");
     }
-    if (($this->transactionActive = self::$mysqli->rollback($flags)) === false) {
-      throw new DatabaseException("Rollback failed", self::$mysqli->error, self::$mysqli->errno);
+    $mysqli = $this->connect();
+    if (($this->transactionActive = $mysqli->rollback($flags)) === false) {
+      throw new DatabaseException("Rollback failed", $mysqli->error, self::$mysqli->errno);
     }
     return $this;
   }
@@ -286,8 +212,9 @@ class Database {
    * @throws \MovLib\Data\DatabaseException
    */
   public function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
-    if (($this->transactionActive = $this->connect()->begin_transaction($flags)) === false) {
-      throw new DatabaseException("Could not start transaction", self::$mysqli->error, self::$mysqli->errno);
+    $mysqli = $this->connect();
+    if (($this->transactionActive = $mysqli->begin_transaction($flags)) === false) {
+      throw new DatabaseException("Could not start transaction", $mysqli->error, $mysqli->errno);
     }
     return $this;
   }
