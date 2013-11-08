@@ -167,7 +167,14 @@ class Stacktrace {
     foreach ($stacktrace["args"] as $delta => $arg) {
       $suffix                     = is_array($arg) ? "(" . count($arg) . ")" : null;
       $type                       = gettype($arg);
-      $title                      = htmlspecialchars(print_r($arg, true), ENT_QUOTES | ENT_HTML5);
+      try {
+        $title = htmlspecialchars(print_r($arg, true), ENT_QUOTES | ENT_HTML5);
+      }
+      // There are some properties that might issue an error (e.g. with mysqli the famous "property access not allowed
+      // yet" warnings.
+      catch (\ErrorException $e) {
+        $title = "WARNING: Property access not allowed yet.";
+      }
       $stacktrace["args"][$delta] = "<var class='stacktrace_var' title='{$title}'>{$type}{$suffix}</var>";
     }
     return implode(", ", $stacktrace["args"]);
