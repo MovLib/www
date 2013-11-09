@@ -248,6 +248,18 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
   }
 
   /**
+   * Whether this method should be ignored or not during skeleton generation.
+   *
+   * @param \ReflectionMethod $method
+   *   The method to check.
+   * @return boolean
+   *   <code>TRUE</code> if this method should be ignored, otherwise <code>FALSE</code>.
+   */
+  protected function ignoreMethod(\ReflectionMethod $method) {
+    return (($docComment = $method->getDocComment()) && strpos($docComment, "@skeletonGeneratorIgnore") !== false);
+  }
+
+  /**
    * Extend an existing test.
    *
    * @param \ReflectionClass $reflector
@@ -276,6 +288,9 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
     $tests = [];
     /* @var $method \ReflectionMethod */
     foreach ($reflector->getMethods() as $method) {
+      if ($this->ignoreMethod($method) === true) {
+        continue;
+      }
       $methodName = $method->getName();
 
       // Make absolutely sure that this method is declared in this class. First we simply ask the reflector which covers
@@ -351,6 +366,9 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
     $tests = [];
     /* @var $method \ReflectionMethod */
     foreach ($reflector->getMethods() as $method) {
+      if ($this->ignoreMethod($method) === true) {
+        continue;
+      }
       $methodName = $method->getName();
 
       if ($method->getDeclaringClass() == $reflector && strpos($source, "function {$methodName}") !== false) {
