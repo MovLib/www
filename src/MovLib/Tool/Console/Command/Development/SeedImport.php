@@ -409,7 +409,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         if (isset($this->uploadDirectories[$directoryNames[$i]])) {
           $directories[$directoryNames[$i]] = $this->uploadDirectories[$directoryNames[$i]];
           sh::execute("rm -rf {$publicUploadDirectory}/{$directoryNames[$i]}/*");
-          sh::execute("cp -R {$seedUploadDirectory}/* {$publicUploadDirectory}/$directoryNames[$i]");
+          sh::execute("cp -R {$seedUploadDirectory}/{$directoryNames[$i]}/* {$publicUploadDirectory}/{$directoryNames[$i]}");
         }
         else {
           throw new \InvalidArgumentException("No directory with name '{$directoryNames[$i]}' found!");
