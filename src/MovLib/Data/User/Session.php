@@ -20,7 +20,6 @@ namespace MovLib\Data\User;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\SessionException;
-use \MovLib\Exception\UserException;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -251,9 +250,13 @@ class Session extends \MovLib\Data\Database {
    */
   public function delete($sessionId = null) {
     $sessionPrefix = ini_get("memcached.sess_prefix");
-    $sessionId = $sessionId ?: $this->id;
+    if (!$sessionId) {
+      $sessionId = $this->id;
+    }
+
     // Fetch all configured Memcached servers from the PHP configuration and split them by the delimiter.
     $servers = explode(",", ini_get("session.save_path"));
+
     // Build the array as expected by Memcached::addServers().
     $c = count($servers);
     for ($i = 0; $i < $c; ++$i) {
@@ -263,12 +266,13 @@ class Session extends \MovLib\Data\Database {
         $servers[$i][1] = 0;
       }
     }
+
     try {
       $memcached = new \Memcached();
       $memcached->addServers($servers);
       if (is_array($sessionId)) {
-        $c = count($sessionId);
-        $clause = implode(", ", array_fill(0, $c, "?"));
+        $c      = count($sessionId);
+        $clause = rtrim(str_repeat("?,", $c), ",");
         $this->query("DELETE FROM `sessions` WHERE `session_id` IN ({$clause})", str_repeat("s", $c), $sessionId);
         for ($i = 0; $i < $c; ++$i) {
           $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
@@ -283,6 +287,7 @@ class Session extends \MovLib\Data\Database {
     catch (\MemcachedException $e) {
       throw new DatabaseException($e->getMessage(), $e);
     }
+
     return $this;
   }
 
@@ -312,7 +317,7 @@ class Session extends \MovLib\Data\Database {
       setcookie($this->name, "", 1, $cookie["path"], $cookie["domain"], $cookie["secure"], $cookie["httponly"]);
       session_write_close();
       // Remove the session ID from our database.
-      $kernel->delayMethodCall([ $this, "delete" ]);
+      $kernel->delayMethodCall([ $this, "delete" ], [ $this->id ]);
     }
 
     return $this;

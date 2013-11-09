@@ -195,9 +195,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->private,
     ]);
 
-    $this->form->actionElements[] = new InputSubmit([
-      "value" => $i18n->t("Update Account Settings"),
-    ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Update Account Settings"), [ "class" => "button--large button--success" ]);
   }
 
   /**

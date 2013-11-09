@@ -18,15 +18,14 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\Client\UnauthorizedException;
+use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Email\User\Deactivation;
 use \MovLib\Presentation\Email\User\Deletion;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\Button;
-use \MovLib\Presentation\Partial\Help;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 
 /**
  * Allows a user to terminate sessions and deactivate the account.
@@ -132,9 +131,8 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
       ;
     }
 
-    $this->form             = new Form($this);
-    $this->buttonDeactivate = new Button("deactivate", $i18n->t("Deactivate"), [ "class" => "button--large button--warning" ]);
-    $this->buttonDelete     = new Button("delete", $i18n->t("Delete"), [ "class" => "button--large button--danger" ]);
+    $this->form                   = new Form($this);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "button--danger" ]);
 
     if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
       $this->validateToken();
@@ -147,29 +145,14 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
    */
   protected function getPageContent() {
     global $i18n;
-
-    $help = new Help($i18n->t(
-      "You agreed to release all your contributions to the {0} database along with an open and free license, therefor " .
-      "each of your edits is tightly bound to your account. To draw an analogy, you cannot withdraw your copyright " .
-      "if you create something in the European juristiction. The deactivation of your account would be just like that. " .
-      "Your {1}personal data{2} is of course deleted and only your username will remain visible to the public.",
-      [ "MovLib", "<a href='{$i18n->r("/user/account-settings")}'>", "</a>" ]
-    ));
-
-    $deactivate = new Alert("{$help}<p>{$i18n->t(
-      "If you want to deactivate your account, for whatever reason, click the button below. All your {0}personal data{1} " .
-      "will be purged from our system and you are signed out. To reactivate your account, simply sign in again with " .
-      "your email address and secret password (of course you’ll have to re-enter your personal data).",
-      [ "<a href='{$this->routeAccountSettings}'>", "</a>" ]
-    )}</p>{$this->form}");
-    $deactivate->severity = Alert::SEVERITY_ERROR;
-
     return
-      "<h2>{$i18n->t("Active Sessions")}</h2>" .
-      "{$this->formSessions->open()}<table class='table-hover' id='profile-sessions'>" .
+
+      // Session Form
+      "<h2>{$i18n->t("Active Sessions")}</h2>{$this->formSessions->open()}<table class='table-hover' id='profile-sessions'>" .
         "<caption>{$i18n->t(
           "The following table contains a listing of all your active sessions. You can terminate any session by " .
           "clicking on the button to the right. Your current session is highlighted with a yellow background color " .
@@ -177,26 +160,24 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
           "listed weren’t initiated by you, terminate them and consider to {0}set a new password{1} to ensure that " .
           "nobody else has access to your account.",
           [ "<a href='{$this->routePasswordSettings}'>", "</a>" ]
-        )}</caption>" .
-        "<thead><tr><th>{$i18n->t("Sign In Time")}</th><th>{$i18n->t("User Agent")}</th><th>{$i18n->t("IP address")}</th><th></th></tr></thead>" .
-        "<tbody>{$this->sessionsTable}</tbody>" .
-      "</table>{$this->formSessions->close()}" .
-      "<h2>{$i18n->t("Deactivate / Delete Account")}</h2>" .
-      $this->form->open() .
-        "<p>{$i18n->t("If you want to deactivate or delete your account—for whatever reason—click one of the buttons below.")}</p>" .
-        "<p>{$i18n->t(
-          "We keep all your personal data and make your account inaccessible if you choose to deactivate it. You can " .
-          "sign in with your email address and password later on to reactivate your account."
-        )}</p>" .
-        "<p>{$this->buttonDeactivate}</p>" .
-        "<p>{$i18n->t(
-          "We purge all your personal data from our system if you choose to delete your account. Please note that all " .
-          "your contributions and your username will stay in our system and you’ll never be able to reclaim your " .
-          "account. This is because your email address will be purged as well and afterwards there’s no possibility to " .
-          "reactivate your account."
-        )}</p>" .
-        "<p>{$this->buttonDelete}</p>" .
-      $this->form->close()
+        )}</caption><thead><tr><th>{$i18n->t(
+          "Sign In Time"
+        )}</th><th>{$i18n->t(
+          "User Agent"
+        )}</th><th>{$i18n->t(
+          "IP address"
+        )}</th><th></th></tr></thead><tbody>{$this->sessionsTable}</tbody></table>{$this->formSessions->close()}" .
+
+      // Deletion Form
+      "<h2>{$i18n->t("Delete Account")}</h2><p>{$i18n->t(
+        "If you want to delete your account—for whatever reason—click the button below. All your personal data is " .
+        "purged from our system and this action is final. Please note that all your contributions and your username " .
+        "will stay in our system. You agreed to release all your contributions to the {0} database along with an " .
+        "open and free license, therefor each of your contributions don’t belong to you anymore. Attribution to you " .
+        "stays with the username you’ve initially chosen. This doesn’t include any reviews of yours which have no " .
+        "open license, they are deleted as well and lost forever. Again, this action is final and there’s no way for " .
+        "you to reclaim your account after deletion!"
+      )}</p>{$this->form}"
     ;
   }
 

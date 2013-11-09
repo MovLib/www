@@ -91,9 +91,9 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     $this->form  = new Form($this, [ $this->email ]);
 
     // The submit button.
-    $this->form->actionElements[] = new InputSubmit([
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Request Email Change"), [
+      "class" => "button--large button--success",
       "title" => $i18n->t("Click here to request the change of your email address after you filled out all fields."),
-      "value" => $i18n->t("Request Email Change"),
     ]);
 
     // Validate the token if the page was requested via GET and a token is actually present.

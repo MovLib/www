@@ -33,7 +33,7 @@ class InputSubmitTest extends \MovLib\TestCase {
    * @covers ::__construct
    */
   public function testConstruct() {
-    $inputSubmit = new InputSubmit([ "value" => "phpunit" ]);
+    $inputSubmit = new InputSubmit("phpunit");
     foreach ([ "class", "id", "tabindex", "type", "value" ] as $key) {
       $this->assertArrayHasKey($key, $inputSubmit->attributes);
     }
@@ -48,7 +48,7 @@ class InputSubmitTest extends \MovLib\TestCase {
    * @covers ::__toString
    */
   public function testToString() {
-    $this->assertRegExp("/<input[a-z0-9='\- ]+>/", (string) new InputSubmit([ "value" => "phpunit" ]));
+    $this->assertRegExp("/<input[a-z0-9='\- ]+>/", (string) new InputSubmit("phpunit"));
   }
 
 }

@@ -30,6 +30,10 @@ namespace MovLib\Presentation\Partial\FormElement;
  */
 class InputSubmit extends \MovLib\Presentation\AbstractBase {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The form elements attributes.
    *
@@ -42,17 +46,30 @@ class InputSubmit extends \MovLib\Presentation\AbstractBase {
    *
    * @var string
    */
-  public $id = "submit";
+  public $id;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
-   * Instantiate new HTML input form element of type submit.
+   * Instantiate new input form element of type submit.
+   *
+   * @param string $value
+   *   The translated text of the input element.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied.
+   * @param string $id [optional]
+   *   The global unique identifier.
    */
-  public function __construct(array $attributes = null) {
+  public function __construct($value, array $attributes = null, $id = "submit") {
     $this->attributes             = $attributes;
-    $this->attributes["class"]    = "button button--large button--success";
-    $this->attributes["id"]       = $this->id;
+    $this->attributes["id"]       = $id;
     $this->attributes["tabindex"] = $this->getTabindex();
     $this->attributes["type"]     = "submit";
+    $this->attributes["value"]    = $value;
+    $this->id                     = $id;
+    $this->addClass("button", $this->attributes);
   }
 
   /**

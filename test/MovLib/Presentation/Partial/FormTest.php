@@ -57,7 +57,7 @@ class FormTest extends \MovLib\TestCase {
   protected function setUp() {
     $this->setStaticProperty("\\MovLib\\Presentation\\AbstractBase", "tabindex", 1);
     $this->inputEmail             = new InputEmail();
-    $this->inputSubmit            = new InputSubmit();
+    $this->inputSubmit            = new InputSubmit("Submit");
     $this->form                   = new Form($this, [ $this->inputEmail ], "phpunit", "validationCallbackMock");
     $this->form->actionElements[] = $this->inputSubmit;
   }

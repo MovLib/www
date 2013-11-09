@@ -134,9 +134,9 @@ class Registration extends \MovLib\Presentation\Page {
     $this->form->attributes["autocomplete"] = "off";
     $this->form->attributes["class"]        = "span span--6 offset--3";
 
-    $this->form->actionElements[] = new InputSubmit([
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Sign Up"), [
+      "class" => "button--large button-success",
       "title" => $i18n->t("Click here to sign up after you filled out all fields"),
-      "value" => $i18n->t("Sign Up"),
     ]);
 
     if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {

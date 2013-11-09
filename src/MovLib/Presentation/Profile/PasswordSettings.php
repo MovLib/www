@@ -96,9 +96,9 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     $this->form->attributes["autocomplete"] = "off";
 
     // The submit button.
-    $this->form->actionElements[] = new InputSubmit([
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Change"), [
+      "class" => "button--large button--success",
       "title" => $i18n->t("Click here to request the password change after you filled out all fields."),
-      "value" => $i18n->t("Request Password Change"),
     ]);
 
     // Validate the token if the page was requested via GET and a token is actually present.

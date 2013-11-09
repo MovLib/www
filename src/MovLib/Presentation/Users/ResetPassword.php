@@ -67,9 +67,9 @@ class ResetPassword extends \MovLib\Presentation\Page {
     $this->form = new Form($this, [ $this->email ]);
     $this->form->attributes["class"] = "span span--6 offset--3";
 
-    $this->form->actionElements[] = new InputSubmit([
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Reset"), [
+      "class" => "button--large button--success",
       "title" => $i18n->t("Click here to request a password reset for the entered email address"),
-      "value" => $i18n->t("Request Password Reset"),
     ]);
   }
 
