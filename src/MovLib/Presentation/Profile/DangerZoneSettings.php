@@ -108,7 +108,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
       $sessions[$i]["ip_address"]     = inet_ntop($sessions[$i]["ip_address"]);
       $active                         = null;
       $button                         = new Button("session_id", $buttonText, [
-        "class" => "button--danger",
+        "class" => "button button--danger",
         "type"  => "submit",
         "value" => $sessions[$i]["session_id"],
         "title" => $buttonTitle,
@@ -132,7 +132,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
     }
 
     $this->form                   = new Form($this);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "button--danger" ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "button button--danger" ]);
 
     if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
       $this->validateToken();

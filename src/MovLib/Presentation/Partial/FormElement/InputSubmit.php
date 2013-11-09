@@ -69,7 +69,6 @@ class InputSubmit extends \MovLib\Presentation\AbstractBase {
     $this->attributes["type"]     = "submit";
     $this->attributes["value"]    = $value;
     $this->id                     = $id;
-    $this->addClass("button", $this->attributes);
   }
 
   /**

@@ -37,7 +37,7 @@ class InputSubmitTest extends \MovLib\TestCase {
     foreach ([ "class", "id", "tabindex", "type", "value" ] as $key) {
       $this->assertArrayHasKey($key, $inputSubmit->attributes);
     }
-    $this->assertEquals("button button--large button--success", $inputSubmit->attributes["class"]);
+    $this->assertEquals("button btn-large btn-success", $inputSubmit->attributes["class"]);
     $this->assertEquals("submit", $inputSubmit->attributes["id"]);
     $this->assertTrue(is_int($inputSubmit->attributes["tabindex"]));
     $this->assertEquals("submit", $inputSubmit->attributes["type"]);
