@@ -19,6 +19,7 @@ namespace MovLib\Data\User;
 
 use \MovLib\Data\Image\Style;
 use \MovLib\Exception\UserException;
+use \MovLib\Tool\Console\Command\Production\FixPermissions;
 
 /**
  * @todo Description of TestUser
@@ -190,9 +191,12 @@ class User extends \MovLib\Data\Image\AbstractImage {
     global $kernel;
     if ($this->imageExists == true) {
       foreach ([ self::IMAGE_STYLE_SPAN_01, self::IMAGE_STYLE_SPAN_02 ] as $style) {
-        $path = $this->getImagePath($style);
-        if (is_file($path) && unlink($path) === false) {
-          Logger::stack("Could not delete {$path}!", Logger::ERROR);
+        try {
+          $path = $this->getImagePath($style);
+          unlink($path);
+        }
+        catch (\ErrorException $e) {
+          error_log("Couldn't delete '{$path}'.");
         }
       }
       $this->imageExists  = false;
@@ -207,6 +211,8 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @internal
    *   We override the <code>parent::uploadImage()</code> method and can handle everything there, no need to implement
    *   this method like other image instances have to.
+   * @codeCoverageIgnore
+   * @skeletonGeneratorIgnore
    */
   protected function generateImageStyles($source) {
     return $this;

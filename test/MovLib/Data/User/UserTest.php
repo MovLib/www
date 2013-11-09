@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\User;
 
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\User;
 use \MovLib\Tool\Console\Command\Development\SeedImport;
 
@@ -86,10 +87,23 @@ class UserTest extends \MovLib\TestCase {
 
   /**
    * @covers ::commit
-   * @todo Implement commit
+   * @global \MovLib\Tool\Database $db
    */
   public function testCommit() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+    global $db;
+
+    // Setup
+    $this->setProperty($this->user, "imageChanged", $_SERVER["REQUEST_TIME"]);
+    $this->setProperty($this->user, "imageExtension", "tst");
+
+    // Test
+    $this->user->commit();
+    $result = $db->query("SELECT UNIX_TIMESTAMP(`imageChanged`), `imageExtension` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->user->id ])->get_result()->fetch_row();
+    $this->assertEquals($_SERVER["REQUEST_TIME"], $result[0]);
+    $this->assertEquals("tst", $result[1]);
+
+    // Teardown
+    (new SeedImport())->databaseImport([ "users" ]);
   }
 
   /**
@@ -120,15 +134,36 @@ class UserTest extends \MovLib\TestCase {
     $this->assertFalse($this->user->imageExists);
     $this->assertNull($this->getProperty($this->user, "imageChanged"));
     $this->assertNull($this->getProperty($this->user, "imageExtension"));
-    (new SeedImport())->uploadImport([ "user" ]);
+
+    // Teardown
+    $seedImport = new SeedImport();
+    $seedImport->databaseImport([ "users" ]);
+    $seedImport->uploadImport([ "user" ]);
   }
 
   /**
-   * @covers ::generateImageStyles
-   * @todo Implement generateImageStyles
+   * @covers ::deleteImage
    */
-  public function testGenerateImageStyles() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+  public function testDeleteImageFileMissing() {
+    // Setup
+    $paths = [
+      $this->invoke($this->user, "getImagePath", [ User::IMAGE_STYLE_SPAN_01 ]),
+      $this->invoke($this->user, "getImagePath", [ User::IMAGE_STYLE_SPAN_02 ]),
+    ];
+    foreach ($paths as $path) {
+      unlink($path);
+    }
+
+    // Teardown
+    $this->invoke($this->user, "deleteImage");
+    foreach ($paths as $path) {
+      $this->assertFileNotExists($path);
+    }
+
+    // Teardown
+    $seedImport = new SeedImport();
+    $seedImport->databaseImport([ "users" ]);
+    $seedImport->uploadImport([ "user" ]);
   }
 
   /**
