@@ -18,7 +18,6 @@
 namespace MovLib\Data;
 
 use \MovLib\Data\Memcached;
-use \MovLib\Data\UnixShell as sh;
 
 /**
  * @coversDefaultClass \MovLib\Data\Memcached
@@ -134,49 +133,6 @@ class MemcachedTest extends \MovLib\TestCase {
     }
     $this->assertTrue($flooding);
     $this->memcached->delete("phpunit{$kernel->remoteAddress}");
-  }
-
-  /**
-   * @coversNothing
-   */
-  public function testResetServers() {
-    $this->getProperty($this->memcached, "memcached")->resetServerList();
-  }
-
-  /**
-   * @covers ::delete
-   * @depends testResetServers
-   * @expectedException \MemcachedException
-   */
-  public function testDeleteException() {
-    $this->memcached->delete("phpunit");
-  }
-
-  /**
-   * @covers ::get
-   * @depends testResetServers
-   * @expectedException \MemcachedException
-   */
-  public function testGetException() {
-    $this->memcached->get("phpunit");
-  }
-
-  /**
-   * @covers ::increment
-   * @depends testResetServers
-   * @expectedException \MemcachedException
-   */
-  public function testIncrementException() {
-    $this->memcached->increment("phpunit");
-  }
-
-  /**
-   * @covers ::set
-   * @depends testResetServers
-   * @expectedException \MemcachedException
-   */
-  public function testSetException() {
-    $this->memcached->set("phpunit", "phpunit");
   }
 
 }

@@ -112,7 +112,9 @@ class Memcached {
    */
   public function delete($key) {
     if (self::$memcached->delete($key) === false && ($code = self::$memcached->getResultCode()) !== \Memcached::RES_NOTFOUND) {
+      // @codeCoverageIgnoreStart
       throw new \MemcachedException(self::$memcached->getResultMessage(), $code);
+      // @codeCoverageIgnoreEnd
     }
     return $this;
   }
@@ -130,7 +132,9 @@ class Memcached {
   public function get($key) {
     $value = self::$memcached->get($key);
     if ($value === false && ($code = self::$memcached->getResultCode()) !== \Memcached::RES_NOTFOUND) {
+      // @codeCoverageIgnoreStart
       throw new \MemcachedException(self::$memcached->getResultMessage(), $code);
+      // @codeCoverageIgnoreEnd
     }
     return $value;
   }
@@ -153,7 +157,9 @@ class Memcached {
   public function increment($key, $initialValue = 1, $expiration = self::DEFAULT_EXPIRATION, $incrementBy = 1) {
     $value = self::$memcached->increment($key, $incrementBy, $initialValue, $expiration);
     if ($value === false) {
+      // @codeCoverageIgnoreStart
       throw new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
+      // @codeCoverageIgnoreEnd
     }
     return $value;
   }
@@ -207,7 +213,9 @@ class Memcached {
    */
   public function set($key, $value, $expiration = self::DEFAULT_EXPIRATION) {
     if (self::$memcached->set($key, $value, $expiration) === false) {
+      // @codeCoverageIgnoreStart
       throw new \MemcachedException(self::$memcached->getResultMessage(), self::$memcached->getResultCode());
+      // @codeCoverageIgnoreEnd
     }
     return $this;
   }
