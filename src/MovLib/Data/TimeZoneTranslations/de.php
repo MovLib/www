@@ -27,6 +27,7 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+// @codeCoverageIgnoreStart
 $translatedTimeZoneIdentifiers = [
   "Africa/Abidjan"                 => "Afrika/Abidjan",
   "Africa/Accra"                   => "Afrika/Accra",
@@ -445,3 +446,4 @@ $translatedTimeZoneIdentifiers = [
   "Pacific/Wake"                   => "Pazifik/Wake",
   "Pacific/Wallis"                 => "Pazifik/Wallis",
 ];
+// @codeCoverageIgnoreEnd
