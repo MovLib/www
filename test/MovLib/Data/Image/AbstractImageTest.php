@@ -45,9 +45,13 @@ class AbstractImageTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
 
 
+  /**
+   * @global \MovLib\TestKernel $kernel
+   */
   public static function setUpBeforeClass() {
-    self::$dirOriginal = "{$_SERVER["DOCUMENT_ROOT"]}/uploads/originals/phpunit/";
-    self::$dirStyles = "{$_SERVER["DOCUMENT_ROOT"]}/uploads/phpunit/";
+    global $kernel;
+    self::$dirOriginal = "{$kernel->documentRoot}/uploads/originals/phpunit/";
+    self::$dirStyles = "{$kernel->documentRoot}/uploads/phpunit/";
     self::$tmpImage = tempnam(ini_get("upload_tmp_dir"), "phpunit") . ".jpg";
     sh::execute("convert -size 500x500 xc: +noise Random " . self::$tmpImage);
     sh::execute("mkdir -p '" . self::$dirOriginal . "' '" . self::$dirStyles . "'");

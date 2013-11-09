@@ -29,11 +29,13 @@ class AbstractRedirectExceptionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::__construct
+   * @global \MovLib\TestKernel $kernel
    */
   public function testConstruct() {
+    global $kernel;
     $stub = $this->getMockForAbstractClass("\\MovLib\\Exception\\Client\\AbstractRedirectException", [ 42, "/phpunit", "phpunit" ]);
     $this->assertEquals(42, http_response_code());
-    $this->assertEquals("Location: {$_SERVER["SERVER"]}/phpunit", $stub->locationHeader);
+    $this->assertEquals("Location: {$kernel->scheme}://{$kernel->hostname}/phpunit", $stub->locationHeader);
     $this->assertContains("42 phpunit", $stub->presentation);
   }
 

@@ -34,30 +34,26 @@ class UnauthorizedExceptionTest extends \MovLib\TestCase {
    * @covers ::__construct
    * @expectedException \MovLib\Exception\Client\UnauthorizedException
    * @expectedExceptionMessage has to authenticate
+   * @global \MovLib\TestKernel $kernel
+   * @global \MovLib\Data\User\Session $session
    */
   public function testConstruct() {
-    global $session;
-    $sessionBackup = clone $session;
-    $session       = $this->getMock("\\MovLib\\Data\\User\\Session", [ "destroy" ]);
+    global $kernel, $session;
+    $kernel->requestMethod = "POST";
+    $_POST                 = [ "secret" => "data" ];
+    $unauthorizedException = new UnauthorizedException("phpunit-msg", "phpunit-title", Alert::SEVERITY_WARNING);
+    $session               = $this->getMock("\\MovLib\\Data\\User\\Session", [ "destroy" ]);
     $session->expects($this->once())->method("destroy");
-    try {
-      $_SERVER["REQUEST_METHOD"] = "POST";
-      $_POST                     = [ "secret" => "data" ];
-      $unauthorizedException     = new UnauthorizedException("phpunit-msg", "phpunit-title", Alert::SEVERITY_WARNING);
-      $this->assertEquals("GET", $_SERVER["REQUEST_METHOD"]);
-      $this->assertTrue(empty($_POST));
-      $this->assertEquals(401, http_response_code());
-      $this->assertEquals('WWW-Authenticate: MovLib location="/users/login"', $unauthorizedException->authenticateHeader);
-      $this->assertInstanceOf("\\MovLib\\Presentation\\Users\\Login", $unauthorizedException->presentation);
-      $presentation              = $unauthorizedException->presentation->getPresentation();
-      $this->assertContains("phpunit-msg", $presentation);
-      $this->assertContains("phpunit-title", $presentation);
-      $this->assertContains(Alert::SEVERITY_WARNING, $presentation);
-      throw $unauthorizedException;
-    }
-    finally {
-      $session = $sessionBackup;
-    }
+    $this->assertEquals("GET", $kernel->requestMethod);
+    $this->assertTrue(empty($_POST));
+    $this->assertEquals(401, http_response_code());
+    $this->assertEquals('WWW-Authenticate: MovLib location="/users/login"', $unauthorizedException->authenticateHeader);
+    $this->assertInstanceOf("\\MovLib\\Presentation\\Users\\Login", $unauthorizedException->presentation);
+    $presentation          = $unauthorizedException->presentation->getPresentation();
+    $this->assertContains("phpunit-msg", $presentation);
+    $this->assertContains("phpunit-title", $presentation);
+    $this->assertContains(Alert::SEVERITY_WARNING, $presentation);
+    throw $unauthorizedException;
   }
 
   /**

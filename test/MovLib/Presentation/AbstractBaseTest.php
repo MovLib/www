@@ -81,25 +81,31 @@ class AbstractBaseTest extends \MovLib\TestCase {
 
   /**
    * @covers ::a
+   * @global \MovLib\TestKernel $kernel
    */
   public function testAnchor() {
-    $_SERVER["PATH_INFO"] = "/phpunit";
+    global $kernel;
+    $kernel->requestURI = "/phpunit";
     $this->assertEquals("<a href='/route' title='PHPUnit'>linktext</a>", $this->invoke($this->abstractPage, "a", [ "/route", "linktext", [ "title" => "PHPUnit" ] ]));
   }
 
   /**
    * @covers ::a
+   * @global \MovLib\TestKernel $kernel
    */
   public function testAnchorPathInfo() {
-    $_SERVER["PATH_INFO"] = $_SERVER["REQUEST_URI"] = "/route";
+    global $kernel;
+    $kernel->requestURI = "/route";
     $this->assertEquals("<a href='#' class='active'>linktext</a>", $this->invoke($this->abstractPage, "a", [ "/route", "linktext", [ "title" => "PHPUnit" ] ]));
   }
 
   /**
    * @covers ::a
+   * @global \MovLib\TestKernel $kernel
    */
   public function testAnchorHash() {
-    $_SERVER["PATH_INFO"] = "/phpunit";
+    global $kernel;
+    $kernel->requestURI = "/phpunit";
     $this->assertEquals("<a href='#' class='active'>linktext</a>", $this->invoke($this->abstractPage, "a", [ "#", "linktext", [ "title" => "PHPUnit" ] ]));
   }
 
@@ -107,7 +113,7 @@ class AbstractBaseTest extends \MovLib\TestCase {
    * @covers ::addClass
    */
   public function testAddClassNoClasses() {
-    $attributes = [ ];
+    $attributes = [];
     $this->invoke($this->abstractPage, "addClass", [ "phpunit", &$attributes ]);
     $this->assertEquals([ "class" => "phpunit" ], $attributes);
   }

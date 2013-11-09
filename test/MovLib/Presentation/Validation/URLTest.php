@@ -3,7 +3,7 @@
 /* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link http://{$_SERVER["SERVER_NAME"]}/ MovLib}.
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
  * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
@@ -36,11 +36,12 @@ class URLTest extends \MovLib\TestCase {
   }
 
   public function dataProviderIllegalParts() {
+    global $kernel;
     return [
-      [ "http://{$_SERVER["SERVER_NAME"]}:80" ],
-      [ "http://admin@{$_SERVER["SERVER_NAME"]}/" ],
-      [ "http://admin:1234@{$_SERVER["SERVER_NAME"]}/" ],
-      [ "http://admin:1234@{$_SERVER["SERVER_NAME"]}:1234/" ],
+      [ "http://{$kernel->hostname}:80" ],
+      [ "http://admin@{$kernel->hostname}/" ],
+      [ "http://admin:1234@{$kernel->hostname}/" ],
+      [ "http://admin:1234@{$kernel->hostname}:1234/" ],
     ];
   }
 
@@ -55,42 +56,45 @@ class URLTest extends \MovLib\TestCase {
   }
 
   public function dataProviderMalformedSchemeAndOrHost() {
+    global $kernel;
     return [
       [ "系" ],
       [ "MovLib" ],
       [ "http://movlib.123" ],
-      [ "{$_SERVER["SERVER_NAME"]}" ],
-      [ "//{$_SERVER["SERVER_NAME"]}" ],
-      [ "ftp://{$_SERVER["SERVER_NAME"]}/" ],
-      [ "{$_SERVER["SERVER_NAME"]}/foo/bar" ],
-      [ "ldap://{$_SERVER["SERVER_NAME"]}/" ],
-      [ "//{$_SERVER["SERVER_NAME"]}/foo/bar" ],
-      [ "mailto:user@{$_SERVER["SERVER_NAME"]}" ],
+      [ "{$kernel->hostname}" ],
+      [ "//{$kernel->hostname}" ],
+      [ "ftp://{$kernel->hostname}/" ],
+      [ "{$kernel->hostname}/foo/bar" ],
+      [ "ldap://{$kernel->hostname}/" ],
+      [ "//{$kernel->hostname}/foo/bar" ],
+      [ "mailto:user@{$kernel->hostname}" ],
     ];
   }
 
   public function dataProviderReachability() {
+    global $kernel;
     return [
       [ "http://non-existent-host.com/" ],
-      [ "https://{$_SERVER["SERVER_NAME"]}/non/existent/path" ],
+      [ "https://{$kernel->hostname}/non/existent/path" ],
     ];
   }
 
   public function dataProviderValid() {
+    global $kernel;
     return [
-      [ "http://{$_SERVER["SERVER_NAME"]}/", "http://{$_SERVER["SERVER_NAME"]}" ],
-      [ "http://{$_SERVER["SERVER_NAME"]}/", "http://{$_SERVER["SERVER_NAME"]}/" ],
-      [ "https://{$_SERVER["SERVER_NAME"]}/", "https://{$_SERVER["SERVER_NAME"]}" ],
-      [ "https://{$_SERVER["SERVER_NAME"]}/", "https://{$_SERVER["SERVER_NAME"]}/" ],
+      [ "http://{$kernel->hostname}/", "http://{$kernel->hostname}" ],
+      [ "http://{$kernel->hostname}/", "http://{$kernel->hostname}/" ],
+      [ "https://{$kernel->hostname}/", "https://{$kernel->hostname}" ],
+      [ "https://{$kernel->hostname}/", "https://{$kernel->hostname}/" ],
       [ "http://wikipedia.org/", "http://wikipedia.org" ],
       [ "https://wikipedia.org/", "https://wikipedia.org" ],
-      [ "http://{$_SERVER["SERVER_NAME"]}/users/login", "http://{$_SERVER["SERVER_NAME"]}/users/login" ],
+      [ "http://{$kernel->hostname}/users/login", "http://{$kernel->hostname}/users/login" ],
       [ "http://www.kawaguchi.science.museum/", "http://www.kawaguchi.science.museum/" ],
       [ "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB", "https://ja.wikipedia.org/wiki/Unix系" ],
       [ "https://en.wikipedia.org/wiki//dev/random", "https://en.wikipedia.org/wiki//dev/random" ],
       [ "http://www.youtube.com/watch?v=5gUKvmOEGCU", "http://www.youtube.com/watch?v=5gUKvmOEGCU" ],
       [ "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB", "https://ja.wikipedia.org/wiki/Unix%E7%B3%BB" ],
-      [ "http://{$_SERVER["SERVER_NAME"]}/users/registration?token=1234567890", "http://{$_SERVER["SERVER_NAME"]}/users/registration?token=1234567890" ],
+      [ "http://{$kernel->hostname}/users/registration?token=1234567890", "http://{$kernel->hostname}/users/registration?token=1234567890" ],
       [
         "https://api.drupal.org/api/drupal/core%21lib%21Drupal%21Component%21Utility%21Url.php/function/Url%3A%3AisValid/8",
         "https://api.drupal.org/api/drupal/core!lib!Drupal!Component!Utility!Url.php/function/Url%3A%3AisValid/8"

@@ -17,7 +17,7 @@
  */
 namespace MovLib\Exception\Client;
 
-use \MovLib\Exception\Client\RedirectSeeOtherException as Redirect;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
 
 /**
  * @coversDefaultClass \MovLib\Exception\Client\RedirectSeeOtherException
@@ -33,20 +33,22 @@ class RedirectSeeOtherExceptionTest extends \MovLib\TestCase {
    * @covers ::__construct
    */
   public function testConstruct() {
-    $r = new Redirect("/phpunit");
+    $r = new RedirectSeeOtherException("/phpunit");
     $this->assertEquals(303, http_response_code());
     $this->assertContains("303 See Other", $r->presentation);
   }
 
   /**
    * @covers ::__construct
+   * @global \MovLib\TestKernel $kernel
    */
   public function testConstructOldClients() {
-    $_SERVER["SERVER_PROTOCOL"] = "HTTP/1.0";
-    $r                          = new Redirect("/phpunit");
+    global $kernel;
+    $kernel->protocol = "HTTP/1.0";
+    $r                = new RedirectSeeOtherException("/phpunit");
     $this->assertEquals(302, http_response_code());
     $this->assertContains("302 Moved Temporarily", $r->presentation);
-    $_SERVER["SERVER_PROTOCOL"] = "HTTP/1.1";
+    $kernel->protocol = "HTTP/1.1";
   }
 
 }

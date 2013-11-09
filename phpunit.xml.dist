@@ -31,6 +31,7 @@
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
+         forceCoversAnnotation="true"
          processIsolation="false"
          stopOnError="false"
          stopOnFailure="false"

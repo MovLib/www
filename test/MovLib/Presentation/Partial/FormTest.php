@@ -72,17 +72,19 @@ class FormTest extends \MovLib\TestCase {
 
   /**
    * @covers ::__construct
+   * @global \MovLib\TestKernel $kernel
+   * @global \MovLib\Data\User\Session $session
    */
   public function testConstruct() {
-    global $session;
-    $_SERVER["PATH_INFO"]           = "/";
+    global $kernel, $session;
+    $kernel->requestURI             = "/";
     $_SERVER["MULTIPART"]           = 0;
     $this->form                     = new Form($this, [ $this->inputEmail ], "phpunit-id");
     $this->inputEmail->attributes[] = "autofocus";
     $this->assertEquals([ $this->inputEmail ], $this->getProperty($this->form, "elements"));
     $this->assertEquals("phpunit-id", $this->form->id);
     $this->assertEquals("<input name='form_id' type='hidden' value='phpunit-id'><input name='csrf' type='hidden' value='{$session->csrfToken}'>", $this->form->hiddenElements);
-    $this->assertEquals([ "action" => $_SERVER["PATH_INFO"], "method" => "post", "enctype" => "multipart/form-data" ], $this->form->attributes);
+    $this->assertEquals([ "action" => $kernel->requestURI, "method" => "post", "enctype" => "multipart/form-data" ], $this->form->attributes);
   }
 
   /**
