@@ -15,21 +15,18 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
-
-use \MovLib\Exception\LanguageException;
+namespace MovLib\Presentation\Partial;
 
 /**
- * Represents a single language.
+ * Represents a single country in HTML.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Language extends \MovLib\Data\Database {
+class Country extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -54,74 +51,59 @@ class Language extends \MovLib\Data\Database {
 
 
   /**
-   * The language's unique identifier.
-   *
-   * @var int
-   */
-  public $id;
-
-  /**
-   * The language's translated name.
-   *
-   * @var string
-   */
-  public $name;
-
-  /**
-   * The language's ISO alpha-2 code.
-   *
-   * @var string
-   */
-  public $code;
-
-  /**
-   * The MySQLi bind param types of the columns.
+   * The attributes array.
    *
    * @var array
    */
-  protected $types = [
-    self::FROM_ID   => "i",
-    self::FROM_CODE => "s"
-  ];
+  protected $attributes;
+
+  /**
+   * The country to present.
+   *
+   * @var \MovLib\Data\Country
+   */
+  protected $country;
+
+  /**
+   * The HTML tag to wrap the country.
+   *
+   * @var string
+   */
+  protected $tag;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new language.
+   * Instantiate new country partial.
    *
-   * If no <var>$from</var> or <var>$value</var> is given, an empty language model will be created.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $from [optional]
+   * @param string $from
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
-   * @param mixed $value [optional]
-   *   Data to identify the language, see the various <var>FROM_*</var> class constants.
-   * @throws \MovLib\Exception\LanguageException
+   * @param mixed $value
+   *   Data to identify the country, see the various <var>FROM_*</var> class constants.
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the element.
+   * @param string $tag [optional]
+   *   The tag that should be used to wrap this country, defaults to <code>"span"</code>.
    */
-  public function __construct($from = null, $value = null) {
-    global $i18n;
-    if ($from && $value) {
-      $namePart = "";
-      if ($i18n->languageCode != $i18n->defaultLanguageCode) {
-        $namePart = "COLUMN_GET(`dyn_translations`, '{$i18n->languageCode}' AS CHAR(255)) AS";
-      }
-      $stmt = $this->query(
-        "SELECT
-          `id`,
-          `code`,
-          {$namePart} `name`
-        FROM `languages`
-        WHERE `{$from}` = ?",
-        $this->types[$from],
-        [ $value ]
-      );
-      $stmt->bind_result($this->id, $this->code, $this->name);
-      if (!$stmt->fetch()) {
-        throw new LanguageException("No country for {$from} '{$value}'.");
-      }
+  public function __construct($from, $value, array $attributes = null, $tag = "span") {
+    $this->country    = new \MovLib\Data\Country($from, $value);
+    $this->tag        = $tag;
+    $this->attributes = $attributes;
+  }
+
+  /**
+   * Get the string representation of the country.
+   *
+   * @return string
+   */
+  public function __toString() {
+    $attributes = null;
+    if ($this->attributes) {
+      $attributes = $this->expandTagAttributes($this->attributes);
     }
+    return "<{$this->tag} itemscope itemtype='http://schema.org/Country'{$attributes}><span itemprop='name'>{$this->country->name}</span></{$this->tag}>";
   }
 
 }

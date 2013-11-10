@@ -86,11 +86,11 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
   protected $private;
 
   /**
-   * The user's profile textarea form element.
+   * The user's about me input HTML form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputHTML
    */
-  protected $profile;
+  protected $aboutMe;
 
   /**
    * The user's real name input text form element.
@@ -128,12 +128,11 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
    * Instantiate new user account settings presentation.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\Session $session
    * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
+    global $i18n, $session;
 
     $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
@@ -166,7 +165,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "value" => $this->user->birthday,
     ], $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
 
-    $this->profile  = new InputHTML("profile", $i18n->t("About You"), $this->user->profile, [
+    $this->aboutMe  = new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, [
       "data-allow-external" => true,
       "placeholder"         => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
     ]);
@@ -187,7 +186,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->avatar,
       $this->sex,
       $this->birthday,
-      $this->profile,
+      $this->aboutMe,
       $this->language,
       $this->country,
       $this->timezone,
@@ -219,7 +218,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->user->birthday           = $this->birthday->value;
       $this->user->countryId          = $this->country->value;
       $this->user->private            = $this->private->value;
-      $this->user->profile            = $this->profile->content;
+      $this->user->aboutMe            = $this->aboutMe->value;
       $this->user->realName           = $this->realName->value;
       $this->user->sex                = $this->sex->value;
       $this->user->systemLanguageCode = $this->language->value;

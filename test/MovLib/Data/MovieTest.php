@@ -191,30 +191,30 @@ class MovieTest extends \MovLib\TestCase {
    */
   public function testGetCountriesWithData() {
     global $db, $i18n;
-    $i18nBackup = $i18n;
-    $i18n       = new I18n("de_AT");
 
-    $result      = $db->query(
-        "SELECT
-        `c`.`country_id` AS `id`,
-        `c`.`iso_alpha-2` AS `code`,
-        COLUMN_GET(`c`.`dyn_translations`, ? AS CHAR(255)) AS `name`
-      FROM `movies_countries` `mc`
-        INNER JOIN `countries` `c`
-        ON `mc`.`country_id` = `c`.`country_id`
-      WHERE `mc`.`movie_id` = ?", "sd", [ $i18n->languageCode, $this->movie->id ]
-      )->get_result();
-    $dbCountries = [ ];
-    while ($country     = $result->fetch_object("\\MovLib\\Data\\Country")) {
+    // Setup
+    $i18n   = new I18n("de_AT");
+    $result = $db->query(
+      "SELECT
+        `country`.`id`,
+        `country`.`code`
+        COLUMN_GET(`country`.`dyn_translations`, ? AS BINARY) AS `name`
+      FROM `movies_countries` AS `mc`
+        INNER JOIN `countries` AS `country` ON `country`.`id` = `mc`.`country_id`
+      WHERE `mc`.`movie_id` = ?",
+      "sd",
+      [ $i18n->languageCode, $this->movie->id ]
+    )->get_result();
+    $dbCountries = [];
+    while ($country = $result->fetch_object("\\MovLib\\Data\\Country")) {
       $dbCountries[$country->name] = $country;
     }
     (new Collator("de_AT"))->ksort($dbCountries);
 
+    // Test
     $countries = $this->movie->getCountries();
     $this->assertCount(count($countries), $countries);
     $this->assertEquals($dbCountries, $countries);
-
-    $i18n = $i18nBackup;
   }
 
   /**
@@ -342,30 +342,30 @@ class MovieTest extends \MovLib\TestCase {
    */
   public function testGetLanguagesWithData() {
     global $db, $i18n;
-    $i18nBackup = $i18n;
-    $i18n       = new I18n("de_AT");
 
-    $result      = $db->query(
-        "SELECT
-        `l`.`language_id` AS `id`,
-        `l`.`iso_alpha-2` AS `code`,
-        COLUMN_GET(`l`.`dyn_translations`, ? AS CHAR(255)) AS `name`
-      FROM `movies_languages` `ml`
-        INNER JOIN `languages` `l`
-        ON `ml`.`language_id` = `l`.`language_id`
-      WHERE `ml`.`movie_id` = ?", "sd", [ $i18n->languageCode, $this->movie->id ]
-      )->get_result();
-    $dbLanguages = [ ];
-    while ($language    = $result->fetch_object("\\MovLib\\Data\\Language")) {
+    // Setup
+    $i18n   = new I18n("de_AT");
+    $result = $db->query(
+      "SELECT
+        `language`.`id`,
+        `language`.`code`,
+        COLUMN_GET(`language`.`dyn_translations`, ? AS BINARY) AS `name`
+      FROM `movies_languages` AS `ml`
+        INNER JOIN `languages` AS `language` ON `language`.`id` = `ml`.`language_id`
+      WHERE `ml`.`movie_id` = ?",
+      "sd",
+      [ $i18n->languageCode, $this->movie->id ]
+    )->get_result();
+    $dbLanguages = [];
+    while ($language = $result->fetch_object("\\MovLib\\Data\\Language")) {
       $dbLanguages[$language->name] = $language;
     }
     (new Collator("de_AT"))->ksort($dbLanguages);
 
+    // Test
     $languages = $this->movie->getLanguages();
-    $this->assertCount(($c         = count($dbLanguages)), $languages);
+    $this->assertCount(count($dbLanguages), $languages);
     $this->assertEquals($dbLanguages, $languages);
-
-    $i18n = $i18nBackup;
   }
 
   /**

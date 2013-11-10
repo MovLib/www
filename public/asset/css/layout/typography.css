@@ -1,0 +1,145 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Typography
+ *
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013–present, MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link https://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Body text
+ *
+ * The hr, p, and small tags are considered paragraph elements and should be used as such. For more information have a
+ * look at {@link http://html5doctor.com/small-hr-element/}.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+hr {
+  height: 1px;
+  padding: 0;
+  background-color: #e5e5e5;
+  border: 0;
+}
+
+hr,
+p,
+small {
+  display: block;
+  margin: 0 0 10px;
+}
+
+.small,
+small,
+sub,
+sup {
+  font-size: 10.5px;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Headings
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 200;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 10px 0;
+  color: #353535;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.1;
+}
+
+h1 {
+  font-size: 36px;
+}
+
+h2 {
+  font-size: 30px;
+}
+
+h3 {
+  font-size: 24px;
+}
+
+h4 {
+  font-size: 18px;
+}
+
+h6 {
+  font-size: 12px;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Section edit links
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+h1 .edit,
+h2 .edit,
+h3 .edit {
+  font-size: 12px;
+  margin-left: 1em;
+  vertical-align: top;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Alignment helpers
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Text selection
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+::-moz-selection {
+  color: #fff;
+  background: #09c;
+}
+
+::selection {
+  color: #fff;
+  background: #09c;
+}

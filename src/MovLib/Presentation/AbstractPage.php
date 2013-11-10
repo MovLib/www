@@ -80,6 +80,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
   protected $stylesheets = [
     "base.css",
     "layout/grid.css",
+    "layout/typography.css",
     "layout/generic.css",
     "layout/header.css",
     "layout/content.css",

@@ -115,12 +115,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`countries`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`countries` (
-  `country_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The country’s unique ID.',
-  `iso_alpha-2` CHAR(2) NOT NULL COMMENT 'The country’s ISO 3166-1 alpha-2 code.',
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The country’s unique ID.',
+  `code` CHAR(2) NOT NULL COMMENT 'The country’s ISO 3166-1 alpha-2 code.',
   `name` TINYTEXT NOT NULL COMMENT 'The country’s unique English name.',
   `dyn_translations` BLOB NOT NULL COMMENT 'The country’s translated name.',
-  PRIMARY KEY (`country_id`),
-  UNIQUE INDEX `uq_countries_iso_alpha-2` (`iso_alpha-2` ASC))
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uq_countries_code` (`code` ASC))
 COMMENT = 'Contains all ISO 3166-1 alpha-2 countries.'
 ROW_FORMAT = COMPRESSED;
 
@@ -136,11 +136,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `password` TINYBLOB NOT NULL COMMENT 'The user’s unique password (hashed).',
   `access` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s creation datetime.',
-  `login` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last login.',
+  `dyn_aboutMe` BLOB NOT NULL COMMENT 'The user’s about me text (translatable).',
   `deactivated` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE if this account was deleted or blocked, default is FALSE.',
   `edits` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The user’s edit counter.',
   `private` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.',
-  `profile` BLOB NOT NULL COMMENT 'The user’s profile text (translatable).',
+  `profileViews` INT NOT NULL DEFAULT 0,
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.',
   `systemLanguageCode` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).',
   `timeZoneId` VARCHAR(30) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'UTC' COMMENT 'User’s time zone ID.',
@@ -150,13 +150,16 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `imageExtension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The avatar’s file extension.',
   `realName` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.',
   `website` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s website URL.',
+  `token` TINYTEXT CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s last token.',
+  `tokenCreated` TIMESTAMP NULL COMMENT 'The user’s token creation time.',
+  `tokenEvent` TINYTEXT CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s last token event.',
   PRIMARY KEY (`id`),
   INDEX `fk_users_countries` (`countryId` ASC),
   UNIQUE INDEX `uq_users_name` (`name` ASC),
   INDEX `users_email` (`email` ASC),
   CONSTRAINT `fk_users_countries`
     FOREIGN KEY (`countryId`)
-    REFERENCES `movlib`.`countries` (`country_id`)
+    REFERENCES `movlib`.`countries` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -457,12 +460,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`languages`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`languages` (
-  `language_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The language’s unique ID.',
-  `iso_alpha-2` CHAR(2) NOT NULL COMMENT 'The language’s ISO 639-1 alpha-2 code.',
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The language’s unique ID.',
+  `code` CHAR(2) NOT NULL COMMENT 'The language’s ISO 639-1 alpha-2 code.',
   `name` TINYTEXT NOT NULL COMMENT 'The language’s unique English name.',
   `dyn_translations` BLOB NOT NULL COMMENT 'The language’s translated name.',
-  PRIMARY KEY (`language_id`),
-  UNIQUE INDEX `unique_languages_iso_alpha-2` (`iso_alpha-2` ASC))
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `unique_languages_code` (`code` ASC))
 COMMENT = 'Contains all ISO 639-1 alpha-2 languages.'
 ROW_FORMAT = COMPRESSED;
 
@@ -484,7 +487,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_countries` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_countries_countries`
     FOREIGN KEY (`country_id`)
-    REFERENCES `movlib`.`countries` (`country_id`)
+    REFERENCES `movlib`.`countries` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'A movie has many countries, a country has many movies.'
@@ -508,7 +511,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_languages` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_languages_languages`
     FOREIGN KEY (`language_id`)
-    REFERENCES `movlib`.`languages` (`language_id`)
+    REFERENCES `movlib`.`languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'A movie has many languages, a language has many movies.'
@@ -632,7 +635,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_titles_languages`
     FOREIGN KEY (`language_id`)
-    REFERENCES `movlib`.`languages` (`language_id`)
+    REFERENCES `movlib`.`languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
@@ -656,7 +659,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_taglines_languages`
     FOREIGN KEY (`language_id`)
-    REFERENCES `movlib`.`languages` (`language_id`)
+    REFERENCES `movlib`.`languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
@@ -736,7 +739,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_images_countries`
     FOREIGN KEY (`country_id`)
-    REFERENCES `movlib`.`countries` (`country_id`)
+    REFERENCES `movlib`.`countries` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'Extends images table with unique movie’s ID.'
@@ -806,7 +809,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_titles` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_series_titles_languages`
     FOREIGN KEY (`language_id`)
-    REFERENCES `movlib`.`languages` (`language_id`)
+    REFERENCES `movlib`.`languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -857,7 +860,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`episodes_titles` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_episodes_titles_languages`
     FOREIGN KEY (`language_id`)
-    REFERENCES `movlib`.`languages` (`language_id`)
+    REFERENCES `movlib`.`languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -965,11 +968,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`master_releases` (
   `commit` CHAR(40) NULL COMMENT 'The master release\'s last commit sha-1 hash.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this master release was created.',
   PRIMARY KEY (`master_release_id`),
-  INDEX `fk_master_releases_countries` (`country_id` ASC),
+  INDEX `fk_master_releases_countries` USING BTREE (`country_id` ASC),
   INDEX `fk_master_releases_packaging` (`packaging_id` ASC),
   CONSTRAINT `fk_master_releases_countries`
     FOREIGN KEY (`country_id`)
-    REFERENCES `movlib`.`countries` (`country_id`)
+    REFERENCES `movlib`.`countries` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_master_releases_packaging`
@@ -1084,7 +1087,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`articles_routes` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_articles_routes_languages`
     FOREIGN KEY (`language_id`)
-    REFERENCES `movlib`.`languages` (`language_id`)
+    REFERENCES `movlib`.`languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
@@ -1128,7 +1131,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_sound_formats` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_releases_sound_formats_languages`
     FOREIGN KEY (`language_id`)
-    REFERENCES `movlib`.`languages` (`language_id`)
+    REFERENCES `movlib`.`languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
@@ -1152,7 +1155,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_subtitles` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_releases_subtitles_languages`
     FOREIGN KEY (`language_id`)
-    REFERENCES `movlib`.`languages` (`language_id`)
+    REFERENCES `movlib`.`languages` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;

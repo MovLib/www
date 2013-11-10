@@ -453,8 +453,8 @@ class Session extends \MovLib\Data\Database {
     // Do nothing if this method isn't called via nginx!
     if (isset($_SERVER["FCGI_ROLE"])) {
       session_regenerate_id(true);
-      $this->id = session_id();
       $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
+      $this->id = session_id();
     }
 
     return $this;
@@ -463,11 +463,13 @@ class Session extends \MovLib\Data\Database {
   /**
    * Shutdown the currently active session and start one for anonymous users if we have to.
    *
+   * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \MemcachedException
    * @throws \MovLib\Exception\SessionException
    */
   public function shutdown() {
+    global $kernel;
     $status = session_status();
 
     // Only start a session for this anonymous user if there is any data that we need to remember and if no session is
@@ -484,6 +486,9 @@ class Session extends \MovLib\Data\Database {
     // this session and the next request can resume this session.
     if ($status === PHP_SESSION_ACTIVE) {
       session_write_close();
+      if ($this->userId > 0) {
+        $kernel->delayMethodCall([ $this, "updateUserAccess" ]);
+      }
     }
 
     return $this;
@@ -529,6 +534,15 @@ class Session extends \MovLib\Data\Database {
       "ssssd",
       [ $this->id, inet_pton($kernel->remoteAddress), $kernel->userAgent, $oldSessionId, $this->userId ]
     );
+  }
+
+  /**
+   * Update the user's access time.
+   *
+   * @return this
+   */
+  public function updateUserAccess() {
+    return $this->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = ?", "d", [ $this->userId ]);
   }
 
   /**

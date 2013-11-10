@@ -52,7 +52,7 @@ class CountriesTest extends \MovLib\TestCase {
   public function testOrderByCode() {
     global $db;
     $this->countries->orderByCode();
-    foreach (array_column($db->query("SELECT `iso_alpha-2` FROM `countries` ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
+    foreach (array_column($db->query("SELECT `code` FROM `countries` ORDER BY `code` ASC")->get_result()->fetch_all(), 0) as $code) {
       $this->assertEquals($code, $this->countries[$code]->code);
     }
   }
@@ -63,7 +63,7 @@ class CountriesTest extends \MovLib\TestCase {
   public function testOrderByCodeFilter() {
     global $db;
     $this->countries->orderByCode([ "US", "AT" ]);
-    foreach (array_column($db->query("SELECT `iso_alpha-2` FROM `countries` WHERE `country_id` IN('US', 'AT') ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
+    foreach (array_column($db->query("SELECT `code` FROM `countries` WHERE `id` IN('US', 'AT') ORDER BY `code` ASC")->get_result()->fetch_all(), 0) as $code) {
       $this->assertEquals($code, $this->countries[$code]->code);
     }
   }
@@ -74,7 +74,7 @@ class CountriesTest extends \MovLib\TestCase {
   public function testOrderById() {
     global $db;
     $this->countries->orderById();
-    foreach (array_column($db->query("SELECT `country_id` FROM `countries`")->get_result()->fetch_all(), 0) as $id) {
+    foreach (array_column($db->query("SELECT `id` FROM `countries`")->get_result()->fetch_all(), 0) as $id) {
       $this->assertEquals($id, $this->countries[$id]->id);
     }
   }
@@ -85,7 +85,7 @@ class CountriesTest extends \MovLib\TestCase {
   public function testOrderByIdFilter() {
     global $db;
     $this->countries->orderById([ 1, 2 ]);
-    foreach (array_column($db->query("SELECT `country_id` FROM `countries` WHERE `country_id` IN (1, 2)")->get_result()->fetch_all(), 0) as $id) {
+    foreach (array_column($db->query("SELECT `id` FROM `countries` WHERE `id` IN (1, 2)")->get_result()->fetch_all(), 0) as $id) {
       $this->assertEquals($id, $this->countries[$id]->id);
     }
   }

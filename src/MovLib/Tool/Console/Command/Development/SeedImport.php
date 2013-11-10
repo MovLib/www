@@ -288,7 +288,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     $queries = null;
     foreach ($seed as $table => $codes) {
-      $queries .= "TRUNCATE TABLE `{$table}`; INSERT INTO `{$table}` (`iso_alpha-2`, `name`, `dyn_translations`) VALUES ";
+      $queries .= "TRUNCATE TABLE `{$table}`; INSERT INTO `{$table}` (`code`, `name`, `dyn_translations`) VALUES ";
       foreach ($codes as $code) {
         $dynTranslations = null;
         foreach ($systemLanguages as $languageCode => $locale) {

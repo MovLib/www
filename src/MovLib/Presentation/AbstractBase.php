@@ -257,4 +257,16 @@ abstract class AbstractBase {
     return "<em class='placeholder'>{$this->checkPlain($text)}</em>";
   }
 
+  /**
+   * Get the raw HTML string.
+   *
+   * @param string $encodedHTML
+   *   The encoded HTML string that should be decoded.
+   * @return string
+   *   The raw HTML string.
+   */
+  protected final function rawHTML($encodedHTML) {
+    return htmlspecialchars_decode($encodedHTML, ENT_QUOTES | ENT_HTML5);
+  }
+
 }

@@ -1,4 +1,6 @@
-/*!
+<?php
+
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -13,15 +15,42 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Presentation\User;
 
 /**
- * Styles specific to \MovLib\Presentation\User presentations.
+ * @todo Description of TraitUser
  *
- * @link http://littlesparkvt.com/flatstrap/base-css.html#buttons
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+trait TraitUser {
+
+  /**
+   * @inheritdoc
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [[ $i18n->r("/users"), $i18n->t("Users") ]];
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getSecondaryNavigationMenuitems() {
+    global $i18n;
+    return [
+      [
+        $i18n->r("/user/{0}/collection", [ $_SERVER["USER_NAME"] ]),
+        $i18n->t("Collection"),
+      ],
+      [
+        $i18n->r("/user/{0}/contact", [ $_SERVER["USER_NAME"] ]),
+        $i18n->t("Contact"),
+      ],
+    ];
+  }
+
+}

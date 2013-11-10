@@ -51,6 +51,13 @@ class Page extends \MovLib\Presentation\AbstractPage {
   public $alerts = "";
 
   /**
+   * HTML that should be included after the page's heading.
+   *
+   * @var string
+   */
+  protected $headingAfter;
+
+  /**
    * HTML that should be included before the page's heading.
    *
    * @var string
@@ -58,11 +65,11 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected $headingBefore;
 
   /**
-   * HTML that should be included after the page's heading.
+   * The itemprop value for the page's heading.
    *
    * @var string
    */
-  protected $headingAfter;
+  protected $headingSchemaProperty;
 
   /**
    * The type name of the schema of this presentation's content.
@@ -354,21 +361,32 @@ class Page extends \MovLib\Presentation\AbstractPage {
    *   The wrapped content, including heading.
    */
   protected function getWrappedContent() {
+    // Allow the presentation to set a heading that includes HTML mark-up.
     $title  = isset($this->pageTitle) ? $this->pageTitle : $this->title;
+
+    // The schema for the complete page content.
     $schema = null;
     if ($this->schemaType) {
       $schema = " itemscope itemtype='http://schema.org/{$this->schemaType}'";
     }
+
+    // The schema property of the heading.
+    $headingprop = null;
+    if ($this->headingSchemaProperty) {
+      $headingprop = " itemprop='{$this->headingSchemaProperty}'";
+    }
+
+    // Render the actual page header.
     return
       "<div class='{$this->id}-content' id='content' role='main'{$schema}>" .
-        "<div id='content__header'>" .
+        "<header id='content-header'>" .
           "<div class='container'>" .
             $this->headingBefore .
-            "<h1 class='title' id='content__header__title'>{$title}</h1>" .
+            "<h1 id='content-title'{$headingprop}>{$title}</h1>" .
             $this->headingAfter .
           "</div>" .
           "<div id='alerts'>{$this->alerts}</div>" .
-        "</div>" .
+        "</header>" .
         $this->getContent() .
       "</div>"
     ;

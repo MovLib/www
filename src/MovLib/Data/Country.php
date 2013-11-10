@@ -47,7 +47,7 @@ class Country extends \MovLib\Data\Database {
    *
    * @var string
    */
-  const FROM_CODE = "iso_alpha-2";
+  const FROM_CODE = "code";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -109,8 +109,8 @@ class Country extends \MovLib\Data\Database {
       }
       $stmt = $this->query(
         "SELECT
-          `country_id`,
-          `iso_alpha-2`,
+          `id`,
+          `code`,
           {$namePart} `name`
         FROM `countries`
         WHERE `{$from}` = ?",

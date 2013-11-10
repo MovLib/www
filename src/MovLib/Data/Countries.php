@@ -45,7 +45,7 @@ class Countries extends \MovLib\Data\DatabaseArrayObject {
     if ($i18n->languageCode != $i18n->defaultLanguageCode) {
       $this->query = "COLUMN_GET(`dyn_translations`, '{$i18n->languageCode}' AS BINARY) AS ";
     }
-    $this->query = "SELECT `country_id` AS `id`, {$this->query}`name`, `iso_alpha-2` AS `code` FROM `countries`";
+    $this->query = "SELECT `id` AS `id`, {$this->query}`name`, `code` AS `code` FROM `countries`";
   }
 
 
@@ -65,10 +65,10 @@ class Countries extends \MovLib\Data\DatabaseArrayObject {
     if ($filter) {
       $c      = count($filter);
       $in     = rtrim(str_repeat("?,", $c), ",");
-      $result = $this->query("{$this->query} WHERE `iso_alpha-2` IN({$in}) ORDER BY `iso_alpha-2` ASC", str_repeat("s", $c), $filter)->get_result();
+      $result = $this->query("{$this->query} WHERE `code` IN({$in}) ORDER BY `code` ASC", str_repeat("s", $c), $filter)->get_result();
     }
     else {
-      $result = $this->query("{$this->query} ORDER BY `iso_alpha-2` ASC")->get_result();
+      $result = $this->query("{$this->query} ORDER BY `code` ASC")->get_result();
     }
     /* @var $country \MovLib\Data\Country */
     while ($country = $result->fetch_object("\\MovLib\\Data\\Country")) {
@@ -90,7 +90,7 @@ class Countries extends \MovLib\Data\DatabaseArrayObject {
     if ($filter) {
       $c      = count($filter);
       $in     = rtrim(str_repeat("?,", $c), ",");
-      $result = $this->query("{$this->query} WHERE `country_id` IN({$in})", str_repeat("i", $c), $filter)->get_result();
+      $result = $this->query("{$this->query} WHERE `id` IN({$in})", str_repeat("i", $c), $filter)->get_result();
     }
     else {
       $result = $this->query($this->query)->get_result();

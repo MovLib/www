@@ -349,16 +349,19 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getCountries() {
     global $i18n;
-    $name = $i18n->languageCode == $i18n->defaultLanguageCode ? "`c`.`name`" : "COLUMN_GET(`c`.`dyn_translations`, '{$i18n->languageCode}' AS BINARY)";
+    $name = $i18n->languageCode == $i18n->defaultLanguageCode
+      ? "`country`.`name`"
+      : "COLUMN_GET(`country`.`dyn_translations`, '{$i18n->languageCode}' AS BINARY)"
+    ;
     $result = $this->query(
       "SELECT
-        `c`.`country_id` AS `id`,
+        `country`.`id`,
         {$name} AS `name`,
-        `c`.`iso_alpha-2` AS `code`
-      FROM `countries` `c`INNER JOIN `movies_countries` `m`
-        ON `m`.`country_id` = `c`.`country_id`
+        `country`.`code`
+      FROM `countries` AS `country`
+        INNER JOIN `movies_countries` `m` ON `m`.`country_id` = `country`.`id`
       WHERE `m`.`movie_id` = ?
-      ORDER BY `c`.`country_id`",
+      ORDER BY `country`.`id`",
       "d",
       [ $this->id ]
     )->get_result();
@@ -454,17 +457,19 @@ class Movie extends \MovLib\Data\Database {
    */
   public function getLanguages() {
     global $i18n;
-    $name = $i18n->languageCode == $i18n->defaultLanguageCode ? "`l`.`name`" : "COLUMN_GET(`l`.`dyn_translations`, '{$i18n->languageCode}' AS BINARY)";
+    $name = $i18n->languageCode == $i18n->defaultLanguageCode
+      ? "`language`.`name`"
+      : "COLUMN_GET(`language`.`dyn_translations`, '{$i18n->languageCode}' AS BINARY)"
+    ;
     $result = $this->query(
       "SELECT
-        `l`.`language_id` AS `id`,
+        `language`.`id`,
         {$name} AS `name`,
-        `l`.`iso_alpha-2` AS `code`
-      FROM `languages` `l`
-      INNER JOIN `movies_languages` `m`
-        ON `m`.`language_id` = `l`.`language_id`
+        `language`.`code`
+      FROM `languages` AS `language`
+        INNER JOIN `movies_languages` AS `m` ON `m`.`language_id` = `language`.`id`
       WHERE `m`.`movie_id` = ?
-      ORDER BY `l`.`language_id`",
+      ORDER BY `language`.`language_id`",
       "d",
       [ $this->id ]
     )->get_result();

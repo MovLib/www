@@ -55,7 +55,7 @@ class LanguagesTest extends \MovLib\TestCase {
   public function testOrderByCode() {
     global $db;
     $this->languages->orderByCode();
-    foreach (array_column($db->query("SELECT `iso_alpha-2` FROM `languages` ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
+    foreach (array_column($db->query("SELECT `code` FROM `languages` ORDER BY `code` ASC")->get_result()->fetch_all(), 0) as $code) {
       $this->assertEquals($code, $this->languages[$code]->code);
     }
   }
@@ -66,7 +66,7 @@ class LanguagesTest extends \MovLib\TestCase {
   public function testOrderByCodeFilter() {
     global $db;
     $this->languages->orderByCode([ "US", "AT" ]);
-    foreach (array_column($db->query("SELECT `iso_alpha-2` FROM `languages` WHERE `language_id` IN('US', 'AT') ORDER BY `iso_alpha-2` ASC")->get_result()->fetch_all(), 0) as $code) {
+    foreach (array_column($db->query("SELECT `code` FROM `languages` WHERE `id` IN('US', 'AT') ORDER BY `code` ASC")->get_result()->fetch_all(), 0) as $code) {
       $this->assertEquals($code, $this->languages[$code]->code);
     }
   }
@@ -77,7 +77,7 @@ class LanguagesTest extends \MovLib\TestCase {
   public function testOrderById() {
     global $db;
     $this->languages->orderById();
-    foreach (array_column($db->query("SELECT `language_id` FROM `languages`")->get_result()->fetch_all(), 0) as $id) {
+    foreach (array_column($db->query("SELECT `id` FROM `languages`")->get_result()->fetch_all(), 0) as $id) {
       $this->assertEquals($id, $this->languages[$id]->id);
     }
   }
@@ -88,7 +88,7 @@ class LanguagesTest extends \MovLib\TestCase {
   public function testOrderByIdFilter() {
     global $db;
     $this->languages->orderById([ 1, 2 ]);
-    foreach (array_column($db->query("SELECT `language_id` FROM `languages` WHERE `language_id` IN (1, 2)")->get_result()->fetch_all(), 0) as $id) {
+    foreach (array_column($db->query("SELECT `id` FROM `languages` WHERE `id` IN (1, 2)")->get_result()->fetch_all(), 0) as $id) {
       $this->assertEquals($id, $this->languages[$id]->id);
     }
   }
@@ -114,7 +114,7 @@ class LanguagesTest extends \MovLib\TestCase {
     global $i18n;
     $this->assertNotNull($this->getProperty($this->languages, "query"));
     $this->assertNotContains("dyn_translations", $this->getProperty($this->languages, "query"));
-    
+
     $i18n = new \MovLib\Data\I18n("de-at");
     $this->languages = new Languages();
     $this->assertContains("dyn_translations", $this->getProperty($this->languages, "query"));

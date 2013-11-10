@@ -19,7 +19,6 @@ namespace MovLib\Data\User;
 
 use \MovLib\Data\Image\Style;
 use \MovLib\Exception\UserException;
-use \MovLib\Tool\Console\Command\Production\FixPermissions;
 
 /**
  * @todo Description of TestUser

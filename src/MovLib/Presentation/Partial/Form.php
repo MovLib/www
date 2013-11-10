@@ -164,6 +164,18 @@ class Form extends \MovLib\Presentation\AbstractBase {
       $page->{$validationCallback}($errors);
     }
 
+    // If no element is invalid and we have a request to focus on a particular element, search for it and autofocus it.
+    if ($autofocus === true && isset($_GET["autofocus"])) {
+      $c = count($this->elements);
+      for ($i = 0; $i < $c; ++$i) {
+        if ($this->elements[$i]->id == $_GET["autofocus"]) {
+          $this->elements[$i]->attributes[] = "autofocus";
+          $autofocus = false;
+          break;
+        }
+      }
+    }
+
     // If no element is invalid and we have elements give the first element the autofocus attribute.
     if ($autofocus === true && $this->elements) {
       $this->elements[0]->attributes[] = "autofocus";

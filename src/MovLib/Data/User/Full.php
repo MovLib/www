@@ -38,6 +38,13 @@ class Full extends \MovLib\Data\User\User {
 
 
   /**
+   * The user's profile text (in the current display language if available).
+   *
+   * @var string
+   */
+  public $aboutMe;
+
+  /**
    * The user's last access (UNIX timestamp).
    *
    * @var int
@@ -87,13 +94,6 @@ class Full extends \MovLib\Data\User\User {
   public $email;
 
   /**
-   * The user's last login (UNIX timestamp).
-   *
-   * @var int
-   */
-  public $login;
-
-  /**
    * The user's hashed password.
    *
    * @var string
@@ -106,13 +106,6 @@ class Full extends \MovLib\Data\User\User {
    * @var boolean
    */
   public $private;
-
-  /**
-   * The user's profile text (in the current display language if available).
-   *
-   * @var string
-   */
-  public $profile;
 
   /**
    * The user's real name.
@@ -185,13 +178,12 @@ class Full extends \MovLib\Data\User\User {
           `email`,
           UNIX_TIMESTAMP(`created`),
           UNIX_TIMESTAMP(`access`),
-          UNIX_TIMESTAMP(`login`),
           `password`,
           `private`,
           `deactivated`,
           `timeZoneId`,
           `edits`,
-          COLUMN_GET(`profile`, '{$i18n->languageCode}' AS BINARY),
+          COLUMN_GET(`dyn_aboutMe`, '{$i18n->languageCode}' AS BINARY),
           `sex`,
           `countryId`,
           `realName`,
@@ -212,13 +204,12 @@ class Full extends \MovLib\Data\User\User {
         $this->email,
         $this->created,
         $this->access,
-        $this->login,
         $this->password,
         $this->private,
         $this->deactivated,
         $this->timeZoneId,
         $this->edits,
-        $this->profile,
+        $this->aboutMe,
         $this->sex,
         $this->countryId,
         $this->realName,
@@ -284,7 +275,7 @@ class Full extends \MovLib\Data\User\User {
         `imageChanged`       = FROM_UNIXTIME(?),
         `imageExtension`     = ?,
         `private`            = ?,
-        `profile`            = COLUMN_ADD(`profile`, ?, ?),
+        `dyn_aboutMe`        = COLUMN_ADD(`dyn_aboutMe`, ?, ?),
         `realName`           = ?,
         `sex`                = ?,
         `systemLanguageCode` = ?,
@@ -300,7 +291,7 @@ class Full extends \MovLib\Data\User\User {
         $this->imageExtension,
         $this->private,
         $i18n->languageCode,
-        $this->profile,
+        $this->aboutMe,
         $this->realName,
         $this->sex,
         $this->systemLanguageCode,
@@ -323,18 +314,6 @@ class Full extends \MovLib\Data\User\User {
   public function hashPassword($rawPassword) {
     global $kernel;
     return password_hash($rawPassword, PASSWORD_DEFAULT, $kernel->passwordOptions);
-  }
-
-  /**
-   * Reactivate a deactivated account.
-   *
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function reactivate() {
-    $this->deactivated = false;
-    $this->query("UPDATE `users` SET `deactivated` = false WHERE `id` = ?", "d", [ $this->id ]);
-    return $this;
   }
 
   /**

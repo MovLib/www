@@ -17,6 +17,9 @@
 /**
  * Global content styles.
  *
+ * The usage of IDs for the header and the title are intended, those elements can only appear once within any
+ * presentation because they uniquely identify this single page within the entire website.
+ *
  * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,20 +29,36 @@
  */
 
 #content {
-  background-color: #fff;
-  padding-bottom: 40px;
   min-height: 500px;
+  padding-bottom: 40px;
+  background-color: #fff;
 }
 
-#content__header {
-  background-color: #252525;
+#content-header {
   margin-bottom: 40px;
+  background-color: #252525;
+  color: #c7c7c7;
 }
 
-#content__header__title {
-  color: #fff;
-  font-size: 42px;
-  line-height: 63px;
-  margin: 0;
+#content-header > .container {
   padding: 20px 0 30px;
+}
+
+#content-header p {
+  margin: 1em 0;
+}
+
+#content-header small {
+  margin: 0.5em 0;
+}
+
+/* Compensate the additionl 10px bottom padding from the container. */
+#content-header img {
+  margin-bottom: -10px;
+}
+
+#content-title {
+  padding: 0;
+  margin: 0;
+  color: #fff;
 }
