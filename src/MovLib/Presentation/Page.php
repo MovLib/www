@@ -65,6 +65,14 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected $headingAfter;
 
   /**
+   * The type name of the schema of this presentation's content.
+   *
+   * @link http://schema.org/docs/schemas.html
+   * @var string
+   */
+  protected $schemaType;
+
+  /**
    * Associative array containing global settings that will be passed as JSON encoded string to our JavaScript.
    *
    * @var type
@@ -346,9 +354,13 @@ class Page extends \MovLib\Presentation\AbstractPage {
    *   The wrapped content, including heading.
    */
   protected function getWrappedContent() {
-    $title = isset($this->pageTitle) ? $this->pageTitle : $this->title;
+    $title  = isset($this->pageTitle) ? $this->pageTitle : $this->title;
+    $schema = null;
+    if ($this->schemaType) {
+      $schema = " itemscope itemtype='http://schema.org/{$this->schemaType}'";
+    }
     return
-      "<div class='{$this->id}-content' id='content' role='main'>" .
+      "<div class='{$this->id}-content' id='content' role='main'{$schema}>" .
         "<div id='content__header'>" .
           "<div class='container'>" .
             $this->headingBefore .
