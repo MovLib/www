@@ -177,7 +177,7 @@ class SessionTest extends \MovLib\TestCase {
     $this->invoke($session, "init", [ 1, $_SERVER["REQUEST_TIME"] ]);
     $this->assertEquals($user->id, $session->userId);
     $this->assertEquals($user->name, $session->userName);
-    $this->assertEquals($user->timeZoneId, $session->userTimeZoneId);
+    $this->assertEquals($user->timeZoneIdentifier, $session->userTimeZoneId);
     $this->assertEquals($_SERVER["REQUEST_TIME"], $session->authentication);
     $this->assertNotEmpty($session->csrfToken);
   }
@@ -274,14 +274,14 @@ class SessionTest extends \MovLib\TestCase {
     $needsRehash = password_hash("Test1234", PASSWORD_DEFAULT, [ "cost" => $kernel->passwordCost - 1 ]);
     $session->passwordNeedsRehash($needsRehash, "Test1234");
     $this->assertNotEquals($hashBefore, $this->_testPasswordNeedsRehash($db));
-    $db->query("UPDATE `users` SET `password` = ? WHERE `user_id` = 1", "s", [ $hashBefore ]);
+    $db->query("UPDATE `users` SET `password` = ? WHERE `id` = 1", "s", [ $hashBefore ]);
     (new SeedImport())->databaseImport([ "users" ]);
   }
 
   /** @global \MovDev\Database $db */
   private function _testPasswordNeedsRehash() {
     global $db;
-    $stmt = $db->query("SELECT `password` FROM `users` WHERE `user_id` = 1 LIMIT 1");
+    $stmt = $db->query("SELECT `password` FROM `users` WHERE `id` = 1 LIMIT 1");
     $stmt->bind_result($password);
     $stmt->fetch();
     return $password;

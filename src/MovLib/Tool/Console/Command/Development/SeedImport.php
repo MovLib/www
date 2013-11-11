@@ -352,14 +352,13 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * Import all seed data.
    *
    * @global \MovLib\Tool\Kernel $kernel
-   * @global \MovLib\Tool\Database $db
    * @return this
    * @throws \MovLib\Exception\DatabaseExeption
    * @throws \ErrorException
    * @throws \MovLib\Exception\FileSystemException
    */
   public function seedImport() {
-    global $kernel, $db;
+    global $kernel;
 
     // Array containing the names of all tasks that should be executed.
     $tasks = [
@@ -370,11 +369,13 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     // The two additional operations are for the schema import itself.
     $this->write("Importing all seed data ...")->progressStart(count($tasks) + 2);
-    if (($schema = file_get_contents("{$kernel->documentRoot}/conf/mariadb/movlib.sql")) === false) {
+    if (!file_exists("{$kernel->documentRoot}/conf/mariadb/movlib.sql")) {
       throw new FileSystemException("Couldn't read schema!");
     }
     $this->progressAdvance();
-    $db->queries($schema);
+    // We have to execute this in the shell directly, because our database object always tries to connect to the default
+    // database, which might not exist yet!
+    sh::execute("mysql < {$kernel->documentRoot}/conf/mariadb/movlib.sql");
     $this->progressAdvance();
     foreach ($tasks as $task) {
       $this->{$task}()->progressAdvance();

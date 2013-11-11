@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Profile;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Presentation\Email\User\Deactivation;
+use \MovLib\Exception\UserException;
 use \MovLib\Presentation\Email\User\Deletion;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -81,7 +81,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function __construct() {
@@ -97,14 +97,14 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
 
     // We must instantiate the form before we create the sessions table, otherwise deletions would happen after the
     // table containing the sessions listing was built. Deleted sessions would still be displayed!
-    $this->formSessions = new Form($this, [], "sessions", "deleteSession");
+    $this->formSessions = new Form($this, [], "{$this->id}-sessions", "deleteSession");
     $buttonText         = $i18n->t("Terminate");
     $buttonTitle        = $i18n->t("Terminate this session, the associated user agent will be signed out immediately.");
 
     $sessions           = $session->getActiveSessions();
     $c                  = count($sessions);
     for ($i = 0; $i < $c; ++$i) {
-      $sessions[$i]["authentication"] = $i18n->formatDate($sessions[$i]["authentication"], $this->user->timeZoneId, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
+      $sessions[$i]["authentication"] = $i18n->formatDate($sessions[$i]["authentication"], $this->user->timeZoneIdentifier, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
       $sessions[$i]["ip_address"]     = inet_ntop($sessions[$i]["ip_address"]);
       $active                         = null;
       $button                         = new Button("session_id", $buttonText, [
@@ -132,7 +132,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
     }
 
     $this->form                   = new Form($this);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "button button--danger" ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "button button--large button--danger" ]);
 
     if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
       $this->validateToken();
@@ -185,7 +185,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    * Attempt to delete the session identified by the submitted session ID from Memcached and our persistent storage.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
@@ -208,14 +208,14 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
       $session->delete($_POST["session_id"]);
     }
     catch (DatabaseException $e) {
-      $this->checkErrors([ $i18n->t("The submitted session ID was invalid.") ]);
+      $this->checkErrors($i18n->t("The submitted session ID was invalid."));
     }
 
     return $this;
   }
 
   /**
-   * Delete all personal data and sign out the user.
+   * No validation at this point, just send the email and display more information to the user.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
@@ -226,19 +226,8 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
   public function validate(array $errors = null) {
     global $i18n, $kernel;
 
-    // Nothing to do!
-    if (!isset($_POST["deactivate"]) && !isset($_POST["delete"])) {
-      return $this;
-    }
-
-    if (isset($_POST["deactivate"])) {
-      $kernel->sendEmail(new Deactivation($this->user));
-      $title = $i18n->t("Successfully Requested Deactivation");
-    }
-    else {
-      $kernel->sendEmail(new Deletion($this->user));
-      $title = $i18n->t("Successfully Requested Deletion");
-    }
+    // Send the email for verification of this action.
+    $kernel->sendEmail(new Deletion($this->user));
 
     // The request was accepted but needs further action.
     http_response_code(202);
@@ -246,7 +235,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
     // Let the user know where to find the instructions to complete the request.
     $this->alerts .= new Alert(
       $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
-      $title,
+      $i18n->t("Successfully Requested Deletion"),
       Alert::SEVERITY_SUCCESS
     );
 
@@ -263,10 +252,26 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
   /**
    * Validate the submitted authentication token and delete the user's account.
    *
-   * @todo Implement account deletion (update database scheme to allow NULL on email).
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
    * @return this
    */
   protected function validateToken() {
+    global $i18n, $kernel, $session;
+    try {
+      $this->user->delete($_GET["token"]);
+      $session->destroy();
+      $kernel->alerts .= new Alert(
+        $i18n->t("Your account has been purged from our system. We’re very sorry to see you leave."),
+        $i18n->t("Account Deletion Successfull"),
+        Alert::SEVERITY_SUCCESS
+      );
+      throw new RedirectSeeOtherException("/");
+    }
+    catch (UserException $e) {
+      $this->checkErrors($i18n->t("The submitted token is invalid, please request a new token below."));
+    }
     return $this;
   }
 

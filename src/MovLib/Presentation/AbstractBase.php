@@ -233,6 +233,18 @@ abstract class AbstractBase {
   }
 
   /**
+   * Get the raw HTML string.
+   *
+   * @param string $encodedHTML
+   *   The encoded HTML string that should be decoded.
+   * @return string
+   *   The raw HTML string.
+   */
+  protected final function htmlRaw($encodedHTML) {
+    return htmlspecialchars_decode($encodedHTML, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
    * Normalize all kinds of line feeds to *NIX style (real LF).
    *
    * @link http://stackoverflow.com/a/7836692/1251219 How to replace different newline styles in PHP the smartest way?
@@ -255,18 +267,6 @@ abstract class AbstractBase {
    */
   protected final function placeholder($text) {
     return "<em class='placeholder'>{$this->checkPlain($text)}</em>";
-  }
-
-  /**
-   * Get the raw HTML string.
-   *
-   * @param string $encodedHTML
-   *   The encoded HTML string that should be decoded.
-   * @return string
-   *   The raw HTML string.
-   */
-  protected final function rawHTML($encodedHTML) {
-    return htmlspecialchars_decode($encodedHTML, ENT_QUOTES | ENT_HTML5);
   }
 
 }

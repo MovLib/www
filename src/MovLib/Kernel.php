@@ -379,12 +379,7 @@ class Kernel {
       // Execute each delayed method.
       if ($this->delayedMethods) {
         foreach ($this->delayedMethods as list($callable, $params)) {
-          if ($params) {
-            call_user_func_array($callable, $params);
-          }
-          else {
-            call_user_func($callable);
-          }
+          $params ? call_user_func_array($callable, $params) : call_user_func($callable);
         }
       }
 

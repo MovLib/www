@@ -48,6 +48,13 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   protected $user;
 
+  /**
+   * Route to profile account settings.
+   *
+   * @var string
+   */
+  protected $routeAccountSettings;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -57,17 +64,19 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Exception\NotFoundException
    * @throws \MovLib\Exception\Client\RedirectPermanentException
    */
   public function __construct() {
-    global $i18n, $kernel;
+    global $i18n, $kernel, $session;
     try {
       $this->user = new UserFull(UserFull::FROM_NAME, $_SERVER["USER_NAME"]);
       if ($this->user->route != $kernel->requestURI) {
         throw new RedirectPermanentException($this->user->route);
       }
       $this->init($this->user->name);
+      $this->routeAccountSettings = $i18n->r("/profile/account-settings");
 
       // http://schema.org/Person
       $this->schemaType = "Person";
@@ -80,16 +89,8 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
 
       // Create user info.
       $personalData = null;
-      if ($this->user->realName) {
-        // http://microformats.org/wiki/rel-me
-        // http://microformats.org/wiki/rel-nofollow
-        if ($this->user->website) {
-          $personalData[] = "<a href='{$this->user->website}' itemprop='url name' rel='me nofollow' target='_blank'>{$this->user->realName}</a>";
-        }
-        else {
-          $personalData[] = "<span itemprop='name'>{$this->user->realName}</span>";
-        }
-      }
+
+      // Format the user's birthday if available.
       if ($this->user->birthday) {
         $date = new Date($this->user->birthday);
         $personalData[] = "<time itemprop='birthDate' datetime='{$date->format()}'>{$date->getAge()}</time>";
@@ -103,18 +104,38 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         $personalData[] = "<span itemprop='nationality'>{$country}</span>";
       }
 
+      // Link the user's real name to the website if we have both properties.
+      if ($this->user->realName) {
+        // http://microformats.org/wiki/rel-me
+        // http://microformats.org/wiki/rel-nofollow
+        if ($this->user->website) {
+          array_unshift($personalData, "<a href='{$this->user->website}' itemprop='url name' rel='me nofollow' target='_blank'>{$this->user->realName}</a>");
+        }
+        else {
+          array_unshift($personalData, "<span itemprop='name'>{$this->user->realName}</span>");
+        }
+      }
+      // If not use the hostname.
+      elseif ($this->user->website) {
+        $hostname = parse_url($this->user->website, PHP_URL_HOST);
+        $personalData[] = "<br><a href='{$this->user->website}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a>";
+      }
+
       if ($personalData) {
         $personalData = implode(", ", $personalData);
         $personalData = "<p>{$personalData}</p>";
       }
 
+      $avatar = $this->getImage($this->user->getImageStyle(), false, [ "itemprop" => "image" ]);
+      if ($session->userId === $this->user->id) {
+        $avatar = "<a class='img text-center' href='{$this->routeAccountSettings}'>{$avatar}<span>{$i18n->t("Change Avatar")}</span></a>";
+      }
+
       // Display additional info about this user after the name and the avatar to the right of it.
       $this->headingAfter = "{$personalData}<small>{$i18n->t("Joined {0} and was last seen {1}.", [
-        (new Date($this->user->created))->format(),
+        (new Date($this->user->created))->intlFormat(),
         (new Time($this->user->access))->formatRelative(),
-      ])}</small></div><div class='span span--2'>{$this->getImage(
-        $this->user->getImageStyle(), false, [ "itemprop" => "image" ]
-      )}</div></div>";
+      ])}</small></div><div class='span span--2'>{$avatar}</div></div>";
     }
     catch (UserException $e) {
       throw new ErrorNotFoundException("No user with this name.");
@@ -138,13 +159,13 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     $aboutMe = $edit = null;
     if (empty($this->user->aboutMe) && $session->userId === $this->user->id) {
       $aboutMe = "<p>{$i18n->t("Your profile is currently empty, {0}click here to edit{1}.", [
-        "<a href='{$i18n->r("/profile/account-settings")}?autofocus=about_me'>", "</a>"
+        "<a href='{$this->routeAccountSettings}?autofocus=about_me'>", "</a>"
       ])}</p>";
     }
     else {
-      $aboutMe = $this->rawHTML($this->user->aboutMe);
+      $aboutMe = $this->htmlRaw($this->user->aboutMe);
       if ($session->userId === $this->user->id) {
-        $edit = "<a class='small edit' href='{$i18n->r("/profile/account-settings")}?autofocus=about_me'>{$i18n->t("edit")}</a>";
+        $edit = "<a class='small edit' href='{$this->routeAccountSettings}?autofocus=about_me'>{$i18n->t("edit")}</a>";
       }
     }
     if ($aboutMe) {

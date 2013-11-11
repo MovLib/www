@@ -104,6 +104,10 @@
   background-color: #256c9b;
 }
 
+.button--primary:focus {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(52, 152, 219, 0.6);
+}
+
 .button--info {
   background-color: #49afcd;
 }
@@ -114,6 +118,10 @@
 .button--info.active,
 .button--info.disabled {
   background-color: #32788d;
+}
+
+.button--info:focus {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(73, 175, 205, 0.6);
 }
 
 .button--success {
@@ -128,6 +136,10 @@
   background-color: #3b773b;
 }
 
+.button--success:focus {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(91, 183, 91, 0.6);
+}
+
 .button--warning {
   background-color: #faa732;
 }
@@ -138,6 +150,10 @@
 .button--warning.active,
 .button--warning.disabled {
   background-color: #cc8829;
+}
+
+.button--warning:focus {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(250, 167, 50, 0.6);
 }
 
 .button--danger {
@@ -152,6 +168,10 @@
   background-color: #9a3834;
 }
 
+.button--danger:focus {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(218, 79, 73, 0.6);
+}
+
 .button--inverse {
   background-color: #555;
 }
@@ -162,4 +182,8 @@
 .button--inverse.active,
 .button--inverse.disabled {
   background-color: #000;
+}
+
+.button--inverse:focus {
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(85, 85, 85, 0.6);
 }

@@ -143,9 +143,9 @@ class User extends \MovLib\Data\Image\AbstractImage {
         "SELECT
           `id`,
           `name`,
-          UNIX_TIMESTAMP(`imageChanged`),
-          `imageExtension`,
-          `imageChanged` IS NOT NULL
+          UNIX_TIMESTAMP(`image_changed`),
+          `image_extension`,
+          `image_changed` IS NOT NULL
         FROM `users`
         WHERE `{$from}` = ?",
         $this->types[$from],
@@ -172,7 +172,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    */
   public function commit() {
     return $this->query(
-      "UPDATE `users` SET `imageChanged` = FROM_UNIXTIME(?), `imageExtension` = ? WHERE `id` = ?",
+      "UPDATE `users` SET `image_changed` = FROM_UNIXTIME(?), `image_extension` = ? WHERE `id` = ?",
       "ssd",
       [ $this->imageChanged, $this->imageExtension, $this->id ]
     );

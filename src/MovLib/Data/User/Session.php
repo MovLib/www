@@ -341,7 +341,7 @@ class Session extends \MovLib\Data\Database {
     return $this->query(
       "SELECT `session_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ?",
       "d",
-      [ $_SESSION["user_id"] ]
+      [ $this->userId ]
     )->get_result()->fetch_all(MYSQLI_ASSOC);
   }
 
@@ -381,12 +381,12 @@ class Session extends \MovLib\Data\Database {
 
     // We are initializing this session for a registered user.
     if ($userId > 0) {
-      if (!($result = $this->query("SELECT `name`, `timeZoneId` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $userId ])->get_result()->fetch_assoc())) {
+      if (!($result = $this->query("SELECT `name`, `time_zone_identifier` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $userId ])->get_result()->fetch_row())) {
         throw new SessionException("Could not fetch user data for user ID {$userId}.");
       }
       $this->userId          = $_SESSION["user_id"]           = $userId;
-      $this->userName        = $_SESSION["user_name"]         = $result["name"];
-      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = $result["timeZoneId"];
+      $this->userName        = $_SESSION["user_name"]         = $result[0];
+      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = $result[1];
       $this->isAuthenticated = true;
     }
     // Initialize this session for an anonymous user.

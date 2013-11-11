@@ -19,7 +19,6 @@ namespace MovLib\Data\User;
 
 use \MovLib\Tool\Console\Command\Development\SeedImport;
 use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Data\User\Session;
 
 /**
  * @coversDefaultClass \MovLib\Data\User\Full
@@ -136,7 +135,7 @@ class FullTest extends \MovLib\TestCase {
     $this->userFull->realName           = "PHPUnit PHPUnit";
     $this->userFull->sex                = 10;
     $this->userFull->systemLanguageCode = "xx";
-    $this->userFull->timeZoneId         = "PHPUnit/PHPUnit";
+    $this->userFull->timeZoneIdentifier         = "PHPUnit/PHPUnit";
     $this->userFull->website            = "http://phpunit.net/";
     $this->userFull->commit();
 
@@ -149,7 +148,7 @@ class FullTest extends \MovLib\TestCase {
     $this->assertEquals("PHPUnit PHPUnit", $this->userFull->realName);
     $this->assertEquals(10, $this->userFull->sex);
     $this->assertEquals("xx", $this->userFull->systemLanguageCode);
-    $this->assertEquals("PHPUnit/PHPUnit", $this->userFull->timeZoneId);
+    $this->assertEquals("PHPUnit/PHPUnit", $this->userFull->timeZoneIdentifier);
     $this->assertEquals("http://phpunit.net/", $this->userFull->website);
 
     // Teardown
@@ -180,26 +179,6 @@ class FullTest extends \MovLib\TestCase {
    */
   public function testHashPassword() {
     $this->assertTrue(password_verify("Test1234", $this->userFull->hashPassword("Test1234")));
-  }
-
-  /**
-   * @covers ::reactivate
-   * @global \MovLib\Tool\Database $db
-   */
-  public function testReactivate() {
-    global $db;
-
-    // Setup
-    $this->userFull = new UserFull(UserFull::FROM_ID, 1);
-    $db->query("UPDATE `users` SET `deactivated` = true WHERE `id` = ?", "d", [ 1 ]);
-
-    // Test
-    $this->userFull->reactivate();
-    $this->assertFalse($this->userFull->deactivated);
-    $this->assertFalse((boolean) $db->query("SELECT `deactivated` FROM `users` WHERE `id` = ?", "d", [ 1 ])->get_result()->fetch_row()[0]);
-
-    // Teardown
-    (new SeedImport())->databaseImport([ "users" ]);
   }
 
   /**

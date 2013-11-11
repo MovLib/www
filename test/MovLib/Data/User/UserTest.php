@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\User;
 use \MovLib\Tool\Console\Command\Development\SeedImport;
 
@@ -98,7 +97,7 @@ class UserTest extends \MovLib\TestCase {
 
     // Test
     $this->user->commit();
-    $result = $db->query("SELECT UNIX_TIMESTAMP(`imageChanged`), `imageExtension` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->user->id ])->get_result()->fetch_row();
+    $result = $db->query("SELECT UNIX_TIMESTAMP(`image_changed`), `image_extension` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->user->id ])->get_result()->fetch_row();
     $this->assertEquals($_SERVER["REQUEST_TIME"], $result[0]);
     $this->assertEquals("tst", $result[1]);
 

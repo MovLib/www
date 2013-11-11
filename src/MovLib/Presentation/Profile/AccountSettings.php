@@ -159,8 +159,8 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "max"   => $birthdayMax,
       "min"   => $birthdayMin,
       "title" => $i18n->t("The date must be between {0} (120 years) and {1} (6 years)", [
-        $i18n->formatDate($birthdayMin, $this->user->timeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
-        $i18n->formatDate($birthdayMax, $this->user->timeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)
+        $i18n->formatDate($birthdayMin, $this->user->timeZoneIdentifier, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
+        $i18n->formatDate($birthdayMax, $this->user->timeZoneIdentifier, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)
       ]),
       "value" => $this->user->birthday,
     ], $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
@@ -172,7 +172,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
 
     $this->language = new Select("language", $i18n->t("System Language"), (new SystemLanguages())->orderByName(), $this->user->systemLanguageCode);
     $this->country  = new Select("country", $i18n->t("Country"), (new Countries())->orderByName()->reindex("id"), $this->user->countryId);
-    $this->timezone = new Select("time_zone_id", $i18n->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneId);
+    $this->timezone = new Select("time_zone_id", $i18n->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneIdentifier);
     $this->website  = new InputURL("website", $i18n->t("Website"), [ "data-allow-external" => true, "value" => $this->user->website ]);
     $this->private  = new InputCheckbox("private", $i18n->t("Keep my data private!"), [ "value" => $this->user->private ], $i18n->t(
       "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
@@ -222,7 +222,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->user->realName           = $this->realName->value;
       $this->user->sex                = $this->sex->value;
       $this->user->systemLanguageCode = $this->language->value;
-      $this->user->timeZoneId         = $this->timezone->value;
+      $this->user->timeZoneIdentifier         = $this->timezone->value;
       $this->user->website            = $this->website->value;
       $this->user->commit();
       $this->alerts                  .= new Alert(

@@ -40,72 +40,72 @@ class Full extends \MovLib\Data\User\User {
   /**
    * The user's profile text (in the current display language if available).
    *
-   * @var string
+   * @var null|string
    */
   public $aboutMe;
 
   /**
    * The user's last access (UNIX timestamp).
    *
-   * @var int
+   * @var null|integer
    */
   public $access;
 
   /**
    * The user's birthday (date).
    *
-   * @var null|int
+   * @var null|string
    */
   public $birthday;
 
   /**
    * The user's unique country ID.
    *
-   * @var null|int
+   * @var null|integer
    */
   public $countryId;
 
   /**
    * The user's creation time (UNIX timestamp).
    *
-   * @var int
+   * @var null|integer
    */
   public $created;
 
   /**
-   * Flag defining if the user's profile is deactivated.
-   *
-   * @var boolean
-   */
-  public $deactivated;
-
-  /**
    * The user's edit counter.
    *
-   * @var int
+   * @var null|integer
    */
   public $edits;
 
   /**
    * The user's unique mail if logged in.
    *
-   * @var string
+   * @var null|string
    */
   public $email;
 
   /**
    * The user's hashed password.
    *
-   * @var string
+   * @var null|string
    */
   public $password;
 
   /**
    * Flag defining if the user's personal data is private or not.
    *
-   * @var boolean
+   * @var null|boolean
    */
   public $private;
+
+  /**
+   * Total amount of profile views.
+   *
+   * @var null|integer
+   */
+  public $profileViews;
 
   /**
    * The user's real name.
@@ -113,6 +113,13 @@ class Full extends \MovLib\Data\User\User {
    * @var null|string
    */
   public $realName;
+
+  /**
+   * The user's reputation counter.
+   *
+   * @var null|integer
+   */
+  public $reputation;
 
   /**
    * The user's sex according to ISO/IEC 5218.
@@ -126,23 +133,23 @@ class Full extends \MovLib\Data\User\User {
    * The fourth value makes no sense in our software.
    *
    * @link https://en.wikipedia.org/wiki/ISO/IEC_5218
-   * @var int
+   * @var null|integer
    */
   public $sex;
 
   /**
    * The user's preferred system language's code (e.g. <code>"en"</code>).
    *
-   * @var string
+   * @var null|string
    */
   public $systemLanguageCode;
 
   /**
    * The user's time zone ID (e.g. <code>"Europe/Vienna"</code>).
    *
-   * @var string
+   * @var null|string
    */
-  public $timeZoneId;
+  public $timeZoneIdentifier;
 
   /**
    * The user's website.
@@ -173,25 +180,25 @@ class Full extends \MovLib\Data\User\User {
       $stmt = $this->query(
         "SELECT
           `id`,
-          `systemLanguageCode`,
           `name`,
-          `email`,
-          UNIX_TIMESTAMP(`created`),
           UNIX_TIMESTAMP(`access`),
-          `password`,
-          `private`,
-          `deactivated`,
-          `timeZoneId`,
-          `edits`,
-          COLUMN_GET(`dyn_aboutMe`, '{$i18n->languageCode}' AS BINARY),
-          `sex`,
-          `countryId`,
-          `realName`,
           `birthday`,
-          `website`,
-          UNIX_TIMESTAMP(`imageChanged`),
-          `imageExtension`,
-          `imageChanged` IS NOT NULL
+          `country_id`,
+          UNIX_TIMESTAMP(`created`),
+          COLUMN_GET(`dyn_about_me`, '{$i18n->languageCode}' AS BINARY),
+          `edits`,
+          `email`,
+          UNIX_TIMESTAMP(`image_changed`),
+          `image_extension`,
+          `image_changed` IS NOT NULL,
+          `password`,
+          `profile_views`,
+          `real_name`,
+          `reputation`,
+          `sex`,
+          `system_language_code`,
+          `time_zone_identifier`,
+          `website`
         FROM `users`
         WHERE `{$from}` = ?",
         $this->types[$from],
@@ -199,25 +206,25 @@ class Full extends \MovLib\Data\User\User {
       );
       $stmt->bind_result(
         $this->id,
-        $this->systemLanguageCode,
         $this->name,
-        $this->email,
-        $this->created,
         $this->access,
-        $this->password,
-        $this->private,
-        $this->deactivated,
-        $this->timeZoneId,
-        $this->edits,
-        $this->aboutMe,
-        $this->sex,
-        $this->countryId,
-        $this->realName,
         $this->birthday,
-        $this->website,
+        $this->countryId,
+        $this->created,
+        $this->aboutMe,
+        $this->edits,
+        $this->email,
         $this->imageChanged,
         $this->imageExtension,
-        $this->imageExists
+        $this->imageExists,
+        $this->password,
+        $this->profileViews,
+        $this->realName,
+        $this->reputation,
+        $this->sex,
+        $this->systemLanguageCode,
+        $this->timeZoneIdentifier,
+        $this->website
       );
       if (!$stmt->fetch()) {
         throw new UserException("Couldn't find user for {$from} '{$value}'.");
@@ -226,7 +233,6 @@ class Full extends \MovLib\Data\User\User {
       $this->imageExists = (boolean) $this->imageExists;
       $this->imageName   = rawurlencode($this->name);
       $this->private     = (boolean) $this->private;
-      $this->deactivated = (boolean) $this->deactivated;
       // The image name already has all unsave characters removed.
       $this->route       = $i18n->r("/user/{0}", [ rawurlencode($this->imageName) ]);
     }
@@ -270,36 +276,100 @@ class Full extends \MovLib\Data\User\User {
     global $i18n;
     return $this->query(
       "UPDATE `users` SET
-        `birthday`           = ?,
-        `countryId`          = ?,
-        `imageChanged`       = FROM_UNIXTIME(?),
-        `imageExtension`     = ?,
-        `private`            = ?,
-        `dyn_aboutMe`        = COLUMN_ADD(`dyn_aboutMe`, ?, ?),
-        `realName`           = ?,
-        `sex`                = ?,
-        `systemLanguageCode` = ?,
-        `timeZoneId`         = ?,
-        `website`            = ?
+        `birthday`             = ?,
+        `country`_id`          = ?,
+        `dyn_about_me`         = COLUMN_ADD(`dyn_about_me`, ?, ?),
+        `image_changed`        = FROM_UNIXTIME(?),
+        `image_extension`      = ?,
+        `private`              = ?,
+        `real_name`            = ?,
+        `sex`                  = ?,
+        `system_language_code` = ?,
+        `time_zone_identifier` = ?,
+        `website`              = ?
       WHERE `id` = ?
         LIMIT 1",
-      "sississsisssd",
+      "sisisisisssd",
       [
         $this->birthday,
         $this->countryId,
+        $this->aboutMe,
         $this->imageChanged,
         $this->imageExtension,
         $this->private,
-        $i18n->languageCode,
-        $this->aboutMe,
         $this->realName,
         $this->sex,
+        $i18n->languageCode,
         $this->systemLanguageCode,
-        $this->timeZoneId,
+        $this->timeZoneIdentifier,
         $this->website,
         $this->id,
       ]
     );
+  }
+
+  /**
+   * Delete this user.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $token
+   *   The user submitted token.
+   * @return this
+   * @throws \MovLib\Exception\UserException
+   */
+  public function delete($token) {
+    global $i18n;
+
+    // Validate the given token.
+    if ($this->validateToken("deletion", $token) === false) {
+      throw new UserException("Invalid token for deletion event.");
+    }
+
+    // Delete absolutely everything and only keep the username.
+    return $this
+      ->deleteImage()
+      ->query(
+        "UPDATE `users` SET
+          `email`                = NULL,
+          `password`             = NULL,
+          `access`               = NULL,
+          `created`              = NULL,
+          `dyn_about_me`         = NULL,
+          `edits`                = NULL,
+          `private`              = NULL,
+          `profile_views`        = NULL,
+          `sex`                  = NULL,
+          `system_language_code` = NULL,
+          `time_zone_identifier` = NULL,
+          `country_id`           = NULL,
+          `birthday`             = NULL,
+          `image_changed`        = NULL,
+          `image_extension`      = NULL,
+          `real_name`            = NULL,
+          `website`              = NULL,
+          `token`                = NULL,
+          `token_created`        = NULL,
+          `token_event`          = NULL
+        WHERE `id` = ?",
+        "d",
+        [ $this->id ]
+      )
+    ;
+  }
+
+  /**
+   * Get user token for event.
+   *
+   * @param string $event
+   *   The event for which we generate a token (e.g. <code>"deletion"</code>).
+   * @return string
+   *   The randomly generated token.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getToken($event) {
+    $token = hash("sha256", openssl_random_pseudo_bytes(1024));
+    $this->query("UPDATE `users` SET `token` = ?, `token_created` = CURRENT_TIMESTAMP, `token_event` = ? WHERE `id` = ?", "ssd", [ $token, $event, $this->id ]);
+    return $token;
   }
 
   /**
@@ -334,7 +404,7 @@ class Full extends \MovLib\Data\User\User {
   public function register() {
     global $i18n;
     $stmt = $this->query(
-      "INSERT INTO `users` (`profile`, `email`, `name`, `password`, `systemLanguageCode`) VALUES ('', ?, ?, ?, ?)",
+      "INSERT INTO `users` (`profile`, `email`, `name`, `password`, `system_language_code`) VALUES ('', ?, ?, ?, ?)",
       "ssss",
       [ $this->email, $this->name, $this->password, $i18n->languageCode ]
     );
@@ -351,6 +421,21 @@ class Full extends \MovLib\Data\User\User {
    */
   public function updatePassword($password) {
     return $this->query("UPDATE `users` SET `password` = ? WHERE `id` = ?", "sd", [ $password, $this->id ]);
+  }
+
+  /**
+   * Validate the given token.
+   *
+   * @param string $event
+   *   The event for which we generate a token (e.g. <code>"deletion"</code>).
+   * @param string $token
+   *   The user submitted token.
+   * @return boolean
+   *   <code>TRUE</code> if the token is valid for this event, otherwise <code>FALSE</code>.
+   */
+  protected function validateToken($event, $token) {
+    $result = $this->query("SELECT `token`, `token_event` FROM `users` WHERE DATEDIFF(CURRENT_TIMESTAMP, `token_created`) < 1 AND `id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row();
+    return $result && $token == $result[0] && $event == $result[1];
   }
 
   /**

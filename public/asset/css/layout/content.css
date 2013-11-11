@@ -41,24 +41,5 @@
 }
 
 #content-header > .container {
-  padding: 20px 0 30px;
-}
-
-#content-header p {
-  margin: 1em 0;
-}
-
-#content-header small {
-  margin: 0.5em 0;
-}
-
-/* Compensate the additionl 10px bottom padding from the container. */
-#content-header img {
-  margin-bottom: -10px;
-}
-
-#content-title {
-  padding: 0;
-  margin: 0;
-  color: #fff;
+  padding: 20px 0;
 }

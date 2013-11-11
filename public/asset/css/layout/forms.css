@@ -1,0 +1,199 @@
+/*!
+ * This file is part of {@link https://github.com/MovLib MovLib}.
+ *
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+ *
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
+ * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+ */
+
+/**
+ * Form related styles.
+ *
+ * @link https://github.com/twbs/bootstrap/blob/master/less/forms.less
+ * @author Richard Fussenegger <richard@fussenegger.info>
+ * @copyright © 2013 MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link https://movlib.org/
+ * @since 0.0.1-dev
+ */
+
+button::-moz-focus-inner,
+input::-moz-focus-inner,
+fieldset {
+  padding: 0;
+  margin: 0;
+  border: 0 none;
+}
+
+button,
+html button,
+input[type="reset"],
+input[type="submit"] {
+  -webkit-appearance: button;
+}
+
+button,
+label,
+select,
+input[type="button"],
+input[type="reset"],
+input[type="submit"],
+input[type="radio"],
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+input[type="date"],
+input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="url"],
+select,
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 30px;
+  padding: 7px 9px;
+  margin-bottom: 15px;
+}
+
+label,
+legend {
+  display: block;
+  margin-bottom: 5px;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  margin: 4px 0 0;
+}
+
+input[type="search"] {
+  -webkit-appearance: textfield;
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+input,
+select,
+textarea {
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px solid #ccc;
+  box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
+  transition: 0.2s linear;
+  transition-property: border, box-shadow;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: rgba(82, 168, 236, 0.8);
+  outline: 0;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+input:invalid:not(:empty),
+.invalid,
+textarea:invalid:not(:empty) {
+  border-color: #ee5f5b;
+  outline: 0;
+}
+
+input:focus:invalid:focus:not(:empty),
+.invalid:focus,
+textarea:focus:invalid:focus:not(:empty) {
+  border-color: rgba(233, 50, 45, 0.8);
+  outline: 0;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
+}
+
+input[disabled],
+select[disabled],
+textarea[disabled],
+input[readonly],
+select[readonly],
+textarea[readonly] {
+  cursor: not-allowed;
+  background: #eee;
+}
+
+/* Note that this only uses ONE colon at the beginning! */
+:-moz-placeholder {
+  font-weight: 200;
+  color: #888;
+  opacity: 1;
+}
+
+input:focus:-moz-placeholder,
+textarea:focus:-moz-placeholder {
+  color: #ccc;
+}
+
+/* Note that this uses TWO colons at the beginning! */
+::-moz-placeholder {
+  font-weight: 200;
+  color: #888;
+  opacity: 1;
+}
+
+input:focus::-moz-placeholder,
+textarea:focus::-moz-placeholder {
+  color: #ccc;
+}
+
+:-ms-input-placeholder {
+  font-weight: 200;
+  color: #888;
+}
+
+input:focus:-ms-input-placeholder,
+textarea:focus:-ms-input-placeholder {
+  color: #ccc;
+}
+
+::-webkit-input-placeholder {
+  font-weight: 200;
+  color: #888;
+}
+
+input:focus::-webkit-input-placeholder,
+textarea:focus::-webkit-input-placeholder {
+  color: #ccc;
+}
+
+textarea {
+  min-height: 150px; /* input has 30px, 30 * 5 = 150px (we want people to write a lot). */
+  resize: vertical;
+}
+
+input[type="file"]:focus,
+input[type="radio"]:focus,
+input[type="checkbox"]:focus {
+  outline: thin dotted #353535;
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 #656565;
+}
+
+fieldset,
+form .row,
+form p {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}

@@ -75,7 +75,7 @@ class Deletion extends \MovLib\Presentation\Email\AbstractEmail {
     global $i18n, $kernel;
     $this->recipient = $this->user->email;
     $this->subject   = $i18n->t("Reqeusted Deletion");
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token=" . $this->user->prepareDeletion();
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token=" . $this->user->getToken("deletion");
     return $this;
   }
 
