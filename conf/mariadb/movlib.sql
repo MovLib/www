@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this person was created.',
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.',
   PRIMARY KEY (`person_id`))
-DEFAULT CHARACTER SET = utf8mb4
+ENGINE = InnoDB
 COMMENT = 'Contains all person related data.'
 ROW_FORMAT = COMPRESSED;
 
