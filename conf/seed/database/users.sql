@@ -1,37 +1,35 @@
--- phpMyAdmin SQL Dump
--- version 4.0.8
--- http://www.phpmyadmin.net
+-- MySQL dump 10.14  Distrib 10.0.5-MariaDB, for debian-linux-gnu (x86_64)
 --
--- Host: localhost
--- Generation Time: Oct 17, 2013 at 12:03 PM
--- Server version: 10.0.4-MariaDB-1~wheezy-log
--- PHP Version: 5.5.4
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
-SET time_zone = "+00:00";
-
+-- Host: localhost    Database: movlib
+-- ------------------------------------------------------
+-- Server version	10.0.5-MariaDB-1~wheezy-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8 */;
-
---
--- Database: `movlib`
---
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `access`, `created`, `private`, `deactivated`, `timeZoneId`, `edits`, `dyn_aboutMe`, `sex`, `systemLanguageCode`, `imageExtension`, `imageChanged`, `birthday`, `countryId`, `realName`, `website`) VALUES
-(1, 'Fleshgrinder', 'richard@fussenegger.info', '$2y$13$LFDTAUaaxs5D6XulZkDU4uKtYgJBuyjDBS2ax7k.oqsASEXstzQDu', '2013-10-02 09:45:26', '2013-10-01 16:44:29', 0, 0, 'Europe/Vienna', 0, '\0\0\0\0\0\0#deen!<p>Mein deutscher Profiltext.</p>!<p>My English profile text.</p>', 1, 'de', 'jpg', '2013-10-02 09:45:26', '1985-06-07', 12, 'Richard Fussenegger', 'http://richard.fussenegger.info/'),
-(2, 'ftorghele', 'franz@torghele.at', '$2y$13$UZQYCsImiKIDQQu1OPfaTe9pZSsOd5OCgsEPVXgAVm98ygQLN0Mje', '2013-10-17 12:03:14', '2013-10-17 11:55:53', 0, 0, 'UTC', 0, '', 0, 'en', 'jpg', '1970-01-01 00:33:33', NULL, NULL, NULL, NULL),
-(3, 'Ravenlord', 'markus@deutschl.at', '$2y$13$xtl5jmUnz3F/Tss5qXyzt.fJ1Rppz/d2HGitxd.ig1MUM7gkXQCPC', '2013-10-17 12:03:43', '2013-10-17 11:57:36', 0, 0, 'UTC', 0, '', 0, 'en', 'jpg', '2013-10-15 00:00:00', NULL, NULL, NULL, NULL);
-COMMIT;
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,'Fleshgrinder','2013-11-11 21:23:11','1985-06-27',12,'2013-10-01 16:44:29','\0\0\0\0\0\0Ûdeen¿&lt;p&gt;Mein deutscher Profiltext.&lt;/p&gt;¿&lt;p&gt;My English profile text.&lt;/p&gt;',0,'richard@fussenegger.info','2013-11-11 21:21:51','jpg','$2y$13$LFDTAUaaxs5D6XulZkDU4uKtYgJBuyjDBS2ax7k.oqsASEXstzQDu',0,0,'Richard Fussenegger',0,1,'en','Europe/Vienna',NULL,NULL,NULL,'http://richard.fussenegger.info/'),(2,'Ravenlord','2013-11-11 21:21:51',NULL,12,'2013-10-17 11:55:53','',0,'markus@deutschl.at',NULL,NULL,'$2y$13$xtl5jmUnz3F/Tss5qXyzt.fJ1Rppz/d2HGitxd.ig1MUM7gkXQCPC',0,0,'Markus Deutschl',0,1,'en','Europe/Vienna',NULL,NULL,NULL,NULL),(3,'ftorghele','2013-11-11 21:21:51',NULL,12,'2013-10-17 11:57:36','',0,'franz@torghele.at',NULL,NULL,'$2y$13$UZQYCsImiKIDQQu1OPfaTe9pZSsOd5OCgsEPVXgAVm98ygQLN0Mje',0,0,'Franz Torghele',0,1,'en','Europe/Vienna',NULL,NULL,NULL,NULL);
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2013-11-11 21:25:22

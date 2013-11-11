@@ -3,7 +3,7 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='';
 
 DROP SCHEMA IF EXISTS `movlib` ;
-CREATE SCHEMA IF NOT EXISTS `movlib` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
+CREATE SCHEMA IF NOT EXISTS `movlib` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
 SHOW WARNINGS;
 USE `movlib` ;
 
@@ -132,38 +132,38 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The user’s unique ID.',
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.',
+  `access` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.',
+  `birthday` DATE NULL DEFAULT NULL COMMENT 'The user\'s date of birth.',
+  `country_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.',
+  `created` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s creation datetime.',
+  `dyn_about_me` BLOB NULL COMMENT 'The user’s about me text (translatable).',
+  `edits` BIGINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user’s edit counter.',
   `email` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s unique email address.',
-  `password` TINYBLOB NOT NULL COMMENT 'The user’s unique password (hashed).',
-  `access` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.',
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s creation datetime.',
-  `dyn_aboutMe` BLOB NOT NULL COMMENT 'The user’s about me text (translatable).',
-  `deactivated` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE if this account was deleted or blocked, default is FALSE.',
-  `edits` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The user’s edit counter.',
-  `private` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.',
-  `profileViews` INT NOT NULL DEFAULT 0,
-  `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.',
-  `systemLanguageCode` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).',
-  `timeZoneId` VARCHAR(30) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL DEFAULT 'UTC' COMMENT 'User’s time zone ID.',
-  `countryId` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The user’s country.',
-  `birthday` DATE NULL COMMENT 'The user\'s date of birth.',
-  `imageChanged` TIMESTAMP NULL DEFAULT NULL COMMENT 'The avatar’s last change timestamp.',
-  `imageExtension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The avatar’s file extension.',
-  `realName` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s real name.',
-  `website` TINYBLOB NULL DEFAULT NULL COMMENT 'The user’s website URL.',
-  `token` TINYTEXT CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s last token.',
-  `tokenCreated` TIMESTAMP NULL COMMENT 'The user’s token creation time.',
-  `tokenEvent` TINYTEXT CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s last token event.',
+  `image_changed` TIMESTAMP NULL DEFAULT NULL COMMENT 'The avatar’s last change timestamp.',
+  `image_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT NULL COMMENT 'The avatar’s file extension.',
+  `password` TINYBLOB NULL COMMENT 'The user’s unique password (hashed).',
+  `private` TINYINT(1) NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.',
+  `profile_views` BIGINT UNSIGNED NULL DEFAULT 0,
+  `real_name` TINYBLOB NULL COMMENT 'The user’s real name.',
+  `reputation` BIGINT UNSIGNED NULL DEFAULT 0,
+  `sex` TINYINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.',
+  `system_language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).',
+  `time_zone_identifier` VARCHAR(30) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT 'UTC' COMMENT 'User’s time zone ID.',
+  `token` TINYTEXT CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT NULL COMMENT 'The user’s last token.',
+  `token_created` TIMESTAMP NULL DEFAULT NULL COMMENT 'The user’s token creation time.',
+  `token_event` TINYTEXT CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT NULL COMMENT 'The user’s last token event.',
+  `website` TINYBLOB NULL COMMENT 'The user’s website URL.',
   PRIMARY KEY (`id`),
-  INDEX `fk_users_countries` (`countryId` ASC),
+  INDEX `fk_users_countries` (`country_id` ASC),
   UNIQUE INDEX `uq_users_name` (`name` ASC),
   INDEX `users_email` (`email` ASC),
   CONSTRAINT `fk_users_countries`
-    FOREIGN KEY (`countryId`)
+    FOREIGN KEY (`country_id`)
     REFERENCES `movlib`.`countries` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains all user related data.'
+COMMENT = 'Contains all user related data where absolutely every field  /* comment truncated */ /*is nullable. This is important because we want delete any personal data if a user deletes the account.*/'
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
