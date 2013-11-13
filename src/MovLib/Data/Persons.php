@@ -103,7 +103,7 @@ class Persons extends \MovLib\Data\DatabaseArrayObject {
    */
   public function orderByName($offset = 0, $rowCount = Pagination::SPAN_08) {
     $this->objectsArray = [];
-    $result = $this->query("{$this->query} WHERE `deleted` = false ORDER BY `name` COLLATE `utf8mb4_unicode_ci` ASC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
+    $result = $this->query("{$this->query} WHERE `deleted` = false ORDER BY `name` ASC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
     /* @var $person \MovLib\Data\Person */
     while ($person = $result->fetch_object("\\MovLib\\Data\\Person")) {
       $this->objectsArray[$person->name] = $person;

@@ -57,7 +57,7 @@ class MovieTest extends \MovLib\TestCase {
    */
   public function testConstruct() {
     $this->assertNotEmpty($this->movie->files);
-    $this->assertNotEmpty($this->movie->serializedFiles);
+    $this->assertNotEmpty($this->movie->serializedArrays);
     $this->assertContains("en_synopsis", $this->movie->files);
     $this->assertContains("de_synopsis", $this->movie->files);
   }

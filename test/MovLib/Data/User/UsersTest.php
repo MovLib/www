@@ -49,8 +49,8 @@ class UsersTest extends \MovLib\TestCase {
   public function testOrderById() {
     $expectedUsers = [
       [ "id" => 1, "name" => "Fleshgrinder" ],
-      [ "id" => 2, "name" => "ftorghele" ],
-      [ "id" => 3, "name" => "Ravenlord" ]
+      [ "id" => 2, "name" => "Ravenlord" ],
+      [ "id" => 3, "name" => "ftorghele" ]
     ];
     $index         = 0;
     foreach ($this->users->orderById([ 3, 1, 2 ]) as $key => $value) {

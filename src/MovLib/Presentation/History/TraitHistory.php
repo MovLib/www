@@ -86,18 +86,7 @@ trait TraitHistory {
   protected function diffArrayItems($diff, $case, $className, $methodName, $itemIds) {
     global $i18n;
     $itemInformation = (new $className())->{$methodName}($itemIds);
-    switch ($case) {
-      case "added":
-        $cssClass = "green";
-        break;
-
-      case "removed":
-        $cssClass = "red";
-        break;
-
-      default:
-        $cssClass = null;
-    }
+    $cssClass = ($case == "added") ? "green" : (($case == "removed") ? "red" : null);
 
     $listItems = [];
     $c = count($diff[$case]);
@@ -108,18 +97,13 @@ trait TraitHistory {
 
       $itemName = $itemInformation[$diff[$case][$i]["id"]]->name;
       $propertyList = [];
+
       foreach ($diff[$case][0] as $key => $value) {
         if ($key == "id" || $key == "old" || $case != "edited") {
           continue;
         }
 
-        if (substr($key, -3) === "_id") {
-
-        }
-
-
-
-        $value = $this->textDiffOfStrings($value, $diff[$case][0]['old'][$key], true);
+        $value = $this->textDiffOfStrings($value, $diff[$case][0]['old'][$key], false);
         if ($value != $diff[$case][0]['old'][$key]) {
           $propertyList[] = "<span class='property-name'>{$i18n->t($key)}:</span> {$value}";
         }
@@ -219,13 +203,17 @@ trait TraitHistory {
    *   Diff between revisions as HTML.
    */
   protected function getDiff($head, $ref, $filename) {
-    global $i18n;
+    global $i18n;   
+    $methodName = ucfirst($filename);
     if (in_array($filename, $this->historyModel->files)) {
       return $this->textDiffOfRevisions($head, $ref, $filename, true);
     }
-    else if (in_array($filename, $this->historyModel->serializedFiles)) {
+    else if (in_array($filename, $this->historyModel->serializedArrays)) {
       $diff = $this->historyModel->getArrayDiff($head, $ref, $filename);
-      $methodName = ucfirst($filename);
+      return $this->{"get{$methodName}"}($diff);
+    }
+    else if (in_array($filename, $this->historyModel->serializedIds)) {
+      $diff = $this->historyModel->getIdDiff($head, $ref, $filename);
       return $this->{"get{$methodName}"}($diff);
     }
     else {

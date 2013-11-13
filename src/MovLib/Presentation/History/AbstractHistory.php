@@ -149,7 +149,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
       )}<h2>{$i18n->t("Difference between revisions")}</h2>{$list}</div>"
     ;
   }
-
+ 
   /**
    * Helper function to build revision history.
    *
@@ -170,7 +170,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
     for ($i = 0; $i < $c; ++$i) {
       $commits[$i]["author_name"] = isset($users[ $commits[$i]["author_id"] ]) ? $users[ $commits[$i]["author_id"] ]->name : "";
     }
-    
+
     $list = new Unordered($commits, $i18n->t("No revisions found"));
     $list->closure = [ $this, "formatRevision" ];
 

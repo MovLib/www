@@ -109,7 +109,14 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @var array
    */
-  public $serializedFiles;
+  public $serializedArrays;
+  
+  /**
+   * Names of files with a serialized arrays of ids as content.
+   *
+   * @var array
+   */
+  public $serializedIds;
 
   /**
    * Entity's short name.
@@ -243,10 +250,10 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
   public function getArrayDiff($head, $ref, $filename) {
     $new = unserialize($this->getFileAtRevision($filename, $head));
     $old = unserialize($this->getFileAtRevision($filename, $ref));
-
+        
     $added = ($old == false) ? $new : array_udiff($new, $old, [ $this, 'getArrayDiffDeepCompare' ]);
     $removed = ($old == false) ? [] : array_udiff($old, $new, [ $this, 'getArrayDiffDeepCompare' ]);
-
+    
     $edited = array_uintersect($added, $removed, [ $this, 'getArrayDiffIdCompare' ]);
     $c = count($edited);
     for ($i = 0; $i < $c; ++$i) {
@@ -363,6 +370,31 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     }
     return $output[0];
   }
+  
+  /**
+   * Returns diff between two commits of an serialized array of ids stored in a file.
+   *
+   * @param string $head
+   *   Hash of git commit (newer one).
+   * @param sting $ref
+   *   Hash of git commit (older one).
+   * @param string $filename
+   *   Name of file in repository.
+   * @return array
+   *   Associative array with added and removed items.
+   */
+  public function getIdDiff($head, $ref, $filename) {
+    $new = unserialize($this->getFileAtRevision($filename, $head));
+    $old = unserialize($this->getFileAtRevision($filename, $ref));
+    
+    $added = ($old == false) ? $new : array_diff($new, $old);
+    $removed = ($old == false) ? [] : array_diff($old, $new);
+    
+    return [
+     "added" => array_values($added),
+     "removed" => array_values($removed)
+    ];
+  }
 
   /**
    * Returns an array of associative arrays with commits.
@@ -437,10 +469,10 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       }
     }
 
-    $c = count($this->serializedFiles);
+    $c = count($this->serializedArrays);
     for ($i = 0; $i < $c; ++$i) {
-      if (isset($data[$this->serializedFiles[$i]])) {
-        $this->writeToFile($this->serializedFiles[$i], serialize($data[$this->serializedFiles[$i]]));
+      if (isset($data[$this->serializedArrays[$i]])) {
+        $this->writeToFile($this->serializedArrays[$i], serialize($data[$this->serializedArrays[$i]]));
       }
     }
 

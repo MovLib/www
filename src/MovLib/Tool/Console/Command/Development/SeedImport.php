@@ -76,12 +76,14 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   protected $databaseScripts = [];
 
   /**
-   * Numeric array containing all history supported types.
+   * Associative array containing all history supported types.
+   * 
+   * Key have to be plural, value sigular.
    *
-   * @var string
+   * @var array
    */
   protected $historyTypes = [
-    "movies"
+    "movies" => "movie"
   ];
 
   /**
@@ -131,7 +133,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   protected function configure() {
     $this->setDescription("Import the complete seed data or only specific data via options.");
     // History needs a custom shortcut because '-h' is already defined by Symfony.
-    $this->addOption(self::OPTION_HISTORY, "hi", InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific history data.");
+    $this->addOption(self::OPTION_HISTORY, "hi", InputOption::VALUE_NONE, "Create all history repositories.");
     $this->addInputOption(self::OPTION_DATABASE, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific database data.");
     $this->addInputOption(self::OPTION_UPLOAD, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific upload data.");
   }
@@ -222,35 +224,23 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @return this
    * @throws \InvalidArgumentException
    */
-  public function historyImport(array $types = null) {
+  public function historyImport() {
     global $db, $kernel;
-
-    // If no types were specified import all history types.
-    if (empty($types)) {
-      $types = $this->historyTypes;
-    }
-
-    foreach ($types as $type) {
-      // Validate given history type.
-      if (!in_array($type, $this->historyTypes)) {
-        $supportedTypes = implode(", ", $this->historyTypes);
-        throw new \InvalidArgumentException("No history type with name '{$type}' found! Supported types are: <info>{$supportedTypes}</info>");
-      }
-
+    
+    foreach ($this->historyTypes as $typePlural => $typeSingular) {
       // Remove complete history repository if it's present in the file system.
-      $path = "{$kernel->documentRoot}/private/history/{$type}";
+      $path = "{$kernel->documentRoot}/private/history/{$typeSingular}";
       if (is_dir($path)) {
         sh::execute("rm -rf '{$path}'");
       }
 
       // Creat new repository for each database entry we have.
-      $typeSingular = substr($type, 0, -1);
-      if (($result = $db->query("SELECT `{$typeSingular}_id` FROM `{$type}`")->get_result())) {
+      if (($result = $db->query("SELECT `{$typeSingular}_id` FROM `{$typePlural}`")->get_result())) {
         $class   = new \ReflectionClass("\\MovLib\\Data\\History\\" . ucfirst($typeSingular));
         $queries = null;
         while ($row = $result->fetch_row()) {
           $commitHash = $db->escapeString($class->newInstance($row[0])->createRepository());
-          $queries   .= "UPDATE `{$type}` SET `commit` = '{$commitHash}' WHERE `{$typeSingular}_id` = {$row[0]};";
+          $queries   .= "UPDATE `{$typePlural}` SET `commit` = '{$commitHash}' WHERE `{$typeSingular}_id` = {$row[0]};";
         }
         if ($queries) {
           $db->queries($queries);

@@ -47,20 +47,23 @@ class Movie extends AbstractHistory {
       $this->files[] = "{$systemLanguage->languageCode}_synopsis";
     }
 
-    $this->serializedFiles = [
+    $this->serializedArrays = [
       "titles",
       "taglines",
       "links",
       "trailers",
       "cast",
       "awards",
-      "relationships",
-      "directors",
-      "countries",
+      "relationships"
+    ];
+    
+    $this->serializedIds = [
       "genres",
       "styles",
       "languages",
-      "crew"
+      "crew",
+      "directors",
+      "countries"
     ];
   }
 

@@ -69,7 +69,7 @@ class AbstractHistoryTest extends \MovLib\TestCase {
       "en_synopsis"
     ];
 
-    $this->abstractHistory->serializedFiles = [
+    $this->abstractHistory->serializedArrays = [
       "titles",
       "taglines",
       "links",
@@ -170,6 +170,10 @@ class AbstractHistoryTest extends \MovLib\TestCase {
 
     $this->assertEquals(1, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
     $this->assertEquals(4, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][1]["id"]);
+    
+    $this->assertEquals(2, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"]));
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"]));
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"]));
 
     // cast with id 2 in "added"
     $this->invoke($this->abstractHistory, "writeFiles", [ ["cast" => [
@@ -182,6 +186,10 @@ class AbstractHistoryTest extends \MovLib\TestCase {
 
     $this->assertEquals(2, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
 
+    $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"]));
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"]));
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"]));
+
     // cast with id 1 in "removed"
     $this->invoke($this->abstractHistory, "writeFiles", [ ["cast" => [
           ["id" => 2, "roles" => "richard" ],
@@ -190,7 +198,9 @@ class AbstractHistoryTest extends \MovLib\TestCase {
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "removed cast with id 1" ]);
 
-    $this->assertEquals(1, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"][0]["id"]);
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"]));
+    $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"]));
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"]));
 
     // cast with id 2 in "edited"
     $this->invoke($this->abstractHistory, "writeFiles", [ ["cast" => [
@@ -199,6 +209,10 @@ class AbstractHistoryTest extends \MovLib\TestCase {
       ] ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "edited cast with id 2" ]);
+    
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"]));
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"]));
+    $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"]));
 
     $this->assertEquals(2, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["id"]);
     $this->assertEquals("richard", $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["old"]["roles"]);
@@ -213,12 +227,52 @@ class AbstractHistoryTest extends \MovLib\TestCase {
       ] ] ]);
     $this->invoke($this->abstractHistory, "stageAllFiles");
     $this->invoke($this->abstractHistory, "commitFiles", [ "edited cast with id 2" ]);
+    
+    $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"]));
+    $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"]));
+    $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"]));
 
     $this->assertEquals(2, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["id"]);
     $this->assertEquals("markus", $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["old"]["roles"]);
     $this->assertEquals("franz", $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["edited"][0]["roles"]);
     $this->assertEquals(4, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["removed"][0]["id"]);
-    $this->assertEquals(5, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]);
+    $this->assertEquals(5, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "cast")["added"][0]["id"]); 
+    
+    // genres
+    // genres with id 1,2,3 are added
+    $this->invoke($this->abstractHistory, "writeFiles", [ ["genres" => [ 
+      ["id" => 1],
+      ["id" => 2],
+      ["id" => 3]
+    ] ] ]);
+    $this->invoke($this->abstractHistory, "stageAllFiles");
+    $this->invoke($this->abstractHistory, "commitFiles", [ "genres with id 1,2,3 are added" ]);
+    
+    $this->assertEquals(1, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["added"][0]["id"]);
+    $this->assertEquals(2, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["added"][1]["id"]);
+    $this->assertEquals(3, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["added"][2]["id"]);
+    
+    $this->assertEquals(3, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["added"]));
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["removed"]));
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["edited"]));
+    
+    // genres with id 2 is removed, 4 and 6 are added
+    $this->invoke($this->abstractHistory, "writeFiles", [ ["genres" => [ 
+      ["id" => 1],
+      ["id" => 3],
+      ["id" => 4],
+      ["id" => 6]
+    ] ] ]);
+    $this->invoke($this->abstractHistory, "stageAllFiles");
+    $this->invoke($this->abstractHistory, "commitFiles", [ "genres with id 2 is removed, 4 and 6 are added" ]);
+    
+    $this->assertEquals(2, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["removed"][0]["id"]);
+    $this->assertEquals(4, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["added"][0]["id"]);
+    $this->assertEquals(6, $this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["added"][1]["id"]);
+    
+    $this->assertEquals(2, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["added"]));
+    $this->assertEquals(1, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["removed"]));
+    $this->assertEquals(0, count($this->abstractHistory->getArrayDiff("HEAD", "HEAD~1", "genres")["edited"]));
   }
 
   /**
