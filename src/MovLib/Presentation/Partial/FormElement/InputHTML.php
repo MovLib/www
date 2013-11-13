@@ -18,12 +18,11 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Exception\ValidationException;
-use \MovLib\Presentation\Validation\HTML;
 
 /**
- * HTML textarea form element.
+ * HTML contenteditable text form element.
  *
- * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/textarea
+ * @link https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_Editable
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -37,7 +36,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
 
   /**
-   * The textarea's allowed HTML tag as associative array.
+   * The text's allowed HTML tag as associative array.
    * The keys consist of the predifined tidy constants. @see http://www.php.net/manual/en/tidy.constants.php
    *
    * @var array
@@ -66,7 +65,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   ];
 
   /**
-   * The textarea's raw content.
+   * The text's raw content.
    *
    * @var null|string
    */
@@ -84,7 +83,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   ];
 
   /**
-   * The textarea's encoded content.
+   * The text's encoded content.
    *
    * @var null|string
    */
@@ -95,24 +94,25 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
 
   /**
-   * Instantiate new textarea form element.
+   * Instantiate new HTML form element.
    *
    * @param string $id
-   *   The textarea's global identifier.
+   *   The text's global identifier.
    * @param string $label
-   *   The textarea's label text.
+   *   The text's label text.
    * @param mixed $content [optional]
-   *   The textarea's content, defaults to <code>NULL</code> (no content).
+   *   The text's content, defaults to <code>NULL</code> (no content).
    * @param array $attributes [optional]
-   *   Additional attributes for the textarea, defaults to <code>NULL</code> (no additional attributes).
+   *   Additional attributes for the text, defaults to <code>NULL</code> (no additional attributes).
    * @param string $help [optional]
-   *   The textarea's help text, defaults to <code>NULL</code> (no help text).
+   *   The text's help text, defaults to <code>NULL</code> (no help text).
    * @param boolean $helpPopup
    *   Whether the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
   public function __construct($id, $label, $content = null, array $attributes = null, $help = null, $helpPopup = true) {
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
-    $this->attributes["aria-multiline"] = "true";
+    $this->attributes["aria-multiline"]  = "true";
+    $this->attributes["contenteditable"] = "true";
     if (isset($this->attributes["data-allow-img"])) {
       $this->allowedTags[TIDY_TAG_IMG] = "&lt;img&gt;";
     }
@@ -127,10 +127,10 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    */
   public function __toString() {
     if (empty($this->contentRaw)) {
-    $this->contentRaw = htmlspecialchars_decode($this->value, ENT_QUOTES | ENT_HTML5);
+      $this->contentRaw = htmlspecialchars_decode($this->value, ENT_QUOTES | ENT_HTML5);
     }
-    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->contentRaw}</textarea></p>";
-//    return "<fieldset>{$this->help}<legend>{$this->label}</legend><div contenteditable='true'{$this->expandTagAttributes($this->attributes)}>{$this->contentRaw}</div></fieldset>";
+//    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->contentRaw}</textarea></p>";
+    return "<fieldset>{$this->help}<legend>{$this->label}</legend><div{$this->expandTagAttributes($this->attributes)}>{$this->contentRaw}</div></fieldset>";
   }
 
 
@@ -146,59 +146,23 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // Validate if we have input and throw an Exception if the field is required.
     if (empty($this->contentRaw)) {
       if (array_key_exists("required", $this->attributes)) {
-        throw new ValidationException($i18n->t("The “{0}” textarea is mandatory.", [ $this->label ]));
+        throw new ValidationException($i18n->t("“{0}” text is mandatory.", [ $this->label ]));
       }
       $this->value = "";
       return $this;
     }
 
-    /** @todo Move to global tidy config when finished. */
-    $tidyOptions = [
-      // HTML options.
-      "anchor-as-name"      => false,
-      "doctype"             => "omit",
-      "drop-font-tags"      => true,
-      "enclose-text"        => true,
-      "escape-cdata"        => true,
-      "hide-comments"       => true,
-  //    "new-blocklevel-tags" => "",
-  //    "new-empty-tags"      => "",
-  //    "new-inline-tags"     => "",
-  //    "output-html"         => true,
-  //    "preserve-entities"   => true,
-  //    "quote-ampersand"     => true,
-  //    "quote-marks"         => true,
-      "show-body-only"      => true,
-      // Diagnostics options.
-      "show-errors"         => 6,
-      "show-warnings"       => true,
-      // Pretty print options.
-      "indent"              => "auto",
-      "indent-spaces"       => 2,
-      "sort-attributes"     => "alpha",
-      "tab-size"            => 2,
-      "wrap"                => 80,
-      // Character Encoding options.
-      "output-bom"          => false,
-      // Miscellaneous options.
-      "tidy-mark"           => false,
-    ];
-
     // Parse the HTML input with tidy and clean it.
     try {
       /* @var $tidy \tidy */
-      $tidy = tidy_parse_string(
-        "<!doctype html><html><head><title>MovLib</title></head><body>{$this->contentRaw}</body></html>",
-        $tidyOptions,
-        "utf8"
-      );
+      $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->contentRaw}</body></html>");
       $tidy->cleanRepair();
       if ($tidy->getStatus() === 2) {
         throw new \ErrorException;
       }
     }
     catch (\ErrorException $e) {
-      throw new ValidationException($i18n->t("The “{0}” textarea contains invalid HTML after the validation.", [ $this->label ]));
+      throw new ValidationException($i18n->t("Invalid HTML in “{0}” text.", [ $this->label ]));
     }
 
     // Traverse through the constructed document and validate its contents.
@@ -212,6 +176,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       while (!empty($nodes[$level])) {
         // Retrieve the next node from the stack.
         $node = array_shift($nodes[$level]);
+
         if ($level > 0) {
           // Validate tag and attributes.
           if ($node->type === TIDY_NODETYPE_TEXT) {
@@ -230,11 +195,16 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
             $output = "{$output}<{$node->name}>";
           }
           else {
+            // Encountered a tag that is not allowed, abort.
             $allowedTags = implode(" ", array_values($this->allowedTags));
-            throw new ValidationException($i18n->t("The “{0}” textarea contains invalid HTML tags. Allowed tags are: <code>{$allowedTags}</code>", [ $this->label ]));
+            throw new ValidationException($i18n->t(
+              "The “{0}” text contains invalid HTML tags. Allowed tags are: {1}",
+              [ $this->label, "<code>{$allowedTags}</code>" ],
+              [ "comment" => "{0} is the name of the text, {1} is a list of allowed HTML tags. Both should not be translated." ]
+            ));
           }
         }
-        // Stack the child nodes to the next level.
+        // Stack the child nodes to the next level if there are any.
         if (!empty($node->child)) {
           $level++;
           $nodes[$level] = $node->child;
@@ -242,7 +212,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       }
       $level--;
       // Append all ending tags of the current level to the output, if we are higher than level 0 and if there are any.
-      if ($level && isset($endTags[$level])) {
+      if ($level > 0 && isset($endTags[$level])) {
         while (($endTag = array_pop($endTags[$level]))) {
           $output = "{$output}{$endTag}";
         }
@@ -263,12 +233,12 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       }
     }
     catch (\ErrorException $e) {
-      error_log("Invalid HTML after validation.");
-      throw new ValidationException($i18n->t("The “{0}” textarea contains invalid HTML after the validation.", [ $this->label ]), $e->code, $e);
+      error_log($e);
+      throw new ValidationException($i18n->t("Invalid HTML after the validation in “{0}” text.", [ $this->label ]), $e->code, $e);
     }
 
-    // Normalize UTF-8 characters and encode HTML characters.
-    $this->value = $this->checkPlain(\Normalizer::normalize(tidy_get_output($tidy)));
+    // Replace redundant newlines, normalize UTF-8 characters and encode HTML characters.
+    $this->value = $this->checkPlain(\Normalizer::normalize(str_replace(tidy_get_output($tidy), "\n\n", "\n")));
     \FB::send(htmlspecialchars_decode($this->value, ENT_QUOTES | ENT_HTML5));
     return $this;
   }
@@ -277,21 +247,91 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * Validates and sanitizes HTML anchors.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @param \tidyNode $node
    *   The anchor.
    * @return string
    *   The tag name with the validated attributes.
    */
   protected function validateTagA($node) {
-    global $i18n;
+    global $i18n, $kernel;
+    $attributes = [];
+    $validateURL = null;
+
     // Check if the <code>href</code> attribute was set and validate the URL.
-    if (!isset($node->attribute) || !isset($node->attribute["href"])) {
-      throw new ValidationException($i18n->t("The “{0}” text contains links without a link target.", [ $this->label ]));
+    if (!isset($node->attribute) || empty($node->attribute["href"])) {
+      throw new ValidationException($i18n->t("Links without a link target in “{0}” text.", [ $this->label ]));
     }
-    if (($href = filter_var($node->attribute["href"], FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED)) === false) {
-      throw new ValidationException($i18n->t("The “{0}” text contains a link with the invalid URL <code>{$node->attribute["href"]}</code>.", [ $this->label ]));
+
+    // Parse and validate the parts of the URL.
+    if (($parts = parse_url($node->attribute["href"])) === false || !isset($parts["host"])) {
+      throw new ValidationException($i18n->t(
+        "Invalid link in “{0}” text ({1}).",
+        [ $this->label, "<code>{$this->checkPlain($node->attribute["href"])}</code>" ],
+        [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
+      ));
     }
-    return "a href='{$href}'";
+
+    // Make protocol relative URLs for the internal domain and omit query string.
+    if ($parts["host"] == $kernel->domainDefault || strpos($parts["host"], ".{$kernel->domainDefault}") !== false) {
+      $attributes["href"] = "//{$parts["host"]}";
+      // This is needed, because filter_var doesn't accept protocol relative URLs.
+      $validateURL = "{$kernel->scheme}:{$attributes["href"]}";
+      $parts["query"] = null;
+    }
+    // Add rel="nofollow" to external links, sanitize the protocol and fill query string offset if it doesn't exist.
+    // If external links are not allowed, abort.
+    else {
+      if (!isset($this->attributes["data-external"])) {
+        throw new ValidationException($i18n->t("No external links are allowed in “{0}” text.", [ $this->label ]));
+      }
+      if (isset($parts["scheme"]) && ($parts["scheme"] == "http" || $parts["scheme"] == "https")) {
+        $attributes["href"] = "{$parts["scheme"]}://";
+      }
+      else {
+        $attributes["href"] = "http://";
+      }
+      $attributes["rel"] = "nofollow";
+      $attributes["href"] = "{$attributes["href"]}{$parts["host"]}";
+      $validateURL = $attributes["href"];
+      $parts["query"] = isset($parts["query"]) ? "?{$parts["query"]}" : null;
+    }
+
+    // Initialize the path offset with "/" if it doesn't exist.
+    $parts["path"] = isset($parts["path"]) ? $parts["path"] : "/";
+
+    // Initialize the fragment offset with null if it doesn't exist.
+    $parts["fragment"] = isset($parts["fragment"]) ? "#{$parts["fragment"]}" : null;
+
+    // Append path, query and fragment to the URL.
+    $attributes["href"] = "{$attributes["href"]}{$parts["path"]}{$parts["query"]}{$parts["fragment"]}";
+    $validateURL = "{$validateURL}{$parts["path"]}{$parts["query"]}{$parts["fragment"]}";
+
+    // Validate user, password and port, since we don't allow them.
+    if (isset($parts["user"]) || isset($parts["pass"])) {
+      throw new ValidationException($i18n->t(
+        "Credentials are not allowed in “{0}” text ({1}).",
+        [ $this->label, "<code>{$this->checkPlain($node->attribute["href"])}</code>" ],
+        [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
+      ));
+    }
+    if (isset($parts["port"])) {
+      throw new ValidationException($i18n->t(
+        "Ports are not allowed in “{0}” text ({1}).",
+        [ $this->label, "<code>{$node->attribute["href"]}</code>" ],
+        [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
+      ));
+    }
+
+    if (filter_var($validateURL, FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED) === false) {
+      throw new ValidationException($i18n->t(
+        "Invalid link in “{0}” text ({1}).",
+        [ $this->label, "<code>{$node->attribute["href"]}</code>" ],
+        [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
+      ));
+    }
+
+    return "a{$this->expandTagAttributes($attributes)}";
   }
 
   /**
@@ -310,18 +350,30 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
     // Check if the image contains the required <code>src</code> attribute.
     if (!isset($node->attribute) || !isset($node->attribute["src"])) {
-      throw new ValidationException($i18n->t("Empty image <code>src</code> attribute in “{0}” text.", [ $this->label ]));
+      throw new ValidationException($i18n->t(
+        "Empty image {0} attribute in “{1}” text.",
+        [ "<code>src</code>", $this->label ],
+        [ "comment" => "{0} is <code>src</code>, {1} is the name of the text. Both should not be translated." ]
+      ));
     }
 
     // Validate the <code>src</code> URL.
     if (filter_var($node->attribute["src"], FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED) === false) {
-      throw new ValidationException($i18n->t("Invalid image <code>src</code> attribute in “{0}” text.", [ $this->label ]));
+      throw new ValidationException($i18n->t(
+        "Invalid image {0} attribute in “{1}” text.",
+        [ "<code>src</code>", $this->label ],
+        [ "comment" => "{0} is <code>src</code>, {1} is the name of the text. Both should not be translated." ]
+      ));
     }
 
     // Check if the image comes from our server.
     $url = parse_url($node->attribute["src"]);
     if (strpos($url["host"], $kernel->domainStatic) === false) {
-      throw new ValidationException($i18n->t("Only {0} images are allowed in “{1}” text.", [ $kernel->siteName, $this->label ]));
+      throw new ValidationException($i18n->t(
+        "Only {0} images are allowed in “{1}” text.",
+        [ $kernel->siteName, $this->label ],
+        [ "comment" => "{0} is our site name, {1} is the name of the text. Both should not be translated." ]
+      ));
     }
 
     // Check if the image exists and set <code>src</code>, <code>width</code> and <code>height</code> accordingly.
@@ -329,7 +381,11 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       $image = getimagesize("{$kernel->documentRoot}/public/upload{$url["path"]}");
     }
     catch (\ErrorException $e) {
-      throw new ValidationException($i18n->t("Image doesn’t exist in “{0}” text (<code>{1}</code>).", [ $this->label, $this->checkPlain($node->attribute["src"]) ]));
+      throw new ValidationException($i18n->t(
+        "Image doesn’t exist in “{0}” text ({1}).",
+        [ $this->label, "<code>{$this->checkPlain($node->attribute["src"])}</code>" ],
+        [ "comment" => "{0} is the name of the text, {1} is the value of the image’s src attribute. Both should not be translated." ]
+      ));
     }
     $attributes["src"] = $node->attribute["src"];
     $attributes["width"]  = $image[0];
@@ -361,7 +417,11 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // Validate that the <code>class</code> attribute only contains our user defined CSS classes.
     if (isset($node->attribute) && isset($node->attribute["class"]) && !isset($this->userClasses[$node->attribute["class"]])) {
       $classes = implode(" ", array_keys($this->userClasses));
-      throw new ValidationException($i18n->t("Invalid <code>class</code> attribute found in “{0}” text, allowed values are: <code>{$classes}</code>", [ $this->label ]));
+      throw new ValidationException($i18n->t(
+        "Invalid {0} attribute found in “{1}” text, allowed values are: {2}",
+        [ "<code>class</code>", $this->label, "<code>{$classes}</code>" ],
+        [ "comment" => "{0} is <code>class</code>, {1} is the name of the text, {2} is a list of allowed class values. All those should not be translated." ]
+      ));
     }
     else {
       $class = " class='{$node->attribute["class"]}'";
