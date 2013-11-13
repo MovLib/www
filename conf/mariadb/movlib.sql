@@ -618,6 +618,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_titles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
+  `movie_title_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this title relates to.',
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this title is in.',
   `title` BLOB NOT NULL COMMENT 'The movie\'s title.',
@@ -625,6 +626,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determine if this title is the display title in the specified language.',
   INDEX `fk_movies_titles_languages` (`language_id` ASC),
   INDEX `fk_movies_titles_movies` (`movie_id` ASC),
+  PRIMARY KEY (`movie_title_id`),
   CONSTRAINT `fk_movies_titles_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`movie_id`)
@@ -643,12 +645,14 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_taglines`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
+  `movie_tagline_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.',
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this tagline is in.',
   `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The tagline\'s translatable comment.',
   INDEX `fk_movies_taglines_languages` (`language_id` ASC),
   INDEX `fk_movies_taglines_movies` (`movie_id` ASC),
+  PRIMARY KEY (`movie_tagline_id`),
   CONSTRAINT `fk_movies_taglines_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`movie_id`)
