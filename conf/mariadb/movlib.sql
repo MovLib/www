@@ -618,6 +618,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_titles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this title relates to.',
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this title is in.',
   `title` BLOB NOT NULL COMMENT 'The movie\'s title.',
@@ -625,6 +626,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determine if this title is the display title in the specified language.',
   INDEX `fk_movies_titles_languages` (`language_id` ASC),
   INDEX `fk_movies_titles_movies` (`movie_id` ASC),
+  PRIMARY KEY (`id`),
   CONSTRAINT `fk_movies_titles_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`movie_id`)
@@ -643,12 +645,14 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_taglines`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.',
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this tagline is in.',
   `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The tagline\'s translatable comment.',
   INDEX `fk_movies_taglines_languages` (`language_id` ASC),
   INDEX `fk_movies_taglines_movies` (`movie_id` ASC),
+  PRIMARY KEY (`id`),
   CONSTRAINT `fk_movies_taglines_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`movie_id`)
@@ -712,7 +716,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   `upvotes` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image’s upvotes.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The movie image’s translatable descriptions.',
   `source` BLOB NOT NULL COMMENT 'The movie image’s source.',
-  `styles` BLOB NOT NULL COMMENT 'The movie image’s serialized styles.',
+  `styles` BLOB NOT NULL,
   PRIMARY KEY (`id`, `movie_id`, `type_id`),
   INDEX `fk_posters_movies` (`movie_id` ASC),
   INDEX `fk_movies_images_users` (`user_id` ASC),
