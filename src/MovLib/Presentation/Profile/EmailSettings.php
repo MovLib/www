@@ -21,7 +21,6 @@ use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\UserException;
 use \MovLib\Presentation\Email\User\EmailChange;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -177,6 +176,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Exception\Client\UnauthorizedException
    */
@@ -188,20 +188,20 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
       $data = $tmp->get($_GET["token"]);
     }
     catch (DatabaseException $e) {
-      $this->alerts .= new Alert(
-        $i18n->t("Your confirmation token has expired, please fill out the form again."),
-        $i18n->t("Token Expired"),
-        Alert::SEVERITY_ERROR
-      );
+      $this->checkErrors($i18n->t("Your confirmation token has expired, please fill out the form again."));
+      return $this;
     }
 
-    if ($data["user_id"] !== $this->user->id) {
-      throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your email address."));
+    if (!isset($data["user_id"]) || $data["user_id"] !== $this->user->id) {
+      throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
     }
 
-    $this->user->email = $data["new_email"];
+    if (empty($data["new_email"])) {
+      $this->checkErrors($i18n->t("The confirmation token is invalid, please fill out the form again."));
+      return $this;
+    }
 
-    $kernel->delayMethodCall([ $this->user, "commit" ]);
+    $kernel->delayMethodCall([ $this->user, "updateEmail" ], [ $data["new_email"] ]);
     $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
 
     $this->alerts .= new Alert(

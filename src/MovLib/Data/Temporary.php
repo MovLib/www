@@ -82,16 +82,16 @@ class Temporary extends \MovLib\Data\Database {
   /**
    * Update existing record in the tmp table.
    *
-   * @param string $key [optional]
-   *   The <var>$key</var> can be used to override the generation of a hash as key.
    * @param mixed $data
    *   The record's data.
+   * @param string $key [optional]
+   *   The <var>$key</var> can be used to override the generation of a hash as key.
    * @param string $ttl [optional]
    *   The cron interval in which this entry should be deleted.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function update($key, $data, $ttl = self::TMP_TTL_DAILY) {
+  public function update($data, $key, $ttl = self::TMP_TTL_DAILY) {
     $this->query("UPDATE `tmp` SET `created` = CURRENT_TIMESTAMP, `data` = ?, `ttl` = ?  WHERE `key` = ?", "sss", [ serialize($data), $ttl, $key ]);
     return $this;
   }

@@ -69,12 +69,15 @@ class TestKernel extends \MovLib\Tool\Kernel {
     parent::__construct();
 
     // Most tests rely on a valid session, create one up front.
-    $sessionInit = new \ReflectionMethod($session, "init");
-    $sessionInit->setAccessible(true);
-    $sessionInit->invokeArgs($session, [ 1 ]);
+    $session->active          = true;
+    $session->authentication  = $_SERVER["REQUEST_TIME"];
+    $session->isAuthenticated = true;
+    $session->userId          = 1;
+    $session->userName        = "Fleshgrinder";
+    $session->userTimeZoneId  = "Europe/Vienna";
 
     // Set a user agent string for PHPUnit tests.
-    $this->userAgent = ini_get("user_agent");
+    $this->userAgent          = ini_get("user_agent");
 
     // Create backups of our global objects.
     $backup = [

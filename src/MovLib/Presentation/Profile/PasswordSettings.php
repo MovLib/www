@@ -60,7 +60,7 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
   protected $newPasswordConfirm;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
@@ -74,8 +74,15 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     global $i18n, $kernel, $session;
 
     // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
-    $session->checkAuthorization($i18n->t("You need to sign in to change your password."));
-    $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
+    if (empty($_GET["token"]) && empty($session["reset_password_user_id"])) {
+      $session->checkAuthorization($i18n->t("You need to sign in to change your password."));
+      $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
+    }
+
+    // Validate the token if the page was requested via GET and a token is actually present.
+    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
+      $this->validateToken();
+    }
 
     // Translate and set the page title.
     $this->init($i18n->t("Password Settings"));
@@ -100,12 +107,11 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
       "class" => "button button--large button--success",
       "title" => $i18n->t("Click here to request the password change after you filled out all fields."),
     ]);
-
-    // Validate the token if the page was requested via GET and a token is actually present.
-    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
-      $this->validateToken();
-    }
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc
@@ -153,7 +159,13 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
 
     // Instantiate full user object if we have no errors so far.
     if (!$errors) {
-      $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
+      if ($session->isAuthenticated === true) {
+        $userId = $session->userId;
+      }
+      elseif (!empty($session["reset_password_user_id"])) {
+        $userId                                 = $session["reset_password_user_id"];
+      }
+      $this->user = new UserFull(UserFull::FROM_ID, $userId);
 
       // The new password shouldn't be the same as the old password.
       if ($this->user->verifyPassword($this->newPassword->value) === true) {
@@ -165,6 +177,14 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
 
     // If we have no errors at this point send the email to the user's email address to confirm the password change.
     if ($this->checkErrors($errors) === false) {
+      // Remove the user ID stored in the anonymous session and disable the password input elements because it's no
+      // longer possible for the user to update the password.
+      if (!empty($session["reset_password_user_id"])) {
+        unset($session["reset_password_user_id"]);
+        $this->newPassword->attributes[]        = "disabled";
+        $this->newPasswordConfirm->attributes[] = "disabled";
+      }
+
       $kernel->sendEmail(new PasswordChangeEmail($this->user, $this->newPassword->value));
 
       // The request has been accepted, but further action is required to complete it.
@@ -200,29 +220,54 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     global $i18n, $kernel, $session;
     $tmp = new Temporary();
 
+    // Get previously stored data from temporary database.
     try {
       $data = $tmp->get($_GET["token"]);
     }
     catch (DatabaseException $e) {
-      $this->alerts .= new Alert(
-        $i18n->t("Your confirmation token has expired, please fill out the form again."),
-        $i18n->t("Token Expired"),
-        Alert::SEVERITY_ERROR
-      );
+      $this->checkErrors($i18n->t("Your confirmation token has expired, please fill out the form again."));
+      return $this;
     }
 
-    if ($data["user_id"] !== $session->userId) {
-      throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your password."));
+    // Check once for possible data offsets.
+    $newPassword   = empty($data["reset_password"]);
+    $resetPassword = empty($data["new_password"]);
+
+    // Check if this data was stored for a password event.
+    if (empty($data["user_id"]) || ($newPassword === false && $resetPassword === false)) {
+      if ($session->isAuthenticated === true && $data["user_id"] === $session->userId) {
+        $this->checkErrors($i18n->t("The confirmation token is invalid, please fill out the form again."));
+        return $this;
+      }
+      else {
+        throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
+      }
     }
+    // If we have a new password stored in the database act accordingly.
+    elseif ($newPassword === true) {
+      $kernel->delayMethodCall([ new UserFull(UserFull::FROM_ID, $data["user_id"]), "updatePassword" ], [ $data["new_password"] ]);
+      $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
 
-    $kernel->delayMethodCall([ new UserFull(UserFull::FROM_ID, $session->userId), "passwordUpdate" ], [ $data["new_password"] ]);
-    $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
-
-    $this->alerts .= new Alert(
-      $i18n->t("Your password was successfully changed. Please use your new password to sign in from now on."),
-      $i18n->t("Password Changed Successfully"),
-      Alert::SEVERITY_SUCCESS
-    );
+      if ($session->isAuthenticated === true) {
+        $this->alerts .= new Alert(
+          $i18n->t("Your password was successfully changed. Please use your new password to sign in from now on."),
+          $i18n->t("Password Changed Successfully"),
+          Alert::SEVERITY_SUCCESS
+        );
+      }
+      else {
+        throw new UnauthorizedException(
+          $i18n->t("Your password was successfully changed. Please use your new password to sign in from now on."),
+          $i18n->t("Password Changed Successfully"),
+          Alert::SEVERITY_SUCCESS
+        );
+      }
+    }
+    // Let the user enter a new password (which has to be confirmed via email again).
+    else {
+      $session["reset_password_user_id"] = $data["user_id"];
+      $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
+    }
 
     return $this;
   }

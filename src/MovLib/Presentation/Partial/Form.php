@@ -85,9 +85,9 @@ class Form extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new form.
    *
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
    * @param \MovLib\Presentation\Page $page
    *   The page instance this form is attached to.
    * @param array $elements [optional]
@@ -103,15 +103,10 @@ class Form extends \MovLib\Presentation\AbstractBase {
    *   first invalid form element will get the attribute.
    */
   public function __construct($page, array $elements = [], $id = null, $validationCallback = "validate", $autofocus = true) {
-    global $kernel, $i18n, $session;
+    global $i18n, $kernel, $session;
     $this->elements        = $elements;
     $this->id              = $id ?: $page->id;
     $this->hiddenElements .= "<input name='form_id' type='hidden' value='{$this->id}'>";
-
-    // Any form has to include the CSRF token if a session is active (including anon sessions).
-    if (isset($session->csrfToken)) {
-      $this->hiddenElements .= "<input name='csrf' type='hidden' value='{$session->csrfToken}'>";
-    }
 
     // Set default attributes, a dev can override them by accessing the properties directly.
     $this->attributes = [ "action" => $kernel->requestURI, "method" => "post" ];
@@ -130,10 +125,8 @@ class Form extends \MovLib\Presentation\AbstractBase {
     if (isset($_POST["form_id"]) && $_POST["form_id"] == $this->id) {
       $errors = null;
 
-      // Validate the CSRF token and only continue if it is valid.
-      // @todo We have to switch to form/session based CSRF tokens (like Drupal) to mitigate the BREACH attack, also
-      //       regenerate the session ID every 20 minutes (maximum according to OWASP).
-      if ($session->validateCsrfToken() === false) {
+      // Validate the CSRF token and only continue validation if this is valid.
+      if ($session->active && (empty($_POST["csrf"]) || empty($session["csrf"]) || $_POST["csrf"] != $session["csrf"])) {
         $errors["csrf"] = $i18n->t("The form has become outdated. Copy any unsaved work in the form below and then {0}reload this page{1}.", [
           "<a href='{$kernel->requestURI}'>", "</a>"
         ]);
@@ -162,6 +155,13 @@ class Form extends \MovLib\Presentation\AbstractBase {
 
       // Call the validation callback method and let it handle any errors or continue with the validation process.
       $page->{$validationCallback}($errors);
+    }
+
+    // Generate new CSRF token for this form if we have an active session.
+    if ($session->active) {
+      $csrf                  = hash("sha512", openssl_random_pseudo_bytes(1024));
+      $session["csrf"]       = $csrf;
+      $this->hiddenElements .= "<input type='hidden' name='csrf' value='{$csrf}'>";
     }
 
     // If no element is invalid and we have a request to focus on a particular element, search for it and autofocus it.

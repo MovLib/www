@@ -99,21 +99,21 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ ^<?= $r("/movie/{0}/posters/upload", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_presenter "Upload\\MoviePosterUpload";
+    set $movlib_presenter "Movie\\UploadPoster";
     set $movlib_movie_id $1;
     set $movlib_tab "poster";
     try_files $movlib_cache @php;
   }
 
   location ~ ^<?= $r("/movie/{0}/lobby-cards/upload", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_presenter "Upload\\LobbyCardUpload";
+    set $movlib_presenter "Movie\\UploadLobbyCard";
     set $movlib_movie_id $1;
     set $movlib_tab "lobby-card";
     try_files $movlib_cache @php;
   }
 
   location ~ ^<?= $r("/movie/{0}/photos/upload", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_presenter "Upload\\PhotoUpload";
+    set $movlib_presenter "Movie\\UploadPhoto";
     set $movlib_movie_id $1;
     set $movlib_tab "photo";
     try_files $movlib_cache @php;
@@ -146,11 +146,11 @@ location ^~ <?= $r("/movie") ?> {
     set $movlib_tab "photo";
     try_files $movlib_cache @php;
   }
-  
+
   #
   # Movie Titles
   #
-  
+
   location ~ ^<?= $r("/movie/{0}/titles", [ "([0-9]+)" ]) ?>$ {
     set $movlib_presenter "Movie\\MovieTitles";
     set $movlib_movie_id $1;
@@ -173,7 +173,7 @@ location ^~ <?= $r("/movie") ?> {
     set $movlib_revision_hash $2;
     try_files $movlib_cache @php;
   }
-  
+
   location ~ ^<?= $r("/movie/{0}/titles/history", [ "([0-9]+)" ]) ?>$ {
     set $movlib_presenter "History\\Movie\\MovieTitleRevisions";
     set $movlib_movie_id $1;

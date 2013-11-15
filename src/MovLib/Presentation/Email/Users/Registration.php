@@ -91,10 +91,10 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
     $tmp             = new Temporary();
     $user            = $tmp->get($key);
     if ($user === false) {
-      $tmp->set($key, $this->user);
+      $tmp->set($this->user, $key);
     }
     elseif ($user != $this->user) {
-      $tmp->update($key, $this->user);
+      $tmp->update($this->user, $key);
     }
     return $this;
   }
