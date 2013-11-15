@@ -119,41 +119,56 @@ trait TraitProfile {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
    */
   protected function getSecondaryNavigationMenuitems() {
-    global $i18n;
-    return [
-      [
-        $this->routeProfile,
-        "<i class='icon icon--info-circled'></i> {$this->profileText}",
-        [ "class" => "separator", "title" => $i18n->t("Check out our account summary.") ]
-      ],
-      [
-        $this->routeAccountSettings,
-        "<i class='icon icon--user'></i> {$i18n->t("Account")}",
-        [ "title" => $i18n->t("Manage your basic account settings.") ]
-      ],
-      [
-        $this->routeNotificationSettings,
-        "<i class='icon icon--bell'></i> {$i18n->t("Notifications")}",
-        [ "title" => $i18n->t("Manage your notification settings.") ]
-      ],
-      [
-        $this->routeEmailSettings,
-        "<i class='icon icon--mail'></i> {$i18n->t("Email")}",
-        [ "title" => $i18n->t("Change your email address.") ]
-      ],
-      [
-        $this->routePasswordSettings,
-        "<i class='icon icon--lock'></i> {$i18n->t("Password")}",
-        [ "title" => $i18n->t("Change your password.") ]
-      ],
-      [
-        $this->routeDangerZoneSettings,
-        "<i class='icon icon--alert'></i> {$i18n->t("Danger Zone")}",
-        [ "class" => "delete", "title" => $i18n->t("Manage your sessions and/or deactivate your account.") ]
-      ],
-    ];
+    global $i18n, $session;
+    if ($session->isAuthenticated === true) {
+      return [
+        [
+          $this->routeProfile,
+          "<i class='icon icon--info-circled'></i> {$this->profileText}",
+          [ "class" => "separator", "title" => $i18n->t("Check out our account summary.") ]
+        ],
+        [
+          $this->routeAccountSettings,
+          "<i class='icon icon--user'></i> {$i18n->t("Account")}",
+          [ "title" => $i18n->t("Manage your basic account settings.") ]
+        ],
+        [
+          $this->routeNotificationSettings,
+          "<i class='icon icon--bell'></i> {$i18n->t("Notifications")}",
+          [ "title" => $i18n->t("Manage your notification settings.") ]
+        ],
+        [
+          $this->routeEmailSettings,
+          "<i class='icon icon--mail'></i> {$i18n->t("Email")}",
+          [ "title" => $i18n->t("Change your email address.") ]
+        ],
+        [
+          $this->routePasswordSettings,
+          "<i class='icon icon--lock'></i> {$i18n->t("Password")}",
+          [ "title" => $i18n->t("Change your password.") ]
+        ],
+        [
+          $this->routeDangerZoneSettings,
+          "<i class='icon icon--alert'></i> {$i18n->t("Danger Zone")}",
+          [ "class" => "delete", "title" => $i18n->t("Manage your sessions and/or deactivate your account.") ]
+        ],
+      ];
+    }
+    // A user might visit the password settings page after successfully requesting a reset password email. Only display
+    // the actual secondary navigation point the user is able to access at this point and omit everything else.
+    else {
+      return [
+        [
+          $this->routePasswordSettings,
+          "<i class='icon icon--lock'></i> {$i18n->t("Password")}",
+          [ "title" => $i18n->t("Change your password.") ]
+        ]
+      ];
+    }
   }
 
 }

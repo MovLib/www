@@ -128,22 +128,22 @@ class FullTest extends \MovLib\TestCase {
   public function testCommit() {
     // Setup
     $this->userFull                     = new UserFull(UserFull::FROM_ID, 1);
+    $this->userFull->aboutMe            = "PHPUnit";
     $this->userFull->birthday           = "2000-01-01";
     $this->userFull->countryId          = 1;
-    $this->userFull->aboutMe            = "PHPUnit";
     $this->userFull->private            = true;
     $this->userFull->realName           = "PHPUnit PHPUnit";
     $this->userFull->sex                = 10;
     $this->userFull->systemLanguageCode = "xx";
-    $this->userFull->timeZoneIdentifier         = "PHPUnit/PHPUnit";
+    $this->userFull->timeZoneIdentifier = "PHPUnit/PHPUnit";
     $this->userFull->website            = "http://phpunit.net/";
     $this->userFull->commit();
 
     // Test
     $this->userFull = new UserFull(UserFull::FROM_ID, 1);
+    $this->assertEquals("PHPUnit", $this->userFull->aboutMe);
     $this->assertEquals("2000-01-01", $this->userFull->birthday);
     $this->assertEquals(1, $this->userFull->countryId);
-    $this->assertEquals("PHPUnit", $this->userFull->aboutMe);
     $this->assertTrue($this->userFull->private);
     $this->assertEquals("PHPUnit PHPUnit", $this->userFull->realName);
     $this->assertEquals(10, $this->userFull->sex);
@@ -175,6 +175,31 @@ class FullTest extends \MovLib\TestCase {
   }
 
   /**
+   * @covers ::delete
+   * @global \MovLib\Tool\Database $db
+   */
+  public function testDelete() {
+    global $db;
+
+    // Setup
+    $user = new UserFull(UserFull::FROM_ID, 1);
+    $email = $user->email;
+
+    // Test
+    $user->delete();
+    $this->assertNull($db->query("SELECT * FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_row());
+    $result = $db->query("SELECT * FROM `users` WHERE `id` = 1")->get_result()->fetch_assoc();
+    foreach ($result as $attribute => $value) {
+      if ($attribute != "id" && $attribute != "name") {
+        $this->assertNull($value);
+      }
+    }
+
+    // Teardown
+    (new SeedImport())->databaseImport([ "users" ]);
+  }
+
+  /**
    * @covers ::hashPassword
    */
   public function testHashPassword() {
@@ -200,11 +225,29 @@ class FullTest extends \MovLib\TestCase {
     $stmt   = $db->query("SELECT * FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $user->id ]);
     $result = $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    $this->assertEmpty($result["profile"]);
+    $this->assertEmpty($result["dyn_about_me"]);
     $this->assertEquals($user->name, $result["name"]);
     $this->assertEquals($user->email, $result["email"]);
-    $this->assertEquals($i18n->languageCode, $result["systemLanguageCode"]);
+    $this->assertEquals($i18n->languageCode, $result["system_language_code"]);
     $this->assertEquals($user->password, $result["password"]);
+
+    // Teardown
+    (new SeedImport())->databaseImport([ "users" ]);
+  }
+
+  /**
+   * @covers ::updateEmail
+   * @global \MovLib\Tool\Database $db
+   */
+  public function testUpdateEmail() {
+    global $db;
+
+    // Setup
+    $user = new UserFull(UserFull::FROM_ID, 1);
+
+    // Test
+    $user->updateEmail("phpunit@movlib.org");
+    $this->assertEquals("phpunit@movlib.org", $db->query("SELECT `email` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ 1 ])->get_result()->fetch_row()[0]);
 
     // Teardown
     (new SeedImport())->databaseImport([ "users" ]);
@@ -217,7 +260,10 @@ class FullTest extends \MovLib\TestCase {
   public function testUpdatePassword() {
     global $session;
 
+    // Setup
     $user = new UserFull(UserFull::FROM_ID, 1);
+
+    // Test
     $user->updatePassword($user->hashPassword("PHPUnitPassword1234"));
     $session->authenticate("richard@fussenegger.info", "PHPUnitPassword1234");
 

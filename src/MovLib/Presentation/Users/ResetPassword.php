@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Users;
 
+use \MovLib\Data\Temporary;
+use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -44,7 +46,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
-  private $email;
+  protected $email;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -54,23 +56,26 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * Instantiate new user reset password presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n;
+    global $i18n, $kernel;
     $this->init($i18n->t("Reset Password"));
 
-    $this->email = new InputEmail("email", $i18n->t("Email Address"), [
-      "autofocus",
-      "placeholder" => $i18n->t("Enter your email address"),
-    ]);
+    $this->email = new InputEmail();
+    $this->email->attributes["placeholder"] = $i18n->t("Enter your email address");
 
     $this->form = new Form($this, [ $this->email ]);
     $this->form->attributes["class"] = "span span--6 offset--3";
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Reset"), [
       "class" => "button button--large button--success",
-      "title" => $i18n->t("Click here to request a password reset for the entered email address"),
+      "title" => $i18n->t("Continue here to request a password reset for the entered email address"),
     ]);
+
+    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
+      $this->validateToken($_GET["token"]);
+    }
   }
 
   /**

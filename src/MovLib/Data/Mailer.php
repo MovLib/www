@@ -215,7 +215,12 @@ EOT;
     $this->email     = $email;
     $this->messageID = uniqid("movlib");
     if (method_exists($email, "init")) {
-      $email->init();
+      try {
+        $email->init();
+      }
+      catch (MailerException $e) {
+        return $this;
+      }
     }
     mail($this->getRecipient(), $this->getSubject(), $this->getMessage(), $this->getHeaders(), $this->getParameters());
     return $this;

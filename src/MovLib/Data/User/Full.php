@@ -192,6 +192,7 @@ class Full extends \MovLib\Data\User\User {
           `image_extension`,
           `image_changed` IS NOT NULL,
           `password`,
+          `private`,
           `profile_views`,
           `real_name`,
           `reputation`,
@@ -218,6 +219,7 @@ class Full extends \MovLib\Data\User\User {
         $this->imageExtension,
         $this->imageExists,
         $this->password,
+        $this->private,
         $this->profileViews,
         $this->realName,
         $this->reputation,
@@ -277,7 +279,7 @@ class Full extends \MovLib\Data\User\User {
     return $this->query(
       "UPDATE `users` SET
         `birthday`             = ?,
-        `country`_id`          = ?,
+        `country_id`           = ?,
         `dyn_about_me`         = COLUMN_ADD(`dyn_about_me`, ?, ?),
         `image_changed`        = FROM_UNIXTIME(?),
         `image_extension`      = ?,
@@ -289,17 +291,17 @@ class Full extends \MovLib\Data\User\User {
         `website`              = ?
       WHERE `id` = ?
         LIMIT 1",
-      "sisisisisssd",
+      "sissisisisssd",
       [
         $this->birthday,
         $this->countryId,
+        $i18n->languageCode,
         $this->aboutMe,
         $this->imageChanged,
         $this->imageExtension,
         $this->private,
         $this->realName,
         $this->sex,
-        $i18n->languageCode,
         $this->systemLanguageCode,
         $this->timeZoneIdentifier,
         $this->website,
@@ -311,21 +313,10 @@ class Full extends \MovLib\Data\User\User {
   /**
    * Delete this user.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $token
-   *   The user submitted token.
    * @return this
-   * @throws \MovLib\Exception\UserException
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function delete($token) {
-    global $i18n;
-
-    // Validate the given token.
-    if ($this->validateToken("deletion", $token) === false) {
-      throw new UserException("Invalid token for deletion event.");
-    }
-
-    // Delete absolutely everything and only keep the username.
+  public function delete() {
     return $this
       ->deleteImage()
       ->query(
@@ -346,30 +337,13 @@ class Full extends \MovLib\Data\User\User {
           `image_changed`        = NULL,
           `image_extension`      = NULL,
           `real_name`            = NULL,
-          `website`              = NULL,
-          `token`                = NULL,
-          `token_created`        = NULL,
-          `token_event`          = NULL
+          `reputation`           = NULL,
+          `website`              = NULL
         WHERE `id` = ?",
         "d",
         [ $this->id ]
       )
     ;
-  }
-
-  /**
-   * Get user token for event.
-   *
-   * @param string $event
-   *   The event for which we generate a token (e.g. <code>"deletion"</code>).
-   * @return string
-   *   The randomly generated token.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getToken($event) {
-    $token = hash("sha256", openssl_random_pseudo_bytes(1024));
-    $this->query("UPDATE `users` SET `token` = ?, `token_created` = CURRENT_TIMESTAMP, `token_event` = ? WHERE `id` = ?", "ssd", [ $token, $event, $this->id ]);
-    return $token;
   }
 
   /**
@@ -404,7 +378,7 @@ class Full extends \MovLib\Data\User\User {
   public function register() {
     global $i18n;
     $stmt = $this->query(
-      "INSERT INTO `users` (`profile`, `email`, `name`, `password`, `system_language_code`) VALUES ('', ?, ?, ?, ?)",
+      "INSERT INTO `users` (`dyn_about_me`, `email`, `name`, `password`, `system_language_code`) VALUES ('', ?, ?, ?, ?)",
       "ssss",
       [ $this->email, $this->name, $this->password, $i18n->languageCode ]
     );
@@ -413,29 +387,27 @@ class Full extends \MovLib\Data\User\User {
   }
 
   /**
+   * Change the user's email address.
+   *
+   * @param string $email
+   *   The new email address.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function updateEmail($email) {
+    return $this->query("UPDATE `users` SET `email` = ? WHERE `id` = ?", "sd", [ $email, $this->id ]);
+  }
+
+  /**
    * Change the user's password.
    *
    * @param string $password
    *   The new hashed password.
    * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function updatePassword($password) {
     return $this->query("UPDATE `users` SET `password` = ? WHERE `id` = ?", "sd", [ $password, $this->id ]);
-  }
-
-  /**
-   * Validate the given token.
-   *
-   * @param string $event
-   *   The event for which we generate a token (e.g. <code>"deletion"</code>).
-   * @param string $token
-   *   The user submitted token.
-   * @return boolean
-   *   <code>TRUE</code> if the token is valid for this event, otherwise <code>FALSE</code>.
-   */
-  protected function validateToken($event, $token) {
-    $result = $this->query("SELECT `token`, `token_event` FROM `users` WHERE DATEDIFF(CURRENT_TIMESTAMP, `token_created`) < 1 AND `id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row();
-    return $result && $token == $result[0] && $event == $result[1];
   }
 
   /**

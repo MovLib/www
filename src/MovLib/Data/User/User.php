@@ -152,9 +152,10 @@ class User extends \MovLib\Data\Image\AbstractImage {
         [ $value ]
       );
       $stmt->bind_result($this->id, $this->name, $this->imageChanged, $this->imageExtension, $this->imageExists);
-      if (!$stmt->fetch() && $stmt->close()) {
+      if (!$stmt->fetch()) {
         throw new UserException("Could not find user for {$from} '{$value}'!");
       }
+      $stmt->close();
       $this->imageExists = (boolean) $this->imageExists;
       $this->imageName   = rawurlencode($this->name);
       $this->route       = $i18n->r("/user/{0}", [ $this->imageName ]);

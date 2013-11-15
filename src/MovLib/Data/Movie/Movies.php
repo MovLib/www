@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Movie;
 
 /**
  * Retrieve several movies from the database for listings.
@@ -26,47 +26,47 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movies extends \MovLib\Data\Database implements \MovLib\Data\Pagination {
+class Movies extends \MovLib\Data\DatabaseArrayObject implements \MovLib\Data\Pagination {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The basic query for most methods.
+   *
+   * @todo Improve query!
+   * @var string
+   */
+  protected $query =
+    "SELECT
+      `movie`.`movie_id` AS `id`,
+      IFNULL(`title`.`title`, `movie`.`original_title`) AS `displayTitle`,
+      `movie`.`original_title` AS `originalTitle`,
+      `movie`.`year`
+    FROM `movies` AS `movie`
+      LEFT JOIN `movies_titles` AS `title` ON `title`.`movie_id` = `movie`.`movie_id`
+    WHERE `movie`.`deleted` = false AND `title`.`is_display_title` = true
+    "
+  ;
 
   /**
    * Get a movie list ordered by entry date.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param int $lowerBound [optional]
+   * @param int $offset [optional]
    *   The lower limit for the pagination (defaults to 0).
-   * @param int $upperBound [optional]
+   * @param int $rowCount [optional]
    *   The upper limit for the pagination (defaults to 25).
    * @return array
    *   Sorted numeric array containing the movie information as <code>\MovLib\Data\Movie</code> objects.
    */
-  public function getMoviesByCreated($lowerBound = 0, $upperBound = self::SPAN_08) {
-    global $i18n;
-    $result = $this->query(
-      "SELECT
-        `movie_id` AS `id`,
-          `original_title` AS `originalTitle`,
-          `rating` AS `rating`,
-          `mean_rating` AS `meanRating`,
-          `votes`,
-          `deleted`,
-          `year`,
-          `runtime`,
-          `rank`,
-          COLUMN_GET(`dyn_synopses`, '{$i18n->languageCode}' AS BINARY) AS `synopsis`,
-          `website`,
-          UNIX_TIMESTAMP(`created`) AS `created`
-      FROM `movies`
-      WHERE `deleted` = 0
-      ORDER BY `created` DESC
-      LIMIT ?, ?",
-      "ii",
-      [ $lowerBound, $upperBound ]
-    )->get_result();
-    $movies = [];
-    while ($movie = $result->fetch_object("\\MovLib\\Data\\Movie")) {
-      $movies[] = $movie;
+  public function getMoviesByCreated($offset = 0, $rowCount = self::SPAN_08) {
+    $result = $this->query("{$this->query} ORDER BY `movie`.`created` DESC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
+    while ($movie = $result->fetch_object("\\MovLib\\Data\\Movie\\Movie")) {
+      $this->objectsArray[] = $movie;
     }
-    return $movies;
+    return $this;
   }
 
 }

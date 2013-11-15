@@ -17,10 +17,11 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
+use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\UserException;
 use \MovLib\Presentation\Email\User\Deletion;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -259,20 +260,33 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
    */
   protected function validateToken() {
     global $i18n, $kernel, $session;
+    $tmp = new Temporary();
+
     try {
-      $this->user->delete($_GET["token"]);
-      $session->destroy();
-      $kernel->alerts .= new Alert(
-        $i18n->t("Your account has been purged from our system. We’re very sorry to see you leave."),
-        $i18n->t("Account Deletion Successfull"),
-        Alert::SEVERITY_SUCCESS
+      $data = $tmp->get($_GET["token"]);
+    }
+    catch (DatabaseException $e) {
+      $this->alerts .= new Alert(
+        $i18n->t("Your confirmation token has expired, please fill out the form again."),
+        $i18n->t("Token Expired"),
+        Alert::SEVERITY_ERROR
       );
-      throw new RedirectSeeOtherException("/");
+      return $this;
     }
-    catch (UserException $e) {
-      $this->checkErrors($i18n->t("The submitted token is invalid, please request a new token below."));
+
+    if ($data["user_id"] !== $session->userId) {
+      throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your password."));
     }
-    return $this;
+
+    $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
+    $this->user->delete();
+    $session->destroy();
+    $kernel->alerts .= new Alert(
+      $i18n->t("Your account has been purged from our system. We’re very sorry to see you leave."),
+      $i18n->t("Account Deletion Successfull"),
+      Alert::SEVERITY_SUCCESS
+    );
+    throw new RedirectSeeOtherException("/");
   }
 
 }

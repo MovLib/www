@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation;
+namespace MovLib\Presentation\Movies;
 
 /**
  * Provides secondary menu points and stylesheets for latest additions presentations.
@@ -26,15 +26,7 @@ namespace MovLib\Presentation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait LatestAdditionsTrait {
-
-  /**
-   * @inheritdoc
-   */
-  protected function init($title) {
-    parent::init($title);
-    $this->stylesheets[] = "modules/latest-additions.css";
-  }
+trait TraitMovies {
 
   /**
    * @inheritdoc

@@ -77,7 +77,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
   /**
    * Associative array containing all history supported types.
-   * 
+   *
    * Key have to be plural, value sigular.
    *
    * @var array
@@ -118,7 +118,9 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     foreach (glob("{$this->seedPath}/" . self::OPTION_DATABASE . "/*.sql") as $seedScript) {
       $this->databaseScripts[basename($seedScript, ".sql")] = $seedScript;
     }
-    foreach (glob("{$this->seedPath}/" . self::OPTION_UPLOAD . "/*", GLOB_ONLYDIR) as $uploadDirectory) {
+
+    // Only go through the public directory, the user images don't have private files.
+    foreach (glob("{$this->seedPath}/" . self::OPTION_UPLOAD . "/public/*", GLOB_ONLYDIR) as $uploadDirectory) {
       $this->uploadDirectories[basename($uploadDirectory)] = $uploadDirectory;
     }
   }
@@ -226,7 +228,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    */
   public function historyImport() {
     global $db, $kernel;
-    
+
     foreach ($this->historyTypes as $typePlural => $typeSingular) {
       // Remove complete history repository if it's present in the file system.
       $path = "{$kernel->documentRoot}/private/history/{$typeSingular}";
@@ -386,28 +388,36 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    */
   public function uploadImport(array $directoryNames = null) {
     global $kernel;
-    $directories           = null;
-    $seedUploadDirectory   = "{$this->seedPath}/" . self::OPTION_UPLOAD;
-    $publicUploadDirectory = "{$kernel->documentRoot}/public/" . self::OPTION_UPLOAD;
-    if (empty($directoryNames)) {
-      $directories = $this->uploadDirectories;
-      sh::execute("rm -rf {$publicUploadDirectory}/*");
-      sh::execute("cp -R {$seedUploadDirectory}/* {$publicUploadDirectory}");
-    }
-    else {
-      $c = count($directoryNames);
-      for ($i = 0; $i < $c; ++$i) {
-        if (isset($this->uploadDirectories[$directoryNames[$i]])) {
-          $directories[$directoryNames[$i]] = $this->uploadDirectories[$directoryNames[$i]];
-          sh::execute("rm -rf {$publicUploadDirectory}/{$directoryNames[$i]}/*");
-          sh::execute("cp -R {$seedUploadDirectory}/{$directoryNames[$i]}/* {$publicUploadDirectory}/{$directoryNames[$i]}");
-        }
-        else {
-          throw new \InvalidArgumentException("No directory with name '{$directoryNames[$i]}' found!");
+    foreach ([ "private", "public" ] as $visibility) {
+      $directories     = null;
+      $seedDirectory   = "{$this->seedPath}/" . self::OPTION_UPLOAD . "/{$visibility}";
+      $uploadDirectory = "{$kernel->documentRoot}/{$visibility}/" . self::OPTION_UPLOAD;
+      if (empty($directoryNames)) {
+        $directories = $this->uploadDirectories;
+        $this->uploadMoveImages($seedDirectory, $uploadDirectory);
+      }
+      else {
+        $c = count($directoryNames);
+        for ($i = 0; $i < $c; ++$i) {
+          if (isset($this->uploadDirectories[$directoryNames[$i]])) {
+            $directories[$directoryNames[$i]] = $this->uploadDirectories[$directoryNames[$i]];
+            $this->uploadMoveImages("{$seedDirectory}/{$directoryNames[$i]}", "{$uploadDirectory}/{$directoryNames[$i]}");
+          }
+          else {
+            throw new \InvalidArgumentException("No directory with name '{$directoryNames[$i]}' found!");
+          }
         }
       }
     }
     return $this->write("Successfully imported upload data for '" . implode("', '", array_keys($directories)) . "'.", self::MESSAGE_TYPE_INFO);
+  }
+
+  protected function uploadMoveImages($from, $to) {
+    if (is_dir($from)) {
+      sh::execute("rm -rf {$to}/*");
+      sh::execute("cp -R {$from}/* {$to}");
+    }
+    return $this;
   }
 
 }

@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Email\User;
 
+use \MovLib\Data\Temporary;
+
 /**
  * This email template is used if a user requests account deactivation.
  *
@@ -75,7 +77,11 @@ class Deletion extends \MovLib\Presentation\Email\AbstractEmail {
     global $i18n, $kernel;
     $this->recipient = $this->user->email;
     $this->subject   = $i18n->t("Reqeusted Deletion");
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token=" . $this->user->getToken("deletion");
+    $token           = (new Temporary())->set([
+      "user_id"  => $this->user->id,
+      "deletion" => true,
+    ]);
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token={$token}";
     return $this;
   }
 

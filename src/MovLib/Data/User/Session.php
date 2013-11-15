@@ -27,7 +27,6 @@ use \MovLib\Exception\SessionException;
  * The following attributes are always available:
  * <ul>
  *   <li><code>Session::$authentication</code> contains the timestamp of the time when this session was initialized</li>
- *   <li><code>Session::$csrfToken</code> contains this session's CSRF token used to validate forms</li>
  *   <li><code>Session::$isAuthenticated</code> is a flag indicating if this is a known user</li>
  *   <li><code>Session::$userId</code> is zero for anonymous users, otherwise it contains the unique user's ID</li>
  *   <li><code>Session::$userName</code> contains the IP address for anonymous users, otherwise the user's unique name</li>
@@ -39,25 +38,25 @@ use \MovLib\Exception\SessionException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Session extends \MovLib\Data\Database {
+class Session extends \MovLib\Data\Database implements \ArrayAccess {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Timestamp this session was first authenticated.
+   * Whether this session is active or not.
    *
-   * @var int
+   * @var boolean
    */
-  public $authentication;
+  public $active = false;
 
   /**
-   * The session's CSRF token.
+   * Timestamp this session was first authenticated.
    *
-   * @var string
+   * @var integer
    */
-  public $csrfToken;
+  public $authentication = 0;
 
   /**
    * The session's ID.
@@ -78,12 +77,12 @@ class Session extends \MovLib\Data\Database {
    *
    * @var string
    */
-  private $name;
+  protected $name;
 
   /**
    * The session's user ID.
    *
-   * @var int
+   * @var integer
    */
   public $userId = 0;
 
@@ -125,40 +124,67 @@ class Session extends \MovLib\Data\Database {
     // ensure that HTTP proxies are able to cache anonymous pageviews.
     if (!empty($_COOKIE[$this->name])) {
       // Try to resume the session with the ID from the cookie.
-      if (session_start() === false) {
-        throw new \MemcachedException("Could not resume session (maybe Memcached is down).");
-      }
+      $this->start();
       $this->id = session_id();
 
-      // We have to try loading the session from our persistent session storage if the session IDs don't match.
-      if ($_COOKIE[$this->name] != $this->id || !($result = $this->query("SELECT `user_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name] ])->get_result()->fetch_assoc())) {
-        $this->init($result["user_id"], $result["authentication"]);
+      // Try to load the session from the persistent session storage for registered users if we just generated a new
+      // session ID and have no data stored for it.
+      if ($_COOKIE[$this->name] != $this->id && empty($_SESSION)) {
+        // Load session data from session storage.
+        $stmt = $this->query("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name ]]);
+        $stmt->bind_result($this->authentication, $this->userId);
+
+        // We couldn't find a valid session and we have no data, invalid session.
+        if (!$stmt->fetch()) {
+          $this->destroy();
+        }
+        $stmt->close();
+        $stmt = $this->query("SELECT `name`, `time_zone_identifier` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->userId ]);
+        $stmt->bind_result($this->userName, $this->userTimeZoneId);
+
+        // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
+        if (!$stmt->fetch()) {
+          $this->destroy();
+          error_log("Non-existent user ID from persistent session storage, IP was: {$kernel->remoteAddress} (Session ID: {$_COOKIE[$this->name]})");
+        }
+        $stmt->close();
+
+        // Everything looks good, valid session and valid user, export and update persistent storage.
+        $_SESSION["auth"] = $this->authentication;
+        $_SESSION["id"]   = $this->userId;
+        $_SESSION["name"] = $this->userName;
+        $_SESSION["tz"]   = $this->userTimeZoneId;
         $kernel->delayMethodCall([ $this, "update" ], [ $_COOKIE[$this->name] ]);
       }
-      // Maybe somebody is trying with a random session ID to get a session?
-      elseif (!isset($_SESSION["user_id"])) {
+      // Session data was loaded from Memcached.
+      elseif (!empty($_SESSION)) {
+        // This is a regular user if we stored an ID along with this session in Memcached.
+        if (!empty($_SESSION["id"])) {
+          $this->authentication  = $_SESSION["auth"];
+          $this->userId          = $_SESSION["id"];
+          $this->userName        = $_SESSION["name"];
+          $this->userTimeZoneId  = $_SESSION["tz"];
+          $this->isAuthenticated = true;
+
+          // Regenerate the session ID at least every 20 minutes (OWASP recommendation).
+          if ($this->authentication + 1200 < $_SERVER["REQUEST_TIME"]) {
+            $this->regenerate();
+          }
+        }
+        // This is a anonymous user if we didn't store an ID along with this session in Memcached.
+        else {
+          $this->userName       = $kernel->remoteAddress;
+          $this->userTimeZoneId = ini_get("date.timezone");
+        }
+      }
+      // If we have no data for this session ID directly destroy it.
+      else {
         $this->destroy();
       }
-      // If we have a user ID everything should be fine, export default session data to class scope.
-      else {
-        $this->csrfToken      = $_SESSION["csrf_token"];
-        $this->authentication = $_SESSION["authentication"];
-        $this->userId         = $_SESSION["user_id"];
-        $this->userName       = $_SESSION["user_name"];
-        $this->userTimeZoneId = $_SESSION["user_time_zone_id"];
-
-        // Regenerate the session ID at least every 20 minutes (OWASP recommendation).
-        if ($this->authentication + 1200 < $_SERVER["REQUEST_TIME"]) {
-          $this->regenerate();
-        }
-
-        // If the stored user ID is greather than 0 it's a known user.
-        if ($this->userId > 0) {
-          $this->isAuthenticated = true;
-        }
-      }
     }
+    // Export dynamic values to class scope.
     else {
+      $this->userName       = $kernel->remoteAddress;
       $this->userTimeZoneId = ini_get("date.timezone");
     }
   }
@@ -184,20 +210,22 @@ class Session extends \MovLib\Data\Database {
     global $kernel;
 
     // Load necessary user data from storage (if we have any).
-    $result = $this->query("SELECT `id`, `password` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc();
-    if (!$result) {
-      throw new SessionException("Couldn't find user with email '{$email}'!");
+    if (!($result = $this->query("SELECT `id`, `name`, `password`, `time_zone_identifier` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
+      throw new SessionException("Couldn't find user with email '{$email}'.");
     }
 
     // Validate the submitted password.
     if (password_verify($rawPassword, $result["password"]) === false) {
-      throw new SessionException("Invalid password for user with email {$email}!");
+      throw new SessionException("Invalid password for user with email '{$email}'.");
     }
 
-    // My be the user was doing some work as anonymous user and already has a session active. If so generate new session
+    // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
     // ID and if not generate a completely new session.
     session_status() === PHP_SESSION_ACTIVE ? $this->regenerate() : $this->start();
-    $this->init($result["id"]);
+    $_SESSION["auth"]     = $this->authentication = $_SERVER["REQUEST_TIME"];
+    $_SESSION["id"]       = $this->userId         = $result["id"];
+    $_SESSION["name"]     = $this->userName       = $result["name"];
+    $_SESSION["tz"]       = $this->userTimeZoneId = $result["time_zone_identifier"];
     $kernel->delayMethodCall([ $this, "insert" ]);
 
     // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
@@ -304,18 +332,25 @@ class Session extends \MovLib\Data\Database {
   public function destroy() {
     global $kernel;
 
-    // The user is no longer authenticated, keep this line outside of the if for PHPUnit tests.
+    // The user is no longer authenticated, keep this outside of the if for PHPUnit tests.
+    $this->active          = false;
+    $this->authentication  = 0;
     $this->isAuthenticated = false;
+    $this->userId          = 0;
+    $this->userName        = $kernel->remoteAddress;
+    $this->userTimeZoneId  = ini_get("date.timezone");
 
-    // If no session is active, nothing has to be done.
-    if (session_status() === PHP_SESSION_ACTIVE) {
+    // Only execute the following if this request was made through nginx.
+    if (isset($_SERVER["FCGI_ROLE"])) {
       // Remove all data associated with this session.
-      session_unset();
-      session_destroy();
+      if (session_status() === PHP_SESSION_ACTIVE) {
+        session_unset();
+        session_destroy();
+        session_write_close();
+      }
       // Remove the cookie.
       $cookie = session_get_cookie_params();
       setcookie($this->name, "", 1, $cookie["path"], $cookie["domain"], $cookie["secure"], $cookie["httponly"]);
-      session_write_close();
       // Remove the session ID from our database.
       $kernel->delayMethodCall([ $this, "delete" ], [ $this->id ]);
     }
@@ -343,62 +378,6 @@ class Session extends \MovLib\Data\Database {
       "d",
       [ $this->userId ]
     )->get_result()->fetch_all(MYSQLI_ASSOC);
-  }
-
-  /**
-   * Initialize session with default data.
-   *
-   * @global \MovLib\Kernel $kernel
-   * @param int $userId [optional]
-   *   The ID of the user for wish we should initialize a session. Zero is used if no value is passed, this will
-   *   initialize the session for an anonymous user.
-   * @param int $signIn [optional]
-   *   The timestamp of the last time this user signed in. The current timestamp is used if no value is given.
-   * @return this
-   * @throws \MovLib\Exception\SessionException
-   */
-  private function init($userId = 0, $signIn = null) {
-    global $kernel;
-
-    // We might be changing from an anonymous session to a signed in session while a form is submitted (e.g. the login
-    // form is visited by an anonymous user with an active anonymous session and the form is submitted with the CSRF
-    // token) therefore we have to validate the CSRF token. If the token is invalid at this point, reject creation of
-    // a new session (which might result in elevated privileges).
-    if ($this->validateCsrfToken() === false) {
-      return $this;
-    }
-
-    $this->id             = session_id();
-    $this->csrfToken      = $_SESSION["csrf_token"]     = hash("sha512", openssl_random_pseudo_bytes(1024));
-    $this->authentication = $_SESSION["authentication"] = $signIn ? : $_SERVER["REQUEST_TIME"];
-
-    // Update the (already validated) post submitted CSRF token to the newly generated one. This is important, because
-    // any submitted form will validate the token automatically again, but this would result in an invalid form because
-    // we just created a new session with a new CSRF token for this client.
-    if (isset($_POST["csrf"])) {
-      $_POST["csrf"] = $this->csrfToken;
-    }
-
-    // We are initializing this session for a registered user.
-    if ($userId > 0) {
-      if (!($result = $this->query("SELECT `name`, `time_zone_identifier` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $userId ])->get_result()->fetch_row())) {
-        throw new SessionException("Could not fetch user data for user ID {$userId}.");
-      }
-      $this->userId          = $_SESSION["user_id"]           = $userId;
-      $this->userName        = $_SESSION["user_name"]         = $result[0];
-      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = $result[1];
-      $this->isAuthenticated = true;
-    }
-    // Initialize this session for an anonymous user.
-    else {
-      $this->userId          = $_SESSION["user_id"]           = $userId;
-      $this->userName        = $_SESSION["user_name"]         = $kernel->remoteAddress;
-      // @todo Guess timezone with JavaScript: https://bitbucket.org/pellepim/jstimezonedetect
-      $this->userTimeZoneId  = $_SESSION["user_time_zone_id"] = ini_get("date.timezone");
-      $this->isAuthenticated = false; // Just making sure
-    }
-
-    return $this;
   }
 
   /**
@@ -447,7 +426,7 @@ class Session extends \MovLib\Data\Database {
    * @global \MovLib\Kernel $kernel
    * @return this
    */
-  private function regenerate() {
+  protected function regenerate() {
     global $kernel;
 
     // Do nothing if this method isn't called via nginx!
@@ -470,25 +449,29 @@ class Session extends \MovLib\Data\Database {
    */
   public function shutdown() {
     global $kernel;
-    $status = session_status();
 
-    // Only start a session for this anonymous user if there is any data that we need to remember and if no session is
-    // already active (which is the case if this request was made by an authenticated user).
-    if ($status === PHP_SESSION_NONE && !empty($_SESSION)) {
-      error_log(print_r($_SESSION, true));
-      // Tell the user agent to delete this cookie on it's own shutdown (e.g. closing browser).
-      session_set_cookie_params(0);
-      $this->start()->init();
+    // Absolutely no session data is present (default state).
+    if (empty($_SESSION)) {
+      // Destroy this session if one is active without any data associated to it.
+      if (session_status() === PHP_SESSION_ACTIVE) {
+        $this->destroy();
+      }
     }
-
-    // Save session data to Memcached before sending the response to the user. No matter if we just started a session
-    // in the code above or we already have an active user session. This ensures that the session lock is released for
-    // this session and the next request can resume this session.
-    if ($status === PHP_SESSION_ACTIVE) {
-      session_write_close();
-      if ($this->userId > 0) {
+    // We have session data and we have an active session.
+    elseif (session_status() === PHP_SESSION_ACTIVE) {
+      // If this session belongs to an authenticated user, update the last access time.
+      if ($this->isAuthenticated === true) {
         $kernel->delayMethodCall([ $this, "updateUserAccess" ]);
       }
+
+      // Commit session to memcached and release session lock.
+      session_write_close();
+    }
+    // We have session data but no active session, this means that we have to start a new session for an anonymous user.
+    else {
+      session_set_cookie_params(0);
+      $this->start();
+      session_write_close();
     }
 
     return $this;
@@ -500,14 +483,16 @@ class Session extends \MovLib\Data\Database {
    * @return this
    * @throws \MemcachedException
    */
-  private function start() {
+  protected function start() {
     // Create backup of existing session data (if any).
     $sessionData = isset($_SESSION) ? $_SESSION : null;
 
     // Start new session (if exeution was started by nginx).
-    if (isset($_SERVER["FCGI_ROLE"]) && session_start() === false) {
+    if (isset($_SERVER["FCGI_ROLE"]) && ($this->active = session_start()) === false) {
       throw new \MemcachedException("Could not start session (may be Memcached is down?).");
     }
+
+    $this->id = session_id();
 
     // Restore session data.
     if ($sessionData) {
@@ -546,17 +531,35 @@ class Session extends \MovLib\Data\Database {
   }
 
   /**
-   * Validate session's CSRF token.
-   *
-   * @return boolean
-   *   <code>TRUE</code> if the token is valid, otherwise <code>FALSE</code>.
+   * @inheritdoc
    */
-  public function validateCsrfToken() {
-    if ($this->csrfToken && (empty($_POST["csrf"]) || $this->csrfToken != $_POST["csrf"])) {
-      $this->regenerate();
-      return false;
+  public function offsetExists($offset) {
+    return isset($_SESSION[$offset]);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function &offsetGet($offset) {
+    return $_SESSION[$offset];
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function offsetSet($offset, $value) {
+    $_SESSION[$offset] = $value;
+    $this->active = true;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function offsetUnset($offset) {
+    unset($_SESSION[$offset]);
+    if (empty($_SESSION)) {
+      $this->destroy();
     }
-    return true;
   }
 
 }
