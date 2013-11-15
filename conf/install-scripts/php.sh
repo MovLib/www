@@ -31,7 +31,7 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="5.5.5"
+  VERSION="5.5.6"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 

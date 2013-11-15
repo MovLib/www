@@ -618,7 +618,6 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_titles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
-  `movie_title_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this title relates to.',
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this title is in.',
   `title` BLOB NOT NULL COMMENT 'The movie\'s title.',
@@ -626,7 +625,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determine if this title is the display title in the specified language.',
   INDEX `fk_movies_titles_languages` (`language_id` ASC),
   INDEX `fk_movies_titles_movies` (`movie_id` ASC),
-  PRIMARY KEY (`movie_title_id`),
   CONSTRAINT `fk_movies_titles_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`movie_id`)
@@ -645,14 +643,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_taglines`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
-  `movie_tagline_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.',
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this tagline is in.',
   `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The tagline\'s translatable comment.',
   INDEX `fk_movies_taglines_languages` (`language_id` ASC),
   INDEX `fk_movies_taglines_movies` (`movie_id` ASC),
-  PRIMARY KEY (`movie_tagline_id`),
   CONSTRAINT `fk_movies_taglines_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`movie_id`)
@@ -701,24 +697,23 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_images`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
+  `id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image\'s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image\'s unique ID within the movie.',
-  `type` TINYINT NOT NULL COMMENT 'The movie image’s type (enum from Data class).',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this movie image.',
-  `license_id` INT UNSIGNED NOT NULL COMMENT 'The license\'s unique ID this image is under.',
-  `country_id` INT UNSIGNED NULL,
-  `filename` TINYBLOB NOT NULL COMMENT 'The movie image’s filename without extensions.',
+  `type_id` TINYINT NOT NULL COMMENT 'The movie image’s type.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image’s uploader ID.',
+  `license_id` INT UNSIGNED NOT NULL COMMENT 'The movie image’s license ID.',
+  `country_id` INT UNSIGNED NULL COMMENT 'The movie image’s country ID.',
   `width` SMALLINT NOT NULL COMMENT 'The movie image’s width.',
   `height` SMALLINT NOT NULL COMMENT 'The movie image’s height.',
   `size` INT NOT NULL COMMENT 'The movie image’s size in Bytes.',
-  `ext` VARCHAR(5) NOT NULL COMMENT 'The movie image’s extension without leading dot.',
+  `extension` VARCHAR(3) NOT NULL COMMENT 'The movie image’s extension without leading dot.',
   `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The last time this movie image was updated.',
   `created` TIMESTAMP NOT NULL COMMENT 'The movie image’s creation time.',
   `upvotes` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image’s upvotes.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The movie image’s translatable descriptions.',
-  `hash` BINARY(16) NOT NULL COMMENT 'The file\'s modification timestamp (UNIX format) for cache busting.',
-  `source` BLOB NOT NULL COMMENT 'The image\'s source.',
-  PRIMARY KEY (`movie_id`, `image_id`, `type`),
+  `source` BLOB NOT NULL COMMENT 'The movie image’s source.',
+  `styles` BLOB NOT NULL COMMENT 'The movie image’s serialized styles.',
+  PRIMARY KEY (`id`, `movie_id`, `type_id`),
   INDEX `fk_posters_movies` (`movie_id` ASC),
   INDEX `fk_movies_images_users` (`user_id` ASC),
   INDEX `fk_movies_images_licenses` (`license_id` ASC),
