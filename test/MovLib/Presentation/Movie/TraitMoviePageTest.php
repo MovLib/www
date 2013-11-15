@@ -81,6 +81,16 @@ class TraitMoviePageTest extends \MovLib\TestCase {
     $this->assertAttributeInstanceOf("\\MovLib\\Data\\Movie", "model", $this->traitMoviePage);
     $this->assertEquals("History of The Shawshank Redemption (1994)", $this->getProperty($this->traitMoviePage, "title"));
   }
+  
+  /**
+   * @covers ::getBreadcrumbs
+   */
+  public function testGetBreadcrumbs() {
+    $this->assertEquals(
+      [ [ "/movies", "Movies", [ "title" => "Have a look at the latest movie entries at MovLib." ] ] ],
+      $this->invoke($this->traitMoviePage, "getBreadcrumbs")
+    );
+  }
 
   /**
    * @covers ::getSecondaryNavigationMenuItems

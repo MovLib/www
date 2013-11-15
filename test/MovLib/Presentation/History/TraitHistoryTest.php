@@ -130,14 +130,6 @@ class TraitHistoryTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::getBreadcrumbs
-   * @todo Implement getBreadcrumbs
-   */
-  public function testGetBreadcrumbs() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
    * @covers ::getDiff
    * @todo Implement getDiff
    */

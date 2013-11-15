@@ -178,18 +178,6 @@ trait TraitHistory {
   }
 
   /**
-   * @inheritdoc
-   */
-  protected function getBreadcrumbs() {
-    global $i18n;
-    return [
-      [ $i18n->r("/movies"), $i18n->t("Movies"), [
-        "title" => $i18n->t("Have a look at the latest {0} entries at MovLib.", [ $i18n->t("movie") ])
-      ]]
-    ];
-  }
-
-  /**
    * Calls the right diff methode.
    *
    * @global \MovLib\Data\I18n

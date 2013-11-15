@@ -55,6 +55,18 @@ trait TraitMoviePage {
       throw new ErrorNotFoundException($e);
     }
   }
+  
+  /**
+   * @inheritdoc
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [
+      [ $i18n->r("/movies"), $i18n->t("Movies"), [
+        "title" => $i18n->t("Have a look at the latest {0} entries at MovLib.", [ $i18n->t("movie") ])
+      ]]
+    ];
+  }
    
   /**
    * @inheritdoc
