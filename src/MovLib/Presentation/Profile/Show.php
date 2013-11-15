@@ -57,7 +57,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     foreach ([ $this->user, $session, $kernel, $delayedMethods ] as $obj) {
       ob_start();
       var_dump($obj);
-      $var[] = $this->checkPlain(ob_get_clean());
+      $var[] = $kernel->htmlEncode(ob_get_clean());
     }
     return
       "<h2>{$i18n->t("Your Account Summary")}</h2>" .

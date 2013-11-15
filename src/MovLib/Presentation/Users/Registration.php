@@ -202,7 +202,7 @@ class Registration extends \MovLib\Presentation\Page {
     if (strpbrk($user->name, UserFull::NAME_ILLEGAL_CHARACTERS) !== false) {
       $usernameErrors[] = $i18n->t(
         "The username cannot contain any of the following characters: {0}",
-        [ "<code>{$this->checkPlain(UserFull::NAME_ILLEGAL_CHARACTERS)}</code>" ]
+        [ "<code>{$kernel->htmlEncode(UserFull::NAME_ILLEGAL_CHARACTERS)}</code>" ]
       );
     }
 
