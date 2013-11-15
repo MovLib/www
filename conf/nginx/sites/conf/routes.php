@@ -34,7 +34,7 @@
 location ^~ <?= $r("/movies") ?> {
 
   location = <?= $r("/movies") ?> {
-    set $movlib_presenter "Movies";
+    set $movlib_presenter "Movies\\Show";
     try_files $movlib_cache @php;
   }
 
