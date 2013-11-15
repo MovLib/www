@@ -78,10 +78,15 @@ class MovieTitles extends \MovLib\Data\DatabaseArrayObject {
 
     /* @var $movieTitle \MovLib\Data\Genre */
     while ($movieTitle = $result->fetch_object("\\MovLib\\Data\\Movie\\MovieTitle")) {
-      $dynComments = json_decode($movieTitle->dynComments, true);
-      unset($movieTitle->dynComments);
-      foreach ($dynComments as $language => $comment) {
-        $movieTitle->dynComments[] = [$language => $comment];
+      if (!empty($movieTitle->dynComments)) {
+        $dynComments = json_decode($movieTitle->dynComments, true);
+        unset($movieTitle->dynComments);
+        foreach ($dynComments as $language => $comment) {
+          $movieTitle->dynComments[] = [$language => $comment];
+        }
+      }
+      else {
+        $movieTitle->dynComments = [];
       }
       
       $this->objectsArray[] = $movieTitle;
