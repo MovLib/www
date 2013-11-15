@@ -149,10 +149,11 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    */
   protected function getPageContent(){
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
 
     // -------------------- About Me
 
@@ -163,7 +164,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       ])}</p>";
     }
     else {
-      $aboutMe = $this->htmlRaw($this->user->aboutMe);
+      $aboutMe = $kernel->htmlDecode($this->user->aboutMe);
       if ($session->userId === $this->user->id) {
         $edit = "<a class='small edit' href='{$this->routeAccountSettings}?autofocus=about_me'>{$i18n->t("edit")}</a>";
       }

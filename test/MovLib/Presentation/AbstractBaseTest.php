@@ -192,14 +192,6 @@ class AbstractBaseTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::checkPlain
-   * @todo Implement checkPlain
-   */
-  public function testCheckPlain() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
-  }
-
-  /**
    * @covers ::getImage
    * @todo Implement getImage
    */

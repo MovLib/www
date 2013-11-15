@@ -102,20 +102,6 @@ abstract class AbstractBase {
   }
 
   /**
-   * Encode special characters in a plain-text string for display as HTML.
-   *
-   * <b>Always</b> use this method before displaying any plain-text string to the user.
-   *
-   * @param string $text
-   *   The plain-text string to process.
-   * @return string
-   *   The <var>$text</var> with encoded HTML special characters.
-   */
-  protected final function checkPlain($text) {
-    return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
-  }
-
-  /**
    * Collapse all kinds of whitespace characters to a single space.
    *
    * @param string $string
@@ -139,6 +125,7 @@ abstract class AbstractBase {
    * <pre>$attributes = [ "class" => "css-class", "id" => "css-id" ];
    * echo "<div{$this->expandAttributes($attributes)}></div>";</pre>
    *
+   * @global \MovLib\Kernel $kernel
    * @param null|array $attributes [optional]
    *   Associative array containing the elements attributes. If no attributes are present (e.g. you're handling an
    *   object which sometimes has attributes but not always) an empty string will be returned.
@@ -146,6 +133,7 @@ abstract class AbstractBase {
    *   String representation of the attributes array, or empty string if no attributes are present.
    */
   protected final function expandTagAttributes(array $attributes = null) {
+    global $kernel;
     $expanded = "";
     if (isset($attributes)) {
       foreach ($attributes as $name => $value) {
@@ -156,7 +144,7 @@ abstract class AbstractBase {
           if (is_bool($value)) {
             $value = $value ? "true" : "false";
           }
-          $expanded .= " {$name}='{$this->checkPlain($value)}'";
+          $expanded .= " {$name}='{$kernel->htmlEncode($value)}'";
         }
       }
     }
@@ -233,18 +221,6 @@ abstract class AbstractBase {
   }
 
   /**
-   * Get the raw HTML string.
-   *
-   * @param string $encodedHTML
-   *   The encoded HTML string that should be decoded.
-   * @return string
-   *   The raw HTML string.
-   */
-  protected final function htmlRaw($encodedHTML) {
-    return htmlspecialchars_decode($encodedHTML, ENT_QUOTES | ENT_HTML5);
-  }
-
-  /**
    * Normalize all kinds of line feeds to *NIX style (real LF).
    *
    * @link http://stackoverflow.com/a/7836692/1251219 How to replace different newline styles in PHP the smartest way?
@@ -260,13 +236,15 @@ abstract class AbstractBase {
   /**
    * Formats text for emphasized display in a placeholder inside a sentence.
    *
+   * @global \MovLib\Kernel $kernel
    * @param string $text
    *   The text to format (plain-text).
    * @return string
    *   The formatted text (html).
    */
   protected final function placeholder($text) {
-    return "<em class='placeholder'>{$this->checkPlain($text)}</em>";
+    global $kernel;
+    return "<em class='placeholder'>{$kernel->htmlEncode($text)}</em>";
   }
 
 }

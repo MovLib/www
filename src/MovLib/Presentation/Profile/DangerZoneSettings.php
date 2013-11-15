@@ -125,7 +125,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
       $this->sessionsTable .=
         "<tr{$active}>" .
         "<td>{$sessions[$i]["authentication"]}</td>" .
-        "<td class='small'><code>{$this->checkPlain($sessions[$i]["user_agent"])}</code></td>" .
+        "<td class='small'><code>{$kernel->htmlEncode($sessions[$i]["user_agent"])}</code></td>" .
         "<td><code>{$sessions[$i]["ip_address"]}</code></td>" .
         "<td class='form-actions'>{$button}</td>" .
         "</tr>"

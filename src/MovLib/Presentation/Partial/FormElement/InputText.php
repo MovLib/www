@@ -49,7 +49,7 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    * @inheritdoc
    */
   public function validate() {
-    global $i18n;
+    global $i18n, $kernel;
 
     if (empty($this->value)) {
       $this->value = null;
@@ -70,7 +70,7 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
     }
 
     // Only encode characters with a special purpose in HTML.
-    $this->value = $this->checkPlain($this->value);
+    $this->value = $kernel->htmlEncode($this->value);
 
     // Let PHP validate the string again and strip any low special ASCII characters (e.g. NULL byte).
     if ($this->value != filter_var($this->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_REQUIRE_SCALAR)) {

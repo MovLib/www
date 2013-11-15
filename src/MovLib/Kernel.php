@@ -501,6 +501,32 @@ class Kernel {
   }
 
   /**
+   * Get the raw HTML string.
+   *
+   * @param string $encodedHTML
+   *   The encoded HTML string that should be decoded.
+   * @return string
+   *   The raw HTML string.
+   */
+  public function htmlDecode($encodedHTML) {
+    return htmlspecialchars_decode($encodedHTML, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
+   * Encode special characters in a plain-text string for display as HTML.
+   *
+   * <b>Always</b> use this method before displaying any plain-text string to the user.
+   *
+   * @param string $text
+   *   The plain-text string to process.
+   * @return string
+   *   The <var>$text</var> with encoded HTML special characters.
+   */
+  public function htmlEncode($text) {
+    return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
    * Send email after response was sent to the client.
    *
    * @param \MovLib\Presentation\Email\AbstractEmail $email
