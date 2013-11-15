@@ -17,24 +17,25 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\History\Movie;
+use \MovLib\Data\Movie\MovieTitles as MovieTitlesModel;
+use \MovLib\Presentation\Movie\MovieTitles;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\Movie\TraitMoviePage
+ * @coversDefaultClass \MovLib\Presentation\Movie\MovieTitles
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class TraitMoviePageTest extends \MovLib\TestCase {
+class MovieTitlesTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Movie\TraitMoviePage */
-  protected $traitMoviePage;
+  /** @var \MovLib\Presentation\Movie\MovieTitles */
+  protected $movieTitles;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,29 +45,8 @@ class TraitMoviePageTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    global $kernel, $db, $i18n;
-    $path = "{$kernel->documentRoot}/private/phpunitrepos";
-    if (is_dir($path)) {
-      exec("rm -rf {$path}");
-    }
-
-    $movie = new Movie(2, "phpunitrepos");
-    $movie->createRepository();  
-        
     $_SERVER["MOVIE_ID"] = 2;
-    
-    $this->traitMoviePage = new \MovLib\Presentation\History\Movie\MovieRevisions("phpunitrepos"); 
-  }
-
-  /**
-   * Called after each test.
-   */
-  protected function tearDown() {
-    global $kernel;
-    $path = "{$kernel->documentRoot}/private/phpunitrepos";
-    if (is_dir($path)) {
-      exec("rm -rf {$path}");
-    }
+    $this->movieTitles = new MovieTitles();
   }
 
 
@@ -74,19 +54,41 @@ class TraitMoviePageTest extends \MovLib\TestCase {
 
 
   /**
-   * @covers ::initMovie
+   * @covers ::__construct
    */
-  public function testInitMovie() {
-    $this->assertNotNull($this->getProperty($this->traitMoviePage, "model"));
-    $this->assertAttributeInstanceOf("\\MovLib\\Data\\Movie", "model", $this->traitMoviePage);
-    $this->assertEquals("History of The Shawshank Redemption (1994)", $this->getProperty($this->traitMoviePage, "title"));
+  public function testConstruct() {
+    $this->assertNotNull($this->getProperty($this->movieTitles, "model"));
+    $this->assertEquals("Titles of The Shawshank Redemption (1994)", $this->getProperty($this->movieTitles, "title"));
+    
+  }
+  
+  /**
+   * @covers ::formatComments
+   */
+  public function testFormatComments() {
+    $comment = [ "de" => "deutsches Kommentar" ];
+    $this->assertEquals(
+      "(de) : deutsches Kommentar",
+      $this->movieTitles->formatComments($comment)      
+    );
   }
 
   /**
-   * @covers ::getSecondaryNavigationMenuItems
+   * @covers ::formatTitles
    */
-  public function testGetSecondaryNavigationMenuItems() {
-    $this->assertNotNull($this->invoke($this->traitMoviePage, "getSecondaryNavigationMenuItems"));
+  public function testFormatTitles() {
+    $titles = (new MovieTitlesModel(2))->orderById();
+    $this->assertEquals(
+      "(de) Die Verurteilten (display Title)<div class='well well--small'><ul><li>(de) : deutsches Kommentar</li><li>(en)"
+      . " : english comment</li></ul></div>", $this->movieTitles->formatTitles($this->getProperty($titles, "objectsArray")[0])   
+    );
+  }
+
+  /**
+   * @covers ::getPageContent
+   */
+  public function testGetPageContent() {
+    $this->assertContains("Titles of The Shawshank Redemption (1994)", $this->invoke($this->movieTitles, "getPageContent"));
   }
 
 }

@@ -17,8 +17,6 @@
  */
 namespace MovLib\Data\Movie;
 
-use MovLib\Data\Movie\MovieTitle;
-
 /**
  * Description of MovieTitles
  *
@@ -54,7 +52,7 @@ class MovieTitles extends \MovLib\Data\DatabaseArrayObject {
   public function __construct($movieId) {
     $this->movieId = $movieId;
     $this->query = "SELECT
-      `movie_title_id` AS `id`,
+      `id`,
       `language_id` AS `languageId`,
       `movie_id` AS `movieId`,
       `title`,
@@ -68,10 +66,8 @@ class MovieTitles extends \MovLib\Data\DatabaseArrayObject {
 
 
   /**
-   * Order selected movie titles by ID.
+   * Order all movie titles of one movie by ID.
    *
-   * @param array $filter
-   *   Array containing all movie title IDs to fetch.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
@@ -82,9 +78,15 @@ class MovieTitles extends \MovLib\Data\DatabaseArrayObject {
 
     /* @var $movieTitle \MovLib\Data\Genre */
     while ($movieTitle = $result->fetch_object("\\MovLib\\Data\\Movie\\MovieTitle")) {
+      $dynComments = json_decode($movieTitle->dynComments, true);
+      unset($movieTitle->dynComments);
+      foreach ($dynComments as $language => $comment) {
+        $movieTitle->dynComments[] = [$language => $comment];
+      }
+      
       $this->objectsArray[] = $movieTitle;
     }
-    return $this->objectsArray;
+    return $this;
   }
 
 }

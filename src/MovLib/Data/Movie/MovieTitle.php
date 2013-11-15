@@ -37,7 +37,7 @@ class MovieTitle extends \MovLib\Data\Database {
    *
    * @var int
    */
-  const FROM_ID = "movie_title_id";
+  const FROM_ID = "id";
   
   
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -115,7 +115,7 @@ class MovieTitle extends \MovLib\Data\Database {
     if ($from && $value) {
       $stmt = $this->query(
         "SELECT
-          `movie_title_id` AS `id`,
+          `id`,
           `language_id` AS `languageId`,
           `movie_id` AS `movieId`,
           `title`,
@@ -126,10 +126,11 @@ class MovieTitle extends \MovLib\Data\Database {
         $this->types[$from],
         [ $value ]
       );
-      $stmt->bind_result($this->dynComments, $this->id, $this->isDisplayTitle, $this->languageId, $this->movieId, $this->title);
+      $stmt->bind_result($this->id, $this->languageId, $this->movieId, $this->title, $this->isDisplayTitle, $this->dynComments);
       if (!$stmt->fetch()) {
         throw new CountryException("No movie title for {$from} '{$value}'.");
       }
+      $this->dynComments = json_decode($this->dynComments, true);
     }
   }
 

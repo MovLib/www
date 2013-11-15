@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie;
+use \MovLib\Data\Language;
 use \MovLib\Data\Movie\MovieTitles as MovieTitlesModel;
 use \MovLib\Presentation\Partial\Lists\Unordered;
 
@@ -46,22 +46,45 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   public function __construct() {
     global $i18n;
     $this->initMovie();
-    $this->init($i18n->t("History of {0}", [ $this->title ]));
+    $this->init($i18n->t("Titles of {0}", [ $this->title ]));
     $this->movieTitles = new MovieTitlesModel($_SERVER["MOVIE_ID"]);
+  }
+  
+  /**
+   * Helper mothod to format comments.
+   * 
+   * @global \MovLib\Data\I18n $i18n
+   * @param array
+   *   One comment as associative array.
+   * @return string
+   *   Returns one list item of formatTitles.
+   */
+  public function formatComments($movieTitleComments) {
+    $key = key($movieTitleComments);
+    return "($key) : {$movieTitleComments[$key]}";
   }
   
    /**
    * Helper mothod to format titles.
    * 
+   * @global \MovLib\Data\I18n $i18n
    * @param \MovLib\Data\Movie\MovieTitle $movieTitle
    *   A MovieTitle.
    * @return string
-   *   Returns one list item MovieTitles page.
+   *   Returns one list item of MovieTitles page.
    */
   public function formatTitles($movieTitle) {
-    var_dump($movieTitle);
-    exit();
-    return $movieTitle->title;
+    global $i18n;
+    $language = new Language(Language::FROM_ID, $movieTitle->languageId);
+    $displayTitle = ($movieTitle->isDisplayTitle) ? " ({$i18n->t("display Title")})" : null;
+    $list = new Unordered($movieTitle->dynComments,
+      $i18n->t("There are no Comments.")
+    );
+    $list->closure = [ $this, "formatComments" ];
+    
+    return 
+      "({$language->code}) {$movieTitle->title}{$displayTitle}"
+      . "<div class='well well--small'>{$list}</div>";
   }
 
   /**
@@ -74,7 +97,7 @@ class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     );
     $list->closure = [ $this, "formatTitles" ];
     
-    return $list;
+    return "<h3>{$this->title}</h3>{$list}";
   }
   
 }

@@ -78,7 +78,11 @@ trait TraitMoviePage {
         "accesskey" => "h",
         "class"     => "separator",
         "title"     => $i18n->t("Past versions of this {0}.", [ $i18n->t("movie") ]),
-      ]]
+      ]],
+      [ $i18n->r("/movie/{0}/titles", [ $this->model->id ]), "<i class='icon icon--eye'></i>{$i18n->t("Titles")}", [
+        "accesskey" => "t",
+        "title"     => $i18n->t("View the titles of the {0}.", [ $i18n->t("movie") ]),
+      ]],
     ];
   }
 
