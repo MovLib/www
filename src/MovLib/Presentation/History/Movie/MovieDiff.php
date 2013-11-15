@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\History;
+namespace MovLib\Presentation\History\Movie;
 
 use \MovLib\Data\History\Movie;
 
@@ -28,7 +28,7 @@ use \MovLib\Data\History\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistoryDiff extends \MovLib\Presentation\History\AbstractHistory {
+class MovieDiff extends \MovLib\Presentation\History\AbstractHistory {
   use \MovLib\Presentation\History\TraitHistory;
   use \MovLib\Presentation\Movie\TraitMoviePage;
 

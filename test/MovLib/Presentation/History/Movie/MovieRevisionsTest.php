@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\History;
+namespace MovLib\Presentation\History\Movie;
 
 use \MovLib\Data\History\Movie;
-use \MovLib\Presentation\History\MovieHistory;
+use \MovLib\Presentation\History\Movie\MovieRevisions;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\History\MovieHistory
@@ -28,7 +28,7 @@ use \MovLib\Presentation\History\MovieHistory;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistoryTest extends \MovLib\TestCase {
+class MovieRevisionsTest extends \MovLib\TestCase {
   
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -56,7 +56,7 @@ class MovieHistoryTest extends \MovLib\TestCase {
     $commitHash = $movie->createRepository();
     $db->query("UPDATE `movies` SET `commit` = '{$commitHash}' WHERE `movie_id` = 2");
     
-    $this->movieHistory = new MovieHistory("phpunitrepos");
+    $this->movieHistory = new MovieRevisions("phpunitrepos");
   }
   
   /**

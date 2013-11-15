@@ -15,10 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\History;
+namespace MovLib\Presentation\Movie;
+
+use \MovLib\Data\Movie;
+use \MovLib\Data\Movie\MovieTitles as MovieTitlesModel;
+use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
- * The movie history page.
+ * Page to show movie titles.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,29 +30,51 @@ namespace MovLib\Presentation\History;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistory extends \MovLib\Presentation\History\AbstractHistory {
+class MovieTitles extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   use \MovLib\Presentation\Movie\TraitMoviePage;
-
-
+  
   /**
-   * Instatiate new movie history presentation.
+   * The movie titles to display.
    *
-   * @global \MovLib\Data\I18n $i18n
+   * @var \MovLib\Data\Movie\MovieTitles
    */
-  public function __construct($context = "history") {
+  protected $movieTitles;
+  
+  /**
+   * Instatiate new movie titles presentation.
+   */
+  public function __construct() {
     global $i18n;
     $this->initMovie();
     $this->init($i18n->t("History of {0}", [ $this->title ]));
-
-    $this->historyModel = new \MovLib\Data\History\Movie($this->model->id, $context);
+    $this->movieTitles = new MovieTitlesModel($_SERVER["MOVIE_ID"]);
+  }
+  
+   /**
+   * Helper mothod to format titles.
+   * 
+   * @param \MovLib\Data\Movie\MovieTitle $movieTitle
+   *   A MovieTitle.
+   * @return string
+   *   Returns one list item MovieTitles page.
+   */
+  public function formatTitles($movieTitle) {
+    var_dump($movieTitle);
+    exit();
+    return $movieTitle->title;
   }
 
   /**
    * @inheritdoc
    */
-  protected function getPageContent() {
-    $this->addClass("active", $this->secondaryNavigation->menuitems[3][2]);
-    return $this->revisionsPage();
+  protected function getPageContent() {  
+    global $i18n;
+    $list = new Unordered($this->movieTitles->orderById(),
+      $i18n->t("There are no titles.")
+    );
+    $list->closure = [ $this, "formatTitles" ];
+    
+    return $list;
   }
-
+  
 }

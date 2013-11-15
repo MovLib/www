@@ -55,7 +55,7 @@ class TraitMoviePageTest extends \MovLib\TestCase {
         
     $_SERVER["MOVIE_ID"] = 2;
     
-    $this->traitMoviePage = new \MovLib\Presentation\History\MovieHistory("phpunitrepos"); 
+    $this->traitMoviePage = new \MovLib\Presentation\History\Movie\MovieRevisions("phpunitrepos"); 
   }
 
   /**

@@ -66,7 +66,7 @@ class TraitHistoryTest extends \MovLib\TestCase {
     $_SERVER["MOVIE_ID"] = 2;
     $_SERVER["REVISION_HASH"] = $this->commitHash;
     
-    $this->traitHistory = new \MovLib\Presentation\History\MovieHistory("phpunitrepos"); 
+    $this->traitHistory = new \MovLib\Presentation\History\Movie\MovieRevisions("phpunitrepos"); 
   }
 
   /**

@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\History;
+namespace MovLib\Presentation\History\Movie;
 
 use \MovLib\Data\History\Movie;
-use \MovLib\Presentation\History\MovieHistoryDiff;
+use \MovLib\Presentation\History\Movie\MovieDiff;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\History\MovieHistoryDiff
@@ -28,7 +28,7 @@ use \MovLib\Presentation\History\MovieHistoryDiff;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieHistoryDiffTest extends \MovLib\TestCase {
+class MovieDiffTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -68,7 +68,7 @@ class MovieHistoryDiffTest extends \MovLib\TestCase {
     $_SERVER["MOVIE_ID"] = 2;
     $_SERVER["REVISION_HASH"] = $this->commitHash;
     
-    $this->movieHistoryDiff = new MovieHistoryDiff("phpunitrepos");
+    $this->movieHistoryDiff = new MovieDiff("phpunitrepos");
   }
 
   /**
