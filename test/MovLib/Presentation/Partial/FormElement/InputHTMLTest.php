@@ -85,6 +85,39 @@ class InputHTMLTest extends \MovLib\TestCase {
     ];
   }
 
+  /**
+   * @global \MovLib\Tool\Kernel $kernel
+   */
+  public function dataProviderTestValidateTagImgInvalidSrc() {
+    global $kernel;
+    return [
+      [ "" ],                                   // Empty src.
+      [ ".com" ],                               // Malformed src.
+      [ "movlib.org" ],                         // Empty src scheme.
+      [ "https://example.com" ],                // External src.
+      [ "https://{$kernel->domainStatic}/foo/bar" ],  // Non-existent image.
+    ];
+  }
+
+  public function dataProviderTestValidateTagPInvalidClass() {
+    return [
+      [ "" ],
+      [ "invalidClass" ],
+      [ "invalidClass user-center" ],
+      [ "user-center invalidClass" ],
+      [ "user-centerinvalidClass" ],
+    ];
+  }
+
+  public function dataProviderTestValidateTagPValid() {
+    return [
+      [ [ "attribute" => null ] ],
+      [ [ "attribute" => [ "class" => "user-left" ] ] ],
+      [ [ "attribute" => [ "class" => "user-center" ] ] ],
+      [ [ "attribute" => [ "class" => "user-right" ] ] ],
+    ];
+  }
+
 
   // ------------------------------------------------------------------------------------------------------------------- Tests
 
@@ -112,7 +145,7 @@ class InputHTMLTest extends \MovLib\TestCase {
    */
   public function testConstructWithContent() {
     $content = "PHPUnit";
-    $input = new InputHTML("phpunit", "PHPUnit", $content);
+    $input   = new InputHTML("phpunit", "PHPUnit", $content);
     $this->assertEquals($content, $this->getProperty($input, "contentRaw"));
   }
 
@@ -120,9 +153,9 @@ class InputHTMLTest extends \MovLib\TestCase {
    * @covers ::__construct
    */
   public function testConstructWithPostContent() {
-    $content = "PHPUnit";
+    $content          = "PHPUnit";
     $_POST["phpunit"] = $content;
-    $input = new InputHTML("phpunit", "PHPUnit", "false");
+    $input            = new InputHTML("phpunit", "PHPUnit", "false");
     $this->assertEquals($content, $this->getProperty($input, "contentRaw"));
   }
 
@@ -141,12 +174,14 @@ class InputHTMLTest extends \MovLib\TestCase {
 
   /**
    * @covers ::__toString
+   * @global \MovLib\Tool\Kernel $kernel
    */
   public function testToStringWithoutRawContent() {
+    global $kernel;
     $content = "<p>phpunit</p>";
     $label   = "PHPUnit";
     $markup  = "<fieldset><legend>{$label}</legend><div contenteditable='true'>{$content}</div></fieldset>";
-    $value   = htmlspecialchars($content, ENT_QUOTES | ENT_HTML5);
+    $value   = $kernel->htmlEncode($content);
     $input   = new InputHTML("phpunit", $label);
     $input->value = $value;
     $this->assertContains("<fieldset><legend>{$label}</legend><div ", $input->__toString());
@@ -175,6 +210,15 @@ class InputHTMLTest extends \MovLib\TestCase {
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
    */
+  public function testValidateInvalidTag() {
+    $input = new InputHTML("phpunit", "PHPUnit", "<hr>");
+    $input->validate();
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   */
   public function testValidateRequired() {
     $input = new InputHTML("phpunit", "PHPUnit", null, [ "required" => true ]);
     $input->validate();
@@ -190,6 +234,51 @@ class InputHTMLTest extends \MovLib\TestCase {
   }
 
   /**
+   * @covers ::validate
+   * @global \MovLib\Tool\Kernel $kernel
+   */
+  public function testValidateValidCallbackValidation() {
+    global $kernel;
+    $input = $this->getMock("\\MovLib\\Presentation\\Partial\\FormElement\\InputHTML", [ "validateTagP" ], [ "phpunit", "PHPUnit", "<p>phpunit</p>" ]);
+    $input->expects($this->once())->method("validateTagP")->will($this->returnValue("p"));
+    $input->validate();
+    $this->assertEquals($kernel->htmlEncode("<p>phpunit</p>"), $input->value);
+  }
+
+  /**
+   * @covers ::validate
+   * @global \MovLib\Tool\Kernel $kernel
+   */
+  public function testValidateValidEmptyTag() {
+    global $kernel;
+    $input = new InputHTML("phpunit", "PHPUnit", "<br>");
+    $input->validate();
+    $this->assertEquals($kernel->htmlEncode("<p><br></p>"), $input->value);
+  }
+
+  /**
+   * @covers ::validate
+   * @global \MovLib\Tool\Kernel $kernel
+   */
+  public function testValidateValidMarkup() {
+    global $kernel;
+    $input = new InputHTML("phpunit", "PHPUnit", "<p><a href='https://{$kernel->domainDefault}'>MovLib<img alt='phpunit' src='https://{$kernel->domainStatic}/user/Ravenlord.140.jpg'></a></p>textNode");
+    $input->validate();
+    $this->assertEquals($kernel->htmlEncode("<p><a href='https://{$kernel->domainDefault}'>MovLib<img alt='phpunit' src='https://{$kernel->domainStatic}/user/Ravenlord.140.jpg'></a></p>\n<p>textNode</p>"), $input->value);
+  }
+
+  /**
+   * @covers ::validate
+   * @global \MovLib\Tool\Kernel $kernel
+   */
+  public function testValidateValidTextNode() {
+    global $kernel;
+    $input = new InputHTML("phpunit", "PHPUnit", "textNode");
+    $input->validate();
+    $this->assertEquals($kernel->htmlEncode("<p>textNode</p>"), $input->value);
+  }
+
+  /**
    * @covers ::validateTagA
    * @dataProvider dataProviderTestValidateTagAInvalidURL
    * @expectedException \MovLib\Exception\ValidationException
@@ -197,8 +286,8 @@ class InputHTMLTest extends \MovLib\TestCase {
    *   The URL to test.
    */
   public function testValidateTagAInvalidURL($href) {
-    $input = new InputHTML("phpunit", "PHPUnit", null, [ "data-external" => true ]);
-    $node = (object) [ "attribute" => [ "href" => $href ] ];
+    $input = new InputHTML("phpunit", "PHPUnit", null, [ "data-external" => true]);
+    $node  = (object) [ "attribute" => [ "href" => $href ] ];
     $this->invoke($input, "validateTagA", [ $node ]);
   }
 
@@ -208,7 +297,7 @@ class InputHTMLTest extends \MovLib\TestCase {
    */
   public function testValidateTagANoHref() {
     $input = new InputHTML("phpunit", "PHPUnit");
-    $node = new \stdClass();
+    $node  = new \stdClass();
     $this->invoke($input, "validateTagA", [ $node ]);
   }
 
@@ -218,34 +307,36 @@ class InputHTMLTest extends \MovLib\TestCase {
    */
   public function testValidateTagANoExternal() {
     $input = new InputHTML("phpunit", "PHPUnit");
-    $node = (object) [ "attribute" => [ "href" => "http://example.com" ] ];
+    $node  = (object) [ "attribute" => [ "href" => "http://example.com" ] ];
     $this->invoke($input, "validateTagA", [ $node ]);
   }
 
   /**
    * @covers ::validateTagA
    * @dataProvider dataProviderTestValidateTagAValidExternal
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $scheme
    *   The scheme of the URL with trailing colon.
    * @param string $url
    *   The URL without the scheme.
    */
   public function testValidateTagAValidExternal($scheme, $url) {
-    $input = new InputHTML("phpunit", "PHPUnit", null, [ "data-external" => true ]);
-    $node = (object) [ "attribute" => [ "href" => "{$scheme}//{$url}" ] ];
-    $validatedLink = $this->invoke($input, "validateTagA", [ $node ]);
-    $path = isset($path) ? $path : "/";
+    global $kernel;
+    $input         = new InputHTML("phpunit", "PHPUnit", null, [ "data-external" => true]);
+    $node          = (object) [ "attribute" => [ "href" => "{$scheme}//{$url}"]];
+    $validatedLink = $this->invoke($input, "validateTagA", [ $node]);
+    $path          = isset($path) ? $path : "/";
     if (!in_array($scheme, [ "http:", "https:" ])) {
       $scheme = "http:";
     }
-    $expectedHref = htmlspecialchars("{$scheme}//{$url}", ENT_QUOTES | ENT_HTML5);
+    $expectedHref = $kernel->htmlEncode("{$scheme}//{$url}");
     $this->assertEquals("a href='{$expectedHref}' rel='nofollow'", $validatedLink);
   }
 
   /**
    * @covers ::validateTagA
    * @dataProvider dataProviderTestValidateTagAValidInternal
-   * @global \MovLib\TestKernel $kernel
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $scheme
    *   The scheme of the URL with trailing colon.
    * @param string $path
@@ -257,28 +348,88 @@ class InputHTMLTest extends \MovLib\TestCase {
    */
   public function testValidateTagAValidInternal($scheme, $path, $query, $fragment) {
     global $kernel;
-    $input = new InputHTML("phpunit", "PHPUnit");
-    $node = (object) [ "attribute" => [ "href" => "{$scheme}//{$kernel->domainDefault}{$path}{$query}{$fragment}" ] ];
-    $validatedLink = $this->invoke($input, "validateTagA", [ $node ]);
-    $path = isset($path) ? $path : "/";
-    $expectedHref = htmlspecialchars("//{$kernel->domainDefault}{$path}{$fragment}", ENT_QUOTES | ENT_HTML5);
+    $input         = new InputHTML("phpunit", "PHPUnit");
+    $node          = (object) [ "attribute" => [ "href" => "{$scheme}//{$kernel->domainDefault}{$path}{$query}{$fragment}"]];
+    $validatedLink = $this->invoke($input, "validateTagA", [ $node]);
+    $path          = isset($path) ? $path : "/";
+    $expectedHref  = $kernel->htmlEncode("//{$kernel->domainDefault}{$path}{$fragment}");
     $this->assertEquals("a href='{$expectedHref}'", $validatedLink);
   }
 
   /**
    * @covers ::validateTagImg
-   * @todo Implement validateTagImg
+   * @dataProvider dataProviderTestValidateTagImgInvalidSrc
+   * @expectedException \MovLib\Exception\ValidationException
+   * @param string $src
+   *   The image's src to test.
    */
-  public function testValidateTagImg() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+  public function testValidateTagImgInvalidSrc($src) {
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $img   = (object) [ "attribute" => [ "src" => $src ] ];
+    $this->invoke($input, "validateTagImg", [ $img ]);
+  }
+
+  /**
+   * @covers ::validateTagImg
+   * @expectedException \MovLib\Exception\ValidationException
+   */
+  public function testValidateTagImgNoSrc() {
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $img   = new \stdClass();
+    $this->invoke($input, "validateTagImg", [ $img ]);
+  }
+
+  /**
+   * @covers ::validateTagImg
+   * @global \MovLib\Tool\Kernel $kernel
+   */
+  public function testValidateTagImgValid() {
+    global $kernel;
+    $input        = new InputHTML("phpunit", "PHPUnit");
+    $alt          = "phpunit alt text";
+    $src          = "https://{$kernel->domainStatic}/user/Ravenlord.140.jpg";
+    $img          = (object) [ "attribute" => [ "alt" => $alt, "src" => $src]];
+    $validatedImg = $this->invoke($input, "validateTagImg", [ $img ]);
+    $this->assertEquals("img alt='{$alt}' height='140' src='{$src}' width='140'", $validatedImg);
+  }
+
+  /**
+   * @covers ::validateTagImg
+   */
+  public function testValidateTagImgValidNoAlt() {
+    global $kernel;
+    $input        = new InputHTML("phpunit", "PHPUnit");
+    $src          = "https://{$kernel->domainStatic}/user/Ravenlord.140.jpg";
+    $img          = (object) [ "attribute" => [ "src" => $src]];
+    $validatedImg = $this->invoke($input, "validateTagImg", [ $img ]);
+    $this->assertEquals("img alt='' height='140' src='{$src}' width='140'", $validatedImg);
   }
 
   /**
    * @covers ::validateTagP
-   * @todo Implement validateTagP
+   * @dataProvider dataProviderTestValidateTagPInvalidClass
+   * @expectedException \MovLib\Exception\ValidationException
+   * @param string $class
+   *   The paragraph's class to test.
    */
-  public function testValidateTagP() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+  public function testValidateTagPInvalidClass($class) {
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $p = (object) [ "attribute" => [ "class" => $class ] ];
+    $this->invoke($input, "validateTagP", [ $p ]);
+  }
+
+  /**
+   * @covers ::validateTagP
+   * @dataProvider dataProviderTestValidateTagPValid
+   * @param array $p
+   *   The paragraph to test as associative array.
+   */
+  public function testValidateTagPValid($p) {
+    $p = (object) $p;
+    $class = isset($p->attribute["class"]) ? " class='{$p->attribute["class"]}'" : null;
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $validatedP = $this->invoke($input, "validateTagP", [ $p ]);
+    $this->assertEquals("p{$class}", $validatedP);
   }
 
 }

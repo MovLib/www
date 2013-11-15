@@ -24,6 +24,7 @@ use \MovLib\Exception\ValidationException;
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_Editable
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -126,8 +127,9 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @inheritdoc
    */
   public function __toString() {
+    global $kernel;
     if (empty($this->contentRaw)) {
-      $this->contentRaw = htmlspecialchars_decode($this->value, ENT_QUOTES | ENT_HTML5);
+      $this->contentRaw = $kernel->htmlDecode($this->value);
     }
 //    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->contentRaw}</textarea></p>";
     return "<fieldset>{$this->help}<legend>{$this->label}</legend><div{$this->expandTagAttributes($this->attributes)}>{$this->contentRaw}</div></fieldset>";
@@ -140,9 +142,10 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   public function validate() {
-    global $i18n;
+    global $i18n, $kernel;
     // Validate if we have input and throw an Exception if the field is required.
     if (empty($this->contentRaw)) {
       if (array_key_exists("required", $this->attributes)) {
@@ -181,7 +184,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
           // Validate tag and attributes.
           if ($node->type === TIDY_NODETYPE_TEXT) {
             // Clean text and append to output.
-            $output = "{$output}{$this->checkPlain($node->value)}";
+            $output = "{$output}{$kernel->htmlEncode($node->value)}";
           }
           elseif (isset($this->allowedTags[$node->id])) {
             if (method_exists($this, "validateTag{$node->name}")) {
@@ -222,11 +225,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
     // Parse and format the validated HTML output.
     try {
-      $tidy = tidy_parse_string(
-        "<!doctype html><html><head><title>MovLib</title></head><body>{$output}</body></html>",
-        $tidyOptions,
-        "utf8"
-      );
+      $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$output}</body></html>");
       $tidy->cleanRepair();
       if ($tidy->getStatus() === 2) {
         throw new \ErrorException;
@@ -234,12 +233,11 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     }
     catch (\ErrorException $e) {
       error_log($e);
-      throw new ValidationException($i18n->t("Invalid HTML after the validation in “{0}” text.", [ $this->label ]), $e->code, $e);
+      throw new ValidationException($i18n->t("Invalid HTML after the validation in “{0}” text.", [ $this->label ]));
     }
 
     // Replace redundant newlines, normalize UTF-8 characters and encode HTML characters.
-    $this->value = $this->checkPlain(\Normalizer::normalize(str_replace(tidy_get_output($tidy), "\n\n", "\n")));
-    \FB::send(htmlspecialchars_decode($this->value, ENT_QUOTES | ENT_HTML5));
+    $this->value = $kernel->htmlEncode(\Normalizer::normalize(str_replace("\n\n", "\n", tidy_get_output($tidy))));
     return $this;
   }
 
@@ -267,7 +265,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     if (($parts = parse_url($node->attribute["href"])) === false || !isset($parts["host"])) {
       throw new ValidationException($i18n->t(
         "Invalid link in “{0}” text ({1}).",
-        [ $this->label, "<code>{$this->checkPlain($node->attribute["href"])}</code>" ],
+        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ],
         [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
       ));
     }
@@ -311,14 +309,14 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     if (isset($parts["user"]) || isset($parts["pass"])) {
       throw new ValidationException($i18n->t(
         "Credentials are not allowed in “{0}” text ({1}).",
-        [ $this->label, "<code>{$this->checkPlain($node->attribute["href"])}</code>" ],
+        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ],
         [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
       ));
     }
     if (isset($parts["port"])) {
       throw new ValidationException($i18n->t(
         "Ports are not allowed in “{0}” text ({1}).",
-        [ $this->label, "<code>{$node->attribute["href"]}</code>" ],
+        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ],
         [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
       ));
     }
@@ -326,7 +324,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     if (filter_var($validateURL, FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED) === false) {
       throw new ValidationException($i18n->t(
         "Invalid link in “{0}” text ({1}).",
-        [ $this->label, "<code>{$node->attribute["href"]}</code>" ],
+        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ],
         [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
       ));
     }
@@ -358,7 +356,11 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     }
 
     // Validate the <code>src</code> URL.
-    if (filter_var($node->attribute["src"], FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED) === false) {
+    if (
+          filter_var($node->attribute["src"], FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED) === false
+          || ($url = parse_url($node->attribute["src"])) === false
+          || !isset($url["host"])
+        ) {
       throw new ValidationException($i18n->t(
         "Invalid image {0} attribute in “{1}” text.",
         [ "<code>src</code>", $this->label ],
@@ -367,7 +369,6 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     }
 
     // Check if the image comes from our server.
-    $url = parse_url($node->attribute["src"]);
     if (strpos($url["host"], $kernel->domainStatic) === false) {
       throw new ValidationException($i18n->t(
         "Only {0} images are allowed in “{1}” text.",
@@ -383,21 +384,23 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     catch (\ErrorException $e) {
       throw new ValidationException($i18n->t(
         "Image doesn’t exist in “{0}” text ({1}).",
-        [ $this->label, "<code>{$this->checkPlain($node->attribute["src"])}</code>" ],
+        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["src"])}</code>" ],
         [ "comment" => "{0} is the name of the text, {1} is the value of the image’s src attribute. Both should not be translated." ]
       ));
     }
-    $attributes["src"] = $node->attribute["src"];
+    $attributes["src"] = $kernel->htmlEncode($node->attribute["src"]);
     $attributes["width"]  = $image[0];
     $attributes["height"] = $image[1];
 
     // Encode the <code>alt</code> attribute or fill in an empty one if it wasn't set.
     if (isset($node->attribute["alt"])) {
-      $attributes["alt"] = $this->checkPlain($node->attribute["alt"]);
+      $attributes["alt"] = $kernel->htmlEncode($node->attribute["alt"]);
     }
     else {
       $attributes["alt"] = "";
     }
+
+    ksort($attributes);
 
     return "img{$this->expandTagAttributes($attributes)}";
   }
@@ -423,7 +426,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
         [ "comment" => "{0} is <code>class</code>, {1} is the name of the text, {2} is a list of allowed class values. All those should not be translated." ]
       ));
     }
-    else {
+    elseif (!empty ($node->attribute["class"])) {
       $class = " class='{$node->attribute["class"]}'";
     }
     return "p{$class}";
