@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Exception\ValidationException;
 
 /**
@@ -109,6 +108,14 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public function validate() {
     global $i18n;
+
+    if (empty($this->value)) {
+      $this->value = null;
+      if (in_array("required", $this->attributes)) {
+        throw new ValidationException($i18n->t("The “{0}” select element is mandatory.", [ $this->label ]));
+      }
+      return $this;
+    }
 
     if (!isset($this->options[$this->value])) {
       throw new ValidationException($i18n->t("The submitted value {0} is not a valid option.", [ $this->placeholder($this->value) ]));
