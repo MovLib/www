@@ -11,7 +11,7 @@ USE `movlib` ;
 -- Table `movlib`.`movies`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
-  `movie_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie’s unique ID.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie’s unique ID.',
   `original_title` BLOB NOT NULL COMMENT 'The movie\'s original title.',
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of this movie.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.',
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.',
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `website` TINYTEXT NULL COMMENT 'The movie\'s official website URL.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this movie was created.',
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.',
-  PRIMARY KEY (`movie_id`),
+  PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_movies_rank` (`rank` ASC))
 COMMENT = 'Contains all movie’s data.'
 ROW_FORMAT = COMPRESSED;
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_genres` (
   INDEX `fk_movies_genres_movies` (`movie_id` ASC),
   CONSTRAINT `fk_movies_genres_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_genres_genres`
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_styles` (
   INDEX `fk_movies_styles_movies` (`movie_id` ASC),
   CONSTRAINT `fk_movies_styles_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_styles_styles`
@@ -242,7 +242,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
   INDEX `fk_movies_crew_persons` (`person_id` ASC),
   CONSTRAINT `fk_movies_crew_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_crew_jobs`
@@ -392,7 +392,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`ratings` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_ratings_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'A movie has many ratings, a user has many ratings.'
@@ -418,7 +418,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_cast_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'A movie has many actors, an actor has many movies.'
@@ -480,7 +480,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_countries` (
   INDEX `fk_movies_countries_movies` (`movie_id` ASC),
   CONSTRAINT `fk_movies_countries_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_countries_countries`
@@ -504,7 +504,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_languages` (
   INDEX `fk_movies_languages_movies` (`movie_id` ASC),
   CONSTRAINT `fk_movies_languages_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_languages_languages`
@@ -528,7 +528,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
   INDEX `fk_movies_directors_movies` (`movie_id` ASC),
   CONSTRAINT `fk_movies_directors_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_directors_persons`
@@ -598,7 +598,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_awards_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_awards_persons`
@@ -629,7 +629,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_titles_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_titles_languages`
@@ -655,7 +655,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_taglines_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_taglines_languages`
@@ -690,7 +690,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
   PRIMARY KEY (`movie_id`),
   CONSTRAINT `fk_movies_trailers_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
@@ -724,7 +724,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   INDEX `fk_movies_images_countries` (`country_id` ASC),
   CONSTRAINT `fk_movies_images_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_images_users`
@@ -1034,7 +1034,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_releases` (
   INDEX `fk_movies_releases_movies` (`movie_id` ASC),
   CONSTRAINT `fk_movies_releases_movies1`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_releases_releases1`
@@ -1217,7 +1217,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
   INDEX `fk_movies_ratings_users` (`user_id` ASC),
   CONSTRAINT `fk_movies_ratings_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_ratings_users`
@@ -1247,12 +1247,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_relationships` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_relationships_movies`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_relationships_movies_other`
     FOREIGN KEY (`movie_id_other`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
@@ -1294,7 +1294,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   INDEX `fk_movies_titles_display_title_de_idx` (`display_title_de` ASC),
   CONSTRAINT `fk_movies_titles_movie_id`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_titles_display_title_en`
@@ -1321,7 +1321,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
   PRIMARY KEY (`movie_id`),
   CONSTRAINT `fk_movies_taglines_movie`
     FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
