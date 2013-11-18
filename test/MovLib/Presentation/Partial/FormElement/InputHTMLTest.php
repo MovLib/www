@@ -51,6 +51,16 @@ class InputHTMLTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
 
+  public function dataProviderTestAllowHeadings() {
+    return [
+      [ 2 ],
+      [ 3 ],
+      [ 4 ],
+      [ 5 ],
+      [ 6 ],
+    ];
+  }
+
   public function dataProviderTestValidateTagAInvalidURL() {
     return [
       [ "" ],                             // Empty href.
@@ -125,75 +135,129 @@ class InputHTMLTest extends \MovLib\TestCase {
   /**
    * @covers ::__construct
    */
-  public function testConstructAllowImages() {
-    $input = new InputHTML("phpunit", "PHPUnit", "PHPUnit", [ "data-allow-img" => true ]);
+  public function testConstructStandardConfiguration() {
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $this->assertEquals("true", $input->attributes["aria-multiline"]);
+    $this->assertEquals("true", $input->attributes["contenteditable"]);
+    $this->assertEquals("textbox", $input->attributes["role"]);
+    $this->assertFalse(isset($input->attributes["name"]), "Attribute name is not permitted by HTML standard!");
+    $this->assertFalse(isset($input->attributes["required"]), "Attribute required is not permitted by HTML standard!");
+    $allowedTags = $this->getProperty($input, "allowedTags");
+    $this->assertFalse(isset($allowedTags[TIDY_TAG_IMG]), "Image tags shouldn't be enabled by default!");
+    $this->assertFalse(isset($allowedTags[TIDY_TAG_H1]), "Headings shouldn't be enabled by default!");
+    $this->assertFalse(isset($allowedTags[TIDY_TAG_H2]), "Headings shouldn't be enabled by default!");
+    $this->assertFalse(isset($allowedTags[TIDY_TAG_H3]), "Headings shouldn't be enabled by default!");
+    $this->assertFalse(isset($allowedTags[TIDY_TAG_H4]), "Headings shouldn't be enabled by default!");
+    $this->assertFalse(isset($allowedTags[TIDY_TAG_H5]), "Headings shouldn't be enabled by default!");
+    $this->assertFalse(isset($allowedTags[TIDY_TAG_H6]), "Headings shouldn't be enabled by default!");
+    $this->assertFalse($this->getProperty($input, "allowExternalLinks"), "External links shouldn't be enabled by default!");
+    $this->assertFalse($this->getProperty($input, "required"), "Texts should not be required by default!");
+  }
+
+  /**
+   * @global \MovLib\Kernel $kernel
+   * @covers ::__construct
+   */
+  public function testConstructWithContent() {
+    global $kernel;
+    $content = "&lt;p&gt;PHPUnit&lt;/p&gt;";
+    $input   = new InputHTML("phpunit", "PHPUnit", $content);
+    $this->assertEquals($kernel->htmlDecode($content), $this->getProperty($input, "valueRaw"));
+    $this->assertEquals($content, $input->value);
+  }
+
+  /**
+   * @global \MovLib\Tool\Kernel $kernel
+   * @covers ::__construct
+   */
+  public function testConstructWithPostContent() {
+    global $kernel;
+    $content          = "<p>PHPUnit</p>";
+    $_POST["phpunit"] = $content;
+    $input            = new InputHTML("phpunit", "PHPUnit", "false");
+    $this->assertEquals($content, $this->getProperty($input, "valueRaw"));
+    $this->assertEquals($kernel->htmlEncode($content), $input->value);
+  }
+
+  /**
+   * @covers ::allowExternalLinks
+   */
+  public function testAllowExternalLinks() {
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $input->allowExternalLinks();
+    $this->assertTrue($this->getProperty($input, "allowExternalLinks"), "allowExternalLinks does not work properly!");
+  }
+
+  /**
+   * @covers ::allowHeadings
+   * @dataProvider dataProviderTestAllowHeadings
+   * @param int $level
+   *   The heading level to test.
+   */
+  public function testAllowHeadings($level) {
+    $headings = [ TIDY_TAG_H1, TIDY_TAG_H2, TIDY_TAG_H3, TIDY_TAG_H4, TIDY_TAG_H5, TIDY_TAG_H6];
+    $c        = count($headings);
+    $input    = new InputHTML("phpunit", "PHPUnit");
+    $input->allowHeadings($level);
+    $allowedTags = $this->getProperty($input, "allowedTags");
+    for ($i = 0; $i < $c; ++$i) {
+      if ($i < $level - 1) {
+        $this->assertFalse(isset($allowedTags[$headings[$i]]), "Heading level {$level} should not be set!");
+      }
+      else {
+        $currLevel = $i + 1;
+        $this->assertEquals("&lt;h{$currLevel}&gt;", $allowedTags[$headings[$i]]);
+      }
+    }
+  }
+
+  /**
+   * @covers ::allowImages
+   */
+  public function testAllowImages() {
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $input->allowImages();
     $this->assertEquals("&lt;img&gt;", $this->getProperty($input, "allowedTags")[TIDY_TAG_IMG]);
   }
 
   /**
-   * @covers ::__construct
+   * @covers ::render
    */
-  public function testConstructStandardConfiguration() {
-    $input = new InputHTML("phpunit", "PHPUnit");
-    $this->assertEquals("true", $input->attributes["aria-multiline"]);
-    $this->assertFalse(isset($this->getProperty($input, "allowedTags")[TIDY_TAG_IMG]), "Image tags shouldn't be enabled by default!");
-    $this->assertFalse(isset($input->attributes["data-external"]), "External links shouldn't be enabled by default!");
-  }
-
-  /**
-   * @covers ::__construct
-   */
-  public function testConstructWithContent() {
-    $content = "PHPUnit";
-    $input   = new InputHTML("phpunit", "PHPUnit", $content);
-    $this->assertEquals($content, $this->getProperty($input, "contentRaw"));
-  }
-
-  /**
-   * @covers ::__construct
-   */
-  public function testConstructWithPostContent() {
-    $content          = "PHPUnit";
-    $_POST["phpunit"] = $content;
-    $input            = new InputHTML("phpunit", "PHPUnit", "false");
-    $this->assertEquals($content, $this->getProperty($input, "contentRaw"));
-  }
-
-  /**
-   * @covers ::__toString
-   */
-  public function testToStringWithRawContent() {
+  public function testRenderWithPlaceholder() {
     $content = "<p>phpunit</p>";
     $label   = "PHPUnit";
-    $markup  = "<fieldset><legend>{$label}</legend><div contenteditable='true'>{$content}</div></fieldset>";
-    $input   = new InputHTML("phpunit", $label, $content);
+    $placeholder = "PHPUnit placeholder";
+    $input   = new InputHTML("phpunit", $label, $content, $placeholder);
     $input->value = "wrongValue";
-    $this->assertContains("<fieldset><legend>{$label}</legend><div ", $input->__toString());
-    $this->assertContains("{$content}</div></fieldset>", $input->__toString());
+    $inputRendered = $input->__toString();
+    $this->assertContains("<fieldset><legend>{$label}</legend><div ", $inputRendered);
+    $this->assertContains("{$content}</div><span aria-hidden='true' class='placeholder'>{$placeholder}</span></div></fieldset>", $inputRendered);
   }
 
   /**
-   * @covers ::__toString
+   * @covers ::render
+   * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Tool\Kernel $kernel
    */
-  public function testToStringWithoutRawContent() {
-    global $kernel;
+  public function testRenderWithoutPlaceholder() {
+    global $i18n, $kernel;
     $content = "<p>phpunit</p>";
     $label   = "PHPUnit";
-    $markup  = "<fieldset><legend>{$label}</legend><div contenteditable='true'>{$content}</div></fieldset>";
     $value   = $kernel->htmlEncode($content);
-    $input   = new InputHTML("phpunit", $label);
-    $input->value = $value;
-    $this->assertContains("<fieldset><legend>{$label}</legend><div ", $input->__toString());
-    $this->assertContains("{$content}</div></fieldset>", $input->__toString());
+    $placeholder = $i18n->t("Enter the “{0}” text here …", [ $label ]);
+    $input   = new InputHTML("phpunit", $label, $value);
+    $inputRendered = $input->__toString();
+    $this->assertContains("<fieldset><legend>{$label}</legend><div class='inputhtml'", $inputRendered);
+    $this->assertContains("{$content}</div><span aria-hidden='true' class='placeholder'>{$placeholder}</span></div></fieldset>", $inputRendered);
   }
 
   /**
-   * @covers ::validate
-   * @todo Implement validate
+   * @covers ::required
    */
-  public function testValidate() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+  public function testRequired() {
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $input->required();
+    $this->assertTrue($this->getProperty($input, "required"), "required() does not work properly!");
   }
 
   /**
@@ -220,7 +284,8 @@ class InputHTMLTest extends \MovLib\TestCase {
    * @expectedException \MovLib\Exception\ValidationException
    */
   public function testValidateRequired() {
-    $input = new InputHTML("phpunit", "PHPUnit", null, [ "required" => true ]);
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $input->required();
     $input->validate();
   }
 
@@ -262,9 +327,15 @@ class InputHTMLTest extends \MovLib\TestCase {
    */
   public function testValidateValidMarkup() {
     global $kernel;
-    $input = new InputHTML("phpunit", "PHPUnit", "<p><a href='https://{$kernel->domainDefault}'>MovLib<img alt='phpunit' src='https://{$kernel->domainStatic}/user/Ravenlord.140.jpg'></a></p>textNode");
+    $input = new InputHTML(
+      "phpunit",
+      "PHPUnit",
+      "<p><a href='https://{$kernel->domainDefault}'>MovLib<img alt='phpunit' src='https://{$kernel->domainStatic}/user/Ravenlord.140.jpg'></a></p>textNode",
+      [ "data-allow-img" => true ]
+    );
+    $input->allowImages();
     $input->validate();
-    $this->assertEquals($kernel->htmlEncode("<p><a href='https://{$kernel->domainDefault}'>MovLib<img alt='phpunit' src='https://{$kernel->domainStatic}/user/Ravenlord.140.jpg'></a></p>\n<p>textNode</p>"), $input->value);
+    $this->assertEquals($kernel->htmlEncode("<p><a href='//{$kernel->domainDefault}/'>MovLib<img alt='phpunit' height='140' src='//{$kernel->domainStatic}/user/Ravenlord.140.jpg' width='140'></a></p>\n<p>textNode</p>"), $input->value);
   }
 
   /**
@@ -286,7 +357,8 @@ class InputHTMLTest extends \MovLib\TestCase {
    *   The URL to test.
    */
   public function testValidateTagAInvalidURL($href) {
-    $input = new InputHTML("phpunit", "PHPUnit", null, [ "data-external" => true]);
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $input->allowExternalLinks();
     $node  = (object) [ "attribute" => [ "href" => $href ] ];
     $this->invoke($input, "validateTagA", [ $node ]);
   }
@@ -322,7 +394,8 @@ class InputHTMLTest extends \MovLib\TestCase {
    */
   public function testValidateTagAValidExternal($scheme, $url) {
     global $kernel;
-    $input         = new InputHTML("phpunit", "PHPUnit", null, [ "data-external" => true]);
+    $input         = new InputHTML("phpunit", "PHPUnit");
+    $input->allowExternalLinks();
     $node          = (object) [ "attribute" => [ "href" => "{$scheme}//{$url}"]];
     $validatedLink = $this->invoke($input, "validateTagA", [ $node]);
     $path          = isset($path) ? $path : "/";
@@ -387,10 +460,11 @@ class InputHTMLTest extends \MovLib\TestCase {
     global $kernel;
     $input        = new InputHTML("phpunit", "PHPUnit");
     $alt          = "phpunit alt text";
-    $src          = "https://{$kernel->domainStatic}/user/Ravenlord.140.jpg";
+    $srcAfter     = "//{$kernel->domainStatic}/user/Ravenlord.140.jpg";
+    $src          = "https:{$srcAfter}";
     $img          = (object) [ "attribute" => [ "alt" => $alt, "src" => $src]];
     $validatedImg = $this->invoke($input, "validateTagImg", [ $img ]);
-    $this->assertEquals("img alt='{$alt}' height='140' src='{$src}' width='140'", $validatedImg);
+    $this->assertEquals("img alt='{$alt}' height='140' src='{$srcAfter}' width='140'", $validatedImg);
   }
 
   /**
@@ -399,10 +473,11 @@ class InputHTMLTest extends \MovLib\TestCase {
   public function testValidateTagImgValidNoAlt() {
     global $kernel;
     $input        = new InputHTML("phpunit", "PHPUnit");
-    $src          = "https://{$kernel->domainStatic}/user/Ravenlord.140.jpg";
+    $srcAfter     = "//{$kernel->domainStatic}/user/Ravenlord.140.jpg";
+    $src          = "https:{$srcAfter}";
     $img          = (object) [ "attribute" => [ "src" => $src]];
     $validatedImg = $this->invoke($input, "validateTagImg", [ $img ]);
-    $this->assertEquals("img alt='' height='140' src='{$src}' width='140'", $validatedImg);
+    $this->assertEquals("img alt='' height='140' src='{$srcAfter}' width='140'", $validatedImg);
   }
 
   /**

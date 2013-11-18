@@ -165,10 +165,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "value" => $this->user->birthday,
     ], $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
 
-    $this->aboutMe  = new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, [
-      "data-allow-external" => true,
-      "placeholder"         => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
-    ]);
+    $this->aboutMe  = new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, $i18n->t("Tell others about yourself, what do you do, what do you like, …"));
 
     $this->language = new Select("language", $i18n->t("System Language"), (new SystemLanguages())->orderByName(), $this->user->systemLanguageCode);
     $this->country  = new Select("country", $i18n->t("Country"), (new Countries())->orderByName()->reindex("id"), $this->user->countryId);
