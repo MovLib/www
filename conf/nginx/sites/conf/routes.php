@@ -53,6 +53,12 @@ location ^~ <?= $r("/movies") ?> {
 # ---------------------------------------------------------------------------------------------------------------------- movie
 
 
+location @movie_posters_upload {
+  set $movlib_multipart 1;
+  set $movlib_presenter "Movie\\UploadPoster";
+  include sites/conf/fastcgi_params.conf;
+}
+
 location ^~ <?= $r("/movie") ?> {
 
   location = <?= $r("/movie") ?> {
@@ -99,9 +105,10 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ ^<?= $r("/movie/{0}/posters/upload", [ "([0-9]+)" ]) ?>$ {
+    error_page 413 @movie_posters_upload;
+    set $movlib_multipart 0;
     set $movlib_presenter "Movie\\UploadPoster";
     set $movlib_movie_id $1;
-    set $movlib_tab "poster";
     try_files $movlib_cache @php;
   }
 
