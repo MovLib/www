@@ -701,7 +701,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_images`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
-  `id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image\'s unique ID within the movie.',
+  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The movie image\'s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `type_id` TINYINT NOT NULL COMMENT 'The movie image’s type.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image’s uploader ID.',
