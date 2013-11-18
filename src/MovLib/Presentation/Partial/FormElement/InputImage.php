@@ -65,6 +65,9 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   /**
    * Instantiate new input form element of type file.
    *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
    * @param string $id
    *   The form element's global unique identifier.
    * @param string $label
@@ -73,9 +76,18 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    *   The abstract image instance that's responsible for this image.
    * @param array $attributes [optional]
    *   Additional attributes.
+   * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function __construct($id, $label, $concreteImage, array $attributes = null) {
-    global $i18n;
+    global $i18n, $kernel, $session;
+    if ($session->isAuthenticated === false) {
+      throw new UnauthorizedException($i18n->t(
+        "You must be signed in to upload images, please go to the {0}login page{2} to do so. If you don’t have an " .
+        "account yet go to the {1}registration page{2} and sign up for a free {3} account.", [
+          "<a href=''>", "<a href=''>", "</a>", $kernel->siteName
+        ]
+      ));
+    }
     parent::__construct($id, $label, $attributes);
     $this->attributes["accept"]            = "image/jpeg,image/png";
     $this->attributes["data-max-filesize"] = ini_get("upload_max_filesize");
@@ -93,19 +105,8 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    */
   protected function render() {
-    global $i18n, $kernel, $session;
-    if ($session->isAuthenticated === false) {
-      return (string) new Alert(
-        $i18n->t("You must be signed in to upload images, please go to the {0}login page{1} to do so. If you don’t have an account yet go to the {2}registration page{1} and sign up for a free {3} account.", [
-          "<a href='{$i18n->r("/users/login")}?redirect_to={$kernel->requestURI}'>", "</a>", "<a href='{$i18n->r("/users/registration")}'>", $kernel->siteName,
-        ]),
-        $i18n->t("Please Sign In"),
-        Alert::SEVERITY_ERROR
-      );
-    }
     if ($this->image->imageExists === true) {
       return
         "<div class='row'>" .
