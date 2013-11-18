@@ -131,10 +131,9 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ ^<?= $r("/movie/{0}/poster", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
-    set $movlib_presenter "ImageDetails\\MoviePosterDetails";
+    set $movlib_presenter "ImageDetails\\MoviePoster";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
-    set $movlib_tab "poster";
     try_files $movlib_cache @php;
   }
 

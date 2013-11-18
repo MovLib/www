@@ -269,18 +269,16 @@ SHOW WARNINGS;
 -- Table `movlib`.`licenses`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license\'s unique ID.',
-  `name` VARCHAR(255) CHARACTER SET 'utf8' COLLATE 'utf8_general_ci' NOT NULL COMMENT 'The license\'s english name.',
-  `description` BLOB NOT NULL COMMENT 'The license\'s english description.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The license\'s translated names.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The license\'s translated descriptions.',
-  `url` VARCHAR(255) NULL COMMENT 'The license\'s URL.',
-  `abbreviation` VARCHAR(20) NULL COMMENT 'The license\'s abbreviation.',
-  `icon_extension` VARCHAR(5) NULL COMMENT 'The file extension of the license icon.',
-  `icon_hash` CHAR(10) NULL COMMENT 'The hash of the license icon.',
-  `admin` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Flag which determines whether this license can be edited by ever user (FALSE - 0) or only by admins (TRUE - 1).\nDefaults to 0.',
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `uq_licenses_name` (`name` ASC))
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license’s unique identifier.',
+  `name` TINYBLOB NOT NULL COMMENT 'The license’s English name.',
+  `description` BLOB NOT NULL COMMENT 'The license’s English description.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The license’s translated names.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The license’s translated descriptions.',
+  `abbreviation` VARCHAR(20) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The license’s abbreviation.',
+  `url` VARCHAR(255) NOT NULL COMMENT 'The license’s absolute URL.',
+  `icon_changed` TIMESTAMP NOT NULL COMMENT 'The license’s icon changed timestamp.',
+  `icon_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The license’s icon extension.',
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
 ROW_FORMAT = COMPRESSED;
 
