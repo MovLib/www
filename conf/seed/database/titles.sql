@@ -23,13 +23,13 @@ SET time_zone = "+00:00";
 --
 
 --
--- Dumping data for table `movies_titles`
+-- Dumping data for table `titles`
 --
 
-INSERT INTO `movies_titles` (`movie_id`, `display_title_en`, `display_title_de`) VALUES
-(2, null, 1),
-(3, 1, null),
-(4, null, 1);
+INSERT INTO `titles` (`id`, `movie_id`, `language_id`, `title`, `dyn_comments`) VALUES
+(1, 2, 52, 'Die Verurteilten', '\0\0\0\0\0\0Cdeen!deutsches Kommentar!english comment'),
+(1, 3, 41, 'Léon: The Professional', ''),
+(1, 4, 52, 'Big Buck Bunny', '\0\0\0\0\0\03deen!deutches Kommentar!english comment');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
