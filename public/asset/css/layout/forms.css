@@ -122,6 +122,7 @@ textarea:focus:invalid:focus:not(:empty) {
 input[disabled],
 select[disabled],
 textarea[disabled],
+option[disabled],
 input[readonly],
 select[readonly],
 textarea[readonly] {
@@ -196,4 +197,9 @@ form .row,
 form p {
   margin-top: 20px;
   margin-bottom: 20px;
+}
+
+option[value=""] {
+  color: #999;
+  font-style: italic;
 }
