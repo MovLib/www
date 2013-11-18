@@ -154,6 +154,13 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   protected $imagePlaceholder = "logo/vector.svg";
 
   /**
+   * The original image's filesize.
+   *
+   * @var integer
+   */
+  protected $imageSize;
+
+  /**
    * All available styles information, mapped to database.
    *
    * @var array
@@ -178,16 +185,6 @@ abstract class AbstractImage extends \MovLib\Data\Database {
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
-
-  /**
-   * Update the database with the current object status.
-   *
-   * <b>NOTE</b>
-   * This method is called after deleting or uploading an image and should update all attributes of the entitiy.
-   *
-   * @return this
-   */
-  public abstract function commit();
 
   /**
    * Generate all supported image styles.
@@ -335,7 +332,6 @@ abstract class AbstractImage extends \MovLib\Data\Database {
   /**
    * Upload the <var>$source</var> as this image, overriding the existing image.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $source
    *   Absolute path to the uploaded image.
    * @param string $extension
@@ -345,20 +341,23 @@ abstract class AbstractImage extends \MovLib\Data\Database {
    * @param int $width
    *   The width of the uploaded image in pixels.
    * @return this
+   * @throws \ErrorException
+   * @throws \MovLib\Exception\ImageException
    */
   public function uploadImage($source, $extension, $height, $width) {
-    global $kernel;
     $this->imageChanged   = $this->imageCreated = $_SERVER["REQUEST_TIME"];
     $this->imageExists    = true;
     $this->imageExtension = $extension;
     $this->imageHeight    = $height;
     $this->imageWidth     = $width;
-    sh::executeDetached("convert '{$source}' -strip +repage '{$this->getImagePath()}'");
-    $this->generateImageStyles($source);
+    $original             = $this->getImagePath();
+    sh::execute("convert '{$source}' -strip +repage '{$original}'");
+    unlink($source);
+    $this->imageSize      = filesize($original);
+    $this->generateImageStyles($original);
     if (!isset($this->imageStyles[self::IMAGE_STYLE_SPAN_01]) || !isset($this->imageStyles[self::IMAGE_STYLE_SPAN_02])) {
       throw new ImageException("Every image instance has to generate the default styles!");
     }
-    $kernel->delayMethodCall([ $this, "commit" ]);
     return $this;
   }
 
