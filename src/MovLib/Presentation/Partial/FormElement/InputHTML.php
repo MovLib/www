@@ -46,14 +46,16 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     TIDY_TAG_A  => "&lt;a&gt;",
     TIDY_TAG_B  => "&lt;b&gt;",
     TIDY_TAG_BR => "&lt;br&gt;",
-    TIDY_TAG_H2 => "&lt;h2&gt;",
-    TIDY_TAG_H3 => "&lt;h3&gt;",
-    TIDY_TAG_H4 => "&lt;h4&gt;",
-    TIDY_TAG_H5 => "&lt;h5&gt;",
-    TIDY_TAG_H6 => "&lt;h6&gt;",
     TIDY_TAG_I  => "&lt;i&gt;",
     TIDY_TAG_P  => "&lt;p&gt;",
   ];
+
+  /**
+   * Configuration flag to determine if external links are allowed.
+   *
+   * @var boolean
+   */
+  protected $allowExternalLinks = false;
 
   /**
    * The HTML tags that don't need ending tags.
@@ -66,11 +68,18 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   ];
 
   /**
-   * The text's raw content.
+   * The text's translated placeholder.
    *
-   * @var null|string
+   * @var string
    */
-  protected $contentRaw;
+  protected $placeholder;
+
+  /**
+   * Configuration flag to determine if the text is required.
+   *
+   * @var boolean
+   */
+  protected $required = false;
 
   /**
    * The CSS classes the user can apply.
@@ -84,11 +93,18 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   ];
 
   /**
-   * The text's encoded content.
+   * The text's escaped content.
    *
    * @var null|string
    */
   public $value;
+
+  /**
+   * The text's raw content.
+   *
+   * @var null|string
+   */
+  protected $valueRaw;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -97,12 +113,15 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   /**
    * Instantiate new HTML form element.
    *
+   * @global \MovLib\Kernel $kernel
    * @param string $id
    *   The text's global identifier.
    * @param string $label
    *   The text's label text.
-   * @param mixed $content [optional]
-   *   The text's content, defaults to <code>NULL</code> (no content).
+   * @param mixed $value [optional]
+   *   The form element's value, defaults to <code>NULL</code> (no value).
+   * @param string $placeholder [optional]
+   *   The text's placeholder, defaults to <code>"Enter the $label text here …"</code>.
    * @param array $attributes [optional]
    *   Additional attributes for the text, defaults to <code>NULL</code> (no additional attributes).
    * @param string $help [optional]
@@ -110,16 +129,22 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @param boolean $helpPopup
    *   Whether the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
-  public function __construct($id, $label, $content = null, array $attributes = null, $help = null, $helpPopup = true) {
+  public function __construct($id, $label, $value = null, $placeholder = null, array $attributes = null, $help = null, $helpPopup = true) {
+    global $kernel;
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
+    unset($this->attributes["name"]);
+    unset($this->attributes["required"]);
     $this->attributes["aria-multiline"]  = "true";
     $this->attributes["contenteditable"] = "true";
-    if (isset($this->attributes["data-allow-img"])) {
-      $this->allowedTags[TIDY_TAG_IMG] = "&lt;img&gt;";
+    $this->attributes["role"]            = "textbox";
+    $this->placeholder                   = $placeholder;
+    if (!empty($_POST[$this->id])) {
+      $this->value    = $kernel->htmlEncode($_POST[$this->id]);
+      $this->valueRaw = $_POST[$this->id];
     }
-    $this->contentRaw = $content;
-    if (isset($_POST[$this->id])) {
-      $this->contentRaw = empty($_POST[$this->id]) ? null : $_POST[$this->id];
+    elseif ($value) {
+      $this->value    = $value;
+      $this->valueRaw = $kernel->htmlDecode($value);
     }
   }
 
@@ -127,16 +152,71 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @inheritdoc
    */
   protected function render() {
-    if (empty($this->contentRaw)) {
-      $this->contentRaw = $kernel->htmlDecode($this->value);
+    global $i18n, $kernel;
+    $this->addClass("inputhtml-content", $this->attributes);
+    if (!$this->placeholder) {
+      $this->placeholder = $i18n->t("Enter the “{0}” text here …", [ $this->label ]);
     }
 //    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->contentRaw}</textarea></p>";
-    return "<fieldset>{$this->help}<legend>{$this->label}</legend><div{$this->expandTagAttributes($this->attributes)}>{$this->contentRaw}</div></fieldset>";
+    return "{$this->help}<fieldset><legend>{$this->label}</legend><div class='inputhtml'><div{$this->expandTagAttributes($this->attributes)}>{$this->valueRaw}</div><span aria-hidden='true' class='placeholder'>{$this->placeholder}</span></div></fieldset>";
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Configures the text to allow external links.
+   *
+   * @return $this
+   */
+  public function allowExternalLinks() {
+    $this->allowExternalLinks = true;
+    return $this;
+  }
+
+  /**
+   * Configures the text to allow headings, starting at <code>2</code>.
+   *
+   * @param int $level
+   *   The starting level of the headings. Allowed values are <code>2</code> to <code>6</code>. Defaults to <code>3</code>.
+   * @return $this
+   */
+  public function allowHeadings($level = 3) {
+    switch ($level) {
+      case 2:
+        $this->allowedTags[TIDY_TAG_H2] = "&lt;h2&gt;";
+      case 3:
+        $this->allowedTags[TIDY_TAG_H3] = "&lt;h3&gt;";
+      case 4:
+        $this->allowedTags[TIDY_TAG_H4] = "&lt;h4&gt;";
+      case 5:
+        $this->allowedTags[TIDY_TAG_H5] = "&lt;h5&gt;";
+      case 6:
+        $this->allowedTags[TIDY_TAG_H6] = "&lt;h6&gt;";
+    }
+    return $this;
+  }
+
+  /**
+   * Configures the text to allow images.
+   *
+   * @return $this
+   */
+  public function allowImages() {
+    $this->allowedTags[TIDY_TAG_IMG] = "&lt;img&gt;";
+    return $this;
+  }
+
+  /**
+   * Configures the text to be required.
+   *
+   * @return $this
+   */
+  public function required() {
+    $this->required = true;
+    return $this;
+  }
 
   /**
    * @inheritdoc
@@ -146,8 +226,8 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   public function validate() {
     global $i18n, $kernel;
     // Validate if we have input and throw an Exception if the field is required.
-    if (empty($this->contentRaw)) {
-      if (array_key_exists("required", $this->attributes)) {
+    if (empty($this->valueRaw)) {
+      if ($this->required === true) {
         throw new ValidationException($i18n->t("“{0}” text is mandatory.", [ $this->label ]));
       }
       $this->value = "";
@@ -157,7 +237,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // Parse the HTML input with tidy and clean it.
     try {
       /* @var $tidy \tidy */
-      $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->contentRaw}</body></html>");
+      $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->valueRaw}</body></html>");
       $tidy->cleanRepair();
       if ($tidy->getStatus() === 2) {
         throw new \ErrorException;
@@ -223,6 +303,8 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     while ($level > 0);
 
     // Parse and format the validated HTML output.
+    // Please note that this error is impossible to provoke from the outside.
+    // @codeCoverageIgnoreStart
     try {
       $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$output}</body></html>");
       $tidy->cleanRepair();
@@ -234,6 +316,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       error_log($e);
       throw new ValidationException($i18n->t("Invalid HTML after the validation in “{0}” text.", [ $this->label ]));
     }
+    // @codeCoverageIgnoreEnd
 
     // Replace redundant newlines, normalize UTF-8 characters and encode HTML characters.
     $this->value = $kernel->htmlEncode(\Normalizer::normalize(str_replace("\n\n", "\n", tidy_get_output($tidy))));
@@ -279,7 +362,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // Add rel="nofollow" to external links, sanitize the protocol and fill query string offset if it doesn't exist.
     // If external links are not allowed, abort.
     else {
-      if (!isset($this->attributes["data-external"])) {
+      if ($this->allowExternalLinks === false) {
         throw new ValidationException($i18n->t("No external links are allowed in “{0}” text.", [ $this->label ]));
       }
       if (isset($parts["scheme"]) && ($parts["scheme"] == "http" || $parts["scheme"] == "https")) {
@@ -387,7 +470,8 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
         [ "comment" => "{0} is the name of the text, {1} is the value of the image’s src attribute. Both should not be translated." ]
       ));
     }
-    $attributes["src"] = $kernel->htmlEncode($node->attribute["src"]);
+    $url["path"]          = isset($url["path"]) ? $url["path"] : "/";
+    $attributes["src"]    = $kernel->htmlEncode("//{$url["host"]}{$url["path"]}");
     $attributes["width"]  = $image[0];
     $attributes["height"] = $image[1];
 

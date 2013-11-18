@@ -26,7 +26,12 @@
  */
 
 button::-moz-focus-inner,
-input::-moz-focus-inner,
+input::-moz-focus-inner {
+  padding: 0;
+  margin: 0;
+  border: 0 none;
+}
+
 fieldset {
   padding: 0;
   margin: 0;
@@ -57,7 +62,8 @@ input[type="password"],
 input[type="text"],
 input[type="url"],
 select,
-textarea {
+textarea,
+.inputhtml-content {
   display: block;
   width: 100%;
   min-height: 30px;
@@ -87,7 +93,8 @@ input[type="search"]::-webkit-search-cancel-button {
 
 input,
 select,
-textarea {
+textarea,
+.inputhtml-content {
   display: inline-block;
   vertical-align: middle;
   border: 1px solid #ccc;
@@ -98,7 +105,8 @@ textarea {
 
 input:focus,
 select:focus,
-textarea:focus {
+textarea:focus,
+.inputhtml-content:focus {
   border-color: rgba(82, 168, 236, 0.8);
   outline: 0;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
@@ -106,14 +114,16 @@ textarea:focus {
 
 input:invalid:not(:empty),
 .invalid,
-textarea:invalid:not(:empty) {
+textarea:invalid:not(:empty),
+.inputhtml-content:invalid:not(:empty) {
   border-color: #ee5f5b;
   outline: 0;
 }
 
 input:focus:invalid:focus:not(:empty),
 .invalid:focus,
-textarea:focus:invalid:focus:not(:empty) {
+textarea:focus:invalid:focus:not(:empty),
+.inputhtml-content:focus:invalid:focus:not(:empty) {
   border-color: rgba(233, 50, 45, 0.8);
   outline: 0;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
@@ -125,7 +135,8 @@ textarea[disabled],
 option[disabled],
 input[readonly],
 select[readonly],
-textarea[readonly] {
+textarea[readonly],
+.inputhtml-content[contenteditable="false"] {
   cursor: not-allowed;
   background: #eee;
 }
@@ -174,9 +185,11 @@ textarea:focus::-webkit-input-placeholder {
   color: #ccc;
 }
 
-textarea {
+textarea,
+.inputhtml-content {
   min-height: 150px; /* input has 30px, 30 * 5 = 150px (we want people to write a lot). */
   resize: vertical;
+  z-index: 1;
 }
 
 input[type="file"]:focus,
@@ -199,7 +212,40 @@ form p {
   margin-bottom: 20px;
 }
 
+<<<<<<< HEAD
 option[value=""] {
   color: #999;
   font-style: italic;
+=======
+
+/* ==== InputHTML =================================================================================================== */
+
+
+.inputhtml,
+.inputhtml-content {
+  position: relative;
+}
+
+.inputhtml-content p {
+  margin: 0 0 10px;
+}
+
+.inputhtml .placeholder {
+  color: #888;
+  left: 0;
+  padding: 8px 10px;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  font-weight: 200;
+}
+
+.inputhtml-content:focus:empty + .placeholder {
+  color: #ccc;
+}
+
+.inputhtml-content:not(:empty) + .placeholder,
+.inputhtml-content:focus:not(:empty) + .placeholder {
+  display: none;
+>>>>>>> ab35a4809a10e28c5ec843619371a0880da0dd4b
 }
