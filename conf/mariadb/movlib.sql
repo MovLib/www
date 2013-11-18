@@ -615,24 +615,23 @@ ROW_FORMAT = COMPRESSED;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`movies_titles`
+-- Table `movlib`.`titles`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
+  `id` INT UNSIGNED NOT NULL DEFAULT 1,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this title relates to.',
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this title is in.',
   `title` BLOB NOT NULL COMMENT 'The movie\'s title.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.',
-  `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determine if this title is the display title in the specified language.',
-  INDEX `fk_movies_titles_languages` (`language_id` ASC),
-  INDEX `fk_movies_titles_movies` (`movie_id` ASC),
-  PRIMARY KEY (`id`),
-  CONSTRAINT `fk_movies_titles_movies`
+  INDEX `fk_titles_languages` (`language_id` ASC),
+  INDEX `fk_titles_movies` (`movie_id` ASC),
+  PRIMARY KEY (`id`, `movie_id`),
+  CONSTRAINT `fk_titles_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`movie_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_titles_languages`
+  CONSTRAINT `fk_titles_languages`
     FOREIGN KEY (`language_id`)
     REFERENCES `movlib`.`languages` (`id`)
     ON DELETE NO ACTION
@@ -642,23 +641,23 @@ ROW_FORMAT = COMPRESSED;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`movies_taglines`
+-- Table `movlib`.`taglines`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
+  `id` INT UNSIGNED NOT NULL DEFAULT 1,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.',
   `language_id` INT UNSIGNED NOT NULL COMMENT 'The language\'s unique ID this tagline is in.',
   `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The tagline\'s translatable comment.',
-  INDEX `fk_movies_taglines_languages` (`language_id` ASC),
-  INDEX `fk_movies_taglines_movies` (`movie_id` ASC),
-  PRIMARY KEY (`id`),
-  CONSTRAINT `fk_movies_taglines_movies`
+  INDEX `fk_taglines_languages` (`language_id` ASC),
+  INDEX `fk_taglines_movies` (`movie_id` ASC),
+  PRIMARY KEY (`id`, `movie_id`),
+  CONSTRAINT `fk_taglines_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`movie_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_taglines_languages`
+  CONSTRAINT `fk_taglines_languages`
     FOREIGN KEY (`language_id`)
     REFERENCES `movlib`.`languages` (`id`)
     ON DELETE NO ACTION
@@ -713,7 +712,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   `extension` VARCHAR(3) NOT NULL COMMENT 'The movie image’s extension without leading dot.',
   `changed` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The last time this movie image was updated.',
   `created` TIMESTAMP NOT NULL COMMENT 'The movie image’s creation time.',
-  `upvotes` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image’s upvotes.',
+  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie image’s upvotes.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The movie image’s translatable descriptions.',
   `source` BLOB NOT NULL COMMENT 'The movie image’s source.',
   `styles` BLOB NOT NULL,
@@ -1277,6 +1276,54 @@ CREATE TABLE IF NOT EXISTS `movlib`.`sessions` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Persistent session storage.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_titles`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this title relates to.',
+  `commit` CHAR(40) NULL,
+  `display_title_en` INT NULL,
+  `display_title_de` INT NULL,
+  INDEX `fk_movies_titles_movies` (`movie_id` ASC),
+  PRIMARY KEY (`movie_id`),
+  INDEX `fk_movies_titles_display_title_en_idx` (`display_title_en` ASC),
+  INDEX `fk_movies_titles_display_title_de_idx` (`display_title_de` ASC),
+  CONSTRAINT `fk_movies_titles_movie_id`
+    FOREIGN KEY (`movie_id`)
+    REFERENCES `movlib`.`movies` (`movie_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_titles_display_title_en`
+    FOREIGN KEY (`display_title_en`)
+    REFERENCES `movlib`.`titles` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_titles_display_title_de`
+    FOREIGN KEY (`display_title_de`)
+    REFERENCES `movlib`.`titles` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_taglines`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.',
+  `commit` CHAR(40) NULL,
+  INDEX `fk_movies_taglines_movies` (`movie_id` ASC),
+  PRIMARY KEY (`movie_id`),
+  CONSTRAINT `fk_movies_taglines_movie`
+    FOREIGN KEY (`movie_id`)
+    REFERENCES `movlib`.`movies` (`movie_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
 
