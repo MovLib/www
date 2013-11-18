@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Help;
 
 /**
@@ -93,10 +94,19 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   /**
    * Get string representation of this form element.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   String representation of this form element.
    */
-  public abstract function __toString();
+  public function __toString() {
+    global $i18n;
+    try {
+      return $this->render();
+    }
+    catch (\Exception $e) {
+      return (string) new Alert("<pre>{$e}</pre>", $i18n->t("Error Rendering Element"), Alert::SEVERITY_ERROR);
+    }
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -132,6 +142,14 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
     $this->help                           = new Help($text, $this->id, $popup);
     return $this;
   }
+
+  /**
+   * Get the string representation of the form element.
+   *
+   * @return string
+   *   The string representation of the form element.
+   */
+  protected abstract function render();
 
   /**
    * Validate the user submitted data.

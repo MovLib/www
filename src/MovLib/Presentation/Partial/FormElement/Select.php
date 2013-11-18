@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Exception\ValidationException;
 
 /**
@@ -80,9 +81,8 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
   /**
    * @inheritdoc
    */
-  public function __toString() {
+  protected function render() {
     global $i18n;
-
     //  The first child option element of a select element with a required attribute and without a multiple attribute,
     //  and whose size is 1, must have either an empty value attribute, or must have no text content.
     $emptyValue = empty($this->value);

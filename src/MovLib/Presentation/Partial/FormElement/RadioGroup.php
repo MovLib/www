@@ -84,7 +84,7 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   /**
    * @inheritdoc
    */
-  public function __toString() {
+  protected function render() {
     $choices = null;
     foreach ($this->choices as $value => $choice) {
       $checked  = $this->value == $value ? " checked" : null;

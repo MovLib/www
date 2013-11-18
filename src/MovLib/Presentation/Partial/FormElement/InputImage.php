@@ -18,8 +18,10 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Data\Image\AbstractImage as Image;
+use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\ValidationException;
+use \MovLib\Presentation\Partial\Alert;
 
 /**
  * HTML input type file form element specialized for image uploads.
@@ -89,9 +91,21 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
    */
-  public function __toString() {
-    try{
+  protected function render() {
+    global $i18n, $kernel, $session;
+    if ($session->isAuthenticated === false) {
+      return (string) new Alert(
+        $i18n->t("You must be signed in to upload images, please go to the {0}login page{1} to do so. If you don’t have an account yet go to the {2}registration page{1} and sign up for a free {3} account.", [
+          "<a href='{$i18n->r("/users/login")}?redirect_to={$kernel->requestURI}'>", "</a>", "<a href='{$i18n->r("/users/registration")}'>", $kernel->siteName,
+        ]),
+        $i18n->t("Please Sign In"),
+        Alert::SEVERITY_ERROR
+      );
+    }
     if ($this->image->imageExists === true) {
       return
         "<div class='row'>" .
@@ -101,7 +115,6 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
       ;
     }
     return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
-    }catch(\Exception $e){return "<pre>{$e}</pre>";}
   }
 
 
@@ -110,9 +123,16 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
    */
   public function validate(){
-    global $i18n;
+    global $i18n, $session;
+
+    // Only authenticated user's are allowed to upload images.
+    if ($session->isAuthenticated === false) {
+      throw new UnauthorizedException;
+    }
 
     if (empty($_FILES[$this->id]) || $_FILES[$this->id]["error"] === UPLOAD_ERR_NO_FILE) {
       if (in_array("required", $this->attributes)) {

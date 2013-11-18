@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Partial;
 
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Exception\ValidationException;
 
 /**
@@ -185,15 +186,22 @@ class Form extends \MovLib\Presentation\AbstractBase {
   /**
    * Get string representation of this form element.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @return string
    */
   public function __toString() {
-    $inputs = null;
-    $c      = count($this->elements);
-    for ($i = 0; $i < $c; ++$i) {
-      $inputs .= $this->elements[$i];
+    global $i18n;
+    try {
+      $inputs = null;
+      $c      = count($this->elements);
+      for ($i = 0; $i < $c; ++$i) {
+        $inputs .= $this->elements[$i];
+      }
+      return "{$this->open()}{$inputs}{$this->close()}";
     }
-    return "{$this->open()}{$inputs}{$this->close()}";
+    catch (\Exception $e) {
+      return (string) new Alert("<pre>{$e}</pre>", $i18n->t("Unexpected Error"), Alert::SEVERITY_ERROR);
+    }
   }
 
 

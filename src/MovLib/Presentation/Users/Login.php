@@ -87,12 +87,12 @@ class Login extends \MovLib\Presentation\Page {
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
-    if ($kernel->requestURI != $routeLogin) {
-      if (empty($_GET["redirect_to"])) {
-        $_GET["redirect_to"] = $kernel->requestURI;
-      }
-      $_GET["redirect_to"] = rawurlencode($_GET["redirect_to"]);
-      $action             .= "?redirect_to={$_GET["redirect_to"]}";
+    if ($kernel->requestURI != $routeLogin && empty($_GET["redirect_to"])) {
+      $_GET["redirect_to"] = $kernel->requestURI;
+    }
+
+    if (isset($_GET["redirect_to"])) {
+      $action .= "?redirect_to={$_GET["redirect_to"]}";
     }
 
     // Ensure all views are using the correct path info to render themselves.

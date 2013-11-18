@@ -65,7 +65,7 @@ class Button extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    * @return string
    *   The button's string representation.
    */
-  public function __toString() {
+  protected function render() {
     return "<button{$this->expandTagAttributes($this->attributes)}>{$this->content}</button>";
   }
 

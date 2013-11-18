@@ -63,6 +63,15 @@ class Movie extends \MovLib\Data\Database {
   public $displayTitle;
 
   /**
+   * The movie's display title with the year appended in brackets.
+   *
+   * @internal
+   *   This is used by so many other classes that we only want to concatenate it once and for all.
+   * @var string
+   */
+  public $displayTitleWithYear;
+
+  /**
    * The movie's original title.
    *
    * @var string
@@ -87,6 +96,7 @@ class Movie extends \MovLib\Data\Database {
    *   The unique movie's ID to load.
    */
   public function __construct($id = null) {
+    global $i18n;
     // Load the movie if an ID was passed to the constructor.
     if ($id) {
       $stmt = $this->query(
@@ -101,8 +111,8 @@ class Movie extends \MovLib\Data\Database {
           `movie`.`movie_id` = ?
           AND `title`.`is_display_title` = true
         LIMIT 1",
-        "di",
-        [ $id, self::IMAGE_TYPE_POSTER ]
+        "d",
+        [ $id ]
       );
       $stmt->bind_result(
         $this->deleted,
@@ -120,19 +130,26 @@ class Movie extends \MovLib\Data\Database {
     // Load the display poster if the above query set the movie ID or this object was instantiated by PHP and the
     // property is already set.
     if ($this->id) {
+      // Create the full default display title.
+      $this->displayTitleWithYear = $this->displayTitle;
+      if ($this->year) {
+        $this->displayTitleWithYear .= " {$i18n->t("({0})", [ $this->year ])}";
+      }
+
+      // Always cast deleted to a real boolean if we are instantiating a movie.
+      $this->deleted = (boolean) $this->deleted;
+
+      // Fetch the display poster from the database.
       $result = $this->query(
-        "SELECT `image_id`, `ext`, `changed` FROM `movies_images` WHERE `movie_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
+        "SELECT `id`, `extension`, `changed` FROM `movies_images` WHERE `movie_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
         "d",
         [ $this->id ]
       )->get_result();
 
       // Load an empty poster if we have no posters at all.
-      if (!($this->displayPoster = $result->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id ]))) {
-        $this->displayPoster = new MoviePoster($this->id);
+      if (!($this->displayPoster = $result->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]))) {
+        $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
       }
-
-      // Always cast deleted to a real boolean if we are instantiating a movie.
-      $this->deleted = (boolean) $this->deleted;
     }
   }
 

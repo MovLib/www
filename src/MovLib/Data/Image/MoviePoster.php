@@ -41,20 +41,23 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
 
   protected $alternativeText;
 
+  public $countryId;
+
+  public $description;
+
   protected $imageDirectory = "movie";
 
   public $id;
 
-  /**
-   * The movie this poster belongs to.
-   *
-   * @var \MovLib\Data\Movie\Movie
-   */
-  public $movie;
+  public $license;
+
+  protected $movieId;
 
   public $route;
 
-  private $type = 0;
+  public $source;
+
+  protected $type = 0;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -63,24 +66,21 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   /**
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param \MovLib\Data\Movie\Movie $movie
+   * @param integer $movieId
+   * @param string $displayTitleWithYear
    * @param type $imageId
    */
-  public function __construct($movie, $imageId = null) {
+  public function __construct($movieId, $displayTitleWithYear, $imageId = null) {
     global $i18n;
     if ($imageId) {
 
     }
-    $alt = $movie->displayTitle;
-    if ($movie->year) {
-      $alt .= " ({$movie->year})";
-    }
-    $this->alternativeText = $i18n->t("Poster for {0}.", [ $alt ]);
-    $this->imageDirectory .= "/{$movie->id}/poster";
+    $this->alternativeText = $i18n->t("Poster for {0}.", [ $displayTitleWithYear ]);
+    $this->imageDirectory .= "/{$movieId}/poster";
     $this->imageExists     = (boolean) $this->imageExists;
-    $this->movie           = $movie->id;
+    $this->movieId         = $movieId;
     if ($this->id) {
-      $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $this->movie->id, $this->id ]);
+      $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $movieId, $this->id ]);
     }
     else {
       $this->route = $i18n->t("/movie/{0}/posters/upload");
@@ -92,7 +92,63 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
 
 
   public function commit() {
-
+    global $i18n;
+    if ($this->imageExists === true) {
+      $this->query(
+        "UPDATE `movies_images` SET
+          `license_id`       = ?,
+          `country_id`       = ?,
+          `width`            = ?,
+          `height`           = ?,
+          `extension`        = ?,
+          `changed`          = CURRENT_TIMESTAMP,
+          `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, ?, ?),
+          `source`           = ?,
+          `styles`           = ?
+        WHERE `id` = ? AND `movie_id` = ?",
+        "iiiiisssssdd",
+        [
+          $this->license,
+          $this->countryId,
+          $this->imageWidth,
+          $this->imageHeight,
+          //$this->imageSize,
+          $this->imageExtension,
+          $i18n->languageCode,
+          $this->description,
+          $this->source,
+          serialize($this->imageStyles),
+          $this->id,
+          $this->movieId,
+        ]
+      );
+    }
+    else {
+      $this->query(
+        "INSERT INTO `movies_images` (
+          `id`,
+          `movie_id`,
+          `type_id`,
+          `user_id`,
+          `license_id`,
+          `country_id`,
+          `width`,
+          `height`,
+          `size`,
+          `extension`,
+          `changed`,
+          `created`,
+          `dyn_descriptions`,
+          `source`,
+          `styles`
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?)",
+        "ddidiiiiissss",
+        [
+          
+        ]
+      );
+    }
+    return $this;
   }
 
   protected function generateImageStyles($source) {

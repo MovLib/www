@@ -126,8 +126,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   /**
    * @inheritdoc
    */
-  public function __toString() {
-    global $kernel;
+  protected function render() {
     if (empty($this->contentRaw)) {
       $this->contentRaw = $kernel->htmlDecode($this->value);
     }

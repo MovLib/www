@@ -85,10 +85,10 @@ class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractInp
   /**
    * @inheritdoc
    */
-  public function __toString() {
+  protected function render() {
     // Ensure value isn't prefilled in output!
     unset($this->value);
-    return parent::__toString();
+    return parent::render();
   }
 
 

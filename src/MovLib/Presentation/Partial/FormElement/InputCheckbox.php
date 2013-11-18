@@ -54,7 +54,7 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
   /**
    * @inheritdoc
    */
-  public function __toString() {
+  protected function render() {
     if ($this->value === true) {
       $this->attributes[] = "checked";
     }

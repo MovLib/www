@@ -56,7 +56,7 @@ abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\Ab
   /**
    * @inheritdoc
    */
-  public function __toString() {
+  protected function render() {
     if (empty($this->value)) {
       unset($this->attributes["value"]);
     }

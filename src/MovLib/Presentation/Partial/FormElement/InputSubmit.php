@@ -78,7 +78,7 @@ class InputSubmit extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The string representation of this form element.
    */
-  public function __toString() {
+  protected function render() {
     return "<input{$this->expandTagAttributes($this->attributes)}>";
   }
 
