@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\History\Movie;
+namespace MovLib\Data\History;
 
 /**
- * The movie title revisions page.
+ * Description of MovieTitles
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,27 +26,17 @@ namespace MovLib\Presentation\History\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieTitlesRevisions extends \MovLib\Presentation\History\AbstractHistory {
-  use \MovLib\Presentation\Movie\TraitMoviePage;
+class MovieTitles extends AbstractHistory {
 
-  /**
-   * Instatiate new movie title history presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   */
-  public function __construct($context = "history") {
-    global $i18n;
-    $this->initMovie();
-    $this->init($i18n->t("History of {0}", [ $this->title ]));
-
-    $this->historyModel = new \MovLib\Data\History\MovieTitles($this->model->id, $context);
-  }
-  
   /**
    * @inheritdoc
    */
-  protected function getPageContent() {
-    $this->addClass("active", $this->secondaryNavigation->menuitems[4][2]);
-    return $this->revisionsPage();
+  public function __construct($id, $context = "history") {
+    parent::__construct($id, $context);
+    
+    $this->serializedArrays = [
+      "titles"
+    ];
   }
+
 }
