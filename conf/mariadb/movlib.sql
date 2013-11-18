@@ -269,7 +269,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`licenses`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
-  `license_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license\'s unique ID.',
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license\'s unique ID.',
   `name` VARCHAR(255) CHARACTER SET 'utf8' COLLATE 'utf8_general_ci' NOT NULL COMMENT 'The license\'s english name.',
   `description` BLOB NOT NULL COMMENT 'The license\'s english description.',
   `dyn_names` BLOB NOT NULL COMMENT 'The license\'s translated names.',
@@ -279,9 +279,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
   `icon_extension` VARCHAR(5) NULL COMMENT 'The file extension of the license icon.',
   `icon_hash` CHAR(10) NULL COMMENT 'The hash of the license icon.',
   `admin` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Flag which determines whether this license can be edited by ever user (FALSE - 0) or only by admins (TRUE - 1).\nDefaults to 0.',
-  PRIMARY KEY (`license_id`),
+  PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_licenses_name` (`name` ASC))
-DEFAULT CHARACTER SET = utf8mb4
+ENGINE = InnoDB
 ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
@@ -322,7 +322,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_photos_licenses`
     FOREIGN KEY (`license_id`)
-    REFERENCES `movlib`.`licenses` (`license_id`)
+    REFERENCES `movlib`.`licenses` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'Extends images table with unique person’s ID.'
@@ -367,7 +367,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies_images` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_companies_images_licenses`
     FOREIGN KEY (`license_id`)
-    REFERENCES `movlib`.`licenses` (`license_id`)
+    REFERENCES `movlib`.`licenses` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 COMMENT = 'Extends images table with unique company’s ID.'
@@ -734,7 +734,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_images_licenses`
     FOREIGN KEY (`license_id`)
-    REFERENCES `movlib`.`licenses` (`license_id`)
+    REFERENCES `movlib`.`licenses` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_images_countries`
