@@ -17,8 +17,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Helper script containing global configuration for all installer scripts.
+# "libmemcached" installation script.
 #
+# LINK:       https://github.com/trondn/libmemcached
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT:  © 2013 MovLib
 # LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -26,46 +27,18 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-function msgline() {
-  for i in {1..80}; do
-    echo -n "-"
-  done
-}
+source $(pwd)/inc/conf.sh
 
-function msgerror() {
-  local COLOR="\033[01;31m" # red
-  local RESET="\033[00;00m" # white
-  echo -e "${COLOR}${1}${RESET}"
-}
-
-function msginfo() {
-  local COLOR="\033[01;34m" # blue
-  local RESET="\033[00;00m" # white
-  echo -e "${COLOR}${1}${RESET}"
-}
-
-function msgsuccess() {
-  local COLOR="\033[01;32m" # green
-  local RESET="\033[00;00m" # white
-  echo -e "${COLOR}${1}${RESET}"
-}
-
-function exitonerror() {
-  if [ $? != 0 ]; then
-    msgerror "Last command failed!"
-    exit 1
-  fi
-}
-
-if [ "$(whoami)" != "root" ]; then
-  msgerror "You are using a non-privileged account, exiting!"
-  exit 1
+if [ ${#} == 1 ]; then
+  VERSION=${1}
+else
+  VERSION="52-1"
+  msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
-# Exit on any error!
-set -e
-
-WD="$(pwd)/"          # Work directory
-ID="${WD}/inc/"       # Include directory
-SD="/usr/local/src/"  # Source directory
-cd ${SD}
+NAME="icu"
+source ${ID}uninstall.sh
+svn export http://source.icu-project.org/repos/icu/icu/tags/release-${VERSION}/ ${NAME}-${VERSION}
+cd ${SD}/${NAME}-${VERSION}
+./source/runConfigureICU Linux/gcc
+source ${ID}install.sh

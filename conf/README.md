@@ -17,14 +17,3 @@ Things one might want to configure as well (to be extended):
   * ImageMagick
   * pwgen
   * much more ...
-
-## Installing ICU
-```Shell
-# cd /usr/local/src
-# svn export http://source.icu-project.org/repos/icu/icu/tags/release-??-?/
-# cd release-??-?
-# ./source/runConfigureICU Linux/gcc
-# make
-# make install
-# ldconfig
-```
