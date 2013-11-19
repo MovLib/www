@@ -130,7 +130,7 @@ class FullTest extends \MovLib\TestCase {
     $this->userFull                     = new UserFull(UserFull::FROM_ID, 1);
     $this->userFull->aboutMe            = "PHPUnit";
     $this->userFull->birthday           = "2000-01-01";
-    $this->userFull->countryId          = 1;
+    $this->userFull->countryCode        = "AT";
     $this->userFull->private            = true;
     $this->userFull->realName           = "PHPUnit PHPUnit";
     $this->userFull->sex                = 10;
@@ -143,7 +143,7 @@ class FullTest extends \MovLib\TestCase {
     $this->userFull = new UserFull(UserFull::FROM_ID, 1);
     $this->assertEquals("PHPUnit", $this->userFull->aboutMe);
     $this->assertEquals("2000-01-01", $this->userFull->birthday);
-    $this->assertEquals(1, $this->userFull->countryId);
+    $this->assertEquals("AT", $this->userFull->countryCode);
     $this->assertTrue($this->userFull->private);
     $this->assertEquals("PHPUnit PHPUnit", $this->userFull->realName);
     $this->assertEquals(10, $this->userFull->sex);

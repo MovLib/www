@@ -99,8 +99,8 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         $gender     = $this->user->sex === 1 ? $i18n->t("Male") : $i18n->t("Female");
         $personalData[] = "<span itemprop='gender'>{$gender}</span>";
       }
-      if ($this->user->countryId) {
-        $country    = new Country(Country::FROM_ID, $this->user->countryId);
+      if ($this->user->countryCode) {
+        $country    = new Country(Country::FROM_CODE, $this->user->countryCode);
         $personalData[] = "<span itemprop='nationality'>{$country}</span>";
       }
 
