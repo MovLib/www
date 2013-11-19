@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_movies_rank` (`rank` ASC))
-COMMENT = 'Contains all movie’s data.'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Contains all movie’s data.';
 
 SHOW WARNINGS;
 
@@ -42,8 +42,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre description’s translations.',
   PRIMARY KEY (`genre_id`),
   UNIQUE INDEX `uq_genres_name` (`name` ASC))
-COMMENT = 'Contains all movie genres.'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Contains all movie genres.';
 
 SHOW WARNINGS;
 
@@ -55,19 +55,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_genres` (
   `genre_id` INT UNSIGNED NOT NULL COMMENT 'The genre’s unique ID.',
   PRIMARY KEY (`movie_id`, `genre_id`),
   INDEX `fk_movies_genres_genres` (`genre_id` ASC),
-  INDEX `fk_movies_genres_movies` (`movie_id` ASC),
-  CONSTRAINT `fk_movies_genres_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_genres_genres`
-    FOREIGN KEY (`genre_id`)
-    REFERENCES `movlib`.`genres` (`genre_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'A movie has many genres, a genre has many movies.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_movies_genres_movies` (`movie_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'A movie has many genres, a genre has many movies.';
 
 SHOW WARNINGS;
 
@@ -82,8 +72,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`styles` (
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The style description’s translations.',
   PRIMARY KEY (`style_id`),
   UNIQUE INDEX `uq_styles_name` (`name` ASC))
-COMMENT = 'Contains all movie styles.'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Contains all movie styles.';
 
 SHOW WARNINGS;
 
@@ -95,19 +85,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_styles` (
   `style_id` INT UNSIGNED NOT NULL COMMENT 'The style’s unique ID.',
   PRIMARY KEY (`movie_id`, `style_id`),
   INDEX `fk_movies_styles_styles` (`style_id` ASC),
-  INDEX `fk_movies_styles_movies` (`movie_id` ASC),
-  CONSTRAINT `fk_movies_styles_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_styles_styles`
-    FOREIGN KEY (`style_id`)
-    REFERENCES `movlib`.`styles` (`style_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'A movie has many styles, a style has many movies.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_movies_styles_movies` (`movie_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'A movie has many styles, a style has many movies.';
 
 SHOW WARNINGS;
 
@@ -139,9 +119,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_users_name` (`name` ASC),
   INDEX `users_email` (`email` ASC))
-ENGINE = InnoDB
-COMMENT = 'Contains all user related data where absolutely every field  /* comment truncated */ /*is nullable. This is important because we want delete any personal data if a user deletes the account.*/'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Contains all user related data where absolutely every field  /* comment truncated */ /*is nullable. This is important because we want delete any personal data if a user deletes the account.*/';
 
 SHOW WARNINGS;
 
@@ -166,9 +145,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this person was created.',
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.',
   PRIMARY KEY (`person_id`))
-ENGINE = InnoDB
-COMMENT = 'Contains all person related data.'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Contains all person related data.';
 
 SHOW WARNINGS;
 
@@ -184,8 +162,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`jobs` (
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this job was created.',
   PRIMARY KEY (`job_id`),
   UNIQUE INDEX `uq_jobs_title` (`title` ASC))
-COMMENT = 'Contains all job related data.'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Contains all job related data.';
 
 SHOW WARNINGS;
 
@@ -200,8 +178,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
   `dyn_links` BLOB NOT NULL COMMENT 'The company’s external links.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this companies was created.',
   PRIMARY KEY (`company_id`))
-COMMENT = 'Contains all company related data.'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Contains all company related data.';
 
 SHOW WARNINGS;
 
@@ -218,29 +196,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
   INDEX `fk_movies_crew_movies` (`movie_id` ASC),
   INDEX `fk_movies_crew_jobs` (`job_id` ASC),
   INDEX `fk_movies_crew_companies` (`company_id` ASC),
-  INDEX `fk_movies_crew_persons` (`person_id` ASC),
-  CONSTRAINT `fk_movies_crew_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_crew_jobs`
-    FOREIGN KEY (`job_id`)
-    REFERENCES `movlib`.`jobs` (`job_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_crew_companies`
-    FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`company_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_crew_persons`
-    FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'Contains the crew of a movie.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_movies_crew_persons` (`person_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'Contains the crew of a movie.';
 
 SHOW WARNINGS;
 
@@ -258,8 +216,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
   `icon_changed` TIMESTAMP NOT NULL COMMENT 'The license’s icon changed timestamp.',
   `icon_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The license’s icon extension.',
   PRIMARY KEY (`id`))
-ENGINE = InnoDB
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -286,24 +243,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
   INDEX `fk_persons_photos_persons` (`person_id` ASC),
   INDEX `fk_persons_photos_images` (`image_id` ASC),
   INDEX `fk_persons_photos_users` (`user_id` ASC),
-  INDEX `fk_persons_photos_licenses` (`license_id` ASC),
-  CONSTRAINT `fk_persons_photos_persons`
-    FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_photos_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_photos_licenses`
-    FOREIGN KEY (`license_id`)
-    REFERENCES `movlib`.`licenses` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'Extends images table with unique person’s ID.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_persons_photos_licenses` (`license_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'Extends images table with unique person’s ID.';
 
 SHOW WARNINGS;
 
@@ -331,24 +273,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies_images` (
   INDEX `fk_companies_images_companies` (`company_id` ASC),
   INDEX `fk_companies_images_images` (`image_id` ASC),
   INDEX `fk_companies_images_users` (`user_id` ASC),
-  INDEX `fk_companies_images_licenses` (`license_id` ASC),
-  CONSTRAINT `fk_companies_images_companies`
-    FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`company_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_companies_images_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_companies_images_licenses`
-    FOREIGN KEY (`license_id`)
-    REFERENCES `movlib`.`licenses` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'Extends images table with unique company’s ID.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_companies_images_licenses` (`license_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'Extends images table with unique company’s ID.';
 
 SHOW WARNINGS;
 
@@ -361,19 +288,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`ratings` (
   `rating` TINYINT UNSIGNED NOT NULL COMMENT 'The rating itself (between 1 and 5).',
   PRIMARY KEY (`user_id`, `movie_id`),
   INDEX `fk_ratings_movies` (`movie_id` ASC),
-  INDEX `fk_ratings_users` (`user_id` ASC),
-  CONSTRAINT `fk_ratings_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_ratings_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'A movie has many ratings, a user has many ratings.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_ratings_users` (`user_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'A movie has many ratings, a user has many ratings.';
 
 SHOW WARNINGS;
 
@@ -387,19 +304,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   `weight` INT NULL COMMENT 'The weight (display order) of the movie\'s cast.',
   PRIMARY KEY (`movie_id`, `person_id`),
   INDEX `fk_movies_cast_movies` (`movie_id` ASC),
-  INDEX `fk_movies_cast_persons` (`person_id` ASC),
-  CONSTRAINT `fk_movies_cast_persons`
-    FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_cast_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'A movie has many actors, an actor has many movies.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_movies_cast_persons` (`person_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'A movie has many actors, an actor has many movies.';
 
 SHOW WARNINGS;
 
@@ -412,8 +319,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`messages` (
   `comment` BLOB NULL COMMENT 'The message’s optional comment for translators.',
   `dyn_translations` BLOB NOT NULL COMMENT 'The message’s translations.',
   PRIMARY KEY (`message_id`))
-COMMENT = 'Contains all translatable system messages.'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Contains all translatable system messages.';
 
 SHOW WARNINGS;
 
@@ -426,8 +333,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`routes` (
   `dyn_translations` BLOB NOT NULL COMMENT 'The route’s translations.',
   PRIMARY KEY (`route_id`),
   UNIQUE INDEX `uq_routes_route` (`route` ASC))
-COMMENT = 'Contains all routes (relative URIs).'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Contains all routes (relative URIs).';
 
 SHOW WARNINGS;
 
@@ -438,14 +345,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_countries` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `country_code` CHAR(2) NOT NULL COMMENT 'The country’s unique ISO alpha-2 code.',
   PRIMARY KEY (`movie_id`, `country_code`),
-  INDEX `fk_movies_countries_movies` (`movie_id` ASC),
-  CONSTRAINT `fk_movies_countries_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'A movie has many countries, a country has many movies.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_movies_countries_movies` (`movie_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'A movie has many countries, a country has many movies.';
 
 SHOW WARNINGS;
 
@@ -456,14 +358,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_languages` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The language’s unique iso alpha-2 code.',
   PRIMARY KEY (`movie_id`, `language_code`),
-  INDEX `fk_movies_languages_movies` (`movie_id` ASC),
-  CONSTRAINT `fk_movies_languages_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'A movie has many languages, a language has many movies.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_movies_languages_movies` (`movie_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'A movie has many languages, a language has many movies.';
 
 SHOW WARNINGS;
 
@@ -475,19 +372,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
   PRIMARY KEY (`movie_id`, `person_id`),
   INDEX `fk_movies_directors_persons` (`person_id` ASC),
-  INDEX `fk_movies_directors_movies` (`movie_id` ASC),
-  CONSTRAINT `fk_movies_directors_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_directors_persons`
-    FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'A movie has many directors, a director has many movies.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_movies_directors_movies` (`movie_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'A movie has many directors, a director has many movies.';
 
 SHOW WARNINGS;
 
@@ -502,8 +389,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`tmp` (
   PRIMARY KEY (`key`),
   INDEX `created` (`created` ASC),
   INDEX `cron` (`ttl` ASC))
-COMMENT = 'Used to store temporary data.'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Used to store temporary data.';
 
 SHOW WARNINGS;
 
@@ -519,8 +406,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this award was created.',
   PRIMARY KEY (`award_id`),
   UNIQUE INDEX `uq_awards_name` (`name` ASC))
-COMMENT = 'Contains all job related data.'
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB
+COMMENT = 'Contains all job related data.';
 
 SHOW WARNINGS;
 
@@ -540,28 +427,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   INDEX `fk_awards_movies_movies` (`movie_id` ASC),
   INDEX `fk_awards_movies_awards` (`award_id` ASC),
   INDEX `fk_persons_awards_persons` (`person_id` ASC),
-  INDEX `fk_persons_awards_companies` (`company_id` ASC),
-  CONSTRAINT `fk_movies_awards_awards`
-    FOREIGN KEY (`award_id`)
-    REFERENCES `movlib`.`awards` (`award_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_awards_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_awards_persons`
-    FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_awards_companies`
-    FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`company_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_persons_awards_companies` (`company_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -575,13 +442,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
   `title` BLOB NOT NULL COMMENT 'The movie\'s title.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.',
   INDEX `fk_titles_movies` (`movie_id` ASC),
-  PRIMARY KEY (`id`, `movie_id`),
-  CONSTRAINT `fk_titles_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  PRIMARY KEY (`id`, `movie_id`))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -595,13 +457,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
   `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The tagline\'s translatable comment.',
   INDEX `fk_taglines_movies` (`movie_id` ASC),
-  PRIMARY KEY (`id`, `movie_id`),
-  CONSTRAINT `fk_taglines_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  PRIMARY KEY (`id`, `movie_id`))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -616,7 +473,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`relationship_types` (
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The relationship type\'s description translations.',
   PRIMARY KEY (`relationship_type_id`),
   UNIQUE INDEX `name_UNIQUE` (`name` ASC))
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -625,13 +482,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movies\'s unique ID.',
-  PRIMARY KEY (`movie_id`),
-  CONSTRAINT `fk_movies_trailers_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  PRIMARY KEY (`movie_id`))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -658,24 +510,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   PRIMARY KEY (`id`, `movie_id`, `type_id`),
   INDEX `fk_posters_movies` (`movie_id` ASC),
   INDEX `fk_movies_images_users` (`user_id` ASC),
-  INDEX `fk_movies_images_licenses` (`license_id` ASC),
-  CONSTRAINT `fk_movies_images_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_licenses`
-    FOREIGN KEY (`license_id`)
-    REFERENCES `movlib`.`licenses` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-COMMENT = 'Extends images table with unique movie’s ID.'
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_movies_images_licenses` (`license_id` ASC))
+ENGINE = TokuDB
+COMMENT = 'Extends images table with unique movie’s ID.';
 
 SHOW WARNINGS;
 
@@ -697,7 +534,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series` (
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this series was created.',
   `commit` CHAR(40) NULL COMMENT 'The series\' last commit sha-1 hash.',
   PRIMARY KEY (`series_id`))
-ENGINE = InnoDB
+ENGINE = TokuDB
 COMMENT = 'Contains all series data.';
 
 SHOW WARNINGS;
@@ -712,13 +549,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_seasons` (
   `end_year` SMALLINT NULL COMMENT 'The year the season ended for the first time.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this season was created.',
   PRIMARY KEY (`series_id`, `seasons_number`),
-  INDEX `fk_series_seasons_series` (`series_id` ASC),
-  CONSTRAINT `fk_series_seasons_series`
-    FOREIGN KEY (`series_id`)
-    REFERENCES `movlib`.`series` (`series_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
+  INDEX `fk_series_seasons_series` (`series_id` ASC))
+ENGINE = TokuDB
 COMMENT = 'Contains seasons data for a series.';
 
 SHOW WARNINGS;
@@ -732,13 +564,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_titles` (
   `title` BLOB NOT NULL COMMENT 'The series´ title.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.',
   `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determines whether this is the title to diplay in the localized site or not.',
-  INDEX `fk_series_titles_series` (`series_id` ASC),
-  CONSTRAINT `fk_series_titles_series`
-    FOREIGN KEY (`series_id`)
-    REFERENCES `movlib`.`series` (`series_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
+  INDEX `fk_series_titles_series` (`series_id` ASC))
+ENGINE = TokuDB
 COMMENT = 'A series has many titles, a title belongs to one series. Con /* comment truncated */ /*tains language specific titles for series.*/';
 
 SHOW WARNINGS;
@@ -755,13 +582,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`seasons_episodes` (
   `original_title` BLOB NOT NULL COMMENT 'The episode´s original title.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this episode was created.',
   PRIMARY KEY (`series_id`, `seasons_number`, `position`),
-  INDEX `fk_seasons_episodes_series_seasons` (`series_id` ASC, `seasons_number` ASC),
-  CONSTRAINT `fk_seasons_episodes_series_seasons`
-    FOREIGN KEY (`series_id` , `seasons_number`)
-    REFERENCES `movlib`.`series_seasons` (`series_id` , `seasons_number`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
+  INDEX `fk_seasons_episodes_series_seasons` (`series_id` ASC, `seasons_number` ASC))
+ENGINE = TokuDB
 COMMENT = 'Contains all episode data of episodes belonging to seasons w /* comment truncated */ /*hich belong to series.*/';
 
 SHOW WARNINGS;
@@ -777,13 +599,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`episodes_titles` (
   `title` BLOB NOT NULL COMMENT 'The episode´s title.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this episode title.',
   `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determine if this episode title is the display title in the specified language.',
-  INDEX `fk_episodes_titles_seasons_episodes` (`series_id` ASC, `seasons_number` ASC, `position` ASC),
-  CONSTRAINT `fk_episodes_titles_seasons_episodes`
-    FOREIGN KEY (`series_id` , `seasons_number` , `position`)
-    REFERENCES `movlib`.`seasons_episodes` (`series_id` , `seasons_number` , `position`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
+  INDEX `fk_episodes_titles_seasons_episodes` (`series_id` ASC, `seasons_number` ASC, `position` ASC))
+ENGINE = TokuDB
 COMMENT = 'Contains all episode data of episodes belonging to seasons w /* comment truncated */ /*hich belong to series.*/';
 
 SHOW WARNINGS;
@@ -796,18 +613,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_genres` (
   `genre_id` INT UNSIGNED NOT NULL COMMENT 'The genre\'s unique ID.',
   PRIMARY KEY (`series_id`, `genre_id`),
   INDEX `fk_series_genres_genres` (`genre_id` ASC),
-  INDEX `fk_series_genres_series` (`series_id` ASC),
-  CONSTRAINT `fk_series_genres_series`
-    FOREIGN KEY (`series_id`)
-    REFERENCES `movlib`.`series` (`series_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_series_genres_genres`
-    FOREIGN KEY (`genre_id`)
-    REFERENCES `movlib`.`genres` (`genre_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+  INDEX `fk_series_genres_series` (`series_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -819,18 +626,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_styles` (
   `style_id` INT UNSIGNED NOT NULL COMMENT 'The style\'s unique ID.',
   PRIMARY KEY (`series_id`, `style_id`),
   INDEX `fk_series_styles_styles` (`style_id` ASC),
-  INDEX `fk_series_styles_series` (`series_id` ASC),
-  CONSTRAINT `fk_series_styles_series`
-    FOREIGN KEY (`series_id`)
-    REFERENCES `movlib`.`series` (`series_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_series_styles_styles`
-    FOREIGN KEY (`style_id`)
-    REFERENCES `movlib`.`styles` (`style_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+  INDEX `fk_series_styles_series` (`series_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -847,7 +644,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`articles` (
   `commit` CHAR(40) NULL COMMENT 'The article\'s last commit sha-1 hash.',
   PRIMARY KEY (`article_id`),
   UNIQUE INDEX `uq_articles_title` (`title` ASC))
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -858,7 +655,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`aspect_ratios` (
   `aspect_ratio_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The aspect ratio\'s unique ID.',
   `name` TINYTEXT NOT NULL COMMENT 'The aspect ratio\'s English name.',
   PRIMARY KEY (`aspect_ratio_id`))
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -871,7 +668,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`packaging` (
   `dyn_names` BLOB NOT NULL COMMENT 'The packaging´s translatable names.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The packaging´s translatable descriptions',
   PRIMARY KEY (`packaging_id`))
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -888,13 +685,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`master_releases` (
   `commit` CHAR(40) NULL COMMENT 'The master release\'s last commit sha-1 hash.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this master release was created.',
   PRIMARY KEY (`master_release_id`),
-  INDEX `fk_master_releases_packaging` (`packaging_id` ASC),
-  CONSTRAINT `fk_master_releases_packaging`
-    FOREIGN KEY (`packaging_id`)
-    REFERENCES `movlib`.`packaging` (`packaging_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_master_releases_packaging` (`packaging_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -918,23 +710,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
   INDEX `fk_releases_aspect_ratios` (`aspect_ratio_id` ASC),
   PRIMARY KEY (`release_id`),
   INDEX `fk_releases_packaging` (`packaging_id` ASC),
-  INDEX `fk_releases_master_release` (`master_release_id` ASC),
-  CONSTRAINT `fk_releases_aspect_ratios`
-    FOREIGN KEY (`aspect_ratio_id`)
-    REFERENCES `movlib`.`aspect_ratios` (`aspect_ratio_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_releases_master_releases`
-    FOREIGN KEY (`master_release_id`)
-    REFERENCES `movlib`.`master_releases` (`master_release_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_releases_packaging`
-    FOREIGN KEY (`packaging_id`)
-    REFERENCES `movlib`.`packaging` (`packaging_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_releases_master_release` (`master_release_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -946,17 +723,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_releases` (
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release´s unique ID that is related to the movie.',
   PRIMARY KEY (`movie_id`, `release_id`),
   INDEX `fk_movies_releases_releases` (`release_id` ASC),
-  INDEX `fk_movies_releases_movies` (`movie_id` ASC),
-  CONSTRAINT `fk_movies_releases_movies1`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_releases_releases1`
-    FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`release_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
+  INDEX `fk_movies_releases_movies` (`movie_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -969,18 +737,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_labels` (
   `cat_no` TINYBLOB NULL COMMENT 'The release´s catalog number on this label.',
   PRIMARY KEY (`release_id`, `company_id`),
   INDEX `fk_releases_labels_companies` (`company_id` ASC),
-  INDEX `fk_releases_labels_releases` (`release_id` ASC),
-  CONSTRAINT `fk_releases_companies_releases`
-    FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`release_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_releases_companies_companies`
-    FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`company_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_releases_labels_releases` (`release_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -993,13 +751,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`articles_routes` (
   `section` VARCHAR(255) NOT NULL COMMENT 'The article’s section (e.g. help).',
   `route` VARCHAR(255) NOT NULL COMMENT 'The article’s route format.',
   PRIMARY KEY (`article_id`, `language_code`, `section`, `route`),
-  INDEX `articles_routes_section_route` (`section` ASC, `route` ASC),
-  CONSTRAINT `fk_articles_routes_articles`
-    FOREIGN KEY (`article_id`)
-    REFERENCES `movlib`.`articles` (`article_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  INDEX `articles_routes_section_route` (`section` ASC, `route` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -1012,7 +765,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`sound_formats` (
   `dyn_names` BLOB NOT NULL COMMENT 'The sound format´s translations, if there are any.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The sound format´s translatable descriptions.',
   PRIMARY KEY (`sound_format_id`))
-ROW_FORMAT = COMPRESSED;
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -1026,18 +779,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_sound_formats` (
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment field for this sound format.',
   PRIMARY KEY (`release_id`, `sound_format_id`, `language_code`),
   INDEX `fk_releases_sound_formats_sound_formats` (`sound_format_id` ASC),
-  INDEX `fk_releases_sound_formats_releases` (`release_id` ASC),
-  CONSTRAINT `fk_releases_sound_formats_releases`
-    FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`release_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_releases_sound_formats_sound_formats`
-    FOREIGN KEY (`sound_format_id`)
-    REFERENCES `movlib`.`sound_formats` (`sound_format_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_releases_sound_formats_releases` (`release_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -1049,13 +792,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_subtitles` (
   `language_code` CHAR(2) NOT NULL COMMENT 'The releases subtitle\'s ISO alpha-2 language code.',
   `is_hearing_impaired` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag that determines whether the subtitle track is for the hearing impaired or not (defaults to FALSE).',
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment field for this subtitle track.',
-  PRIMARY KEY (`release_id`, `language_code`, `is_hearing_impaired`),
-  CONSTRAINT `fk_releases_subtitles_releases`
-    FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`release_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  PRIMARY KEY (`release_id`, `language_code`, `is_hearing_impaired`))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -1068,18 +806,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`master_releases_labels` (
   `cat_no` TINYBLOB NULL COMMENT 'The master release´s catalog number on this label.',
   PRIMARY KEY (`master_release_id`, `company_id`),
   INDEX `fk_master_releases_labels_companies` (`company_id` ASC),
-  INDEX `fk_master_releases_labels_master_releases` (`master_release_id` ASC),
-  CONSTRAINT `fk_master_releases_labels_master_releases`
-    FOREIGN KEY (`master_release_id`)
-    REFERENCES `movlib`.`master_releases` (`master_release_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_master_releases_labels_companies`
-    FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`company_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_master_releases_labels_master_releases` (`master_release_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -1093,13 +821,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`awards_categories` (
   `description` BLOB NULL COMMENT 'The award category’s English description.',
   `dyn_names` BLOB NOT NULL COMMENT 'The award category’s title translations.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The award category’s description translations.',
-  PRIMARY KEY (`award_id`, `award_category_id`),
-  CONSTRAINT `fk_awards_categories_awards`
-    FOREIGN KEY (`award_id`)
-    REFERENCES `movlib`.`awards` (`award_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+  PRIMARY KEY (`award_id`, `award_category_id`))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -1111,18 +834,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user\'s unique ID.',
   `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user\'s rating for this movie (1-5).',
   PRIMARY KEY (`movie_id`, `user_id`),
-  INDEX `fk_movies_ratings_users` (`user_id` ASC),
-  CONSTRAINT `fk_movies_ratings_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_ratings_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+  INDEX `fk_movies_ratings_users` (`user_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -1136,23 +849,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_relationships` (
   PRIMARY KEY (`movie_id`, `movie_id_other`, `relationship_type_id`),
   INDEX `fk_movies_relationships_relationship_types` (`relationship_type_id` ASC),
   INDEX `fk_movies_relationships_movies` (`movie_id` ASC),
-  INDEX `fk_movies_relationships_movies_other` (`movie_id_other` ASC),
-  CONSTRAINT `fk_movies_relationships_relationship_types`
-    FOREIGN KEY (`relationship_type_id`)
-    REFERENCES `movlib`.`relationship_types` (`relationship_type_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_relationships_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_relationships_movies_other`
-    FOREIGN KEY (`movie_id_other`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_movies_relationships_movies_other` (`movie_id_other` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -1166,13 +864,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`sessions` (
   `ip_address` BLOB NOT NULL COMMENT 'The session\'s IP address.',
   `user_agent` BLOB NOT NULL COMMENT 'The session\'s user agent string.',
   PRIMARY KEY (`session_id`),
-  INDEX `fk_sessions_users` (`user_id` ASC),
-  CONSTRAINT `fk_sessions_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
+  INDEX `fk_sessions_users` (`user_id` ASC))
+ENGINE = TokuDB
 COMMENT = 'Persistent session storage.';
 
 SHOW WARNINGS;
@@ -1188,23 +881,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   INDEX `fk_movies_titles_movies` (`movie_id` ASC),
   PRIMARY KEY (`movie_id`),
   INDEX `fk_movies_titles_display_title_en_idx` (`display_title_en` ASC),
-  INDEX `fk_movies_titles_display_title_de_idx` (`display_title_de` ASC),
-  CONSTRAINT `fk_movies_titles_movie_id`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_titles_display_title_en`
-    FOREIGN KEY (`display_title_en`)
-    REFERENCES `movlib`.`titles` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_titles_display_title_de`
-    FOREIGN KEY (`display_title_de`)
-    REFERENCES `movlib`.`titles` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  INDEX `fk_movies_titles_display_title_de_idx` (`display_title_de` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -1215,13 +893,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.',
   `commit` CHAR(40) NULL,
   INDEX `fk_movies_taglines_movies` (`movie_id` ASC),
-  PRIMARY KEY (`movie_id`),
-  CONSTRAINT `fk_movies_taglines_movie`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ROW_FORMAT = COMPRESSED;
+  PRIMARY KEY (`movie_id`))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
@@ -1237,18 +910,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_collections` (
   `purchased_at` TINYTEXT NULL COMMENT 'The location where the release was purchased.',
   PRIMARY KEY (`user_id`, `release_id`),
   INDEX `fk_user_collection_users_idx` (`user_id` ASC),
-  INDEX `fk_users_collections_releases_idx` (`release_id` ASC),
-  CONSTRAINT `fk_user_collection_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_users_collections_releases`
-    FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`release_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+  INDEX `fk_users_collections_releases_idx` (`release_id` ASC))
+ENGINE = TokuDB;
 
 SHOW WARNINGS;
 
