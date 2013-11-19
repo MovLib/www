@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Partial;
 
 /**
- * Represents a single country in HTML and provides an interface to all available countries.
+ * Represents a single language in HTML and provides an interface to all available languages.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Country extends \MovLib\Presentation\AbstractBase {
+class Language extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -40,11 +40,11 @@ class Country extends \MovLib\Presentation\AbstractBase {
   protected $attributes;
 
   /**
-   * The country to present.
+   * The language to present.
    *
-   * @var \MovLib\Data\Country
+   * @var \MovLib\Data\Language
    */
-  protected $country;
+  protected $language;
 
   /**
    * The HTML tag to wrap the country.
@@ -58,25 +58,33 @@ class Country extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Instantiate new country partial.
+   * Instantiate new language partial.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @param string $code
-   *   The ISO 3166-1 alpha-2 code of the country.
+   *   The ISO 639-1 code of the language.
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the element.
    * @param string $tag [optional]
-   *   The tag that should be used to wrap this country, defaults to <code>"span"</code>.
+   *   The tag that should be used to wrap this language, defaults to <code>"span"</code>.
    */
   public function __construct($code, array $attributes = null, $tag = "span") {
+    global $i18n;
     $this->attributes             = $attributes;
     $this->attributes[]           = "itemscope";
-    $this->attributes["itemtype"] = "http://schema.org/Country";
-    $this->country                = new \MovLib\Data\Country($code);
+    $this->attributes["itemtype"] = "http://schem.org/Language";
+    $this->language               = new \MovLib\Data\Language($code);
     $this->tag                    = $tag;
+
+    // The special code xx isn't valid if we use it as lang attribute, but the ISO 639-2 code zxx is, make sure we use
+    // the right language code.
+    if ($this->language->code != $i18n->languageCode) {
+      $attributes["lang"] = $this->language->code == "xx" ? "zxx" : $this->language->code;
+    }
   }
 
   /**
-   * Get the string representation of the country.
+   * Get the string representation of the language.
    *
    * @return string
    */
@@ -89,13 +97,29 @@ class Country extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Get all supported and translated countries.
+   * Get all supported and translated languages.
    *
+   * @global \MovLib\Data\I18n $i18n
+   * @staticvar array $languages
+   *   Associative array used for caching.
    * @return array
-   *   All supported and translated countries.
+   *   All supported and translated languages.
    */
-  public static function getCountries() {
-    return \MovLib\Data\Country::getCountries();
+  public static function getLanguages() {
+    global $i18n;
+    static $languages = null;
+
+    // If we haven't built the array for this locale build it.
+    if (!isset($languages[$i18n->locale])) {
+      // @todo We can't use the native name as title because it has a different language and we have no possiblity to
+      //       indicate that to the user agent. On the other hand this isn't only used for form elements and in those
+      //       other use cases the native name might be from interest.
+      foreach (\MovLib\Data\Language::getLanguages() as $code => $language) {
+        $languages[$i18n->locale][$code] = $language["name"];
+      }
+    }
+
+    return $languages[$i18n->locale];
   }
 
 }

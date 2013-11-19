@@ -72,7 +72,7 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
     // If not render the page.
     $this->init($i18n->t("Language Selection"));
     $this->stylesheets[]                   = "modules/language-selection.css";
-    $this->navigation                      = new Navigation($this->id, $i18n->t("Available Languages"), new SystemLanguages());
+    $this->navigation                      = new Navigation($this->id, $i18n->t("Available Languages"), array_keys($kernel->systemLanguages));
     $this->navigation->attributes["class"] = "well well--large";
     $this->navigation->glue                = " / ";
     $this->navigation->callback             = [ $this, "formatSystemLanguage" ];
@@ -81,18 +81,19 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
   /**
    * Format a single system language.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @param \MovLib\Data\SystemLanguage $systemLanguage
-   *   The system language to format.
+   * @param string $languageCode
+   *   The language code of the system language.
    * @return array
    */
-  public function formatSystemLanguage($systemLanguage) {
-    global $kernel;
-    return [
-      "//{$systemLanguage->languageCode}.{$kernel->domainDefault}/",
-      $systemLanguage->nameNative,
-      [ "lang" => $systemLanguage->languageCode, "rel" => "prefetch", "tabindex" => $this->getTabindex() ],
-    ];
+  public function formatSystemLanguage($languageCode) {
+    global $i18n, $kernel;
+    $attributes = [ "rel" => "prefetch", "tabindex" => $this->getTabindex() ];
+    if ($languageCode != $i18n->languageCode) {
+      $attributes["lang"] = $languageCode;
+    }
+    return [ "//{$languageCode}.{$kernel->domainDefault}/", \Locale::getDisplayLanguage($languageCode, $languageCode), $attributes ];
   }
 
   /**
@@ -109,10 +110,10 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
         "</h1>" .
         "<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$this->navigation}" .
       "</div></div>" .
-      "<footer id='footer'><div class='container'><p>{$i18n->t(
+      "<footer id='footer'><div class='container'><div class='row'><p>{$i18n->t(
         "Is your language missing from our list? Help us translate {0} to your language. More information can be found at {1}our translation portal{2}.",
         [ $kernel->siteName, "<a href='//{$kernel->domainLocalize}/'>", "</a>" ]
-      )}</p></div></footer>"
+      )}</p></div></div></footer>"
     ;
   }
 

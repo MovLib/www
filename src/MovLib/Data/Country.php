@@ -17,72 +17,34 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Exception\CountryException;
-
 /**
- * Represents a single country.
+ * Represents a single country and provides an interface to all available countries.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Country extends \MovLib\Data\Database {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * Load the country from ID.
-   *
-   * @var int
-   */
-  const FROM_ID = "id";
-
-  /**
-   * Load the country from the code.
-   *
-   * @var string
-   */
-  const FROM_CODE = "code";
+class Country {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The country's unique identifier.
-   *
-   * @var int
-   */
-  public $id;
-
-  /**
-   * The country's translated name.
-   *
-   * @var string
-   */
-  public $name;
-
-  /**
-   * The country's ISO alpha-2 code.
+   * The country's ISO 3166-1 alpha-2 code.
    *
    * @var string
    */
   public $code;
 
   /**
-   * The MySQLi bind param types of the columns.
+   * The country's translated full name.
    *
-   * @var array
+   * @var string
    */
-  protected $types = [
-    self::FROM_ID   => "i",
-    self::FROM_CODE => "s"
-  ];
+  public $name;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -91,36 +53,15 @@ class Country extends \MovLib\Data\Database {
   /**
    * Instantiate new country.
    *
-   * If no <var>$from</var> or <var>$value</var> is given, an empty country model will be created.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $from [optional]
-   *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
-   * @param mixed $value [optional]
-   *   Data to identify the country, see the various <var>FROM_*</var> class constants.
-   * @throws \MovLib\Exception\CountryException
+   * @param string $code
+   *   The ISO 3166-1 alpha-2 code of the country. You can also pass <code>NULL</code> which will create an empty
+   *   instance.
+   * @throws \ErrorException
    */
-  public function __construct($from = null, $value = null) {
-    global $i18n;
-    if ($from && $value) {
-      $namePart = "";
-      if ($i18n->languageCode != $i18n->defaultLanguageCode) {
-        $namePart = "COLUMN_GET(`dyn_translations`, '{$i18n->languageCode}' AS CHAR(255)) AS";
-      }
-      $stmt = $this->query(
-        "SELECT
-          `id`,
-          `code`,
-          {$namePart} `name`
-        FROM `countries`
-        WHERE `{$from}` = ?",
-        $this->types[$from],
-        [ $value ]
-      );
-      $stmt->bind_result($this->id, $this->code, $this->name);
-      if (!$stmt->fetch()) {
-        throw new CountryException("No country for {$from} '{$value}'.");
-      }
+  public function __construct($code) {
+    if ($code) {
+      $this->code = $code;
+      $this->name = self::getCountries()[$code];
     }
   }
 
@@ -129,16 +70,22 @@ class Country extends \MovLib\Data\Database {
 
 
   /**
-   * Callback for select form elements for consistent formatting.
+   * Get all supported and translated countries.
    *
-   * @param string $value
-   *   The select option's value attribute.
-   * @param \MovLib\Data\Country $option
-   *   The select option's text value.
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @staticvar array $countries
+   *   Associative array used for caching.
+   * @return array
+   *   All supported and translated countries.
    */
-  public function selectCallback(&$value, &$option) {
-    $value  = $this->id;
-    $option = $this->name;
+  public static function getCountries() {
+    global $i18n, $kernel;
+    static $countries = null;
+    if (!isset($countries[$i18n->locale])) {
+      $countries[$i18n->locale] = require "{$kernel->documentRoot}/private/icu/country/{$i18n->locale}.php";
+    }
+    return $countries[$i18n->locale];
   }
 
 }

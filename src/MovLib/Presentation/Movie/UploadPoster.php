@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Countries;
+use \MovLib\Data\Country;
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Licenses;
 use \MovLib\Data\Movie\Movie;
@@ -123,7 +123,7 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
 
       $this->source = new InputURL("source", $i18n->t("Source"), [ "value" => $this->image->source ]);
 
-      $this->country = new Select("country", $i18n->t("Country"), (new Countries())->orderByName(), $this->image->countryId);
+      $this->country = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
 
       $this->license = new Select("license", $i18n->t("License"), [], $this->image->license);
 
@@ -164,7 +164,7 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
    */
   public function validate(array $errors = null) {
     if ($this->checkErrors($errors) === false) {
-      $this->image->countryId   = $this->country->value;
+      $this->image->countryCode = $this->country->value;
       $this->image->description = $this->description->value;
       $this->image->licenseId   = $this->license->value;
       $this->image->source      = $this->source->value;

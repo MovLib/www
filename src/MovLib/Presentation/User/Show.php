@@ -100,7 +100,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         $personalData[] = "<span itemprop='gender'>{$gender}</span>";
       }
       if ($this->user->countryCode) {
-        $country    = new Country(Country::FROM_CODE, $this->user->countryCode);
+        $country        = new Country($this->user->countryCode);
         $personalData[] = "<span itemprop='nationality'>{$country}</span>";
       }
 

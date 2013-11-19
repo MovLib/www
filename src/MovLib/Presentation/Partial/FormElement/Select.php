@@ -73,8 +73,8 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public function __construct($id, $label, $options, $value = null, array $attributes = null, $help = null, $helpPopup = true) {
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
-    $this->options = is_object(($options)) ? $options->getSelectOptions() : $options;
-    $this->value   = (string) isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
+    $this->options = $options;
+    $this->value   = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }
 
 
@@ -98,8 +98,16 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
     }
 
     foreach ($this->options as $value => $option) {
-      $selected = !$emptyValue && $this->value == $value ? " selected" : null;
-      $options .= "<option{$selected} value='{$value}'>{$option}</option>";
+      $attributes = [];
+      if (is_array($option)) {
+        $attributes = $option[1];
+        $option     = $option[0];
+      }
+      $attributes["value"] = $value;
+      if (!$emptyValue && $this->value == $value) {
+        $attributes[] = "selected";
+      }
+      $options .= "<option{$this->expandTagAttributes($attributes)}>{$option}</option>";
     }
 
     return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><select{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";

@@ -30,21 +30,21 @@ use \MovLib\Data\SystemLanguages;
  */
 class Movie extends AbstractHistory {
 
-  
+
   /**
    * @inheritdoc
    */
   public function __construct($id, $context = "history") {
+    global $kernel;
     parent::__construct($id, $context);
     $this->files = [
       "original_title",
       "runtime",
       "year"
     ];
-    
-    /* @var $systemLanguage \MovLib\Data\SystemLanguage */
-    foreach (new SystemLanguages() as $systemLanguage) {
-      $this->files[] = "{$systemLanguage->languageCode}_synopsis";
+
+    foreach ($kernel->systemLanguages as $code => $locale) {
+      $this->files[] = "{$code}_synopsis";
     }
 
     $this->serializedArrays = [
@@ -56,7 +56,7 @@ class Movie extends AbstractHistory {
       "awards",
       "relationships"
     ];
-    
+
     $this->serializedIds = [
       "genres",
       "styles",

@@ -17,21 +17,21 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Data\Countries;
 use \MovLib\Data\DateTimeZone;
-use \MovLib\Data\SystemLanguages;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Country;
+use \MovLib\Presentation\Partial\Currency;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputDate;
+use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputURL;
 use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\Select;
-use \MovLib\Presentation\Partial\FormElement\InputHTML;
 
 /**
  * Allows the user to manage his personalized settings.
@@ -72,9 +72,16 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
   protected $country;
 
   /**
-   * The user's language select form element.
+   * The user's currency select form element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\Select
+   */
+  protected $currency;
+
+  /**
+   * The user's language radio group form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\RadioGroup
    */
   protected $language;
 
@@ -128,11 +135,12 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
    * Instantiate new user account settings presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\Session $session
    * @throws \MovLib\Exception\Client\UnauthorizedException
    */
   public function __construct() {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
 
     $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
@@ -167,9 +175,16 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
 
     $this->aboutMe  = new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, $i18n->t("Tell others about yourself, what do you do, what do you like, …"));
 
-    $this->language = new Select("language", $i18n->t("System Language"), (new SystemLanguages())->orderByName(), $this->user->systemLanguageCode);
-    $this->country  = new Select("country", $i18n->t("Country"), []);
+    $systemLanguages = [];
+    foreach ($kernel->systemLanguages as $systemLanguageCode => $systemLanguageLocale) {
+      $systemLanguages[$systemLanguageCode] = \Locale::getDisplayLanguage($systemLanguageCode, $i18n->locale);
+    }
+    $i18n->getCollator()->asort($systemLanguages);
+    $this->language = new RadioGroup("language", $i18n->t("System Language"), $systemLanguages, $this->user->systemLanguageCode);
+
+    $this->country  = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->user->countryCode);
     $this->timezone = new Select("time_zone_id", $i18n->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneIdentifier);
+    $this->currency = new Select("currency", $i18n->t("Currency"), Currency::getCurrencies(), $this->user->currencyCode);
     $this->website  = new InputURL("website", $i18n->t("Website"), [ "data-allow-external" => true, "value" => $this->user->website ]);
     $this->private  = new InputCheckbox("private", $i18n->t("Keep my data private!"), [ "value" => $this->user->private ], $i18n->t(
       "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
@@ -187,6 +202,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       $this->language,
       $this->country,
       $this->timezone,
+      $this->currency,
       $this->website,
       $this->private,
     ]);
@@ -214,12 +230,13 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     if ($this->checkErrors($errors) === false) {
       $this->user->birthday           = $this->birthday->value;
       $this->user->countryCode        = $this->country->value;
+      $this->user->currencyCode       = $this->currency->value;
       $this->user->private            = $this->private->value;
       $this->user->aboutMe            = $this->aboutMe->value;
       $this->user->realName           = $this->realName->value;
       $this->user->sex                = $this->sex->value;
       $this->user->systemLanguageCode = $this->language->value;
-      $this->user->timeZoneIdentifier         = $this->timezone->value;
+      $this->user->timeZoneIdentifier = $this->timezone->value;
       $this->user->website            = $this->website->value;
       $this->user->commit();
       $this->alerts                  .= new Alert(

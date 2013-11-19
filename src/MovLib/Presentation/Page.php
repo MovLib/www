@@ -107,17 +107,17 @@ class Page extends \MovLib\Presentation\AbstractPage {
   /**
    * Format system language for footer system language links.
    *
-   * @see \MovLib\Presentation\Partial\Navigation::__toString()
    * @todo This won't work for all kinds of links we have, how can we solve this?
+   * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @param \MovLib\Data\SystemLanguage $systemLanguage
-   *   The system language to format.
+   * @param string $languageCode
+   *   The language code of the system language.
    * @return array
    *   Array for navigation.
    */
-  public function formatFooterSystemLanguage($systemLanguage) {
-    global $kernel;
-    return [ "//{$systemLanguage->domain}{$kernel->requestURI}", "{$systemLanguage->name} ({$systemLanguage->nameNative})" ];
+  public function formatFooterSystemLanguage($languageCode) {
+    global $i18n, $kernel;
+    return [ "//{$languageCode}.{$kernel->domainDefault}{$kernel->requestURI}", \Locale::getDisplayLanguage($languageCode, $i18n->languageCode) ];
   }
 
   /**
@@ -194,7 +194,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected function getFooter() {
     global $kernel, $i18n;
     $displayLanguage        = \Locale::getDisplayLanguage($i18n->languageCode, $i18n->locale);
-    $languageLinks          = new Navigation("language-links", $i18n->t("Language Links"), new SystemLanguages(false));
+    $languageLinks          = new Navigation("language-links", $i18n->t("Language Links"), array_keys($kernel->systemLanguages));
     $languageLinks->callback = [ $this, "formatFooterSystemLanguage" ];
     $footerNavigation       = new Navigation("footer", $i18n->t("Legal Links"), [
       [ $i18n->r("/imprint"), $i18n->t("Imprint") ],

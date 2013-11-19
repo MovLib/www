@@ -51,11 +51,11 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   protected $alternativeText;
 
   /**
-   * The image's country ID.
+   * The image's country code.
    *
-   * @var null|integer
+   * @var null|string
    */
-  public $countryId;
+  public $countryCode;
 
   /**
    * The image's translated description (current display language).
@@ -151,7 +151,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
           `id`,
           `user_id`,
           `license_id`,
-          `country_id`,
+          `country_code`,
           `width`,
           `height`,
           `size`,
@@ -172,7 +172,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         $this->id,
         $this->userId,
         $this->licenseId,
-        $this->countryId,
+        $this->countryCode,
         $this->imageWidth,
         $this->imageHeight,
         $this->imageSize,
@@ -233,7 +233,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
       $this->query(
         "UPDATE `movies_images` SET
           `license_id`       = ?,
-          `country_id`       = ?,
+          `country_code`     = ?,
           `width`            = ?,
           `height`           = ?,
           `size`             = ?,
@@ -255,7 +255,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
           `type_id`          = ?,
           `user_id`          = ?,
           `license_id`       = ?,
-          `country_id`       = ?,
+          `country_code`     = ?,
           `width`            = ?,
           `height`           = ?,
           `size`             = ?,
@@ -271,7 +271,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
           $this->typeId,
           $session->userId,
           $this->licenseId,
-          $this->countryId,
+          $this->countryCode,
           $this->imageWidth,
           $this->imageHeight,
           $this->imageSize,

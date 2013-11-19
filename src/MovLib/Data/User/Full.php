@@ -17,6 +17,7 @@
  */
 namespace MovLib\Data\User;
 
+use \MovLib\Data\Currency;
 use \MovLib\Exception\UserException;
 
 /**
@@ -71,6 +72,13 @@ class Full extends \MovLib\Data\User\User {
    * @var null|integer
    */
   public $created;
+
+  /**
+   * The user's currency code.
+   *
+   * @var string
+   */
+  public $currencyCode;
 
   /**
    * The user's edit counter.
@@ -185,6 +193,7 @@ class Full extends \MovLib\Data\User\User {
           `birthday`,
           `country_code`,
           UNIX_TIMESTAMP(`created`),
+          `currency_code`,
           COLUMN_GET(`dyn_about_me`, '{$i18n->languageCode}' AS BINARY),
           `edits`,
           `email`,
@@ -212,6 +221,7 @@ class Full extends \MovLib\Data\User\User {
         $this->birthday,
         $this->countryCode,
         $this->created,
+        $this->currencyCode,
         $this->aboutMe,
         $this->edits,
         $this->email,
@@ -237,6 +247,9 @@ class Full extends \MovLib\Data\User\User {
       $this->private     = (boolean) $this->private;
       // The image name already has all unsave characters removed.
       $this->route       = $i18n->r("/user/{0}", [ rawurlencode($this->imageName) ]);
+      if (!$this->currencyCode) {
+        $this->currencyCode = Currency::getDefaultCode();
+      }
     }
   }
 
@@ -280,6 +293,7 @@ class Full extends \MovLib\Data\User\User {
       "UPDATE `users` SET
         `birthday`             = ?,
         `country_code`         = ?,
+        `currency_code`        = ?,
         `dyn_about_me`         = COLUMN_ADD(`dyn_about_me`, ?, ?),
         `image_changed`        = FROM_UNIXTIME(?),
         `image_extension`      = ?,
@@ -291,10 +305,11 @@ class Full extends \MovLib\Data\User\User {
         `website`              = ?
       WHERE `id` = ?
         LIMIT 1",
-      "sissisisisssd",
+      "sisssisisisssd",
       [
         $this->birthday,
         $this->countryCode,
+        $this->currencyCode,
         $i18n->languageCode,
         $this->aboutMe,
         $this->imageChanged,
@@ -325,6 +340,7 @@ class Full extends \MovLib\Data\User\User {
           `password`             = NULL,
           `access`               = NULL,
           `created`              = NULL,
+          `currency_code`        = NULL,
           `dyn_about_me`         = NULL,
           `edits`                = NULL,
           `private`              = NULL,

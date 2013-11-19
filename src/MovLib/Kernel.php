@@ -236,8 +236,6 @@ class Kernel {
   /**
    * Numeric array containing the system locales.
    *
-   * @see \MovLib\Data\SystemLanguage
-   * @see \MovLib\Data\SystemLanguages
    * @var array
    */
   public $systemLanguages = [ "de" => "de_AT", "en" => "en_US" ];
