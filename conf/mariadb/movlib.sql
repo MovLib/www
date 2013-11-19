@@ -918,7 +918,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
   INDEX `fk_releases_aspect_ratios` (`aspect_ratio_id` ASC),
   PRIMARY KEY (`release_id`),
   INDEX `fk_releases_packaging` (`packaging_id` ASC),
-  INDEX `fk_releases_master_release` (),
+  INDEX `fk_releases_master_release` (`master_release_id` ASC),
   CONSTRAINT `fk_releases_aspect_ratios`
     FOREIGN KEY (`aspect_ratio_id`)
     REFERENCES `movlib`.`aspect_ratios` (`aspect_ratio_id`)
