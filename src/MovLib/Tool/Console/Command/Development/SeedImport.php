@@ -56,6 +56,13 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   const OPTION_DATABASE = "database";
 
   /**
+   * Command option to import Intl ICU data.
+   *
+   * @var string
+   */
+  const OPTION_ICU = "icu";
+
+  /**
    * Command option to import upload data.
    *
    * @var string
@@ -137,6 +144,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     // History needs a custom shortcut because '-h' is already defined by Symfony.
     $this->addOption(self::OPTION_HISTORY, "hi", InputOption::VALUE_NONE, "Create all history repositories.");
     $this->addInputOption(self::OPTION_DATABASE, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific database data.");
+    $this->addInputOption(self::OPTION_ICU, InputOption::VALUE_NONE, "Import ICU data.");
     $this->addInputOption(self::OPTION_UPLOAD, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific upload data.");
   }
 
@@ -204,7 +212,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
     $all     = true;
-    foreach ([ self::OPTION_DATABASE, self::OPTION_HISTORY, self::OPTION_UPLOAD ] as $option) {
+    foreach ([ self::OPTION_DATABASE, self::OPTION_HISTORY, self::OPTION_ICU, self::OPTION_UPLOAD ] as $option) {
       if ($options[$option]) {
         $this->{"{$option}Import"}($options[$option]);
         $all = false;
@@ -254,90 +262,267 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   }
 
   /**
-   * Import the Intl ICU translations for countries and languages.
+   * Import all ICU translations.
    *
    * @global \MovLib\Tool\Kernel $kernel
-   * @global \MovLib\Tool\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @return this
-   * @throws \MovLib\Exception\DatabaseExeption
-   * @throws \ErrorException
    */
-  public function importIntlICUCountriesAndLanguages() {
-    global $kernel, $db, $i18n;
-    $this->write("Importing Intl ICU translations for countries and languages ...");
+  public function icuImport() {
+    global $kernel;
+    $this->write("Importing ICU translations ...");
 
-    // Contains all country and basic language codes that our application shall know about.
-    $seed = [
-      "countries" => [ "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW" ],
-      "languages" => [ "ab", "aa", "af", "ak", "sq", "am", "ar", "an", "hy", "as", "av", "ae", "ay", "az", "bm", "ba", "eu", "be", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "ch", "ce", "ny", "zh", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "gl", "ka", "de", "el", "gn", "gu", "ht", "ha", "he", "hz", "hi", "ho", "hu", "ia", "id", "ie", "ga", "ig", "ik", "io", "is", "it", "iu", "ja", "jv", "kl", "kn", "kr", "ks", "kk", "km", "ki", "rw", "ky", "kv", "kg", "ko", "ku", "kj", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "gv", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mh", "mn", "na", "nv", "nb", "nd", "ne", "ng", "nn", "no", "ii", "nr", "oc", "oj", "cu", "om", "or", "os", "pa", "pi", "fa", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "sa", "sc", "sd", "se", "sm", "sg", "sr", "gd", "sn", "si", "sk", "sl", "so", "st", "es", "su", "sw", "ss", "sv", "ta", "te", "tg", "th", "ti", "bo", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "cy", "wo", "fy", "xh", "yi", "yo", "za", "zu" ]
-    ];
+    // Prepare ICU environment variables.
+    sh::execute("icu-config --version", $version);
+    $version     = trim(strtr($version[0], ".", "-"));
+    $source      = "/usr/local/src/icu-{$version}/source/data";
+    $destination = "{$kernel->documentRoot}/private/icu";
 
-    // Create local copy of all available system languages and remove the default language from the array, we only have
-    // to translate into other languages than the default language.
-    $systemLanguages = $kernel->systemLanguages;
-    unset($systemLanguages[$i18n->defaultLanguageCode]);
+    // Generate the various ICU translations.
+    $this->icuImportCountries($source, $destination);
+    $this->icuImportCurrency($source, $destination);
+    $this->icuImportLanguages($source, $destination);
 
-    $queries = null;
-    foreach ($seed as $table => $codes) {
-      $queries .= "TRUNCATE TABLE `{$table}`; INSERT INTO `{$table}` (`code`, `name`, `dyn_translations`) VALUES ";
-      foreach ($codes as $code) {
-        $dynTranslations = null;
-        foreach ($systemLanguages as $languageCode => $locale) {
-          $dynTranslations .= "'{$languageCode}', '{$this->intlTranslate($table, $code, $locale)}',";
-        }
-        if (empty($dynTranslations)) {
-          $dynTranslations = "''";
-        }
-        else {
-          $dynTranslations = "COLUMN_CREATE(" . rtrim($dynTranslations, ",") . ")";
-        }
-        $queries .= "('{$code}', '{$this->intlTranslate($table, $code, $i18n->defaultLocale)}', {$dynTranslations}),";
-      }
-      $queries = rtrim($queries, ",") . ";";
-    }
-
-    if ($queries) {
-      try {
-        $db->transactionStart();
-        $db->queries($queries, false);
-        $db->transactionCommit();
-      }
-      catch (DatabaseException $e) {
-        $db->transactionRollback();
-        throw $e;
-      }
-    }
-
-    return $this->write("Successfully imported Intl ICU translations for countries and languages!", self::MESSAGE_TYPE_INFO);
+    return $this->write("Imported all ICU translations.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
-   * Translate the given <var>$data</var> with Intl ICU.
+   * Generate, load and delete resource bundle.
    *
-   * @global \MovLib\Tool\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $type
-   *   The type of data, one of <code>"countries"</code>, <code>"languages"</code>.
-   * @param string $data
-   *   The data to translate.
+   * @param string $source
+   *   Absolute path to the resource source files.
    * @param string $locale
-   *   The target locale.
-   * @return string
-   *   The translated <var>$data</var>.
-   * @throws \MovLib\Exception\DatabaseExeption
-   * @throws \InvalidArgumentException
+   *   The locale for which this resource bundle should be generated.
+   * @param string $languageCode
+   *   The language code for which this resource bundle should be generated.
+   * @return \ResourceBundle
+   *   The loaded resource bundle.
+   * @throws \RuntimeException
    */
-  public function intlTranslate($type, $data, $locale) {
-    global $db, $i18n;
-    switch ($type) {
-      case "countries":
-        return $db->escapeString(\Locale::getDisplayRegion("{$i18n->defaultLanguageCode}-{$data}", $locale));
+  protected function icuGetResourceBundle($source, $locale, $languageCode) {
+    // Create absolute paths to source file and resource bundle.
+    $src = is_file("{$source}/{$locale}.txt") ? "{$source}/{$locale}.txt" : "{$source}/{$languageCode}.txt";
 
-      case "languages":
-        return $db->escapeString(\Locale::getDisplayLanguage($data, $locale));
+    // Generate the resource bundle for this locale.
+    $destination = sys_get_temp_dir();
+    if (sh::execute("genrb -R -e UTF-8 -d {$destination} {$src}") === false) {
+      throw new \RuntimeException("Couldn't compile resource bundle for system locale '{$locale}'.");
     }
-    throw new \InvalidArgumentException;
+
+    // Load the generated resource bundle and delete the resource bundle files.
+    $rb = new \ResourceBundle($locale, $destination, true);
+    sh::execute("rm {$destination}/*.res");
+    return $rb;
+  }
+
+  /**
+   * Debug method to export the contents of a ICU resource bundle.
+   *
+   * @param \ResourceBundle $rb
+   *   The resource bundle to export.
+   * @return string
+   *   The exported resource bundle as string (best written to file because it's usually very long).
+   */
+  protected function icuExportResourceBundle(\ResourceBundle $rb) {
+    ob_start();
+    foreach ($rb as $k => $v) {
+      if (is_object($v)) {
+        var_dump($k);
+        $this->icuExportResourceBundle($v);
+      }
+      else {
+        var_dump($k, $v);
+      }
+    }
+    return ob_get_clean();
+  }
+
+  /**
+   * Import ICU country translations.
+   *
+   * @param string $source
+   *   Absolute path to ICU source resources.
+   * @param string $destination
+   *   Absolute path to final ICU PHP files.
+   * @return this
+   */
+  protected function icuImportCountries($source, $destination) {
+    $source      .= "/region";
+    $destination .= "/country";
+    $codes        = [
+      "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ",
+      "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ",
+      "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ",
+      "DE", "DJ", "DK", "DM", "DO", "DZ",
+      "EC", "EE", "EG", "EH", "ER", "ES", "ET",
+      "FI", "FJ", "FK", "FM", "FO", "FR",
+      "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY",
+      "HK", "HM", "HN", "HR", "HT", "HU",
+      "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT",
+      "JE", "JM", "JO", "JP",
+      "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ",
+      "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY",
+      "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ",
+      "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ",
+      "OM",
+      "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY",
+      "QA",
+      "RE", "RO", "RS", "RU", "RW",
+      "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ",
+      "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ",
+      "UA", "UG", "UM", "US", "UY", "UZ",
+      "VA", "VC", "VE", "VG", "VI", "VN", "VU",
+      "WF", "WS",
+      "YE", "YT",
+      "ZA", "ZM", "ZW",
+    ];
+    $this->icuWriteTranslations($destination, function (&$translation, $locale) use ($codes) {
+      $sortArray = [];
+      foreach ($codes as $code) {
+        $sortArray[$code] = \Locale::getDisplayRegion("xx-{$code}", $locale);
+      }
+      (new \Collator($locale))->asort($sortArray);
+      foreach ($sortArray as $code => $name) {
+        $translation .= "  \"{$code}\" => \"{$name}\",\n";
+      }
+    }, "ICU country translations.");
+    return $this;
+  }
+
+  /**
+   * Import ICU currency translations.
+   *
+   * @param string $source
+   *   Absolute path to ICU source resources.
+   * @param string $destination
+   *   Absolute path to final ICU PHP files.
+   * @return this
+   */
+  protected function icuImportCurrency($source, $destination) {
+    $source      .= "/curr";
+    $destination .= "/currency";
+    $codes        = [
+      "ADP", "AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "ATS", "AUD", "AWG", "AZN",
+      "BAM", "BBD", "BDT", "BEF", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYR", "BZD",
+      "CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUC", "CUP", "CVE", "CYP", "CZK",
+      "DEM", "DJF", "DKK", "DOP", "DZD",
+      "EEK", "EGP", "ERN", "ESP", "ETB", "EUR",
+      "FIM", "FJD", "FKP", "FRF",
+      "GBP", "GEL", "GHS", "GIP", "GMD", "GNF", "GRD", "GTQ", "GYD",
+      "HKD", "HNL", "HRK", "HTG", "HUF",
+      "IDR", "IEP", "ILS", "INR", "IQD", "IRR", "ISK", "ITL",
+      "JMD", "JOD", "JPY",
+      "KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT",
+      "LAK", "LBP", "LKR", "LRD", "LSL", "LTL", "LUF", "LVL", "LYD",
+      "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRO", "MTL", "MUR", "MVR", "MWK", "MXN", "MXV", "MYR", "MZN",
+      "NAD", "NGN", "NIO", "NLG", "NOK", "NPR", "NZD",
+      "OMR",
+      "PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PTE", "PYG",
+      "QAR",
+      "RON", "RSD", "RUB", "RWF",
+      "SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SIT", "SKK", "SLL", "SOS", "SRD", "SSP", "STD", "SYP", "SZL",
+      "THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TWD", "TZS",
+      "UAH", "UGX", "USD", "UYU", "UZS",
+      "VEF", "VND", "VUV",
+      "WST",
+      "XAF", "XCD", "XOF", "XPF",
+      "YER",
+      "ZAR", "ZMW",
+    ];
+    $this->icuWriteTranslations($destination, function (&$translation, $locale, $languageCode) use ($codes, $source) {
+      $rb = $this->icuGetResourceBundle($source, $locale, $languageCode);
+      foreach ($codes as $code) {
+        $name         = $rb["Currencies"][$code][1];
+        $symbol       = $rb["Currencies"][$code][0];
+        $translation .= "  \"{$code}\" => [ \"name\" => \"{$name}\", \"symbol\" => \"{$symbol}\" ],\n";
+      }
+    }, "ICU currency translations.");
+    return $this;
+  }
+
+  /**
+   * Import ICU language translations.
+   *
+   * @param string $source
+   *   Absolute path to ICU source resources.
+   * @param string $destination
+   *   Absolute path to final ICU PHP files.
+   * @return this
+   */
+  protected function icuImportLanguages($source, $destination) {
+    $source      .= "/lang";
+    $destination .= "/language";
+    $codes        = [
+      "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az",
+      "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo", "br", "bs",
+      "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy",
+      "da", "de", "dv", "dz",
+      "ee", "el", "en", "eo", "es", "et", "eu",
+      "fa", "ff", "fi", "fj", "fo", "fr", "fy",
+      "ga", "gd", "gl", "gn", "gu", "gv",
+      "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz",
+      "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu",
+      "ja", "jv",
+      "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn", "ko", "kr", "ks", "ku", "kv", "kw", "ky",
+      "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv",
+      "mg", "mh", "mi", "mk", "ml", "mn", "mr", "ms", "mt", "my",
+      "na", "nb", "nd", "ne", "ng", "nl", "nn", "no", "nr", "nv", "ny",
+      "oc", "oj", "om", "or", "os",
+      "pa", "pi", "pl", "ps", "pt",
+      "qu",
+      "rm", "rn", "ro", "ru", "rw",
+      "sa", "sc", "sd", "se", "sg", "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st", "su", "sv", "sw",
+      "ta", "te", "tg", "th", "ti", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty",
+      "ug", "uk", "ur", "uz",
+      "ve", "vi", "vo",
+      "wa", "wo",
+      "xh",
+      "yi", "yo",
+      "za", "zh", "zu",
+    ];
+    $this->icuWriteTranslations($destination, function (&$translation, $locale) use ($codes) {
+      global $i18n;
+      $sortArray = [];
+      foreach ($codes as $code) {
+        $sortArray[$code] = \Locale::getDisplayLanguage($code, $locale);
+      }
+      (new \Collator($locale))->asort($sortArray);
+      foreach ($sortArray as $code => $name) {
+        $native       = \Locale::getDisplayLanguage($code, $code);
+        $translation .= "  \"{$code}\" => [ \"name\" => \"{$name}\", \"native\" => \"{$native}\" ],\n";
+      }
+      // Add special code for no linguistic content (from ISO 639-2), always keep this entry at the end of the list.
+      $translation .= "  \"xx\" => [ \"name\" => \"{$i18n->t("No Language")}\", \"native\" => \"-\" ],\n";
+    }, "ICU language translations.");
+    return $this;
+  }
+
+  /**
+   * ICU helper method to iterate over all available system languages and write the translated file.
+   *
+   * @global \MovLib\Tool\Kernel $kernel
+   * @staticvar string $scaffold
+   *   Used for caching of the scaffold file.
+   * @param string $destination
+   *   Absolute path to the directory where the translated files should be stored.
+   * @param callable $callback
+   *   The callback method that is called on each iteration.
+   * @param string $comment
+   *   The class comment for the docBlock.
+   * @return this
+   */
+  protected function icuWriteTranslations($destination, callable $callback, $comment) {
+    global $kernel;
+    static $scaffold = null;
+    if (!$scaffold) {
+      $scaffold = file_get_contents("{$kernel->documentRoot}/private/icu/scaffold.php");
+    }
+    foreach ($kernel->systemLanguages as $languageCode => $locale) {
+      $translation = "return [\n";
+      $callback($translation, $locale, $languageCode);
+      $translation .= "];\n// @codeCoverageIgnoreEnd\n";
+      file_put_contents("{$destination}/{$locale}.php", str_replace("{classComment}", $comment, $scaffold) . $translation);
+    }
+    return $this;
   }
 
   /**
@@ -354,8 +539,8 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     // Array containing the names of all tasks that should be executed.
     $tasks = [
-      "importIntlICUCountriesAndLanguages",
       "databaseImport",
+      "icuImport",
       "uploadImport",
     ];
 
@@ -412,6 +597,15 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     return $this->write("Successfully imported upload data for '" . implode("', '", array_keys($directories)) . "'.", self::MESSAGE_TYPE_INFO);
   }
 
+  /**
+   * Helper method to delete and move seed upload files.
+   *
+   * @param string $from
+   *   Absolute path to the source directory.
+   * @param string $to
+   *   Absolute path to the target directory.
+   * @return this
+   */
   protected function uploadMoveImages($from, $to) {
     if (is_dir($from)) {
       sh::execute("rm -rf {$to}/*");
