@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.',
   `access` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.',
   `birthday` DATE NULL DEFAULT NULL COMMENT 'The user\'s date of birth.',
-  `country_code` CHAR(2) NULL COMMENT 'The user’s country.',
+  `country_code` CHAR(2) NULL COMMENT 'The user’s ISO alpha-2 country code.',
   `created` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s creation datetime.',
   `currency_code` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s ISO 4217 currency code.',
   `dyn_about_me` BLOB NULL COMMENT 'The user’s about me text (translatable).',
@@ -436,7 +436,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_countries` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `country_code` CHAR(2) NOT NULL COMMENT 'The country’s unique ID.',
+  `country_code` CHAR(2) NOT NULL COMMENT 'The country’s unique ISO alpha-2 code.',
   PRIMARY KEY (`movie_id`, `country_code`),
   INDEX `fk_movies_countries_movies` (`movie_id` ASC),
   CONSTRAINT `fk_movies_countries_movies`
@@ -454,7 +454,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_languages` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The language’s unique ID.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The language’s unique iso alpha-2 code.',
   PRIMARY KEY (`movie_id`, `language_code`),
   INDEX `fk_movies_languages_movies` (`movie_id` ASC),
   CONSTRAINT `fk_movies_languages_movies`
@@ -571,7 +571,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
   `id` INT UNSIGNED NOT NULL DEFAULT 1,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this title relates to.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The language\'s unique ID this title is in.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The title\'s ISO alpha-2 language code.',
   `title` BLOB NOT NULL COMMENT 'The movie\'s title.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.',
   INDEX `fk_titles_movies` (`movie_id` ASC),
@@ -591,7 +591,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
   `id` INT UNSIGNED NOT NULL DEFAULT 1,
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The language\'s unique ID this tagline is in.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The tagline\'s ISO alpha-2 language code.',
   `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The tagline\'s translatable comment.',
   INDEX `fk_taglines_movies` (`movie_id` ASC),
@@ -644,7 +644,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   `type_id` TINYINT NOT NULL COMMENT 'The movie image’s type.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image’s uploader ID.',
   `license_id` INT UNSIGNED NOT NULL COMMENT 'The movie image’s license ID.',
-  `country_code` CHAR(2) NULL COMMENT 'The movie image’s country ID.',
+  `country_code` CHAR(2) NULL COMMENT 'The movie image’s ISO alpha-2 country code.',
   `width` SMALLINT NOT NULL COMMENT 'The movie image’s width.',
   `height` SMALLINT NOT NULL COMMENT 'The movie image’s height.',
   `size` INT NOT NULL COMMENT 'The movie image’s size in Bytes.',
@@ -728,7 +728,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`series_titles` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The series` unique ID.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The language\'s unique ID this title is in.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The series title\'s ISO aplha-2 language code.',
   `title` BLOB NOT NULL COMMENT 'The series´ title.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.',
   `is_display_title` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Determines whether this is the title to diplay in the localized site or not.',
@@ -881,7 +881,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`master_releases` (
   `master_release_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The master release´s unique ID.',
   `title` BLOB NOT NULL COMMENT 'The master release´s title.',
-  `country_code` CHAR(2) NOT NULL COMMENT 'The unique ID of the master release´s country.',
+  `country_code` CHAR(2) NOT NULL COMMENT 'The master release´s ISO alpha-2 country code.',
   `dyn_notes` BLOB NOT NULL COMMENT 'The master release´s translatable release notes.',
   `release_date` DATE NULL COMMENT 'The date this master release has been published.',
   `packaging_id` INT UNSIGNED NULL COMMENT 'The master release´s packaging (Only present if there are more than 1 releases in this master release).',
@@ -989,7 +989,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`articles_routes` (
   `article_id` BIGINT UNSIGNED NOT NULL COMMENT 'The article’s unique ID.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The article route’s language ID.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The article route’s ISO alpha-2 language code.',
   `section` VARCHAR(255) NOT NULL COMMENT 'The article’s section (e.g. help).',
   `route` VARCHAR(255) NOT NULL COMMENT 'The article’s route format.',
   PRIMARY KEY (`article_id`, `language_code`, `section`, `route`),
@@ -1022,7 +1022,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`releases_sound_formats` (
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release´s unique ID.',
   `sound_format_id` INT UNSIGNED NOT NULL COMMENT 'The sound format´s unique ID.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The language this sound format is in.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The releases sound format\'s ISO alpha-2 language code.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment field for this sound format.',
   PRIMARY KEY (`release_id`, `sound_format_id`, `language_code`),
   INDEX `fk_releases_sound_formats_sound_formats` (`sound_format_id` ASC),
@@ -1046,7 +1046,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`releases_subtitles` (
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release´s unique ID this subtitle track belongs to.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The language´s unique ID this subtitle track is in.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The releases subtitle\'s ISO alpha-2 language code.',
   `is_hearing_impaired` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag that determines whether the subtitle track is for the hearing impaired or not (defaults to FALSE).',
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment field for this subtitle track.',
   PRIMARY KEY (`release_id`, `language_code`, `is_hearing_impaired`),
@@ -1222,6 +1222,33 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`users_collections`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`users_collections` (
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user\'s unique id.',
+  `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release\'s unique id.',
+  `count` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The amount of identical releases.',
+  `currency_code` CHAR(3) NULL COMMENT 'The user’s ISO 4217 currency code.',
+  `price` FLOAT UNSIGNED NULL COMMENT 'The price of the release.',
+  `purchased_at` TINYTEXT NULL COMMENT 'The location where the release was purchased.',
+  PRIMARY KEY (`user_id`, `release_id`),
+  INDEX `fk_user_collection_users_idx` (`user_id` ASC),
+  INDEX `fk_users_collections_releases_idx` (`release_id` ASC),
+  CONSTRAINT `fk_user_collection_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_collections_releases`
+    FOREIGN KEY (`release_id`)
+    REFERENCES `movlib`.`releases` (`release_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
 SHOW WARNINGS;
 
