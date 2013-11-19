@@ -26,12 +26,12 @@ SET time_zone = "+00:00";
 -- Dumping data for table `movies_countries`
 --
 
-INSERT INTO `movies_countries` (`movie_id`, `country_id`) VALUES
-(1, 77),
-(2, 233),
-(3, 75),
-(3, 233),
-(4, 166);
+INSERT INTO `movies_countries` (`movie_id`, `country_code`) VALUES
+(1, 'GB'),
+(2, 'US'),
+(3, 'FR'),
+(3, 'US'),
+(4, 'NL');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

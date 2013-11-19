@@ -26,12 +26,12 @@ SET time_zone = "+00:00";
 -- Dumping data for table `releases_subtitles`
 --
 
-INSERT INTO `releases_subtitles` (`release_id`, `language_id`, `is_hearing_impaired`, `dyn_comments`) VALUES
-(1, 41, 1, ''),
-(1, 52, 0, ''),
-(1, 52, 1, ''),
-(2, 41, 0, ''),
-(2, 52, 0, '');
+INSERT INTO `releases_subtitles` (`release_id`, `language_code`, `is_hearing_impaired`, `dyn_comments`) VALUES
+(1, 'en', 1, ''),
+(1, 'de', 0, ''),
+(1, 'de', 1, ''),
+(2, 'en', 0, ''),
+(2, 'de', 0, '');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

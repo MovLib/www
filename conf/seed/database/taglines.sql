@@ -26,13 +26,13 @@ SET time_zone = "+00:00";
 -- Dumping data for table `taglines`
 --
 
-INSERT INTO `taglines` (`id`, `movie_id`, `language_id`, `tagline`, `dyn_comments`) VALUES
-(1, 2, 41, 'Fear can hold you prisoner. Hope can set you free.', '\0\0\0\0\0\0Cdeen!deutsches Kommentar!english comment'),
-(1, 3, 41, 'If you want a job done well hire a professional.', ''),
-(2, 3, 41, 'A perfect assassin. An innocent girl. They have nothing left to lose except each other. He moves without sound. Kills without emotion. Disappears without trace. Only a 12 year old girl... knows his weakness.', ''),
-(3, 3, 41, 'He moves without sound. Kills without emotion. Disappears without trace.', ''),
-(4, 3, 41, 'You can&apos;t stop what you can&apos;t see.', ''),
-(1, 4, 41, 'Don&apos;t mess with the bunny!', '\0\0\0\0\0\0Cdeen!deutsches Kommentar!english comment');
+INSERT INTO `taglines` (`id`, `movie_id`, `language_code`, `tagline`, `dyn_comments`) VALUES
+(1, 2, 'en', 'Fear can hold you prisoner. Hope can set you free.', '\0\0\0\0\0\0Cdeen!deutsches Kommentar!english comment'),
+(1, 3, 'en', 'If you want a job done well hire a professional.', ''),
+(2, 3, 'en', 'A perfect assassin. An innocent girl. They have nothing left to lose except each other. He moves without sound. Kills without emotion. Disappears without trace. Only a 12 year old girl... knows his weakness.', ''),
+(3, 3, 'en', 'He moves without sound. Kills without emotion. Disappears without trace.', ''),
+(4, 3, 'en', 'You can&apos;t stop what you can&apos;t see.', ''),
+(1, 4, 'en', 'Don&apos;t mess with the bunny!', '\0\0\0\0\0\0Cdeen!deutsches Kommentar!english comment');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

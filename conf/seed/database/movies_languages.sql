@@ -26,11 +26,11 @@ SET time_zone = "+00:00";
 -- Dumping data for table `movies_languages`
 --
 
-INSERT INTO `movies_languages` (`movie_id`, `language_id`) VALUES
-(1, 185),
-(2, 41),
-(3, 41),
-(4, 185);
+INSERT INTO `movies_languages` (`movie_id`, `language_code`) VALUES
+(1, 'xx'),
+(2, 'en'),
+(3, 'en'),
+(4, 'xx');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -26,10 +26,10 @@ SET time_zone = "+00:00";
 -- Dumping data for table `master_releases`
 --
 
-INSERT INTO `master_releases` (`master_release_id`, `title`, `country_id`, `dyn_notes`, `release_date`, `packaging_id`, `commit`, `created`) VALUES
-(1, 'Die Verurteilten', 57, '', '2007-11-15', NULL, NULL, CURRENT_TIMESTAMP),
-(2, 'Die Verurteilten', 57, '', '2003-01-16', NULL, NULL, CURRENT_TIMESTAMP),
-(3, 'Die Verurteilten', 57, '', '2000-09-28', NULL, NULL, CURRENT_TIMESTAMP);
+INSERT INTO `master_releases` (`master_release_id`, `title`, `country_code`, `dyn_notes`, `release_date`, `packaging_id`, `commit`, `created`) VALUES
+(1, 'Die Verurteilten', 'DE', '', '2007-11-15', NULL, NULL, CURRENT_TIMESTAMP),
+(2, 'Die Verurteilten', 'DE', '', '2003-01-16', NULL, NULL, CURRENT_TIMESTAMP),
+(3, 'Die Verurteilten', 'DE', '', '2000-09-28', NULL, NULL, CURRENT_TIMESTAMP);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -26,13 +26,13 @@ SET time_zone = "+00:00";
 -- Dumping data for table `releases_sound_formats`
 --
 
-INSERT INTO `releases_sound_formats` (`release_id`, `sound_format_id`, `language_id`, `dyn_comments`) VALUES
-(1, 1, 52, ''),
-(1, 2, 41, ''),
-(2, 2, 41, ''),
-(2, 2, 52, ''),
-(2, 5, 52, ''),
-(3, 4, 52, '');
+INSERT INTO `releases_sound_formats` (`release_id`, `sound_format_id`, `language_code`, `dyn_comments`) VALUES
+(1, 1, 'de', ''),
+(1, 2, 'en', ''),
+(2, 2, 'en', ''),
+(2, 2, 'de', ''),
+(2, 5, 'de', ''),
+(3, 4, 'de', '');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
