@@ -212,11 +212,10 @@ form p {
   margin-bottom: 20px;
 }
 
-<<<<<<< HEAD
 option[value=""] {
   color: #999;
   font-style: italic;
-=======
+}
 
 /* ==== InputHTML =================================================================================================== */
 
@@ -247,5 +246,4 @@ option[value=""] {
 .inputhtml-content:not(:empty) + .placeholder,
 .inputhtml-content:focus:not(:empty) + .placeholder {
   display: none;
->>>>>>> ab35a4809a10e28c5ec843619371a0880da0dd4b
 }
