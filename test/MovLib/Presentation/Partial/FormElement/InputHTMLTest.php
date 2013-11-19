@@ -143,13 +143,11 @@ class InputHTMLTest extends \MovLib\TestCase {
     $this->assertFalse(isset($input->attributes["name"]), "Attribute name is not permitted by HTML standard!");
     $this->assertFalse(isset($input->attributes["required"]), "Attribute required is not permitted by HTML standard!");
     $allowedTags = $this->getProperty($input, "allowedTags");
-    $this->assertFalse(isset($allowedTags[TIDY_TAG_IMG]), "Image tags shouldn't be enabled by default!");
-    $this->assertFalse(isset($allowedTags[TIDY_TAG_H1]), "Headings shouldn't be enabled by default!");
-    $this->assertFalse(isset($allowedTags[TIDY_TAG_H2]), "Headings shouldn't be enabled by default!");
-    $this->assertFalse(isset($allowedTags[TIDY_TAG_H3]), "Headings shouldn't be enabled by default!");
-    $this->assertFalse(isset($allowedTags[TIDY_TAG_H4]), "Headings shouldn't be enabled by default!");
-    $this->assertFalse(isset($allowedTags[TIDY_TAG_H5]), "Headings shouldn't be enabled by default!");
-    $this->assertFalse(isset($allowedTags[TIDY_TAG_H6]), "Headings shouldn't be enabled by default!");
+    $this->assertFalse(isset($allowedTags["figure"]), "Images shouldn't be enabled by default!");
+    $this->assertFalse(isset($allowedTags["figcaption"]), "Images shouldn't be enabled by default!");
+    for ($i = 1; $i <= 6; ++$i) {
+      $this->assertFalse(isset($allowedTags["h{$i}"]), "Headings shouldn't be enabled by default!");
+    }
     $this->assertFalse($this->getProperty($input, "allowExternalLinks"), "External links shouldn't be enabled by default!");
     $this->assertFalse($this->getProperty($input, "required"), "Texts should not be required by default!");
   }
@@ -180,6 +178,17 @@ class InputHTMLTest extends \MovLib\TestCase {
   }
 
   /**
+   * @covers ::allowBlockqoutes
+   */
+  public function testAllowBlockqoutes() {
+    $input = new InputHTML("phpunit", "PHPUnit");
+    $input->allowBlockqoutes();
+    $allowedTags = $this->getProperty($input, "allowedTags");
+    $this->assertEquals("&lt;blockquote&gt;", $allowedTags["blockquote"]);
+    $this->assertFalse(isset($allowedTags["cite"]), "<cite> should never be allowed on its own!");
+  }
+
+  /**
    * @covers ::allowExternalLinks
    */
   public function testAllowExternalLinks() {
@@ -195,18 +204,15 @@ class InputHTMLTest extends \MovLib\TestCase {
    *   The heading level to test.
    */
   public function testAllowHeadings($level) {
-    $headings = [ TIDY_TAG_H1, TIDY_TAG_H2, TIDY_TAG_H3, TIDY_TAG_H4, TIDY_TAG_H5, TIDY_TAG_H6];
-    $c        = count($headings);
-    $input    = new InputHTML("phpunit", "PHPUnit");
+    $input = new InputHTML("phpunit", "PHPUnit");
     $input->allowHeadings($level);
     $allowedTags = $this->getProperty($input, "allowedTags");
-    for ($i = 0; $i < $c; ++$i) {
-      if ($i < $level - 1) {
-        $this->assertFalse(isset($allowedTags[$headings[$i]]), "Heading level {$level} should not be set!");
+    for ($i = 1; $i <= 6; ++$i) {
+      if ($i < $level) {
+        $this->assertFalse(isset($allowedTags["h{$i}"]), "Heading level {$i} should not be set!");
       }
       else {
-        $currLevel = $i + 1;
-        $this->assertEquals("&lt;h{$currLevel}&gt;", $allowedTags[$headings[$i]]);
+        $this->assertEquals("&lt;h{$i}&gt;", $allowedTags["h{$i}"]);
       }
     }
   }
@@ -217,7 +223,9 @@ class InputHTMLTest extends \MovLib\TestCase {
   public function testAllowImages() {
     $input = new InputHTML("phpunit", "PHPUnit");
     $input->allowImages();
-    $this->assertEquals("&lt;img&gt;", $this->getProperty($input, "allowedTags")[TIDY_TAG_IMG]);
+    $allowedTags = $this->getProperty($input, "allowedTags");
+    $this->assertEquals("&lt;figure&gt;", $allowedTags["figure"]);
+    $this->assertFalse(isset($allowedTags["figcaption"]), "<figcaption> should never be allowed on its own!");
   }
 
   /**
@@ -268,6 +276,54 @@ class InputHTMLTest extends \MovLib\TestCase {
     $input = new InputHTML("phpunit", "PHPUnit");
     $input->validate();
     $this->assertEquals("", $input->value);
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage The “PHPUnit” text contains a quotation without a supplied source.
+   */
+  public function testValidateInvalidBlockquoteWithoutCite() {
+    $input = new InputHTML("phpunit", "PHPUnit", "<p><blockquote><p>missing citation</p></blockquote></p>");
+    $input->allowBlockqoutes();
+    $input->validate();
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage The “PHPUnit” text contains the invalid element <code><blockquote></code> inside a quotation or a figure.
+   */
+  public function testValidateInvalidBlockquoteWithBlockquote() {
+    $input = new InputHTML("phpunit", "PHPUnit", "<p><blockquote><p>this is a quote<blockquote><p>this is a nested quote</p><cite>inner cite</cite></blockquote></p><cite>outer cite</cite></blockquote></p>");
+    $input->allowBlockqoutes();
+    $input->allowImages();
+    $input->validate();
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage The “PHPUnit” text contains the invalid element <code><figure></code> inside a quotation or a figure.
+   * @global \MovLib\Tool\Kernel $kernel
+   */
+  public function testValidateInvalidBlockquoteWithFigure() {
+    global $kernel;
+    $input = new InputHTML("phpunit", "PHPUnit", "<p><blockquote><figure><figcaption>caption</figcaption><img src='https://{$kernel->domainStatic}/user/Ravenlord.140.jpg'></figure><cite>cite</cite></blockquote></p>");
+    $input->allowBlockqoutes();
+    $input->allowImages();
+    $input->validate();
+  }
+
+  /**
+   * @covers ::validate
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage The “PHPUnit” text contains invalid HTML tags.
+   */
+  public function testValidateInvalidStandaloneCite() {
+    $input = new InputHTML("phpunit", "PHPUnit", "<p><cite>wrong citation</cite></p>");
+    $input->allowBlockqoutes();
+    $input->validate();
   }
 
   /**

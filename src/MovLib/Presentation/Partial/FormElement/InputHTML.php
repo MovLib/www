@@ -38,16 +38,16 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
   /**
    * The text's allowed HTML tag as associative array.
-   * The keys consist of the predifined tidy constants. @see http://www.php.net/manual/en/tidy.constants.php
+   * The keys consist of the tag names.
    *
    * @var array
    */
   protected $allowedTags = [
-    TIDY_TAG_A  => "&lt;a&gt;",
-    TIDY_TAG_B  => "&lt;b&gt;",
-    TIDY_TAG_BR => "&lt;br&gt;",
-    TIDY_TAG_I  => "&lt;i&gt;",
-    TIDY_TAG_P  => "&lt;p&gt;",
+    "a"  => "&lt;a&gt;",
+    "b"  => "&lt;b&gt;",
+    "br" => "&lt;br&gt;",
+    "i"  => "&lt;i&gt;",
+    "p"  => "&lt;p&gt;",
   ];
 
   /**
@@ -59,12 +59,13 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
   /**
    * The HTML tags that don't need ending tags.
-   * The keys consist of the predifined tidy constants. @see http://www.php.net/manual/en/tidy.constants.php
+   * The keys consist of the tag names.
    *
    * @var array
    */
   protected $emptyTags = [
-    TIDY_TAG_BR => true,
+    "br"  => true,
+    "img" => true,
   ];
 
   /**
@@ -165,6 +166,12 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+
+  public function allowBlockqoutes() {
+    $this->allowedTags["blockquote"] = "&lt;blockquote&gt;";
+    return $this;
+  }
+
   /**
    * Configures the text to allow external links.
    *
@@ -183,17 +190,10 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @return $this
    */
   public function allowHeadings($level = 3) {
-    switch ($level) {
-      case 2:
-        $this->allowedTags[TIDY_TAG_H2] = "&lt;h2&gt;";
-      case 3:
-        $this->allowedTags[TIDY_TAG_H3] = "&lt;h3&gt;";
-      case 4:
-        $this->allowedTags[TIDY_TAG_H4] = "&lt;h4&gt;";
-      case 5:
-        $this->allowedTags[TIDY_TAG_H5] = "&lt;h5&gt;";
-      case 6:
-        $this->allowedTags[TIDY_TAG_H6] = "&lt;h6&gt;";
+    if ($level >= 2) {
+      for ($i = $level; $i <= 6; ++$i) {
+        $this->allowedTags["h{$i}"] = "&lt;h{$i}&gt;";
+      }
     }
     return $this;
   }
@@ -204,7 +204,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @return $this
    */
   public function allowImages() {
-    $this->allowedTags[TIDY_TAG_IMG] = "&lt;img&gt;";
+    $this->allowedTags["figure"]     = "&lt;figure&gt;";
     return $this;
   }
 
@@ -248,12 +248,15 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     }
 
     // Traverse through the constructed document and validate its contents.
-    $level = 0;
+    $level      = 0;
     /* @var $node \tidyNode */
-    $node = null;
-    $nodes = [ $level => [ $tidy->body() ]];
-    $endTags = [];
-    $output = null;
+    $node           = null;
+    $nodes          = [ $level => [ $tidy->body()]];
+    $endTags        = [];
+    $output         = null;
+    $blockquote     = false;
+    $figure         = false;
+    $immediateChild = null;
     do {
       while (!empty($nodes[$level])) {
         // Retrieve the next node from the stack.
@@ -265,19 +268,89 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
             // Clean text and append to output.
             $output = "{$output}{$kernel->htmlEncode($node->value)}";
           }
-          elseif (isset($this->allowedTags[$node->id])) {
+          elseif (isset($this->allowedTags[$node->name])) {
+            // If we are already nested in a <blockquote> or a <figure>, ensure that these elements don't occur there.
+            if (($blockquote === true || $figure === true) && ($node->name == "blockquote" || $node->name == "figure")) {
+              throw new ValidationException($i18n->t(
+                "The “{0}” text contains the invalid element {1} inside a quotation or a figure.",
+                [ $this->label, "<code><{$node->name}></code>" ],
+                [ "comment" => "{0} is the name of the text, {1} is the name of the invalid element. Both should not be translated." ]
+              ));
+            }
+            // If there are more complex validations to be done for the tag, invoke the corresponding method.
             if (method_exists($this, "validateTag{$node->name}")) {
               $node->name = $this->{"validateTag{$node->name}"}($node);
             }
             // Stack a closing tag to the current level, if needed.
-            if (!isset($this->emptyTags[$node->id])) {
+            if (!isset($this->emptyTags[$node->name])) {
               $endTags[$level][] = "</{$node->name}>";
             }
             // Append a starting tag of the current node to the output.
-            $output = "{$output}<{$node->name}>";
+            $output .= "<{$node->name}>";
+
+            // We only allow <figure> elements with an <img> as first and a <figcaption> as second child.
+            if ($node->name == "figure") {;
+              $figure = true;
+              $alt = null;
+              if (count($node->child) !== 2) {
+                throw new ValidationException($i18n->t(
+                  "The “{0}” text contains an invalid figure.",
+                  [ $this->label ],
+                  [ "comment" => "{0} is the name of the text, which should not be translated." ]
+                ));
+              }
+              // Validate caption.
+              if ($node->child[1]->name == "figcaption") {
+                $immediateChild = $this->validateTextOnlyOrAnchor($node->child[1]);
+                /** @todo double check */
+                $alt = $kernel->htmlEncode(strip_tags(implode("", $node->child[1]->child)));
+              }
+              else {
+                throw new ValidationException($i18n->t(
+                  "The “{0}” text contains a figure without a caption.",
+                  [ $this->label ],
+                  [ "comment" => "{0} is the name of the text, which should not be translated." ]
+                ));
+              }
+
+              // Validate image.
+              if ($node->child[0]->name == "img") {
+                $node->child[0]->attribute["alt"] = $alt;
+                $immediateChild = "<{$this->validateTagImg($node->child[0])}>{$immediateChild}";
+              }
+              else {
+                throw new ValidationException($i18n->t(
+                  "The “{0}” text contains a figure without an image.",
+                  [ $this->label ],
+                  [ "comment" => "{0} is the name of the text, which should not be translated." ]
+                ));
+              }
+              $node->child = null;
+            }
+
+            // We only allow <blockquote> elements with a <cite> element right before the end tag.
+            // Remove the cite element and validate it separately.
+            if ($node->name == "blockquote") {
+              $blockquote     = true;
+              $lastChildNode  = array_pop($node->child);
+
+              // If there is no <cite> as last child of the <blockquote>, abort.
+              if ($lastChildNode->name != "cite") {
+                throw new ValidationException($i18n->t(
+                  "The “{0}” text contains a quotation without a supplied source.",
+                  [ $this->label, "<code><{$node->name}></code>" ],
+                  [ "comment" => "{0} is the name of the text, which should not be translated." ]
+                ));
+              }
+              // Otherwise validate, that the <cite> only contains anchors or plain text.
+              else {
+                $immediateChild = $this->validateTextOnlyOrAnchor($lastChildNode);
+              }
+
+            }
           }
+          // Encountered a tag that is not allowed, abort.
           else {
-            // Encountered a tag that is not allowed, abort.
             $allowedTags = implode(" ", array_values($this->allowedTags));
             throw new ValidationException($i18n->t(
               "The “{0}” text contains invalid HTML tags. Allowed tags are: {1}",
@@ -286,17 +359,26 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
             ));
           }
         }
+
         // Stack the child nodes to the next level if there are any.
         if (!empty($node->child)) {
-          $level++;
-          $nodes[$level] = $node->child;
+          $nodes[++$level] = $node->child;
         }
       }
+
+      // There are no more nodes to process in this level (while loop above has already handled them). Go one level up and proceed.
       $level--;
       // Append all ending tags of the current level to the output, if we are higher than level 0 and if there are any.
       if ($level > 0 && isset($endTags[$level])) {
         while (($endTag = array_pop($endTags[$level]))) {
-          $output = "{$output}{$endTag}";
+          if ($endTag == "</blockquote>" || $endTag == "</figure>") {
+            $blockquote = $figure = false;
+            $output              .= "{$immediateChild}{$endTag}";
+            $immediateChild       = null;
+          }
+          else {
+            $output .= $endTag;
+          }
         }
       }
     }
@@ -513,6 +595,18 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       $class = " class='{$node->attribute["class"]}'";
     }
     return "p{$class}";
+  }
+
+  /**
+   * Validates and sanitizes HTML elements which can only contain anchors or text.
+   *
+   * @param \tidyNode $node
+   *   The node to validate.
+   * @return string
+   *   The tag with the validated contents.
+   */
+  protected function validateTextOnlyOrAnchor($node) {
+    return "";
   }
 
 }
