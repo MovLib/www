@@ -32,7 +32,7 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="1.5.6"
+  VERSION="1.5.7"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
@@ -113,17 +113,17 @@ msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
   --without-http_userid_module \
   --without-http_uwsgi_module
 
-exitonerror
-
 # Create cache directories for nginx.
 mkdir -p /var/cache/nginx/body /var/cache/nginx/fastcgi
 
 # Stop currently running nginx process.
-/etc/init.d/nginx stop
+set +e
+service nginx stop
+set -e
 
-make && exitonerror
-checkinstall make install && exitonerror
-make clean && exitonerror
+make
+checkinstall make install
+make clean
 
 # Remove the default configuration files.
 cd conf
@@ -137,6 +137,6 @@ LINE=$(msgline)
 msgsuccess "${LINE}\nSuccessfully installed ${NAME}\n${LINE}"
 
 # Start newly installed nginx.
-/etc/init.d/nginx start
+service nginx start
 
 exit 0
