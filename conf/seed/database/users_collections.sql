@@ -26,16 +26,16 @@ SET time_zone = "+00:00";
 -- Dumping data for table `users_collections`
 --
 
-INSERT INTO `users_collections` (`user_id`, `release_id`, `count`, `currency_code`, `price`) VALUES
-(1, 1, 1, 'EUR', 9.99),
-(1, 2, 2, 'EUR', 7.99),
-(1, 3, 1, 'USD', 5.99),
-(2, 1, 1, 'EUR', 9.99),
-(2, 2, 2, 'EUR', 7.99),
-(2, 3, 1, 'USD', 5.99),
-(3, 1, 1, 'EUR', 9.99),
-(3, 2, 2, 'EUR', 7.99),
-(3, 3, 1, 'USD', 5.99);
+INSERT INTO `users_collections` (`user_id`, `release_id`, `count`, `currency_code`, `price`, `purchased_at`) VALUES
+(1, 1, 1, 'EUR', 9.99, null),
+(1, 2, 2, 'EUR', 7.99, 'Amazon'),
+(1, 3, 1, 'USD', 5.99, 'http://www.amazon.de'),
+(2, 1, 1, 'EUR', 9.99, null),
+(2, 2, 2, 'EUR', 7.99, 'Amazon'),
+(2, 3, 1, 'USD', 5.99, 'http://www.amazon.de'),
+(3, 1, 1, 'EUR', 9.99, null),
+(3, 2, 2, 'EUR', 7.99, 'Amazon'),
+(3, 3, 1, 'USD', 5.99, 'http://www.amazon.de');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
