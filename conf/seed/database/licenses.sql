@@ -26,10 +26,33 @@ SET time_zone = "+00:00";
 -- Dumping data for table `licenses`
 --
 
-INSERT INTO `licenses` (`id`, `name`, `description`, `dyn_names`, `dyn_descriptions`, `url`, `abbreviation`, `icon_extension`, `icon_hash`, `admin`) VALUES
-(1, 'Copyright protected', '', '', '', 'https://en.wikipedia.org/wiki/Copyright', '©', 'svg', NULL, 1),
-(2, 'Creative Commons CC0 1.0 Universal Public Domain Dedication', '<p>The person who associated a work with this deed has dedicated the work to the public domain by waiving all of his or her rights to the work worldwide under copyright law, including all related and neighboring rights, to the extent allowed by law. You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.</p>', '', '', 'https://creativecommons.org/publicdomain/zero/1.0/', 'CC0 1.0', 'svg', NULL, 1),
-(3, 'Creative Commons Attribution 3.0 Unported', '<p>You are free:</p><ul><li><b>to share</b> – to copy, distribute and transmit the work</li><li><b>to remix</b> – to adapt the work</li></ul><p>Under the following conditions:<ul><li><b>attribution</b> – You must attribute the work in the manner specified by the author or licensor (but not in any way that suggests that they endorse you or your use of the work).</li></ul></p>', '', '', 'https://creativecommons.org/licenses/by/3.0/', 'CC BY 3.0', 'svg', NULL, 1);
+INSERT INTO `licenses` SET
+  `dyn_names`         = COLUMN_CREATE('en', 'Copyrighted'),
+  `dyn_descriptions`  = '',
+  `url`               = 'https://en.wikipedia.org/wiki/Copyright',
+  `abbreviation`      = '©',
+  `icon_extension`    = 'svg',
+  `icon_changed`      = CURRENT_TIMESTAMP
+;
+
+INSERT INTO `licenses` SET
+  `dyn_names`         = COLUMN_CREATE('en', 'Creative Commons Zero 1.0 Universal'),
+  `dyn_descriptions`  = COLUMN_CREATE('en', '&lt;p&gt;The person who associated a work with this deed has dedicated the work to the public domain by waiving all of his or her rights to the work worldwide under copyright law, including all related and neighboring rights, to the extent allowed by law. You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.&lt;/p&gt;'),
+  `url`               = 'https://creativecommons.org/publicdomain/zero/1.0/',
+  `abbreviation`      = 'CC0 1.0',
+  `icon_extension`    = 'svg',
+  `icon_changed`      = CURRENT_TIMESTAMP
+;
+
+INSERT INTO `licenses` SET
+  `dyn_names`         = COLUMN_CREATE('en', 'Creative Commons Attribution 3.0 Unported'),
+  `dyn_descriptions`  = COLUMN_CREATE('en', '&lt;p&gt;You are free:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;to share&lt;/b&gt; – to copy, distribute and transmit the work&lt;/li&gt;&lt;li&gt;&lt;b&gt;to remix&lt;/b&gt; – to adapt the work&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Under the following conditions:&lt;ul&gt;&lt;li&gt;&lt;b&gt;attribution&lt;/b&gt; – You must attribute the work in the manner specified by the author or licensor (but not in any way that suggests that they endorse you or your use of the work).&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;'),
+  `url`               = 'https://creativecommons.org/licenses/by/3.0/',
+  `abbreviation`      = 'CC BY 3.0',
+  `icon_extension`    = 'svg',
+  `icon_changed`      = CURRENT_TIMESTAMP
+;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

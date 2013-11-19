@@ -59,11 +59,11 @@ class Full extends \MovLib\Data\User\User {
   public $birthday;
 
   /**
-   * The user's unique country ID.
+   * The user's unique country code.
    *
-   * @var null|integer
+   * @var null|string
    */
-  public $countryId;
+  public $countryCode;
 
   /**
    * The user's creation time (UNIX timestamp).
@@ -183,7 +183,7 @@ class Full extends \MovLib\Data\User\User {
           `name`,
           UNIX_TIMESTAMP(`access`),
           `birthday`,
-          `country_id`,
+          `country_code`,
           UNIX_TIMESTAMP(`created`),
           COLUMN_GET(`dyn_about_me`, '{$i18n->languageCode}' AS BINARY),
           `edits`,
@@ -210,7 +210,7 @@ class Full extends \MovLib\Data\User\User {
         $this->name,
         $this->access,
         $this->birthday,
-        $this->countryId,
+        $this->countryCode,
         $this->created,
         $this->aboutMe,
         $this->edits,
@@ -279,7 +279,7 @@ class Full extends \MovLib\Data\User\User {
     return $this->query(
       "UPDATE `users` SET
         `birthday`             = ?,
-        `country_id`           = ?,
+        `country_code`         = ?,
         `dyn_about_me`         = COLUMN_ADD(`dyn_about_me`, ?, ?),
         `image_changed`        = FROM_UNIXTIME(?),
         `image_extension`      = ?,
@@ -294,7 +294,7 @@ class Full extends \MovLib\Data\User\User {
       "sissisisisssd",
       [
         $this->birthday,
-        $this->countryId,
+        $this->countryCode,
         $i18n->languageCode,
         $this->aboutMe,
         $this->imageChanged,

@@ -168,7 +168,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $this->aboutMe  = new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, $i18n->t("Tell others about yourself, what do you do, what do you like, …"));
 
     $this->language = new Select("language", $i18n->t("System Language"), (new SystemLanguages())->orderByName(), $this->user->systemLanguageCode);
-    $this->country  = new Select("country", $i18n->t("Country"), (new Countries())->orderByName()->reindex("id"), $this->user->countryId);
+    $this->country  = new Select("country", $i18n->t("Country"), []);
     $this->timezone = new Select("time_zone_id", $i18n->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneIdentifier);
     $this->website  = new InputURL("website", $i18n->t("Website"), [ "data-allow-external" => true, "value" => $this->user->website ]);
     $this->private  = new InputCheckbox("private", $i18n->t("Keep my data private!"), [ "value" => $this->user->private ], $i18n->t(
@@ -213,7 +213,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     global $i18n;
     if ($this->checkErrors($errors) === false) {
       $this->user->birthday           = $this->birthday->value;
-      $this->user->countryId          = $this->country->value;
+      $this->user->countryCode        = $this->country->value;
       $this->user->private            = $this->private->value;
       $this->user->aboutMe            = $this->aboutMe->value;
       $this->user->realName           = $this->realName->value;
