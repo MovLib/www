@@ -92,6 +92,7 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Instantiate new movie.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The unique movie's ID to load.
    */
@@ -106,10 +107,11 @@ class Movie extends \MovLib\Data\Database {
           `movie`.`original_title`,
           `movie`.`year`
         FROM `movies` AS `movie`
-          LEFT JOIN `movies_titles` AS `title` ON `title`.`movie_id` = `movie`.`movie_id`
-        WHERE
-          `movie`.`movie_id` = ?
-          AND `title`.`is_display_title` = true
+          LEFT JOIN `movies_titles` AS `mt` ON `mt`.`movie_id` = `movie`.`id`
+          LEFT JOIN `titles` AS `title`
+            ON `title`.`movie_id` = `movie`.`id`
+            AND `title`.`id` = `mt`.`display_title_{$i18n->languageCode}`
+        WHERE `movie`.`id` = ?
         LIMIT 1",
         "d",
         [ $id ]

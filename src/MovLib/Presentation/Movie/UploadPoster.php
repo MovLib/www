@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Country;
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Data\Licenses;
+use \MovLib\Data\License;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
@@ -125,7 +125,11 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
 
       $this->country = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
 
-      $this->license = new Select("license", $i18n->t("License"), [], $this->image->license);
+      $licenses = (new License())->getLicenses();
+      foreach ($licenses as $licenseId => $license) {
+        $licenses[$licenseId] = $license->name;
+      }
+      $this->license = new Select("license", $i18n->t("License"), $licenses, $this->image->licenseId ?: 1, [ "required" ]);
 
       $this->form = new Form($this, [
         $this->inputImage,
