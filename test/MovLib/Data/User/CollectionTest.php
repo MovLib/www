@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Data\User;
 
-use \MovLib\Presentation\User\Collection;
+use \MovLib\Data\User\Collection;
 
 /**
- * @coversDefaultClass \MovLib\Presentation\User\Collection
+ * @coversDefaultClass \MovLib\Data\User\Collection
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -33,7 +33,7 @@ class CollectionTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\User\Collection */
+  /** @var \MovLib\Data\User\Collection */
   protected $collection;
 
 
@@ -75,10 +75,18 @@ class CollectionTest extends \MovLib\TestCase {
   }
 
   /**
-   * @covers ::getPageContent
-   * @todo Implement getPageContent
+   * @covers ::getMediaConditions
+   * @todo Implement getMediaConditions
    */
-  public function testGetPageContent() {
+  public function testGetMediaConditions() {
+    $this->markTestIncomplete("This test has not been implemented yet.");
+  }
+
+  /**
+   * @covers ::getSleeveConditions
+   * @todo Implement getSleeveConditions
+   */
+  public function testGetSleeveConditions() {
     $this->markTestIncomplete("This test has not been implemented yet.");
   }
 
