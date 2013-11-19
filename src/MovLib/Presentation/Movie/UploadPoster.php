@@ -19,8 +19,10 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Countries;
 use \MovLib\Data\Image\MoviePoster;
+use \MovLib\Data\Licenses;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Exception\Client\ErrorNotFoundException;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\MovieException;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
@@ -60,7 +62,7 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
   /**
    * The concrete image (namely the poster in this class, but not in child classes).
    *
-   * @var \MovLib\Data\Image\AbstractImage
+   * @var \MovLib\Data\Image\MoviePoster
    */
   protected $image;
 
@@ -96,6 +98,8 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
 
   /**
    * Instantiate new upload poster presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
     global $i18n;
@@ -108,7 +112,7 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
         $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear, $_SERVER["IMAGE_ID"]);
       }
       else {
-        $title = $i18n->t("Upload new poster for {0}.", [ $this->movie->displayTitleWithYear ]);
+        $title = $i18n->t("Upload new poster for {0}", [ $this->movie->displayTitleWithYear ]);
         $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear);
       }
       $this->init($title);
@@ -155,7 +159,17 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
     return [];
   }
 
+  /**
+   * @inheritdoc
+   */
   public function validate(array $errors = null) {
+    if ($this->checkErrors($errors) === false) {
+      $this->image->countryId   = $this->country->value;
+      $this->image->description = $this->description->value;
+      $this->image->licenseId   = $this->license->value;
+      $this->image->source      = $this->source->value;
+      throw new RedirectSeeOtherException($this->image->route);
+    }
     return $this;
   }
 

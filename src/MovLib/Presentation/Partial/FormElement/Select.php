@@ -73,9 +73,13 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    */
   public function __construct($id, $label, $options, $value = null, array $attributes = null, $help = null, $helpPopup = true) {
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
-    $this->options = $options;
-    $this->value   = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
+    $this->options = is_object(($options)) ? $options->getSelectOptions() : $options;
+    $this->value   = (string) isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc
@@ -86,22 +90,20 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
     //  and whose size is 1, must have either an empty value attribute, or must have no text content.
     $emptyValue = empty($this->value);
     $selected   = $emptyValue ? " selected" : null;
-    $options    = "<option{$selected} value=''>{$i18n->t("Please Select …")}</option>";
+    if (in_array("required", $this->attributes)) {
+      $options = "<option disabled{$selected}>{$i18n->t("Please Select …")}</option>";
+    }
+    else {
+      $options = "<option{$selected} value=''>{$i18n->t("None")}</option>";
+    }
 
     foreach ($this->options as $value => $option) {
-      if (is_object($option)) {
-        $option->selectCallback($value, $option);
-      }
       $selected = !$emptyValue && $this->value == $value ? " selected" : null;
       $options .= "<option{$selected} value='{$value}'>{$option}</option>";
     }
 
     return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><select{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
   }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
 
   /**
    * @inheritdoc

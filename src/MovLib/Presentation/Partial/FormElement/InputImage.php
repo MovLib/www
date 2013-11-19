@@ -21,7 +21,6 @@ use \MovLib\Data\Image\AbstractImage as Image;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\ImageException;
 use \MovLib\Exception\ValidationException;
-use \MovLib\Presentation\Partial\Alert;
 
 /**
  * HTML input type file form element specialized for image uploads.
@@ -41,6 +40,15 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
 
   /**
+   * The image's extension.
+   *
+   * <b>Note:</b> This value is only available after validation!
+   *
+   * @var string
+   */
+  public $extension;
+
+  /**
    * Available image extensions.
    *
    * @internal We don't use image_type_to_extension() because it uses long extensions (e.g. jpeg instead of jpg).
@@ -52,11 +60,38 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   ];
 
   /**
+   * The image's height.
+   *
+   * <b>Note:</b> This value is only available after validation!
+   *
+   * @var integer
+   */
+  public $height;
+
+  /**
    * The image instance responsible for storing this image.
    *
    * @var \MovLib\Data\Image\AbstractImage
    */
   protected $image;
+
+  /**
+   * The image's absolute path.
+   *
+   * <b>Note:</b> This value is only available after validation!
+   *
+   * @var string
+   */
+  public $path;
+
+  /**
+   * The image's width.
+   *
+   * <b>Note:</b> This value is only available after validation!
+   *
+   * @var integer
+   */
+  public $width;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -164,9 +199,9 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
     // Gather meta information about the uploaded image, getimagesize() will fail if this isn't a valid image.
     try {
-      list($width, $height, $type) = getimagesize($_FILES[$this->id]["tmp_name"]);
-      assert($width > 0);
-      assert($height > 0);
+      list($this->width, $this->height, $type) = getimagesize($_FILES[$this->id]["tmp_name"]);
+      assert($this->width > 0);
+      assert($this->height > 0);
       assert($type === IMAGETYPE_JPEG || $type === IMAGETYPE_PNG);
     }
     catch (\ErrorException $e) {
@@ -174,7 +209,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     }
 
     // Check dimension constrains.
-    if ($height < $this->attributes["data-min-height"] || $width < $this->attributes["data-min-width"]) {
+    if ($this->height < $this->attributes["data-min-height"] || $this->width < $this->attributes["data-min-width"]) {
       throw new ValidationException(
         $i18n->t("The image is too small, it must be larger than {0}x{1} pixels.",
         [ $this->attributes["data-min-height"], $this->attributes["data-min-width"] ]
@@ -190,17 +225,18 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     // @todo @Richard
     //   Think about a way to solve this kind of problem once and for all. Maybe with a ConfirmationException which is
     //   catched in main.php?
-    if ($height < $this->image->imageHeight || $width < $this->image->imageWidth) {
+    if ($this->height < $this->image->imageHeight || $this->width < $this->image->imageWidth) {
       throw new ImageException($i18n->t(
         "New images should have a better quality than already existing images, this includes the resolution. The " .
         "current image’s resolution is {0}x{1} pixels but yours is {2}x{3}. Please cofirm that your upload has a " .
         "better quality than the existing on despite the fact of smaller dimensions.",
-        [ $this->image->imageWidth, $this->image->imageHeight, $width, $height ]
+        [ $this->image->imageWidth, $this->image->imageHeight, $this->width, $this->height ]
       ));
     }
 
-    // Time to move the image to our persistent storage, all seems valid.
-    $this->image->uploadImage($_FILES[$this->id]["tmp_name"], $this->extensions[$type], $height, $width);
+    // Everything seems valid, export all values to class scope.
+    $this->path      = $_FILES[$this->id]["tmp_name"];
+    $this->extension = $this->extensions[$type];
     return $this;
   }
 
