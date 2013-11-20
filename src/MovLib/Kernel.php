@@ -48,6 +48,17 @@ class Kernel {
   public $alerts;
 
   /**
+   * Associative array containing the cache buster strings for the various assets.
+   *
+   * @var array
+   */
+  protected $cacheBusters = [
+    "css" => [],
+    "img" => [],
+    "js"  => [],
+  ];
+
+  /**
    * Numeric array containing all delayed emails.
    *
    * @var null|array
@@ -137,6 +148,20 @@ class Kernel {
    * @var string
    */
   public $hostname = "movlib.org";
+
+  /**
+   * Numeric array containing all JavaScript module names that should be loaded with this presentation.
+   *
+   * @var array
+   */
+  public $javascripts = [];
+
+  /**
+   * Associative array to collect JavaScript settings for this presentation.
+   *
+   * @var array
+   */
+  public $javascriptSettings = [];
 
   /**
    * The password options.
@@ -232,6 +257,13 @@ class Kernel {
    * @var string
    */
   public $siteSlogan = "the free movie library";
+
+  /**
+   * Numeric array containing all CSS module names that should be loaded with this presentation.
+   *
+   * @var array
+   */
+  public $stylesheets = [];
 
   /**
    * Numeric array containing the system locales.
@@ -397,6 +429,53 @@ class Kernel {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Get absolute URL for an asset file.
+   *
+   * @staticvar array $cache
+   *   Used to cache the URLs that are built during a single request.
+   * @param string $name
+   *   The filename (or path) of the asset file for which the URL should be built. What you have to pass with this
+   *   parameter depends on the asset type you need. CSS and JS files are <b>always</b> only referred by their name.
+   *   This is because all CSS and JS files that are dynamically included reside in the module sub-directory of their
+   *   asset directory. If you need an image on the other side the name must include the absolute path within the img
+   *   directory in the asset directory (without leading slash). Don't include the trailing dot nor the asset's
+   *   extension here!
+   * @param string $extension
+   *   The asset's file extension (e.g. <code>"css"</code>).
+   * @return string
+   *   The absolute URL (including scheme and hostname) of the asset.
+   */
+  public function getAssetURL($name, $extension) {
+    static $cache = [];
+
+    // If we have no cached URL for this asset build the URL.
+    if (!isset($cache[$extension][$name])) {
+      // CSS and JS assets are always in the same directory as their extension plus the module sub-directory (other
+      // assets of this type aren't includable during normal execution, with the exception of the files that are named
+      // MovLib), images have many different extensions and their directory doesn't match up with that.
+      $dir = "img";
+      if ($extension == "css" || $extension == "js") {
+        $dir = $extension;
+        if ($name != "MovLib") {
+          $dir .= "/module";
+        }
+      }
+
+      // Get the cache buster string for this asset, the md5_file() call is only performed during development because
+      // otherwise we should have an entry for it.
+      $cacheBuster = isset($this->cacheBusters[$extension][$name])
+        ? $this->cacheBusters[$extension][$name]
+        : md5_file("{$this->documentRoot}/public/asset/{$dir}/{$name}.{$extension}")
+      ;
+
+      // Add the absolute URL to our URL cache and we're done.
+      $cache[$extension][$name] = "//{$this->domainStatic}/asset/{$dir}/{$name}.{$extension}?c={$cacheBuster}";
+    }
+
+    return $cache[$extension][$name];
+  }
 
   /**
    * Class autoloader.

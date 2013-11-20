@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Data\SystemLanguages;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Navigation;
 
@@ -78,13 +77,6 @@ class Page extends \MovLib\Presentation\AbstractPage {
    * @var string
    */
   protected $schemaType;
-
-  /**
-   * Associative array containing global settings that will be passed as JSON encoded string to our JavaScript.
-   *
-   * @var type
-   */
-  protected $scriptSettings = [];
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -332,29 +324,6 @@ class Page extends \MovLib\Presentation\AbstractPage {
   }
 
   /**
-   * Get the current presentation as string.
-   *
-   * Any standard MovLib page consists of the same elements:
-   * <ul>
-   *   <li>The <b>Header</b> which includes the small and big navigation</li>
-   *   <li>The <b>WrappedContent</b> which wraps the heading and the actual content</li>
-   *   <li>The <b>Footer</b> which contains miscallenous links</li>
-   * </ul>
-   * Base on this assumptions this class contains reference implementations of all these regions and concatenates them
-   * at this point. Of course including the global MovLib HTML header from <code>\MovLib\Presentation\AbstractPage</code>.
-   * Noteworthy as well, this is the first place in which we include JavaScript. Not every page needs JavaScript, but
-   * a page extending the reference implementation needs at least the Header-JavaScript that helps browsers to correctly
-   * manage focus on our search box and header navigation. Plus without any JavaScript there's not module loader.
-   *
-   * @return string
-   *   The current presentation as string.
-   */
-  public function getPresentation() {
-    $html = parent::getPresentation();
-    return "{$html}{$this->getHeader()}{$this->getWrappedContent()}{$this->getFooter()}";
-  }
-
-  /**
    * Get the wrapped content, including heading.
    *
    * @return string
@@ -413,7 +382,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
     $this->alerts    .= "<noscript>{$noscript}</noscript>";
 
     if (count($this->namespace) > 1) {
-      $this->stylesheets[] = "modules/{$this->namespace[0]}.css";
+      $kernel->stylesheets[] = $this->namespace[0];
     }
 
     if (isset($_COOKIE["alerts"])) {

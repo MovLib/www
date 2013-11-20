@@ -18,7 +18,6 @@
 namespace MovLib\Presentation;
 
 use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Data\SystemLanguages;
 use \MovLib\Exception\Client\RedirectTemporaryException;
 use \MovLib\Presentation\Partial\Navigation;
 
@@ -71,11 +70,7 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
 
     // If not render the page.
     $this->init($i18n->t("Language Selection"));
-    $this->stylesheets[]                   = "modules/language-selection.css";
-    $this->navigation                      = new Navigation($this->id, $i18n->t("Available Languages"), array_keys($kernel->systemLanguages));
-    $this->navigation->attributes["class"] = "well well--large";
-    $this->navigation->glue                = " / ";
-    $this->navigation->callback             = [ $this, "formatSystemLanguage" ];
+    $kernel->stylesheets[] = "language-selection";
   }
 
   /**
@@ -99,21 +94,43 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
   /**
    * @inheritdoc
    */
-  public function getPresentation() {
-    global $kernel, $i18n;
-    $html = parent::getPresentation();
+  protected function getFooter() {
+    global $i18n, $kernel;
     return
-      "{$html}<div class='{$this->id}-content' id='content' role='main'><div class='container'>" .
-        "<h1 class='clear-fix' id='logo-big'>" .
-          "<img alt='{$kernel->siteName} {$i18n->t("logo")}' height='192' src='//{$kernel->domainStatic}/asset/img/logo/vector.svg' width='192'>" .
-          "<span>{$kernel->siteNameAndSloganHTML}</span>" .
-        "</h1>" .
-        "<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$this->navigation}" .
-      "</div></div>" .
       "<footer id='footer'><div class='container'><div class='row'><p>{$i18n->t(
         "Is your language missing from our list? Help us translate {0} to your language. More information can be found at {1}our translation portal{2}.",
         [ $kernel->siteName, "<a href='//{$kernel->domainLocalize}/'>", "</a>" ]
       )}</p></div></div></footer>"
+    ;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getHeader() {
+    return "";
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getWrappedContent() {
+    global $i18n, $kernel;
+
+    // Build the navigation.
+    $this->navigation                      = new Navigation($this->id, $i18n->t("Available Languages"), array_keys($kernel->systemLanguages));
+    $this->navigation->attributes["class"] = "well well--large";
+    $this->navigation->glue                = " / ";
+    $this->navigation->callback             = [ $this, "formatSystemLanguage" ];
+
+    return
+      "<div class='{$this->id}-content' id='content' role='main'><div class='container'>" .
+        "<h1 class='clear-fix' id='logo-big'>" .
+          "<img alt='{$kernel->siteName} {$i18n->t("logo")}' height='192' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='192'>" .
+          "<span>{$kernel->siteNameAndSloganHTML}</span>" .
+        "</h1>" .
+        "<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$this->navigation}" .
+      "</div></div>"
     ;
   }
 

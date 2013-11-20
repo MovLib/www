@@ -69,30 +69,6 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
   protected $pageTitle;
 
   /**
-   * Numeric array containing all stylesheets within the <code>assets/css/layout</code> path on the server.
-   *
-   * These stylesheets will be delivered with any request for any page, they represent the most basic styles for our
-   * complete website and we want them to be fetched as early as possible, so that the user's browser can cache them
-   * till the end of time (or we generate a new one).
-   *
-   * @var array
-   */
-  protected $stylesheets = [
-    "base.css",
-    "layout/grid.css",
-    "layout/typography.css",
-    "layout/forms.css",
-    "layout/generic.css",
-    "layout/header.css",
-    "layout/content.css",
-    "layout/secondary-navigation.css",
-    "layout/footer.css",
-    "layout/icons.css",
-    "layout/alert.css",
-    "layout/buttons.css",
-  ];
-
-  /**
    * The page's title.
    *
    * @var string
@@ -100,7 +76,35 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
   protected $title;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Protected Methods
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
+  /**
+   * Get the page's header.
+   *
+   * @return string
+   *   The presentation's header.
+   */
+  protected abstract function getHeader();
+
+  /**
+   * Get the page's wrapped content.
+   *
+   * @return string
+   *   The page's wrapped content.
+   */
+  protected abstract function getWrappedContent();
+
+  /**
+   * Get the page's footer.
+   *
+   * @return string
+   *   The page's footer.
+   */
+  protected abstract function getFooter();
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
@@ -135,19 +139,19 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
    * <i>getPresentation() must not throw an exception</i> message would be displayed (fatal error of course, so you get
    * nothing).
    *
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @return string
    */
   public function getPresentation() {
-    global $kernel, $i18n, $session;
+    global $i18n, $kernel, $session;
 
     // Build a link for each stylesheet of this page.
-    $stylesheets = "";
-    $c = count($this->stylesheets);
+    $stylesheets = null;
+    $c           = count($kernel->stylesheets);
     for ($i = 0; $i < $c; ++$i) {
-      $stylesheets .= "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/{$this->stylesheets[$i]}'>";
+      $stylesheets .= "<link href='{$kernel->getAssetURL($kernel->stylesheets[$i], "css")}' rel='stylesheet'>";
     }
 
     // Apply additional CSS class if the current request is made from a signed in user.
@@ -155,39 +159,36 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
       $this->bodyClasses .= " authenticated";
     }
 
+    // Build the JavaScript settings JSON.
+    $c = count($kernel->javascripts);
+    for ($i = 0; $i < $c; ++$i) {
+      $kernel->javascriptSettings["modules"][$kernel->javascripts[$i]] = $kernel->getAssetURL($kernel->javascripts[$i], "js");
+    }
+    $jsSettings = json_encode($kernel->javascriptSettings, JSON_UNESCAPED_UNICODE);
+
     return
       "<!doctype html>" .
       "<html dir='{$i18n->direction}' id='nojs' lang='{$i18n->languageCode}'>" .
-        "<head>" .
-          // @todo RFC: META-Charset
-          //
-          // The meta-charset is only needed if a document is not sending appropriate HTTP headers. So for instance if
-          // someone saves a page to disc. The question is, do we really need support for such situations? Older (not
-          // supported) browsers like IE8 have problems with more than one charset declaration (experimental page speed
-          // rule says so) and it is simply redundant in the web context. Our HTTP header already told the browser that
-          // this page is completely in UTF-8 (same is true for any other text based content our server is going to
-          // deliver). The bytes we save here are of course irrevelant, it's the redundancy that bugs me.
-          //
-          //"<meta charset='utf-8'>" .
-          "<title>{$this->getHeadTitle()}</title>" .
-          $stylesheets .
-          // Yes, we could create these in a loop, but why should we implement a loop for static data? Do be honest, I
-          // generated it with a loop and simply copied the output here.
-          "<link rel='icon' type='image/svg+xml' href='//{$kernel->domainStatic}/asset/img/logo/vector.svg'>" .
-          "<link rel='icon' type='image/png' sizes='256x256' href='//{$kernel->domainStatic}/asset/img/logo/256.png'>" .
-          "<link rel='icon' type='image/png' sizes='128x128' href='//{$kernel->domainStatic}/asset/img/logo/128.png'>" .
-          "<link rel='icon' type='image/png' sizes='64x64' href='//{$kernel->domainStatic}/asset/img/logo/64.png'>" .
-          "<link rel='icon' type='image/png' sizes='32x32' href='//{$kernel->domainStatic}/asset/img/logo/32.png'>" .
-          "<link rel='icon' type='image/png' sizes='24x24' href='//{$kernel->domainStatic}/asset/img/logo/24.png'>" .
-          "<link rel='icon' type='image/png' sizes='16x16' href='//{$kernel->domainStatic}/asset/img/logo/16.png'>" .
-          // @todo Add opensearch tag (rel="search").
-          "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
-        "</head>" .
-        // @todo Drop the {$this->id}-body class!
-        "<body id='{$this->id}' class='{$this->bodyClasses}'>"
-      // Please note that there is no need to include the closing body- nor html-tag with the HTML5 doc-type! We abuse
-      // this for our inheritance and other classes can overwrite and extend the most default getPresentation() method
-      // while retaining the global header.
+      "<head>" .
+        "<title>{$this->getHeadTitle()}</title>" .
+        // Include the global styles and any presentation specific ones.
+        "<link href='{$kernel->getAssetURL("MovLib", "css")}' rel='stylesheet'>{$stylesheets}" .
+        // Yes, we could create these in a loop, but why should we implement a loop for static data? To be honest, I
+        // generated it with a loop and simply copied the output here.
+        "<link href='{$kernel->getAssetURL("logo/vector", "svg")}' rel='icon' type='image/svg+xml'>" .
+        "<link href='{$kernel->getAssetURL("logo/256", "png")}' rel='icon' sizes='256x256' type='image/png'>" .
+        "<link href='{$kernel->getAssetURL("logo/128", "png")}' rel='icon' sizes='128x128' type='image/png'>" .
+        "<link href='{$kernel->getAssetURL("logo/64", "png")}' rel='icon' sizes='64x64' type='image/png'>" .
+        "<link href='{$kernel->getAssetURL("logo/32", "png")}' rel='icon' sizes='32x32' type='image/png'>" .
+        "<link href='{$kernel->getAssetURL("logo/24", "png")}' rel='icon' sizes='24x24' type='image/png'>" .
+        "<link href='{$kernel->getAssetURL("logo/16", "png")}' rel='icon' sizes='16x16' type='image/png'>" .
+        // @todo Add opensearch tag (rel="search").
+        "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
+      "</head>" .
+      "<body id='{$this->id}' class='{$this->bodyClasses}'>" .
+        "{$this->getHeader()}{$this->getWrappedContent()}{$this->getFooter()}" .
+      "<script id='js-settings' type='application/json'>{$jsSettings}</script>" .
+      "<script src='{$kernel->getAssetURL("MovLib", "js")}'></script>"
     ;
   }
 

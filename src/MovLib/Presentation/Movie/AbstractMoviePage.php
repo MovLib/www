@@ -43,7 +43,8 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
    * @inheritdoc
    */
   protected function init($title) {
-    $this->stylesheets[] = "modules/movie.css";
+    global $kernel;
+    $kernel->addStylesheet("modules/movie");
     return parent::init($title);
   }
 

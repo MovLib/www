@@ -36,7 +36,7 @@ class Home extends \MovLib\Presentation\Page {
   public function __construct() {
     global $kernel;
     $this->init($kernel->siteName);
-    $this->stylesheets[] = "modules/home.css";
+    $kernel->stylesheets[] = "home";
   }
 
   /**
