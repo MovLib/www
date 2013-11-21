@@ -147,6 +147,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       $this->value    = $value;
       $this->valueRaw = $kernel->htmlDecode($value);
     }
+    $kernel->javascripts[] = "InputHTML";
   }
 
   /**
@@ -266,11 +267,11 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
           // Validate tag and attributes.
           if ($node->type === TIDY_NODETYPE_TEXT) {
             // Clean text and append to output.
-            $output = "{$output}{$kernel->htmlEncode($node->value)}";
+            $output .= "{$kernel->htmlEncode($node->value)}";
           }
           elseif (isset($this->allowedTags[$node->name])) {
-            // If we are already nested in a <blockquote> or a <figure>, ensure that these elements don't occur there.
-            if (($blockquote === true || $figure === true) && ($node->name == "blockquote" || $node->name == "figure")) {
+            // If we are already nested in a <blockquote>, ensure that it doesn't contain <blockquote> or <figure> there.
+            if ($blockquote === true && ($node->name == "blockquote" || $node->name == "figure")) {
               throw new ValidationException($i18n->t(
                 "The “{0}” text contains the invalid element {1} inside a quotation or a figure.",
                 [ $this->label, "<code><{$node->name}></code>" ],
@@ -289,8 +290,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
             $output .= "<{$node->name}>";
 
             // We only allow <figure> elements with an <img> as first and a <figcaption> as second child.
-            if ($node->name == "figure") {;
-              $figure = true;
+            if ($node->name == "figure") {
               $alt = null;
               if (count($node->child) !== 2) {
                 throw new ValidationException($i18n->t(
@@ -325,7 +325,10 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
                   [ "comment" => "{0} is the name of the text, which should not be translated." ]
                 ));
               }
+              // Delete all children, since they are already validated.
               $node->child = null;
+              // Increase the level, since we need an ending tag, but have no children.
+              $level++;
             }
 
             // We only allow <blockquote> elements with a <cite> element right before the end tag.
@@ -333,6 +336,15 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
             if ($node->name == "blockquote") {
               $blockquote     = true;
               $lastChildNode  = array_pop($node->child);
+
+              // Do not allow quotations without text.
+              if (count($node->child) < 1) {
+                throw new ValidationException($i18n->t(
+                  "The “{0}” text contains an empty quotation.",
+                  [ $this->label, "<code><{$node->name}></code>" ],
+                  [ "comment" => "{0} is the name of the text, which should not be translated." ]
+                ));
+              }
 
               // If there is no <cite> as last child of the <blockquote>, abort.
               if ($lastChildNode->name != "cite") {
@@ -346,7 +358,6 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
               else {
                 $immediateChild = $this->validateTextOnlyOrAnchor($lastChildNode);
               }
-
             }
           }
           // Encountered a tag that is not allowed, abort.
@@ -372,7 +383,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       if ($level > 0 && isset($endTags[$level])) {
         while (($endTag = array_pop($endTags[$level]))) {
           if ($endTag == "</blockquote>" || $endTag == "</figure>") {
-            $blockquote = $figure = false;
+            $blockquote           = false;
             $output              .= "{$immediateChild}{$endTag}";
             $immediateChild       = null;
           }
@@ -600,13 +611,14 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   /**
    * Validates and sanitizes HTML elements which can only contain anchors or text.
    *
+   * @todo Implement validation of plain text or anchors.
    * @param \tidyNode $node
    *   The node to validate.
    * @return string
    *   The tag with the validated contents.
    */
   protected function validateTextOnlyOrAnchor($node) {
-    return "";
+    return "<$node->name>Not implemented yet.</$node->name>";
   }
 
 }
