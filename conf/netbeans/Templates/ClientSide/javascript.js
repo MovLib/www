@@ -7,6 +7,9 @@
 /* jshint browser:true */
 
 /**
+ * @module ${prj.name}
+ * @namespace modules
+ * @submodule ${name}
  * @author ${user}
  * @copyright © ${date?date?string("yyyy")} ${prj.name}
  * @license ${prj.licenseLink} ${prj.licenseName}
@@ -15,7 +18,7 @@
  * @param {window} window
  * @param {document} document
  * @param {MovLib} MovLib
- * @returns {undefined}
+ * @return {undefined}
  */
 (function (window, document, MovLib) {
   "use strict";

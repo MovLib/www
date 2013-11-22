@@ -20,6 +20,7 @@
  * The main file of the MovLib JavaScript framework that is loaded on every page load and takes care of loading any
  * additional modules.
  *
+ * @module MovLib
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -37,7 +38,8 @@
    * always included directly above the closing body. This ensures that the DOM is actually already present on the client
    * side when this script is invoke. Makes life much easier and loading of scripts much more reliable.
    *
-   * @returns {MovLib}
+   * @class MovLib
+   * @constructor
    */
   function MovLib() {
 
@@ -46,6 +48,7 @@
      *
      * This is kept public because our modules export themselves, unlike you're used to from other systems.
      *
+     * @property modules
      * @type Object
      */
     this.modules = {};
@@ -53,6 +56,7 @@
     /**
      * The global JavaScript settings object.
      *
+     * @property settings
      * @type Object
      */
     this.settings = JSON.parse(document.getElementById("js-settings").innerHTML);
@@ -71,11 +75,13 @@
     /**
      * Add an event listener to the given HTMLElement.
      *
+     * @method bind
+     * @chainable
      * @param {HTMLElement} element
      *   The element on which we should listen for events.
      * @param {Object} events
      *   Object where the key is the event to listen for and the value the desired callback function.
-     * @returns {MovLib}
+     * @return {MovLib}
      */
     bind: function (element, events) {
       for (var event in events) {
@@ -86,8 +92,15 @@
       return this;
     },
 
+    /**
+     * Initialize page features that are available on every page.
+     *
+     * @method init
+     * @chainable
+     * @return {MovLib}
+     */
     init: function () {
-      // Anon helper function to load polyfills.
+      // Anonymous helper function to load polyfills.
       var load = function (name) {
         this.loadModule(name, "//" + this.settings.domainStatic + "/asset/js/polyfill/" + name + ".js");
       };
@@ -96,6 +109,8 @@
       if (!("classList" in document.documentElement)) {
         load.call(this, "classList");
       }
+
+      return this;
     },
 
     /**
@@ -103,11 +118,13 @@
      *
      * Note that any module that wasn't loaded yet will be automatically loaded and executed.
      *
+     * @method executeModules
+     * @chainable
      * @param {Object} modules
      *   The modules to execute.
      * @param {HTMLCollection} context
      *   The context we are currently working with.
-     * @returns {MovLib}
+     * @return {MovLib}
      */
     executeModules: function (modules, context) {
       // The callback method if the module isn't loaded yet.
@@ -130,22 +147,20 @@
     /**
      * Asynchronously load the given module.
      *
-     * @param {String} name
-     *   The module's name.
+     * @method loadModule
+     * @chainable
      * @param {String} url
      *   The module's absolute URL (including scheme and hostname).
-     * @param {Function} onloadCallback [optional]
+     * @param {Function} [onloadCallback]
      *   A function to call on the onload event of the inserted script tag.
-     * @returns {MovLib}
+     * @return {MovLib}
      */
-    loadModule: function (name, url, onloadCallback) {
-      if (!this.modules[name]) {
-        var script    = document.createElement("script");
-        script.async  = true;
-        script.src    = url;
-        script.onload = onloadCallback;
-        document.body.appendChild(script);
-      }
+    loadModule: function (url, onloadCallback) {
+      var script    = document.createElement("script");
+      script.async  = true;
+      script.src    = url;
+      script.onload = onloadCallback;
+      document.body.appendChild(script);
       return this;
     }
 

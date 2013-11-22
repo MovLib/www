@@ -17,6 +17,9 @@
 /* jshint browser:true */
 
 /**
+ * @module MovLib
+ * @namespace modules
+ * @submodule InputHTML
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,7 +29,7 @@
  * @param {window} window
  * @param {document} document
  * @param {MovLib} MovLib
- * @returns {undefined}
+ * @return {undefined}
  */
 (function (window, document, MovLib) {
   "use strict";
@@ -34,14 +37,38 @@
   /**
    * WYSIWYG editor for the InputHTML form elemement partial plus other handy features.
    *
+   * @class InputHTML
+   * @constructor
    * @param {HTMLElement} element
    *   The <b>.inputhtml</b> element to work with.
-   * @returns {InputHTML}
    */
   function InputHTML(element) {
+
+    /**
+     * The form's textarea, contains the HTML source.
+     *
+     * @property textarea
+     * @type HTMLElement
+     */
     this.textarea = element.children[1].children[1];
+
+    /**
+     * The <code><div></code> wrapping the WYSIWYG buttons.
+     *
+     * @property editor
+     * @type HTMLElement
+     */
     this.editor   = element.children[2];
+
+    /**
+     * The content editable <code><div></code>.
+     *
+     * @property content
+     * @type HTMLElement
+     */
     this.content  = this.editor.children[0].children[0];
+
+    // Enhance the current element.
     this.init(element);
   }
 
@@ -50,7 +77,9 @@
     /**
      * Copy the content of the content editable element back into the textarea.
      *
-     * @returns {InputHTML}
+     * @method copyToTextarea
+     * @chainable
+     * @return {InputHTML}
      */
     copyToTextarea: function () {
       this.textarea.value = this.content.innerHTML;
@@ -60,9 +89,11 @@
     /**
      * React on focus changes.
      *
+     * @method focus
+     * @chainable
      * @param {Event} event
      *   The focus event.
-     * @returns {InputHTML}
+     * @return {InputHTML}
      */
     focus: function (event) {
       event.preventDefault();
@@ -74,9 +105,11 @@
     /**
      * Initialize <b>.inputhtml</b> element.
      *
+     * @method init
+     * @chainable
      * @param {HTMLElement} element
      *   The element to initialize.
-     * @returns {InputHTML}
+     * @return {InputHTML}
      */
     init: function (element) {
       // Copy textarea's content into our content area.
@@ -98,6 +131,8 @@
       // Use this to print an HTMLElement to the console!
       //console.dir(element);
       //
+      // How to document: http://yui.github.io/yuidoc/syntax/index.html
+      //
       // Helpful code: https://github.com/jakiestfu/Medium.js/blob/master/medium.js
       //
       // Remember IE9+ support!
@@ -109,9 +144,11 @@
     /**
      * React on keydown changes.
      *
+     * @method keydown
+     * @chainable
      * @param {Event} event
      *   The focus event.
-     * @returns {InputHTML}
+     * @return {InputHTML}
      */
     keydown: function (event) {
       event.preventDefault();
@@ -123,9 +160,11 @@
     /**
      * React on keyup changes.
      *
+     * @method keyup
+     * @chainable
      * @param {Event} event
      *   The focus event.
-     * @returns {InputHTML}
+     * @return {InputHTML}
      */
     keyup: function (event) {
       event.preventDefault();
@@ -137,7 +176,7 @@
   };
 
   /**
-   * Attach InputHTML to the MovLib modules.
+   * Attach InputHTML to the MovLib modules namespace.
    *
    * @param {HTMLCollection} context
    *   The context we are currently working with.
