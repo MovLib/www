@@ -142,7 +142,6 @@
       if (!this.modules[name]) {
         var script    = document.createElement("script");
         script.async  = true;
-        script.defer  = true;
         script.src    = url;
         script.onload = onloadCallback;
         document.body.appendChild(script);
