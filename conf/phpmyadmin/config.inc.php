@@ -30,7 +30,7 @@
 // Server: localhost
 $i = 1;
 $cfg["Servers"][$i]["verbose"]      = "MovLib";
-$cfg["Servers"][$i]["host"]         = "p:localhost";
+$cfg["Servers"][$i]["host"]         = "localhost";
 $cfg["Servers"][$i]["port"]         = "";
 $cfg["Servers"][$i]["socket"]       = "/run/mysqld/mysqld.sock";
 $cfg["Servers"][$i]["connect_type"] = "socket";
