@@ -163,12 +163,16 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     global $db;
     $queries = $scripts = null;
 
+    // If no scripts where specified for import Import all available scripts.
     if (empty($scriptNames)) {
       $truncate = false;
       $scripts  = $this->databaseScripts;
     }
+    // Otherwise go through all specified scripts and check if they are available.
     else {
+      // Be sure to truncate if we're importing some specific scripts.
       $truncate = true;
+
       foreach ($scriptNames as $scriptName) {
         try {
           $scripts[$scriptName] = $this->databaseScripts[$scriptName];
@@ -179,18 +183,24 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       }
     }
 
+    // Build the queries for all scripts.
     if (!empty($scripts)) {
       foreach ($scripts as $table => $script) {
         $this->write("Importing database data for table '{$table}' ...");
+
+        // We're only truncating if we're importing specific scripts.
         if ($truncate === true) {
           $queries .= "TRUNCATE TABLE `{$table}`;";
         }
+
+        // Concatenate all scripts to one singel big query.
         if (($queries .= file_get_contents($script)) === false) {
           throw new FileSystemException("Couldn't read '{$script}'!");
         }
       }
     }
 
+    // Only continue if we have at least a single query to execute.
     if (!empty($queries)) {
       try {
         $db->transactionStart();
@@ -552,10 +562,12 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     $this->progressAdvance();
     // We have to execute this in the shell directly, because our database object always tries to connect to the default
     // database, which might not exist yet!
-    sh::execute("mysql < {$kernel->documentRoot}/conf/mariadb/movlib.sql");
+    if (sh::execute("mysql < {$kernel->documentRoot}/conf/mariadb/movlib.sql", $output) === false) {
+      throw new \LogicException("Couldn't import database schema: " . trim($output[0]));
+    }
     $this->progressAdvance();
     foreach ($tasks as $task) {
-      $this->{$task}()->progressAdvance();
+      $this->$task()->progressAdvance();
     }
     return $this->progressFinish()->write("Successfully imported seed data!", self::MESSAGE_TYPE_INFO);
   }

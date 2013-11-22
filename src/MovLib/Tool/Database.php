@@ -101,10 +101,12 @@ class Database extends \MovLib\Data\Database {
     $error  = $mysqli->multi_query($queries);
     do {
       if ($error === false) {
+        $error = $mysqli->error;
+        $errno = $mysqli->errno;
         if ($foreignKeyChecks === false) {
           $this->query("SET foreign_key_checks = 1");
         }
-        throw new DatabaseException("Execution of multiple queries failed", $mysqli->error, $mysqli->errno);
+        throw new DatabaseException("Execution of multiple queries failed", $error, $errno);
       }
       $mysqli->use_result();
       if (($more = $mysqli->more_results())) {
