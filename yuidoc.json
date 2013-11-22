@@ -1,0 +1,14 @@
+{
+  "name": "MovLib, the free movie library.",
+  "description": "API documentation of the MovLib JavaScript framework.",
+  "version": "0.0.1-dev",
+  "url": "https://movlib.org/",
+  "logo": "https://movlib.org/asset/img/logo/vector.svg",
+  "options": {
+    "linkNatives": "true",
+    "attributesEmit": "false",
+    "selleck": "false",
+    "paths": "./public/js",
+    "outdir": "./public/doc/js"
+  }
+}
