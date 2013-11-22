@@ -8,7 +8,7 @@
     "linkNatives": "true",
     "attributesEmit": "false",
     "selleck": "false",
-    "paths": "./public/js",
-    "outdir": "./public/doc/js"
+    "paths": "public/asset/js",
+    "outdir": "public/doc/js"
   }
 }
