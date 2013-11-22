@@ -27,8 +27,6 @@
 
 source        :
               - "./bin"
-              - "./bootstrap.php"
-              - "./main.php"
               - "./src"
               - "./test"
 destination   : "./public/doc"
