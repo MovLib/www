@@ -117,7 +117,7 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
       }
       $this->init($title);
 
-      $this->inputImage = new InputImage("poster", $i18n->t("Poster"), $this->image);
+      $this->inputImage = new InputImage("poster", $i18n->t("Poster"), $this->image, [ "required" ]);
 
       $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description);
 

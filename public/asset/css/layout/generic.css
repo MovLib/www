@@ -160,7 +160,9 @@
   clear: both;
 }
 
-.hidden {
+.hidden,
+#js .jshidden,
+#nojs .nojshidden {
   display: none;
   visibility: hidden;
 }

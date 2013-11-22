@@ -37,8 +37,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
 
   /**
-   * The text's allowed HTML tag as associative array.
-   * The keys consist of the tag names.
+   * Associative array containing the allowed HTML tags.
    *
    * @var array
    */
@@ -51,15 +50,33 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   ];
 
   /**
-   * Configuration flag to determine if external links are allowed.
+   * Whether external links are allowed or not for anchor elements.
    *
    * @var boolean
    */
   protected $allowExternalLinks = false;
 
   /**
-   * The HTML tags that don't need ending tags.
-   * The keys consist of the tag names.
+   * Whether we are inside a <code><blockqutoe></code> or not.
+   *
+   * @var boolean
+   */
+  protected $blockquote = false;
+
+  /**
+   * Associative array containing all HTML tags that aren't allowed within a <code><blockquote></code>.
+   *
+   * @var array
+   */
+  protected $blockquoteDisallowedTags = [
+    "blockquote" => false,
+    "figure"     => false,
+    "ul"         => false,
+    "ol"         => false,
+  ];
+
+  /**
+   * Associative array to identify empty HTML tags.
    *
    * @var array
    */
@@ -69,21 +86,21 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   ];
 
   /**
-   * The text's translated placeholder.
+   * Used for some elements that have a required last child element.
    *
-   * @var string
+   * @var null|\tidyNode
    */
-  protected $placeholder;
+  protected $lastChild;
 
   /**
-   * Configuration flag to determine if the text is required.
+   * The level within the HTML text DOM we are currently traversing.
    *
-   * @var boolean
+   * @var integer
    */
-  protected $required = false;
+  protected $level = 0;
 
   /**
-   * The CSS classes the user can apply.
+   * Associative array to identify allowed user CSS classes.
    *
    * @var array
    */
@@ -94,14 +111,14 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   ];
 
   /**
-   * The text's escaped content.
+   * The text's HTML encoded content.
    *
    * @var null|string
    */
   public $value;
 
   /**
-   * The text's raw content.
+   * The text's HTML decoded content.
    *
    * @var null|string
    */
@@ -133,12 +150,9 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   public function __construct($id, $label, $value = null, $placeholder = null, array $attributes = null, $help = null, $helpPopup = true) {
     global $kernel;
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
-    unset($this->attributes["name"]);
-    unset($this->attributes["required"]);
-    $this->attributes["aria-multiline"]  = "true";
-    $this->attributes["contenteditable"] = "true";
-    $this->attributes["role"]            = "textbox";
-    $this->placeholder                   = $placeholder;
+    $kernel->javascripts[]              = "InputHTML";
+    $this->attributes["aria-multiline"] = "true";
+
     if (!empty($_POST[$this->id])) {
       $this->value    = $kernel->htmlEncode($_POST[$this->id]);
       $this->valueRaw = $_POST[$this->id];
@@ -147,34 +161,70 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       $this->value    = $value;
       $this->valueRaw = $kernel->htmlDecode($value);
     }
-    $kernel->javascripts[] = "InputHTML";
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function render() {
-    global $i18n, $kernel;
-    $this->addClass("inputhtml-content", $this->attributes);
-    if (!$this->placeholder) {
-      $this->placeholder = $i18n->t("Enter the “{0}” text here …", [ $this->label ]);
-    }
-//    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->contentRaw}</textarea></p>";
-    return "{$this->help}<fieldset><legend>{$this->label}</legend><div class='inputhtml'><div{$this->expandTagAttributes($this->attributes)}>{$this->valueRaw}</div><span aria-hidden='true' class='placeholder'>{$this->placeholder}</span></div></fieldset>";
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+  /**
+   * @inheritdoc
+   */
+  protected function render() {
+    global $i18n;
 
+    // We need to alter the div attributes in order to make them valid for this kind of HTML element. The div element
+    // also needs a class for easy identification via CSS and JS whilst the textarea doesn't need anything because the
+    // tag is more than sufficient for identification.
+    $divAttributes                    = $this->attributes;
+    $divAttributes["contenteditable"] = "true";
+    $divAttributes["role"]            = "textbox";
+    $this->addClass("content", $divAttributes);
+
+    // The name attribute is always present for the textarea but nonsense for our div.
+    unset($divAttributes["id"], $divAttributes["name"]);
+
+    // The required attribute isn't allowed on our div element.
+    if (($key = array_search("required", $divAttributes)) !== false) {
+      unset($divAttributes[$key]);
+    }
+
+    // Use default placeholder text if none was provided.
+    if (!isset($this->attributes["placeholder"])) {
+      $this->attributes["placeholder"] = $i18n->t("Enter “{0}” text here …", [ $this->label ]);
+    }
+
+    // Build the editor based on available tags.
+    $editor = null;
+
+    return
+      "{$this->help}<fieldset class='inputhtml'>" .
+        "<legend>{$this->label}</legend>" .
+        // The jshidden class uses display:none to hide its elements, this means that these elements aren't part of the
+        // DOM tree and aren't parsed by user agents.
+        "<p class='jshidden'><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->valueRaw}</textarea></p>" .
+        // Same situation above but for user agents with disabled JavaScript.
+        "<div class='editor nojshidden'>{$editor}" .
+          // The content for the editable div is copied over from the textarea by the JS module. But we directly
+          // include the placeholder because it's very short.
+          "<div class='wrapper'><div{$this->expandTagAttributes($divAttributes)}></div><span aria-hidden='true' class='placeholder'>{$this->attributes["placeholder"]}</span></div>" .
+        "</div>" .
+      "</fieldset>"
+    ;
+  }
+
+  /**
+   * Allow <code><blockquote></code> elements.
+   *
+   * @return $this
+   */
   public function allowBlockqoutes() {
     $this->allowedTags["blockquote"] = "&lt;blockquote&gt;";
     return $this;
   }
 
   /**
-   * Configures the text to allow external links.
+   * Allow external links.
    *
    * @return $this
    */
@@ -184,38 +234,37 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   }
 
   /**
-   * Configures the text to allow headings, starting at <code>2</code>.
+   * Allow <code><h$level></code> to <code><h6></code> headings.
    *
-   * @param int $level
+   * @param integer $level [optional]
    *   The starting level of the headings. Allowed values are <code>2</code> to <code>6</code>. Defaults to <code>3</code>.
    * @return $this
    */
   public function allowHeadings($level = 3) {
-    if ($level >= 2) {
-      for ($i = $level; $i <= 6; ++$i) {
-        $this->allowedTags["h{$i}"] = "&lt;h{$i}&gt;";
-      }
+    for ($i = $level; $i <= 6; ++$i) {
+      $this->allowedTags["h{$i}"] = "&lt;h{$i}&gt;";
     }
     return $this;
   }
 
   /**
-   * Configures the text to allow images.
+   * Allow images.
    *
    * @return $this
    */
   public function allowImages() {
-    $this->allowedTags["figure"]     = "&lt;figure&gt;";
+    $this->allowedTags["figure"] = "&lt;figure&gt;";
     return $this;
   }
 
   /**
-   * Configures the text to be required.
+   * Allow unordered and ordered lists.
    *
    * @return $this
    */
-  public function required() {
-    $this->required = true;
+  public function allowLists() {
+    $this->allowedTags["ul"] = "&lt;ul&gt;";
+    $this->allowedTags["ol"] = "&lt;ol&gt;";
     return $this;
   }
 
@@ -226,12 +275,13 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    */
   public function validate() {
     global $i18n, $kernel;
+
     // Validate if we have input and throw an Exception if the field is required.
     if (empty($this->valueRaw)) {
-      if ($this->required === true) {
+      if (in_array("required", $this->attributes)) {
         throw new ValidationException($i18n->t("“{0}” text is mandatory.", [ $this->label ]));
       }
-      $this->value = "";
+      $this->value = null;
       return $this;
     }
 
@@ -248,152 +298,81 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       throw new ValidationException($i18n->t("Invalid HTML in “{0}” text.", [ $this->label ]));
     }
 
-    // Traverse through the constructed document and validate its contents.
-    $level      = 0;
     /* @var $node \tidyNode */
     $node           = null;
-    $nodes          = [ $level => [ $tidy->body()]];
+    $nodes          = [ $this->level => [ $tidy->body() ] ];
     $endTags        = [];
     $output         = null;
-    $blockquote     = false;
-    $figure         = false;
-    $immediateChild = null;
-    do {
-      while (!empty($nodes[$level])) {
-        // Retrieve the next node from the stack.
-        $node = array_shift($nodes[$level]);
 
-        if ($level > 0) {
-          // Validate tag and attributes.
+    // Traverse through the constructed document and validate its contents.
+    do {
+      while (!empty($nodes[$this->level])) {
+        // Retrieve the next node from the stack.
+        $node = array_shift($nodes[$this->level]);
+
+        if ($this->level > 0) {
+          // If we encounter a text node, simply encode its contents and continue with the next node.
           if ($node->type === TIDY_NODETYPE_TEXT) {
-            // Clean text and append to output.
             $output .= "{$kernel->htmlEncode($node->value)}";
           }
+          // If we encounter an allowed HTML tag validate it.
           elseif (isset($this->allowedTags[$node->name])) {
-            // If we are already nested in a <blockquote>, ensure that it doesn't contain <blockquote> or <figure> there.
-            if ($blockquote === true && ($node->name == "blockquote" || $node->name == "figure")) {
-              throw new ValidationException($i18n->t(
-                "The “{0}” text contains the invalid element {1} inside a quotation or a figure.",
-                [ $this->label, "<code><{$node->name}></code>" ],
-                [ "comment" => "{0} is the name of the text, {1} is the name of the invalid element. Both should not be translated." ]
-              ));
+            // If we're already inside <blockquote>, ensure it doesn't contain any disallowed elements.
+            if ($this->blockquote === true && !isset($this->blockquoteDisallowedTags[$node->name])) {
+              throw new ValidationException($i18n->t("Found disallowed tag {0} in quotation.", [ "<code>&lt;{$node->name}&gt;</code>" ]));
+            }
+
+            // Directly take care of the most common element that has allowed attributes, the content is validated in
+            // the next iteration.
+            if ($node->name == "p") {
+              $node->name = "p{$this->validateUserClasses($node)}";
             }
             // If there are more complex validations to be done for the tag, invoke the corresponding method.
-            if (method_exists($this, "validateTag{$node->name}")) {
-              $node->name = $this->{"validateTag{$node->name}"}($node);
+            else {
+              $methodName = "validate" . ucfirst($node->name);
+              if (method_exists($this, $methodName)) {
+                $node->name = $this->$methodName($node);
+              }
             }
+
             // Stack a closing tag to the current level, if needed.
             if (!isset($this->emptyTags[$node->name])) {
-              $endTags[$level][] = "</{$node->name}>";
+              $endTags[$this->level][] = "</{$node->name}>";
             }
-            // Append a starting tag of the current node to the output.
+
+            // Append a starting tag including valid attributes (if any) of the current node to the output.
             $output .= "<{$node->name}>";
-
-            // We only allow <figure> elements with an <img> as first and a <figcaption> as second child.
-            if ($node->name == "figure") {
-              $alt = null;
-              if (count($node->child) !== 2) {
-                throw new ValidationException($i18n->t(
-                  "The “{0}” text contains an invalid figure.",
-                  [ $this->label ],
-                  [ "comment" => "{0} is the name of the text, which should not be translated." ]
-                ));
-              }
-              // Validate caption.
-              if ($node->child[1]->name == "figcaption") {
-                $immediateChild = $this->validateTextOnlyOrAnchor($node->child[1]);
-                /** @todo double check */
-                $alt = $kernel->htmlEncode(strip_tags(implode("", $node->child[1]->child)));
-              }
-              else {
-                throw new ValidationException($i18n->t(
-                  "The “{0}” text contains a figure without a caption.",
-                  [ $this->label ],
-                  [ "comment" => "{0} is the name of the text, which should not be translated." ]
-                ));
-              }
-
-              // Validate image.
-              if ($node->child[0]->name == "img") {
-                $node->child[0]->attribute["alt"] = $alt;
-                $immediateChild = "<{$this->validateTagImg($node->child[0])}>{$immediateChild}";
-              }
-              else {
-                throw new ValidationException($i18n->t(
-                  "The “{0}” text contains a figure without an image.",
-                  [ $this->label ],
-                  [ "comment" => "{0} is the name of the text, which should not be translated." ]
-                ));
-              }
-              // Delete all children, since they are already validated.
-              $node->child = null;
-              // Increase the level, since we need an ending tag, but have no children.
-              $level++;
-            }
-
-            // We only allow <blockquote> elements with a <cite> element right before the end tag.
-            // Remove the cite element and validate it separately.
-            if ($node->name == "blockquote") {
-              $blockquote     = true;
-              $lastChildNode  = array_pop($node->child);
-
-              // Do not allow quotations without text.
-              if (count($node->child) < 1) {
-                throw new ValidationException($i18n->t(
-                  "The “{0}” text contains an empty quotation.",
-                  [ $this->label, "<code><{$node->name}></code>" ],
-                  [ "comment" => "{0} is the name of the text, which should not be translated." ]
-                ));
-              }
-
-              // If there is no <cite> as last child of the <blockquote>, abort.
-              if ($lastChildNode->name != "cite") {
-                throw new ValidationException($i18n->t(
-                  "The “{0}” text contains a quotation without a supplied source.",
-                  [ $this->label, "<code><{$node->name}></code>" ],
-                  [ "comment" => "{0} is the name of the text, which should not be translated." ]
-                ));
-              }
-              // Otherwise validate, that the <cite> only contains anchors or plain text.
-              else {
-                $immediateChild = $this->validateTextOnlyOrAnchor($lastChildNode);
-              }
-            }
           }
           // Encountered a tag that is not allowed, abort.
           else {
-            $allowedTags = implode(" ", array_values($this->allowedTags));
-            throw new ValidationException($i18n->t(
-              "The “{0}” text contains invalid HTML tags. Allowed tags are: {1}",
-              [ $this->label, "<code>{$allowedTags}</code>" ],
-              [ "comment" => "{0} is the name of the text, {1} is a list of allowed HTML tags. Both should not be translated." ]
-            ));
+            $allowedTags = implode(" ", $this->allowedTags);
+            throw new ValidationException($i18n->t("Found disallowed HTML tags, allowed tags are: {1}", [ "<code>{$allowedTags}</code>" ]));
           }
         }
 
         // Stack the child nodes to the next level if there are any.
         if (!empty($node->child)) {
-          $nodes[++$level] = $node->child;
+          $nodes[++$this->level] = $node->child;
         }
       }
 
-      // There are no more nodes to process in this level (while loop above has already handled them). Go one level up and proceed.
-      $level--;
-      // Append all ending tags of the current level to the output, if we are higher than level 0 and if there are any.
-      if ($level > 0 && isset($endTags[$level])) {
-        while (($endTag = array_pop($endTags[$level]))) {
-          if ($endTag == "</blockquote>" || $endTag == "</figure>") {
-            $blockquote           = false;
-            $output              .= "{$immediateChild}{$endTag}";
-            $immediateChild       = null;
-          }
-          else {
-            $output .= $endTag;
-          }
+      // There are no more nodes to process in this level (while loop above has already handled them). Go one level down
+      // and proceed with the next node.
+      $this->level--;
+
+      // Append all ending tags of the current level to the output, if we are greater than level 0 and if there are any.
+      if ($this->level > 0 && isset($endTags[$this->level])) {
+        while (($endTag = array_pop($endTags[$this->level]))) {
+          $this->blockquote = false;
+          $output          .= "{$this->lastChild}{$endTag}";
+          $this->lastChild  = null;
         }
       }
     }
-    while ($level > 0);
+    while ($this->level > 0);
+
+    // Reset the level to its default state.
+    $this->level = 0;
 
     // Parse and format the validated HTML output.
     // Please note that this error is impossible to provoke from the outside.
@@ -413,6 +392,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
     // Replace redundant newlines, normalize UTF-8 characters and encode HTML characters.
     $this->value = $kernel->htmlEncode(\Normalizer::normalize(str_replace("\n\n", "\n", tidy_get_output($tidy))));
+
     return $this;
   }
 
@@ -426,7 +406,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @return string
    *   The tag name with the validated attributes.
    */
-  protected function validateTagA($node) {
+  protected function validateA($node) {
     global $i18n, $kernel;
     $attributes = [];
     $validateURL = null;
@@ -508,104 +488,118 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   }
 
   /**
-   * Validates and sanitizes HTML images.
+   * Validate <code><blockquote></code>.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @param \tidyNode $node
-   *   The image.
+   *   The blockquote node to validate.
    * @return string
-   *   The tag name with the validated attributes.
+   *   The starting tag including allowed attributes.
+   * @throws \MovLib\Exception\ValidationException
    */
-  protected function validateTagImg($node) {
-    global $i18n, $kernel;
-    $attributes = [];
+  protected function validateBlockquote($node) {
+    global $i18n;
+    $this->blockquote = true;
 
-    // Check if the image contains the required <code>src</code> attribute.
-    if (!isset($node->attribute) || !isset($node->attribute["src"])) {
-      throw new ValidationException($i18n->t(
-        "Empty image {0} attribute in “{1}” text.",
-        [ "<code>src</code>", $this->label ],
-        [ "comment" => "{0} is <code>src</code>, {1} is the name of the text. Both should not be translated." ]
+    // Do not allow quotations without text.
+    if (count($node->child) < 1) {
+      throw new ValidationException(
+        $i18n->t("The “{0}” text contains an empty quotation.",
+        [ $this->label, "<code>&lt;{$node->name}&gt;</code>" ]
       ));
     }
 
-    // Validate the <code>src</code> URL.
-    if (
-          filter_var($node->attribute["src"], FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED) === false
-          || ($url = parse_url($node->attribute["src"])) === false
-          || !isset($url["host"])
-        ) {
-      throw new ValidationException($i18n->t(
-        "Invalid image {0} attribute in “{1}” text.",
-        [ "<code>src</code>", $this->label ],
-        [ "comment" => "{0} is <code>src</code>, {1} is the name of the text. Both should not be translated." ]
-      ));
-    }
+    /* @var $lastChild \tidyNode */
+    $lastChild = array_pop($node->child);
 
-    // Check if the image comes from our server.
-    if (strpos($url["host"], $kernel->domainStatic) === false) {
-      throw new ValidationException($i18n->t(
-        "Only {0} images are allowed in “{1}” text.",
-        [ $kernel->siteName, $this->label ],
-        [ "comment" => "{0} is our site name, {1} is the name of the text. Both should not be translated." ]
-      ));
+    // Validate that <cite> only contains text and/or anchor nodes.
+    if ($lastChild->name == "cite") {
+      $this->lastChild = $this->validateTextOnlyWithOptionalAnchors($lastChild);
     }
-
-    // Check if the image exists and set <code>src</code>, <code>width</code> and <code>height</code> accordingly.
-    try {
-      $image = getimagesize("{$kernel->documentRoot}/public/upload{$url["path"]}");
-    }
-    catch (\ErrorException $e) {
-      throw new ValidationException($i18n->t(
-        "Image doesn’t exist in “{0}” text ({1}).",
-        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["src"])}</code>" ],
-        [ "comment" => "{0} is the name of the text, {1} is the value of the image’s src attribute. Both should not be translated." ]
-      ));
-    }
-    $url["path"]          = isset($url["path"]) ? $url["path"] : "/";
-    $attributes["src"]    = $kernel->htmlEncode("//{$url["host"]}{$url["path"]}");
-    $attributes["width"]  = $image[0];
-    $attributes["height"] = $image[1];
-
-    // Encode the <code>alt</code> attribute or fill in an empty one if it wasn't set.
-    if (isset($node->attribute["alt"])) {
-      $attributes["alt"] = $kernel->htmlEncode($node->attribute["alt"]);
-    }
+    // A <blockquote> without a <cite> is invalid.
     else {
-      $attributes["alt"] = "";
+      throw new ValidationException(
+        $i18n->t("The “{0}” text contains a quotation without source.",
+        [ $this->label, "<code>&lt;{$node->name}&gt;</code>" ]
+      ));
     }
 
-    ksort($attributes);
-
-    return "img{$this->expandTagAttributes($attributes)}";
+    return "blockquote{$this->validateUserClasses($node)}";
   }
 
   /**
-   * Validates and sanitizes HTML paragraphs.
+   * Validate figure.
    *
    * @global \MovLib\Data\I18n $i18n
    * @param \tidyNode $node
-   *   The paragraph.
+   *   The figure node to validate.
    * @return string
-   *   The tag name with the validated attributes.
+   *   The starting tag including allowed attributes.
+   * @throws ValidationException
    */
-  protected function validateTagP($node) {
+  protected function validateFigure($node) {
     global $i18n;
-    $class = null;
-    // Validate that the <code>class</code> attribute only contains our user defined CSS classes.
-    if (isset($node->attribute) && isset($node->attribute["class"]) && !isset($this->userClasses[$node->attribute["class"]])) {
-      $classes = implode(" ", array_keys($this->userClasses));
-      throw new ValidationException($i18n->t(
-        "Invalid {0} attribute found in “{1}” text, allowed values are: {2}",
-        [ "<code>class</code>", $this->label, "<code>{$classes}</code>" ],
-        [ "comment" => "{0} is <code>class</code>, {1} is the name of the text, {2} is a list of allowed class values. All those should not be translated." ]
-      ));
+
+    // Always communicate the <figure> element as image, the actual implementation isn't the user's concern and might
+    // change with future web technologies.
+    if (count($node->child) !== 2 || $node->child[0]->name != "img" || empty($node->child[0]->attribute["src"])) {
+      throw new ValidationException($i18n->t("The image is mandatory and cannot be empty."));
     }
-    elseif (!empty ($node->attribute["class"])) {
-      $class = " class='{$node->attribute["class"]}'";
+    // Of course we can communicate the caption as seperate element, as it's visible to the user.
+    elseif ($node->child[1]->name != "figcaption" || empty($node->child[1]->child)) {
+      throw new ValidationException($i18n->t("The image caption is mandatory and cannot be empty."));
     }
-    return "p{$class}";
+
+    // Use the caption's content as alt attribute for the image.
+    $node->child[0]->attribute["alt"] = implode("", $node->childe[1]->child);
+
+    // Validate the image and caption.
+    $this->lastChild = "<{$this->validateImage($node->child[0])}>{$this->validateTextOnlyWithOptionalAnchors($node->child[1])}";
+
+    // Delete all children, since they are already validated.
+    $node->child = null;
+
+    // Increase the level, since we need an ending tag, but have no children.
+    $this->level++;
+
+    return "figure{$this->validateUserClasses($node)}";
+  }
+
+  /**
+   * Validate image.
+   *
+   * @todo We have to keep reference of images in texts in order to update their cache buster string and remove them
+   *       if the image is deleted.
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @param \tidyNode $node
+   *   The image node to validate.
+   * @return string
+   *   The starting tag including allowed attributes.
+   * @throws \MovLib\Exception\ValidationException
+   */
+  protected function validateImage($node) {
+    global $i18n, $kernel;
+
+    // Validate the URL.
+    if (($url = parse_url($node->attribute["src"])) === false || !isset($url["host"])) {
+      throw new ValidationException($i18n->t("Image URL seems to be invalid."));
+    }
+
+    // If a host is present check if it's from MovLib.
+    if (isset($url["host"]) && $url["host"] != $kernel->domainStatic && strpos($url["host"], ".{$kernel->domainDefault}") === false) {
+      throw new ValidationException($i18n->t("Only images from {0} are allowed.", [ $kernel->siteName ]));
+    }
+
+    // Check that the image actually exists and set width and height.
+    try {
+      $attributes = getimagesize("{$kernel->documentRoot}/public{$url["path"]}")[3];
+    }
+    catch (\ErrorException $e) {
+      throw new ValidationException($i18n->t("Image doesn’t exist ({1}).", [ "<code>{$node->attribute["src"]}</code>" ]));
+    }
+
+    return "img {$attributes} src='//{$kernel->domainStatic}{$url["path"]}'";
   }
 
   /**
@@ -615,10 +609,35 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @param \tidyNode $node
    *   The node to validate.
    * @return string
-   *   The tag with the validated contents.
+   *   The tag with the validated content.
    */
-  protected function validateTextOnlyOrAnchor($node) {
-    return "<$node->name>Not implemented yet.</$node->name>";
+  protected function validateTextOnlyWithOptionalAnchors($node) {
+    return "<{$node->name}>Not implemented yet.</{$node->name}>";
+  }
+
+  /**
+   * Validate that the node only contains allowed user CSS classes.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param \tidyNode $node
+   *   The node to validate.
+   * @return null|string
+   *   The expanded class attribute if present, otherwise <code>NULL</code>.
+   * @throws \MovLib\Exception\ValidationException
+   */
+  protected function validateUserClasses($node) {
+    global $i18n;
+    if (isset($node->attribute) && !empty($node->attribute["class"])) {
+      if (!isset($this->userClasses[$node->attribute["class"]])) {
+        throw new ValidationException($i18n->t(
+          "Disallowed CSS classes in “{0}” text, allowed values are: {2}",
+          [ $this->label, implode(" ", array_keys($this->userClasses)) ]
+        ));
+      }
+      else {
+        return " class='{$node->attribute["class"]}'";
+      }
+    }
   }
 
 }

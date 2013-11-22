@@ -109,7 +109,11 @@ class Page extends \MovLib\Presentation\AbstractPage {
    */
   public function formatFooterSystemLanguage($languageCode) {
     global $i18n, $kernel;
-    return [ "//{$languageCode}.{$kernel->domainDefault}{$kernel->requestURI}", \Locale::getDisplayLanguage($languageCode, $i18n->languageCode) ];
+    $attributes = null;
+    if ($languageCode != $i18n->languageCode) {
+      $attributes["lang"] = $languageCode;
+    }
+    return [ "//{$languageCode}.{$kernel->domainDefault}{$kernel->requestURI}", \Locale::getDisplayLanguage($languageCode, $i18n->languageCode), $attributes ];
   }
 
   /**
@@ -218,10 +222,6 @@ class Page extends \MovLib\Presentation\AbstractPage {
         "</div>" .
         "<div class='row'>{$footerNavigation}</div>" .
       "</div></footer>"
-//      "<script id='js-settings' type='application/json'>" . json_encode($this->scripts) . "</script>"
-      // @todo Minify and combine!
-//      "<script src='{$GLOBALS["movlib"]["static_domain"]}js/jquery.js'></script>" .
-//      "<script src='{$GLOBALS["movlib"]["static_domain"]}js/movlib.js?" . rand() . "'></script>"
     ;
   }
 

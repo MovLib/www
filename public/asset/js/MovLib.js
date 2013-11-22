@@ -1,21 +1,20 @@
 /*!
- * This file is part of {@link Expression prj is undefined on line 2, column 48 in Templates/Licenses/license-movlib.txt. Expression prj is undefined on line 2, column 66 in Templates/Licenses/license-movlib.txt.}.
+ * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link Expression prj is undefined on line 4, column 52 in Templates/Licenses/license-movlib.txt. Expression prj is undefined on line 4, column 67 in Templates/Licenses/license-movlib.txt.}.
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
- * Expression prj is undefined on line 6, column 20 in Templates/Licenses/license-movlib.txt. is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
  * version.
  *
- * Expression prj is undefined on line 10, column 20 in Templates/Licenses/license-movlib.txt. is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with Expression prj is undefined on line 13, column 104 in Templates/Licenses/license-movlib.txt..
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
-/* jshint browser:true, globalstrict:true */
-/* global MovLib:true */
+/* jshint browser:true */
 
 /**
  * The main file of the MovLib JavaScript framework that is loaded on every page load and takes care of loading any
@@ -27,72 +26,133 @@
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-
-// We enforce strict behaviour in all our modules and we aren't using any third-party scripts.
-"use strict";
-
-/**
- * The global MovLib object.
- *
- * @class
- * @type MovLib
- */
-function MovLib() {
-  // We only extract the body element once from the DOM, this isn't going to be removed at any point.
-  this.bodyTag = document.getElementsByTagName("body")[0];
-
-  // Object to keep reference of already loaded modules.
-  this.modules = {};
-
-  // Directly parse the document supplied settings on initialization.
-  this.settings = JSON.parse(document.getElementById("js-settings").innerHTML);
-
-  // Initialize all basic page features.
-  this.init();
-
-  // Execute all modules of this presentation if there are any.
-  if (this.settings.modules) {
-    this.loadAndExecuteModules(this.settings.modules);
-  }
-}
-
-MovLib.prototype = {
-
-  init: function () {
-
-  },
+(function (window, document) {
+  // The first thing we do is changing the id attribute of the html element, this is necessary for all our CSS styles.
+  document.getElementsByTagName("html")[0].id = "js";
 
   /**
-   * Load and execute all given modules.
+   * The global MovLib object.
    *
-   * @param {Object} modules
-   *   Object containing all modules that should be loaded, where the key is the module's name and the value the
-   *   absolute URL to the module's file.
-   * @param {Object} context [optional]
-   *   The context that should be passed to the module on execution. Defaults to the complete document.
+   * No need to wait for the DOM to be ready (and implement highly complicated code to do so) because our scripts are
+   * always included directly above the closing body. This ensures that the DOM is actually already present on the client
+   * side when this script is invoke. Makes life much easier and loading of scripts much more reliable.
+   *
    * @returns {MovLib}
    */
-  loadAndExecuteModules: function (modules, context) {
-    var moduleOnload = function () {
-      self.modules[this.module](context || document);
-    };
-    var self = this;
-    var script;
+  function MovLib() {
 
-    for (var module in modules) {
-      if (!this.modules[module]) {
-        script        = document.createElement("script");
-        script.module = module;
-        script.src    = modules[module];
-        script.onload = moduleOnload;
-        this.body.appendChild(script);
-      }
-      else {
-        this.modules[module](context || document);
-      }
+    /**
+     * Object to keep reference of already loaded modules.
+     *
+     * This is kept public because our modules export themselves, unlike you're used to from other systems.
+     *
+     * @type Object
+     */
+    this.modules = {};
+
+    /**
+     * The global JavaScript settings object.
+     *
+     * @type Object
+     */
+    this.settings = JSON.parse(document.getElementById("js-settings").innerHTML);
+
+    // Initialize all basic page features.
+    this.init();
+
+    // Load and execute all modules of this presentation if there are any.
+    if (this.settings.modules) {
+      this.executeModules(this.settings.modules, document);
     }
-
-    return this;
   }
 
-};
+  MovLib.prototype = {
+
+    /**
+     * Add an event listener to the given HTMLElement.
+     *
+     * @param {HTMLElement} element
+     *   The element on which we should listen for events.
+     * @param {Object} events
+     *   Object where the key is the event to listen for and the value the desired callback function.
+     * @returns {MovLib}
+     */
+    bind: function (element, events) {
+      for (var event in events) {
+        if (typeof event === "string") {
+          element.addEventListener(event, events[event], false);
+        }
+      }
+      return this;
+    },
+
+    init: function () {
+      // Anon helper function to load polyfills.
+      var load = function (name) {
+        this.loadModule(name, "//" + this.settings.domainStatic + "/asset/js/polyfill/" + name + ".js");
+      };
+
+      // Load cross-browser sham for classList support.
+      if (!("classList" in document.documentElement)) {
+        load.call(this, "classList");
+      }
+    },
+
+    /**
+     * Execute all given modules with the given context.
+     *
+     * Note that any module that wasn't loaded yet will be automatically loaded and executed.
+     *
+     * @param {Object} modules
+     *   The modules to execute.
+     * @param {HTMLCollection} context
+     *   The context we are currently working with.
+     * @returns {MovLib}
+     */
+    executeModules: function (modules, context) {
+      // The callback method if the module isn't loaded yet.
+      var execute = function (module) {
+        this.modules[module](context);
+      };
+
+      for (var module in modules) {
+        if (!this.modules[module]) {
+          this.loadModule(module, modules[module], execute.bind(this, module));
+        }
+        else {
+          this.modules[module](context);
+        }
+      }
+
+      return this;
+    },
+
+    /**
+     * Asynchronously load the given module.
+     *
+     * @param {String} name
+     *   The module's name.
+     * @param {String} url
+     *   The module's absolute URL (including scheme and hostname).
+     * @param {Function} onloadCallback [optional]
+     *   A function to call on the onload event of the inserted script tag.
+     * @returns {MovLib}
+     */
+    loadModule: function (name, url, onloadCallback) {
+      if (!this.modules[name]) {
+        var script    = document.createElement("script");
+        script.async  = true;
+        script.defer  = true;
+        script.src    = url;
+        script.onload = onloadCallback;
+        document.body.appendChild(script);
+      }
+      return this;
+    }
+
+  };
+
+  // Instantiate and export the global MovLib object.
+  window.MovLib = new MovLib();
+
+})(window, window.document);

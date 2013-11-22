@@ -160,6 +160,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
     }
 
     // Build the JavaScript settings JSON.
+    $kernel->javascriptSettings["domainStatic"] = $kernel->domainStatic;
     $c = count($kernel->javascripts);
     for ($i = 0; $i < $c; ++$i) {
       $kernel->javascriptSettings["modules"][$kernel->javascripts[$i]] = $kernel->getAssetURL($kernel->javascripts[$i], "js");
@@ -187,8 +188,8 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
       "</head>" .
       "<body id='{$this->id}' class='{$this->bodyClasses}'>" .
         "{$this->getHeader()}{$this->getWrappedContent()}{$this->getFooter()}" .
-      "<script id='js-settings' type='application/json'>{$jsSettings}</script>" .
-      "<script src='{$kernel->getAssetURL("MovLib", "js")}'></script>"
+        "<script id='js-settings' type='application/json'>{$jsSettings}</script>" .
+        "<script async src='{$kernel->getAssetURL("MovLib", "js")}'></script>"
     ;
   }
 
