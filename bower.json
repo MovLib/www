@@ -2,11 +2,6 @@
   "name": "MovLib",
   "version": "0.0.1-dev",
   "main": "main.php",
-  "dependencies": {
-    "bootstrap": "*",
-    "jquery": "*",
-    "jquery.localScroll": "*",
-    "jquery.toc": "*"
-  },
+  "dependencies": {},
   "private": true
 }
