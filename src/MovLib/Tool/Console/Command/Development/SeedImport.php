@@ -282,7 +282,9 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     $this->write("Importing ICU translations ...");
 
     // Prepare ICU environment variables.
-    sh::execute("icu-config --version", $version);
+    if (sh::execute("icu-config --version", $version) === false) {
+      throw new \LogicException("Couldn't execute `icu-config`, is ICU installed?");
+    }
     $version     = trim(strtr($version[0], ".", "-"));
     $source      = "/usr/local/src/icu-{$version}/source/data";
     $destination = "{$kernel->documentRoot}/private/icu";
