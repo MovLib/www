@@ -178,9 +178,11 @@
   /**
    * Attach InputHTML to the MovLib modules namespace.
    *
+   * @method
+   * @chainable
    * @param {HTMLCollection} context
    *   The context we are currently working with.
-   * @returns {MovLib}
+   * @return {MovLib}
    */
   MovLib.modules.InputHTML = function (context) {
     var elements = context.getElementsByClassName("inputhtml");
