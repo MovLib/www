@@ -329,7 +329,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
             }
             // If there are more complex validations to be done for the tag, invoke the corresponding method.
             else {
-              $methodName = "validate" . ucfirst($node->name);
+              $methodName = "validate{$node->name}";
               if (method_exists($this, $methodName)) {
                 $node->name = $this->$methodName($node);
               }

@@ -30,6 +30,21 @@ use \MovLib\Exception\DatabaseException;
  */
 class Temporary extends \MovLib\Data\Database {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * TTL value for records in the temporary table that are deleted on a daily basis.
+   *
+   * @var int
+   */
+  const TMP_TTL_DAILY = "@daily";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * Delete a temporary record.
    *

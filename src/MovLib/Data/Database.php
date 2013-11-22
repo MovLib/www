@@ -36,17 +36,6 @@ use \MovLib\Exception\DatabaseException;
 class Database {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
-  /**
-   * TTL value for records in the temporary table that are deleted on a daily basis.
-   *
-   * @var int
-   */
-  const TMP_TTL_DAILY = "@daily";
-
-
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -62,7 +51,7 @@ class Database {
    *
    * @var \mysqli
    */
-  private static $mysqli = [];
+  protected static $mysqli = [];
 
   /**
    * Used to cache the reference to <code>stmt_bind_param()</code> function, which allow us to invoke the function with
@@ -71,7 +60,7 @@ class Database {
    *
    * @var \ReflectionFunction
    */
-  private static $stmtBindParam;
+  protected static $stmtBindParam;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -90,15 +79,15 @@ class Database {
         self::$stmtBindParam = new \ReflectionFunction("mysqli_stmt_bind_param");
       }
       $mysqli = new \mysqli();
-      try {
+//      try {
         $mysqli->real_connect();
-      }
+//      }
       // If we have a broken pipe (e.g. database restart) kill this thread and directly re-connect. If this fails again
       // (very unlikely) an ErrorException is thrown again and the error andler can take care of it.
-      catch (\ErrorException $e) {
-        $mysqli->kill($mysqli->thread_id);
-        $mysqli->real_connect();
-      }
+//      catch (\ErrorException $e) {
+//        $mysqli->kill($mysqli->thread_id);
+//        $mysqli->real_connect();
+//      }
       if ($mysqli->connect_error) {
         throw new DatabaseException("Connecting to database server failed", $mysqli->error, $mysqli->errno);
       }

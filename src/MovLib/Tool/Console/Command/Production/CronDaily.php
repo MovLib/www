@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
+use \MovLib\Data\Temporary;
 use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\DatabaseException;
 use \Symfony\Component\Console\Input\InputInterface;
@@ -69,7 +70,7 @@ class CronDaily extends \MovLib\Tool\Console\Command\AbstractCommand {
   public function purgeTemporaryTable() {
     global $db;
     try {
-      $db->query("DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$db->escapeString(\MovLib\Data\Database::TMP_TTL_DAILY)}'");
+      $db->query("DELETE FROM `tmp` WHERE DATEDIFF(CURRENT_TIMESTAMP, `created`) > 0 AND `ttl` = '{$db->escapeString(Temporary::TMP_TTL_DAILY)}'");
     }
     catch (DatabaseException $e) {
       error_log($e);
