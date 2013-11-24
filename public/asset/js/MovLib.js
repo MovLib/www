@@ -102,7 +102,7 @@
     init: function () {
       // Anonymous helper function to load polyfills.
       var load = function (name) {
-        this.loadModule(name, "//" + this.settings.domainStatic + "/asset/js/polyfill/" + name + ".js");
+        this.loadModule("//" + this.settings.domainStatic + "/asset/js/polyfill/" + name + ".js");
       };
 
       // Load cross-browser sham for classList support.
@@ -134,7 +134,7 @@
 
       for (var module in modules) {
         if (!this.modules[module]) {
-          this.loadModule(module, modules[module], execute.bind(this, module));
+          this.loadModule(modules[module], execute.bind(this, module));
         }
         else {
           this.modules[module](context);
