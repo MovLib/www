@@ -35,10 +35,10 @@ SHOW WARNINGS;
 -- Table `movlib`.`genres`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
-  `genre_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique ID.',
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique ID.',
   `dyn_names` BLOB NOT NULL COMMENT 'The genre’s names.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s descriptions.',
-  PRIMARY KEY (`genre_id`))
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all movie genres.'
 ROW_FORMAT = COMPRESSED
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_genres` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_genres_genres`
     FOREIGN KEY (`genre_id`)
-    REFERENCES `movlib`.`genres` (`genre_id`)
+    REFERENCES `movlib`.`genres` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -810,7 +810,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_genres` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_series_genres_genres`
     FOREIGN KEY (`genre_id`)
-    REFERENCES `movlib`.`genres` (`genre_id`)
+    REFERENCES `movlib`.`genres` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
