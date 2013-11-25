@@ -36,14 +36,13 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `genre_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique ID.',
-  `name` VARCHAR(100) NOT NULL COMMENT 'The genre’s unique English name.',
-  `description` BLOB NOT NULL COMMENT 'The genre’s English description.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The genre name’s translations.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre description’s translations.',
-  PRIMARY KEY (`genre_id`),
-  UNIQUE INDEX `uq_genres_name` (`name` ASC))
+  `dyn_names` BLOB NOT NULL COMMENT 'The genre’s names.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s descriptions.',
+  PRIMARY KEY (`genre_id`))
 ENGINE = InnoDB
-COMMENT = 'Contains all movie genres.';
+COMMENT = 'Contains all movie genres.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
