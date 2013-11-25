@@ -127,12 +127,12 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     $this->attributes["accept"]            = "image/jpeg,image/png";
     $this->attributes["data-max-filesize"] = ini_get("upload_max_filesize");
     $this->attributes["data-min-height"]   = isset($this->image->imageHeight) ? $this->image->imageHeight : Image::IMAGE_MIN_HEIGHT;
-    $this->attributes["data-min-width"]    = isset($this->image->imageWidth)  ? $this->image->imageWidth  : Image::IMAGE_MIN_WIDTH;
+    $this->attributes["data-min-width"]    = isset($this->image->imageWidth) ? $this->image->imageWidth : Image::IMAGE_MIN_WIDTH;
     $this->attributes["type"]              = "file";
     $this->image                           = $concreteImage;
-    $helpMessageAttributes = $this->formatBytes($this->attributes["data-max-filesize"]);
-    $helpMessageAttributes[] = $this->attributes["data-min-width"];
-    $helpMessageAttributes[] = $this->attributes["data-min-height"];
+    $helpMessageAttributes                 = $this->formatBytes($this->attributes["data-max-filesize"]);
+    $helpMessageAttributes[]               = $this->attributes["data-min-width"];
+    $helpMessageAttributes[]               = $this->attributes["data-min-height"];
     $this->setHelp($i18n->t("Image must be larger than {2}x{3} and less than {0} {1}. Allowed image types: JPG and PNG", $helpMessageAttributes));
   }
 

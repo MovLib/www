@@ -345,19 +345,28 @@ abstract class AbstractImage {
    * @throws \MovLib\Exception\ImageException
    */
   public function uploadImage($source, $extension, $height, $width) {
-    $this->imageChanged   = $this->imageCreated = $_SERVER["REQUEST_TIME"];
-    $this->imageExists    = true;
+    // We have to export the extension to class scope in order to move the original image.
     $this->imageExtension = $extension;
-    $this->imageHeight    = $height;
-    $this->imageWidth     = $width;
-    $original             = $this->getImagePath();
+
+    // Strip meta data from uploaded image and move to persistent storage.
+    $original = $this->getImagePath();
     sh::execute("convert '{$source}' -strip +repage '{$original}'");
-    unlink($source);
-    $this->imageSize      = filesize($original);
+    sh::executeDetached("rm {$source}");
+
+    // Collect all data we want to know about the newly uploaded image.
+    $this->imageChanged = $this->imageCreated = $_SERVER["REQUEST_TIME"];
+    $this->imageHeight  = $height;
+    $this->imageSize    = filesize($original);
+    $this->imageWidth   = $width;
+
+    // Let the concrete class create the various image styles.
     $this->generateImageStyles($original);
     if (!isset($this->imageStyles[self::IMAGE_STYLE_SPAN_01]) || !isset($this->imageStyles[self::IMAGE_STYLE_SPAN_02])) {
       throw new ImageException("Every image instance has to generate the default styles!");
     }
+
+    // Must be last because extending classes use it to determine if they have to update or insert.
+    $this->imageExists = true;
     return $this;
   }
 

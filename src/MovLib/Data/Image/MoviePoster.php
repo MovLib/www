@@ -17,10 +17,7 @@
  */
 namespace MovLib\Data\Image;
 
-use \MovLib\Data\Country;
 use \MovLib\Data\Image\Style;
-//use \MovLib\Data\License;
-use \MovLib\Data\User\User;
 use \MovLib\Exception\ImageException;
 
 /**
@@ -146,6 +143,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
    */
   public function __construct($movieId, $displayTitleWithYear, $imageId = null) {
     global $db, $i18n;
+    $this->movieId = $movieId;
     if ($imageId) {
       $stmt = $db->query(
         "SELECT
@@ -190,20 +188,14 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
       }
       $stmt->close();
     }
+    // The ID is the name of the image, which we need to generate the new image.
     else {
-      $stmt = $db->query(
-        "SELECT IFNULL(MAX(`id`), 1) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1",
-        "di",
-        [ $movieId, $this->typeId ]
-      );
-      $this->id = $stmt->get_result()->fetch_row()[0];
-      $stmt->close();
+      $this->id = $this->getNextId();
     }
     $this->alternativeText = $i18n->t("Poster for {0}.", [ $displayTitleWithYear ]);
     $this->imageDirectory .= "/{$movieId}/poster";
     $this->imageExists     = (boolean) $this->imageExists;
     $this->imageName       = $this->id;
-    $this->movieId         = $movieId;
     if ($this->imageExists === true) {
       $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $movieId, $this->id ]);
     }
@@ -232,21 +224,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
 
     // Update the record with the new data if this is an update.
     if ($this->imageExists === true) {
-      $db->query(
-        "UPDATE `movies_images` SET
-          `license_id`       = ?,
-          `country_code`     = ?,
-          `width`            = ?,
-          `height`           = ?,
-          `size`             = ?,
-          `extension`        = ?,
-          `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, ?, ?),
-          `source`           = ?,
-          `styles`           = ?
-        WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
-        "ddi",
-        [ $this->id, $this->movieId, $this->typeId ]
-      );
+      throw new \RuntimeException("Not implemented yet!");
     }
     // If this is a new upload insert the record and create the new details route for this upload.
     else {
@@ -262,11 +240,12 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
           `height`           = ?,
           `size`             = ?,
           `extension`        = ?,
+          `changed`          = FROM_UNIXTIME(?),
+          `created`          = FROM_UNIXTIME(?),
           `dyn_descriptions` = COLUMN_CREATE(?, ?),
           `source`           = ?,
-          `styles`           = ?,
-          `upvotes`          = 0",
-        "ddidiiiiisssss",
+          `styles`           = ?",
+        "ididisiiisssssss",
         [
           $this->id,
           $this->movieId,
@@ -278,6 +257,8 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
           $this->imageHeight,
           $this->imageSize,
           $this->imageExtension,
+          $this->imageChanged,
+          $this->imageCreated,
           $i18n->languageCode,
           $this->description,
           $this->source,
@@ -307,6 +288,22 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
       );
     }
     return $this->imageStylesCache[$style];
+  }
+
+  /**
+   * Get the next available image ID for this movie and type.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The next available image ID for this movie and type.
+   */
+  protected function getNextId() {
+    global $db;
+    return $db->query(
+      "SELECT IFNULL(MAX(`id`), 1) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1",
+      "di",
+      [ $this->movieId, $this->typeId ]
+    )->get_result()->fetch_row()[0];
   }
 
 }

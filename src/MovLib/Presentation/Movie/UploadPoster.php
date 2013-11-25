@@ -121,7 +121,7 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
 
       $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description);
 
-      $this->source = new InputURL("source", $i18n->t("Source"), [ "value" => $this->image->source ]);
+      $this->source = new InputURL("source", $i18n->t("Source"), [ "data-allow-external" => true, "value" => $this->image->source ]);
 
       $this->country = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
 
@@ -163,11 +163,17 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
    * @inheritdoc
    */
   public function validate(array $errors = null) {
+    global $i18n;
+    // The description can't be empty if the source is empty and vice versa.
+    if (empty($this->description->value) && empty($this->source->value)) {
+      $errors = $i18n->t("Description and source URL missing, you have to fill out at least one of these fields.");
+    }
     if ($this->checkErrors($errors) === false) {
       $this->image->countryCode = $this->country->value;
       $this->image->description = $this->description->value;
       $this->image->licenseId   = $this->license->value;
       $this->image->source      = $this->source->value;
+      $this->image->uploadImage($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
       throw new RedirectSeeOtherException($this->image->route);
     }
     return $this;
