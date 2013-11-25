@@ -74,15 +74,14 @@ SHOW WARNINGS;
 -- Table `movlib`.`styles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`styles` (
-  `style_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The style’s unique ID.',
-  `name` VARCHAR(100) NOT NULL COMMENT 'The style’s unique English name.',
-  `description` BLOB NOT NULL COMMENT 'The style’s English description.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The style name’s translations.',
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The style’s unique identifier.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The style’s names.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The style description’s translations.',
-  PRIMARY KEY (`style_id`),
-  UNIQUE INDEX `uq_styles_name` (`name` ASC))
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
-COMMENT = 'Contains all movie styles.';
+COMMENT = 'Contains all movie styles.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -102,7 +101,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_styles` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_styles_styles`
     FOREIGN KEY (`style_id`)
-    REFERENCES `movlib`.`styles` (`style_id`)
+    REFERENCES `movlib`.`styles` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -833,7 +832,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_styles` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_series_styles_styles`
     FOREIGN KEY (`style_id`)
-    REFERENCES `movlib`.`styles` (`style_id`)
+    REFERENCES `movlib`.`styles` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
