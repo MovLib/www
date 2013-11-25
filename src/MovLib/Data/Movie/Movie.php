@@ -124,7 +124,7 @@ class Movie {
         $this->year
       );
       if (!$stmt->fetch()) {
-        throw new MovieException("Couldn't find movie for ID '{$id}'.");
+        throw new \DomainException("Couldn't find movie for ID '{$id}'.");
       }
       $stmt->close();
       $this->id = $id;
