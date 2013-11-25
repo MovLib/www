@@ -54,7 +54,11 @@ class Home extends \MovLib\Presentation\Page {
    */
   protected function getHeaderLogo() {
     global $kernel;
-    return "<h1 class='span' id='header__logo'><img alt='{$kernel->siteName}' height='42' id='logo' src='//{$kernel->domainStatic}/asset/img/logo/vector.svg' width='42'> {$kernel->siteName}</h1>";
+    return
+      "<h1 class='span' id='header-logo'>" .
+        "<img alt='{$kernel->siteName}' height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}" .
+      "</h1>"
+    ;
   }
 
   /**

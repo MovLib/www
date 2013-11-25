@@ -290,13 +290,13 @@ class Page extends \MovLib\Presentation\AbstractPage {
           "<div class='row'>" .
             "{$this->getHeaderLogo()}{$mainNavigation}" .
             // Render the header search, this is not an instance of form because it would make things complicated.
-            "<form action='{$i18n->t("/search")}' class='span' id='header__search-form' method='post' role='search'>" .
-              "<input type='hidden' name='form_id' value='header-search'>" .
-              "<label class='visuallyhidden' for='header__search-input'>{$i18n->t("Search the {0} database.", [ $kernel->siteName ])}</label>" .
-              "<input accesskey='f' id='header__search-input' name='searchterm' required tabindex='{$this->getTabindex()}' title='{$i18n->t(
+            "<form action='{$i18n->t("/search")}' class='span' id='search' method='post' role='search'>" .
+              "<input type='hidden' name='form_id' value='header_search'>" .
+              "<label class='visuallyhidden' for='search-input'>{$i18n->t("Search the {0} database.", [ $kernel->siteName ])}</label>" .
+              "<input accesskey='f' id='search-input' name='searchterm' required tabindex='{$this->getTabindex()}' title='{$i18n->t(
                 "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
               )}' type='search'>" .
-              "<button id='header__search-button' title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
+              "<button title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
                 "<i class='icon icon--search'></i>" .
               "</button>" .
             "</form>" .
@@ -317,8 +317,8 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected function getHeaderLogo() {
     global $kernel, $i18n;
     return
-      "<a class='span' href='/' id='header__logo' title='{$i18n->t("Go back to the home page.")}'>" .
-        "<img alt='{$kernel->siteName}' height='42' id='logo' src='//{$kernel->domainStatic}/asset/img/logo/vector.svg' width='42'> {$kernel->siteName}" .
+      "<a class='span' href='/' id='header-logo' title='{$i18n->t("Go back to the home page.")}'>" .
+        "<img alt='{$kernel->siteName}' height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}" .
       "</a>"
     ;
   }

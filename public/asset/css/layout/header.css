@@ -49,7 +49,7 @@
 /* ==== LOGO ======================================================================================================== */
 
 
-#header__logo {
+#header-logo {
   border-bottom: 0;
   color: #656565;
   display: block;
@@ -66,12 +66,12 @@
   width: 180px;
 }
 
-#header__logo:hover,
-#header__logo:focus {
+#header-logo:hover,
+#header-logo:focus {
   color: #353535;
 }
 
-#header__logo img {
+#header-logo img {
   position: relative;
   top: -4px;
 }
@@ -200,24 +200,16 @@
 /* ==== SEARCH FORM ================================================================================================= */
 
 
-#header__search-form {
+#search {
   overflow: hidden;
   margin: 0;
   position: absolute;
-  right: -610px;
+  right: 50px;
   top: 0;
-  transition: right 0.5s ease-in-out;
-  width: 710px;
 }
 
-#header__search-form:hover,
-#header__search-form:focus,
-#header__search-form:active {
-  right: 0;
-}
-
-#header__search-form button,
-#header__search-form input {
+#search button,
+#search-input {
   background-color: #252525;
   border: 0;
   box-shadow: none;
@@ -228,12 +220,19 @@
   padding: 0;
 }
 
-#header__search-button {
+#search button {
   float: left;
   width: 50px;
 }
 
-#header__search-input {
+#search-input {
   font-weight: 200;
+  width: 0;
+  transition: width 0.5s ease-in-out;
+}
+
+#search:hover #search-input,
+#search:focus #search-input,
+#search-input:focus {
   width: 660px;
 }
