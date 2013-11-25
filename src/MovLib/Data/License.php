@@ -83,6 +83,29 @@ class License extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
+   * Get all available licenses.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @staticvar array $licenses
+   *   Used to cache the result.
+   * @return array
+   *   Associative array containing all available licenses.
+   */
+  public static function getLicenses() {
+    global $db, $i18n;
+    static $licenses = [];
+    if (!isset($licenses[$i18n->locale])) {
+      $query  = self::getQuery();
+      $result = $db->query("{$query} ORDER BY `name` ASC", "ss", [ $i18n->languageCode, $i18n->languageCode ])->get_result();
+      while ($license = $result->fetch_assoc()) {
+        $licenses[$i18n->locale][$license["id"]] = $license["name"];
+      }
+    }
+    return $licenses[$i18n->locale];
+  }
+
+  /**
    * Get the default query.
    *
    * @global \MovLib\Data\I18n $i18n
@@ -108,29 +131,6 @@ class License extends \MovLib\Data\Image\AbstractImage {
       ;
     }
     return $query;
-  }
-
-  /**
-   * Get all available licenses.
-   *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @staticvar array $licenses
-   *   Used to cache the result.
-   * @return array
-   *   Associative array containing all available licenses.
-   */
-  public static function getLicenses() {
-    global $db, $i18n;
-    static $licenses = [];
-    if (!isset($licenses[$i18n->locale])) {
-      $query  = self::getQuery();
-      $result = $db->query("{$query} ORDER BY `name` ASC", "ss", [ $i18n->languageCode, $i18n->languageCode ])->get_result();
-      while ($license = $result->fetch_assoc()) {
-        $licenses[$i18n->locale][$license["id"]] = $license["name"];
-      }
-    }
-    return $licenses[$i18n->locale];
   }
 
 }

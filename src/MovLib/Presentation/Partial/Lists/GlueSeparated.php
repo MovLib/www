@@ -35,6 +35,10 @@ namespace MovLib\Presentation\Partial\Lists;
  */
 class GlueSeparated extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The glue used to separate the items.
    *
@@ -55,6 +59,10 @@ class GlueSeparated extends \MovLib\Presentation\Partial\Lists\AbstractList {
    * @var string
    */
   public $listAfter;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new glue separated list.
@@ -77,13 +85,14 @@ class GlueSeparated extends \MovLib\Presentation\Partial\Lists\AbstractList {
     $this->listAfter = $listAfter;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * Get the string representation of the glue separated list.
-   *
-   * @return string
-   *   The string representation of the glue separated list.
+   * @inheritdoc
    */
-  public function __toString() {
+  protected function render() {
     if (($c = count($this->listItems))) {
       $list = null;
       for ($i = 0; $i < $c; ++$i) {

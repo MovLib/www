@@ -29,23 +29,32 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\Movie\TraitMoviePage;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The movie we are currently working with.
+   *
+   * @var \MovLib\Data\Movie\Full
+   */
+  protected $movie;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc
    */
   protected function getBreadcrumbs() {
     global $i18n;
-    return [ [ $i18n->r("/movies"), $i18n->t("Movies") ] ];
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function init($title) {
-    global $kernel;
-    $kernel->addStylesheet("modules/movie");
-    return parent::init($title);
+    return [
+      [ $i18n->r("/movies"), $i18n->t("Movies"), [
+        "title" => $i18n->t("Have a look at the latest {0} entries at MovLib.", [ $i18n->t("movie") ])
+      ]]
+    ];
   }
 
   /**
@@ -80,6 +89,36 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
     $gone->title = $i18n->t("This Movie has been deleted.");
     $gone->severity = Alert::SEVERITY_ERROR;
     return $gone;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function getSecondaryNavigationMenuItems() {
+    global $i18n;
+    return [
+      [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--eye'></i>{$i18n->t("View")}", [
+        "accesskey" => "v",
+        "title"     => $i18n->t("View the {0}.", [ $i18n->t("movie") ]),
+      ]],
+      [ $i18n->r("/movie/{0}/discussion", [ $this->model->id ]), "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [
+        "accesskey" => "d",
+        "title"     => $i18n->t("Discussion about the {0}.", [ $i18n->t("movie") ])
+      ]],
+      [ $i18n->r("/movie/{0}/edit", [ $this->model->id ]), "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [
+        "accesskey" => "e",
+        "title"     => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]),
+      ]],
+      [ $i18n->r("/movie/{0}/history", [ $this->model->id ]), "<i class='icon icon--history'></i>{$i18n->t("History")}", [
+        "accesskey" => "h",
+        "class"     => "separator",
+        "title"     => $i18n->t("Past versions of this {0}.", [ $i18n->t("movie") ]),
+      ]],
+      [ $i18n->r("/movie/{0}/titles", [ $this->model->id ]), "<i class='icon icon--eye'></i>{$i18n->t("Titles")}", [
+        "accesskey" => "t",
+        "title"     => $i18n->t("View the titles of the {0}.", [ $i18n->t("movie") ]),
+      ]],
+    ];
   }
 
 }

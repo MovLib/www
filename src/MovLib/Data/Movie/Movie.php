@@ -99,9 +99,11 @@ class Movie {
    */
   public function __construct($id = null) {
     global $db, $i18n;
+
     // Load the movie if an ID was passed to the constructor.
     if ($id) {
-      $stmt = $db->query(
+      $this->id = $id;
+      $stmt     = $db->query(
         "SELECT
           `movie`.`deleted`,
           IFNULL(`title`.`title`, `movie`.`original_title`),
@@ -115,7 +117,7 @@ class Movie {
         WHERE `movie`.`id` = ?
         LIMIT 1",
         "d",
-        [ $id ]
+        [ $this->id ]
       );
       $stmt->bind_result(
         $this->deleted,
@@ -124,36 +126,43 @@ class Movie {
         $this->year
       );
       if (!$stmt->fetch()) {
-        throw new \DomainException("Couldn't find movie for ID '{$id}'.");
+        throw new \DomainException("Couldn't find movie for ID '{$this->id}'.");
       }
       $stmt->close();
-      $this->id = $id;
     }
 
     // Load the display poster if the above query set the movie ID or this object was instantiated by PHP and the
     // property is already set.
     if ($this->id) {
-      // Create the full default display title.
-      $this->displayTitleWithYear = $this->displayTitle;
-      if ($this->year) {
-        $this->displayTitleWithYear .= " {$i18n->t("({0})", [ $this->year ])}";
-      }
-
-      // Always cast deleted to a real boolean if we are instantiating a movie.
-      $this->deleted = (boolean) $this->deleted;
-
-      // Fetch the display poster from the database.
-      $result = $db->query(
-        "SELECT `id`, `extension`, `changed` FROM `movies_images` WHERE `movie_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
-        "d",
-        [ $this->id ]
-      )->get_result();
-
-      // Load an empty poster if we have no posters at all.
-      if (!($this->displayPoster = $result->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]))) {
-        $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
-      }
+      $this->init();
     }
+  }
+
+  protected function init() {
+    global $db, $i18n;
+
+    // Create the full default display title.
+    $this->displayTitleWithYear = $this->displayTitle;
+    if ($this->year) {
+      $this->displayTitleWithYear .= " {$i18n->t("({0})", [ $this->year ])}";
+    }
+
+    // Always cast deleted to a real boolean if we are instantiating a movie.
+    $this->deleted = (boolean) $this->deleted;
+
+    // Fetch the display poster from the database.
+    $this->displayPoster = $db->query(
+      "SELECT `id`, `extension`, `changed` FROM `movies_images` WHERE `movie_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
+      "d",
+      [ $this->id ]
+    )->get_result()->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]);
+
+    // Load an empty poster if we have no posters at all.
+    if (!$this->displayPoster) {
+      $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
+    }
+
+    return $this;
   }
 
 }

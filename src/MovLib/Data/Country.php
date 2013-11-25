@@ -76,15 +76,31 @@ class Country {
    * @global \MovLib\Kernel $kernel
    * @staticvar array $countries
    *   Associative array used for caching.
+   * @param array $filter [optional]
+   *   Associative array where the keys are the country codes that should be returned.
    * @return array
    *   All supported and translated countries.
    */
-  public static function getCountries() {
+  public static function getCountries(array $filter = null) {
     global $i18n, $kernel;
     static $countries = null;
+
+    // Fetch (pre-sorted) and cache all available country's for the current display language.
     if (!isset($countries[$i18n->locale])) {
       $countries[$i18n->locale] = require "{$kernel->documentRoot}/private/icu/country/{$i18n->locale}.php";
     }
+
+    // Filter the result if a filter was defined and make sure that we keep the sorting.
+    if ($filter) {
+      $filtered = [];
+      foreach ($countries[$i18n->locale] as $code => $name) {
+        if (isset($filter[$code])) {
+          $filtered[$code] = $name;
+        }
+      }
+      return $filtered;
+    }
+
     return $countries[$i18n->locale];
   }
 

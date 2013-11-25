@@ -85,13 +85,14 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
     $this->listItemsAttributes = $listItemsAttributes;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * Get the string representation of the images.
-   *
-   * @return string
-   *   The string representation of the images.
+   * @inheritdoc
    */
-  public function __toString() {
+  protected function render() {
     if (($c = count($this->listItems->entities))) {
       $list = null;
       for ($i = 0; $i < $c; ++$i) {

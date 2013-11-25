@@ -20,30 +20,29 @@ namespace MovLib\Data;
 /**
  * @todo Description of RatingModel
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Rating extends \MovLib\Data\Database {
+class Rating {
 
   /**
    * Get the user's rating for a specific movie.
    *
+   * @global \MovLib\Data\Database $db
    * @param int $userId
    *   The user's unique ID.
    * @param int $movieId
    *   The movie's unique ID.
    * @return null|int
-   *   The user's rating for this movie, null if none is present.
+   *   The user's rating for this movie, <code>NULL</code> if the user hasn't rated this movie.
    */
   public function getMovieRating($userId, $movieId) {
-    $result = $this->query(
-      "SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1",
-      "dd", [ $userId, $movieId ]
-    )->get_result()->fetch_row();
-    if (!empty($result[0])) {
+    global $db;
+    $result = $db->query("SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1","dd", [ $userId, $movieId ])->get_result()->fetch_row();
+    if (isset($result[0])) {
       return $result[0];
     }
   }

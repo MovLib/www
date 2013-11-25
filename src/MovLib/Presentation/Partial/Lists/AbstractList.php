@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial\Lists;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * Base class for HTML lists.
  *
@@ -86,6 +88,26 @@ abstract class AbstractList extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The string representation of the list.
    */
-  public abstract function __toString();
+  public function __toString() {
+    global $i18n;
+    try {
+      return $this->render();
+    }
+    catch (\Exception $e) {
+      return (string) new Alert("<pre>{$e}</pre>", $i18n->t("Error Rendering List"), Alert::SEVERITY_ERROR);
+    }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get string representation of concrete list.
+   *
+   * @return string
+   *   String representation of concrete list.
+   */
+  protected abstract function render();
 
 }

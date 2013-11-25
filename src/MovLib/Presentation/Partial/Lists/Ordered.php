@@ -75,13 +75,14 @@ class Ordered extends \MovLib\Presentation\Partial\Lists\AbstractList {
     $this->listItemsAttributes = $listItemsAttributes;
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * Get the string representation of the HTML ordered list.
-   *
-   * @return string
-   *   The string representation of the HTML ordered list.
+   * @inheritdoc
    */
-  public function __toString() {
+  protected function render() {
     if (($c = count($this->listItems))) {
       $list = null;
       for ($i = 0; $i < $c; ++$i) {
