@@ -1238,22 +1238,22 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users_collections` (
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
-  `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release’s unique identifier.',
+  `master_release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The Master release\'s unique identifier.',
   `count` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The amount of identical releases.',
   `currency_code` CHAR(3) NULL COMMENT 'The user’s ISO 4217 currency code.',
   `price` FLOAT UNSIGNED NULL COMMENT 'The price of the release.',
   `purchased_at` TINYTEXT NULL COMMENT 'The location where the release was purchased.',
-  PRIMARY KEY (`user_id`, `release_id`),
+  PRIMARY KEY (`user_id`, `master_release_id`),
   INDEX `fk_user_collection_users_idx` (`user_id` ASC),
-  INDEX `fk_users_collections_releases_idx` (`release_id` ASC),
+  INDEX `fk_users_collections_master_releases_idx` (`master_release_id` ASC),
   CONSTRAINT `fk_user_collection_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_users_collections_releases`
-    FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`release_id`)
+  CONSTRAINT `fk_users_collections_master_releases`
+    FOREIGN KEY (`master_release_id`)
+    REFERENCES `movlib`.`master_releases` (`master_release_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
