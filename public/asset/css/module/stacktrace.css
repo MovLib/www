@@ -25,85 +25,68 @@
  * @since 0.0.1-dev
  */
 
-.stacktrace {
-  margin: 0;
-  padding: 3px;
-  background: #d8d8d8;
-  border-radius: 3px;
+#stacktrace-details {
+  margin-top: 10px;
   font: 12px/18px Consolas, monospace;
 }
 
-.stacktrace__title {
-  background-color: #eaeaea;
-  background-image: -webkit-linear-gradient(#fafafa, #eaeaea);
-  background-image:    -moz-linear-gradient(#fafafa, #eaeaea);
-  background-image:     -ms-linear-gradient(#fafafa, #eaeaea);
-  background-image:      -o-linear-gradient(#fafafa, #eaeaea);
-  background-image:         linear-gradient(#fafafa, #eaeaea);
-  border-bottom: 1px solid #d8d8d8;
-  color: #555;
+#stacktrace-details .title {
+  background-color: #333;
+  color: #fff;
   font-family: Consolas, monospace;
   line-height: 25px;
   min-height: 33px;
   padding: 5px 10px;
-  text-shadow: 0 1px 0 #fff;
 }
 
-.stacktrace__table {
+#stacktrace-details table {
   margin: 0;
   padding: 0;
   width: 100%;
-  background: #fff;
+  background-color: #fff;
   border-collapse: collapse;
   font: 12px/24px Consolas, monospace;
   color: #000;
 }
 
-.stacktrace__td {
-  padding: 0;
+#stacktrace-details td {
+  padding: 3px 5px;
 }
 
-.stacktrace__tr:first-child .stacktrace__td {
-  padding-top: 5px;
+#stacktrace-details tr:first-child td {
+  background-color: #ffc;
 }
 
-.stacktrace__tr:last-child .stacktrace__td {
-  padding-bottom: 5px;
-}
-
-.stacktrace__line-number,
-.stacktrace__file {
+#stacktrace-details .line-number,
+#stacktrace-details .file {
   color: rgba(0, 0, 0, 0.3);
   text-align: right;
 }
 
-.stacktrace__line-number {
-  padding: 0 8px;
+#stacktrace-details line-number {
   width: 1%;
-  border-right: 1px solid #e5e5e5;
 }
 
-.stacktrace__table .stacktrace__line-container {
-  padding: 0 10px;
+#stacktrace-details tr td:last-child {
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
-.stacktrace__table tr:first-child .stacktrace__line-container {
-  background-color: #ffc;
-}
-
-.stacktrace__function {
+#stacktrace-details .function {
   color: #00f;
 }
 
-.stacktrace__var {
-  background: transparent;
-  border-bottom: 1px dotted #d14;
+#stacktrace-details var {
+  background-color: transparent;
   border: 0;
-  cursor: pointer;
   margin: 0;
   padding: 0;
 }
 
-.stacktrace__file {
+#stacktrace-details var[title] {
+  cursor: help;
+}
+
+#stacktrace-details .file {
   float: right;
 }

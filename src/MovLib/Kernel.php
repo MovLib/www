@@ -17,6 +17,7 @@
  */
 namespace MovLib;
 
+use \MovLib\Data\Database;
 use \MovLib\Data\I18n;
 use \MovLib\Data\Mailer;
 use \MovLib\Data\User\Session;
@@ -293,12 +294,13 @@ class Kernel {
   /**
    * Instantiate new Bootstrap process.
    *
-   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $kernel, $i18n, $session;
+    global $db, $i18n, $kernel, $session;
 
     // Export ourself to global scope and allow any layer to access the kernel's public properties.
     $kernel = $this;
@@ -342,6 +344,9 @@ class Kernel {
           }
         }
       }
+
+      // Prepare global database connection.
+      $db = new Database();
 
       // Always create an I18n instance for translating any kind of presentation.
       $i18n = new I18n();

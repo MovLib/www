@@ -25,6 +25,7 @@
  * @since 0.0.1-dev
  */
 
+@import "layout/fonts.css";
 @import "base.css";
 @import "layout/grid.css";
 @import "layout/typography.css";

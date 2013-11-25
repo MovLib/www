@@ -54,7 +54,7 @@ use \MovLib\Exception\ImageException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractImage extends \MovLib\Data\Database {
+abstract class AbstractImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

@@ -135,6 +135,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   /**
    * Instantiate new movie poster image.
    *
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @param integer $movieId
    *   The unique movie ID this poster belongs to.
@@ -144,9 +145,9 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
    *   The image ID to load, if none is given (default) no image is loaded.
    */
   public function __construct($movieId, $displayTitleWithYear, $imageId = null) {
-    global $i18n;
+    global $db, $i18n;
     if ($imageId) {
-      $stmt = $this->query(
+      $stmt = $db->query(
         "SELECT
           `id`,
           `user_id`,
@@ -190,7 +191,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
       $stmt->close();
     }
     else {
-      $stmt     = $this->query(
+      $stmt = $db->query(
         "SELECT IFNULL(MAX(`id`), 1) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1",
         "di",
         [ $movieId, $this->typeId ]
@@ -217,11 +218,12 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    */
   protected function generateImageStyles($source) {
-    global $i18n, $session;
+    global $db, $i18n, $session;
 
     // Generate the various image's styles and always go from best quality down to worst quality.
     $span08 = $this->convertImage($source, self::IMAGE_STYLE_SPAN_08);
@@ -230,7 +232,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
 
     // Update the record with the new data if this is an update.
     if ($this->imageExists === true) {
-      $this->query(
+      $db->query(
         "UPDATE `movies_images` SET
           `license_id`       = ?,
           `country_code`     = ?,
@@ -248,7 +250,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
     }
     // If this is a new upload insert the record and create the new details route for this upload.
     else {
-      $this->query(
+      $db->query(
         "INSERT INTO `movies_images` SET
           `id`               = ?,
           `movie_id`         = ?,

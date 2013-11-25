@@ -175,6 +175,7 @@ class Full extends \MovLib\Data\User\User {
    *
    * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
    *
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @param string $from [optional]
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
@@ -183,9 +184,9 @@ class Full extends \MovLib\Data\User\User {
    * @throws \MovLib\Exception\UserException
    */
   public function __construct($from = null, $value = null) {
-    global $i18n;
+    global $db, $i18n;
     if ($from && $value) {
-      $stmt = $this->query(
+      $stmt = $db->query(
         "SELECT
           `id`,
           `name`,
@@ -260,36 +261,41 @@ class Full extends \MovLib\Data\User\User {
   /**
    * Check if this email address is already in use.
    *
+   * @global \MovLib\Data\Database $db
    * @param string $email
    *   The email address to look up.
    * @return boolean
    *   <code>TRUE</code> if this email address is already in use, otherwise <code>FALSE</code>.
    */
   public function checkEmail($email) {
-    return !empty($this->query("SELECT `id` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_row());
+    global $db;
+    return !empty($db->query("SELECT `id` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_row());
   }
 
   /**
    * Check if this name is already in use.
    *
+   * @global \MovLib\Data\Database $db
    * @param string $username
    *   The username to look up.
    * @return boolean
    *   <code>TRUE</code> if this name is already in use, otherwise <code>FALSE</code>.
    */
   public function checkName($username) {
-    return !empty($this->query("SELECT `id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $username ])->get_result()->fetch_row());
+    global $db;
+    return !empty($db->query("SELECT `id` FROM `users` WHERE `name` = ? LIMIT 1", "s", [ $username ])->get_result()->fetch_row());
   }
 
   /**
    * Update the user model in the database with the data of the current class instance.
    *
+   * @global \MovLib\Data\Database $db
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function commit() {
-    global $i18n;
-    return $this->query(
+    global $db, $i18n;
+    $db->query(
       "UPDATE `users` SET
         `birthday`             = ?,
         `country_code`         = ?,
@@ -323,43 +329,45 @@ class Full extends \MovLib\Data\User\User {
         $this->id,
       ]
     );
+    return $this;
   }
 
   /**
    * Delete this user.
    *
+   * @global \MovLib\Data\Database $db
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function delete() {
-    return $this
-      ->deleteImage()
-      ->query(
-        "UPDATE `users` SET
-          `email`                = NULL,
-          `password`             = NULL,
-          `access`               = NULL,
-          `created`              = NULL,
-          `currency_code`        = NULL,
-          `dyn_about_me`         = NULL,
-          `edits`                = NULL,
-          `private`              = NULL,
-          `profile_views`        = NULL,
-          `sex`                  = NULL,
-          `system_language_code` = NULL,
-          `time_zone_identifier` = NULL,
-          `country_id`           = NULL,
-          `birthday`             = NULL,
-          `image_changed`        = NULL,
-          `image_extension`      = NULL,
-          `real_name`            = NULL,
-          `reputation`           = NULL,
-          `website`              = NULL
-        WHERE `id` = ?",
-        "d",
-        [ $this->id ]
-      )
-    ;
+    global $db;
+    $this->deleteImage();
+    $db->query(
+      "UPDATE `users` SET
+        `email`                = NULL,
+        `password`             = NULL,
+        `access`               = NULL,
+        `created`              = NULL,
+        `currency_code`        = NULL,
+        `dyn_about_me`         = NULL,
+        `edits`                = NULL,
+        `private`              = NULL,
+        `profile_views`        = NULL,
+        `sex`                  = NULL,
+        `system_language_code` = NULL,
+        `time_zone_identifier` = NULL,
+        `country_id`           = NULL,
+        `birthday`             = NULL,
+        `image_changed`        = NULL,
+        `image_extension`      = NULL,
+        `real_name`            = NULL,
+        `reputation`           = NULL,
+        `website`              = NULL
+      WHERE `id` = ?",
+      "d",
+      [ $this->id ]
+    );
+    return $this;
   }
 
   /**
@@ -387,13 +395,14 @@ class Full extends \MovLib\Data\User\User {
    * now the registered new user. This is the desired behavior during our registration process, because we
    * want to display the password settings page within the user's account directly.
    *
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function register() {
-    global $i18n;
-    $stmt = $this->query(
+    global $db, $i18n;
+    $stmt = $db->query(
       "INSERT INTO `users` (`dyn_about_me`, `email`, `name`, `password`, `system_language_code`) VALUES ('', ?, ?, ?, ?)",
       "ssss",
       [ $this->email, $this->name, $this->password, $i18n->languageCode ]
@@ -405,25 +414,29 @@ class Full extends \MovLib\Data\User\User {
   /**
    * Change the user's email address.
    *
+   * @global \MovLib\Data\Database $db
    * @param string $email
    *   The new email address.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function updateEmail($email) {
-    return $this->query("UPDATE `users` SET `email` = ? WHERE `id` = ?", "sd", [ $email, $this->id ]);
+    global $db;
+    return $db->query("UPDATE `users` SET `email` = ? WHERE `id` = ?", "sd", [ $email, $this->id ]);
   }
 
   /**
    * Change the user's password.
    *
+   * @global \MovLib\Data\Database $db
    * @param string $password
    *   The new hashed password.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function updatePassword($password) {
-    return $this->query("UPDATE `users` SET `password` = ? WHERE `id` = ?", "sd", [ $password, $this->id ]);
+    global $db;
+    return $db->query("UPDATE `users` SET `password` = ? WHERE `id` = ?", "sd", [ $password, $this->id ]);
   }
 
   /**

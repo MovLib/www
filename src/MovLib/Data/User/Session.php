@@ -38,7 +38,7 @@ use \MovLib\Exception\SessionException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Session extends \MovLib\Data\Database implements \ArrayAccess {
+class Session implements \ArrayAccess {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -110,12 +110,13 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
   /**
    * Resume existing session if any.
    *
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Kernel $kernel
    * @throws \MemcachedException
    * @throws \MovLib\Exception\DatabaseException
    */
   public function __construct() {
-    global $kernel;
+    global $db, $kernel;
 
     // Export the session's name to class scope.
     $this->name = session_name();
@@ -131,7 +132,7 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
       // session ID and have no data stored for it.
       if ($_COOKIE[$this->name] != $this->id && empty($_SESSION)) {
         // Load session data from session storage.
-        $stmt = $this->query("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name ]]);
+        $stmt = $db->query("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name ]]);
         $stmt->bind_result($this->authentication, $this->userId);
 
         // We couldn't find a valid session and we have no data, invalid session.
@@ -139,7 +140,7 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
           $this->destroy();
         }
         $stmt->close();
-        $stmt = $this->query("SELECT `name`, `time_zone_identifier` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->userId ]);
+        $stmt = $db->query("SELECT `name`, `time_zone_identifier` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->userId ]);
         $stmt->bind_result($this->userName, $this->userTimeZoneId);
 
         // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
@@ -196,6 +197,7 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
   /**
    * Authenticate a user.
    *
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Kernel $kernel
    * @param string $email
    *   The user submitted email address.
@@ -207,10 +209,10 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
    * @throws \MovLib\Exception\SessionException
    */
   public function authenticate($email, $rawPassword) {
-    global $kernel;
+    global $db, $kernel;
 
     // Load necessary user data from storage (if we have any).
-    if (!($result = $this->query("SELECT `id`, `name`, `password`, `time_zone_identifier` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
+    if (!($result = $db->query("SELECT `id`, `name`, `password`, `time_zone_identifier` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
       throw new SessionException("Couldn't find user with email '{$email}'.");
     }
 
@@ -270,6 +272,7 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
    * Deletes this session from our session database.
    *
    * @delayed
+   * @global \MovLib\Data\Database $db
    * @param string|array $sessionId [optional]
    *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
@@ -277,6 +280,8 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function delete($sessionId = null) {
+    global $db;
+
     $sessionPrefix = ini_get("memcached.sess_prefix");
     if (!$sessionId) {
       $sessionId = $this->id;
@@ -301,14 +306,14 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
       if (is_array($sessionId)) {
         $c      = count($sessionId);
         $clause = rtrim(str_repeat("?,", $c), ",");
-        $this->query("DELETE FROM `sessions` WHERE `session_id` IN ({$clause})", str_repeat("s", $c), $sessionId);
+        $db->query("DELETE FROM `sessions` WHERE `session_id` IN ({$clause})", str_repeat("s", $c), $sessionId);
         for ($i = 0; $i < $c; ++$i) {
           $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
         }
         $memcached->deleteMulti($sessionId);
       }
       else {
-        $this->query("DELETE FROM `sessions` WHERE `session_id` = ?", "s", [ $sessionId ]);
+        $db->query("DELETE FROM `sessions` WHERE `session_id` = ?", "s", [ $sessionId ]);
         $memcached->delete("{$sessionPrefix}{$sessionId}");
       }
     }
@@ -361,6 +366,7 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
   /**
    * Retrieve a list of all active sessions.
    *
+   * @global \MovLib\Data\Database $db
    * @return array
    *   Numeric array ontaining all sessions currently stored in the persistent session storage for the currently signed
    *   in user. Each entry in the numeric array is an associative array with the following entries:
@@ -373,7 +379,8 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getActiveSessions() {
-    return $this->query(
+    global $db;
+    return $db->query(
       "SELECT `session_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ?",
       "d",
       [ $this->userId ]
@@ -384,17 +391,19 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
    * Insert newly created session into persistent session storage.
    *
    * @delayed
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function insert() {
-    global $kernel;
-    return $this->query(
+    global $db, $kernel;
+    $db->query(
       "INSERT INTO `sessions` (`session_id`, `user_id`, `user_agent`, `ip_address`, `authentication`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
       "sdssi",
       [ $this->id, $this->userId, $kernel->userAgent, inet_pton($kernel->remoteAddress), $this->authentication ]
     );
+    return $this;
   }
 
   /**
@@ -506,6 +515,7 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
    * Update the ID of a session in our persistent session store.
    *
    * @delayed
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Kernel $kernel
    * @param string $oldSessionId
    *   The old session ID that should be updated.
@@ -513,21 +523,25 @@ class Session extends \MovLib\Data\Database implements \ArrayAccess {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function update($oldSessionId) {
-    global $kernel;
-    return $this->query(
+    global $db, $kernel;
+    $db->query(
       "UPDATE `sessions` SET `session_id` = ?, `ip_address` = ?, `user_agent` = ? WHERE `session_id` = ? AND `user_id` = ?",
       "ssssd",
       [ $this->id, inet_pton($kernel->remoteAddress), $kernel->userAgent, $oldSessionId, $this->userId ]
     );
+    return $this;
   }
 
   /**
    * Update the user's access time.
    *
+   * @global \MovLib\Data\Database $db
    * @return this
    */
   public function updateUserAccess() {
-    return $this->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = ?", "d", [ $this->userId ]);
+    global $db;
+    $db->query("UPDATE `users` SET `access` = CURRENT_TIMESTAMP WHERE `id` = ?", "d", [ $this->userId ]);
+    return $this;
   }
 
   /**

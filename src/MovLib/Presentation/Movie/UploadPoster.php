@@ -125,11 +125,7 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
 
       $this->country = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
 
-      $licenses = (new License())->getLicenses();
-      foreach ($licenses as $licenseId => $license) {
-        $licenses[$licenseId] = $license->name;
-      }
-      $this->license = new Select("license", $i18n->t("License"), $licenses, $this->image->licenseId ?: 1, [ "required" ]);
+      $this->license = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ?: 1, [ "required" ]);
 
       $this->form = new Form($this, [
         $this->inputImage,

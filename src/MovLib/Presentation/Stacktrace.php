@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * The stacktrace presentation is used if everything else fails.
  *
@@ -30,28 +32,7 @@ namespace MovLib\Presentation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Stacktrace {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The exception to format.
-   *
-   * @var \Exception
-   */
-  protected $exception;
-
-  /**
-   * The title.
-   *
-   * This is the name of the exception for which we generated the stacktrace.
-   *
-   * @see Stacktrace::__construct()
-   * @var string
-   */
-  protected $title;
+class Stacktrace extends \MovLib\Presentation\Page {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -60,6 +41,8 @@ class Stacktrace {
   /**
    * Instantiate new stacktrace presentation page.
    *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @param \Exception $exception
    *   The exception that should be presented. Any instance that inherits from PHP's built in exception class is okay.
    * @param boolean $fatal [optional]
@@ -67,85 +50,25 @@ class Stacktrace {
    *   <code>FALSE</code>.
    */
   public function __construct($exception, $fatal = false) {
-    $this->exception = $exception;
-    $this->title     = $fatal === true ? "Fatal Error" : get_class($exception);
-  }
-
-  /**
-   * Get presentation as string.
-   *
-   * @todo Combine CSS files.
-   * @global \MovLib\Kernel $kernel
-   * @return string
-   *   The presentation as string.
-   */
-  public function getPresentation() {
-    global $kernel;
+    global $i18n, $kernel;
     http_response_code(500);
-    return
-      "<!doctype html>" .
-      "<html dir='ltr' lang='en'>" .
-        "<head>" .
-          "<title>Internal Server Error — {$kernel->siteName}</title>" .
-          "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/base.css'>" .
-          "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/layout/grid.css'>" .
-          "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/layout/generic.css'>" .
-          "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/layout/header.css'>" .
-          "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/layout/content.css'>" .
-          "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/layout/footer.css'>" .
-          "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/layout/icons.css'>" .
-          "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/layout/alert.css'>" .
-          "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/layout/buttons.css'>" .
-          "<link rel='stylesheet' href='//{$kernel->domainStatic}/asset/css/modules/stacktrace.css'>" .
-          "<link rel='icon' type='image/svg+xml' href='//{$kernel->domainStatic}/asset/img/logo/vector.svg'>" .
-          "<link rel='icon' type='image/png' sizes='256x256' href='//{$kernel->domainStatic}/asset/img/logo/256.png'>" .
-          "<link rel='icon' type='image/png' sizes='128x128' href='//{$kernel->domainStatic}/asset/img/logo/128.png'>" .
-          "<link rel='icon' type='image/png' sizes='64x64' href='//{$kernel->domainStatic}/asset/img/logo/64.png'>" .
-          "<link rel='icon' type='image/png' sizes='32x32' href='//{$kernel->domainStatic}/asset/img/logo/32.png'>" .
-          "<link rel='icon' type='image/png' sizes='24x24' href='//{$kernel->domainStatic}/asset/img/logo/24.png'>" .
-          "<link rel='icon' type='image/png' sizes='16x16' href='//{$kernel->domainStatic}/asset/img/logo/16.png'>" .
-          "<meta name='viewport' content='width=device-width,initial-scale=1.0'>" .
-        "</head>" .
-        "<body class='stacktrace-body' id='stacktrace'>" .
-          "<header id='header'>" .
-            "<div class='container'>" .
-              "<div id='header__logo'>" .
-                "<img alt='{$kernel->siteName} logo' height='42' id='logo' src='//{$kernel->domainStatic}/asset/img/logo/vector.svg' width='42'> {$kernel->siteName}" .
-              "</div>" .
-            "</div>" .
-          "</header>" .
-          "<div class='stacktrace-content' id='content' role='main'>" .
-            "<div id='content__header'>" .
-              "<div class='container'>" .
-                "<h1 class='title' id='content__header__title'>Internal Server Error</h1>" .
-              "</div>" .
-              "<div id='alerts'>" .
-                "<div class='alert alert--error' role='alert'>" .
-                  "<div class='container'>" .
-                    "<h4 class='alert__title'>An unexpected condition which prevented us from fulfilling the request was encountered.</h4>" .
-                    "<p>This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes.</p>" .
-                  "</div>" .
-                "</div>" .
-                "<div class='alert alert--info' role='alert'>" .
-                  "<div class='container'>" .
-                    "<h4 class='alert__title'>Stacktrace for {$this->title}</h4>" .
-                    "<div class='stacktrace'>" .
-                      "<div class='stacktrace__title'><i class='icon icon--attention'></i> {$this->exception->getMessage()}</div>" .
-                      "<table class='stacktrace__table'>{$this->formatStacktrace($this->exception->getTrace())}</table>" .
-                    "</div>" .
-                  "</div>" .
-                "</div>" .
-              "</div>" .
-            "</div>" .
-          "</div>" .
-          "<footer id='footer'>" .
-            "<div class='container'>" .
-              "<small style='text-align:center'>Stacktrace is only available if release type is <em class='placeholder'>dev</em>!</small>" .
-            "</div>" .
-          "</footer>" .
-        "</body>" .
-      "</html>"
-    ;
+    $this->init($i18n->t("Internal Server Error"));
+    $kernel->stylesheets[] = "stacktrace";
+
+    $this->alerts .= new Alert(
+      $i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
+      $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
+      Alert::SEVERITY_ERROR
+    );
+
+    $this->alerts .= new Alert(
+      "<div id='stacktrace-details'>" .
+        "<div class='title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
+        "<table>{$this->formatStacktrace($exception->getTrace())}</table>" .
+      "</div>",
+      $i18n->t("Stacktrace for {0}", [ $this->placeholder($fatal === true ? "Fatal Error" : get_class($exception)) ]),
+      Alert::SEVERITY_INFO
+    );
   }
 
 
@@ -165,8 +88,8 @@ class Stacktrace {
       return "";
     }
     foreach ($stacktrace["args"] as $delta => $arg) {
-      $suffix                     = is_array($arg) ? "(" . count($arg) . ")" : null;
-      $type                       = gettype($arg);
+      $suffix = is_array($arg) ? "(" . count($arg) . ")" : null;
+      $type   = gettype($arg);
       try {
         $title = htmlspecialchars(print_r($arg, true), ENT_QUOTES | ENT_HTML5);
       }
@@ -175,7 +98,10 @@ class Stacktrace {
       catch (\ErrorException $e) {
         $title = "WARNING: Property access not allowed yet.";
       }
-      $stacktrace["args"][$delta] = "<var class='stacktrace_var' title='{$title}'>{$type}{$suffix}</var>";
+      if (!empty($title)) {
+        $title = " title='{$title}'";
+      }
+      $stacktrace["args"][$delta] = "<var{$title}>{$type}{$suffix}</var>";
     }
     return implode(", ", $stacktrace["args"]);
   }
@@ -247,14 +173,9 @@ class Stacktrace {
       $args       = $this->formatFunctionArguments($stacktrace[$i]);
       $file       = $this->formatFileName($stacktrace[$i]);
       $formatted .=
-        "<tr class='stacktrace__tr'>" .
-          "<td class='stacktrace__td stacktrace__line-number'>{$line}</td>" .
-          "<td class='stacktrace__td'>" .
-            "<div class='stacktrace__line-container'>{$class}{$type}" .
-              "<span class='stacktrace__function'>{$function}</span>({$args})" .
-              "<span class='stacktrace__file'>{$file}</span>" .
-            "</div>" .
-          "</td>" .
+        "<tr>" .
+          "<td class='line-number'>{$line}</td>" .
+          "<td>{$class}{$type}<span class='function'>{$function}</span>({$args})<span class='file'>{$file}</span></td>" .
         "</tr>"
       ;
     }

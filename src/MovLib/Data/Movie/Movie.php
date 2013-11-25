@@ -28,7 +28,7 @@ use \MovLib\Data\Image\MoviePoster;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movie extends \MovLib\Data\Database {
+class Movie {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -92,15 +92,16 @@ class Movie extends \MovLib\Data\Database {
   /**
    * Instantiate new movie.
    *
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The unique movie's ID to load.
    */
   public function __construct($id = null) {
-    global $i18n;
+    global $db, $i18n;
     // Load the movie if an ID was passed to the constructor.
     if ($id) {
-      $stmt = $this->query(
+      $stmt = $db->query(
         "SELECT
           `movie`.`deleted`,
           IFNULL(`title`.`title`, `movie`.`original_title`),
@@ -142,7 +143,7 @@ class Movie extends \MovLib\Data\Database {
       $this->deleted = (boolean) $this->deleted;
 
       // Fetch the display poster from the database.
-      $result = $this->query(
+      $result = $db->query(
         "SELECT `id`, `extension`, `changed` FROM `movies_images` WHERE `movie_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
         "d",
         [ $this->id ]

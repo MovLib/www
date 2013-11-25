@@ -40,8 +40,6 @@ class License extends \MovLib\Data\Image\AbstractImage {
 
   public $name;
 
-  protected static $query;
-
   public $url;
 
 
@@ -51,31 +49,18 @@ class License extends \MovLib\Data\Image\AbstractImage {
   /**
    * Instantiate new license.
    *
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The unique license identifier. If no identifier is passed an empty license is created.
    */
   public function __construct($id = null) {
-    global $i18n;
-
-    // The default query for all selects.
-    if (!self::$query) {
-      self::$query =
-        "SELECT
-          `id`,
-          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
-          COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
-          `abbreviation`,
-          `url`,
-          UNIX_TIMESTAMP(`icon_changed`) AS `imageChanged`,
-          `icon_extension` AS `imageExtension`
-        FROM `licenses`"
-      ;
-    }
+    global $db, $i18n;
 
     // If we have an identifier try to fetch the license from the database.
     if ($id) {
-      $stmt = $this->query(self::$query . " WHERE `id` = ? LIMIT 1", "ssi", [ $i18n->languageCode, $i18n->languageCode, $id ]);
+      $query = self::getQuery();
+      $stmt  = $db->query("{$query} WHERE `id` = ? LIMIT 1", "ssi", [ $i18n->languageCode, $i18n->languageCode, $id ]);
       $stmt->bind_result($this->name, $this->description, $this->abbreviation, $this->url, $this->imageChanged, $this->imageExtension);
       if (!$stmt->fetch()) {
         throw new \DomainException;
@@ -97,13 +82,52 @@ class License extends \MovLib\Data\Image\AbstractImage {
 
   }
 
-  public function getLicenses() {
+  /**
+   * Get the default query.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @staticvar string $query
+   *   Used to cache the default query.
+   * @return string
+   *   The default query.
+   */
+  protected static function getQuery() {
     global $i18n;
+    static $query = null;
+    if (!$query) {
+      $query =
+        "SELECT
+          `id`,
+          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
+          COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
+          `abbreviation`,
+          `url`,
+          UNIX_TIMESTAMP(`icon_changed`) AS `imageChanged`,
+          `icon_extension` AS `imageExtension`
+        FROM `licenses`"
+      ;
+    }
+    return $query;
+  }
+
+  /**
+   * Get all available licenses.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @staticvar array $licenses
+   *   Used to cache the result.
+   * @return array
+   *   Associative array containing all available licenses.
+   */
+  public static function getLicenses() {
+    global $db, $i18n;
     static $licenses = [];
     if (!isset($licenses[$i18n->locale])) {
-      $result = $this->query(self::$query . " ORDER BY `name` ASC", "ss", [ $i18n->languageCode, $i18n->languageCode ])->get_result();
-      while ($license = $result->fetch_object(__CLASS__)) {
-        $licenses[$i18n->locale][$license->id] = $license;
+      $query  = self::getQuery();
+      $result = $db->query("{$query} ORDER BY `name` ASC", "ss", [ $i18n->languageCode, $i18n->languageCode ])->get_result();
+      while ($license = $result->fetch_assoc()) {
+        $licenses[$i18n->locale][$license["id"]] = $license["name"];
       }
     }
     return $licenses[$i18n->locale];

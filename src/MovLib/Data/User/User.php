@@ -129,6 +129,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *
    * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
    *
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @param string $from [optional]
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
@@ -137,9 +138,9 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\UserException
    */
   public function __construct($from = null, $value = null) {
-    global $i18n;
+    global $db, $i18n;
     if ($from && $value) {
-      $stmt = $this->query(
+      $stmt = $db->query(
         "SELECT
           `id`,
           `name`,
@@ -169,14 +170,17 @@ class User extends \MovLib\Data\Image\AbstractImage {
   /**
    * Commit the current state of the object to the database.
    *
+   * @global \MovLib\Data\Database $db
    * @return this
    */
   public function commit() {
-    return $this->query(
+    global $db;
+    $db->query(
       "UPDATE `users` SET `image_changed` = FROM_UNIXTIME(?), `image_extension` = ? WHERE `id` = ?",
       "ssd",
       [ $this->imageChanged, $this->imageExtension, $this->id ]
     );
+    return $this;
   }
 
   /**

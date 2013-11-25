@@ -28,7 +28,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class I18n extends \MovLib\Data\Database {
+class I18n {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -155,6 +155,7 @@ class I18n extends \MovLib\Data\Database {
   /**
    * Format the given message and translate it to the display locale.
    *
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Kernel $kernel
    * @param string $context
    *   The context in which we should translate the message.
@@ -175,11 +176,11 @@ class I18n extends \MovLib\Data\Database {
    * @throws \IntlException
    */
   public function formatMessage($context, $pattern, $args, $options = null) {
-    global $kernel;
+    global $db, $kernel;
     $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
     if ($languageCode != $this->defaultLanguageCode) {
       // @todo Create translation extractor or use xgettext
-      if (!($result = $this->query("SELECT COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ])->get_result()->fetch_assoc())) {
+      if (!($result = $db->query("SELECT COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ])->get_result()->fetch_assoc())) {
         if ($context === "message") {
           $kernel->delayMethodCall([ $this, "insertMessage" ], [ $pattern, $options ]);
         }
@@ -210,6 +211,7 @@ class I18n extends \MovLib\Data\Database {
   /**
    * Insert message pattern.
    *
+   * @global \MovLib\Data\Database $db
    * @param string $message
    *   The message to insert.
    * @param array $options [optional]
@@ -218,11 +220,12 @@ class I18n extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function insertMessage($message, $options = null) {
-    if (empty($this->query("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", [ $message ])->get_result()->fetch_assoc())) {
+    global $db;
+    if (empty($db->query("SELECT `message_id` FROM `messages` WHERE `message` = ? LIMIT 1", "s", [ $message ])->get_result()->fetch_assoc())) {
       if (!isset($options["comment"])) {
         $options["comment"] = null;
       }
-      $this->query("INSERT INTO `messages` (`message`, `comment`, `dyn_translations`) VALUES (?, ?, '')", "ss", [ $message, $options["comment"] ]);
+      $db->query("INSERT INTO `messages` (`message`, `comment`, `dyn_translations`) VALUES (?, ?, '')", "ss", [ $message, $options["comment"] ]);
     }
     return $this;
   }
@@ -230,6 +233,7 @@ class I18n extends \MovLib\Data\Database {
   /**
    * Insert a translation of pattern into the database table identified by context.
    *
+   * @global \MovLib\Data\Database $db
    * @param string $context
    *   The context of this translation, either <em>message</em> or <em>route</em>.
    * @param int $id
@@ -242,7 +246,8 @@ class I18n extends \MovLib\Data\Database {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function insertOrUpdateTranslation($context, $id, $languageCode, $translation) {
-    $this->query(
+    global $db;
+    $db->query(
       "UPDATE `{$context}s` SET `dyn_translations` = COLUMN_ADD(`dyn_translations`, ?, ?) WHERE `{$context}_id` = ?",
       "ssd",
       [ $languageCode, $translation, $id ]
@@ -253,14 +258,16 @@ class I18n extends \MovLib\Data\Database {
   /**
    * Insert raoute pattern.
    *
+   * @global \MovLib\Data\Database $db
    * @param string $route
    *   The route to insert.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
   public function insertRoute($route) {
-    if (empty($this->query("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_assoc())) {
-      $this->query("INSERT INTO `routes` (`route`, `dyn_translations`) VALUES (?, '')", "s", [ $route ]);
+    global $db;
+    if (empty($db->query("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_assoc())) {
+      $db->query("INSERT INTO `routes` (`route`, `dyn_translations`) VALUES (?, '')", "s", [ $route ]);
     }
     return $this;
   }
