@@ -61,7 +61,7 @@ abstract class AbstractBaseImage {
 
   /**
    * 70x>
-   * 
+   *
    * Default image dimension for preview area of input file elements if the image exists.
    *
    * @var int
@@ -70,7 +70,7 @@ abstract class AbstractBaseImage {
 
   /**
    * 140x>
-   * 
+   *
    * Default image dimension for image listings.
    *
    * @var int
@@ -179,19 +179,10 @@ abstract class AbstractBaseImage {
 
 
   /**
-   * Generate all supported image styles.
-   *
-   * @param string $source
-   *   Absolute path to the uploaded image.
-   * @return this
-   */
-  protected abstract function generateStyles($source);
-
-  /**
    * Get the <var>$style</var> for this image.
    *
    * @param mixed $style
-   *   The desired style, use the objects <var>IMAGE_STYLE_*</var> constants. Defaults to <var>IMAGE_STYLE_SPAN_02</var>.
+   *   The desired style, use the objects <var>STYLE_*</var> class constants. Defaults to <var>STYLE_SPAN_02</var>.
    * @return \MovLib\Data\Image\Style
    *   The image's desired style object.
    */
@@ -322,43 +313,24 @@ abstract class AbstractBaseImage {
   }
 
   /**
-   * Upload the <var>$source</var> as this image, overriding the existing image.
+   * Upload the <var>$source</var>, overriding any existing image.
    *
    * @param string $source
    *   Absolute path to the uploaded image.
    * @param string $extension
    *   The three letter image extension (e.g. <code>"jpg"</code>).
-   * @param int $height
-   *   The height of the uploaded image in pixels.
-   * @param int $width
-   *   The width of the uploaded image in pixels.
+   * @param integer $height
+   *   <b>Unused!</b>
+   * @param integer $width
+   *   <b>Unused!</b>
    * @return this
-   * @throws \ErrorException
-   * @throws \LogicException
+   * @throws \RuntimeException
    */
   public function upload($source, $extension, $height, $width) {
-    // We have to export the extension to class scope in order to move the original image.
+    $this->changed   = $_SERVER["REQUEST_TIME"];
+    $this->exists    = true;
     $this->extension = $extension;
-
-    // Strip meta data from uploaded image and move to persistent storage.
-    $original = $this->getPath();
-    sh::execute("convert '{$source}' -strip +repage '{$original}'");
-    sh::executeDetached("rm {$source}");
-
-    // Collect all data we want to know about the newly uploaded image.
-    $this->changed = $this->created = $_SERVER["REQUEST_TIME"];
-    $this->height  = $height;
-    $this->filesize    = filesize($original);
-    $this->width   = $width;
-
-    // Let the concrete class create the various image styles.
-    $this->generateStyles($original);
-    if (!isset($this->styles[self::STYLE_SPAN_01]) || !isset($this->styles[self::STYLE_SPAN_02])) {
-      throw new \LogicException("Every image instance has to generate the default styles!");
-    }
-
-    // Must be last because extending classes use it to determine if they have to update or insert.
-    $this->exists = true;
+    $this->convert($this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true), self::STYLE_SPAN_01);
     return $this;
   }
 

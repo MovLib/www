@@ -156,9 +156,9 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
       $stmt->close();
-      $this->exists = (boolean) $this->exists;
-      $this->filename   = rawurlencode($this->name);
-      $this->route       = $i18n->r("/user/{0}", [ $this->filename ]);
+      $this->exists   = (boolean) $this->exists;
+      $this->filename = rawurlencode($this->name);
+      $this->route    = $i18n->r("/user/{0}", [ $this->filename ]);
     }
   }
 
@@ -203,26 +203,19 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         }
       }
       $this->exists  = false;
-      $this->changed = $this->extension = $this->stylesCache = null;
+      $this->changed = $this->extension = null;
       $kernel->delayMethodCall([ $this, "commit" ]);
     }
     return $this;
   }
 
   /**
-   * {@inheritdoc}
-   * @internal
-   *   We override the <code>parent::uploadImage()</code> method and can handle everything there, no need to implement
-   *   this method like other image instances have to.
-   * @codeCoverageIgnore
-   * @skeletonGeneratorIgnore
-   */
-  protected function generateStyles($source) {
-    return $this;
-  }
-
-  /**
-   * @inheritdoc
+   * Get the <var>$style</var> for this image.
+   *
+   * @param mixed $style
+   *   The desired style, use the objects <var>STYLE_*</var> class constants. Defaults to <var>STYLE_SPAN_02</var>.
+   * @return \MovLib\Data\Image\Style
+   *   The image's desired style object.
    */
   public function getStyle($style = self::STYLE_SPAN_02) {
     global $i18n;
@@ -236,36 +229,6 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
       );
     }
     return $this->stylesCache[$style];
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @internal
-   *   The user's avatar is different from other images, we don't keep the original file and directly generate all
-   *   styles (instead of a delayed call to ImageMagick as in other image classes). This is because avatar's are small
-   *   images and not those huge monsters as we get them if someone uploads a poster or lobby card.
-   * @param string $source
-   *   {@inheritdoc}
-   * @param string $extension
-   *   {@inheritdoc}
-   * @param integer $height
-   *   <b>UNUSED!</b> but kept for compatibility with parent signature.
-   * @param integer $width
-   *   <b>UNUSED!</b> but kept for compatibility with parent signature.
-   * @return this
-   * @throws \ErrorException
-   */
-  public function upload($source, $extension, $height, $width) {
-    $this->changed   = $_SERVER["REQUEST_TIME"];
-    $this->exists    = true;
-    $this->extension = $extension;
-    // Generate the span1 style from the converted span2 image (better quality and performance).
-    $this->convert(
-      $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true),
-      self::STYLE_SPAN_01
-    );
-    return $this;
   }
 
 }

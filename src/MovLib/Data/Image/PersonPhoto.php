@@ -28,25 +28,10 @@ use \MovLib\Data\Image\Style;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PersonPhoto extends \MovLib\Data\Image\AbstractBaseImage {
+class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The photo's alternative text.
-   *
-   * @var string
-   */
-  protected $alternativeText;
-
-  /**
-   * The photo's translated description.
-   *
-   * @var string
-   */
-  protected $description;
 
   /**
    * The photo's path within the upload directory.
@@ -57,53 +42,11 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractBaseImage {
   protected $imageDirectory = "person";
 
   /**
-   * The photo's identifier (unique together with the person identifier).
-   *
-   * @var integer
-   */
-  public $id;
-
-  /**
-   * The photo's license identifier.
-   *
-   * @var integer
-   */
-  public $licenseId;
-
-  /**
    * The photo's unique person identifier.
    *
    * @var integer
    */
   protected $personId;
-
-  /**
-   * The photo's route to its own details page or to the upload page if this photo doesn't exist yet.
-   *
-   * @var string
-   */
-  public $route;
-
-  /**
-   * The photo's source URL.
-   *
-   * @var string
-   */
-  public $source;
-
-  /**
-   * The photo's upvotes.
-   *
-   * @var integer
-   */
-  public $upvotes;
-
-  /**
-   * The photo's unique uploader's identifier.
-   *
-   * @var integer
-   */
-  public $userId;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
