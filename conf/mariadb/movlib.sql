@@ -1238,7 +1238,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users_collections` (
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
-  `master_release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The Master release\'s unique identifier.',
+  `master_release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The Master release’s unique identifier.',
   `count` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The amount of identical releases.',
   `currency_code` CHAR(3) NULL COMMENT 'The user’s ISO 4217 currency code.',
   `price` FLOAT UNSIGNED NULL COMMENT 'The price of the release.',
@@ -1256,7 +1256,91 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_collections` (
     REFERENCES `movlib`.`master_releases` (`master_release_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains all related data to an user collection.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`users_lists`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`users_lists` (
+  `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The user’s list’s unique ID.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
+  `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The user’s list’s type (enum from Data class).',
+  `dyn_names` BLOB NOT NULL COMMENT 'The user’s list’s translated names.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The user’s list’s translated descriptions.',
+  PRIMARY KEY (`id`, `user_id`, `type_id`),
+  INDEX `fk_users_lists_users_idx` (`user_id` ASC),
+  CONSTRAINT `fk_users_lists_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all related data to users lists.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`users_movies_lists`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`users_movies_lists` (
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
+  `users_lists_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s list’s unique ID.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  PRIMARY KEY (`user_id`, `users_lists_id`, `movie_id`),
+  INDEX `fk_users_movielists_movies_idx` (`movie_id` ASC),
+  INDEX `fk_users_movies_lists_users_idx` (`user_id` ASC),
+  CONSTRAINT `fk_users_movielists_users_lists`
+    FOREIGN KEY (`users_lists_id`)
+    REFERENCES `movlib`.`users_lists` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_movielists_movies`
+    FOREIGN KEY (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_movies_lists_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all related data to users movies lists.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`users_persons_lists`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`users_persons_lists` (
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
+  `users_lists_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s list’s unique ID.',
+  `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
+  PRIMARY KEY (`user_id`, `users_lists_id`, `person_id`),
+  INDEX `fk_users_person_lists_persons_idx` (`person_id` ASC),
+  INDEX `fk_users_persons_lists_users1_idx` (`user_id` ASC),
+  CONSTRAINT `fk_users_person_lists_users_lists`
+    FOREIGN KEY (`users_lists_id`)
+    REFERENCES `movlib`.`users_lists` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_person_lists_persons`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `movlib`.`persons` (`person_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_users_persons_lists_users1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all related data to users persons lists.';
 
 SHOW WARNINGS;
 
