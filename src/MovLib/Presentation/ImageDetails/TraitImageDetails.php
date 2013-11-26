@@ -145,7 +145,7 @@ trait TraitImageDetails {
     $stream = array_fill(0, MovieImages::STREAM_IMAGE_COUNT + 1, "<span class='span span--1'></span>");
     $stream[$activeImageIndex] = $this->getImage(
       $this->image,
-      AbstractImage::IMAGESTYLE_DETAILS_STREAM,
+      AbstractBaseImage::IMAGESTYLE_DETAILS_STREAM,
       null,
       $this->image->imageUri,
       [ "alt" => $this->image->imageAlt, "class" => "active span span--1" ]
@@ -171,7 +171,7 @@ trait TraitImageDetails {
       "<div id='image-details--stream'>{$stream}</div>" .
       "<div id='image-details--image'>{$previous}{$this->getImage(
         $this->image,
-        AbstractImage::IMAGESTYLE_DETAILS,
+        AbstractBaseImage::IMAGESTYLE_DETAILS,
         [ "alt" => "{$this->entityTitle} {$this->image->imageAlt}" ],
         $this->image->imageUri
       )}{$next}</div>" .

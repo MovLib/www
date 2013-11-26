@@ -74,11 +74,11 @@ class Show extends \MovLib\Presentation\Page {
    * @return type
    */
   public function renderAvatar($user, $attributes, $i) {
-    $routeName = rawurlencode($user->imageName);
-    if ($user->imageExists == false) {
+    $routeName = rawurlencode($user->filename);
+    if ($user->exists == false) {
       $attributes["src"] = "https://alpha.movlib.org/img/logo/vector.svg";
     }
-    return "<a class='ia' href='{$this->userRoute}{$routeName}'><img{$this->expandTagAttributes($attributes)}><br><small>{$user->imageName}</small></a>";
+    return "<a class='ia' href='{$this->userRoute}{$routeName}'><img{$this->expandTagAttributes($attributes)}><br><small>{$user->filename}</small></a>";
   }
 
 }

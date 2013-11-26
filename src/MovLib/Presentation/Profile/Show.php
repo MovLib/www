@@ -72,7 +72,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
           "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->user->access, $this->user->timeZoneIdentifier)}</dd>" .
         "</dl>" .
         "<div class='span span--2'>" .
-          $this->a($i18n->r("/user/account-settings"), $this->getImage($this->user->getImageStyle()), [
+          $this->a($i18n->r("/user/account-settings"), $this->getImage($this->user->getStyle()), [
             "class" => "change-avatar no-border",
             "title" => "Change your avatar image.",
           ]) .

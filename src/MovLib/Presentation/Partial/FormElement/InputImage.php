@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Data\Image\AbstractImage as Image;
+use \MovLib\Data\Image\AbstractBaseImage as Image;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\ValidationException;
 
@@ -70,7 +70,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   /**
    * The image instance responsible for storing this image.
    *
-   * @var \MovLib\Data\Image\AbstractImage
+   * @var \MovLib\Data\Image\AbstractBaseImage
    */
   protected $image;
 
@@ -106,7 +106,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    *   The form element's global unique identifier.
    * @param string $label
    *   The label test.
-   * @param \MovLib\Data\Image\AbstractImage $concreteImage
+   * @param \MovLib\Data\Image\AbstractBaseImage $concreteImage
    *   The abstract image instance that's responsible for this image.
    * @param array $attributes [optional]
    *   Additional attributes.
@@ -125,8 +125,8 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     parent::__construct($id, $label, $attributes);
     $this->attributes["accept"]            = "image/jpeg,image/png";
     $this->attributes["data-max-filesize"] = ini_get("upload_max_filesize");
-    $this->attributes["data-min-height"]   = isset($this->image->imageHeight) ? $this->image->imageHeight : Image::IMAGE_MIN_HEIGHT;
-    $this->attributes["data-min-width"]    = isset($this->image->imageWidth) ? $this->image->imageWidth : Image::IMAGE_MIN_WIDTH;
+    $this->attributes["data-min-height"]   = isset($this->image->height) ? $this->image->height : Image::IMAGE_MIN_HEIGHT;
+    $this->attributes["data-min-width"]    = isset($this->image->width) ? $this->image->width : Image::IMAGE_MIN_WIDTH;
     $this->attributes["type"]              = "file";
     $this->image                           = $concreteImage;
     $helpMessageAttributes                 = $this->formatBytes($this->attributes["data-max-filesize"]);
@@ -141,10 +141,10 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    * @global \MovLib\Kernel $kernel
    */
   protected function render() {
-    if ($this->image->imageExists === true) {
+    if ($this->image->exists === true) {
       return
         "<div class='row'>" .
-          "<div class='span span--1'>{$this->getImage($this->image->getImageStyle(Image::IMAGE_STYLE_SPAN_01))}</div>" .
+          "<div class='span span--1'>{$this->getImage($this->image->getStyle(Image::STYLE_SPAN_01))}</div>" .
           "<div class='span span--8'>{$this->help}<label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></div>" .
         "</div>"
       ;
@@ -224,12 +224,12 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     // @todo @Richard
     //   Think about a way to solve this kind of problem once and for all. Maybe with a ConfirmationException which is
     //   catched in main.php?
-    if ($this->height < $this->image->imageHeight || $this->width < $this->image->imageWidth) {
+    if ($this->height < $this->image->height || $this->width < $this->image->width) {
       throw new ValidationException($i18n->t(
         "New images should have a better quality than already existing images, this includes the resolution. The " .
         "current image’s resolution is {0}x{1} pixels but yours is {2}x{3}. Please cofirm that your upload has a " .
         "better quality than the existing on despite the fact of smaller dimensions.",
-        [ $this->image->imageWidth, $this->image->imageHeight, $this->width, $this->height ]
+        [ $this->image->width, $this->image->height, $this->width, $this->height ]
       ));
     }
 

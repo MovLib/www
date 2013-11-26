@@ -225,9 +225,9 @@ class Full extends \MovLib\Data\User\User {
         $this->aboutMe,
         $this->edits,
         $this->email,
-        $this->imageChanged,
-        $this->imageExtension,
-        $this->imageExists,
+        $this->changed,
+        $this->extension,
+        $this->exists,
         $this->password,
         $this->private,
         $this->profileViews,
@@ -242,11 +242,11 @@ class Full extends \MovLib\Data\User\User {
         throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
       $stmt->close();
-      $this->imageExists = (boolean) $this->imageExists;
-      $this->imageName   = rawurlencode($this->name);
+      $this->exists = (boolean) $this->exists;
+      $this->filename   = rawurlencode($this->name);
       $this->private     = (boolean) $this->private;
       // The image name already has all unsave characters removed.
-      $this->route       = $i18n->r("/user/{0}", [ rawurlencode($this->imageName) ]);
+      $this->route       = $i18n->r("/user/{0}", [ rawurlencode($this->filename) ]);
       if (!$this->currencyCode) {
         $this->currencyCode = Currency::getDefaultCode();
       }
@@ -317,8 +317,8 @@ class Full extends \MovLib\Data\User\User {
         $this->currencyCode,
         $i18n->languageCode,
         $this->aboutMe,
-        $this->imageChanged,
-        $this->imageExtension,
+        $this->changed,
+        $this->extension,
         $this->private,
         $this->realName,
         $this->sex,
@@ -340,7 +340,7 @@ class Full extends \MovLib\Data\User\User {
    */
   public function delete() {
     global $db;
-    $this->deleteImage();
+    $this->delete();
     $db->query(
       "UPDATE `users` SET
         `email`                = NULL,

@@ -28,7 +28,7 @@ use \MovLib\Data\Image\Style;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
+class PersonPhoto extends \MovLib\Data\Image\AbstractBaseImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -152,31 +152,31 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
         $this->id,
         $this->userId,
         $this->licenseId,
-        $this->imageWidth,
-        $this->imageHeight,
-        $this->imageSize,
-        $this->imageExtension,
-        $this->imageChanged,
-        $this->imageCreated,
+        $this->width,
+        $this->height,
+        $this->filesize,
+        $this->extension,
+        $this->changed,
+        $this->created,
         $this->upvotes,
         $this->description,
         $this->source,
-        $this->imageStyles
+        $this->styles
       );
       if (!$stmt->fetch()) {
         throw new \OutOfBoundsException("Couldn't find person photo for identifier '{$id}' (person identifier '{$this->personId}')");
       }
       $stmt->close();
-      $this->imageExists = true;
+      $this->exists = true;
     }
     else {
       $this->id          = $this->getNextId();
-      $this->imageExists = (boolean) $this->imageExists;
+      $this->exists = (boolean) $this->exists;
     }
     $this->alternativeText = $i18n->t("Photo of {person_name}.", [ "person_name" => $personName ]);
-    $this->imageDirectory .= "/{$this->personId}";
-    $this->imageName       = $this->id;
-    if ($this->imageExists === true) {
+    $this->directory .= "/{$this->personId}";
+    $this->filename       = $this->id;
+    if ($this->exists === true) {
       $this->route = $i18n->r("/person/{0}/photo/{1}", [ $this->personId, $this->id ]);
     }
     else {
@@ -194,14 +194,14 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    */
-  protected function generateImageStyles($source) {
+  protected function generateStyles($source) {
     global $db, $i18n, $session;
 
     // Generate the various image styles and always go from best quality down to worst quality.
 
   }
 
-  public function getImageStyle($style = self::IMAGE_STYLE_SPAN_02) {
+  public function getStyle($style = self::STYLE_SPAN_02) {
 
   }
 

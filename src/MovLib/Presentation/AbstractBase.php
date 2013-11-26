@@ -157,6 +157,8 @@ abstract class AbstractBase {
    * <b>Example usages with Intl ICU</b>
    * <pre>$i18n->t("{0,number} {1}", [ $this->formatBytes($bytes) ]);</pre>
    *
+   * @internal
+   *   A loop is actually slower than the current implementation.
    * @staticvar array $units
    *   Available file size units.
    * @param int $bytes
@@ -165,17 +167,17 @@ abstract class AbstractBase {
    *   Numeric array containing the truncated number in offset 0 and the unit in offset 1.
    */
   protected final function formatBytes($bytes) {
-    if ($bytes >= 1000000000000) {
-      return [ round($bytes / 1000000000000, 2), "TB" ];
+    if ($bytes >= 1e12) {
+      return [ round($bytes / 1e12, 2), "TB" ];
     }
-    if ($bytes >= 1000000000) {
-      return [ round($bytes / 1000000000, 2), "GB" ];
+    if ($bytes >= 1e9) {
+      return [ round($bytes / 1e9, 2), "GB" ];
     }
-    if ($bytes >= 1000000) {
-      return [ round($bytes / 1000000, 2), "MB" ];
+    if ($bytes >= 1e6) {
+      return [ round($bytes / 1e6, 2), "MB" ];
     }
-    if ($bytes >= 1000) {
-      return [ round($bytes / 1000, 2), "kB" ];
+    if ($bytes >= 1e3) {
+      return [ round($bytes / 13, 2), "kB" ];
     }
     return [ round($bytes, 2), "B" ];
   }

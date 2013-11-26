@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Data\User\User;
-use \MovLib\Data\Image\AbstractImage;
+use \MovLib\Data\Image\AbstractBaseImage;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
 
 /**
@@ -54,8 +54,8 @@ class InputImageTest extends \MovLib\TestCase {
   public function testConstructGlobalDimensionConstraints() {
     $concreteImage = new User();
     $inputImage    = new InputImage("phpunit", "PHPUnit", $concreteImage);
-    $this->assertEquals(AbstractImage::IMAGE_MIN_HEIGHT, $inputImage->attributes["data-min-height"]);
-    $this->assertEquals(AbstractImage::IMAGE_MIN_WIDTH, $inputImage->attributes["data-min-width"]);
+    $this->assertEquals(AbstractBaseImage::IMAGE_MIN_HEIGHT, $inputImage->attributes["data-min-height"]);
+    $this->assertEquals(AbstractBaseImage::IMAGE_MIN_WIDTH, $inputImage->attributes["data-min-width"]);
   }
 
   /**
@@ -73,7 +73,7 @@ class InputImageTest extends \MovLib\TestCase {
    */
   public function testToStringNoImage() {
     $concreteImage              = new User(User::FROM_ID, 1);
-    $concreteImage->imageExists = false;
+    $concreteImage->exists = false;
     $inputImage                 = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
     $this->assertNotContains("<img", $inputImage);
     $this->assertContains("<label for='phpunit'>PHPUnit</label>", $inputImage);

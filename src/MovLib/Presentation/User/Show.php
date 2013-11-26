@@ -125,7 +125,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         $personalData = "<p>{$personalData}</p>";
       }
 
-      $avatar = $this->getImage($this->user->getImageStyle(), false, [ "itemprop" => "image" ]);
+      $avatar = $this->getImage($this->user->getStyle(), false, [ "itemprop" => "image" ]);
       if ($session->userId === $this->user->id) {
         $avatar = "<a class='img text-center' href='{$this->routeAccountSettings}'>{$avatar}<span>{$i18n->t("Change Avatar")}</span></a>";
       }

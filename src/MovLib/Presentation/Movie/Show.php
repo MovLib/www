@@ -163,7 +163,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
           "<small><span class='visuallyhidden'>{$i18n->t("Genres:")} </span>{$genres} | <span class='visuallyhidden'>{$i18n->t("Styles:")} </span>{$styles}</small>" .
         "</div>" . // close .span
         $this->getImage(
-          $this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_03),
+          $this->movie->displayPoster->getStyle(MoviePoster::IMAGE_STYLE_SPAN_03),
           $i18n->t("/movie/{0}/posters", [ $this->movie->id ]),
           [ "itemprop" => "image" ],
           [ "class" => "span span--3" ]

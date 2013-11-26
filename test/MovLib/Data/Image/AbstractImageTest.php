@@ -18,7 +18,7 @@
 namespace MovLib\Data\Image;
 
 use \MovLib\Data\UnixShell as sh;
-use \MovLib\Data\Image\AbstractImage as Image;
+use \MovLib\Data\Image\AbstractBaseImage as Image;
 
 /**
  * @coversDefaultClass \MovLib\Data\Image\AbstractImage
@@ -38,7 +38,7 @@ class AbstractImageTest extends \MovLib\TestCase {
   private static $dirStyles;
   private static $tmpImage;
 
-  /** @var \MovLib\Data\Image\AbstractImage */
+  /** @var \MovLib\Data\Image\AbstractBaseImage */
   private $image;
 
 
@@ -80,14 +80,14 @@ class AbstractImageTest extends \MovLib\TestCase {
    * @covers ::convertImage
    */
   public function testConvertImageNoDimensionsCropFalse() {
-    $path = $this->invoke($this->image, "convertImage", [ self::$tmpImage, Image::IMAGE_STYLE_SPAN_02 ]);
+    $path = $this->invoke($this->image, "convertImage", [ self::$tmpImage, Image::STYLE_SPAN_02 ]);
     $this->assertTrue(is_file($path) && is_readable($path) && is_writable($path));
     list($width, $height) = getimagesize($path);
     foreach ([
-    $width, $this->getProperty($this->image, "imageStyles")[Image::IMAGE_STYLE_SPAN_02]["width"],
-    $height, $this->getProperty($this->image, "imageStyles")[Image::IMAGE_STYLE_SPAN_02]["height"]
+    $width, $this->getProperty($this->image, "imageStyles")[Image::STYLE_SPAN_02]["width"],
+    $height, $this->getProperty($this->image, "imageStyles")[Image::STYLE_SPAN_02]["height"]
     ] as $actual) {
-      $this->assertEquals(Image::IMAGE_STYLE_SPAN_02, $actual);
+      $this->assertEquals(Image::STYLE_SPAN_02, $actual);
     }
   }
 
@@ -95,13 +95,13 @@ class AbstractImageTest extends \MovLib\TestCase {
    * @covers ::convertImage
    */
   public function testConvertImageDimensionsCropTrue() {
-    $path = $this->invoke($this->image, "convertImage", [ self::$tmpImage, Image::IMAGE_STYLE_SPAN_02, Image::IMAGE_STYLE_SPAN_02, Image::IMAGE_STYLE_SPAN_01, true ]);
+    $path = $this->invoke($this->image, "convertImage", [ self::$tmpImage, Image::STYLE_SPAN_02, Image::STYLE_SPAN_02, Image::STYLE_SPAN_01, true ]);
     $this->assertTrue(is_file($path) && is_readable($path) && is_writable($path));
     list($width, $height) = getimagesize($path);
-    $this->assertEquals(Image::IMAGE_STYLE_SPAN_02, $width);
-    $this->assertEquals(Image::IMAGE_STYLE_SPAN_02, $this->getProperty($this->image, "imageStyles")[Image::IMAGE_STYLE_SPAN_02]["width"]);
-    $this->assertEquals(Image::IMAGE_STYLE_SPAN_01, $height);
-    $this->assertEquals(Image::IMAGE_STYLE_SPAN_01, $this->getProperty($this->image, "imageStyles")[Image::IMAGE_STYLE_SPAN_02]["height"]);
+    $this->assertEquals(Image::STYLE_SPAN_02, $width);
+    $this->assertEquals(Image::STYLE_SPAN_02, $this->getProperty($this->image, "imageStyles")[Image::STYLE_SPAN_02]["width"]);
+    $this->assertEquals(Image::STYLE_SPAN_01, $height);
+    $this->assertEquals(Image::STYLE_SPAN_01, $this->getProperty($this->image, "imageStyles")[Image::STYLE_SPAN_02]["height"]);
   }
 
   /**
@@ -109,20 +109,20 @@ class AbstractImageTest extends \MovLib\TestCase {
    * @expectedException \MovLib\Exception\ImageException
    */
   public function testConvertImageException() {
-    $this->invoke($this->image, "convertImage", [ __FILE__, Image::IMAGE_STYLE_SPAN_02 ]);
+    $this->invoke($this->image, "convertImage", [ __FILE__, Image::STYLE_SPAN_02 ]);
   }
 
   /**
    * @covers ::deleteImage
    */
   public function testDeleteImage() {
-    $this->image->imageExists = true;
+    $this->image->exists = true;
     $imageName                = $this->getProperty($this->image, "imageName");
     $imageExtension           = $this->getProperty($this->image, "imageExtension");
-    $imageStyles              = [ Image::IMAGE_STYLE_SPAN_01 => [ ], Image::IMAGE_STYLE_SPAN_02 => [ ] ];
+    $imageStyles              = [ Image::STYLE_SPAN_01 => [ ], Image::STYLE_SPAN_02 => [ ] ];
     $imageOriginal            = self::$dirOriginal . "{$imageName}.{$imageExtension}";
-    $imageStyle01             = self::$dirStyles . "{$imageName}." . Image::IMAGE_STYLE_SPAN_01 . ".{$imageExtension}";
-    $imageStyle02             = self::$dirStyles . "{$imageName}." . Image::IMAGE_STYLE_SPAN_02 . ".{$imageExtension}";
+    $imageStyle01             = self::$dirStyles . "{$imageName}." . Image::STYLE_SPAN_01 . ".{$imageExtension}";
+    $imageStyle02             = self::$dirStyles . "{$imageName}." . Image::STYLE_SPAN_02 . ".{$imageExtension}";
     $this->setProperty($this->image, "imageStyles", serialize($imageStyles));
     foreach ([ $imageOriginal, $imageStyle01, $imageStyle02 ] as $image) {
       touch($image);

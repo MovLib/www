@@ -172,7 +172,7 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
       $this->image->description = $this->description->value;
       $this->image->licenseId   = $this->license->value;
       $this->image->source      = $this->source->value;
-      $this->image->uploadImage($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
+      $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
       throw new RedirectSeeOtherException($this->image->route);
     }
     return $this;

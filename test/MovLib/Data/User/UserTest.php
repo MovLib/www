@@ -75,8 +75,8 @@ class UserTest extends \MovLib\TestCase {
 
   public function dataProviderImageStyles() {
     return [
-      [ User::IMAGE_STYLE_SPAN_01 ],
-      [ User::IMAGE_STYLE_SPAN_02 ],
+      [ User::STYLE_SPAN_01 ],
+      [ User::STYLE_SPAN_02 ],
     ];
   }
 
@@ -127,10 +127,10 @@ class UserTest extends \MovLib\TestCase {
    */
   public function testDeleteImage() {
     $this->invoke($this->user, "deleteImage");
-    foreach ([ User::IMAGE_STYLE_SPAN_01, User::IMAGE_STYLE_SPAN_02 ] as $style) {
+    foreach ([ User::STYLE_SPAN_01, User::STYLE_SPAN_02 ] as $style) {
       $this->assertFileNotExists($this->invoke($this->user, "getImagePath", [ $style ]));
     }
-    $this->assertFalse($this->user->imageExists);
+    $this->assertFalse($this->user->exists);
     $this->assertNull($this->getProperty($this->user, "imageChanged"));
     $this->assertNull($this->getProperty($this->user, "imageExtension"));
 
@@ -146,8 +146,8 @@ class UserTest extends \MovLib\TestCase {
   public function testDeleteImageFileMissing() {
     // Setup
     $paths = [
-      $this->invoke($this->user, "getImagePath", [ User::IMAGE_STYLE_SPAN_01 ]),
-      $this->invoke($this->user, "getImagePath", [ User::IMAGE_STYLE_SPAN_02 ]),
+      $this->invoke($this->user, "getImagePath", [ User::STYLE_SPAN_01 ]),
+      $this->invoke($this->user, "getImagePath", [ User::STYLE_SPAN_02 ]),
     ];
     foreach ($paths as $path) {
       unlink($path);
@@ -172,7 +172,7 @@ class UserTest extends \MovLib\TestCase {
    */
   public function testGetImageStyle($style) {
     global $kernel;
-    $styleObj = $this->user->getImageStyle($style);
+    $styleObj = $this->user->getStyle($style);
     $this->assertInstanceOf("\\MovLib\\Data\\Image\\Style", $styleObj);
     $this->assertEquals("Avatar image of Fleshgrinder.", $styleObj->alt);
     $this->assertEquals("//{$kernel->domainStatic}/upload/user/Fleshgrinder.{$style}.jpg?c=" . $this->getProperty($this->user, "imageChanged"), $styleObj->src);
@@ -188,10 +188,10 @@ class UserTest extends \MovLib\TestCase {
   public function testUploadImage() {
     global $kernel;
     $source = tempnam(sys_get_temp_dir(), "phpunit");
-    copy("{$kernel->documentRoot}/conf/seed/upload/user/{$this->getProperty($this->user, "imageName")}." . User::IMAGE_STYLE_SPAN_02 . ".jpg", $source);
+    copy("{$kernel->documentRoot}/conf/seed/upload/user/{$this->getProperty($this->user, "imageName")}." . User::STYLE_SPAN_02 . ".jpg", $source);
     $this->invoke($this->user, "deleteImage");
-    $this->user->uploadImage($source, "jpg", 220, 220);
-    foreach ([ User::IMAGE_STYLE_SPAN_01, User::IMAGE_STYLE_SPAN_02 ] as $style) {
+    $this->user->upload($source, "jpg", 220, 220);
+    foreach ([ User::STYLE_SPAN_01, User::STYLE_SPAN_02 ] as $style) {
       $this->assertFileExists($this->invoke($this->user, "getImagePath", [ $style ]));
     }
     $this->assertEquals(1, $this->getProperty($this->user, "imageExists"));

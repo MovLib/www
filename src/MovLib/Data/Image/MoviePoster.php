@@ -28,7 +28,7 @@ use \MovLib\Data\Image\Style;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviePoster extends \MovLib\Data\Image\AbstractImage {
+class MoviePoster extends \MovLib\Data\Image\AbstractBaseImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -186,31 +186,31 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         $this->userId,
         $this->licenseId,
         $this->countryCode,
-        $this->imageWidth,
-        $this->imageHeight,
-        $this->imageSize,
-        $this->imageExtension,
-        $this->imageChanged,
-        $this->imageCreated,
+        $this->width,
+        $this->height,
+        $this->filesize,
+        $this->extension,
+        $this->changed,
+        $this->created,
         $this->upvotes,
         $this->description,
         $this->source,
-        $this->imageStyles
+        $this->styles
       );
       if (!$stmt->fetch()) {
         throw new \OutOfBoundsException("Couldn't find image with ID '{$imageId}' of type '{$this->typeId}' for movie with ID '{$movieId}'.");
       }
       $stmt->close();
-      $this->imageExists = true;
+      $this->exists = true;
     }
     else {
       $this->id          = $this->getNextId();
-      $this->imageExists = (boolean) $this->imageExists;
+      $this->exists = (boolean) $this->exists;
     }
     $this->alternativeText = $i18n->t("Poster for {movie_title_with_year}.", [ "movie_title_with_year" => $displayTitleWithYear ]);
-    $this->imageDirectory .= "/{$movieId}/poster";
-    $this->imageName       = $this->id;
-    if ($this->imageExists === true) {
+    $this->directory .= "/{$movieId}/poster";
+    $this->filename       = $this->id;
+    if ($this->exists === true) {
       $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $this->movieId, $this->id ]);
     }
     else {
@@ -228,17 +228,17 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    */
-  protected function generateImageStyles($source) {
+  protected function generateStyles($source) {
     global $db, $i18n, $session;
 
     // Generate the various image's styles and always go from best quality down to worst quality.
-    $span08 = $this->convertImage($source, self::IMAGE_STYLE_SPAN_08);
-    $span03 = $this->convertImage($span08, self::IMAGE_STYLE_SPAN_03);
-    $span02 = $this->convertImage($span03, self::IMAGE_STYLE_SPAN_02);
-    $this->convertImage($span02, self::IMAGE_STYLE_SPAN_01);
+    $span08 = $this->convert($source, self::IMAGE_STYLE_SPAN_08);
+    $span03 = $this->convert($span08, self::IMAGE_STYLE_SPAN_03);
+    $span02 = $this->convert($span03, self::STYLE_SPAN_02);
+    $this->convert($span02, self::STYLE_SPAN_01);
 
     // Update the record with the new data if this is an update.
-    if ($this->imageExists === true) {
+    if ($this->exists === true) {
       throw new \LogicException("Not implemented yet!");
     }
     // If this is a new upload insert the record and create the new details route for this upload.
@@ -268,16 +268,16 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
           $session->userId,
           $this->licenseId,
           $this->countryCode,
-          $this->imageWidth,
-          $this->imageHeight,
-          $this->imageSize,
-          $this->imageExtension,
-          $this->imageChanged,
-          $this->imageCreated,
+          $this->width,
+          $this->height,
+          $this->filesize,
+          $this->extension,
+          $this->changed,
+          $this->created,
           $i18n->languageCode,
           $this->description,
           $this->source,
-          serialize($this->imageStyles),
+          serialize($this->styles),
         ]
       );
       $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $this->movieId, $this->id ]);
@@ -289,20 +289,20 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   /**
    * @inheritdoc
    */
-  public function getImageStyle($style = self::IMAGE_STYLE_SPAN_02) {
-    if (!isset($this->imageStyles[$style])) {
-      $this->imageStyles = unserialize($this->imageStyles);
+  public function getStyle($style = self::STYLE_SPAN_02) {
+    if (!isset($this->styles[$style])) {
+      $this->styles = unserialize($this->styles);
     }
-    if (!isset($this->imageStylesCache[$style])) {
-      $this->imageStylesCache[$style] = new Style(
+    if (!isset($this->stylesCache[$style])) {
+      $this->stylesCache[$style] = new Style(
         $this->alternativeText,
-        $this->getImageURL($style),
-        $this->imageStyles[$style]["width"],
-        $this->imageStyles[$style]["height"],
+        $this->getURL($style),
+        $this->styles[$style]["width"],
+        $this->styles[$style]["height"],
         $this->route
       );
     }
-    return $this->imageStylesCache[$style];
+    return $this->stylesCache[$style];
   }
 
   /**

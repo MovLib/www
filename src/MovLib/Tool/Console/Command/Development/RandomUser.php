@@ -174,7 +174,7 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     if (($c = count($usersWithAvatar))) {
       $this->write("Generating avatar images (every 6th user has none) ...");
-      $dim    = UserFull::IMAGE_STYLE_SPAN_02;
+      $dim    = UserFull::STYLE_SPAN_02;
       $tmp    = ini_get("upload_tmp_dir") . "/movdev-command-create-users.jpg";
       if (sh::execute("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}") === false) {
         throw new \RuntimeException("Couldn't create random image with ImageMagick!");
@@ -185,8 +185,8 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       $result = $db->query("SELECT `user_id`, `name` FROM `users` WHERE `name` IN ({$in})", str_repeat("s", $c), $usersWithAvatar)->get_result();
       while ($row = $result->fetch_assoc()) {
         $this->setProperty($user, "imageName", $row["name"]);
-        $this->invoke($user, "convertImage", [ $tmp, UserFull::IMAGE_STYLE_SPAN_02 ]);
-        $this->invoke($user, "convertImage", [ $tmp, UserFull::IMAGE_STYLE_SPAN_01 ]);
+        $this->invoke($user, "convertImage", [ $tmp, UserFull::STYLE_SPAN_02 ]);
+        $this->invoke($user, "convertImage", [ $tmp, UserFull::STYLE_SPAN_01 ]);
         $this->progress->advance();
       }
       unlink($tmp);

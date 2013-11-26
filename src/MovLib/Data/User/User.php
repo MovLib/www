@@ -28,7 +28,7 @@ use \MovLib\Data\Image\Style;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class User extends \MovLib\Data\Image\AbstractImage {
+class User extends \MovLib\Data\Image\AbstractBaseImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -151,14 +151,14 @@ class User extends \MovLib\Data\Image\AbstractImage {
         $this->types[$from],
         [ $value ]
       );
-      $stmt->bind_result($this->id, $this->name, $this->imageChanged, $this->imageExtension, $this->imageExists);
+      $stmt->bind_result($this->id, $this->name, $this->changed, $this->extension, $this->exists);
       if (!$stmt->fetch()) {
         throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
       $stmt->close();
-      $this->imageExists = (boolean) $this->imageExists;
-      $this->imageName   = rawurlencode($this->name);
-      $this->route       = $i18n->r("/user/{0}", [ $this->imageName ]);
+      $this->exists = (boolean) $this->exists;
+      $this->filename   = rawurlencode($this->name);
+      $this->route       = $i18n->r("/user/{0}", [ $this->filename ]);
     }
   }
 
@@ -177,7 +177,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
     $db->query(
       "UPDATE `users` SET `image_changed` = FROM_UNIXTIME(?), `image_extension` = ? WHERE `id` = ?",
       "ssd",
-      [ $this->imageChanged, $this->imageExtension, $this->id ]
+      [ $this->changed, $this->extension, $this->id ]
     );
     return $this;
   }
@@ -190,20 +190,20 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   No need to delete the directory, all avatars are in the same directory and at least one is always present.
    * @return this
    */
-  protected function deleteImage() {
+  protected function delete() {
     global $kernel;
-    if ($this->imageExists == true) {
-      foreach ([ self::IMAGE_STYLE_SPAN_01, self::IMAGE_STYLE_SPAN_02 ] as $style) {
+    if ($this->exists == true) {
+      foreach ([ self::STYLE_SPAN_01, self::STYLE_SPAN_02 ] as $style) {
         try {
-          $path = $this->getImagePath($style);
+          $path = $this->getPath($style);
           unlink($path);
         }
         catch (\ErrorException $e) {
           error_log("Couldn't delete '{$path}'.");
         }
       }
-      $this->imageExists  = false;
-      $this->imageChanged = $this->imageExtension = $this->imageStylesCache = null;
+      $this->exists  = false;
+      $this->changed = $this->extension = $this->stylesCache = null;
       $kernel->delayMethodCall([ $this, "commit" ]);
     }
     return $this;
@@ -217,25 +217,25 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @codeCoverageIgnore
    * @skeletonGeneratorIgnore
    */
-  protected function generateImageStyles($source) {
+  protected function generateStyles($source) {
     return $this;
   }
 
   /**
    * @inheritdoc
    */
-  public function getImageStyle($style = self::IMAGE_STYLE_SPAN_02) {
+  public function getStyle($style = self::STYLE_SPAN_02) {
     global $i18n;
-    if (!isset($this->imageStylesCache[$style])) {
-      $this->imageStylesCache[$style] = new Style(
+    if (!isset($this->stylesCache[$style])) {
+      $this->stylesCache[$style] = new Style(
         $i18n->t("Avatar image of {0}.", [ $this->name ]),
-        $this->getImageURL($style),
+        $this->getURL($style),
         $style,
         $style,
         $this->route
       );
     }
-    return $this->imageStylesCache[$style];
+    return $this->stylesCache[$style];
   }
 
   /**
@@ -256,14 +256,14 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @return this
    * @throws \ErrorException
    */
-  public function uploadImage($source, $extension, $height, $width) {
-    $this->imageChanged   = $_SERVER["REQUEST_TIME"];
-    $this->imageExists    = true;
-    $this->imageExtension = $extension;
+  public function upload($source, $extension, $height, $width) {
+    $this->changed   = $_SERVER["REQUEST_TIME"];
+    $this->exists    = true;
+    $this->extension = $extension;
     // Generate the span1 style from the converted span2 image (better quality and performance).
-    $this->convertImage(
-      $this->convertImage($source, self::IMAGE_STYLE_SPAN_02, self::IMAGE_STYLE_SPAN_02, self::IMAGE_STYLE_SPAN_02, true),
-      self::IMAGE_STYLE_SPAN_01
+    $this->convert(
+      $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true),
+      self::STYLE_SPAN_01
     );
     return $this;
   }

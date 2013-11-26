@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\Lists;
 
-use \MovLib\Data\Image\AbstractImage;
+use \MovLib\Data\Image\AbstractBaseImage;
 
 /**
  * Create an image list.
@@ -54,7 +54,7 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *
    * @var int
    */
-  public $imageStyle = AbstractImage::IMAGE_STYLE_SPAN_02;
+  public $imageStyle = AbstractBaseImage::STYLE_SPAN_02;
 
   /**
    * The list's items attributes.

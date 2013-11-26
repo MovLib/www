@@ -43,7 +43,7 @@ class MoviePhotoDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
     global $i18n;
     $this->initMovie();
     $this->image = new MovieImage($this->model->id, MovieImage::IMAGETYPE_PHOTO, $_SERVER["IMAGE_ID"]);
-    if ($this->image->imageExists === false) {
+    if ($this->image->exists === false) {
       throw new ErrorNotFoundException("");
     }
     $this->entityTitle  = $this->title;
@@ -56,7 +56,7 @@ class MoviePhotoDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->streamImages = (new MovieImages(
       $this->model->id,
       MovieImage::IMAGETYPE_PHOTO,
-      new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
+      new ResizeCropCenterImageStyle(AbstractBaseImage::IMAGESTYLE_DETAILS_STREAM),
       $this->imagesRoute,
       $this->entityTitle
     ))->getOrderedByCreatedAsc($this->image->imageId, true);
@@ -70,7 +70,7 @@ class MoviePhotoDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
       (new MovieImages(
         $this->model->id,
         MovieImage::IMAGETYPE_PHOTO,
-        new ResizeCropCenterImageStyle(AbstractImage::IMAGESTYLE_DETAILS_STREAM),
+        new ResizeCropCenterImageStyle(AbstractBaseImage::IMAGESTYLE_DETAILS_STREAM),
         $this->imagesRoute,
         $this->entityTitle
       ))->getOrderedByCreatedAsc($imageId, false, $paginationSize);

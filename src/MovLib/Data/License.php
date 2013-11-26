@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class License extends \MovLib\Data\Image\AbstractImage {
+class License extends \MovLib\Data\Image\AbstractBaseImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -63,12 +63,12 @@ class License extends \MovLib\Data\Image\AbstractImage {
     if ($id) {
       $query = self::getQuery();
       $stmt  = $db->query("{$query} WHERE `id` = ? LIMIT 1", "ssi", [ $i18n->languageCode, $i18n->languageCode, $id ]);
-      $stmt->bind_result($this->name, $this->description, $this->abbreviation, $this->url, $this->imageChanged, $this->imageExtension);
+      $stmt->bind_result($this->name, $this->description, $this->abbreviation, $this->url, $this->changed, $this->extension);
       if (!$stmt->fetch()) {
         throw new \OutOfBoundsException("Couldn't find license for identifier '{$id}'");
       }
       $stmt->close();
-      $this->imageExists = (boolean) $this->imageChanged;
+      $this->exists = (boolean) $this->changed;
     }
   }
 
@@ -76,11 +76,11 @@ class License extends \MovLib\Data\Image\AbstractImage {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  protected function generateImageStyles($source) {
+  protected function generateStyles($source) {
 
   }
 
-  public function getImageStyle($style = self::IMAGE_STYLE_SPAN_02) {
+  public function getStyle($style = self::STYLE_SPAN_02) {
 
   }
 
