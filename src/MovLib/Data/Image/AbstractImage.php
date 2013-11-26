@@ -243,7 +243,7 @@ abstract class AbstractImage {
       $args = "'{$width}x{$height}>'";
     }
     $destination = $this->getImagePath($style);
-    if (sh::execute("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 75 -resize {$args} '{$destination}'") === false) {
+    if (sh::execute("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 80 -unsharp 0x0.75+0.75+0.008 -resize {$args} '{$destination}'") === false) {
       throw new ImageException("Could not convert '{$source}' to '{$style}'!");
     }
     list($this->imageStyles[$style]["width"], $this->imageStyles[$style]["height"]) = getimagesize($destination);

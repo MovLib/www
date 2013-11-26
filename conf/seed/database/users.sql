@@ -1,35 +1,91 @@
--- MySQL dump 10.14  Distrib 10.0.5-MariaDB, for debian-linux-gnu (x86_64)
+-- ---------------------------------------------------------------------------------------------------------------------
+-- This file is part of {@link https://github.com/MovLib MovLib}.
 --
--- Host: localhost    Database: movlib
--- ------------------------------------------------------
--- Server version	10.0.5-MariaDB-1~wheezy-log
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
+-- Copyright Â© 2013-present {@link https://movlib.org/ MovLib}.
 --
--- Dumping data for table `users`
+-- MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+-- License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+-- version.
 --
+-- MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+-- of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+--
+-- You should have received a copy of the GNU Affero General Public License along with MovLib.
+-- If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+-- ---------------------------------------------------------------------------------------------------------------------
 
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'Fleshgrinder','2013-11-11 21:23:11','1985-06-27','AT','2013-10-01 16:44:29', 'EUR', '\0\0\0\0\0\0ódeenÀ&lt;p&gt;Mein deutscher Profiltext.&lt;/p&gt;À&lt;p&gt;My English profile text.&lt;/p&gt;',0,'richard@fussenegger.info','2013-11-11 21:21:51','jpg','$2y$13$LFDTAUaaxs5D6XulZkDU4uKtYgJBuyjDBS2ax7k.oqsASEXstzQDu',0,0,'Richard Fussenegger',0,1,'en','Europe/Vienna','http://richard.fussenegger.info/'),(2,'Ravenlord','2013-11-11 21:21:51',NULL,'AT','2013-10-17 11:55:53', 'EUR','',0,'markus@deutschl.at',NULL,NULL,'$2y$13$xtl5jmUnz3F/Tss5qXyzt.fJ1Rppz/d2HGitxd.ig1MUM7gkXQCPC',0,0,'Markus Deutschl',0,1,'en','Europe/Vienna',NULL),(3,'ftorghele','2013-11-11 21:21:51',NULL,'AT','2013-10-17 11:57:36', 'EUR','',0,'franz@torghele.at',NULL,NULL,'$2y$13$UZQYCsImiKIDQQu1OPfaTe9pZSsOd5OCgsEPVXgAVm98ygQLN0Mje',0,0,'Franz Torghele',0,1,'en','Europe/Vienna',NULL);
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+-- ---------------------------------------------------------------------------------------------------------------------
+-- Movie seed data.
+--
+-- @author Richard Fussenegger <richard@fussenegger.info>
+-- @copyright Â© 2013 MovLib
+-- @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+-- @link https://movlib.org/
+-- @since 0.0.1-dev
+-- ---------------------------------------------------------------------------------------------------------------------
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+TRUNCATE TABLE `ratings`;
+TRUNCATE TABLE `sessions`;
+TRUNCATE TABLE `users`;
 
--- Dump completed on 2013-11-11 21:25:22
+-- START "Fleshgrinder"
+
+INSERT INTO `users` SET
+  `name`                 = 'Fleshgrinder',
+  `access`               = CURRENT_TIMESTAMP,
+  `birthday`             = '1985-06-27',
+  `country_code`         = 'AT',
+  `created`              = '2013-04-22 19:15:35', -- initial commit
+  `currency_code`        = 'EUR',
+  `dyn_about_me`         = COLUMN_CREATE(
+    'en', '&lt;p&gt;My English profile text.&lt;/p&gt;',
+    'de', '&lt;p&gt;Mein deutscher Profiltext.&lt;/p&gt;'
+  ),
+  `email`                = 'richard@fussenegger.info',
+  `image_changed`        = CURRENT_TIMESTAMP,
+  `image_extension`      = 'jpg',
+  `password`             = '$2y$13$LFDTAUaaxs5D6XulZkDU4uKtYgJBuyjDBS2ax7k.oqsASEXstzQDu',
+  `real_name`            = 'Richard Fussenegger',
+  `sex`                  = 1,
+  `system_language_code` = 'en',
+  `time_zone_identifier` = 'Europe/Vienna',
+  `website`              = 'http://richard.fussenegger.info/'
+;
+
+INSERT INTO `ratings` (`movie_id`, `user_id`, `rating`) VALUES
+(1, 1, 5), -- "Roundhay Garden Scene" must have 5 ;)
+(2, 1, 4); -- "Big Buck Bunny"
+
+UPDATE `movies` SET `rating` = (1 / (1 + 100)) * 5 + (100 / (1 + 100)), `mean_rating` = 5, `votes` = `votes`+ 1 WHERE `id` = 1;
+UPDATE `movies` SET `rating` = (1 / (1 + 100)) * 4 + (100 / (1 + 100)),`mean_rating` = 4, `votes` = `votes`+ 1 WHERE `id` = 2;
+
+-- END "Fleshgrinder"
+
+INSERT INTO `users` SET
+  `name`                 = 'Ravenlord',
+  `access`               = CURRENT_TIMESTAMP,
+  `country_code`         = 'AT',
+  `created`              = '2013-05-03 07:48:30', -- initial commit
+  `currency_code`        = 'EUR',
+  `email`                = 'markus@deutschl.at',
+  `password`             = '$2y$13$xtl5jmUnz3F/Tss5qXyzt.fJ1Rppz/d2HGitxd.ig1MUM7gkXQCPC',
+  `real_name`            = 'Markus Deutschl',
+  `sex`                  = 1,
+  `system_language_code` = 'en',
+  `time_zone_identifier` = 'Europe/Vienna'
+;
+
+
+INSERT INTO `users` SET
+  `name`                 = 'ftorghele',
+  `access`               = CURRENT_TIMESTAMP,
+  `country_code`         = 'AT',
+  `created`              = '2013-05-27 01:29:57', -- initial commit
+  `currency_code`        = 'EUR',
+  `email`                = 'franz@torghele.at',
+  `password`             = '$2y$13$UZQYCsImiKIDQQu1OPfaTe9pZSsOd5OCgsEPVXgAVm98ygQLN0Mje',
+  `real_name`            = 'Franz Torghele',
+  `sex`                  = 1,
+  `system_language_code` = 'en',
+  `time_zone_identifier` = 'Europe/Vienna'
+;

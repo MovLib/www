@@ -17,9 +17,11 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Movie\Full as MovieFull;
+use \MovLib\Presentation\Partial\Country;
+use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Lists\GlueSeparated;
-use \MovLib\Presentation\Partial\Lists\Unordered;
 
 /**
  * Single movie presentation page.
@@ -33,7 +35,7 @@ use \MovLib\Presentation\Partial\Lists\Unordered;
 class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
@@ -47,89 +49,110 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     try {
       $this->movie = new MovieFull($_SERVER["MOVIE_ID"]);
       $this->init($this->movie->displayTitleWithYear);
+      $this->schemaType = "Movie";
       if ($this->movie->year) {
-        $this->pageTitle = $i18n->t("{0} {1}({2}){3}", [ $this->movie->displayTitle, "<small>", $this->movie->year, "</small>" ]);
+        $this->pageTitle = $i18n->t("{movie_title} {time_open}({year}){time_close}", [
+          "movie_title" => "<span itemprop='name'>{$this->movie->displayTitle}</span>",
+          "time_open"   => "<time itemprop='datePublished'>",
+          "year"        => $this->movie->year,
+          "time_close"  => "</time>",
+        ]);
       }
       if ($this->movie->deleted === true) {
         return;
       }
       $this->headingBefore = "<div class='row'><div class='span span--9'>";
 
-      // Construct the "Your rating" section for the rating explanation.
-      if ($session->isAuthenticated === false) {
-        $userRating = $i18n->t(
-          "please {0}log in{1} to rate this movie",
-          [ "<a href='{$i18n->r("/users/login")}' title='{$i18n->t("Click here to log in to your account.")}'>", "</a>" ]
-        );
-      }
-      elseif (($userRating = $this->ratingModel->getMovieRating($session->userId, $this->movie->id))) {
-        $userRating = $i18n->t("your rating: {0}", [ $userRating ]);
+      $userRating = null;
+      if ($session->isAuthenticated === true) {
+        $userRating = $session->getMovieRating($this->movie->id);
+        if ($userRating) {
+          $rating = $i18n->t("your rating: {0,number}", [ $userRating ]);
+        }
+        else {
+          $rating = $i18n->t("you haven’t rated this movie yet");
+        }
       }
       else {
-        $userRating = $i18n->t("you haven’t rated this movie yet");
+        $rating = $i18n->t("please {0}sign in{1} to rate this movie", [ "<a href='{$i18n->r("/users/login")}'>", "</a>" ]);
       }
 
-      $countries = new GlueSeparated($this->movie->countries, $i18n->t("No countries assigned yet, {0}add countries{1}?", [ "<a href='{$i18n->r("/movie/{0}/edit", [ $this->movie->id ])}'>", "</a>" ]));
-      $genres    = new GlueSeparated($this->movie->genres, $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$i18n->r("/movie/{0}/edit", [ $this->movie->id ])}'>", "</a>" ]));
-      $styles    = new GlueSeparated($this->movie->styles, $i18n->t("No styles assigned yet, {0}add styles{1}?", [ "<a href='{$i18n->r("/movie/{0}/edit")}'>", "</a>" ]));
+      $ratings = [
+        1 => $i18n->t("Awful"),
+        2 => $i18n->t("Not that bad"),
+        3 => $i18n->t("Fair"),
+        4 => $i18n->t("Pretty good"),
+        5 => $i18n->t("Awesome"),
+      ];
+
+      $stars = null;
+      for ($i = 1; $i <= 5; ++$i) {
+        $rated  = $i <= $userRating ? " rated" : null;
+        $stars .=
+          "<label class='popup-container{$rated}'>" .
+            "<small class='popup popup--inverse'>{$ratings[$i]}</small>" .
+            "<button name='rating' type='submit' value='{$i}'><i class='icon icon--star'></i></button>" .
+          "</label>"
+        ;
+      }
+
+      $ratingExplanation = null;
+      if ($this->movie->votes === 1 && $userRating) {
+        $ratingExplanation = $i18n->t("You’re the only one who voted for this movie (yet).");
+      }
+      else {
+        $ratingExplanation = $i18n->t(
+          "Rated by {votes, plural,
+  zero  {nobody}
+  one   {one user with {mean_rating, number, integer}}
+  other {{link_rating_demographics}# users{link_close} with a {link_rating_help}mean rating{link_close} of {mean_rating, number}}
+}.",
+          [
+            "link_rating_demographics" => "<a href='{$i18n->r("/movie/{0}/rating-demographics", [ $this->movie->id ])}' title='{$i18n->t("View the rating demographics.")}'>",
+            "votes"                    => $this->movie->votes,
+            "link_close"               => "</a>",
+            "link_rating_help"         => "<a href='{$i18n->r("/help/rating")}' title='{$i18n->t("Go to the rating help page to find out more.")}'>",
+            "mean_rating"              => $this->movie->ratingMean,
+          ]
+        );
+      }
+
+      $countries          = new GlueSeparated($this->movie->countries, $i18n->t("No countries assigned yet, {0}add countries{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
+      $countries->closure = function ($name, $code) {
+        return new Country($code, [ "itemprop" => "contentLocation" ]);
+      };
+
+      $runtime = new Duration($this->movie->runtime, [ "itemprop" => "duration" ], Duration::MINUTES);
+
+      $genres          = new GlueSeparated($this->movie->genres, $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
+      $styles          = new GlueSeparated($this->movie->styles, $i18n->t("No styles assigned yet, {0}add styles{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
+      $genres->closure = $styles->closure = function ($name) {
+        return "<span itemprop='genre'>{$name}</span>";
+      };
 
       $this->headingAfter  =
           "<p>{$i18n->t("“{0}” ({1}original title{2})", [ $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
-          "<form action='{$i18n->r("/movie/{0}", [ $this->movie->id ])}' id='movie__rating' method='post'>" .
-            "<span class='visuallyhidden'>{$i18n->t("Rating")}: </span>" .
-            "<div id='movie__rating__back'>" .
-              "<span>&#xe000;</span>" .
-              "<span>&#xe000;</span>" .
-              "<span>&#xe000;</span>" .
-              "<span>&#xe000;</span>" .
-              "<span>&#xe000;</span>" .
-            "</div>" .
-            "<div id='movie__rating__front'>" .
-              "<label class='popup-container'>" .
-                "<small class='popup popup--inverse'>{$i18n->t("Awful")}</small>" .
-                "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 1 ])}' type='submit' value='1'>&#xe000;</button>" .
-              "</label>" .
-              "<label class='popup-container'>" .
-                "<small class='popup popup--inverse'>{$i18n->t("Not that bad")}</small>" .
-                "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 2 ])}' type='submit' value='2'>&#xe000;</button>" .
-              "</label>" .
-              "<label class='popup-container'>" .
-                "<small class='popup popup--inverse'>{$i18n->t("Fair")}</small>" .
-                "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 3 ])}' type='submit' value='3'>&#xe000;</button>" .
-              "</label>" .
-              "<label class='popup-container'>" .
-                "<small class='popup popup--inverse'>{$i18n->t("Pretty Good")}</small>" .
-                "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 4 ])}' type='submit' value='4'>&#xe000;</button>" .
-              "</label>" .
-              "<label class='popup-container'>" .
-                "<small class='popup popup--inverse'>{$i18n->t("Great")}</small>" .
-                "<button name='rating' title='{$i18n->t("Rate this movie with {0} stars.", [ 5 ])}' type='submit' value='5'>&#xe000;</button>" .
-              "</label>" .
-            "</div>" .
-          "</form>" .
-          "<p id='movie__rating__description' class='small'>" .
-            $i18n->t(
-              "Rated by {0}{1,number,integer} users{2} with an {3}average rating{4} of {5,number} ({6}).",
-              [
-                "<a href='{$i18n->r("/movie/{0}/rating-demographics", [ $this->movie->id ])}' title='{$i18n->t("View Rating demographics")}'>",
-                $this->movie->votes,
-                "</a>",
-                "<a href='{$i18n->r("/help/average-rating")}' title='{$i18n->t("Go to help page: {0}", [ "Average Rating"] )}'>",
-                "</a>",
-                $this->movie->rating,
-                $userRating,
-              ]) .
-          "</p>" .
+
+          "<form action='{$this->routeMovie}' id='movie-rating' method='post'><fieldset>" .
+            "<input type='hidden' value='movie_rating'>" .
+            "<legend class='visuallyhidden'>{$i18n->t("Your Rating:")}</legend>" .
+            "<div class='back'>" . str_repeat("<i class='icon icon--star'></i>", 5) . "</div>" .
+            "<div class='front'>{$stars}</div>" .
+            //"<div class='user-rating'>{$userRating} / 5</div>" .
+          "</fieldset></form>" .
+
+          "<p id='movie__rating__description' class='small'>{$ratingExplanation}</p>" .
+
           "<small><span class='visuallyhidden'>{$i18n->t("Countries")}: </span>{$countries}</small>" .
           "<small>" .
-            "<span class='visuallyhidden'>{$i18n->t("Length")}: </span> {$this->movie->runtime} {$i18n->t("min.")}" .
+            "<span class='visuallyhidden'>{$i18n->t("Runtime")}: </span> {$runtime}" .
             " | <span class='visuallyhidden'>{$i18n->t("Genres")}: </span> {$genres}" .
             " | <span class='visuallyhidden'>{$i18n->t("Styles")}: </span> {$styles}" .
           "</small>" .
         "</div>{$this->getImage(
-        $this->movie->displayPoster->getImageStyle(),
+        $this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_03),
         $i18n->t("/movie/{0}/posters", [ $this->movie->id ]),
-        null,
+        [ "itemprop" => "image" ],
         [ "class" => "span span--3" ]
       )}</div>";
     }
@@ -138,69 +161,54 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     }
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n;
-    if ($this->movie->deleted === true) {
-      return $this->getGoneContent();
-    }
-
-    // Numeric Array holding all the page's content points in a uniform way.
-    // Format:
-    //   [0] => [ "id" => "first section id",   "title" => "translated title", "content" => "section content" ]
-    //   [1] => [ "id" => "second section id",  "title" => "translated title", "content" => "section content" ]
-    $contents = [];
-    $editRoute = $i18n->r("/movie/{0}/edit", [ $this->movie->id ]);
-
-    // ----------------------------------------------------------------------------------------------------------------- Synopsis
-
-    $contents[] = [
-      "id"      => "synopsis",
-      "title"   => $i18n->t("Synopsis"),
-      "content" => $this->movie->synopsis
-    ];
-
-    // ----------------------------------------------------------------------------------------------------------------- Directors
-
-    $list = new Unordered($this->movie->getDirectors(), $i18n->t(
-      "No directors assigned yet, {0}add directors{1}?", [ "<a href='{$editRoute}'>", "</a>" ]
-    ));
-    $list->closure = function (&$director) {
-      global $i18n;
-      $director = $this->a($i18n->r("/person/{0}", [ $director["id"] ]), $director["name"]);
-    };
-    $contents[] = [ "id" => "directors", "title" => $i18n->t("Directors"), "content" => $list ];
-
-    // ----------------------------------------------------------------------------------------------------------------- Titles
-
-    $contents[] = [
-      "id"      => "titles",
-      "title"   => $i18n->t("Titles"),
-      "content" => new Unordered(array_column($this->movie->getTitles(), "title"), $i18n->t(
-        "No titles assigned yet, {0}add titles{1}?", [ "<a href='{$editRoute}'>", "</a>" ]
-      )),
-    ];
-
-    // ----------------------------------------------------------------------------------------------------------------- Taglines
-
-    $contents[] = [
-      "id"      => "taglines",
-      "title"   => $i18n->t("Taglines"),
-      "content" => new Unordered(array_column($this->movie->getTagLines(), "tagline"), $i18n->t(
-        "No taglines assigned yet, {0}add taglines{1}?", [ "<a href='{$editRoute}'>", "</a>" ]
-      )),
-    ];
-
-    // Construct the content from the content array.
-    $content = null;
-    $c       = count($contents);
-    for ($i = 0; $i < $c; ++$i) {
-      $this->secondaryNavigation->menuitems[] = [ "#{$contents[$i]["id"]}", $contents[$i]["title"], [ "title" => $i18n->t("Go to section") ] ];
-      $content .= "<div id='{$contents[$i]["id"]}' class='movie-section'><h2>{$contents[$i]["title"]} <small><a href='{$editRoute}'>{$i18n->t("Edit")}</a></small></h2>{$contents[$i]["content"]}</div>";
-    }
-    return $content;
+    global $i18n, $kernel;
+//    if ($this->movie->deleted === true) {
+//      return $this->getGoneContent();
+//    }
+//
+//    // Numeric Array holding all the page's content points in a uniform way.
+//    // Format:
+//    //   [0] => [ "id" => "first section id",   "title" => "translated title", "content" => "section content" ]
+//    //   [1] => [ "id" => "second section id",  "title" => "translated title", "content" => "section content" ]
+//    $contents = [];
+//
+//    // ----------------------------------------------------------------------------------------------------------------- Synopsis
+//
+//    $contents[] = [ "id" => "synopsis", "title" => $i18n->t("Synopsis"), "content" => $kernel->htmlDecode($this->movie->synopsis) ];
+//
+//    // ----------------------------------------------------------------------------------------------------------------- Directors
+//
+//    $list = new Unordered($this->movie->directors, $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
+//    $list->closure = function (&$director) {
+//      global $i18n;
+//      $director = $this->a($i18n->r("/person/{0}", [ $director["id"] ]), $director["name"]);
+//    };
+//    $contents[] = [ "id" => "directors", "title" => $i18n->t("Directors"), "content" => $list ];
+//
+//    // Construct the content from the content array.
+//    $content = null;
+//    $c       = count($contents);
+//    for ($i = 0; $i < $c; ++$i) {
+//      $this->secondaryNavigation->menuitems[] = [ "#{$contents[$i]["id"]}", $contents[$i]["title"], [ "title" => $i18n->t("Go to section") ] ];
+//      $content .= "<div id='{$contents[$i]["id"]}' class='movie-section'><h2>{$contents[$i]["title"]} <small><a href='{$this->routeEdit}'>{$i18n->t("Edit")}</a></small></h2>{$contents[$i]["content"]}</div>";
+//    }
+    return
+      "<div itemprop='description'><h2>{$i18n->t("Synopsis")}</h2>{$kernel->htmlDecode($this->movie->synopsis)}</div>" .
+      $this->getImage($this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_01)) .
+      $this->getImage($this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_02)) .
+      $this->getImage($this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_03)) .
+      $this->getImage($this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_08))
+    ;
   }
 
 }

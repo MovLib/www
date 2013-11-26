@@ -41,6 +41,12 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
    */
   protected $movie;
 
+  protected $routeDiscussion;
+  protected $routeEdit;
+  protected $routeHistory;
+  protected $routeMovie;
+  protected $routeMovies;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -48,10 +54,26 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
   /**
    * @inheritdoc
    */
+  protected function init($title) {
+    global $i18n;
+
+    // Translate all routes that we need on all movie pages once.
+    $this->routeDiscussion = $i18n->r("/movie/{0}/discussion", [ $_SERVER["MOVIE_ID"] ]);
+    $this->routeEdit       = $i18n->r("/movie/{0}/edit", [ $_SERVER["MOVIE_ID"] ]);
+    $this->routeHistory    = $i18n->r("/movie/{0}/history", [ $_SERVER["MOVIE_ID"] ]);
+    $this->routeMovie      = $i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]);
+    $this->routeMovies     = $i18n->r("/movies");
+
+    return parent::init($title);
+  }
+
+  /**
+   * @inheritdoc
+   */
   protected function getBreadcrumbs() {
     global $i18n;
     return [
-      [ $i18n->r("/movies"), $i18n->t("Movies"), [
+      [ $this->routeMovies, $i18n->t("Movies"), [
         "title" => $i18n->t("Have a look at the latest {0} entries at MovLib.", [ $i18n->t("movie") ])
       ]]
     ];
@@ -67,28 +89,22 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
    */
   protected function getGoneContent() {
     global $i18n;
-    // Status code for "Gone".
     http_response_code(410);
-    $gone = new Alert(
+    return new Alert(
       "<p>{$i18n->t("The deletion message is provided below for reference.")}</p>" .
       /** @todo Provide commit message with history implementation. */
-      "<p>" .
-        $i18n->t(
-          "The movie and all its content has been deleted. A look at the edit {0}history{2} or {1}discussion{2} " .
-          "will explain why that is the case. Please discuss with the person responsible for this deletion before " .
-          "you restore this entry from its {0}history{2}.",
-          [
-            "<a href='{$i18n->r("/movie/{0}/history", [ $this->model->id ])}'>",
-            "<a href='{$i18n->r("/movie/{0}/discussion", [ $this->model->id ])}'>",
-            "</a>",
-          ]
-        ) .
-      "</p>" .
-      "<p>{$i18n->t("{0}Please note{1}: The images for this movie have been permanently deleted and cannot be restored.", [ "<strong>", "</strong>" ])}</p>"
+      "<p>{$i18n->t(
+        "The movie and all its content has been deleted. A look at the edit {0}history{2} or {1}discussion{2} " .
+        "will explain why that is the case. Please discuss with the person responsible for this deletion before " .
+        "you restore this entry from its {0}history{2}.",
+        [ "<a href='{$this->routeHistory}'>", "<a href='{$this->routeDiscussion}'>", "</a>" ]
+      )}</p><p>{$i18n->t(
+        "{0}Please note{1}: The images for this movie have been permanently deleted and cannot be restored.",
+        [ "<strong>", "</strong>" ]
+      )}</p>",
+      $i18n->t("This Movie has been deleted."),
+      Alert::SEVERITY_ERROR
     );
-    $gone->title = $i18n->t("This Movie has been deleted.");
-    $gone->severity = Alert::SEVERITY_ERROR;
-    return $gone;
   }
 
   /**
@@ -97,27 +113,12 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
   public function getSecondaryNavigationMenuItems() {
     global $i18n;
     return [
-      [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--eye'></i>{$i18n->t("View")}", [
-        "accesskey" => "v",
-        "title"     => $i18n->t("View the {0}.", [ $i18n->t("movie") ]),
+      [ $this->routeMovie, "<i class='icon icon--eye'></i>{$i18n->t("View")}", [ "accesskey" => "v" ]],
+      [ $this->routeDiscussion, "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [
+        "accesskey" => "d", "itemprop" => "discussionUrl",
       ]],
-      [ $i18n->r("/movie/{0}/discussion", [ $this->model->id ]), "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [
-        "accesskey" => "d",
-        "title"     => $i18n->t("Discussion about the {0}.", [ $i18n->t("movie") ])
-      ]],
-      [ $i18n->r("/movie/{0}/edit", [ $this->model->id ]), "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [
-        "accesskey" => "e",
-        "title"     => $i18n->t("You can edit this {0}.", [ $i18n->t("movie") ]),
-      ]],
-      [ $i18n->r("/movie/{0}/history", [ $this->model->id ]), "<i class='icon icon--history'></i>{$i18n->t("History")}", [
-        "accesskey" => "h",
-        "class"     => "separator",
-        "title"     => $i18n->t("Past versions of this {0}.", [ $i18n->t("movie") ]),
-      ]],
-      [ $i18n->r("/movie/{0}/titles", [ $this->model->id ]), "<i class='icon icon--eye'></i>{$i18n->t("Titles")}", [
-        "accesskey" => "t",
-        "title"     => $i18n->t("View the titles of the {0}.", [ $i18n->t("movie") ]),
-      ]],
+      [ $this->routeEdit, "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [ "accesskey" => "e" ]],
+      [ $this->routeHistory, "<i class='icon icon--history'></i>{$i18n->t("History")}", [ "accesskey" => "h", "class" => "separator" ]],
     ];
   }
 

@@ -28,23 +28,4 @@ namespace MovLib\Data;
  */
 class Rating {
 
-  /**
-   * Get the user's rating for a specific movie.
-   *
-   * @global \MovLib\Data\Database $db
-   * @param int $userId
-   *   The user's unique ID.
-   * @param int $movieId
-   *   The movie's unique ID.
-   * @return null|int
-   *   The user's rating for this movie, <code>NULL</code> if the user hasn't rated this movie.
-   */
-  public function getMovieRating($userId, $movieId) {
-    global $db;
-    $result = $db->query("SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1","dd", [ $userId, $movieId ])->get_result()->fetch_row();
-    if (isset($result[0])) {
-      return $result[0];
-    }
-  }
-
 }

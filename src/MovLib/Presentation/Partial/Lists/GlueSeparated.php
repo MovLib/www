@@ -79,10 +79,10 @@ class GlueSeparated extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *   The translated text to display before the list, defaults to no text.
    */
   public function __construct($listItems, $noItemsText = null, $glue = ", ", $listBefore = null, $listAfter = null) {
-    parent::__construct($listItems, $noItemsText, null);
-    $this->glue = $glue;
+    parent::__construct($listItems, $noItemsText);
+    $this->glue       = $glue;
     $this->listBefore = $listBefore;
-    $this->listAfter = $listAfter;
+    $this->listAfter  = $listAfter;
   }
 
 
@@ -93,13 +93,13 @@ class GlueSeparated extends \MovLib\Presentation\Partial\Lists\AbstractList {
    * @inheritdoc
    */
   protected function render() {
-    if (($c = count($this->listItems))) {
+    if (!empty($this->listItems)) {
       $list = null;
-      for ($i = 0; $i < $c; ++$i) {
+      foreach ($this->listItems as $delta => $item) {
         if ($this->closure) {
-          $this->listItems[$i] = call_user_func_array($this->closure, [ $this->listItems[$i], $i, $c ]);
+          $item = call_user_func_array($this->closure, [ $item, $delta ]);
         }
-        $list .= ($i !== 0) ? "{$this->glue}{$this->listItems[$i]}" : $this->listItems[$i];
+        $list .= $list ? "{$this->glue}{$item}" : $item;
       }
       return "{$this->listBefore}{$list}{$this->listAfter}";
     }

@@ -388,6 +388,23 @@ class Session implements \ArrayAccess {
   }
 
   /**
+   * Get the user's rating for the given movie ID.
+   *
+   * @global \MovLib\Data\Database $db
+   * @param integer $movieId
+   *   The unique movie's identifier.
+   * @return null|integer
+   *   The user's rating if available, otherwise <code>NULL</code>.
+   */
+  public function getMovieRating($movieId) {
+    global $db;
+    $result = $db->query("SELECT `rating` FROM `ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1", "dd", [ $this->userId, $movieId ])->get_result()->fetch_row();
+    if (isset($result[0])) {
+      return $result[0];
+    }
+  }
+
+  /**
    * Insert newly created session into persistent session storage.
    *
    * @delayed

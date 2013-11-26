@@ -32,6 +32,7 @@ class Full extends \MovLib\Data\Movie\Movie {
 
   public $countries;
   public $created;
+  public $directors;
   public $genres;
   public $rank;
   public $rating;
@@ -39,6 +40,8 @@ class Full extends \MovLib\Data\Movie\Movie {
   public $runtime;
   public $styles;
   public $synopsis;
+  public $taglines;
+  public $title;
   public $votes;
   public $website;
 
@@ -149,6 +152,27 @@ class Full extends \MovLib\Data\Movie\Movie {
     }
     $result->free();
     $stmt->close();
+
+    // ----------------------------------------------------------------------------------------------------------------- Directors
+
+    $stmt = $db->query(
+      "SELECT `persons`.`person_id`
+      FROM `movies_directors` INNER JOIN `persons` ON `persons`.`person_id` = `movies_directors`.`person_id`
+      WHERE `movies_directors`.`movie_id` = ?
+      ORDER BY `persons`.`name` ASC",
+      "d",
+      [ $this->id ]
+    );
+    $result = $stmt->get_result();
+    while ($person = $result->fetch_object("\\MovLib\\Data\\Person")) {
+      $this->directors[$person->id] = $person;
+    }
+    $result->free();
+    $stmt->close();
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+
   }
 
 }

@@ -25,12 +25,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 install:
-	sudo composer update
-	movlib seed-import
-	sudo movlib nginx-routes
+	sudo composer update && movlib seed-import && sudo movlib nginx-routes
 
 clean:
-	git clean -xdf
-	git reset --hard
-	git pull
-	sudo movlib fix-permissions
+	mv vendor ~ && git clean -xdf && git reset --hard && git pull && chmod 2770 bin/movlib.php && mv ~/vendor . && sudo movlib fix-permissions

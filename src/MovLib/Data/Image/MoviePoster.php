@@ -35,6 +35,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
+  const IMAGE_STYLE_SPAN_03 = \MovLib\Data\Image\SPAN_03;
   const IMAGE_STYLE_SPAN_08 = \MovLib\Data\Image\SPAN_08;
 
 
@@ -189,7 +190,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
       $stmt->close();
     }
     // The ID is the name of the image, which we need to generate the new image.
-    else {
+    elseif (!$this->id) {
       $this->id = $this->getNextId();
     }
     $this->alternativeText = $i18n->t("Poster for {0}.", [ $displayTitleWithYear ]);
@@ -219,7 +220,8 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
 
     // Generate the various image's styles and always go from best quality down to worst quality.
     $span08 = $this->convertImage($source, self::IMAGE_STYLE_SPAN_08);
-    $span02 = $this->convertImage($span08, self::IMAGE_STYLE_SPAN_02);
+    $span03 = $this->convertImage($span08, self::IMAGE_STYLE_SPAN_03);
+    $span02 = $this->convertImage($span03, self::IMAGE_STYLE_SPAN_02);
     $this->convertImage($span02, self::IMAGE_STYLE_SPAN_01);
 
     // Update the record with the new data if this is an update.

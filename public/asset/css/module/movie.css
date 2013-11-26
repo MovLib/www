@@ -52,35 +52,39 @@ body.movie h2 small {
   margin-bottom: 1.39em;
 }
 
-#movie__rating {
-  margin: 20px 0 5px 0;
+#movie-show__header #movie-rating__description {
+  margin-bottom: 20px;
+}
+
+
+/* ==== RATING ====================================================================================================== */
+
+
+#movie-rating {
+  margin-bottom: 10px;
   position: relative;
   width: 120px;
 }
 
-#movie-show__header #movie__rating__description {
-  margin-bottom: 20px;
-}
-
-#movie__rating,
-#movie__rating div {
+#movie-rating,
+#movie-rating div {
   height: 20px;
 }
 
-#movie__rating div {
+#movie-rating div {
   left: 0;
   position: absolute;
   top: 0;
 }
 
-#movie__rating span,
-#movie__rating label,
-#movie__rating button {
+#movie-rating i,
+#movie-rating label,
+#movie-rating button {
   display: inline-block;
 }
 
-#movie__rating span,
-#movie__rating button {
+#movie-rating i,
+#movie-rating button {
   background-color: transparent;
   border: none;
   color: inherit;
@@ -93,27 +97,29 @@ body.movie h2 small {
   line-height: 1;
 }
 
-#movie__rating label {
+#movie-rating label {
+  margin: 0;
   transition: color 0.3s ease-in-out;
 }
 
-#movie__rating__back {
-  color: #fb3;
+#movie-rating .back {
+  color: #c7c7c7;
   overflow: hidden;
   white-space: pre;
-  z-index: 1;
 }
 
-#movie__rating:hover #movie__rating__front {
+#movie-rating .rated,
+#movie-rating:hover .front,
+#movie-rating:focus .front {
   color: #fb3;
-  z-index: 2;
 }
 
-#movie__rating__front > label:hover ~ label {
+#movie-rating .front > label:hover ~ label,
+#movie-rating .front > label:focus ~ label {
   color: #c7c7c7;
 }
 
-#movie__rating .popup {
+#movie-rating .popup {
   width: 100px;
   text-align: center;
   left: -40.5px;
