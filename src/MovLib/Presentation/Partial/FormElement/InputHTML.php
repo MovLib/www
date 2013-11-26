@@ -42,11 +42,12 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @var array
    */
   protected $allowedTags = [
-    "a"  => "&lt;a&gt;",
-    "b"  => "&lt;b&gt;",
-    "br" => "&lt;br&gt;",
-    "i"  => "&lt;i&gt;",
-    "p"  => "&lt;p&gt;",
+    "a"      => "&lt;a&gt;",
+    "b"      => "&lt;b&gt;",
+    "br"     => "&lt;br&gt;",
+    "i"      => "&lt;i&gt;",
+    "p"      => "&lt;p&gt;",
+    "strong" => "&lt;strong&gt;",
   ];
 
   /**
@@ -57,7 +58,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   protected $allowExternalLinks = false;
 
   /**
-   * Whether we are inside a <code><blockqutoe></code> or not.
+   * Whether we are inside a <code><blockquote></code> or not.
    *
    * @var boolean
    */
@@ -84,6 +85,13 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     "br"  => true,
     "img" => true,
   ];
+
+  /**
+   * Whether to insert last child and clear it or not.
+   *
+   * @var null|string
+   */
+  protected $insertLastChild;
 
   /**
    * Used for some elements that have a required last child element.
@@ -138,8 +146,6 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    *   The text's label text.
    * @param mixed $value [optional]
    *   The form element's value, defaults to <code>NULL</code> (no value).
-   * @param string $placeholder [optional]
-   *   The text's placeholder, defaults to <code>"Enter the $label text here …"</code>.
    * @param array $attributes [optional]
    *   Additional attributes for the text, defaults to <code>NULL</code> (no additional attributes).
    * @param string $help [optional]
@@ -147,7 +153,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @param boolean $helpPopup
    *   Whether the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
-  public function __construct($id, $label, $value = null, $placeholder = null, array $attributes = null, $help = null, $helpPopup = true) {
+  public function __construct($id, $label, $value = null, array $attributes = null, $help = null, $helpPopup = true) {
     global $kernel;
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
     $kernel->javascripts[]              = "InputHTML";
@@ -279,7 +285,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // Validate if we have input and throw an Exception if the field is required.
     if (empty($this->valueRaw)) {
       if (in_array("required", $this->attributes)) {
-        throw new ValidationException($i18n->t("“{0}” text is mandatory.", [ $this->label ]));
+        throw new ValidationException($i18n->t("“{label}” is mandatory.", [ "label" => $this->label ]));
       }
       $this->value = null;
       return $this;
@@ -313,12 +319,12 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
         if ($this->level > 0) {
           // If we encounter a text node, simply encode its contents and continue with the next node.
           if ($node->type === TIDY_NODETYPE_TEXT) {
-            $output .= "{$kernel->htmlEncode($node->value)}";
+            $output .= $kernel->htmlEncode($node->value);
           }
           // If we encounter an allowed HTML tag validate it.
           elseif (isset($this->allowedTags[$node->name])) {
             // If we're already inside <blockquote>, ensure it doesn't contain any disallowed elements.
-            if ($this->blockquote === true && !isset($this->blockquoteDisallowedTags[$node->name])) {
+            if ($this->blockquote === true && isset($this->blockquoteDisallowedTags[$node->name])) {
               throw new ValidationException($i18n->t("Found disallowed tag {0} in quotation.", [ "<code>&lt;{$node->name}&gt;</code>" ]));
             }
 
@@ -331,7 +337,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
             else {
               $methodName = "validate{$node->name}";
               if (method_exists($this, $methodName)) {
-                $node->name = $this->$methodName($node);
+                $node->name = $this->{$methodName}($node);
               }
             }
 
@@ -356,16 +362,22 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
         }
       }
 
-      // There are no more nodes to process in this level (while loop above has already handled them). Go one level down
-      // and proceed with the next node.
+      // There are no more nodes to process in this level (while loop above has already handled them).
+      // Go one level down and proceed with the next node.
       $this->level--;
 
       // Append all ending tags of the current level to the output, if we are greater than level 0 and if there are any.
       if ($this->level > 0 && isset($endTags[$this->level])) {
         while (($endTag = array_pop($endTags[$this->level]))) {
-          $this->blockquote = false;
-          $output          .= "{$this->lastChild}{$endTag}";
-          $this->lastChild  = null;
+          if ($endTag == "</{$this->insertLastChild}>") {
+            $this->blockquote      = false;
+            $output               .= "{$this->lastChild}{$endTag}";
+            $this->insertLastChild = null;
+            $this->lastChild       = null;
+          }
+          else {
+            $output .= $endTag;
+          }
         }
       }
     }
@@ -420,8 +432,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     if (($parts = parse_url($node->attribute["href"])) === false || !isset($parts["host"])) {
       throw new ValidationException($i18n->t(
         "Invalid link in “{0}” text ({1}).",
-        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ],
-        [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
+        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
     }
 
@@ -444,10 +455,10 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       else {
         $attributes["href"] = "http://";
       }
-      $attributes["rel"] = "nofollow";
+      $attributes["rel"]  = "nofollow";
       $attributes["href"] = "{$attributes["href"]}{$parts["host"]}";
-      $validateURL = $attributes["href"];
-      $parts["query"] = isset($parts["query"]) ? "?{$parts["query"]}" : null;
+      $validateURL        = $attributes["href"];
+      $parts["query"]     = isset($parts["query"]) ? "?{$parts["query"]}" : null;
     }
 
     // Initialize the path offset with "/" if it doesn't exist.
@@ -458,29 +469,26 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
     // Append path, query and fragment to the URL.
     $attributes["href"] = "{$attributes["href"]}{$parts["path"]}{$parts["query"]}{$parts["fragment"]}";
-    $validateURL = "{$validateURL}{$parts["path"]}{$parts["query"]}{$parts["fragment"]}";
+    $validateURL        = "{$validateURL}{$parts["path"]}{$parts["query"]}{$parts["fragment"]}";
 
     // Validate user, password and port, since we don't allow them.
     if (isset($parts["user"]) || isset($parts["pass"])) {
       throw new ValidationException($i18n->t(
         "Credentials are not allowed in “{0}” text ({1}).",
-        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ],
-        [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
+        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
     }
     if (isset($parts["port"])) {
       throw new ValidationException($i18n->t(
         "Ports are not allowed in “{0}” text ({1}).",
-        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ],
-        [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
+        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
     }
 
     if (filter_var($validateURL, FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED) === false) {
       throw new ValidationException($i18n->t(
         "Invalid link in “{0}” text ({1}).",
-        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ],
-        [ "comment" => "{0} is the name of the text, {1} is the value of the link’s href attribute. Both should not be translated." ]
+        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
     }
 
@@ -499,7 +507,8 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    */
   protected function validateBlockquote($node) {
     global $i18n;
-    $this->blockquote = true;
+    $this->blockquote      = true;
+    $this->insertLastChild = "blockquote";
 
     // Do not allow quotations without text.
     if (count($node->child) < 1) {
@@ -514,7 +523,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
     // Validate that <cite> only contains text and/or anchor nodes.
     if ($lastChild->name == "cite") {
-      $this->lastChild = $this->validateTextOnlyWithOptionalAnchors($lastChild);
+      $this->lastChild = "<cite>{$this->validateTextOnlyWithOptionalAnchors($lastChild, $i18n->t("attributions"))}</cite>";
     }
     // A <blockquote> without a <cite> is invalid.
     else {
@@ -530,7 +539,10 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   /**
    * Validate figure.
    *
+   * @todo We have to keep reference of images in texts in order to update their cache buster string and remove them
+   *       if the image is deleted.
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @param \tidyNode $node
    *   The figure node to validate.
    * @return string
@@ -538,23 +550,45 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @throws ValidationException
    */
   protected function validateFigure($node) {
-    global $i18n;
+    global $i18n, $kernel;
+    $this->insertLastChild = "figure";
 
-    // Always communicate the <figure> element as image, the actual implementation isn't the user's concern and might
-    // change with future web technologies.
-    if (count($node->child) !== 2 || $node->child[0]->name != "img" || empty($node->child[0]->attribute["src"])) {
-      throw new ValidationException($i18n->t("The image is mandatory and cannot be empty."));
-    }
     // Of course we can communicate the caption as seperate element, as it's visible to the user.
-    elseif ($node->child[1]->name != "figcaption" || empty($node->child[1]->child)) {
+    if (count($node->child) !== 2 || $node->child[1]->name != "figcaption" || empty($node->child[1]->child)) {
       throw new ValidationException($i18n->t("The image caption is mandatory and cannot be empty."));
     }
+    // Always communicate the <figure> element as image, the actual implementation isn't the user's concern and might
+    // change with future web technologies.
+    elseif ($node->child[0]->name != "img" || empty($node->child[0]->attribute["src"])) {
+      throw new ValidationException($i18n->t("The image is mandatory and cannot be empty."));
+    }
+
+    // Validate the caption.
+    $caption = $this->validateTextOnlyWithOptionalAnchors($node->child[1], $i18n->t("image captions"));
 
     // Use the caption's content as alt attribute for the image.
-    $node->child[0]->attribute["alt"] = implode("", $node->childe[1]->child);
+    $node->child[0]->attribute["alt"] = $caption;
 
-    // Validate the image and caption.
-    $this->lastChild = "<{$this->validateImage($node->child[0])}>{$this->validateTextOnlyWithOptionalAnchors($node->child[1])}";
+    // Validate the image's src URL.
+    if (($url = parse_url($node->child[0]->attribute["src"])) === false || !isset($url["host"])) {
+      throw new ValidationException($i18n->t("Image URL seems to be invalid."));
+    }
+
+    // If a host is present check if it's from MovLib.
+    if (isset($url["host"]) && $url["host"] != $kernel->domainStatic && strpos($url["host"], ".{$kernel->domainDefault}") === false) {
+      throw new ValidationException($i18n->t("Only images from {0} are allowed.", [ $kernel->siteName ]));
+    }
+
+    // Check that the image actually exists and set width and height.
+    try {
+      $imgAttributes = getimagesize("{$kernel->documentRoot}/public{$url["path"]}")[3];
+    }
+    catch (\ErrorException $e) {
+      throw new ValidationException($i18n->t("Image doesn’t exist ({1}).", [ "<code>{$node->attribute["src"]}</code>" ]));
+    }
+
+    // Build the image tag and validate the caption.
+    $this->lastChild = "<img {$imgAttributes} src='//{$kernel->domainStatic}{$url["path"]}'><figcaption>{$caption}</figcaption>";
 
     // Delete all children, since they are already validated.
     $node->child = null;
@@ -566,53 +600,41 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   }
 
   /**
-   * Validate image.
-   *
-   * @todo We have to keep reference of images in texts in order to update their cache buster string and remove them
-   *       if the image is deleted.
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @param \tidyNode $node
-   *   The image node to validate.
-   * @return string
-   *   The starting tag including allowed attributes.
-   * @throws \MovLib\Exception\ValidationException
-   */
-  protected function validateImage($node) {
-    global $i18n, $kernel;
-
-    // Validate the URL.
-    if (($url = parse_url($node->attribute["src"])) === false || !isset($url["host"])) {
-      throw new ValidationException($i18n->t("Image URL seems to be invalid."));
-    }
-
-    // If a host is present check if it's from MovLib.
-    if (isset($url["host"]) && $url["host"] != $kernel->domainStatic && strpos($url["host"], ".{$kernel->domainDefault}") === false) {
-      throw new ValidationException($i18n->t("Only images from {0} are allowed.", [ $kernel->siteName ]));
-    }
-
-    // Check that the image actually exists and set width and height.
-    try {
-      $attributes = getimagesize("{$kernel->documentRoot}/public{$url["path"]}")[3];
-    }
-    catch (\ErrorException $e) {
-      throw new ValidationException($i18n->t("Image doesn’t exist ({1}).", [ "<code>{$node->attribute["src"]}</code>" ]));
-    }
-
-    return "img {$attributes} src='//{$kernel->domainStatic}{$url["path"]}'";
-  }
-
-  /**
    * Validates and sanitizes HTML elements which can only contain anchors or text.
    *
    * @todo Implement validation of plain text or anchors.
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @param \tidyNode $node
    *   The node to validate.
+   * @param string $context
+   *   The already translated context of the element for error messages.
    * @return string
-   *   The tag with the validated content.
+   *   The validated content.
    */
-  protected function validateTextOnlyWithOptionalAnchors($node) {
-    return "<{$node->name}>Not implemented yet.</{$node->name}>";
+  protected function validateTextOnlyWithOptionalAnchors($node, $context) {
+    global $i18n, $kernel;
+    $content = null;
+    $c = count($node->child);
+    // Iterate and validate all children.
+    for ($i = 0; $i < $c; ++$i) {
+      // If we encounter a text node, encode it and continue.
+      if ($node->child[$i]->type === TIDY_NODETYPE_TEXT) {
+        $content .= $kernel->htmlEncode($node->child[$i]->value);
+      }
+      // If the child is a link, check that it has only one child (text) and validate the link tag separately.
+      elseif ($node->child[$i]->name == "a") {
+        if (count($node->child[$i]->child) !== 1 || $node->child[$i]->child[0]->type !== TIDY_NODETYPE_TEXT) {
+          throw new ValidationException($i18n->t("Only plain text is allowed for links in {context}.", [ "context" => $context]));
+        }
+        $content .= "<{$this->validateA($node->child[$i])}>{$kernel->htmlEncode($node->child[$i]->child[0]->value)}</a>";
+      }
+      // Other nodes are not allowed, abort.
+      else {
+        throw new ValidationException($i18n->t("Only plain text and links are allowed in {context}.", [ "context" => $context]));
+      }
+    }
+    return $content;
   }
 
   /**
@@ -629,9 +651,10 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     global $i18n;
     if (isset($node->attribute) && !empty($node->attribute["class"])) {
       if (!isset($this->userClasses[$node->attribute["class"]])) {
+        $classes = implode(" ", array_keys($this->userClasses));
         throw new ValidationException($i18n->t(
           "Disallowed CSS classes in “{0}” text, allowed values are: {2}",
-          [ $this->label, implode(" ", array_keys($this->userClasses)) ]
+          [ $this->label, "<code>{$classes}</code>" ]
         ));
       }
       else {
