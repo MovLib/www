@@ -6,8 +6,11 @@
  * Public Domain.
  * NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
  */
+ 
 /*global self, document, DOMException */
+
 /*! @source http://purl.eligrey.com/github/classList.js/blob/master/classList.js*/
+
 if ("document" in self && !(
   "classList" in document.createElement("_") &&
   "classList" in document.createElementNS("http://www.w3.org/2000/svg", "svg")
