@@ -61,8 +61,12 @@ class Language {
    */
   public function __construct($code) {
     if ($code) {
+      $languages  = self::getLanguages();
+      if (!isset($languages[$code])) {
+        throw new \OutOfBoundsException("Couldn't find language for code '{$code}'");
+      }
       $this->code = $code;
-      $this->name = self::getLanguages()[$code];
+      $this->name = $languages[$code];
     }
   }
 

@@ -23,7 +23,6 @@ use \MovLib\Data\License;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\MovieException;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
@@ -139,7 +138,7 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
         "title" => $i18n->t("Continue here after you filled out all mandatory fields."),
       ]);
     }
-    catch (MovieException $e) {
+    catch (\DomainException $e) {
       throw new ErrorNotFoundException("No movie with ID '{$_SERVER["MOVIE_ID"]}'.");
     }
     catch (ImageException $e) {

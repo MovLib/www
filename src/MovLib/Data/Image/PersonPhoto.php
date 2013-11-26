@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,16 +15,34 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Data\Image;
 
-namespace MovLib\Exception;
+use \MovLib\Data\Image\Style;
 
 /**
- * A movie exception might be thrown if an error occures related to languages.
+ * Represents a single person photo.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class LanguageException extends \RuntimeException {}
+class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
+
+  /**
+   *
+   */
+  public function __construct() {
+
+  }
+
+  protected function generateImageStyles($source) {
+
+  }
+
+  public function getImageStyle($style = self::IMAGE_STYLE_SPAN_02) {
+
+  }
+
+}

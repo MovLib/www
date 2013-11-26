@@ -18,7 +18,6 @@
 namespace MovLib\Data\Image;
 
 use \MovLib\Data\Image\Style;
-use \MovLib\Exception\ImageException;
 
 /**
  * @todo Description of MoviePoster
@@ -35,7 +34,18 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
+  /**
+   * Image style used on the show page to display the movie poster.
+   *
+   * @var integer
+   */
   const IMAGE_STYLE_SPAN_03 = \MovLib\Data\Image\SPAN_03;
+
+  /**
+   * Image style used on the image details page for the big preview.
+   *
+   * @var integer
+   */
   const IMAGE_STYLE_SPAN_08 = \MovLib\Data\Image\SPAN_08;
 
 
@@ -141,6 +151,8 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
    *   The display title (with year) of the movie this image belongs to.
    * @param null|integer $imageId [optional]
    *   The image ID to load, if none is given (default) no image is loaded.
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \OutOfBoundsException
    */
   public function __construct($movieId, $displayTitleWithYear, $imageId = null) {
     global $db, $i18n;
@@ -185,7 +197,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         $this->imageStyles
       );
       if (!$stmt->fetch()) {
-        throw new ImageException("Couldn't find image with ID '{$imageId}' of type '{$this->typeId}' for movie with ID '{$movieId}'.");
+        throw new \OutOfBoundsException("Couldn't find image with ID '{$imageId}' of type '{$this->typeId}' for movie with ID '{$movieId}'.");
       }
       $stmt->close();
     }
@@ -226,7 +238,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
 
     // Update the record with the new data if this is an update.
     if ($this->imageExists === true) {
-      throw new \RuntimeException("Not implemented yet!");
+      throw new \LogicException("Not implemented yet!");
     }
     // If this is a new upload insert the record and create the new details route for this upload.
     else {

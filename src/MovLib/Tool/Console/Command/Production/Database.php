@@ -17,7 +17,6 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Exception\ConsoleException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -88,7 +87,7 @@ class Database extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
-    throw new ConsoleException("Not implemented yet!");
+    throw new \RuntimeException("Not implemented yet!");
     return $options;
   }
 

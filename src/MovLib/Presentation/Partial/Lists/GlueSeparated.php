@@ -93,17 +93,18 @@ class GlueSeparated extends \MovLib\Presentation\Partial\Lists\AbstractList {
    * @inheritdoc
    */
   protected function render() {
-    if (!empty($this->listItems)) {
-      $list = null;
-      foreach ($this->listItems as $delta => $item) {
-        if ($this->closure) {
-          $item = call_user_func_array($this->closure, [ $item, $delta ]);
-        }
-        $list .= $list ? "{$this->glue}{$item}" : $item;
-      }
-      return "{$this->listBefore}{$list}{$this->listAfter}";
+    if (empty($this->listItems)) {
+      return $this->noItemsText;
     }
-    return $this->noItemsText;
+
+    $list = null;
+    foreach ($this->listItems as $delta => $item) {
+      if ($this->closure) {
+        $item = call_user_func($this->closure, $item, $delta);
+      }
+      $list .= $list ? "{$this->glue}{$item}" : $item;
+    }
+    return "{$this->listBefore}{$list}{$this->listAfter}";
   }
 
 }

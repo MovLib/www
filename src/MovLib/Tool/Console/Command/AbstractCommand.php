@@ -17,7 +17,6 @@
  */
 namespace MovLib\Tool\Console\Command;
 
-use \MovLib\Exception\ConsoleException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -294,10 +293,11 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    * Check if the executing user has root privileges.
    *
    * @return this
+   * @throws \RuntimeException
    */
   protected final function checkPrivileges() {
     if (posix_getuid() !== 0) {
-      throw new ConsoleException("This script must be executed as privileged user (root or sudo).");
+      throw new \RuntimeException("This script must be executed as privileged user (root or sudo).");
     }
     return $this;
   }

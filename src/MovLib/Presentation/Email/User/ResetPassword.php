@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Email\User;
 
 use \MovLib\Data\Temporary;
 use \MovLib\Data\User\User;
-use \MovLib\Exception\MailerException;
 
 /**
  * @todo Description of ResetPassword
@@ -86,10 +85,9 @@ class ResetPassword extends \MovLib\Presentation\Email\AbstractEmail {
       $this->link    = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/profile/password-settings")}?token={$token}";
       $this->subject = $i18n->t("Requested Password Reset");
     }
-    catch (UserException $e) {
+    catch (\DomainException $e) {
       error_log($e);
-      // Convert to mailer exception and abort sending of this mail.
-      throw new MailerException($e->getMessage());
+      throw $e;
     }
     return $this;
   }

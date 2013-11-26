@@ -19,7 +19,6 @@ namespace MovLib\Data\User;
 
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\UnauthorizedException;
-use \MovLib\Exception\SessionException;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -206,19 +205,20 @@ class Session implements \ArrayAccess {
    * @return this
    * @throws \MemcachedException
    * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Exception\SessionException
+   * @throws \OutOfBoundsException
+   * @throws \UnexpectedValue
    */
   public function authenticate($email, $rawPassword) {
     global $db, $kernel;
 
     // Load necessary user data from storage (if we have any).
     if (!($result = $db->query("SELECT `id`, `name`, `password`, `time_zone_identifier` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
-      throw new SessionException("Couldn't find user with email '{$email}'.");
+      throw new \OutOfBoundsException("Couldn't find user with email '{$email}'");
     }
 
     // Validate the submitted password.
     if (password_verify($rawPassword, $result["password"]) === false) {
-      throw new SessionException("Invalid password for user with email '{$email}'.");
+      throw new \UnexpectedValueException("Invalid password for user with email '{$email}'");
     }
 
     // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
@@ -277,6 +277,7 @@ class Session implements \ArrayAccess {
    *   The unique session ID(s) that should be deleted. If no ID is passed along the current session ID of this instance
    *   will be used. If a numeric array is passed all values are treated as session IDs and deleted.
    * @return this
+   * @throws \MemcachedException
    * @throws \MovLib\Exception\DatabaseException
    */
   public function delete($sessionId = null) {
@@ -300,25 +301,20 @@ class Session implements \ArrayAccess {
       }
     }
 
-    try {
-      $memcached = new \Memcached();
-      $memcached->addServers($servers);
-      if (is_array($sessionId)) {
-        $c      = count($sessionId);
-        $clause = rtrim(str_repeat("?,", $c), ",");
-        $db->query("DELETE FROM `sessions` WHERE `session_id` IN ({$clause})", str_repeat("s", $c), $sessionId);
-        for ($i = 0; $i < $c; ++$i) {
-          $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
-        }
-        $memcached->deleteMulti($sessionId);
+    $memcached = new \Memcached();
+    $memcached->addServers($servers);
+    if (is_array($sessionId)) {
+      $c      = count($sessionId);
+      $clause = rtrim(str_repeat("?,", $c), ",");
+      $db->query("DELETE FROM `sessions` WHERE `session_id` IN ({$clause})", str_repeat("s", $c), $sessionId);
+      for ($i = 0; $i < $c; ++$i) {
+        $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
       }
-      else {
-        $db->query("DELETE FROM `sessions` WHERE `session_id` = ?", "s", [ $sessionId ]);
-        $memcached->delete("{$sessionPrefix}{$sessionId}");
-      }
+      $memcached->deleteMulti($sessionId);
     }
-    catch (\MemcachedException $e) {
-      throw new DatabaseException($e->getMessage(), $e);
+    else {
+      $db->query("DELETE FROM `sessions` WHERE `session_id` = ?", "s", [ $sessionId ]);
+      $memcached->delete("{$sessionPrefix}{$sessionId}");
     }
 
     return $this;
@@ -434,7 +430,7 @@ class Session implements \ArrayAccess {
    *   The unhashed password.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Exception\UserException
+   * @throws \DomainException
    */
   public function passwordNeedsRehash($password, $rawPassword) {
     global $kernel;
@@ -471,7 +467,7 @@ class Session implements \ArrayAccess {
    * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \MemcachedException
-   * @throws \MovLib\Exception\SessionException
+   * @throws \DomainException
    */
   public function shutdown() {
     global $kernel;
@@ -515,7 +511,7 @@ class Session implements \ArrayAccess {
 
     // Start new session (if exeution was started by nginx).
     if (isset($_SERVER["FCGI_ROLE"]) && ($this->active = session_start()) === false) {
-      throw new \MemcachedException("Could not start session (may be Memcached is down?).");
+      throw new \MemcachedException("Couldn't start session (may be Memcached is down?)");
     }
 
     $this->id = session_id();

@@ -43,7 +43,6 @@ const SPAN_12 = 940;
 // @codeCoverageIgnoreEnd
 
 use \MovLib\Data\UnixShell as sh;
-use \MovLib\Exception\ImageException;
 
 /**
  * Abstract base image implementation.
@@ -230,7 +229,7 @@ abstract class AbstractImage {
    *   defaults to no cropping.
    * @return string
    *   The absolute path to the converted image.
-   * @throws \MovLib\Exception\ImageException
+   * @throws \RuntimeException
    */
   protected function convertImage($source, $style, $width = null, $height = null, $crop = false) {
     if (!$width) {
@@ -244,7 +243,7 @@ abstract class AbstractImage {
     }
     $destination = $this->getImagePath($style);
     if (sh::execute("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 80 -unsharp 0x0.75+0.75+0.008 -resize {$args} '{$destination}'") === false) {
-      throw new ImageException("Could not convert '{$source}' to '{$style}'!");
+      throw new \RuntimeException("Couldn't convert '{$source}' to '{$style}'");
     }
     list($this->imageStyles[$style]["width"], $this->imageStyles[$style]["height"]) = getimagesize($destination);
     return $destination;
@@ -342,7 +341,7 @@ abstract class AbstractImage {
    *   The width of the uploaded image in pixels.
    * @return this
    * @throws \ErrorException
-   * @throws \MovLib\Exception\ImageException
+   * @throws \LogicException
    */
   public function uploadImage($source, $extension, $height, $width) {
     // We have to export the extension to class scope in order to move the original image.
@@ -362,7 +361,7 @@ abstract class AbstractImage {
     // Let the concrete class create the various image styles.
     $this->generateImageStyles($original);
     if (!isset($this->imageStyles[self::IMAGE_STYLE_SPAN_01]) || !isset($this->imageStyles[self::IMAGE_STYLE_SPAN_02])) {
-      throw new ImageException("Every image instance has to generate the default styles!");
+      throw new \LogicException("Every image instance has to generate the default styles!");
     }
 
     // Must be last because extending classes use it to determine if they have to update or insert.

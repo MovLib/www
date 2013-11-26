@@ -56,12 +56,16 @@ class Country {
    * @param string $code
    *   The ISO 3166-1 alpha-2 code of the country. You can also pass <code>NULL</code> which will create an empty
    *   instance.
-   * @throws \ErrorException
+   * @throws \OutOfBoundsException
    */
   public function __construct($code) {
     if ($code) {
+      $countries  = self::getCountries();
+      if (!isset($countries[$code])) {
+        throw new \OutOfBoundsException("Couldn't find country for code '{$code}'");
+      }
       $this->code = $code;
-      $this->name = self::getCountries()[$code];
+      $this->name = $countries[$code];
     }
   }
 

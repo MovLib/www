@@ -19,7 +19,6 @@ namespace MovLib\Tool\Console\Command\Development;
 
 use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Exception\ImageException;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -178,7 +177,7 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       $dim    = UserFull::IMAGE_STYLE_SPAN_02;
       $tmp    = ini_get("upload_tmp_dir") . "/movdev-command-create-users.jpg";
       if (sh::execute("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}") === false) {
-        throw new ImageException("Couldn't create random image with ImageMagick!");
+        throw new \RuntimeException("Couldn't create random image with ImageMagick!");
       }
       $this->setProperty($user, "imageExtension", "jpg");
       $this->progress->start($this->output, $c);

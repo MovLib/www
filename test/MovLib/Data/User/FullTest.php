@@ -166,7 +166,7 @@ class FullTest extends \MovLib\TestCase {
 
   /**
    * @covers ::__construct
-   * @expectedException \MovLib\Exception\UserException
+   * @expectedException \DomainException
    * @expectedExceptionMessage Couldn't find user for
    * @dataProvider dataProviderConstructInvalid
    */

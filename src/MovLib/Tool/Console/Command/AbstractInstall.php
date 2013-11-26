@@ -18,7 +18,6 @@
 namespace MovLib\Tool\Console\Command;
 
 use \MovLib\Data\UnixShell as sh;
-use \MovLib\Exception\ConsoleException;
 
 /**
  * Base class for installation scripts.
@@ -91,7 +90,7 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @param string $flags
    *   Flags to set before configuration, e.g. <i>CFLAGS</i>.
    * @return this
-   * @throws \MovLib\Exception\ConsoleException
+   * @throws \RuntimeException
    */
   protected function configureInstallation(array $options = [], $flags = null) {
     $this->write("Configuring installation of {$this->installationName} ...");
@@ -99,7 +98,7 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
       $flags .= " ";
     }
     if (sh::executeDisplayOutput("{$flags}./configure " . implode(" ", $options)) === false) {
-      throw new ConsoleException("Couldn't configure {$this->installationName}");
+      throw new \RuntimeException("Couldn't configure {$this->installationName}");
     }
     return $this;
   }
@@ -133,7 +132,7 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    *   The GitHub projectname.
    * @return this
    * @throws \InvalidArgumentException
-   * @throws \MovLib\Exception\ConsoleException
+   * @throws \RuntimeException
    */
   protected function git($user, $project) {
     if (!is_string($user) || empty($user) || !is_string($project) || empty($project)) {
@@ -150,7 +149,7 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    * Install the software.
    *
    * @return this
-   * @throws \MovLib\Exception\ConsoleException
+   * @throws \RuntimeException
    */
   protected function install() {
     $this->write("Starting installation of {$this->installationName} ...");
@@ -206,7 +205,7 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    *   The absolute path to the archive.
    * @return this
    * @throws \InvalidArgumentException
-   * @throws \MovLib\Exception\ConsoleException
+   * @throws \RuntimeException
    */
   protected function tar($path) {
     if (!is_string($path) || !is_dir($path)) {
@@ -227,7 +226,7 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    * Uninstall old installation.
    *
    * @return this
-   * @throws \MovLib\Exception\ConsoleException
+   * @throws \RuntimeException
    */
   protected function uninstall() {
     $this->write("Uninstalling old {$this->installationName} installation.");
@@ -247,7 +246,7 @@ class AbstractInstall extends \MovLib\Tool\Console\Command\AbstractCommand {
    *   The absolute URL.
    * @return this
    * @throws \InvalidArgumentException
-   * @throws \MovLib\Exception\ConsoleException
+   * @throws \RuntimeException
    */
   protected function wget($url) {
     if (!filter_var($url, FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED)) {

@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data;
 
-use \MovLib\Exception\MailerException;
 use \MovLib\Presentation\Email\AbstractEmail;
 
 /**
@@ -185,11 +184,11 @@ EOT;
    *
    * @return string
    *   The email's recipient.
-   * @throws \MovLib\Exception\MailerException
+   * @throws \RuntimeException
    */
   protected function getRecipient() {
     if (strpos($this->email->recipient, ",") !== false) {
-      throw new MailerException("An email recipient cannot contain a comma.");
+      throw new \RuntimeException("An email recipient cannot contain a comma.");
     }
     return $this->email->recipient;
   }
@@ -218,7 +217,7 @@ EOT;
       try {
         $email->init();
       }
-      catch (MailerException $e) {
+      catch (\Exception $e) {
         return $this;
       }
     }

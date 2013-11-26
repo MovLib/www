@@ -18,7 +18,6 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Data\Currency;
-use \MovLib\Exception\UserException;
 
 /**
  * Extended user.
@@ -181,7 +180,7 @@ class Full extends \MovLib\Data\User\User {
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
    * @param mixed $value [optional]
    *   Data to identify the user, see the various <var>FROM_*</var> class constants.
-   * @throws \MovLib\Exception\UserException
+   * @throws \OutOfBoundsException
    */
   public function __construct($from = null, $value = null) {
     global $db, $i18n;
@@ -240,7 +239,7 @@ class Full extends \MovLib\Data\User\User {
         $this->website
       );
       if (!$stmt->fetch()) {
-        throw new UserException("Couldn't find user for {$from} '{$value}'.");
+        throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
       $stmt->close();
       $this->imageExists = (boolean) $this->imageExists;

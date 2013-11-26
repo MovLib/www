@@ -52,6 +52,8 @@ class Full extends \MovLib\Data\Movie\Movie {
    * @global \MovLib\Data\I18n $i18n
    * @param integer $id
    *   The unique movie's ID to load.
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \OutOfBoundsException
    */
   public function __construct($id) {
     global $db, $i18n;
@@ -94,7 +96,7 @@ class Full extends \MovLib\Data\Movie\Movie {
       $this->displayTitle
     );
     if (!$stmt->fetch()) {
-      throw new \DomainException("Couldn't find movie for ID '{$id}'.");
+      throw new \OutOfBoundsException("Couldn't find movie for ID '{$id}'.");
     }
     $stmt->close();
     $this->init();

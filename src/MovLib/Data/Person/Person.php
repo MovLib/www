@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception;
+namespace MovLib\Data\Person;
 
 /**
- * An image exception might be thrown if any image action fails.
+ * Represents a single person.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,4 +26,15 @@ namespace MovLib\Exception;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageException extends \RuntimeException {}
+class Person {
+
+  /**
+   *
+   */
+  public function __construct($id = null) {
+    if ($id) {
+      
+    }
+  }
+
+}

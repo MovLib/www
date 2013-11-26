@@ -18,8 +18,6 @@
 namespace MovLib\Presentation\Users;
 
 use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\SessionException;
-use \MovLib\Exception\UserException;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
@@ -142,11 +140,8 @@ class Login extends \MovLib\Presentation\Page {
         );
         throw new RedirectSeeOtherException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
       }
-      catch (SessionException $e) {
+      catch (DomainException $e) {
         $this->checkErrors($i18n->t("We either don’t know the email address, or the password was wrong."));
-      }
-      catch (UserException $e) {
-        throw new RedirectSeeOtherException($i18n->r("/profile/deactivated"));
       }
     }
     return $this;
