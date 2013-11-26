@@ -51,6 +51,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
   /**
    * The image's alternative text.
    *
@@ -200,20 +201,20 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         throw new \OutOfBoundsException("Couldn't find image with ID '{$imageId}' of type '{$this->typeId}' for movie with ID '{$movieId}'.");
       }
       $stmt->close();
-    }
-    // The ID is the name of the image, which we need to generate the new image.
-    elseif (!$this->id) {
-      $this->id = $this->getNextId();
-    }
-    $this->alternativeText = $i18n->t("Poster for {0}.", [ $displayTitleWithYear ]);
-    $this->imageDirectory .= "/{$movieId}/poster";
-    $this->imageExists     = (boolean) $this->imageExists;
-    $this->imageName       = $this->id;
-    if ($this->imageExists === true) {
-      $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $movieId, $this->id ]);
+      $this->imageExists = true;
     }
     else {
-      $this->route = $i18n->t("/movie/{0}/posters/upload");
+      $this->id          = $this->getNextId();
+      $this->imageExists = (boolean) $this->imageExists;
+    }
+    $this->alternativeText = $i18n->t("Poster for {movie_title_with_year}.", [ "movie_title_with_year" => $displayTitleWithYear ]);
+    $this->imageDirectory .= "/{$movieId}/poster";
+    $this->imageName       = $this->id;
+    if ($this->imageExists === true) {
+      $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $this->movieId, $this->id ]);
+    }
+    else {
+      $this->route = $i18n->t("/movie/{0}/posters/upload", [ $this->movieId ]);
     }
   }
 
