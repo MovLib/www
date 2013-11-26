@@ -116,7 +116,7 @@ class UserTest extends \MovLib\TestCase {
   /**
    * @covers ::__construct
    * @dataProvider dataProviderTestConstructException
-   * @expectedException \MovLib\Exception\UserException
+   * @expectedException \DomainException
    */
   public function testConstructNoUser($from, $value) {
     new User($from, $value);

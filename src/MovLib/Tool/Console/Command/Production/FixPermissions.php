@@ -18,7 +18,6 @@
 namespace MovLib\Tool\Console\Command\Production;
 
 use \MovLib\Data\UnixShell as sh;
-use \MovLib\Exception\ConsoleException;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -91,7 +90,7 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
         => "Executable permissions fixed!"
     ] as $cmd => $msg) {
       if (sh::execute($cmd) === false) {
-        throw new ConsoleException("Failed to execute '{$cmd}'!");
+        throw new \RuntimeException("Failed to execute '{$cmd}'!");
       }
       $this->write($msg, self::MESSAGE_TYPE_INFO);
     }

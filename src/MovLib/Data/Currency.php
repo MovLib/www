@@ -65,11 +65,14 @@ class Currency {
    * @param string $code
    *   The ISO 4217 alpha-3 code of the currency. You can also pass <code>NULL</code> which will create an empty
    *   instance.
-   * @throws \ErrorException
+   * @throws \OutOfBoundsException
    */
   public function __construct($code) {
     if ($code) {
       $currencies   = self::getCurrencies();
+      if (!isset($currencies[$code])) {
+        throw new \OutOfBoundsException("Couldn't find currency for code '{$code}'");
+      }
       $this->code   = $code;
       $this->name   = $currencies[$code]["name"];
       $this->symbol = $currencies[$code]["symbol"];

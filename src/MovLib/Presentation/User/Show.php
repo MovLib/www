@@ -22,7 +22,6 @@ use \MovLib\Presentation\Partial\Time;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Exception\Client\RedirectPermanentException;
-use \MovLib\Exception\UserException;
 use \MovLib\Presentation\Partial\Country;
 
 /**
@@ -137,7 +136,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         (new Time($this->user->access))->formatRelative(),
       ])}</small></div><div class='span span--2'>{$avatar}</div></div>";
     }
-    catch (UserException $e) {
+    catch (\DomainException $e) {
       throw new ErrorNotFoundException("No user with this name.");
     }
   }

@@ -72,7 +72,7 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::authenticate
-   * @expectedException \MovLib\Exception\SessionException
+   * @expectedException \DomainException
    * @expectedExceptionMessage Couldn't find user with email 'phpunit@movlib.org'.
    */
   public function testAuthenticateInvalidEmailAddress() {
@@ -81,7 +81,7 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::authenticate
-   * @expectedException \MovLib\Exception\SessionException
+   * @expectedException \DomainException
    * @expectedExceptionMessage Invalid password for user with email 'richard@fussenegger.info'.
    */
   public function testAuthenticateInvalidPassword() {

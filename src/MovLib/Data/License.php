@@ -53,6 +53,8 @@ class License extends \MovLib\Data\Image\AbstractImage {
    * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The unique license identifier. If no identifier is passed an empty license is created.
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \OutOfBoundsException
    */
   public function __construct($id = null) {
     global $db, $i18n;
@@ -63,7 +65,7 @@ class License extends \MovLib\Data\Image\AbstractImage {
       $stmt  = $db->query("{$query} WHERE `id` = ? LIMIT 1", "ssi", [ $i18n->languageCode, $i18n->languageCode, $id ]);
       $stmt->bind_result($this->name, $this->description, $this->abbreviation, $this->url, $this->imageChanged, $this->imageExtension);
       if (!$stmt->fetch()) {
-        throw new \DomainException;
+        throw new \OutOfBoundsException("Couldn't find license for identifier '{$id}'");
       }
       $stmt->close();
       $this->imageExists = (boolean) $this->imageChanged;
@@ -91,6 +93,7 @@ class License extends \MovLib\Data\Image\AbstractImage {
    *   Used to cache the result.
    * @return array
    *   Associative array containing all available licenses.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public static function getLicenses() {
     global $db, $i18n;
@@ -113,6 +116,7 @@ class License extends \MovLib\Data\Image\AbstractImage {
    *   Used to cache the default query.
    * @return string
    *   The default query.
+   * @throws \MovLib\Exception\DatabaseException
    */
   protected static function getQuery() {
     global $i18n;

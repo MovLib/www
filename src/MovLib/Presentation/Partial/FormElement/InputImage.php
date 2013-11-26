@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Data\Image\AbstractImage as Image;
 use \MovLib\Exception\Client\UnauthorizedException;
-use \MovLib\Exception\ImageException;
 use \MovLib\Exception\ValidationException;
 
 /**
@@ -226,7 +225,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     //   Think about a way to solve this kind of problem once and for all. Maybe with a ConfirmationException which is
     //   catched in main.php?
     if ($this->height < $this->image->imageHeight || $this->width < $this->image->imageWidth) {
-      throw new ImageException($i18n->t(
+      throw new ValidationException($i18n->t(
         "New images should have a better quality than already existing images, this includes the resolution. The " .
         "current image’s resolution is {0}x{1} pixels but yours is {2}x{3}. Please cofirm that your upload has a " .
         "better quality than the existing on despite the fact of smaller dimensions.",

@@ -83,17 +83,19 @@ class Ordered extends \MovLib\Presentation\Partial\Lists\AbstractList {
    * @inheritdoc
    */
   protected function render() {
-    if (($c = count($this->listItems))) {
-      $list = null;
-      for ($i = 0; $i < $c; ++$i) {
-        if ($this->closure) {
-          $this->listItems[$i] = call_user_func_array($this->closure, [ $this->listItems[$i], $i, $c ]);
-        }
-        $list .= "<li{$this->expandTagAttributes($this->listItemsAttributes)}>{$this->listItems[$i]}</li>";
-      }
-      return "<{$this->tag}{$this->expandTagAttributes($this->attributes)}>{$list}</{$this->tag}>";
+    if (empty($this->listItems)) {
+      return $this->noItemsText;
     }
-    return $this->noItemsText;
+
+    $list = null;
+    foreach ($this->listItems as $delta => $item) {
+      if ($this->closure) {
+        $item = call_user_func($this->closure, $item, $delta);
+      }
+      $list .= "<li{$this->expandTagAttributes($this->listItemsAttributes)}>{$item}</li>";
+    }
+    return "<{$this->tag}{$this->expandTagAttributes($this->attributes)}>{$list}</{$this->tag}>";
+
   }
 
 }

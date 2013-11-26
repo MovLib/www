@@ -18,7 +18,6 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Data\Image\Style;
-use \MovLib\Exception\UserException;
 
 /**
  * @todo Description of TestUser
@@ -135,7 +134,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
    * @param mixed $value [optional]
    *   Data to identify the user, see the various <var>FROM_*</var> class constants.
-   * @throws \MovLib\Exception\UserException
+   * @throws \OutOfBoundsException
    */
   public function __construct($from = null, $value = null) {
     global $db, $i18n;
@@ -154,7 +153,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
       );
       $stmt->bind_result($this->id, $this->name, $this->imageChanged, $this->imageExtension, $this->imageExists);
       if (!$stmt->fetch()) {
-        throw new UserException("Could not find user for {$from} '{$value}'!");
+        throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
       $stmt->close();
       $this->imageExists = (boolean) $this->imageExists;
@@ -255,7 +254,7 @@ class User extends \MovLib\Data\Image\AbstractImage {
    * @param integer $width
    *   <b>UNUSED!</b> but kept for compatibility with parent signature.
    * @return this
-   * @throws \MovLib\Exception\ImageException
+   * @throws \ErrorException
    */
   public function uploadImage($source, $extension, $height, $width) {
     $this->imageChanged   = $_SERVER["REQUEST_TIME"];

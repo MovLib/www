@@ -19,7 +19,6 @@ namespace MovLib\Tool\Console\Command\Development;
 
 use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\DatabaseException;
-use \MovLib\Exception\FileSystemException;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -157,7 +156,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    *   all seed data will be imported.
    * @return this
    * @throws \ErrorException
-   * @throws \MovLib\Exception\FileSystemException
+   * @throws \RuntimeException
    */
   public function databaseImport(array $scriptNames = null) {
     global $db;
@@ -195,7 +194,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
         // Concatenate all scripts to one singel big query.
         if (($queries .= file_get_contents($script)) === false) {
-          throw new FileSystemException("Couldn't read '{$script}'!");
+          throw new \RuntimeException("Couldn't read '{$script}'!");
         }
       }
     }
@@ -544,7 +543,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @return this
    * @throws \MovLib\Exception\DatabaseExeption
    * @throws \ErrorException
-   * @throws \MovLib\Exception\FileSystemException
+   * @throws \RuntimeException
    */
   public function seedImport() {
     global $kernel;
@@ -583,7 +582,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    *   all seed data will be imported.
    * @return this
    * @throws \ErrorException
-   * @throws \MovLib\Exception\FileSystemException
+   * @throws \RuntimeException
    */
   public function uploadImport(array $directoryNames = null) {
     global $kernel;

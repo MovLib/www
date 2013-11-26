@@ -26,40 +26,6 @@
  * @since 0.0.1-dev
  */
 
-body.movie h2 small {
-  float: right;
-}
-
-#movie-show__header {
-  color: #c7c7c7;
-}
-
-#movie-show__header__poster {
-  margin-top: 20px;
-  margin-bottom: 20px;
-  border: none;
-}
-
-#movie-show__header h1 {
-  padding-bottom: 0;
-}
-
-#movie-show__header p {
-  margin: 0;
-}
-
-#movie-show__header p:last-of-type {
-  margin-bottom: 1.39em;
-}
-
-#movie-show__header #movie-rating__description {
-  margin-bottom: 20px;
-}
-
-
-/* ==== RATING ====================================================================================================== */
-
-
 #movie-rating {
   margin-bottom: 10px;
   position: relative;

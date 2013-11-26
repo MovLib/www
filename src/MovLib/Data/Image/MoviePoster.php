@@ -18,7 +18,6 @@
 namespace MovLib\Data\Image;
 
 use \MovLib\Data\Image\Style;
-use \MovLib\Exception\ImageException;
 
 /**
  * @todo Description of MoviePoster
@@ -35,11 +34,23 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
+  /**
+   * Image style used on the show page to display the movie poster.
+   *
+   * @var integer
+   */
   const IMAGE_STYLE_SPAN_03 = \MovLib\Data\Image\SPAN_03;
+
+  /**
+   * Image style used on the image details page for the big preview.
+   *
+   * @var integer
+   */
   const IMAGE_STYLE_SPAN_08 = \MovLib\Data\Image\SPAN_08;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The image's alternative text.
@@ -141,6 +152,8 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
    *   The display title (with year) of the movie this image belongs to.
    * @param null|integer $imageId [optional]
    *   The image ID to load, if none is given (default) no image is loaded.
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \OutOfBoundsException
    */
   public function __construct($movieId, $displayTitleWithYear, $imageId = null) {
     global $db, $i18n;
@@ -185,23 +198,23 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         $this->imageStyles
       );
       if (!$stmt->fetch()) {
-        throw new ImageException("Couldn't find image with ID '{$imageId}' of type '{$this->typeId}' for movie with ID '{$movieId}'.");
+        throw new \OutOfBoundsException("Couldn't find image with ID '{$imageId}' of type '{$this->typeId}' for movie with ID '{$movieId}'.");
       }
       $stmt->close();
-    }
-    // The ID is the name of the image, which we need to generate the new image.
-    elseif (!$this->id) {
-      $this->id = $this->getNextId();
-    }
-    $this->alternativeText = $i18n->t("Poster for {0}.", [ $displayTitleWithYear ]);
-    $this->imageDirectory .= "/{$movieId}/poster";
-    $this->imageExists     = (boolean) $this->imageExists;
-    $this->imageName       = $this->id;
-    if ($this->imageExists === true) {
-      $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $movieId, $this->id ]);
+      $this->imageExists = true;
     }
     else {
-      $this->route = $i18n->t("/movie/{0}/posters/upload");
+      $this->id          = $this->getNextId();
+      $this->imageExists = (boolean) $this->imageExists;
+    }
+    $this->alternativeText = $i18n->t("Poster for {movie_title_with_year}.", [ "movie_title_with_year" => $displayTitleWithYear ]);
+    $this->imageDirectory .= "/{$movieId}/poster";
+    $this->imageName       = $this->id;
+    if ($this->imageExists === true) {
+      $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $this->movieId, $this->id ]);
+    }
+    else {
+      $this->route = $i18n->t("/movie/{0}/posters/upload", [ $this->movieId ]);
     }
   }
 
@@ -226,7 +239,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
 
     // Update the record with the new data if this is an update.
     if ($this->imageExists === true) {
-      throw new \RuntimeException("Not implemented yet!");
+      throw new \LogicException("Not implemented yet!");
     }
     // If this is a new upload insert the record and create the new details route for this upload.
     else {

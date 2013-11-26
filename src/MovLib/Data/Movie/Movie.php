@@ -96,6 +96,8 @@ class Movie {
    * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The unique movie's ID to load.
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \OutOfBoundsException
    */
   public function __construct($id = null) {
     global $db, $i18n;
@@ -126,7 +128,7 @@ class Movie {
         $this->year
       );
       if (!$stmt->fetch()) {
-        throw new \DomainException("Couldn't find movie for ID '{$this->id}'.");
+        throw new \OutOfBoundsException("Couldn't find movie for ID '{$this->id}'");
       }
       $stmt->close();
     }

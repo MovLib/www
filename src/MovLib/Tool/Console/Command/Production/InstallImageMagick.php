@@ -49,7 +49,7 @@ class InstallImageMagick extends \MovLib\Tool\Console\Command\AbstractInstall {
 
   /**
    * @inheritdoc
-   * @throws \MovLib\Exception\ConsoleException
+   * @throws \RuntimeException
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);

@@ -22,6 +22,7 @@ use \MovLib\Data\Movie\Full as MovieFull;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Lists\GlueSeparated;
+use \MovLib\Presentation\Partial\Lists\Ordered;
 
 /**
  * Single movie presentation page.
@@ -47,9 +48,12 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   public function __construct() {
     global $i18n, $session;
     try {
+      // Instantiate movie, initialize page and set the microdata schema.
       $this->movie = new MovieFull($_SERVER["MOVIE_ID"]);
       $this->init($this->movie->displayTitleWithYear);
       $this->schemaType = "Movie";
+
+      // Enhance the page's title with microdata.
       if ($this->movie->year) {
         $this->pageTitle = $i18n->t("{movie_title} {time_open}({year}){time_close}", [
           "movie_title" => "<span itemprop='name'>{$this->movie->displayTitle}</span>",
@@ -58,11 +62,19 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
           "time_close"  => "</time>",
         ]);
       }
+      else {
+        $this->pageTitle = "<span itemprop='name'>{$this->movie->displayTitle}</span>";
+      }
+
+      // Display gone page if this movie was deleted.
       if ($this->movie->deleted === true) {
         return;
       }
+
+      // Enhance the header, insert row and span before the title.
       $this->headingBefore = "<div class='row'><div class='span span--9'>";
 
+      // Format the rating for the currently signed in user, if any.
       $userRating = null;
       if ($session->isAuthenticated === true) {
         $userRating = $session->getMovieRating($this->movie->id);
@@ -77,6 +89,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         $rating = $i18n->t("please {0}sign in{1} to rate this movie", [ "<a href='{$i18n->r("/users/login")}'>", "</a>" ]);
       }
 
+      // The five available ratings.
       $ratings = [
         1 => $i18n->t("Awful"),
         2 => $i18n->t("Not that bad"),
@@ -85,6 +98,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         5 => $i18n->t("Awesome"),
       ];
 
+      // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
       $stars = null;
       for ($i = 1; $i <= 5; ++$i) {
         $rated  = $i <= $userRating ? " rated" : null;
@@ -96,6 +110,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         ;
       }
 
+      // Build an explanation based on available rating data.
       $ratingExplanation = null;
       if ($this->movie->votes === 1 && $userRating) {
         $ratingExplanation = $i18n->t("You’re the only one who voted for this movie (yet).");
@@ -104,7 +119,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         $ratingExplanation = $i18n->t(
           "Rated by {votes, plural,
   zero  {nobody}
-  one   {one user with {mean_rating, number, integer}}
+  one   {one user with {mean_rating, plural, one {1 star} other {# stars}}}
   other {{link_rating_demographics}# users{link_close} with a {link_rating_help}mean rating{link_close} of {mean_rating, number}}
 }.",
           [
@@ -117,45 +132,45 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         );
       }
 
+      // Format the movie's countries and enhance them with microdata.
       $countries          = new GlueSeparated($this->movie->countries, $i18n->t("No countries assigned yet, {0}add countries{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
       $countries->closure = function ($name, $code) {
         return new Country($code, [ "itemprop" => "contentLocation" ]);
       };
 
+      // Format the movie's duration and enhance it with microdata.
       $runtime = new Duration($this->movie->runtime, [ "itemprop" => "duration" ], Duration::MINUTES);
 
+      // Format the movie's genres and styles and enhance them with microdata. We mark the styles as genres as well
+      // because schema.org doesn't have any special mark-up for sub-genres.
       $genres          = new GlueSeparated($this->movie->genres, $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
       $styles          = new GlueSeparated($this->movie->styles, $i18n->t("No styles assigned yet, {0}add styles{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
       $genres->closure = $styles->closure = function ($name) {
         return "<span itemprop='genre'>{$name}</span>";
       };
 
+      // But it all together after the closing title.
       $this->headingAfter  =
           "<p>{$i18n->t("“{0}” ({1}original title{2})", [ $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
-
           "<form action='{$this->routeMovie}' id='movie-rating' method='post'><fieldset>" .
             "<input type='hidden' value='movie_rating'>" .
             "<legend class='visuallyhidden'>{$i18n->t("Your Rating:")}</legend>" .
             "<div class='back'>" . str_repeat("<i class='icon icon--star'></i>", 5) . "</div>" .
             "<div class='front'>{$stars}</div>" .
-            //"<div class='user-rating'>{$userRating} / 5</div>" .
           "</fieldset></form>" .
-
-          "<p id='movie__rating__description' class='small'>{$ratingExplanation}</p>" .
-
-          "<small><span class='visuallyhidden'>{$i18n->t("Countries")}: </span>{$countries}</small>" .
-          "<small>" .
-            "<span class='visuallyhidden'>{$i18n->t("Runtime")}: </span> {$runtime}" .
-            " | <span class='visuallyhidden'>{$i18n->t("Genres")}: </span> {$genres}" .
-            " | <span class='visuallyhidden'>{$i18n->t("Styles")}: </span> {$styles}" .
-          "</small>" .
-        "</div>{$this->getImage(
-        $this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_03),
-        $i18n->t("/movie/{0}/posters", [ $this->movie->id ]),
-        [ "itemprop" => "image" ],
-        [ "class" => "span span--3" ]
-      )}</div>";
+          "<small>{$ratingExplanation}</small>" .
+          "<small><span class='visuallyhidden'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='visuallyhidden'>{$i18n->t("Countries:")} </span>{$countries}</small>" .
+          "<small><span class='visuallyhidden'>{$i18n->t("Genres:")} </span>{$genres} | <span class='visuallyhidden'>{$i18n->t("Styles:")} </span>{$styles}</small>" .
+        "</div>" . // close .span
+        $this->getImage(
+          $this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_03),
+          $i18n->t("/movie/{0}/posters", [ $this->movie->id ]),
+          [ "itemprop" => "image" ],
+          [ "class" => "span span--3" ]
+        ) .
+      "</div>"; // close .row
     }
+    // We don't have any movie with the given identifier.
     catch (\DomainException $e) {
 
     }
@@ -172,43 +187,42 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
    */
   protected function getPageContent() {
     global $i18n, $kernel;
-//    if ($this->movie->deleted === true) {
-//      return $this->getGoneContent();
-//    }
-//
-//    // Numeric Array holding all the page's content points in a uniform way.
-//    // Format:
-//    //   [0] => [ "id" => "first section id",   "title" => "translated title", "content" => "section content" ]
-//    //   [1] => [ "id" => "second section id",  "title" => "translated title", "content" => "section content" ]
-//    $contents = [];
-//
-//    // ----------------------------------------------------------------------------------------------------------------- Synopsis
-//
-//    $contents[] = [ "id" => "synopsis", "title" => $i18n->t("Synopsis"), "content" => $kernel->htmlDecode($this->movie->synopsis) ];
-//
-//    // ----------------------------------------------------------------------------------------------------------------- Directors
-//
-//    $list = new Unordered($this->movie->directors, $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
-//    $list->closure = function (&$director) {
-//      global $i18n;
-//      $director = $this->a($i18n->r("/person/{0}", [ $director["id"] ]), $director["name"]);
-//    };
-//    $contents[] = [ "id" => "directors", "title" => $i18n->t("Directors"), "content" => $list ];
-//
-//    // Construct the content from the content array.
-//    $content = null;
-//    $c       = count($contents);
-//    for ($i = 0; $i < $c; ++$i) {
-//      $this->secondaryNavigation->menuitems[] = [ "#{$contents[$i]["id"]}", $contents[$i]["title"], [ "title" => $i18n->t("Go to section") ] ];
-//      $content .= "<div id='{$contents[$i]["id"]}' class='movie-section'><h2>{$contents[$i]["title"]} <small><a href='{$this->routeEdit}'>{$i18n->t("Edit")}</a></small></h2>{$contents[$i]["content"]}</div>";
-//    }
-    return
-      "<div itemprop='description'><h2>{$i18n->t("Synopsis")}</h2>{$kernel->htmlDecode($this->movie->synopsis)}</div>" .
-      $this->getImage($this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_01)) .
-      $this->getImage($this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_02)) .
-      $this->getImage($this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_03)) .
-      $this->getImage($this->movie->displayPoster->getImageStyle(MoviePoster::IMAGE_STYLE_SPAN_08))
+
+    // Translate the titles of each section.
+    $titleSynopsis  = $i18n->t("Synopsis");
+    $titleDirectors = $i18n->t("{0, plural, one {Director} other {Directors}}", [ count($this->movie->directors) ]);
+
+    // Add a jump link for each section to the secondary navigation.
+    $this->secondaryNavigation->menuitems[] = [ "#synopsis", $titleSynopsis ];
+    $this->secondaryNavigation->menuitems[] = [ "#directors", $titleDirectors ];
+
+    // Prepare the content for each section.
+    $synopsis = empty($this->movie->synopsis)
+      ? $i18n->t("No synopsis available, {0}write one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
+        : $kernel->htmlDecode($this->movie->synopsis)
     ;
+
+    $directors = new Ordered($this->movie->directors, $i18n->t("No directors assigned yet, {0}add directors{1}?", [
+        "<a href='{$this->routeEdit}'>", "</a>",
+      ]), null, [ "itemprop" => "director" ]);
+    $directors->closure = [ $this, "formatDirector" ];
+
+    return
+      "<div id='synopsis'><h2>{$titleSynopsis}</h2><div itemprop='description'>{$synopsis}</div></div>" .
+      "<div id='directors'><h2>{$titleDirectors}</h2>{$directors}</div>"
+    ;
+  }
+
+  /**
+   * Format a single director.
+   *
+   * @param \MovLib\Data\Person $person
+   *   The person to format as director.
+   * @return string
+   *   The formatted director.
+   */
+  public function formatDirector($person) {
+    return $person->name;
   }
 
 }

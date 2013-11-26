@@ -18,8 +18,6 @@
 namespace MovLib\Tool\Console\Command\Production;
 
 use \MovLib\Data\UnixShell as sh;
-use \MovLib\Exception\ConsoleException;
-use \MovLib\Exception\FileSystemException;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -93,7 +91,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
 
       // We need output buffering to catch the output of the following require call.
       if (ob_start() === false) {
-        throw new ConsoleException("Couldn't start output buffering!");
+        throw new \RuntimeException("Couldn't start output buffering!");
       }
 
       // Execute the routes source file and translate all routes with the closure.
@@ -101,12 +99,12 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
 
       // Get the translated content of this run ...
       if (($routes[$i18n->languageCode] = ob_get_clean()) === false) {
-        throw new ConsoleException("Couldn't get buffered output!");
+        throw new \RuntimeException("Couldn't get buffered output!");
       }
 
       // ... and write it to the target directory.
       if (file_put_contents("{$routesDirectory}/{$i18n->languageCode}.conf", $routes[$i18n->languageCode]) === false) {
-        throw new FileSystemException("Could not write translated routes file to nginx routes directory.");
+        throw new \RuntimeException("Couldn't write translated routes file to nginx routes directory.");
       }
 
       $this->write("Written routing file for '{$i18n->languageCode}' ...");
@@ -115,7 +113,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     $db->transactionCommit();
 
     if (sh::executeDisplayOutput("service nginx reload") === false) {
-      throw new ConsoleException("Couldn't reload nginx!");
+      throw new \RuntimeException("Couldn't reload nginx!");
     }
 
     // Make sure all files have the correct permissions.
