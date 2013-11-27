@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- Dumping data for table `companies`
 --
 
-INSERT INTO `companies` (`company_id`, `name`, `deleted`, `dyn_descriptions`, `dyn_links`, `created`) VALUES
+INSERT INTO `companies` (`id`, `name`, `deleted`, `dyn_descriptions`, `dyn_links`, `created`) VALUES
 (1, 'Anchor Bay', 0, '', '', '2013-10-23 13:21:23'),
 (2, 'Capitol Films', 0, '', '', '2013-10-23 13:21:23'),
 (3, 'DreamWorks SKG', 0, '', '', '2013-10-23 13:21:23'),
