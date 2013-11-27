@@ -923,7 +923,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
   `dyn_notes` BLOB NOT NULL COMMENT 'The release’s release notes in various languages. Keys are ISO alpha-2 language codes.',
   `aspect_ratio_id` INT UNSIGNED NOT NULL COMMENT 'The aspect ratio’s unique ID.',
   `packaging_id` INT UNSIGNED NOT NULL COMMENT 'The packaging’s unique ID.',
-  `bin_type_data` BLOB NOT NULL COMMENT 'The release´s type specific fields in serialized igbinary format.',
   `releases_type_id` INT UNSIGNED NOT NULL COMMENT 'The release type’s unique ID.',
   INDEX `fk_releases_aspect_ratios` (`aspect_ratio_id` ASC),
   PRIMARY KEY (`id`),

@@ -26,10 +26,10 @@ SET time_zone = "+00:00";
 -- Dumping data for table `releases`
 --
 
-INSERT INTO `releases` (`id`, `master_release_id`, `is_cut`, `ean`, `length`, `length_credits`, `length_bonus`, `dyn_extras`, `dyn_notes`, `aspect_ratio_id`, `packaging_id`, `type`, `bin_type_data`) VALUES
-(1, 1, 0, '4009750255773', '02:12:38', '02:16:44', '01:16:00', '', '', 1, 1, 'DVD', ''),
-(2, 2, 1, '4009750216279', NULL, NULL, NULL, '', '\0\0\0\0\0\0cdeen!Der Film wurde aufgrund eines Masteringfehlers unabsichtlich um 2-3 Minuten gekürzt.!The movie has been accidentaly cut by 2-3 minutes due to a mastering mistake.', 3, 2, 'DVD', ''),
-(3, 3, 0, '4012909054233', NULL, '02:17:00', NULL, '', '\0\0\0\0\0\0�deen!Abspann beginnt über bewegtem Filmbild.!The credits start over the moving movie image.', 2, 4, 'Video', '');
+INSERT INTO `releases` (`id`, `master_release_id`, `is_cut`, `length`, `length_credits`, `length_bonus`, `dyn_extras`, `dyn_notes`, `aspect_ratio_id`, `packaging_id`, `releases_type_id`) VALUES
+(1, 1, 0, '02:12:38', '02:16:44', '01:16:00', '', '', 1, 1, 2),
+(2, 2, 1, NULL, NULL, NULL, '', '\0\0\0\0\0\0cdeen!Der Film wurde aufgrund eines Masteringfehlers unabsichtlich um 2-3 Minuten gekürzt.!The movie has been accidentaly cut by 2-3 minutes due to a mastering mistake.', 3, 2, 2),
+(3, 3, 0, NULL, '02:17:00', NULL, '', '\0\0\0\0\0\0�deen!Abspann beginnt über bewegtem Filmbild.!The credits start over the moving movie image.', 2, 4, 1);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
