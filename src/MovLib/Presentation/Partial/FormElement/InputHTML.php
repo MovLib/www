@@ -199,6 +199,10 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = $i18n->t("Enter “{0}” text here …", [ $this->label ]);
     }
+    // Unset the placeholder in the div attributes, since this attribute is not allowed by HTML standard.
+    else {
+      unset($divAttributes["placeholder"]);
+    }
 
     // Build the editor based on available tags.
     $editor = null;
@@ -301,7 +305,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       }
     }
     catch (\ErrorException $e) {
-      throw new ValidationException($i18n->t("Invalid HTML in “{0}” text.", [ $this->label ]));
+      throw new ValidationException($i18n->t("Invalid HTML in “{label}” text.", [ "label" => $this->label ]));
     }
 
     /* @var $node \tidyNode */
@@ -325,7 +329,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
           elseif (isset($this->allowedTags[$node->name])) {
             // If we're already inside <blockquote>, ensure it doesn't contain any disallowed elements.
             if ($this->blockquote === true && isset($this->blockquoteDisallowedTags[$node->name])) {
-              throw new ValidationException($i18n->t("Found disallowed tag {0} in quotation.", [ "<code>&lt;{$node->name}&gt;</code>" ]));
+              throw new ValidationException($i18n->t("Found disallowed tag {tag} in quotation.", [ "tag" => "<code>&lt;{$node->name}&gt;</code>" ]));
             }
 
             // Directly take care of the most common element that has allowed attributes, the content is validated in
@@ -352,7 +356,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
           // Encountered a tag that is not allowed, abort.
           else {
             $allowedTags = implode(" ", $this->allowedTags);
-            throw new ValidationException($i18n->t("Found disallowed HTML tags, allowed tags are: {1}", [ "<code>{$allowedTags}</code>" ]));
+            throw new ValidationException($i18n->t("Found disallowed HTML tags, allowed tags are: {taglist}", [ "taglist" => "<code>{$allowedTags}</code>" ]));
           }
         }
 
@@ -398,7 +402,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     }
     catch (\ErrorException $e) {
       error_log($e);
-      throw new ValidationException($i18n->t("Invalid HTML after the validation in “{0}” text.", [ $this->label ]));
+      throw new ValidationException($i18n->t("Invalid HTML after the validation in “{label}” text.", [ "label" => $this->label ]));
     }
     // @codeCoverageIgnoreEnd
 
@@ -425,14 +429,14 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
     // Check if the <code>href</code> attribute was set and validate the URL.
     if (!isset($node->attribute) || empty($node->attribute["href"])) {
-      throw new ValidationException($i18n->t("Links without a link target in “{0}” text.", [ $this->label ]));
+      throw new ValidationException($i18n->t("Links without a link target in “{label}” text.", [ "label" => $this->label ]));
     }
 
     // Parse and validate the parts of the URL.
     if (($parts = parse_url($node->attribute["href"])) === false || !isset($parts["host"])) {
       throw new ValidationException($i18n->t(
-        "Invalid link in “{0}” text ({1}).",
-        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
+        "Invalid link in “{label}” text ({link_url}).",
+        [ "label" => $this->label, "link_url" => "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
     }
 
@@ -447,7 +451,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // If external links are not allowed, abort.
     else {
       if ($this->allowExternalLinks === false) {
-        throw new ValidationException($i18n->t("No external links are allowed in “{0}” text.", [ $this->label ]));
+        throw new ValidationException($i18n->t("No external links are allowed in “{label}” text.", [ "label" => $this->label ]));
       }
       if (isset($parts["scheme"]) && ($parts["scheme"] == "http" || $parts["scheme"] == "https")) {
         $attributes["href"] = "{$parts["scheme"]}://";
@@ -474,21 +478,21 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // Validate user, password and port, since we don't allow them.
     if (isset($parts["user"]) || isset($parts["pass"])) {
       throw new ValidationException($i18n->t(
-        "Credentials are not allowed in “{0}” text ({1}).",
-        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
+        "Credentials are not allowed in “{label}” text ({link_url}).",
+        [ "label" => $this->label, "link_url" => "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
     }
     if (isset($parts["port"])) {
       throw new ValidationException($i18n->t(
-        "Ports are not allowed in “{0}” text ({1}).",
-        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
+        "Ports are not allowed in “{label}” text ({link_url}).",
+        [ "label" => $this->label, "link_url" => "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
     }
 
     if (filter_var($validateURL, FILTER_VALIDATE_URL, FILTER_REQUIRE_SCALAR | FILTER_FLAG_HOST_REQUIRED) === false) {
       throw new ValidationException($i18n->t(
-        "Invalid link in “{0}” text ({1}).",
-        [ $this->label, "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
+        "Invalid link in “{label}” text ({link_url}).",
+        [ "label" => $this->label, "link_url" => "<code>{$kernel->htmlEncode($node->attribute["href"])}</code>" ]
       ));
     }
 
@@ -510,26 +514,28 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     $this->blockquote      = true;
     $this->insertLastChild = "blockquote";
 
-    // Do not allow quotations without text.
-    if (count($node->child) < 1) {
-      throw new ValidationException(
-        $i18n->t("The “{0}” text contains an empty quotation.",
-        [ $this->label, "<code>&lt;{$node->name}&gt;</code>" ]
-      ));
-    }
+    // We don't have to check for children, because tidy already purges empty <blockquote> tags.
 
     /* @var $lastChild \tidyNode */
     $lastChild = array_pop($node->child);
 
     // Validate that <cite> only contains text and/or anchor nodes.
-    if ($lastChild->name == "cite") {
+    if ($lastChild->name == "cite" && count($lastChild->child) > 0) {
       $this->lastChild = "<cite>{$this->validateTextOnlyWithOptionalAnchors($lastChild, $i18n->t("attributions"))}</cite>";
     }
     // A <blockquote> without a <cite> is invalid.
     else {
       throw new ValidationException(
-        $i18n->t("The “{0}” text contains a quotation without source.",
-        [ $this->label, "<code>&lt;{$node->name}&gt;</code>" ]
+        $i18n->t("The “{label}” text contains a quotation without source.",
+        [ "label" => $this->label ]
+      ));
+    }
+
+    // Do not allow quotations without content.
+    if (!isset($node->child[0])) {
+      throw new ValidationException(
+        $i18n->t("The “{label}” text contains quotation without text.",
+        [ "label" => $this->label ]
       ));
     }
 
@@ -566,9 +572,6 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // Validate the caption.
     $caption = $this->validateTextOnlyWithOptionalAnchors($node->child[1], $i18n->t("image captions"));
 
-    // Use the caption's content as alt attribute for the image.
-    $node->child[0]->attribute["alt"] = $caption;
-
     // Validate the image's src URL.
     if (($url = parse_url($node->child[0]->attribute["src"])) === false || !isset($url["host"])) {
       throw new ValidationException($i18n->t("Image URL seems to be invalid."));
@@ -576,7 +579,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
     // If a host is present check if it's from MovLib.
     if (isset($url["host"]) && $url["host"] != $kernel->domainStatic && strpos($url["host"], ".{$kernel->domainDefault}") === false) {
-      throw new ValidationException($i18n->t("Only images from {0} are allowed.", [ $kernel->siteName ]));
+      throw new ValidationException($i18n->t("Only images from {movlib} are allowed.", [ "movlib" => $kernel->siteName ]));
     }
 
     // Check that the image actually exists and set width and height.
@@ -584,11 +587,11 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       $imgAttributes = getimagesize("{$kernel->documentRoot}/public{$url["path"]}")[3];
     }
     catch (\ErrorException $e) {
-      throw new ValidationException($i18n->t("Image doesn’t exist ({1}).", [ "<code>{$node->attribute["src"]}</code>" ]));
+      throw new ValidationException($i18n->t("Image doesn’t exist ({image_src}).", [ "image_src" => "<code>{$node->child[0]->attribute["src"]}</code>" ]));
     }
 
-    // Build the image tag and validate the caption.
-    $this->lastChild = "<img {$imgAttributes} src='//{$kernel->domainStatic}{$url["path"]}'><figcaption>{$caption}</figcaption>";
+    // Build the image tag.
+    $this->lastChild = "<img alt='{$caption}' {$imgAttributes} src='//{$kernel->domainStatic}{$url["path"]}'><figcaption>{$caption}</figcaption>";
 
     // Delete all children, since they are already validated.
     $node->child = null;
@@ -653,8 +656,8 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       if (!isset($this->userClasses[$node->attribute["class"]])) {
         $classes = implode(" ", array_keys($this->userClasses));
         throw new ValidationException($i18n->t(
-          "Disallowed CSS classes in “{0}” text, allowed values are: {2}",
-          [ $this->label, "<code>{$classes}</code>" ]
+          "Disallowed CSS classes in “{label}” text, allowed values are: {classes}",
+          [ "label" => $this->label, "classes" => "<code>{$classes}</code>" ]
         ));
       }
       else {

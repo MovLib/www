@@ -101,17 +101,28 @@ class InputHTMLTest extends \MovLib\TestCase {
   public function dataProviderTestValidateFigureInvalidSrc() {
     global $kernel;
     return [
-      [ "" ],                                   // Empty src.
-      [ ".com" ],                               // Malformed src.
-      [ "movlib.org" ],                         // Empty src scheme.
-      [ "https://example.com" ],                // External src.
+      [ ".com" ],                                     // Malformed src.
+      [ "movlib.org" ],                               // Empty src scheme.
+      [ "https://example.com" ],                      // External src.
       [ "https://{$kernel->domainStatic}/foo/bar" ],  // Non-existent image.
     ];
   }
 
-  public function dataProviderTestValidatePInvalidClass() {
+  public function dataProviderTestValidateInvalidBlockquoteDisallowedTags() {
+    $data = [];
+    $disallowedTags = $this->getProperty((new InputHTML("phpunit", "PHPUnit")), "blockquoteDisallowedTags");
+    foreach ($disallowedTags as $tag => $value) {
+      $content = "disallowed tag content";
+      if ($tag == "ul" || $tag == "ol") {
+        $content = "<li>{$content}</li>";
+      }
+      $data[] = [ "<{$tag}>{$content}</{$tag}>" ];
+    }
+    return $data;
+  }
+
+  public function dataProviderTestValidateUserClassesInvalidClass() {
     return [
-      [ "" ],
       [ "invalidClass" ],
       [ "invalidClass user-center" ],
       [ "user-center invalidClass" ],
@@ -119,7 +130,7 @@ class InputHTMLTest extends \MovLib\TestCase {
     ];
   }
 
-  public function dataProviderTestValidatePValid() {
+  public function dataProviderTestValidateUserClassesValid() {
     return [
       [ [ "attribute" => null ] ],
       [ [ "attribute" => [ "class" => "user-left" ] ] ],
@@ -138,18 +149,15 @@ class InputHTMLTest extends \MovLib\TestCase {
   public function testConstructStandardConfiguration() {
     $input = new InputHTML("phpunit", "PHPUnit");
     $this->assertEquals("true", $input->attributes["aria-multiline"]);
-    $this->assertEquals("true", $input->attributes["contenteditable"]);
-    $this->assertEquals("textbox", $input->attributes["role"]);
-    $this->assertFalse(isset($input->attributes["name"]), "Attribute name is not permitted by HTML standard!");
-    $this->assertFalse(isset($input->attributes["required"]), "Attribute required is not permitted by HTML standard!");
+    $this->assertFalse(isset($input->attributes["required"]), "Attribute required shouldn't be set by default!");
     $allowedTags = $this->getProperty($input, "allowedTags");
     $this->assertFalse(isset($allowedTags["figure"]), "Images shouldn't be enabled by default!");
     $this->assertFalse(isset($allowedTags["figcaption"]), "Images shouldn't be enabled by default!");
+    $this->assertFalse(isset($allowedTags["blockquote"]), "Quotations shouldn't be enabled by default!");
     for ($i = 1; $i <= 6; ++$i) {
       $this->assertFalse(isset($allowedTags["h{$i}"]), "Headings shouldn't be enabled by default!");
     }
     $this->assertFalse($this->getProperty($input, "allowExternalLinks"), "External links shouldn't be enabled by default!");
-    $this->assertFalse($this->getProperty($input, "required"), "Texts should not be required by default!");
   }
 
   /**
@@ -233,13 +241,16 @@ class InputHTMLTest extends \MovLib\TestCase {
    */
   public function testRenderWithPlaceholder() {
     $content = "<p>phpunit</p>";
+    $id = "phpunit";
     $label   = "PHPUnit";
     $placeholder = "PHPUnit placeholder";
-    $input   = new InputHTML("phpunit", $label, $content, $placeholder);
+    $input   = new InputHTML($id, $label, $content, [ "placeholder" => $placeholder ]);
     $input->value = "wrongValue";
     $inputRendered = $input->__toString();
-    $this->assertContains("<fieldset><legend>{$label}</legend><div ", $inputRendered);
-    $this->assertContains("{$content}</div><span aria-hidden='true' class='placeholder'>{$placeholder}</span></div></fieldset>", $inputRendered);
+    $this->assertContains("<fieldset class='inputhtml'><legend>{$label}</legend><p class='jshidden'><label for='{$id}'>{$label}</label>", $inputRendered);
+    $this->assertContains("<textarea placeholder='{$placeholder}' name='{$id}' id='{$id}'", $inputRendered);
+    $this->assertContains("{$content}</textarea></p><div class='editor nojshidden'>", $inputRendered);
+    $this->assertContains("aria-multiline='true' contenteditable='true' role='textbox' class='content'></div><span aria-hidden='true' class='placeholder'>{$placeholder}</span></div></div></fieldset>", $inputRendered);
   }
 
   /**
@@ -252,11 +263,11 @@ class InputHTMLTest extends \MovLib\TestCase {
     $content = "<p>phpunit</p>";
     $label   = "PHPUnit";
     $value   = $kernel->htmlEncode($content);
-    $placeholder = $i18n->t("Enter the “{0}” text here …", [ $label ]);
+    $placeholder = $i18n->t("Enter “{0}” text here …", [ $label ]);
     $input   = new InputHTML("phpunit", $label, $value);
     $inputRendered = $input->__toString();
-    $this->assertContains("<fieldset><legend>{$label}</legend><div class='inputhtml'", $inputRendered);
-    $this->assertContains("{$content}</div><span aria-hidden='true' class='placeholder'>{$placeholder}</span></div></fieldset>", $inputRendered);
+    $this->assertContains("aria-multiline='true' placeholder='{$placeholder}'>{$content}</textarea>", $inputRendered);
+    $this->assertContains("<span aria-hidden='true' class='placeholder'>{$placeholder}</span><", $inputRendered);
   }
 
   /**
@@ -271,45 +282,23 @@ class InputHTMLTest extends \MovLib\TestCase {
 
   /**
    * @covers ::validate
+   * @dataProvider dataProviderTestValidateInvalidBlockquoteDisallowedTags
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionMessage The “PHPUnit” text contains a quotation without a supplied source.
+   * @expectedExceptionMessage Found disallowed tag
+   * @expectedExceptionMessage in quotation.
    */
-  public function testValidateInvalidBlockquoteWithoutCite() {
-    $input = new InputHTML("phpunit", "PHPUnit", "<p><blockquote><p>missing citation</p></blockquote></p>");
-    $input->allowBlockqoutes();
-    $input->validate();
-  }
-
-  /**
-   * @covers ::validate
-   * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionMessage The “PHPUnit” text contains the invalid element <code><blockquote></code> inside a quotation or a figure.
-   */
-  public function testValidateInvalidBlockquoteWithBlockquote() {
-    $input = new InputHTML("phpunit", "PHPUnit", "<p><blockquote><p>this is a quote<blockquote><p>this is a nested quote</p><cite>inner cite</cite></blockquote></p><cite>outer cite</cite></blockquote></p>");
+  public function testValidateInvalidBlockquoteDisallowedTags($disallowedTag) {
+    $input = new InputHTML("phpunit", "PHPUnit", "<blockquote>{$disallowedTag}<cite>outer cite</cite></blockquote>");
     $input->allowBlockqoutes();
     $input->allowImages();
+    $input->allowLists();
     $input->validate();
   }
 
   /**
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionMessage The “PHPUnit” text contains the invalid element <code><figure></code> inside a quotation or a figure.
-   * @global \MovLib\Tool\Kernel $kernel
-   */
-  public function testValidateInvalidBlockquoteWithFigure() {
-    global $kernel;
-    $input = new InputHTML("phpunit", "PHPUnit", "<p><blockquote><figure><figcaption>caption</figcaption><img src='https://{$kernel->domainStatic}/user/Ravenlord.140.jpg'></figure><cite>cite</cite></blockquote></p>");
-    $input->allowBlockqoutes();
-    $input->allowImages();
-    $input->validate();
-  }
-
-  /**
-   * @covers ::validate
-   * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionMessage The “PHPUnit” text contains invalid HTML tags.
+   * @expectedExceptionMessage Found disallowed HTML tags
    */
   public function testValidateInvalidStandaloneCite() {
     $input = new InputHTML("phpunit", "PHPUnit", "<p><cite>wrong citation</cite></p>");
@@ -331,7 +320,7 @@ class InputHTMLTest extends \MovLib\TestCase {
    * @expectedException \MovLib\Exception\ValidationException
    */
   public function testValidateRequired() {
-    $input = new InputHTML("phpunit", "PHPUnit", [ "required" => true ]);
+    $input = new InputHTML("phpunit", "PHPUnit", null,[ "required" => true ]);
     $input->validate();
   }
 
@@ -350,10 +339,10 @@ class InputHTMLTest extends \MovLib\TestCase {
    */
   public function testValidateValidCallbackValidation() {
     global $kernel;
-    $input = $this->getMock("\\MovLib\\Presentation\\Partial\\FormElement\\InputHTML", [ "validateP" ], [ "phpunit", "PHPUnit", "<p>phpunit</p>" ]);
-    $input->expects($this->once())->method("validateP")->will($this->returnValue("p"));
+    $input = $this->getMock("\\MovLib\\Presentation\\Partial\\FormElement\\InputHTML", [ "validateA" ], [ "phpunit", "PHPUnit", "<p><a href='https://movlib.org'>movlib</a></p>" ]);
+    $input->expects($this->once())->method("validateA")->will($this->returnValue("a href='//movlib.org'"));
     $input->validate();
-    $this->assertEquals($kernel->htmlEncode("<p>phpunit</p>"), $input->value);
+    $this->assertEquals($kernel->htmlEncode("<p><a href='//movlib.org'>movlib</a></p>"), $input->value);
   }
 
   /**
@@ -376,8 +365,7 @@ class InputHTMLTest extends \MovLib\TestCase {
     $input = new InputHTML(
       "phpunit",
       "PHPUnit",
-      "<p><a href='https://{$kernel->domainDefault}'>MovLib<img alt='phpunit' src='https://{$kernel->domainStatic}/user/Ravenlord.140.jpg'></a></p>textNode",
-      [ "data-allow-img" => true ]
+      "<p><a href='https://{$kernel->domainDefault}'>MovLib<img alt='phpunit' src='https://{$kernel->domainStatic}/user/Ravenlord.140.jpg'></a></p>textNode"
     );
     $input->allowImages();
     $input->validate();
@@ -476,6 +464,114 @@ class InputHTMLTest extends \MovLib\TestCase {
   }
 
   /**
+   * @covers ::validateBlockquote
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage text contains a quotation without source.
+   */
+  public function testValidateBlockquoteEmptyCite() {
+    /* @var $tidy \tidy */
+    $tidy       = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body><blockquote>PHPUnit quote<cite></cite></blockquote></body></html>");
+    $tidy->cleanRepair();
+    $input      = new InputHTML("phpunit", "PHPUnit");
+    $blockquote = $tidy->body()->child[0];
+    $this->invoke($input, "validateBlockquote", [ $blockquote ]);
+  }
+
+  /**
+   * @covers ::validateBlockquote
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage text contains a quotation without source.
+   */
+  public function testValidateBlockquoteWithoutCite() {
+    /* @var $tidy \tidy */
+    $tidy       = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body><blockquote>PHPUnit quote</blockquote></body></html>");
+    $tidy->cleanRepair();
+    $input      = new InputHTML("phpunit", "PHPUnit");
+    $blockquote = $tidy->body()->child[0];
+    $this->invoke($input, "validateBlockquote", [ $blockquote ]);
+  }
+
+  /**
+   * @covers ::validateBlockquote
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage text contains quotation without text.
+   */
+  public function testValidateBlockquoteWithoutText() {
+    /* @var $tidy \tidy */
+    $tidy       = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body><blockquote><cite>PHPUnit source</cite></blockquote></body></html>");
+    $tidy->cleanRepair();
+    $input      = new InputHTML("phpunit", "PHPUnit");
+    $blockquote = $tidy->body()->child[0];
+    $this->invoke($input, "validateBlockquote", [ $blockquote ]);
+
+  }
+
+  /**
+   * @covers ::validateBlockquote
+   */
+  public function testValidateBlockquoteValid() {
+    $quotationSource = "PHPUnit source";
+    /* @var $tidy \tidy */
+    $tidy       = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body><blockquote class='user-left'><p>PHPUnit quotation</p><cite>{$quotationSource}</cite></blockquote></body></html>");
+    $tidy->cleanRepair();
+    $blockquote = $tidy->body()->child[0];
+    $input = $this->getMock("\\MovLib\\Presentation\\Partial\\FormElement\\InputHTML", [ "validateTextOnlyWithOptionalAnchors", "validateUserClasses" ], [ "phpunit", "PHPUnit" ]);
+    $input->expects($this->once())->method("validateTextOnlyWithOptionalAnchors")->will($this->returnValue($quotationSource));
+    $input->expects($this->once())->method("validateUserClasses")->will($this->returnValue(" class='user-left'"));
+    $validatedBlockquote = $this->invoke($input, "validateBlockquote", [ $blockquote ]);
+    $this->assertEquals("blockquote class='user-left'", $validatedBlockquote);
+    $this->assertTrue($this->getProperty($input, "blockquote"));
+    $this->assertEquals("blockquote", $this->getProperty($input, "insertLastChild"));
+    $this->assertEquals("<cite>{$quotationSource}</cite>", $this->getProperty($input, "lastChild"));
+  }
+
+  /**
+   * @covers ::validateFigure
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage The image caption is mandatory and cannot be empty.
+   * @global \MovLib\Tool\Kernel $kernel
+   */
+  public function testValidateFigureEmptyCaption() {
+    global $kernel;
+    /* @var $tidy \tidy */
+    $tidy   = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body><figure><img src='https://{$kernel->domainStatic}/upload/user/Ravenlord.140.jpg'><figcaption></figcaption></figure></body></html>");
+    $tidy->cleanRepair();
+    $input  = new InputHTML("phpunit", "PHPUnit");
+    $figure = $tidy->body()->child[0];
+    $this->invoke($input, "validateFigure", [ $figure ]);
+  }
+
+  /**
+   * @covers ::validateFigure
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage The image caption is mandatory and cannot be empty.
+   * @global \MovLib\Tool\Kernel $kernel
+   */
+  public function testValidateFigureNoCaption() {
+    global $kernel;
+    /* @var $tidy \tidy */
+    $tidy   = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body><figure><img src='https://{$kernel->domainStatic}/upload/user/Ravenlord.140.jpg'></figure></body></html>");
+    $tidy->cleanRepair();
+    $input  = new InputHTML("phpunit", "PHPUnit");
+    $figure = $tidy->body()->child[0];
+    $this->invoke($input, "validateFigure", [ $figure ]);
+  }
+
+  /**
+   * @covers ::validateFigure
+   * @expectedException \MovLib\Exception\ValidationException
+   * @expectedExceptionMessage The image is mandatory and cannot be empty.
+   */
+  public function testValidateFigureNoImage() {
+    /* @var $tidy \tidy */
+    $tidy   = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body><figure><img><figcaption>PHPUnit caption</figcaption></figure></body></html>");
+    $tidy->cleanRepair();
+    $input  = new InputHTML("phpunit", "PHPUnit");
+    $figure = $tidy->body()->child[0];
+    $this->invoke($input, "validateFigure", [ $figure ]);
+  }
+
+  /**
    * @covers ::validateFigure
    * @dataProvider dataProviderTestValidateFigureInvalidSrc
    * @expectedException \MovLib\Exception\ValidationException
@@ -483,19 +579,12 @@ class InputHTMLTest extends \MovLib\TestCase {
    *   The image's src to test.
    */
   public function testValidateFigureInvalidSrc($src) {
-    $input = new InputHTML("phpunit", "PHPUnit");
-    $img   = (object) [ "attribute" => [ "src" => $src ] ];
-    $this->invoke($input, "validateFigure", [ $img ]);
-  }
-
-  /**
-   * @covers ::validateFigure
-   * @expectedException \MovLib\Exception\ValidationException
-   */
-  public function testValidateFigureNoSrc() {
-    $input = new InputHTML("phpunit", "PHPUnit");
-    $img   = new \stdClass();
-    $this->invoke($input, "validateFigure", [ $img ]);
+    /* @var $tidy \tidy */
+    $tidy   = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body><figure><img src='{$src}'><figcaption>PHPUnit caption</figcaption></figure></body></html>");
+    $tidy->cleanRepair();
+    $input  = new InputHTML("phpunit", "PHPUnit");
+    $figure = $tidy->body()->child[0];
+    $this->invoke($input, "validateFigure", [ $figure ]);
   }
 
   /**
@@ -504,53 +593,97 @@ class InputHTMLTest extends \MovLib\TestCase {
    */
   public function testValidateFigureValid() {
     global $kernel;
-    $input        = new InputHTML("phpunit", "PHPUnit");
-    $alt          = "phpunit alt text";
-    $srcAfter     = "//{$kernel->domainStatic}/user/Ravenlord.140.jpg";
+    $caption = "PHPUnit caption";
+    $srcAfter     = "//{$kernel->domainStatic}/upload/user/Ravenlord.140.jpg";
     $src          = "https:{$srcAfter}";
-    $img          = (object) [ "attribute" => [ "alt" => $alt, "src" => $src]];
-    $validatedImg = $this->invoke($input, "validateFigure", [ $img ]);
-    $this->assertEquals("img alt='{$alt}' height='140' src='{$srcAfter}' width='140'", $validatedImg);
+    /* @var $tidy \tidy */
+    $tidy   = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body><figure><img src='{$src}'><figcaption>{$caption}</figcaption></figure></body></html>");
+    $tidy->cleanRepair();
+    $figure = $tidy->body()->child[0];
+    $input = $this->getMock("\\MovLib\\Presentation\\Partial\\FormElement\\InputHTML", [ "validateTextOnlyWithOptionalAnchors", "validateUserClasses" ], [ "phpunit", "PHPUnit" ]);
+    $input->expects($this->once())->method("validateTextOnlyWithOptionalAnchors")->will($this->returnValue($caption));
+    $input->expects($this->once())->method("validateUserClasses")->will($this->returnValue(" class='user-right'"));
+    $figureValidated = $this->invoke($input, "validateFigure", [ $figure ]);
+    $this->assertEquals("figure class='user-right'", $figureValidated);
+    $this->assertEquals("figure", $this->getProperty($input, "insertLastChild"));
+    $this->assertEquals("<img alt='{$caption}' width=\"140\" height=\"140\" src='{$srcAfter}'><figcaption>{$caption}</figcaption>", $this->getProperty($input, "lastChild"));
   }
+//
+//  /**
+//   * @covers ::validateFigure
+//   * @expectedException \MovLib\Exception\ValidationException
+//   */
+//  public function testValidateFigureNoSrc() {
+//    $input = new InputHTML("phpunit", "PHPUnit");
+//    $img   = new \stdClass();
+//    $this->invoke($input, "validateFigure", [ $img ]);
+//  }
+//
+//  /**
+//   * @covers ::validateFigure
+//   * @global \MovLib\Tool\Kernel $kernel
+//   */
+//  public function testValidateFigureValid() {
+//    global $kernel;
+//    $input        = new InputHTML("phpunit", "PHPUnit");
+//    $alt          = "phpunit alt text";
+//    $srcAfter     = "//{$kernel->domainStatic}/upload/user/Ravenlord.140.jpg";
+//    $src          = "https:{$srcAfter}";
+//    $figure       = (object) [
+//      "attribute" => [ "class" => "user-center" ],
+//      "child" => [
+//        (object) [ "name" => "img", "attribute" => [ "src" => $src, "alt" => $alt ] ],
+//        (object) [ "name" => "figcaption", "child" => [ (object) [ "type" => TIDY_NODETYPE_TEXT, "value" => $alt ] ] ],
+//      ],
+//    ];
+//    $validatedFigure = $this->invoke($input, "validateFigure", [ $figure ]);
+//    $this->assertEquals("figure class='user-center'", $validatedFigure);
+//  }
+//
+//  /**
+//   * @covers ::validateFigure
+//   */
+//  public function testValidateFigureValidNoAlt() {
+//    global $kernel;
+//    $input        = new InputHTML("phpunit", "PHPUnit");
+//    $srcAfter     = "//{$kernel->domainStatic}/upload/user/Ravenlord.140.jpg";
+//    $src          = "https:{$srcAfter}";
+//    $figure       = (object) [
+//      "attribute" => null,
+//      "child" => [
+//        (object) [ "name" => "img", "attribute" => [ "src" => $src ] ],
+//        (object) [ "name" => "figcaption", "child" => [ (object) [ "type" => TIDY_NODETYPE_TEXT, "value" => "caption" ] ] ],
+//      ],
+//    ];
+//    $validatedFigure = $this->invoke($input, "validateFigure", [ $figure ]);
+//    $this->assertEquals("figure", $validatedFigure);
+//  }
 
   /**
-   * @covers ::validateFigure
-   */
-  public function testValidateFigureValidNoAlt() {
-    global $kernel;
-    $input        = new InputHTML("phpunit", "PHPUnit");
-    $srcAfter     = "//{$kernel->domainStatic}/user/Ravenlord.140.jpg";
-    $src          = "https:{$srcAfter}";
-    $img          = (object) [ "attribute" => [ "src" => $src]];
-    $validatedImg = $this->invoke($input, "validateFigure", [ $img ]);
-    $this->assertEquals("img alt='' height='140' src='{$srcAfter}' width='140'", $validatedImg);
-  }
-
-  /**
-   * @covers ::validateP
-   * @dataProvider dataProviderTestValidatePInvalidClass
+   * @covers ::validateUserClasses
+   * @dataProvider dataProviderTestValidateUserClassesInvalidClass
    * @expectedException \MovLib\Exception\ValidationException
    * @param string $class
    *   The paragraph's class to test.
    */
-  public function testValidatePInvalidClass($class) {
+  public function testValidateUserClassesInvalidClass($class) {
     $input = new InputHTML("phpunit", "PHPUnit");
     $p = (object) [ "attribute" => [ "class" => $class ] ];
-    $this->invoke($input, "validateP", [ $p ]);
+    $this->invoke($input, "validateUserClasses", [ $p ]);
   }
 
   /**
-   * @covers ::validateP
-   * @dataProvider dataProviderTestValidatePValid
+   * @covers ::validateUserClasses
+   * @dataProvider dataProviderTestValidateUserClassesValid
    * @param array $p
    *   The paragraph to test as associative array.
    */
-  public function testValidatePValid($p) {
+  public function testValidateUserClassesValid($p) {
     $p = (object) $p;
     $class = isset($p->attribute["class"]) ? " class='{$p->attribute["class"]}'" : null;
     $input = new InputHTML("phpunit", "PHPUnit");
-    $validatedP = $this->invoke($input, "validateP", [ $p ]);
-    $this->assertEquals("p{$class}", $validatedP);
+    $validatedClass = $this->invoke($input, "validateUserClasses", [ $p ]);
+    $this->assertEquals("{$class}", $validatedClass);
   }
 
 }
