@@ -27,8 +27,23 @@
 INSERT INTO `licenses` SET
   `dyn_names`         = COLUMN_CREATE('en', 'Copyrighted'),
   `dyn_descriptions`  = '',
-  `url`               = 'https://en.wikipedia.org/wiki/Copyright',
+  `dyn_url`           = COLUMN_CREATE(
+    'en', 'https://en.wikipedia.org/wiki/Copyright',
+    'de', 'https://de.wikipedia.org/wiki/Urheberrecht'
+  ),
   `abbreviation`      = '©',
+  `icon_extension`    = 'svg',
+  `icon_changed`      = CURRENT_TIMESTAMP
+;
+
+INSERT INTO `licenses` SET
+  `dyn_names`         = COLUMN_CREATE('en', 'Public Domain', 'de', 'Gemeinfrei'),
+  `dyn_descriptions`  = '',
+  `dyn_url`           = COLUMN_CREATE(
+    'en', 'https://en.wikipedia.org/wiki/Public_domain',
+    'de', 'https://de.wikipedia.org/wiki/Gemeinfreiheit'
+  ),
+  `abbreviation`      = 'PD',
   `icon_extension`    = 'svg',
   `icon_changed`      = CURRENT_TIMESTAMP
 ;
@@ -38,7 +53,10 @@ INSERT INTO `licenses` SET
   `dyn_descriptions`  = COLUMN_CREATE(
     'en', '&lt;p&gt;The person who associated a work with this deed has dedicated the work to the public domain by waiving all of his or her rights to the work worldwide under copyright law, including all related and neighboring rights, to the extent allowed by law. You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.&lt;/p&gt;'
   ),
-  `url`               = 'https://creativecommons.org/publicdomain/zero/1.0/',
+  `dyn_url`           = COLUMN_CREATE(
+    'en', 'https://creativecommons.org/publicdomain/zero/1.0/deed.en',
+    'de', 'https://creativecommons.org/publicdomain/zero/1.0/deed.de'
+  ),
   `abbreviation`      = 'CC0 1.0',
   `icon_extension`    = 'svg',
   `icon_changed`      = CURRENT_TIMESTAMP
@@ -49,7 +67,10 @@ INSERT INTO `licenses` SET
   `dyn_descriptions`  = COLUMN_CREATE(
     'en', '&lt;p&gt;You are free:&lt;/p&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;to share&lt;/b&gt; – to copy, distribute and transmit the work&lt;/li&gt;&lt;li&gt;&lt;b&gt;to remix&lt;/b&gt; – to adapt the work&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Under the following conditions:&lt;ul&gt;&lt;li&gt;&lt;b&gt;attribution&lt;/b&gt; – You must attribute the work in the manner specified by the author or licensor (but not in any way that suggests that they endorse you or your use of the work).&lt;/li&gt;&lt;/ul&gt;&lt;/p&gt;'
   ),
-  `url`               = 'https://creativecommons.org/licenses/by/3.0/',
+  `dyn_url`           = COLUMN_CREATE(
+    'en', 'https://creativecommons.org/licenses/by/3.0/deed.en',
+    'de', 'https://creativecommons.org/licenses/by/3.0/deed.de'
+  ),
   `abbreviation`      = 'CC BY 3.0',
   `icon_extension`    = 'svg',
   `icon_changed`      = CURRENT_TIMESTAMP
