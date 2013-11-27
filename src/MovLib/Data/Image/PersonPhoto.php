@@ -180,9 +180,10 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
         `source`           = ?,
         `styles`           = ?,
         `width`            = ?",
-      "iiiiss",
+      "ssssiiissi",
       [
         $this->changed,
+        $i18n->languageCode,
         $this->description,
         $this->extension,
         $this->filesize,

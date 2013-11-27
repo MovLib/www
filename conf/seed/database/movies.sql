@@ -52,6 +52,25 @@ INSERT INTO `persons` SET
   `country`         = 'FR'
 ;
 
+INSERT INTO `persons_photos` SET
+  `id`               = 1,
+  `person_id`        = 1,
+  `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'PD' LIMIT 1),
+  `width`            = 363,
+  `height`           = 454,
+  `filesize`         = 42010,
+  `extension`        = 'jpg',
+  `changed`          = CURRENT_TIMESTAMP,
+  `created`          = CURRENT_TIMESTAMP,
+  `dyn_descriptions` = COLUMN_CREATE(
+    'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information.&lt;/p&gt;',
+    'de', '&lt;p&gt;Der franz&ouml;sische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen k&ouml;nnen der Quelle entnommen werden.&lt;/p&gt;'
+  ),
+  `source`           = 'https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg',
+  `styles`           = 'a:2:{i:140;a:2:{s:6:"height";i:175;s:5:"width";i:140;}i:70;a:2:{s:6:"height";i:88;s:5:"width";i:70;}}',
+  `deleted`          = false
+;
+
 INSERT INTO `movies_directors` SET `movie_id` = 1, `person_id` = 1;
 INSERT INTO `movies_countries` SET `movie_id` = 1, `country_code` = 'UK';
 INSERT INTO `movies_languages` SET `movie_id` = 1, `language_code` = 'xx';
