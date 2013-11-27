@@ -38,5 +38,4 @@ INSERT INTO `styles` (`dyn_names`, `dyn_descriptions`) VALUES
     'en', '&lt;p&gt;&lt;strong&gt;Marial arts&lt;/strong&gt; is a style of the &lt;a href="/genre/1"&gt;action film genres&lt;/a&gt;.&lt;/p&gt;',
     'de', '&lt;p&gt;&lt;strong&gt;Marial Arts&lt;/strong&gt; ist ein Stil des &lt;a href="/genre/1"&gt;Actionfilm Genres&lt;/a&gt;.&lt;/p&gt;'
   )
-)
-;
+);

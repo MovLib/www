@@ -1287,7 +1287,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users_movies_lists` (
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
-  `users_lists_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s list’s unique ID.',
+  `users_lists_id` INT UNSIGNED NOT NULL COMMENT 'The user’s list’s unique ID.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   PRIMARY KEY (`user_id`, `users_lists_id`, `movie_id`),
   INDEX `fk_users_movielists_movies_idx` (`movie_id` ASC),
@@ -1317,7 +1317,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users_persons_lists` (
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
-  `users_lists_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s list’s unique ID.',
+  `users_lists_id` INT UNSIGNED NOT NULL COMMENT 'The user’s list’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
   PRIMARY KEY (`user_id`, `users_lists_id`, `person_id`),
   INDEX `fk_users_person_lists_persons_idx` (`person_id` ASC),
