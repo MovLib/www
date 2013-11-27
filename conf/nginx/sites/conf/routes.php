@@ -233,6 +233,12 @@ location ^~ <?= $r("/persons") ?> {
 # ---------------------------------------------------------------------------------------------------------------------- person
 
 
+location @person_photos_upload {
+  set $movlib_multipart 1;
+  set $movlib_presenter "Person\\UploadPhoto";
+  include sites/conf/fastcgi_params.conf;
+}
+
 location ^~ <?= $r("/person") ?> {
 
   location = <?= $r("/person") ?> {
@@ -253,6 +259,14 @@ location ^~ <?= $r("/person") ?> {
     set $movlib_action "person";
     set $movlib_id $1;
     try_files $movlib_cache @gallery;
+  }
+
+  location ~ ^<?= $r("/person/{0}/photos/upload", [ "([0-9]+)" ]) ?>$ {
+    error_page 413 @person_photos_upload;
+    set $movlib_multipart 0;
+    set $movlib_presenter "Person\\UploadPhoto";
+    set $movlib_person_id $1;
+    try_files $movlib_cache @php;
   }
 
   return 404;
