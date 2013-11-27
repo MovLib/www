@@ -1,40 +1,61 @@
--- phpMyAdmin SQL Dump
--- version 4.0.6
--- http://www.phpmyadmin.net
+-- ---------------------------------------------------------------------------------------------------------------------
+-- This file is part of {@link https://github.com/MovLib MovLib}.
 --
--- Host: localhost
--- Generation Time: Sep 16, 2013 at 12:22 PM
--- Server version: 10.0.4-MariaDB-1~wheezy-log
--- PHP Version: 5.5.2
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-
+-- Copyright © 2013-present {@link https://movlib.org/ MovLib}.
 --
--- Database: `movlib`
+-- MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+-- License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+-- version.
 --
-
+-- MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+-- of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
 --
--- Dumping data for table `sound_formats`
+-- You should have received a copy of the GNU Affero General Public License along with MovLib.
+-- If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+-- ---------------------------------------------------------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------------------------------------------------------
+-- Sound Format seed data.
 --
+-- @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+-- @copyright © 2013 MovLib
+-- @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+-- @link https://movlib.org/
+-- @since 0.0.1-dev
+-- ---------------------------------------------------------------------------------------------------------------------
 
-INSERT INTO `sound_formats` (`sound_format_id`, `name`, `dyn_names`, `dyn_descriptions`) VALUES
-(1, 'Dolby Digital 5.1', '', ''),
-(2, 'Dolby Digital 2.0 Stereo', '', ''),
-(3, 'DTS-HD Master Audio 5.1', '', ''),
-(4, 'DTS 2.0 Stereo', '', ''),
-(5, 'Dolby Digital 5.1 EX', '', ''),
-(6, 'Stereo', '', '');
-COMMIT;
+INSERT INTO `sound_formats` SET
+  `id`					= 1,
+  `dyn_names`  			= COLUMN_CREATE('en', 'Dolby Digital 5.1'),
+  `dyn_descriptions`	= ''
+;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+INSERT INTO `sound_formats` SET
+  `id`					= 2,
+  `dyn_names`  			= COLUMN_CREATE('en', 'Dolby Digital 2.0 Stereo'),
+  `dyn_descriptions`	= ''
+;
+
+INSERT INTO `sound_formats` SET
+  `id`					= 3,
+  `dyn_names`  			= COLUMN_CREATE('en', 'DTS-HD Master Audio 5.1'),
+  `dyn_descriptions`	= ''
+;
+
+INSERT INTO `sound_formats` SET
+  `id`					= 4,
+  `dyn_names`  			= COLUMN_CREATE('en', 'DTS 2.0 Stereo'),
+  `dyn_descriptions`	= ''
+;
+
+INSERT INTO `sound_formats` SET
+  `id`					= 5,
+  `dyn_names`  			= COLUMN_CREATE('en', 'Dolby Digital 5.1 EX'),
+  `dyn_descriptions`	= ''
+;
+
+INSERT INTO `sound_formats` SET
+  `id`					= 6,
+  `dyn_names`  			= COLUMN_CREATE('en', 'Stereo'),
+  `dyn_descriptions`	= ''
+;

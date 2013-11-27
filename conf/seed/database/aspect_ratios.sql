@@ -26,7 +26,7 @@ SET time_zone = "+00:00";
 -- Dumping data for table `aspect_ratios`
 --
 
-INSERT INTO `aspect_ratios` (`aspect_ratio_id`, `name`) VALUES
+INSERT INTO `aspect_ratios` (`id`, `name`) VALUES
 (1, '1,78:1 (anamorph / 16:9)'),
 (2, '1,33:1'),
 (3, '1,85:1 (anamorph / 16:9)');
