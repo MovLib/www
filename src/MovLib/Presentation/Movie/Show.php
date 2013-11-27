@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Movie\Full as MovieFull;
+use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Lists\GlueSeparated;
@@ -171,8 +172,8 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       "</div>"; // close .row
     }
     // We don't have any movie with the given identifier.
-    catch (\DomainException $e) {
-
+    catch (\OutOfBoundsException $e) {
+      throw new ErrorNotFoundException("Couldn't find movie for identifier '{$_SERVER["MOVIE_ID"]}'");
     }
   }
 
