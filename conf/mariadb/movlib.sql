@@ -191,15 +191,17 @@ SHOW WARNINGS;
 -- Table `movlib`.`companies`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
-  `company_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The company’s unique ID.',
-  `name` VARCHAR(255) NOT NULL COMMENT 'The company’s unique name.',
-  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this company was deleted, default is FALSE (0).',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translatable descriptions.',
-  `dyn_links` BLOB NOT NULL COMMENT 'The company’s external links.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this companies was created.',
-  PRIMARY KEY (`company_id`))
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The company’s unique ID.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the company as timestamp.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this company was marked as deleted or not. TRUE (1) if this company was marked as deleted, default is FALSE (0).',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_links` BLOB NOT NULL COMMENT 'External links belonging to this company. The link’s hostname serves as key.',
+  `name` VARCHAR(255) NOT NULL COMMENT 'The company’s name.',
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
-COMMENT = 'Contains all company related data.';
+COMMENT = 'Contains all movie companies.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -229,7 +231,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_crew_companies`
     FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`company_id`)
+    REFERENCES `movlib`.`companies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_crew_persons`
@@ -266,32 +268,26 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
   `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The photo’s unique ID within the person.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'Unique ID of the user who uploaded this photo.',
-  `license_id` INT UNSIGNED NOT NULL COMMENT 'The license\'s unique ID this image is under.',
-  `width` SMALLINT UNSIGNED NOT NULL COMMENT 'The photo’s width.',
-  `height` SMALLINT UNSIGNED NOT NULL COMMENT 'The photo’s height.',
-  `size` INT UNSIGNED NOT NULL COMMENT 'The photo’s size in Bytes.',
-  `extension` CHAR(3) NOT NULL COMMENT 'The photo’s extension without leading dot.',
-  `changed` TIMESTAMP NOT NULL COMMENT 'The last time this photo was updated.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The photo’s creation time.',
+  `license_id` INT UNSIGNED NULL COMMENT 'The license\'s unique ID this image is under.',
+  `width` SMALLINT UNSIGNED NULL COMMENT 'The photo’s width.',
+  `height` SMALLINT UNSIGNED NULL COMMENT 'The photo’s height.',
+  `size` INT UNSIGNED NULL COMMENT 'The photo’s size in Bytes.',
+  `extension` CHAR(3) NULL COMMENT 'The photo’s extension without leading dot.',
+  `changed` TIMESTAMP NULL COMMENT 'The last time this photo was updated.',
+  `created` TIMESTAMP NULL COMMENT 'The photo’s creation time.',
   `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The photo’s upvotes.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The photo’s translatable descriptions.',
-  `source` TINYTEXT NOT NULL COMMENT 'The photo\'s source.',
-  `styles` BLOB NOT NULL,
+  `dyn_descriptions` BLOB NULL COMMENT 'The photo’s translatable descriptions.',
+  `source` TINYTEXT NULL COMMENT 'The photo\'s source.',
+  `styles` BLOB NULL,
+  `deleted` TINYINT(1) NOT NULL DEFAULT true,
   PRIMARY KEY (`id`, `person_id`),
   INDEX `fk_persons_photos_persons` (`person_id` ASC),
   INDEX `fk_persons_photos_images` (`id` ASC),
-  INDEX `fk_persons_photos_users` (`user_id` ASC),
   INDEX `fk_persons_photos_licenses` (`license_id` ASC),
   INDEX `persons_photos_order_by_upvotes` (`upvotes` ASC),
   CONSTRAINT `fk_persons_photos_persons`
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`person_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_photos_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_photos_licenses`
@@ -312,32 +308,26 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies_images` (
   `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The company image’s unique identifier.',
   `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company’s unique identifier.',
   `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The company image’s type (enum from Data class).',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The image’s unique uploader’s identifier.',
-  `license_id` INT UNSIGNED NOT NULL COMMENT 'The company image’s unique license identifier.',
-  `width` SMALLINT UNSIGNED NOT NULL COMMENT 'The company image’s width.',
-  `height` SMALLINT UNSIGNED NOT NULL COMMENT 'The company image’s height.',
-  `size` INT UNSIGNED NOT NULL COMMENT 'The company image’s size in Bytes.',
-  `extension` CHAR(3) NOT NULL COMMENT 'The company image’s extension without leading dot.',
-  `changed` TIMESTAMP NOT NULL COMMENT 'The last time this company image was updated.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The company image’s creation time.',
+  `license_id` INT UNSIGNED NULL COMMENT 'The company image’s unique license identifier.',
+  `width` SMALLINT UNSIGNED NULL COMMENT 'The company image’s width.',
+  `height` SMALLINT UNSIGNED NULL COMMENT 'The company image’s height.',
+  `size` INT UNSIGNED NULL COMMENT 'The company image’s size in Bytes.',
+  `extension` CHAR(3) NULL COMMENT 'The company image’s extension without leading dot.',
+  `changed` TIMESTAMP NULL COMMENT 'The last time this company image was updated.',
+  `created` TIMESTAMP NULL COMMENT 'The company image’s creation time.',
   `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company image’s upvotes.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The company image’s translatable descriptions.',
-  `source` TINYTEXT NOT NULL COMMENT 'The image\'s source.',
-  `styles` BLOB NOT NULL,
+  `dyn_descriptions` BLOB NULL COMMENT 'The company image’s translatable descriptions.',
+  `source` TINYTEXT NULL COMMENT 'The image\'s source.',
+  `styles` BLOB NULL,
+  `deleted` TINYINT(1) NOT NULL DEFAULT true,
   PRIMARY KEY (`id`, `company_id`, `type_id`),
   INDEX `fk_companies_images_companies` (`company_id` ASC),
   INDEX `fk_companies_images_images` (`id` ASC),
-  INDEX `fk_companies_images_users` (`user_id` ASC),
   INDEX `fk_companies_images_licenses` (`license_id` ASC),
   INDEX `companies_images_order_by_upvotes` (`upvotes` ASC),
   CONSTRAINT `fk_companies_images_companies`
     FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`company_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_companies_images_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
+    REFERENCES `movlib`.`companies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_companies_images_licenses`
@@ -559,7 +549,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_awards_companies`
     FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`company_id`)
+    REFERENCES `movlib`.`companies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -625,14 +615,19 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_trailers`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movies\'s unique ID.',
-  PRIMARY KEY (`movie_id`),
+  `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The movie trailer’s unique ID within the movie.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The movie trailer’s ISO alpha-2 language code.',
+  `url` VARCHAR(255) NOT NULL,
+  `country_code` CHAR(2) NULL COMMENT 'The movie trailer’s ISO alpha-2 country code.',
+  PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_movies_trailers_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains all movie trailsers.';
 
 SHOW WARNINGS;
 
@@ -643,32 +638,26 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The movie image\'s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The movie image’s type.',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie image’s uploader ID.',
-  `license_id` INT UNSIGNED NOT NULL COMMENT 'The movie image’s license ID.',
-  `country_code` CHAR(2) NULL COMMENT 'The movie image’s ISO alpha-2 country code.',
-  `width` SMALLINT UNSIGNED NOT NULL COMMENT 'The movie image’s width.',
-  `height` SMALLINT UNSIGNED NOT NULL COMMENT 'The movie image’s height.',
-  `size` INT UNSIGNED NOT NULL COMMENT 'The movie image’s size in Bytes.',
-  `extension` CHAR(3) NOT NULL COMMENT 'The movie image’s extension without leading dot.',
-  `changed` TIMESTAMP NOT NULL COMMENT 'The last time this movie image was updated.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The movie image’s creation time.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT true,
   `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie image’s upvotes.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The movie image’s translatable descriptions.',
-  `source` TINYTEXT NOT NULL COMMENT 'The movie image’s source.',
-  `styles` BLOB NOT NULL,
+  `license_id` INT UNSIGNED NULL COMMENT 'The movie image’s license ID.',
+  `country_code` CHAR(2) NULL COMMENT 'The movie image’s ISO alpha-2 country code.',
+  `width` SMALLINT UNSIGNED NULL COMMENT 'The movie image’s width.',
+  `height` SMALLINT UNSIGNED NULL COMMENT 'The movie image’s height.',
+  `size` INT UNSIGNED NULL COMMENT 'The movie image’s size in Bytes.',
+  `extension` CHAR(3) NULL COMMENT 'The movie image’s extension without leading dot.',
+  `changed` TIMESTAMP NULL COMMENT 'The last time this movie image was updated.',
+  `created` TIMESTAMP NULL COMMENT 'The movie image’s creation time.',
+  `dyn_descriptions` BLOB NULL COMMENT 'The movie image’s translatable descriptions.',
+  `source` TINYTEXT NULL COMMENT 'The movie image’s source.',
+  `styles` BLOB NULL,
   PRIMARY KEY (`id`, `movie_id`, `type_id`),
   INDEX `fk_posters_movies` (`movie_id` ASC),
-  INDEX `fk_movies_images_users` (`user_id` ASC),
   INDEX `fk_movies_images_licenses` (`license_id` ASC),
   INDEX `movies_images_type_id` (`type_id` ASC, `upvotes` ASC),
   CONSTRAINT `fk_movies_images_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_images_licenses`
@@ -882,22 +871,41 @@ SHOW WARNINGS;
 -- Table `movlib`.`master_releases`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`master_releases` (
-  `master_release_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The master release´s unique ID.',
-  `title` BLOB NOT NULL COMMENT 'The master release´s title.',
-  `country_code` CHAR(2) NOT NULL COMMENT 'The master release´s ISO alpha-2 country code.',
-  `dyn_notes` BLOB NOT NULL COMMENT 'The master release´s translatable release notes.',
-  `release_date` DATE NULL COMMENT 'The date this master release has been published.',
-  `packaging_id` INT UNSIGNED NULL COMMENT 'The master release´s packaging (Only present if there are more than 1 releases in this master release).',
-  `commit` CHAR(40) NULL COMMENT 'The master release\'s last commit sha-1 hash.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this master release was created.',
-  PRIMARY KEY (`master_release_id`),
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The master release’s unique ID.',
+  `country_code` CHAR(2) NOT NULL COMMENT 'The master release’s ISO alpha-2 country code.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the master release as timestamp.',
+  `dyn_notes` BLOB NOT NULL COMMENT 'The master release’s release notes in various languages. Keys are ISO alpha-2 language codes.',
+  `title` BLOB NOT NULL COMMENT 'The master release’s title.',
+  `commit` CHAR(40) NULL COMMENT 'The master release’s last history commit sha-1 hash.',
+  `packaging_id` INT UNSIGNED NULL COMMENT 'The master release’s packaging. Only present if the master release contains multiple releases (e.g. a movie collection box).',
+  `release_date` DATE NULL COMMENT 'The publishing date of the master release.',
+  PRIMARY KEY (`id`),
   INDEX `fk_master_releases_packaging` (`packaging_id` ASC),
   CONSTRAINT `fk_master_releases_packaging`
     FOREIGN KEY (`packaging_id`)
     REFERENCES `movlib`.`packaging` (`packaging_id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains all master releases. A master release contains one  /* comment truncated */ /*or more (e.g. a movie collection box) releases.*/'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`releases_types`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`releases_types` (
+  `id` INT UNSIGNED NOT NULL,
+  `dyn_names` BLOB NOT NULL COMMENT 'The release type’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The release type’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `abbreviation` TINYBLOB NOT NULL COMMENT 'The release type’s abbreviation.',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+COMMENT = 'The release types (e.g. DVD, VHS,..).'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -905,23 +913,23 @@ SHOW WARNINGS;
 -- Table `movlib`.`releases`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
-  `release_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The release´s unique ID.',
-  `master_release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The master release´s unique ID this release belongs to.',
-  `is_cut` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this release is cut or not.',
-  `ean` TINYBLOB NULL COMMENT 'The global identification number (EAN) of this release.',
-  `length` TIME NULL COMMENT 'The length of this release without the credits.',
-  `length_credits` TIME NULL COMMENT 'The length of this release with the credits.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The release’s unique ID.',
+  `master_release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The master release’s unique ID this release belongs to.',
+  `is_cut` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this release is cut or not. TRUE (1) if this release is marked as cutted, default is FALSE (0).',
+  `length` TIME NULL COMMENT 'The release’s length without credits.',
+  `length_credits` TIME NULL COMMENT 'The release’s length with credits.',
   `length_bonus` TIME NULL COMMENT 'The length of this release\'s bonus material.',
-  `dyn_extras` BLOB NOT NULL COMMENT 'The release´s translatable extras free text field.',
-  `dyn_notes` BLOB NOT NULL COMMENT 'The translatable release notes (free text) field for this release, if there is more than one release in the master release.',
-  `aspect_ratio_id` INT UNSIGNED NOT NULL COMMENT 'The unique ID of the release´s aspect ratio.',
-  `packaging_id` INT UNSIGNED NOT NULL COMMENT 'The packaging´s unique ID this release is boxed in.',
-  `type` VARCHAR(20) NOT NULL COMMENT 'The release´s type in lowercase letters, e.g. dvd or bluray.',
+  `dyn_extras` BLOB NOT NULL COMMENT 'The description of the release’s extras in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_notes` BLOB NOT NULL COMMENT 'The release’s release notes in various languages. Keys are ISO alpha-2 language codes.',
+  `aspect_ratio_id` INT UNSIGNED NOT NULL COMMENT 'The aspect ratio’s unique ID.',
+  `packaging_id` INT UNSIGNED NOT NULL COMMENT 'The packaging’s unique ID.',
   `bin_type_data` BLOB NOT NULL COMMENT 'The release´s type specific fields in serialized igbinary format.',
+  `releases_type_id` INT UNSIGNED NOT NULL COMMENT 'The release type’s unique ID.',
   INDEX `fk_releases_aspect_ratios` (`aspect_ratio_id` ASC),
-  PRIMARY KEY (`release_id`),
+  PRIMARY KEY (`id`),
   INDEX `fk_releases_packaging` (`packaging_id` ASC),
   INDEX `fk_releases_master_release` (`master_release_id` ASC),
+  INDEX `fk_releases_releases_types1_idx` (`releases_type_id` ASC),
   CONSTRAINT `fk_releases_aspect_ratios`
     FOREIGN KEY (`aspect_ratio_id`)
     REFERENCES `movlib`.`aspect_ratios` (`aspect_ratio_id`)
@@ -929,15 +937,23 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_releases_master_releases`
     FOREIGN KEY (`master_release_id`)
-    REFERENCES `movlib`.`master_releases` (`master_release_id`)
+    REFERENCES `movlib`.`master_releases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_releases_packaging`
     FOREIGN KEY (`packaging_id`)
     REFERENCES `movlib`.`packaging` (`packaging_id`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_releases_releases_types1`
+    FOREIGN KEY (`releases_type_id`)
+    REFERENCES `movlib`.`releases_types` (`id`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains all releases. Every release has to belong to a mast /* comment truncated */ /*er release.*/'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -957,7 +973,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_releases` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_releases_releases1`
     FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`release_id`)
+    REFERENCES `movlib`.`releases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -976,12 +992,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_labels` (
   INDEX `fk_releases_labels_releases` (`release_id` ASC),
   CONSTRAINT `fk_releases_companies_releases`
     FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`release_id`)
+    REFERENCES `movlib`.`releases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_releases_companies_companies`
     FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`company_id`)
+    REFERENCES `movlib`.`companies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -1033,7 +1049,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_sound_formats` (
   INDEX `fk_releases_sound_formats_releases` (`release_id` ASC),
   CONSTRAINT `fk_releases_sound_formats_releases`
     FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`release_id`)
+    REFERENCES `movlib`.`releases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_releases_sound_formats_sound_formats`
@@ -1056,7 +1072,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_subtitles` (
   PRIMARY KEY (`release_id`, `language_code`, `is_hearing_impaired`),
   CONSTRAINT `fk_releases_subtitles_releases`
     FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`release_id`)
+    REFERENCES `movlib`.`releases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -1075,12 +1091,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`master_releases_labels` (
   INDEX `fk_master_releases_labels_master_releases` (`master_release_id` ASC),
   CONSTRAINT `fk_master_releases_labels_master_releases`
     FOREIGN KEY (`master_release_id`)
-    REFERENCES `movlib`.`master_releases` (`master_release_id`)
+    REFERENCES `movlib`.`master_releases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_master_releases_labels_companies`
     FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`company_id`)
+    REFERENCES `movlib`.`companies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -1111,9 +1127,9 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_ratings`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID.',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user\'s unique ID.',
-  `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user\'s rating for this movie (1-5).',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
+  `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user’s rating for this movie (1-5).',
   PRIMARY KEY (`movie_id`, `user_id`),
   INDEX `fk_movies_ratings_users` (`user_id` ASC),
   CONSTRAINT `fk_movies_ratings_movies`
@@ -1126,7 +1142,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains all movie ratings by users.';
 
 SHOW WARNINGS;
 
@@ -1251,7 +1268,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_collections` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_users_collections_master_releases`
     FOREIGN KEY (`master_release_id`)
-    REFERENCES `movlib`.`master_releases` (`master_release_id`)
+    REFERENCES `movlib`.`master_releases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1339,6 +1356,70 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_persons_lists` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all related data to users persons lists.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`releases_identifiers_types`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`releases_identifiers_types` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The release identifier type’s unique ID.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The release identifier type’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The release identifier type’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `abbreviation` TINYBLOB NOT NULL COMMENT 'The release identifier type’s abbreviation.',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+COMMENT = 'Contains all release identifier types (e.g. EAN, GTIN, JAN,. /* comment truncated */ /*.)*/'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`releases_identifiers`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`releases_identifiers` (
+  `releases_identifiers_type_id` INT UNSIGNED NOT NULL COMMENT 'The release identifier type’s unique ID.',
+  `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release’s unique ID.',
+  `identifier` TINYBLOB NOT NULL COMMENT 'The release identifier’s unique identifier.',
+  INDEX `fk_releases_identifiers_releases_identifiers_types_idx` (`releases_identifiers_type_id` ASC),
+  INDEX `fk_releases_identifiers_releases_idx` (`release_id` ASC),
+  CONSTRAINT `fk_releases_identifiers_releases_identifiers_types`
+    FOREIGN KEY (`releases_identifiers_type_id`)
+    REFERENCES `movlib`.`releases_identifiers_types` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_releases_identifiers_releases`
+    FOREIGN KEY (`release_id`)
+    REFERENCES `movlib`.`releases` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all release identifiers belonging to releases.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`master_releases_identifiers`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`master_releases_identifiers` (
+  `releases_identifiers_type_id` INT UNSIGNED NOT NULL COMMENT 'The release identifier type’s unique ID.',
+  `master_release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The master release’s unique ID.',
+  `identifier` TINYBLOB NOT NULL COMMENT 'The release identifier’s unique identifier.',
+  INDEX `fk_master_releases_identifiers_releases_identifiers_types_idx` (`releases_identifiers_type_id` ASC),
+  INDEX `fk_master_releases_identifiers_master_releases_idx` (`master_release_id` ASC),
+  CONSTRAINT `fk_master_releases_identifiers_releases_identifiers_types`
+    FOREIGN KEY (`releases_identifiers_type_id`)
+    REFERENCES `movlib`.`releases_identifiers_types` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_master_releases_identifiers_master_releases`
+    FOREIGN KEY (`master_release_id`)
+    REFERENCES `movlib`.`master_releases` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all release identifiers belonging to master release /* comment truncated */ /*s.*/';
 
 SHOW WARNINGS;
 
