@@ -131,6 +131,13 @@ abstract class AbstractBaseImage {
   protected $filename;
 
   /**
+   * The original image's filesize.
+   *
+   * @var integer
+   */
+  protected $filesize;
+
+  /**
    * The image's height.
    *
    * @internal Must be public for validation.
@@ -139,18 +146,18 @@ abstract class AbstractBaseImage {
   public $height;
 
   /**
-   * The image's placeholder path, name and extension within the assets path.
+   * The image's placeholder path within the asset image directory.
    *
    * @var string
    */
-  protected $placeholder = "logo/vector.svg";
+  protected $placeholder = "logo/vector";
 
   /**
-   * The original image's filesize.
+   * The image's placeholder extension.
    *
-   * @var integer
+   * @var string
    */
-  protected $filesize;
+  protected $placeholderExtension = "svg";
 
   /**
    * All available styles information, mapped to database.
@@ -226,7 +233,7 @@ abstract class AbstractBaseImage {
       $args = "'{$width}x{$height}>'";
     }
     $destination = $this->getPath($style);
-    if (sh::execute("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 80 -unsharp 0x0.75+0.75+0.008 -resize {$args} '{$destination}'") === false) {
+    if (sh::execute("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 80 -unsharp '0x0.75+0.75+0.008' -resize {$args} '{$destination}'") === false) {
       throw new \RuntimeException("Couldn't convert '{$source}' to '{$style}'");
     }
     list($this->styles[$style]["width"], $this->styles[$style]["height"]) = getimagesize($destination);
@@ -280,16 +287,25 @@ abstract class AbstractBaseImage {
    *   The style for which you want the path, if no style is given (default) the path to the original file is returned.
    * @return string
    *   The absolute path to the image.
+   * @throws \LogicException
    */
   protected function getPath($style = null) {
     global $kernel;
+
+    // We always have to generate the absolute path to the image within our persistent storage, doesn't matter if it
+    // exists or not, as it may be requested to move or convert an image that was just uploaded. Of course we need the
+    // directory, filename and the extension to do so. The concrete image is responsible for this.
+    if (empty($this->directory) || empty($this->filename) || empty($this->extension)) {
+      throw new \LogicException("Directory, filename and/or extension cannot be empty.");
+    }
+
+    // If no style was given the path to the original is desired.
     if (empty($style)) {
-      $path = "private/upload/{$this->directory}/{$this->filename}.{$this->extension}";
+      return "{$kernel->documentRoot}/private/upload/{$this->directory}/{$this->filename}.{$this->extension}";
     }
-    else {
-      $path = "public/upload/{$this->directory}/{$this->filename}.{$style}.{$this->extension}";
-    }
-    return "{$kernel->documentRoot}/{$path}";
+
+    // Otherwise the path to the given style.
+    return "{$kernel->documentRoot}/public/upload/{$this->directory}/{$this->filename}.{$style}.{$this->extension}";
   }
 
   /**
@@ -300,16 +316,28 @@ abstract class AbstractBaseImage {
    *   The style for which you want the URL, if no style is given (default) the URL to the original file is returned.
    * @return string
    *   The absolute (static) URL to the image.
+   * @throws \LogicException
    */
   protected function getURL($style = null) {
     global $kernel;
+
+    // If the image doesn't exist but a URL is claimed return the placeholder.
+    if ($this->exists === false) {
+      return $kernel->getAssetURL($this->placeholder, $this->placeholderExtension);
+    }
+
+    // We need a directory, filename and extension if the image exists.
+    if (empty($this->directory) || empty($this->filename) || empty($this->extension)) {
+      throw new \LogicException("Directory, filename and/or extension cannot be empty.");
+    }
+
+    // If no style was given the URL to the original is desired.
     if (empty($style)) {
-      $url = "private/upload/{$this->directory}/{$this->filename}.{$this->extension}";
+      return "//{$kernel->domainStatic}/private/upload/{$this->directory}/{$this->filename}.{$this->extension}?c={$this->changed}";
     }
-    else {
-      $url = "upload/{$this->directory}/{$this->filename}.{$style}.{$this->extension}?c={$this->changed}";
-    }
-    return "//{$kernel->domainStatic}/{$url}";
+
+    // Otherwise the URL to the given style.
+    return "//{$kernel->domainStatic}/upload/{$this->directory}/{$this->filename}.{$style}.{$this->extension}?c={$this->changed}";
   }
 
   /**

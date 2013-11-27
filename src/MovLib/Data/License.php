@@ -62,7 +62,7 @@ class License extends \MovLib\Data\Image\AbstractBaseImage {
     // If we have an identifier try to fetch the license from the database.
     if ($id) {
       $query = self::getQuery();
-      $stmt  = $db->query("{$query} WHERE `id` = ? LIMIT 1", "ssi", [ $i18n->languageCode, $i18n->languageCode, $id ]);
+      $stmt  = $db->query("{$query} WHERE `id` = ? LIMIT 1", "sssi", [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]);
       $stmt->bind_result($this->name, $this->description, $this->abbreviation, $this->url, $this->changed, $this->extension);
       if (!$stmt->fetch()) {
         throw new \OutOfBoundsException("Couldn't find license for identifier '{$id}'");
@@ -100,7 +100,7 @@ class License extends \MovLib\Data\Image\AbstractBaseImage {
     static $licenses = [];
     if (!isset($licenses[$i18n->locale])) {
       $query  = self::getQuery();
-      $result = $db->query("{$query} ORDER BY `name` ASC", "ss", [ $i18n->languageCode, $i18n->languageCode ])->get_result();
+      $result = $db->query("{$query} ORDER BY `name` ASC", "sss", [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode ])->get_result();
       while ($license = $result->fetch_assoc()) {
         $licenses[$i18n->locale][$license["id"]] = $license["name"];
       }
@@ -128,9 +128,9 @@ class License extends \MovLib\Data\Image\AbstractBaseImage {
           IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
           COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
           `abbreviation`,
-          `url`,
-          UNIX_TIMESTAMP(`icon_changed`) AS `imageChanged`,
-          `icon_extension` AS `imageExtension`
+          COLUMN_GET(`dyn_url`, ? AS CHAR) AS `url`,
+          UNIX_TIMESTAMP(`icon_changed`) AS `changed`,
+          `icon_extension` AS `extension`
         FROM `licenses`"
       ;
     }

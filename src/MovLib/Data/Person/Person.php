@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Person;
 
+use \MovLib\Data\Image\PersonPhoto;
+
 /**
  * Represents a single person.
  *
@@ -28,12 +30,77 @@ namespace MovLib\Data\Person;
  */
 class Person {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
+   * The person's unique identifier.
    *
+   * @var integer
+   */
+  public $id;
+
+  /**
+   * The person's deletion state.
+   *
+   * @var boolean
+   */
+  public $deleted;
+
+  /**
+   * The person's display photo.
+   *
+   * @var \MovLib\Data\Image\PersonPhoto
+   */
+  public $displayPhoto;
+
+  /**
+   * The person's name.
+   *
+   * @var string
+   */
+  public $name;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new person.
+   *
+   * @global \MovLib\Data\Database $db
+   * @param integer $id [optional]
+   *   The unique person's identifier to load, leave empty to create empty instance.
+   * @throws \OutOfBoundsException
    */
   public function __construct($id = null) {
+    global $db;
+
+    // Try to load the person for the given identifier.
     if ($id) {
-      
+      $stmt = $db->query("SELECT `name`, `deleted` FROM `persons` WHERE `person_id` = ? LIMIT 1", "d", [ $id ]);
+      $stmt->bind_result($this->name, $this->deleted);
+      if (!$stmt->fetch()) {
+        throw new \OutOfBoundsException("Couldn't find person for identifier '{$id}'");
+      }
+      $stmt->close();
+      $this->id = $id;
+    }
+
+    // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
+    // load the photo for this person.
+    if ($this->id) {
+      $this->deleted = (boolean) $this->deleted;
+      $this->displayPhoto = $db->query(
+        "SELECT `id`, `extension`, UNIX_TIMESTAMP(`changed`) AS `changed` FROM `persons_photos` WHERE `person_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
+        "d",
+        [ $this->id ]
+      )->get_result()->fetch_object("\\MovLib\\Data\\Image\\PersonPhoto", [ $this->id, $this->name ]);
+
+      if (!$this->displayPhoto) {
+        $this->displayPhoto = new PersonPhoto($this->id, $this->name);
+      }
     }
   }
 

@@ -39,7 +39,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
    * @see PersonPhoto::__construct()
    * @var string
    */
-  protected $imageDirectory = "person";
+  protected $directory = "person";
 
   /**
    * The photo's unique person identifier.
@@ -112,8 +112,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
       $stmt->close();
       $this->exists = true;
     }
-    else {
-      $this->id          = $this->getNextId();
+    elseif ($this->id) {
       $this->exists = (boolean) $this->exists;
     }
     $this->alternativeText = $i18n->t("Photo of {person_name}.", [ "person_name" => $personName ]);
@@ -136,30 +135,70 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
+   * @throws \MovLib\Exception\DatabaseException
    */
   protected function generateStyles($source) {
-    global $db, $i18n, $session;
+    global $db, $i18n;
 
-    // Generate the various image styles and always go from best quality down to worst quality.
+    // If this is a new upload insert the just uploaded image.
+    if ($this->exists === false) {
+      // Reserve the identifier in the table and directly insert the person's identifier as well, as it can't change in
+      // the future plus the creation timestamp. We still keep the image in the deleted state because we don't want
+      // that any request that might come in right now while we generate the new image styles is considered to exists.
+      $db->query(
+        "INSERT INTO `persons_photos` SET
+          `id`        = (SELECT IFNULL(MAX(`s`.`id`), 0) + 1 FROM `persons_photos` AS `s` WHERE `s`.`person_id` = ? LIMIT 1),
+          `person_id` = ?,
+          `created`   = FROM_UNIXTIME(?)",
+        "dds",
+        [ $this->personId, $this->personId, $this->created ]
+      )->close();
 
+      // Snatch the just inserted identifier from the database and prepare filename, identifier and route which allows
+      // us to generate the directory for the images and the various image styles.
+      $stmt           = $db->query("SELECT MAX(`id`) FROM `persons_photos` WHERE `person_id` = ? LIMIT 1", "d", [ $this->personId ]);
+      $this->filename = $this->id = $stmt->get_result()->fetch_row()[0];
+      $this->route    = $i18n->r("/person/{0}/photo/{1}", [ $this->personId, $this->id ]);
+      $stmt->close();
+      $this->createDirectories();
+    }
+
+    // Generate the various image's styles and always go from best quality down to worst quality.
+    $this->convert($this->convert($source, self::STYLE_SPAN_02), self::STYLE_SPAN_01);
+
+    // Now we have to update the existing record with the new data. We always set deleted to false at this point as a
+    // user wouldn't even be able to upload (trigger the call of this method) if the image is deleted.
+    $db->query(
+      "UPDATE `persons_photos` SET
+        `changed`          = FROM_UNIXTIME(?),
+        `deleted`          = false,
+        `dyn_descriptions` = COLUMN_CREATE(?, ?),
+        `extension`        = ?,
+        `filesize`         = ?,
+        `height`           = ?,
+        `license_id`       = ?,
+        `source`           = ?,
+        `styles`           = ?,
+        `width`            = ?",
+      "iiiiss",
+      [
+        $this->changed,
+        $this->description,
+        $this->extension,
+        $this->filesize,
+        $this->height,
+        $this->licenseId,
+        $this->source,
+        serialize($this->styles),
+        $this->width,
+      ]
+    );
+
+    return $this;
   }
 
   public function getStyle($style = self::STYLE_SPAN_02) {
-
-  }
-
-  /**
-   * Get the next available photo identifier.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return integer
-   *   The next available photo identifier.
-   */
-  protected function getNextId() {
-    global $db;
-    return $db->query(
-      "SELECT IFNULL(MAX(`id`), 1) FROM `persons_photos` WHERE `person_id` = ? LIMIT 1", "d", [ $this->personId ]
-    )->get_result()->fetch_row()[0];
+    throw new \LogicException("Not implemented yet!");
   }
 
 }

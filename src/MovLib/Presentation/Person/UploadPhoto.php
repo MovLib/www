@@ -15,12 +15,11 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Country;
-use \MovLib\Data\Image\MoviePoster;
+use \MovLib\Data\Image\PersonPhoto;
 use \MovLib\Data\License;
-use \MovLib\Data\Movie\Movie;
+use \MovLib\Data\Person\Person;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Form;
@@ -31,7 +30,7 @@ use \MovLib\Presentation\Partial\FormElement\InputURL;
 use \MovLib\Presentation\Partial\FormElement\Select;
 
 /**
- * Form to upload a new poster or update an existing one.
+ * @todo Description of UploadPhoto
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -39,19 +38,12 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class UploadPhoto extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   use \MovLib\Presentation\TraitFormPage;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The form's country selection.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\Select
-   */
-  protected $country;
 
   /**
    * The form's description input.
@@ -61,9 +53,9 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
   protected $description;
 
   /**
-   * The concrete image (namely the poster in this class, but not in child classes).
+   * The photo instance.
    *
-   * @var \MovLib\Data\Image\MoviePoster
+   * @var \MovLib\Data\Image\PersonPhoto
    */
   protected $image;
 
@@ -75,11 +67,11 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
   protected $inputImage;
 
   /**
-   * The movie this image belongs to.
+   * The person this photo belongs to.
    *
-   * @var \MovLib\Data\Movie\Movie
+   * @var \MovLib\Data\Person\Person
    */
-  protected $movie;
+  protected $person;
 
   /**
    * The form's license selection.
@@ -100,50 +92,47 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
 
 
   /**
-   * Instantiate new upload poster presentation.
+   * Instantiate new person upload photo presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
     global $i18n;
     try {
-      $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-      if ($this->movie->deleted === true) {
-        // @todo Display appropriate information if movie is deleted.
+      $this->person = new Person($_SERVER["PERSON_ID"]);
+      if ($this->person->deleted === true) {
+        // @todo Display appropriate information if person is deleted.
       }
       elseif (isset($_SERVER["IMAGE_ID"])) {
-        $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear, $_SERVER["IMAGE_ID"]);
+        $title       = $i18n->t("Update photo of {0}", [ $this->person->name ]);
+        $submit      = $i18n->t("Update Photo");
+        $this->image = new PersonPhoto($this->person->id, $this->person->name, $_SERVER["IMAGE_ID"]);
       }
       else {
-        $title = $i18n->t("Upload new poster for {0}", [ $this->movie->displayTitleWithYear ]);
-        $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear);
+        $title       = $i18n->t("Upload new photo for {0}", [ $this->person->name ]);
+        $submit      = $i18n->t("Upload Photo");
+        $this->image = new PersonPhoto($this->person->id, $this->person->name);
       }
       $this->init($title);
 
-      $this->inputImage = new InputImage("poster", $i18n->t("Poster"), $this->image, [ "required" ]);
-
+      $this->inputImage  = new InputImage("photo", $i18n->t("Photo"), $this->image, [ "required" ]);
       $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description);
-
-      $this->source = new InputURL("source", $i18n->t("Source"), [ "data-allow-external" => true, "value" => $this->image->source ]);
-
-      $this->country = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
-
-      $this->license = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ?: 1, [ "required" ]);
+      $this->source      = new InputURL("source", $i18n->t("Source"), [ "data-allow-external" => true, "value" => $this->image->source ]);
+      $this->license     = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ? : 1, [ "required" ]);
 
       $this->form = new Form($this, [
         $this->inputImage,
         $this->description,
         $this->source,
-        $this->country,
         $this->license,
       ]);
-      $this->form->actionElements[] = new InputSubmit($i18n->t("Upload Poster"), [
+      $this->form->actionElements[] = new InputSubmit($submit, [
         "class" => "button button--large button--success",
         "title" => $i18n->t("Continue here after you filled out all mandatory fields."),
       ]);
     }
     catch (\OutOfBoundsException $e) {
-      throw new ErrorNotFoundException("No movie with ID '{$_SERVER["MOVIE_ID"]}'.");
+      throw new ErrorNotFoundException("No person with identifier '{$_SERVER["PERSON_ID"]}'");
     }
   }
 
@@ -170,18 +159,20 @@ class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage 
    */
   public function validate(array $errors = null) {
     global $i18n;
+
     // The description can't be empty if the source is empty and vice versa.
     if (empty($this->description->value) && empty($this->source->value)) {
       $errors = $i18n->t("Description and source URL missing, you have to fill out at least one of these fields.");
     }
+
     if ($this->checkErrors($errors) === false) {
-      $this->image->countryCode = $this->country->value;
       $this->image->description = $this->description->value;
       $this->image->licenseId   = $this->license->value;
       $this->image->source      = $this->source->value;
       $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
       throw new RedirectSeeOtherException($this->image->route);
     }
+
     return $this;
   }
 

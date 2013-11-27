@@ -57,7 +57,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
    *
    * @var integer
    */
-  const TYPE_ID = 0;
+  const TYPE_ID = 1;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -76,7 +76,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
    * @see MoviePoster::__construct()
    * @var string
    */
-  protected $imageDirectory = "movie";
+  protected $directory = "movie";
 
   /**
    * The image's unique movie ID.
@@ -126,7 +126,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         FROM `movies_images`
         WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?
         LIMIT 1",
-        "sdd",
+        "sidi",
         [ $i18n->languageCode, $imageId, $movieId, static::TYPE_ID ]
       );
       $stmt->bind_result(
@@ -151,8 +151,9 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
       $stmt->close();
       $this->exists = true;
     }
-    else {
-      $this->exists = (boolean) $this->exists;
+    // If we already have an identifier we were instantiated via PHP's built-in fetch_object() method.
+    elseif ($this->id) {
+      $this->exists = (boolean) $this->changed;
     }
 
     $this->alternativeText = $i18n->t("Poster for {movie_title_with_year}.", [ "movie_title_with_year" => $displayTitleWithYear ]);
@@ -181,6 +182,21 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   protected function generateStyles($source) {
     global $db, $i18n, $session;
 
+    $db->transactionStart();
+
+    if ($this->exists === false) {
+      $stmt           = $db->query("SELECT IFNULL(MAX(`id`), 1) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1", "di", [ $this->movieId, static::TYPE_ID ]);
+      $this->filename = $this->id = $stmt->get_result()->fetch_row()[0];
+      $stmt->close();
+      $this->createDirectories();
+    }
+
+    // Generate the various image's styles and always go from best quality down to worst quality.
+    $span08 = $this->convert($source, self::STYLE_SPAN_08);
+    $span03 = $this->convert($span08, self::STYLE_SPAN_03);
+    $span02 = $this->convert($span03, self::STYLE_SPAN_02);
+    $this->convert($span02, self::STYLE_SPAN_01);
+
     // Update the record with the new data if this is an update.
     if ($this->exists === true) {
       throw new \LogicException("Not implemented yet!");
@@ -189,7 +205,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
     else {
       $db->query(
         "INSERT INTO `movies_images` SET
-          `id`               = (SELECT IFNULL(MAX(`id`), 1) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1),
+          `id`               = `next_id`,
           `movie_id`         = ?,
           `type_id`          = ?,
           `user_id`          = ?,
@@ -203,11 +219,10 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
           `created`          = FROM_UNIXTIME(?),
           `dyn_descriptions` = COLUMN_CREATE(?, ?),
           `source`           = ?,
-          `styles`           = ?",
-        "dididisiiisssssss",
+          `styles`           = ?
+        SELECT IFNULL(MAX(`id`), 1) AS `next_id` FROM `movies_images`",
+        "didisiiisssssss",
         [
-          $this->movieId,
-          static::TYPE_ID,
           $this->movieId,
           static::TYPE_ID,
           $session->userId,
@@ -226,20 +241,8 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         ]
       )->close();
 
-      // Identifier and filename is the same.
-      $this->filename = $this->id = $db->query(
-        "SELECT MAX(`id`) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1",
-        "di",
-        [ $this->movieId, static::TYPE_ID ]
-      )->get_result()->fetch_row()[0];
       $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $this->movieId, $this->id ]);
     }
-
-    // Generate the various image's styles and always go from best quality down to worst quality.
-    $span08 = $this->convert($source, self::STYLE_SPAN_08);
-    $span03 = $this->convert($span08, self::STYLE_SPAN_03);
-    $span02 = $this->convert($span03, self::STYLE_SPAN_02);
-    $this->convert($span02, self::STYLE_SPAN_01);
 
     return $this;
   }

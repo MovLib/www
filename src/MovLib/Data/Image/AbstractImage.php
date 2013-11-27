@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Image;
 
+use \MovLib\Data\UnixShell as sh;
+
 /**
  * Default image implementation.
  *
@@ -51,7 +53,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    *
    * @var string
    */
-  protected $description;
+  public $description;
 
   /**
    * The image's identifier (unique together with the associated entity).
@@ -113,6 +115,18 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
 
 
   /**
+   * Create the private and public upload directories for this image.
+   *
+   * @global \MovLib\Kernel $kernel
+   * @return $this
+   */
+  protected function createDirectories() {
+    global $kernel;
+    sh::execute("mkdir -p '{$kernel->documentRoot}/private/upload/{$this->directory}' '{$kernel->documentRoot}/public/upload/{$this->directory}'");
+    return $this;
+  }
+
+  /**
    * Move the originally uploaded file from the system temporary folder to the persistent storage.
    *
    * @delayed
@@ -149,8 +163,10 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
     // We have to export the extension to class scope in order to move the original image.
     $this->extension = $extension;
 
-    // Clean the uploaded image.
-    sh::execute("convert '{$source}' -strip +repage '{$source}'");
+    // Clean the uploaded image, ImageMagick needs the extension to determine the algorithm.
+    sh::execute("convert '{$source}' -strip +repage '{$source}.{$extension}'");
+    sh::executeDetached("rm '{$source}'");
+    $source .= ".{$extension}";
 
     // Collect all data we want to know about the newly uploaded image.
     $this->changed  = $this->created = $_SERVER["REQUEST_TIME"];

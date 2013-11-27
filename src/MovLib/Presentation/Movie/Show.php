@@ -167,7 +167,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
           $this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03),
           $i18n->t("/movie/{0}/posters", [ $this->movie->id ]),
           [ "itemprop" => "image" ],
-          [ "class" => "span span--3" ]
+          [ "class" => "img span span--3" ]
         ) .
       "</div>"; // close .row
     }

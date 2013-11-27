@@ -148,4 +148,73 @@ class Database {
     return $stmt;
   }
 
+  /**
+   * Whether a transaction is active or not.
+   *
+   * @return boolean
+   *   <code>TRUE</code> if a transaction is active, otherwise <code>FALSE</code>.
+   */
+  public function transactionActive() {
+    return $this->transactionActive;
+  }
+
+  /**
+   * Commit current transaction.
+   *
+   * @param int $flags [optional]
+   *   A bitmask of <var>MYSQLI_TRANS_COR_*</var> constants, defaults to <var>MYSQLI_TRANS_COR_AND_NO_CHAIN</var>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function transactionCommit($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+    if ($this->transactionActive === false) {
+      throw new DatabaseException("No active transaction, nothing to commit.");
+    }
+    if (($this->transactionActive = $this->mysqli->commit($flags)) === false) {
+      $e = new DatabaseException("Commit failed", $this->mysqli->error, $this->mysqli->errno);
+      $this->transactionRollback();
+      throw $e;
+    }
+    return $this;
+  }
+
+  /**
+   * Rollback current transaction.
+   *
+   * @param int $flags [optional]
+   *   A bitmask of <var>MYSQLI_TRANS_COR_*</var> constants, defaults to <var>MYSQLI_TRANS_COR_AND_NO_CHAIN</var>.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function transactionRollback($flags = MYSQLI_TRANS_COR_AND_NO_CHAIN) {
+    if ($this->transactionActive === false) {
+      throw new DatabaseException("No active transaction, nothing to rollback.");
+    }
+    if (($this->transactionActive = $this->mysqli->rollback($flags)) === false) {
+      throw new DatabaseException("Rollback failed", $this->mysqli->error, $this->mysqli->errno);
+    }
+    return $this;
+  }
+
+  /**
+   * Start a transaction.
+   *
+   * Executes a SQL native <code>START TRANSACTION</code> against the database and establishes a connection if not
+   * connection is available.
+   *
+   * @param int $flags [optional]
+   *   One of the <var>MYSQLI_TRANS_START_*</var> constants, defaults to <var>MYSQLI_TRANS_START_READ_WRITE</var>.
+   * @return this
+   * @throws \MovLib\Data\DatabaseException
+   */
+  public function transactionStart($flags = MYSQLI_TRANS_START_READ_WRITE) {
+    if (!$this->mysqli) {
+      $this->connect();
+    }
+    if (($this->transactionActive = $this->mysqli->begin_transaction($flags)) === false) {
+      throw new DatabaseException("Could not start transaction", $this->mysqli->error, $this->mysqli->errno);
+    }
+    return $this;
+  }
+
 }
