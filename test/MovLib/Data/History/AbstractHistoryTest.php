@@ -357,8 +357,8 @@ class AbstractHistoryTest extends \MovLib\TestCase {
 
   /**
    * @covers ::hideRepository
-   * @expectedException \MovLib\Exception\HistoryException
-   * @expectedExceptionMessage Repository already hidden
+   * @expectedException         \RuntimeException
+   * @expectedExceptionMessage  Repository already hidden
    */
   public function testHideRepositoryIfHidden() {
     $this->invoke($this->abstractHistory, "hideRepository");
@@ -422,18 +422,18 @@ class AbstractHistoryTest extends \MovLib\TestCase {
   }
 
   /**
-   * @expectedException        \MovLib\Exception\HistoryException
-   * @expectedExceptionMessage startEditing() has to be called before saveHistory()!
    * @covers ::saveHistory
+   * @expectedException        \RuntimeException
+   * @expectedExceptionMessage startEditing() has to be called before saveHistory()!
    */
   public function testSaveHistoryWithoutStartEditing() {
     $this->abstractHistory->saveHistory([ ], "initial commit");
   }
 
   /**
-   * @expectedException        \MovLib\Exception\HistoryException
-   * @expectedExceptionMessage Someone else edited the same information about the movie!
    * @covers ::saveHistory
+   * @expectedException        \RuntimeException
+   * @expectedExceptionMessage Someone else edited the same information about the movie!
    */
   public function testSaveHistoryIfSomeoneElseAlreadyChangedTheSameInformation() {
     global $kernel, $db;
@@ -488,9 +488,9 @@ class AbstractHistoryTest extends \MovLib\TestCase {
   }
 
   /**
-   * @expectedException        \MovLib\Exception\HistoryException
-   * @expectedExceptionMessage Repository not hidden
    * @covers ::unhideRepository
+   * @expectedException        \RuntimeException
+   * @expectedExceptionMessage Repository not hidden
    */
   public function testUnhideRepositoryIfNotHidden() {
     $this->invoke($this->abstractHistory, "unhideRepository");

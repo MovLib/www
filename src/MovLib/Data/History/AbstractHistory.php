@@ -18,8 +18,8 @@
 namespace MovLib\Data\History;
 
 use \MovLib\Exception\FileSystemException;
-use \MovLib\Exception\HistoryException;
 use \ReflectionClass;
+use \RuntimeException;
 
 /**
  * Abstract base class for all history classes.
@@ -157,18 +157,18 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @param string $message
    *   The commit message.
    * @return this
-   * @throws \MovLib\Exception\HistoryException
+   * @throws \RuntimeException
    */
   private function commitFiles($message) {
     global $session;
 
     if (empty($this->getDirtyFiles())) {
-      throw new HistoryException("No changed files to commit!", self::E_NOTHING_TO_COMMIT);
+      throw new RuntimeException("No changed files to commit!", self::E_NOTHING_TO_COMMIT);
     }
 
     exec("cd {$this->path} && git commit --author='{$session->userId} <>' -m '{$message}'", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new HistoryException("Error commiting changes");
+      throw new RuntimeException("Error commiting changes");
     }
     return $this;
   }
@@ -181,7 +181,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @return string
    *   The commit hash.
-   * @throws \MovLib\Exception\HistoryException
+   * @throws \RuntimeException
    * @throws \MovLib\Exception\DatabaseException
    */
   public function createRepository() {
@@ -190,11 +190,11 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     }
     exec("cd {$this->path} && git init", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new HistoryException("Could not initialize GIT repository.");
+      throw new RuntimeException("Could not initialize GIT repository.");
     }
     exec("cd {$this->path} && git commit --allow-empty --author='init <>' -m 'initial commit'", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new HistoryException("Error while initial commit!");
+      throw new RuntimeException("Error while initial commit!");
     }
     return $this->getLastCommitHashFromGit();
   }
@@ -208,12 +208,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   Hash of git commit (older one).
    * @return array
    *   Numeric array of changed files.
-   * @throws \MovLib\Exception\HistoryException
+   * @throws \RuntimeException
    */
   public function getChangedFiles($head, $ref) {
     exec("cd {$this->path} && git diff {$ref} {$head} --name-only", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new HistoryException("There was an error locating changed files");
+      throw new RuntimeException("There was an error locating changed files");
     }
     return $output;
   }
@@ -224,13 +224,13 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @return string
    *   Commit hash as string.
    * @throws \MovLib\Exception\DatabaseException
-   * @throws \MovLib\Exception\HistoryException
+   * @throws \RuntimeException
    */
   private function getCommitHashFromDb() {
     $stmt = $this->query("SELECT `commit` FROM `{$this->type}s` WHERE `{$this->type}_id` = ? LIMIT 1", "d", [ $this->id ]);
     $stmt->bind_result($commitHash);
     if (!$stmt->fetch()) {
-      throw new HistoryException("Could not find commit hash of {$this->type} with ID '{$this->id}'!");
+      throw new RuntimeException("Could not find commit hash of {$this->type} with ID '{$this->id}'!");
     }
     return $commitHash;
   }
@@ -323,12 +323,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @return array
    *   Numeric array of changed files.
-   * @throws \MovLib\Exception\HistoryException
+   * @throws \RuntimeException
    */
   private function getDirtyFiles() {
     exec("cd {$this->path} && git diff --name-only HEAD && git ls-files --others", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new HistoryException("There was an error locating dirty files");
+      throw new RuntimeException("There was an error locating dirty files");
     }
     return $output;
   }
@@ -338,12 +338,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @return string
    *   Last commit hash from the repository.
-   * @throws HistoryException
+   * @throws \RuntimeException
    */
   private function getLastCommitHashFromGit() {
     exec("cd {$this->path} && git log --format='%H' --max-count=1", $output, $returnVar);
     if ($returnVar !== 0 || !isset($output[0])) {
-      throw new HistoryException("There was an error getting last commit hash from repository");
+      throw new RuntimeException("There was an error getting last commit hash from repository");
     }
     return $output[0];
   }
@@ -357,7 +357,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   Hash of git commit.
    * @return string
    *   The content of a file at a certain revision.
-   * @throws \MovLib\Exception\HistoryException
+   * @throws \RuntimeException
    */
   public function getFileAtRevision($filename, $ref) {
     exec("cd {$this->path} && git show {$ref}:{$filename} 2<&-", $output, $returnVar);
@@ -366,7 +366,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
       return "";
     }
     elseif ($returnVar !== 0 || !isset($output[0])) {
-      throw new HistoryException("There was an error getting '{$filename}' at revision '{$ref}'");
+      throw new RuntimeException("There was an error getting '{$filename}' at revision '{$ref}'");
     }
     return $output[0];
   }
@@ -403,14 +403,14 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   The number of commits which should be retrieved.
    * @return array
    *   Numeric array with associative array containing the commits.
-   * @throws \MovLib\Exception\HistoryException
+   * @throws \RuntimeException
    */
   public function getLastCommits($limit = null) {
     $limit = isset($limit) ? " --max-count={$limit}" : "";
     $format = '{"hash":"%H","author_id":%an,"timestamp":%at,"subject":"%s"}';
     exec("cd {$this->path} && git log --format='{$format}'{$limit} --min-parents=1", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new HistoryException("There was an error getting last commits");
+      throw new RuntimeException("There was an error getting last commits");
     }
     $c = count($output);
     for ($i = 0; $i < $c; ++$i) {
@@ -436,18 +436,17 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @global \MovLib\Kernel $kernel
    * @return this
-   * @throws \MovLib\Exception\HistoryException
-   * @throws \MovLib\Exception}FileSystemException
+   * @throws \RuntimeException
    */
   private function hideRepository() {
     global $kernel;
     $newPath = "{$kernel->documentRoot}/private/{$this->context}/{$this->type}/.{$this->id}";
     if (is_dir($newPath)) {
-      throw new HistoryException("Repository already hidden", self::E_REPOSITORY_IN_USE);
+      throw new RuntimeException("Repository already hidden", self::E_REPOSITORY_IN_USE);
     }
     exec("mv {$this->path} {$newPath}", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new FileSystemException("Error while renaming repository");
+      throw new RuntimeException("Error while renaming repository");
     }
     $this->path = $newPath;
     return $this;
@@ -485,14 +484,14 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @param array $files
    *   Numeric array containing the file names to be reseted.
    * @return this
-   * @throws \MovLib\Exception\HistoryException
+   * @throws \RuntimeException
    */
   private function resetFiles(array $files) {
     $this->unstageFiles($files);
     $filesToReset = implode(" ", $files);
     exec("cd {$this->path} && git checkout -- {$filesToReset}", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new HistoryException("Error resetting files!");
+      throw new RuntimeException("Error resetting files!");
     }
     return $this;
   }
@@ -511,12 +510,11 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *   The commit Message.
    * @return string
    *   The hash of the current HEAD of the repository.
-   * @throws \MovLib\Exception\HistoryException
-   * @throws \MovLib\Exception\ErrorException
+   * @throws \RuntimeException
    */
   public function saveHistory(array $entity, $message) {
     if (!isset($this->commitHash)) {
-      throw new HistoryException("startEditing() has to be called before saveHistory()!");
+      throw new RuntimeException("startEditing() has to be called before saveHistory()!");
     }
 
     $this->hideRepository();
@@ -531,7 +529,7 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
         $this->intersectingFiles = array_intersect($changedFiles, $changedSinceStartEditing);
         // we reset the all dirty files.
         $this->resetFiles($changedFiles);
-        throw new HistoryException("Someone else edited the same information about the {$this->type}!", self::E_EDITING_CONFLICT);
+        throw new RuntimeException("Someone else edited the same information about the {$this->type}!", self::E_EDITING_CONFLICT);
       } else {
         $this->intersectingFiles = null;
         $this->commitFiles($message);
@@ -540,7 +538,6 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
     finally {
       $this->unhideRepository();
     }
-
     return $this->getLastCommitHashFromGit();
   }
 
@@ -548,12 +545,12 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * Stage all changed files.
    *
    * @return this
-   * @throws \MovLib\Exception\HistoryException
+   * @throws \RuntimeException
    */
   private function stageAllFiles() {
     exec("cd {$this->path} && git add -A", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new HistoryException("Error adding files to stage!");
+      throw new RuntimeException("Error adding files to stage!");
     }
     return $this;
   }
@@ -576,18 +573,17 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    *
    * @global \MovLib\Kernel $kernel
    * @return this
-   * @throws \MovLib\Exception\HistoryException
-   * @throws \MovLib\Exception}FileSystemException
+   * @throws \RuntimeException
    */
   private function unhideRepository() {
     global $kernel;
     $newPath = "{$kernel->documentRoot}/private/{$this->context}/{$this->type}/{$this->id}";
     if (is_dir($newPath)) {
-      throw new HistoryException("Repository not hidden");
+      throw new RuntimeException("Repository not hidden");
     }
     exec("mv {$this->path} {$newPath}", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new FileSystemException("Error while renaming repository");
+      throw new RuntimeException("Error while renaming repository");
     }
     else {
       $this->path = $newPath;
@@ -601,13 +597,13 @@ abstract class AbstractHistory extends \MovLib\Data\Database {
    * @param array $files
    *   Numeric array containing the file names to unstage.
    * @return this
-   * @throws \MovLib\Exception\HistoryException
+   * @throws \RuntimeException
    */
   private function unstageFiles(array $files) {
     $filesToUnstage = implode(" ", $files);
     exec("cd {$this->path} && git reset --quiet HEAD {$filesToUnstage}", $output, $returnVar);
     if ($returnVar !== 0) {
-      throw new HistoryException("Error unstaging files!");
+      throw new RuntimeException("Error unstaging files!");
     }
     return $this;
   }
