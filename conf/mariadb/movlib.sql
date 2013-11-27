@@ -249,8 +249,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license’s unique identifier.',
   `dyn_names` BLOB NOT NULL COMMENT 'The license’s translated names.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The license’s translated descriptions.',
+  `dyn_url` BLOB NOT NULL COMMENT 'The license’s absolute URL.',
   `abbreviation` VARCHAR(20) NOT NULL COMMENT 'The license’s abbreviation.',
-  `url` VARCHAR(255) NOT NULL COMMENT 'The license’s absolute URL.',
   `icon_changed` TIMESTAMP NOT NULL COMMENT 'The license’s icon changed timestamp.',
   `icon_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The license’s icon extension.',
   PRIMARY KEY (`id`))
