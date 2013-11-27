@@ -17,8 +17,6 @@
  */
 namespace MovLib\Data\Image;
 
-use \MovLib\Data\Image\Style;
-
 /**
  * Represents a single person photo.
  *
@@ -68,7 +66,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
    */
   public function __construct($personId, $personName, $id = null) {
     global $db, $i18n;
-    $this->personId = $personId;
+
     if ($id) {
       $stmt = $db->query(
         "SELECT
@@ -89,7 +87,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
         WHERE `id` = ? AND `person_id` = ?
         LIMIT 1",
         "id",
-        [ $id, $this->personId ]
+        [ $id, $personId ]
       );
       $stmt->bind_result(
         $this->id,
@@ -107,22 +105,25 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
         $this->styles
       );
       if (!$stmt->fetch()) {
-        throw new \OutOfBoundsException("Couldn't find person photo for identifier '{$id}' (person identifier '{$this->personId}')");
+        throw new \OutOfBoundsException("Couldn't find person photo for identifier '{$id}' (person identifier '{$personId}')");
       }
       $stmt->close();
       $this->exists = true;
     }
     elseif ($this->id) {
-      $this->exists = (boolean) $this->exists;
+      $this->exists = true;
     }
+
     $this->alternativeText = $i18n->t("Photo of {person_name}.", [ "person_name" => $personName ]);
-    $this->directory .= "/{$this->personId}";
-    $this->filename       = $this->id;
+    $this->directory      .= "/{$personId}";
+    $this->personId        = $personId;
+    $this->filename        = $this->id;
+
     if ($this->exists === true) {
-      $this->route = $i18n->r("/person/{0}/photo/{1}", [ $this->personId, $this->id ]);
+      $this->route = $i18n->r("/person/{0}/photo/{1}", [ $personId, $this->id ]);
     }
     else {
-      $this->route = $i18n->r("/person/{0}/photos/upload", [ $this->personId ]);
+      $this->route = $i18n->r("/person/{0}/photos/upload", [ $personId ]);
     }
   }
 
@@ -196,10 +197,6 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
     );
 
     return $this;
-  }
-
-  public function getStyle($style = self::STYLE_SPAN_02) {
-    throw new \LogicException("Not implemented yet!");
   }
 
 }

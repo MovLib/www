@@ -40,6 +40,9 @@ INSERT INTO `movies` SET
     'de', '&lt;p&gt;Die Szene zeigt Adolphe Le Prince, Sarah Whitley, Joseph Whitley und Harriet Whitley im Roundhay Garden.&lt;/p&gt;'
   )
 ;
+INSERT INTO `movies_countries` SET `movie_id` = 1, `country_code` = 'UK';
+INSERT INTO `movies_languages` SET `movie_id` = 1, `language_code` = 'xx';
+INSERT INTO `movies_genres` SET `movie_id` = 1, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
 
 INSERT INTO `persons` SET
   `name`            = 'Louis Le Prince',
@@ -51,7 +54,7 @@ INSERT INTO `persons` SET
   `dyn_links`       = '',
   `country`         = 'FR'
 ;
-
+INSERT INTO `movies_directors` SET `movie_id` = 1, `person_id` = 1;
 INSERT INTO `persons_photos` SET
   `id`               = 1,
   `person_id`        = 1,
@@ -71,10 +74,41 @@ INSERT INTO `persons_photos` SET
   `deleted`          = false
 ;
 
-INSERT INTO `movies_directors` SET `movie_id` = 1, `person_id` = 1;
-INSERT INTO `movies_countries` SET `movie_id` = 1, `country_code` = 'UK';
-INSERT INTO `movies_languages` SET `movie_id` = 1, `language_code` = 'xx';
-INSERT INTO `movies_genres` SET `movie_id` = 1, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
+INSERT INTO `persons` SET
+  `name`            = 'Harriet Hartley',
+  `dyn_aliases`     = '',
+  `dyn_biographies` = '',
+  `dyn_links`       = ''
+;
+INSERT INTO `movies_cast` SET `movie_id` = 1, `person_id` = 2, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
+
+INSERT INTO `persons` SET
+  `name`            = 'Adolphe Le Prince',
+  `dyn_aliases`     = '',
+  `dyn_biographies` = '',
+  `dyn_links`       = ''
+;
+INSERT INTO `movies_cast` SET `movie_id` = 1, `person_id` = 3, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
+
+INSERT INTO `persons` SET
+  `name`            = 'Joseph Whitley',
+  `dyn_aliases`     = '',
+  `dyn_biographies` = '',
+  `dyn_links`       = ''
+;
+INSERT INTO `movies_cast` SET `movie_id` = 1, `person_id` = 4, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
+
+INSERT INTO `persons` SET
+  `name`            = 'Sarah Whitley',
+  `born_name`       = 'Sarah Robinson',
+  `birthdate`       = '1816-00-00',
+  `deathdate`       = '1888-10-24',
+  `dyn_aliases`     = '',
+  `dyn_biographies` = '',
+  `dyn_links`       = '',
+  `country`         = 'UK'
+;
+INSERT INTO `movies_cast` SET `movie_id` = 1, `person_id` = 5, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
 
 -- END "Roundhay Garden Scene"
 

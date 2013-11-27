@@ -173,7 +173,9 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
       "value" => $this->user->birthday,
     ], $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
 
-    $this->aboutMe  = new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, $i18n->t("Tell others about yourself, what do you do, what do you like, …"));
+    $this->aboutMe  = new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, [
+      "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
+    ]);
 
     $systemLanguages = [];
     foreach ($kernel->systemLanguages as $systemLanguageCode => $systemLanguageLocale) {

@@ -92,7 +92,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    *
    * @var string
    */
-  protected $imageDirectory = "user";
+  protected $directory = "user";
 
   /**
    * The user's unique name.
@@ -144,19 +144,18 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
           `id`,
           `name`,
           UNIX_TIMESTAMP(`image_changed`),
-          `image_extension`,
-          `image_changed` IS NOT NULL
+          `image_extension`
         FROM `users`
         WHERE `{$from}` = ?",
         $this->types[$from],
         [ $value ]
       );
-      $stmt->bind_result($this->id, $this->name, $this->changed, $this->extension, $this->exists);
+      $stmt->bind_result($this->id, $this->name, $this->changed, $this->extension);
       if (!$stmt->fetch()) {
         throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
       $stmt->close();
-      $this->exists   = (boolean) $this->exists;
+      $this->exists   = (boolean) $this->changed;
       $this->filename = rawurlencode($this->name);
       $this->route    = $i18n->r("/user/{0}", [ $this->filename ]);
     }

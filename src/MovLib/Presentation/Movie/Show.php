@@ -18,12 +18,13 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
+use \MovLib\Data\Image\PersonPhoto;
 use \MovLib\Data\Movie\Full as MovieFull;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Lists\GlueSeparated;
-use \MovLib\Presentation\Partial\Lists\Ordered;
+use \MovLib\Presentation\Partial\Lists\Images;
 
 /**
  * Single movie presentation page.
@@ -192,10 +193,12 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     // Translate the titles of each section.
     $titleSynopsis  = $i18n->t("Synopsis");
     $titleDirectors = $i18n->t("{0, plural, one {Director} other {Directors}}", [ count($this->movie->directors) ]);
+    $titleCast      = $i18n->t("Cast");
 
     // Add a jump link for each section to the secondary navigation.
     $this->secondaryNavigation->menuitems[] = [ "#synopsis", $titleSynopsis ];
     $this->secondaryNavigation->menuitems[] = [ "#directors", $titleDirectors ];
+    $this->secondaryNavigation->menuitems[] = [ "#cast", $titleCast ];
 
     // Prepare the content for each section.
     $synopsis = empty($this->movie->synopsis)
@@ -203,27 +206,46 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         : $kernel->htmlDecode($this->movie->synopsis)
     ;
 
-    $directors = new Ordered($this->movie->directors, $i18n->t("No directors assigned yet, {0}add directors{1}?", [
-        "<a href='{$this->routeEdit}'>", "</a>",
-      ]), null, [ "itemprop" => "director" ]);
-    $directors->closure = [ $this, "formatDirector" ];
+    $directors = new Images(
+      $this->movie->directors,
+      $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
+      null,
+      [ "class" => "span span--2", "itemprop" => "director" ]
+    );
+    $directors->closure = [ $this, "formatPerson" ];
+
+    $cast = new Images(
+      $this->movie->cast,
+      $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
+      null,
+      [ "class" => "span span--2", "itemprop" => "actor" ]
+    );
+    $cast->closure = [ $this, "formatPerson" ];
 
     return
       "<div id='synopsis'><h2>{$titleSynopsis}</h2><div itemprop='description'>{$synopsis}</div></div>" .
-      "<div id='directors'><h2>{$titleDirectors}</h2>{$directors}</div>"
+      "<div id='directors'><h2>{$titleDirectors}</h2>{$directors}</div>" .
+      "<div id='cast'><h2>{$titleCast}</h2>{$cast}</div>"
     ;
   }
 
   /**
-   * Format a single director.
+   * Format a single person.
    *
-   * @param \MovLib\Data\Person $person
-   *   The person to format as director.
+   * @global \MovLib\Data\I18n $i18n
+   * @param \MovLib\Data\Person\Person $person
+   *   The person to format.
    * @return string
-   *   The formatted director.
+   *   The formatted person.
    */
-  public function formatDirector($person) {
-    return $person->name;
+  public function formatPerson($person) {
+    global $i18n;
+    return
+      "<a class='img' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url' itemscope itemtype='http://schema.org/Person'>" .
+        $this->getImage($person->displayPhoto->getStyle(), false, [ "itemprop" => "image" ]) .
+        "<span itemprop='name'>{$person->name}</span>" .
+      "</a>"
+    ;
   }
 
 }

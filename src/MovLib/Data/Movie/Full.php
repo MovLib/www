@@ -30,6 +30,7 @@ use \MovLib\Data\Country;
  */
 class Full extends \MovLib\Data\Movie\Movie {
 
+  public $cast;
   public $countries;
   public $created;
   public $directors;
@@ -109,7 +110,6 @@ class Full extends \MovLib\Data\Movie\Movie {
     while ($row = $result->fetch_row()) {
       $countries[$row[0]] = "";
     }
-    $result->free();
     $stmt->close();
     if ($countries) {
       $this->countries = Country::getCountries($countries);
@@ -132,7 +132,6 @@ class Full extends \MovLib\Data\Movie\Movie {
     while ($row = $result->fetch_row()) {
       $this->genres[$row[0]] = $row[1];
     }
-    $result->free();
     $stmt->close();
 
     // ----------------------------------------------------------------------------------------------------------------- Styles
@@ -152,29 +151,47 @@ class Full extends \MovLib\Data\Movie\Movie {
     while ($row = $result->fetch_row()) {
       $this->styles[$row[0]] = $row[1];
     }
-    $result->free();
     $stmt->close();
 
     // ----------------------------------------------------------------------------------------------------------------- Directors
 
     $stmt = $db->query(
-      "SELECT `persons`.`person_id`
-      FROM `movies_directors` INNER JOIN `persons` ON `persons`.`person_id` = `movies_directors`.`person_id`
+      "SELECT
+        `persons`.`person_id` AS `id`,
+        `persons`.`name`,
+        `persons`.`deleted`
+      FROM `movies_directors`
+      INNER JOIN `persons` ON `persons`.`person_id` = `movies_directors`.`person_id`
       WHERE `movies_directors`.`movie_id` = ?
       ORDER BY `persons`.`name` ASC",
       "d",
       [ $this->id ]
     );
     $result = $stmt->get_result();
-    while ($person = $result->fetch_object("\\MovLib\\Data\\Person")) {
+    while ($person = $result->fetch_object("\\MovLib\\Data\\Person\\Person")) {
       $this->directors[$person->id] = $person;
     }
-    $result->free();
     $stmt->close();
 
-    // -----------------------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------- Cast
 
-
+    $stmt = $db->query(
+      "SELECT
+        `persons`.`person_id` AS `id`,
+        `persons`.`name`,
+        `persons`.`deleted`
+      FROM `movies_cast`
+      INNER JOIN `persons` ON `persons`.`person_id` = `movies_cast`.`person_id`
+      WHERE `movies_cast`.`movie_id` = ?
+      ORDER BY `persons`.`name` ASC",
+      "d",
+      [ $this->id ]
+    );
+    $result = $stmt->get_result();
+    while ($person = $result->fetch_object("\\MovLib\\Data\\Person\\Person")) {
+      $this->cast[$person->id] = $person;
+    }
+    $stmt->close();
   }
 
 }

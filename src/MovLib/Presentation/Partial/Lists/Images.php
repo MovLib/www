@@ -80,9 +80,12 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *   The list's items attributes, will be applied to each list item's <code><li></code> element. Defaults to
    *   <code>[ "class" => "span span--2" ]</code>.
    */
-  public function __construct($listItems, $noItemsText = null, array $attributes = [ "class" => "no-list row" ], array $listItemsAttributes = [ "class" => "span span--2" ]) {
+  public function __construct($listItems, $noItemsText = null, array $attributes = null, array $listItemsAttributes = null) {
+    if (!$attributes) {
+      $attributes = [ "class" => "no-list row" ];
+    }
     parent::__construct($listItems, $noItemsText, $attributes);
-    $this->listItemsAttributes = $listItemsAttributes;
+    $this->listItemsAttributes = $listItemsAttributes ?: [ "class" => "span span--2" ];
   }
 
 
@@ -93,27 +96,21 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
    * @inheritdoc
    */
   protected function render() {
-    if (($c = count($this->listItems->entities))) {
-      $list = null;
-      for ($i = 0; $i < $c; ++$i) {
-        $attributes = $this->listItems->getImageStyleAttributes($i, $this->imageStyle);
-        if ($this->closure) {
-          $item = call_user_func_array($this->closure, [
-            (object) $this->listItems->entities[$i], // The current entity as faked object for easy code completion.
-            $attributes, $i, $c
-          ]);
-        }
-        elseif ($this->listItems->entities[$i]["imageExists"] == true) {
-          $item = "<img{$this->expandTagAttributes($attributes)}>";
-        }
-        else {
-          $item = "no image";
-        }
-        $list .= "<li{$this->expandTagAttributes($this->listItemsAttributes)}>{$item}</li>";
-      }
-      return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
+    if (empty($this->listItems)) {
+      return $this->noItemsText;
     }
-    return $this->noItemsText;
+
+    $list = null;
+    foreach ($this->listItems as $delta => $item) {
+      if ($this->closure) {
+        $item = call_user_func($this->closure, $item, $delta);
+      }
+      else {
+        $item = $this->getImage($this->imageStyle);
+      }
+      $list .= "<li{$this->expandTagAttributes($this->listItemsAttributes)}>{$item}</li>";
+    }
+    return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
   }
 
 }

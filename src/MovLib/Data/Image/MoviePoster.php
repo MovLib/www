@@ -17,8 +17,6 @@
  */
 namespace MovLib\Data\Image;
 
-use \MovLib\Data\Image\Style;
-
 /**
  * @todo Description of MoviePoster
  *
@@ -245,25 +243,6 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
     }
 
     return $this;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function getStyle($style = self::STYLE_SPAN_02) {
-    if (!isset($this->styles[$style])) {
-      $this->styles = unserialize($this->styles);
-    }
-    if (!isset($this->stylesCache[$style])) {
-      $this->stylesCache[$style] = new Style(
-        $this->alternativeText,
-        $this->getURL($style),
-        $this->styles[$style]["width"],
-        $this->styles[$style]["height"],
-        $this->route
-      );
-    }
-    return $this->stylesCache[$style];
   }
 
 }

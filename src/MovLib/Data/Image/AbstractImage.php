@@ -18,6 +18,7 @@
 namespace MovLib\Data\Image;
 
 use \MovLib\Data\UnixShell as sh;
+use \MovLib\Data\Image\Style;
 
 /**
  * Default image implementation.
@@ -90,13 +91,6 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    */
   public $upvotes;
 
-  /**
-   * The image's unique uploader's identifier.
-   *
-   * @var integer
-   */
-  public $userId;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
@@ -124,6 +118,32 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
     global $kernel;
     sh::execute("mkdir -p '{$kernel->documentRoot}/private/upload/{$this->directory}' '{$kernel->documentRoot}/public/upload/{$this->directory}'");
     return $this;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function getStyle($style = self::STYLE_SPAN_02) {
+    // Use the style itself for width and height if this image doesn't exist.
+    if ($this->exists === false) {
+      $this->styles[$style]["width"] = $this->styles[$style]["height"] = $style;
+    }
+    elseif (!is_array($this->styles)) {
+      $this->styles = unserialize($this->styles);
+    }
+
+    // Use cache entry if we already generated this style once.
+    if (!isset($this->stylesCache[$style])) {
+      $this->stylesCache[$style] = new Style(
+        $this->alternativeText,
+        $this->getURL($style),
+        $this->styles[$style]["width"],
+        $this->styles[$style]["height"],
+        $this->route
+      );
+    }
+
+    return $this->stylesCache[$style];
   }
 
   /**
