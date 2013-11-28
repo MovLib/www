@@ -40,9 +40,11 @@ INSERT INTO `movies` SET
     'de', '&lt;p&gt;Die Szene zeigt Adolphe Le Prince, Sarah Whitley, Joseph Whitley und Harriet Whitley im Roundhay Garden.&lt;/p&gt;'
   )
 ;
-INSERT INTO `movies_countries` SET `movie_id` = 1, `country_code` = 'UK';
-INSERT INTO `movies_languages` SET `movie_id` = 1, `language_code` = 'xx';
-INSERT INTO `movies_genres` SET `movie_id` = 1, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
+SET @roundhay_garden_scene_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_countries` SET `movie_id` = @roundhay_garden_scene_id, `country_code` = 'UK';
+INSERT INTO `movies_languages` SET `movie_id` = @roundhay_garden_scene_id, `language_code` = 'xx';
+INSERT INTO `movies_genres` SET `movie_id` = @roundhay_garden_scene_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
 
 INSERT INTO `persons` SET
   `name`            = 'Louis Le Prince',
@@ -54,23 +56,25 @@ INSERT INTO `persons` SET
   `dyn_links`       = '',
   `country`         = 'FR'
 ;
-INSERT INTO `movies_directors` SET `movie_id` = 1, `person_id` = 1;
+SET @louis_le_prince_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_directors` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @louis_le_prince_id;
 INSERT INTO `persons_photos` SET
   `id`               = 1,
-  `person_id`        = 1,
+  `person_id`        = @louis_le_prince_id,
   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'PD' LIMIT 1),
   `width`            = 363,
-  `height`           = 454,
+  `height`           = 363,
   `filesize`         = 42010,
   `extension`        = 'jpg',
-  `changed`          = CURRENT_TIMESTAMP,
-  `created`          = CURRENT_TIMESTAMP,
+  `changed`          = '2013-11-28 15:13:42',
+  `created`          = '2013-11-28 15:13:42',
   `dyn_descriptions` = COLUMN_CREATE(
     'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information.&lt;/p&gt;',
     'de', '&lt;p&gt;Der franz&ouml;sische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen k&ouml;nnen der Quelle entnommen werden.&lt;/p&gt;'
   ),
   `source`           = 'https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg',
-  `styles`           = 'a:2:{i:140;a:2:{s:6:"height";i:175;s:5:"width";i:140;}i:70;a:2:{s:6:"height";i:88;s:5:"width";i:70;}}',
+  `styles`           = 'a:2:{i:70;a:2:{s:5:"width";i:70;s:6:"height";i:70;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:140;}}',
   `deleted`          = false
 ;
 
@@ -80,7 +84,8 @@ INSERT INTO `persons` SET
   `dyn_biographies` = '',
   `dyn_links`       = ''
 ;
-INSERT INTO `movies_cast` SET `movie_id` = 1, `person_id` = 2, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
+SET @harriet_hartley_id = LAST_INSERT_ID();
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
 
 INSERT INTO `persons` SET
   `name`            = 'Adolphe Le Prince',
@@ -88,7 +93,8 @@ INSERT INTO `persons` SET
   `dyn_biographies` = '',
   `dyn_links`       = ''
 ;
-INSERT INTO `movies_cast` SET `movie_id` = 1, `person_id` = 3, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
+SET @adolphe_le_prince_id = LAST_INSERT_ID();
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
 
 INSERT INTO `persons` SET
   `name`            = 'Joseph Whitley',
@@ -96,7 +102,8 @@ INSERT INTO `persons` SET
   `dyn_biographies` = '',
   `dyn_links`       = ''
 ;
-INSERT INTO `movies_cast` SET `movie_id` = 1, `person_id` = 4, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
+SET @joseph_whitley_id = LAST_INSERT_ID();
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
 
 INSERT INTO `persons` SET
   `name`            = 'Sarah Whitley',
@@ -108,7 +115,8 @@ INSERT INTO `persons` SET
   `dyn_links`       = '',
   `country`         = 'UK'
 ;
-INSERT INTO `movies_cast` SET `movie_id` = 1, `person_id` = 5, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
+SET @sarah_whitley_id = LAST_INSERT_ID();
+INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
 
 -- END "Roundhay Garden Scene"
 
@@ -124,6 +132,7 @@ INSERT INTO `movies` SET
   ),
   `website`        = 'http://www.bigbuckbunny.org/'
 ;
+SET @big_buck_bunny_id = LAST_INSERT_ID();
 
 INSERT INTO `persons` SET
   `name`            = 'Sacha Goedegebure',
@@ -132,16 +141,17 @@ INSERT INTO `persons` SET
   `dyn_links`       = '',
   `country`         = 'NL'
 ;
+SET @sacha_goedegebure_id = LAST_INSERT_ID();
 
-INSERT INTO `movies_directors` SET `movie_id`  = 2, `person_id` = 2;
-INSERT INTO `movies_countries` SET `movie_id` = 2, `country_code` = 'US';
-INSERT INTO `movies_languages` SET `movie_id` = 2, `language_code` = 'xx';
-INSERT INTO `movies_genres` SET `movie_id` = 2, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
-INSERT INTO `movies_genres` SET `movie_id` = 2, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Animation' LIMIT 1);
+INSERT INTO `movies_directors` SET `movie_id`  = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id;
+INSERT INTO `movies_countries` SET `movie_id` = @big_buck_bunny_id, `country_code` = 'US';
+INSERT INTO `movies_languages` SET `movie_id` = @big_buck_bunny_id, `language_code` = 'xx';
+INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
+INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Animation' LIMIT 1);
 
 INSERT INTO `movies_images` SET
   `id`               = 1,
-  `movie_id`         = 2,
+  `movie_id`         = @big_buck_bunny_id,
   `type_id`          = 1,
   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
   `country_code`     = 'US',
@@ -150,8 +160,8 @@ INSERT INTO `movies_images` SET
   `height`           = 2107,
   `filesize`         = 493629,
   `extension`        = 'jpg',
-  `changed`          = CURRENT_TIMESTAMP,
-  `created`          = CURRENT_TIMESTAMP,
+  `changed`          = '2013-11-28 15:13:42',
+  `created`          = '2013-11-28 15:13:42',
   `dyn_descriptions` = '',
   `source`           = 'http://download.blender.org/peach/presskit.zip',
   `styles`           = 'a:4:{i:70;a:2:{s:5:"width";i:70;s:6:"height";i:99;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:197;}i:220;a:2:{s:5:"width";i:220;s:6:"height";i:309;}i:620;a:2:{s:5:"width";i:620;s:6:"height";i:871;}}'

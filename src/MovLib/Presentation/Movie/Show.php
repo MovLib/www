@@ -57,11 +57,9 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
       // Enhance the page's title with microdata.
       if ($this->movie->year) {
-        $this->pageTitle = $i18n->t("{movie_title} {time_open}({year}){time_close}", [
+        $this->pageTitle = $i18n->t("{movie_title} ({year})", [
           "movie_title" => "<span itemprop='name'>{$this->movie->displayTitle}</span>",
-          "time_open"   => "<time itemprop='datePublished'>",
-          "year"        => $this->movie->year,
-          "time_close"  => "</time>",
+          "year"        => "<a itemprop='datePublished' href='/year/{$this->movie->year}'>{$this->movie->year}</a>",
         ]);
       }
       else {
@@ -210,7 +208,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       $this->movie->directors,
       $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
       null,
-      [ "class" => "span span--2", "itemprop" => "director" ]
+      [ "class" => "span span--1", "itemprop" => "director", "itemscope", "itemtype" => "http://schema.org/Person" ]
     );
     $directors->closure = [ $this, "formatPerson" ];
 
@@ -218,7 +216,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       $this->movie->cast,
       $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
       null,
-      [ "class" => "span span--2", "itemprop" => "actor" ]
+      [ "class" => "span span--1", "itemprop" => "actor", "itemscope", "itemtype" => "http://schema.org/Person" ]
     );
     $cast->closure = [ $this, "formatPerson" ];
 
@@ -241,8 +239,8 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   public function formatPerson($person) {
     global $i18n;
     return
-      "<a class='img' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url' itemscope itemtype='http://schema.org/Person'>" .
-        $this->getImage($person->displayPhoto->getStyle(), false, [ "itemprop" => "image" ]) .
+      "<a class='img' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
+        $this->getImage($person->displayPhoto->getStyle(PersonPhoto::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
         "<span itemprop='name'>{$person->name}</span>" .
       "</a>"
     ;

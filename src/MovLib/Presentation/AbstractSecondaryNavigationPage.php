@@ -51,7 +51,7 @@ abstract class AbstractSecondaryNavigationPage extends \MovLib\Presentation\Page
     // Call this method before building the complete content, this allows extending classes to alter the secondary
     // navigation in their getPageContent method.
     $pageContent                                    = $this->getPageContent();
-    return "<div class='container'><div class='row'><aside class='span span--3' role='complementary'>{$this->secondaryNavigation}</aside><div class='span span--9'>{$pageContent}</div></div></div>";
+    return "<div class='container'><div class='row'><aside class='span span--2' role='complementary'>{$this->secondaryNavigation}</aside><div class='span span--10'>{$pageContent}</div></div></div>";
   }
 
   /**

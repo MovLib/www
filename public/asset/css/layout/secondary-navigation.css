@@ -30,10 +30,11 @@
 
 
 .secondary-navigation .no-list {
-  margin: 0;
+  margin: 0 0 0 -20px;
   overflow: hidden;
-  padding: 30px 0;
+  padding: 0 0 30px;
   position: relative;
+  font-size: 12px;
 }
 
 .secondary-navigation .no-list:after {
@@ -70,8 +71,8 @@
   color: #656565;
   display: block;
   margin-bottom: -1px;
-  margin-left: 25px;
-  padding: 9px 15px;
+  margin-left: 20px;
+  padding: 8px 10px;
   position: relative;
   transition: 0.4s ease-out;
   transition-property: color, background-color, border-color, margin-left;
@@ -121,10 +122,10 @@
 
 
 .secondary-navigation .separator {
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
 
-.secondary-navigation .icon {
-  margin-right: 10px;
+.secondary-navigation .icon:before {
+  margin-right: 5px;
   width: 15px;
 }
