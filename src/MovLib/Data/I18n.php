@@ -153,59 +153,6 @@ class I18n {
   }
 
   /**
-   * Format the given message and translate it to the display locale.
-   *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Kernel $kernel
-   * @staticvar array $cache
-   * @param string $context
-   *   The context in which we should translate the message.
-   * @param string $pattern
-   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
-   * @param array $args
-   *   Numeric array of arguments that should be inserted into <var>$pattern</var>.
-   * @param array $options [optional]
-   *   Associative array of options to alter the behaviour of this method. Available options are:
-   *   <ul>
-   *     <li><var>"comment"</var> You can pass along a comment that will be stored along this pattern for translators
-   *     to help them understand how they should translate it, defaults to no comment.</li>
-   *     <li><var>"language_code"</var> Set the language code into which the message should be translated, defaults to
-   *     the current display language code.</li>
-   *   </ul>
-   * @return string
-   *   The formatted and translated (if applicable) message.
-   * @throws \IntlException
-   */
-  public function formatMessage($context, $pattern, $args, $options = null) {
-    global $db, $kernel;
-    static $cache = [];
-
-    $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
-    if (isset($cache[$languageCode][$context][$pattern])) {
-      $pattern = $cache[$languageCode][$context][$pattern];
-    }
-    elseif ($languageCode != $this->defaultLanguageCode) {
-      // @todo Create translation extractor
-      $result = $db->query(
-        "SELECT COLUMN_GET(`dyn_translations`, ? AS BINARY) FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1",
-        "ss",
-        [ $languageCode, $pattern ]
-      )->get_result()->fetch_row();
-      if (!$result && $context == "message") {
-        $kernel->delayMethodCall([ $this, "insertMessage" ], [ $pattern, $options ]);
-      }
-      elseif (!empty($result[0])) {
-        $pattern = $cache[$languageCode][$context][$pattern] = $result[0];
-      }
-    }
-
-    if ($args) {
-      return \MessageFormatter::formatMessage($languageCode, $pattern, $args);
-    }
-    return $pattern;
-  }
-
-  /**
    * Get collator for the current locale.
    *
    * @return \MovLib\Data\Collator
@@ -268,51 +215,76 @@ class I18n {
   /**
    * Format and translate the given route.
    *
-   * @see \MovLib\Data\I18n::formatMessage()
+   * @global \MovLib\Kernel $kernel
+   * @staticvar array $routes
    * @param string $route
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
    * @param array $args [optional]
-   *   Numeric array of arguments that should be inserted into <var>$route</var>.
-   * @param array $options [optional]
-   *   Associative array of options to alter the behaviour of this method. Available options are:
-   *   <ul>
-   *     <li><var>"absolute"</var> If set to <code>FALSE</code> only the formatted and translated <var>$route</var>
-   *     without protocol and host will be returned, defaults to <code>TRUE</code>.</li>
-   *     <li><var>"comment"</var> You can pass along a comment that will be stored along this pattern for translators
-   *     to help them understand how they should translate it, defaults to no comment.</li>
-   *     <li><var>"language_code"</var> Set the language code into which the message should be translated, defaults to
-   *     the current display language code.</li>
-   *   </ul>
+   *   Array of arguments that should be inserted into <var>$route</var>.
    * @return string
    *   The formatted and translated <var>$route</var>.
+   * @throws \ErrorException
    * @throws \IntlException
    */
-  public function r($route, array $args = null, array $options = null) {
-    return $this->formatMessage("route", $route, $args, $options);
+  public function r($route, array $args = null) {
+    global $kernel;
+    static $routes = [];
+
+    // We only need to translate the route if it isn't in the default locale.
+    if ($this->locale != $this->defaultLocale) {
+      // Check if we already have the route translations for this locale cached.
+      if (!isset($routes[$this->locale])) {
+        $routes[$this->locale] = require "{$kernel->documentRoot}/private/icu/routes/{$this->locale}.php";
+      }
+
+      // Check if we have a translation for this route and use it if we have one.
+      // @todo All routes should be translated in production, remove this check?
+      if (isset($routes[$this->locale][$route])) {
+        $route = $routes[$this->locale][$route];
+      }
+    }
+
+    if ($args) {
+      return \MessageFormatter::formatMessage($this->locale, $route, $args);
+    }
+    return $route;
   }
 
   /**
    * Format and translate the given message.
    *
-   * @see \MovLib\Data\I18n::formatMessage()
+   * @global \MovLib\Data\Database $db
+   * @staticvar array $messages
    * @param string $message
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
    * @param array $args [optional]
    *   Numeric array of arguments that should be inserted into <var>$message</var>.
-   * @param array $options [optional]
-   *   Associative array of options to alter the behaviour of this method. Available options are:
-   *   <ul>
-   *     <li><var>"comment"</var> You can pass along a comment that will be stored along this pattern for translators
-   *     to help them understand how they should translate it, defaults to no comment.</li>
-   *     <li><var>"language_code"</var> Set the language code into which the message should be translated, defaults to
-   *     the current display language code.</li>
-   *   </ul>
    * @return string
    *   The formatted and translated <var>$message</var>.
    * @throws \IntlException
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function t($message, array $args = null, array $options = null) {
-    return $this->formatMessage("message", $message, $args, $options);
+  public function t($message, array $args = null) {
+    global $db;
+    static $messages = [];
+
+    if ($this->locale != $this->defaultLocale) {
+      if (!isset($messages[$this->locale][$message])) {
+        $result = $db->query("SELECT COLUMN_GET(`dyn_translations`, ? AS CHAR) FROM `messages` WHERE `message` = ? LIMIT 1", "ss", [ $this->languageCode, $message ])->get_result()->fetch_row();
+        if (!empty($result[0])) {
+          $messages[$this->locale][$message] = $result[0];
+          $message                           = $result[0];
+        }
+        else {
+          $messages[$this->locale][$message] = $message;
+        }
+      }
+    }
+
+    if ($args) {
+      return \MessageFormatter::formatMessage($this->locale, $message, $args);
+    }
+    return $message;
   }
 
 }

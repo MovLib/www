@@ -140,17 +140,57 @@ class Movie {
     }
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  public static function getMovies() {
+    global $db, $i18n;
+    static $movies = [];
+
+    if (!isset($movies[$i18n->locale])) {
+      $result = $db->query(
+        "SELECT
+          `movies`.`id`,
+          IFNULL(`titles`.`title`, `movies`.`original_title`) AS `displayTitle`,
+          `movies`.`original_title` AS `originalTitle`,
+          `movies`.`year`,
+          `movies`.`created`
+        FROM `movies`
+          LEFT JOIN `movies_titles` ON `movies_titles`.`movie_id` = `movies`.`id`
+          LEFT JOIN `titles`
+            ON `titles`.`movie_id` = `movies`.`id`
+            AND `titles`.`id` = `movies_titles`.`display_title_{$i18n->languageCode}`
+        WHERE `movies`.`deleted` = false
+        ORDER BY `movies`.`created` ASC"
+      )->get_result();
+      while ($movie = $result->fetch_object(__CLASS__)) {
+        $movies[$i18n->locale][$movie->id] = $movie;
+      }
+    }
+
+    return $movies[$i18n->locale];
+  }
+
+
   protected function init() {
     global $db, $i18n;
 
     // Create the full default display title.
-    $this->displayTitleWithYear = $this->displayTitle;
     if ($this->year) {
-      $this->displayTitleWithYear .= " {$i18n->t("({0})", [ $this->year ])}";
+      $this->displayTitleWithYear = $i18n->t("{movie_title} ({movie_year})", [
+        "movie_title" => $this->displayTitle,
+        "movie_year"  => $this->year,
+      ]);
+    }
+    else {
+      $this->displayTitleWithYear = $this->displayTitle;
     }
 
     // Always cast deleted to a real boolean if we are instantiating a movie.
-    $this->deleted = (boolean) $this->deleted;
+    if ($this->deleted) {
+      $this->deleted = (boolean) $this->deleted;
+    }
 
     // Fetch the display poster from the database.
     $this->displayPoster = $db->query(

@@ -38,7 +38,8 @@ INSERT INTO `movies` SET
   `dyn_synopses`   = COLUMN_CREATE(
     'en', '&lt;p&gt;The scene features Adolphe Le Prince, Sarah Whitley, Joseph Whitley and Harriet Whitley in the Roundhay Garden.&lt;/p&gt;',
     'de', '&lt;p&gt;Die Szene zeigt Adolphe Le Prince, Sarah Whitley, Joseph Whitley und Harriet Whitley im Roundhay Garden.&lt;/p&gt;'
-  )
+  ),
+  `created`        = '2013-11-28 15:13:42'
 ;
 SET @roundhay_garden_scene_id = LAST_INSERT_ID();
 
@@ -108,7 +109,7 @@ INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id
 INSERT INTO `persons` SET
   `name`            = 'Sarah Whitley',
   `born_name`       = 'Sarah Robinson',
-  `birthdate`       = '1816-00-00',
+  /*`birthdate`       = '1816-00-00',*/
   `deathdate`       = '1888-10-24',
   `dyn_aliases`     = '',
   `dyn_biographies` = '',
@@ -120,6 +121,8 @@ INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id
 
 -- END "Roundhay Garden Scene"
 
+-- ---------------------------------------------------------------------------------------------------------------------
+
 -- START "Big Buck Bunny"
 
 INSERT INTO `movies` SET
@@ -130,7 +133,8 @@ INSERT INTO `movies` SET
     'en', '&lt;p&gt;“Big” Buck is a chubby bunny who enjoys the beauty of nature. But he decides to shed his gentleness when the flying squirrel Frank, the squirrel Rinky and the chinchilla Gamera kill two butterflies and throw fruits and nuts at him. Buck prepares a well-deserved revenge for the three rodents.&lt;/p&gt;',
     'de', '&lt;p&gt;„Big” Buck is ein fülliges Kaninchen, dass sich an der schönen Natur erfreut. Als jedoch das Flughörnchen Frank, das Eichhörnchen Rinky und das Chinchilla Gamera auftauchen, zwei Schmetterlinge töten und das Kaninchen mit Früchten und Nüssen bewerfen, beschließt es, seine Sanftmütigkeit abzulegen und an den Nagetieren Rache zu nehmen.&lt;/p&gt;'
   ),
-  `website`        = 'http://www.bigbuckbunny.org/'
+  `website`        = 'http://www.bigbuckbunny.org/',
+  `created`        = '2013-11-29 14:01:56'
 ;
 SET @big_buck_bunny_id = LAST_INSERT_ID();
 
@@ -168,3 +172,5 @@ INSERT INTO `movies_images` SET
 ;
 
 -- END "Big Buck Bunny"
+
+-- ---------------------------------------------------------------------------------------------------------------------

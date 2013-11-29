@@ -82,7 +82,7 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
    */
   public function __construct($listItems, $noItemsText = null, array $attributes = null, array $listItemsAttributes = null) {
     if (!$attributes) {
-      $attributes = [ "class" => "no-list row" ];
+      $attributes = [ "class" => "no-list" ];
     }
     parent::__construct($listItems, $noItemsText, $attributes);
     $this->listItemsAttributes = $listItemsAttributes ?: [ "class" => "span span--2" ];
@@ -106,7 +106,7 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
         $item = call_user_func($this->closure, $item, $delta);
       }
       else {
-        $item = $this->getImage($this->imageStyle);
+        $item = $this->getImage($this->item->getStyle());
       }
       $list .= "<li{$this->expandTagAttributes($this->listItemsAttributes)}>{$item}</li>";
     }

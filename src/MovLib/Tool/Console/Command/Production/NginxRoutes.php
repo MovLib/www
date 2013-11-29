@@ -77,7 +77,6 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     /**
      * This closure will be used within our routes script to translate the strings.
      *
-     * @global \MovLib\Tool\Database $db
      * @global \MovLib\Data\I18n $i18n
      * @param string $route
      *   The route to translate.
@@ -87,20 +86,12 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
      *   The translated route.
      */
     $r = function ($route, array $args = null) {
-      global $db, $i18n;
-      static $cache = [];
-
-      if (!isset($cache[$i18n->languageCode][$route])) {
-        $result = $db->query("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_row();
-        if (!$result) {
-          $db->query("INSERT INTO `routes` (`route`, `dyn_translations`) VALUES (?, '')", "s", [ $route ])->close();
-        }
-      }
-
-      return ($cache[$i18n->languageCode][$route] = $i18n->r($route, $args));
+      global $i18n;
+      return $i18n->r($route, $args);
     };
 
     foreach ($kernel->systemLanguages as $languageCode => $locale) {
+      $i18n->locale       = $locale;
       $i18n->languageCode = $languageCode;
 
       // We need output buffering to catch the output of the following require call.
