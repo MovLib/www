@@ -106,7 +106,7 @@ trait TraitProfile {
     $this->routeNotificationSettings = $i18n->r("/profile/notification-settings");
     $this->routeEmailSettings        = $i18n->r("/profile/email-settings");
     $this->routePasswordSettings     = $i18n->r("/profile/password-settings");
-    $this->routeDangerZoneSettings   = $i18n->r("/profile/danger-zone-settings");
+    $this->routeDangerZoneSettings   = $i18n->r("/profile/danger-zone");
     return parent::init($title);
   }
 

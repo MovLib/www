@@ -381,8 +381,9 @@ class Page extends \MovLib\Presentation\AbstractPage {
     $noscript->title  = $i18n->t("JavaScript Disabled");
     $this->alerts    .= "<noscript>{$noscript}</noscript>";
 
-    if (count($this->namespace) > 1) {
-      $kernel->stylesheets[] = $this->namespace[0];
+    $c = count($this->namespace);
+    for ($i = 0; $i < $c; ++$i) {
+      $kernel->stylesheets[] = $this->namespace[$i];
     }
 
     if (isset($_COOKIE["alerts"])) {

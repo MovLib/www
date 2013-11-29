@@ -204,6 +204,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
     // The substr() removes the \MovLib\Presentation\ part!
     $className         = strtolower(substr(get_class($this), 20));
     $this->namespace   = explode("\\", $className);
+    array_pop($this->namespace); // The last element is the name of the class and not part of the namespace.
     $this->bodyClasses = strtr($className, "\\", " ");
     $this->id          = strtr($className, "\\", "-");
     $this->title       = $title;

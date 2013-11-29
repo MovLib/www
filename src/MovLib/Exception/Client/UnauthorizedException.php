@@ -17,7 +17,7 @@
  */
 namespace MovLib\Exception\Client;
 
-use \MovLib\Presentation\Users\Login;
+use \MovLib\Presentation\Profile\Login;
 use \MovLib\Presentation\Partial\Alert;
 
 /**

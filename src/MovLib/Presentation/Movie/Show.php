@@ -19,10 +19,11 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Image\PersonPhoto;
-use \MovLib\Data\Movie\Full as MovieFull;
+use \MovLib\Data\Movie\Full as FullMovie;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
+use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\Lists\GlueSeparated;
 use \MovLib\Presentation\Partial\Lists\Images;
 
@@ -36,6 +37,7 @@ use \MovLib\Presentation\Partial\Lists\Images;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\TraitFormPage;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -51,7 +53,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     global $i18n, $session;
     try {
       // Instantiate movie, initialize page and set the microdata schema.
-      $this->movie = new MovieFull($_SERVER["MOVIE_ID"]);
+      $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
       $this->init($this->movie->displayTitleWithYear);
       $this->schemaType = "Movie";
 
@@ -59,7 +61,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       if ($this->movie->year) {
         $this->pageTitle = $i18n->t("{movie_title} ({year})", [
           "movie_title" => "<span itemprop='name'>{$this->movie->displayTitle}</span>",
-          "year"        => "<a itemprop='datePublished' href='/year/{$this->movie->year}'>{$this->movie->year}</a>",
+          "year"        => "<a itemprop='datePublished' href='{$i18n->r("/year/{0}", [ $this->movie->year ])}'>{$this->movie->year}</a>",
         ]);
       }
       else {
@@ -68,7 +70,8 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
       // Display gone page if this movie was deleted.
       if ($this->movie->deleted === true) {
-        return;
+        // @todo Implement gone presentation for movies.
+        throw new \LogicException("Not implemented yet!");
       }
 
       // Enhance the header, insert row and span before the title.
@@ -88,6 +91,10 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       else {
         $rating = $i18n->t("please {0}sign in{1} to rate this movie", [ "<a href='{$i18n->r("/profile/login")}'>", "</a>" ]);
       }
+
+      // Instantiate the rating form.
+      $this->form             = new Form($this);
+      $this->form->attributes = [ "id" => "movie-rating" ];
 
       // The five available ratings.
       $ratings = [
@@ -134,9 +141,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
       // Format the movie's countries and enhance them with microdata.
       $countries          = new GlueSeparated($this->movie->countries, $i18n->t("No countries assigned yet, {0}add countries{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
-      $countries->closure = function ($name, $code) {
-        return new Country($code, [ "itemprop" => "contentLocation" ]);
-      };
+      $countries->closure = [ $this, "formatCountry" ];
 
       // Format the movie's duration and enhance it with microdata.
       $runtime = new Duration($this->movie->runtime, [ "itemprop" => "duration" ], Duration::MINUTES);
@@ -151,12 +156,12 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       // But it all together after the closing title.
       $this->headingAfter  =
           "<p>{$i18n->t("“{0}” ({1}original title{2})", [ $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
-          "<form action='{$this->routeMovie}' id='movie-rating' method='post'><fieldset>" .
+          "{$this->form->open()}<fieldset>" .
             "<input type='hidden' value='movie_rating'>" .
             "<legend class='visuallyhidden'>{$i18n->t("Your Rating:")}</legend>" .
             "<div class='back'>" . str_repeat("<i class='icon icon--star'></i>", 5) . "</div>" .
             "<div class='front'>{$stars}</div>" .
-          "</fieldset></form>" .
+          "</fieldset>{$this->form->close()}" .
           "<small>{$ratingExplanation}</small>" .
           "<small><span class='visuallyhidden'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='visuallyhidden'>{$i18n->t("Countries:")} </span>{$countries}</small>" .
           "<small><span class='visuallyhidden'>{$i18n->t("Genres:")} </span>{$genres} | <span class='visuallyhidden'>{$i18n->t("Styles:")} </span>{$styles}</small>" .
@@ -224,6 +229,20 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       "<div id='directors'><h2>{$titleDirectors}</h2>{$directors}</div>" .
       "<div id='cast'><h2>{$titleCast}</h2>{$cast}</div>"
     ;
+  }
+
+  /**
+   * Format a single country.
+   *
+   * @param string $name
+   *   <b>Unused!</b>
+   * @param string $code
+   *   The country's ISO 3166-1 alpha-2 code.
+   * @return \MovLib\Presentation\Partial\Country
+   *   The country partial that represents this country.
+   */
+  public function formatCountry($name, $code) {
+    return new Country($code, [ "itemprop" => "contentLocation" ]);
   }
 
   /**

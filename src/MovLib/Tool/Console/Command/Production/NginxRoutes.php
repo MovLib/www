@@ -19,7 +19,6 @@ namespace MovLib\Tool\Console\Command\Production;
 
 use \MovLib\Data\UnixShell as sh;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
-use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -66,6 +65,14 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     if (!is_dir($routesDirectory)) {
       throw new FileSystemException("The nginx routes directory is missing!");
     }
+
+    /**
+     * Regular expression to match identifier within a route that ensures that the route doesn't start or only contains
+     * zeros.
+     *
+     * @var string
+     */
+    $idRegExp = "([1-9][0-9]*)";
 
     /**
      * This closure will be used within our routes script to translate the strings.

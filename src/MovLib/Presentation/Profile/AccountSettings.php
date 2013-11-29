@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\DateTimeZone;
-use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Data\User\Full as FullUser;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Currency;
@@ -146,7 +146,7 @@ class AccountSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPa
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     $this->init($i18n->t("Account Settings"));
-    $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
+    $this->user = new FullUser(FullUser::FROM_ID, $session->userId);
 
     $this->realName = new InputText("real_name", $i18n->t("Real Name"), [
       "placeholder" => $i18n->t("Entery our real name"),

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Person;
+namespace MovLib\Presentation\Person\Upload;
 
 use \MovLib\Data\Image\PersonPhoto;
 use \MovLib\Data\License;
@@ -38,7 +38,7 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class UploadPhoto extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class Photo extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   use \MovLib\Presentation\TraitFormPage;
 
 

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\Movie\Upload;
 
 use \MovLib\Data\Country;
 use \MovLib\Data\Image\MoviePoster;
@@ -39,7 +39,7 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class UploadPoster extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class Poster extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   use \MovLib\Presentation\TraitFormPage;
 
 
