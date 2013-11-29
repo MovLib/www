@@ -15,10 +15,8 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Users;
+namespace MovLib\Presentation\Profile;
 
-use \MovLib\Data\Temporary;
-use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -103,7 +101,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
       $kernel->sendEmail(new ResetPasswordEmail($this->email->value));
       http_response_code(202);
       $this->alerts .= new Alert(
-        $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]),
+        $i18n->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email->value) ]),
         $i18n->t("Successfully Requested Password Reset"),
         Alert::SEVERITY_SUCCESS
       );

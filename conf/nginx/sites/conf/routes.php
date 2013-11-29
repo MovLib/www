@@ -31,6 +31,12 @@
 # ---------------------------------------------------------------------------------------------------------------------- movies
 
 
+location @movie_posters_upload {
+  set $movlib_multipart 1;
+  set $movlib_presenter "Movie\\UploadPoster";
+  include sites/conf/fastcgi_params.conf;
+}
+
 location ^~ <?= $r("/movies") ?> {
 
   location = <?= $r("/movies") ?> {
@@ -42,21 +48,13 @@ location ^~ <?= $r("/movies") ?> {
     return 301 <?= $r("/movies") ?>;
   }
 
-  location ~ ^<?= $r("/movies") ?>/([0-9]+)$ {
+<?php if ($r("/movies") != $r("/movie")): ?>
+
+  location ~ "^<?= $r("/movies") ?>/([0-9]+)$" {
     return 301 <?= $r("/movie") ?>/$1;
   }
 
   return 404;
-}
-
-
-# ---------------------------------------------------------------------------------------------------------------------- movie
-
-
-location @movie_posters_upload {
-  set $movlib_multipart 1;
-  set $movlib_presenter "Movie\\UploadPoster";
-  include sites/conf/fastcgi_params.conf;
 }
 
 location ^~ <?= $r("/movie") ?> {
@@ -68,8 +66,9 @@ location ^~ <?= $r("/movie") ?> {
   location = <?= $r("/movie") ?>/ {
     return 301 <?= $r("/movies") ?>;
   }
+<?php endif ?>
 
-  location ~ ^<?= $r("/movie") ?>/([0-9]+)$ {
+  location ~ "^<?= $r("/movie") ?>/([0-9]+)$" {
     set $movlib_presenter "Movie\\Show";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
@@ -79,32 +78,29 @@ location ^~ <?= $r("/movie") ?> {
   # Galleries
   #
 
-  location ~ ^<?= $r("/movie/{0}/posters", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_presenter "Gallery\\MoviePosterGallery";
+  location ~ "^<?= $r("/movie/{0}/posters", [ "([0-9]+)" ]) ?>$" {
+    set $movlib_presenter "Gallery\\MoviePoster";
     set $movlib_movie_id $1;
-    set $movlib_tab "poster";
     try_files $movlib_cache @php;
   }
 
-  location ~ ^<?= $r("/movie/{0}/lobby-cards", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_presenter "Gallery\\MovieLobbyCardGallery";
+  location ~ "^<?= $r("/movie/{0}/lobby-cards", [ "([0-9]+)" ]) ?>$" {
+    set $movlib_presenter "Gallery\\MovieLobbyCard";
     set $movlib_movie_id $1;
-    set $movlib_tab "lobby-card";
     try_files $movlib_cache @php;
   }
 
-  location ~ ^<?= $r("/movie/{0}/photos", [ "([0-9]+)" ]) ?>$ {
-    set $movlib_presenter "Gallery\\MoviePhotoGallery";
+  location ~ "^<?= $r("/movie/{0}/photos", [ "([0-9]+)" ]) ?>$" {
+    set $movlib_presenter "Gallery\\MoviePhoto";
     set $movlib_movie_id $1;
-    set $movlib_tab "photo";
     try_files $movlib_cache @php;
   }
 
   #
-  # Gallery Uploads
+  # Image Uploads
   #
 
-  location ~ ^<?= $r("/movie/{0}/posters/upload", [ "([0-9]+)" ]) ?>$ {
+  location ~ "^<?= $r("/movie/{0}/posters/upload", [ "([0-9]+)" ]) ?>$" {
     error_page 413 @movie_posters_upload;
     set $movlib_multipart 0;
     set $movlib_presenter "Movie\\UploadPoster";
@@ -112,17 +108,15 @@ location ^~ <?= $r("/movie") ?> {
     try_files $movlib_cache @php;
   }
 
-  location ~ ^<?= $r("/movie/{0}/lobby-cards/upload", [ "([0-9]+)" ]) ?>$ {
+  location ~ "^<?= $r("/movie/{0}/lobby-cards/upload", [ "([0-9]+)" ]) ?>$" {
     set $movlib_presenter "Movie\\UploadLobbyCard";
     set $movlib_movie_id $1;
-    set $movlib_tab "lobby-card";
     try_files $movlib_cache @php;
   }
 
-  location ~ ^<?= $r("/movie/{0}/photos/upload", [ "([0-9]+)" ]) ?>$ {
+  location ~ "^<?= $r("/movie/{0}/photos/upload", [ "([0-9]+)" ]) ?>$" {
     set $movlib_presenter "Movie\\UploadPhoto";
     set $movlib_movie_id $1;
-    set $movlib_tab "photo";
     try_files $movlib_cache @php;
   }
 
@@ -130,26 +124,24 @@ location ^~ <?= $r("/movie") ?> {
   # Image Details
   #
 
-  location ~ ^<?= $r("/movie/{0}/poster", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
+  location ~ "^<?= $r("/movie/{0}/poster/{1}", [ "([0-9]+)", "([0-9]+)" ]) ?>$" {
     set $movlib_presenter "ImageDetails\\MoviePoster";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
   }
 
-  location ~ ^<?= $r("/movie/{0}/lobby-card", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
+  location ~ "^<?= $r("/movie/{0}/lobby-card/{1}", [ "([0-9]+)", "([0-9]+)" ]) ?>$" {
     set $movlib_presenter "ImageDetails\\MovieLobbyCardDetails";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
-    set $movlib_tab "lobby-card";
     try_files $movlib_cache @php;
   }
 
-  location ~ ^<?= $r("/movie/{0}/photo", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
+  location ~ "^<?= $r("/movie/{0}/photo/{1}", [ "([0-9]+)", "([0-9]+)" ]) ?>$" {
     set $movlib_presenter "ImageDetails\\MoviePhotoDetails";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
-    set $movlib_tab "photo";
     try_files $movlib_cache @php;
   }
 
@@ -157,7 +149,7 @@ location ^~ <?= $r("/movie") ?> {
   # Movie Titles
   #
 
-  location ~ ^<?= $r("/movie/{0}/titles", [ "([0-9]+)" ]) ?>$ {
+  location ~ "^<?= $r("/movie/{0}/titles", [ "([0-9]+)" ]) ?>$" {
     set $movlib_presenter "Movie\\MovieTitles";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
@@ -167,26 +159,26 @@ location ^~ <?= $r("/movie") ?> {
   # History
   #
 
-  location ~ ^<?= $r("/movie/{0}/history", [ "([0-9]+)" ]) ?>$ {
+  location ~ "^<?= $r("/movie/{0}/history", [ "([0-9]+)" ]) ?>$" {
     set $movlib_presenter "History\\Movie\\MovieRevisions";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
 
-  location ~ '^<?= $r("/movie/{0}/diff", [ "([0-9]+)" ]) ?>/([a-f0-9]{40})$' {
+  location ~ "^<?= $r("/movie/{0}/diff/{1}", [ "([0-9]+)", "([a-f0-9]{40})" ]) ?>$" {
     set $movlib_presenter "History\\Movie\\MovieDiff";
     set $movlib_movie_id $1;
     set $movlib_revision_hash $2;
     try_files $movlib_cache @php;
   }
 
-  location ~ ^<?= $r("/movie/{0}/titles/history", [ "([0-9]+)" ]) ?>$ {
+  location ~ "^<?= $r("/movie/{0}/titles/history", [ "([0-9]+)" ]) ?>$" {
     set $movlib_presenter "History\\Movie\\MovieTitlesRevisions";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
 
-  location ~ '^<?= $r("/movie/{0}/titles/diff", [ "([0-9]+)" ]) ?>/([a-f0-9]{40})$' {
+  location ~ "^<?= $r("/movie/{0}/titles/diff/{1}", [ "([0-9]+)", "([a-f0-9]{40})" ]) ?>$" {
     set $movlib_presenter "History\\Movie\\MovieTitlesDiff";
     set $movlib_movie_id $1;
     set $movlib_revision_hash $2;
@@ -197,7 +189,7 @@ location ^~ <?= $r("/movie") ?> {
   # Releases
   #
 
-  location ~ ^<?= $r("/movie/{0}/release", [ "([0-9]+)" ]) ?>/([0-9]+)$ {
+  location ~ "^<?= $r("/movie/{0}/release/{1}", [ "([0-9]+)", "([0-9]+)" ]) ?>$" {
     set $movlib_presenter "Release";
     set $movlib_movie_id $1;
     set $movlib_release_id $2;
@@ -208,13 +200,25 @@ location ^~ <?= $r("/movie") ?> {
 }
 
 
-# ---------------------------------------------------------------------------------------------------------------------- persons
+# ---------------------------------------------------------------------------------------------------------------------- persons / person
 
+
+location @person_photos_upload {
+  set $movlib_multipart 1;
+  set $movlib_presenter "Person\\UploadPhoto";
+  include sites/conf/fastcgi_params.conf;
+}
+
+location @person_photo_update {
+  set $movlib_multipart 1;
+  set $movlib_presenter "Person\\UploadPhoto";
+  include sites/conf/fastcgi_params.conf;
+}
 
 location ^~ <?= $r("/persons") ?> {
 
   location = <?= $r("/persons") ?> {
-    set $movlib_presenter "Persons";
+    set $movlib_presenter "Persons\\Show";
     try_files $movlib_cache @php;
   }
 
@@ -222,21 +226,18 @@ location ^~ <?= $r("/persons") ?> {
     return 301 <?= $r("/persons") ?>;
   }
 
-  location ~ ^<?= $r("/persons") ?>/([0-9]+)$ {
+  location = <?= $r("/persons/new") ?> {
+    set $movlib_presenter "Persons\\New";
+    try_files $movlib_cache @php;
+  }
+
+<?php if ($r("/persons") != $r("/person")): ?>
+
+  location ~ "^<?= $r("/persons") ?>/([0-9]+)$" {
     return 301 <?= $r("/person") ?>/$1;
   }
 
   return 404;
-}
-
-
-# ---------------------------------------------------------------------------------------------------------------------- person
-
-
-location @person_photos_upload {
-  set $movlib_multipart 1;
-  set $movlib_presenter "Person\\UploadPhoto";
-  include sites/conf/fastcgi_params.conf;
 }
 
 location ^~ <?= $r("/person") ?> {
@@ -248,24 +249,41 @@ location ^~ <?= $r("/person") ?> {
   location = <?= $r("/person") ?>/ {
     return 301 <?= $r("/persons") ?>;
   }
+<?php endif ?>
 
-  location ~ ^<?= $r("/person") ?>/([0-9]+)$ {
+  location ~ "^<?= $r("/person/{0}", [ "([0-9]+)" ]) ?>$" {
     set $movlib_presenter "Person";
     set $movlib_person_id $1;
     try_files $movlib_cache @php;
   }
 
-  location ~ ^<?= $r("/person/{0}/photos", [ "([0-9]+)" ]) ?>$ {
+  location ~ "^<?= $r("/person/{0}/photos", [ "([0-9]+)" ]) ?>$" {
     set $movlib_action "person";
     set $movlib_id $1;
     try_files $movlib_cache @gallery;
   }
 
-  location ~ ^<?= $r("/person/{0}/photos/upload", [ "([0-9]+)" ]) ?>$ {
+  location ~ "^<?= $r("/person/{0}/photos/upload", [ "([0-9]+)" ]) ?>$" {
     error_page 413 @person_photos_upload;
     set $movlib_multipart 0;
     set $movlib_presenter "Person\\UploadPhoto";
     set $movlib_person_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/person/{0}/photo/{1}", [ "([0-9]+)", "([0-9]+)" ]) ?>$" {
+    set $movlib_presenter "Person\\Photo";
+    set $movlib_person_id $1;
+    set $movlib_image_id $2;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/person/{0}/photo/{1}/update", [ "([0-9]+)", "([0-9]+)" ]) ?>$" {
+    error_page 413 @person_photo_update;
+    set $movlib_multipart 0;
+    set $movlib_presenter "Person\\UploadPhoto";
+    set $movlib_person_id $1;
+    set $movlib_image_id $2;
     try_files $movlib_cache @php;
   }
 
@@ -292,6 +310,21 @@ location ^~ <?= $r("/profile") ?> {
 
   location = <?= $r("/profile") ?>/ {
     return 301 <?= $r("/profile") ?>;
+  }
+
+  location = <?= $r("/profile/login") ?> {
+    set $movlib_presenter "Profile\\Login";
+    try_files $movlib_cache @php;
+  }
+
+  location = <?= $r("/profile/registration") ?> {
+    set $movlib_presenter "Profile\\Registration";
+    try_files $movlib_cache @php;
+  }
+
+  location = <?= $r("/profile/reset-password") ?> {
+    set $movlib_presenter "Profile\\ResetPassword";
+    include sites/conf/fastcgi_params.conf;
   }
 
   location = <?= $r("/profile/sign-out") ?> {
@@ -335,7 +368,7 @@ location ^~ <?= $r("/profile") ?> {
 }
 
 
-# ---------------------------------------------------------------------------------------------------------------------- users
+# ---------------------------------------------------------------------------------------------------------------------- users / user
 
 
 location ^~ <?= $r("/users") ?> {
@@ -349,27 +382,14 @@ location ^~ <?= $r("/users") ?> {
     return 301 <?= $r("/users") ?>;
   }
 
-  location = <?= $r("/users/login") ?> {
-    set $movlib_presenter "Users\\Login";
-    try_files $movlib_cache @php;
-  }
+<?php if ($r("/users") != $r("/user")): ?>
 
-  location = <?= $r("/users/registration") ?> {
-    set $movlib_presenter "Users\\Registration";
-    try_files $movlib_cache @php;
-  }
-
-  location = <?= $r("/users/reset-password") ?> {
-    set $movlib_presenter "Users\\ResetPassword";
-    include sites/conf/fastcgi_params.conf;
+  location ~ "^<?= $r("/users") ?>/.*$" {
+    return 301 <?= $r("/users") ?>;
   }
 
   return 404;
 }
-
-
-# ---------------------------------------------------------------------------------------------------------------------- user
-
 
 location ^~ <?= $r("/user") ?> {
 
@@ -380,22 +400,23 @@ location ^~ <?= $r("/user") ?> {
   location = <?= $r("/user") ?>/ {
     return 301 <?= $r("/users") ?>;
   }
+<?php endif ?>
 
-  # A username cannot contain spaces nor slashes. The slashes are very important, otherwise it would be impossible for
-  # us to have routes beneath the user's page.
-  location ~ '^<?= $r("/user") ?>/([^/ ]+)$' {
+  # A username cannot contain slashes. The slashes are very important, otherwise it would be impossible for us to have
+  # routes beneath the user's page.
+  location ~ "^<?= $r("/user/{0}", [ "([^/]+)" ]) ?>$" {
     set $movlib_presenter "User\\Show";
     set $movlib_user_name $1;
     try_files $movlib_cache @php;
   }
 
-  location ~ ^<?= $r("/user") ?>/(.+)/<?= $r("contact") ?>$ {
+  location ~ "^<?= $r("/user/{0}/contact", [ "([^/]+)" ]) ?>$" {
     set $movlib_presenter "User\\Contact";
     set $movlib_user_name $1;
     try_files $movlib_cache @php;
   }
 
-  location ~ ^<?= $r("/user") ?>/(.+)/<?= $r("collection") ?>$ {
+  location ~ "^<?= $r("/user/{0}/collection", [ "([^/]+)" ]) ?>$" {
     set $movlib_presenter "User\\Collection";
     set $movlib_user_name $1;
     try_files $movlib_cache @php;

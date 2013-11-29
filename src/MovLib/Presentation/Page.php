@@ -261,8 +261,8 @@ class Page extends \MovLib\Presentation\AbstractPage {
     }
     else {
       $mainMenuitems = [
-        [ $i18n->r("/users/registration"), $i18n->t("Registration"), [ "title" => $i18n->t("Click here to sign up for a new account.") ]],
-        [ $i18n->r("/users/login"),        $i18n->t("Login"),        [ "title" => $i18n->t("Click here to sign in to your account.")   ]],
+        [ $i18n->r("/profile/registration"), $i18n->t("Registration"), [ "title" => $i18n->t("Click here to sign up for a new account.") ]],
+        [ $i18n->r("/profile/login"),        $i18n->t("Login"),        [ "title" => $i18n->t("Click here to sign in to your account.")   ]],
       ];
     }
     $mainNavigation = new Navigation("main", $i18n->t("Main Navigation"), $mainMenuitems);

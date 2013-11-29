@@ -86,7 +86,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         }
       }
       else {
-        $rating = $i18n->t("please {0}sign in{1} to rate this movie", [ "<a href='{$i18n->r("/users/login")}'>", "</a>" ]);
+        $rating = $i18n->t("please {0}sign in{1} to rate this movie", [ "<a href='{$i18n->r("/profile/login")}'>", "</a>" ]);
       }
 
       // The five available ratings.
@@ -144,10 +144,9 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       // Format the movie's genres and styles and enhance them with microdata. We mark the styles as genres as well
       // because schema.org doesn't have any special mark-up for sub-genres.
       $genres          = new GlueSeparated($this->movie->genres, $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
+      $genres->closure = [ $this, "formatGenre" ];
       $styles          = new GlueSeparated($this->movie->styles, $i18n->t("No styles assigned yet, {0}add styles{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
-      $genres->closure = $styles->closure = function ($name) {
-        return "<span itemprop='genre'>{$name}</span>";
-      };
+      $styles->closure = [ $this, "formatStyle" ];
 
       // But it all together after the closing title.
       $this->headingAfter  =
@@ -228,9 +227,44 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   }
 
   /**
+   * Format a single genre.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $name
+   *   The genre's translated name.
+   * @param integer $id
+   *   The genre's unique identifier.
+   * @return string
+   *   The formatted genre.
+   */
+  public function formatGenre($name, $id) {
+    global $i18n;
+    return "<a href='{$i18n->r("/genre/{0}", [ $id ])}' itemprop='genre'>{$name}</a>";
+  }
+
+  /**
+   * Format a single style.
+   *
+   * @internal
+   *   We have to use genre for the itemprop attribute because Schema.org has no styles.
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $name
+   *   The style's translated name.
+   * @param integer $id
+   *   The style's unique identifier.
+   * @return string
+   *   The formatted style.
+   */
+  public function formatStyle($name, $id) {
+    global $i18n;
+    return "<a href='{$i18n->r("/style/{0}", [ $id ])}' itemprop='genre'>{$name}</a>";
+  }
+
+  /**
    * Format a single person.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @staticvar string $route
    * @param \MovLib\Data\Person\Person $person
    *   The person to format.
    * @return string
@@ -238,12 +272,8 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
    */
   public function formatPerson($person) {
     global $i18n;
-    return
-      "<a class='img' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
-        $this->getImage($person->displayPhoto->getStyle(PersonPhoto::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
-        "<span itemprop='name'>{$person->name}</span>" .
-      "</a>"
-    ;
+    $image = $this->getImage($person->displayPhoto->getStyle(PersonPhoto::STYLE_SPAN_01), false, [ "itemprop" => "image" ]);
+    return "<a class='img' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>{$image}<span itemprop='name'>{$person->name}</span></a>";
   }
 
 }

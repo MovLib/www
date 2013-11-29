@@ -49,7 +49,7 @@ class SignOut {
         Alert::SEVERITY_SUCCESS
       );
     }
-    throw new RedirectSeeOtherException($i18n->r("/users/login"));
+    throw new RedirectSeeOtherException($i18n->r("/profile/login"));
   }
 
 }

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Users;
+namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Memcached;
 use \MovLib\Data\Temporary;
@@ -119,7 +119,7 @@ class Registration extends \MovLib\Presentation\Page {
         [ UserFull::NAME_ILLEGAL_CHARACTERS, UserFull::NAME_MAXIMUM_LENGTH ]
       ),
     ]);
-    $this->username->setHelp("<a href='{$i18n->r("/users/login")}'>{$i18n->t("Already have an account?")}</a>", false);
+    $this->username->setHelp("<a href='{$i18n->r("/profile/login")}'>{$i18n->t("Already have an account?")}</a>", false);
 
     $this->email    = new InputEmail();
     $this->password = new InputPassword();
@@ -233,7 +233,7 @@ class Registration extends \MovLib\Presentation\Page {
       $user->email    = $this->email->value;
       $user->password = $user->hashPassword($this->password->value);
       if ((new Memcached())->isRemoteAddressFlooding("registration") === true) {
-        $this->checkErrors($i18n->t("Too many registration attempts from this IP address. Please wait 1 hour before trying again."));
+        $this->checkErrors($i18n->t("Too many registration attempts from this IP address. Please wait one hour before trying again."));
       }
 
       // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
@@ -253,7 +253,7 @@ class Registration extends \MovLib\Presentation\Page {
       // Accepted but further action is required!
       http_response_code(202);
       $this->alerts .= new Alert(
-        $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]),
+        $i18n->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email->value) ]),
         $i18n->t("Registration Successful"),
         Alert::SEVERITY_SUCCESS
       );

@@ -115,7 +115,7 @@ class Home extends \MovLib\Presentation\Page {
               "<h2>{$i18n->t("My {0}", [ $kernel->siteName ])}</h2>" .
               "<p></p>" .
               "<p>{$this->a(
-                $i18n->r("/users/registration"),
+                $i18n->r("/profile/registration"),
                 $i18n->t("Sign up for a new account"),
                 [ "class" => "button button--success button--large" ]
               )}</p>" .

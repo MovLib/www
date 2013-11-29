@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Users;
+namespace MovLib\Presentation\Profile;
 
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Alert;
@@ -80,7 +80,7 @@ class Login extends \MovLib\Presentation\Page {
     $this->init($i18n->t("Login"));
 
     // We need to know the translated version of the login route for comparison.
-    $routeLogin = $action = $i18n->r("/users/login");
+    $routeLogin = $action = $i18n->r("/profile/login");
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
@@ -97,7 +97,7 @@ class Login extends \MovLib\Presentation\Page {
     $kernel->requestURI = $routeLogin;
 
     $this->email                      = new InputEmail();
-    $this->email->setHelp("<a href='{$i18n->r("/users/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
+    $this->email->setHelp("<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
     $this->password                   = new InputPassword();
     $this->form                       = new Form($this, [ $this->email, $this->password ]);
     $this->form->attributes["action"] = $action;

@@ -157,6 +157,7 @@ class I18n {
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Kernel $kernel
+   * @staticvar array $cache
    * @param string $context
    *   The context in which we should translate the message.
    * @param string $pattern
@@ -177,18 +178,27 @@ class I18n {
    */
   public function formatMessage($context, $pattern, $args, $options = null) {
     global $db, $kernel;
+    static $cache = [];
+
     $languageCode = isset($options["language_code"]) ? $options["language_code"] : $this->languageCode;
-    if ($languageCode != $this->defaultLanguageCode) {
-      // @todo Create translation extractor or use xgettext
-      if (!($result = $db->query("SELECT COLUMN_GET(`dyn_translations`, '{$languageCode}' AS BINARY) AS `translation` FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1", "s", [ $pattern ])->get_result()->fetch_assoc())) {
-        if ($context === "message") {
-          $kernel->delayMethodCall([ $this, "insertMessage" ], [ $pattern, $options ]);
-        }
+    if (isset($cache[$languageCode][$context][$pattern])) {
+      $pattern = $cache[$languageCode][$context][$pattern];
+    }
+    elseif ($languageCode != $this->defaultLanguageCode) {
+      // @todo Create translation extractor
+      $result = $db->query(
+        "SELECT COLUMN_GET(`dyn_translations`, ? AS BINARY) FROM `{$context}s` WHERE `{$context}` = ? LIMIT 1",
+        "ss",
+        [ $languageCode, $pattern ]
+      )->get_result()->fetch_row();
+      if (!$result && $context == "message") {
+        $kernel->delayMethodCall([ $this, "insertMessage" ], [ $pattern, $options ]);
       }
-      elseif (!empty($result["translation"])) {
-        $pattern = $result["translation"];
+      elseif (!empty($result[0])) {
+        $pattern = $cache[$languageCode][$context][$pattern] = $result[0];
       }
     }
+
     if ($args) {
       return \MessageFormatter::formatMessage($languageCode, $pattern, $args);
     }
@@ -252,23 +262,6 @@ class I18n {
       "ssd",
       [ $languageCode, $translation, $id ]
     );
-    return $this;
-  }
-
-  /**
-   * Insert raoute pattern.
-   *
-   * @global \MovLib\Data\Database $db
-   * @param string $route
-   *   The route to insert.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function insertRoute($route) {
-    global $db;
-    if (empty($db->query("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_assoc())) {
-      $db->query("INSERT INTO `routes` (`route`, `dyn_translations`) VALUES (?, '')", "s", [ $route ]);
-    }
     return $this;
   }
 

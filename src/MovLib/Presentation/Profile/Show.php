@@ -66,13 +66,13 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
           "<dt>{$i18n->t("Username")}</dt><dd>{$this->user->name}</dd>" .
           "<dt>{$i18n->t("User ID")}</dt><dd>{$this->user->id}</dd>" .
           "<dt>{$i18n->t("Edits")}</dt><dd>{$this->user->edits}</dd>" .
-          "<dt>{$i18n->t("Reputation")}</dt><dd><em>@todo</em> reputation counter</dd>" .
+          "<dt>{$i18n->t("Reputation")}</dt><dd>{$this->user->reputation}</dd>" .
           "<dt>{$i18n->t("Email Address")}</dt><dd>{$this->user->email}</dd>" .
           "<dt>{$i18n->t("Registration")}</dt><dd>{$i18n->formatDate($this->user->created, $this->user->timeZoneIdentifier)}</dd>" .
           "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->user->access, $this->user->timeZoneIdentifier)}</dd>" .
         "</dl>" .
         "<div class='span span--2'>" .
-          $this->a($i18n->r("/user/account-settings"), $this->getImage($this->user->getStyle()), [
+          $this->a($i18n->r("/profile/account-settings"), $this->getImage($this->user->getStyle()), [
             "class" => "change-avatar no-border",
             "title" => "Change your avatar image.",
           ]) .

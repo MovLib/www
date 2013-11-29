@@ -19,6 +19,7 @@ namespace MovLib\Tool\Console\Command\Production;
 
 use \MovLib\Data\UnixShell as sh;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
+use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -69,6 +70,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     /**
      * This closure will be used within our routes script to translate the strings.
      *
+     * @global \MovLib\Tool\Database $db
      * @global \MovLib\Data\I18n $i18n
      * @param string $route
      *   The route to translate.
@@ -78,13 +80,18 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
      *   The translated route.
      */
     $r = function ($route, array $args = null) {
-      global $i18n;
-      return $i18n->insertRoute($route)->r($route, $args);
-    };
+      global $db, $i18n;
+      static $cache = [];
 
-    // Drop all routes from this server.
-    $db->transactionStart();
-    $db->query("TRUNCATE TABLE `routes`");
+      if (!isset($cache[$i18n->languageCode][$route])) {
+        $result = $db->query("SELECT `route_id` FROM `routes` WHERE `route` = ? LIMIT 1", "s", [ $route ])->get_result()->fetch_row();
+        if (!$result) {
+          $db->query("INSERT INTO `routes` (`route`, `dyn_translations`) VALUES (?, '')", "s", [ $route ])->close();
+        }
+      }
+
+      return ($cache[$i18n->languageCode][$route] = $i18n->r($route, $args));
+    };
 
     foreach ($kernel->systemLanguages as $languageCode => $locale) {
       $i18n->languageCode = $languageCode;
@@ -109,8 +116,6 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
 
       $this->write("Written routing file for '{$i18n->languageCode}' ...");
     }
-
-    $db->transactionCommit();
 
     if (sh::executeDisplayOutput("service nginx reload") === false) {
       throw new \RuntimeException("Couldn't reload nginx!");

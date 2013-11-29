@@ -91,7 +91,7 @@ class PasswordSettings extends \MovLib\Presentation\AbstractSecondaryNavigationP
     $this->newPassword = new InputPassword("new-password", $i18n->t("New Password"), [
       "placeholder" => $i18n->t("Enter your new password"),
     ]);
-    $this->newPassword->setHelp("<a href='{$i18n->r("/users/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
+    $this->newPassword->setHelp("<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
 
     // Second field to enter the new password for confirmation.
     $this->newPasswordConfirm = new InputPassword("new-password-confirm", $i18n->t("Confirm Password"), [

@@ -86,7 +86,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
     global $i18n, $kernel;
     $this->recipient = $this->user->email;
     $this->subject   = $i18n->t("Welcome to {0}!", [ $kernel->siteName ]);
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/users/registration")}?token=" . rawurlencode(base64_encode($this->recipient));
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/profile/registration")}?token=" . rawurlencode(base64_encode($this->recipient));
     $key             = "registration{$this->user->email}";
     $tmp             = new Temporary();
     $user            = $tmp->get($key);
