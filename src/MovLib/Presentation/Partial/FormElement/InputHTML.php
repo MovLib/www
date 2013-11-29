@@ -45,6 +45,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     "a"      => "&lt;a&gt;",
     "b"      => "&lt;b&gt;",
     "br"     => "&lt;br&gt;",
+    "em"     => "&lt;em&gt;",
     "i"      => "&lt;i&gt;",
     "p"      => "&lt;p&gt;",
     "strong" => "&lt;strong&gt;",
@@ -106,6 +107,15 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @var integer
    */
   protected $level = 0;
+
+  /**
+   * The list information array used to determine when and if to close a list.
+   *
+   * Format: <code>[ "tag" => "ol"|"ul", "level" => "$level of first list opening", "allowed_tags" => "backup of allowed tags" ]</code>
+   *
+   * @var boolean|array
+   */
+  protected $list = false;
 
   /**
    * Associative array to identify allowed user CSS classes.
@@ -308,84 +318,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       throw new ValidationException($i18n->t("Invalid HTML in “{label}” text.", [ "label" => $this->label ]));
     }
 
-    /* @var $node \tidyNode */
-    $node           = null;
-    $nodes          = [ $this->level => [ $tidy->body() ] ];
-    $endTags        = [];
-    $output         = null;
-
-    // Traverse through the constructed document and validate its contents.
-    do {
-      while (!empty($nodes[$this->level])) {
-        // Retrieve the next node from the stack.
-        $node = array_shift($nodes[$this->level]);
-
-        if ($this->level > 0) {
-          // If we encounter a text node, simply encode its contents and continue with the next node.
-          if ($node->type === TIDY_NODETYPE_TEXT) {
-            $output .= $kernel->htmlEncode($node->value);
-          }
-          // If we encounter an allowed HTML tag validate it.
-          elseif (isset($this->allowedTags[$node->name])) {
-            // If we're already inside <blockquote>, ensure it doesn't contain any disallowed elements.
-            if ($this->blockquote === true && isset($this->blockquoteDisallowedTags[$node->name])) {
-              throw new ValidationException($i18n->t("Found disallowed tag {tag} in quotation.", [ "tag" => "<code>&lt;{$node->name}&gt;</code>" ]));
-            }
-
-            // Directly take care of the most common element that has allowed attributes, the content is validated in
-            // the next iteration.
-            if ($node->name == "p") {
-              $node->name = "p{$this->validateUserClasses($node)}";
-            }
-            // If there are more complex validations to be done for the tag, invoke the corresponding method.
-            else {
-              $methodName = "validate{$node->name}";
-              if (method_exists($this, $methodName)) {
-                $node->name = $this->{$methodName}($node);
-              }
-            }
-
-            // Stack a closing tag to the current level, if needed.
-            if (!isset($this->emptyTags[$node->name])) {
-              $endTags[$this->level][] = "</{$node->name}>";
-            }
-
-            // Append a starting tag including valid attributes (if any) of the current node to the output.
-            $output .= "<{$node->name}>";
-          }
-          // Encountered a tag that is not allowed, abort.
-          else {
-            $allowedTags = implode(" ", $this->allowedTags);
-            throw new ValidationException($i18n->t("Found disallowed HTML tags, allowed tags are: {taglist}", [ "taglist" => "<code>{$allowedTags}</code>" ]));
-          }
-        }
-
-        // Stack the child nodes to the next level if there are any.
-        if (!empty($node->child)) {
-          $nodes[++$this->level] = $node->child;
-        }
-      }
-
-      // There are no more nodes to process in this level (while loop above has already handled them).
-      // Go one level down and proceed with the next node.
-      $this->level--;
-
-      // Append all ending tags of the current level to the output, if we are greater than level 0 and if there are any.
-      if ($this->level > 0 && isset($endTags[$this->level])) {
-        while (($endTag = array_pop($endTags[$this->level]))) {
-          if ($endTag == "</{$this->insertLastChild}>") {
-            $this->blockquote      = false;
-            $output               .= "{$this->lastChild}{$endTag}";
-            $this->insertLastChild = null;
-            $this->lastChild       = null;
-          }
-          else {
-            $output .= $endTag;
-          }
-        }
-      }
-    }
-    while ($this->level > 0);
+    $output = $this->validateDOM($tidy->body(), $this->allowedTags, $this->level);
 
     // Reset the level to its default state.
     $this->level = 0;
@@ -407,7 +340,8 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // @codeCoverageIgnoreEnd
 
     // Replace redundant newlines, normalize UTF-8 characters and encode HTML characters.
-    $this->value = $kernel->htmlEncode(\Normalizer::normalize(str_replace("\n\n", "\n", tidy_get_output($tidy))));
+    $this->valueRaw = \Normalizer::normalize(str_replace("\n\n", "\n", tidy_get_output($tidy)));
+    $this->value    = $kernel->htmlEncode($this->valueRaw);
 
     return $this;
   }
@@ -521,7 +455,15 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
 
     // Validate that <cite> only contains text and/or anchor nodes.
     if ($lastChild->name == "cite" && count($lastChild->child) > 0) {
-      $this->lastChild = "<cite>{$this->validateTextOnlyWithOptionalAnchors($lastChild, $i18n->t("attributions"))}</cite>";
+      $citeAllowedTags = [
+        "a"      => "&lt;a&gt;",
+        "b"      => "&lt;b&gt;",
+        "em"     => "&lt;em&gt;",
+        "i"      => "&lt;i&gt;",
+        "strong" => "&lt;strong&gt;",
+      ];
+      $citeContent = $this->validateDOM($lastChild, $citeAllowedTags);
+      $this->lastChild = "<cite>{$citeContent}</cite>";
     }
     // A <blockquote> without a <cite> is invalid.
     else {
@@ -543,6 +485,109 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   }
 
   /**
+   * Validate a DOM tree starting at <code>$node</code>.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @param \tidyNode $node
+   *   The node to start from.
+   * @param array $allowedTags
+   *   Associative array containing the tag names as keys and the encoded tags as values.
+   * @param integer $level [optional]
+   *   The level to use (global or local). Defaults to <code>0</code>.
+   * @return string
+   *   The parsed and sanitized output.
+   * @throws ValidationException
+   */
+  protected function validateDOM($node, &$allowedTags, &$level = 0) {
+    global $i18n, $kernel;
+    $nodes       = [ $level => [ $node]];
+    $endTags     = [];
+    $output      = null;
+
+    // Traverse through the constructed document and validate its contents.
+    do {
+      while (!empty($nodes[$level])) {
+        // Retrieve the next node from the stack.
+        $node = array_shift($nodes[$level]);
+
+        if ($level > 0) {
+          // If we encounter a text node, simply encode its contents and continue with the next node.
+          if ($node->type === TIDY_NODETYPE_TEXT) {
+            $output .= $kernel->htmlEncode($node->value);
+          }
+          // If we encounter an allowed HTML tag validate it.
+          elseif (isset($allowedTags[$node->name])) {
+            // If we're already inside <blockquote>, ensure it doesn't contain any disallowed elements.
+            if ($this->blockquote === true && isset($this->blockquoteDisallowedTags[$node->name])) {
+              throw new ValidationException($i18n->t("Found disallowed tag {tag} in quotation.", [ "tag" => "<code>&lt;{$node->name}&gt;</code>" ]));
+            }
+
+            // Stack a closing tag to the current level, if needed.
+            if (!isset($this->emptyTags[$node->name])) {
+              $endTags[$level][] = "</{$node->name}>";
+            }
+
+            // Directly take care of the most common element that has allowed attributes, the content is validated in
+            // the next iteration.
+            if ($node->name == "p") {
+              $node->name = "p{$this->validateUserClasses($node)}";
+            }
+            // If there are more complex validations to be done for the tag, invoke the corresponding method.
+            else {
+              $methodName = "validate{$node->name}";
+              if (method_exists($this, $methodName)) {
+                $node->name = $this->{$methodName}($node);
+              }
+            }
+
+            // Append a starting tag including valid attributes (if any) of the current node to the output.
+            $output .= "<{$node->name}>";
+          }
+          // Encountered a tag that is not allowed, abort.
+          else {
+            $allowedTagsList = implode(" ", $allowedTags);
+            throw new ValidationException($i18n->t("Found disallowed HTML tags, allowed tags are: {taglist}", [ "taglist" => "<code>{$allowedTagsList}</code>" ]));
+          }
+        }
+
+        // Stack the child nodes to the next level if there are any.
+        if (!empty($node->child)) {
+          $nodes[++$level] = $node->child;
+        }
+      }
+
+      // There are no more nodes to process in this level (while loop above has already handled them).
+      // Go one level down and proceed with the next node.
+      $level--;
+
+      // Append all ending tags of the current level to the output, if we are greater than level 0 and if there are any.
+      if ($level > 0 && isset($endTags[$level])) {
+        while (($endTag = array_pop($endTags[$level]))) {
+          if ($endTag == "</{$this->insertLastChild}>") {
+            $this->blockquote      = false;
+            $output               .= "{$this->lastChild}{$endTag}";
+            $this->insertLastChild = null;
+            $this->lastChild       = null;
+          }
+          // Check if we are at the end of a list and if the level fits.
+          // If so, restore allowed tags and list flag.
+          elseif ($this->list && "</{$this->list["tag"]}>" == $endTag && $this->list["level"] === $level) {
+            $this->allowedTags = $this->list["allowed_tags"];
+            $this->list        = false;
+          }
+          else {
+            $output .= $endTag;
+          }
+        }
+      }
+    }
+    while ($level > 0);
+
+    return $output;
+  }
+
+  /**
    * Validate figure.
    *
    * @todo We have to keep reference of images in texts in order to update their cache buster string and remove them
@@ -551,6 +596,8 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    * @global \MovLib\Kernel $kernel
    * @param \tidyNode $node
    *   The figure node to validate.
+   * @param integer $level
+   *   The current level in the DOM tree.
    * @return string
    *   The starting tag including allowed attributes.
    * @throws ValidationException
@@ -570,7 +617,14 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     }
 
     // Validate the caption.
-    $caption = $this->validateTextOnlyWithOptionalAnchors($node->child[1], $i18n->t("image captions"));
+    $captionAllowedTags = [
+      "a"      => "&lt;a&gt;",
+      "b"      => "&lt;b&gt;",
+      "em"     => "&lt;em&gt;",
+      "i"      => "&lt;i&gt;",
+      "strong" => "&lt;strong&gt;",
+    ];
+    $caption = $this->validateDOM($node->child[1], $captionAllowedTags);
 
     // Validate the image's src URL.
     if (($url = parse_url($node->child[0]->attribute["src"])) === false || !isset($url["host"])) {
@@ -603,41 +657,57 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   }
 
   /**
-   * Validates and sanitizes HTML elements which can only contain anchors or text.
+   * Validate list.
    *
-   * @todo Implement validation of plain text or anchors.
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @param \tidyNode $node
-   *   The node to validate.
-   * @param string $context
-   *   The already translated context of the element for error messages.
+   *   The list node to validate.
    * @return string
-   *   The validated content.
+   *   The starting tag including allowed attributes.
    */
-  protected function validateTextOnlyWithOptionalAnchors($node, $context) {
-    global $i18n, $kernel;
-    $content = null;
-    $c = count($node->child);
-    // Iterate and validate all children.
-    for ($i = 0; $i < $c; ++$i) {
-      // If we encounter a text node, encode it and continue.
-      if ($node->child[$i]->type === TIDY_NODETYPE_TEXT) {
-        $content .= $kernel->htmlEncode($node->child[$i]->value);
-      }
-      // If the child is a link, check that it has only one child (text) and validate the link tag separately.
-      elseif ($node->child[$i]->name == "a") {
-        if (count($node->child[$i]->child) !== 1 || $node->child[$i]->child[0]->type !== TIDY_NODETYPE_TEXT) {
-          throw new ValidationException($i18n->t("Only plain text is allowed for links in {context}.", [ "context" => $context]));
-        }
-        $content .= "<{$this->validateA($node->child[$i])}>{$kernel->htmlEncode($node->child[$i]->child[0]->value)}</a>";
-      }
-      // Other nodes are not allowed, abort.
-      else {
-        throw new ValidationException($i18n->t("Only plain text and links are allowed in {context}.", [ "context" => $context]));
-      }
+  protected function validateList($node) {
+    // If this is the first opening list tag, set the list information array accordingly and constrain the allowed tags.
+    if ($this->list === false) {
+      $this->list = [
+        "tag"          => $node->name,
+        "level"        => $this->level,
+        "allowed_tags" => $this->allowedTags,
+      ];
+      $this->allowedTags = [
+        "a"      => "&lt;a&gt;",
+        "b"      => "&lt;b&gt;",
+        "em"     => "&lt;em&gt;",
+        "i"      => "&lt;i&gt;",
+        "li"     => "&lt;li&gt;",
+        "ol"     => "&lt;ol&gt;",
+        "strong" => "&lt;strong&gt;",
+        "ul"     => "&lt;ul&gt;",
+      ];
     }
-    return $content;
+    return "{$node->name}{$this->validateUserClasses($node)}";
+  }
+
+  /**
+   * Validate ordered list.
+   *
+   * @param \tidyNode $node
+   *   The list node to validate.
+   * @return string
+   *   The starting tag including allowed attributes.
+   */
+  protected function validateOl($node) {
+    return $this->validateList($node);
+  }
+
+  /**
+   * Validate unordered list.
+   *
+   * @param \tidyNode $node
+   *   The list node to validate.
+   * @return string
+   *   The starting tag including allowed attributes.
+   */
+  protected function validateUl($node) {
+    return $this->validateList($node);
   }
 
   /**
