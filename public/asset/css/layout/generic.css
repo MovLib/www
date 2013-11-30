@@ -296,20 +296,51 @@ tbody .info {
 }
 
 
-/* ==== LISTS ======================================================================================================= */
+/* ==== IMAGES LISTS ================================================================================================ */
+
+
+.images-list a {
+  color: #656565;
+  transition: background-color 0.4s ease-out;
+  display: block;
+}
+
+.images-list a:hover,
+.images-list a:focus {
+  background-color: #e2f4fb;
+}
+
+.images-list img {
+  margin: 10px 0;
+}
+
+.images-list .span--9 {
+  padding-top: 20px;
+}
+
+.images-list span[itemprop="name"] {
+  color: #09c;
+}
+
+
+/* ==== DESCRIPTION LISTS =========================================================================================== */
+
 
 .dl--horizontal {
   *zoom: 1;
 }
+
 .dl--horizontal:before,
 .dl--horizontal:after {
   display: table;
   content: "";
   line-height: 0;
 }
+
 .dl--horizontal:after {
   clear: both;
 }
+
 .dl--horizontal dt {
   float: left;
   width: 160px;
@@ -319,6 +350,7 @@ tbody .info {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .dl--horizontal dd {
   margin-left: 180px;
 }

@@ -27,7 +27,6 @@ use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
-use \MovLib\Presentation\Partial\FormElement\InputURL;
 use \MovLib\Presentation\Partial\FormElement\Select;
 
 /**
@@ -88,13 +87,6 @@ class Poster extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   protected $license;
 
-  /**
-   * The form's URL input.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\InputURL
-   */
-  protected $source;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -119,21 +111,14 @@ class Poster extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear);
       }
       $this->init($title);
-
-      $this->inputImage = new InputImage("poster", $i18n->t("Poster"), $this->image, [ "required" ]);
-
-      $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description);
-
-      $this->source = new InputURL("source", $i18n->t("Source"), [ "data-allow-external" => true, "value" => $this->image->source ]);
-
-      $this->country = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
-
-      $this->license = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ?: 1, [ "required" ]);
+      $this->inputImage  = new InputImage("poster", $i18n->t("Poster"), $this->image, [ "required" ]);
+      $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description, [ "required" ]);
+      $this->country     = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
+      $this->license     = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ? : 1, [ "required" ]);
 
       $this->form = new Form($this, [
         $this->inputImage,
         $this->description,
-        $this->source,
         $this->country,
         $this->license,
       ]);
@@ -170,15 +155,10 @@ class Poster extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   public function validate(array $errors = null) {
     global $i18n;
-    // The description can't be empty if the source is empty and vice versa.
-    if (empty($this->description->value) && empty($this->source->value)) {
-      $errors = $i18n->t("Description and source URL missing, you have to fill out at least one of these fields.");
-    }
     if ($this->checkErrors($errors) === false) {
       $this->image->countryCode = $this->country->value;
       $this->image->description = $this->description->value;
       $this->image->licenseId   = $this->license->value;
-      $this->image->source      = $this->source->value;
       $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
       throw new RedirectSeeOtherException($this->image->route);
     }

@@ -237,11 +237,11 @@ class Page extends \MovLib\Presentation\AbstractPage {
   protected function getHeader() {
     global $kernel, $i18n, $session;
 
-    $moviesNavigation             = new Navigation("movies-mega", $i18n->t("Movies"), [
-      [ $i18n->r("/movies"), $i18n->t("Latest movie entries"), [ "title" => $i18n->t("Have a look at the latest movie entries at {0}.", [ $kernel->siteName ]) ] ],
-      [ $i18n->r("/movies/new"), $i18n->t("Create new movie"), [ "title" => $i18n->t("Add a new movie to the {0} library.", [ $kernel->siteName ]) ] ],
+    $moviesNavigation = new Navigation("movies-mega", $i18n->t("Movies"), [
+      [ $i18n->r("/movies"),        $i18n->t("Latest movie entries"), [ "title" => $i18n->t("Have a look at the latest movie entries at {0}.", [ $kernel->siteName ]) ] ],
+      [ $i18n->r("/movie/create"),  $i18n->t("Create new movie"),     [ "title" => $i18n->t("Add a new movie to the {0} library.", [ $kernel->siteName ]) ]             ],
     ]);
-    $moviesNavigation->hideTitle  = false;
+    $moviesNavigation->hideTitle = false;
 
     $seriesNavigation             = new Navigation("series-mega", $i18n->t("Series"), [ ]);
     $seriesNavigation->hideTitle  = false;

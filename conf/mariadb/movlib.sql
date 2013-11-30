@@ -12,22 +12,24 @@ USE `movlib` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie’s unique ID.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The movie’s creation time.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this movie was deleted, default is FALSE (0).',
+  `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.',
+  `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.',
   `original_title` BLOB NOT NULL COMMENT 'The movie\'s original title.',
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of this movie.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.',
-  `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.',
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s vote count.',
-  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this movie was deleted, default is FALSE (0).',
-  `year` SMALLINT NULL COMMENT 'The movie’s initial release year.',
-  `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime in minutes.',
-  `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.',
-  `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.',
-  `website` TINYTEXT NULL COMMENT 'The movie\'s official website URL.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this movie was created.',
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.',
+  `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.',
+  `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime in minutes.',
+  `website` TINYTEXT NULL COMMENT 'The movie\'s official website URL.',
+  `year` SMALLINT NULL COMMENT 'The movie’s initial release year.',
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uq_movies_rank` (`rank` ASC))
+  UNIQUE INDEX `uq_movies_rank` (`rank` ASC),
+  INDEX `movies_deleted` (`deleted` ASC),
+  INDEX `movies_created` (`created` DESC))
 ENGINE = InnoDB
-COMMENT = 'Contains all movie’s data.';
+COMMENT = 'Contains all basic movie data.';
 
 SHOW WARNINGS;
 
@@ -268,23 +270,24 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
   `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The photo’s unique ID within the person.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT true,
+  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The photo’s upvotes.',
   `license_id` INT UNSIGNED NULL COMMENT 'The license\'s unique ID this image is under.',
+  `user_id` BIGINT UNSIGNED NULL,
   `width` SMALLINT UNSIGNED NULL COMMENT 'The photo’s width.',
   `height` SMALLINT UNSIGNED NULL COMMENT 'The photo’s height.',
   `filesize` INT UNSIGNED NULL COMMENT 'The photo’s size in Bytes.',
   `extension` CHAR(3) NULL COMMENT 'The photo’s extension without leading dot.',
   `changed` TIMESTAMP NULL COMMENT 'The last time this photo was updated.',
   `created` TIMESTAMP NULL COMMENT 'The photo’s creation time.',
-  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The photo’s upvotes.',
   `dyn_descriptions` BLOB NULL COMMENT 'The photo’s translatable descriptions.',
-  `source` TINYTEXT NULL COMMENT 'The photo\'s source.',
   `styles` BLOB NULL,
-  `deleted` TINYINT(1) NOT NULL DEFAULT true,
   PRIMARY KEY (`id`, `person_id`),
   INDEX `fk_persons_photos_persons` (`person_id` ASC),
   INDEX `fk_persons_photos_images` (`id` ASC),
   INDEX `fk_persons_photos_licenses` (`license_id` ASC),
   INDEX `persons_photos_order_by_upvotes` (`upvotes` ASC),
+  INDEX `fk_persons_photos_users1_idx` (`user_id` ASC),
   CONSTRAINT `fk_persons_photos_persons`
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`person_id`)
@@ -293,6 +296,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
   CONSTRAINT `fk_persons_photos_licenses`
     FOREIGN KEY (`license_id`)
     REFERENCES `movlib`.`licenses` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_photos_users1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -308,23 +316,24 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies_images` (
   `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The company image’s unique identifier.',
   `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company’s unique identifier.',
   `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The company image’s type (enum from Data class).',
+  `deleted` TINYINT(1) NOT NULL DEFAULT true,
+  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company image’s upvotes.',
   `license_id` INT UNSIGNED NULL COMMENT 'The company image’s unique license identifier.',
+  `user_id` BIGINT UNSIGNED NULL,
   `width` SMALLINT UNSIGNED NULL COMMENT 'The company image’s width.',
   `height` SMALLINT UNSIGNED NULL COMMENT 'The company image’s height.',
   `filesize` INT UNSIGNED NULL COMMENT 'The company image’s size in Bytes.',
   `extension` CHAR(3) NULL COMMENT 'The company image’s extension without leading dot.',
   `changed` TIMESTAMP NULL COMMENT 'The last time this company image was updated.',
   `created` TIMESTAMP NULL COMMENT 'The company image’s creation time.',
-  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company image’s upvotes.',
   `dyn_descriptions` BLOB NULL COMMENT 'The company image’s translatable descriptions.',
-  `source` TINYTEXT NULL COMMENT 'The image\'s source.',
   `styles` BLOB NULL,
-  `deleted` TINYINT(1) NOT NULL DEFAULT true,
   PRIMARY KEY (`id`, `company_id`, `type_id`),
   INDEX `fk_companies_images_companies` (`company_id` ASC),
   INDEX `fk_companies_images_images` (`id` ASC),
   INDEX `fk_companies_images_licenses` (`license_id` ASC),
   INDEX `companies_images_order_by_upvotes` (`upvotes` ASC),
+  INDEX `fk_companies_images_users1_idx` (`user_id` ASC),
   CONSTRAINT `fk_companies_images_companies`
     FOREIGN KEY (`company_id`)
     REFERENCES `movlib`.`companies` (`id`)
@@ -333,6 +342,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies_images` (
   CONSTRAINT `fk_companies_images_licenses`
     FOREIGN KEY (`license_id`)
     REFERENCES `movlib`.`licenses` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_companies_images_users1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -400,21 +414,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`messages` (
   `comment` BLOB NULL COMMENT 'The message’s optional comment for translators.',
   `dyn_translations` BLOB NOT NULL COMMENT 'The message’s translations.',
   PRIMARY KEY (`message_id`))
-ENGINE = InnoDB
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`routes`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`routes` (
-  `route_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The route’s unique ID.',
-  `route` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The route’s unique English pattern.',
-  `dyn_translations` BLOB NOT NULL COMMENT 'The route’s translations.',
-  PRIMARY KEY (`route_id`),
-  UNIQUE INDEX `uq_routes_route` (`route` ASC))
 ENGINE = InnoDB
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
@@ -641,6 +640,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   `deleted` TINYINT(1) NOT NULL DEFAULT true,
   `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie image’s upvotes.',
   `license_id` INT UNSIGNED NULL COMMENT 'The movie image’s license ID.',
+  `user_id` BIGINT UNSIGNED NULL,
   `country_code` CHAR(2) NULL COMMENT 'The movie image’s ISO alpha-2 country code.',
   `width` SMALLINT UNSIGNED NULL COMMENT 'The movie image’s width.',
   `height` SMALLINT UNSIGNED NULL COMMENT 'The movie image’s height.',
@@ -649,12 +649,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   `changed` TIMESTAMP NULL COMMENT 'The last time this movie image was updated.',
   `created` TIMESTAMP NULL COMMENT 'The movie image’s creation time.',
   `dyn_descriptions` BLOB NULL COMMENT 'The movie image’s translatable descriptions.',
-  `source` TINYTEXT NULL COMMENT 'The movie image’s source.',
   `styles` BLOB NULL,
   PRIMARY KEY (`id`, `movie_id`, `type_id`),
   INDEX `fk_posters_movies` (`movie_id` ASC),
   INDEX `fk_movies_images_licenses` (`license_id` ASC),
   INDEX `movies_images_type_id` (`type_id` ASC, `upvotes` ASC),
+  INDEX `fk_movies_images_users1_idx` (`user_id` ASC),
   CONSTRAINT `fk_movies_images_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -663,6 +663,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   CONSTRAINT `fk_movies_images_licenses`
     FOREIGN KEY (`license_id`)
     REFERENCES `movlib`.`licenses` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_images_users1`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -861,7 +866,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`packaging` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The packaging’s unique ID.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The packaging’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The packaging’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The packaging´s translatable names.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all available packaging variants.';

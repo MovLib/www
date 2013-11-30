@@ -139,7 +139,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function generateStyles($source) {
-    global $db, $i18n;
+    global $db, $i18n, $session;
 
     // If this is a new upload insert the just uploaded image.
     if ($this->exists === false) {
@@ -178,10 +178,10 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
         `filesize`         = ?,
         `height`           = ?,
         `license_id`       = ?,
-        `source`           = ?,
         `styles`           = ?,
+        `user_id`          = ?,
         `width`            = ?",
-      "ssssiiissi",
+      "ssssiiisdi",
       [
         $this->changed,
         $i18n->languageCode,
@@ -190,11 +190,11 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
         $this->filesize,
         $this->height,
         $this->licenseId,
-        $this->source,
         serialize($this->styles),
+        $session->userId,
         $this->width,
       ]
-    );
+    )->close();
 
     return $this;
   }

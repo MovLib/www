@@ -29,6 +29,46 @@
 /* ==== The LIST ==================================================================================================== */
 
 
+.secondary-container {
+  position: relative;
+}
+
+.images-list .secondary-container > .row {
+  overflow: hidden;
+}
+
+.secondary-navigation {
+  position: absolute;
+  top: 0;
+  left: -20px;
+  bottom: -40px;
+}
+
+/* Ensure that the shadow is as high as the actual content and extend it a bit to the bottom (sse above rule) */
+.secondary-navigation #movies-show-nav,
+.secondary-navigation div[role="menu"],
+.secondary-navigation .no-list {
+  height: 100%;
+}
+
+.secondary-content {
+  margin-left: 180px;
+  position: relative;
+}
+
+.images-list .secondary-content:after,
+.secondary-navigation .no-list:after {
+  bottom: 0;
+  box-shadow: 0 0 10px 10px #fff;
+  content: "";
+  display: block;
+  position: absolute;
+  right: -100%;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
+
 .secondary-navigation .no-list {
   margin: 0 0 0 -20px;
   overflow: hidden;
@@ -38,15 +78,7 @@
 }
 
 .secondary-navigation .no-list:after {
-  bottom: 0;
   box-shadow: 0 0 10px #dfdfdf;
-  content: "";
-  display: block;
-  position: absolute;
-  right: -100%;
-  top: 0;
-  width: 100%;
-  z-index: 1;
 }
 
 

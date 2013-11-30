@@ -24,6 +24,7 @@
 -- @since 0.0.1-dev
 -- ---------------------------------------------------------------------------------------------------------------------
 
+TRUNCATE TABLE `movies_countries`;
 TRUNCATE TABLE `movies_directors`;
 TRUNCATE TABLE `movies_images`;
 TRUNCATE TABLE `movies`;
@@ -32,14 +33,14 @@ TRUNCATE TABLE `persons`;
 -- START "Roundhay Garden Scene"
 
 INSERT INTO `movies` SET
+  `created`        = '2013-11-28 15:13:42',
   `original_title` = 'Roundhay Garden Scene',
   `year`           = 1888,
   `runtime`        = 60, -- 1 minute
   `dyn_synopses`   = COLUMN_CREATE(
     'en', '&lt;p&gt;The scene features Adolphe Le Prince, Sarah Whitley, Joseph Whitley and Harriet Whitley in the Roundhay Garden.&lt;/p&gt;',
     'de', '&lt;p&gt;Die Szene zeigt Adolphe Le Prince, Sarah Whitley, Joseph Whitley und Harriet Whitley im Roundhay Garden.&lt;/p&gt;'
-  ),
-  `created`        = '2013-11-28 15:13:42'
+  )
 ;
 SET @roundhay_garden_scene_id = LAST_INSERT_ID();
 
@@ -71,12 +72,12 @@ INSERT INTO `persons_photos` SET
   `changed`          = '2013-11-28 15:13:42',
   `created`          = '2013-11-28 15:13:42',
   `dyn_descriptions` = COLUMN_CREATE(
-    'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information.&lt;/p&gt;',
-    'de', '&lt;p&gt;Der franz&ouml;sische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen k&ouml;nnen der Quelle entnommen werden.&lt;/p&gt;'
+    'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;',
+    'de', '&lt;p&gt;Der französische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen können der Quelle entnommen werden: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;'
   ),
-  `source`           = 'https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg',
   `styles`           = 'a:2:{i:70;a:2:{s:5:"width";i:70;s:6:"height";i:70;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:140;}}',
-  `deleted`          = false
+  `deleted`          = false,
+  `user_id`          = 1
 ;
 
 INSERT INTO `persons` SET
@@ -147,7 +148,7 @@ INSERT INTO `persons` SET
 ;
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
 
-INSERT INTO `movies_directors` SET `movie_id`  = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id;
+INSERT INTO `movies_directors` SET `movie_id` = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id;
 INSERT INTO `movies_countries` SET `movie_id` = @big_buck_bunny_id, `country_code` = 'US';
 INSERT INTO `movies_languages` SET `movie_id` = @big_buck_bunny_id, `language_code` = 'xx';
 INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
@@ -166,11 +167,53 @@ INSERT INTO `movies_images` SET
   `extension`        = 'jpg',
   `changed`          = '2013-11-28 15:13:42',
   `created`          = '2013-11-28 15:13:42',
-  `dyn_descriptions` = '',
-  `source`           = 'http://download.blender.org/peach/presskit.zip',
-  `styles`           = 'a:4:{i:70;a:2:{s:5:"width";i:70;s:6:"height";i:99;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:197;}i:220;a:2:{s:5:"width";i:220;s:6:"height";i:309;}i:620;a:2:{s:5:"width";i:620;s:6:"height";i:871;}}'
+  `dyn_descriptions` = COLUMN_CREATE(
+    'en', '&lt;p&gt;&lt;a href="http://download.blender.org/peach/presskit.zip"&gt;“Big Buck Bunny” presskit&lt;/a&gt;&lt;/p&gt;'
+  ),
+  `styles`           = 'a:4:{i:70;a:2:{s:5:"width";i:70;s:6:"height";i:99;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:197;}i:220;a:2:{s:5:"width";i:220;s:6:"height";i:309;}i:620;a:2:{s:5:"width";i:620;s:6:"height";i:871;}}',
+  `user_id`          = 1
 ;
 
 -- END "Big Buck Bunny"
 
 -- ---------------------------------------------------------------------------------------------------------------------
+
+-- START "The Shawshank Redemption"
+
+INSERT INTO `movies` SET
+  `created`        = CURRENT_TIMESTAMP,
+  `original_title` = 'The Shawshank Redemption',
+  `runtime`        = 8520, -- 142 minutes
+  `website`        = 'https://www.facebook.com/ShawshankRedemptionFilm',
+  `year`           = 1994,
+  `dyn_synopses`   = ''
+;
+SET @the_shawshank_redemption_id = LAST_INSERT_ID();
+
+INSERT INTO `persons` SET
+  `name`            = 'Frank Darabont',
+  `birthdate`       = '1959-01-28',
+  `country`         = 'FR',
+  `city`            = 'Montbéliard',
+  `region`          = 'Doubs',
+  `sex`             = 1,
+  `dyn_aliases`     = '',
+  `dyn_biographies` = '',
+  `dyn_links`       = ''
+;
+SET @frank_darabont_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_directors` SET `movie_id` = @the_shawshank_redemption_id, `person_id` = @frank_darabont_id;
+
+-- SET @the_shawshank_redemption_de_title1_id = (SELECT IFNULL(`id`, 0) + 1 FROM `titles` WHERE `movie_id` = @the_shawshank_redemption_id LIMIT 1);
+INSERT INTO `titles` SET
+  `id`            = 1,
+  `movie_id`      = @the_shawshank_redemption_id,
+  `language_code` = 'de',
+  `title`         = 'Die Verurteilten',
+  `dyn_comments`  = COLUMN_CREATE(
+    'en', 'Official title in German speaking countries.',
+    'de', 'Offizieller Titel im deutschsprachigen Raum.'
+  )
+;
+INSERT INTO `movies_titles` SET `display_title_de` = 1, `movie_id` = @the_shawshank_redemption_id;

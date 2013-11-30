@@ -70,8 +70,8 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
   /**
    * Instantiate new images list.
    *
-   * @param \MovLib\Data\Images\AbstractImages $images
-   *   The images instance.
+   * @param array $listItems
+   *   Array with the list items.
    * @param string $noItemsText [optional]
    *   The list's translated text if no items are present, defaults to no text.
    * @param array $attributes [optional]
@@ -85,6 +85,7 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
       $attributes = [ "class" => "no-list" ];
     }
     parent::__construct($listItems, $noItemsText, $attributes);
+    $this->addClass("images-list", $this->attributes);
     $this->listItemsAttributes = $listItemsAttributes ?: [ "class" => "span span--2" ];
   }
 

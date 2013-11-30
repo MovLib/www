@@ -180,11 +180,21 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   protected function generateStyles($source) {
     global $db, $i18n, $session;
 
-    $db->transactionStart();
-
+    // Reserve identifier if this is a new upload.
     if ($this->exists === false) {
-      $stmt           = $db->query("SELECT IFNULL(MAX(`id`), 1) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1", "di", [ $this->movieId, static::TYPE_ID ]);
-      $this->filename = $this->id = $stmt->get_result()->fetch_row()[0];
+      $db->query(
+        "INSERT INTO `movies_images` SET
+          `id`       = (SELECT IFNULL(MAX(`s`.`id`), 0) + 1 FROM `movies_images` AS `s` WHERE `s`.`movie_id` = ? AND `s`.`type_id` = ? LIMIT 1),
+          `movie_id` = ?,
+          `type_id`  = ?,
+          `created`  = FROM_UNIXTIME(?)",
+        "didis",
+        [ $this->movieId, static::TYPE_ID, $this->movieId, static::TYPE_ID, $_SERVER["REQUEST_TIME"] ]
+      )->close();
+
+      $stmt           = $db->query("SELECT MAX(`id`) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1", "di", [ $this->movieId, static::TYPE_ID ]);
+      $this->filename = $this->id       = $stmt->get_result()->fetch_row()[0];
+      $this->route    = $i18n->r("/movie/{0}/poster/{1}", [ $this->movieId, $this->id ]);
       $stmt->close();
       $this->createDirectories();
     }
@@ -195,52 +205,32 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
     $span02 = $this->convert($span03, self::STYLE_SPAN_02);
     $this->convert($span02, self::STYLE_SPAN_01);
 
-    // Update the record with the new data if this is an update.
-    if ($this->exists === true) {
-      throw new \LogicException("Not implemented yet!");
-    }
-    // If this is a new upload insert the record and create the new details route for this upload.
-    else {
-      $db->query(
-        "INSERT INTO `movies_images` SET
-          `id`               = `next_id`,
-          `movie_id`         = ?,
-          `type_id`          = ?,
-          `user_id`          = ?,
-          `license_id`       = ?,
-          `country_code`     = ?,
-          `width`            = ?,
-          `height`           = ?,
-          `size`             = ?,
-          `extension`        = ?,
-          `changed`          = FROM_UNIXTIME(?),
-          `created`          = FROM_UNIXTIME(?),
-          `dyn_descriptions` = COLUMN_CREATE(?, ?),
-          `source`           = ?,
-          `styles`           = ?
-        SELECT IFNULL(MAX(`id`), 1) AS `next_id` FROM `movies_images`",
-        "didisiiisssssss",
-        [
-          $this->movieId,
-          static::TYPE_ID,
-          $session->userId,
-          $this->licenseId,
-          $this->countryCode,
-          $this->width,
-          $this->height,
-          $this->filesize,
-          $this->extension,
-          $this->changed,
-          $this->created,
-          $i18n->languageCode,
-          $this->description,
-          $this->source,
-          serialize($this->styles),
-        ]
-      )->close();
-
-      $this->route = $i18n->r("/movie/{0}/poster/{1}", [ $this->movieId, $this->id ]);
-    }
+    $db->query(
+      "UPDATE `movies_images` SET
+        `changed`          = FROM_UNIXTIME(?),
+        `deleted`          = false,
+        `dyn_descriptions` = COLUMN_CREATE(?, ?),
+        `extension`        = ?,
+        `filesize`         = ?,
+        `height`           = ?,
+        `license_id`       = ?,
+        `styles`           = ?,
+        `user_id`          = ?,
+        `width`            = ?",
+      "ssssiiisdi",
+      [
+        $_SERVER["REQUEST_TIME"],
+        $i18n->languageCode,
+        $this->description,
+        $this->extension,
+        $this->filesize,
+        $this->height,
+        $this->licenseId,
+        serialize($this->styles),
+        $session->userId,
+        $this->width,
+      ]
+    )->close();
 
     return $this;
   }

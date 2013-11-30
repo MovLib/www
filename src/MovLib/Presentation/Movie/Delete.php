@@ -1,3 +1,5 @@
+<?php
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -13,45 +15,21 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Presentation\Movie;
 
 /**
- * Global content styles.
+ * @todo Description of Delete
  *
- * The usage of IDs for the header and the title are intended, those elements can only appear once within any
- * presentation because they uniquely identify this single page within the entire website.
- *
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+class Delete {
 
-#content {
-  min-height: 500px;
-  padding-bottom: 40px;
-  background-color: #fff;
-}
+  public function __construct() {
+    throw new \LogicException("Not implemented yet!");
+  }
 
-#content-header {
-  margin-bottom: 40px;
-  background-color: #252525;
-  color: #c7c7c7;
-}
-
-#content-header > .container {
-  padding: 20px 0;
-}
-
-#filter {
-  border-top: 1px solid #e5e5e5;
-  border-bottom: 1px solid #e5e5e5;
-  margin-left: -20px;
-  padding: 8px 20px;
-  font-size: 12px;
-}
-
-#filter + .no-list {
-  margin-top: 0;
 }

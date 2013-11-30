@@ -48,6 +48,8 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   public function __construct() {
     global $i18n;
     $this->init($i18n->t("Movies"));
+    $this->bodyClasses .= " images-list";
+    // @todo Respect GET parameters
     $this->movies = Movie::getMovies();
   }
 
@@ -60,7 +62,11 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   public function formatMovie($movie) {
     global $i18n;
+
+    // Format the poster for the list.
     $image = $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]);
+
+    // Format the display title for the list.
     if ($movie->year) {
       $title = $i18n->t("{movie_title} ({movie_year})", [
         "movie_title" => "<span itemprop='name'>{$movie->displayTitle}</span>",
@@ -70,7 +76,21 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     else {
       $title = "<span itemprop='name'>{$movie->displayTitle}</span>";
     }
-    return "<a class='img' href='{$i18n->r("/movie/{0}", [ $movie->id ])}' itemprop='url'>{$image}{$title}</a>{$movie->created}";
+
+    // Append the original title to the output if it differs from the localized title.
+    if ($movie->displayTitle != $movie->originalTitle) {
+      $title .= "<br>{$i18n->t("Original title: “{original_title}”", [
+        "original_title" => "<span itemprop='alternateName'>{$movie->originalTitle}</span>",
+      ])}";
+    }
+
+    // Put it all together.
+    return
+      "<a class='img row' href='{$i18n->r("/movie/{0}", [ $movie->id ])}' itemprop='url' tabindex='{$this->getTabindex()}'>" .
+        "<span class='span span--1'>{$image}</span>" .
+        "<span class='span span--9'>{$title}</span>" .
+      "</a>"
+    ;
   }
 
   /**
@@ -78,14 +98,18 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   protected function getPageContent() {
     global $i18n;
+
+    // Instantiate the list that makes up all the content.
     $movies = new Images(
       $this->movies,
       new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO),
-      null,
+      [ "class" => "no-list" ],
       [ "itemscope", "itemtype" => "http://schema.org/Movie" ]
     );
     $movies->closure = [ $this, "formatMovie" ];
-    return $movies;
+
+    // Add the filter interface to the current presentation.
+    return "<div id='filter'>Filter Content</div>{$movies}";
   }
 
   /**
@@ -94,21 +118,11 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   public function getSecondaryNavigationMenuItems() {
     global $i18n;
     return [
-      [
-        $i18n->r("/movies"),
-        "<i class='icon icon--film'></i> {$i18n->t("Movies")}",
-        [ "title" => $i18n->t("View the latest {0} additions to the database.", [ $i18n->t("movie") ]) ]
-      ],
-      [
-        $i18n->r("/persons"),
-        "<i class='icon icon--user'></i> {$i18n->t("Persons")}",
-        [ "title" => $i18n->t("View the latest {0} additions to the database.", [ $i18n->t("person") ]) ]
-      ],
-      [
-        $i18n->r("/help"),
-        "<i class='icon icon--help-circled'></i> {$i18n->t("Help")}",
-        [ "title" => $i18n->t("View the latest {0} additions to the database.", [ $i18n->t("help") ]) ]
-      ]
+      [ $i18n->r("/movies"),    "<i class='icon icon--film'></i> {$i18n->t("Movies")}"        ],
+      [ $i18n->r("/releases"),  "<i class='icon icon--film'></i> {$i18n->t("Releases")}"      ],
+      [ $i18n->r("/persons"),   "<i class='icon icon--user'></i> {$i18n->t("Persons")}"       ],
+      [ $i18n->r("/series"),    "<i class='icon icon--film'></i> {$i18n->t("Series")}"        ],
+      [ $i18n->r("/help"),      "<i class='icon icon--help-circled'></i> {$i18n->t("Help")}"  ],
     ];
   }
 

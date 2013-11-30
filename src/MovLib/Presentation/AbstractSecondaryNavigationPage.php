@@ -44,14 +44,23 @@ abstract class AbstractSecondaryNavigationPage extends \MovLib\Presentation\Page
    */
   public function getContent() {
     global $i18n;
-    $this->secondaryNavigation                      = new Navigation($this->id, $i18n->t("Secondary Navigation"), $this->getSecondaryNavigationMenuitems());
-    $this->secondaryNavigation->attributes["class"] = "secondary-navigation";
+
+    // Instantiate the secondary navigation.
+    $this->secondaryNavigation = new Navigation($this->id, $i18n->t("Secondary Navigation"), $this->getSecondaryNavigationMenuitems());
+
     // We need the unordered list for styling, check the CSS.
-    $this->secondaryNavigation->unorderedList       = true;
+    $this->secondaryNavigation->unorderedList = true;
+
     // Call this method before building the complete content, this allows extending classes to alter the secondary
     // navigation in their getPageContent method.
-    $pageContent                                    = $this->getPageContent();
-    return "<div class='container'><div class='row'><aside class='span span--2' role='complementary'>{$this->secondaryNavigation}</aside><div class='span span--10'>{$pageContent}</div></div></div>";
+    $pageContent = $this->getPageContent();
+
+    return
+      "<div class='container secondary-container'><div class='row'>" .
+        "<aside class='secondary-navigation span span--2' role='complementary'>{$this->secondaryNavigation}</aside>" .
+        "<div class='secondary-content span span--10'>{$pageContent}</div>" .
+      "</div></div>"
+    ;
   }
 
   /**

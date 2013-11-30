@@ -99,10 +99,10 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       // The five available ratings.
       $ratings = [
         1 => $i18n->t("Awful"),
-        2 => $i18n->t("Not that bad"),
-        3 => $i18n->t("Fair"),
-        4 => $i18n->t("Pretty good"),
-        5 => $i18n->t("Awesome"),
+        2 => $i18n->t("Bad"),
+        3 => $i18n->t("Okay"),
+        4 => $i18n->t("Fine"),
+        5 => $i18n->t("Terrific"),
       ];
 
       // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
@@ -168,7 +168,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         "</div>" . // close .span
         $this->getImage(
           $this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03),
-          $i18n->t("/movie/{0}/posters", [ $this->movie->id ]),
+          $i18n->r("/movie/{0}/posters", [ $this->movie->id ]),
           [ "itemprop" => "image" ],
           [ "class" => "img span span--3" ]
         ) .
@@ -205,7 +205,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     // Prepare the content for each section.
     $synopsis = empty($this->movie->synopsis)
       ? $i18n->t("No synopsis available, {0}write one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
-        : $kernel->htmlDecode($this->movie->synopsis)
+      : $kernel->htmlDecode($this->movie->synopsis)
     ;
 
     $directors = new Images(

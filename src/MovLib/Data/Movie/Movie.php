@@ -104,31 +104,17 @@ class Movie {
 
     // Load the movie if an ID was passed to the constructor.
     if ($id) {
-      $this->id = $id;
-      $stmt     = $db->query(
-        "SELECT
-          `movie`.`deleted`,
-          IFNULL(`title`.`title`, `movie`.`original_title`),
-          `movie`.`original_title`,
-          `movie`.`year`
-        FROM `movies` AS `movie`
-          LEFT JOIN `movies_titles` AS `mt` ON `mt`.`movie_id` = `movie`.`id`
-          LEFT JOIN `titles` AS `title`
-            ON `title`.`movie_id` = `movie`.`id`
-            AND `title`.`id` = `mt`.`display_title_{$i18n->languageCode}`
-        WHERE `movie`.`id` = ?
-        LIMIT 1",
-        "d",
-        [ $this->id ]
-      );
+      $query = self::getQuery();
+      $stmt  = $db->query("{$query} WHERE `movies`.`id` = ? LIMIT 1", "d", [ $id ]);
       $stmt->bind_result(
+        $this->id,
         $this->deleted,
         $this->displayTitle,
         $this->originalTitle,
         $this->year
       );
       if (!$stmt->fetch()) {
-        throw new \OutOfBoundsException("Couldn't find movie for ID '{$this->id}'");
+        throw new \OutOfBoundsException("Couldn't find movie for ID '{$id}'");
       }
       $stmt->close();
     }
@@ -149,21 +135,8 @@ class Movie {
     static $movies = [];
 
     if (!isset($movies[$i18n->locale])) {
-      $result = $db->query(
-        "SELECT
-          `movies`.`id`,
-          IFNULL(`titles`.`title`, `movies`.`original_title`) AS `displayTitle`,
-          `movies`.`original_title` AS `originalTitle`,
-          `movies`.`year`,
-          `movies`.`created`
-        FROM `movies`
-          LEFT JOIN `movies_titles` ON `movies_titles`.`movie_id` = `movies`.`id`
-          LEFT JOIN `titles`
-            ON `titles`.`movie_id` = `movies`.`id`
-            AND `titles`.`id` = `movies_titles`.`display_title_{$i18n->languageCode}`
-        WHERE `movies`.`deleted` = false
-        ORDER BY `movies`.`created` ASC"
-      )->get_result();
+      $query = self::getQuery();
+      $result = $db->query("{$query} WHERE `movies`.`deleted` = false ORDER BY `movies`.`created` DESC")->get_result();
       while ($movie = $result->fetch_object(__CLASS__)) {
         $movies[$i18n->locale][$movie->id] = $movie;
       }
@@ -172,6 +145,30 @@ class Movie {
     return $movies[$i18n->locale];
   }
 
+  /**
+   * Get the default query.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The default query.
+   */
+  private static function getQuery() {
+    global $i18n;
+    return
+      "SELECT
+        `movies`.`id`,
+        `movies`.`deleted`,
+        IFNULL(`titles`.`title`, `movies`.`original_title`) AS `displayTitle`,
+        `movies`.`original_title` AS `originalTitle`,
+        `movies`.`year`
+      FROM `movies`
+        LEFT JOIN `movies_titles` ON `movies_titles`.`movie_id` = `movies`.`id`
+        LEFT JOIN `titles`
+          ON `titles`.`movie_id` = `movies`.`id`
+          AND `titles`.`id` = `movies_titles`.`display_title_{$i18n->languageCode}`
+      "
+    ;
+  }
 
   protected function init() {
     global $db, $i18n;
