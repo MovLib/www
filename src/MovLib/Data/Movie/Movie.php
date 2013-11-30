@@ -191,7 +191,15 @@ class Movie {
 
     // Fetch the display poster from the database.
     $this->displayPoster = $db->query(
-      "SELECT `id`, `extension`, UNIX_TIMESTAMP(`changed`) AS `changed` FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
+      "SELECT
+        `id`,
+        `extension`,
+        UNIX_TIMESTAMP(`changed`) AS `changed`,
+        `styles`
+      FROM `movies_images`
+      WHERE `movie_id` = ? AND `type_id` = ?
+      ORDER BY `upvotes` DESC
+      LIMIT 1",
       "di",
       [ $this->id, MoviePoster::TYPE_ID ]
     )->get_result()->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]);

@@ -192,8 +192,13 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         [ $this->movieId, static::TYPE_ID, $this->movieId, static::TYPE_ID, $_SERVER["REQUEST_TIME"] ]
       )->close();
 
-      $stmt           = $db->query("SELECT MAX(`id`) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1", "di", [ $this->movieId, static::TYPE_ID ]);
-      $this->filename = $this->id       = $stmt->get_result()->fetch_row()[0];
+      // Fetch the just generated identifier from the database again.
+      $stmt = $db->query(
+        "SELECT MAX(`id`) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1",
+        "di",
+        [ $this->movieId, static::TYPE_ID ]
+      );
+      $this->filename = $this->id = $stmt->get_result()->fetch_row()[0];
       $this->route    = $i18n->r("/movie/{0}/poster/{1}", [ $this->movieId, $this->id ]);
       $stmt->close();
       $this->createDirectories();
@@ -205,6 +210,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
     $span02 = $this->convert($span03, self::STYLE_SPAN_02);
     $this->convert($span02, self::STYLE_SPAN_01);
 
+    // Update the just inserted or the already existing database entry.
     $db->query(
       "UPDATE `movies_images` SET
         `changed`          = FROM_UNIXTIME(?),
@@ -216,8 +222,9 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         `license_id`       = ?,
         `styles`           = ?,
         `user_id`          = ?,
-        `width`            = ?",
-      "ssssiiisdi",
+        `width`            = ?
+      WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
+      "ssssiiisdiidi",
       [
         $_SERVER["REQUEST_TIME"],
         $i18n->languageCode,
@@ -229,6 +236,9 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         serialize($this->styles),
         $session->userId,
         $this->width,
+        $this->id,
+        $this->movieId,
+        static::TYPE_ID,
       ]
     )->close();
 
