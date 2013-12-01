@@ -36,7 +36,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class EmailSettings extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Profile\TraitProfile;
 
@@ -83,7 +83,7 @@ class EmailSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage
     $this->email->setHelp($i18n->t(
         "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
         "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to your " .
-        "{0}notification settings{1}.", [ "<a href='{$this->routeNotificationSettings}'>", "</a>" ]
+        "{0}notification settings{1}.", [ "<a href='{$i18n->r("/profile/notification-settings")}'>", "</a>" ]
     ));
 
         // Initialize the actual form of this page.

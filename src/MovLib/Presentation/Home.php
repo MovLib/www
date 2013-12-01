@@ -37,16 +37,8 @@ class Home extends \MovLib\Presentation\Page {
     global $kernel;
     $this->init($kernel->siteName);
     $kernel->stylesheets[] = "home";
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getBreadcrumb() {
-    $breadcrumb = parent::getBreadcrumb();
     // A link to the current page would be redundant!
-    unset($breadcrumb->menuitems[1]);
-    return $breadcrumb;
+    unset($this->breadcrumb->menuitems[1]);
   }
 
   /**

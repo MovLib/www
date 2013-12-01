@@ -61,7 +61,8 @@ class Kernel extends \MovLib\Kernel {
 
     // The tool kernel has to ensure that the document root is always set to the actual MovLib document root without
     // tampering with any super global (which might destroy other software).
-    $this->documentRoot = dirname(dirname(dirname(__DIR__)));
+    $this->documentRoot     = dirname(dirname(dirname(__DIR__)));
+    $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
 
     // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied
     // software is casting various deprecated or strict errors.

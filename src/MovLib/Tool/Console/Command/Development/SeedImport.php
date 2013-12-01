@@ -273,25 +273,22 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   /**
    * Import all ICU translations.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @return this
    */
   public function icuImport() {
-    global $kernel;
     $this->write("Importing ICU translations ...");
 
     // Prepare ICU environment variables.
     if (sh::execute("icu-config --version", $version) === false) {
       throw new \LogicException("Couldn't execute `icu-config`, is ICU installed?");
     }
-    $version     = trim(strtr($version[0], ".", "-"));
-    $source      = "/usr/local/src/icu-{$version}/source/data";
-    $destination = "{$kernel->documentRoot}/private/icu";
+    $version = trim(strtr($version[0], ".", "-"));
+    $source  = "/usr/local/src/icu-{$version}/source/data";
 
     // Generate the various ICU translations.
-    $this->icuImportCountries($source, $destination);
-    $this->icuImportCurrency($source, $destination);
-    $this->icuImportLanguages($source, $destination);
+    $this->icuImportCountries($source);
+    $this->icuImportCurrency($source);
+    $this->icuImportLanguages($source);
 
     return $this->write("Imported all ICU translations.", self::MESSAGE_TYPE_INFO);
   }
@@ -350,15 +347,15 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   /**
    * Import ICU country translations.
    *
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $source
    *   Absolute path to ICU source resources.
-   * @param string $destination
-   *   Absolute path to final ICU PHP files.
    * @return this
    */
-  protected function icuImportCountries($source, $destination) {
+  protected function icuImportCountries($source) {
+    global $kernel;
     $source      .= "/region";
-    $destination .= "/country";
+    $destination  = "{$kernel->pathTranslations}/country";
     $codes        = [
       "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ",
       "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ",
@@ -402,15 +399,15 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   /**
    * Import ICU currency translations.
    *
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $source
    *   Absolute path to ICU source resources.
-   * @param string $destination
-   *   Absolute path to final ICU PHP files.
    * @return this
    */
-  protected function icuImportCurrency($source, $destination) {
+  protected function icuImportCurrency($source) {
+    global $kernel;
     $source      .= "/curr";
-    $destination .= "/currency";
+    $destination  = "{$kernel->pathTranslations}/currency";
     $codes        = [
       "ADP", "AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "ATS", "AUD", "AWG", "AZN",
       "BAM", "BBD", "BDT", "BEF", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYR", "BZD",
@@ -453,15 +450,15 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   /**
    * Import ICU language translations.
    *
+   * @global \MovLib\Tool\Kernel $kernel
    * @param string $source
    *   Absolute path to ICU source resources.
-   * @param string $destination
-   *   Absolute path to final ICU PHP files.
    * @return this
    */
-  protected function icuImportLanguages($source, $destination) {
+  protected function icuImportLanguages($source) {
+    global $kernel;
     $source      .= "/lang";
-    $destination .= "/language";
+    $destination  = "{$kernel->pathTranslations}/language";
     $codes        = [
       "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az",
       "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo", "br", "bs",
@@ -525,7 +522,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     global $kernel;
     static $scaffold = null;
     if (!$scaffold) {
-      $scaffold = file_get_contents("{$kernel->documentRoot}/private/icu/scaffold.php");
+      $scaffold = file_get_contents("{$kernel->pathTranslations}/scaffold.php");
     }
     foreach ($kernel->systemLanguages as $languageCode => $locale) {
       $translation = "return [\n";

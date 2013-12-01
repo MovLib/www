@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Presentation\Profile\DangerZoneSettings;
+use \MovLib\Presentation\Profile\DangerZone;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\Profile\DangerZoneSettings
@@ -27,14 +27,14 @@ use \MovLib\Presentation\Profile\DangerZoneSettings;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DangerZoneSettingsTest extends \MovLib\TestCase {
+class DangerZoneTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Profile\DangerZoneSettings */
-  protected $dangerZoneSettings;
+  /** @var \MovLib\Presentation\Profile\DangerZone */
+  protected $dangerZone;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Fixtures
@@ -44,7 +44,7 @@ class DangerZoneSettingsTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->dangerZoneSettings = new DangerZoneSettings();
+    $this->dangerZone = new DangerZone();
   }
 
   /**

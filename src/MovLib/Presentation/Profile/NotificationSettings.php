@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class NotificationSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class NotificationSettings extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\Profile\TraitProfile;
 
   /**

@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Movie\ImageDetails;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * @todo Description of Photo
  *
@@ -26,18 +28,14 @@ namespace MovLib\Presentation\Movie\ImageDetails;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Photo extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class Photo extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    throw new \LogicException("Not implemented yet!");
+    $this->init("Movie Photo");
+    $this->alerts .= new Alert("Not implemented yet!");
   }
 
-  protected function getPageContent() {
-
-  }
-
-  protected function getSecondaryNavigationMenuitems() {
-
-  }
+  protected function getPageContent() {}
 
 }

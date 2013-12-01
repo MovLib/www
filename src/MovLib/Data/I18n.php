@@ -234,7 +234,7 @@ class I18n {
     if ($this->locale != $this->defaultLocale) {
       // Check if we already have the route translations for this locale cached.
       if (!isset($routes[$this->locale])) {
-        $routes[$this->locale] = require "{$kernel->documentRoot}/private/icu/routes/{$this->locale}.php";
+        $routes[$this->locale] = require "{$kernel->pathTranslations}/routes/{$this->locale}.php";
       }
 
       // Check if we have a translation for this route and use it if we have one.

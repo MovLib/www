@@ -50,6 +50,26 @@ class Page extends \MovLib\Presentation\AbstractPage {
   public $alerts = "";
 
   /**
+   * The presentation's breadcrumb navigation.
+   *
+   * @var \MovLib\Presentation\Partial\Navigation
+   */
+  protected $breadcrumb;
+
+  /**
+   * HTML that should be included after the page's content.
+   *
+   * @var string
+   */
+  protected $contentAfter;
+
+  /**
+   * HTML that should be included before the page's content.
+   * @var string
+   */
+  protected $contentBefore;
+
+  /**
    * HTML that should be included after the page's heading.
    *
    * @var string
@@ -117,43 +137,6 @@ class Page extends \MovLib\Presentation\AbstractPage {
   }
 
   /**
-   * Get the breadcrumb navigation.
-   *
-   * @see \MovLib\Presentation\Partial\Navigation
-   * @global \MovLib\Data\I18n $i18n
-   * @return \MovLib\Presentation\Navigation
-   *   The breadcrumb navigation.
-   */
-  protected function getBreadcrumb() {
-    global $i18n;
-
-    // Always include the home and the current page, any other breadcrumb trails are up to the extending class.
-    $trail       = [[ "/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ] ] ];
-    $breadcrumbs = $this->getBreadcrumbs();
-    $c           = count($breadcrumbs);
-    for ($i = 0; $i < $c; ++$i) {
-      // 0 => route
-      // 1 => linktext
-      // 2 => attributes
-      if (mb_strlen($breadcrumbs[$i][1]) > 25) {
-        $breadcrumbs[$i][2]["title"] = $breadcrumbs[$i][1];
-        $breadcrumbs[$i][1]          = mb_strimwidth($breadcrumbs[$i][1], 0, 25, $i18n->t("…"));
-      }
-      $trail[] = $breadcrumbs[$i];
-    }
-    $trail[] = [ "#", isset($this->breadcrumbTitle) ? $this->breadcrumbTitle : $this->title ];
-
-    // Create the actual navigation with the trail we just built.
-    $breadcrumb                      = new Navigation("breadcrumb", $i18n->t("You are here: "), $trail);
-    $breadcrumb->attributes["class"] = "container";
-    $breadcrumb->glue                = " › ";
-    $breadcrumb->hideTitle           = false;
-
-    // We return the navigation instance itself, this allows an extending class to perform further actions.
-    return $breadcrumb;
-  }
-
-  /**
    * Get additional breadcrumbs.
    *
    * This method is called automatically from the reference implementation of
@@ -161,23 +144,23 @@ class Page extends \MovLib\Presentation\AbstractPage {
    * added to the trail it should override this method and return them. Please note that the home link and the current
    * page are always part of the trail and don't have to be created in this method.
    *
+   * @internal
+   *   The reference implementation doesn't add any breadcrumbs to the trail!
    * @see \MovLib\Presentation\Partial\Navigation
    * @return null|array
    *   Additional breadcrumbs that should be added to the trail. Please have a look at the navigation partial for an in
    *   depth disucssion about the format of the returned array.
    */
-  protected function getBreadcrumbs() {
-    // The reference implementation doesn't add any breadcrumbs to the trail!
-  }
+  protected function getBreadcrumbs() {}
 
   /**
-   * The reference implmentation is absolutely empty.
+   * Get the presentation's page content.
    *
+   * @internal
+   *   The reference implementation doesn't add any breadcrumbs to the trail!
    * @return string
    */
-  protected function getContent() {
-    return "";
-  }
+  protected function getContent() {}
 
   /**
    * Get the reference footer.
@@ -246,7 +229,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
     $seriesNavigation             = new Navigation("series-mega", $i18n->t("Series"), [ ]);
     $seriesNavigation->hideTitle  = false;
 
-    $personsNavigation            = new Navigation("persons-mega", $i18n->t("Perons"), [ ]);
+    $personsNavigation            = new Navigation("persons-mega", $i18n->t("Persons"), [ ]);
     $personsNavigation->hideTitle = false;
 
     $otherNavigation              = new Navigation("other-mega", $i18n->t("Other"), [ ]);
@@ -272,8 +255,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
       "<header id='header'>" .
         "<div id='mega-nav-container'>" .
           "<div id='mega-nav'>" .
-            "<div class='container'>" .
-              $this->getBreadcrumb() .
+            "<div class='container'>{$this->breadcrumb}" .
               "<div class='row'>" .
                 "<div class='span span--3'>{$moviesNavigation}</div>" .
                 "<div class='span span--3'>{$seriesNavigation}</div>" .
@@ -349,14 +331,10 @@ class Page extends \MovLib\Presentation\AbstractPage {
     return
       "<div class='{$this->id}-content' id='content' role='main'{$schema}>" .
         "<header id='content-header'>" .
-          "<div class='container'>" .
-            $this->headingBefore .
-            "<h1 id='content-title'{$headingprop}>{$title}</h1>" .
-            $this->headingAfter .
-          "</div>" .
+          "<div class='container'>{$this->headingBefore}<h1 id='content-title'{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
           "<div id='alerts'>{$this->alerts}</div>" .
         "</header>" .
-        $this->getContent() .
+        "{$this->contentBefore}{$this->getContent()}{$this->contentAfter}" .
       "</div>"
     ;
   }
@@ -377,19 +355,43 @@ class Page extends \MovLib\Presentation\AbstractPage {
     global $i18n, $kernel;
     parent::init($title);
 
-    $noscript         = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."));
-    $noscript->title  = $i18n->t("JavaScript Disabled");
-    $this->alerts    .= "<noscript>{$noscript}</noscript>";
+    // Warn users that have JavaScript disabled that not all things will be as awesome as they should be.
+    $noscript      = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."), $i18n->t("JavaScript Disabled"));
+    $this->alerts .= "<noscript>{$noscript}</noscript>";
 
+    // Each sub-namespace within the presentation namespace is worth a stylsheet.
     $c = count($this->namespace);
     for ($i = 0; $i < $c; ++$i) {
       $kernel->stylesheets[] = $this->namespace[$i];
     }
 
+    // Add all alerts that are stored in a cookie to the current presentation and remove them afterwards.
     if (isset($_COOKIE["alerts"])) {
       $this->alerts .= $_COOKIE["alerts"];
       setcookie("alerts", "", 1, "/", $kernel->domainDefault);
     }
+
+    // Initialize the breadcrumb navigation and always include the home page's link and the currently displayed page.
+    $trail       = [[ "/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ] ] ];
+    $breadcrumbs = $this->getBreadcrumbs();
+    $c           = count($breadcrumbs);
+    for ($i = 0; $i < $c; ++$i) {
+      // 0 => route
+      // 1 => linktext
+      // 2 => attributes
+      if (mb_strlen($breadcrumbs[$i][1]) > 25) {
+        $breadcrumbs[$i][2]["title"] = $breadcrumbs[$i][1];
+        $breadcrumbs[$i][1]          = mb_strimwidth($breadcrumbs[$i][1], 0, 25, $i18n->t("…"));
+      }
+      $trail[] = $breadcrumbs[$i];
+    }
+    $trail[] = [ $kernel->requestPath, $this->title ];
+
+    // Create the actual navigation with the trail we just built.
+    $this->breadcrumb                      = new Navigation("breadcrumb", $i18n->t("You are here: "), $trail);
+    $this->breadcrumb->attributes["class"] = "container";
+    $this->breadcrumb->glue                = " › ";
+    $this->breadcrumb->hideTitle           = false;
 
     return $this;
   }

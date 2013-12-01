@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
- * @todo Description of Create
+ * Movie deletion presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,10 +28,45 @@ namespace MovLib\Presentation\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create {
+class Create extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitFormPage;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+
+  /**
+   * Instantiate new delete movie presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   */
   public function __construct() {
-    throw new \LogicException("Not implemented yet!");
+    global $i18n;
+    $this->init($i18n->t("Create New Movie"));
+    $this->alerts .= new Alert("Not implemented yet!");
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [[ $i18n->r("/movies"), $i18n->t("Movies") ]];
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getPageContent() {}
 
 }

@@ -37,7 +37,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class DangerZone extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Profile\TraitProfile;
 
@@ -160,7 +160,7 @@ class DangerZoneSettings extends \MovLib\Presentation\AbstractSecondaryNavigatio
           "and the button reads “sign out” instead of “terminate”. If you have the feeling that some sessions that are " .
           "listed weren’t initiated by you, terminate them and consider to {0}set a new password{1} to ensure that " .
           "nobody else has access to your account.",
-          [ "<a href='{$this->routePasswordSettings}'>", "</a>" ]
+          [ "<a href='{$i18n->r("/profile/password-settings")}'>", "</a>" ]
         )}</caption><thead><tr><th>{$i18n->t(
           "Sign In Time"
         )}</th><th>{$i18n->t(

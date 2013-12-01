@@ -38,17 +38,6 @@ use \MovLib\Presentation\Partial\Navigation;
 class LanguageSelection extends \MovLib\Presentation\AbstractPage {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * Numeric array containing all supported languages.
-   *
-   * @var \MovLib\Presentation\Partial\Navigation
-   */
-  protected $navigation;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
@@ -118,10 +107,10 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
     global $i18n, $kernel;
 
     // Build the navigation.
-    $this->navigation                      = new Navigation($this->id, $i18n->t("Available Languages"), array_keys($kernel->systemLanguages));
-    $this->navigation->attributes["class"] = "well well--large";
-    $this->navigation->glue                = " / ";
-    $this->navigation->callback             = [ $this, "formatSystemLanguage" ];
+    $navigation                      = new Navigation($this->id, $i18n->t("Available Languages"), array_keys($kernel->systemLanguages));
+    $navigation->attributes["class"] = "well well--large";
+    $navigation->glue                = " / ";
+    $navigation->callback             = [ $this, "formatSystemLanguage" ];
 
     return
       "<div class='{$this->id}-content' id='content' role='main'><div class='container'>" .
@@ -129,7 +118,7 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
           "<img alt='{$kernel->siteName} {$i18n->t("logo")}' height='192' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='192'>" .
           "<span>{$kernel->siteNameAndSloganHTML}</span>" .
         "</h1>" .
-        "<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$this->navigation}" .
+        "<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$navigation}" .
       "</div></div>"
     ;
   }

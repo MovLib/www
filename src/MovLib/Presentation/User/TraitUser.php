@@ -27,6 +27,26 @@ namespace MovLib\Presentation\User;
  * @since 0.0.1-dev
  */
 trait TraitUser {
+  use \MovLib\Presentation\TraitSidebar;
+
+  /**
+   * Initialize the user page.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $title
+   *   The page's title.
+   * @return this
+   */
+  protected function init($title) {
+    global $i18n;
+    parent::init($title);
+    $this->initSidebar([
+      [ $i18n->r("/user/{0}", [ $_SERVER["USER_NAME"] ]), $i18n->t("User page"), [ "class" => "separator" ] ],
+      [ $i18n->r("/user/{0}/collection", [ $_SERVER["USER_NAME"] ]), $i18n->t("Collection") ],
+      [ $i18n->r("/user/{0}/contact", [ $_SERVER["USER_NAME"] ]), $i18n->t("Contact") ],
+    ]);
+    return $this;
+  }
 
   /**
    * @inheritdoc
@@ -34,23 +54,6 @@ trait TraitUser {
   protected function getBreadcrumbs() {
     global $i18n;
     return [[ $i18n->r("/users"), $i18n->t("Users") ]];
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getSecondaryNavigationMenuitems() {
-    global $i18n;
-    return [
-      [
-        $i18n->r("/user/{0}/collection", [ $_SERVER["USER_NAME"] ]),
-        $i18n->t("Collection"),
-      ],
-      [
-        $i18n->r("/user/{0}/contact", [ $_SERVER["USER_NAME"] ]),
-        $i18n->t("Contact"),
-      ],
-    ];
   }
 
 }

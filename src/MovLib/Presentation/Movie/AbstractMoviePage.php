@@ -28,7 +28,8 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -47,7 +48,6 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
   protected $routeMovie;
   protected $routeMovies;
 
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -56,15 +56,22 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
    */
   protected function init($title) {
     global $i18n;
+    parent::init($title);
 
-    // Translate all routes that we need on all movie pages once.
+    // Substitue all routes for this movie once and for all (this has nothing to do with caching, we just don't want to
+    // keep repeating us as these routes are needed A LOT).
     $this->routeDiscussion = $i18n->r("/movie/{0}/discussion", [ $_SERVER["MOVIE_ID"] ]);
     $this->routeEdit       = $i18n->r("/movie/{0}/edit", [ $_SERVER["MOVIE_ID"] ]);
     $this->routeHistory    = $i18n->r("/movie/{0}/history", [ $_SERVER["MOVIE_ID"] ]);
     $this->routeMovie      = $i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]);
-    $this->routeMovies     = $i18n->r("/movies");
 
-    return parent::init($title);
+    $this->initSidebar([
+      [ $this->routeMovie, "<i class='icon icon--eye'></i>{$i18n->t("View")}", [ "accesskey" => "v" ] ],
+      [ $this->routeDiscussion, "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [ "accesskey" => "d", "itemprop" => "discussionUrl" ] ],
+      [ $this->routeEdit, "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [ "accesskey" => "e" ] ],
+      [ $this->routeHistory, "<i class='icon icon--history'></i>{$i18n->t("History")}", [ "accesskey" => "h", "class" => "separator" ] ],
+    ]);
+    return $this;
   }
 
   /**
@@ -72,11 +79,7 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
    */
   protected function getBreadcrumbs() {
     global $i18n;
-    return [
-      [ $this->routeMovies, $i18n->t("Movies"), [
-        "title" => $i18n->t("Have a look at the latest {0} entries at MovLib.", [ $i18n->t("movie") ])
-      ]]
-    ];
+    return [[ $i18n->r("/movies"), $i18n->t("Movies") ]];
   }
 
   /**
@@ -105,21 +108,6 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\AbstractSecondaryN
       $i18n->t("This Movie has been deleted."),
       Alert::SEVERITY_ERROR
     );
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function getSecondaryNavigationMenuItems() {
-    global $i18n;
-    return [
-      [ $this->routeMovie, "<i class='icon icon--eye'></i>{$i18n->t("View")}", [ "accesskey" => "v" ]],
-      [ $this->routeDiscussion, "<i class='icon icon--comment'></i>{$i18n->t("Discuss")}", [
-        "accesskey" => "d", "itemprop" => "discussionUrl",
-      ]],
-      [ $this->routeEdit, "<i class='icon icon--pencil'></i>{$i18n->t("Edit")}", [ "accesskey" => "e" ]],
-      [ $this->routeHistory, "<i class='icon icon--history'></i>{$i18n->t("History")}", [ "accesskey" => "h", "class" => "separator" ]],
-    ];
   }
 
 }

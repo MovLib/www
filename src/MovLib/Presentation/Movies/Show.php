@@ -31,7 +31,13 @@ use \MovLib\Presentation\Partial\Lists\Images;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class Show extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Presentation\TraitPagination;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * Numeric array containing the <code>\MovLib\Data\Movie</code> objects to display.
@@ -39,6 +45,10 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    * @var array
    */
   protected $movies;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new latest movies presentation
@@ -48,10 +58,21 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   public function __construct() {
     global $i18n;
     $this->init($i18n->t("Movies"));
-    $this->bodyClasses .= " images-list";
-    // @todo Respect GET parameters
-    $this->movies = Movie::getMovies();
+    $this->initSidebar([
+      [ $i18n->r("/movies"),    "<i class='icon icon--film'></i> {$i18n->t("Movies")}"        ],
+      [ $i18n->r("/releases"),  "<i class='icon icon--film'></i> {$i18n->t("Releases")}"      ],
+      [ $i18n->r("/persons"),   "<i class='icon icon--user'></i> {$i18n->t("Persons")}"       ],
+      [ $i18n->r("/series"),    "<i class='icon icon--film'></i> {$i18n->t("Series")}"        ],
+      [ $i18n->r("/help"),      "<i class='icon icon--help-circled'></i> {$i18n->t("Help")}"  ],
+    ]);
+    $this->initPagination(Movie::getUndeletedMoviesCount());
+    $this->movies        = Movie::getMovies($this->resultsOffset, $this->resultsPerPage);
+    $this->headingBefore = "<a class='button button--large button--success pull-right' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Format a single movie.
@@ -79,9 +100,9 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
 
     // Append the original title to the output if it differs from the localized title.
     if ($movie->displayTitle != $movie->originalTitle) {
-      $title .= "<br>{$i18n->t("Original title: “{original_title}”", [
+      $title .= "<br><span class='small'>{$i18n->t("Original title: “{original_title}”", [
         "original_title" => "<span itemprop='alternateName'>{$movie->originalTitle}</span>",
-      ])}";
+      ])}</span>";
     }
 
     // Put it all together.
@@ -94,7 +115,11 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   }
 
   /**
-   * @inheritdoc
+   * Get the presentation's page content.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The presentation's page content.
    */
   protected function getPageContent() {
     global $i18n;
@@ -109,21 +134,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     $movies->closure = [ $this, "formatMovie" ];
 
     // Add the filter interface to the current presentation.
-    return "<div id='filter'>Filter Content</div>{$movies}";
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function getSecondaryNavigationMenuItems() {
-    global $i18n;
-    return [
-      [ $i18n->r("/movies"),    "<i class='icon icon--film'></i> {$i18n->t("Movies")}"        ],
-      [ $i18n->r("/releases"),  "<i class='icon icon--film'></i> {$i18n->t("Releases")}"      ],
-      [ $i18n->r("/persons"),   "<i class='icon icon--user'></i> {$i18n->t("Persons")}"       ],
-      [ $i18n->r("/series"),    "<i class='icon icon--film'></i> {$i18n->t("Series")}"        ],
-      [ $i18n->r("/help"),      "<i class='icon icon--help-circled'></i> {$i18n->t("Help")}"  ],
-    ];
+    return "<div id='filter'>filter filter filter</div>{$movies}";
   }
 
 }

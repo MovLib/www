@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Movie\Gallery;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
- * @todo Description of Posters
+ * @todo Description of Poster
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,18 +28,14 @@ namespace MovLib\Presentation\Movie\Gallery;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Posters extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class Posters extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    throw new \LogicException("Not implemented yet!");
+    $this->init("Movie Posters");
+    $this->alerts .= new Alert("Not implemented yet!");
   }
 
-  protected function getPageContent() {
-
-  }
-
-  protected function getSecondaryNavigationMenuitems() {
-
-  }
+  protected function getPageContent() {}
 
 }

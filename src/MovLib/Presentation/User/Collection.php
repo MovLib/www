@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * The user's movie collection page.
  *
@@ -27,7 +29,8 @@ namespace MovLib\Presentation\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Collection extends \MovLib\Presentation\User\Show {
+class Collection extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\User\TraitUser;
 
   /**
    *
@@ -37,15 +40,21 @@ class Collection extends \MovLib\Presentation\User\Show {
    */
   public function __construct(){
     global $i18n;
-    parent::__construct();
-    $this->title = $i18n->t("Collection of {0}", [ $this->title ]);
+    $this->init($i18n->t("Collection of {0}", [ $_SERVER["USER_NAME"] ]));
+    $this->alerts .= new Alert("Not implemented yet!");
   }
 
   /**
    * @inheritdoc
    */
-  protected function getPageContent(){
-    return "";
+  protected function getPageContent(){}
+
+  /**
+   * @inheritdoc
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [[ $i18n->r("/user/{0}", [ $_SERVER["USER_NAME"] ]), $_SERVER["USER_NAME"] ]];
   }
 
 }

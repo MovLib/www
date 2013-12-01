@@ -175,6 +175,13 @@ class Kernel {
   public $passwordOptions = [ "cost" => 12 ];
 
   /**
+   * Absolute path to the PHP translation files.
+   *
+   * @var string
+   */
+  public $pathTranslations = "/private/translation";
+
+  /**
    * The user name (for file permissions etc.).
    *
    * @var string
@@ -217,8 +224,22 @@ class Kernel {
   public $requestMethod = "GET";
 
   /**
-   * The currently request URI.
+   * The requested URI path.
    *
+   * This variable contains only the requested path without the query part.
+   *
+   * @var Kernel::$requestURI
+   * @var string
+   */
+  public $requestPath = "/";
+
+  /**
+   * The requested URI path and query.
+   *
+   * The name is misleading and this has historical reasons. This string actually contains the path and query parts of
+   * the requested URI.
+   *
+   * @see Kernel::$requestPath
    * @var string
    */
   public $requestURI = "/";
@@ -315,16 +336,18 @@ class Kernel {
 
     try {
       // Initialize environment properties based on variables passed in by nginx.
-      $this->documentRoot  = $_SERVER["DOCUMENT_ROOT"];
-      $this->hostname      = $_SERVER["SERVER_NAME"];
-      $this->protocol      = $_SERVER["SERVER_PROTOCOL"];
+      $this->documentRoot     = $_SERVER["DOCUMENT_ROOT"];
+      $this->hostname         = $_SERVER["SERVER_NAME"];
+      $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
+      $this->protocol         = $_SERVER["SERVER_PROTOCOL"];
       // @todo If we're ever going to use proxy servers this code has to be changed!
       //       https://github.com/komola/ZendFramework/blob/master/Controller/Request/Http.php#L1054
-      $this->remoteAddress = filter_var($_SERVER["REMOTE_ADDR"], FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
-      $this->requestMethod = $_SERVER["REQUEST_METHOD"];
-      $this->requestURI    = $_SERVER["REQUEST_URI"];
-      $this->scheme        = $_SERVER["SCHEME"];
-      $this->userAgent     = filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW | FILTER_FLAG_STRIP_HIGH);
+      $this->remoteAddress    = filter_var($_SERVER["REMOTE_ADDR"], FILTER_VALIDATE_IP, FILTER_REQUIRE_SCALAR);
+      $this->requestMethod    = $_SERVER["REQUEST_METHOD"];
+      $this->requestPath      = $_SERVER["REQUEST_PATH"];
+      $this->requestURI       = $_SERVER["REQUEST_URI"];
+      $this->scheme           = $_SERVER["SCHEME"];
+      $this->userAgent        = filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
 
       // Configure the autoloader.
       if ($this->production === true) {

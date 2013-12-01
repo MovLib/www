@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Movie\Upload;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * @todo Description of LobbyCard
  *
@@ -26,19 +28,11 @@ namespace MovLib\Presentation\Movie\Upload;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class LobbyCard extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
-  use \MovLib\Presentation\TraitFormPage;
+class LobbyCard extends \MovLib\Presentation\Movie\Upload\Poster {
 
   public function __construct() {
-    throw new \LogicException("Not implemented yet!");
-  }
-
-  protected function getPageContent() {
-
-  }
-
-  protected function getSecondaryNavigationMenuitems() {
-
+    $this->init("Movie Lobby Card Upload");
+    $this->alerts .= new Alert("Not implemented yet!");
   }
 
 }

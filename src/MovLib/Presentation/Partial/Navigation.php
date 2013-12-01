@@ -44,30 +44,20 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * The navigation's ID.
+   * The navigation's attributes.
    *
-   * Please note that the actual ID used within the output will have <code>"-nav"</code> appended to it. This is to
-   * ensure that there won't be any name collisions with the ID of the <code><body></code> elment if you use your
-   * page's ID as ID for your navigation. The same is true for the title element of the navigation, the ID of that one
-   * will be <code>"{$this->id}-nav-title"</code>.
-   *
-   * @var string
-   */
-  public $id;
-
-  /**
-   * The navigation's title.
-   *
-   * @var string
-   */
-  public $title;
-
-  /**
-   * The navigation's menuitems.
+   * Associative array with additional attributes for the <code><nav></code> element itself.
    *
    * @var array
    */
-  public $menuitems;
+  public $attributes;
+
+  /**
+   * Callable that will be called with each menuitem.
+   *
+   * @var null|callable|\Closure
+   */
+  public $callback;
 
   /**
    * The navigation's menuitem glue.
@@ -77,15 +67,6 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    * @var string
    */
   public $glue = " ";
-
-  /**
-   * The navigation's attributes.
-   *
-   * Associative array with additional attributes for the <code><nav></code> element itself.
-   *
-   * @var array
-   */
-  public $attributes;
 
   /**
    * Flag indicating if the navigation's title should be hidden via CSS.
@@ -98,11 +79,39 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
   public $hideTitle = true;
 
   /**
-   * Callable that will be called with each menuitem.
+   * The navigation's ID.
    *
-   * @var null|callable|\Closure
+   * Please note that the actual ID used within the output will have <code>"-nav"</code> appended to it. This is to
+   * ensure that there won't be any name collisions with the ID of the <code><body></code> elment if you use your
+   * page's ID as ID for your navigation. The same is true for the title element of the navigation, the ID of that one
+   * will be <code>"{$this->id}-nav-title"</code>.
+   *
+   * @var string
    */
-  public $callback;
+  public $id;
+
+  /**
+   * Whether to ignore the query string while checking if the link should be marked active or not. Default is to ignore
+   * the query string.
+   *
+   * @see \MovLib\Presentation\AbstractBase::a()
+   * @var boolean
+   */
+  public $ignoreQuery = false;
+
+  /**
+   * The navigation's menuitems.
+   *
+   * @var array
+   */
+  public $menuitems;
+
+  /**
+   * The navigation's title.
+   *
+   * @var string
+   */
+  public $title;
 
   /**
    * Flag indicating if all menuitems should be wrapped in an unordered list.
@@ -135,7 +144,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    *   </ul>
    *   For a more in-depth explanation have a look at {@see AbstractPage::a()}.
    */
-  public function __construct($id, $title, $menuitems) {
+  public function __construct($id, $title, array $menuitems) {
     $this->id        = $id;
     $this->title     = $title;
     $this->menuitems = $menuitems;
@@ -160,7 +169,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
       if (!empty($menuitem)) {
         if (is_array($menuitem)) {
           $menuitem[2]["role"] = "menuitem";
-          $menuitem            = $this->a($menuitem[0], $menuitem[1], $menuitem[2]);
+          $menuitem            = $this->a($menuitem[0], $menuitem[1], $menuitem[2], $this->ignoreQuery);
         }
         $menuitems .= $this->unorderedList ? "<li>{$menuitem}</li>" : $menuitem;
       }

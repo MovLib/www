@@ -130,5 +130,8 @@ return [
   "/style/{0}/edit"       => "/stilrichtung/{0}/bearbeiten",
   "/style/{0}/löschen"    => "/stilrichtung/{0}/löschen",
 
+  // ------------------------------------------------------------------------------------------------------------------- Queries
+  "page"                  => "seite",
+
 ];
 // @codeCoverageIgnoreEnd

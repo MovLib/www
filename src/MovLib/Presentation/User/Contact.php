@@ -17,34 +17,44 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
- * @todo Description of Contact
+ * The user's movie collection page.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Contact extends \MovLib\Presentation\User\Show {
+class Contact extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\User\TraitUser;
 
   /**
    *
-   * Instantiate new user contact presentation.
+   * Instantiate new user collection presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    */
   public function __construct(){
     global $i18n;
-    parent::__construct();
-    $this->title = "{$i18n->t("Contact")} {$this->title}";
+    $this->init($i18n->t("Contact {0}", [ $_SERVER["USER_NAME"] ]));
+    $this->alerts .= new Alert("Not implemented yet!");
   }
 
   /**
    * @inheritdoc
    */
-  protected function getPageContent(){
-    return "";
+  protected function getPageContent(){}
+
+  /**
+   * @inheritdoc
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [[ $i18n->r("/user/{0}", [ $_SERVER["USER_NAME"] ]), $_SERVER["USER_NAME"] ]];
   }
 
 }

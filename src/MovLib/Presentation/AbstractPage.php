@@ -57,9 +57,9 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
   /**
    * Contains the CSS classes of the body element.
    *
-   * @var array
+   * @var string
    */
-  protected $bodyClasses;
+  private $bodyClasses;
 
   /**
    * The page's title used in the header.
@@ -106,6 +106,23 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Add a class (or more) to the body's class attribute.
+   *
+   * @param string $class
+   *   The CSS class(es) that should be added to the body's class attribute.
+   * @return this
+   */
+  protected function addBodyClass($class) {
+    if (!$this->bodyClasses) {
+      $this->bodyClasses = $class;
+    }
+    else {
+      $this->bodyClasses .= " {$class}";
+    }
+    return $this;
+  }
 
   /**
    * Get the head title.

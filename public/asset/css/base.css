@@ -231,6 +231,8 @@ a.active {
 }
 
 a.active[href="#"] {
+  color: #656565;
+  border-bottom-color: transparent;
   cursor: default;
 }
 

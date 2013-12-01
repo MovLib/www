@@ -93,14 +93,13 @@ class Movie {
    * Instantiate new movie.
    *
    * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
    *   The unique movie's ID to load.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \OutOfBoundsException
    */
   public function __construct($id = null) {
-    global $db, $i18n;
+    global $db;
 
     // Load the movie if an ID was passed to the constructor.
     if ($id) {
@@ -130,13 +129,26 @@ class Movie {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  public static function getMovies() {
+  public static function getUndeletedMoviesCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query("SELECT COUNT(`id`) FROM `movies` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
+  }
+
+  public static function getMovies($offset, $rowCount) {
     global $db, $i18n;
     static $movies = [];
 
     if (!isset($movies[$i18n->locale])) {
-      $query = self::getQuery();
-      $result = $db->query("{$query} WHERE `movies`.`deleted` = false ORDER BY `movies`.`created` DESC")->get_result();
+      $query  = self::getQuery();
+      $result = $db->query(
+        "{$query} WHERE `movies`.`deleted` = false ORDER BY `movies`.`id` DESC LIMIT ? OFFSET ?",
+        "ii",
+        [ $rowCount, $offset ]
+      )->get_result();
       while ($movie = $result->fetch_object(__CLASS__)) {
         $movies[$i18n->locale][$movie->id] = $movie;
       }

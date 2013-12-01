@@ -88,7 +88,7 @@ class Language {
     global $i18n, $kernel;
     static $languages = null;
     if (!isset($languages[$i18n->locale])) {
-      $languages[$i18n->locale] = require "{$kernel->documentRoot}/private/icu/language/{$i18n->locale}.php";
+      $languages[$i18n->locale] = require "{$kernel->pathTranslations}/language/{$i18n->locale}.php";
     }
     return $languages[$i18n->locale];
   }

@@ -62,17 +62,22 @@ abstract class AbstractBase {
    *   The translated text that should appear as link on the page.
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the link element.
+   * @param boolean $ignoreQuery [optional]
+   *   Whether to ignore the query string while checking if the link should be marked active or not. Default is to
+   *   ignore the query string.
    * @return string
    *   The internal link ready for print.
    */
-  protected final function a($route, $text, array $attributes = null) {
+  protected final function a($route, $text, array $attributes = null, $ignoreQuery = true) {
     global $kernel;
-    // Recreate path to make sure we match the actual route and not the currently requested URI which might include
-    // GET arguments.
+
+    // We don't want any links to the current page (as per W3C recommendation) and transforming the route to a hash
+    // achieves exactly that. The href attribute of an anchor element should never be empty but transforming the
+    // anchor element to a span might cause rendering issues, using the hash solves this problem for us.
     if ($route == $kernel->requestURI) {
-      // A hash keeps the anchor element itself valid but removes the link to the current page—perfect!
       $route = "#";
     }
+
     // Could be that the route that was passed to us is already a hash sign.
     if ($route == "#") {
       // Remove the title if we have one in the attributes array.
@@ -81,6 +86,13 @@ abstract class AbstractBase {
       }
       $this->addClass("active", $attributes);
     }
+    // We also have to mark the current anchor as active if the caller requested that we ignore the query part of the
+    // URI (default behaviour of this method). We keep the title attribute in this case as it's a clickable link.
+    elseif ($ignoreQuery === true && $route == $kernel->requestPath) {
+      $this->addClass("active", $attributes);
+    }
+
+    // Put it all together.
     return "<a href='{$route}'{$this->expandTagAttributes($attributes)}>{$text}</a>";
   }
 

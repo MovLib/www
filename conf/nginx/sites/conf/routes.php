@@ -71,7 +71,7 @@ location ^~ <?= $r("/movie") ?> {
     try_files $movlib_cache @php;
   }
 
-  location ~ "^<?= $r("/movie/{0}/delete", [ $idRegExp ]) ?> $" {
+  location ~ "^<?= $r("/movie/{0}/delete", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Movie\\Delete";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
@@ -461,7 +461,7 @@ location ^~ <?= $r("/profile") ?> {
   }
 
   location = <?= $r("/profile/danger-zone") ?> {
-    set $movlib_presenter "Profile\\DangerZoneSettings";
+    set $movlib_presenter "Profile\\DangerZone";
     include sites/conf/fastcgi_params.conf;
   }
 
@@ -503,22 +503,21 @@ location ^~ <?= $r("/user") ?> {
   }
 <?php endif ?>
 
-  # A username cannot contain slashes. The slashes are very important, otherwise it would be impossible for us to have
-  # routes beneath the user's page.
-  location ~ "^<?= $r("/user/{0}", [ "([^/]+)" ]) ?>$" {
-    set $movlib_presenter "User\\Show";
+  location ~ "^<?= $r("/user/{0}/collection", [ "(.+)" ]) ?>$" {
+    set $movlib_presenter "User\\Collection";
     set $movlib_user_name $1;
     try_files $movlib_cache @php;
   }
 
-  location ~ "^<?= $r("/user/{0}/contact", [ "([^/]+)" ]) ?>$" {
+  location ~ "^<?= $r("/user/{0}/contact", [ "(.+)" ]) ?>$" {
     set $movlib_presenter "User\\Contact";
     set $movlib_user_name $1;
     try_files $movlib_cache @php;
   }
 
-  location ~ "^<?= $r("/user/{0}/collection", [ "([^/]+)" ]) ?>$" {
-    set $movlib_presenter "User\\Collection";
+  # Must be last! Otherwise above location won't match.
+  location ~ "^<?= $r("/user/{0}", [ "(.+)" ]) ?>$" {
+    set $movlib_presenter "User\\Show";
     set $movlib_user_name $1;
     try_files $movlib_cache @php;
   }

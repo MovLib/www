@@ -91,7 +91,7 @@ class Country {
 
     // Fetch (pre-sorted) and cache all available country's for the current display language.
     if (!isset($countries[$i18n->locale])) {
-      $countries[$i18n->locale] = require "{$kernel->documentRoot}/private/icu/country/{$i18n->locale}.php";
+      $countries[$i18n->locale] = require "{$kernel->pathTranslations}/country/{$i18n->locale}.php";
     }
 
     // Filter the result if a filter was defined and make sure that we keep the sorting.

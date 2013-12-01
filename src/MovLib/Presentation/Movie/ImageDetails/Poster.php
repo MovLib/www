@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Movie\ImageDetails;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * @todo Description of Poster
  *
@@ -26,18 +28,14 @@ namespace MovLib\Presentation\Movie\ImageDetails;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Poster extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class Poster extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    throw new \LogicException("Not implemented yet!");
+    $this->init("Movie Poster");
+    $this->alerts .= new Alert("Not implemented yet!");
   }
 
-  protected function getPageContent() {
-
-  }
-
-  protected function getSecondaryNavigationMenuitems() {
-
-  }
+  protected function getPageContent() {}
 
 }

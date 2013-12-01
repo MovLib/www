@@ -33,7 +33,7 @@ use \MovLib\Presentation\Partial\Country;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class Show extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\User\TraitUser;
 
 

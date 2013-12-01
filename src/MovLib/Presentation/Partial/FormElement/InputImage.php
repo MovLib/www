@@ -145,7 +145,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
       return
         "<div class='row'>" .
           "<div class='span span--1'>{$this->getImage($this->image->getStyle(Image::STYLE_SPAN_01))}</div>" .
-          "<div class='span span--8'>{$this->help}<label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></div>" .
+          "<div class='span span--9'>{$this->help}<label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></div>" .
         "</div>"
       ;
     }

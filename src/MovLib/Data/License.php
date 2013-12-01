@@ -26,20 +26,45 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class License extends \MovLib\Data\Image\AbstractBaseImage {
+class License extends \MovLib\Data\Image\AbstractImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
+  /**
+   * The license's official abbreviation.
+   *
+   * @var string
+   */
   public $abbreviation;
 
+  /**
+   * The license's translated description text.
+   *
+   * @var string
+   */
   public $description;
 
+  /**
+   * The license's unique identifier.
+   *
+   * @var integer
+   */
   public $id;
 
+  /**
+   * The license's translated name.
+   *
+   * @var string
+   */
   public $name;
 
+  /**
+   * The license's absolute URL.
+   *
+   * @var string
+   */
   public $url;
 
 
@@ -76,12 +101,11 @@ class License extends \MovLib\Data\Image\AbstractBaseImage {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+  /**
+   * @inheritdoc
+   */
   protected function generateStyles($source) {
-
-  }
-
-  public function getStyle($style = self::STYLE_SPAN_02) {
-
+    throw new \LogicException("Not implemented yet!");
   }
 
   /**
@@ -120,21 +144,17 @@ class License extends \MovLib\Data\Image\AbstractBaseImage {
    */
   protected static function getQuery() {
     global $i18n;
-    static $query = null;
-    if (!$query) {
-      $query =
-        "SELECT
-          `id`,
-          IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
-          COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
-          `abbreviation`,
-          COLUMN_GET(`dyn_url`, ? AS CHAR) AS `url`,
-          UNIX_TIMESTAMP(`icon_changed`) AS `changed`,
-          `icon_extension` AS `extension`
-        FROM `licenses`"
-      ;
-    }
-    return $query;
+    return
+      "SELECT
+        `id`,
+        IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`,
+        COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
+        `abbreviation`,
+        COLUMN_GET(`dyn_url`, ? AS CHAR) AS `url`,
+        UNIX_TIMESTAMP(`icon_changed`) AS `changed`,
+        `icon_extension` AS `extension`
+      FROM `licenses`"
+    ;
   }
 
 }

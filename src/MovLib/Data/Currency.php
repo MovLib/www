@@ -139,7 +139,7 @@ class Currency {
     global $i18n, $kernel;
     static $currencies = null;
     if (!isset($currencies[$i18n->locale])) {
-      $currencies[$i18n->locale] = require "{$kernel->documentRoot}/private/icu/currency/{$i18n->locale}.php";
+      $currencies[$i18n->locale] = require "{$kernel->pathTranslations}/currency/{$i18n->locale}.php";
     }
     return $currencies[$i18n->locale];
   }

@@ -40,6 +40,20 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   use \MovLib\Presentation\TraitFormPage;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The movie's translated and formatted synopsis.
+   *
+   * @var string
+   */
+  protected $synopsis;
+  protected $directors;
+  protected $cast;
+
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
@@ -47,10 +61,11 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * Instatiate new single movie presentation page.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
     try {
       // Instantiate movie, initialize page and set the microdata schema.
       $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
@@ -173,6 +188,40 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
           [ "class" => "img span span--3" ]
         ) .
       "</div>"; // close .row
+
+      // Translate the titles of each section.
+      $titleSynopsis  = $i18n->t("Synopsis");
+      $titleDirectors = $i18n->t("{0, plural, one {Director} other {Directors}}", [ count($this->movie->directors) ]);
+      $titleCast      = $i18n->t("Cast");
+
+      // Add a jump link for each section to the secondary navigation.
+      $this->sidebarNavigation->menuitems[] = [ "#synopsis", $titleSynopsis ];
+      $this->sidebarNavigation->menuitems[] = [ "#directors", $titleDirectors ];
+      $this->sidebarNavigation->menuitems[] = [ "#cast", $titleCast ];
+
+      $synopsis = empty($this->movie->synopsis)
+        ? $i18n->t("No synopsis available, {0}write one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
+        : $kernel->htmlDecode($this->movie->synopsis)
+      ;
+      $this->synopsis = "<h2>{$titleSynopsis}</h2><div itemprop='description'>{$synopsis}</div>";
+
+      $directors = new Images(
+        $this->movie->directors,
+        $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
+        [ "class" => "clear-fix" ],
+        [ "class" => "span span--1", "itemprop" => "director", "itemscope", "itemtype" => "http://schema.org/Person" ]
+      );
+      $directors->closure = [ $this, "formatPerson" ];
+      $this->directors = "<h2>{$titleDirectors}</h2>{$directors}";
+
+      $cast = new Images(
+        $this->movie->cast,
+        $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
+        [ "class" => "clear-fix" ],
+        [ "class" => "span span--1", "itemprop" => "actor", "itemscope", "itemtype" => "http://schema.org/Person" ]
+      );
+      $cast->closure = [ $this, "formatPerson" ];
+      $this->cast = "<h2>{$titleCast}</h2>{$cast}";
     }
     // We don't have any movie with the given identifier.
     catch (\OutOfBoundsException $e) {
@@ -186,48 +235,12 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
-
-    // Translate the titles of each section.
-    $titleSynopsis  = $i18n->t("Synopsis");
-    $titleDirectors = $i18n->t("{0, plural, one {Director} other {Directors}}", [ count($this->movie->directors) ]);
-    $titleCast      = $i18n->t("Cast");
-
-    // Add a jump link for each section to the secondary navigation.
-    $this->secondaryNavigation->menuitems[] = [ "#synopsis", $titleSynopsis ];
-    $this->secondaryNavigation->menuitems[] = [ "#directors", $titleDirectors ];
-    $this->secondaryNavigation->menuitems[] = [ "#cast", $titleCast ];
-
-    // Prepare the content for each section.
-    $synopsis = empty($this->movie->synopsis)
-      ? $i18n->t("No synopsis available, {0}write one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
-      : $kernel->htmlDecode($this->movie->synopsis)
-    ;
-
-    $directors = new Images(
-      $this->movie->directors,
-      $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-      null,
-      [ "class" => "span span--1", "itemprop" => "director", "itemscope", "itemtype" => "http://schema.org/Person" ]
-    );
-    $directors->closure = [ $this, "formatPerson" ];
-
-    $cast = new Images(
-      $this->movie->cast,
-      $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-      null,
-      [ "class" => "span span--1", "itemprop" => "actor", "itemscope", "itemtype" => "http://schema.org/Person" ]
-    );
-    $cast->closure = [ $this, "formatPerson" ];
-
     return
-      "<div id='synopsis'><h2>{$titleSynopsis}</h2><div itemprop='description'>{$synopsis}</div></div>" .
-      "<div id='directors'><h2>{$titleDirectors}</h2>{$directors}</div>" .
-      "<div id='cast'><h2>{$titleCast}</h2>{$cast}</div>"
+      "<div id='synopsis'>{$this->synopsis}</div>" .
+      "<div id='directors'>{$this->directors}</div>" .
+      "<div id='cast'>{$this->cast}</div>"
     ;
   }
 

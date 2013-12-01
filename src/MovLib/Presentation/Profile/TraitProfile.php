@@ -27,6 +27,7 @@ namespace MovLib\Presentation\Profile;
  * @since 0.0.1-dev
  */
 trait TraitProfile {
+  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -39,55 +40,6 @@ trait TraitProfile {
    */
   protected $user;
 
-  /**
-   * The translated text "Profile".
-   *
-   * @var string
-   */
-  protected $profileText;
-
-  /**
-   * The translated profile route.
-   *
-   * @var string
-   */
-  protected $routeProfile;
-
-  /**
-   * The translated account settings route.
-   *
-   * @var string
-   */
-  protected $routeAccountSettings;
-
-  /**
-   * The translated notification settings route.
-   *
-   * @var string
-   */
-  protected $routeNotificationSettings;
-
-  /**
-   * The translated email settings route.
-   *
-   * @var string
-   */
-  protected $routeEmailSettings;
-
-  /**
-   * The translated password settings route.
-   *
-   * @var string
-   */
-  protected $routePasswordSettings;
-
-  /**
-   * The translated danger zone settings route.
-   *
-   * @var string
-   */
-  protected $routeDangerZoneSettings;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -96,63 +48,38 @@ trait TraitProfile {
    * @inheritdoc
    */
   protected function init($title = null) {
-    global $i18n;
-    $this->routeProfile = $i18n->r("/profile");
-    $this->profileText  = $i18n->t("Profile");
-    if (!$title) {
-      $title = $this->profileText;
-    }
-    $this->routeAccountSettings      = $i18n->r("/profile/account-settings");
-    $this->routeNotificationSettings = $i18n->r("/profile/notification-settings");
-    $this->routeEmailSettings        = $i18n->r("/profile/email-settings");
-    $this->routePasswordSettings     = $i18n->r("/profile/password-settings");
-    $this->routeDangerZoneSettings   = $i18n->r("/profile/danger-zone");
-    return parent::init($title);
-  }
-
-  /**
-   * @inhertidoc
-   */
-  protected function getBreadcrumbs() {
-    return [[ $this->routeProfile, $this->profileText ]];
-  }
-
-  /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
-   */
-  protected function getSecondaryNavigationMenuitems() {
     global $i18n, $session;
+    parent::init($title ?: $i18n->t("Profile"));
+
     if ($session->isAuthenticated === true) {
-      return [
+      $sidebar = [
         [
-          $this->routeProfile,
-          "<i class='icon icon--info-circled'></i> {$this->profileText}",
+          $i18n->r("/profile"),
+          "<i class='icon icon--info-circled'></i> {$i18n->t("Profile")}",
           [ "class" => "separator", "title" => $i18n->t("Check out our account summary.") ]
         ],
         [
-          $this->routeAccountSettings,
+          $i18n->r("/profile/account-settings"),
           "<i class='icon icon--user'></i> {$i18n->t("Account")}",
           [ "title" => $i18n->t("Manage your basic account settings.") ]
         ],
         [
-          $this->routeNotificationSettings,
+          $i18n->r("/profile/notification-settings"),
           "<i class='icon icon--bell'></i> {$i18n->t("Notifications")}",
           [ "title" => $i18n->t("Manage your notification settings.") ]
         ],
         [
-          $this->routeEmailSettings,
+          $i18n->r("/profile/email-settings"),
           "<i class='icon icon--mail'></i> {$i18n->t("Email")}",
           [ "title" => $i18n->t("Change your email address.") ]
         ],
         [
-          $this->routePasswordSettings,
+          $i18n->r("/profile/password-settings"),
           "<i class='icon icon--lock'></i> {$i18n->t("Password")}",
           [ "title" => $i18n->t("Change your password.") ]
         ],
         [
-          $this->routeDangerZoneSettings,
+          $i18n->r("/profile/danger-zone"),
           "<i class='icon icon--alert'></i> {$i18n->t("Danger Zone")}",
           [ "class" => "delete", "title" => $i18n->t("Manage your sessions and/or deactivate your account.") ]
         ],
@@ -161,14 +88,33 @@ trait TraitProfile {
     // A user might visit the password settings page after successfully requesting a reset password email. Only display
     // the actual secondary navigation point the user is able to access at this point and omit everything else.
     else {
-      return [
+      $sidebar = [
         [
-          $this->routePasswordSettings,
+          $i18n->r("/profile/password-settings"),
           "<i class='icon icon--lock'></i> {$i18n->t("Password")}",
           [ "title" => $i18n->t("Change your password.") ]
         ]
       ];
     }
+    $this->initSidebar($sidebar);
+
+    return $this;
+  }
+
+  /**
+   * @inhertidoc
+   * @global \MovLib\Data\I18n $i18n
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [[ $i18n->r("/profile"), $i18n->t("Profile") ]];
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getPageContent() {
+    return $this->form;
   }
 
 }

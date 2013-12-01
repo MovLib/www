@@ -38,7 +38,8 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Poster extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class Poster extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
   use \MovLib\Presentation\TraitFormPage;
 
 
@@ -107,10 +108,15 @@ class Poster extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
         $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear, $_SERVER["IMAGE_ID"]);
       }
       else {
-        $title = $i18n->t("Upload new poster for {0}", [ $this->movie->displayTitleWithYear ]);
+        $title = "<a href='{$i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ])}'>{$this->movie->displayTitle}</a>";
+        if ($this->movie->year) {
+          $title = $i18n->t("{movie_title} ({movie_year})", [ "movie_title" => $title, "movie_year" => $this->movie->year ]);
+        }
+        $title = $i18n->t("Upload new poster for {movie_title}", [ "movie_title" => $title ]);
         $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear);
       }
       $this->init($title);
+      $this->initSidebar([]);
       $this->inputImage  = new InputImage("poster", $i18n->t("Poster"), $this->image, [ "required" ]);
       $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description, [ "required" ]);
       $this->country     = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
@@ -141,13 +147,6 @@ class Poster extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   protected function getPageContent() {
     return $this->form;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getSecondaryNavigationMenuitems() {
-    return [];
   }
 
   /**

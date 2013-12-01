@@ -15,8 +15,7 @@
  */
 
 /**
- * Main CSS file which will contain the minified and optimized contents of all CSS files that reside in the layout
- * directory. We stick to @import rules in production.
+ * Pagination styles.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -25,15 +24,38 @@
  * @since 0.0.1-dev
  */
 
-@import "layout/fonts.css";
-@import "base.css";
-@import "layout/grid.css";
-@import "layout/typography.css";
-@import "layout/forms.css";
-@import "layout/generic.css";
-@import "layout/header.css";
-@import "layout/content.css";
-@import "layout/footer.css";
-@import "layout/icons.css";
-@import "layout/alert.css";
-@import "layout/buttons.css";
+#pagination-nav {
+  display: table;
+  margin: 0 auto 10px;
+  border-left: 1px solid #e5e5e5;
+}
+
+#pagination-nav a,
+#pagination-nav span {
+  display: table-cell;
+  min-width: 40px;
+  height: 40px;
+  text-align: center;
+  border: 1px solid #e5e5e5;
+  border-left: 0 none;
+  margin-left: -1px;
+  padding: 8px 10px;
+  transition: 0.4s ease-out;
+  transition-property: background, color;
+}
+
+#pagination-nav a:hover,
+#pagination-nav a:focus {
+  background-color: #eee;
+}
+
+#pagination-nav a:active,
+#pagination-nav a.active {
+  color: #fff;
+  background-color: #09c;
+}
+
+#pagination-nav .mute {
+  color: #999;
+  cursor: not-allowed;
+}

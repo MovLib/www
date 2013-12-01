@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
- * @todo Description of Delete
+ * Movie deletion presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,10 +28,19 @@ namespace MovLib\Presentation\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Delete {
+class Delete extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
+  /**
+   * Instantiate new delete movie presentation.
+   */
   public function __construct() {
-    throw new \LogicException("Not implemented yet!");
+    $this->init("Delete Movie");
+    $this->alerts .= new Alert("Not implemented yet!");
   }
+
+  /**
+   * @inheritdoc
+   */
+  protected function getPageContent() {}
 
 }

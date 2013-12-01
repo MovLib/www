@@ -15,7 +15,7 @@
  */
 
 /**
- * Secondary navigation styles.
+ * Sidebar styles.
  *
  * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -25,39 +25,7 @@
  * @since 0.0.1-dev
  */
 
-
-/* ==== The LIST ==================================================================================================== */
-
-
-.secondary-container {
-  position: relative;
-}
-
-.images-list .secondary-container > .row {
-  overflow: hidden;
-}
-
-.secondary-navigation {
-  position: absolute;
-  top: 0;
-  left: -20px;
-  bottom: -40px;
-}
-
-/* Ensure that the shadow is as high as the actual content and extend it a bit to the bottom (sse above rule) */
-.secondary-navigation #movies-show-nav,
-.secondary-navigation div[role="menu"],
-.secondary-navigation .no-list {
-  height: 100%;
-}
-
-.secondary-content {
-  margin-left: 180px;
-  position: relative;
-}
-
-.images-list .secondary-content:after,
-.secondary-navigation .no-list:after {
+#sidebar-nav .no-list:after {
   bottom: 0;
   box-shadow: 0 0 10px 10px #fff;
   content: "";
@@ -69,7 +37,7 @@
   z-index: 1;
 }
 
-.secondary-navigation .no-list {
+#sidebar-nav .no-list {
   margin: 0 0 0 -20px;
   overflow: hidden;
   padding: 0 0 30px;
@@ -77,15 +45,11 @@
   font-size: 12px;
 }
 
-.secondary-navigation .no-list:after {
+#sidebar-nav .no-list:after {
   box-shadow: 0 0 10px #dfdfdf;
 }
 
-
-/* ==== The MENUITEMS =============================================================================================== */
-
-
-.secondary-navigation a:before {
+#sidebar-nav a:before {
   background-color: #e5e5e5;
   bottom: -1px;
   content: "";
@@ -96,7 +60,8 @@
   width: 5px;
 }
 
-.secondary-navigation a {
+#sidebar-nav a,
+#sidebar-nav a.active {
   background-color: #fcfcfc;
   border: 1px solid #e5e5e5;
   border-right: 0;
@@ -110,54 +75,46 @@
   transition-property: color, background-color, border-color, margin-left;
 }
 
-.secondary-navigation a:focus,
-.secondary-navigation a:hover {
+#sidebar-nav a:focus,
+#sidebar-nav a:hover {
   background-color: #fff;
 }
 
-.secondary-navigation a.active {
+#sidebar-nav a.active {
   background-color: #fff;
   z-index: 2;
 }
 
-.secondary-navigation a:focus:before,
-.secondary-navigation a:hover:before,
-.secondary-navigation a.active:before {
+#sidebar-nav a:focus:before,
+#sidebar-nav a:hover:before,
+#sidebar-nav a.active:before {
   background-color: #09c;
 }
 
-.secondary-navigation a:focus,
-.secondary-navigation a:hover,
-.secondary-navigation a.active {
+#sidebar-nav a:focus,
+#sidebar-nav a:hover,
+#sidebar-nav a.active {
   color: #09c;
   margin-left: 5px;
 }
 
-
-/* ==== SPECIAL STYLES ============================================================================================== */
-
-
-.secondary-navigation .delete:focus:before,
-.secondary-navigation .delete:hover:before,
-.secondary-navigation .delete.active:before {
-  background-color: #c00;
-}
-
-.secondary-navigation .delete:focus,
-.secondary-navigation .delete:hover,
-.secondary-navigation .delete.active {
-  color: #c00;
-}
-
-
-/* ==== The ICONS =================================================================================================== */
-
-
-.secondary-navigation .separator {
+#sidebar-nav a.separator {
   margin-bottom: 15px;
 }
 
-.secondary-navigation .icon:before {
+#sidebar-nav .delete:focus:before,
+#sidebar-nav .delete:hover:before,
+#sidebar-nav .delete.active:before {
+  background-color: #c00;
+}
+
+#sidebar-nav .delete:focus,
+#sidebar-nav .delete:hover,
+#sidebar-nav .delete.active {
+  color: #c00;
+}
+
+#sidebar-nav .icon:before {
   margin-right: 5px;
   width: 15px;
 }
