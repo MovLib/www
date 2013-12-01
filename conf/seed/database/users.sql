@@ -24,7 +24,7 @@
 -- @since 0.0.1-dev
 -- ---------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE `ratings`;
+TRUNCATE TABLE `movies_ratings`;
 TRUNCATE TABLE `sessions`;
 TRUNCATE TABLE `users`;
 
@@ -52,12 +52,14 @@ INSERT INTO `users` SET
   `website`              = 'http://richard.fussenegger.info/'
 ;
 
-INSERT INTO `ratings` (`movie_id`, `user_id`, `rating`) VALUES
+INSERT INTO `movies_ratings` (`movie_id`, `user_id`, `rating`) VALUES
 (1, 1, 5), -- "Roundhay Garden Scene" must have 5 ;)
-(2, 1, 4); -- "Big Buck Bunny"
+(2, 1, 4), -- "Big Buck Bunny"
+(3, 1, 4); -- "The Shawshank Redemption"
 
-UPDATE `movies` SET `rating` = (1 / (1 + 100)) * 5 + (100 / (1 + 100)), `mean_rating` = 5, `votes` = `votes`+ 1 WHERE `id` = 1;
-UPDATE `movies` SET `rating` = (1 / (1 + 100)) * 4 + (100 / (1 + 100)),`mean_rating` = 4, `votes` = `votes`+ 1 WHERE `id` = 2;
+UPDATE `movies` SET `rating` = (1 / (1 + 100)) * 5 + (100 / (1 + 100)), `mean_rating` = 5, `votes` = `votes` + 1 WHERE `id` = 1;
+UPDATE `movies` SET `rating` = (1 / (1 + 100)) * 4 + (100 / (1 + 100)), `mean_rating` = 4, `votes` = `votes` + 1 WHERE `id` = 2;
+UPDATE `movies` SET `rating` = (1 / (1 + 100)) * 4 + (100 / (1 + 100)), `mean_rating` = 4, `votes` = `votes` + 1 WHERE `id` = 3;
 
 -- END "Fleshgrinder"
 

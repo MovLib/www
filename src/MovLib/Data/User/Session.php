@@ -394,7 +394,11 @@ class Session implements \ArrayAccess {
    */
   public function getMovieRating($movieId) {
     global $db;
-    $result = $db->query("SELECT `rating` FROM `ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1", "dd", [ $this->userId, $movieId ])->get_result()->fetch_row();
+    $result = $db->query(
+      "SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1",
+      "dd",
+      [ $this->userId, $movieId ]
+    )->get_result()->fetch_row();
     if (isset($result[0])) {
       return $result[0];
     }

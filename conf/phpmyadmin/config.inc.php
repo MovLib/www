@@ -38,7 +38,7 @@ $cfg["Servers"][$i]["extension"]    = "mysqli";
 $cfg["Servers"][$i]["auth_type"]    = "config";
 $cfg["Servers"][$i]["user"]         = "root";
 $cfg["Servers"][$i]["password"]     = "rootpass";
-$cfg["Servers"][$i]["only_db"]      = [ "movlib", "test", "FlughafenDB" ];
+$cfg["Servers"][$i]["only_db"]      = [ "movlib" ];
 
 // Control User (for Advanced Features)
 //$cfg["Servers"][$i]["controlhost"] = "localhost";
@@ -75,7 +75,6 @@ $cfg["Export"]["sql_procedure_function"]      = false;
 $cfg["Export"]["sql_relation"]                = true;
 $cfg["Export"]["sql_structure_or_data"]       = "data";
 $cfg["ForceSSL"]                              = true;
-//$cfg["PersistentConnections"]                 = true; // Seems to be causing trouble
 $cfg["SaveDir"]                               = "";
 $cfg["ServerDefault"]                         = 1;
 $cfg["ShowAll"]                               = true;

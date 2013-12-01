@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `email` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s unique email address.',
   `image_changed` TIMESTAMP NULL DEFAULT NULL COMMENT 'The avatar’s last change timestamp.',
   `image_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT NULL COMMENT 'The avatar’s file extension.',
-  `password` TINYBLOB NULL COMMENT 'The user’s unique password (hashed).',
+  `password` VARBINARY(255) NULL COMMENT 'The user’s unique password (hashed).',
   `private` TINYINT(1) NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.',
   `profile_views` BIGINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user’s profile views.',
   `real_name` TINYBLOB NULL COMMENT 'The user’s real name.',
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `sex` TINYINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.',
   `system_language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).',
   `time_zone_identifier` VARCHAR(30) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT 'UTC' COMMENT 'User’s time zone ID.',
-  `website` TINYBLOB NULL COMMENT 'The user’s website URL.',
+  `website` VARCHAR(255) NULL COMMENT 'The user’s website URL.',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_users_name` (`name` ASC),
   UNIQUE INDEX `uq_users_email` (`email` ASC),
@@ -352,30 +352,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies_images` (
 ENGINE = InnoDB
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`ratings`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`ratings` (
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `rating` TINYINT UNSIGNED NOT NULL COMMENT 'The rating itself (between 1 and 5).',
-  PRIMARY KEY (`user_id`, `movie_id`),
-  INDEX `fk_ratings_movies` (`movie_id` ASC),
-  INDEX `fk_ratings_users` (`user_id` ASC),
-  CONSTRAINT `fk_ratings_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_ratings_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
 
 SHOW WARNINGS;
 
@@ -835,15 +811,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`articles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`articles` (
-  `article_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The article´s unique ID.',
-  `title` VARCHAR(255) NOT NULL COMMENT 'The article´s English title.',
+  `article_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The article´s unique identifier.',
   `dyn_titles` BLOB NOT NULL COMMENT 'The article´s translated titles.',
-  `text` BLOB NOT NULL COMMENT 'The article´s text.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The article´s translated text.',
   `admin` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Determines whether the article can be edited by users (FALSE - 0) or not (TRUE - 1). Defaults to FALSE (0).',
   `commit` CHAR(40) NULL COMMENT 'The article\'s last commit sha-1 hash.',
-  PRIMARY KEY (`article_id`),
-  UNIQUE INDEX `uq_articles_title` (`title` ASC))
+  PRIMARY KEY (`article_id`))
 ENGINE = InnoDB;
 
 SHOW WARNINGS;
@@ -1010,25 +983,6 @@ COMMENT = 'Contains the label a release is related to.';
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`articles_routes`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`articles_routes` (
-  `article_id` BIGINT UNSIGNED NOT NULL COMMENT 'The article’s unique ID.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The article route’s ISO alpha-2 language code.',
-  `section` VARCHAR(255) NOT NULL COMMENT 'The article’s section (e.g. help).',
-  `route` VARCHAR(255) NOT NULL COMMENT 'The article’s route format.',
-  PRIMARY KEY (`article_id`, `language_code`, `section`, `route`),
-  INDEX `articles_routes_section_route` (`section` ASC, `route` ASC),
-  CONSTRAINT `fk_articles_routes_articles`
-    FOREIGN KEY (`article_id`)
-    REFERENCES `movlib`.`articles` (`article_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`sound_formats`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`sound_formats` (
@@ -1138,11 +1092,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_ratings`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique identifier.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
   `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user’s rating for this movie (1-5).',
   PRIMARY KEY (`movie_id`, `user_id`),
   INDEX `fk_movies_ratings_users` (`user_id` ASC),
+  INDEX `fk_movies_ratings_movies` (`movie_id` ASC),
   CONSTRAINT `fk_movies_ratings_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)

@@ -33,11 +33,11 @@
   "require-dev": {
     "apigen/apigen": "2.8.0",
     "firephp/firephp-core": "v0.4.0",
-    "phpmyadmin/phpmyadmin": "dev-STABLE",
+    "phpmyadmin/phpmyadmin": "dev-MAINT_4_0_9",
     "phpunit/php-code-coverage": "1.3.*@dev",
     "phpunit/phpunit": "3.8.*@dev",
     "phpunit/phpunit-mock-objects": "1.3.*@dev",
-    "symfony/console": "v2.3.5"
+    "symfony/console": "v2.3.7"
   },
   "repositories": [
     {
