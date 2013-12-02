@@ -201,7 +201,7 @@ class DangerZone extends \MovLib\Presentation\Page {
     // Delete own session means sign out.
     if ($_POST["session_id"] == $session->id) {
       $session->destroy();
-      throw new RedirectSeeOtherException($i18n->r("/profile/login"));
+      throw new RedirectSeeOtherException($i18n->r("/profile/sign-in"));
     }
 
     // Delete the session from Memcached and our persistent storage.

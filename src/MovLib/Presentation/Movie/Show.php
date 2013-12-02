@@ -103,7 +103,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         }
       }
       else {
-        $rating = $i18n->t("please {0}sign in{1} to rate this movie", [ "<a href='{$i18n->r("/profile/login")}'>", "</a>" ]);
+        $rating = $i18n->t("please {0}sign in{1} to rate this movie", [ "<a href='{$i18n->r("/profile/sign-in")}'>", "</a>" ]);
       }
 
       // Instantiate the rating form.

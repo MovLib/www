@@ -20,8 +20,8 @@ namespace MovLib\Presentation\Email\Users;
 use \MovLib\Data\User\User;
 
 /**
- * This email template is used if someone tries to register an email address that is already taken by another user. We
- * inform the owner of this email address about the registration attempt.
+ * This email template is used if someone tries to join with an email address that is already taken by another user. We
+ * inform the owner of this email address about the joining attempt.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -29,7 +29,7 @@ use \MovLib\Data\User\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class RegistrationEmailExists extends \MovLib\Presentation\Email\AbstractEmail {
+class EmailExists extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -47,10 +47,10 @@ class RegistrationEmailExists extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   /**
-   * Instantiate new registration email exists email.
+   * Instantiate new <i>email exists</i> email.
    *
    * @param string $email
-   *   The valid email address of the registered user.
+   *   The valid email address of the existing user.
    */
   public function __construct($email) {
     $this->recipient = $email;

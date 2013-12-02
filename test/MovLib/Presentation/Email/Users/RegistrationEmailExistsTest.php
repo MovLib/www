@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Email\Users;
 
-use \MovLib\Presentation\Email\Users\RegistrationEmailExists;
+use \MovLib\Presentation\Email\Users\EmailExists;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\Email\Users\RegistrationEmailExists
@@ -33,7 +33,7 @@ class RegistrationEmailExistsTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Email\Users\RegistrationEmailExists */
+  /** @var \MovLib\Presentation\Email\Users\EmailExists */
   protected $registrationEmailExists;
 
 
@@ -44,7 +44,7 @@ class RegistrationEmailExistsTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->registrationEmailExists = new RegistrationEmailExists();
+    $this->registrationEmailExists = new EmailExists();
   }
 
   /**

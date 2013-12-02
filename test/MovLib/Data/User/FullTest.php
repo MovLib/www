@@ -221,7 +221,7 @@ class FullTest extends \MovLib\TestCase {
     $user->password = $user->hashPassword("PHPUnitPassword1234");
 
     // Test
-    $user->register();
+    $user->join();
     $stmt   = $db->query("SELECT * FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $user->id ]);
     $result = $stmt->get_result()->fetch_assoc();
     $stmt->close();

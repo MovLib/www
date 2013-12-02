@@ -17,7 +17,7 @@
  */
 namespace MovLib\Exception\Client;
 
-use \MovLib\Presentation\Profile\Login;
+use \MovLib\Presentation\Profile\SignIn;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -36,13 +36,13 @@ class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientExcep
 
 
   /**
-   * The login presentation.
+   * The sign in presentation.
    *
    * @internal
    *   Keep this public and allow altering of the presentation by throwing class.
-   * @var \MovLib\Presentation\Users\Login
+   * @var \MovLib\Presentation\Users\SignIn
    */
-  public $loginPresentation;
+  public $signInPresentation;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -51,27 +51,27 @@ class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientExcep
   /**
    * Instantiate new unauthorized exception.
    *
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @param string $message [optional]
-   *   The alert's translated message, defaults to <code>$i18n->t("Please use the form below to sign in or go to the
-   *   {0}registration page to sign up{1}."</code>
+   *   The alert's translated message, defaults to <code>$i18n->t("Please use the form below to sign in or {0}join
+   *   {sitename}{1}."</code>
    * @param string $title [optional]
    *   The alert's translated title, defaults to <code>$i18n->t("You must be signed in to access this content.")</code>.
    * @param string $severity [optional]
    *   The alert's severity level, default to <code>Alert::SEVERITY_ERROR</code>.
    */
   public function __construct($message = null, $title = null, $severity = Alert::SEVERITY_ERROR) {
-    global $kernel, $i18n, $session;
+    global $i18n, $kernel, $session;
     parent::__construct("User has to authenticate to view this content.");
 
-    // Ensure that the login form won't auto-validate any POST data.
+    // Ensure that the sign in form won't auto-validate any POST data.
     $kernel->requestMethod = "GET";
 
     // Use translated defaults if nothing else is provided.
     if (!$message) {
-      $message = $i18n->t("Please use the form below to sign in or go to the {0}registration page to sign up{1}.", [ "<a href='{$i18n->r("/users/registration")}'>", "</a>" ]);
+      $message = $i18n->t("Please use the form below to sign in or {0}join {sitename}{1}.", [ "<a href='{$i18n->r("/profile/join")}'>", "</a>", "sitename" => $kernel->siteName ]);
     }
     if (!$title) {
       $title = $i18n->t("You must be signed in to access this content.");
@@ -80,9 +80,9 @@ class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientExcep
     // Ensure any active session is destroyed.
     $session->destroy();
 
-    // Instantiate the login page and add the alert message to the presentation.
-    $this->loginPresentation          = new Login();
-    $this->loginPresentation->alerts .= new Alert($message, $title, $severity);
+    // Instantiate the sign in page and add the alert message to the presentation.
+    $this->signInPresentation          = new SignIn();
+    $this->signInPresentation->alerts .= new Alert($message, $title, $severity);
   }
 
 
@@ -91,15 +91,13 @@ class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientExcep
 
   /**
    * @inheritdoc
+   * @link http://stackoverflow.com/a/1088127/1251219
    * @global \MovLib\Data\I18n $i18n
    */
   public function getPresentation() {
     global $i18n;
-
-    // Read the following: http://stackoverflow.com/a/1088127/1251219
-    header("WWW-Authenticate: MovLib loation='{$i18n->r("/users/login")}'", true, 401);
-
-    return $this->loginPresentation->getPresentation();
+    header("WWW-Authenticate: MovLib loation='{$i18n->r("/profile/sign-in")}'", true, 401);
+    return $this->signInPresentation->getPresentation();
   }
 
 }

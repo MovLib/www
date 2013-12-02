@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Email\Users;
 use \MovLib\Data\Temporary;
 
 /**
- * Email template that is sent to clients after successfull registration.
+ * Email template that is sent to clients after successfully joining MovLib.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,7 +28,7 @@ use \MovLib\Data\Temporary;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Registration extends \MovLib\Presentation\Email\AbstractEmail {
+class Join extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -60,7 +60,7 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
 
 
   /**
-   * Create registration email for activation of account.
+   * Create join email for activation of account.
    *
    * @param \MovLib\Data\User\Full $user
    *   The user instance.
@@ -86,8 +86,8 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
     global $i18n, $kernel;
     $this->recipient = $this->user->email;
     $this->subject   = $i18n->t("Welcome to {0}!", [ $kernel->siteName ]);
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/profile/registration")}?token=" . rawurlencode(base64_encode($this->recipient));
-    $key             = "registration{$this->user->email}";
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/profile/join")}?{$i18n->r("token")}=" . rawurlencode(base64_encode($this->recipient));
+    $key             = "jointoken{$this->user->email}";
     $tmp             = new Temporary();
     $user            = $tmp->get($key);
     if ($user === false) {
@@ -107,9 +107,9 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
   public function getHTML() {
     global $i18n, $kernel;
     return
-      "<p>{$i18n->t("Hi {0}!", [ $this->user->name ])}</p>" .
-      "<p>{$i18n->t("Thank you for registering at {0}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
-        $kernel->siteName,
+      "<p>{$i18n->t("Hi {username}!", [ "username" => $this->user->name ])}</p>" .
+      "<p>{$i18n->t("Thank you for joining {sitename}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
+        "sitename" => $kernel->siteName,
         "<a href='{$this->link}'>",
         "</a>"
       ])}</p>" .
@@ -131,9 +131,9 @@ class Registration extends \MovLib\Presentation\Email\AbstractEmail {
   public function getPlainText() {
     global $i18n, $kernel;
     return <<<EOT
-{$i18n->t("Hi {0}!", [ $this->user->name ])}
+{$i18n->t("Hi {username}!", [ "username" => $this->user->name ])}
 
-{$i18n->t("Thank your for registering at {0}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ $kernel->siteName ])}
+{$i18n->t("Thank your for joining {sitename}. You may now sign in and activate your new account by clicking the following link or copying and pasting it to your browser:", [ "sitename" => $kernel->siteName ])}
 
 {$this->link}
 

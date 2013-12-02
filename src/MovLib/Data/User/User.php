@@ -56,7 +56,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   const FROM_EMAIL = "email";
 
   /**
-   * Maximum attempts for actions like registration, login, ...
+   * Maximum attempts for actions like signing in, reseting password, ...
    *
    * @var integer
    */

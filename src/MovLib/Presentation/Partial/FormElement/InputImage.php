@@ -116,9 +116,8 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     global $i18n, $kernel, $session;
     if ($session->isAuthenticated === false) {
       throw new UnauthorizedException($i18n->t(
-        "You must be signed in to upload images, please go to the {0}login page{2} to do so. If you don’t have an " .
-        "account yet go to the {1}registration page{2} and sign up for a free {3} account.", [
-          "<a href=''>", "<a href=''>", "</a>", $kernel->siteName
+        "You must be signed in to upload images. If you don’t have an account yet why not {0}join {sitename}{1}?.", [
+          "<a href='{$i18n->r("/profile/join")}'>", "</a>", "sitename" => $kernel->siteName,
         ]
       ));
     }

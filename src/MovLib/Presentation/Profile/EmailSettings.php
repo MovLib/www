@@ -141,7 +141,7 @@ class EmailSettings extends \MovLib\Presentation\Page {
     // anyone use any email we already have in our system. A user experiencing this kind of problem should contact us
     // directly.
     elseif ($this->user->checkEmail($this->email->value) === true) {
-      $errors[] = $i18n->t("This email address is already registered, please choose another one.");
+      $errors[] = $i18n->t("This email address is already is use, please choose another one.");
       $errors[] = $i18n->t("If you feel that receiving this error is a mistake please {0}contact us{1}.", [
         "<a href='{$i18n->r("/contact")}'>", "</a>"
       ]);

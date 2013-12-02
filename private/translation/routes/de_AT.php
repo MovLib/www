@@ -83,8 +83,8 @@ return [
 
   // ------------------------------------------------------------------------------------------------------------------- Profile
   "/profile"                       => "/profil",
-  "/profile/login"                 => "/profil/anmeldung",
-  "/profile/registration"          => "/profil/registrierung",
+  "/profile/sign-in"               => "/profil/anmelden",
+  "/profile/join"                  => "/profil/beitreten",
   "/profile/reset-password"        => "/profil/passwort-zurücksetzen",
   "/profile/sign-out"              => "/profil/abmelden",
   "/profile/account-settings"      => "/profil/kontoeinstellungen",

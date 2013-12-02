@@ -127,11 +127,11 @@ class Session implements \ArrayAccess {
       $this->start();
       $this->id = session_id();
 
-      // Try to load the session from the persistent session storage for registered users if we just generated a new
+      // Try to load the session from the persistent session storage for known users if we just generated a new
       // session ID and have no data stored for it.
       if ($_COOKIE[$this->name] != $this->id && empty($_SESSION)) {
         // Load session data from session storage.
-        $stmt = $db->query("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `session_id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name ]]);
+        $stmt = $db->query("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name ]]);
         $stmt->bind_result($this->authentication, $this->userId);
 
         // We couldn't find a valid session and we have no data, invalid session.
@@ -306,14 +306,14 @@ class Session implements \ArrayAccess {
     if (is_array($sessionId)) {
       $c      = count($sessionId);
       $clause = rtrim(str_repeat("?,", $c), ",");
-      $db->query("DELETE FROM `sessions` WHERE `session_id` IN ({$clause})", str_repeat("s", $c), $sessionId);
+      $db->query("DELETE FROM `sessions` WHERE `id` IN ({$clause})", str_repeat("s", $c), $sessionId);
       for ($i = 0; $i < $c; ++$i) {
         $sessionId[$i] = "{$sessionPrefix}{$sessionId[$i]}";
       }
       $memcached->deleteMulti($sessionId);
     }
     else {
-      $db->query("DELETE FROM `sessions` WHERE `session_id` = ?", "s", [ $sessionId ]);
+      $db->query("DELETE FROM `sessions` WHERE `id` = ?", "s", [ $sessionId ]);
       $memcached->delete("{$sessionPrefix}{$sessionId}");
     }
 
@@ -367,7 +367,7 @@ class Session implements \ArrayAccess {
    *   Numeric array ontaining all sessions currently stored in the persistent session storage for the currently signed
    *   in user. Each entry in the numeric array is an associative array with the following entries:
    *   <ul>
-   *     <li><code>"session_id"</code> is the session's unique ID</li>
+   *     <li><code>"id"</code> is the session's unique ID</li>
    *     <li><code>"authentication"</code> is the timestamp when this session was initially created</li>
    *     <li><code>"ip_address"</code> is the IP address stored during authentication or regeneration</li>
    *     <li><code>"user_agent"</code> is the user agent string submitted during authentication or regeneration</li>
@@ -377,7 +377,7 @@ class Session implements \ArrayAccess {
   public function getActiveSessions() {
     global $db;
     return $db->query(
-      "SELECT `session_id`, UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ?",
+      "SELECT `id`, UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ?",
       "d",
       [ $this->userId ]
     )->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -416,7 +416,7 @@ class Session implements \ArrayAccess {
   public function insert() {
     global $db, $kernel;
     $db->query(
-      "INSERT INTO `sessions` (`session_id`, `user_id`, `user_agent`, `ip_address`, `authentication`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
+      "INSERT INTO `sessions` (`id`, `user_id`, `user_agent`, `ip_address`, `authentication`) VALUES (?, ?, ?, ?, FROM_UNIXTIME(?))",
       "sdssi",
       [ $this->id, $this->userId, $kernel->userAgent, inet_pton($kernel->remoteAddress), $this->authentication ]
     );
@@ -534,17 +534,17 @@ class Session implements \ArrayAccess {
    * @delayed
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Kernel $kernel
-   * @param string $oldSessionId
+   * @param string $oldId
    *   The old session ID that should be updated.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function update($oldSessionId) {
+  public function update($oldId) {
     global $db, $kernel;
     $db->query(
-      "UPDATE `sessions` SET `session_id` = ?, `ip_address` = ?, `user_agent` = ? WHERE `session_id` = ? AND `user_id` = ?",
+      "UPDATE `sessions` SET `id` = ?, `ip_address` = ?, `user_agent` = ? WHERE `id` = ? AND `user_id` = ?",
       "ssssd",
-      [ $this->id, inet_pton($kernel->remoteAddress), $kernel->userAgent, $oldSessionId, $this->userId ]
+      [ $this->id, inet_pton($kernel->remoteAddress), $kernel->userAgent, $oldId, $this->userId ]
     );
     return $this;
   }

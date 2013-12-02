@@ -21,7 +21,7 @@ use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * Sign the current user out and redirect to login presentation.
+ * Sign the current user out and redirect to sign in presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -49,7 +49,7 @@ class SignOut {
         Alert::SEVERITY_SUCCESS
       );
     }
-    throw new RedirectSeeOtherException($i18n->r("/profile/login"));
+    throw new RedirectSeeOtherException($i18n->r("/profile/sign-in"));
   }
 
 }

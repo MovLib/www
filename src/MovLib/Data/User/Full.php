@@ -382,22 +382,22 @@ class Full extends \MovLib\Data\User\User {
   }
 
   /**
-   * Register a new user account.
+   * Join MovLib.
    *
    * After the user clicked the activation link for the account, we are finally able to create an account for her/him.
    * The validation process is something the model does not care about, this is handled by the presenter, who's also
    * responsible to display the correct error messages. This method simply inserts the new data. Note that the object
-   * this method is called on will automatically become the user that was just registered. Think of it like passing
-   * the variable by reference. So if you call this on the global user object, the formerly anonymous global user is
-   * now the registered new user. This is the desired behavior during our registration process, because we
-   * want to display the password settings page within the user's account directly.
+   * this method is called on will automatically become the user that just joined. Think of it like passing the
+   * variable by reference. So if you call this on the global user object, the formerly anonymous global user is now the
+   * newly joined user. This is the desired behavior during our joining process, because we want to display the password
+   * settings page within the user's account directly.
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function register() {
+  public function join() {
     global $db, $i18n;
     $stmt = $db->query(
       "INSERT INTO `users` (`dyn_about_me`, `email`, `name`, `password`, `system_language_code`) VALUES ('', ?, ?, ?, ?)",

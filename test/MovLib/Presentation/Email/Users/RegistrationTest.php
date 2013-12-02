@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Email\Users;
 
-use \MovLib\Presentation\Email\Users\Registration;
+use \MovLib\Presentation\Email\Users\Join;
 
 /**
  * @coversDefaultClass \MovLib\Presentation\Email\Users\Registration
@@ -33,7 +33,7 @@ class RegistrationTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Email\Users\Registration */
+  /** @var \MovLib\Presentation\Email\Users\Join */
   protected $registration;
 
 
@@ -44,7 +44,7 @@ class RegistrationTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->registration = new Registration();
+    $this->registration = new Join();
   }
 
   /**

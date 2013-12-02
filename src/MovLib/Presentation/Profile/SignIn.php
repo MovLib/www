@@ -25,7 +25,7 @@ use \MovLib\Presentation\Partial\FormElement\InputPassword;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 
 /**
- * User login presentation.
+ * User sign in presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -33,7 +33,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Login extends \MovLib\Presentation\Page {
+class SignIn extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Users\TraitUsers;
 
@@ -61,7 +61,7 @@ class Login extends \MovLib\Presentation\Page {
 
 
   /**
-   * Instantiate new user login presentation.
+   * Instantiate new sign in presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
@@ -77,15 +77,15 @@ class Login extends \MovLib\Presentation\Page {
     }
 
     // Start rendering the page.
-    $this->init($i18n->t("Login"));
+    $this->init($i18n->t("Sign In"));
 
-    // We need to know the translated version of the login route for comparison.
-    $routeLogin = $action = $i18n->r("/profile/login");
+    // We need to know the translated version of the sign in route for comparison.
+    $routeSignIn = $action = $i18n->r("/profile/sign-in");
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
-    if ($kernel->requestURI != $routeLogin && empty($_GET["redirect_to"])) {
+    if ($kernel->requestURI != $routeSignIn && empty($_GET["redirect_to"])) {
       $_GET["redirect_to"] = $kernel->requestURI;
     }
 
@@ -94,7 +94,7 @@ class Login extends \MovLib\Presentation\Page {
     }
 
     // Ensure all views are using the correct path info to render themselves.
-    $kernel->requestURI = $routeLogin;
+    $kernel->requestURI = $routeSignIn;
 
     $this->email                      = new InputEmail();
     $this->email->setHelp("<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
@@ -134,7 +134,7 @@ class Login extends \MovLib\Presentation\Page {
       try {
         $session->authenticate($this->email->value, $this->password->value);
         $kernel->alerts .= new Alert(
-          $i18n->t("Login was successful."),
+          $i18n->t("Successfully Signed In!"),
           $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]),
           Alert::SEVERITY_SUCCESS
         );

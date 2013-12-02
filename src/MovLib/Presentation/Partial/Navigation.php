@@ -143,11 +143,14 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    *     applied to the menuitem</li>
    *   </ul>
    *   For a more in-depth explanation have a look at {@see AbstractPage::a()}.
+   * @param boolean $hideTitle [optional]
+   *   Whether to show or hide the navigation's title, defaults to <code>TRUE</code> (hide).
    */
-  public function __construct($id, $title, array $menuitems) {
+  public function __construct($id, $title, array $menuitems, $hideTitle = true) {
     $this->id        = $id;
     $this->title     = $title;
     $this->menuitems = $menuitems;
+    $this->hideTitle = $hideTitle;
   }
 
   /**

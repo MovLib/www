@@ -211,63 +211,69 @@ class Page extends \MovLib\Presentation\AbstractPage {
   /**
    * Get the reference header, including logo, navigations and search form.
    *
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
    * @return string
    *   The reference header.
    */
   protected function getHeader() {
-    global $kernel, $i18n, $session;
+    global $i18n, $kernel, $session;
 
-    $moviesNavigation = new Navigation("movies-mega", $i18n->t("Movies"), [
-      [ $i18n->r("/movies"),        $i18n->t("Latest movie entries"), [ "title" => $i18n->t("Have a look at the latest movie entries at {0}.", [ $kernel->siteName ]) ] ],
-      [ $i18n->r("/movie/create"),  $i18n->t("Create new movie"),     [ "title" => $i18n->t("Add a new movie to the {0} library.", [ $kernel->siteName ]) ]             ],
+    // Sub-navigations of the explore menuitem.
+    $moviesNavigation  = new Navigation("movies-mega", $i18n->t("Movies"), [
+      [ $i18n->r("/movies"), $i18n->t("Latest movie entries") ],
+      [ $i18n->r("/movie/create"), $i18n->t("Create new movie") ],
+      [ $i18n->r("/movies/reviews"), $i18n->t("Latest movie reviews") ],
+      [ $i18n->r("/movie/random"), $i18n->t("Go to random movie") ],
+    ], false);
+    $seriesNavigation  = new Navigation("series-mega", $i18n->t("Series"), [
+      [ $i18n->r("/series"), $i18n->t("Latest series entries") ],
+      [ $i18n->r("/series/create"), $i18n->t("Create new series") ],
+      [ $i18n->r("/series/reviews"), $i18n->t("Latest series reviews") ],
+      [ $i18n->r("/series/random"), $i18n->t("Go to random series") ],
+    ], false);
+    $personsCompaniesNavigation = new Navigation("persons-companies-mega", $i18n->t("Persons and Companies"), [
+      [ $i18n->r("/persons"), $i18n->t("Latest person entries") ],
+      [ $i18n->r("/person/create"), $i18n->t("Create new person") ],
+      [ $i18n->r("/person/random"), $i18n->t("Go to random person") ],
+      [ $i18n->r("/companies"), $i18n->t("Latest company entries") ],
+      [ $i18n->r("/company/create"), $i18n->t("Create new company") ],
+      [ $i18n->r("/company/random"), $i18n->t("Go to random company") ],
+    ], false);
+    $otherNavigation   = new Navigation("other-mega", $i18n->t("Other"), [
+      [ $i18n->r("/genres"), $i18n->t("Overview of all genres") ],
+      [ $i18n->r("/articles"), $i18n->t("Overview of all articles") ],
+      [ $i18n->r("/help"), $i18n->t("Overview of all help articles") ],
+    ], false);
+
+    // Put them all together.
+    $mainNavigation = new Navigation("main", $i18n->t("Main Navigation"), [
+      "<div class='expander'>{$i18n->t("Explore")}<div class='row'>" .
+        "<div class='span span--3'>{$moviesNavigation}</div>" .
+        "<div class='span span--3'>{$seriesNavigation}</div>" .
+        "<div class='span span--3'>{$personsCompaniesNavigation}</div>" .
+        "<div class='span span--3'>{$otherNavigation}</div>" .
+      "</div></div>"
     ]);
-    $moviesNavigation->hideTitle = false;
-
-    $seriesNavigation             = new Navigation("series-mega", $i18n->t("Series"), [ ]);
-    $seriesNavigation->hideTitle  = false;
-
-    $personsNavigation            = new Navigation("persons-mega", $i18n->t("Persons"), [ ]);
-    $personsNavigation->hideTitle = false;
-
-    $otherNavigation              = new Navigation("other-mega", $i18n->t("Other"), [ ]);
-    $otherNavigation->hideTitle   = false;
 
     if ($session->isAuthenticated === true) {
-      $mainMenuitems = [
-        [ $i18n->r("/profile"),           $i18n->t("Profile"),    [ "title" => $i18n->t("Go to your personal user page.")                                       ]],
-        [ $i18n->r("/profile/watchlist"), $i18n->t("Watchlist"),  [ "title" => $i18n->t("Have a look at the latest changes of the content your are watching.")  ]],
-        [ $i18n->r("/profile/sign-out"),  $i18n->t("Sign Out"),   [ "title" => $i18n->t("Click here to sign out from your current session.")                    ]],
+      $userNavigation = [
+
       ];
     }
     else {
-      $mainMenuitems = [
-        [ $i18n->r("/profile/registration"), $i18n->t("Registration"), [ "title" => $i18n->t("Click here to sign up for a new account.") ]],
-        [ $i18n->r("/profile/login"),        $i18n->t("Login"),        [ "title" => $i18n->t("Click here to sign in to your account.")   ]],
+      $userNavigation = [
+        [ $i18n->r("/profile/sign-in"), $i18n->t("Sign In") ],
+        [ $i18n->r("/profile/join"), $i18n->t("Join") ],
+        [ $i18n->r("/profile/reset-password"), $i18n->t("Reset Password") ],
       ];
     }
-    $mainNavigation = new Navigation("main", $i18n->t("Main Navigation"), $mainMenuitems);
+    $userNavigation = new Navigation("user", $i18n->t("User Navigation"), $userNavigation);
 
     return
       "<a class='visuallyhidden' href='#content'>{$i18n->t("Skip to content")}</a>" .
       "<header id='header'>" .
-        "<div id='mega-nav-container'>" .
-          "<div id='mega-nav'>" .
-            "<div class='container'>{$this->breadcrumb}" .
-              "<div class='row'>" .
-                "<div class='span span--3'>{$moviesNavigation}</div>" .
-                "<div class='span span--3'>{$seriesNavigation}</div>" .
-                "<div class='span span--3'>{$personsNavigation}</div>" .
-                "<div class='span span--3'>{$otherNavigation}</div>" .
-              "</div>" . // .row
-            "</div>" . // .container
-          "</div>" . // #mega-nav
-          // No title and nothing else for this element. Handicapped people are not interested in an element that is
-          // only here for presentational purposes.
-          "<div class='container'><span id='mega-nav-switch'><span class='button button--inverse'><i></i></span></span></div>" .
-        "</div>" . // #mega-nav-container
         "<div class='container'>" .
           "<div class='row'>" .
             "{$this->getHeaderLogo()}{$mainNavigation}" .
@@ -277,9 +283,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
               "<input accesskey='f' id='search-input' name='searchterm' required tabindex='{$this->getTabindex()}' title='{$i18n->t("Enter the search term you wish to search for and hit enter.")}' type='search'>" .
               "<button title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'><i class='ico-search'></i></button>" .
             "</form>" .
-            "<div class='button button--inverse ico-user-add'>" .
-              // @todo Add user navigation
-            "</div>" .
+            "<div class='button button--inverse ico-user-add'>{$userNavigation}</div>" .
           "</div>" . // .row
         "</div>" . // .container
       "</header>"

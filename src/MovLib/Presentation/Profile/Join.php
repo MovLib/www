@@ -23,8 +23,8 @@ use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\ValidationException;
-use \MovLib\Presentation\Email\Users\Registration as RegistrationEmail;
-use \MovLib\Presentation\Email\Users\RegistrationEmailExists;
+use \MovLib\Presentation\Email\Users\Join as JoinEmail;
+use \MovLib\Presentation\Email\Users\EmailExists;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
@@ -34,7 +34,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
 
 /**
- * User registration presentation.
+ * User join presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -42,7 +42,7 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Registration extends \MovLib\Presentation\Page {
+class Join extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Users\TraitUsers;
 
@@ -51,7 +51,7 @@ class Registration extends \MovLib\Presentation\Page {
 
 
   /**
-   * Flag indicating if this registration attempt was accepted or not.
+   * Whether this join attempt was accepted or not.
    *
    * @var boolean
    */
@@ -90,23 +90,23 @@ class Registration extends \MovLib\Presentation\Page {
 
 
   /**
-   * Instantiate new user registration presentation.
+   * Instantiate new user join presentation.
    *
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Exception\Client\RedirectSeeOtherException
    */
   public function __construct() {
-    global $kernel, $i18n, $session;
+    global $i18n, $kernel, $session;
 
-    // If the user is logged in, no need for registration.
+    // If the user is signed in, no need for joining.
     if ($session->isAuthenticated === true) {
       throw new RedirectSeeOtherException($i18n->r("/my"));
     }
 
     // Start rendering the page.
-    $this->init($i18n->t("Registration"));
+    $this->init($i18n->t("Join"));
 
     $this->username = new InputText("username", $i18n->t("Username"), [
       "maxlength"   => UserFull::NAME_MAXIMUM_LENGTH,
@@ -119,7 +119,7 @@ class Registration extends \MovLib\Presentation\Page {
         [ UserFull::NAME_ILLEGAL_CHARACTERS, UserFull::NAME_MAXIMUM_LENGTH ]
       ),
     ]);
-    $this->username->setHelp("<a href='{$i18n->r("/profile/login")}'>{$i18n->t("Already have an account?")}</a>", false);
+    $this->username->setHelp("<a href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Already have an account?")}</a>", false);
 
     $this->email    = new InputEmail();
     $this->password = new InputPassword();
@@ -172,14 +172,14 @@ class Registration extends \MovLib\Presentation\Page {
    * The redirect exception is thrown if the supplied data is valid. The user will be redirected to her or his personal
    * dashboard.
    *
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @param array $errors [optional]
    *   {@inheritdoc}
    * @return this
    */
   public function validate(array $errors = null) {
-    global $kernel, $i18n;
+    global $i18n, $kernel;
     $user           = new UserFull();
     $user->name     = $_POST[$this->username->id]; // We want to validate the original data again
     $usernameErrors = null;
@@ -224,27 +224,26 @@ class Registration extends \MovLib\Presentation\Page {
 
     if (isset($errors[$this->terms->id])) {
       $errors[$this->terms->id] = $i18n->t(
-        "You have to accept the {0}Privacy Policy{2} and {1}Terms of Use{2} to sign up.",
-        [ "<a href='{$i18n->t("/privacy-policy")}'><a href='{$i18n->r("/terms-of-use")}'></a>" ]
+        "You have to accept the {0}Privacy Policy{2} and {1}Terms of Use{2} to join {sitename}.",
+        [ "<a href='{$i18n->t("/privacy-policy")}'><a href='{$i18n->r("/terms-of-use")}'></a>", "sitename" => $kernel->siteName ]
       );
     }
 
     if ($this->checkErrors($errors) === false) {
       $user->email    = $this->email->value;
       $user->password = $user->hashPassword($this->password->value);
-      if ((new Memcached())->isRemoteAddressFlooding("registration") === true) {
-        $this->checkErrors($i18n->t("Too many registration attempts from this IP address. Please wait one hour before trying again."));
+      if ((new Memcached())->isRemoteAddressFlooding("join") === true) {
+        $this->checkErrors($i18n->t("Too many joining attempts from this IP address. Please wait one hour before trying again."));
       }
 
-      // Don't tell the user who's trying to register that we already have this email, otherwise it would be possible
-      // to find out which emails we have in our system. Instead we send a message to the user this email belongs to.
+      // Don't tell the user who's trying to join that we already have this email, otherwise it would be possible to
+      // find out which emails we have in our system. Instead we send a message to the user this email belongs to.
       if ($user->checkEmail($user->email) === true) {
-        $kernel->sendEmail(new RegistrationEmailExists($user->email));
+        $kernel->sendEmail(new EmailExists($user->email));
       }
-      // If this is a vliad new registration generate the authentication token and insert the submitted data into our
-      // temporary database, and of course send out the email with the token.
+      // Send email with activation token if this emai isn't already in use.
       else {
-        $kernel->sendEmail(new RegistrationEmail($user));
+        $kernel->sendEmail(new JoinEmail($user));
       }
 
       // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
@@ -254,7 +253,7 @@ class Registration extends \MovLib\Presentation\Page {
       http_response_code(202);
       $this->alerts .= new Alert(
         $i18n->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email->value) ]),
-        $i18n->t("Registration Successful"),
+        $i18n->t("Successfully Joined"),
         Alert::SEVERITY_SUCCESS
       );
     }
@@ -263,7 +262,7 @@ class Registration extends \MovLib\Presentation\Page {
   }
 
   /**
-   * Validate the submitted authentication token, register, sign in and redirect to password settings.
+   * Validate the submitted authentication token, join, sign in and redirect to password settings.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
@@ -280,10 +279,10 @@ class Registration extends \MovLib\Presentation\Page {
 
       // Email is valid, try to load the user from the temporary database.
       $tmp  = new Temporary();
-      $user = $tmp->get("registration{$email}");
+      $user = $tmp->get("join{$email}");
       if (!($user instanceof UserFull)) {
         throw new ValidationException(
-          "<p>{$i18n->t("We couldn’t find any registration data for your token.")}</p>" .
+          "<p>{$i18n->t("We couldn’t find any activation data for your token.")}</p>" .
           "<ul>" .
             "<li>{$i18n->t("The token might have expired, remember that you only have 24 hours to activate your account.")}</li>" .
             "<li>{$i18n->t("The token might be invalid, check the email again we’ve sent you and be sure to copy the whole link.")}</li>" .
@@ -311,14 +310,14 @@ class Registration extends \MovLib\Presentation\Page {
       }
 
       // Register the new account (this can't be done delayed because the user needs to validate directly after the
-      // redirect) and register the deletion of the temporary database entry.
-      $user->register();
-      $kernel->delayMethodCall([ $tmp, "delete" ], [ "registration{$user->email}" ]);
+      // redirect) and stack the deletion of the temporary database entry.
+      $user->join();
+      $kernel->delayMethodCall([ $tmp, "delete" ], [ "join{$user->email}" ]);
 
       // The user has to sign in, this makes sure that the person is really who she or he claims to be. The password is
-      // entered by the user during registration and never displayed anywhere to anyone (plus we hash it right away in
-      // the validate method of this class, so even we have no clue what it is). Even if somebody was able to activate
-      // an account for another person (man in the middle; very unlikely) she or he couldn't access that new account
+      // entered by the user while joining and never displayed anywhere to anyone (plus we hash it right away in the
+      // validate method of this class, so even we have no clue what it is). Even if somebody was able to activate an
+      // account for another person (man in the middle; very unlikely) she or he couldn't access that new account
       // because that person would also need the secret password.
       throw new UnauthorizedException(
         $i18n->t("Your account has been activated, please sign in with your email address and your secret password."),
@@ -331,9 +330,9 @@ class Registration extends \MovLib\Presentation\Page {
     }
     catch (UnauthorizedException $e) {
       if (isset($user) && isset($user->email)) {
-        $e->loginPresentation->email->attributes["value"] = $user->email;
-        unset($e->loginPresentation->email->attributes[array_search("autofocus", $e->loginPresentation->email->attributes)]);
-        $e->loginPresentation->password->attributes[]     = "autofocus";
+        $e->signInPresentation->email->attributes["value"] = $user->email;
+        unset($e->signInPresentation->email->attributes[array_search("autofocus", $e->signInPresentation->email->attributes)]);
+        $e->signInPresentation->password->attributes[]     = "autofocus";
       }
       throw $e;
     }

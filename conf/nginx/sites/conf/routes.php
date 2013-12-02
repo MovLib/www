@@ -418,13 +418,13 @@ location ^~ <?= $r("/profile") ?> {
     return 301 <?= $r("/profile") ?>;
   }
 
-  location = <?= $r("/profile/login") ?> {
-    set $movlib_presenter "Profile\\Login";
+  location = <?= $r("/profile/sign-in") ?> {
+    set $movlib_presenter "Profile\\SignIn";
     try_files $movlib_cache @php;
   }
 
-  location = <?= $r("/profile/registration") ?> {
-    set $movlib_presenter "Profile\\Registration";
+  location = <?= $r("/profile/join") ?> {
+    set $movlib_presenter "Profile\\Join";
     try_files $movlib_cache @php;
   }
 
