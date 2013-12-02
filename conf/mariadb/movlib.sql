@@ -215,7 +215,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
   `crew_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The crew’s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `job_id` INT UNSIGNED NOT NULL COMMENT 'The job’s unique ID.',
+  `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The job’s unique ID.',
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique ID.',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique ID.',
   PRIMARY KEY (`crew_id`, `movie_id`),
@@ -501,9 +501,9 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID.',
-  `award_count` INT NOT NULL COMMENT 'The award\'s number for a movie.',
-  `award_id` INT UNSIGNED NOT NULL COMMENT 'The award\'s unique ID.',
-  `award_category_id` INT UNSIGNED NULL COMMENT 'The award category´s ID.',
+  `award_count` BIGINT NOT NULL COMMENT 'The award\'s number for a movie.',
+  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award\'s unique ID.',
+  `award_category_id` BIGINT UNSIGNED NULL COMMENT 'The award category´s ID.',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The unique ID of the person who received the award.',
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The unique ID of the company which received the award.',
   `year` SMALLINT UNSIGNED NOT NULL COMMENT 'The year the award has been given to the movie.',
