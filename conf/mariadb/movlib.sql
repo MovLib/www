@@ -161,16 +161,18 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `country` CHAR(2) NULL COMMENT 'The person’s birth country.',
   `city` TINYBLOB NULL COMMENT 'The person’s birth city.',
   `region` TINYBLOB NULL COMMENT 'The person’s birth region.',
-  `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The person\'s sex according to ISO 5218.',
+  `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The person\'s sex according to ISO 5218.\n\n0 = not known\n1 = male\n2 = female\n9 = not applicable',
   `rank` BIGINT UNSIGNED NULL COMMENT 'The person\'s global rank.',
   `dyn_aliases` BLOB NOT NULL COMMENT 'The person’s aliases.',
   `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s translatable biographies.',
   `dyn_links` BLOB NOT NULL COMMENT 'The person’s external weblinks.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this person was created.',
-  `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.',
+  `commit` CHAR(40) NULL COMMENT 'The person’s last history commit sha-1 hash.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
-COMMENT = 'Contains all person related data.';
+COMMENT = 'Contains all persons.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -178,16 +180,15 @@ SHOW WARNINGS;
 -- Table `movlib`.`jobs`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`jobs` (
-  `job_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The job’s unique ID.',
-  `title` VARCHAR(100) NOT NULL COMMENT 'The job’s unique English title.',
-  `description` BLOB NOT NULL COMMENT 'The job’s English description.',
-  `dyn_titles` BLOB NOT NULL COMMENT 'The job title’s translations.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The job description’s translations.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The job’s unique ID.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this job was created.',
-  PRIMARY KEY (`job_id`),
-  UNIQUE INDEX `uq_jobs_title` (`title` ASC))
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The job’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The job’s title in various languages. Keys are ISO alpha-2 language codes.',
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
-COMMENT = 'Contains all job related data.';
+COMMENT = 'Contains all jobs.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -200,10 +201,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this company was marked as deleted or not. TRUE (1) if this company was marked as deleted, default is FALSE (0).',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s description in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_links` BLOB NOT NULL COMMENT 'External links belonging to this company. The link’s hostname serves as key.',
-  `name` VARCHAR(255) NOT NULL COMMENT 'The company’s name.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
-COMMENT = 'Contains all movie companies.'
+COMMENT = 'Contains all companies.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_crew_jobs`
     FOREIGN KEY (`job_id`)
-    REFERENCES `movlib`.`jobs` (`job_id`)
+    REFERENCES `movlib`.`jobs` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_crew_companies`
@@ -484,16 +484,15 @@ SHOW WARNINGS;
 -- Table `movlib`.`awards`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`awards` (
-  `award_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.',
-  `name` VARCHAR(100) NOT NULL COMMENT 'The award\'s unique English name.',
-  `description` BLOB NULL COMMENT 'The award’s English description.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The award’s title translations.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description translations.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this award was created.',
-  PRIMARY KEY (`award_id`),
-  UNIQUE INDEX `uq_awards_name` (`name` ASC))
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award’s unique ID.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award was created.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The award’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The award’s name in various languages. Keys are ISO alpha-2 language codes.',
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
-COMMENT = 'Contains all job related data.';
+COMMENT = 'Contains all awards.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -516,7 +515,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   INDEX `fk_persons_awards_companies` (`company_id` ASC),
   CONSTRAINT `fk_movies_awards_awards`
     FOREIGN KEY (`award_id`)
-    REFERENCES `movlib`.`awards` (`award_id`)
+    REFERENCES `movlib`.`awards` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_awards_movies`
@@ -656,7 +655,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains all movie images.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -821,13 +819,16 @@ SHOW WARNINGS;
 -- Table `movlib`.`articles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`articles` (
-  `article_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The article´s unique identifier.',
-  `dyn_titles` BLOB NOT NULL COMMENT 'The article´s translated titles.',
-  `dyn_texts` BLOB NOT NULL COMMENT 'The article´s translated text.',
-  `admin` TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Determines whether the article can be edited by users (FALSE - 0) or not (TRUE - 1). Defaults to FALSE (0).',
-  `commit` CHAR(40) NULL COMMENT 'The article\'s last commit sha-1 hash.',
-  PRIMARY KEY (`article_id`))
-ENGINE = InnoDB;
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The article´s unique identifier.',
+  `dyn_texts` BLOB NOT NULL COMMENT 'The article’s text in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The article’s title in various languages. Keys are ISO alpha-2 language codes.',
+  `admin` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether the article can only be edited by admins (TRUE - 1) or not  (FALSE - 0). Defaults to FALSE (0).',
+  `commit` CHAR(40) NULL COMMENT 'The article’s last history commit sha-1 hash.',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+COMMENT = 'Contains all articles.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -892,7 +893,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_types` (
   `dyn_names` BLOB NOT NULL COMMENT 'The release type’s name in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
-COMMENT = 'The release types (e.g. DVD, VHS,..).'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -939,7 +939,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains all releases. Every release has to belong to a mast /* comment truncated */ /*er release.*/'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -987,8 +986,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`releases_labels` (
     REFERENCES `movlib`.`companies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains the label a release is related to.';
+ENGINE = InnoDB;
 
 SHOW WARNINGS;
 
@@ -1037,11 +1035,11 @@ SHOW WARNINGS;
 -- Table `movlib`.`releases_subtitles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`releases_subtitles` (
-  `is_hearing_impaired` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag that determines whether the subtitle is hearing impaired or not (defaults to FALSE).',
+  `impaired` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag that determines whether the subtitle is hearing impaired or not (defaults to FALSE).',
   `language_code` CHAR(2) NOT NULL COMMENT 'The releases subtitle’s ISO alpha-2 language code.',
   `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release subtitle’s unique ID.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The release subtitle’s comment in various languages. Keys are ISO alpha-2 language codes.',
-  PRIMARY KEY (`is_hearing_impaired`, `language_code`, `release_id`),
+  PRIMARY KEY (`impaired`, `language_code`, `release_id`),
   CONSTRAINT `fk_releases_subtitles_releases`
     FOREIGN KEY (`release_id`)
     REFERENCES `movlib`.`releases` (`id`)
@@ -1082,19 +1080,22 @@ SHOW WARNINGS;
 -- Table `movlib`.`awards_categories`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`awards_categories` (
-  `award_id` INT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
-  `award_category_id` INT UNSIGNED NOT NULL COMMENT 'The award category’s ID within the award.',
-  `name` VARCHAR(100) NOT NULL COMMENT 'The award category´s English name.',
-  `description` BLOB NULL COMMENT 'The award category’s English description.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The award category’s title translations.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The award category’s description translations.',
-  PRIMARY KEY (`award_id`, `award_category_id`),
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The award category’s ID within the award.',
+  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award’s unique ID.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp on which this award category was created.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The award categorie’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The award categorie’s namein various languages. Keys are ISO alpha-2 language codes.',
+  PRIMARY KEY (`id`, `award_id`),
+  INDEX `fk_awards_categories_awards_idx` (`award_id` ASC),
   CONSTRAINT `fk_awards_categories_awards`
     FOREIGN KEY (`award_id`)
-    REFERENCES `movlib`.`awards` (`award_id`)
+    REFERENCES `movlib`.`awards` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains all award categories'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -1255,7 +1256,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_lists` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains all related data to users lists.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -1286,8 +1286,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_movies_lists` (
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains movie lists of users.';
+ENGINE = InnoDB;
 
 SHOW WARNINGS;
 
