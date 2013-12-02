@@ -75,7 +75,7 @@ INSERT INTO `persons_photos` SET
     'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;',
     'de', '&lt;p&gt;Der französische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen können der Quelle entnommen werden: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;'
   ),
-  `styles`           = 'a:2:{i:70;a:2:{s:5:"width";i:70;s:6:"height";i:70;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:140;}}',
+  `styles`           = 'a:2:{i:60;a:2:{s:5:"width";i:60;s:6:"height";i:60;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:140;}}',
   `deleted`          = false,
   `user_id`          = 1
 ;
@@ -147,6 +147,21 @@ INSERT INTO `persons` SET
   `country`         = 'NL'
 ;
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
+INSERT INTO `persons_photos` SET
+  `id`               = 1,
+  `person_id`        = @sacha_goedegebure_id,
+  `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
+  `width`            = 363,
+  `height`           = 363,
+  `filesize`         = 42010,
+  `extension`        = 'jpg',
+  `changed`          = '2013-11-28 15:13:42',
+  `created`          = '2013-11-28 15:13:42',
+  `dyn_descriptions` = '',
+  `styles`           = 'a:2:{i:60;a:2:{s:5:"width";i:60;s:6:"height";i:60;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:140;}}',
+  `deleted`          = false,
+  `user_id`          = 1
+;
 
 INSERT INTO `movies_directors` SET `movie_id` = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id;
 INSERT INTO `movies_countries` SET `movie_id` = @big_buck_bunny_id, `country_code` = 'US';
@@ -170,7 +185,7 @@ INSERT INTO `movies_images` SET
   `dyn_descriptions` = COLUMN_CREATE(
     'en', '&lt;p&gt;&lt;a href="http://download.blender.org/peach/presskit.zip"&gt;“Big Buck Bunny” presskit&lt;/a&gt;&lt;/p&gt;'
   ),
-  `styles`           = 'a:4:{i:70;a:2:{s:5:"width";i:70;s:6:"height";i:99;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:197;}i:220;a:2:{s:5:"width";i:220;s:6:"height";i:309;}i:620;a:2:{s:5:"width";i:620;s:6:"height";i:871;}}',
+  `styles`           = 'a:4:{i:60;a:2:{s:5:"width";i:60;s:6:"height";i:84;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:197;}i:220;a:2:{s:5:"width";i:220;s:6:"height";i:309;}i:620;a:2:{s:5:"width";i:620;s:6:"height";i:871;}}',
   `user_id`          = 1
 ;
 
