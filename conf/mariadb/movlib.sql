@@ -1267,7 +1267,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`users_movies_lists` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
-  `users_lists_id` INT UNSIGNED NOT NULL COMMENT 'The users-list’s unique ID within the user.',
+  `users_lists_id` BIGINT UNSIGNED NOT NULL COMMENT 'The users-list’s unique ID within the user.',
   PRIMARY KEY (`movie_id`, `user_id`, `users_lists_id`),
   INDEX `fk_users_movielists_movies_idx` (`movie_id` ASC),
   INDEX `fk_users_movies_lists_users_idx` (`user_id` ASC),
