@@ -268,26 +268,26 @@ SHOW WARNINGS;
 -- Table `movlib`.`persons_photos`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
-  `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The photo’s unique ID within the person.',
+  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The person photo’s unique ID within the person.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
-  `deleted` TINYINT(1) NOT NULL DEFAULT true,
-  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The photo’s upvotes.',
-  `license_id` INT UNSIGNED NULL COMMENT 'The license\'s unique ID this image is under.',
-  `user_id` BIGINT UNSIGNED NULL,
-  `width` SMALLINT UNSIGNED NULL COMMENT 'The photo’s width.',
-  `height` SMALLINT UNSIGNED NULL COMMENT 'The photo’s height.',
-  `filesize` INT UNSIGNED NULL COMMENT 'The photo’s size in Bytes.',
-  `extension` CHAR(3) NULL COMMENT 'The photo’s extension without leading dot.',
-  `changed` TIMESTAMP NULL COMMENT 'The last time this photo was updated.',
-  `created` TIMESTAMP NULL COMMENT 'The photo’s creation time.',
-  `dyn_descriptions` BLOB NULL COMMENT 'The photo’s translatable descriptions.',
-  `styles` BLOB NULL,
+  `deleted` TINYINT(1) NOT NULL DEFAULT true COMMENT 'The flag that determines whether this person photo is marked as deleted (TRUE(1)) or not (FALSE(0)), default is TRUE(1).',
+  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person photo’s upvote count.',
+  `license_id` BIGINT UNSIGNED NULL COMMENT 'The license’s unique ID.',
+  `user_id` BIGINT UNSIGNED NULL COMMENT 'The user’s unique ID.',
+  `changed` TIMESTAMP NULL COMMENT 'The last time this person photo was updated as timestamp.',
+  `created` TIMESTAMP NULL COMMENT 'The person photo’s creation time as timestamp.',
+  `dyn_descriptions` BLOB NULL COMMENT 'The person photo’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `extension` CHAR(3) NULL COMMENT 'The person photo’s extension without leading dot.',
+  `filesize` INT UNSIGNED NULL COMMENT 'The person photo’s original size in Bytes.',
+  `height` SMALLINT UNSIGNED NULL COMMENT 'The person photo’s original height.',
+  `styles` BLOB NULL COMMENT 'Serialized array containing width and height of various image styles.',
+  `width` SMALLINT UNSIGNED NULL COMMENT 'The person photo’s original width.',
   PRIMARY KEY (`id`, `person_id`),
   INDEX `fk_persons_photos_persons` (`person_id` ASC),
   INDEX `fk_persons_photos_images` (`id` ASC),
   INDEX `fk_persons_photos_licenses` (`license_id` ASC),
   INDEX `persons_photos_order_by_upvotes` (`upvotes` ASC),
-  INDEX `fk_persons_photos_users1_idx` (`user_id` ASC),
+  INDEX `fk_persons_photos_users_idx` (`user_id` ASC),
   CONSTRAINT `fk_persons_photos_persons`
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`person_id`)
@@ -298,12 +298,13 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
     REFERENCES `movlib`.`licenses` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_photos_users1`
+  CONSTRAINT `fk_persons_photos_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
+COMMENT = 'Contains all person photos.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -313,27 +314,27 @@ SHOW WARNINGS;
 -- Table `movlib`.`companies_images`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`companies_images` (
-  `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The company image’s unique identifier.',
-  `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company’s unique identifier.',
+  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The company image’s unique ID within the company.',
+  `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company’s unique ID.',
   `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The company image’s type (enum from Data class).',
-  `deleted` TINYINT(1) NOT NULL DEFAULT true,
-  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company image’s upvotes.',
-  `license_id` INT UNSIGNED NULL COMMENT 'The company image’s unique license identifier.',
-  `user_id` BIGINT UNSIGNED NULL,
-  `width` SMALLINT UNSIGNED NULL COMMENT 'The company image’s width.',
-  `height` SMALLINT UNSIGNED NULL COMMENT 'The company image’s height.',
-  `filesize` INT UNSIGNED NULL COMMENT 'The company image’s size in Bytes.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT true COMMENT 'The flag that determines whether this person photo is marked as deleted (TRUE(1)) or not (FALSE(0)), default is TRUE(1).',
+  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company image’s upvote count.',
+  `license_id` BIGINT UNSIGNED NULL COMMENT 'The license’s unique ID.',
+  `user_id` BIGINT UNSIGNED NULL COMMENT 'The user’s unique ID.',
+  `changed` TIMESTAMP NULL COMMENT 'The last time this company image was updated as timestamp.',
+  `created` TIMESTAMP NULL COMMENT 'The company image’s creation time as timestamp.',
+  `dyn_descriptions` BLOB NULL COMMENT 'The company image’s description in various languages. Keys are ISO alpha-2 language codes.',
   `extension` CHAR(3) NULL COMMENT 'The company image’s extension without leading dot.',
-  `changed` TIMESTAMP NULL COMMENT 'The last time this company image was updated.',
-  `created` TIMESTAMP NULL COMMENT 'The company image’s creation time.',
-  `dyn_descriptions` BLOB NULL COMMENT 'The company image’s translatable descriptions.',
-  `styles` BLOB NULL,
+  `filesize` INT UNSIGNED NULL COMMENT 'The company image’s original size in Bytes.',
+  `height` SMALLINT UNSIGNED NULL COMMENT 'The company image’s original height.',
+  `styles` BLOB NULL COMMENT 'Serialized array containing width and height of various image styles.',
+  `width` SMALLINT UNSIGNED NULL COMMENT 'The company image’s original width.',
   PRIMARY KEY (`id`, `company_id`, `type_id`),
   INDEX `fk_companies_images_companies` (`company_id` ASC),
   INDEX `fk_companies_images_images` (`id` ASC),
   INDEX `fk_companies_images_licenses` (`license_id` ASC),
   INDEX `companies_images_order_by_upvotes` (`upvotes` ASC),
-  INDEX `fk_companies_images_users1_idx` (`user_id` ASC),
+  INDEX `fk_companies_images_users_idx` (`user_id` ASC),
   CONSTRAINT `fk_companies_images_companies`
     FOREIGN KEY (`company_id`)
     REFERENCES `movlib`.`companies` (`id`)
@@ -344,12 +345,13 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies_images` (
     REFERENCES `movlib`.`licenses` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_companies_images_users1`
+  CONSTRAINT `fk_companies_images_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
+COMMENT = 'Contains all company images.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -610,27 +612,27 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_images`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
-  `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The movie image\'s unique ID within the movie.',
+  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The movie image’s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The movie image’s type.',
-  `deleted` TINYINT(1) NOT NULL DEFAULT true,
-  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie image’s upvotes.',
-  `license_id` INT UNSIGNED NULL COMMENT 'The movie image’s license ID.',
-  `user_id` BIGINT UNSIGNED NULL,
+  `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The movie image’s type (enum from Data class).',
+  `deleted` TINYINT(1) NOT NULL DEFAULT true COMMENT 'The flag that determines whether this movie image is marked as deleted (TRUE(1)) or not (FALSE(0)), default is TRUE(1).',
+  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie image’s upvote count.',
+  `license_id` BIGINT UNSIGNED NULL COMMENT 'The license’s unique ID.',
+  `user_id` BIGINT UNSIGNED NULL COMMENT 'The user’s unique ID.',
+  `changed` TIMESTAMP NULL COMMENT 'The last time this movie image was updated as timestamp.',
   `country_code` CHAR(2) NULL COMMENT 'The movie image’s ISO alpha-2 country code.',
-  `width` SMALLINT UNSIGNED NULL COMMENT 'The movie image’s width.',
-  `height` SMALLINT UNSIGNED NULL COMMENT 'The movie image’s height.',
-  `filesize` INT UNSIGNED NULL COMMENT 'The movie image’s size in Bytes.',
+  `created` TIMESTAMP NULL COMMENT 'The movie image’s creation time as timestamp.',
+  `dyn_descriptions` BLOB NULL COMMENT 'The movie image’s description in various languages. Keys are ISO alpha-2 language codes.',
   `extension` CHAR(3) NULL COMMENT 'The movie image’s extension without leading dot.',
-  `changed` TIMESTAMP NULL COMMENT 'The last time this movie image was updated.',
-  `created` TIMESTAMP NULL COMMENT 'The movie image’s creation time.',
-  `dyn_descriptions` BLOB NULL COMMENT 'The movie image’s translatable descriptions.',
-  `styles` BLOB NULL,
+  `filesize` INT UNSIGNED NULL COMMENT 'The movie image’s original size in Bytes.',
+  `height` SMALLINT UNSIGNED NULL COMMENT 'The movie image’s original height.',
+  `styles` BLOB NULL COMMENT 'Serialized array containing width and height of various image styles.',
+  `width` SMALLINT UNSIGNED NULL COMMENT 'The movie image’s original width.',
   PRIMARY KEY (`id`, `movie_id`, `type_id`),
   INDEX `fk_posters_movies` (`movie_id` ASC),
   INDEX `fk_movies_images_licenses` (`license_id` ASC),
   INDEX `movies_images_type_id` (`type_id` ASC, `upvotes` ASC),
-  INDEX `fk_movies_images_users1_idx` (`user_id` ASC),
+  INDEX `fk_movies_images_users_idx` (`user_id` ASC),
   CONSTRAINT `fk_movies_images_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -641,12 +643,13 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
     REFERENCES `movlib`.`licenses` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_users1`
+  CONSTRAINT `fk_movies_images_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
+COMMENT = 'Contains all movie images.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
