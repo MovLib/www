@@ -208,8 +208,8 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       $directors = new Images(
         $this->movie->directors,
         $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "class" => "clear-fix" ],
-        [ "class" => "span span--1", "itemprop" => "director", "itemscope", "itemtype" => "http://schema.org/Person" ]
+        [ "class" => "row no-list" ],
+        [ "class" => "span span--5", "itemprop" => "director", "itemscope", "itemtype" => "http://schema.org/Person" ]
       );
       $directors->closure = [ $this, "formatPerson" ];
       $this->directors = "<h2>{$titleDirectors}</h2>{$directors}";
@@ -217,8 +217,8 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       $cast = new Images(
         $this->movie->cast,
         $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "class" => "clear-fix" ],
-        [ "class" => "span span--1", "itemprop" => "actor", "itemscope", "itemtype" => "http://schema.org/Person" ]
+        [ "class" => "row no-list" ],
+        [ "class" => "span span--5", "itemprop" => "actor", "itemscope", "itemtype" => "http://schema.org/Person" ]
       );
       $cast->closure = [ $this, "formatPerson" ];
       $this->cast = "<h2>{$titleCast}</h2>{$cast}";
@@ -304,8 +304,8 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
    */
   public function formatPerson($person) {
     global $i18n;
-    $image = $this->getImage($person->displayPhoto->getStyle(PersonPhoto::STYLE_SPAN_01), false, [ "itemprop" => "image" ]);
-    return "<a class='img' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>{$image}<span itemprop='name'>{$person->name}</span></a>";
+    $image = $this->getImage($person->displayPhoto->getStyle(PersonPhoto::STYLE_SPAN_01), false, [ "class" => "span span--1", "itemprop" => "image" ]);
+    return "<a class='img row' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>{$image}<span class='span span--4'><span itemprop='name'>{$person->name}</span></span></a>";
   }
 
 }

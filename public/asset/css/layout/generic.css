@@ -322,14 +322,6 @@ tbody .info {
   background-color: #e2f4fb;
 }
 
-.images-list img {
-  margin: 10px 0;
-}
-
-.images-list .span--9 {
-  padding-top: 20px;
-}
-
 .images-list span[itemprop="name"] {
   color: #09c;
 }

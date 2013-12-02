@@ -223,6 +223,9 @@ class AccountSettings extends \MovLib\Presentation\Page {
   public function validate(array $errors = null) {
     global $i18n;
     if ($this->checkErrors($errors) === false) {
+      if ($this->avatar->path) {
+        $this->user->upload($this->avatar->path, $this->avatar->extension, $this->avatar->height, $this->avatar->width);
+      }
       $this->user->birthday           = $this->birthday->value;
       $this->user->countryCode        = $this->country->value;
       $this->user->currencyCode       = $this->currency->value;

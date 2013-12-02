@@ -32,15 +32,18 @@ class DateTimeZone extends \DateTimeZone {
    * Get all sorted and translated time zone identifiers.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @return array
    *   Associative array containing all sorted and translated time zone identifiers. The key is the time zone identifier
    *   and the value the translation for the currently active language. The array is sorted by value.
    */
   public static function getTranslatedIdentifiers() {
-    global $i18n;
-    $directory = __DIR__;
-    require "{$directory}/TimeZoneTranslations/{$i18n->languageCode}.php";
-    return $translatedTimeZoneIdentifiers;
+    global $i18n, $kernel;
+    static $timeZones = null;
+    if (!isset($timeZones[$i18n->locale])) {
+      $timeZones[$i18n->locale] = require "{$kernel->pathTranslations}/time_zone/{$i18n->locale}.php";
+    }
+    return $timeZones[$i18n->locale];
   }
 
 }
