@@ -266,22 +266,20 @@ class Page extends \MovLib\Presentation\AbstractPage {
           "</div>" . // #mega-nav
           // No title and nothing else for this element. Handicapped people are not interested in an element that is
           // only here for presentational purposes.
-          "<div class='container'><span id='mega-nav-switch'><span class='button button--inverse'><i class='ico-menu'></i></span></span></div>" .
+          "<div class='container'><span id='mega-nav-switch'><span class='button button--inverse'><i></i></span></span></div>" .
         "</div>" . // #mega-nav-container
         "<div class='container'>" .
           "<div class='row'>" .
             "{$this->getHeaderLogo()}{$mainNavigation}" .
-            // Render the header search, this is not an instance of form because it would make things complicated.
             "<form action='{$i18n->t("/search")}' class='span' id='search' method='post' role='search'>" .
               "<input type='hidden' name='form_id' value='header_search'>" .
               "<label class='visuallyhidden' for='search-input'>{$i18n->t("Search the {0} database.", [ $kernel->siteName ])}</label>" .
-              "<input accesskey='f' id='search-input' name='searchterm' required tabindex='{$this->getTabindex()}' title='{$i18n->t(
-                "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
-              )}' type='search'>" .
-              "<button title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
-                "<i class='ico-search'></i>" .
-              "</button>" .
+              "<input accesskey='f' id='search-input' name='searchterm' required tabindex='{$this->getTabindex()}' title='{$i18n->t("Enter the search term you wish to search for and hit enter.")}' type='search'>" .
+              "<button title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'><i class='ico-search'></i></button>" .
             "</form>" .
+            "<div class='button button--inverse ico-user-add'>" .
+              // @todo Add user navigation
+            "</div>" .
           "</div>" . // .row
         "</div>" . // .container
       "</header>"

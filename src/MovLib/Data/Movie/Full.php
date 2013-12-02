@@ -74,13 +74,13 @@ class Full extends \MovLib\Data\Movie\Movie {
         `movies`.`created`,
         IFNULL(`titles`.`title`, `movies`.`original_title`)
       FROM `movies`
-        LEFT JOIN `movies_titles` ON `movies_titles`.`movie_id` = `movies`.`id`
         LEFT JOIN `titles`
           ON `titles`.`movie_id` = `movies`.`id`
-          AND `titles`.`id` = `movies_titles`.`display_title_{$i18n->languageCode}`
+          AND `titles`.`language_code` = ?
       WHERE `movies`.`id` = ?
       LIMIT 1",
-      "d", [ $this->id ]
+      "sd",
+      [ $i18n->languageCode, $this->id ]
     );
     $stmt->bind_result(
       $this->originalTitle,
@@ -152,46 +152,57 @@ class Full extends \MovLib\Data\Movie\Movie {
       $this->styles[$row[0]] = $row[1];
     }
     $stmt->close();
+  }
 
-    // ----------------------------------------------------------------------------------------------------------------- Directors
-
-    $stmt = $db->query(
+  /**
+   * Get the mysqli result for the movie's cast.
+   *
+   * @todo Order cast by weight not by name!
+   * @global \MovLib\Data\Database $db
+   * @param integer $limit [optional]
+   *   The amount of cast members to fetch.
+   * @return \mysqli_result
+   *   The mysqli result for the movie's cast.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getCastResult($limit = 8) {
+    global $db;
+    return $db->query(
       "SELECT
-        `persons`.`person_id` AS `id`,
-        `persons`.`name`,
-        `persons`.`deleted`
+        `persons`.`id`,
+        `persons`.`name`
+      FROM `movies_cast`
+        INNER JOIN `persons` ON `persons`.`id` = `movies_cast`.`person_id`
+      WHERE `movies_cast`.`movie_id` = ?
+      ORDER BY `persons`.`name` ASC
+      LIMIT ?",
+      "di",
+      [ $this->id, $limit ]
+    )->get_result();
+  }
+
+  /**
+   * Get the mysqli result for the movie's directors.
+   *
+   * @todo Order directors by weight not by name!
+   * @global \MovLib\Data\Database $db
+   * @return \mysqli_result
+   *   The mysqli result for the movie's directors.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getDirectorsResult() {
+    global $db;
+    return $db->query(
+      "SELECT
+        `persons`.`id`,
+        `persons`.`name`
       FROM `movies_directors`
-      INNER JOIN `persons` ON `persons`.`person_id` = `movies_directors`.`person_id`
+        INNER JOIN `persons` ON `persons`.`id` = `movies_directors`.`person_id`
       WHERE `movies_directors`.`movie_id` = ?
       ORDER BY `persons`.`name` ASC",
       "d",
       [ $this->id ]
-    );
-    $result = $stmt->get_result();
-    while ($person = $result->fetch_object("\\MovLib\\Data\\Person\\Person")) {
-      $this->directors[$person->id] = $person;
-    }
-    $stmt->close();
-
-    // ----------------------------------------------------------------------------------------------------------------- Cast
-
-    $stmt = $db->query(
-      "SELECT
-        `persons`.`person_id` AS `id`,
-        `persons`.`name`,
-        `persons`.`deleted`
-      FROM `movies_cast`
-      INNER JOIN `persons` ON `persons`.`person_id` = `movies_cast`.`person_id`
-      WHERE `movies_cast`.`movie_id` = ?
-      ORDER BY `persons`.`name` ASC",
-      "d",
-      [ $this->id ]
-    );
-    $result = $stmt->get_result();
-    while ($person = $result->fetch_object("\\MovLib\\Data\\Person\\Person")) {
-      $this->cast[$person->id] = $person;
-    }
-    $stmt->close();
+    )->get_result();
   }
 
 }

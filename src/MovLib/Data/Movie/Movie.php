@@ -92,6 +92,7 @@ class Movie {
   /**
    * Instantiate new movie.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Database $db
    * @param integer $id [optional]
    *   The unique movie's ID to load.
@@ -99,12 +100,12 @@ class Movie {
    * @throws \OutOfBoundsException
    */
   public function __construct($id = null) {
-    global $db;
+    global $i18n, $db;
 
     // Load the movie if an ID was passed to the constructor.
     if ($id) {
       $query = self::getQuery();
-      $stmt  = $db->query("{$query} WHERE `movies`.`id` = ? LIMIT 1", "d", [ $id ]);
+      $stmt  = $db->query("{$query} WHERE `movies`.`id` = ? LIMIT 1", "sd", [ $i18n->languageCode, $id ]);
       $stmt->bind_result(
         $this->id,
         $this->deleted,
@@ -146,8 +147,8 @@ class Movie {
       $query  = self::getQuery();
       $result = $db->query(
         "{$query} WHERE `movies`.`deleted` = false ORDER BY `movies`.`id` DESC LIMIT ? OFFSET ?",
-        "ii",
-        [ $rowCount, $offset ]
+        "sii",
+        [ $i18n->languageCode, $rowCount, $offset ]
       )->get_result();
       while ($movie = $result->fetch_object(__CLASS__)) {
         $movies[$i18n->locale][$movie->id] = $movie;
@@ -177,7 +178,7 @@ class Movie {
         LEFT JOIN `movies_titles` ON `movies_titles`.`movie_id` = `movies`.`id`
         LEFT JOIN `titles`
           ON `titles`.`movie_id` = `movies`.`id`
-          AND `titles`.`id` = `movies_titles`.`display_title_{$i18n->languageCode}`
+          AND `titles`.`language_code` = ?
       "
     ;
   }

@@ -18,14 +18,13 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Data\Image\PersonPhoto;
 use \MovLib\Data\Movie\Full as FullMovie;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\Lists\GlueSeparated;
-use \MovLib\Presentation\Partial\Lists\Images;
+use \MovLib\Presentation\Partial\Lists\Persons;
 
 /**
  * Single movie presentation page.
@@ -74,9 +73,9 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
       // Enhance the page's title with microdata.
       if ($this->movie->year) {
-        $this->pageTitle = $i18n->t("{movie_title} ({year})", [
-          "movie_title" => "<span itemprop='name'>{$this->movie->displayTitle}</span>",
-          "year"        => "<a itemprop='datePublished' href='{$i18n->r("/year/{0}", [ $this->movie->year ])}'>{$this->movie->year}</a>",
+        $this->pageTitle = $i18n->t("{0} ({1})", [
+          "<span itemprop='name'>{$this->movie->displayTitle}</span>",
+          "<a itemprop='datePublished' href='{$i18n->r("/year/{0}", [ $this->movie->year ])}'>{$this->movie->year}</a>",
         ]);
       }
       else {
@@ -205,22 +204,18 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       ;
       $this->synopsis = "<h2>{$titleSynopsis}</h2><div itemprop='description'>{$synopsis}</div>";
 
-      $directors = new Images(
-        $this->movie->directors,
+      $directors = new Persons(
+        $this->movie->getDirectorsResult(),
         $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "class" => "span span--5", "itemprop" => "director", "itemscope", "itemtype" => "http://schema.org/Person" ],
-        [ "class" => "row no-list" ]
+        [ "itemprop" => "director" ]
       );
-      $directors->closure = [ $this, "formatPerson" ];
       $this->directors = "<h2>{$titleDirectors}</h2>{$directors}";
 
-      $cast = new Images(
-        $this->movie->cast,
+      $cast = new Persons(
+        $this->movie->getCastResult(),
         $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "class" => "span span--5", "itemprop" => "actor", "itemscope", "itemtype" => "http://schema.org/Person" ],
-        [ "class" => "row no-list" ]
+        [ "itemprop" => "actor" ]
       );
-      $cast->closure = [ $this, "formatPerson" ];
       $this->cast = "<h2>{$titleCast}</h2>{$cast}";
     }
     // We don't have any movie with the given identifier.
@@ -290,22 +285,6 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   public function formatStyle($name, $id) {
     global $i18n;
     return "<a href='{$i18n->r("/style/{0}", [ $id ])}' itemprop='genre'>{$name}</a>";
-  }
-
-  /**
-   * Format a single person.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @staticvar string $route
-   * @param \MovLib\Data\Person\Person $person
-   *   The person to format.
-   * @return string
-   *   The formatted person.
-   */
-  public function formatPerson($person) {
-    global $i18n;
-    $image = $this->getImage($person->displayPhoto->getStyle(PersonPhoto::STYLE_SPAN_01), false, [ "class" => "span span--1", "itemprop" => "image" ]);
-    return "<a class='img row' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>{$image}<span class='span span--4'><span itemprop='name'>{$person->name}</span></span></a>";
   }
 
 }
