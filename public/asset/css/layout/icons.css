@@ -33,10 +33,15 @@
  * @license http://licence.visualidiot.com/ Custom
  * @link http://tridentdesign.com/broccoli-dry-icon-set/
  *
- * @author Sergey Shmidt
- * @copyright © 2013–present, Sergey Shmidt
+ * @author David Ferreira
+ * @copyright © 2013–present, David Ferreira
  * @license http://creativecommons.org/licenses/by-sa/3.0/ CC BY-SA 3.0
- * @link http://dribbble.com/shots/927536-Linecons-48-outline-icons
+ * @link http://www.wpzoom.com/freebies/
+ *
+ * @author WebHostingHub
+ * @copyright © 2013–present, WebHostingHub
+ * @license http://creativecommons.org/licenses/by/3.0/ CC BY 3.0
+ * @link https://github.com/whhglyphs/webhostinghub-glyphs
  *
  * @link http://icomoon.io/
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -120,7 +125,7 @@
 .ico-chevron-right:before {
 	content: "\e612";
 }
-.ico-menu:before {
+.ico-user-add:before {
 	content: "\e613";
 }
 .ico-release:before {
