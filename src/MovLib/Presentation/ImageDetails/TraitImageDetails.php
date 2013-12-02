@@ -118,7 +118,7 @@ trait TraitImageDetails {
   private function pager($direction, $id, $text) {
     return
       "<a class='imagedetails-pager' id='imagedetails-{$direction}' href='{$this->imagesRoute}/{$id}'>" .
-        "<i class='icon icon--chevron-{$direction}'></i><span class='visuallyhidden'>{$text}</span>" .
+        "<i class='ico-chevron-{$direction}'></i><span class='visuallyhidden'>{$text}</span>" .
       "</a>"
     ;
   }

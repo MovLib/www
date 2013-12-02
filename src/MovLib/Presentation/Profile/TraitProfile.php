@@ -55,32 +55,32 @@ trait TraitProfile {
       $sidebar = [
         [
           $i18n->r("/profile"),
-          "<i class='icon icon--info-circled'></i> {$i18n->t("Profile")}",
+          "<i class='ico-info'></i> {$i18n->t("Profile")}",
           [ "class" => "separator", "title" => $i18n->t("Check out our account summary.") ]
         ],
         [
           $i18n->r("/profile/account-settings"),
-          "<i class='icon icon--user'></i> {$i18n->t("Account")}",
+          "<i class='ico-user'></i> {$i18n->t("Account")}",
           [ "title" => $i18n->t("Manage your basic account settings.") ]
         ],
         [
           $i18n->r("/profile/notification-settings"),
-          "<i class='icon icon--bell'></i> {$i18n->t("Notifications")}",
+          "<i class='ico-notification'></i> {$i18n->t("Notifications")}",
           [ "title" => $i18n->t("Manage your notification settings.") ]
         ],
         [
           $i18n->r("/profile/email-settings"),
-          "<i class='icon icon--mail'></i> {$i18n->t("Email")}",
+          "<i class='ico-email'></i> {$i18n->t("Email")}",
           [ "title" => $i18n->t("Change your email address.") ]
         ],
         [
           $i18n->r("/profile/password-settings"),
-          "<i class='icon icon--lock'></i> {$i18n->t("Password")}",
+          "<i class='ico-lock'></i> {$i18n->t("Password")}",
           [ "title" => $i18n->t("Change your password.") ]
         ],
         [
           $i18n->r("/profile/danger-zone"),
-          "<i class='icon icon--alert'></i> {$i18n->t("Danger Zone")}",
+          "<i class='ico-alert'></i> {$i18n->t("Danger Zone")}",
           [ "class" => "delete", "title" => $i18n->t("Manage your sessions and/or deactivate your account.") ]
         ],
       ];
@@ -91,7 +91,7 @@ trait TraitProfile {
       $sidebar = [
         [
           $i18n->r("/profile/password-settings"),
-          "<i class='icon icon--lock'></i> {$i18n->t("Password")}",
+          "<i class='ico-lock'></i> {$i18n->t("Password")}",
           [ "title" => $i18n->t("Change your password.") ]
         ]
       ];

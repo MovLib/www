@@ -4,3 +4,9 @@ License:	SIL -- http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL
 
 Icon Set:	Entypo -- http://www.entypo.com/
 License:	CC BY-SA 3.0 -- http://creativecommons.org/licenses/by-sa/3.0/
+
+Icon Set: Brocclidry -- http://tridentdesign.com/broccoli-dry-icon-set/
+License: Custom -- http://licence.visualidiot.com/
+
+Icon Set: Linecons
+License: CC BY-SA 3.0 -- http://creativecommons.org/licenses/by-sa/3.0/

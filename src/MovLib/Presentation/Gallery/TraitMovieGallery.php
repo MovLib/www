@@ -97,8 +97,8 @@ trait TraitMovieGallery {
   public function getSecondaryNavigationMenuitems() {
     global $i18n;
     $points = [
-      [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='icon icon--film'></i>{$i18n->t("Back to {0}", [ $i18n->t("movie") ])}" ],
-      [ $this->uploadRoute, "<i class='icon icon--upload'></i>{$i18n->t("Upload")}", [
+      [ $i18n->r("/movie/{0}", [ $this->model->id ]), "<i class='ico-movie'></i>{$i18n->t("Back to {0}", [ $i18n->t("movie") ])}" ],
+      [ $this->uploadRoute, "<i class='ico-upload'></i>{$i18n->t("Upload")}", [
         "class" => "separator"
       ]],
     ];

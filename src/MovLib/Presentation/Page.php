@@ -185,7 +185,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
       "<footer id='footer'><div class='container'>" .
         "<div class='row'>" .
         // #footer-copyright
-          "<p id='footer-copyright'><i class='icon icon--cc'></i> <i class='icon icon--cc-zero'></i> {$i18n->t(
+          "<p id='footer-copyright'><i class='ico-cc'></i> <i class='ico-cc-zero'></i> {$i18n->t(
             "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
             [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
           )}<br>{$i18n->t(
@@ -266,7 +266,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
           "</div>" . // #mega-nav
           // No title and nothing else for this element. Handicapped people are not interested in an element that is
           // only here for presentational purposes.
-          "<div class='container'><span id='mega-nav-switch'><span class='button button--inverse'><i class='icon icon--menu'></i></span></span></div>" .
+          "<div class='container'><span id='mega-nav-switch'><span class='button button--inverse'><i class='ico-menu'></i></span></span></div>" .
         "</div>" . // #mega-nav-container
         "<div class='container'>" .
           "<div class='row'>" .
@@ -279,7 +279,7 @@ class Page extends \MovLib\Presentation\AbstractPage {
                 "Enter the search term you wish to search for and hit enter. [alt-shift-f]"
               )}' type='search'>" .
               "<button title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'>" .
-                "<i class='icon icon--search'></i>" .
+                "<i class='ico-search'></i>" .
               "</button>" .
             "</form>" .
           "</div>" . // .row
