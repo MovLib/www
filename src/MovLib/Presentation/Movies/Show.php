@@ -128,7 +128,6 @@ class Show extends \MovLib\Presentation\Page {
     $movies = new Images(
       $this->movies,
       new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO),
-      [ "class" => "no-list" ],
       [ "itemscope", "itemtype" => "http://schema.org/Movie" ]
     );
     $movies->closure = [ $this, "formatMovie" ];

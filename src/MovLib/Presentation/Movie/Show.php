@@ -208,8 +208,8 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       $directors = new Images(
         $this->movie->directors,
         $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "class" => "row no-list" ],
-        [ "class" => "span span--5", "itemprop" => "director", "itemscope", "itemtype" => "http://schema.org/Person" ]
+        [ "class" => "span span--5", "itemprop" => "director", "itemscope", "itemtype" => "http://schema.org/Person" ],
+        [ "class" => "row no-list" ]
       );
       $directors->closure = [ $this, "formatPerson" ];
       $this->directors = "<h2>{$titleDirectors}</h2>{$directors}";
@@ -217,8 +217,8 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       $cast = new Images(
         $this->movie->cast,
         $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "class" => "row no-list" ],
-        [ "class" => "span span--5", "itemprop" => "actor", "itemscope", "itemtype" => "http://schema.org/Person" ]
+        [ "class" => "span span--5", "itemprop" => "actor", "itemscope", "itemtype" => "http://schema.org/Person" ],
+        [ "class" => "row no-list" ]
       );
       $cast->closure = [ $this, "formatPerson" ];
       $this->cast = "<h2>{$titleCast}</h2>{$cast}";
