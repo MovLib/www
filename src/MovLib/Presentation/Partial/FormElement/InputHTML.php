@@ -570,14 +570,14 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
             $this->insertLastChild = null;
             $this->lastChild       = null;
           }
-          // Check if we are at the end of a list and if the level fits.
-          // If so, restore allowed tags and list flag.
-          elseif ($this->list && "</{$this->list["tag"]}>" == $endTag && $this->list["level"] === $level) {
-            $this->allowedTags = $this->list["allowed_tags"];
-            $this->list        = false;
-          }
           else {
             $output .= $endTag;
+          }
+          // Check if we are at the end of a list and if the level fits.
+          // If so, restore allowed tags and list flag.
+          if ($this->list && "</{$this->list["tag"]}>" == $endTag && $this->list["level"] === $level) {
+            $this->allowedTags = $this->list["allowed_tags"];
+            $this->list        = false;
           }
         }
       }
@@ -624,7 +624,9 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       "i"      => "&lt;i&gt;",
       "strong" => "&lt;strong&gt;",
     ];
-    $caption = $this->validateDOM($node->child[1], $captionAllowedTags);
+    $caption            = $this->validateDOM($node->child[1], $captionAllowedTags);
+    // Clean the caption from any tags for the image's alt text.
+    $alt                = strip_tags($caption);
 
     // Validate the image's src URL.
     if (($url = parse_url($node->child[0]->attribute["src"])) === false || !isset($url["host"])) {
@@ -645,7 +647,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     }
 
     // Build the image tag.
-    $this->lastChild = "<img alt='{$caption}' {$imgAttributes} src='//{$kernel->domainStatic}{$url["path"]}'><figcaption>{$caption}</figcaption>";
+    $this->lastChild = "<img alt='{$alt}' {$imgAttributes} src='//{$kernel->domainStatic}{$url["path"]}'><figcaption>{$caption}</figcaption>";
 
     // Delete all children, since they are already validated.
     $node->child = null;
