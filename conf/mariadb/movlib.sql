@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.',
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.',
   `original_title` BLOB NOT NULL COMMENT 'The movie\'s original title.',
+  `original_title_language_code` CHAR(2) NOT NULL,
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of this movie.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.',
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s vote count.',
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.',
@@ -250,15 +251,16 @@ SHOW WARNINGS;
 -- Table `movlib`.`licenses`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license’s unique identifier.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The license’s translated names.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The license’s translated descriptions.',
-  `dyn_url` BLOB NOT NULL COMMENT 'The license’s absolute URL.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license’s unique ID.',
   `abbreviation` VARCHAR(20) NOT NULL COMMENT 'The license’s abbreviation.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The license’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The license’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_url` BLOB NOT NULL COMMENT 'The license’s url pointing to various languages. Keys are ISO alpha-2 language codes.',
   `icon_changed` TIMESTAMP NOT NULL COMMENT 'The license’s icon changed timestamp.',
-  `icon_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The license’s icon extension.',
+  `icon_extension` CHAR(3) NOT NULL COMMENT 'The license’s icon extension.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
+COMMENT = 'Contains all licenses.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -387,12 +389,13 @@ SHOW WARNINGS;
 -- Table `movlib`.`messages`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`messages` (
-  `message_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The message’s unique ID.',
-  `message` TEXT NOT NULL COMMENT 'The message’s unique English pattern.',
-  `comment` BLOB NULL COMMENT 'The message’s optional comment for translators.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The message’s unique ID.',
+  `message` TEXT NOT NULL COMMENT 'The message’s unique english pattern.',
   `dyn_translations` BLOB NOT NULL COMMENT 'The message’s translations.',
-  PRIMARY KEY (`message_id`))
+  `comment` BLOB NULL COMMENT 'The message’s optional comment for translators.',
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
+COMMENT = 'Contains all messages and their translations (I18n).'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -462,14 +465,15 @@ SHOW WARNINGS;
 -- Table `movlib`.`tmp`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`tmp` (
-  `key` VARCHAR(255) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The record’s unique key.',
+  `key` VARCHAR(255) NOT NULL COMMENT 'The record’s unique key.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The record’s creation timestamp.',
   `data` BLOB NOT NULL COMMENT 'The record’s serialized data.',
-  `ttl` VARCHAR(16) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The record’s time to life.',
+  `ttl` VARCHAR(16) NOT NULL COMMENT 'The record’s time to life.',
   PRIMARY KEY (`key`),
   INDEX `tmp_created` (`created` ASC),
   INDEX `tmp_cron` (`ttl` ASC))
 ENGINE = InnoDB
+COMMENT = 'Contains temporary data.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -542,6 +546,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
   `language_code` CHAR(2) NOT NULL COMMENT 'The title\'s ISO alpha-2 language code.',
   `title` BLOB NOT NULL COMMENT 'The movie\'s title.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.',
+  `display` TINYINT(1) NOT NULL DEFAULT false,
   INDEX `fk_titles_movies` (`movie_id` ASC),
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_titles_movies`
@@ -562,6 +567,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
   `language_code` CHAR(2) NOT NULL COMMENT 'The tagline\'s ISO alpha-2 language code.',
   `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The tagline\'s translatable comment.',
+  `display` TINYINT(1) NOT NULL DEFAULT false,
   INDEX `fk_taglines_movies` (`movie_id` ASC),
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_taglines_movies`
@@ -1175,25 +1181,11 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this title relates to.',
   `commit` CHAR(40) NULL,
-  `display_title_en` INT NULL,
-  `display_title_de` INT NULL,
   INDEX `fk_movies_titles_movies` (`movie_id` ASC),
   PRIMARY KEY (`movie_id`),
-  INDEX `fk_movies_titles_display_title_en_idx` (`display_title_en` ASC),
-  INDEX `fk_movies_titles_display_title_de_idx` (`display_title_de` ASC),
   CONSTRAINT `fk_movies_titles_movie_id`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_titles_display_title_en`
-    FOREIGN KEY (`display_title_en`)
-    REFERENCES `movlib`.`titles` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_titles_display_title_de`
-    FOREIGN KEY (`display_title_de`)
-    REFERENCES `movlib`.`titles` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
