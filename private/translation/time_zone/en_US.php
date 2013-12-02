@@ -17,9 +17,7 @@
  */
 
 /**
- * Associative array containing all translated time zone identifiers.
- *
- * Please note that this list is already sorted by value!
+ * English time zone translations.
  *
  * @link https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -29,7 +27,7 @@
  * @since 0.0.1-dev
  */
 // @codeCoverageIgnoreStart
-$translatedTimeZoneIdentifiers = [
+return [
   "Africa/Abidjan"                 => "Africa/Abidjan",
   "Africa/Accra"                   => "Africa/Accra",
   "Africa/Addis_Ababa"             => "Africa/Addis Ababa",

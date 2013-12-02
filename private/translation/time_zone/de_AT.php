@@ -17,9 +17,7 @@
  */
 
 /**
- * Associative array containing all translated time zone identifiers.
- *
- * Please note that this list is already sorted by value!
+ * German time zone translations.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,7 +26,7 @@
  * @since 0.0.1-dev
  */
 // @codeCoverageIgnoreStart
-$translatedTimeZoneIdentifiers = [
+return [
   "Africa/Abidjan"                 => "Afrika/Abidjan",
   "Africa/Accra"                   => "Afrika/Accra",
   "Africa/Addis_Ababa"             => "Afrika/Addis Abeba",
