@@ -71,7 +71,7 @@ class Show extends \MovLib\Presentation\Page {
     global $i18n, $kernel, $session;
     try {
       $this->user = new UserFull(UserFull::FROM_NAME, $_SERVER["USER_NAME"]);
-      if ($this->user->route != $kernel->requestURI) {
+      if ($this->user->route != $kernel->requestPath) {
         throw new RedirectPermanentException($this->user->route);
       }
       $this->init($this->user->name);

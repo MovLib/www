@@ -199,7 +199,6 @@ class Full extends \MovLib\Data\User\User {
           `email`,
           UNIX_TIMESTAMP(`image_changed`),
           `image_extension`,
-          `image_changed` IS NOT NULL,
           `password`,
           `private`,
           `profile_views`,
@@ -227,7 +226,6 @@ class Full extends \MovLib\Data\User\User {
         $this->email,
         $this->changed,
         $this->extension,
-        $this->exists,
         $this->password,
         $this->private,
         $this->profileViews,
@@ -242,11 +240,11 @@ class Full extends \MovLib\Data\User\User {
         throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
       $stmt->close();
-      $this->exists = (boolean) $this->exists;
-      $this->filename   = rawurlencode($this->name);
-      $this->private     = (boolean) $this->private;
+      $this->exists   = (boolean) $this->changed;
+      $this->filename = rawurlencode(mb_strtolower($this->name));
+      $this->private  = (boolean) $this->private;
       // The image name already has all unsave characters removed.
-      $this->route       = $i18n->r("/user/{0}", [ rawurlencode($this->filename) ]);
+      $this->route    = $i18n->r("/user/{0}", [ rawurlencode($this->filename) ]);
       if (!$this->currencyCode) {
         $this->currencyCode = Currency::getDefaultCode();
       }

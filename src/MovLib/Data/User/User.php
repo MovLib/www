@@ -156,7 +156,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
       }
       $stmt->close();
       $this->exists   = (boolean) $this->changed;
-      $this->filename = rawurlencode($this->name);
+      $this->filename = rawurlencode(mb_strtolower($this->name));
       $this->route    = $i18n->r("/user/{0}", [ $this->filename ]);
     }
   }

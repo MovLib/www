@@ -28,7 +28,7 @@ namespace MovLib\Data\Image;
  * @internal The zero prefixing ensures natural sorting in IDEs.
  */
 // @codeCoverageIgnoreStart
-const SPAN_01 = 70;
+const SPAN_01 = 60;
 const SPAN_02 = 140;
 const SPAN_03 = 220;
 const SPAN_04 = 300;
