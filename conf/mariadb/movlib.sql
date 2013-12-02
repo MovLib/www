@@ -250,7 +250,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`licenses`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license’s unique identifier.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license’s unique identifier.',
   `dyn_names` BLOB NOT NULL COMMENT 'The license’s translated names.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The license’s translated descriptions.',
   `dyn_url` BLOB NOT NULL COMMENT 'The license’s absolute URL.',
