@@ -118,22 +118,22 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The user’s unique ID.',
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.',
-  `access` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s last access.',
-  `birthday` DATE NULL DEFAULT NULL COMMENT 'The user\'s date of birth.',
+  `access` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The user’s last access timestamp.',
+  `birthday` DATE NULL DEFAULT NULL COMMENT 'The user’s date of birth.',
   `country_code` CHAR(2) NULL COMMENT 'The user’s ISO alpha-2 country code.',
-  `created` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Timestamp for user’s creation datetime.',
-  `currency_code` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s ISO 4217 currency code.',
-  `dyn_about_me` BLOB NULL COMMENT 'The user’s about me text (translatable).',
+  `created` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The user’s accout creation timestamp.',
+  `currency_code` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s ISO 4217  (3 letter) currency code.',
+  `dyn_about_me` BLOB NULL COMMENT 'The user’s about me text in various languages. Keys are ISO alpha-2 language codes.',
   `edits` BIGINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user’s edit counter.',
   `email` VARCHAR(254) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL COMMENT 'The user’s unique email address.',
-  `image_changed` TIMESTAMP NULL DEFAULT NULL COMMENT 'The avatar’s last change timestamp.',
-  `image_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT NULL COMMENT 'The avatar’s file extension.',
-  `password` VARBINARY(255) NULL COMMENT 'The user’s unique password (hashed).',
-  `private` TINYINT(1) NULL DEFAULT false COMMENT 'The flag if the user is willing to display their private date on the profile page.',
-  `profile_views` BIGINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user’s profile views.',
+  `image_changed` TIMESTAMP NULL DEFAULT NULL COMMENT 'The last changed timestamp of the user’s avatar.',
+  `image_extension` CHAR(3) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT NULL COMMENT 'The file extension of the user’s avatar.',
+  `password` VARBINARY(255) NULL COMMENT 'The user’s password (hashed).',
+  `private` TINYINT(1) NULL DEFAULT false COMMENT 'The flag that determines whether this user allows us to display private data on his profile page (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
+  `profile_views` BIGINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user’s profile view count.',
   `real_name` TINYBLOB NULL COMMENT 'The user’s real name.',
-  `reputation` BIGINT UNSIGNED NULL DEFAULT 0,
-  `sex` TINYINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.',
+  `reputation` BIGINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user’s reputation.',
+  `sex` TINYINT UNSIGNED NULL DEFAULT 0 COMMENT 'The user\'s sex according to ISO 5218.\n\n0 = not known\n1 = male\n2 = female\n9 = not applicable',
   `system_language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT 'en' COMMENT 'The user’s preferred system language’s code (e.g. en).',
   `time_zone_identifier` VARCHAR(30) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NULL DEFAULT 'UTC' COMMENT 'User’s time zone ID.',
   `website` VARCHAR(255) NULL COMMENT 'The user’s website URL.',
@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   UNIQUE INDEX `uq_users_email` (`email` ASC),
   INDEX `users_created` (`created` ASC))
 ENGINE = InnoDB
+COMMENT = 'Contains all users.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -151,7 +152,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`persons`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
-  `person_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The person’s unique ID.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The person’s unique ID.',
   `name` VARCHAR(255) NOT NULL COMMENT 'The person’s full name.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this person was deleted, default is FALSE (0).',
   `born_name` MEDIUMBLOB NULL COMMENT 'The person’s born name.',
@@ -167,7 +168,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `dyn_links` BLOB NOT NULL COMMENT 'The person’s external weblinks.',
   `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this person was created.',
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.',
-  PRIMARY KEY (`person_id`))
+  PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all person related data.';
 
@@ -239,7 +240,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_crew_persons`
     FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -292,7 +293,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
   INDEX `fk_persons_photos_users_idx` (`user_id` ASC),
   CONSTRAINT `fk_persons_photos_persons`
     FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_photos_licenses`
@@ -372,7 +373,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   INDEX `fk_movies_cast_persons` (`person_id` ASC),
   CONSTRAINT `fk_movies_cast_persons`
     FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_cast_movies`
@@ -453,7 +454,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_directors_persons`
     FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -465,7 +466,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`tmp`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`tmp` (
-  `key` VARCHAR(255) NOT NULL COMMENT 'The record’s unique key.',
+  `key` VARCHAR(255) CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' NOT NULL COMMENT 'The record’s unique key.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The record’s creation timestamp.',
   `data` BLOB NOT NULL COMMENT 'The record’s serialized data.',
   `ttl` VARCHAR(16) NOT NULL COMMENT 'The record’s time to life.',
@@ -525,7 +526,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_awards_persons`
     FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_awards_companies`
@@ -1156,12 +1157,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`sessions`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`sessions` (
-  `session_id` VARBINARY(86) NOT NULL COMMENT 'The session\'s unique ID.',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The session\'s unique user ID.',
+  `id` VARBINARY(86) NOT NULL COMMENT 'The session’s unique ID.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
   `authentication` TIMESTAMP NOT NULL COMMENT 'Timestamp when this session was initialized.',
-  `ip_address` BLOB NOT NULL COMMENT 'The session\'s IP address.',
-  `user_agent` BLOB NOT NULL COMMENT 'The session\'s user agent string.',
-  PRIMARY KEY (`session_id`, `user_id`),
+  `ip_address` VARBINARY(128) NOT NULL COMMENT 'The session’s IP address.',
+  `user_agent` TINYBLOB NOT NULL COMMENT 'The session’s user agent string.',
+  PRIMARY KEY (`id`, `user_id`),
   INDEX `fk_sessions_users` (`user_id` ASC),
   CONSTRAINT `fk_sessions_users`
     FOREIGN KEY (`user_id`)
@@ -1213,11 +1214,11 @@ SHOW WARNINGS;
 -- Table `movlib`.`users_collections`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users_collections` (
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
-  `master_release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The Master release’s unique identifier.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
+  `master_release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The master release’s unique ID.',
   `count` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The amount of identical releases.',
-  `currency_code` CHAR(3) NULL COMMENT 'The user’s ISO 4217 currency code.',
-  `price` FLOAT UNSIGNED NULL COMMENT 'The price of the release.',
+  `currency_code` CHAR(3) NULL COMMENT 'The user’s ISO 4217 (3 letter) currency code.',
+  `price` FLOAT UNSIGNED NULL COMMENT 'The purchase price of the release.',
   `purchased_at` TINYTEXT NULL COMMENT 'The location where the release was purchased.',
   PRIMARY KEY (`user_id`, `master_release_id`),
   INDEX `fk_user_collection_users_idx` (`user_id` ASC),
@@ -1233,7 +1234,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_collections` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains all related data to an user collection.';
+COMMENT = 'Contains all user collections.';
 
 SHOW WARNINGS;
 
@@ -1241,11 +1242,11 @@ SHOW WARNINGS;
 -- Table `movlib`.`users_lists`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users_lists` (
-  `id` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The user’s list’s unique ID.',
+  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The list’s unique ID within the user.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
-  `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The user’s list’s type (enum from Data class).',
-  `dyn_names` BLOB NOT NULL COMMENT 'The user’s list’s translated names.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The user’s list’s translated descriptions.',
+  `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The list’s type (enum from Data class).',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The list’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The list’s name in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`, `user_id`, `type_id`),
   INDEX `fk_users_lists_users_idx` (`user_id` ASC),
   CONSTRAINT `fk_users_lists_users`
@@ -1264,10 +1265,10 @@ SHOW WARNINGS;
 -- Table `movlib`.`users_movies_lists`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users_movies_lists` (
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
-  `users_lists_id` INT UNSIGNED NOT NULL COMMENT 'The user’s list’s unique ID.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  PRIMARY KEY (`user_id`, `users_lists_id`, `movie_id`),
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
+  `users_lists_id` INT UNSIGNED NOT NULL COMMENT 'The users-list’s unique ID within the user.',
+  PRIMARY KEY (`movie_id`, `user_id`, `users_lists_id`),
   INDEX `fk_users_movielists_movies_idx` (`movie_id` ASC),
   INDEX `fk_users_movies_lists_users_idx` (`user_id` ASC),
   CONSTRAINT `fk_users_movielists_users_lists`
@@ -1286,7 +1287,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_movies_lists` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains all related data to users movies lists.';
+COMMENT = 'Contains movie lists of users.';
 
 SHOW WARNINGS;
 
@@ -1294,10 +1295,10 @@ SHOW WARNINGS;
 -- Table `movlib`.`users_persons_lists`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users_persons_lists` (
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
-  `users_lists_id` INT UNSIGNED NOT NULL COMMENT 'The user’s list’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
-  PRIMARY KEY (`user_id`, `users_lists_id`, `person_id`),
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique ID.',
+  `users_lists_id` BIGINT UNSIGNED NOT NULL COMMENT 'The users-list’s unique ID within the user.',
+  PRIMARY KEY (`person_id`, `user_id`, `users_lists_id`),
   INDEX `fk_users_person_lists_persons_idx` (`person_id` ASC),
   INDEX `fk_users_persons_lists_users1_idx` (`user_id` ASC),
   CONSTRAINT `fk_users_person_lists_users_lists`
@@ -1307,7 +1308,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_persons_lists` (
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_users_person_lists_persons`
     FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_users_persons_lists_users1`
@@ -1316,7 +1317,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users_persons_lists` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'Contains all related data to users persons lists.';
+COMMENT = 'Contains person lists of users.';
 
 SHOW WARNINGS;
 
