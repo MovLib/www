@@ -168,11 +168,6 @@
   visibility: hidden;
 }
 
-.no-list {
-  list-style: none;
-  padding-left: 0;
-}
-
 .visuallyhidden {
   border: 0;
   clip: rect(0 0 0 0);
@@ -305,56 +300,4 @@ tbody .info {
 
 .table-hover tbody .info:hover {
   background-color: #c4e3f3;
-}
-
-
-/* ==== IMAGES LISTS ================================================================================================ */
-
-
-.images-list a {
-  color: #656565;
-  transition: background-color 0.4s ease-out;
-  display: block;
-}
-
-.images-list a:hover,
-.images-list a:focus {
-  background-color: #e2f4fb;
-}
-
-.images-list span[itemprop="name"] {
-  color: #09c;
-}
-
-
-/* ==== DESCRIPTION LISTS =========================================================================================== */
-
-
-.dl--horizontal {
-  *zoom: 1;
-}
-
-.dl--horizontal:before,
-.dl--horizontal:after {
-  display: table;
-  content: "";
-  line-height: 0;
-}
-
-.dl--horizontal:after {
-  clear: both;
-}
-
-.dl--horizontal dt {
-  float: left;
-  width: 160px;
-  clear: left;
-  text-align: right;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dl--horizontal dd {
-  margin-left: 180px;
 }

@@ -29,7 +29,8 @@ use \MovLib\Exception\Client\ErrorNotFoundException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
+class Show extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -46,6 +47,13 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
+  /**
+   * Instantiate new person presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Exception\Client\ErrorNotFoundException
+   * @throws \LogicException
+   */
   public function __construct() {
     global $i18n;
     try {
@@ -53,6 +61,7 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       $this->schemaType            = "Person";
       $this->headingSchemaProperty = "name";
       $this->init($this->person->name);
+      $this->initSidebar([]);
 
       // Display gone page if this person was deleted.
       if ($this->person->deleted === true) {
@@ -78,12 +87,9 @@ class Show extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  protected function getPageContent() {
-    return "";
-  }
-
-  protected function getSecondaryNavigationMenuitems() {
-    return [];
-  }
+  /**
+   * @inheritdoc
+   */
+  protected function getPageContent() {}
 
 }
