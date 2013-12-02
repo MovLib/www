@@ -71,69 +71,135 @@
 .ico-star:before {
 	content: "\e600";
 }
+
 .ico-lock:before {
 	content: "\e601";
 }
+
 .ico-upload:before {
 	content: "\e602";
 }
-.ico-search:before {
+
+.ico-align-left:before {
 	content: "\e603";
 }
-.ico-cc:before {
+
+.ico-align-center:before {
 	content: "\e604";
 }
-.ico-cc-zero:before {
+
+.ico-align-right:before {
 	content: "\e605";
 }
-.ico-user:before {
+
+.ico-bold:before {
 	content: "\e606";
 }
-.ico-notification:before {
+
+.ico-italic:before {
 	content: "\e607";
 }
-.ico-email:before {
+
+.ico-image:before {
 	content: "\e608";
 }
-.ico-alert:before {
+
+.ico-ul:before {
 	content: "\e609";
 }
-.ico-view:before {
+
+.ico-ol:before {
 	content: "\e60a";
 }
-.ico-discussion:before {
+
+.ico-quotation:before {
 	content: "\e60b";
 }
-.ico-edit:before {
+
+.ico-unlink:before {
 	content: "\e60c";
 }
-.ico-history:before {
+
+.ico-link:before {
 	content: "\e60d";
 }
-.ico-person:before {
+
+.ico-search:before {
 	content: "\e60e";
 }
-.ico-help:before {
+
+.ico-cc:before {
 	content: "\e60f";
 }
-.ico-info:before {
+
+.ico-cc-zero:before {
 	content: "\e610";
 }
-.ico-chevron-left:before {
+
+.ico-user:before {
 	content: "\e611";
 }
-.ico-chevron-right:before {
+
+.ico-notification:before {
 	content: "\e612";
 }
-.ico-user-add:before {
+
+.ico-email:before {
 	content: "\e613";
 }
-.ico-release:before {
+
+.ico-alert:before {
 	content: "\e614";
 }
-.ico-movie:before {
+
+.ico-view:before {
 	content: "\e615";
 }
-.ico-series:before {
+
+.ico-discussion:before {
 	content: "\e616";
+}
+
+.ico-edit:before {
+	content: "\e617";
+}
+
+.ico-history:before {
+	content: "\e618";
+}
+
+.ico-person:before {
+	content: "\e619";
+}
+
+.ico-help:before {
+	content: "\e61a";
+}
+
+.ico-info:before {
+	content: "\e61b";
+}
+
+.ico-chevron-left:before {
+	content: "\e61c";
+}
+
+.ico-chevron-right:before {
+	content: "\e61d";
+}
+
+.ico-user-add:before {
+	content: "\e61e";
+}
+
+.ico-release:before {
+	content: "\e61f";
+}
+
+.ico-movie:before {
+	content: "\e620";
+}
+
+.ico-series:before {
+	content: "\e621";
 }
