@@ -25,8 +25,18 @@
  *
  * @author Daniel Bruce
  * @copyright © 2013–present, Daniel Bruce
- * @license http://creativecommons.org/licenses/by-sa/3.0/ CC BY 3.0
+ * @license http://creativecommons.org/licenses/by-sa/3.0/ CC BY-SA 3.0
  * @link http://www.entypo.com/
+ *
+ * @author Visual Idiot
+ * @copyright © 2013–present, Visual Idiot
+ * @license http://licence.visualidiot.com/ Custom
+ * @link http://tridentdesign.com/broccoli-dry-icon-set/
+ *
+ * @author Sergey Shmidt
+ * @copyright © 2013–present, Sergey Shmidt
+ * @license http://creativecommons.org/licenses/by-sa/3.0/ CC BY-SA 3.0
+ * @link http://dribbble.com/shots/927536-Linecons-48-outline-icons
  *
  * @link http://icomoon.io/
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -37,8 +47,8 @@
  * @since 0.0.1-dev
  */
 
-.icon:before,
-.icon:before {
+[class^="ico-"],
+[class*=" ico-"] {
   font-style: normal;
   font-variant: normal;
   font-weight: normal;
@@ -53,69 +63,72 @@
   vertical-align: baseline;
 }
 
-.icon--star:before {
-	content: "\e000";
+.ico-star:before {
+	content: "\e600";
 }
-.icon--star-empty:before {
-	content: "\e001";
+.ico-lock:before {
+	content: "\e601";
 }
-.icon--search:before {
-	content: "\e002";
+.ico-upload:before {
+	content: "\e602";
 }
-.icon--menu:before {
-	content: "\e003";
+.ico-search:before {
+	content: "\e603";
 }
-.icon--cc:before {
-	content: "\e004";
+.ico-cc:before {
+	content: "\e604";
 }
-.icon--cc-zero:before {
-	content: "\e005";
+.ico-cc-zero:before {
+	content: "\e605";
 }
-.icon--user:before {
-	content: "\e006";
+.ico-user:before {
+	content: "\e606";
 }
-.icon--bell:before {
-	content: "\e007";
+.ico-notification:before {
+	content: "\e607";
 }
-.icon--mail:before {
-	content: "\e008";
+.ico-email:before {
+	content: "\e608";
 }
-.icon--lock:before {
-	content: "\e009";
+.ico-alert:before {
+	content: "\e609";
 }
-.icon--alert:before {
-	content: "\e00a";
+.ico-view:before {
+	content: "\e60a";
 }
-.icon--eye:before {
-	content: "\e00b";
+.ico-discussion:before {
+	content: "\e60b";
 }
-.icon--comment:before {
-	content: "\e00c";
+.ico-edit:before {
+	content: "\e60c";
 }
-.icon--pencil:before {
-	content: "\e00d";
+.ico-history:before {
+	content: "\e60d";
 }
-.icon--history:before {
-	content: "\e00e";
+.ico-person:before {
+	content: "\e60e";
 }
-.icon--film:before {
-	content: "\e00f";
+.ico-help:before {
+	content: "\e60f";
 }
-.icon--arrow-left:before {
-	content: "\e010";
+.ico-info:before {
+	content: "\e610";
 }
-.icon--upload:before {
-	content: "\e011";
+.ico-chevron-left:before {
+	content: "\e611";
 }
-.icon--help-circled:before {
-	content: "\e012";
+.ico-chevron-right:before {
+	content: "\e612";
 }
-.icon--info-circled:before {
-	content: "\e013";
+.ico-menu:before {
+	content: "\e613";
 }
-.icon--chevron-left:before {
-	content: "\e014";
+.ico-release:before {
+	content: "\e614";
 }
-.icon--chevron-right:before {
-	content: "\e015";
+.ico-movie:before {
+	content: "\e615";
+}
+.ico-series:before {
+	content: "\e616";
 }

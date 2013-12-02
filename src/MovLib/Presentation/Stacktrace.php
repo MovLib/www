@@ -63,7 +63,7 @@ class Stacktrace extends \MovLib\Presentation\Page {
 
     $this->alerts .= new Alert(
       "<div id='stacktrace-details'>" .
-        "<div class='title'><i class='icon icon--attention'></i> {$exception->getMessage()}</div>" .
+        "<div class='title'><i class='ico-info'></i> {$exception->getMessage()}</div>" .
         "<table>{$this->formatStacktrace($exception->getTrace())}</table>" .
       "</div>",
       $i18n->t("Stacktrace for {0}", [ $this->placeholder($fatal === true ? "Fatal Error" : get_class($exception)) ]),

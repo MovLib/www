@@ -712,33 +712,45 @@ class InputHTMLTest extends \MovLib\TestCase {
    */
   public function testValidateValidMarkup() {
     global $kernel;
-    $url = "https://example.com/foo/bar?baz=42";
-    $srcAfter     = "//{$kernel->domainStatic}/upload/user/Ravenlord.140.jpg";
-    $src          = "https:{$srcAfter}";
+    $url         = "https://example.com/foo/bar?baz=42#test";
+    $caption     = "Such image. Much <a href='{$url}' rel='nofollow'>source</a>. <em>Very <b>emphasize</b></em>. <i>Wow</i>.";
+    $alt         = "Such image. Much source. Very emphasize. Wow.";
+    $srcAfter    = "//{$kernel->domainStatic}/upload/user/Ravenlord.140.jpg";
+    $src         = "https:{$srcAfter}";
+    $img         = "<img src='{$src}'>";
+    $imgAfter    = "<img alt='{$alt}' height=\"140\" src='{$srcAfter}' width=\"140\">";
     $markupStart = "
 <h2>Le awesome heading!</h2>
 <p class='user-left'>
 This <i>is <b>some</b></i> <em><strong>paragraph</strong> text</em>.
+</p>
 <ul>
 <li>listy list</li>
-<li>nested list<ol><li>listception<ul><li>we need to go deeper...</li></ul></li></ol></li>
+<li>nested list
+  <ol>
+    <li>listception
+      <ul>
+        <li>we need to go deeper...</li>
+      </ul>
+      </li>
+  </ol>
+</li>
 </ul>
-</p>
 <blockquote class='user-center'>
 <p>I am a <strong>quote</strong>!</p>
-<cite><strong>This <i>is</i> <em>some <b>source</b></em> <a href='{$url}'>text</a>.</strong></cite>
+<cite><strong>This <i>is</i> <em>some <b>source</b></em> <a href='{$url}' rel='nofollow'>text</a>.</strong></cite>
 </blockquote>
 <figure class='user-right'>
-<img src='";
+";
 
-    $markupEnd = "'>
-<figcaption>Such image. Much <a href='{$url}'>source</a>. <em>Very <b>emphasize</b></em>. <i>Wow</i>.</figcaption>
+    $markupEnd = "<figcaption>{$caption}</figcaption>
 </figure>
 ";
-    $markup = "{$markupStart}{$src}{$markupEnd}";
-    $markupAfter = "{$markupStart}{$srcAfter}{$markupEnd}";
-    $tidy        = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$markup}</body></html>");
+    $markup      = "{$markupStart}{$img}{$markupEnd}";
+    $markupAfter = "{$markupStart}{$imgAfter}{$markupEnd}";
+    $tidy        = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$markupAfter}</body></html>");
     $tidy->cleanRepair();
+    $markupAfter = \Normalizer::normalize(str_replace("\n\n", "\n", tidy_get_output($tidy)));
     $input       = new InputHTML("phpunit", "PHPUnit", $markup);
     $input->allowBlockqoutes();
     $input->allowExternalLinks();
@@ -746,8 +758,8 @@ This <i>is <b>some</b></i> <em><strong>paragraph</strong> text</em>.
     $input->allowImages();
     $input->allowLists();
     $input->validate();
-//    $this->assertEquals(str_replace("\n", "", $markupAfter), str_replace("\n", "", $kernel->htmlDecode($input->value)));
-    echo PHP_EOL, $kernel->htmlDecode($input->value), PHP_EOL;
+    $this->assertEquals($markupAfter, $kernel->htmlDecode($input->value));
+//    echo PHP_EOL, $kernel->htmlDecode($input->value), PHP_EOL;
   }
 
 }
