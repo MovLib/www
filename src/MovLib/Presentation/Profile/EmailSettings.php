@@ -36,9 +36,8 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class EmailSettings extends \MovLib\Presentation\Page {
+class EmailSettings extends \MovLib\Presentation\Profile\Show {
   use \MovLib\Presentation\TraitFormPage;
-  use \MovLib\Presentation\Profile\TraitProfile;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -54,7 +53,7 @@ class EmailSettings extends \MovLib\Presentation\Page {
   private $email;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
@@ -100,6 +99,10 @@ class EmailSettings extends \MovLib\Presentation\Page {
       $this->validateToken();
     }
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc

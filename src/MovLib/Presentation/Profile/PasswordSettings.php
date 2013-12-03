@@ -37,9 +37,8 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PasswordSettings extends \MovLib\Presentation\Page {
+class PasswordSettings extends \MovLib\Presentation\Profile\Show {
   use \MovLib\Presentation\TraitFormPage;
-  use \MovLib\Presentation\Profile\TraitProfile;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

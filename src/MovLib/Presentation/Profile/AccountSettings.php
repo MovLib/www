@@ -42,9 +42,8 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class AccountSettings extends \MovLib\Presentation\Page {
+class AccountSettings extends \MovLib\Presentation\Profile\Show {
   use \MovLib\Presentation\TraitFormPage;
-  use \MovLib\Presentation\Profile\TraitProfile;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -210,6 +209,17 @@ class AccountSettings extends \MovLib\Presentation\Page {
     ]);
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Update Account Settings"), [ "class" => "button button--large button--success" ]);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  protected function getPageContent() {
+    return $this->form;
   }
 
   /**

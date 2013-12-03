@@ -33,7 +33,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SignIn extends \MovLib\Presentation\Page {
+class SignIn extends \MovLib\Presentation\AbstractPage {
   use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Users\TraitUsers;
 

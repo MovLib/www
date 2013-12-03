@@ -28,8 +28,23 @@ use \MovLib\Data\User\Full as UserFull;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\Profile\TraitProfile;
+class Show extends \MovLib\Presentation\AbstractPage {
+  use \MovLib\Presentation\TraitSidebar;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The user we are currently displaying.
+   *
+   * @var \MovLib\Data\User\Full
+   */
+  protected $user;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new user show presentation.
@@ -41,8 +56,20 @@ class Show extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n, $session;
     $session->checkAuthorization($i18n->t("You must be signed in to view your profile."));
-    $this->init();
-    $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
+    $this->init($i18n->t("Profile"));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inhertidoc
+   * @global \MovLib\Data\I18n $i18n
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [[ $i18n->r("/profile"), $i18n->t("Profile") ]];
   }
 
   /**
@@ -83,6 +110,35 @@ class Show extends \MovLib\Presentation\Page {
       "<h2>Kernel</h2><pre>{$var[2]}</pre>" .
       "<h2>Delayed Methods</h2><pre>{$var[3]}</pre>"
     ;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  protected function init($title) {
+    global $i18n, $session;
+    parent::init($title);
+
+    if ($session->isAuthenticated === true) {
+      $sidebar = [
+        [ $i18n->r("/profile"), "<i class='ico-info'></i> {$i18n->t("Profile")}", [ "class" => "separator" ] ],
+        [ $i18n->r("/profile/account-settings"), "<i class='ico-user'></i> {$i18n->t("Account")}" ],
+        [ $i18n->r("/profile/notification-settings"), "<i class='ico-notification'></i> {$i18n->t("Notifications")}" ],
+        [ $i18n->r("/profile/email-settings"), "<i class='ico-email'></i> {$i18n->t("Email")}" ],
+        [ $i18n->r("/profile/password-settings"), "<i class='ico-lock'></i> {$i18n->t("Password")}" ],
+        [ $i18n->r("/profile/danger-zone"), "<i class='ico-alert'></i> {$i18n->t("Danger Zone")}" ],
+      ];
+    }
+    // A user might visit the password settings page after successfully requesting a reset password email. Only display
+    // the actual secondary navigation point the user is able to access at this point and omit everything else.
+    else {
+      $sidebar = [[ $i18n->r("/profile/password-settings"), "<i class='ico-lock'></i> {$i18n->t("Password")}" ]];
+    }
+    $this->initSidebar($sidebar);
+
+    $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
+
+    return $this;
   }
 
 }

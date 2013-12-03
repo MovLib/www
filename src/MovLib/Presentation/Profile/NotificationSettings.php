@@ -29,8 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class NotificationSettings extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\Profile\TraitProfile;
+class NotificationSettings extends \MovLib\Presentation\Profile\Show {
 
   /**
    * Instantiate new user notification settings presentation.

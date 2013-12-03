@@ -37,9 +37,8 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class DangerZone extends \MovLib\Presentation\Page {
+class DangerZone extends \MovLib\Presentation\Profile\Show {
   use \MovLib\Presentation\TraitFormPage;
-  use \MovLib\Presentation\Profile\TraitProfile;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -111,12 +110,12 @@ class DangerZone extends \MovLib\Presentation\Page {
       $button                         = new Button("session_id", $buttonText, [
         "class" => "button button--danger",
         "type"  => "submit",
-        "value" => $sessions[$i]["session_id"],
+        "value" => $sessions[$i]["id"],
         "title" => $buttonTitle,
       ]);
       unset($button->attributes["id"]);
 
-      if ($sessions[$i]["session_id"] == $session->id) {
+      if ($sessions[$i]["id"] == $session->id) {
         $active                      = " class='warning'";
         $button->attributes["title"] = $i18n->t("If you click this button your active session is terminated and you’ll be signed out!");
         $button->content             = $i18n->t("Sign Out");
