@@ -41,7 +41,8 @@ INSERT INTO `movies` SET
   `dyn_synopses`                 = COLUMN_CREATE(
     'en', '&lt;p&gt;The scene features Adolphe Le Prince, Sarah Whitley, Joseph Whitley and Harriet Whitley in the Roundhay Garden.&lt;/p&gt;',
     'de', '&lt;p&gt;Die Szene zeigt Adolphe Le Prince, Sarah Whitley, Joseph Whitley und Harriet Whitley im Roundhay Garden.&lt;/p&gt;'
-  )
+  ),
+  `dyn_links`                    = ''
 ;
 SET @roundhay_garden_scene_id = LAST_INSERT_ID();
 
@@ -137,7 +138,9 @@ INSERT INTO `movies` SET
     'en', '&lt;p&gt;“Big” Buck is a chubby bunny who enjoys the beauty of nature. But he decides to shed his gentleness when the flying squirrel Frank, the squirrel Rinky and the chinchilla Gamera kill two butterflies and throw fruits and nuts at him. Buck prepares a well-deserved revenge for the three rodents.&lt;/p&gt;',
     'de', '&lt;p&gt;„Big” Buck is ein fülliges Kaninchen, dass sich an der schönen Natur erfreut. Als jedoch das Flughörnchen Frank, das Eichhörnchen Rinky und das Chinchilla Gamera auftauchen, zwei Schmetterlinge töten und das Kaninchen mit Früchten und Nüssen bewerfen, beschließt es, seine Sanftmütigkeit abzulegen und an den Nagetieren Rache zu nehmen.&lt;/p&gt;'
   ),
-  `website`                      = 'http://www.bigbuckbunny.org/'
+  `dyn_links`                    = COLUMN_CREATE(
+    'en', 'http://www.bigbuckbunny.org/'
+  )
 ;
 SET @big_buck_bunny_id = LAST_INSERT_ID();
 
@@ -202,9 +205,11 @@ INSERT INTO `movies` SET
   `original_title`               = 'The Shawshank Redemption',
   `original_title_language_code` = 'en',
   `runtime`                      = 8520, -- 142 minutes
-  `website`                      = 'https://www.facebook.com/ShawshankRedemptionFilm',
   `year`                         = 1994,
-  `dyn_synopses`                 = ''
+  `dyn_synopses`                 = '',
+  `dyn_links`                    = COLUMN_CREATE(
+    'en', 'https://www.facebook.com/ShawshankRedemptionFilm'
+  )
 ;
 SET @the_shawshank_redemption_id = LAST_INSERT_ID();
 
