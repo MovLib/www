@@ -327,7 +327,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
   `roles` BLOB NOT NULL COMMENT 'The names of the role the person played in the movie.',
-  `weight` BIGINT NOT NULL COMMENT 'The weight (display order) of the movie\'s cast.',
+  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie\'s cast. Default is 0.',
   PRIMARY KEY (`movie_id`, `person_id`),
   INDEX `fk_movies_cast_movies` (`movie_id` ASC),
   INDEX `fk_movies_cast_persons` (`person_id` ASC),
@@ -404,7 +404,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
-  `weight` BIGINT UNSIGNED NOT NULL COMMENT 'The weight (display order) of the movie\'s director.',
+  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie\'s director. Default is 0.',
   PRIMARY KEY (`movie_id`, `person_id`),
   INDEX `fk_movies_directors_persons` (`person_id` ASC),
   INDEX `fk_movies_directors_movies` (`movie_id` ASC),
