@@ -66,7 +66,7 @@
      * @property content
      * @type HTMLElement
      */
-    this.content = this.editor.children[0].children[0];
+    this.content = this.editor.children[this.editor.children.length - 1].children[0];
 
     // Enhance the current element.
     this.init(element);
