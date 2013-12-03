@@ -323,19 +323,22 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
 
     return
       "<a class='visuallyhidden' href='#main'>{$i18n->t("Skip directly to page content.")}</a>" .
-      "<header id='header'><div class='container'><div class='row'>{$this->getHeaderLogo()}<div class='span span--9'>" .
-        "<section class='expander'>" .
-          "<h2>{$i18n->t("Explore")}</h2>" .
-          "<div class='concealed row'>{$moviesNavigation}{$seriesNavigation}{$personsCompaniesNavigation}{$otherNavigation}</div>" .
-        "</section>" .
-        "<form action='{$i18n->t("/search")}' class='span' id='search' method='post' role='search'>" .
-          "<input type='hidden' name='form_id' value='header_search'>" .
-          "<label class='visuallyhidden' for='search-input'>{$i18n->t("Search the {0} database.", [ $kernel->siteName ])}</label>" .
-          "<input id='search-input' name='searchterm' required tabindex='{$searchTabindex}' title='{$i18n->t("Enter the search term you wish to search for and hit enter.")}' type='search'>" .
-          "<button title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'><i class='ico-search'></i></button>" .
-        "</form>" .
-        "<div class='button button--inverse expander ico-user-add'><div class='concealed row'>{$userNavigation}</div></div>" .
-      "</div></div></div></header>"
+      "<header id='header'><div class='container'><div class='row'>" .
+        "<div class='span span--3'>{$this->getHeaderLogo()}</div>" .
+        "<div class='span span--9'>" .
+          "<section class='expander'>" .
+            "<h2>{$i18n->t("Explore")}</h2>" .
+            "<div class='concealed row'>{$moviesNavigation}{$seriesNavigation}{$personsCompaniesNavigation}{$otherNavigation}</div>" .
+          "</section>" .
+          "<form action='{$i18n->t("/search")}' class='span' id='search' method='post' role='search'>" .
+            "<input type='hidden' name='form_id' value='header_search'>" .
+            "<label class='visuallyhidden' for='search-input'>{$i18n->t("Search the {0} database.", [ $kernel->siteName ])}</label>" .
+            "<input id='search-input' name='searchterm' required tabindex='{$searchTabindex}' title='{$i18n->t("Enter the search term you wish to search for and hit enter.")}' type='search'>" .
+            "<button title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'><i class='ico-search'></i></button>" .
+          "</form>" .
+          "<div class='button button--inverse expander ico-user-add'><div class='concealed row'>{$userNavigation}</div></div>" .
+        "</div>" .
+      "</div></div></header>"
     ;
   }
 
@@ -350,7 +353,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
   protected function getHeaderLogo() {
     global $kernel, $i18n;
     return
-      "<a class='span span--3' href='/' id='header-logo' title='{$i18n->t("Go back to the home page.")}'>" .
+      "<a href='/' id='header-logo' title='{$i18n->t("Go back to the home page.")}'>" .
         "<img alt='{$kernel->siteName}' height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}" .
       "</a>"
     ;

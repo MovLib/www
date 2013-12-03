@@ -75,13 +75,13 @@
 }
 
 #movie-rating .rated,
-#movie-rating:hover .front,
-#movie-rating:focus .front {
+#movie-rating:focus .front,
+#movie-rating:hover .front {
   color: #fb3;
 }
 
-#movie-rating .front > label:hover ~ label,
-#movie-rating .front > label:focus ~ label {
+#movie-rating .front > label:focus ~ label,
+#movie-rating .front > label:hover ~ label {
   color: #c7c7c7;
 }
 

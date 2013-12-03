@@ -58,7 +58,7 @@
 #header-logo {
   position: relative;
   top: -1px;
-  display: block;
+  display: inline-block;
   padding: 0;
   margin-top: 0;
   margin-right: 0;
@@ -98,13 +98,13 @@
   content: "▾";
 }
 
+/* Put the element off-screen to ensure that all browsers are still able to tab to the anchor elements. */
 #header .concealed {
   position: absolute;
   top: 0;
-  right: 0;
-  left: 0;
+  right: 999999em;
+  left: -999999em;
   z-index: -2;
-  display: none;
   background-color: #fff;
   opacity: 0;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
@@ -115,14 +115,16 @@
 #header .expand .concealed,
 #header .expander:hover .concealed {
   top: 50px;
-  display: block;
+  right: 0;
+  left: 0;
   pointer-events: auto;
   opacity: 1;
 }
 
 /* Ensure fade out animation is smooth as well if the browser supports pointer events. */
 .pointer-events #header .concealed {
-  display: block;
+  right: 0;
+  left: 0;
   pointer-events: none;
 }
 
