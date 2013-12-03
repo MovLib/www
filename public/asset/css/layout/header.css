@@ -104,6 +104,7 @@
   right: 0;
   left: 0;
   z-index: -2;
+  display: none;
   background-color: #fff;
   opacity: 0;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
@@ -112,10 +113,17 @@
 }
 
 #header .expand .concealed,
-#header .expander:focus .concealed,
 #header .expander:hover .concealed {
   top: 50px;
+  display: block;
+  pointer-events: auto;
   opacity: 1;
+}
+
+/* Ensure fade out animation is smooth as well if the browser supports pointer events. */
+.pointer-events #header .concealed {
+  display: block;
+  pointer-events: none;
 }
 
 #header .button {

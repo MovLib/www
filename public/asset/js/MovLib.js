@@ -80,6 +80,13 @@
      * @return {MovLib}
      */
     init: function () {
+      /**
+       * A DOM element for testing.
+       *
+       * @type HTMLElement
+       */
+      var element = document.createElement("x");
+
       // Anonymous helper function to load polyfills.
       var load = function (name) {
         this.loadModule("//" + this.settings.domainStatic + "/asset/js/polyfill/" + name + ".js");
@@ -90,12 +97,25 @@
         load.call(this, "classList");
       }
 
+      // Test for pointer-events support.
+      element.style.cssText = "pointer-events:auto";
+      if (element.style.pointerEvents === "auto") {
+        document.body.classList.add("pointer-events");
+      }
+
       // Show the hidden header navigations on focus of the anchor elements. There's sadly no way to do this in CSS :(
       var expanders = document.getElementsByClassName("expander");
       expanders.toggle = function () {
         this.classList.toggle("expand");
       };
+      expanders.remove = function () {
+        this.classList.remove("expand");
+      };
       for (var i = 0; i < expanders.length; ++i) {
+        // For mobile browsers which have no hover state.
+        expanders[i].addEventListener("click", expanders.toggle, false);
+        expanders[i].addEventListener("mouseout", expanders.remove, false);
+        // For keyboard navigation to manage visibility.
         expanders[i].addEventListener("focus", expanders.toggle, true);
         expanders[i].addEventListener("blur", expanders.toggle, true);
       }
