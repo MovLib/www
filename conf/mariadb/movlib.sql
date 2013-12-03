@@ -12,25 +12,27 @@ USE `movlib` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie’s unique ID.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The movie’s creation time.',
-  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'TRUE (1) if this movie was deleted, default is FALSE (0).',
-  `dyn_synopses` BLOB NOT NULL COMMENT 'The movie’s translatable synopses.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the movie as timestamp.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether the movie is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
+  `dyn_links` BLOB NOT NULL COMMENT 'External links to the official website in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the movie in various languages. Keys are ISO alpha-2 language codes.',
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.',
-  `original_title` BLOB NOT NULL COMMENT 'The movie\'s original title.',
-  `original_title_language_code` CHAR(2) NOT NULL,
+  `original_title` BLOB NOT NULL COMMENT 'The movie’s original title.',
+  `original_title_language_code` CHAR(2) NOT NULL COMMENT 'The movie’s original title ISO alpha-2 language code.',
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of this movie.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.',
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s vote count.',
-  `commit` CHAR(40) NULL COMMENT 'The movie\'s last commit sha-1 hash.',
+  `commit` CHAR(40) NULL COMMENT 'The movie\'s last history commit sha-1 hash.',
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.',
   `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime in minutes.',
-  `website` TINYTEXT NULL COMMENT 'The movie\'s official website URL.',
   `year` SMALLINT(4) ZEROFILL UNSIGNED NULL COMMENT 'The movie’s initial release year.',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_movies_rank` (`rank` ASC),
   INDEX `movies_deleted` (`deleted` ASC),
   INDEX `movies_created` (`created` DESC))
 ENGINE = InnoDB
-COMMENT = 'Contains all basic movie data.';
+COMMENT = 'Contains all basic movie data.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -39,8 +41,8 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`genres` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The genre’s unique ID.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The genre’s names.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s descriptions.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The genre’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The genre’s name in various languages. Keys are ISO alpha-2 language codes.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all movie genres.'
@@ -53,9 +55,9 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_genres`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_genres` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `genre_id` BIGINT UNSIGNED NOT NULL COMMENT 'The genre’s unique ID.',
-  PRIMARY KEY (`movie_id`, `genre_id`),
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  PRIMARY KEY (`genre_id`, `movie_id`),
   INDEX `fk_movies_genres_genres` (`genre_id` ASC),
   INDEX `fk_movies_genres_movies` (`movie_id` ASC),
   CONSTRAINT `fk_movies_genres_movies`
@@ -326,8 +328,8 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
-  `roles` BLOB NOT NULL COMMENT 'The names of the role the person played in the movie.',
-  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie\'s cast. Default is 0.',
+  `roles` BLOB NOT NULL COMMENT 'The names of the role the person played in the movie as comma separated list.',
+  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s cast. Default is 0.',
   PRIMARY KEY (`movie_id`, `person_id`),
   INDEX `fk_movies_cast_movies` (`movie_id` ASC),
   INDEX `fk_movies_cast_persons` (`person_id` ASC),
@@ -342,7 +344,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'A movie has many actors, an actor has many movies.';
+COMMENT = 'Contains all the movie casts.';
 
 SHOW WARNINGS;
 
@@ -404,7 +406,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
-  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie\'s director. Default is 0.',
+  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s director. Default is 0.',
   PRIMARY KEY (`movie_id`, `person_id`),
   INDEX `fk_movies_directors_persons` (`person_id` ASC),
   INDEX `fk_movies_directors_movies` (`movie_id` ASC),
@@ -419,7 +421,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'A movie has many directors, a director has many movies.';
+COMMENT = 'Contains the directors of a movie.';
 
 SHOW WARNINGS;
 
@@ -461,24 +463,17 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_awards`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID.',
-  `award_count` BIGINT NOT NULL COMMENT 'The award\'s number for a movie.',
-  `award_id` BIGINT UNSIGNED NOT NULL COMMENT 'The award\'s unique ID.',
-  `award_category_id` BIGINT UNSIGNED NULL COMMENT 'The award category´s ID.',
-  `person_id` BIGINT UNSIGNED NULL COMMENT 'The unique ID of the person who received the award.',
-  `company_id` BIGINT UNSIGNED NULL COMMENT 'The unique ID of the company which received the award.',
-  `year` SMALLINT(4) UNSIGNED ZEROFILL NOT NULL COMMENT 'The year the award has been given to the movie.',
-  `won` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag, whether the award has been won (true), or if there was only the nomination (false).',
-  PRIMARY KEY (`movie_id`, `award_count`),
+  `id` BIGINT NOT NULL COMMENT 'The movie award’s unique ID within a movie.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique ID (who received the award).',
+  `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique ID (who received the award).',
+  `won` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this award has been won (TRUE(1)) or not (FALSE(0), default is FALSE (0).',
+  `year` SMALLINT(4) UNSIGNED ZEROFILL NOT NULL COMMENT 'The year in which the movie won the award.',
+  `award_category_id` BIGINT UNSIGNED NULL COMMENT 'The award category’s unique ID.',
+  PRIMARY KEY (`id`, `movie_id`),
   INDEX `fk_awards_movies_movies` (`movie_id` ASC),
-  INDEX `fk_awards_movies_awards` (`award_id` ASC),
   INDEX `fk_persons_awards_persons` (`person_id` ASC),
   INDEX `fk_persons_awards_companies` (`company_id` ASC),
-  CONSTRAINT `fk_movies_awards_awards`
-    FOREIGN KEY (`award_id`)
-    REFERENCES `movlib`.`awards` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_awards_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -494,7 +489,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
     REFERENCES `movlib`.`companies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains all awards belonging to movies.';
 
 SHOW WARNINGS;
 
@@ -502,12 +498,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`titles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
-  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1,
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this title relates to.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The title\'s ISO alpha-2 language code.',
-  `title` BLOB NOT NULL COMMENT 'The movie\'s title.',
-  `dyn_comments` BLOB NOT NULL COMMENT 'The translatable comment for this title.',
-  `display` TINYINT(1) NOT NULL DEFAULT false,
+  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The title’s unique ID within the movie.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  `display` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this title is the display title for its language (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
+  `dyn_comments` BLOB NOT NULL COMMENT 'The title’s comment in various languages. Keys are ISO alpha-2 language codes.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The title’s ISO alpha-2 language code.',
+  `title` BLOB NOT NULL COMMENT 'The movie’s title.',
   INDEX `fk_titles_movies` (`movie_id` ASC),
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_titles_movies`
@@ -515,7 +511,10 @@ CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains movie titles.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -523,12 +522,12 @@ SHOW WARNINGS;
 -- Table `movlib`.`taglines`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
-  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1,
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The tagline\'s ISO alpha-2 language code.',
-  `tagline` BLOB NOT NULL COMMENT 'The movie\'s tagline.',
-  `dyn_comments` BLOB NOT NULL COMMENT 'The tagline\'s translatable comment.',
-  `display` TINYINT(1) NOT NULL DEFAULT false,
+  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The tagline’s unique ID within the movie.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  `display` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this tagline is the display title for its language (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
+  `dyn_comments` BLOB NOT NULL COMMENT 'The taglines’s comment in various languages. Keys are ISO alpha-2 language codes.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The tagline’s ISO alpha-2 language code.',
+  `tagline` BLOB NOT NULL COMMENT 'The movie’s tagline.',
   INDEX `fk_taglines_movies` (`movie_id` ASC),
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_taglines_movies`
@@ -536,7 +535,10 @@ CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains all movie taglines.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -544,14 +546,14 @@ SHOW WARNINGS;
 -- Table `movlib`.`relationship_types`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`relationship_types` (
-  `relationship_type_id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'The relationship type\'s unique ID.',
-  `name` VARCHAR(100) NOT NULL COMMENT 'The relationship type\'s unique English name.',
-  `description` BLOB NULL COMMENT 'The relationship type\'s English description.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The relationship type\'s name translations.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The relationship type\'s description translations.',
-  PRIMARY KEY (`relationship_type_id`),
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC))
-ENGINE = InnoDB;
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'The relationship type\'s unique ID.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The relationship type’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The relationship type’s description in various languages. Keys are ISO alpha-2 language codes.',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+COMMENT = 'Contains relationship types.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -562,7 +564,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
   `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The movie trailer’s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The movie trailer’s ISO alpha-2 language code.',
-  `url` VARCHAR(255) NOT NULL,
+  `url` VARCHAR(255) NOT NULL COMMENT 'The movie trailer’s url, e.g. youtube.',
   `country_code` CHAR(2) NULL COMMENT 'The movie trailer’s ISO alpha-2 country code.',
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_movies_trailers_movies`
@@ -674,7 +676,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`series_titles` (
   `id` BIGINT UNSIGNED NOT NULL COMMENT 'The series title’s ID within the series.',
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
-  `display` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this series title is the display title for his language (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
+  `display` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this series title is the display title for its language (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_comments` BLOB NOT NULL COMMENT 'The series title’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The series title’s ISO aplha-2 language code.',
   `title` BLOB NOT NULL COMMENT 'The title of the series.',
@@ -699,7 +701,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`seasons_episodes` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of he series.',
   `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s number this episode belongs to.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode’s chronological position within the season.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The timestamp this episode was created.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the episode as timestamp.',
   `original_title` BLOB NOT NULL COMMENT 'The episode’s original title.',
   `original_title_language_code` CHAR(2) NOT NULL COMMENT 'The episode’s original title ISO alpha-2 language code.',
   `episode_number` TINYTEXT NULL COMMENT 'The episodes number within the season (e.g. 01, but also 0102 if it contains two episodes).',
@@ -725,7 +727,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`episodes_titles` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
   `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season number within the series.',
   `position` SMALLINT UNSIGNED NOT NULL COMMENT 'The episode’s chronological position within the season.',
-  `display` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this episode title is the display title for his language (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
+  `display` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this episode title is the display title for its language (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_comments` BLOB NOT NULL COMMENT 'The episode title’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The episode title’s ISO aplha-2 language code.',
   `title` BLOB NOT NULL COMMENT 'The episode’s title.',
@@ -899,22 +901,23 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_releases`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_releases` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie´s unique ID.',
-  `release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The release´s unique ID that is related to the movie.',
-  PRIMARY KEY (`movie_id`, `release_id`),
-  INDEX `fk_movies_releases_releases` (`release_id` ASC),
+  `master_release_id` BIGINT UNSIGNED NOT NULL COMMENT 'The master release’s unique ID.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  PRIMARY KEY (`master_release_id`, `movie_id`),
   INDEX `fk_movies_releases_movies` (`movie_id` ASC),
-  CONSTRAINT `fk_movies_releases_movies1`
+  INDEX `fk_movies_releases_master_releases_idx` (`master_release_id` ASC),
+  CONSTRAINT `fk_movies_releases_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_releases_releases1`
-    FOREIGN KEY (`release_id`)
-    REFERENCES `movlib`.`releases` (`id`)
+  CONSTRAINT `fk_movies_releases_master_releases`
+    FOREIGN KEY (`master_release_id`)
+    REFERENCES `movlib`.`master_releases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'A movie has many releases, a release has many movies.';
 
 SHOW WARNINGS;
 
@@ -1056,7 +1059,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique identifier.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
-  `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user’s rating for this movie (1-5).',
+  `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user’s rating for a certain movie (1-5).',
   PRIMARY KEY (`movie_id`, `user_id`),
   INDEX `fk_movies_ratings_users` (`user_id` ASC),
   INDEX `fk_movies_ratings_movies` (`movie_id` ASC),
@@ -1079,29 +1082,30 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_relationships`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_relationships` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The first movie\'s unique ID in this relationship.',
-  `movie_id_other` BIGINT UNSIGNED NOT NULL COMMENT 'The second movie\'s unique ID in this relationship.',
-  `relationship_type_id` BIGINT NOT NULL COMMENT 'The unique ID of the relationship type.',
-  PRIMARY KEY (`movie_id`, `movie_id_other`, `relationship_type_id`),
+  `first_movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The first movie’s unique ID.',
+  `second_movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The second movie’s unique ID.',
+  `relationship_type_id` BIGINT NOT NULL COMMENT 'The movie relationship type’s unique ID.',
+  PRIMARY KEY (`first_movie_id`, `second_movie_id`, `relationship_type_id`),
   INDEX `fk_movies_relationships_relationship_types` (`relationship_type_id` ASC),
-  INDEX `fk_movies_relationships_movies` (`movie_id` ASC),
-  INDEX `fk_movies_relationships_movies_other` (`movie_id_other` ASC),
+  INDEX `fk_movies_relationships_first_movie_idx` (`first_movie_id` ASC),
+  INDEX `fk_movies_relationships_second_movie_idx` (`second_movie_id` ASC),
   CONSTRAINT `fk_movies_relationships_relationship_types`
     FOREIGN KEY (`relationship_type_id`)
-    REFERENCES `movlib`.`relationship_types` (`relationship_type_id`)
+    REFERENCES `movlib`.`relationship_types` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_relationships_movies`
-    FOREIGN KEY (`movie_id`)
+  CONSTRAINT `fk_movies_relationships_first_movie`
+    FOREIGN KEY (`first_movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_relationships_movies_other`
-    FOREIGN KEY (`movie_id_other`)
+  CONSTRAINT `fk_movies_relationships_second_movie`
+    FOREIGN KEY (`second_movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains relationships between movies.';
 
 SHOW WARNINGS;
 
@@ -1132,8 +1136,8 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_titles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this title relates to.',
-  `commit` CHAR(40) NULL,
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  `commit` CHAR(40) NULL COMMENT 'The last history commit sha-1 hash for a set of titles belonging to a movie.',
   INDEX `fk_movies_titles_movies` (`movie_id` ASC),
   PRIMARY KEY (`movie_id`),
   CONSTRAINT `fk_movies_titles_movie_id`
@@ -1141,7 +1145,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains the sha-1 commit hashes used in the movie title his /* comment truncated */ /*tory.*/';
 
 SHOW WARNINGS;
 
@@ -1149,8 +1154,8 @@ SHOW WARNINGS;
 -- Table `movlib`.`movies_taglines`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie\'s unique ID this tagline relates to.',
-  `commit` CHAR(40) NULL,
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
+  `commit` CHAR(40) NULL COMMENT 'The last history commit sha-1 hash for a set of taglines belonging to a movie.',
   INDEX `fk_movies_taglines_movies` (`movie_id` ASC),
   PRIMARY KEY (`movie_id`),
   CONSTRAINT `fk_movies_taglines_movie`
@@ -1158,7 +1163,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'Contains the sha-1 commit hashes used in the movie tagline h /* comment truncated */ /*istory.*/';
 
 SHOW WARNINGS;
 
@@ -1332,6 +1338,37 @@ CREATE TABLE IF NOT EXISTS `movlib`.`master_releases_identifiers` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all release identifiers belonging to master release /* comment truncated */ /*s.*/';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`series_relationships`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`series_relationships` (
+  `first_series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the first series.',
+  `second_series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the second series.',
+  `relationship_type_id` BIGINT NOT NULL COMMENT 'The relationship type’s unique ID.',
+  PRIMARY KEY (`first_series_id`, `second_series_id`, `relationship_type_id`),
+  INDEX `fk_series_relationships_second_series_idx` (`second_series_id` ASC),
+  INDEX `fk_series_relationships_relationship_types1_idx` (`relationship_type_id` ASC),
+  INDEX `fk_series_relationships_first_series_idx` (`first_series_id` ASC),
+  CONSTRAINT `fk_series_relationships_first_series`
+    FOREIGN KEY (`first_series_id`)
+    REFERENCES `movlib`.`series` (`series_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_relationships_second_series`
+    FOREIGN KEY (`second_series_id`)
+    REFERENCES `movlib`.`series` (`series_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_series_relationships_relationship_types`
+    FOREIGN KEY (`relationship_type_id`)
+    REFERENCES `movlib`.`relationship_types` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains relationships between series.';
 
 SHOW WARNINGS;
 
