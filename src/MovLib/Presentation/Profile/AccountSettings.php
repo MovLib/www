@@ -175,6 +175,13 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
     $this->aboutMe  = new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, [
       "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
     ]);
+    $this->aboutMe
+      ->allowBlockqoutes()
+      ->allowExternalLinks()
+      ->allowHeadings()
+      ->allowImages()
+      ->allowLists()
+    ;
 
     $systemLanguages = [];
     foreach ($kernel->systemLanguages as $systemLanguageCode => $systemLanguageLocale) {

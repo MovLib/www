@@ -94,8 +94,8 @@ input[type="search"]::-webkit-search-cancel-button {
 input,
 select,
 textarea,
-.inputhtml .content {
-  display: inline-block;
+.inputhtml .editor {
+  display: block;
   vertical-align: middle;
   border: 1px solid #ccc;
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
@@ -106,7 +106,7 @@ textarea,
 input:focus,
 select:focus,
 textarea:focus,
-.inputhtml .content:focus {
+.inputhtml .focus {
   border-color: rgba(82, 168, 236, 0.8);
   outline: 0;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
@@ -115,7 +115,7 @@ textarea:focus,
 input:invalid:not(:empty),
 .invalid,
 textarea:invalid:not(:empty),
-.inputhtml .content:invalid:not(:empty) {
+.inputhtml .invalid {
   border-color: #ee5f5b;
   outline: 0;
 }
@@ -123,7 +123,7 @@ textarea:invalid:not(:empty),
 input:focus:invalid:focus:not(:empty),
 .invalid:focus,
 textarea:focus:invalid:focus:not(:empty),
-.inputhtml .content:focus:invalid:focus:not(:empty) {
+.inputhtml .focus.invalid {
   border-color: rgba(233, 50, 45, 0.8);
   outline: 0;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
@@ -215,38 +215,4 @@ form p {
 option[value=""] {
   color: #999;
   font-style: italic;
-}
-
-
-/* ==== INPUTHTML =================================================================================================== */
-
-
-.inputhtml .wrapper {
-  position: relative;
-}
-
-/* Reset paragraph margin for our content children that was previously redefined for paragraphs within forms. */
-.inputhtml .content p {
-  margin: 0 0 10px;
-}
-
-/* Mimic the default browser behavior for the placeholder attribute. */
-.inputhtml .placeholder {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  padding: 8px 10px;
-  font-weight: 200;
-  color: #888;
-}
-
-.inputhtml .content:focus:empty + .placeholder {
-  color: #ccc;
-}
-
-.inputhtml .content:not(:empty) + .placeholder,
-.inputhtml .content:focus:not(:empty) + .placeholder {
-  display: none;
-  visibility: hidden;
 }

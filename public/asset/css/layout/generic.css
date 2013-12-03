@@ -163,7 +163,8 @@
 
 .hidden,
 #js .jshidden,
-#nojs .nojshidden {
+#nojs .nojshidden,
+.inputhtml .not-empty .placeholder {
   display: none;
   visibility: hidden;
 }

@@ -96,6 +96,7 @@
      * @return {InputHTML}
      */
     focus: function (event) {
+      this.editor.classList.add("focus");
       event.preventDefault();
       event.returnValue = false;
       // Focus event is now totally disabled for this HTMLElement! (Doesn't account for mouse clicks ;)
