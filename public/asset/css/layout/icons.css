@@ -124,82 +124,90 @@
 	content: "\e60d";
 }
 
-.ico-search:before {
+.ico-indent-left:before {
 	content: "\e60e";
 }
 
-.ico-cc:before {
+.ico-indent-right:before {
 	content: "\e60f";
 }
 
-.ico-cc-zero:before {
+.ico-search:before {
 	content: "\e610";
 }
 
-.ico-user:before {
+.ico-cc:before {
 	content: "\e611";
 }
 
-.ico-notification:before {
+.ico-cc-zero:before {
 	content: "\e612";
 }
 
-.ico-email:before {
+.ico-user:before {
 	content: "\e613";
 }
 
-.ico-alert:before {
+.ico-notification:before {
 	content: "\e614";
 }
 
-.ico-view:before {
+.ico-email:before {
 	content: "\e615";
 }
 
-.ico-discussion:before {
+.ico-alert:before {
 	content: "\e616";
 }
 
-.ico-edit:before {
+.ico-view:before {
 	content: "\e617";
 }
 
-.ico-history:before {
+.ico-discussion:before {
 	content: "\e618";
 }
 
-.ico-person:before {
+.ico-edit:before {
 	content: "\e619";
 }
 
-.ico-help:before {
+.ico-history:before {
 	content: "\e61a";
 }
 
-.ico-info:before {
+.ico-person:before {
 	content: "\e61b";
 }
 
-.ico-chevron-left:before {
+.ico-help:before {
 	content: "\e61c";
 }
 
-.ico-chevron-right:before {
+.ico-info:before {
 	content: "\e61d";
 }
 
-.ico-user-add:before {
+.ico-chevron-left:before {
 	content: "\e61e";
 }
 
-.ico-release:before {
+.ico-chevron-right:before {
 	content: "\e61f";
 }
 
-.ico-movie:before {
+.ico-user-add:before {
 	content: "\e620";
 }
 
-.ico-series:before {
+.ico-release:before {
 	content: "\e621";
+}
+
+.ico-movie:before {
+	content: "\e622";
+}
+
+.ico-series:before {
+	content: "\e623";
 }
