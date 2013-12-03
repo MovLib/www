@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `rank` BIGINT UNSIGNED NULL COMMENT 'The movie’s global rank.',
   `runtime` SMALLINT UNSIGNED NULL COMMENT 'The movie’s approximate runtime in minutes.',
   `website` TINYTEXT NULL COMMENT 'The movie\'s official website URL.',
-  `year` YEAR NULL COMMENT 'The movie’s initial release year.',
+  `year` SMALLINT(4) ZEROFILL UNSIGNED NULL COMMENT 'The movie’s initial release year.',
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_movies_rank` (`rank` ASC),
   INDEX `movies_deleted` (`deleted` ASC),
@@ -326,8 +326,8 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
-  `roles` BLOB NULL COMMENT 'The names of the role the person played in the movie.',
-  `weight` BIGINT NULL COMMENT 'The weight (display order) of the movie\'s cast.',
+  `roles` BLOB NOT NULL COMMENT 'The names of the role the person played in the movie.',
+  `weight` BIGINT NOT NULL COMMENT 'The weight (display order) of the movie\'s cast.',
   PRIMARY KEY (`movie_id`, `person_id`),
   INDEX `fk_movies_cast_movies` (`movie_id` ASC),
   INDEX `fk_movies_cast_persons` (`person_id` ASC),
@@ -467,7 +467,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   `award_category_id` BIGINT UNSIGNED NULL COMMENT 'The award category´s ID.',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The unique ID of the person who received the award.',
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The unique ID of the company which received the award.',
-  `year` SMALLINT UNSIGNED NOT NULL COMMENT 'The year the award has been given to the movie.',
+  `year` SMALLINT(4) UNSIGNED ZEROFILL NOT NULL COMMENT 'The year the award has been given to the movie.',
   `won` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag, whether the award has been won (true), or if there was only the nomination (false).',
   PRIMARY KEY (`movie_id`, `award_count`),
   INDEX `fk_awards_movies_movies` (`movie_id` ASC),
@@ -636,9 +636,9 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series` (
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The vote count of the series.',
   `bin_relationships` BLOB NULL COMMENT 'The relations of the series to other series, e.g. sequel.\nStored in igbinary serialized format.',
   `commit` CHAR(40) NULL COMMENT 'The last history commit sha-1 hash of the series.',
-  `end_year` SMALLINT UNSIGNED NULL COMMENT 'The year the series was cancelled.',
+  `end_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the series was cancelled.',
   `rank` BIGINT UNSIGNED NULL COMMENT 'The global rank of the series.',
-  `start_year` SMALLINT UNSIGNED NULL COMMENT 'The year the series was aired for the first time.',
+  `start_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the series was aired for the first time.',
   PRIMARY KEY (`series_id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all series.'
@@ -654,8 +654,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_seasons` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
   `seasons_number` SMALLINT UNSIGNED NOT NULL COMMENT 'The season’s  number within the series.',
   `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the season as timestamp.',
-  `end_year` SMALLINT NULL COMMENT 'The year the season ended.',
-  `start_year` SMALLINT NULL COMMENT 'The year the season started airing.',
+  `end_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the season ended.',
+  `start_year` SMALLINT(4) UNSIGNED ZEROFILL NULL COMMENT 'The year the season started airing.',
   PRIMARY KEY (`series_id`, `seasons_number`),
   INDEX `fk_series_seasons_series` (`series_id` ASC),
   CONSTRAINT `fk_series_seasons_series`
