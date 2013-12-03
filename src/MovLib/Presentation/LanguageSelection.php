@@ -103,7 +103,7 @@ class LanguageSelection extends \MovLib\Presentation\AbstractPage {
   /**
    * @inheritdoc
    */
-  protected function getWrappedContent() {
+  protected function getMainContent() {
     global $i18n, $kernel;
 
     // Build the navigation.

@@ -58,7 +58,7 @@
      * @property editor
      * @type HTMLElement
      */
-    this.editor   = element.children[2];
+    this.editor = element.children[2];
 
     /**
      * The content editable <code><div></code>.
@@ -66,7 +66,7 @@
      * @property content
      * @type HTMLElement
      */
-    this.content  = this.editor.children[0].children[0];
+    this.content = this.editor.children[0].children[0];
 
     // Enhance the current element.
     this.init(element);
@@ -119,14 +119,12 @@
       // We have to copy the divs content back into the textarea directly before the form is submitted to ensure that
       // the content is automatically passed to our webserver via the browser. We only do this once instead of updating
       // the textarea on every key event.
-      MovLib.bind(element.form, { submit: this.copyToTextarea.bind(this) });
+      element.form.addEventListener("submit", this.copyToTextarea.bind(this), false);
 
       // React on various content events.
-      MovLib.bind(this.content, {
-        focus   : this.focus.bind(this),
-        keydown : this.keydown.bind(this),
-        keyup   : this.keyup.bind(this)
-      });
+      this.content.addEventListener("focus", this.focus.bind(this), false);
+      this.content.addEventListener("keydown", this.focus.bind(this), false);
+      this.content.addEventListener("keyup", this.focus.bind(this), false);
 
       // Use this to print an HTMLElement to the console!
       //console.dir(element);

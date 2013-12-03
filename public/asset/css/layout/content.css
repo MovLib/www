@@ -28,19 +28,19 @@
  * @since 0.0.1-dev
  */
 
-#content {
+main {
   min-height: 500px;
   padding-bottom: 40px;
   background-color: #fff;
 }
 
-#content-header {
+main header {
   margin-bottom: 40px;
   background-color: #252525;
   color: #c7c7c7;
 }
 
-#content-header > .container {
+main header > .container {
   padding: 20px 0;
 }
 

@@ -171,8 +171,8 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       $this->headingAfter  =
           "<p>{$i18n->t("“{0}” ({1}original title{2})", [ $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
           "{$this->form->open()}<fieldset>" .
-            "<input type='hidden' value='movie_rating'>" .
             "<legend class='visuallyhidden'>{$i18n->t("Your Rating:")}</legend>" .
+            "<input type='hidden' value='movie_rating'>" .
             "<div class='back'>" . str_repeat("<i class='ico-star'></i>", 5) . "</div>" .
             "<div class='front'>{$stars}</div>" .
           "</fieldset>{$this->form->close()}" .

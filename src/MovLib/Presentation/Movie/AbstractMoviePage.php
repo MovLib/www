@@ -66,10 +66,10 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
     $this->routeMovie      = $i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]);
 
     $this->initSidebar([
-      [ $this->routeMovie, "<i class='ico-view'></i>{$i18n->t("View")}", [ "accesskey" => "v" ] ],
-      [ $this->routeDiscussion, "<i class='ico-discussion'></i>{$i18n->t("Discuss")}", [ "accesskey" => "d", "itemprop" => "discussionUrl" ] ],
-      [ $this->routeEdit, "<i class='ico-edit'></i>{$i18n->t("Edit")}", [ "accesskey" => "e" ] ],
-      [ $this->routeHistory, "<i class='ico-history'></i>{$i18n->t("History")}", [ "accesskey" => "h", "class" => "separator" ] ],
+      [ $this->routeMovie, "<i class='ico-view'></i>{$i18n->t("View")}" ],
+      [ $this->routeDiscussion, "<i class='ico-discussion'></i>{$i18n->t("Discuss")}", [ "itemprop" => "discussionUrl" ] ],
+      [ $this->routeEdit, "<i class='ico-edit'></i>{$i18n->t("Edit")}" ],
+      [ $this->routeHistory, "<i class='ico-history'></i>{$i18n->t("History")}", [ "class" => "separator" ] ],
     ]);
     return $this;
   }

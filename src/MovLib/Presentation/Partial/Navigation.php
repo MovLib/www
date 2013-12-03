@@ -50,7 +50,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    *
    * @var array
    */
-  public $attributes;
+  protected $attributes;
 
   /**
    * Callable that will be called with each menuitem.
@@ -67,6 +67,13 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    * @var string
    */
   public $glue = " ";
+
+  /**
+   * The level of the heading.
+   *
+   * @var string
+   */
+  public $headingLevel = "2";
 
   /**
    * Flag indicating if the navigation's title should be hidden via CSS.
@@ -88,7 +95,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    *
    * @var string
    */
-  public $id;
+  protected $id;
 
   /**
    * Whether to ignore the query string while checking if the link should be marked active or not. Default is to ignore
@@ -111,7 +118,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    *
    * @var string
    */
-  public $title;
+  protected $title;
 
   /**
    * Flag indicating if all menuitems should be wrapped in an unordered list.
@@ -143,14 +150,14 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    *     applied to the menuitem</li>
    *   </ul>
    *   For a more in-depth explanation have a look at {@see AbstractPage::a()}.
-   * @param boolean $hideTitle [optional]
-   *   Whether to show or hide the navigation's title, defaults to <code>TRUE</code> (hide).
+   * @param array $attributes [optional]
+   *   Additional attributes that should be applied to the <code><nav></code> element.
    */
-  public function __construct($id, $title, array $menuitems, $hideTitle = true) {
-    $this->id        = $id;
-    $this->title     = $title;
-    $this->menuitems = $menuitems;
-    $this->hideTitle = $hideTitle;
+  public function __construct($id, $title, array $menuitems, array $attributes = null) {
+    $this->id         = $id;
+    $this->title      = $title;
+    $this->menuitems  = $menuitems;
+    $this->attributes = $attributes;
   }
 
   /**
@@ -163,7 +170,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
     $menuitems = null;
 
     foreach ($this->menuitems as $menuitem) {
-      if ($menuitems) {
+      if ($menuitems && $this->unorderedList === false) {
         $menuitems .= $this->glue;
       }
       if ($this->callback) {
@@ -174,18 +181,18 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
           $menuitem[2]["role"] = "menuitem";
           $menuitem            = $this->a($menuitem[0], $menuitem[1], $menuitem[2], $this->ignoreQuery);
         }
-        $menuitems .= $this->unorderedList ? "<li>{$menuitem}</li>" : $menuitem;
+        $menuitems .= $this->unorderedList === true ? "<li>{$menuitem}</li>" : $menuitem;
       }
     }
 
     if ($menuitems) {
-      if ($this->unorderedList) {
+      if ($this->unorderedList === true) {
         $menuitems = "<ul class='no-list'>{$menuitems}</ul>";
       }
       $this->attributes["id"]   = "{$this->id}-nav";
       $this->attributes["role"] = "navigation";
       $hideTitle                = $this->hideTitle ? " class='visuallyhidden'" : null;
-      return "<nav{$this->expandTagAttributes($this->attributes)}><h2{$hideTitle} id='{$this->id}-nav-title'>{$this->title}</h2><div role='menu'>{$menuitems}</div></nav>";
+      return "<nav{$this->expandTagAttributes($this->attributes)}><h{$this->headingLevel}{$hideTitle} id='{$this->id}-nav-title'>{$this->title}</h{$this->headingLevel}><div role='menu'>{$menuitems}</div></nav>";
     }
 
     return "";

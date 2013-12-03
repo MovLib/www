@@ -60,13 +60,15 @@ trait TraitSidebar {
   /**
    * Implement the content getter and insert the sidebar.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @return string
    *   The presentation's content wrapped in a container and including the sidebar.
    */
   protected function getContent() {
+    global $i18n;
     return
       "<div class='container sidebar-container'><div class='row sidebar-row'>" .
-        "<aside class='sidebar-aside span span--2' role='complementary'>{$this->sidebarNavigation}</aside>" .
+        "<aside id='sidebar' class='span span--2' role='complementary'><h2 class='visuallyhidden'>{$i18n->t("Sidebar")}</h2>{$this->sidebarNavigation}</aside>" .
         "<div class='page-content span span--10'>{$this->getPageContent()}</div>" .
       "</div></div>"
     ;

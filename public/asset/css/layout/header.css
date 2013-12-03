@@ -25,49 +25,54 @@
  * @since 0.0.1-dev
  */
 
-
-/* ==== HEADER WRAPPER for ALL ====================================================================================== */
-
-
 #header {
-  background-color: #fff;
-  border-bottom: 1px solid #252525;
-  left: 0;
   position: fixed;
-  right: 0;
   top: 0;
+  right: 0;
+  left: 0;
   z-index: 999999;
+  height: 50px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
 
 #header > .container {
-  height: 50px;
-  overflow: hidden;
   position: relative;
 }
 
+#header > .container:before {
+  position: absolute;
+  top: 0;
+  right: -100px;
+  bottom: 0;
+  left: -100px;
+  z-index: -1;
+  background-color: #fff;
+  content: "";
+}
 
-/* ==== LOGO ======================================================================================================== */
+
+/* ==== Logo ======================================================================================================== */
 
 
 #header-logo {
-  border-bottom: 0;
-  color: #656565;
+  position: relative;
+  top: -1px;
   display: block;
+  padding: 0;
+  margin-top: 0;
+  margin-right: 0;
+  margin-bottom: 0;
   font-size: 28px;
   font-weight: bold;
   line-height: 50px;
-  margin-top: 0;
-  margin-bottom: 0;
-  margin-right: 0;
-  padding: 0;
-  position: relative;
-  top: -1px;
+  color: #656565;
+  border-bottom: 0;
   transition: color 0.4s linear;
-  width: 180px;
 }
 
-#header-logo:hover,
-#header-logo:focus {
+#header-logo:focus,
+#header-logo:hover {
   color: #353535;
 }
 
@@ -77,123 +82,44 @@
 }
 
 
-/* ==== MAIN NAVIGATION ============================================================================================= */
+/* ==== Main Navigation ============================================================================================= */
 
 
-/*
-  Display as table to get rid of the spaces between the menuitems. We want those spaces because otherwise the words are
-  directly next to each other (e.g. "FooBar" instead of "Foo Bar").
-*/
-#main-nav {
-  display: table;
+#header section h2 {
   height: 50px;
-  float: right;
+  min-width: 50px;
   margin: 0;
-  margin-right: 100px;
-  vertical-align: middle;
-}
-
-#main-nav a {
-  border-bottom-width: 5px;
-  color: #656565;
-  display: table-cell;
-  font-size: 12px;
-  height: 50px;
-  padding-top: 22px;
-  text-indent: 10px;
-  width: 100px;
-}
-
-#main-nav a:hover,
-#main-nav a:focus,
-#main-nav a:active,
-#main-nav a.active {
-  color: #09c;
-  border-bottom-color: #09c;
-}
-
-
-/* ==== MEGA NAVIGATION ============================================================================================= */
-
-
-#mega-nav-container .container {
-  position: relative;
-  z-index: 9999999;
-}
-
-#mega-nav {
-  background-color: #252525;
-  color: #fff;
-  height: 0;
-  overflow: hidden;
-  transition: height 0.4s ease-in-out;
-}
-
-#mega-nav .container {
-  position: relative;
-}
-
-#mega-nav h2 {
-  color: #fff;
-}
-
-#mega-nav a {
-  display: block;
-}
-
-#mega-nav a.active {
-  color: #c7c7c7;
-  border-bottom-color: transparent;
-}
-
-#mega-nav > .container,
-#mega-nav-container:hover #mega-nav,
-#mega-nav-container:focus #mega-nav,
-#mega-nav-container:active #mega-nav {
-  height: 200px;
-}
-
-#mega-nav-switch {
-  display: table;
-  height: 50px;
-  width: 50px;
-  position: absolute;
-  right: 0;
-  bottom: -50px;
-}
-
-#mega-nav-switch .button {
-  display: table-cell;
-  vertical-align: middle;
-  font-size: 21.333333px;
+  font-size: 14px;
+  line-height: 50px;
   cursor: pointer;
 }
 
-
-/* ==== BREADCRUMB ================================================================================================== */
-
-
-#breadcrumb-nav,
-#breadcrumb-nav-title {
-  font-size: 12px;
-  margin: 1.39em 0;
-  padding: 0;
+#header section h2:after {
+  content: "▾";
 }
 
-/* We have to use both IDs at this point to overwrite the inheritance from the "#mega-nav .container" selector! */
-#mega-nav #breadcrumb-nav {
-  bottom: 0;
+#header .concealed {
   position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: -2;
+  background-color: #fff;
+  opacity: 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+  transition: 0.2s linear;
+  transition-property: opacity, top;
 }
 
-#breadcrumb-nav div,
-#breadcrumb-nav-title {
-  display: inline;
-  line-height: 1.46;
+#header .expand .concealed,
+#header .expander:focus .concealed,
+#header .expander:hover .concealed {
+  top: 50px;
+  opacity: 1;
 }
 
-#breadcrumb-nav a {
-  display: inline;
+#header .button {
+  display: none !important;
 }
 
 
@@ -201,23 +127,23 @@
 
 
 #search {
-  overflow: hidden;
-  margin: 0;
   position: absolute;
-  right: 50px;
   top: 0;
+  right: 50px;
+  margin: 0;
+  overflow: hidden;
 }
 
 #search button,
 #search-input {
+  height: 50px;
+  padding: 0;
+  font-size: 24px;
+  line-height: 50px;
+  color: #fff;
   background-color: #252525;
   border: 0;
   box-shadow: none;
-  color: #fff;
-  font-size: 24px;
-  height: 50px;
-  line-height: 50px;
-  padding: 0;
 }
 
 #search button {
@@ -226,13 +152,19 @@
 }
 
 #search-input {
-  font-weight: 200;
   width: 0;
+  font-weight: 200;
   transition: width 0.5s ease-in-out;
 }
 
-#search:hover #search-input,
 #search:focus #search-input,
+#search:hover #search-input,
 #search-input:focus {
   width: 660px;
 }
+
+
+/* ==== BREADCRUMB ================================================================================================== */
+
+
+

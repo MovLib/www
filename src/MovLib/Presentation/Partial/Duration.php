@@ -105,6 +105,9 @@ class Duration extends \MovLib\Presentation\AbstractBase {
       if ($value > 0) {
         $this->attributes["datetime"] .= "{$value}{$type}";
       }
+      if ($type == "D") {
+        $this->attributes["datetime"] .= "T";
+      }
     }
 
     // Format text depending on precision.
@@ -115,7 +118,7 @@ class Duration extends \MovLib\Presentation\AbstractBase {
     }
     // @todo Can't we translate the unit with Intl ICU? Couldn't find anything.
     else {
-      $this->text = $i18n->t("{0,number,integer} min.", [ ceil($this->duration / 60) ]);
+      $this->text = $i18n->t("{0, number, integer} min.", [ ceil($this->duration / 60) ]);
     }
   }
 

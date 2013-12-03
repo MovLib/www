@@ -73,26 +73,6 @@
   MovLib.prototype = {
 
     /**
-     * Add an event listener to the given HTMLElement.
-     *
-     * @method bind
-     * @chainable
-     * @param {HTMLElement} element
-     *   The element on which we should listen for events.
-     * @param {Object} events
-     *   Object where the key is the event to listen for and the value the desired callback function.
-     * @return {MovLib}
-     */
-    bind: function (element, events) {
-      for (var event in events) {
-        if (typeof event === "string") {
-          element.addEventListener(event, events[event], false);
-        }
-      }
-      return this;
-    },
-
-    /**
      * Initialize page features that are available on every page.
      *
      * @method init
@@ -108,6 +88,16 @@
       // Load cross-browser sham for classList support.
       if (!("classList" in document.documentElement)) {
         load.call(this, "classList");
+      }
+
+      // Show the hidden header navigations on focus of the anchor elements. There's sadly no way to do this in CSS :(
+      var expanders = document.getElementsByClassName("expander");
+      expanders.toggle = function () {
+        this.classList.toggle("expand");
+      };
+      for (var i = 0; i < expanders.length; ++i) {
+        expanders[i].addEventListener("focus", expanders.toggle, true);
+        expanders[i].addEventListener("blur", expanders.toggle, true);
       }
 
       return this;

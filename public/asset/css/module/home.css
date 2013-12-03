@@ -36,12 +36,12 @@
 }
 
 /* More white space for our description boxes than usual */
-.span--home {
+#home article {
   margin-top: 40px;
   margin-bottom: 40px;
   text-align: justify;
 }
 
-.span--home h2 {
+#home article h2 {
   text-align: center;
 }
