@@ -1128,7 +1128,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`sessions` (
 ENGINE = InnoDB
 COMMENT = 'Persistent session storage.'
 ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 16;
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 

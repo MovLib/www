@@ -24,6 +24,8 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
+DOCUMENT_ROOT=/var/www
+
 install:
 	sudo composer update && \
 	movlib seed-import && \
@@ -31,11 +33,33 @@ install:
 
 clean:
 	sudo movlib fix-permissions && \
-	rm -rf private/upload/* public/upload/* && \
-	mv vendor ~ && \
+	rm -rf ${DOCUMENT_ROOT}/private/upload/* ${DOCUMENT_ROOT}/public/upload/* && \
+	rm -rf ~/vendor && \
+	mv ${DOCUMENT_ROOT}/vendor ~ && \
 	git clean -xdf && \
 	git reset --hard && \
 	git pull && \
 	mv ~/vendor . && \
-	chmod 2770 bin/movlib.php && \
+	chmod 2770 ${DOCUMENT_ROOT}/bin/movlib.php && \
 	sudo movlib fix-permissions
+
+mariadb:
+	cp ${DOCUMENT_ROOT}/conf/mariadb/my.ini ~/my.ini && \
+	aptitude update
+	aptitude -y purge \
+	  libdb-mysql-perl \
+	  libmariadbclient18 \
+	  libmysqlclient18 \
+	  mariadb-server-10.0 \
+	  mariadb-client-10.0 \
+	  mariadb-client-core-10.0 \
+	  mariadb-common \
+	  mysql-common && \
+	aptitude autoclean
+	rm -rf /etc/mysql /var/lib/mysql && \
+	mv ~/my.ini ${DOCUMENT_ROOT}/conf/mariadb/my.ini && \
+	mkdir -p /etc/mysql && \
+	ln -s ${DOCUMENT_ROOT}/conf/mariadb/my.ini /etc/mysql/my.cnf
+	movlib fp
+	aptitude -y install mariadb-server-10.0
+	movlib si
