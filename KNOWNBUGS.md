@@ -5,6 +5,6 @@
 
 ### Solved
 * Internet Explorer isn't displaying SVG images embedded via img tags
-  * The solution is to set the viewBox attribute on the root element, rather than the width and height. <sup>[[ref](http://stackoverflow.com/questions/9777143)]</sup>
+  * The solution is to set the `viewBox` attribute on the root element, rather than `width` and `height`. <sup>[[ref](http://stackoverflow.com/questions/9777143)]</sup>
 * Safari displays SVGs totally distorted.
-  * The solution is to set the preserveAspectRatio attribute to "xMinYMin none". <sup>[[ref](http://stackoverflow.com/questions/11768364)]</sup>
+  * The solution is to set the `preserveAspectRatio` attribute to `xMinYMin none`. <sup>[[ref](http://stackoverflow.com/questions/11768364)]</sup>
