@@ -26,28 +26,29 @@
  */
 
 #footer {
-  clear: both;
+/* Styles for sticky footer, also see base.css and content.css
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+*/
+  padding: 20px 0;
   color: #c7c7c7;
   font-size: 12px;
-  padding-bottom: 80px;
+  z-index: -1;
 }
 
-#footer .row {
+#footer .span {
   border-bottom: 1px solid #595959;
-  padding: 40px 0;
+  padding: 20px 0;
 }
 
-#footer .container .row:last-child {
-  border-bottom: none;
-}
-
-#footer-logos {
-  text-align: center;
+#footer .last {
+  border-bottom: 0 none;
 }
 
 #footer-logos a {
-  border: none !important;
-  margin-right: 20px;
+  margin: 0 20px;
   opacity: 0.5;
   transition: opacity 0.4s ease-out;
 }
@@ -55,8 +56,4 @@
 #footer-logos a:hover,
 #footer-logos a:focus {
   opacity: 1;
-}
-
-#footer-logos a:last-child {
-  margin-right: 0;
 }

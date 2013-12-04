@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Tool;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Page extends \MovLib\Presentation\Page {
+class Page extends \MovLib\Presentation\AbstractPage {
 
   /**
    * @inheritdoc

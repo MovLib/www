@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * HTML navigation including all ARIA roles.
  *
@@ -86,18 +88,6 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
   public $hideTitle = true;
 
   /**
-   * The navigation's ID.
-   *
-   * Please note that the actual ID used within the output will have <code>"-nav"</code> appended to it. This is to
-   * ensure that there won't be any name collisions with the ID of the <code><body></code> elment if you use your
-   * page's ID as ID for your navigation. The same is true for the title element of the navigation, the ID of that one
-   * will be <code>"{$this->id}-nav-title"</code>.
-   *
-   * @var string
-   */
-  protected $id;
-
-  /**
    * Whether to ignore the query string while checking if the link should be marked active or not. Default is to ignore
    * the query string.
    *
@@ -136,8 +126,6 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
   /**
    * Instantiate new navigation partial.
    *
-   * @param string $id
-   *   The globally unique identifier of this navigation.
    * @param string $title
    *   Descriptive title for the complete navigation.
    * @param array $menuitems
@@ -153,8 +141,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the <code><nav></code> element.
    */
-  public function __construct($id, $title, array $menuitems, array $attributes = null) {
-    $this->id         = $id;
+  public function __construct($title, array $menuitems, array $attributes = null) {
     $this->title      = $title;
     $this->menuitems  = $menuitems;
     $this->attributes = $attributes;
@@ -168,7 +155,6 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    */
   public function __toString() {
     $menuitems = null;
-
     foreach ($this->menuitems as $menuitem) {
       if ($menuitems && $this->unorderedList === false) {
         $menuitems .= $this->glue;
@@ -184,18 +170,12 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
         $menuitems .= $this->unorderedList === true ? "<li>{$menuitem}</li>" : $menuitem;
       }
     }
-
-    if ($menuitems) {
-      if ($this->unorderedList === true) {
-        $menuitems = "<ul class='no-list'>{$menuitems}</ul>";
-      }
-      $this->attributes["id"]   = "{$this->id}-nav";
-      $this->attributes["role"] = "navigation";
-      $hideTitle                = $this->hideTitle ? " class='visuallyhidden'" : null;
-      return "<nav{$this->expandTagAttributes($this->attributes)}><h{$this->headingLevel}{$hideTitle} id='{$this->id}-nav-title'>{$this->title}</h{$this->headingLevel}><div role='menu'>{$menuitems}</div></nav>";
+    if ($this->unorderedList === true) {
+      $menuitems = "<ul class='no-list'>{$menuitems}</ul>";
     }
-
-    return "";
+    $this->attributes["role"] = "navigation";
+    $hideTitle                = $this->hideTitle ? " class='visuallyhidden'" : null;
+    return "<nav{$this->expandTagAttributes($this->attributes)}><h{$this->headingLevel}{$hideTitle}>{$this->title}</h{$this->headingLevel}><div role='menu'>{$menuitems}</div></nav>";
   }
 
 }

@@ -91,7 +91,7 @@ trait TraitSidebar {
     global $i18n, $kernel;
     $kernel->stylesheets[] = "sidebar";
     $this->addBodyClass("sidebar");
-    $this->sidebarNavigation                = new Navigation("sidebar", $i18n->t("Secondary Navigation"), $menuitems);
+    $this->sidebarNavigation                = new Navigation($i18n->t("Secondary Navigation"), $menuitems, [ "id" => "sidebar-nav" ]);
     $this->sidebarNavigation->ignoreQuery   = true;
     $this->sidebarNavigation->unorderedList = true; // For CSS styling.
     return $this;

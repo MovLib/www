@@ -48,6 +48,14 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
   /**
    * @inheritdoc
    */
+  protected function render() {
+    $this->attributes["spellcheck"] = "true";
+    return parent::render();
+  }
+
+  /**
+   * @inheritdoc
+   */
   public function validate() {
     global $i18n, $kernel;
 

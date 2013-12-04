@@ -59,11 +59,11 @@ class Show extends \MovLib\Presentation\Page {
     global $i18n;
     $this->init($i18n->t("Movies"));
     $this->initSidebar([
-      [ $i18n->r("/movies"),    "<i class='ico-movie'></i> {$i18n->t("Movies")}"        ],
-      [ $i18n->r("/releases"),  "<i class='ico-release'></i> {$i18n->t("Releases")}"      ],
-      [ $i18n->r("/persons"),   "<i class='ico-person'></i> {$i18n->t("Persons")}"    ],
-      [ $i18n->r("/series"),    "<i class='ico-series'></i> {$i18n->t("Series")}"      ],
-      [ $i18n->r("/help"),      "<i class='ico-help'></i> {$i18n->t("Help")}"  ],
+      [ $i18n->r("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
+      [ $i18n->r("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
+      [ $i18n->r("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
+      [ $i18n->r("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ] ],
+      [ $i18n->r("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
     ]);
     $this->initPagination(Movie::getUndeletedMoviesCount());
     $this->movies        = Movie::getMovies($this->resultsOffset, $this->resultsPerPage);

@@ -30,6 +30,10 @@
 
 main {
   min-height: 500px;
+  margin-top: 50px; /* Style for sticky header, also see base.css and header.css (causing many issues) */
+/* Style for sticky footer, also see base.css and footer.css
+  margin-bottom: 265px;
+*/
   padding-bottom: 40px;
   background-color: #fff;
 }

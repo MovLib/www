@@ -166,7 +166,7 @@ trait TraitPagination {
         $pages[] = "<span class='mute' aria-hidden='true'>{$i18n->t("next »")}</span>";
       }
 
-      $pagination = new Navigation("pagination", $i18n->t("Pagination"), $pages);
+      $pagination = new Navigation($i18n->t("Pagination"), $pages, [ "id" => "pagination-nav" ]);
     }
 
     // Tampering with the actual navigation partial of the pagination isn't allowed, the concrete class only has the

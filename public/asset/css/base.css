@@ -73,20 +73,12 @@ section {
   display: block;
 }
 
-/* Always display vertical scrollbar, avoids different screen width upon page changes. */
-html {
-  overflow-y: scroll;
-}
-
 body {
-  padding-top: 51px; /* @see layout/header.css */
-  margin: 0;
-}
-
-html,
-body {
-  height: 100%;
   background-color: #252525;
+  overflow-y: scroll;
+  /*margin: 50px 0 265px;*/
+  margin: 0;
+  padding: 0;
 }
 
 abbr[title] {
@@ -226,12 +218,11 @@ a:focus {
 }
 
 a:hover,
-a:active,
-a.active {
+a:active {
   outline: 0;
 }
 
-a.active[href="#"] {
+a.active {
   color: #656565;
   border-bottom-color: transparent;
   cursor: default;

@@ -44,14 +44,6 @@ class Home extends \MovLib\Presentation\AbstractPage {
   /**
    * @inheritdoc
    */
-  protected function getHeaderLogo() {
-    global $kernel;
-    return "<h1 id='header-logo'><img alt='' height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}</h1>";
-  }
-
-  /**
-   * @inheritdoc
-   */
   protected function getHeadTitle() {
     global $kernel;
     return $kernel->siteNameAndSlogan;
@@ -102,11 +94,9 @@ class Home extends \MovLib\Presentation\AbstractPage {
             "<article class='span span--4'>" .
               "<h2>{$i18n->t("My {sitename}", [ "sitename" => $kernel->siteName ])}</h2>" .
               "<p></p>" .
-              "<p>{$this->a(
-                $i18n->r("/profile/join"),
-                $i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ]),
-                [ "class" => "button button--success button--large" ]
-              )}</p>" .
+              "<p><a class='button button--success button--large' href='{$i18n->r("/profile/join")}' tabindex='{$this->getTabindex()}'>{$i18n->t(
+                "Join {sitename}", [ "sitename" => $kernel->siteName ])
+              }</a></p>" .
             "</article>" .
             "<article class='span span--4'>" .
               "<h2>{$i18n->t("<abbr title='Application Programming Interface'>API</abbr>")}</h2>" .
@@ -116,9 +106,9 @@ class Home extends \MovLib\Presentation\AbstractPage {
                 "use the data we all collect here at {sitename}.",
                 [ "sitename" => $kernel->siteName ]
               )}</p>" .
-              "<p><a class='button button--primary button--large' href='//{$kernel->domainAPI}/'>" .
-                $i18n->t("Read the API documentation") .
-              "</a></p>" .
+              "<p><a class='button button--primary button--large' href='//{$kernel->domainAPI}/' tabindex='{$this->getTabindex()}'>{$i18n->t(
+                "Read the API documentation"
+              )}</a></p>" .
             "</article>" .
           "</div>" .
         "</div>" .

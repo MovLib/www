@@ -25,13 +25,22 @@
  * @since 0.0.1-dev
  */
 
+#header,
+#header section h2,
+#header .button,
+#search,
+#search-input,
+#search .ico-search {
+  padding: 0;
+  height: 50px;
+}
+
 #header {
   position: fixed;
   top: 0;
   right: 0;
   left: 0;
   z-index: 999999;
-  height: 50px;
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
@@ -55,7 +64,11 @@
 /* ==== Logo ======================================================================================================== */
 
 
-#header-logo {
+#header h1 {
+  margin-bottom: 0;
+}
+
+#logo {
   position: relative;
   top: -1px;
   display: inline-block;
@@ -71,12 +84,12 @@
   transition: color 0.4s linear;
 }
 
-#header-logo:focus,
-#header-logo:hover {
+#logo:focus,
+#logo:hover {
   color: #353535;
 }
 
-#header-logo img {
+#logo img {
   position: relative;
   top: -4px;
 }
@@ -85,18 +98,51 @@
 /* ==== Main Navigation ============================================================================================= */
 
 
-#header section h2 {
-  height: 50px;
+#header .span--9 {
+  width: auto;
+  float: right;
+}
+
+#header .expander {
+  float: left;
+}
+
+#header .visible {
   min-width: 50px;
+  padding: 0 20px 0 25px;
   margin: 0;
   font-size: 14px;
   line-height: 50px;
   cursor: pointer;
+  transition: color 0.2s ease-in-out;
 }
 
-#header section h2:after {
-  content: "▾";
+#header .expand .visible,
+#header .expander:hover .visible {
+  color: #09c;
 }
+
+#header .visible:after {
+  content: " ▾";
+}
+
+/*
+#header .visible:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -500px;
+  right: 100px;
+  bottom: -10px;
+  visibility: hidden;
+  transition: visibility 0.2s;
+  cursor: auto;
+}
+
+#header .expander:hover .visible:before {
+  visibility: visible;
+}
+*/
 
 /* Put the element off-screen to ensure that all browsers are still able to tab to the anchor elements. */
 #header .concealed {
@@ -105,11 +151,17 @@
   right: 999999em;
   left: -999999em;
   z-index: -2;
+  padding: 20px 0;
+  margin-right: -20px;
   background-color: #fff;
   opacity: 0;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
   transition: 0.2s linear;
-  transition-property: opacity, top;
+  transition-property: opacity, top, visibility;
+}
+
+#header .concealed h3 {
+  margin-top: 0;
 }
 
 #header .expand .concealed,
@@ -128,8 +180,26 @@
   pointer-events: none;
 }
 
+#search-input,
+#search .ico-search,
 #header .button {
-  display: none !important;
+  font-size: 24px;
+  line-height: 50px;
+}
+
+#user-nav {
+  margin-left: 50px;
+}
+
+#header .button {
+  width: 50px;
+}
+
+/* hack hack hack hack */
+#user-avatar-for-now {
+  width: 50px !important;
+  height: 50px !important;
+  cursor: pointer;
 }
 
 
@@ -144,32 +214,34 @@
   overflow: hidden;
 }
 
-#search button,
-#search-input {
-  height: 50px;
-  padding: 0;
-  font-size: 24px;
-  line-height: 50px;
+#search-input,
+#search .ico-search {
   color: #fff;
   background-color: #252525;
   border: 0;
   box-shadow: none;
 }
 
-#search button {
+#search .ico-search {
   float: left;
   width: 50px;
 }
 
+#search .ico-search:focus {
+  background-color: #09c;
+}
+
 #search-input {
+  float: right;
   width: 0;
   font-weight: 200;
   transition: width 0.5s ease-in-out;
 }
 
+#search-input:focus,
+#search .ico-search:focus + #search-input,
 #search:focus #search-input,
-#search:hover #search-input,
-#search-input:focus {
+#search:hover #search-input {
   width: 660px;
 }
 

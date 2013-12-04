@@ -54,7 +54,7 @@
   position: relative;
 }
 
-.popup:before,
+.popup:after,
 .popup {
   display: block;
   opacity: 0;
@@ -65,7 +65,7 @@
   z-index: 999999999; /* Even go over our sticky header! */
 }
 
-.popup:before {
+.popup:after {
   border: 6px solid transparent;
   border-top-color: #252525;
   bottom: -12px;
@@ -84,7 +84,7 @@
   max-width: 320px;
 }
 
-.popup--inverse:before {
+.popup--inverse:after {
   border-top-color: #fff;
 }
 
@@ -100,8 +100,8 @@
 
 .popup-container:hover .popup,
 .popup-container:focus .popup,
-.popup-container:hover .popup:before,
-.popup-container:focus .popup:before {
+.popup-container:hover .popup:after,
+.popup-container:focus .popup:after {
   opacity: 1;
   visibility: visible;
 }
@@ -119,7 +119,7 @@
   width: 320px;
 }
 
-.form-help .popup:before {
+.form-help .popup:after {
   left: auto;
   right: 34px;
   margin: 0;
@@ -165,13 +165,13 @@
 #js .jshidden,
 #nojs .nojshidden,
 .inputhtml .not-empty .placeholder {
-  display: none;
+  display: none !important;
   visibility: hidden;
 }
 
 .visuallyhidden {
   border: 0;
-  clip: rect(0 0 0 0);
+  clip: rect(0, 0, 0, 0);
   height: 1px;
   margin: -1px;
   overflow: hidden;

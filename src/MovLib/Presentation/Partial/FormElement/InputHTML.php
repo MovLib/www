@@ -218,62 +218,52 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // We need to add the aria-labelledby attribute to the textarea, since it won't have a label.
     $this->attributes["aria-labelledby"] = "{$this->id}-legend";
 
-    // Build the editor based on available tags.
+    // Build the editor based on allowed tags.
     $editor = null;
 
-    // Fill the format dropdown menu. If there are no headings allowed, don't display it.
-    $formats = null;
-    for ($i = 2; $i <= 6; ++$i) {
-      if (isset($this->allowedTags["h{$i}"])) {
-        $formats[] = "<span>{$i18n->t("Heading {0, number, integer}", [ $i ])}</span>";
+    // Check if any heading is allowed (checking against level 6 is enough as it's always part of the party if any level
+    // is allowed) and include the block level selector if we have any. Ommit if no headings are allowed.
+    if (isset($this->allowedTags["h6"])) {
+      for ($i = 2; $i <= 6; ++$i) {
+        if (isset($this->allowedTags["h{$i}"])) {
+          $editor .= "<span>{$i18n->t("Heading {0, number, integer}", [ $i ])}</span>";
+        }
       }
-    }
-    if (isset($formats)) {
-      array_unshift($formats, "<span>{$i18n->t("Paragraph")}</span>");
-      $formats = implode("", $formats);
-      $editor .= "<span class='formats'><span class='expander'>{$i18n->t("Paragraph")}</span><span class='concealed hidden'>{$formats}</span></span>";
+      $editor = "<button class='button formats'><span class='expander'>{$i18n->t("Paragraph")}</span><span class='concealed hidden'>{$editor}</span></button>";
     }
 
-    // Add the font styles.
-    $editor .= "<button class='button ico-bold'><span class='visuallyhidden'>{$i18n->t("Bold")}</span></button>" .
-               "<button class='button ico-italic'><span class='visuallyhidden'>{$i18n->t("Italic")}</span></button>"
+    $external = $this->allowExternalLinks === true ? " external" : null;
+    $editor .=
+      // Add the font styles.
+      "<button class='button ico ico-bold'><span class='visuallyhidden'>{$i18n->t("Bold")}</span></button>" .
+      "<button class='button ico ico-italic'><span class='visuallyhidden'>{$i18n->t("Italic")}</span></button>" .
+      // Add the alignment buttons.
+      "<button class='button ico ico-align-left'><span class='visuallyhidden'>{$i18n->t("Align left")}</span></button>" .
+      "<button class='button ico ico-align-center'><span class='visuallyhidden'>{$i18n->t("Align center")}</span></button>" .
+      "<button class='button ico ico-align-right'><span class='visuallyhidden'>{$i18n->t("Align right")}</span></button>" .
+      // Add the insert section according to configuration.
+      "<button class='button ico ico-link{$external}'><span class='visuallyhidden'>{$i18n->t("Insert link")}</span></button>"
     ;
 
-    // Add the alignment buttons.
-    $editor .= "<button class='button ico-align-left'><span class='visuallyhidden'>{$i18n->t("Align left")}</span></button>" .
-               "<button class='button ico-align-center'><span class='visuallyhidden'>{$i18n->t("Align center")}</span></button>" .
-               "<button class='button ico-align-right'><span class='visuallyhidden'>{$i18n->t("Align right")}</span></button>"
-    ;
-
-    // Add the insert section according to the configuration.
-    // Links.
-    $insert = null;
-    if ($this->allowExternalLinks === true) {
-      $insert = " external";
-    }
-    $insert = "<button class='button ico-link{$insert}'><span class='visuallyhidden'>{$i18n->t("Insert link")}</span></button>";
-    // Blockquotes.
     if (isset($this->allowedTags["blockquote"])) {
-      $insert .= "<button class='button ico-quotation'><span class='visuallyhidden'>{$i18n->t("Insert quotation")}</span></button>";
+      $editor .= "<button class='button ico ico-quotation'><span class='visuallyhidden'>{$i18n->t("Insert quotation")}</span></button>";
     }
-    // Images.
+
     if (isset($this->allowedTags["figure"])) {
-      $insert .= "<button class='button ico-image'><span class='visuallyhidden'>{$i18n->t("Insert image")}</span></button>";
+      $editor .= "<button class='button ico ico-image'><span class='visuallyhidden'>{$i18n->t("Insert image")}</span></button>";
     }
-    $editor .= $insert;
 
     // Add list section, if lists are allowed.
     if (isset($this->allowedTags["ul"])) {
       $editor .=
-        "<button class='button ico-ul'><span class='visuallyhidden'>{$i18n->t("Insert unordered list")}</span></button>" .
-        "<button class='button ico-ol'><span class='visuallyhidden'>{$i18n->t("Insert ordered list")}</span></button>" .
-        "<button class='button ico-indent-left'><span class='visuallyhidden'>{$i18n->t("Indent list item left")}</span></button>" .
-        "<button class='button ico-indent-right'><span class='visuallyhidden'>{$i18n->t("Indent list item right")}</span></button>"
+        "<button class='button ico ico-ul'><span class='visuallyhidden'>{$i18n->t("Insert unordered list")}</span></button>" .
+        "<button class='button ico ico-ol'><span class='visuallyhidden'>{$i18n->t("Insert ordered list")}</span></button>" .
+        "<button class='button ico ico-indent-left'><span class='visuallyhidden'>{$i18n->t("Indent list item left")}</span></button>" .
+        "<button class='button ico ico-indent-right'><span class='visuallyhidden'>{$i18n->t("Indent list item right")}</span></button>"
       ;
     }
 
     $editorEmptyClass = empty($this->valueRaw) ? null : " not-empty";
-
     return
       "{$this->help}<fieldset class='inputhtml'>" .
         // Set an id for the legend, since it labels our textarea.

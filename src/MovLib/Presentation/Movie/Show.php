@@ -126,7 +126,9 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         $stars .=
           "<label class='popup-container{$rated}'>" .
             "<small class='popup popup--inverse'>{$ratings[$i]}</small>" .
-            "<button name='rating' type='submit' value='{$i}'><i class='ico-star'></i></button>" .
+            "<button class='ico ico-star' name='rating' type='submit' value='{$i}'>" .
+              "<span class='visuallyhidden'>{$i18n->t("Rate with {0, plural, one {one star} other {# stars}}", [ $i ])}</span>" .
+            "</button>" .
           "</label>"
         ;
       }
@@ -173,7 +175,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
           "{$this->form->open()}<fieldset>" .
             "<legend class='visuallyhidden'>{$i18n->t("Your Rating:")}</legend>" .
             "<input type='hidden' value='movie_rating'>" .
-            "<div class='back'>" . str_repeat("<i class='ico-star'></i>", 5) . "</div>" .
+            "<div class='back'>" . str_repeat("<span class='ico ico-star'></span>", 5) . "</div>" .
             "<div class='front'>{$stars}</div>" .
           "</fieldset>{$this->form->close()}" .
           "<small>{$ratingExplanation}</small>" .

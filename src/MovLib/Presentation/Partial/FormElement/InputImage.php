@@ -143,7 +143,8 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     if ($this->image->exists === true) {
       return
         "<div class='row'>" .
-          "<div class='span span--1'>{$this->getImage($this->image->getStyle(Image::STYLE_SPAN_01))}</div>" .
+          // @todo Image must have focus style in order to use route! */
+          "<div class='span span--1'>{$this->getImage($this->image->getStyle(Image::STYLE_SPAN_01), false)}</div>" .
           "<div class='span span--9'>{$this->help}<label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></div>" .
         "</div>"
       ;

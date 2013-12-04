@@ -54,7 +54,7 @@ class Home extends \MovLib\Presentation\Tool\Page {
   protected function getContent() {
     global $kernel, $i18n;
 
-    $tools = new Navigation("tools", "Tools", [
+    $tools = new Navigation("Tools", [
       [ "ApiGen", "public/doc/", "{$i18n->t("Have a look at the source code documentation.")} {$i18n->t("Generated once a day.")}", false ],
       [ "PHPInfo", "phpinfo", $i18n->t("Have a look at the current PHP configuration, extensions, etc."), false ],
       [ "phpMyAdmin", "phpmyadmin/", $i18n->t("Easily manage the database via the phpMyAdmin web interface."), true ],

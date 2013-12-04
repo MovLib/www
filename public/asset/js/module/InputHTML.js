@@ -50,7 +50,7 @@
      * @property textarea
      * @type HTMLElement
      */
-    this.textarea = element.children[1].children[1];
+    this.textarea = element.children[1].children[0];
 
     /**
      * The <code><div></code> wrapping the WYSIWYG buttons.
@@ -87,23 +87,6 @@
     },
 
     /**
-     * React on focus changes.
-     *
-     * @method focus
-     * @chainable
-     * @param {Event} event
-     *   The focus event.
-     * @return {InputHTML}
-     */
-    focus: function (event) {
-      this.editor.classList.add("focus");
-      event.preventDefault();
-      event.returnValue = false;
-      // Focus event is now totally disabled for this HTMLElement! (Doesn't account for mouse clicks ;)
-      return this;
-    },
-
-    /**
      * Initialize <b>.inputhtml</b> element.
      *
      * @method init
@@ -122,10 +105,28 @@
       // the textarea on every key event.
       element.form.addEventListener("submit", this.copyToTextarea.bind(this), false);
 
+      this.editor.addEventListener("focus", function () {
+        // Set the cursor to the end of the content but within the last HTML tag.
+        if (this.content.lastChild) {
+          var range     = document.createRange();
+          var selection = window.getSelection();
+          range.setStart(this.content.lastChild, 1);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+
+        // Give the complete editor focus.
+        this.editor.classList.add("focus");
+      }.bind(this), true);
+
+      this.editor.addEventListener("blur", function () {
+        this.editor.classList.remove("focus");
+      }.bind(this), true);
+
       // React on various content events.
-      this.content.addEventListener("focus", this.focus.bind(this), false);
-      this.content.addEventListener("keydown", this.focus.bind(this), false);
-      this.content.addEventListener("keyup", this.focus.bind(this), false);
+      this.content.addEventListener("keydown", this.keydown.bind(this), false);
+      this.content.addEventListener("keyup", this.keyup.bind(this), false);
 
       // Use this to print an HTMLElement to the console!
       //console.dir(element);
@@ -150,9 +151,10 @@
      * @return {InputHTML}
      */
     keydown: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      // Keydown event is now totally disabled for this HTMLElement!
+
+      // Disable keydown totally!
+      //event.preventDefault();
+      //event.returnValue = false;
       return this;
     },
 
@@ -166,9 +168,15 @@
      * @return {InputHTML}
      */
     keyup: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      // Keyup event is now totally disabled for this HTMLElement!
+      // Disable keyup totally!
+      //event.preventDefault();
+      //event.returnValue = false;
+      if (this.content.innerHTML === "") {
+        this.editor.classList.remove("not-empty");
+      }
+      else {
+        this.editor.classList.add("not-empty");
+      }
       return this;
     }
 

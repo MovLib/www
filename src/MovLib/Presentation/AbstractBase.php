@@ -55,6 +55,7 @@ abstract class AbstractBase {
    * method.
    *
    * @global \MovLib\Kernel $kernel
+   * @link http://www.w3.org/TR/html5/text-level-semantics.html#the-a-element
    * @link http://www.nngroup.com/articles/avoid-within-page-links/ Avoid Within-Page Links
    * @param string $route
    *   The original English route.
@@ -71,29 +72,36 @@ abstract class AbstractBase {
   protected final function a($route, $text, array $attributes = null, $ignoreQuery = true) {
     global $kernel;
 
-    // We don't want any links to the current page (as per W3C recommendation) and transforming the route to a hash
-    // achieves exactly that. The href attribute of an anchor element should never be empty but transforming the
-    // anchor element to a span might cause rendering issues, using the hash solves this problem for us.
+    // We don't want any links to the current page (as per W3C recommendation). We also have to ensure that the anchors
+    // aren't tabbed to, therefor we completely remove the href attribute. While we're at it we also remove the title
+    // attribute because it doesn't add any value for screen readers without any target (plus the user is actually on
+    // this very page).
     if ($route == $kernel->requestURI) {
-      $route = "#";
-    }
-
-    // Could be that the route that was passed to us is already a hash sign.
-    if ($route == "#") {
-      // Remove the title if we have one in the attributes array.
-      if (isset($attributes["title"])) {
-        unset($attributes["title"]);
+      // Remove all attributes which aren't allowed on an anchor with empty href attribute.
+      $unset = [ "download", "href", "hreflang", "rel", "target", "title", "type" ];
+      for ($i = 0; $i < 7; ++$i) {
+        if (isset($attributes[$unset[$i]])) {
+          unset($attributes[$unset[$i]]);
+        }
       }
       $this->addClass("active", $attributes);
     }
-    // We also have to mark the current anchor as active if the caller requested that we ignore the query part of the
-    // URI (default behaviour of this method). We keep the title attribute in this case as it's a clickable link.
-    elseif ($ignoreQuery === true && $route == $kernel->requestPath) {
-      $this->addClass("active", $attributes);
+    else {
+      // We also have to mark the current anchor as active if the caller requested that we ignore the query part of the
+      // URI (default behaviour of this method). We keep the title attribute in this case as it's a clickable link.
+      if ($ignoreQuery === true && $route == $kernel->requestPath) {
+        $this->addClass("active", $attributes);
+      }
+
+      // Add the route to the anchor element.
+      $attributes["href"] = $route;
     }
 
     // Put it all together.
-    return "<a href='{$route}'{$this->expandTagAttributes($attributes)}>{$text}</a>";
+    if (!isset($attributes["tabindex"])) {
+      $attributes["tabindex"] = $this->getTabindex();
+    }
+    return "<a{$this->expandTagAttributes($attributes)}>{$text}</a>";
   }
 
   /**

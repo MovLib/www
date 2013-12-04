@@ -215,38 +215,52 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
    */
   protected function getFooter() {
     global $kernel, $i18n;
-    $displayLanguage        = \Locale::getDisplayLanguage($i18n->languageCode, $i18n->locale);
-    $languageLinks          = new Navigation("language-links", $i18n->t("Language Links"), array_keys($kernel->systemLanguages));
-    $languageLinks->callback = [ $this, "formatFooterSystemLanguage" ];
-    $footerNavigation       = new Navigation("footer", $i18n->t("Legal Links"), [
-      [ $i18n->r("/imprint"), $i18n->t("Imprint") ],
-      [ $i18n->r("/privacy-policy"), $i18n->t("Privacy Policy") ],
-      [ $i18n->r("/terms-of-use"), $i18n->t("Terms of Use") ],
-    ]);
-    $footerNavigation->glue = " · ";
+
+//    $displayLanguage        = \Locale::getDisplayLanguage($i18n->languageCode, $i18n->locale);
+//    $languageLinks          = new Navigation($i18n->t("Language Links"), array_keys($kernel->systemLanguages));
+//    $languageLinks->callback = [ $this, "formatFooterSystemLanguage" ];
+
     return
-      "<footer id='footer'><div class='container'>" .
-        "<div class='row'>" .
-        // #footer-copyright
-          "<p id='footer-copyright'><i class='ico-cc'></i> <i class='ico-cc-zero'></i> {$i18n->t(
-            "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
-            [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
-          )}<br>{$i18n->t(
-            "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
-          )}</p>" .
-        // #footer-copyright
-        // #footer-links
-          "<div id='footer-links'>" .
-            "<button class='button button--inverse'>{$i18n->t("Language")}: {$displayLanguage}</button>" .
-            "<div class='well'>{$languageLinks}</div>" .
+      "<a class='visuallyhidden' href='#main' tabindex='{$this->getTabindex()}'>{$i18n->t("Skip footer and jump back to main content.")}</a> " .
+      "<a class='visuallyhidden' href='#header' tabindex='{$this->getTabindex()}'>{$i18n->t("Skip footer and jump back to header content.")}</a>" .
+      "<footer id='footer' role='contentinfo'>" .
+        // @todo Is this title appropriate?
+        "<h1 class='visuallyhidden'>{$i18n->t("Infos all around {sitename}", [
+          "sitename" => $kernel->siteName
+        ])}</h1>" .
+        "<div class='container'><div class='row'>" .
+          "<div class='span span--12'>" .
+            "<h3 class='visuallyhidden'>{$i18n->t("Copyright and licensing information")}</h3>" .
+            "<p id='footer-copyright'><span class='ico ico-cc'></span> <span class='ico ico-cc-zero'></span> {$i18n->t(
+              "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
+              [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license' tabindex='{$this->getTabindex()}'>", "</a>" ]
+            )}<br>{$i18n->t(
+              "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
+            )}</p>" .
           "</div>" .
-        // #footer-links
+//            "<h3 class='visuallyhidden'>{$i18n->t("")}</h3>" .
+//            "<button class='button button--inverse'>{$i18n->t("Language")}: {$displayLanguage}</button>" .
+//            "<div class='well'>{$languageLinks}</div>" .
+          "<div id='footer-logos' class='span span--12 tac'>" .
+            "<h3 class='visuallyhidden'>{$i18n->t("Sponsors and external resources")}</h3>" .
+            "<a class='img' href='http://www.fh-salzburg.ac.at/' tabindex='{$this->getTabindex()}' target='_blank'>" .
+              "<img alt='Fachhochschule Salzburg' height='30' src='{$kernel->getAssetURL("footer/fachhochschule-salzburg", "svg")}' width='48'>" .
+            "</a>" .
+            "<a class='img' href='https://github.com/MovLib' tabindex='{$this->getTabindex()}' target='_blank'>" .
+              "<img alt='GitHub' height='30' src='{$kernel->getAssetURL("footer/github", "svg")}' width='48'>" .
+            "</a>" .
+          "</div>" .
+          "<div class='last span span--6'>" .
+            "<h3 class='visuallyhidden'>{$i18n->t("Language Selection")}</h3>" .
+            // @todo Add language selection.
+          "</div>" .
+          "<div class='last span span--6 tar'>" .
+            "<h3 class='visuallyhidden'>{$i18n->t("Legal Links")}</h3>" .
+            "{$this->a($i18n->r("/imprint"), $i18n->t("Imprint"))} · " .
+            "{$this->a($i18n->r("/privacy-policy"), $i18n->t("Privacy Policy"))} · " .
+            "{$this->a($i18n->r("/terms-of-use"), $i18n->t("Terms of Use"))}" .
+          "</div>" .
         "</div>" .
-        "<div class='row' id='footer-logos'>" .
-          "<a target='_blank' href='http://www.fh-salzburg.ac.at/'><img alt='Fachhochschule Salzburg' height='41' src='//{$kernel->domainStatic}/asset/img/footer/fachhochschule-salzburg.svg' width='64'></a>" .
-          "<a target='_blank' href='https://github.com/MovLib'><img alt='GitHub' height='17' src='//{$kernel->domainStatic}/asset/img/footer/github.svg' width='64'></a>" .
-        "</div>" .
-        "<div class='row'>{$footerNavigation}</div>" .
       "</div></footer>"
     ;
   }
@@ -263,99 +277,146 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
   protected function getHeader() {
     global $i18n, $kernel, $session;
 
-    $moviesNavigation = new Navigation("movies-mega", $i18n->t("Movies"), [
-      [ $i18n->r("/movies"), $i18n->t("Latest movie entries") ],
-      [ $i18n->r("/movie/create"), $i18n->t("Create new movie") ],
-      [ $i18n->r("/movies/reviews"), $i18n->t("Latest movie reviews") ],
-      [ $i18n->r("/movie/random"), $i18n->t("Go to random movie") ],
+    // The search is the most important thing within MovLib, therefor we always give it the two first tab indexes. But
+    // if a form is present the form has precedence over the search and the search directly follows the form. The third
+    // tabindex is reserved for the "skip to content" anchor. Afterwards we leave it to the browser to manage the focus
+    // state (it should go down the page, starting with the main navigation).
+    $searchInputTabindex  = $this->getTabindex();
+    $searchSubmitTabindex = $this->getTabindex();
+    $skipLinkTabindex     = $this->getTabindex();
+
+    $moviesNavigation = new Navigation($i18n->t("Movies"), [
+      [ $i18n->r("/movies"), $i18n->t("Latest Entries") ],
+      [ $i18n->r("/movies/charts"), $i18n->t("Charts") ],
+      [ $i18n->r("/movie/create"), $i18n->t("Create New") ],
+      [ $i18n->r("/movies/reviews"), $i18n->t("Latest Reviews") ],
+      [ $i18n->r("/movie/random"), $i18n->t("Random Movie") ],
     ], [ "class" => "span span--3" ]);
     $moviesNavigation->headingLevel  = "3";
     $moviesNavigation->hideTitle     = false;
     $moviesNavigation->unorderedList = true;
+    // Retrieve tabindexes.
+    $moviesNavigation = (string) $moviesNavigation;
 
-    $seriesNavigation = new Navigation("series-mega", $i18n->t("Series"), [
-      [ $i18n->r("/series"), $i18n->t("Latest series entries") ],
-      [ $i18n->r("/series/create"), $i18n->t("Create new series") ],
-      [ $i18n->r("/series/reviews"), $i18n->t("Latest series reviews") ],
-      [ $i18n->r("/series/random"), $i18n->t("Go to random series") ],
+    $seriesNavigation = new Navigation($i18n->t("Series"), [
+      [ $i18n->r("/series"), $i18n->t("Latest Entries") ],
+      [ $i18n->r("/series/charts"), $i18n->t("Charts") ],
+      [ $i18n->r("/series/create"), $i18n->t("Create New") ],
+      [ $i18n->r("/series/reviews"), $i18n->t("Latest Reviews") ],
+      [ $i18n->r("/series/random"), $i18n->t("Random Series") ],
     ], [ "class" => "span span--3" ]);
     $seriesNavigation->headingLevel  = "3";
     $seriesNavigation->hideTitle     = false;
     $seriesNavigation->unorderedList = true;
+    // Retrieve tabindexes.
+    $seriesNavigation = (string) $seriesNavigation;
 
-    $personsCompaniesNavigation = new Navigation("persons-companies-mega", $i18n->t("Persons and Companies"), [
-      [ $i18n->r("/persons"), $i18n->t("Latest person entries") ],
-      [ $i18n->r("/person/create"), $i18n->t("Create new person") ],
-      [ $i18n->r("/person/random"), $i18n->t("Go to random person") ],
-      [ $i18n->r("/companies"), $i18n->t("Latest company entries") ],
-      [ $i18n->r("/company/create"), $i18n->t("Create new company") ],
-      [ $i18n->r("/company/random"), $i18n->t("Go to random company") ],
+    $personsNavigation = new Navigation($i18n->t("Persons"), [
+      [ $i18n->r("/persons"), $i18n->t("Latest Entries") ],
+      [ $i18n->r("/person/create"), $i18n->t("Create New") ],
+      [ $i18n->r("/person/random"), $i18n->t("Random Person") ],
     ], [ "class" => "span span--3" ]);
-    $personsCompaniesNavigation->headingLevel  = "3";
-    $personsCompaniesNavigation->hideTitle     = false;
-    $personsCompaniesNavigation->unorderedList = true;
+    $personsNavigation->headingLevel  = "3";
+    $personsNavigation->hideTitle     = false;
+    $personsNavigation->unorderedList = true;
+    // Retrieve tabindexes.
+    $personsNavigation = (string) $personsNavigation;
 
-    $otherNavigation = new Navigation("other-mega", $i18n->t("Other"), [
-      [ $i18n->r("/genres"), $i18n->t("Overview of all genres") ],
-      [ $i18n->r("/articles"), $i18n->t("Overview of all articles") ],
-      [ $i18n->r("/help"), $i18n->t("Overview of all help articles") ],
+    $companiesNavigation = new Navigation($i18n->t("Companies"), [
+      [ $i18n->r("/companies"), $i18n->t("Latest Entries") ],
+      [ $i18n->r("/company/create"), $i18n->t("Create New") ],
+      [ $i18n->r("/company/random"), $i18n->t("Random Company") ],
+    ], [ "class" => "span span--3" ]);
+    $companiesNavigation->headingLevel  = "3";
+    $companiesNavigation->hideTitle     = false;
+    $companiesNavigation->unorderedList = true;
+    // Retrieve tabindexes.
+    $companiesNavigation = (string) $companiesNavigation;
+
+    $otherNavigation = new Navigation($i18n->t("More"), [
+      [ $i18n->r("/genres"), $i18n->t("Explore all genres") ],
+      [ $i18n->r("/articles"), $i18n->t("Explore all articles") ],
     ], [ "class" => "span span--3" ]);
     $otherNavigation->headingLevel  = "3";
     $otherNavigation->hideTitle     = false;
     $otherNavigation->unorderedList = true;
+    // Retrieve tabindexes.
+    $otherNavigation = (string) $otherNavigation;
 
     if ($session->isAuthenticated === true) {
-      $userNavigation = [
-
-      ];
+      // @todo Store image in session or create special nginx route that stays the same and is internally redirected
+      //       to the correct avatar via redirect, e.g. /avatar.jpg?username=fleshgrinder and it's internally
+      //       redirected to /upload/user/fleshgrinder.70.jpg
+      //       On the other hand, we'd only have to save the changed timestamp in the session to generate the image
+      //       route ...
+      $user = new \MovLib\Data\User\User(\MovLib\Data\User\User::FROM_ID, $session->userId);
+      // @todo We need a 50x50 avatar (this one's 60x60).
+      $userIcon = $this->getImage($user->getStyle(\MovLib\Data\User\User::STYLE_SPAN_01), false, [ "id" => "user-avatar-for-now" ]);
+      $userNavigation =
+        "<ul>" .
+          "<li>{$this->a($i18n->r("/profile"), $i18n->t("Profil"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/sign-out"), $i18n->t("Sign Out"))}</li>" .
+        "</ul>"
+      ;
     }
     else {
-      $userNavigation = [
-        [ $i18n->r("/profile/sign-in"), $i18n->t("Sign In") ],
-        [ $i18n->r("/profile/join"), $i18n->t("Join") ],
-        [ $i18n->r("/profile/reset-password"), $i18n->t("Reset Password") ],
-      ];
+      $userIcon = "<span class='button button--inverse ico ico-user-add'></span>";
+      $userNavigation =
+        "<ul>" .
+          "<li>{$this->a($i18n->r("/profile/sign-in"), $i18n->t("Sign In"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/join"), $i18n->t("Join"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/reset-password"), $i18n->t("Reset Password"))}</li>" .
+        "</ul>"
+      ;
     }
-    $userNavigation = new Navigation("user", $i18n->t("User Navigation"), $userNavigation, [ "class" => "span span--3" ]);
 
-    // Reserve the "first" tabindex for the search (it's not really the first if a form is present).
-    $searchTabindex = $this->getTabindex();
+    // @todo Nice placeholder for the missing navigations, there are simply too many people checking out our dev site :P
+    $notImplemented = new Alert("Not implemented yet!");
 
+    // @todo Is it a problem that we have nested navigations?
     return
-      "<a class='visuallyhidden' href='#main'>{$i18n->t("Skip directly to page content.")}</a>" .
-      "<header id='header'><div class='container'><div class='row'>" .
-        "<div class='span span--3'>{$this->getHeaderLogo()}</div>" .
+      "<a class='visuallyhidden' href='#main' tabindex='{$skipLinkTabindex}'>{$i18n->t("Skip directly to the page’s main content.")}</a>" .
+      "<header id='header' role='banner'><div class='container'><div class='row'>" .
+        // Only one <h1> per page? No problem according to Google https://www.youtube.com/watch?v=GIn5qJKU8VM plus HTML5
+        // wants us to use multiple <h1>s for multiple sections, so here we go. The header is always the MovLib header.
+        "<h1 class='span span--3'>{$this->a(
+          "/",
+          "<img alt='' height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}",
+          [ "id" => "logo", "title" => $i18n->t("Go back to the home page.") ]
+        )}</h1>" .
         "<div class='span span--9'>" .
-          "<section class='expander'>" .
-            "<h2>{$i18n->t("Explore")}</h2>" .
-            "<div class='concealed row'>{$moviesNavigation}{$seriesNavigation}{$personsCompaniesNavigation}{$otherNavigation}</div>" .
-          "</section>" .
+          "<nav aria-expanded='false' class='expander' role='navigation'>" .
+            "<h2 class='visible'>{$i18n->t("Explore")}</h2>" .
+            "<div class='concealed row'>" .
+              "{$moviesNavigation}{$seriesNavigation}" .
+              "<div class='span span--3'>{$personsNavigation}{$companiesNavigation}</div>" .
+              $otherNavigation .
+            "</div>" .
+          "</nav>" .
+          "<nav aria-expanded='false' class='expander' role='navigation'>" .
+            "<h2 class='visible'>{$i18n->t("Marketplace")}</h2>" .
+            "<div class='concealed row'><div class='span span--12'>{$notImplemented}</div></div>" .
+          "</nav>" .
+          "<nav aria-expanded='false' class='expander' role='navigation'>" .
+            "<h2 class='visible'>{$i18n->t("Community")}</h2>" .
+            "<div class='concealed row'><div class='span span--12'>{$notImplemented}</div></div>" .
+          "</nav>" .
           "<form action='{$i18n->t("/search")}' class='span' id='search' method='post' role='search'>" .
             "<input type='hidden' name='form_id' value='header_search'>" .
-            "<label class='visuallyhidden' for='search-input'>{$i18n->t("Search the {0} database.", [ $kernel->siteName ])}</label>" .
-            "<input id='search-input' name='searchterm' required tabindex='{$searchTabindex}' title='{$i18n->t("Enter the search term you wish to search for and hit enter.")}' type='search'>" .
-            "<button title='{$i18n->t("Start searching for the entered keyword.")}' type='submit'><i class='ico-search'></i></button>" .
+            "<label class='visuallyhidden' for='search-input'>{$i18n->t("Search the {sitename} database.", [ "sitename" => $kernel->siteName ])}</label>" .
+            "<button class='ico ico-search' tabindex='{$searchSubmitTabindex}' type='submit'><span class='visuallyhidden'>{$i18n->t(
+              "Start searching for the entered keyword."
+            )}</span></button>" .
+            "<input id='search-input' name='searchterm' required tabindex='{$searchInputTabindex}' title='{$i18n->t(
+              "Enter the search term you wish to search for and hit enter."
+            )}' type='search'>" .
           "</form>" .
-          "<div class='button button--inverse expander ico-user-add'><div class='concealed row'>{$userNavigation}</div></div>" .
+          "<nav id='user-nav' aria-expanded='false' class='expander' role='navigation'>" .
+            "<h2 class='visuallyhidden'>{$i18n->t("User Navigation")}</h2>{$userIcon}" .
+            "<div class='concealed row'><div class='span span--12'>{$userNavigation}</div></div>" .
+          "</nav>" .
         "</div>" .
       "</div></div></header>"
-    ;
-  }
-
-  /**
-   * Get the header logo.
-   *
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\I18n $i18n
-   * @return string
-   *   The header logo.
-   */
-  protected function getHeaderLogo() {
-    global $kernel, $i18n;
-    return
-      "<a href='/' id='header-logo' title='{$i18n->t("Go back to the home page.")}'>" .
-        "<img alt='{$kernel->siteName}' height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}" .
-      "</a>"
     ;
   }
 
@@ -366,16 +427,13 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
    * appending the sitename.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @return string
    *   The head title.
    */
   protected function getHeadTitle() {
-    global $i18n;
-    return "{$this->title}{$i18n->t(" — ", null, [ "comment" =>
-      "The em dash is used as separator character in the header title to denote the source of the document (like in " .
-      "a quote the author), this should be translated to the equivalent character in your language. More information " .
-      "on this specific character can be found at <a href='//en.wikipedia.org/wiki/Dash#Em_dash'>Wikipedia</a>."
-    ])}MovLib";
+    global $i18n, $kernel;
+    return $i18n->t("{page_title} — {sitename}", [ "page_title" => $this->title, "sitename" => $kernel->siteName ]);
   }
 
   /**
@@ -531,7 +589,7 @@ abstract class AbstractPage extends \MovLib\Presentation\AbstractBase {
     $trail[] = [ $kernel->requestPath, $this->title ];
 
     // Create the actual navigation with the trail we just built.
-    $this->breadcrumb       = new Navigation("breadcrumb", $i18n->t("You are here: "), $trail, [ "class" => "container" ], false);
+    $this->breadcrumb       = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "container", "id" => "breadcrumb" ], false);
     $this->breadcrumb->glue = " › ";
 
     return $this;

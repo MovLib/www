@@ -98,12 +98,7 @@ class Show extends \MovLib\Presentation\AbstractPage {
           "<dt>{$i18n->t("Joined")}</dt><dd>{$i18n->formatDate($this->user->created, $this->user->timeZoneIdentifier)}</dd>" .
           "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->user->access, $this->user->timeZoneIdentifier)}</dd>" .
         "</dl>" .
-        "<div class='span span--2'>" .
-          $this->a($i18n->r("/profile/account-settings"), $this->getImage($this->user->getStyle()), [
-            "class" => "change-avatar no-border",
-            "title" => "Change your avatar image.",
-          ]) .
-        "</div>" .
+        "<div class='span span--2'>{$this->getImage($this->user->getStyle(), $this->user->route)}</div>" .
       "</div>" .
       "<h2>User</h2><pre>{$var[0]}</pre>" .
       "<h2>Session</h2><pre>{$var[1]}</pre>" .
@@ -121,12 +116,12 @@ class Show extends \MovLib\Presentation\AbstractPage {
 
     if ($session->isAuthenticated === true) {
       $sidebar = [
-        [ $i18n->r("/profile"), "<i class='ico-info'></i> {$i18n->t("Profile")}", [ "class" => "separator" ] ],
-        [ $i18n->r("/profile/account-settings"), "<i class='ico-user'></i> {$i18n->t("Account")}" ],
-        [ $i18n->r("/profile/notification-settings"), "<i class='ico-notification'></i> {$i18n->t("Notifications")}" ],
-        [ $i18n->r("/profile/email-settings"), "<i class='ico-email'></i> {$i18n->t("Email")}" ],
-        [ $i18n->r("/profile/password-settings"), "<i class='ico-lock'></i> {$i18n->t("Password")}" ],
-        [ $i18n->r("/profile/danger-zone"), "<i class='ico-alert'></i> {$i18n->t("Danger Zone")}" ],
+        [ $i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "separator ico ico-info" ] ],
+        [ $i18n->r("/profile/account-settings"), $i18n->t("Account"), [ "class" => "ico ico-user" ] ],
+        [ $i18n->r("/profile/notification-settings"), $i18n->t("Notifications"), [ "class" => "ico ico-notification" ] ],
+        [ $i18n->r("/profile/email-settings"), $i18n->t("Email"), [ "class" => "ico ico-email" ] ],
+        [ $i18n->r("/profile/password-settings"), $i18n->t("Password"), [ "class" => "ico ico-lock" ] ],
+        [ $i18n->r("/profile/danger-zone"), $i18n->t("Danger Zone"), [ "class" => "ico ico-alert" ] ],
       ];
     }
     // A user might visit the password settings page after successfully requesting a reset password email. Only display

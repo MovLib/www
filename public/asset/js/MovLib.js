@@ -73,6 +73,29 @@
   MovLib.prototype = {
 
     /**
+     * Bind one or more events to a set of elements.
+     *
+     * @param {HTMLCollection|NodeList} elements
+     *   The elements to which the event listener should be added.
+     * @param {Object} events
+     *   An object containing the events to listen to where the key is the event name and the value the function to bind.
+     * @param {Boolean} [capture]
+     *   Whether to listen on the capture or bubble phase, defaults to bubble.
+     * @returns {_L30.MovLib.prototype}
+     */
+    bind: function (elements, events, capture) {
+      capture = capture || false;
+      for (var i = 0; i < elements.length; ++i) {
+        for (var e in events) {
+          if (typeof e === "string") {
+            elements[i].addEventListener(e, events[e], capture);
+          }
+        }
+      }
+      return this;
+    },
+
+    /**
      * Initialize page features that are available on every page.
      *
      * @method init
@@ -85,7 +108,7 @@
        *
        * @type HTMLElement
        */
-      var element = document.createElement("x");
+      var element = document.createElement("input");
 
       // Anonymous helper function to load polyfills.
       var load = function (name) {
@@ -103,22 +126,27 @@
         document.body.classList.add("pointer-events");
       }
 
-      // Show the hidden header navigations on focus of the anchor elements. There's sadly no way to do this in CSS :(
-      var expanders = document.getElementsByClassName("expander");
-      expanders.toggle = function () {
-        this.classList.toggle("expand");
-      };
-      expanders.remove = function () {
-        this.classList.remove("expand");
-      };
-      for (var i = 0; i < expanders.length; ++i) {
-        // For mobile browsers which have no hover state.
-        expanders[i].addEventListener("click", expanders.toggle, false);
-        expanders[i].addEventListener("mouseout", expanders.remove, false);
-        // For keyboard navigation to manage visibility.
-        expanders[i].addEventListener("focus", expanders.toggle, true);
-        expanders[i].addEventListener("blur", expanders.toggle, true);
+      // Give autofocus to autofocus fields in browsers that don't support autofocus.
+      if (!("autofocus" in element)) {
+        document.querySelector("[autofocus]").focus();
       }
+
+      // Add the expand class and set the ARIA expanded state to true.
+      var expand = function () {
+        this.classList.add("expand");
+        this.setAttribute("aria-expanded", true);
+      };
+
+      // Remove the expand class and set the ARIA expanded state to false.
+      var contract = function () {
+        this.classList.remove("expand");
+        this.setAttribute("aria-expanded", false);
+      };
+
+      // Bind the functions to the events on all matching elements.
+      var expanders = document.getElementsByClassName("expander");
+      this.bind(expanders, { click: expand, mouseover: expand, mouseout: contract });
+      this.bind(expanders, { focus: expand, blur: contract }, true);
 
       return this;
     },

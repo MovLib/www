@@ -26,10 +26,64 @@
   position: relative;
 }
 
+
+/* ==== Editor ====================================================================================================== */
+
+
+.inputhtml .editor {
+  padding-top: 4px;
+  margin-bottom: 15px;
+}
+
+.inputhtml .button:first-child {
+  margin-left: 4px;
+}
+
+.inputhtml .button {
+  opacity: 0.5;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.inputhtml .focus .button {
+  opacity: 1;
+}
+
+.inputhtml .formats {
+  position: relative;
+}
+
+.inputhtml .formats .expander:after {
+  content: " ▾";
+}
+
+.inputhtml .formats span {
+  cursor: pointer;
+}
+
+.inputhtml .ico-bold,
+.inputhtml .ico-align-left,
+.inputhtml .ico-link,
+.inputhtml .ico-ul {
+  margin-left: 4px;
+}
+
+
+/* ==== Content ===================================================================================================== */
+
+
+.inputhtml .content {
+  margin: 4px 0 0;
+  outline: 0 none !important;
+}
+
 /* Reset paragraph margin for our content children that was previously redefined for paragraphs within forms. */
 .inputhtml .content p {
   margin: 0 0 10px;
 }
+
+
+/* ==== Placeholder ================================================================================================= */
+
 
 /* Mimic the default browser behavior for the placeholder attribute. */
 .inputhtml .placeholder {
@@ -40,22 +94,9 @@
   padding: 8px 10px;
   font-weight: 200;
   color: #888;
+  pointer-events: none;
 }
 
-.inputhtml .focus.empty + .placeholder {
+.inputhtml .focus .placeholder {
   color: #ccc;
-}
-
-.inputhtml .formats span {
-  cursor: pointer;
-}
-
-.inputhtml .formats .expander:after {
-  content: "▾";
-}
-
-.inputhtml .button.ico-align-left,
-.inputhtml .button.ico-link,
-.inputhtml .button.ico-ul {
-  margin-left: 24px;
 }

@@ -32,7 +32,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Stacktrace extends \MovLib\Presentation\Page {
+class Stacktrace extends \MovLib\Presentation\AbstractPage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -52,7 +52,14 @@ class Stacktrace extends \MovLib\Presentation\Page {
   public function __construct($exception, $fatal = false) {
     global $i18n, $kernel;
     http_response_code(500);
-    $this->init($i18n->t("Internal Server Error"));
+    try {
+      $this->init($i18n->t("Internal Server Error"));
+    }
+    catch (\Exception $e) {
+      header("content-type: text/plain; charset=utf-8");
+      echo "==== FATAL ERROR ====\n\n";
+      exit($e);
+    }
     $kernel->stylesheets[] = "stacktrace";
 
     $this->alerts .= new Alert(
