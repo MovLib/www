@@ -75,6 +75,40 @@
   InputHTML.prototype = {
 
     /**
+     * Handle alignment button clicks.
+     *
+     * @method align
+     * @chainable
+     * @param {Event} event
+     *   The click event on an align button.
+     * @returns {InputHTML}
+     */
+    align: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      // @todo Read direction from data attribute and add the respective class.
+      console.dir(event);
+      alert("Not implemented yet!");
+      return this;
+    },
+
+    /**
+     * Handle bold formatting button clicks.
+     *
+     * @method bold
+     * @chainable
+     * @param {Event} event
+     *   The click event on the editor button.
+     * @returns {InputHTML}
+     */
+    bold: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      alert("Clicked on bold button.");
+      return this;
+    },
+
+    /**
      * Copy the content of the content editable element back into the textarea.
      *
      * @method copyToTextarea
@@ -83,6 +117,72 @@
      */
     copyToTextarea: function () {
       this.textarea.value = this.content.innerHTML;
+      return this;
+    },
+
+    /**
+     * Handle format selector clicks.
+     *
+     * @method formats
+     * @chainable
+     * @param {Event} event
+     *   The click event on the formats selector.
+     * @returns {InputHTML}
+     */
+    formats: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      alert("Not implemented yet!");
+      return this;
+    },
+
+    /**
+     * Handle format clicks for headings.
+     *
+     * @method heading
+     * @chainable
+     * @param {Event} event
+     *   The click event on a heading format.
+     * @returns {InputHTML}
+     */
+    heading: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      // @todo Read heading level from data attribute and format the whole block.
+      alert("Not implemented yet!");
+      return this;
+    },
+
+    /**
+     * Handle image button clicks.
+     *
+     * @method image
+     * @chainable
+     * @param {Event} event
+     *   The click event on the editor button.
+     * @returns {InputHTML}
+     */
+    image: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      alert("Not implemented yet!");
+      return this;
+    },
+
+    /**
+     * Handle indent button clicks.
+     *
+     * @method indent
+     * @chainable
+     * @param {Event} event
+     *   The click event on the editor button.
+     * @returns {InputHTML}
+     */
+    indent: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      // @todo Read direction from data attribute.
+      alert("Not implemented yet!");
       return this;
     },
 
@@ -124,6 +224,16 @@
         this.editor.classList.remove("focus");
       }.bind(this), true);
 
+      // Bind event handlers to the editor controls.
+      var c = this.editor.children.length - 1;
+      for (var i = 0; i < c; ++i) {
+        // Handle the children of the formats selector
+        if (this.editor.children[i].getAttribute("data-handler") === "formats") {
+
+        }
+        this.editor.children[i].addEventListener("click", this[this.editor.children[i].getAttribute("data-handler")].bind(this), false);
+      }
+
       // React on various content events.
       this.content.addEventListener("keydown", this.keydown.bind(this), false);
       this.content.addEventListener("keyup", this.keyup.bind(this), false);
@@ -138,6 +248,22 @@
       // Remember IE9+ support!
       // Remember if something results in more than a single reflow hide and show element.
 
+      return this;
+    },
+
+    /**
+     * Handle italic formatting button clicks.
+     *
+     * @method italic
+     * @chainable
+     * @param {Event} event
+     *   The click event on the editor button.
+     * @returns {InputHTML}
+     */
+    italic: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      alert("Not implemented yet!");
       return this;
     },
 
@@ -177,6 +303,72 @@
       else {
         this.editor.classList.add("not-empty");
       }
+      return this;
+    },
+
+    /**
+     * Handle link button clicks.
+     *
+     * @method link
+     * @chainable
+     * @param {Event} event
+     *   The click event on the editor button.
+     * @returns {InputHTML}
+     */
+    link: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      // @todo Handle external link restriction.
+      alert("Not implemented yet!");
+      return this;
+    },
+
+    /**
+     * Handle list button clicks.
+     *
+     * @method list
+     * @chainable
+     * @param {Event} event
+     *   The click event on the editor button.
+     * @returns {InputHTML}
+     */
+    list: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      // @todo Read type from event target.
+      alert("Not implemented yet!");
+      return this;
+    },
+
+    /**
+     * Handle format clicks for paragraphs.
+     *
+     * @method paragraph
+     * @chainable
+     * @param {Event} event
+     *   The click event on the paragraph format.
+     * @returns {InputHTML}
+     */
+    paragraph: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      alert("Not implemented yet!");
+      return this;
+    },
+
+    /**
+     * Handle quotation button clicks.
+     *
+     * @method quotation
+     * @chainable
+     * @param {Event} event
+     *   The click event on the editor button.
+     * @returns {InputHTML}
+     */
+    quotation: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      alert("Not implemented yet!");
       return this;
     }
 
