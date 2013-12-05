@@ -168,11 +168,11 @@
 
 @font-face {
   font-family: MovLib;
-  src: url("/asset/font/movlib/movlib.eot?20131203");
-  src: url("/asset/font/movlib/movlib.eot?20131203#iefix") format("embedded-opentype"),
-       url("/asset/font/movlib/movlib.woff?20131203") format("woff"),
-       url("/asset/font/movlib/movlib.ttf?20131203") format("truetype"),
-       url("/asset/font/movlib/movlib.svg?20131203#movlib") format("svg")
+  src: url("/asset/font/movlib/movlib.eot?20131205");
+  src: url("/asset/font/movlib/movlib.eot?20131205#iefix") format("embedded-opentype"),
+       url("/asset/font/movlib/movlib.woff?20131205") format("woff"),
+       url("/asset/font/movlib/movlib.ttf?20131205") format("truetype"),
+       url("/asset/font/movlib/movlib.svg?20131205#movlib") format("svg")
   ;
   font-weight: normal;
   font-style: normal;
