@@ -26,7 +26,7 @@ namespace MovLib\Presentation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Home extends \MovLib\Presentation\AbstractPage {
+class Home extends \MovLib\Presentation\Page {
 
   /**
    * Instantiate new special home presentation page.

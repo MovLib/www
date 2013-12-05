@@ -32,7 +32,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ResetPassword extends \MovLib\Presentation\AbstractPage {
+class ResetPassword extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
 
 

@@ -42,7 +42,7 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Join extends \MovLib\Presentation\AbstractPage {
+class Join extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
   use \MovLib\Presentation\Users\TraitUsers;
 

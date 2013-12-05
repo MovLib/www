@@ -32,7 +32,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Stacktrace extends \MovLib\Presentation\AbstractPage {
+class Stacktrace extends \MovLib\Presentation\Page {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
