@@ -224,10 +224,10 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // Check if any heading is allowed (checking against level 6 is enough as it's always part of the party if any level
     // is allowed) and include the block level selector if we have any. Ommit if no headings are allowed.
     if (isset($this->allowedTags["h6"])) {
-      $editor .= "<span data-handler='paragraph' href=''>{$i18n->t("Paragraph")}</span>";
+      $editor .= "<span data-handler='formatBlock' data-tag='p' href=''>{$i18n->t("Paragraph")}</span>";
       for ($i = 2; $i <= 6; ++$i) {
         if (isset($this->allowedTags["h{$i}"])) {
-          $editor .= "<span data-handler='heading' data-level='{$i}' href=''>{$i18n->t("Heading {0, number, integer}", [ $i ])}</span>";
+          $editor .= "<span data-handler='formatBlock' data-tag='h{$i}' href=''>{$i18n->t("Heading {0, number, integer}", [ $i ])}</span>";
         }
       }
       $editor = "<a class='button formats' data-handler='formats' href=''><span class='expander' href=''>{$i18n->t("Paragraph")}</span><span class='concealed hidden'>{$editor}</span></a>";
@@ -243,7 +243,8 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       "<a class='button ico ico-align-center' data-direction='center' data-handler='align' href=''><span class='visuallyhidden'>{$i18n->t("Align center")}</span></a>" .
       "<a class='button ico ico-align-right' data-direction='right' data-handler='align' href=''><span class='visuallyhidden'>{$i18n->t("Align right")}</span></a>" .
       // Add the insert section according to configuration.
-      "<a class='button ico ico-link{$external}' data-handler='link' href=''><span class='visuallyhidden'>{$i18n->t("Insert link")}</span></a>"
+      "<a class='button ico ico-link{$external}' data-handler='link' href=''><span class='visuallyhidden'>{$i18n->t("Insert link")}</span></a>" .
+      "<a class='button ico ico-unlink' data-handler='unlink' href=''><span class='visuallyhidden'>{$i18n->t("Unlink selection")}</span></a>"
     ;
 
     if (isset($this->allowedTags["blockquote"])) {
@@ -264,7 +265,6 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
       ;
     }
 
-    $editorEmptyClass = empty($this->valueRaw) ? null : " not-empty";
     return
       "{$this->help}<fieldset class='inputhtml'>" .
         // Set an id for the legend, since it labels our textarea.
@@ -272,12 +272,9 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
         // The jshidden class uses display:none to hide its elements, this means that these elements aren't part of the
         // DOM tree and aren't parsed by user agents.
         "<p class='jshidden'><textarea{$this->expandTagAttributes($this->attributes)}>{$this->valueRaw}</textarea></p>" .
-        // Same situation above but for user agents with disabled JavaScript.
-        "<div class='editor nojshidden{$editorEmptyClass}'>{$editor}" .
-          // The content for the editable div is copied over from the textarea by the JS module. But we directly
-          // include the placeholder because it's very short.
-          "<div class='wrapper'><div{$this->expandTagAttributes($divAttributes)}></div><span aria-hidden='true' class='placeholder'>{$this->attributes["placeholder"]}</span></div>" .
-        "</div>" .
+        // Same situation above but for user agents with disabled JavaScript. The content for the editable div is copied
+        // over from the textarea by the JS module. But we directly include the placeholder because it's very short.
+        "<div class='editor nojshidden'>{$editor}<div{$this->expandTagAttributes($divAttributes)}></div></div>" .
       "</fieldset>"
     ;
   }

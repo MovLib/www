@@ -22,10 +22,6 @@
  * @since 0.0.1-dev
  */
 
-.inputhtml .wrapper {
-  position: relative;
-}
-
 
 /* ==== Editor ====================================================================================================== */
 
@@ -58,6 +54,7 @@
 
 .inputhtml .formats span {
   cursor: pointer;
+  display: block;
 }
 
 .inputhtml .ico-bold,
@@ -87,14 +84,8 @@
 
 /* Mimic the default browser behavior for the placeholder attribute. */
 .inputhtml .placeholder {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  padding: 8px 10px;
   font-weight: 200;
   color: #888;
-  pointer-events: none;
 }
 
 .inputhtml .focus .placeholder {

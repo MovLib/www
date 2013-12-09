@@ -66,7 +66,7 @@
      * @property content
      * @type HTMLElement
      */
-    this.content = this.editor.children[this.editor.children.length - 1].children[0];
+    this.content = this.editor.children[this.editor.children.length - 1];
 
     // Enhance the current element.
     this.init(element);
@@ -104,7 +104,7 @@
     bold: function (event) {
       event.preventDefault();
       event.returnValue = false;
-      alert("Clicked on bold button.");
+      document.execCommand("bold");
       return this;
     },
 
@@ -121,6 +121,27 @@
     },
 
     /**
+     * Handle format clicks.
+     *
+     * @method heading
+     * @chainable
+     * @param {Event} event
+     *   The click event on a heading format.
+     * @returns {InputHTML}
+     */
+    formatBlock: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      // @todo Read tag from data attribute and format the whole block.
+      try {
+        document.execCommand("formatBlock", true, event.target.getAttribute("data-tag"));
+      }
+      catch (e) {}
+      alert("Not implemented yet!");
+      return this;
+    },
+
+    /**
      * Handle format selector clicks.
      *
      * @method formats
@@ -132,24 +153,7 @@
     formats: function (event) {
       event.preventDefault();
       event.returnValue = false;
-      alert("Not implemented yet!");
-      return this;
-    },
-
-    /**
-     * Handle format clicks for headings.
-     *
-     * @method heading
-     * @chainable
-     * @param {Event} event
-     *   The click event on a heading format.
-     * @returns {InputHTML}
-     */
-    heading: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      // @todo Read heading level from data attribute and format the whole block.
-      alert("Not implemented yet!");
+      this.editor.children[0].children[1].classList.remove("hidden");
       return this;
     },
 
@@ -196,9 +200,16 @@
      * @return {InputHTML}
      */
     init: function (element) {
-      // Copy textarea's content into our content area.
-      // @todo Does this really trigger a single reflow?
-      this.content.innerHTML = this.textarea.value;
+      this.placeholder           = document.createElement("p");
+      this.placeholder.innerHTML = this.textarea.getAttribute("placeholder");
+      this.placeholderActual     = this.placeholder.cloneNode(true);
+      if (this.textarea.value === "") {
+        this.content.appendChild(this.placeholderActual);
+        this.content.classList.add("placeholder");
+      }
+      else {
+        this.content.innerHTML = this.textarea.value;
+      }
 
       // We have to copy the divs content back into the textarea directly before the form is submitted to ensure that
       // the content is automatically passed to our webserver via the browser. We only do this once instead of updating
@@ -207,13 +218,8 @@
 
       this.editor.addEventListener("focus", function () {
         // Set the cursor to the end of the content but within the last HTML tag.
-        if (this.content.lastChild) {
-          var range     = document.createRange();
-          var selection = window.getSelection();
-          range.setStart(this.content.lastChild, 1);
-          range.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(range);
+        if (this.content.classList.contains("placeholder")) {
+          window.getSelection().collapse(this.placeholderActual, 0);
         }
 
         // Give the complete editor focus.
@@ -263,7 +269,7 @@
     italic: function (event) {
       event.preventDefault();
       event.returnValue = false;
-      alert("Not implemented yet!");
+      document.execCommand("italic");
       return this;
     },
 
@@ -277,10 +283,10 @@
      * @return {InputHTML}
      */
     keydown: function (event) {
-
-      // Disable keydown totally!
-      //event.preventDefault();
-      //event.returnValue = false;
+      if (this.content.classList.contains("placeholder")) {
+        this.content.classList.remove("placeholder");
+        this.placeholderActual.innerHTML = "";
+      }
       return this;
     },
 
@@ -297,12 +303,14 @@
       // Disable keyup totally!
       //event.preventDefault();
       //event.returnValue = false;
-      if (this.content.innerHTML === "") {
-        this.editor.classList.remove("not-empty");
+      if (this.content.innerHTML === "" || this.content.children.length === 0 || this.content.children[0].childNodes.length === 0) {
+        this.placeholderActual = this.placeholder.cloneNode(true);
+        this.content.innerHTML = "";
+        this.content.appendChild(this.placeholderActual);
+        window.getSelection().collapse(this.placeholderActual, 0);
+        this.content.classList.add("placeholder");
       }
-      else {
-        this.editor.classList.add("not-empty");
-      }
+
       return this;
     },
 
@@ -369,6 +377,22 @@
       event.preventDefault();
       event.returnValue = false;
       alert("Not implemented yet!");
+      return this;
+    },
+
+    /**
+     * Handle unlink button clicks.
+     *
+     * @method link
+     * @chainable
+     * @param {Event} event
+     *   The click event on the editor button.
+     * @returns {InputHTML}
+     */
+    unlink: function (event) {
+      event.preventDefault();
+      event.returnValue = false;
+      document.execCommand("unlink");
       return this;
     }
 
