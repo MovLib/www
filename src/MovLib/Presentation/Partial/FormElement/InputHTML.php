@@ -196,6 +196,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     $divAttributes                    = $this->attributes;
     $divAttributes["contenteditable"] = "true";
     $divAttributes["role"]            = "textbox";
+    $divAttributes["tabindex"]        = 0;
     $this->addClass("content", $divAttributes);
 
     // The name attribute is always present for the textarea but nonsense for our div.
@@ -230,38 +231,38 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
           $editor .= "<span data-handler='formatBlock' data-tag='h{$i}' href=''>{$i18n->t("Heading {0, number, integer}", [ $i ])}</span>";
         }
       }
-      $editor = "<a class='button formats' data-handler='formats' href=''><span class='expander' href=''>{$i18n->t("Paragraph")}</span><span class='concealed hidden'>{$editor}</span></a>";
+      $editor = "<span class='button formats' data-handler='formats'><span class='expander'>{$i18n->t("Paragraph")}</span><span class='concealed hidden'>{$editor}</span></span>";
     }
 
     $external = $this->allowExternalLinks === true ? " external" : null;
     $editor .=
       // Add the font styles.
-      "<a class='button ico ico-bold' data-handler='bold' href=''><span class='visuallyhidden'>{$i18n->t("Bold")}</span></a>" .
-      "<a class='button ico ico-italic' data-handler='italic' href=''><span class='visuallyhidden'>{$i18n->t("Italic")}</span></a>" .
+      "<span class='button ico ico-bold' data-handler='bold'><span class='visuallyhidden'>{$i18n->t("Bold")}</span></span>" .
+      "<span class='button ico ico-italic' data-handler='italic'><span class='visuallyhidden'>{$i18n->t("Italic")}</span></span>" .
       // Add the alignment buttons.
-      "<a class='button ico ico-align-left' data-direction='left' data-handler='align' href=''><span class='visuallyhidden'>{$i18n->t("Align left")}</span></a>" .
-      "<a class='button ico ico-align-center' data-direction='center' data-handler='align' href=''><span class='visuallyhidden'>{$i18n->t("Align center")}</span></a>" .
-      "<a class='button ico ico-align-right' data-direction='right' data-handler='align' href=''><span class='visuallyhidden'>{$i18n->t("Align right")}</span></a>" .
+      "<span class='button ico ico-align-left' data-direction='left' data-handler='align'><span class='visuallyhidden'>{$i18n->t("Align left")}</span></span>" .
+      "<span class='button ico ico-align-center' data-direction='center' data-handler='align'><span class='visuallyhidden'>{$i18n->t("Align center")}</span></span>" .
+      "<span class='button ico ico-align-right' data-direction='right' data-handler='align'><span class='visuallyhidden'>{$i18n->t("Align right")}</span></span>" .
       // Add the insert section according to configuration.
-      "<a class='button ico ico-link{$external}' data-handler='link' href=''><span class='visuallyhidden'>{$i18n->t("Insert link")}</span></a>" .
-      "<a class='button ico ico-unlink' data-handler='unlink' href=''><span class='visuallyhidden'>{$i18n->t("Unlink selection")}</span></a>"
+      "<span class='button ico ico-link{$external}' data-handler='link'><span class='visuallyhidden'>{$i18n->t("Insert link")}</span></span>" .
+      "<span class='button ico ico-unlink' data-handler='unlink'><span class='visuallyhidden'>{$i18n->t("Unlink selection")}</span></span>"
     ;
 
     if (isset($this->allowedTags["blockquote"])) {
-      $editor .= "<a class='button ico ico-quotation' data-handler='quotation' href=''><span class='visuallyhidden'>{$i18n->t("Insert quotation")}</span></a>";
+      $editor .= "<span class='button ico ico-quotation' data-handler='quotation'><span class='visuallyhidden'>{$i18n->t("Insert quotation")}</span></span>";
     }
 
     if (isset($this->allowedTags["figure"])) {
-      $editor .= "<a class='button ico ico-image' data-handler='image' href=''><span class='visuallyhidden'>{$i18n->t("Insert image")}</span></a>";
+      $editor .= "<span class='button ico ico-image' data-handler='image'><span class='visuallyhidden'>{$i18n->t("Insert image")}</span></span>";
     }
 
     // Add list section, if lists are allowed.
     if (isset($this->allowedTags["ul"])) {
       $editor .=
-        "<a class='button ico ico-ul' data-handler='list' href=''><span class='visuallyhidden'>{$i18n->t("Insert unordered list")}</span></a>" .
-        "<a class='button ico ico-ol' data-handler='list' href=''><span class='visuallyhidden'>{$i18n->t("Insert ordered list")}</span></a>" .
-        "<a class='button ico ico-indent-left' data-direction='left' data-handler='indent' href=''><span class='visuallyhidden'>{$i18n->t("Indent list item left")}</span></a>" .
-        "<a class='button ico ico-indent-right' data-direction='right' data-handler='indent' href=''><span class='visuallyhidden'>{$i18n->t("Indent list item right")}</span></a>"
+        "<span class='button ico ico-ul' data-handler='list'><span class='visuallyhidden'>{$i18n->t("Insert unordered list")}</span></span>" .
+        "<span class='button ico ico-ol' data-handler='list'><span class='visuallyhidden'>{$i18n->t("Insert ordered list")}</span></span>" .
+        "<span class='button ico ico-indent-left' data-direction='left' data-handler='indent'><span class='visuallyhidden'>{$i18n->t("Indent list item left")}</span></span>" .
+        "<span class='button ico ico-indent-right' data-direction='right' data-handler='indent'><span class='visuallyhidden'>{$i18n->t("Indent list item right")}</span></span>"
       ;
     }
 

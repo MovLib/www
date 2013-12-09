@@ -87,7 +87,6 @@
       event.preventDefault();
       event.returnValue = false;
       // @todo Read direction from data attribute and add the respective class.
-      console.dir(event);
       alert("Not implemented yet!");
       return this;
     },
@@ -200,11 +199,10 @@
      * @return {InputHTML}
      */
     init: function (element) {
-      this.placeholder           = document.createElement("p");
-      this.placeholder.innerHTML = this.textarea.getAttribute("placeholder");
-      this.placeholderActual     = this.placeholder.cloneNode(true);
       if (this.textarea.value === "") {
-        this.content.appendChild(this.placeholderActual);
+        var placeholder       = document.createElement("p");
+        placeholder.innerHTML = this.textarea.getAttribute("placeholder");
+        this.content.appendChild(placeholder);
         this.content.classList.add("placeholder");
       }
       else {
@@ -217,12 +215,6 @@
       element.form.addEventListener("submit", this.copyToTextarea.bind(this), false);
 
       this.editor.addEventListener("focus", function () {
-        // Set the cursor to the end of the content but within the last HTML tag.
-        if (this.content.classList.contains("placeholder")) {
-          window.getSelection().collapse(this.placeholderActual, 0);
-        }
-
-        // Give the complete editor focus.
         this.editor.classList.add("focus");
       }.bind(this), true);
 
@@ -240,9 +232,25 @@
         this.editor.children[i].addEventListener("click", this[this.editor.children[i].getAttribute("data-handler")].bind(this), false);
       }
 
+      // Bind the focus event of the content separately.
+      this.content.addEventListener("focus", function () {
+        // Set the cursor to the end of the content but within the last HTML tag.
+        if (this.content.classList.contains("placeholder")) {
+          this.content.firstChild.innerHTML = "";
+          this.content.firstChild.innerHTML = this.textarea.getAttribute("placeholder");
+          //window.getSelection().collapse(this.content.firstChild, 0);
+        }
+
+        // Deactivate toolbar tabbing.
+        var c = this.editor.children.length - 1;
+        for (var i = 0; i < c; ++i) {
+          this.editor.children[i].setAttribute("tabindex", -1);
+        }
+      }.bind(this), true);
+
       // React on various content events.
+      this.content.addEventListener("keypress", this.keypress.bind(this), false);
       this.content.addEventListener("keydown", this.keydown.bind(this), false);
-      this.content.addEventListener("keyup", this.keyup.bind(this), false);
 
       // Use this to print an HTMLElement to the console!
       //console.dir(element);
@@ -279,36 +287,54 @@
      * @method keydown
      * @chainable
      * @param {Event} event
-     *   The focus event.
+     *   The keydown event.
      * @return {InputHTML}
      */
     keydown: function (event) {
-      if (this.content.classList.contains("placeholder")) {
-        this.content.classList.remove("placeholder");
-        this.placeholderActual.innerHTML = "";
+      // Disable keyup totally!
+      //event.preventDefault();
+      //event.returnValue = false;
+
+      // Check for the ALT + F10 key combination and activate toolbar tabbing.
+      if (event.altKey && (event.which === 121 || event.keyCode === 121)) {
+        var c = this.editor.children.length - 1;
+        for (var i = 0; i < c; ++i) {
+          this.editor.children[i].setAttribute("tabindex", 0);
+        }
+        this.editor.firstChild.focus();
       }
+
       return this;
     },
 
     /**
-     * React on keyup changes.
+     * React on keypress changes.
      *
-     * @method keyup
+     * @method keypress
      * @chainable
      * @param {Event} event
-     *   The focus event.
+     *   The keypress event.
      * @return {InputHTML}
      */
-    keyup: function (event) {
-      // Disable keyup totally!
+    keypress: function (event) {
+      // Disable keypress totally!
       //event.preventDefault();
       //event.returnValue = false;
-      if (this.content.innerHTML === "" || this.content.children.length === 0 || this.content.children[0].childNodes.length === 0) {
-        this.placeholderActual = this.placeholder.cloneNode(true);
+
+      // Delete the contents of the placeholder when something is typed.
+      if (this.content.classList.contains("placeholder")) {
+        this.content.classList.remove("placeholder");
+        this.content.firstChild.innerHTML = "";
+      }
+      // Check if the content is empty. If so, put the placeholder back into place and delete all unnecessary contents
+      // like <br> or <div> some browsers insert.
+      else if (this.content.innerHTML === "" || this.content.children.length === 0 || this.content.children[0].childNodes.length === 0) {
         this.content.innerHTML = "";
-        this.content.appendChild(this.placeholderActual);
-        window.getSelection().collapse(this.placeholderActual, 0);
+        var placeholder = document.createElement("p");
+        this.content.appendChild(placeholder);
+        placeholder.focus();
         this.content.classList.add("placeholder");
+        placeholder.innerHTML = this.textarea.getAttribute("placeholder");
       }
 
       return this;
