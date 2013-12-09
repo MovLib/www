@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation\Partial;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
  * HTML navigation including all ARIA roles.
  *

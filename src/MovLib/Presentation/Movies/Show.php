@@ -107,7 +107,7 @@ class Show extends \MovLib\Presentation\Page {
 
     // Put it all together.
     return
-      "<a class='img row' href='{$i18n->r("/movie/{0}", [ $movie->id ])}' itemprop='url' tabindex='{$this->getTabindex()}'>" .
+      "<a class='img row' href='{$i18n->r("/movie/{0}", [ $movie->id ])}' itemprop='url'>" .
         "<span class='span span--1'>{$image}</span>" .
         "<span class='span span--9'>{$title}</span>" .
       "</a>"

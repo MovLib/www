@@ -43,7 +43,6 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * <ul>
    *   <li><code>"id"</code> is set to <var>AbstractFormElement::$id</var></li>
    *   <li><code>"name"</code> is set to <var>AbstractFormElement::$id</var></li>
-   *   <li><code>"tabindex"</code> is set to the next global tabindex</li>
    * </ul>
    *
    * @var array
@@ -85,10 +84,9 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   The form element's global identifier.
    */
   public function __construct($id, $label, array $attributes = null) {
-    $this->attributes             = $attributes;
-    $this->id                     = $this->attributes["id"] = $this->attributes["name"] = $id;
-    $this->attributes["tabindex"] = $this->getTabindex();
-    $this->label                  = $label;
+    $this->attributes = $attributes;
+    $this->id         = $this->attributes["id"] = $this->attributes["name"] = $id;
+    $this->label      = $label;
   }
 
   /**

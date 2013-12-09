@@ -82,7 +82,6 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    *   <ul>
    *     <li><code>"id"</code> is set to <var>$id</var></li>
    *     <li><code>"name"</code> is set to <var>$id</var></li>
-   *     <li><code>"tabindex"</code> is set to the next global tabindex (with <code>getTabindex()</code>)</li>
    *     <li><code>"type"</code> is set to <code>"date"</code></li>
    *   </ul>
    *   You <b>should not</b> override any of the default attributes.

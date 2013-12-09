@@ -111,7 +111,7 @@ trait TraitPagination {
 
       // Generate the previous link if it isn't the first page.
       if ($x >= 1) {
-        $pages[] = [ "{$route}{$x}", $i18n->t("« previous"), [ "rel" => "previous", "tabindex" => $this->getTabindex() ] ];
+        $pages[] = [ "{$route}{$x}", $i18n->t("« previous"), [ "rel" => "previous prerender" ] ];
       }
       // We totally mute this pagination item for screen readers and alike because it has no value anymore for them. But
       // we keep it on normal screens to ensure that the pagination navigation always looks the same on all pages.
@@ -120,14 +120,14 @@ trait TraitPagination {
       }
 
       // Always add the first page to the pagination for fast jumps to the beginning.
-      $pages[] = [ $kernel->requestPath, "1", [ "rel" => "first", "tabindex" => $this->getTabindex() ] ];
+      $pages[] = [ $kernel->requestPath, "1", [ "rel" => "first prerender" ] ];
       if ($x <= 1) {
         $x = 2;
       }
 
       // The second pagination item is special and if we have a pagination it always exists, see above if.
       if ($x < 5) {
-        $pages[] = [ "{$route}2", "2", [ "tabindex" => $this->getTabindex() ] ];
+        $pages[] = [ "{$route}2", "2", [ "rel" => "prerender" ] ];
         $x = 3;
       }
       else {
@@ -143,24 +143,24 @@ trait TraitPagination {
       // We can generate the next points in a loop, as they always have the same formatting.
       $secondLast = $this->pageCount - 1;
       for ($i = 0; $i < 5 && $x < $secondLast; ++$i, ++$x) {
-        $pages[] = [ "{$route}{$x}", $x, [ "tabindex" => $this->getTabindex() ] ];
+        $pages[] = [ "{$route}{$x}", $x ];
       }
 
       // The second last pagination item is special again.
       if ($x === $secondLast) {
-        $pages[] = [ "{$route}{$secondLast}", $secondLast, [ "tabindex" => $this->getTabindex() ] ];
+        $pages[] = [ "{$route}{$secondLast}", $secondLast ];
       }
       else {
         $pages[] = "<span class='mute'>{$i18n->t("…")}</span>";
       }
 
       // Always add the last page to the pagination for fast traveling.
-      $pages[] = [ "{$route}{$this->pageCount}", $this->pageCount, [ "rel" => "last", "tabindex" => $this->getTabindex() ] ];
+      $pages[] = [ "{$route}{$this->pageCount}", $this->pageCount, [ "rel" => "last prerender" ] ];
 
       // Check if we have a next page and perform the same logic as we used for the previous link.
       if ($this->page < $this->pageCount) {
         $next    = $this->page + 1;
-        $pages[] = [ "{$route}{$next}", $i18n->t("next »"), [ "rel" => "next prefetch", "tabindex" => $this->getTabindex() ] ];
+        $pages[] = [ "{$route}{$next}", $i18n->t("next »"), [ "rel" => "next prerender" ] ];
       }
       else {
         $pages[] = "<span class='mute' aria-hidden='true'>{$i18n->t("next »")}</span>";

@@ -63,12 +63,11 @@ class InputSubmit extends \MovLib\Presentation\AbstractBase {
    *   The global unique identifier.
    */
   public function __construct($value, array $attributes = null, $id = "submit") {
-    $this->attributes             = $attributes;
-    $this->attributes["id"]       = $id;
-    $this->attributes["tabindex"] = $this->getTabindex();
-    $this->attributes["type"]     = "submit";
-    $this->attributes["value"]    = $value;
-    $this->id                     = $id;
+    $this->attributes          = $attributes;
+    $this->attributes["id"]    = $id;
+    $this->attributes["type"]  = "submit";
+    $this->attributes["value"] = $value;
+    $this->id                  = $id;
   }
 
   /**

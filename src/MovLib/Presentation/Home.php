@@ -94,7 +94,7 @@ class Home extends \MovLib\Presentation\Page {
             "<article class='span span--4'>" .
               "<h2>{$i18n->t("My {sitename}", [ "sitename" => $kernel->siteName ])}</h2>" .
               "<p></p>" .
-              "<p><a class='button button--success button--large' href='{$i18n->r("/profile/join")}' tabindex='{$this->getTabindex()}'>{$i18n->t(
+              "<p><a class='button button--success button--large' href='{$i18n->r("/profile/join")}'>{$i18n->t(
                 "Join {sitename}", [ "sitename" => $kernel->siteName ])
               }</a></p>" .
             "</article>" .
@@ -106,7 +106,7 @@ class Home extends \MovLib\Presentation\Page {
                 "use the data we all collect here at {sitename}.",
                 [ "sitename" => $kernel->siteName ]
               )}</p>" .
-              "<p><a class='button button--primary button--large' href='//{$kernel->domainAPI}/' tabindex='{$this->getTabindex()}'>{$i18n->t(
+              "<p><a class='button button--primary button--large' href='//{$kernel->domainAPI}/'>{$i18n->t(
                 "Read the API documentation"
               )}</a></p>" .
             "</article>" .

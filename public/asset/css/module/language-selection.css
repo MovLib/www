@@ -26,55 +26,55 @@
  */
 
 #languageselection {
-  padding: 0;
   text-align: center;
 }
 
-#languageselection-content {
+#languageselection #main {
   min-height: 50%;
+  margin-top: 0;
 }
 
-#logo-big {
+#languageselection h1 {
+  width: 512px;
+  padding: 10% 0 0;
+  margin: 0 auto;
   font-size: 85.6px;
   font-weight: bold;
   line-height: 1;
-  margin: 0 auto;
-  padding: 10% 0 0;
-  width: 512px;
   color: #353535;
 }
 
-#logo-big img {
+#languageselection h1 img {
   float: left;
 }
 
-#logo-big span {
+#languageselection h1 span {
   display: block;
-  margin-left: 205px;
   padding-top: 28px;
+  margin-left: 205px;
 }
 
-#logo-big small {
+#languageselection h1 small {
   display: block;
+  padding: 2px 0 0;
+  margin: 0;
   font-size: 32.4px;
   font-weight: 200;
   letter-spacing: -0.3px;
-  margin: 0;
-  padding: 2px 0 0;
   text-indent: 7px;
   white-space: pre;
 }
 
-#languageselection-nav {
+#languageselection nav {
   font-size: 16px;
 }
 
-#languageselection-nav a {
+#languageselection nav a {
   margin: 0 25px;
   color: #353535;
 }
 
-#languageselection-nav a:hover,
-#languageselection-nav a:focus {
+#languageselection nav a:hover,
+#languageselection nav a:focus {
   border-bottom-color: #353535;
 }

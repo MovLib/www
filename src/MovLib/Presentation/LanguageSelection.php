@@ -73,7 +73,7 @@ class LanguageSelection extends \MovLib\Presentation\Page {
    */
   public function formatSystemLanguage($languageCode) {
     global $i18n, $kernel;
-    $attributes = [ "rel" => "prefetch", "tabindex" => $this->getTabindex() ];
+    $attributes = [ "rel" => "prerender" ];
     if ($languageCode != $i18n->languageCode) {
       $attributes["lang"] = $languageCode;
     }
@@ -107,19 +107,18 @@ class LanguageSelection extends \MovLib\Presentation\Page {
     global $i18n, $kernel;
 
     // Build the navigation.
-    $navigation                      = new Navigation($this->id, $i18n->t("Available Languages"), array_keys($kernel->systemLanguages));
-    $navigation->attributes["class"] = "well well--large";
-    $navigation->glue                = " / ";
-    $navigation->callback             = [ $this, "formatSystemLanguage" ];
+    $navigation           = new Navigation($i18n->t("Available Languages"), array_keys($kernel->systemLanguages), [ "class" => "well well--large" ]);
+    $navigation->glue     = " / ";
+    $navigation->callback = [ $this, "formatSystemLanguage" ];
 
     return
-      "<div class='{$this->id}-content' id='content' role='main'><div class='container'>" .
-        "<h1 class='clear-fix' id='logo-big'>" .
+      "<main class='{$this->id}-content' id='main' role='main'><div class='container'>" .
+        "<h1 class='clear-fix'>" .
           "<img alt='{$kernel->siteName} {$i18n->t("logo")}' height='192' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='192'>" .
           "<span>{$kernel->siteNameAndSloganHTML}</span>" .
         "</h1>" .
         "<p>{$i18n->t("Please select your preferred language from the following list.")}</p>{$navigation}" .
-      "</div></div>"
+      "</div></main>"
     ;
   }
 

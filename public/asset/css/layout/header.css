@@ -31,8 +31,13 @@
 #search,
 #search-input,
 #search .ico-search {
-  padding: 0;
   height: 50px;
+  padding: 0;
+}
+
+#header,
+#header > .container:before {
+  background-color: #fff;
 }
 
 #header {
@@ -41,7 +46,6 @@
   right: 0;
   left: 0;
   z-index: 999999;
-  background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
 
@@ -52,12 +56,12 @@
 #header > .container:before {
   position: absolute;
   top: 0;
-  right: -100px;
+  right: -2000px;
   bottom: 0;
-  left: -100px;
+  left: -2000px;
   z-index: -1;
-  background-color: #fff;
   content: "";
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
 
 
@@ -84,6 +88,7 @@
   transition: color 0.4s linear;
 }
 
+#logo:active
 #logo:focus,
 #logo:hover {
   color: #353535;
@@ -99,8 +104,8 @@
 
 
 #header .span--9 {
-  width: auto;
   float: right;
+  width: auto;
 }
 
 #header .expander {
@@ -108,77 +113,76 @@
 }
 
 #header .visible {
+  position: relative;
   min-width: 50px;
   padding: 0 20px 0 25px;
   margin: 0;
   font-size: 14px;
   line-height: 50px;
   cursor: pointer;
-  transition: color 0.2s ease-in-out;
+  transition: 0.2s linear 0.1s;
+  transition-property: color, background-color;
 }
 
-#header .expand .visible,
-#header .expander:hover .visible {
-  color: #09c;
+#header .open .visible:before,
+#header .visible:before {
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-top-color: #09c;
+  content: "";
+  opacity: 0;
+  transition: opacity 0.2s linear 0.1s;
 }
 
 #header .visible:after {
   content: " ▾";
 }
 
-/*
-#header .visible:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -500px;
-  right: 100px;
-  bottom: -10px;
-  visibility: hidden;
-  transition: visibility 0.2s;
-  cursor: auto;
+#header .focus .visible,
+#header .open .visible,
+#header .expander:hover .visible {
+  color: #fff;
+  background-color: #09c;
 }
 
+#header .open .visible:before,
 #header .expander:hover .visible:before {
-  visibility: visible;
+  opacity: 1;
 }
-*/
 
-/* Put the element off-screen to ensure that all browsers are still able to tab to the anchor elements. */
 #header .concealed {
   position: absolute;
   top: 0;
-  right: 999999em;
-  left: -999999em;
+  right: 0;
+  left: 0;
   z-index: -2;
   padding: 20px 0;
   margin-right: -20px;
   background-color: #fff;
   opacity: 0;
+  visibility: hidden;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
-  transition: 0.2s linear;
+  transition: 0.2s linear 0.2s;
   transition-property: opacity, top, visibility;
+}
+
+#header .open .concealed,
+#header .expander:hover .concealed {
+  top: 50px;
+  opacity: 1;
+  visibility: visible;
 }
 
 #header .concealed h3 {
   margin-top: 0;
 }
 
-#header .expand .concealed,
-#header .expander:hover .concealed {
-  top: 50px;
-  right: 0;
-  left: 0;
-  pointer-events: auto;
-  opacity: 1;
-}
 
-/* Ensure fade out animation is smooth as well if the browser supports pointer events. */
-.pointer-events #header .concealed {
-  right: 0;
-  left: 0;
-  pointer-events: none;
-}
+/* ==== */
+
 
 #search-input,
 #search .ico-search,

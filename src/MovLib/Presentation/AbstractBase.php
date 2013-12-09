@@ -32,17 +32,6 @@ namespace MovLib\Presentation;
 abstract class AbstractBase {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * Global counter for the tabindex across a single presentation process.
-   *
-   * @var int
-   */
-  private static $tabindex = 1;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Protected Methods
 
 
@@ -98,9 +87,6 @@ abstract class AbstractBase {
     }
 
     // Put it all together.
-    if (!isset($attributes["tabindex"])) {
-      $attributes["tabindex"] = $this->getTabindex();
-    }
     return "<a{$this->expandTagAttributes($attributes)}>{$text}</a>";
   }
 
@@ -231,15 +217,6 @@ abstract class AbstractBase {
       $image                    = "<a{$this->expandTagAttributes($anchorAttributes)}>{$image}</a>";
     }
     return $image;
-  }
-
-  /**
-   * Get the next global tabindex.
-   *
-   * @return int
-   */
-  protected final function getTabindex() {
-    return self::$tabindex++;
   }
 
   /**

@@ -59,7 +59,6 @@ class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractInp
    *   <ul>
    *     <li><code>"id"</code> is set to <var>$id</var></li>
    *     <li><code>"name"</code> is set to <var>$id</var></li>
-   *     <li><code>"tabindex"</code> is set to the next global tabindex (with <code>getTabindex()</code>)</li>
    *     <li><code>"required"</code> is set</li>
    *     <li><code>"pattern"</code> is set to a regular expression that matches our minimum password requirements</li>
    *     <li><code>"title"</code> explains the minimum password requirements</li>

@@ -73,30 +73,10 @@
   MovLib.prototype = {
 
     /**
-     * Bind one or more events to a set of elements.
-     *
-     * @param {HTMLCollection|NodeList} elements
-     *   The elements to which the event listener should be added.
-     * @param {Object} events
-     *   An object containing the events to listen to where the key is the event name and the value the function to bind.
-     * @param {Boolean} [capture]
-     *   Whether to listen on the capture or bubble phase, defaults to bubble.
-     * @returns {_L30.MovLib.prototype}
-     */
-    bind: function (elements, events, capture) {
-      capture = capture || false;
-      for (var i = 0; i < elements.length; ++i) {
-        for (var e in events) {
-          if (typeof e === "string") {
-            elements[i].addEventListener(e, events[e], capture);
-          }
-        }
-      }
-      return this;
-    },
-
-    /**
      * Initialize page features that are available on every page.
+     *
+     * The code within this method is only executed during the initial page load, not for any subsequent AJAX loads
+     * (which aren't implemented yet but planned).
      *
      * @method init
      * @chainable
@@ -120,33 +100,110 @@
         load.call(this, "classList");
       }
 
-      // Test for pointer-events support.
-      element.style.cssText = "pointer-events:auto";
-      if (element.style.pointerEvents === "auto") {
-        document.body.classList.add("pointer-events");
-      }
+      // Extend our document with the most important sections.
+      document.header = document.getElementById("header");
+      document.main   = document.getElementById("main");
+      document.footer = document.getElementById("footer");
 
-      // Give autofocus to autofocus fields in browsers that don't support autofocus.
-      if (!("autofocus" in element)) {
-        document.querySelector("[autofocus]").focus();
-      }
+      // Ensure focused elements don't hide themselve beneath our fixed header.
+      document.body.addEventListener("focus", this.fixFocusScrollPosition, true);
 
-      // Add the expand class and set the ARIA expanded state to true.
-      var expand = function () {
-        this.classList.add("expand");
-        this.setAttribute("aria-expanded", true);
-      };
+      // Ensure that the viewport is properly scrolled to. This fixes a problem with the usage of autofocus in Gecko
+      // (Firefox) browsers where it includes the hidden main navigation elements while computing the scroll top offset
+      // for the current autofocus element. This is something I came up myself, no known workaround and a little known
+      // problem. But there is a bug report at: https://bugzilla.mozilla.org/show_bug.cgi?id=712130
+      //
+      // @todo If this gets fixed in Gecko remove it (the fix for the reported bug might not fix our problem).
+      window.onload = function () {
+        var autofocusElement = document.querySelector("[autofocus]");
+        if (autofocusElement) {
+          // Enable autofocus support in older browsers while we're at it.
+          autofocusElement.focus();
 
-      // Remove the expand class and set the ARIA expanded state to false.
-      var contract = function () {
-        this.classList.remove("expand");
-        this.setAttribute("aria-expanded", false);
-      };
+          // This is the actual Firefox hack. See called method for further details.
+          this.fixFocusScrollPosition({ target: autofocusElement });
+        }
+      }.bind(this);
 
-      // Bind the functions to the events on all matching elements.
+      // @todo Extend mega menu further for best accessability!
+      //       - http://terrillthompson.com/blog/474
+      //       - http://adobe-accessibility.github.io/Accessible-Mega-Menu/
       var expanders = document.getElementsByClassName("expander");
-      this.bind(expanders, { click: expand, mouseover: expand, mouseout: contract });
-      this.bind(expanders, { focus: expand, blur: contract }, true);
+      var c         = expanders.length;
+      for (var i = 0; i < c; ++i) {
+        // Add focus class to expander if it is focused for CSS styling.
+        expanders[i].addEventListener("focus", function () {
+          this.classList.add("focus");
+        }, false);
+
+        // Remove focus class from expander.
+        expanders[i].addEventListener("blur", function () {
+          this.classList.remove("focus");
+        }, false);
+
+        // Capture blur events of children to determine if the complete expander lost focus.
+        expanders[i].addEventListener("blur", function () {
+          // Remove open class if no element is currently focused or if the currently focused element isn't one of our
+          // children.
+          var checkFocus = function () {
+            if (!document.activeElement || !this.contains(document.activeElement)) {
+              this.classList.remove("open");
+            }
+          };
+
+          // Give the browser a millisecond grace time to change the focus state.
+          // @todo Is a millisecond enough for all browsers?
+          window.setTimeout(checkFocus.bind(this), 100);
+        }, true);
+
+        // React on certain keypress events as recommended by W3C's menu widget.
+        // http://www.w3.org/TR/wai-aria-practices/#menu
+        expanders[i].addEventListener("keypress", function (event) {
+          switch (event.which || event.keyCode) {
+            case 13: // Return / Enter
+            case 32: // Space
+            case 38: // Up Arrow
+              if (event.target === this) {
+                this.classList.add("open");
+                this.getElementsByTagName("a")[0].focus();
+              }
+              break;
+
+            case 27: // Escape
+              this.classList.remove("open");
+              this.focus();
+              break;
+          }
+        }, false);
+
+        // Allow mobile browsers to open the menu.
+        expanders[i].getElementsByClass("clicker").firstChild.addEventListener("click", function () {
+          this.parentNode().classList.add("open");
+        }, false);
+
+        // Allow mobile browsers to close the menu.
+        expanders[i].addEventListener("click", function (event) {
+          if (event.target === this) {
+            this.classList.remove("open");
+          }
+        }, true);
+      }
+
+      return this.execute(document);
+    },
+
+    /**
+     * The MovLib module itself.
+     *
+     * The code within this method is executed on every page load, including subsequent AJAX loads.
+     *
+     * @method execute
+     * @chainable
+     * @param {HTMLCollection} context
+     *   The context we are currently working with.
+     * @returns {MovLib}
+     */
+    execute: function (context) {
 
       return this;
     },
@@ -180,6 +237,26 @@
       }
 
       return this;
+    },
+
+    /**
+     * Fix scroll position on focus.
+     *
+     * Because we have a fixed header input elements might go beneath it if you tab through the page. Unfortunately
+     * there is no way to fix this with a pure CSS solution for input elements. Input elements are empty an can't have
+     * a :before of :after element and focus doesn't bubble in CSS. We fix this issue for all users who have JavaScript
+     * enable and others have to scroll themselves.
+     *
+     * @method fixFocusScrollPosition
+     * @returns {undefined}
+     */
+    fixFocusScrollPosition: function (event) {
+      if (!document.header.contains(event.target)) {
+        var boundingClientRect = event.target.getBoundingClientRect();
+        if (boundingClientRect.top < boundingClientRect.height + 50) {
+          window.scrollBy(0, -((boundingClientRect.top > 0 ? boundingClientRect.height : (boundingClientRect.top * -1 + boundingClientRect.height)) + 60));
+        }
+      }
     },
 
     /**

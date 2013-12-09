@@ -88,9 +88,8 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     $choices = null;
     foreach ($this->choices as $value => $choice) {
       $checked  = $this->value == $value ? " checked" : null;
-      $choices .= "<label class='radio inline'><input{$checked} id='{$this->id}-{$value}' name='{$this->id}' required tabindex='{$this->attributes["tabindex"]}' type='radio' value='{$value}'>{$choice}</label>";
+      $choices .= "<label class='radio inline'><input{$checked} id='{$this->id}-{$value}' name='{$this->id}' required type='radio' value='{$value}'>{$choice}</label>";
     }
-    unset($this->attributes["tabindex"]);
     return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend>{$choices}</fieldset>";
   }
 
