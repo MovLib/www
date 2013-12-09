@@ -118,6 +118,7 @@
   padding: 0 20px 0 25px;
   margin: 0;
   font-size: 14px;
+  font-weight: normal;
   line-height: 50px;
   cursor: pointer;
   transition: 0.2s linear 0.1s;

@@ -128,7 +128,7 @@
       // @todo Extend mega menu further for best accessability!
       //       - http://terrillthompson.com/blog/474
       //       - http://adobe-accessibility.github.io/Accessible-Mega-Menu/
-      var expanders = document.getElementsByClassName("expander");
+      var expanders = document.header.getElementsByClassName("expander");
       var c         = expanders.length;
       for (var i = 0; i < c; ++i) {
         // Add focus class to expander if it is focused for CSS styling.
@@ -177,8 +177,8 @@
         }, false);
 
         // Allow mobile browsers to open the menu.
-        expanders[i].getElementsByClassName("clicker").firstChild.addEventListener("click", function () {
-          this.parentNode().classList.add("open");
+        expanders[i].getElementsByClassName("clicker")[0].addEventListener("click", function () {
+          this.parentNode.classList.add("open");
         }, false);
 
         // Allow mobile browsers to close the menu.
@@ -187,6 +187,11 @@
             this.classList.remove("open");
           }
         }, true);
+
+        // Ensure menu closes if mouse user clicked.
+        expanders[i].addEventListener("mouseout", function () {
+          this.classList.remove("open");
+        }, false);
       }
 
       return this.execute(document);
