@@ -177,7 +177,7 @@
         }, false);
 
         // Allow mobile browsers to open the menu.
-        expanders[i].getElementsByClass("clicker").firstChild.addEventListener("click", function () {
+        expanders[i].getElementsByClassName("clicker").firstChild.addEventListener("click", function () {
           this.parentNode().classList.add("open");
         }, false);
 
