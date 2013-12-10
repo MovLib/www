@@ -83,12 +83,6 @@
      * @return {MovLib}
      */
     init: function () {
-      /**
-       * A DOM element for testing.
-       *
-       * @type HTMLElement
-       */
-      var element = document.createElement("input");
 
       // Anonymous helper function to load polyfills.
       var load = function (name) {
@@ -108,90 +102,77 @@
       // Ensure focused elements don't hide themselve beneath our fixed header.
       document.body.addEventListener("focus", this.fixFocusScrollPosition, true);
 
-      // Ensure that the viewport is properly scrolled to. This fixes a problem with the usage of autofocus in Gecko
-      // (Firefox) browsers where it includes the hidden main navigation elements while computing the scroll top offset
-      // for the current autofocus element. This is something I came up myself, no known workaround and a little known
-      // problem. But there is a bug report at: https://bugzilla.mozilla.org/show_bug.cgi?id=712130
-      //
-      // @todo If this gets fixed in Gecko remove it (the fix for the reported bug might not fix our problem).
-      window.onload = function () {
-        var autofocusElement = document.querySelector("[autofocus]");
-        if (autofocusElement) {
-          // Enable autofocus support in older browsers while we're at it.
-          autofocusElement.focus();
+      // Add focus class to expander for CSS styling.
+      var expanderFocus = function () {
+        this.classList.add("focus");
+      };
 
-          // This is the actual Firefox hack. See called method for further details.
-          this.fixFocusScrollPosition({ target: autofocusElement });
+      // Remove focus class and CSS styles on blur.
+      var expanderBlur = function () {
+        this.classList.remove("focus");
+      };
+
+      // Check if there is any active element and if there is check if it's a child of the currently opened navigation.
+      // If none of both is true remove the open class and close the navigation.
+      var checkFocus = function () {
+        if (!document.activeElement || !this.contains(document.activeElement)) {
+          this.classList.remove("open");
         }
-      }.bind(this);
+      };
 
+      // Wait 10 milliseconds and allow the browser to change the active element, afterwards check focus.
+      var expanderCapturingBlur = function () {
+        window.setTimeout(checkFocus.bind(this), 10);
+      };
+
+      // Extend our mega menu with the W3C recommended keyboard shortcuts for accessability.
+      // @see http://www.w3.org/TR/wai-aria-practices/#menu
+      var expanderKeypress = function (event) {
+        switch (event.which || event.keyCode) {
+          case 13: // Return / Enter
+          case 32: // Space
+          case 38: // Up Arrow
+            if (event.target === this) {
+              event.preventDefault();
+              event.returnValue = false;
+              this.classList.add("open");
+              this.getElementsByTagName("a")[0].focus();
+            }
+            break;
+
+          case 27: // Escape
+            event.preventDefault();
+            event.returnValue = false;
+            this.classList.remove("open");
+            this.focus();
+            break;
+        }
+      };
+
+      // Enable mobile users to close the menu via click.
+      var expanderClose = function () {
+        this.classList.remove("open");
+      };
+
+      // Enable mobile users to open the menu via click.
+      var clickerClick = function () {
+        this.parentNode.classList.add("open");
+      };
+
+      // Bind all events
       // @todo Extend mega menu further for best accessability!
       //       - http://terrillthompson.com/blog/474
       //       - http://adobe-accessibility.github.io/Accessible-Mega-Menu/
       var expanders = document.header.getElementsByClassName("expander");
       var c         = expanders.length;
       for (var i = 0; i < c; ++i) {
-        // Add focus class to expander if it is focused for CSS styling.
-        expanders[i].addEventListener("focus", function () {
-          this.classList.add("focus");
-        }, false);
-
-        // Remove focus class from expander.
-        expanders[i].addEventListener("blur", function () {
-          this.classList.remove("focus");
-        }, false);
-
-        // Capture blur events of children to determine if the complete expander lost focus.
-        expanders[i].addEventListener("blur", function () {
-          // Remove open class if no element is currently focused or if the currently focused element isn't one of our
-          // children.
-          var checkFocus = function () {
-            if (!document.activeElement || !this.contains(document.activeElement)) {
-              this.classList.remove("open");
-            }
-          };
-
-          // Give the browser a millisecond grace time to change the focus state.
-          // @todo Is a millisecond enough for all browsers?
-          window.setTimeout(checkFocus.bind(this), 100);
-        }, true);
-
-        // React on certain keypress events as recommended by W3C's menu widget.
-        // http://www.w3.org/TR/wai-aria-practices/#menu
-        expanders[i].addEventListener("keypress", function (event) {
-          switch (event.which || event.keyCode) {
-            case 13: // Return / Enter
-            case 32: // Space
-            case 38: // Up Arrow
-              if (event.target === this) {
-                this.classList.add("open");
-                this.getElementsByTagName("a")[0].focus();
-              }
-              break;
-
-            case 27: // Escape
-              this.classList.remove("open");
-              this.focus();
-              break;
-          }
-        }, false);
-
-        // Allow mobile browsers to open the menu.
-        expanders[i].getElementsByClassName("clicker")[0].addEventListener("click", function () {
-          this.parentNode.classList.add("open");
-        }, false);
-
-        // Allow mobile browsers to close the menu.
-        expanders[i].addEventListener("click", function (event) {
-          if (event.target === this) {
-            this.classList.remove("open");
-          }
-        }, true);
-
-        // Ensure menu closes if mouse user clicked.
-        expanders[i].addEventListener("mouseout", function () {
-          this.classList.remove("open");
-        }, false);
+        expanders[i].addEventListener("focus", expanderFocus, false);
+        expanders[i].addEventListener("blur", expanderBlur, false);
+        expanders[i].addEventListener("blur", expanderCapturingBlur, true);
+        expanders[i].addEventListener("keypress", expanderKeypress, false);
+        expanders[i].getElementsByClassName("clicker")[0].addEventListener("click", clickerClick, false);
+        expanders[i].addEventListener("click", expanderClose, true);
+        expanders[i].addEventListener("mouseout", expanderClose, false);
       }
 
       return this.execute(document);
