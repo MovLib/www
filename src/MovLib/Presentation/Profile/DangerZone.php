@@ -146,9 +146,10 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n;
+    global $i18n, $kernel;
     return
 
       // Session Form
@@ -177,7 +178,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
         "stays with the username you’ve initially chosen. This doesn’t include any reviews of yours which have no " .
         "open license, they are deleted as well and lost forever. Again, this action is final and there’s no way for " .
         "you to reclaim your account after deletion!"
-      )}</p>{$this->form}"
+      , [ $kernel->siteName ])}</p>{$this->form}"
     ;
   }
 
