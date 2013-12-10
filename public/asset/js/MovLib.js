@@ -125,7 +125,7 @@
         window.setTimeout(checkFocus.bind(this), 10);
       };
 
-      // Extend our mega menu with the W3C recommended keyboard shortcuts for accessability.
+      // Extend our mega menu with the W3C recommended keyboard shortcuts for accessibility.
       // @see http://www.w3.org/TR/wai-aria-practices/#menu
       var expanderKeypress = function (event) {
         switch (event.which || event.keyCode) {
@@ -136,7 +136,13 @@
               event.preventDefault();
               event.returnValue = false;
               this.classList.add("open");
-              this.getElementsByTagName("a")[0].focus();
+
+              // We have to ensure that the first anchor is actually visible before the transition finished in order to
+              // give it focus right away.
+              var firstAnchor = this.getElementsByTagName("a");
+              firstAnchor.style.visibility = "visible";
+              firstAnchor.focus();
+              firstAnchor.removeAttribute("style");
             }
             break;
 
@@ -160,7 +166,7 @@
       };
 
       // Bind all events
-      // @todo Extend mega menu further for best accessability!
+      // @todo Extend mega menu further for best accessibility!
       //       - http://terrillthompson.com/blog/474
       //       - http://adobe-accessibility.github.io/Accessible-Mega-Menu/
       var expanders = document.header.getElementsByClassName("expander");

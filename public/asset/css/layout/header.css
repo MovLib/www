@@ -181,15 +181,6 @@
   margin-top: 0;
 }
 
-/* Make sure we can give focus to the child elements in JS */
-#header .concealed .span {
-  visibility: visible;
-}
-
-
-/* ==== */
-
-
 #search-input,
 #search .ico-search,
 #header .button {
