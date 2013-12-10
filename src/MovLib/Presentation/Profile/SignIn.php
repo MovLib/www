@@ -133,16 +133,19 @@ class SignIn extends \MovLib\Presentation\Page {
     if ($this->checkErrors($errors) === false) {
       try {
         $session->authenticate($this->email->value, $this->password->value);
-        $kernel->alerts .= new Alert(
-          $i18n->t("Successfully Signed In!"),
-          $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]),
-          Alert::SEVERITY_SUCCESS
-        );
-        throw new RedirectSeeOtherException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
       }
-      catch (DomainException $e) {
+      catch (\Exception $e) {
         $this->checkErrors($i18n->t("We either don’t know the email address, or the password was wrong."));
+        return $this;
       }
+
+      $kernel->alerts .= new Alert(
+        $i18n->t("Successfully Signed In!"),
+        $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]),
+        Alert::SEVERITY_SUCCESS
+      );
+
+      throw new RedirectSeeOtherException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
     }
     return $this;
   }

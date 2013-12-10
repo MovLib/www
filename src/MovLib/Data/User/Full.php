@@ -152,13 +152,6 @@ class Full extends \MovLib\Data\User\User {
   public $systemLanguageCode;
 
   /**
-   * The user's time zone ID (e.g. <code>"Europe/Vienna"</code>).
-   *
-   * @var null|string
-   */
-  public $timeZoneIdentifier;
-
-  /**
    * The user's website.
    *
    * @var null|string

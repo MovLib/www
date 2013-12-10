@@ -43,6 +43,7 @@ abstract class AbstractBase {
    * need that. Please use common sense. In general you should simply create the anchor element instead of calling this
    * method.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @link http://www.w3.org/TR/html5/text-level-semantics.html#the-a-element
    * @link http://www.nngroup.com/articles/avoid-within-page-links/ Avoid Within-Page Links
@@ -59,7 +60,7 @@ abstract class AbstractBase {
    *   The internal link ready for print.
    */
   protected final function a($route, $text, array $attributes = null, $ignoreQuery = true) {
-    global $kernel;
+    global $i18n, $kernel;
 
     // We don't want any links to the current page (as per W3C recommendation). We also have to ensure that the anchors
     // aren't tabbed to, therefor we completely remove the href attribute. While we're at it we also remove the title
@@ -67,12 +68,15 @@ abstract class AbstractBase {
     // this very page).
     if ($route == $kernel->requestURI) {
       // Remove all attributes which aren't allowed on an anchor with empty href attribute.
-      $unset = [ "download", "href", "hreflang", "rel", "target", "title", "type" ];
-      for ($i = 0; $i < 7; ++$i) {
+      $unset = [ "download", "href", "hreflang", "rel", "target", "type" ];
+      for ($i = 0; $i < 6; ++$i) {
         if (isset($attributes[$unset[$i]])) {
           unset($attributes[$unset[$i]]);
         }
       }
+      // Ensure that this anchor is still "tabable".
+      $attributes["tabindex"] = "0";
+      $attributes["title"]    = $i18n->t("You’re currently viewing this page.");
       $this->addClass("active", $attributes);
     }
     else {
@@ -207,6 +211,9 @@ abstract class AbstractBase {
   protected final function getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null) {
     if (!isset($attributes["alt"])) {
       $attributes["alt"] = $style->alt;
+    }
+    if ($style->placeholder === true) {
+      $this->addClass("placeholder", $attributes);
     }
     $attributes["src"]    = $style->src;
     $attributes["width"]  = $style->width;

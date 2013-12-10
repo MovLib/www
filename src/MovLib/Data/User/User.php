@@ -116,6 +116,13 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   public $route;
 
   /**
+   * The user's time zone ID (e.g. <code>"Europe/Vienna"</code>).
+   *
+   * @var null|string
+   */
+  public $timeZoneIdentifier;
+
+  /**
    * The MySQLi bind param types of the columns.
    *
    * @var array
@@ -150,6 +157,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         "SELECT
           `id`,
           `name`,
+          `time_zone_identifier`,
           UNIX_TIMESTAMP(`image_changed`),
           `image_extension`
         FROM `users`
@@ -157,7 +165,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         $this->types[$from],
         [ $value ]
       );
-      $stmt->bind_result($this->id, $this->name, $this->changed, $this->extension);
+      $stmt->bind_result($this->id, $this->name, $this->timeZoneIdentifier, $this->changed, $this->extension);
       if (!$stmt->fetch()) {
         throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
@@ -231,6 +239,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         $this->getURL($style),
         $style,
         $style,
+        $this->exists,
         $this->route
       );
     }
@@ -240,6 +249,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * Upload the <var>$source</var>, overriding any existing image.
    *
+   * @global \MovLib\Data\User\Session $session
    * @param string $source
    *   Absolute path to the uploaded image.
    * @param string $extension
@@ -252,14 +262,19 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    * @throws \RuntimeException
    */
   public function upload($source, $extension, $height, $width) {
-    $this->changed   = $_SERVER["REQUEST_TIME"];
-    $this->exists    = true;
-    $this->extension = $extension;
-    $span2           = $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
+    global $session;
+
+    $this->changed     = $_SERVER["REQUEST_TIME"];
+    $this->exists      = true;
+    $this->extension   = $extension;
+    $this->stylesCache = null;
+    $span2             = $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
 
     // Generate the small ones based on the span2 result, this will give us best results.
     $this->convert($span2, self::STYLE_SPAN_01);
     $this->convert($span2, self::STYLE_HEADER_USER_NAVIGATION);
+
+    $session->userAvatar = $this->getStyle(self::STYLE_HEADER_USER_NAVIGATION);
 
     return $this;
   }

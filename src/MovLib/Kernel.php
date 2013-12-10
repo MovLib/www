@@ -228,7 +228,7 @@ class Kernel {
    *
    * This variable contains only the requested path without the query part.
    *
-   * @var Kernel::$requestURI
+   * @see Kernel::$requestURI
    * @var string
    */
   public $requestPath = "/";

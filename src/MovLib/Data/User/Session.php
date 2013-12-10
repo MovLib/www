@@ -17,7 +17,8 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Data\User\User;
+use \MovLib\Data\User\Full as FullUser;
 use \MovLib\Exception\Client\UnauthorizedException;
 
 /**
@@ -79,6 +80,13 @@ class Session implements \ArrayAccess {
   protected $name;
 
   /**
+   * The user's absolute avatar image URL for the header.
+   *
+   * @var string
+   */
+  public $userAvatar;
+
+  /**
    * The session's user ID.
    *
    * @var integer
@@ -138,29 +146,32 @@ class Session implements \ArrayAccess {
         if (!$stmt->fetch()) {
           $this->destroy();
         }
-        $stmt->close();
-        $stmt = $db->query("SELECT `name`, `time_zone_identifier` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->userId ]);
-        $stmt->bind_result($this->userName, $this->userTimeZoneId);
+        else {
+          $stmt->close();
+          try {
+            $user = new User(User::FROM_ID, $this->userId);
 
-        // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
-        if (!$stmt->fetch()) {
-          $this->destroy();
-          error_log("Non-existent user ID from persistent session storage, IP was: {$kernel->remoteAddress} (Session ID: {$_COOKIE[$this->name]})");
+            // Everything looks good, valid session and valid user, export and update persistent storage.
+            $_SESSION["auth"]   = $this->authentication;
+            $_SESSION["id"]     = $this->userId;
+            $_SESSION["avatar"] = $this->userAvatar     = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
+            $_SESSION["name"]   = $this->userName       = $user->name;
+            $_SESSION["tz"]     = $this->userTimeZoneId = $user->timeZoneIdentifier;
+            $kernel->delayMethodCall([ $this, "update" ], [ $_COOKIE[$this->name] ]);
+          }
+          // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
+          catch (\OutOfBoundsException $e) {
+            $this->destroy();
+            error_log("Non-existent user ID from persistent session storage, IP was: {$kernel->remoteAddress} (Session ID: {$_COOKIE[$this->name]})");
+          }
         }
-        $stmt->close();
-
-        // Everything looks good, valid session and valid user, export and update persistent storage.
-        $_SESSION["auth"] = $this->authentication;
-        $_SESSION["id"]   = $this->userId;
-        $_SESSION["name"] = $this->userName;
-        $_SESSION["tz"]   = $this->userTimeZoneId;
-        $kernel->delayMethodCall([ $this, "update" ], [ $_COOKIE[$this->name] ]);
       }
       // Session data was loaded from Memcached.
       elseif (!empty($_SESSION)) {
         // This is a regular user if we stored an ID along with this session in Memcached.
         if (!empty($_SESSION["id"])) {
           $this->authentication  = $_SESSION["auth"];
+          $this->userAvatar      = $_SESSION["avatar"];
           $this->userId          = $_SESSION["id"];
           $this->userName        = $_SESSION["name"];
           $this->userTimeZoneId  = $_SESSION["tz"];
@@ -171,19 +182,15 @@ class Session implements \ArrayAccess {
             $this->regenerate();
           }
         }
-        // This is a anonymous user if we didn't store an ID along with this session in Memcached.
-        else {
-          $this->userName       = $kernel->remoteAddress;
-          $this->userTimeZoneId = ini_get("date.timezone");
-        }
       }
-      // If we have no data for this session ID directly destroy it.
+      // If we have no data for this session ID destroy it.
       else {
         $this->destroy();
       }
     }
-    // Export dynamic values to class scope.
-    else {
+
+    // This is an anonymous user if we have no user name at this point.
+    if (!$this->userName) {
       $this->userName       = $kernel->remoteAddress;
       $this->userTimeZoneId = ini_get("date.timezone");
     }
@@ -196,7 +203,6 @@ class Session implements \ArrayAccess {
   /**
    * Authenticate a user.
    *
-   * @global \MovLib\Data\Database $db
    * @global \MovLib\Kernel $kernel
    * @param string $email
    *   The user submitted email address.
@@ -209,31 +215,30 @@ class Session implements \ArrayAccess {
    * @throws \UnexpectedValue
    */
   public function authenticate($email, $rawPassword) {
-    global $db, $kernel;
+    global $kernel;
 
     // Load necessary user data from storage (if we have any).
-    if (!($result = $db->query("SELECT `id`, `name`, `password`, `time_zone_identifier` FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_assoc())) {
-      throw new \OutOfBoundsException("Couldn't find user with email '{$email}'");
-    }
+    $user = new FullUser(User::FROM_EMAIL, $email);
 
     // Validate the submitted password.
-    if (password_verify($rawPassword, $result["password"]) === false) {
+    if ($user->verifyPassword($rawPassword) === false) {
       throw new \UnexpectedValueException("Invalid password for user with email '{$email}'");
     }
 
     // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
     // ID and if not generate a completely new session.
     session_status() === PHP_SESSION_ACTIVE ? $this->regenerate() : $this->start();
-    $_SESSION["auth"]     = $this->authentication = $_SERVER["REQUEST_TIME"];
-    $_SESSION["id"]       = $this->userId         = $result["id"];
-    $_SESSION["name"]     = $this->userName       = $result["name"];
-    $_SESSION["tz"]       = $this->userTimeZoneId = $result["time_zone_identifier"];
+    $_SESSION["auth"]   = $this->authentication = $_SERVER["REQUEST_TIME"];
+    $_SESSION["avatar"] = $this->userAvatar     = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
+    $_SESSION["id"]     = $this->userId         = $user->id;
+    $_SESSION["name"]   = $this->userName       = $user->name;
+    $_SESSION["tz"]     = $this->userTimeZoneId = $user->timeZoneIdentifier;
     $kernel->delayMethodCall([ $this, "insert" ]);
 
     // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
     //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
     //       have to worry about. Maybe introduce a configuration option for this?
-    $kernel->delayMethodCall([ $this, "passwordNeedsRehash" ], [ $result["password"], $rawPassword ]);
+    $kernel->delayMethodCall([ $this, "passwordNeedsRehash" ], [ $user->password, $rawPassword ]);
 
     return $this;
   }
@@ -337,6 +342,7 @@ class Session implements \ArrayAccess {
     $this->active          = false;
     $this->authentication  = 0;
     $this->isAuthenticated = false;
+    $this->userAvatar      = null;
     $this->userId          = 0;
     $this->userName        = $kernel->remoteAddress;
     $this->userTimeZoneId  = ini_get("date.timezone");
@@ -439,7 +445,7 @@ class Session implements \ArrayAccess {
   public function passwordNeedsRehash($password, $rawPassword) {
     global $kernel;
     if (password_needs_rehash($password, PASSWORD_DEFAULT, $kernel->passwordOptions) === true) {
-      $user     = new UserFull(UserFull::FROM_ID, $this->userId);
+      $user     = new FullUser(FullUser::FROM_ID, $this->userId);
       $password = $user->hashPassword($rawPassword);
       $user->updatePassword($password);
     }
