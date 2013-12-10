@@ -46,7 +46,6 @@
   right: 0;
   left: 0;
   z-index: 999999;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
 
 #header > .container {
@@ -162,6 +161,7 @@
   z-index: -2;
   padding: 20px 0;
   margin-right: -20px;
+  pointer-events: none;
   background-color: #fff;
   opacity: 0;
   visibility: hidden;
@@ -173,6 +173,7 @@
 #header .open .concealed,
 #header .expander:hover .concealed {
   top: 50px;
+  pointer-events: auto;
   opacity: 1;
   visibility: visible;
 }

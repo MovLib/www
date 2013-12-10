@@ -139,7 +139,7 @@
 
               // We have to ensure that the first anchor is actually visible before the transition finished in order to
               // give it focus right away.
-              var firstAnchor = this.getElementsByTagName("a");
+              var firstAnchor = this.getElementsByTagName("a")[0];
               firstAnchor.style.visibility = "visible";
               firstAnchor.focus();
               firstAnchor.removeAttribute("style");
