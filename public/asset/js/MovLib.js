@@ -83,7 +83,6 @@
      * @return {MovLib}
      */
     init: function () {
-
       // Anonymous helper function to load polyfills.
       var load = function (name) {
         this.loadModule("//" + this.settings.domainStatic + "/asset/js/polyfill/" + name + ".js");
@@ -120,9 +119,9 @@
         }
       };
 
-      // Wait 10 milliseconds and allow the browser to change the active element, afterwards check focus.
+      // Wait 100 milliseconds and allow the browser to change the active element, afterwards check focus.
       var expanderCapturingBlur = function () {
-        window.setTimeout(checkFocus.bind(this), 10);
+        window.setTimeout(checkFocus.bind(this), 100);
       };
 
       // Extend our mega menu with the W3C recommended keyboard shortcuts for accessibility.
@@ -240,6 +239,8 @@
      * enable and others have to scroll themselves.
      *
      * @method fixFocusScrollPosition
+     * @param {Event} event
+     *   The focus event.
      * @returns {undefined}
      */
     fixFocusScrollPosition: function (event) {
