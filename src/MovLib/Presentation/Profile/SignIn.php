@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use MovLib\Exception\DatabaseException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -86,7 +87,7 @@ class SignIn extends \MovLib\Presentation\Page {
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
     if ($kernel->requestURI != $routeSignIn && empty($_GET["redirect_to"])) {
-      $_GET["redirect_to"] = $kernel->requestURI;
+      $_GET["redirect_to"] = rawurlencode($kernel->requestURI);
     }
 
     if (isset($_GET["redirect_to"])) {

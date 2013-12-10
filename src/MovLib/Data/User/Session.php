@@ -152,11 +152,13 @@ class Session implements \ArrayAccess {
             $user = new User(User::FROM_ID, $this->userId);
 
             // Everything looks good, valid session and valid user, export and update persistent storage.
-            $_SESSION["auth"]   = $this->authentication;
-            $_SESSION["id"]     = $this->userId;
-            $_SESSION["avatar"] = $this->userAvatar     = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
-            $_SESSION["name"]   = $this->userName       = $user->name;
-            $_SESSION["tz"]     = $this->userTimeZoneId = $user->timeZoneIdentifier;
+            $_SESSION["auth"]      = $this->authentication;
+            $_SESSION["id"]        = $this->userId;
+            $_SESSION["avatar"]    = $this->userAvatar     = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
+            $_SESSION["name"]      = $this->userName       = $user->name;
+            $_SESSION["tz"]        = $this->userTimeZoneId = $user->timeZoneIdentifier;
+            $this->isAuthenticated = true;
+            
             $kernel->delayMethodCall([ $this, "update" ], [ $_COOKIE[$this->name] ]);
           }
           // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.

@@ -186,7 +186,7 @@ class FullTest extends \MovLib\TestCase {
     $email = $user->email;
 
     // Test
-    $user->delete();
+    $user->deleteAccount();
     $this->assertNull($db->query("SELECT * FROM `users` WHERE `email` = ? LIMIT 1", "s", [ $email ])->get_result()->fetch_row());
     $result = $db->query("SELECT * FROM `users` WHERE `id` = 1")->get_result()->fetch_assoc();
     foreach ($result as $attribute => $value) {

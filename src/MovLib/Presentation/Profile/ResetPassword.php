@@ -205,19 +205,9 @@ class ResetPassword extends \MovLib\Presentation\Page {
    */
   protected function validateToken() {
     global $i18n, $kernel;
-    $tmp = new Temporary();
-
-    // Get previously stored data from temporary database.
-    try {
-      $data = $tmp->get($_GET["token"]);
-    }
-    catch (DatabaseException $e) {
-      $this->checkErrors($i18n->t("Your confirmation token has expired, please fill out the form again."));
-      return false;
-    }
 
     // Check if this data was stored for a password event.
-    if (empty($data["user_id"]) || empty($data["reset_password"])) {
+    if (($data = (new Temporary())->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["reset_password"])) {
       $this->checkErrors($i18n->t("Your confirmation token has expired, please fill out the form again."));
       return false;
     }

@@ -324,14 +324,16 @@ class Full extends \MovLib\Data\User\User {
 
   /**
    * Delete this user.
+   * 
+   * @todo   Delete avatar.
    *
    * @global \MovLib\Data\Database $db
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function delete() {
+  public function deleteAccount() {
     global $db;
-    $this->delete();
+
     $db->query(
       "UPDATE `users` SET
         `email`                = NULL,
@@ -346,7 +348,7 @@ class Full extends \MovLib\Data\User\User {
         `sex`                  = NULL,
         `system_language_code` = NULL,
         `time_zone_identifier` = NULL,
-        `country_id`           = NULL,
+        `country_code`         = NULL,
         `birthday`             = NULL,
         `image_changed`        = NULL,
         `image_extension`      = NULL,

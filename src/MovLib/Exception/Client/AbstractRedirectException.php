@@ -70,13 +70,13 @@ abstract class AbstractRedirectException extends \MovLib\Exception\Client\Abstra
    */
   public function __construct($httpResponseCode, $route, $title) {
     global $kernel;
+    if (strpos($route, "http") === false) {
+      $route = "{$kernel->scheme}://{$kernel->hostname}{$route}";
+    }
     parent::__construct("Redirecting user to {$route} with status {$httpResponseCode}.");
     $this->responseCode  = $httpResponseCode;
     $this->locationRoute = $route;
     $this->title         = $title;
-    if (strpos($this->locationRoute, "http") === false) {
-      $route = "{$kernel->scheme}://{$kernel->hostname}{$route}";
-    }
   }
 
 

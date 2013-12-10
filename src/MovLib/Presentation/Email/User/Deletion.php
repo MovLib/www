@@ -81,7 +81,7 @@ class Deletion extends \MovLib\Presentation\Email\AbstractEmail {
       "user_id"  => $this->user->id,
       "deletion" => true,
     ]);
-    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?token={$token}";
+    $this->link      = "{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}?{$i18n->r("token")}={$token}";
     return $this;
   }
 

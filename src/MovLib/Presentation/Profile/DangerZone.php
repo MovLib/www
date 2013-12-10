@@ -92,8 +92,13 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     // Start rendering the page.
+    $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
+
+    if (!empty($_GET["token"])) {
+      $this->validateToken();
+    }
+    
     $this->init($i18n->t("Danger Zone Settings"));
-    $this->user         = new UserFull(UserFull::FROM_ID, $session->userId);
 
     // We must instantiate the form before we create the sessions table, otherwise deletions would happen after the
     // table containing the sessions listing was built. Deleted sessions would still be displayed!
@@ -133,10 +138,6 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
 
     $this->form                   = new Form($this);
     $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "button button--large button--danger" ]);
-
-    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
-      $this->validateToken();
-    }
   }
 
 
@@ -262,30 +263,29 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     global $i18n, $kernel, $session;
     $tmp = new Temporary();
 
-    try {
-      $data = $tmp->get($_GET["token"]);
-    }
-    catch (DatabaseException $e) {
-      $this->alerts .= new Alert(
+    if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["deletion"])) {
+      $kernel->alerts .= new Alert(
         $i18n->t("Your confirmation token has expired, please fill out the form again."),
         $i18n->t("Token Expired"),
         Alert::SEVERITY_ERROR
       );
-      return $this;
+      throw new RedirectSeeOtherException($kernel->requestPath);
     }
-
+    
     if ($data["user_id"] !== $session->userId) {
       throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your password."));
     }
 
-    $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
-    $this->user->delete();
+    $kernel->delayMethodCall([ $tmp, "deleteAccount" ], [ $_GET["token"] ]);
+    
     $session->destroy();
+    
     $kernel->alerts .= new Alert(
       $i18n->t("Your account has been purged from our system. We’re very sorry to see you leave."),
       $i18n->t("Account Deletion Successfull"),
       Alert::SEVERITY_SUCCESS
     );
+    
     throw new RedirectSeeOtherException("/");
   }
 
