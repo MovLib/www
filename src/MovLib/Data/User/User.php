@@ -76,6 +76,13 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    */
   const NAME_ILLEGAL_CHARACTERS = "/_@#<>|()[]{}?\\=:;,'\"&$*~";
 
+  /**
+   * Special style for the avatar in the site header.
+   *
+   * @var string
+   */
+  const STYLE_HEADER_USER_NAVIGATION = 50;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
@@ -228,6 +235,33 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
       );
     }
     return $this->stylesCache[$style];
+  }
+
+  /**
+   * Upload the <var>$source</var>, overriding any existing image.
+   *
+   * @param string $source
+   *   Absolute path to the uploaded image.
+   * @param string $extension
+   *   The three letter image extension (e.g. <code>"jpg"</code>).
+   * @param integer $height
+   *   <b>Unused!</b>
+   * @param integer $width
+   *   <b>Unused!</b>
+   * @return this
+   * @throws \RuntimeException
+   */
+  public function upload($source, $extension, $height, $width) {
+    $this->changed   = $_SERVER["REQUEST_TIME"];
+    $this->exists    = true;
+    $this->extension = $extension;
+    $span2           = $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
+
+    // Generate the small ones based on the span2 result, this will give us best results.
+    $this->convert($span2, self::STYLE_SPAN_01);
+    $this->convert($span2, self::STYLE_HEADER_USER_NAVIGATION);
+
+    return $this;
   }
 
 }

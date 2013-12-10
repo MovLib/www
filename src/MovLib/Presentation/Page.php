@@ -330,7 +330,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
       //       route ...
       $user = new \MovLib\Data\User\User(\MovLib\Data\User\User::FROM_ID, $session->userId);
       // @todo We need a 50x50 avatar (this one's 60x60).
-      $userIcon = $this->getImage($user->getStyle(\MovLib\Data\User\User::STYLE_SPAN_01), false, [ "id" => "user-avatar-for-now", "class" => "clicker" ]);
+      $userIcon = $this->getImage($user->getStyle(\MovLib\Data\User\User::STYLE_HEADER_USER_NAVIGATION), false, [ "id" => "user-avatar-for-now", "class" => "clicker" ]);
       $userNavigation =
         "<ul>" .
           "<li>{$this->a($i18n->r("/profile"), $i18n->t("Profil"))}</li>" .

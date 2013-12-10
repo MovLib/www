@@ -195,6 +195,22 @@ abstract class AbstractBaseImage {
    */
   public abstract function getStyle($style = self::STYLE_SPAN_02);
 
+  /**
+   * Upload the <var>$source</var>, overriding any existing image.
+   *
+   * @param string $source
+   *   Absolute path to the uploaded image.
+   * @param string $extension
+   *   The three letter image extension (e.g. <code>"jpg"</code>).
+   * @param integer $height
+   *   The height of the uploaded image.
+   * @param integer $width
+   *   The width of the uploaded image.
+   * @return this
+   * @throws \RuntimeException
+   */
+  public abstract function upload($source, $extension, $height, $width);
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -338,28 +354,6 @@ abstract class AbstractBaseImage {
 
     // Otherwise the URL to the given style.
     return "//{$kernel->domainStatic}/upload/{$this->directory}/{$this->filename}.{$style}.{$this->extension}?c={$this->changed}";
-  }
-
-  /**
-   * Upload the <var>$source</var>, overriding any existing image.
-   *
-   * @param string $source
-   *   Absolute path to the uploaded image.
-   * @param string $extension
-   *   The three letter image extension (e.g. <code>"jpg"</code>).
-   * @param integer $height
-   *   <b>Unused!</b>
-   * @param integer $width
-   *   <b>Unused!</b>
-   * @return this
-   * @throws \RuntimeException
-   */
-  public function upload($source, $extension, $height, $width) {
-    $this->changed   = $_SERVER["REQUEST_TIME"];
-    $this->exists    = true;
-    $this->extension = $extension;
-    $this->convert($this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true), self::STYLE_SPAN_01);
-    return $this;
   }
 
 }
