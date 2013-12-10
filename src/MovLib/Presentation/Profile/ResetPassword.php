@@ -19,8 +19,8 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\DatabaseException;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -80,13 +80,12 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * Instantiate new user reset password presentation.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n, $kernel;
+    global $i18n;
     $this->init($i18n->t("Reset Password"));
 
-    if ($kernel->requestMethod == "GET" && !empty($_GET["token"]) && $this->validateToken() === true) {
+    if (!empty($_GET["token"]) && $this->validateToken() === true) {
       // First field to enter the new password.
       $this->newPassword = new InputPassword("new-password", $i18n->t("New Password"), [
         "placeholder" => $i18n->t("Enter your new password"),
@@ -118,6 +117,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
         "title" => $i18n->t("Continue here to request a password reset for the entered email address"),
       ]);
     }
+
     $this->form->attributes["class"] = "span span--6 offset--3";
   }
 
@@ -159,7 +159,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
 
   /**
    * Validation callback after auto-validation of change password form has succeeded.
-   * 
+   *
    * @todo OWASP and other sources recommend to store a password history for each user and check that the new password
    *       isn't one of the old passwords. This would increase the account's security a lot. Anyone willing to implement
    *       this is very welcome.
@@ -179,13 +179,15 @@ class ResetPassword extends \MovLib\Presentation\Page {
     }
 
     if ($this->checkErrors($errors) === false) {
-      $this->user->updatePassword($this->user->password);
-      $this->alerts .= new Alert(
+      $this->user->updatePassword($this->user->hashPassword($this->newPassword->value));
+      $kernel->delayMethodCall([ new Temporary(), "delete" ], [ $_GET["token"] ]);
+      $kernel->alerts .= new Alert(
         $i18n->t("Your password was successfully changed. Please use your new password to sign in from now on."),
         $i18n->t("Password Changed Successfully"),
         Alert::SEVERITY_SUCCESS
       );
-      $kernel->delayMethodCall([ new Temporary(), "delete" ], [ $_GET["token"] ]);
+
+      throw new RedirectSeeOtherException($i18n->r("/profile/sign-in"));
     }
 
     return $this;
@@ -220,8 +222,9 @@ class ResetPassword extends \MovLib\Presentation\Page {
       return false;
     }
 
-    $this->user           = new UserFull(UserFull::FROM_ID, $data["user_id"]);
-    $this->user->password = $data["reset_password"];
+    if ($kernel->requestMethod == "POST") {
+      $this->user = new UserFull(UserFull::FROM_ID, $data["user_id"]);
+    }
 
     return true;
   }

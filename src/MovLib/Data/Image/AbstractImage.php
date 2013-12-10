@@ -139,6 +139,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
         $this->getURL($style),
         $this->styles[$style]["width"],
         $this->styles[$style]["height"],
+        $this->exists,
         $this->route
       );
     }

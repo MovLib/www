@@ -116,6 +116,13 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   public $route;
 
   /**
+   * The user's time zone ID (e.g. <code>"Europe/Vienna"</code>).
+   *
+   * @var null|string
+   */
+  public $timeZoneIdentifier;
+
+  /**
    * The MySQLi bind param types of the columns.
    *
    * @var array
@@ -150,6 +157,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         "SELECT
           `id`,
           `name`,
+          `time_zone_identifier`,
           UNIX_TIMESTAMP(`image_changed`),
           `image_extension`
         FROM `users`
@@ -157,7 +165,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         $this->types[$from],
         [ $value ]
       );
-      $stmt->bind_result($this->id, $this->name, $this->changed, $this->extension);
+      $stmt->bind_result($this->id, $this->name, $this->timeZoneIdentifier, $this->changed, $this->extension);
       if (!$stmt->fetch()) {
         throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
@@ -231,6 +239,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         $this->getURL($style),
         $style,
         $style,
+        $this->exists,
         $this->route
       );
     }

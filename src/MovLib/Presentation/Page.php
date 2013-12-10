@@ -274,63 +274,45 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected function getHeader() {
     global $i18n, $kernel, $session;
 
-    $moviesNavigation = new Navigation($i18n->t("Movies"), [
-      [ $i18n->r("/movies"), $i18n->t("Latest Entries") ],
-      [ $i18n->r("/movies/charts"), $i18n->t("Charts") ],
-      [ $i18n->r("/movie/create"), $i18n->t("Create New") ],
-      [ $i18n->r("/movies/reviews"), $i18n->t("Latest Reviews") ],
-      [ $i18n->r("/movie/random"), $i18n->t("Random Movie") ],
-    ], [ "class" => "span span--3" ]);
-    $moviesNavigation->headingLevel  = "3";
-    $moviesNavigation->hideTitle     = false;
-    $moviesNavigation->unorderedList = true;
-
-    $seriesNavigation = new Navigation($i18n->t("Series"), [
-      [ $i18n->r("/series"), $i18n->t("Latest Entries") ],
-      [ $i18n->r("/series/charts"), $i18n->t("Charts") ],
-      [ $i18n->r("/series/create"), $i18n->t("Create New") ],
-      [ $i18n->r("/series/reviews"), $i18n->t("Latest Reviews") ],
-      [ $i18n->r("/series/random"), $i18n->t("Random Series") ],
-    ], [ "class" => "span span--3" ]);
-    $seriesNavigation->headingLevel  = "3";
-    $seriesNavigation->hideTitle     = false;
-    $seriesNavigation->unorderedList = true;
-
-    $personsNavigation = new Navigation($i18n->t("Persons"), [
-      [ $i18n->r("/persons"), $i18n->t("Latest Entries") ],
-      [ $i18n->r("/person/create"), $i18n->t("Create New") ],
-      [ $i18n->r("/person/random"), $i18n->t("Random Person") ],
-    ]);
-    $personsNavigation->headingLevel  = "3";
-    $personsNavigation->hideTitle     = false;
-    $personsNavigation->unorderedList = true;
-
-    $companiesNavigation = new Navigation($i18n->t("Companies"), [
-      [ $i18n->r("/companies"), $i18n->t("Latest Entries") ],
-      [ $i18n->r("/company/create"), $i18n->t("Create New") ],
-      [ $i18n->r("/company/random"), $i18n->t("Random Company") ],
-    ]);
-    $companiesNavigation->headingLevel  = "3";
-    $companiesNavigation->hideTitle     = false;
-    $companiesNavigation->unorderedList = true;
-
-    $otherNavigation = new Navigation($i18n->t("More"), [
-      [ $i18n->r("/genres"), $i18n->t("Explore all genres") ],
-      [ $i18n->r("/articles"), $i18n->t("Explore all articles") ],
-    ], [ "class" => "span span--3" ]);
-    $otherNavigation->headingLevel  = "3";
-    $otherNavigation->hideTitle     = false;
-    $otherNavigation->unorderedList = true;
+    $navs = [];
+    foreach ([
+      "movies" => [ $i18n->t("Movies"), [
+        [ $i18n->r("/movies"), $i18n->t("Latest Entries") ],
+        [ $i18n->r("/movies/charts"), $i18n->t("Charts") ],
+        [ $i18n->r("/movie/create"), $i18n->t("Create New") ],
+        [ $i18n->r("/movies/reviews"), $i18n->t("Latest Reviews") ],
+        [ $i18n->r("/movie/random"), $i18n->t("Random Movie") ],
+      ]],
+      "series" => [ $i18n->t("Series"), [
+        [ $i18n->r("/series"), $i18n->t("Latest Entries") ],
+        [ $i18n->r("/series/charts"), $i18n->t("Charts") ],
+        [ $i18n->r("/series/create"), $i18n->t("Create New") ],
+        [ $i18n->r("/series/reviews"), $i18n->t("Latest Reviews") ],
+        [ $i18n->r("/series/random"), $i18n->t("Random Series") ],
+      ]],
+      "persons" => [ $i18n->t("Persons"), [
+        [ $i18n->r("/persons"), $i18n->t("Latest Entries") ],
+        [ $i18n->r("/person/create"), $i18n->t("Create New") ],
+        [ $i18n->r("/person/random"), $i18n->t("Random Person") ],
+      ]],
+      "companies" => [ $i18n->t("Companies"), [
+        [ $i18n->r("/companies"), $i18n->t("Latest Entries") ],
+        [ $i18n->r("/company/create"), $i18n->t("Create New") ],
+        [ $i18n->r("/company/random"), $i18n->t("Random Company") ],
+      ]],
+      "more" => [ $i18n->t("More"), [
+        [ $i18n->r("/genres"), $i18n->t("Explore all genres") ],
+        [ $i18n->r("/articles"), $i18n->t("Explore all articles") ],
+      ]],
+    ] as $name => $nav) {
+      $navs[$name]                = new Navigation($nav[0], $nav[1], [ "class" => "span span--3" ]);
+      $navs[$name]->headingLevel  = "3";
+      $navs[$name]->hideTitle     = false;
+      $navs[$name]->unorderedList = true;
+    }
 
     if ($session->isAuthenticated === true) {
-      // @todo Store image in session or create special nginx route that stays the same and is internally redirected
-      //       to the correct avatar via redirect, e.g. /avatar.jpg?username=fleshgrinder and it's internally
-      //       redirected to /upload/user/fleshgrinder.70.jpg
-      //       On the other hand, we'd only have to save the changed timestamp in the session to generate the image
-      //       route ...
-      $user = new \MovLib\Data\User\User(\MovLib\Data\User\User::FROM_ID, $session->userId);
-      // @todo We need a 50x50 avatar (this one's 60x60).
-      $userIcon = $this->getImage($user->getStyle(\MovLib\Data\User\User::STYLE_HEADER_USER_NAVIGATION), false, [ "id" => "user-avatar-for-now", "class" => "clicker" ]);
+      $userIcon = $this->getImage($session->userAvatar, false, [ "class" => "clicker" ]);
       $userNavigation =
         "<ul>" .
           "<li>{$this->a($i18n->r("/profile"), $i18n->t("Profil"))}</li>" .
@@ -365,7 +347,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='explore-nav' role='navigation' tabindex='0'>" .
             "<h2 class='visible clicker'>{$i18n->t("Explore")}</h2>" .
             "<div class='concealed row'>" .
-              "{$moviesNavigation}{$seriesNavigation}<div class='span span--3'>{$personsNavigation}{$companiesNavigation}</div>{$otherNavigation}" .
+              "{$navs["movies"]}{$navs["series"]}<div class='span span--3'>{$navs["persons"]}{$navs["companies"]}</div>{$navs["more"]}" .
             "</div>" .
           "</nav>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='marketplace-nav' role='navigation' tabindex='0'>" .

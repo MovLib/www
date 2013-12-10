@@ -61,6 +61,13 @@ class Style {
   public $height;
 
   /**
+   * Whether this is a placeholder image or not.
+   *
+   * @var boolean
+   */
+  public $placeholder;
+
+  /**
    * The image style's route to its details page.
    *
    * @var string
@@ -82,15 +89,18 @@ class Style {
    *   The image style's width.
    * @param int $height
    *   The image style's height.
+   * @param boolean $placeholder
+   *   Whether this is a placeholder image or not.
    * @param string $route
    *   The image style's route to its details page.
    */
-  public function __construct($alt, $src, $width, $height, $route) {
-    $this->alt    = $alt;
-    $this->src    = $src;
-    $this->width  = $width;
-    $this->height = $height;
-    $this->route  = $route;
+  public function __construct($alt, $src, $width, $height, $placeholder, $route) {
+    $this->alt         = $alt;
+    $this->src         = $src;
+    $this->width       = $width;
+    $this->height      = $height;
+    $this->placeholder = $placeholder;
+    $this->route       = $route;
   }
 
 }

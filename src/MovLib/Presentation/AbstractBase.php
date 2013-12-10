@@ -208,6 +208,9 @@ abstract class AbstractBase {
     if (!isset($attributes["alt"])) {
       $attributes["alt"] = $style->alt;
     }
+    if ($style->placeholder === true) {
+      $this->addClass("placeholder", $attributes);
+    }
     $attributes["src"]    = $style->src;
     $attributes["width"]  = $style->width;
     $attributes["height"] = $style->height;
