@@ -107,7 +107,7 @@ class LanguageSelection extends \MovLib\Presentation\Page {
     global $i18n, $kernel;
 
     // Build the navigation.
-    $navigation           = new Navigation($i18n->t("Available Languages"), array_keys($kernel->systemLanguages), [ "class" => "well well--large" ]);
+    $navigation           = new Navigation($i18n->t("Available Languages"), array_keys($kernel->systemLanguages), [ "class" => "well well-lg" ]);
     $navigation->glue     = " / ";
     $navigation->callback = [ $this, "formatSystemLanguage" ];
 

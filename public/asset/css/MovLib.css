@@ -25,16 +25,17 @@
  * @since 0.0.1-dev
  */
 
-@import "layout/fonts.css";
+@import "layout/font.css";
 @import "base.css";
 @import "layout/grid.css";
 @import "layout/typography.css";
-@import "layout/forms.css";
+@import "layout/form.css";
 @import "layout/generic.css";
 @import "layout/header.css";
 @import "layout/content.css";
 @import "layout/footer.css";
-@import "layout/icons.css";
+@import "layout/icon.css";
 @import "layout/alert.css";
-@import "layout/buttons.css";
-@import "layout/lists.css";
+@import "layout/button.css";
+@import "layout/list.css";
+@import "layout/well.css";

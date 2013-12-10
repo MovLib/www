@@ -37,28 +37,28 @@ class Alert {
    *
    * @var string
    */
-  const SEVERITY_ERROR = " alert--error";
+  const SEVERITY_ERROR = " alert-error";
 
   /**
    * Severity level <i>info</i> for alert message (color <i>blue</i>).
    *
    * @var string
    */
-  const SEVERITY_INFO = " alert--info";
+  const SEVERITY_INFO = " alert-info";
 
   /**
    * Severity level <i>success</i> for alert message (color <i>green</i>).
    *
    * @var string
    */
-  const SEVERITY_SUCCESS = " alert--success";
+  const SEVERITY_SUCCESS = " alert-success";
 
   /**
    * Severity level <i>warning</i> (default) for alert message (color <i>yellow</i>).
    *
    * @var string
    */
-  const SEVERITY_WARNING = " alert--warning";
+  const SEVERITY_WARNING = "";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -117,7 +117,7 @@ class Alert {
    *   HTML representation of this alert message.
    */
   public function __toString() {
-    $title = $this->title ? "<h4 class='alert__title'>{$this->title}</h4>" : null;
+    $title = $this->title ? "<h4 class='title'>{$this->title}</h4>" : null;
     return "<div class='alert{$this->severity}' role='alert'><div class='container'>{$title}{$this->message}</div></div>";
   }
 

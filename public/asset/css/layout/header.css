@@ -170,10 +170,17 @@
   transition-property: opacity, top, visibility;
 }
 
+/*
+Fix for Gecko (Firefox) bug, visibility hidden isn't really hidden and the elements can still receive pointer events.
+We can't use display none because it would break the animation of the drop downs.
+*/
+#header:hover .concealed {
+  pointer-events: auto;
+}
+
 #header .open .concealed,
 #header .expander:hover .concealed {
   top: 50px;
-  pointer-events: auto;
   opacity: 1;
   visibility: visible;
 }
@@ -227,9 +234,12 @@
 #search .ico-search {
   float: left;
   width: 50px;
+  transition: background-color 0.2s linear;
 }
 
-#search .ico-search:focus {
+#search .ico-search:active,
+#search .ico-search:focus,
+#search .ico-search:hover {
   background-color: #09c;
 }
 

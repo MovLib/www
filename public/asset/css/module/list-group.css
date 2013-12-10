@@ -15,73 +15,13 @@
  */
 
 /**
- * Alert module/component.
+ * Description of list-groups
  *
- * @link https://github.com/twbs/bootstrap/blob/master/less/alerts.less
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 
-.alert {
-  background-color: #fcf8e3;
-  padding: 8px 35px 8px 14px;
-}
 
-#alerts .alert {
-  padding: 20px 0;
-}
-
-.alert p:first-of-type {
-  margin-top: 0;
-}
-
-.alert p:last-of-type {
-  margin-bottom: 0;
-}
-
-.alert,
-.alert .title {
-  color: #c09853;
-}
-
-.alert .title {
-  font-weight: bold;
-  margin: 0;
-}
-
-.alert-info {
-  background-color: #d9edf7;
-}
-
-.alert-info,
-.alert-info .title {
-  color: #3a87ad;
-}
-
-.alert-success {
-  background-color: #dff0d8;
-}
-
-.alert-success,
-.alert-success .title {
-  color: #468847;
-}
-
-.alert-error {
-  background-color: #f2dede;
-}
-
-.alert-error,
-.alert-error .title {
-  color: #b94a48;
-}
-
-.alert .form-help {
-  color: #656565;
-  position: relative;
-  right: -21px;
-  top: -2px;
-}
