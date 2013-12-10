@@ -17,10 +17,15 @@
  */
 namespace MovLib\Presentation\Profile;
 
+use \MovLib\Data\Temporary;
+use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Exception\Client\UnauthorizedException;
+use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
+use \MovLib\Presentation\Partial\FormElement\InputPassword;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 
 /**
@@ -93,11 +98,11 @@ class ResetPassword extends \MovLib\Presentation\Page {
       ]);
 
       // Initialize the actual form of this page.
-      $this->form = new Form($this, [ $this->newPassword, $this->newPasswordConfirm ], null, "validatePassword");
+      $this->form = new Form($this, [ $this->newPassword, $this->newPasswordConfirm ], "{$this->id}-password", "validatePassword");
       $this->form->attributes["autocomplete"] = "off";
 
       // The submit button.
-      $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Change"), [
+      $this->form->actionElements[] = new InputSubmit($i18n->t("Reset Password"), [
         "class" => "button button--large button--success",
         "title" => $i18n->t("Continue here to reset your password after you filled out all fields."),
       ]);
@@ -106,14 +111,14 @@ class ResetPassword extends \MovLib\Presentation\Page {
       $this->email = new InputEmail();
       $this->email->attributes["placeholder"] = $i18n->t("Enter your email address");
 
-      $this->form = new Form($this, [ $this->email ], null, "validateEmail");
-      $this->form->attributes["class"] = "span span--6 offset--3";
+      $this->form = new Form($this, [ $this->email ], "{$this->id}-email", "validateEmail");
 
       $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Reset"), [
         "class" => "button button--large button--success",
         "title" => $i18n->t("Continue here to request a password reset for the entered email address"),
       ]);
     }
+    $this->form->attributes["class"] = "span span--6 offset--3";
   }
 
   /**
@@ -124,10 +129,9 @@ class ResetPassword extends \MovLib\Presentation\Page {
   }
 
   /**
-   * Validation callback after auto-validation of form has succeeded.
+   * Validation callback after auto-validation of reset password form has succeeded.
    *
-   * The redirect exception is thrown if the supplied data is valid. The user will be redirected to her or his personal
-   * dashboard.
+   * The redirect exception is thrown if the supplied data is valid.
    *
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
@@ -153,8 +157,20 @@ class ResetPassword extends \MovLib\Presentation\Page {
     return $this;
   }
 
+  /**
+   * Validation callback after auto-validation of change password form has succeeded.
+   * 
+   * @todo OWASP and other sources recommend to store a password history for each user and check that the new password
+   *       isn't one of the old passwords. This would increase the account's security a lot. Anyone willing to implement
+   *       this is very welcome.
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @param array $errors [optional]
+   *   {@inheritdoc}
+   * @return this
+   */
   public function validatePassword(array $errors = null) {
-    global $i18n;
+    global $i18n, $kernel;
 
     if ($this->newPassword->value != $this->newPasswordConfirm->value) {
       $this->newPassword->invalid();
@@ -169,6 +185,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
         $i18n->t("Password Changed Successfully"),
         Alert::SEVERITY_SUCCESS
       );
+      $kernel->delayMethodCall([ new Temporary(), "delete" ], [ $_GET["token"] ]);
     }
 
     return $this;
@@ -199,12 +216,12 @@ class ResetPassword extends \MovLib\Presentation\Page {
 
     // Check if this data was stored for a password event.
     if (empty($data["user_id"]) || empty($data["reset_password"])) {
-      throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
+      $this->checkErrors($i18n->t("Your confirmation token has expired, please fill out the form again."));
+      return false;
     }
 
     $this->user           = new UserFull(UserFull::FROM_ID, $data["user_id"]);
     $this->user->password = $data["reset_password"];
-    $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
 
     return true;
   }

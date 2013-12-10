@@ -82,7 +82,7 @@ class ResetPassword extends \MovLib\Presentation\Email\AbstractEmail {
         "user_id"        => $this->user->id,
         "reset_password" => true,
       ]);
-      $this->link    = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/profile/password-settings")}?token={$token}";
+      $this->link    = "{$kernel->scheme}://{$kernel->hostname}{$i18n->r("/profile/reset-password")}?token={$token}";
       $this->subject = $i18n->t("Requested Password Reset");
     }
     catch (\DomainException $e) {

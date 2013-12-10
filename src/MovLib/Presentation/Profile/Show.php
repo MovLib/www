@@ -113,22 +113,16 @@ class Show extends \MovLib\Presentation\Page {
   protected function init($title) {
     global $i18n, $session;
     parent::init($title);
+    
+    $sidebar = [
+      [ $i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "separator ico ico-info" ] ],
+      [ $i18n->r("/profile/account-settings"), $i18n->t("Account"), [ "class" => "ico ico-user" ] ],
+      [ $i18n->r("/profile/notification-settings"), $i18n->t("Notifications"), [ "class" => "ico ico-notification" ] ],
+      [ $i18n->r("/profile/email-settings"), $i18n->t("Email"), [ "class" => "ico ico-email" ] ],
+      [ $i18n->r("/profile/password-settings"), $i18n->t("Password"), [ "class" => "ico ico-lock" ] ],
+      [ $i18n->r("/profile/danger-zone"), $i18n->t("Danger Zone"), [ "class" => "ico ico-alert" ] ],
+    ];
 
-    if ($session->isAuthenticated === true) {
-      $sidebar = [
-        [ $i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "separator ico ico-info" ] ],
-        [ $i18n->r("/profile/account-settings"), $i18n->t("Account"), [ "class" => "ico ico-user" ] ],
-        [ $i18n->r("/profile/notification-settings"), $i18n->t("Notifications"), [ "class" => "ico ico-notification" ] ],
-        [ $i18n->r("/profile/email-settings"), $i18n->t("Email"), [ "class" => "ico ico-email" ] ],
-        [ $i18n->r("/profile/password-settings"), $i18n->t("Password"), [ "class" => "ico ico-lock" ] ],
-        [ $i18n->r("/profile/danger-zone"), $i18n->t("Danger Zone"), [ "class" => "ico ico-alert" ] ],
-      ];
-    }
-    // A user might visit the password settings page after successfully requesting a reset password email. Only display
-    // the actual secondary navigation point the user is able to access at this point and omit everything else.
-    else {
-      $sidebar = [[ $i18n->r("/profile/password-settings"), "<i class='ico-lock'></i> {$i18n->t("Password")}" ]];
-    }
     $this->initSidebar($sidebar);
 
     $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
