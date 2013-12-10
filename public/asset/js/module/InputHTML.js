@@ -61,10 +61,10 @@
     this.editor = element.children[2];
 
     /**
-     * The content editable <code><div></code>.
+     * The content editable <code><iframe></code> element.
      *
      * @property content
-     * @type HTMLElement
+     * @type HTMLIFrameElement
      */
     this.content = this.editor.children[this.editor.children.length - 1];
 
@@ -75,39 +75,6 @@
   InputHTML.prototype = {
 
     /**
-     * Handle alignment button clicks.
-     *
-     * @method align
-     * @chainable
-     * @param {Event} event
-     *   The click event on an align button.
-     * @returns {InputHTML}
-     */
-    align: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      // @todo Read direction from data attribute and add the respective class.
-      alert("Not implemented yet!");
-      return this;
-    },
-
-    /**
-     * Handle bold formatting button clicks.
-     *
-     * @method bold
-     * @chainable
-     * @param {Event} event
-     *   The click event on the editor button.
-     * @returns {InputHTML}
-     */
-    bold: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      document.execCommand("bold");
-      return this;
-    },
-
-    /**
      * Copy the content of the content editable element back into the textarea.
      *
      * @method copyToTextarea
@@ -115,77 +82,7 @@
      * @return {InputHTML}
      */
     copyToTextarea: function () {
-      this.textarea.value = this.content.innerHTML;
-      return this;
-    },
-
-    /**
-     * Handle format clicks.
-     *
-     * @method heading
-     * @chainable
-     * @param {Event} event
-     *   The click event on a heading format.
-     * @returns {InputHTML}
-     */
-    formatBlock: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      // @todo Read tag from data attribute and format the whole block.
-      try {
-        document.execCommand("formatBlock", true, event.target.getAttribute("data-tag"));
-      }
-      catch (e) {}
-      alert("Not implemented yet!");
-      return this;
-    },
-
-    /**
-     * Handle format selector clicks.
-     *
-     * @method formats
-     * @chainable
-     * @param {Event} event
-     *   The click event on the formats selector.
-     * @returns {InputHTML}
-     */
-    formats: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      this.editor.children[0].children[1].classList.remove("hidden");
-      return this;
-    },
-
-    /**
-     * Handle image button clicks.
-     *
-     * @method image
-     * @chainable
-     * @param {Event} event
-     *   The click event on the editor button.
-     * @returns {InputHTML}
-     */
-    image: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      alert("Not implemented yet!");
-      return this;
-    },
-
-    /**
-     * Handle indent button clicks.
-     *
-     * @method indent
-     * @chainable
-     * @param {Event} event
-     *   The click event on the editor button.
-     * @returns {InputHTML}
-     */
-    indent: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      // @todo Read direction from data attribute.
-      alert("Not implemented yet!");
+      this.textarea.value = this.content.contentDocument.body.innerHTML;
       return this;
     },
 
@@ -199,14 +96,232 @@
      * @return {InputHTML}
      */
     init: function (element) {
+      var eventFunctions = {
+
+        /**
+         * Handle alignment button clicks.
+         *
+         * @function align
+         * @chainable
+         * @param {Event} event
+         *   The click event on an align button.
+         * @returns {InputHTML}
+         */
+        align: function (event) {
+          event.preventDefault();
+          event.returnValue = false;
+          // @todo Read direction from data attribute and add the respective class.
+          alert("Not implemented yet!");
+          return this;
+        }.bind(this),
+
+        /**
+         * Handle blur events on the editor.
+         *
+         * @function blurEditor
+         * @chainable
+         * @returns {InputHTML}
+         */
+        blurEditor: function () {
+          // If we have an active element in our editor iframe or our wrapper div, do not blur.
+          if (!document.activeElement || !this.editor.contains(document.activeElement)) {
+            this.editor.classList.remove("focus");
+            // Remove all event handlers for the editor controls.
+            // @todo Remove all event handlers for the editor controls.
+          }
+          return this;
+        }.bind(this),
+
+        /**
+         * Handle format block clicks.
+         *
+         * @function
+         * @param {Event} event
+         *   The click event on a block format.
+         * @returns {InputHTML}
+         */
+        formatBlock: function (event) {
+          this.content.contentDocument.execCommand("formatBlock", false, event.target.getAttribute("data-tag"));
+          this.content.focus();
+          return this;
+        }.bind(this),
+
+        /**
+         * Handle format inline clicks.
+         *
+         * @function
+         * @param {Event} event
+         *   The click event on an inline format.
+         * @returns {InputHTML}
+         */
+        formatInline: function (event) {
+          console.log("formatInline: " + event.target.getAttribute("data-tag"));
+          this.content.contentDocument.execCommand(event.target.getAttribute("data-tag"), false, null);
+          this.content.focus();
+          return this;
+        }.bind(this),
+
+        /**
+         * Handle image button clicks.
+         *
+         * @function image
+         * @chainable
+         * @param {Event} event
+         *   The click event on the image button.
+         * @returns {InputHTML}
+         */
+        image: function (event) {
+          event.preventDefault();
+          event.returnValue = false;
+          alert("Not implemented yet!");
+          return this;
+        }.bind(this),
+
+        /**
+         * Handle indent button clicks.
+         *
+         * @function indent
+         * @chainable
+         * @param {Event} event
+         *   The click event on an indent button.
+         * @returns {InputHTML}
+         */
+        indent: function (event) {
+          event.preventDefault();
+          event.returnValue = false;
+          // @todo Read direction from data attribute.
+          alert("Not implemented yet!");
+          return this;
+        }.bind(this),
+
+        /**
+         * React on keyup changes.
+         *
+         * @method keyup
+         * @chainable
+         * @param {Event} event
+         *   The keydown event.
+         * @return {InputHTML}
+         */
+        keyup: function (event) {
+          this.keyupBlocked = {};
+
+          // Check for the ALT + F10 key combination and activate toolbar tabbing.
+          if (!this.keyupBlocked.toolbar && event.altKey && ((event.which || event.keyCode) === 121)) {
+            this.keyupBlocked.toolbar = true;
+
+            var c = this.editor.children.length - 1;
+            for (var i = 0; i < c; ++i) {
+              this.editor.children[i].setAttribute("tabindex", 0);
+            }
+
+            // Caution, focus lost = selection lost!
+            this.editor.firstChild.focus();
+
+            window.setTimeout(function () {
+              this.keyupBlocked.toolbar = false;
+            }.bind(this), 100);
+
+            return this;
+          }
+
+          // @markus you have to implement the following code, blocking and so on!!!!
+          //         the following is only a scaffold and doesn't do anything
+          if (!this.keyupBlocked.actions) { // Paste + Delete + Backspace
+            this.keyupBlocked.actions = true;
+
+            window.setTimeout(function () {
+              this.keyupBlocked.actions = false;
+            }.bind(this), 100);
+
+            return this;
+          }
+
+          // @markus the following code should only be executed if any interesting keystroke was pressed, not on every
+          //         possible keystroke in this world.
+          //
+          // Delete the contents of the placeholder when something is typed.
+          if (this.content.classList.contains("placeholder")) {
+            this.content.classList.remove("placeholder");
+            this.content.contentDocument.body.firstChild.innerHTML = "";
+          }
+          else if (this.content.contentDocument.body.children.length > 0 && this.content.contentDocument.body.firstChild.nodeType === 3) {
+            this.content.contentDocument.body.innerHTML = "<p>" + this.content.contentDocument.body.firstChild.textContent.replace(/\n\n+/, "</p><p>").split("\n").join("<br>") + "</p>";
+          }
+          // Check if the content is empty. If so, put the placeholder back into place and delete all unnecessary contents
+          // like <br> or <div> some browsers insert.
+          else if (this.content.contentDocument.body.innerHTML === "" || this.content.contentDocument.body.children[0].childNodes.length === 0) {
+            this.content.contentDocument.body.innerHTML = "";
+            var placeholder = this.content.contentDocument.createElement("p");
+            this.content.contentDocument.body.appendChild(placeholder);
+            this.content.focus();
+            this.content.classList.add("placeholder");
+            placeholder.innerHTML = this.textarea.getAttribute("placeholder");
+          }
+
+          return this;
+        }.bind(this),
+
+        /**
+         * Handle link button clicks.
+         *
+         * @function link
+         * @chainable
+         * @param {Event} event
+         *   The click event on the link button.
+         * @returns {InputHTML}
+         */
+        link: function (event) {
+          event.preventDefault();
+          event.returnValue = false;
+          // @todo Handle external link restriction.
+          alert("Not implemented yet!");
+          return this;
+        }.bind(this),
+
+        /**
+         * Handle list button clicks.
+         *
+         * @function list
+         * @chainable
+         * @param {Event} event
+         *   The click event on a list button.
+         * @returns {InputHTML}
+         */
+        list: function (event) {
+          event.preventDefault();
+          event.returnValue = false;
+          // @todo Read type from event target.
+          alert("Not implemented yet!");
+          return this;
+        }.bind(this),
+
+        /**
+         * Handle quotation button clicks.
+         *
+         * @function quotation
+         * @chainable
+         * @param {Event} event
+         *   The click event on the editor button.
+         * @returns {InputHTML}
+         */
+        quotation: function (event) {
+          event.preventDefault();
+          event.returnValue = false;
+          alert("Not implemented yet!");
+          return this;
+        }.bind(this)
+      };
+
+      this.content.contentDocument.designMode = "on";
       if (this.textarea.value === "") {
         var placeholder       = document.createElement("p");
         placeholder.innerHTML = this.textarea.getAttribute("placeholder");
-        this.content.appendChild(placeholder);
+        this.content.contentDocument.body.appendChild(placeholder);
         this.content.classList.add("placeholder");
       }
       else {
-        this.content.innerHTML = this.textarea.value;
+        this.content.contentDocument.body.innerHTML = this.textarea.value;
       }
 
       // We have to copy the divs content back into the textarea directly before the form is submitted to ensure that
@@ -214,43 +329,48 @@
       // the textarea on every key event.
       element.form.addEventListener("submit", this.copyToTextarea.bind(this), false);
 
-      this.editor.addEventListener("focus", function () {
-        this.editor.classList.add("focus");
-      }.bind(this), true);
-
       this.editor.addEventListener("blur", function () {
-        this.editor.classList.remove("focus");
+        window.setTimeout(eventFunctions.blurEditor, 100);
       }.bind(this), true);
 
-      // Bind event handlers to the editor controls.
-      var c = this.editor.children.length - 1;
-      for (var i = 0; i < c; ++i) {
-        // Handle the children of the formats selector
-        if (this.editor.children[i].getAttribute("data-handler") === "formats") {
-
-        }
-        this.editor.children[i].addEventListener("click", this[this.editor.children[i].getAttribute("data-handler")].bind(this), false);
-      }
-
-      // Bind the focus event of the content separately.
-      this.content.addEventListener("focus", function () {
-        // Set the cursor to the end of the content but within the last HTML tag.
+      this.content.contentDocument.addEventListener("focus", function () {
+        // Attach the placeholder if the class is present.
         if (this.content.classList.contains("placeholder")) {
-          this.content.firstChild.innerHTML = "";
-          this.content.firstChild.innerHTML = this.textarea.getAttribute("placeholder");
-          //window.getSelection().collapse(this.content.firstChild, 0);
+          this.content.contentDocument.body.firstChild.innerHTML = "";
+          this.content.contentDocument.body.firstChild.innerHTML = this.textarea.getAttribute("placeholder");
         }
 
-        // Deactivate toolbar tabbing.
-        var c = this.editor.children.length - 1;
-        for (var i = 0; i < c; ++i) {
-          this.editor.children[i].setAttribute("tabindex", -1);
+
+        // Set the cursor to the end of the content but within the last HTML tag.
+        this.content.contentDocument.body.lastChild.focus();
+
+        // Bind the event handlers and add the focus class, if the editor was not in focus already.
+        if (!this.editor.classList.contains("focus")) {
+          this.editor.classList.add("focus");
+
+          // Bind event handlers to the editor controls.
+          var c = this.editor.children.length - 1;
+          for (var i = 0; i < c; ++i) {
+            // Handle the children of the formats selector
+            if (this.editor.children[i].classList.contains("formats")) {
+              for (var j = 0; j < this.editor.children[i].children[1].children.length; ++j) {
+                this.editor.children[i].children[1].children[j].addEventListener("click", eventFunctions.formatBlock, false);
+              }
+            }
+            else {
+              this.editor.children[i].addEventListener("click", eventFunctions[this.editor.children[i].getAttribute("data-handler")], false);
+            }
+          }
         }
       }.bind(this), true);
+
+      this.content.contentDocument.addEventListener("blur", function () {
+        window.setTimeout(eventFunctions.blurEditor, 100);
+      });
 
       // React on various content events.
-      this.content.addEventListener("keypress", this.keypress.bind(this), false);
-      this.content.addEventListener("keydown", this.keydown.bind(this), false);
+      // @see http://docs.cksource.com/ckeditor_api/symbols/src/plugins_keystrokes_plugin.js.html
+      this.content.contentDocument.addEventListener("keyup", eventFunctions.keyup, false);
 
       // Use this to print an HTMLElement to the console!
       //console.dir(element);
@@ -262,22 +382,6 @@
       // Remember IE9+ support!
       // Remember if something results in more than a single reflow hide and show element.
 
-      return this;
-    },
-
-    /**
-     * Handle italic formatting button clicks.
-     *
-     * @method italic
-     * @chainable
-     * @param {Event} event
-     *   The click event on the editor button.
-     * @returns {InputHTML}
-     */
-    italic: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      document.execCommand("italic");
       return this;
     },
 
@@ -296,11 +400,12 @@
       //event.returnValue = false;
 
       // Check for the ALT + F10 key combination and activate toolbar tabbing.
-      if (event.altKey && (event.which === 121 || event.keyCode === 121)) {
+      if (event.altKey && ((event.which || event.keyCode) === 121)) {
         var c = this.editor.children.length - 1;
         for (var i = 0; i < c; ++i) {
           this.editor.children[i].setAttribute("tabindex", 0);
         }
+        // Caution, focus lost = selection lost!
         this.editor.firstChild.focus();
       }
 
@@ -324,103 +429,24 @@
       // Delete the contents of the placeholder when something is typed.
       if (this.content.classList.contains("placeholder")) {
         this.content.classList.remove("placeholder");
-        this.content.firstChild.innerHTML = "";
+        this.content.contentDocument.body.firstChild.innerHTML = "";
+      }
+      else if (this.content.contentDocument.body.children.length > 0 && this.content.contentDocument.body.firstChild.nodeType === 3) {
+        this.content.contentDocument.body.innerHTML = "<p>" + this.content.contentDocument.body.firstChild.textContent.replace(/\n\n+/, "</p><p>").split("\n").join("<br>") + "</p>";
       }
       // Check if the content is empty. If so, put the placeholder back into place and delete all unnecessary contents
       // like <br> or <div> some browsers insert.
-      else if (this.content.innerHTML === "" || this.content.children.length === 0 || this.content.children[0].childNodes.length === 0) {
-        this.content.innerHTML = "";
-        var placeholder = document.createElement("p");
-        this.content.appendChild(placeholder);
-        placeholder.focus();
+      else if (this.content.contentDocument.body.innerHTML === "" || this.content.contentDocument.body.children[0].childNodes.length === 0) {
+        this.content.contentDocument.body.innerHTML = "";
+        var placeholder = this.content.contentDocument.createElement("p");
+        this.content.contentDocument.body.appendChild(placeholder);
+        this.content.focus();
         this.content.classList.add("placeholder");
         placeholder.innerHTML = this.textarea.getAttribute("placeholder");
       }
 
       return this;
     },
-
-    /**
-     * Handle link button clicks.
-     *
-     * @method link
-     * @chainable
-     * @param {Event} event
-     *   The click event on the editor button.
-     * @returns {InputHTML}
-     */
-    link: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      // @todo Handle external link restriction.
-      alert("Not implemented yet!");
-      return this;
-    },
-
-    /**
-     * Handle list button clicks.
-     *
-     * @method list
-     * @chainable
-     * @param {Event} event
-     *   The click event on the editor button.
-     * @returns {InputHTML}
-     */
-    list: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      // @todo Read type from event target.
-      alert("Not implemented yet!");
-      return this;
-    },
-
-    /**
-     * Handle format clicks for paragraphs.
-     *
-     * @method paragraph
-     * @chainable
-     * @param {Event} event
-     *   The click event on the paragraph format.
-     * @returns {InputHTML}
-     */
-    paragraph: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      alert("Not implemented yet!");
-      return this;
-    },
-
-    /**
-     * Handle quotation button clicks.
-     *
-     * @method quotation
-     * @chainable
-     * @param {Event} event
-     *   The click event on the editor button.
-     * @returns {InputHTML}
-     */
-    quotation: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      alert("Not implemented yet!");
-      return this;
-    },
-
-    /**
-     * Handle unlink button clicks.
-     *
-     * @method link
-     * @chainable
-     * @param {Event} event
-     *   The click event on the editor button.
-     * @returns {InputHTML}
-     */
-    unlink: function (event) {
-      event.preventDefault();
-      event.returnValue = false;
-      document.execCommand("unlink");
-      return this;
-    }
 
   };
 

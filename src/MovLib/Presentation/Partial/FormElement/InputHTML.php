@@ -193,18 +193,19 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // We need to alter the div attributes in order to make them valid for this kind of HTML element. The div element
     // also needs a class for easy identification via CSS and JS whilst the textarea doesn't need anything because the
     // tag is more than sufficient for identification.
-    $divAttributes                    = $this->attributes;
-    $divAttributes["contenteditable"] = "true";
-    $divAttributes["role"]            = "textbox";
-    $divAttributes["tabindex"]        = 0;
-    $this->addClass("content", $divAttributes);
+    $iframeAttributes                    = $this->attributes;
+    $iframeAttributes["contenteditable"] = "true";
+    $iframeAttributes["role"]            = "textbox";
+    $iframeAttributes["seamless"]        = "seamless";
+    $iframeAttributes["tabindex"]        = 0;
+    $this->addClass("content", $iframeAttributes);
 
     // The name attribute is always present for the textarea but nonsense for our div.
-    unset($divAttributes["id"], $divAttributes["name"]);
+    unset($iframeAttributes["id"], $iframeAttributes["name"]);
 
     // The required attribute isn't allowed on our div element.
-    if (($key = array_search("required", $divAttributes)) !== false) {
-      unset($divAttributes[$key]);
+    if (($key = array_search("required", $iframeAttributes)) !== false) {
+      unset($iframeAttributes[$key]);
     }
 
     // Use default placeholder text if none was provided.
@@ -213,7 +214,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     }
     // Unset the placeholder in the div attributes, since this attribute is not allowed by HTML standard.
     else {
-      unset($divAttributes["placeholder"]);
+      unset($iframeAttributes["placeholder"]);
     }
 
     // We need to add the aria-labelledby attribute to the textarea, since it won't have a label.
@@ -225,27 +226,27 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // Check if any heading is allowed (checking against level 6 is enough as it's always part of the party if any level
     // is allowed) and include the block level selector if we have any. Ommit if no headings are allowed.
     if (isset($this->allowedTags["h6"])) {
-      $editor .= "<span data-handler='formatBlock' data-tag='p' href=''>{$i18n->t("Paragraph")}</span>";
+      $editor .= "<li data-handler='formatBlock' data-tag='p' href=''>{$i18n->t("Paragraph")}</li>";
       for ($i = 2; $i <= 6; ++$i) {
         if (isset($this->allowedTags["h{$i}"])) {
-          $editor .= "<span data-handler='formatBlock' data-tag='h{$i}' href=''>{$i18n->t("Heading {0, number, integer}", [ $i ])}</span>";
+          $editor .= "<li data-handler='formatBlock' data-tag='h{$i}' href=''>{$i18n->t("Heading {0, number, integer}", [ $i ])}</li>";
         }
       }
-      $editor = "<span class='button formats' data-handler='formats'><span class='expander'>{$i18n->t("Paragraph")}</span><span class='concealed hidden'>{$editor}</span></span>";
+      $editor = "<div class='button formats' data-handler='formats'><span class='expander'>{$i18n->t("Paragraph")}</span><ul class='concealed no-list'>{$editor}</ul></div>";
     }
 
     $external = $this->allowExternalLinks === true ? " external" : null;
     $editor .=
       // Add the font styles.
-      "<span class='button ico ico-bold' data-handler='bold'><span class='visuallyhidden'>{$i18n->t("Bold")}</span></span>" .
-      "<span class='button ico ico-italic' data-handler='italic'><span class='visuallyhidden'>{$i18n->t("Italic")}</span></span>" .
+      "<span class='button ico ico-bold' data-handler='formatInline' data-tag='bold'><span class='visuallyhidden'>{$i18n->t("Bold")}</span></span>" .
+      "<span class='button ico ico-italic' data-handler='formatInline' data-tag='italic'><span class='visuallyhidden'>{$i18n->t("Italic")}</span></span>" .
       // Add the alignment buttons.
       "<span class='button ico ico-align-left' data-direction='left' data-handler='align'><span class='visuallyhidden'>{$i18n->t("Align left")}</span></span>" .
       "<span class='button ico ico-align-center' data-direction='center' data-handler='align'><span class='visuallyhidden'>{$i18n->t("Align center")}</span></span>" .
       "<span class='button ico ico-align-right' data-direction='right' data-handler='align'><span class='visuallyhidden'>{$i18n->t("Align right")}</span></span>" .
       // Add the insert section according to configuration.
       "<span class='button ico ico-link{$external}' data-handler='link'><span class='visuallyhidden'>{$i18n->t("Insert link")}</span></span>" .
-      "<span class='button ico ico-unlink' data-handler='unlink'><span class='visuallyhidden'>{$i18n->t("Unlink selection")}</span></span>"
+      "<span class='button ico ico-unlink' data-handler='formatInline' data-tag='unlink'><span class='visuallyhidden'>{$i18n->t("Unlink selection")}</span></span>"
     ;
 
     if (isset($this->allowedTags["blockquote"])) {
@@ -275,7 +276,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
         "<p class='jshidden'><textarea{$this->expandTagAttributes($this->attributes)}>{$this->valueRaw}</textarea></p>" .
         // Same situation above but for user agents with disabled JavaScript. The content for the editable div is copied
         // over from the textarea by the JS module. But we directly include the placeholder because it's very short.
-        "<div class='editor nojshidden'>{$editor}<div{$this->expandTagAttributes($divAttributes)}></div></div>" .
+        "<div class='editor nojshidden'>{$editor}<iframe{$this->expandTagAttributes($iframeAttributes)}></iframe></div>" .
       "</fieldset>"
     ;
   }

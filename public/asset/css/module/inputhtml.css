@@ -38,24 +38,47 @@
 .inputhtml .button {
   cursor: pointer;
   opacity: 0.5;
+  pointer-events: none;
   transition: opacity 0.4s ease-in-out;
 }
 
 .inputhtml .focus .button {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .inputhtml .formats {
   position: relative;
 }
 
-.inputhtml .formats .expander:after {
+.inputhtml .focus .formats:hover .concealed {
+  display: block;
+}
+
+.inputhtml .expander:after {
   content: " ▾";
 }
 
-.inputhtml .formats span {
+.inputhtml .formats span,
+.inputhtml .concealed li {
   cursor: pointer;
-  display: block;
+}
+
+.inputhtml .concealed {
+  background-color: #ccc;
+  display: none;
+  left: 0;
+  list-style: none;
+  margin: 0;
+  position: absolute;
+  right: 0;
+  text-align: left;
+  top: 28px;
+  pointer-events: auto;
+}
+
+.inputhtml .formats .concealed li {
+  padding: 0 12px;
 }
 
 .inputhtml .ico-bold,
@@ -77,6 +100,7 @@
 /* Reset paragraph margin for our content children that was previously redefined for paragraphs within forms. */
 .inputhtml .content p {
   margin: 0 0 10px;
+  color: #00f;
 }
 
 
