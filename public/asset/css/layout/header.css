@@ -111,6 +111,10 @@
   float: left;
 }
 
+#header .clicker {
+  cursor: pointer;
+}
+
 #header .visible {
   position: relative;
   min-width: 50px;
@@ -119,7 +123,6 @@
   font-size: 14px;
   font-weight: normal;
   line-height: 50px;
-  cursor: pointer;
   transition: 0.2s linear 0.1s;
   transition-property: color, background-color;
 }
@@ -204,11 +207,14 @@ We can't use display none because it would break the animation of the drop downs
   width: 50px;
 }
 
-/* hack hack hack hack */
-#user-avatar-for-now {
-  width: 50px !important;
-  height: 50px !important;
-  cursor: pointer;
+#user-nav .avatar {
+
+}
+
+#user-nav.focus .avatar,
+#user-nav .avatar:active,
+#user-nav .avatar:hover {
+
 }
 
 

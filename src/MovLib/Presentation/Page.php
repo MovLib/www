@@ -312,7 +312,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     }
 
     if ($session->isAuthenticated === true) {
-      $userIcon = $this->getImage($session->userAvatar, false, [ "class" => "clicker" ]);
+      $userIcon = $this->getImage($session->userAvatar, false, [ "class" => "avatar clicker" ]);
       $userNavigation =
         "<ul>" .
           "<li>{$this->a($i18n->r("/profile"), $i18n->t("Profil"))}</li>" .
