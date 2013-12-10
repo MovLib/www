@@ -95,24 +95,5 @@
 .inputhtml .content {
   margin: 4px 0 0;
   outline: 0 none !important;
-}
-
-/* Reset paragraph margin for our content children that was previously redefined for paragraphs within forms. */
-.inputhtml .content p {
-  margin: 0 0 10px;
-  color: #00f;
-}
-
-
-/* ==== Placeholder ================================================================================================= */
-
-
-/* Mimic the default browser behavior for the placeholder attribute. */
-.inputhtml .placeholder {
-  font-weight: 200;
-  color: #888;
-}
-
-.inputhtml .focus .placeholder {
-  color: #ccc;
+  border: 0 none !important;
 }
