@@ -331,8 +331,6 @@ class Join extends \MovLib\Presentation\Page {
     catch (UnauthorizedException $e) {
       if (isset($user) && isset($user->email)) {
         $e->signInPresentation->email->attributes["value"] = $user->email;
-        unset($e->signInPresentation->email->attributes[array_search("autofocus", $e->signInPresentation->email->attributes)]);
-        $e->signInPresentation->password->attributes[]     = "autofocus";
       }
       throw $e;
     }

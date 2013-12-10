@@ -159,13 +159,13 @@ class Show extends \MovLib\Presentation\Page {
     $aboutMe = $edit = null;
     if (empty($this->user->aboutMe) && $session->userId === $this->user->id) {
       $aboutMe = "<p>{$i18n->t("Your profile is currently empty, {0}click here to edit{1}.", [
-        "<a href='{$this->routeAccountSettings}?autofocus=about_me'>", "</a>"
+        "<a href='{$this->routeAccountSettings}'>", "</a>"
       ])}</p>";
     }
     else {
       $aboutMe = $kernel->htmlDecode($this->user->aboutMe);
       if ($session->userId === $this->user->id) {
-        $edit = "<a class='small edit' href='{$this->routeAccountSettings}?autofocus=about_me'>{$i18n->t("edit")}</a>";
+        $edit = "<a class='small edit' href='{$this->routeAccountSettings}'>{$i18n->t("edit")}</a>";
       }
     }
     if ($aboutMe) {

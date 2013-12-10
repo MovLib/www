@@ -98,12 +98,8 @@ class Form extends \MovLib\Presentation\AbstractBase {
    * @param string $validationCallback [optional]
    *   The name of the method that should be called if the form's auto-validation is completed an no errors were
    *   detected. Defaults to <code>"validate"</code>.
-   * @param boolean $autofocus [optional]
-   *   If set to <code>FALSE</code> no form element will get the <code>"autofocus"</code> attribute. Defaults to
-   *   <code>TRUE</code> where the first form element of the form gets the attribute, if any form element is invalid the
-   *   first invalid form element will get the attribute.
    */
-  public function __construct($page, array $elements = [], $id = null, $validationCallback = "validate", $autofocus = true) {
+  public function __construct($page, array $elements = [], $id = null, $validationCallback = "validate") {
     global $i18n, $kernel, $session;
     $this->elements        = $elements;
     $this->id              = $id ?: $page->id;
@@ -142,13 +138,6 @@ class Form extends \MovLib\Presentation\AbstractBase {
           catch (ValidationException $e) {
             // Mark this form element as invalid.
             $this->elements[$i]->invalid();
-
-            // Give it autofocus if it's the first invalid element.
-            if ($autofocus === true) {
-              $this->elements[$i]->attributes[] = "autofocus";
-              $autofocus = false;
-            }
-
             $errors[$this->elements[$i]->id] = $e->getMessage();
           }
         }
@@ -163,23 +152,6 @@ class Form extends \MovLib\Presentation\AbstractBase {
       $csrf                  = hash("sha512", openssl_random_pseudo_bytes(1024));
       $session["csrf"]       = $csrf;
       $this->hiddenElements .= "<input type='hidden' name='csrf' value='{$csrf}'>";
-    }
-
-    // If no element is invalid and we have a request to focus on a particular element, search for it and autofocus it.
-    if ($autofocus === true && isset($_GET["autofocus"])) {
-      $c = count($this->elements);
-      for ($i = 0; $i < $c; ++$i) {
-        if ($this->elements[$i]->id == $_GET["autofocus"]) {
-          $this->elements[$i]->attributes[] = "autofocus";
-          $autofocus = false;
-          break;
-        }
-      }
-    }
-
-    // If no element is invalid and we have elements give the first element the autofocus attribute.
-    if ($autofocus === true && $this->elements) {
-      $this->elements[0]->attributes[] = "autofocus";
     }
   }
 
