@@ -81,7 +81,7 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *   The list's attributes, defaults to <code>[ "class" => "no-list" ]</code>. Also note that the class
    *   <code>"img-list"</code> is always applied.
    */
-  public function __construct($listItems, $noItemsText = null, array $listItemsAttributes = null, array $attributes = null) {
+  public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null) {
     if (!$attributes) {
       $attributes = [ "class" => "no-list" ];
     }

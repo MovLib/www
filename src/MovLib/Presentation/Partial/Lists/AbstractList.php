@@ -76,7 +76,7 @@ abstract class AbstractList extends \MovLib\Presentation\AbstractBase {
    * @param array $attributes [optional]
    *   The list's attributes, defaults to no attributes.
    */
-  public function __construct($listItems, $noItemsText = null, array $attributes = null) {
+  public function __construct($listItems, $noItemsText = "", array $attributes = null) {
     $this->noItemsText = $noItemsText;
     $this->listItems   = $listItems;
     $this->attributes  = $attributes;

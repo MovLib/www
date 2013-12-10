@@ -14,8 +14,10 @@
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
+/* recess noOverqualifying:false */
+
 /**
- * Description of list-groups
+ * List group styles.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -24,4 +26,47 @@
  * @since 0.0.1-dev
  */
 
+.list-group {
+  padding-left: 0;
+  margin-bottom: 20px;
+}
 
+.list-group .title {
+  color: #252525;
+  transition: color 0.4s ease-in-out;
+}
+
+.list-group-item {
+  position: relative;
+  display: block;
+  padding: 10px 15px;
+  margin-bottom: -1px;
+  background-color: #fcfcfc;
+  border: 1px solid #e5e5e5;
+}
+
+a.list-group-item {
+  color: #656565;
+  border-bottom-color: #e5e5e5;
+  transition: 0.4s ease-in-out;
+  transition-property: color, background-color;
+}
+
+a.list-group-item:focus,
+a.list-group-item:hover {
+  z-index: 1;
+  background-color: #e5e5e5;
+}
+
+a.list-group-item:active,
+a.list-group-item.active {
+  z-index: 1;
+  background-color: #09c;
+}
+
+a.list-group-item:active,
+a.list-group-item.active,
+a.list-group-item:active .title,
+a.list-group-item.active .title {
+  color: #fff;
+}

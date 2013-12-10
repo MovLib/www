@@ -46,6 +46,27 @@ class ResetPassword extends \MovLib\Presentation\Page {
    */
   protected $email;
 
+  /**
+   * The input password form element for the new password.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputPassword
+   */
+  protected $newPassword;
+
+  /**
+   * The input password form element for confirmation of the new password.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputPassword
+   */
+  protected $newPasswordConfirm;
+
+  /**
+   * The user who's reseting her or his password.
+   *
+   * @var \MovLib\Data\User\Full
+   */
+  protected $user;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -60,19 +81,38 @@ class ResetPassword extends \MovLib\Presentation\Page {
     global $i18n, $kernel;
     $this->init($i18n->t("Reset Password"));
 
-    $this->email = new InputEmail();
-    $this->email->attributes["placeholder"] = $i18n->t("Enter your email address");
+    if ($kernel->requestMethod == "GET" && !empty($_GET["token"]) && $this->validateToken() === true) {
+      // First field to enter the new password.
+      $this->newPassword = new InputPassword("new-password", $i18n->t("New Password"), [
+        "placeholder" => $i18n->t("Enter your new password"),
+      ]);
 
-    $this->form = new Form($this, [ $this->email ]);
-    $this->form->attributes["class"] = "span span--6 offset--3";
+      // Second field to enter the new password for confirmation.
+      $this->newPasswordConfirm = new InputPassword("new-password-confirm", $i18n->t("Confirm Password"), [
+        "placeholder" => $i18n->t("Enter your new password again"),
+      ]);
 
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Reset"), [
-      "class" => "button button--large button--success",
-      "title" => $i18n->t("Continue here to request a password reset for the entered email address"),
-    ]);
+      // Initialize the actual form of this page.
+      $this->form = new Form($this, [ $this->newPassword, $this->newPasswordConfirm ], null, "validatePassword");
+      $this->form->attributes["autocomplete"] = "off";
 
-    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
-      $this->validateToken($_GET["token"]);
+      // The submit button.
+      $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Change"), [
+        "class" => "button button--large button--success",
+        "title" => $i18n->t("Continue here to reset your password after you filled out all fields."),
+      ]);
+    }
+    else {
+      $this->email = new InputEmail();
+      $this->email->attributes["placeholder"] = $i18n->t("Enter your email address");
+
+      $this->form = new Form($this, [ $this->email ], null, "validateEmail");
+      $this->form->attributes["class"] = "span span--6 offset--3";
+
+      $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Reset"), [
+        "class" => "button button--large button--success",
+        "title" => $i18n->t("Continue here to request a password reset for the entered email address"),
+      ]);
     }
   }
 
@@ -95,18 +135,78 @@ class ResetPassword extends \MovLib\Presentation\Page {
    *   {@inheritdoc}
    * @return this
    */
-  public function validate(array $errors = null) {
+  public function validateEmail(array $errors = null) {
     global $kernel, $i18n;
+
     if ($this->checkErrors($errors) === false) {
       $kernel->sendEmail(new ResetPasswordEmail($this->email->value));
+
       http_response_code(202);
+
       $this->alerts .= new Alert(
         $i18n->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email->value) ]),
         $i18n->t("Successfully Requested Password Reset"),
         Alert::SEVERITY_SUCCESS
       );
     }
+
     return $this;
+  }
+
+  public function validatePassword(array $errors = null) {
+    global $i18n;
+
+    if ($this->newPassword->value != $this->newPasswordConfirm->value) {
+      $this->newPassword->invalid();
+      $this->newPasswordConfirm->invalid();
+      $errors[] = $i18n->t("The confirmation password doesn’t match the new password, please try again.");
+    }
+
+    if ($this->checkErrors($errors) === false) {
+      $this->user->updatePassword($this->user->password);
+      $this->alerts .= new Alert(
+        $i18n->t("Your password was successfully changed. Please use your new password to sign in from now on."),
+        $i18n->t("Password Changed Successfully"),
+        Alert::SEVERITY_SUCCESS
+      );
+    }
+
+    return $this;
+  }
+
+  /**
+   * Validate the submitted authentication token and reset the user's password.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\Session $session
+   * @return boolean
+   *   <code>FALSE</code> if the token is invalid, otherwise <code>TRUE</code>
+   * @throws \MovLib\Exception\Client\UnauthorizedException
+   */
+  protected function validateToken() {
+    global $i18n, $kernel;
+    $tmp = new Temporary();
+
+    // Get previously stored data from temporary database.
+    try {
+      $data = $tmp->get($_GET["token"]);
+    }
+    catch (DatabaseException $e) {
+      $this->checkErrors($i18n->t("Your confirmation token has expired, please fill out the form again."));
+      return false;
+    }
+
+    // Check if this data was stored for a password event.
+    if (empty($data["user_id"]) || empty($data["reset_password"])) {
+      throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
+    }
+
+    $this->user           = new UserFull(UserFull::FROM_ID, $data["user_id"]);
+    $this->user->password = $data["reset_password"];
+    $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
+
+    return true;
   }
 
 }

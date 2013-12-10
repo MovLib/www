@@ -30,29 +30,34 @@ class Page extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function getFooter() {
-    global $kernel, $i18n;
-    $year  = date("Y");
+    global $i18n, $kernel;
+    $year = date("Y");
     return
-      "<footer id='footer'><div class='container'><p>" .
+      "<footer id='footer' role='contentinfo'><div class='container'><p>" .
         "© {$year} {$kernel->siteName}™ " .
         "<a href='mailto:{$kernel->emailWebmaster}'>{$i18n->t("Contact")}</a> " .
         "<a href='//{$kernel->domainStatic}/asset/ssl/ca.crt'>{$i18n->t("CA Certificate")}</a> " .
-        "<a target='_blank' href='https://github.com/MovLib'>GitHub {$i18n->t("Porject")}</a>" .
+        "<a target='_blank' href='https://github.com/MovLib'>GitHub {$i18n->t("Project")}</a>" .
       "</p></div></footer>"
     ;
   }
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Tool\Kernel $kernel
    */
   protected function getHeader() {
-    global $kernel;
+    global $i18n, $kernel;
     return
-      "<header id='header'><div class='container'><a href='/' id='header__logo'>" .
-        "<img alt='' height='42' src='//{$kernel->domainStatic}/asset/img/logo/tools-vector.svg' width='42'> {$kernel->siteName}" .
-      "</a></div></header>"
+      "<header id='header' role='banner'><div class='container'><div class='row'>" .
+        "<h1 class='span span--3'>{$this->a("/", "<img alt='' height='42' src='{$kernel->getAssetURL("logo/tools-vector", "svg")}' width='42'> {$kernel->siteName}", [ "id" => "logo" ])}</h1>" .
+        "<div class='span span--9'><h2><a href='//{$kernel->domainDefault}/'>{$kernel->siteName}</a></h2></div>" .
+      "</div></div></header>"
     ;
   }
 

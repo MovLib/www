@@ -40,9 +40,14 @@ class Home extends \MovLib\Presentation\Tool\Page {
 
   /**
    * Instantiate new tools homepage.
+   *
+   * @global \MovLib\Tool\Kernel $kernel
    */
   public function __construct() {
+    global $kernel;
     $this->init("Tools");
+    $kernel->stylesheets[] = "label";
+    $kernel->stylesheets[] = "list-group";
     if (!empty($_SERVER["SSL_CLIENT_VERIFY"])) {
       $this->sslClientVerified = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS";
     }
@@ -61,7 +66,7 @@ class Home extends \MovLib\Presentation\Tool\Page {
       [ "Coverage", "public/coverage/", "{$i18n->t("Have a look at the unit test code coverage reports.")} {$i18n->t("Generated once a day.")}", false ],
       // @todo Either our tests are broken or VisualPHPUnit is broken ... impossible to get this working.
       //[ "VisualPHPUnit", $i18n->t("Run PHPUnit tests via the VisualPHPUnit web interface."), true ],
-    ]);
+    ], [ "class" => "list-group" ]);
     $tools->callback = function ($tool) {
       global $kernel;
       $route = "/{$tool[1]}";
@@ -70,20 +75,25 @@ class Home extends \MovLib\Presentation\Tool\Page {
         $route = "//{$kernel->domainSecureTools}{$route}";
         $label = $this->sslClientVerified === true ? [ "success", "verified" ] : [ "danger", "not verified" ];
       }
-      return [ $route, "<span class='label label-{$label[0]} pull-right'>{$label[1]}</span><h4>{$tool[0]}</h4><p>{$tool[2]}</p>", [
+      return [ $route, "<span class='label label-{$label[0]} pull-right'>{$label[1]}</span><h4 class='title'>{$tool[0]}</h4><p>{$tool[2]}</p>", [
         "class" => "list-group-item"
       ]];
     };
 
-    $devs = new GlueSeparated(glob("{$kernel->documentRoot}/public/coverage/devs/*", GLOB_ONLYDIR));
-    $devs->closure = function ($listitem) {
-      global $kernel;
-      $route = str_replace($kernel->documentRoot, "", $listitem);
-      $text  = basename($listitem);
-      return "<a href='{$route}'>{$text}</a>";
-    };
+    $devs    = null;
+    $reports = glob("{$kernel->documentRoot}/public/coverage/devs/*", GLOB_ONLYDIR);
+    if (count($reports) > 0) {
+      $devs = new GlueSeparated(glob("{$kernel->documentRoot}/public/coverage/devs/*", GLOB_ONLYDIR));
+      $devs->closure = function ($listitem) {
+        global $kernel;
+        $route = str_replace($kernel->documentRoot, "", $listitem);
+        $text  = basename($listitem);
+        return "<a href='{$route}'>{$text}</a>";
+      };
+      $devs = "<small>{$i18n->t("Developer specific coverage reports:")} {$devs}</small>";
+    }
 
-    return "<div class='container'><div class='list-group'>{$tools}</div><small>{$i18n->t("Developer specific coverage reports:")} {$devs}</small></div>";
+    return "<div class='container'>{$tools}{$devs}</div>";
   }
 
 }

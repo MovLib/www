@@ -78,7 +78,7 @@ class GlueSeparated extends \MovLib\Presentation\Partial\Lists\AbstractList {
    * @param string $listAfter [optional]
    *   The translated text to display before the list, defaults to no text.
    */
-  public function __construct($listItems, $noItemsText = null, $glue = ", ", $listBefore = null, $listAfter = null) {
+  public function __construct($listItems, $noItemsText = "", $glue = ", ", $listBefore = null, $listAfter = null) {
     parent::__construct($listItems, $noItemsText);
     $this->glue       = $glue;
     $this->listBefore = $listBefore;

@@ -70,7 +70,7 @@ class Ordered extends \MovLib\Presentation\Partial\Lists\AbstractList {
    * @param array $listItemsAttributes [optional]
    *   The list's items attributes, will be applied to each list item's <code><li></code> element.
    */
-  public function __construct($listItems, $noItemsText = null, array $attributes = null, array $listItemsAttributes = null) {
+  public function __construct($listItems, $noItemsText = "", array $attributes = null, array $listItemsAttributes = null) {
     parent::__construct($listItems, $noItemsText, $attributes);
     $this->listItemsAttributes = $listItemsAttributes;
   }
