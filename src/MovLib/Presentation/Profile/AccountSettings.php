@@ -23,6 +23,7 @@ use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Currency;
 use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\Button;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputDate;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
@@ -76,6 +77,13 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
    * @var \MovLib\Presentation\Partial\FormElement\Select
    */
   protected $currency;
+  
+  /**
+   * The user's avatar delete button form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\Button
+   */
+  protected $deleteAvatar;
 
   /**
    * The user's language radio group form element.
@@ -153,6 +161,9 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
     ]);
 
     $this->avatar = new InputImage("avatar", $i18n->t("Avatar"), $this->user);
+    
+    $hiddenFlag = $this->user->exists? null : " hidden";
+    $this->deleteAvatar = new Button("delete_avatar", $i18n->t("Delete"), [ "value" => "true", "class" => "button button--danger{$hiddenFlag}" ]); 
 
     $this->sex = new RadioGroup("sex", $i18n->t("Sex"), [
       2 => $i18n->t("Female"),
@@ -204,6 +215,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
     $this->form = new Form($this, [
       $this->realName,
       $this->avatar,
+      $this->deleteAvatar,
       $this->sex,
       $this->birthday,
       $this->aboutMe,
