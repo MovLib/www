@@ -774,6 +774,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`articles` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The article’s unique identifier.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the article as timestamp.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The article’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_titles` BLOB NOT NULL COMMENT 'The article’s title in various languages. Keys are ISO alpha-2 language codes.',
   `commit` CHAR(40) NULL COMMENT 'The article’s last history commit sha-1 hash.',
@@ -1377,6 +1378,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`help` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help’s unique identifier.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the help as timestamp.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The help’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
   `commit` CHAR(40) NULL COMMENT 'The help’s last history commit sha-1 hash.',
@@ -1393,6 +1395,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`protected_pages` (
   `id` SMALLINT NOT NULL AUTO_INCREMENT COMMENT 'The page’s unique identifier.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the page as timestamp.',
   `dyn_titles` BLOB NOT NULL COMMENT 'Thepage’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
   `commit` CHAR(40) NULL COMMENT 'The article’s last history commit sha-1 hash.',
@@ -1408,7 +1411,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`protected_pages_routes`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`protected_pages_routes` (
-  `route` VARCHAR(20) NOT NULL,
+  `route` VARCHAR(255) NOT NULL,
   `protected_page_id` SMALLINT NOT NULL,
   PRIMARY KEY (`route`, `protected_page_id`),
   INDEX `fk_protected_pages_routes_protected_page_id` (`protected_page_id` ASC),
