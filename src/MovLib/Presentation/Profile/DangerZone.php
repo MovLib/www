@@ -265,8 +265,8 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
 
     if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["deletion"])) {
       $kernel->alerts .= new Alert(
-        $i18n->t("Your confirmation token has expired, please fill out the form again."),
-        $i18n->t("Token Expired"),
+        $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
+        $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
       throw new RedirectSeeOtherException($kernel->requestPath);
