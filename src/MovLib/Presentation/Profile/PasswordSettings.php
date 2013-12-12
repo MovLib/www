@@ -20,8 +20,8 @@ namespace MovLib\Presentation\Profile;
 use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Data\UnixShell as sh;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\Client\UnauthorizedException;
-use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -202,17 +202,16 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     global $i18n, $kernel, $session;
     $tmp = new Temporary();
 
-    // Get previously stored data from temporary database.
-    try {
-      $data = $tmp->get($_GET["token"]);
-    }
-    catch (DatabaseException $e) {
-      $this->checkErrors($i18n->t("Your confirmation token has expired, please fill out the form again."));
-      return $this;
+    if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["new_password"])) {
+      $kernel->alerts .= new Alert(
+        $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
+        $i18n->t("Token Invalid"),
+        Alert::SEVERITY_ERROR
+      );
+      throw new RedirectSeeOtherException($kernel->requestPath);
     }
 
-    // Check if this data was stored for a password event.
-    if (empty($data["user_id"]) || empty($data["new_password"]) || $data["user_id"] !== $session->userId) {
+    if ($data["user_id"] !== $session->userId) {
       throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
     }
 

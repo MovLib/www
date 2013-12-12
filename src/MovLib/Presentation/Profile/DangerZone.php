@@ -265,8 +265,8 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
 
     if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["deletion"])) {
       $kernel->alerts .= new Alert(
-        $i18n->t("Your confirmation token has expired, please fill out the form again."),
-        $i18n->t("Token Expired"),
+        $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
+        $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
       throw new RedirectSeeOtherException($kernel->requestPath);
@@ -276,7 +276,8 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
       throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your password."));
     }
 
-    $kernel->delayMethodCall([ $tmp, "deleteAccount" ], [ $_GET["token"] ]);
+    $this->user->deleteAccount();
+    $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
     
     $session->destroy();
     

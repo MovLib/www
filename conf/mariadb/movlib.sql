@@ -565,6 +565,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The movie trailer’s ISO alpha-2 language code.',
   `url` VARCHAR(255) NOT NULL COMMENT 'The movie trailer’s url, e.g. youtube.',
+  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of this trailer, default is 0.',
   `country_code` CHAR(2) NULL COMMENT 'The movie trailer’s ISO alpha-2 country code.',
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_movies_trailers_movies`

@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Exception\DatabaseException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
 use \MovLib\Presentation\Partial\Alert;
@@ -205,11 +204,14 @@ class ResetPassword extends \MovLib\Presentation\Page {
    */
   protected function validateToken() {
     global $i18n, $kernel;
-
-    // Check if this data was stored for a password event.
+    
     if (($data = (new Temporary())->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["reset_password"])) {
-      $this->checkErrors($i18n->t("Your confirmation token has expired, please fill out the form again."));
-      return false;
+      $kernel->alerts .= new Alert(
+        $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
+        $i18n->t("Token Invalid"),
+        Alert::SEVERITY_ERROR
+      );
+      throw new RedirectSeeOtherException($kernel->requestPath);
     }
 
     if ($kernel->requestMethod == "POST") {

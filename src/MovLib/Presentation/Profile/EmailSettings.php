@@ -19,8 +19,8 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Exception\Client\UnauthorizedException;
-use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Email\User\EmailChange;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -186,25 +186,21 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
   protected function validateToken() {
     global $i18n, $kernel;
     $tmp = new Temporary();
-
-    try {
-      $data = $tmp->get($_GET["token"]);
+    
+    if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["new_email"])) {
+      $kernel->alerts .= new Alert(
+        $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
+        $i18n->t("Token Invalid"),
+        Alert::SEVERITY_ERROR
+      );
+      throw new RedirectSeeOtherException($kernel->requestPath);
     }
-    catch (DatabaseException $e) {
-      $this->checkErrors($i18n->t("Your confirmation token has expired, please fill out the form again."));
-      return $this;
-    }
-
-    if (!isset($data["user_id"]) || $data["user_id"] !== $this->user->id) {
+    
+    if ($data["user_id"] !== $this->user->id) {
       throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
     }
 
-    if (empty($data["new_email"])) {
-      $this->checkErrors($i18n->t("The confirmation token is invalid, please fill out the form again."));
-      return $this;
-    }
-
-    $kernel->delayMethodCall([ $this->user, "updateEmail" ], [ $data["new_email"] ]);
+    $this->user->updateEmail($data["new_email"]);
     $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
 
     $this->alerts .= new Alert(
@@ -212,7 +208,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
       $i18n->t("Email Changed Successfully"),
       Alert::SEVERITY_SUCCESS
     );
-
+    
     return $this;
   }
 

@@ -333,7 +333,7 @@ class Full extends \MovLib\Data\User\User {
    */
   public function deleteAccount() {
     global $db;
-
+    $this->deleteAvatar();
     $db->query(
       "UPDATE `users` SET
         `email`                = NULL,
@@ -414,7 +414,9 @@ class Full extends \MovLib\Data\User\User {
    */
   public function updateEmail($email) {
     global $db;
-    return $db->query("UPDATE `users` SET `email` = ? WHERE `id` = ?", "sd", [ $email, $this->id ]);
+    $db->query("UPDATE `users` SET `email` = ? WHERE `id` = ?", "sd", [ $email, $this->id ]);
+    $this->email = $email;
+    return $this;
   }
 
   /**

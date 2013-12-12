@@ -64,7 +64,7 @@ class Temporary extends \MovLib\Data\Database {
    *   The key of the record to get.
    * @return mixed
    *   The unserialized data of the record that was previously stored or <code>FALSE</code> if nothing was found.
-   * @throws DatabaseException
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function get($key) {
     if (!($result = $this->query("SELECT `data` FROM `tmp` WHERE `key` = ? LIMIT 1", "s", [ $key ])->get_result()->fetch_row())) {
