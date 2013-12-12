@@ -28,7 +28,7 @@ use \MovLib\Exception\Client\UnauthorizedException;
  * <ul>
  *   <li><code>Session::$authentication</code> contains the timestamp of the time when this session was initialized</li>
  *   <li><code>Session::$isAuthenticated</code> is a flag indicating if this is a known user</li>
- *   <li><code>Session::$userId</code> is zero for anonymous users, otherwise it contains the unique user's ID</li>
+ *   <li><code>Session::$userId</code> is zero for anonymous users, otherwise it contains the user's unique ID</li>
  *   <li><code>Session::$userName</code> contains the IP address for anonymous users, otherwise the user's unique name</li>
  * </ul>
  *
@@ -138,7 +138,7 @@ class Session implements \ArrayAccess {
       // Try to load the session from the persistent session storage for known users if we just generated a new
       // session ID and have no data stored for it.
       if ($_COOKIE[$this->name] != $this->id && empty($_SESSION)) {
-        // Load session data from session storage.
+        // Load session data from persistent session storage.
         $stmt = $db->query("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name ]]);
         $stmt->bind_result($this->authentication, $this->userId);
 
@@ -158,7 +158,7 @@ class Session implements \ArrayAccess {
             $_SESSION["name"]      = $this->userName       = $user->name;
             $_SESSION["tz"]        = $this->userTimeZoneId = $user->timeZoneIdentifier;
             $this->isAuthenticated = true;
-            
+
             $kernel->delayMethodCall([ $this, "update" ], [ $_COOKIE[$this->name] ]);
           }
           // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
@@ -185,7 +185,7 @@ class Session implements \ArrayAccess {
           }
         }
       }
-      // If we have no data for this session ID destroy it.
+      // If we have no data for this session ID, destroy it.
       else {
         $this->destroy();
       }
@@ -292,7 +292,11 @@ class Session implements \ArrayAccess {
 
     $sessionPrefix = ini_get("memcached.sess_prefix");
     if (!$sessionId) {
-      $sessionId = $this->id;
+      $sessionId = $db->query("SELECT `id` FROM `sessions` WHERE `user_id` = ?", "d", [ $this->userId ])->get_result()->fetch_all();
+      if (empty($sessionId)) {
+        return $this;
+      }
+      $sessionId = array_column($sessionId, 0);
     }
 
     // Fetch all configured Memcached servers from the PHP configuration and split them by the delimiter.
@@ -310,8 +314,7 @@ class Session implements \ArrayAccess {
 
     $memcached = new \Memcached();
     $memcached->addServers($servers);
-    if (is_array($sessionId)) {
-      $c      = count($sessionId);
+    if (is_array($sessionId) && ($c = count($sessionId)) > 0) {
       $clause = rtrim(str_repeat("?,", $c), ",");
       $db->query("DELETE FROM `sessions` WHERE `id` IN ({$clause})", str_repeat("s", $c), $sessionId);
       for ($i = 0; $i < $c; ++$i) {
@@ -340,15 +343,6 @@ class Session implements \ArrayAccess {
   public function destroy() {
     global $kernel;
 
-    // The user is no longer authenticated, keep this outside of the if for PHPUnit tests.
-    $this->active          = false;
-    $this->authentication  = 0;
-    $this->isAuthenticated = false;
-    $this->userAvatar      = null;
-    $this->userId          = 0;
-    $this->userName        = $kernel->remoteAddress;
-    $this->userTimeZoneId  = ini_get("date.timezone");
-
     // Only execute the following if this request was made through nginx.
     if (isset($_SERVER["FCGI_ROLE"])) {
       // Remove all data associated with this session.
@@ -357,12 +351,23 @@ class Session implements \ArrayAccess {
         session_destroy();
         session_write_close();
       }
+
       // Remove the cookie.
       $cookie = session_get_cookie_params();
       setcookie($this->name, "", 1, $cookie["path"], $cookie["domain"], $cookie["secure"], $cookie["httponly"]);
-      // Remove the session ID from our database.
-      $kernel->delayMethodCall([ $this, "delete" ], [ $this->id ]);
+
+      // Remove ALL sessions from Memcached and the persistent storage.
+      $this->delete();
     }
+
+    // The user is no longer authenticated, keep this outside of the if for PHPUnit tests.
+    $this->active          = false;
+    $this->authentication  = 0;
+    $this->isAuthenticated = false;
+    $this->userAvatar      = null;
+    $this->userId          = 0;
+    $this->userName        = $kernel->remoteAddress;
+    $this->userTimeZoneId  = ini_get("date.timezone");
 
     return $this;
   }
@@ -396,7 +401,7 @@ class Session implements \ArrayAccess {
    *
    * @global \MovLib\Data\Database $db
    * @param integer $movieId
-   *   The unique movie's identifier.
+   *   The movie's unique identifier.
    * @return null|integer
    *   The user's rating if available, otherwise <code>NULL</code>.
    */

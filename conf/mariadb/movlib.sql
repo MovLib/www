@@ -565,6 +565,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The movie trailer’s ISO alpha-2 language code.',
   `url` VARCHAR(255) NOT NULL COMMENT 'The movie trailer’s url, e.g. youtube.',
+  `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of this trailer, default is 0.',
   `country_code` CHAR(2) NULL COMMENT 'The movie trailer’s ISO alpha-2 country code.',
   PRIMARY KEY (`id`, `movie_id`),
   CONSTRAINT `fk_movies_trailers_movies`
@@ -775,7 +776,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`articles` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The article’s unique identifier.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The article’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_titles` BLOB NOT NULL COMMENT 'The article’s title in various languages. Keys are ISO alpha-2 language codes.',
-  `admin` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether the article can only be edited by admins (TRUE - 1) or not  (FALSE - 0). Defaults to FALSE (0).',
   `commit` CHAR(40) NULL COMMENT 'The article’s last history commit sha-1 hash.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
@@ -1369,6 +1369,58 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_relationships` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains relationships between series.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`help`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`help` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help’s unique identifier.',
+  `dyn_texts` BLOB NOT NULL COMMENT 'The help’s text in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
+  `commit` CHAR(40) NULL COMMENT 'The help’s last history commit sha-1 hash.',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+COMMENT = 'Contains all help articles.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`protected_pages`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`protected_pages` (
+  `id` SMALLINT NOT NULL AUTO_INCREMENT COMMENT 'The page’s unique identifier.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'Thepage’s text in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_texts` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
+  `commit` CHAR(40) NULL COMMENT 'The article’s last history commit sha-1 hash.',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+COMMENT = 'Contains all protected pages, e.g. Imprint.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`protected_pages_routes`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`protected_pages_routes` (
+  `route` VARCHAR(20) NOT NULL,
+  `protected_page_id` SMALLINT NOT NULL,
+  PRIMARY KEY (`route`, `protected_page_id`),
+  INDEX `fk_protected_pages_routes_protected_page_id` (`protected_page_id` ASC),
+  CONSTRAINT `fk_protected_pages_routes_protected_pages`
+    FOREIGN KEY (`protected_page_id`)
+    REFERENCES `movlib`.`protected_pages` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains all routes for protected pages, since they can be a /* comment truncated */ /*ccessed via their name.*/'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
