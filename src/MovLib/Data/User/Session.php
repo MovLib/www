@@ -28,7 +28,7 @@ use \MovLib\Exception\Client\UnauthorizedException;
  * <ul>
  *   <li><code>Session::$authentication</code> contains the timestamp of the time when this session was initialized</li>
  *   <li><code>Session::$isAuthenticated</code> is a flag indicating if this is a known user</li>
- *   <li><code>Session::$userId</code> is zero for anonymous users, otherwise it contains the unique user's ID</li>
+ *   <li><code>Session::$userId</code> is zero for anonymous users, otherwise it contains the user's unique ID</li>
  *   <li><code>Session::$userName</code> contains the IP address for anonymous users, otherwise the user's unique name</li>
  * </ul>
  *
@@ -138,7 +138,7 @@ class Session implements \ArrayAccess {
       // Try to load the session from the persistent session storage for known users if we just generated a new
       // session ID and have no data stored for it.
       if ($_COOKIE[$this->name] != $this->id && empty($_SESSION)) {
-        // Load session data from session storage.
+        // Load session data from persistent session storage.
         $stmt = $db->query("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name ]]);
         $stmt->bind_result($this->authentication, $this->userId);
 
@@ -158,7 +158,7 @@ class Session implements \ArrayAccess {
             $_SESSION["name"]      = $this->userName       = $user->name;
             $_SESSION["tz"]        = $this->userTimeZoneId = $user->timeZoneIdentifier;
             $this->isAuthenticated = true;
-            
+
             $kernel->delayMethodCall([ $this, "update" ], [ $_COOKIE[$this->name] ]);
           }
           // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
@@ -185,7 +185,7 @@ class Session implements \ArrayAccess {
           }
         }
       }
-      // If we have no data for this session ID destroy it.
+      // If we have no data for this session ID, destroy it.
       else {
         $this->destroy();
       }
@@ -396,7 +396,7 @@ class Session implements \ArrayAccess {
    *
    * @global \MovLib\Data\Database $db
    * @param integer $movieId
-   *   The unique movie's identifier.
+   *   The movie's unique identifier.
    * @return null|integer
    *   The user's rating if available, otherwise <code>NULL</code>.
    */
