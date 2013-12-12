@@ -30,6 +30,10 @@ use \MovLib\Data\Country;
  */
 class Full extends \MovLib\Data\Movie\Movie {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   public $cast;
   public $countries;
   public $created;
@@ -44,7 +48,10 @@ class Full extends \MovLib\Data\Movie\Movie {
   public $taglines;
   public $title;
   public $votes;
-  public $website;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new movie.
@@ -70,7 +77,6 @@ class Full extends \MovLib\Data\Movie\Movie {
         `movies`.`runtime`,
         `movies`.`rank`,
         COLUMN_GET(`movies`.`dyn_synopses`, '{$i18n->languageCode}' AS BINARY),
-        `movies`.`website`,
         `movies`.`created`,
         IFNULL(`titles`.`title`, `movies`.`original_title`)
       FROM `movies`
@@ -92,7 +98,6 @@ class Full extends \MovLib\Data\Movie\Movie {
       $this->runtime,
       $this->rank,
       $this->synopsis,
-      $this->website,
       $this->created,
       $this->displayTitle
     );
@@ -131,25 +136,6 @@ class Full extends \MovLib\Data\Movie\Movie {
     $result = $stmt->get_result();
     while ($row = $result->fetch_row()) {
       $this->genres[$row[0]] = $row[1];
-    }
-    $stmt->close();
-
-    // ----------------------------------------------------------------------------------------------------------------- Styles
-
-    $stmt = $db->query(
-      "SELECT
-        `styles`.`id`,
-        IFNULL(COLUMN_GET(`styles`.`dyn_names`, ? AS CHAR), COLUMN_GET(`styles`.`dyn_names`, '{$i18n->languageCode}' AS CHAR)) AS `name`
-      FROM `movies_styles`
-        INNER JOIN `styles` ON `styles`.`id` = `movies_styles`.`style_id`
-      WHERE `movies_styles`.`movie_id` = ?
-      ORDER BY `name` ASC",
-      "sd",
-      [ $i18n->languageCode, $this->id ]
-    );
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_row()) {
-      $this->styles[$row[0]] = $row[1];
     }
     $stmt->close();
   }
@@ -202,6 +188,24 @@ class Full extends \MovLib\Data\Movie\Movie {
       ORDER BY `persons`.`name` ASC",
       "d",
       [ $this->id ]
+    )->get_result();
+  }
+
+  /**
+   * Get the mysqli result for the movie's trailers.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   The mysqli result for the movie's trailers.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getTrailersResult() {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT `url` FROM `movies_trailers` WHERE `movie_id` = ? AND `language_code` IN(?, 'xx') ORDER BY `weight` DESC",
+      "ds",
+      [ $this->id, $i18n->languageCode ]
     )->get_result();
   }
 

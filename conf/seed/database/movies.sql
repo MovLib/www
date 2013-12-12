@@ -49,6 +49,7 @@ SET @roundhay_garden_scene_id = LAST_INSERT_ID();
 INSERT INTO `movies_countries` SET `movie_id` = @roundhay_garden_scene_id, `country_code` = 'UK';
 INSERT INTO `movies_languages` SET `movie_id` = @roundhay_garden_scene_id, `language_code` = 'xx';
 INSERT INTO `movies_genres` SET `movie_id` = @roundhay_garden_scene_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
+INSERT INTO `movies_trailers` SET `movie_id` = @roundhay_garden_scene_id, `id` = 1, `language_code` = 'xx', `country_code` = 'UK', `url` = 'nR2r__ZgO5g';
 
 INSERT INTO `persons` SET
   `name`            = 'Louis Le Prince',

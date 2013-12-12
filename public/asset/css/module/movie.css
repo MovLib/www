@@ -43,13 +43,13 @@
   top: 0;
 }
 
-#movie-rating i,
+#movie-rating .ico,
 #movie-rating label,
 #movie-rating button {
   display: inline-block;
 }
 
-#movie-rating i,
+#movie-rating .ico,
 #movie-rating button {
   background-color: transparent;
   border: none;

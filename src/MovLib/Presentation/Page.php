@@ -485,9 +485,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
     // user agents support the new HTML5 element yet).
     return
       "<main id='main' role='main'{$schema}>" .
-        "<header>" .
+        "<header id='main-header'>" .
           "<div class='container'>{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
           "<div id='alerts'>{$this->alerts}</div>" .
+          "<div id='breadcrumb'>{$this->breadcrumb}</div>" .
         "</header>" .
         "{$this->contentBefore}{$this->getContent()}{$this->contentAfter}" .
       "</main>"
@@ -545,8 +546,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
     $trail[] = [ $kernel->requestPath, $this->title ];
 
     // Create the actual navigation with the trail we just built.
-    $this->breadcrumb       = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "container", "id" => "breadcrumb" ], false);
-    $this->breadcrumb->glue = " › ";
+    $this->breadcrumb            = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "container small" ]);
+    $this->breadcrumb->glue      = " › ";
+    $this->breadcrumb->hideTitle = false;
 
     return $this;
   }

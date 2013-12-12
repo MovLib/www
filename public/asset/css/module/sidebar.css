@@ -40,7 +40,7 @@
 #sidebar-nav .no-list {
   margin: 0 0 0 -20px;
   overflow: hidden;
-  padding: 0 0 30px;
+  padding: 10px 0 30px;
   position: relative;
   font-size: 12px;
 }
@@ -75,12 +75,10 @@
   transition-property: color, background-color, border-color, margin-left;
 }
 
+#sidebar-nav a.active,
+#sidebar-nav a:active,
 #sidebar-nav a:focus,
 #sidebar-nav a:hover {
-  background-color: #fff;
-}
-
-#sidebar-nav a.active {
   background-color: #fff;
   z-index: 2;
 }

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Movie\Full as FullMovie;
 use \MovLib\Exception\Client\ErrorNotFoundException;
@@ -37,20 +38,6 @@ use \MovLib\Presentation\Partial\Lists\Persons;
  */
 class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   use \MovLib\Presentation\TraitFormPage;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The movie's translated and formatted synopsis.
-   *
-   * @var string
-   */
-  protected $synopsis;
-  protected $directors;
-  protected $cast;
-
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -162,16 +149,13 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       // Format the movie's duration and enhance it with microdata.
       $runtime = new Duration($this->movie->runtime, [ "itemprop" => "duration" ], Duration::MINUTES);
 
-      // Format the movie's genres and styles and enhance them with microdata. We mark the styles as genres as well
-      // because schema.org doesn't have any special mark-up for sub-genres.
+      // Format the movie's genres.
       $genres          = new GlueSeparated($this->movie->genres, $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
       $genres->closure = [ $this, "formatGenre" ];
-      $styles          = new GlueSeparated($this->movie->styles, $i18n->t("No styles assigned yet, {0}add styles{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
-      $styles->closure = [ $this, "formatStyle" ];
 
       // But it all together after the closing title.
       $this->headingAfter  =
-          "<p>{$i18n->t("“{0}” ({1}original title{2})", [ $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
+          "<p>{$i18n->t("“{original_title}” ({0}original title{1})", [ "original_title" => $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
           "{$this->form->open()}<fieldset>" .
             "<legend class='visuallyhidden'>{$i18n->t("Your Rating:")}</legend>" .
             "<input type='hidden' value='movie_rating'>" .
@@ -180,7 +164,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
           "</fieldset>{$this->form->close()}" .
           "<small>{$ratingExplanation}</small>" .
           "<small><span class='visuallyhidden'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='visuallyhidden'>{$i18n->t("Countries:")} </span>{$countries}</small>" .
-          "<small><span class='visuallyhidden'>{$i18n->t("Genres:")} </span>{$genres} | <span class='visuallyhidden'>{$i18n->t("Styles:")} </span>{$styles}</small>" .
+          "<small><span class='visuallyhidden'>{$i18n->t("Genres:")} </span>{$genres}</small>" .
         "</div>" . // close .span
         $this->getImage(
           $this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03),
@@ -189,36 +173,6 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
           [ "class" => "img span span--3" ]
         ) .
       "</div>"; // close .row
-
-      // Translate the titles of each section.
-      $titleSynopsis  = $i18n->t("Synopsis");
-      $titleDirectors = $i18n->t("{0, plural, one {Director} other {Directors}}", [ count($this->movie->directors) ]);
-      $titleCast      = $i18n->t("Cast");
-
-      // Add a jump link for each section to the secondary navigation.
-      $this->sidebarNavigation->menuitems[] = [ "#synopsis", $titleSynopsis ];
-      $this->sidebarNavigation->menuitems[] = [ "#directors", $titleDirectors ];
-      $this->sidebarNavigation->menuitems[] = [ "#cast", $titleCast ];
-
-      $synopsis = empty($this->movie->synopsis)
-        ? $i18n->t("No synopsis available, {0}write one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
-        : $kernel->htmlDecode($this->movie->synopsis)
-      ;
-      $this->synopsis = "<h2>{$titleSynopsis}</h2><div itemprop='description'>{$synopsis}</div>";
-
-      $directors = new Persons(
-        $this->movie->getDirectorsResult(),
-        $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "itemprop" => "director" ]
-      );
-      $this->directors = "<h2>{$titleDirectors}</h2>{$directors}";
-
-      $cast = new Persons(
-        $this->movie->getCastResult(),
-        $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
-        [ "itemprop" => "actor" ]
-      );
-      $this->cast = "<h2>{$titleCast}</h2>{$cast}";
     }
     // We don't have any movie with the given identifier.
     catch (\OutOfBoundsException $e) {
@@ -232,13 +186,59 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\I18n $i18n
    */
   protected function getPageContent() {
-    return
-      "<div id='synopsis'>{$this->synopsis}</div>" .
-      "<div id='directors'>{$this->directors}</div>" .
-      "<div id='cast'>{$this->cast}</div>"
-    ;
+    global $i18n, $kernel;
+
+    $sections["synopsis"] = [
+      $i18n->t("Synopsis"),
+      empty($this->movie->synopsis)
+        ? $i18n->t("No synopsis available, {0}write one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
+        : $kernel->htmlDecode($this->movie->synopsis)
+      ,
+    ];
+
+    $sections["directors"] = [
+      $i18n->t("{0, plural, one {Director} other {Directors}}", [ count($this->movie->directors) ]),
+      new Persons(
+        $this->movie->getDirectorsResult(),
+        $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
+        [ "itemprop" => "director" ]
+      ),
+    ];
+
+    $sections["cast"] = [
+      $i18n->t("Cast"),
+      new Persons(
+        $this->movie->getCastResult(),
+        $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
+        [ "itemprop" => "actor" ]
+      ),
+    ];
+
+    $sections["releases"] = [
+      $i18n->t("Releases"),
+      new Alert("Not implemented yet!"),
+    ];
+
+    $sections["trailers"] = [
+      $i18n->t("Trailers"),
+      new Alert("Not implemented yet!"),
+    ];
+
+    $sections["reviews"] = [
+      $i18n->t("Reviews"),
+      new Alert("Not implemented yet!"),
+    ];
+
+    $content = null;
+    foreach ($sections as $id => $section) {
+      $this->sidebarNavigation->menuitems[] = [ "#{$id}", $section[0] ];
+      $content .= "<div id='{$id}'><h2>{$section[0]}</h2>{$section[1]}</div>";
+    }
+    return $content;
   }
 
   /**
@@ -269,24 +269,6 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   public function formatGenre($name, $id) {
     global $i18n;
     return "<a href='{$i18n->r("/genre/{0}", [ $id ])}' itemprop='genre'>{$name}</a>";
-  }
-
-  /**
-   * Format a single style.
-   *
-   * @internal
-   *   We have to use genre for the itemprop attribute because Schema.org has no styles.
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $name
-   *   The style's translated name.
-   * @param integer $id
-   *   The style's unique identifier.
-   * @return string
-   *   The formatted style.
-   */
-  public function formatStyle($name, $id) {
-    global $i18n;
-    return "<a href='{$i18n->r("/style/{0}", [ $id ])}' itemprop='genre'>{$name}</a>";
   }
 
 }

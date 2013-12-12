@@ -28,24 +28,35 @@
  * @since 0.0.1-dev
  */
 
-main {
+#main {
   min-height: 500px;
-  margin-top: 50px; /* Style for sticky header, also see base.css and header.css (causing many issues) */
-/* Style for sticky footer, also see base.css and footer.css
-  margin-bottom: 265px;
-*/
+  margin-top: 50px;
   padding-bottom: 40px;
   background-color: #fff;
 }
 
-main header {
+#main-header {
   margin-bottom: 40px;
   background-color: #252525;
+}
+
+#main-header > .container {
+  padding: 20px 0;
   color: #c7c7c7;
 }
 
-main header > .container {
-  padding: 20px 0;
+#breadcrumb {
+  padding: 5px 0;
+  background-color: #f5f5f5;
+}
+
+#breadcrumb h2 {
+  font: inherit;
+}
+
+#breadcrumb h2,
+#breadcrumb div {
+  display: inline;
 }
 
 #filter {

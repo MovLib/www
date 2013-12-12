@@ -42,6 +42,30 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
   public $imageStyle = PersonPhoto::STYLE_SPAN_01;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new special persons listing.
+   *
+   * @param \mysqli_result $listItems
+   *   The mysqli result object containing the persons.
+   * @param string $noItemsText
+   *   {@inheritdoc}
+   * @param array $listItemsAttributes
+   *   {@inheritdoc}
+   * @param array $attributes
+   *   {@inheritdoc}
+   */
+  public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null) {
+    parent::__construct($listItems, $noItemsText, $listItemsAttributes, $attributes);
+    $this->addClass("row", $this->attributes);
+    $this->addClass("span span--5 row", $this->listItemsAttributes);
+    $this->listItemsAttributes[]           = "itemscope";
+    $this->listItemsAttributes["itemtype"] = "http://schema.org/Person";
+  }
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -55,25 +79,18 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
     }
 
     $list = null;
-    $this->addClass("span span--5 row", $this->listItemsAttributes);
-    $this->listItemsAttributes[]           = "itemscope";
-    $this->listItemsAttributes["itemtype"] = "http://schema.org/Person";
     /* @var $person \MovLib\Data\Person\Person */
     while ($person = $this->listItems->fetch_object("\\MovLib\\Data\\Person\\Person")) {
-      if ($this->closure) {
-        $item = call_user_func($this->closure, $person);
-      }
-      else {
-        $item =
+      $list .=
+        "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
           "<a class='img row' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
             $this->getImage($person->displayPhoto->getStyle($this->imageStyle), false, [ "class" => "span span--1", "itemprop" => "image" ]) .
             "<span class='span span--4' itemprop='name'>{$person->name}</span>" .
-          "</a>"
-        ;
-      }
-      $list .= "<li{$this->expandTagAttributes($this->listItemsAttributes)}>{$item}</li>";
+          "</a>" .
+        "</li>"
+      ;
     }
-    $this->addClass("row", $this->attributes);
+
     return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
   }
 

@@ -66,10 +66,12 @@ trait TraitSidebar {
    */
   protected function getContent() {
     global $i18n;
+    // Allow implementing class to alter the sidebar within the getPageContent method.
+    $content = $this->getPageContent();
     return
       "<div class='container sidebar-container'><div class='row sidebar-row'>" .
         "<aside id='sidebar' class='span span--2' role='complementary'><h2 class='visuallyhidden'>{$i18n->t("Sidebar")}</h2>{$this->sidebarNavigation}</aside>" .
-        "<div class='page-content span span--10'>{$this->getPageContent()}</div>" .
+        "<div class='page-content span span--10'>{$content}</div>" .
       "</div></div>"
     ;
   }
