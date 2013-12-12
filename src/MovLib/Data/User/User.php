@@ -204,7 +204,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    *   No need to delete the directory, all avatars are in the same directory and at least one is always present.
    * @return this
    */
-  protected function delete() {
+  protected function deleteAvatar() {
     global $kernel;
     if ($this->exists == true) {
       foreach ([ self::STYLE_SPAN_01, self::STYLE_SPAN_02 ] as $style) {

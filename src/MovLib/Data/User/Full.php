@@ -333,7 +333,7 @@ class Full extends \MovLib\Data\User\User {
    */
   public function deleteAccount() {
     global $db;
-
+    $this->deleteAvatar();
     $db->query(
       "UPDATE `users` SET
         `email`                = NULL,
