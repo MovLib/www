@@ -136,7 +136,7 @@ class Session implements \ArrayAccess {
 
       // Try to load the session from the persistent session storage for known users if we just generated a new
       // session ID and have no data stored for it.
-      if ($_COOKIE[$this->name] != $this->id && empty($_SESSION)) {
+      if (empty($_SESSION)) {
         // Load session data from persistent session storage.
         $stmt = $db->query("SELECT UNIX_TIMESTAMP(`authentication`), `user_id` FROM `sessions` WHERE `id` = ? LIMIT 1", "s", [ $_COOKIE[$this->name ]]);
         $stmt->bind_result($this->authentication, $this->userId);
@@ -158,7 +158,7 @@ class Session implements \ArrayAccess {
             $_SESSION["tz"]        = $this->userTimeZoneId = $user->timeZoneIdentifier;
             $this->isAuthenticated = true;
 
-            $kernel->delayMethodCall([ $this, "update" ], [ $_COOKIE[$this->name] ]);
+            $this->regenerate();
           }
           // Well, this is akward, we have a valid session but no valid user, destroy session and log this error.
           catch (\OutOfBoundsException $e) {
@@ -168,25 +168,18 @@ class Session implements \ArrayAccess {
         }
       }
       // Session data was loaded from Memcached.
-      elseif (!empty($_SESSION)) {
-        // This is a regular user if we stored an ID along with this session in Memcached.
-        if (!empty($_SESSION["id"])) {
-          $this->authentication  = $_SESSION["auth"];
-          $this->userAvatar      = $_SESSION["avatar"];
-          $this->userId          = $_SESSION["id"];
-          $this->userName        = $_SESSION["name"];
-          $this->userTimeZoneId  = $_SESSION["tz"];
-          $this->isAuthenticated = true;
+      elseif (!empty($_SESSION["id"])) {
+        $this->authentication  = $_SESSION["auth"];
+        $this->userAvatar      = $_SESSION["avatar"];
+        $this->userId          = $_SESSION["id"];
+        $this->userName        = $_SESSION["name"];
+        $this->userTimeZoneId  = $_SESSION["tz"];
+        $this->isAuthenticated = true;
 
-          // Regenerate the session ID at least every 20 minutes (OWASP recommendation).
-          if ($this->authentication + 1200 < $_SERVER["REQUEST_TIME"]) {
-            $this->regenerate();
-          }
+        // Regenerate the session ID at least every 20 minutes (OWASP recommendation).
+        if ($this->authentication + 1200 < $_SERVER["REQUEST_TIME"]) {
+          $this->regenerate();
         }
-      }
-      // If we have no data for this session ID, destroy it.
-      else {
-        $this->destroy();
       }
     }
 
