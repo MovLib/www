@@ -279,7 +279,7 @@ class Join extends \MovLib\Presentation\Page {
 
       // Email is valid, try to load the user from the temporary database.
       $tmp  = new Temporary();
-      $user = $tmp->get("join{$email}");
+      $user = $tmp->get("jointoken{$email}");
       if (!($user instanceof UserFull)) {
         throw new ValidationException(
           "<p>{$i18n->t("We couldn’t find any activation data for your token.")}</p>" .
@@ -312,7 +312,7 @@ class Join extends \MovLib\Presentation\Page {
       // Register the new account (this can't be done delayed because the user needs to validate directly after the
       // redirect) and stack the deletion of the temporary database entry.
       $user->join();
-      $kernel->delayMethodCall([ $tmp, "delete" ], [ "join{$user->email}" ]);
+      $kernel->delayMethodCall([ $tmp, "delete" ], [ "jointoken{$user->email}" ]);
 
       // The user has to sign in, this makes sure that the person is really who she or he claims to be. The password is
       // entered by the user while joining and never displayed anywhere to anyone (plus we hash it right away in the
