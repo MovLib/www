@@ -75,9 +75,24 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     $idRegExp = "([1-9][0-9]*)";
 
     /**
+     * Associative array containing the currently untranlated singular forms for each locale.
+     *
+     * @var array
+     */
+    $emptyTranslationsSingular = [];
+
+    /**
+     * Associative array containing the currently untranlated plural forms for each locale.
+     *
+     * @var array
+     */
+    $emptyTranslationsPlural = [];
+
+    /**
      * This closure will be used within our routes script to translate singular strings.
      *
      * @global \MovLib\Data\I18n $i18n
+     * @global \MovLib\Tool\Kernel $kernel
      * @param string $route
      *   The route to translate.
      * @param null|array $args [optional]
@@ -85,15 +100,37 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
      * @return string
      *   The translated route.
      */
-    $r = function ($route, array $args = null) {
-      global $i18n;
-      return $i18n->r($route, $args);
+    $r = function ($route, array $args = null) use (&$emptyTranslationsSingular) {
+      global $i18n, $kernel;
+      static $routes = [];
+
+      // We only need to translate the route if it isn't in the default locale.
+      if ($i18n->locale != $i18n->defaultLocale) {
+        // Check if we already have the route translations for this locale cached.
+        if (!isset($routes[$i18n->locale])) {
+          $routes[$i18n->locale] = require "{$kernel->pathTranslations}/routes/{$i18n->locale}.php";
+        }
+
+        // Check if we have a translation for this route and use it if we have one.
+        if (!empty($routes[$i18n->locale][$route])) {
+          $route = $routes[$i18n->locale][$route];
+        }
+        else {
+          $emptyTranslationsSingular[$i18n->languageCode][$route] = $route;
+        }
+      }
+
+      if ($args) {
+        return \MessageFormatter::formatMessage($i18n->locale, $route, $args);
+      }
+      return $route;
     };
 
     /**
      * This closure will be used within our routes script to translate plural strings.
      *
      * @global \MovLib\Data\I18n $i18n
+     * @global \MovLib\Tool\Kernel $kernel
      * @param string $route
      *   The route to translate.
      * @param null|array $args [optional]
@@ -101,9 +138,30 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
      * @return string
      *   The translated route.
      */
-    $rp = function ($route, array $args = null) {
-      global $i18n;
-      return $i18n->rp($route, $args);
+    $rp = function ($route, array $args = null) use (&$emptyTranslationsPlural) {
+      global $i18n, $kernel;
+      static $routes = [];
+
+      // We only need to translate the route if it isn't in the default locale.
+      if ($i18n->locale != $i18n->defaultLocale) {
+        // Check if we already have the route translations for this locale cached.
+        if (!isset($routes[$i18n->locale])) {
+          $routes[$i18n->locale] = require "{$kernel->pathTranslations}/routes/{$i18n->locale}.plural.php";
+        }
+
+        // Check if we have a translation for this route and use it if we have one.
+        if (!empty($routes[$i18n->locale][$route])) {
+          $route = $routes[$i18n->locale][$route];
+        }
+        else {
+          $emptyTranslationsPlural[$i18n->languageCode][$route] = $route;
+        }
+      }
+
+      if ($args) {
+        return \MessageFormatter::formatMessage($i18n->locale, $route, $args);
+      }
+      return $route;
     };
 
     foreach ($kernel->systemLanguages as $languageCode => $locale) {
@@ -129,6 +187,16 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
 
       $this->write("Written routing file for '{$i18n->languageCode}' ...");
+
+      // Print the keys that still need translation.
+      if (!empty($emptyTranslationsSingular[$i18n->languageCode])) {
+        $this->write("The following singular forms for '{$i18n->languageCode}' still need translations:", self::MESSAGE_TYPE_ERROR);
+        $this->write(array_values($emptyTranslationsSingular[$i18n->languageCode]), self::MESSAGE_TYPE_COMMENT);
+      }
+      if (!empty($emptyTranslationsPlural[$i18n->languageCode])) {
+        $this->write("The following plural forms for '{$i18n->languageCode}' still need translations:", self::MESSAGE_TYPE_ERROR);
+        $this->write(array_values($emptyTranslationsPlural[$i18n->languageCode]), self::MESSAGE_TYPE_COMMENT);
+      }
     }
 
     if (sh::executeDisplayOutput("service nginx reload") === false) {

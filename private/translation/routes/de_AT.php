@@ -98,9 +98,12 @@ return [
   "/help"                => "/hilfe",
   "/help/create"         => "/hilfe/erstellen",
   "/help/{0}"            => "/hilfe/{0}",
-  "/help/{0}/discussion" => "/hilfe/{0}/diskussion",
+  "/help/{0}/create"     => "/hilfe/{0}/erstellen",
   "/help/{0}/edit"       => "/hilfe/{0}/bearbeiten",
   "/help/{0}/delete"     => "/hilfe/{0}/löschen",
+  "/help/{0}/{0}"        => "/hilfe/{0}/{0}",
+  "/help/{0}/{0}/edit"   => "/hilfe/{0}/{0}/bearbeiten",
+  "/help/{0}/{0}/delete" => "/hilfe/{0}/{0}/löschen",
 
   // ------------------------------------------------------------------------------------------------------------------- Country
   // Countries are created with Intl ICU data and aren"t editable.
@@ -128,8 +131,13 @@ return [
   "/style/{0}/edit"       => "/stilrichtung/{0}/bearbeiten",
   "/style/{0}/löschen"    => "/stilrichtung/{0}/löschen",
 
+  // ------------------------------------------------------------------------------------------------------------------- System Pages
+  "/{0}/edit"   => "/{0}/bearbeiten",
+  "/{0}/delete" => "/{0}/löschen",
+
   // ------------------------------------------------------------------------------------------------------------------- Queries
-  "page"                  => "seite",
+  "page"  => "seite",
+  "token" => "token",
 
 ];
 // @codeCoverageIgnoreEnd

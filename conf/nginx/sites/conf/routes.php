@@ -37,7 +37,7 @@ location @movie_poster_upload {
   include sites/conf/fastcgi_params.conf;
 }
 
-location = <?= $r("/movies") ?> {
+location = <?= $rp("/movies") ?> {
   set $movlib_presenter "Movies\\Show";
   try_files $movlib_cache @php;
 }
@@ -297,36 +297,12 @@ location @person_photo_update {
   include sites/conf/fastcgi_params.conf;
 }
 
-location ^~ <?= $r("/persons") ?> {
-
-  location = <?= $r("/persons") ?> {
-    set $movlib_presenter "Persons\\Show";
-    try_files $movlib_cache @php;
-  }
-
-  location = <?= $r("/persons") ?>/ {
-    return 301 <?= $r("/persons") ?>;
-  }
-
-<?php if ($r("/persons") != $r("/person")): ?>
-
-  location ~ "^<?= $r("/persons") ?>/.*$" {
-    return 301 <?= $r("/person") ?>/$1;
-  }
-
-  return 404;
+location = <?= $rp("/persons") ?> {
+  set $movlib_presenter "Persons\\Show";
+  try_files $movlib_cache @php;
 }
 
 location ^~ <?= $r("/person") ?> {
-
-  location = <?= $r("/person") ?> {
-    return 301 <?= $r("/persons") ?>;
-  }
-
-  location = <?= $r("/person") ?>/ {
-    return 301 <?= $r("/persons") ?>;
-  }
-<?php endif ?>
 
   #
   # Person
@@ -472,36 +448,12 @@ location ^~ <?= $r("/profile") ?> {
 # ---------------------------------------------------------------------------------------------------------------------- user(s)
 
 
-location ^~ <?= $r("/users") ?> {
-
-  location = <?= $r("/users") ?> {
-    set $movlib_presenter "Users\\Show";
-    try_files $movlib_cache @php;
-  }
-
-  location = <?= $r("/users") ?>/ {
-    return 301 <?= $r("/users") ?>;
-  }
-
-<?php if ($r("/users") != $r("/user")): ?>
-
-  location ~ "^<?= $r("/users") ?>/.*$" {
-    return 301 <?= $r("/users") ?>;
-  }
-
-  return 404;
+location = <?= $rp("/users") ?> {
+  set $movlib_presenter "Users\\Show";
+  try_files $movlib_cache @php;
 }
 
 location ^~ <?= $r("/user") ?> {
-
-  location = <?= $r("/user") ?> {
-    return 301 <?= $r("/users") ?>;
-  }
-
-  location = <?= $r("/user") ?>/ {
-    return 301 <?= $r("/users") ?>;
-  }
-<?php endif ?>
 
   location ~ "^<?= $r("/user/{0}/collection", [ "(.+)" ]) ?>$" {
     set $movlib_presenter "User\\Collection";
@@ -529,36 +481,12 @@ location ^~ <?= $r("/user") ?> {
 # ---------------------------------------------------------------------------------------------------------------------- style(s)
 
 
-location ^~ <?= $r("/styles") ?> {
-
-  location = <?= $r("/styles") ?> {
-    set $movlib_presenter "Styles\\Show";
-    try_files $movlib_cache @php;
-  }
-
-  location = <?= $r("/styles") ?>/ {
-    return 301 <?= $r("/styles") ?>;
-  }
-
-<?php if ($r("/styles") != $r("/style")): ?>
-
-  location ~ "^<?= $r("/styles") ?>(/.*)$" {
-    return 301 <?= $r("/style") ?>$1;
-  }
-
-  return 404;
+location = <?= $rp("/styles") ?> {
+  set $movlib_presenter "Styles\\Show";
+  try_files $movlib_cache @php;
 }
 
 location ^~ <?= $r("/style") ?> {
-
-  location = <?= $r("/style") ?> {
-    return 301 <?= $r("/styles") ?>;
-  }
-
-  location = <?= $r("/style") ?>/ {
-    return 301 <?= $r("/styles") ?>;
-  }
-<?php endif ?>
 
   location ~ "^<?= $r("/style/create") ?>$" {
     set $movlib_presenter "Style\\Create";
@@ -591,3 +519,122 @@ location ^~ <?= $r("/style") ?> {
 
   return 404;
 }
+
+
+# ---------------------------------------------------------------------------------------------------------------------- article(s)
+
+
+location = <?= $rp("/articles") ?> {
+  set $movlib_presenter "Articles\\Show";
+  try_files $movlib_cache @php;
+}
+
+location ^~ <?= $r("/article") ?> {
+
+  location ~ "^<?= $r("/article/create") ?>$" {
+    set $movlib_presenter "Article\\Create";
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/article/{0}", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Article\\Show";
+    set $movlib_article_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/article/{0}/discussion", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Article\\Discussion";
+    set $movlib_article_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/article/{0}/edit", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Article\\Edit";
+    set $movlib_article_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~"^<?= $r("/article/{0}/delete", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Article\\Delete";
+    set $movlib_article_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  return 404;
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------- help
+
+
+location = <?= $rp("/help") ?> {
+  set $movlib_presenter "Help\\Categories";
+  try_files $movlib_cache @php;
+}
+
+location ^~ <?= $r("/help") ?> {
+
+  location ~ "^<?= $r("/help/create") ?>$" {
+    set $movlib_presenter "Help\\CreateCategory";
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/help/{0}/{0}/edit", [ "(.*)" ]) ?>$" {
+    set $movlib_presenter "Help\\Edit";
+    set $movlib_help_category $1;
+    set $movlib_help_title $2;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/help/{0}/{0}/delete", [ "(.*)" ]) ?>$" {
+    set $movlib_presenter "Help\\Delete";
+    set $movlib_help_category $1;
+    set $movlib_help_title $2;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/help/{0}/{0}", [ "(.*)" ]) ?>$" {
+    set $movlib_presenter "Help\\Show";
+    set $movlib_help_category $1;
+    set $movlib_help_title $2;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/help/{0}", [ "(.*)" ]) ?>$" {
+    set $movlib_presenter "Help\\Category";
+    set $movlib_help_category $1;
+    try_files $movlib_cache @php;
+  }
+
+  return 404;
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------- system pages
+
+
+<?php
+$result = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) FROM `protected_pages`", "s", [ $i18n->defaultLanguageCode ])->get_result();
+while ($route = $result->fetch_row()):
+  $id    = $route[0];
+  $route = \MovLib\Data\FileSystem::sanitizeFilename($route[1]);
+?>
+
+location = <?= $r("/{$route}") ?> {
+  set $movlib_presenter "ProtectedPage\\Show";
+  set $movlib_id <?= $id ?>;
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/{0}/edit", [ $route ]) ?> {
+  set $movlib_presenter "ProtectedPage\\Edit";
+  set $movlib_id <?= $id ?>;
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/{0}/delete", [ $route ]) ?> {
+  set $movlib_presenter "ProtectedPage\\Delete";
+  set $movlib_id <?= $id ?>;
+  try_files $movlib_cache @php;
+}
+<?php endwhile ?>
