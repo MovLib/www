@@ -253,54 +253,6 @@ option[value=""] {
   margin-left: -20px;
 }
 
-.popup-container {
-  position: relative;
-}
-
-.popup:after,
-.popup {
-  display: block;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  transition: 0.3s ease;
-  visibility: hidden;
-  z-index: 999999999; /* Even go over our sticky header! */
-}
-
-.popup:after {
-  border: 6px solid transparent;
-  border-top-color: #fff;
-  bottom: -12px;
-  content: "";
-  left: 50%;
-  margin-left: -6px;
-}
-
-.popup {
-  background-color: #fff;
-  bottom: 0;
-  left: -50%;
-  margin: 0 0 6px 0;
-  padding: 10px;
-  max-width: 320px;
-  color: #656565;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
-}
-
-.popup-container:hover .popup,
-.popup-container:focus .popup {
-  bottom: 100%;
-}
-
-.popup-container:hover .popup,
-.popup-container:focus .popup,
-.popup-container:hover .popup:after,
-.popup-container:focus .popup:after {
-  opacity: 1;
-  visibility: visible;
-}
-
 .form-help {
   cursor: help;
   margin: 0;

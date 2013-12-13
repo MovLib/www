@@ -59,10 +59,13 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * Instatiate new single movie presentation page.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
+    $kernel->javascripts[] = "Movie";
+
     try {
       // Instantiate movie, initialize page and set the microdata schema.
       $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
@@ -90,8 +93,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       $this->headingBefore = "<div class='row'><div class='span span--9'>";
 
       // Instantiate the rating form.
-      $this->form                   = new Form($this);
-      $this->form->attributes["id"] = "movie-rating";
+      $this->form = new Form($this);
 
       // The five available ratings.
       $ratings = [
@@ -104,15 +106,13 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
       // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
       $stars = null;
-      for ($i = 1; $i <= 5; ++$i) {
+      for ($i = 1; $i < 6; ++$i) {
         $rated  = $i <= $this->movie->userRating ? " rated" : null;
         $stars .=
-          "<label class='popup-container{$rated}'>" .
-            "<small class='popup'>{$ratings[$i]}</small>" .
-            "<button class='ico ico-star' name='rating' type='submit' value='{$i}'>" .
-              "<span class='visuallyhidden'>{$i18n->t("Rate with {0, plural, one {one star} other {# stars}}", [ $i ])}</span>" .
-            "</button>" .
-          "</label>"
+          "<button class='popup-container{$rated}' name='rating' type='submit' value='{$i}'>" .
+            "<small class='popup tac'>{$ratings[$i]}</small>" .
+            "<span class='visuallyhidden'>{$i18n->t("Rate with {0, plural, one {one star} other {# stars}}", [ $i ])}</span>" .
+          "</button>"
         ;
       }
 
@@ -160,10 +160,9 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       // But it all together after the closing title.
       $this->headingAfter  =
           "<p>{$i18n->t("“{original_title}” ({0}original title{1})", [ "original_title" => $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
-          "{$ratingHelp}{$this->form->open()}<fieldset>" .
+          "{$this->form->open()}<fieldset id='movie-rating'>{$ratingHelp}" .
             "<legend class='visuallyhidden'>{$i18n->t("Rate this movie:")}</legend>" .
-            "<input type='hidden' value='movie_rating'>" .
-            "<div aria-hidden='true' class='back'>" . str_repeat("<span class='ico ico-star'></span>", 5) . "</div>" .
+            "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
             "<div class='front'>{$stars}</div>" .
           "</fieldset>{$this->form->close()}" .
           "<small>{$ratingSummary}</small>" .

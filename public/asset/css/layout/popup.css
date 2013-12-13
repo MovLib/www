@@ -15,8 +15,7 @@
  */
 
 /**
- * Main CSS file which will contain the minified and optimized contents of all CSS files that reside in the layout
- * directory. We stick to @import rules in production.
+ * Popup styles
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -25,18 +24,52 @@
  * @since 0.0.1-dev
  */
 
-@import "layout/font.css";
-@import "base.css";
-@import "layout/grid.css";
-@import "layout/typography.css";
-@import "layout/form.css";
-@import "layout/generic.css";
-@import "layout/header.css";
-@import "layout/content.css";
-@import "layout/footer.css";
-@import "layout/icon.css";
-@import "layout/alert.css";
-@import "layout/button.css";
-@import "layout/list.css";
-@import "layout/well.css";
-@import "layout/popup.css";
+.popup-container {
+  position: relative;
+  outline: 0 none !important;
+}
+
+.popup:after,
+.popup {
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: 0.3s ease;
+  visibility: hidden;
+  z-index: 10;
+}
+
+.popup {
+  background-color: #fff;
+  bottom: 0;
+  right: auto; /* Important for Internet Explorer, otherwise the popup's are too much to the left! */
+  left: -50%;
+  margin: 0 0 6px 0;
+  padding: 10px;
+  max-width: 320px;
+  color: #656565;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+}
+
+.popup:after {
+  border: 6px solid transparent;
+  border-top-color: #fff;
+  bottom: -12px;
+  content: "";
+  left: 50%;
+  margin-left: -6px;
+}
+
+.popup-container:focus .popup,
+.popup-container:hover .popup {
+  bottom: 100%;
+}
+
+.popup-container:focus .popup,
+.popup-container:hover .popup,
+.popup-container:focus .popup:after,
+.popup-container:hover .popup:after {
+  opacity: 1;
+  visibility: visible;
+}

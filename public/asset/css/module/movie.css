@@ -27,82 +27,68 @@
  */
 
 #movie-rating-help {
-  float: left;
-  margin: 10px 0 0 125px;
+  float: right;
+  margin-left: 4px;
   opacity: 0.5;
   transition: opacity 0.4s ease-in-out;
 }
 
-#movie-rating-help:active,
 #movie-rating-help:focus,
 #movie-rating-help:hover {
   opacity: 1;
 }
 
 #movie-rating {
-  margin-bottom: 10px;
+  width: 138px;
+  height: 20px;
   position: relative;
-  width: 120px;
-}
-
-#movie-rating,
-#movie-rating div {
-  height: 20px;
-}
-
-#movie-rating div {
-  left: 0;
-  position: absolute;
-  top: 0;
-}
-
-#movie-rating .ico,
-#movie-rating label,
-#movie-rating button {
-  display: inline-block;
-}
-
-#movie-rating .ico,
-#movie-rating button {
-  background-color: transparent;
-  border: none;
-  color: inherit;
-  font-family: MovLib;
-  font-size: 20px;
-  height: 20px;
-  width: 24px;
-  padding: 0 5px 0 0;
-  margin: 0;
-  line-height: 1;
-}
-
-#movie-rating label {
-  margin: 0;
-  transition: color 0.3s ease-in-out;
 }
 
 #movie-rating .back {
-  color: #c7c7c7;
-  overflow: hidden;
-  white-space: pre;
+  position: absolute;
+  top: 0;
+  right: 18px;
+  bottom: 0;
+  left: 0;
 }
 
-#movie-rating-mean:before,
-#movie-rating .rated,
-#movie-rating:focus .front,
-#movie-rating:hover .front {
-  color: #fb3;
+#movie-rating .back span,
+#movie-rating button {
+  width: 24px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  background: left 0 url("/asset/img/star.svg#i") no-repeat transparent;
+  background-size: 20px 20px; /* Important for older WebKit browsers! */
+  border: 0 none;
+  float: left;
+  overflow: visible; /* Important for Internet Explorer, otherwise the popup's aren't visible! */
 }
 
-#movie-rating .front > label:focus ~ label,
-#movie-rating .front > label:hover ~ label {
-  color: #c7c7c7;
+@media (-webkit-min-device-pixel-ratio:0) {
+  #movie-rating .back span,
+  #movie-rating button {
+    background-image: url("/asset/img/star-gray.svg");
+  }
 }
 
-#movie-rating .popup {
+#movie-rating.focus button,
+#movie-rating:hover button,
+#movie-rating .rated {
+  background-image: url("/asset/img/star.svg");
+  opacity: 1;
+}
+
+#movie-rating button:focus ~ button,
+#movie-rating button:hover ~ button,
+#movie-rating button {
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+}
+
+#movie-rating .tac {
   width: 100px;
-  text-align: center;
-  left: -40.5px;
+  left: -40px;
 }
 
 #movie-poster {
@@ -111,13 +97,17 @@
 
 #movie-rating-mean {
   background: url("/asset/img/star.svg") no-repeat;
-  position: absolute;
-  bottom: 0;
-  left: -60px;
+  background-size: 140px 140px; /* Important for older WebKit browsers! */
+  bottom: -54px;
   color: #252525;
-  font-size: 38px;
-  z-index: 1;
-  width: 120px;
-  line-height: 120px;
+  font-size: 34px;
+  font-weight: bold;
+  height: 140px;
+  left: -71.5px;
   letter-spacing: -1px;
+  line-height: 148px;
+  position: absolute;
+  text-shadow: 0 0 5px #fff, 0 0 20px #fff;
+  width: 140px;
+  z-index: 1;
 }
