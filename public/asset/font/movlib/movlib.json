@@ -3690,9 +3690,9 @@
 					"order": 17,
 					"id": 39,
 					"prevSize": 14,
-					"code": 58916,
+					"code": 58917,
 					"name": "series",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -12517,9 +12517,9 @@
 					"order": 22,
 					"id": 1646,
 					"prevSize": 32,
-					"code": 58915,
+					"code": 58916,
 					"name": "movie",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -44646,9 +44646,9 @@
 					"order": 16,
 					"id": 100,
 					"prevSize": 32,
-					"code": 58914,
+					"code": 58915,
 					"name": "release",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -51633,8 +51633,8 @@
 					],
 					"width": 878,
 					"tags": [
-						"cog",
 						"settings",
+						"cog",
 						"options",
 						"gear",
 						"preferences"
@@ -56092,8 +56092,13 @@
 					"id": 18
 				},
 				{
-					"order": 0,
-					"id": 19
+					"order": 38,
+					"id": 19,
+					"prevSize": 28,
+					"code": 58897,
+					"name": "settings",
+					"tempChar": "",
+					"ligatures": ""
 				},
 				{
 					"order": 0,
@@ -69829,9 +69834,9 @@
 					"order": 7,
 					"id": 5,
 					"prevSize": 28,
-					"code": 58902,
+					"code": 58903,
 					"name": "email",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -69842,9 +69847,9 @@
 					"order": 12,
 					"id": 7,
 					"prevSize": 28,
-					"code": 58906,
+					"code": 58907,
 					"name": "edit",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -69875,27 +69880,27 @@
 					"order": 5,
 					"id": 14,
 					"prevSize": 28,
-					"code": 58900,
+					"code": 58901,
 					"name": "user",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
 					"order": 15,
 					"id": 15,
 					"prevSize": 28,
-					"code": 58908,
+					"code": 58909,
 					"name": "person",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
 					"order": 23,
 					"id": 16,
 					"prevSize": 28,
-					"code": 58913,
+					"code": 58914,
 					"name": "user-add",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -69966,9 +69971,9 @@
 					"order": 11,
 					"id": 33,
 					"prevSize": 28,
-					"code": 58905,
+					"code": 58906,
 					"name": "discussion",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -69987,9 +69992,9 @@
 					"order": 2,
 					"id": 37,
 					"prevSize": 28,
-					"code": 58897,
+					"code": 58898,
 					"name": "search",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -70004,9 +70009,9 @@
 					"order": 6,
 					"id": 40,
 					"prevSize": 28,
-					"code": 58901,
+					"code": 58902,
 					"name": "notification",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -70065,9 +70070,9 @@
 					"order": 9,
 					"id": 54,
 					"prevSize": 28,
-					"code": 58903,
+					"code": 58904,
 					"name": "alert",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -70098,9 +70103,9 @@
 					"order": 10,
 					"id": 61,
 					"prevSize": 28,
-					"code": 58904,
+					"code": 58905,
 					"name": "view",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -70391,9 +70396,9 @@
 					"order": 19,
 					"id": 133,
 					"prevSize": 28,
-					"code": 58910,
+					"code": 58911,
 					"name": "info",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -70404,9 +70409,9 @@
 					"order": 18,
 					"id": 135,
 					"prevSize": 28,
-					"code": 58909,
+					"code": 58910,
 					"name": "help",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -70449,9 +70454,9 @@
 					"order": 13,
 					"id": 145,
 					"prevSize": 28,
-					"code": 58907,
+					"code": 58908,
 					"name": "history",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -70735,9 +70740,9 @@
 					"order": 20,
 					"id": 214,
 					"prevSize": 28,
-					"code": 58911,
+					"code": 58912,
 					"name": "chevron-left",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -70752,9 +70757,9 @@
 					"order": 21,
 					"id": 217,
 					"prevSize": 28,
-					"code": 58912,
+					"code": 58913,
 					"name": "chevron-right",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -70793,9 +70798,9 @@
 					"order": 3,
 					"id": 226,
 					"prevSize": 28,
-					"code": 58898,
+					"code": 58899,
 					"name": "cc",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
@@ -70830,9 +70835,9 @@
 					"order": 4,
 					"id": 234,
 					"prevSize": 28,
-					"code": 58899,
+					"code": 58900,
 					"name": "cc-zero",
-					"tempChar": "",
+					"tempChar": "",
 					"ligatures": ""
 				},
 				{
