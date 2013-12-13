@@ -679,7 +679,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`series_titles` (
   `series_id` BIGINT UNSIGNED NOT NULL COMMENT 'The unique ID of the series.',
   `display` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this series title is the display title for its language (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_comments` BLOB NOT NULL COMMENT 'The series title’s comment in various languages. Keys are ISO alpha-2 language codes.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The series title’s ISO aplha-2 language code.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The series title’s ISO 3166-1 aplha-2 language code.',
   `title` BLOB NOT NULL COMMENT 'The title of the series.',
   INDEX `fk_series_titles_series` (`series_id` ASC),
   PRIMARY KEY (`id`, `series_id`),
@@ -1413,6 +1413,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`protected_pages_routes` (
   `route` VARCHAR(255) NOT NULL,
   `protected_page_id` SMALLINT NOT NULL,
+  `system_language_code` CHAR(2) NOT NULL COMMENT 'The title’s ISO 3166-1 alpha-2 language code.',
   PRIMARY KEY (`route`, `protected_page_id`),
   INDEX `fk_protected_pages_routes_protected_page_id` (`protected_page_id` ASC),
   CONSTRAINT `fk_protected_pages_routes_protected_pages`
