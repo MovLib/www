@@ -133,7 +133,6 @@ class Session implements \ArrayAccess {
     if (!empty($_COOKIE[$this->name])) {
       // Try to resume the session with the ID from the cookie.
       $this->start();
-      $this->id = session_id();
 
       // Try to load the session from the persistent session storage for known users if we just generated a new
       // session ID and have no data stored for it.
@@ -227,15 +226,15 @@ class Session implements \ArrayAccess {
       throw new \UnexpectedValueException("Invalid password for user with email '{$email}'");
     }
 
-    // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
-    // ID and if not generate a completely new session.
-    session_status() === PHP_SESSION_ACTIVE ? $this->regenerate() : $this->start();
     $_SESSION["auth"]   = $this->authentication = $_SERVER["REQUEST_TIME"];
     $_SESSION["avatar"] = $this->userAvatar     = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
     $_SESSION["id"]     = $this->userId         = $user->id;
     $_SESSION["name"]   = $this->userName       = $user->name;
     $_SESSION["tz"]     = $this->userTimeZoneId = $user->timeZoneIdentifier;
-    $kernel->delayMethodCall([ $this, "insert" ]);
+
+    // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
+    // ID and if not generate a completely new session.
+    session_status() === PHP_SESSION_ACTIVE ? $this->regenerate() : $this->start();
 
     // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
     //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
@@ -290,7 +289,6 @@ class Session implements \ArrayAccess {
   public function delete($sessionId = null) {
     global $db;
 
-    $sessionPrefix = ini_get("memcached.sess_prefix");
     if (!$sessionId) {
       $sessionId = $db->query("SELECT `id` FROM `sessions` WHERE `user_id` = ?", "d", [ $this->userId ])->get_result()->fetch_all();
       if (empty($sessionId)) {
@@ -300,7 +298,8 @@ class Session implements \ArrayAccess {
     }
 
     // Fetch all configured Memcached servers from the PHP configuration and split them by the delimiter.
-    $servers = explode(",", ini_get("session.save_path"));
+    $sessionPrefix = ini_get("memcached.sess_prefix");
+    $servers       = explode(",", ini_get("session.save_path"));
 
     // Build the array as expected by Memcached::addServers().
     $c = count($servers);
@@ -376,9 +375,9 @@ class Session implements \ArrayAccess {
    * Retrieve a list of all active sessions.
    *
    * @global \MovLib\Data\Database $db
-   * @return array
-   *   Numeric array ontaining all sessions currently stored in the persistent session storage for the currently signed
-   *   in user. Each entry in the numeric array is an associative array with the following entries:
+   * @return \mysqli_result
+   *   Mysqli result ontaining all sessions currently stored in the persistent session storage for the currently signed
+   *   in user. Each entry in the result set contains the following names in the projection:
    *   <ul>
    *     <li><code>"id"</code> is the session's unique ID</li>
    *     <li><code>"authentication"</code> is the timestamp when this session was initially created</li>
@@ -393,7 +392,7 @@ class Session implements \ArrayAccess {
       "SELECT `id`, UNIX_TIMESTAMP(`authentication`) AS `authentication`, `ip_address`, `user_agent` FROM `sessions` WHERE `user_id` = ?",
       "d",
       [ $this->userId ]
-    )->get_result()->fetch_all(MYSQLI_ASSOC);
+    )->get_result();
   }
 
   /**
@@ -471,7 +470,9 @@ class Session implements \ArrayAccess {
     // Do nothing if this method isn't called via nginx!
     if (isset($_SERVER["FCGI_ROLE"])) {
       session_regenerate_id(true);
-      $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
+      if ($this->userId > 0) {
+        $kernel->delayMethodCall([ $this, "update" ], [ $this->id ]);
+      }
       $this->id = session_id();
     }
 
@@ -528,6 +529,8 @@ class Session implements \ArrayAccess {
    * @throws \MemcachedException
    */
   protected function start() {
+    global $kernel;
+
     // Create backup of existing session data (if any).
     $sessionData = isset($_SESSION) ? $_SESSION : null;
 
@@ -541,6 +544,10 @@ class Session implements \ArrayAccess {
     // Restore session data.
     if ($sessionData) {
       $_SESSION += $sessionData;
+    }
+
+    if (isset($_SESSION["id"]) && $_SESSION["id"] > 0) {
+      $kernel->delayMethodCall([ $this, "insert" ]);
     }
 
     return $this;
