@@ -75,7 +75,7 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     $idRegExp = "([1-9][0-9]*)";
 
     /**
-     * This closure will be used within our routes script to translate the strings.
+     * This closure will be used within our routes script to translate singular strings.
      *
      * @global \MovLib\Data\I18n $i18n
      * @param string $route
@@ -88,6 +88,22 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     $r = function ($route, array $args = null) {
       global $i18n;
       return $i18n->r($route, $args);
+    };
+
+    /**
+     * This closure will be used within our routes script to translate plural strings.
+     *
+     * @global \MovLib\Data\I18n $i18n
+     * @param string $route
+     *   The route to translate.
+     * @param null|array $args [optional]
+     *   Arguments that should be inserted into the pattern.
+     * @return string
+     *   The translated route.
+     */
+    $rp = function ($route, array $args = null) {
+      global $i18n;
+      return $i18n->rp($route, $args);
     };
 
     foreach ($kernel->systemLanguages as $languageCode => $locale) {
