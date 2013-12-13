@@ -1407,27 +1407,6 @@ KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
--- -----------------------------------------------------
--- Table `movlib`.`protected_pages_routes`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`protected_pages_routes` (
-  `route` VARCHAR(255) NOT NULL,
-  `protected_page_id` SMALLINT NOT NULL,
-  `system_language_code` CHAR(2) NOT NULL COMMENT 'The title’s ISO 3166-1 alpha-2 language code.',
-  PRIMARY KEY (`route`, `protected_page_id`, `system_language_code`),
-  INDEX `fk_protected_pages_routes_protected_page_id` (`protected_page_id` ASC),
-  CONSTRAINT `fk_protected_pages_routes_protected_pages`
-    FOREIGN KEY (`protected_page_id`)
-    REFERENCES `movlib`.`protected_pages` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains all routes for protected pages, since they can be a /* comment truncated */ /*ccessed via their name.*/'
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
