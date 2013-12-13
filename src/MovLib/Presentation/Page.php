@@ -486,8 +486,8 @@ class Page extends \MovLib\Presentation\AbstractBase {
     return
       "<main id='main' role='main'{$schema}>" .
         "<header id='main-header'>" .
-          "<div class='container'>{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
           "<div id='alerts'>{$this->alerts}</div>" .
+          "<div class='container'>{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
           "<div id='breadcrumb'>{$this->breadcrumb}</div>" .
         "</header>" .
         "{$this->contentBefore}{$this->getContent()}{$this->contentAfter}" .

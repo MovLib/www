@@ -15,8 +15,9 @@
 -- ---------------------------------------------------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------------------------------------------------
--- Licenses seed data.
+-- System pages seed data.
 --
+-- @author Richard Fussenegger <richard@fussenegger.info>
 -- @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
 -- @copyright © 2013 MovLib
 -- @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -24,10 +25,9 @@
 -- @since 0.0.1-dev
 -- ---------------------------------------------------------------------------------------------------------------------
 
-TRUNCATE TABLE `protected_pages`;
+TRUNCATE TABLE `system_pages`;
 
-
-INSERT INTO `protected_pages` (`dyn_titles`, `dyn_texts`) VALUES
+INSERT INTO `system_pages` (`dyn_titles`, `dyn_texts`) VALUES
   (COLUMN_CREATE('en', 'Contact', 'de', 'Kontakt'), '' ),
   (COLUMN_CREATE('en', 'Imprint', 'de', 'Impressum'), COLUMN_CREATE('en', 'English imprint', 'de', 'Deutsches Impressum')),
   (COLUMN_CREATE('en', 'Privacy Policy', 'de', 'Datenschutzerklärung'), ''),

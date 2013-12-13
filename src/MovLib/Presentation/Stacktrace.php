@@ -35,6 +35,24 @@ use \MovLib\Presentation\Partial\Alert;
 class Stacktrace extends \MovLib\Presentation\Page {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The thrown exception.
+   *
+   * @var \Exception
+   */
+  protected $exception;
+
+  /**
+   * Whether this was a fatal error or not.
+   *
+   * @var boolean
+   */
+  protected $fatal;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
@@ -61,25 +79,37 @@ class Stacktrace extends \MovLib\Presentation\Page {
       exit($e);
     }
     $kernel->stylesheets[] = "stacktrace";
+    $this->exception = $exception;
+    $this->fatal     = $fatal;
 
     $this->alerts .= new Alert(
       $i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
       $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
       Alert::SEVERITY_ERROR
     );
-
-    $this->alerts .= new Alert(
-      "<div id='stacktrace-details'>" .
-        "<div class='title'><i class='ico ico-info'></i> {$exception->getMessage()}</div>" .
-        "<table>{$this->formatStacktrace($exception->getTrace())}</table>" .
-      "</div>",
-      $i18n->t("Stacktrace for {0}", [ $this->placeholder($fatal === true ? "Fatal Error" : get_class($exception)) ]),
-      Alert::SEVERITY_INFO
-    );
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @return \MovLib\Presentation\Partial\Alert
+   */
+  protected function getContent() {
+    global $i18n;
+    $stacktrace = new Alert(
+      "<div id='stacktrace-details'>" .
+        "<div class='title'><i class='ico ico-info'></i> {$this->exception->getMessage()}</div>" .
+        "<table>{$this->formatStacktrace($this->exception->getTrace())}</table>" .
+      "</div>",
+      $i18n->t("Stacktrace for {0}", [ $this->placeholder($this->fatal === true ? "Fatal Error" : get_class($this->exception)) ]),
+      Alert::SEVERITY_INFO
+    );
+    return "<div class='container'>{$stacktrace}</div>";
+  }
 
 
   /**

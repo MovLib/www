@@ -81,7 +81,7 @@ location ^~ <?= $r("/movie") ?> {
   # Movie Posters
   #
 
-  location ~ "^<?= $r("/movie/{0}/posters", [ $idRegExp ]) ?>$" {
+  location ~ "^<?= $rp("/movie/{0}/posters", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Movie\\Gallery\\Posters";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
@@ -122,7 +122,7 @@ location ^~ <?= $r("/movie") ?> {
   # Movie Lobby Cards
   #
 
-  location ~ "^<?= $r("/movie/{0}/lobby-cards", [ $idRegExp ]) ?>$" {
+  location ~ "^<?= $rp("/movie/{0}/lobby-cards", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Movie\\Gallery\\LobbyCards";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
@@ -163,7 +163,7 @@ location ^~ <?= $r("/movie") ?> {
   # Movie Images
   #
 
-  location ~ "^<?= $r("/movie/{0}/photos", [ $idRegExp ]) ?>$" {
+  location ~ "^<?= $rp("/movie/{0}/photos", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Movie\\Gallery\\Photos";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
@@ -242,7 +242,7 @@ location ^~ <?= $r("/movie") ?> {
   # Movie Titles
   #
 
-  location ~ "^<?= $r("/movie/{0}/titles", [ $idRegExp ]) ?>$" {
+  location ~ "^<?= $rp("/movie/{0}/titles", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Movie\\MovieTitles";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
@@ -323,8 +323,8 @@ location ^~ <?= $r("/person") ?> {
     return 301 $1;
   }
 
-  location ~ "^<?= $r("/person/{0}/create", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\Create";
+  location ~ "^<?= $r("/person/{0}/edit", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Person\\Edit";
     set $movlib_person_id $1;
     try_files $movlib_cache @php;
   }
@@ -339,13 +339,13 @@ location ^~ <?= $r("/person") ?> {
   # Person Photos
   #
 
-  location ~ "^<?= $r("/person/{0}/photos", [ $idRegExp ]) ?>$" {
+  location ~ "^<?= $rp("/person/{0}/photos", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Gallery\\Person\\Photos";
     set $movlib_id $1;
     try_files $movlib_cache @gallery;
   }
 
-  location ~ "^<?= $r("/person/{0}/photos/upload", [ $idRegExp ]) ?>$" {
+  location ~ "^<?= $r("/person/{0}/photo/upload", [ $idRegExp ]) ?>$" {
     error_page 413 @person_photos_upload;
     set $movlib_multipart 0;
     set $movlib_presenter "Upload\\Person\\Photo";
@@ -478,92 +478,6 @@ location ^~ <?= $r("/user") ?> {
 }
 
 
-# ---------------------------------------------------------------------------------------------------------------------- style(s)
-
-
-location = <?= $rp("/styles") ?> {
-  set $movlib_presenter "Styles\\Show";
-  try_files $movlib_cache @php;
-}
-
-location ^~ <?= $r("/style") ?> {
-
-  location ~ "^<?= $r("/style/create") ?>$" {
-    set $movlib_presenter "Style\\Create";
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/style/{0}", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Style\\Show";
-    set $movlib_style_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/style/{0}/discussion", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Style\\Discussion";
-    set $movlib_style_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/style/{0}/edit", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Style\\Edit";
-    set $movlib_style_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~"^<?= $r("/style/{0}/delete", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Style\\Delete";
-    set $movlib_style_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  return 404;
-}
-
-
-# ---------------------------------------------------------------------------------------------------------------------- article(s)
-
-
-location = <?= $rp("/articles") ?> {
-  set $movlib_presenter "Articles\\Show";
-  try_files $movlib_cache @php;
-}
-
-location ^~ <?= $r("/article") ?> {
-
-  location ~ "^<?= $r("/article/create") ?>$" {
-    set $movlib_presenter "Article\\Create";
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/article/{0}", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Article\\Show";
-    set $movlib_article_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/article/{0}/discussion", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Article\\Discussion";
-    set $movlib_article_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/article/{0}/edit", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Article\\Edit";
-    set $movlib_article_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~"^<?= $r("/article/{0}/delete", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Article\\Delete";
-    set $movlib_article_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  return 404;
-}
-
-
 # ---------------------------------------------------------------------------------------------------------------------- help
 
 
@@ -572,69 +486,80 @@ location = <?= $rp("/help") ?> {
   try_files $movlib_cache @php;
 }
 
-location ^~ <?= $r("/help") ?> {
+<?php
+$stmt           = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title` FROM `help_categories`", "s", [ $i18n->defaultLanguageCode ]);
+$helpCategories = $stmt->get_result();
+while ($helpCategory = $helpCategories->fetch_assoc()):
+  $helpCategory["title"] = \MovLib\Data\FileSystem::sanitizeFilename($helpCategory["title"]);
+?>
 
-  location ~ "^<?= $r("/help/create") ?>$" {
-    set $movlib_presenter "Help\\CreateCategory";
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/help/{0}/{0}/edit", [ "(.*)" ]) ?>$" {
-    set $movlib_presenter "Help\\Edit";
-    set $movlib_help_category $1;
-    set $movlib_help_title $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/help/{0}/{0}/delete", [ "(.*)" ]) ?>$" {
-    set $movlib_presenter "Help\\Delete";
-    set $movlib_help_category $1;
-    set $movlib_help_title $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/help/{0}/{0}", [ "(.*)" ]) ?>$" {
-    set $movlib_presenter "Help\\Show";
-    set $movlib_help_category $1;
-    set $movlib_help_title $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/help/{0}", [ "(.*)" ]) ?>$" {
-    set $movlib_presenter "Help\\Category";
-    set $movlib_help_category $1;
-    try_files $movlib_cache @php;
-  }
-
-  return 404;
+location = <?= $r("/help/{$helpCategory["title"]}") ?> {
+  set $movlib_presenter "Help\\Category";
+  set $movlib_help_category <?= $helpCategory["id"] ?>;
+  try_files $movlib_cache @php;
 }
+<?php
+endwhile;
+$stmt->close();
+
+$stmt = $db->query(
+  "SELECT
+    `help_articles`.`id` AS `article_id`,
+    COLUMN_GET(`help_articles`.`dyn_titles`, ? AS CHAR(255)) AS `article_title`,
+    `help_articles`.`category_id` AS `category_id`,
+    COLUMN_GET(`help_categories`.`dyn_titles`, ? AS CHAR(255)) AS `category_title`
+  FROM `help_articles`
+  INNER JOIN `help_categories`
+    ON `help_articles`.`category_id` = `help_categories`.`id`",
+  "ss",
+  [ $i18n->defaultLanguageCode, $i18n->defaultLanguageCode ]
+);
+$helpArticles = $stmt->get_result();
+while ($helpArticle = $helpArticles->fetch_assoc()):
+  $helpArticle["category_title"] = \MovLib\Data\FileSystem::sanitizeFilename($helpArticle["category_title"]);
+  $helpArticle["article_title"]  = \MovLib\Data\FileSystem::sanitizeFilename($helpArticle["article_title"]);
+?>
+
+location = <?= $r("/help/{$helpArticle["category_title"]}/{$helpArticle["article_title"]}") ?> {
+  set $movlib_presenter "Help\\Article";
+  set $movlib_help_category <?= $helpArticle["category_id"] ?>;
+  set $movlib_help_article <?= $helpArticle["article_id"] ?>;
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/help/{$helpArticle["category_title"]}/{$helpArticle["article_title"]}/edit") ?> {
+  set $movlib_presenter "Help\\Edit";
+  set $movlib_help_category <?= $helpArticle["category_id"] ?>;
+  set $movlib_id <?= $helpArticle["article_id"] ?>;
+  try_files $movlib_cache @php;
+}
+<?php
+endwhile;
+$stmt->close();
+?>
 
 
 # ---------------------------------------------------------------------------------------------------------------------- system pages
 
-
 <?php
-$result = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) FROM `protected_pages`", "s", [ $i18n->defaultLanguageCode ])->get_result();
-while ($route = $result->fetch_row()):
-  $id    = $route[0];
-  $route = \MovLib\Data\FileSystem::sanitizeFilename($route[1]);
+$stmt        = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title` FROM `system_pages`", "s", [ $i18n->defaultLanguageCode ]);
+$systemPages = $stmt->get_result();
+while ($systemPage = $systemPages->fetch_assoc()):
+  $systemPage["title"] = \MovLib\Data\FileSystem::sanitizeFilename($systemPage["title"]);
 ?>
 
-location = <?= $r("/{$route}") ?> {
-  set $movlib_presenter "ProtectedPage\\Show";
-  set $movlib_id <?= $id ?>;
+location = <?= $r("/{$systemPage["title"]}") ?> {
+  set $movlib_presenter "SystemPage\\Show";
+  set $movlib_id <?= $systemPage["id"] ?>;
   try_files $movlib_cache @php;
 }
 
-location = <?= $r("/{0}/edit", [ $route ]) ?> {
-  set $movlib_presenter "ProtectedPage\\Edit";
-  set $movlib_id <?= $id ?>;
+location = <?= $r("/{$systemPage["title"]}/edit") ?> {
+  set $movlib_presenter "SystemPage\\Edit";
+  set $movlib_id <?= $systemPage["id"] ?>;
   try_files $movlib_cache @php;
 }
-
-location = <?= $r("/{0}/delete", [ $route ]) ?> {
-  set $movlib_presenter "ProtectedPage\\Delete";
-  set $movlib_id <?= $id ?>;
-  try_files $movlib_cache @php;
-}
-<?php endwhile ?>
+<?php
+endwhile;
+$stmt->close();
+?>

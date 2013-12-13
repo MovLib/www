@@ -17,13 +17,14 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Movie\Full as FullMovie;
 use \MovLib\Exception\Client\ErrorNotFoundException;
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\Help;
 use \MovLib\Presentation\Partial\Lists\GlueSeparated;
 use \MovLib\Presentation\Partial\Lists\Persons;
 
@@ -40,6 +41,17 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   use \MovLib\Presentation\TraitFormPage;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The user's movie rating.
+   *
+   * @var integer
+   */
+  protected $userRating;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
@@ -47,11 +59,10 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * Instatiate new single movie presentation page.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
+    global $i18n, $session;
     try {
       // Instantiate movie, initialize page and set the microdata schema.
       $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
@@ -78,24 +89,9 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       // Enhance the header, insert row and span before the title.
       $this->headingBefore = "<div class='row'><div class='span span--9'>";
 
-      // Format the rating for the currently signed in user, if any.
-      $userRating = null;
-      if ($session->isAuthenticated === true) {
-        $userRating = $session->getMovieRating($this->movie->id);
-        if ($userRating) {
-          $rating = $i18n->t("your rating: {0,number}", [ $userRating ]);
-        }
-        else {
-          $rating = $i18n->t("you haven’t rated this movie yet");
-        }
-      }
-      else {
-        $rating = $i18n->t("please {0}sign in{1} to rate this movie", [ "<a href='{$i18n->r("/profile/sign-in")}'>", "</a>" ]);
-      }
-
       // Instantiate the rating form.
-      $this->form             = new Form($this);
-      $this->form->attributes = [ "id" => "movie-rating" ];
+      $this->form                   = new Form($this);
+      $this->form->attributes["id"] = "movie-rating";
 
       // The five available ratings.
       $ratings = [
@@ -103,16 +99,16 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         2 => $i18n->t("Bad"),
         3 => $i18n->t("Okay"),
         4 => $i18n->t("Fine"),
-        5 => $i18n->t("Terrific"),
+        5 => $i18n->t("Awesome"),
       ];
 
       // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
       $stars = null;
       for ($i = 1; $i <= 5; ++$i) {
-        $rated  = $i <= $userRating ? " rated" : null;
+        $rated  = $i <= $this->movie->userRating ? " rated" : null;
         $stars .=
           "<label class='popup-container{$rated}'>" .
-            "<small class='popup popup--inverse'>{$ratings[$i]}</small>" .
+            "<small class='popup'>{$ratings[$i]}</small>" .
             "<button class='ico ico-star' name='rating' type='submit' value='{$i}'>" .
               "<span class='visuallyhidden'>{$i18n->t("Rate with {0, plural, one {one star} other {# stars}}", [ $i ])}</span>" .
             "</button>" .
@@ -120,13 +116,13 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         ;
       }
 
+      $ratingHelp = null;
       // Build an explanation based on available rating data.
-      $ratingExplanation = null;
-      if ($this->movie->votes === 1 && $userRating) {
-        $ratingExplanation = $i18n->t("You’re the only one who voted for this movie (yet).");
+      if ($this->movie->votes === 1 && $this->movie->userRating) {
+        $ratingSummary = $i18n->t("You’re the only one who voted for this movie (yet).");
       }
       else {
-        $ratingExplanation = $i18n->t(
+        $ratingSummary = $i18n->t(
           "Rated by {votes, plural,
   zero  {nobody}
   one   {one user with {mean_rating, plural, one {1 star} other {# stars}}}
@@ -136,10 +132,18 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
             "link_rating_demographics" => "<a href='{$i18n->r("/movie/{0}/rating-demographics", [ $this->movie->id ])}' title='{$i18n->t("View the rating demographics.")}'>",
             "votes"                    => $this->movie->votes,
             "link_close"               => "</a>",
-            "link_rating_help"         => "<a href='{$i18n->r("/help/rating")}' title='{$i18n->t("Go to the rating help page to find out more.")}'>",
+            "link_rating_help"         => "<a href='{$i18n->r("/help/movies/ratings")}' title='{$i18n->t("Go to the rating help page to find out more.")}'>",
             "mean_rating"              => $this->movie->ratingMean,
           ]
         );
+
+        // Don't tell a user who isn't signed in that she or he has to sign in. We tell this to the user on click / submit.
+        if ($session->isAuthenticated === true) {
+          $ratingHelp = new Help(($this->movie->userRating === null
+            ? $i18n->t("You haven’t rated this movie yet.")
+            : $i18n->t("Your current rating is {0,number}, simply vote again to update it.", [ $this->movie->userRating ])
+          ), "movie-rating");
+        }
       }
 
       // Format the movie's countries and enhance them with microdata.
@@ -156,13 +160,13 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       // But it all together after the closing title.
       $this->headingAfter  =
           "<p>{$i18n->t("“{original_title}” ({0}original title{1})", [ "original_title" => $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
-          "{$this->form->open()}<fieldset>" .
-            "<legend class='visuallyhidden'>{$i18n->t("Your Rating:")}</legend>" .
+          "{$ratingHelp}{$this->form->open()}<fieldset>" .
+            "<legend class='visuallyhidden'>{$i18n->t("Rate this movie:")}</legend>" .
             "<input type='hidden' value='movie_rating'>" .
-            "<div class='back'>" . str_repeat("<span class='ico ico-star'></span>", 5) . "</div>" .
+            "<div aria-hidden='true' class='back'>" . str_repeat("<span class='ico ico-star'></span>", 5) . "</div>" .
             "<div class='front'>{$stars}</div>" .
           "</fieldset>{$this->form->close()}" .
-          "<small>{$ratingExplanation}</small>" .
+          "<small>{$ratingSummary}</small>" .
           "<small><span class='visuallyhidden'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='visuallyhidden'>{$i18n->t("Countries:")} </span>{$countries}</small>" .
           "<small><span class='visuallyhidden'>{$i18n->t("Genres:")} </span>{$genres}</small>" .
         "</div>" . // close .span
@@ -269,6 +273,39 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
   public function formatGenre($name, $id) {
     global $i18n;
     return "<a href='{$i18n->r("/genre/{0}", [ $id ])}' itemprop='genre'>{$name}</a>";
+  }
+
+  /**
+   * Validate the user's rating and update the database.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
+   * @return this
+   */
+  public function validate() {
+    global $i18n, $kernel, $session;
+
+    if ($session->isAuthenticated === false) {
+      $this->alerts .= new Alert(
+        $i18n->t("Please {0}sign in{1} or {2}join {sitename}{1} to rate this movie.", [
+          "<a href='{$i18n->r("/profile/sign-in")}'>", "</a>", "<a href='{$i18n->r("/profile/join")}'>", "sitename" => $kernel->siteName,
+        ]),
+        null,
+        Alert::SEVERITY_INFO
+      );
+    }
+    elseif (!empty($_POST["rating"])) {
+      $_POST["rating"] = (integer) $_POST["rating"];
+      if ($_POST["rating"] > 0 && $_POST["rating"] < 6) {
+        $this->movie->rate($_POST["rating"]);
+      }
+      else {
+        $this->checkErrors($i18n->t("The submitted rating of {0,number,integer} isn’t valid. Valid ratings range from: 1 to 5", [ $_POST["rating"] ]));
+      }
+    }
+
+    return $this;
   }
 
 }

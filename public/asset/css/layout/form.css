@@ -231,3 +231,96 @@ option[value=""] {
   opacity: 0;
   cursor: pointer;
 }
+
+.checkbox,
+.radio {
+  display: inline-block;
+  min-height: 20px;
+  padding-left: 20px;
+}
+
+.checkbox.inline,
+.radio.inline {
+  margin-bottom: 0;
+  margin-right: 25px;
+  padding-top: 5px;
+  vertical-align: middle;
+}
+
+.checkbox input,
+.radio input {
+  float: left;
+  margin-left: -20px;
+}
+
+.popup-container {
+  position: relative;
+}
+
+.popup:after,
+.popup {
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: 0.3s ease;
+  visibility: hidden;
+  z-index: 999999999; /* Even go over our sticky header! */
+}
+
+.popup:after {
+  border: 6px solid transparent;
+  border-top-color: #fff;
+  bottom: -12px;
+  content: "";
+  left: 50%;
+  margin-left: -6px;
+}
+
+.popup {
+  background-color: #fff;
+  bottom: 0;
+  left: -50%;
+  margin: 0 0 6px 0;
+  padding: 10px;
+  max-width: 320px;
+  color: #656565;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+}
+
+.popup-container:hover .popup,
+.popup-container:focus .popup {
+  bottom: 100%;
+}
+
+.popup-container:hover .popup,
+.popup-container:focus .popup,
+.popup-container:hover .popup:after,
+.popup-container:focus .popup:after {
+  opacity: 1;
+  visibility: visible;
+}
+
+.form-help {
+  cursor: help;
+  margin: 0;
+  float: right;
+}
+
+.form-help .popup {
+  padding: 20px;
+  left: auto;
+  right: -32px;
+  width: 320px;
+}
+
+.form-help .popup:after {
+  left: auto;
+  right: 34px;
+  margin: 0;
+}
+
+.form-actions input,
+.form-actions button {
+  margin-right: 10px;
+}

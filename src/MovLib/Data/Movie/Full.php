@@ -47,6 +47,7 @@ class Full extends \MovLib\Data\Movie\Movie {
   public $synopsis;
   public $taglines;
   public $title;
+  public $userRating;
   public $votes;
 
 
@@ -58,13 +59,14 @@ class Full extends \MovLib\Data\Movie\Movie {
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
    * @param integer $id
    *   The unique movie's ID to load.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \OutOfBoundsException
    */
   public function __construct($id) {
-    global $db, $i18n;
+    global $db, $i18n, $session;
     $this->id = $id;
     $stmt     = $db->query(
       "SELECT
@@ -138,6 +140,19 @@ class Full extends \MovLib\Data\Movie\Movie {
       $this->genres[$row[0]] = $row[1];
     }
     $stmt->close();
+
+    // ----------------------------------------------------------------------------------------------------------------- User Rating
+
+    $stmt = $db->query(
+      "SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1",
+      "dd",
+      [ $session->userId, $this->id ]
+    );
+    $result = $stmt->get_result()->fetch_row();
+    if (isset($result[0])) {
+      $this->userRating = $result[0];
+    }
+    $stmt->close();
   }
 
   /**
@@ -207,6 +222,47 @@ class Full extends \MovLib\Data\Movie\Movie {
       "ds",
       [ $this->id, $i18n->languageCode ]
     )->get_result();
+  }
+
+  /**
+   * Rate this movie.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\User\Session $session
+   * @param integer $rating
+   *   The user's rating for this movie.
+   * @return this
+   * @throws \ErrorException
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function rate($rating) {
+    global $db, $session;
+
+    // Insert or update the user's rating for this movie.
+    if (!$this->userRating) {
+      $db->query("INSERT INTO `movies_ratings` SET `movie_id` = ?, `user_id` = ?, `rating` = ?", "ddi", [ $this->id, $session->userId, $rating ])->close();
+      $this->votes++;
+    }
+    else {
+      $db->query("UPDATE `movies_ratings` SET `rating` = ? WHERE `movie_id` = ? AND `user_id` = ?", "idd", [ $rating, $this->id, $session->userId ])->close();
+    }
+
+    // Update the mean rating of this movie.
+    $db->query(
+      "UPDATE `movies` SET `mean_rating` = (
+        SELECT ROUND(SUM(`mr`.`rating`) / COUNT(`mr`.`rating`), 1) FROM `movies_ratings` AS `mr` WHERE `mr`.`movie_id` = ?
+      ), `votes` = ? WHERE `id` = ?",
+      "did",
+      [ $this->id, $this->votes, $this->id ]
+    )->close();
+
+    // Get the updated mean rating for us.
+    $this->ratingMean = $db->query("SELECT `mean_rating` FROM `movies` WHERE `id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
+
+    // Update the old rating with the new rating.
+    $this->userRating = $rating;
+
+    return $this;
   }
 
 }

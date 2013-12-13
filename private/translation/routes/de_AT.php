@@ -95,15 +95,10 @@ return [
   "/user/{0}/collection" => "/benutzer/{0}/sammlung",
 
   // ------------------------------------------------------------------------------------------------------------------- Help
-  "/help"                => "/hilfe",
-  "/help/create"         => "/hilfe/erstellen",
-  "/help/{0}"            => "/hilfe/{0}",
-  "/help/{0}/create"     => "/hilfe/{0}/erstellen",
-  "/help/{0}/edit"       => "/hilfe/{0}/bearbeiten",
-  "/help/{0}/delete"     => "/hilfe/{0}/löschen",
-  "/help/{0}/{0}"        => "/hilfe/{0}/{0}",
-  "/help/{0}/{0}/edit"   => "/hilfe/{0}/{0}/bearbeiten",
-  "/help/{0}/{0}/delete" => "/hilfe/{0}/{0}/löschen",
+  "/help"                     => "/hilfe",
+  "/help/movies"              => "/hilfe/filme",
+  "/help/movies/ratings"      => "/hilfe/filme/bewertungen",
+  "/help/movies/ratings/edit" => "/hilfe/filme/bewertungen/bearbeiten",
 
   // ------------------------------------------------------------------------------------------------------------------- Country
   // Countries are created with Intl ICU data and aren"t editable.
@@ -123,17 +118,17 @@ return [
   "/genre/{0}/edit"       => "/genre/{0}/bearbeiten",
   "/genre/{0}/löschen"    => "/genre/{0}/löschen",
 
-  // ------------------------------------------------------------------------------------------------------------------- Style
-  "/style"                => "/stilrichtung",
-  "/style/create"         => "/stilrichtung/erstellen",
-  "/style/{0}"            => "/stilrichtung/{0}",
-  "/style/{0}/discussion" => "/stilrichtung/{0}/diskussion",
-  "/style/{0}/edit"       => "/stilrichtung/{0}/bearbeiten",
-  "/style/{0}/löschen"    => "/stilrichtung/{0}/löschen",
-
   // ------------------------------------------------------------------------------------------------------------------- System Pages
-  "/{0}/edit"   => "/{0}/bearbeiten",
-  "/{0}/delete" => "/{0}/löschen",
+  "/contact"             => "/kontakt",
+  "/contact/edit"        => "/kontakt/bearbeiten",
+  "/imprint"             => "/impressum",
+  "/imprint/edit"        => "/impressum/bearbeiten",
+  "/privacy-policy"      => "/datenschutzerklärung",
+  "/privacy-policy/edit" => "/datenschutzerklärung/bearbeiten",
+  "/team"                => "/team",
+  "/team/edit"           => "/team/bearbeiten",
+  "/terms-of-use"        => "/nutzungsbedingungen",
+  "/terms-of-use/edit"   => "/nutzungsbedingungen/bearbeiten",
 
   // ------------------------------------------------------------------------------------------------------------------- Queries
   "page"  => "seite",

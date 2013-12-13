@@ -56,10 +56,10 @@ class Home extends \MovLib\Presentation\Page {
     global $kernel, $i18n;
     return
       "<main id='main' role='main'>" .
+        "<div id='alerts'>{$this->alerts}</div>" .
         "<div id='home-banner'>" .
           "<div class='container lead hero'>{$i18n->t("Do you like movies?{0}Great, so do we!", [ "<br>" ])}</div>" .
         "</div>" .
-        "<div id='alerts'>{$this->alerts}</div>" .
         "<div class='container container--home'>" .
           "<div class='row'>" .
             "<article class='span span--4'>" .

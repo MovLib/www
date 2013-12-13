@@ -770,23 +770,6 @@ COMMENT = 'A series has many genres, a genre has many series.';
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`articles`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`articles` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The article’s unique identifier.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the article as timestamp.',
-  `dyn_texts` BLOB NOT NULL COMMENT 'The article’s text in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_titles` BLOB NOT NULL COMMENT 'The article’s title in various languages. Keys are ISO alpha-2 language codes.',
-  `commit` CHAR(40) NULL COMMENT 'The article’s last history commit sha-1 hash.',
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-COMMENT = 'Contains all articles.'
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`aspect_ratios`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`aspect_ratios` (
@@ -1374,15 +1357,35 @@ COMMENT = 'Contains relationships between series.';
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`help`
+-- Table `movlib`.`help_categories`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`help` (
+CREATE TABLE IF NOT EXISTS `movlib`.`help_categories` (
+  `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help category’s unique identifier.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The help category’s translated titles.',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`help_articles`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`help_articles` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The help’s unique identifier.',
+  `category_id` TINYINT UNSIGNED NOT NULL,
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the help as timestamp.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The help’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_titles` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
   `commit` CHAR(40) NULL COMMENT 'The help’s last history commit sha-1 hash.',
-  PRIMARY KEY (`id`))
+  PRIMARY KEY (`id`),
+  INDEX `fk_help_articles_help_categories1_idx` (`category_id` ASC),
+  CONSTRAINT `fk_help_articles_help_categories1`
+    FOREIGN KEY (`category_id`)
+    REFERENCES `movlib`.`help_categories` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all help articles.'
 ROW_FORMAT = COMPRESSED
@@ -1391,9 +1394,9 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`protected_pages`
+-- Table `movlib`.`system_pages`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`protected_pages` (
+CREATE TABLE IF NOT EXISTS `movlib`.`system_pages` (
   `id` SMALLINT NOT NULL AUTO_INCREMENT COMMENT 'The page’s unique identifier.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the page as timestamp.',
   `dyn_titles` BLOB NOT NULL COMMENT 'Thepage’s text in various languages. Keys are ISO alpha-2 language codes.',
@@ -1401,7 +1404,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`protected_pages` (
   `commit` CHAR(40) NULL COMMENT 'The article’s last history commit sha-1 hash.',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
-COMMENT = 'Contains all protected pages, e.g. Imprint.'
+COMMENT = 'Contains all system pages, e.g. Imprint.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
