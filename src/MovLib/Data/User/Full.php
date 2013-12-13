@@ -324,7 +324,7 @@ class Full extends \MovLib\Data\User\User {
 
   /**
    * Delete this user.
-   * 
+   *
    * @todo   Delete avatar.
    *
    * @global \MovLib\Data\Database $db
@@ -333,7 +333,9 @@ class Full extends \MovLib\Data\User\User {
    */
   public function deleteAccount() {
     global $db;
-    $this->deleteAvatar();
+    // Delete the avatar image.
+    $this->delete();
+
     $db->query(
       "UPDATE `users` SET
         `email`                = NULL,
@@ -359,6 +361,29 @@ class Full extends \MovLib\Data\User\User {
       "d",
       [ $this->id ]
     );
+
+    return $this;
+  }
+
+  /**
+   * Delete the user's avatar image and all styles of it.
+   *
+   * @return this
+   */
+  public function deleteAvatar() {
+    if ($this->exists == true) {
+      foreach ([ self::STYLE_SPAN_01, self::STYLE_SPAN_02 ] as $style) {
+        try {
+          $path = $this->getPath($style);
+          unlink($path);
+        }
+        catch (\ErrorException $e) {
+          error_log("Couldn't delete '{$path}'.");
+        }
+      }
+      $this->exists  = false;
+      $this->changed = $this->extension = null;
+    }
     return $this;
   }
 

@@ -42,8 +42,7 @@
 .button:hover,
 .button:focus,
 .button:active,
-.button.active,
-.button.disabled {
+.button.active {
   background-color: #cfcfcf;
 }
 
@@ -51,12 +50,6 @@
   outline-offset: -2px;
   outline: 1px dotted #555;
   outline: 5px auto -webkit-focus-ring-color;
-}
-
-.button.disabled {
-  background-image: none;
-  cursor: default;
-  opacity: 0.65;
 }
 
 .button--large {
@@ -99,8 +92,7 @@
 .button--primary:hover,
 .button--primary:focus,
 .button--primary:active,
-.button--primary.active,
-.button--primary.disabled {
+.button--primary.active {
   background-color: #256c9b;
 }
 
@@ -115,8 +107,7 @@
 .button--info:hover,
 .button--info:focus,
 .button--info:active,
-.button--info.active,
-.button--info.disabled {
+.button--info.active {
   background-color: #32788d;
 }
 
@@ -131,8 +122,7 @@
 .button--success:hover,
 .button--success:focus,
 .button--success:active,
-.button--success.active,
-.button--success.disabled {
+.button--success.active {
   background-color: #3b773b;
 }
 
@@ -147,8 +137,7 @@
 .button--warning:hover,
 .button--warning:focus,
 .button--warning:active,
-.button--warning.active,
-.button--warning.disabled {
+.button--warning.active {
   background-color: #cc8829;
 }
 
@@ -163,8 +152,7 @@
 .button--danger:hover,
 .button--danger:focus,
 .button--danger:active,
-.button--danger.active,
-.button--danger.disabled {
+.button--danger.active {
   background-color: #9a3834;
 }
 
@@ -179,8 +167,7 @@
 .button--inverse:hover,
 .button--inverse:focus,
 .button--inverse:active,
-.button--inverse.active,
-.button--inverse.disabled {
+.button--inverse.active {
   background-color: #000;
 }
 

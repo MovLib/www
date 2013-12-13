@@ -75,6 +75,13 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   protected $image;
 
   /**
+   * Insert HTML after input file HTML element.
+   *
+   * @var string
+   */
+  public $inputFileAfter;
+
+  /**
    * The image's absolute path.
    *
    * <b>Note:</b> This value is only available after validation!
@@ -128,28 +135,36 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     $this->attributes["data-min-width"]    = isset($this->image->width) ? $this->image->width : Image::IMAGE_MIN_WIDTH;
     $this->attributes["type"]              = "file";
     $this->image                           = $concreteImage;
-    $helpMessageAttributes                 = $this->formatBytes($this->attributes["data-max-filesize"]);
-    $helpMessageAttributes[]               = $this->attributes["data-min-width"];
-    $helpMessageAttributes[]               = $this->attributes["data-min-height"];
-    $this->setHelp($i18n->t("Image must be larger than {2}x{3} and less than {0} {1}. Allowed image types: JPG and PNG", $helpMessageAttributes));
+    list($size, $unit)                     = $this->formatBytes($this->attributes["data-max-filesize"]);
+    $this->setHelp($i18n->t("Image must be larger than {width}x{height} and less than {size} {unit}. Allowed image types: JPG and PNG", [
+      "width"  => $this->attributes["data-min-width"],
+      "height" => $this->attributes["data-min-height"],
+      "size"   => $size,
+      "unit"   => $unit,
+    ]));
   }
 
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function render() {
+    global $i18n;
+
+    $preview = null;
     if ($this->image->exists === true) {
-      return
-        "<div class='row'>" .
-          // @todo Image must have focus style in order to use route! */
-          "<div class='span span--1'>{$this->getImage($this->image->getStyle(Image::STYLE_SPAN_01), false)}</div>" .
-          "<div class='span span--9'>{$this->help}<label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></div>" .
-        "</div>"
-      ;
+      $preview = $this->getImage($this->image->getStyle(Image::STYLE_SPAN_01), false);
     }
-    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+    return
+      "<div class='row'>" .
+        "<div class='span span--1'>{$preview}</div>" .
+        "<div class='span span--9'>{$this->help}<label for='{$this->id}'>{$this->label}</label>" .
+          "<span class='button file-input'><span aria-hidden='true'>{$i18n->t("Choose Image …")}</span>" .
+            "<input{$this->expandTagAttributes($this->attributes)}>" .
+          "</span>{$this->inputFileAfter}" .
+        "</div>" .
+      "</div>"
+    ;
   }
 
 
