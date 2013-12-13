@@ -87,6 +87,7 @@
   white-space: pre;
 }
 
+#movie-rating-mean:before,
 #movie-rating .rated,
 #movie-rating:focus .front,
 #movie-rating:hover .front {
@@ -102,4 +103,21 @@
   width: 100px;
   text-align: center;
   left: -40.5px;
+}
+
+#movie-poster {
+  position: relative;
+}
+
+#movie-rating-mean {
+  background: url("/asset/img/star.svg") no-repeat;
+  position: absolute;
+  bottom: 0;
+  left: -60px;
+  color: #252525;
+  font-size: 38px;
+  z-index: 1;
+  width: 120px;
+  line-height: 120px;
+  letter-spacing: -1px;
 }

@@ -170,12 +170,13 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
           "<small><span class='visuallyhidden'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='visuallyhidden'>{$i18n->t("Countries:")} </span>{$countries}</small>" .
           "<small><span class='visuallyhidden'>{$i18n->t("Genres:")} </span>{$genres}</small>" .
         "</div>" . // close .span
-        $this->getImage(
+        "<div id='movie-poster' class='span span--3 tac'>{$this->getImage(
           $this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03),
           $i18n->r("/movie/{0}/posters", [ $this->movie->id ]),
-          [ "itemprop" => "image" ],
-          [ "class" => "img span span--3" ]
-        ) .
+          [ "itemprop" => "image" ]
+        )}<div id='movie-rating-mean'>" .
+          \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean) .
+        "</div></div>" .
       "</div>"; // close .row
     }
     // We don't have any movie with the given identifier.
