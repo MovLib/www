@@ -97,30 +97,29 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     if (!empty($_GET["token"])) {
       $this->validateToken();
     }
-    
+
     $this->init($i18n->t("Danger Zone Settings"));
 
     // We must instantiate the form before we create the sessions table, otherwise deletions would happen after the
     // table containing the sessions listing was built. Deleted sessions would still be displayed!
     $this->formSessions = new Form($this, [], "{$this->id}-sessions", "deleteSession");
-    $buttonText         = $i18n->t("Terminate");
-    $buttonTitle        = $i18n->t("Terminate this session, the associated user agent will be signed out immediately.");
 
-    $sessions           = $session->getActiveSessions();
-    $c                  = count($sessions);
-    for ($i = 0; $i < $c; ++$i) {
-      $sessions[$i]["authentication"] = $i18n->formatDate($sessions[$i]["authentication"], $this->user->timeZoneIdentifier, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
-      $sessions[$i]["ip_address"]     = inet_ntop($sessions[$i]["ip_address"]);
-      $active                         = null;
-      $button                         = new Button("session_id", $buttonText, [
+    $buttonText     = $i18n->t("Terminate");
+    $buttonTitle    = $i18n->t("Terminate this session, the associated user agent will be signed out immediately.");
+    $activeSessions = $session->getActiveSessions();
+    while ($activeSession = $activeSessions->fetch_assoc()) {
+      $activeSession["authentication"] = $i18n->formatDate($activeSession["authentication"], $this->user->timeZoneIdentifier, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
+      $activeSession["ip_address"]     = inet_ntop($activeSession["ip_address"]);
+      $active                          = null;
+      $button                          = new Button("session_id", $buttonText, [
         "class" => "button button--danger",
         "type"  => "submit",
-        "value" => $sessions[$i]["id"],
+        "value" => $activeSession["id"],
         "title" => $buttonTitle,
       ]);
       unset($button->attributes["id"]);
 
-      if ($sessions[$i]["id"] == $session->id) {
+      if ($activeSession["id"] == $session->id) {
         $active                      = " class='warning'";
         $button->attributes["title"] = $i18n->t("If you click this button your active session is terminated and you’ll be signed out!");
         $button->content             = $i18n->t("Sign Out");
@@ -128,9 +127,9 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
 
       $this->sessionsTable .=
         "<tr{$active}>" .
-        "<td>{$sessions[$i]["authentication"]}</td>" .
-        "<td class='small'><code>{$kernel->htmlEncode($sessions[$i]["user_agent"])}</code></td>" .
-        "<td><code>{$sessions[$i]["ip_address"]}</code></td>" .
+        "<td>{$activeSession["authentication"]}</td>" .
+        "<td class='small'><code>{$kernel->htmlEncode($activeSession["user_agent"])}</code></td>" .
+        "<td><code>{$activeSession["ip_address"]}</code></td>" .
         "<td class='form-actions'>{$button}</td>" .
         "</tr>"
       ;
@@ -271,22 +270,22 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
       );
       throw new RedirectSeeOtherException($kernel->requestPath);
     }
-    
+
     if ($data["user_id"] !== $session->userId) {
       throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your password."));
     }
 
     $this->user->deleteAccount();
     $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
-    
+
     $session->destroy();
-    
+
     $kernel->alerts .= new Alert(
       $i18n->t("Your account has been purged from our system. We’re very sorry to see you leave."),
       $i18n->t("Account Deletion Successfull"),
       Alert::SEVERITY_SUCCESS
     );
-    
+
     throw new RedirectSeeOtherException("/");
   }
 
