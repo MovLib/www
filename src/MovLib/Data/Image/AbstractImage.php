@@ -121,6 +121,41 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   }
 
   /**
+   * Deletes the original image, all styles and the directory (if empty) from the persistent storage.
+   *
+   * @global \MovLib\Kernel $kernel
+   * @return this
+   */
+  protected function delete() {
+    global $kernel;
+
+    // Unserialize the styles if they are still serialized.
+    if (!is_array($this->styles)) {
+      $this->styles = unserialize($this->styles);
+    }
+
+    // Add the original file to the styles array (DRY), this is why getImagePath() and getImageURL() check with empty()
+    // against their parameter.
+    $this->styles[""] = null;
+    foreach ($this->styles as $styleName => $styleInfo) {
+      try {
+        $imagePath = $this->getPath($styleName);
+        unlink($imagePath);
+
+        // Silently fail if attempting to delete a non-empty directory.
+        $imageDirectory = dirname($imagePath);
+        sh::executeDetached("rmdir -p '{$imageDirectory}'");
+      }
+      catch (\ErrorException $e) {
+        error_log($e);
+      }
+    }
+
+    $this->exists = false;
+    return $this;
+  }
+
+  /**
    * @inheritdoc
    */
   public function getStyle($style = self::STYLE_SPAN_02) {

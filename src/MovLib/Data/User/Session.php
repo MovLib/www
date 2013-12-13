@@ -501,6 +501,11 @@ class Session implements \ArrayAccess {
       // If this session belongs to an authenticated user, update the last access time.
       if ($this->isAuthenticated === true) {
         $kernel->delayMethodCall([ $this, "updateUserAccess" ]);
+        $_SESSION["auth"]   = $this->authentication;
+        $_SESSION["id"]     = $this->userId;
+        $_SESSION["avatar"] = $this->userAvatar;
+        $_SESSION["name"]   = $this->userName;
+        $_SESSION["tz"]     = $this->userTimeZoneId;
       }
 
       // Commit session to memcached and release session lock.
