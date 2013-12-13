@@ -368,9 +368,11 @@ class Full extends \MovLib\Data\User\User {
   /**
    * Delete the user's avatar image and all styles of it.
    *
+   * @global \MovLib\Data\User\Session $session
    * @return this
    */
   public function deleteAvatar() {
+    global $session;
     if ($this->exists == true) {
       foreach ([ self::STYLE_SPAN_01, self::STYLE_SPAN_02 ] as $style) {
         try {
@@ -381,8 +383,9 @@ class Full extends \MovLib\Data\User\User {
           error_log("Couldn't delete '{$path}'.");
         }
       }
-      $this->exists  = false;
-      $this->changed = $this->extension = null;
+      $this->exists        = false;
+      $this->changed       = $this->extension = null;
+      $session->userAvatar = $this->getStyle(self::STYLE_HEADER_USER_NAVIGATION);
     }
     return $this;
   }
