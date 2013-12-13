@@ -108,8 +108,8 @@ class Join extends \MovLib\Presentation\Email\AbstractEmail {
     global $i18n, $kernel;
     return
       "<p>{$i18n->t("Hi {username}!", [ "username" => $this->user->name ])}</p>" .
-      "<p>{$i18n->t("Thank you for joining {sitename}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
-        "sitename" => $kernel->siteName,
+      "<p>{$i18n->t("Thank you for joining {0}. You may now sign in and activate your new account by {1}clicking this link{2}.", [
+        $kernel->siteName,
         "<a href='{$this->link}'>",
         "</a>"
       ])}</p>" .
