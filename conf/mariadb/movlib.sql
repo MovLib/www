@@ -1414,7 +1414,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`protected_pages_routes` (
   `route` VARCHAR(255) NOT NULL,
   `protected_page_id` SMALLINT NOT NULL,
   `system_language_code` CHAR(2) NOT NULL COMMENT 'The title’s ISO 3166-1 alpha-2 language code.',
-  PRIMARY KEY (`route`, `protected_page_id`),
+  PRIMARY KEY (`route`, `protected_page_id`, `system_language_code`),
   INDEX `fk_protected_pages_routes_protected_page_id` (`protected_page_id` ASC),
   CONSTRAINT `fk_protected_pages_routes_protected_pages`
     FOREIGN KEY (`protected_page_id`)
