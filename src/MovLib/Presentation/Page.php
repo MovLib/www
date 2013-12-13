@@ -277,32 +277,32 @@ class Page extends \MovLib\Presentation\AbstractBase {
     $navs = [];
     foreach ([
       "movies" => [ $i18n->t("Movies"), [
-        [ $i18n->r("/movies"), $i18n->t("Latest Entries") ],
-        [ $i18n->r("/movies/charts"), $i18n->t("Charts") ],
-        [ $i18n->r("/movie/create"), $i18n->t("Create New") ],
-        [ $i18n->r("/movies/reviews"), $i18n->t("Latest Reviews") ],
+        [ $i18n->rp("/movies"), $i18n->t("Latest Entries") ],
+        [ $i18n->rp("/movies/charts"), $i18n->t("Charts") ],
+        [ $i18n->rp("/movie/create"), $i18n->t("Create New") ],
+        [ $i18n->rp("/movies/reviews"), $i18n->t("Latest Reviews") ],
         [ $i18n->r("/movie/random"), $i18n->t("Random Movie") ],
       ]],
       "series" => [ $i18n->t("Series"), [
-        [ $i18n->r("/series"), $i18n->t("Latest Entries") ],
-        [ $i18n->r("/series/charts"), $i18n->t("Charts") ],
-        [ $i18n->r("/series/create"), $i18n->t("Create New") ],
-        [ $i18n->r("/series/reviews"), $i18n->t("Latest Reviews") ],
+        [ $i18n->rp("/series"), $i18n->t("Latest Entries") ],
+        [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
+        [ $i18n->rp("/series/create"), $i18n->t("Create New") ],
+        [ $i18n->rp("/series/reviews"), $i18n->t("Latest Reviews") ],
         [ $i18n->r("/series/random"), $i18n->t("Random Series") ],
       ]],
       "persons" => [ $i18n->t("Persons"), [
-        [ $i18n->r("/persons"), $i18n->t("Latest Entries") ],
-        [ $i18n->r("/person/create"), $i18n->t("Create New") ],
+        [ $i18n->rp("/persons"), $i18n->t("Latest Entries") ],
+        [ $i18n->rp("/person/create"), $i18n->t("Create New") ],
         [ $i18n->r("/person/random"), $i18n->t("Random Person") ],
       ]],
       "companies" => [ $i18n->t("Companies"), [
-        [ $i18n->r("/companies"), $i18n->t("Latest Entries") ],
-        [ $i18n->r("/company/create"), $i18n->t("Create New") ],
+        [ $i18n->rp("/companies"), $i18n->t("Latest Entries") ],
+        [ $i18n->rp("/company/create"), $i18n->t("Create New") ],
         [ $i18n->r("/company/random"), $i18n->t("Random Company") ],
       ]],
       "more" => [ $i18n->t("More"), [
-        [ $i18n->r("/genres"), $i18n->t("Explore all genres") ],
-        [ $i18n->r("/articles"), $i18n->t("Explore all articles") ],
+        [ $i18n->rp("/genres"), $i18n->t("Explore all genres") ],
+        [ $i18n->rp("/articles"), $i18n->t("Explore all articles") ],
       ]],
     ] as $name => $nav) {
       $navs[$name]                = new Navigation($nav[0], $nav[1], [ "class" => "span span--3" ]);

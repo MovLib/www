@@ -53,7 +53,7 @@ trait TraitUser {
    */
   protected function getBreadcrumbs() {
     global $i18n;
-    return [[ $i18n->r("/users"), $i18n->t("Users") ]];
+    return [[ $i18n->rp("/users"), $i18n->t("Users") ]];
   }
 
 }

@@ -48,7 +48,7 @@ class MoviePosterDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
     }
     $this->entityTitle  = $this->title;
     $this->imagesRoute  = $i18n->r("/movie/{0}/poster", [ $this->model->id ]);
-    $this->uploadRoute  = $i18n->r("/movie/{0}/posters/upload", [ $this->model->id ]);
+    $this->uploadRoute  = $i18n->rp("/movie/{0}/posters/upload", [ $this->model->id ]);
     $this->editRoute    = $i18n->r("/movie/{0}/poster/{1}/edit", [ $this->model->id, $this->image->imageId ]);
     $this->lastImageId = $this->image->getTotalCount();
     $this->namePattern = "Poster {0} of {1} from “{2}”";

@@ -71,7 +71,7 @@ class Show extends \MovLib\Presentation\Page {
 
       $photo = $this->getImage(
         $this->person->displayPhoto->getStyle(),
-        $i18n->r("/person/{0}/photos", [ $this->person->id ]),
+        $i18n->rp("/person/{0}/photos", [ $this->person->id ]),
         [ "itemprop" => "image" ]
       );
 

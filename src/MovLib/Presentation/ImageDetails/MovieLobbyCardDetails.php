@@ -48,7 +48,7 @@ class MovieLobbyCardDetails extends \MovLib\Presentation\Movie\AbstractMoviePage
     }
     $this->entityTitle  = $this->title;
     $this->imagesRoute  = $i18n->r("/movie/{0}/lobby-card", [ $this->model->id ]);
-    $this->uploadRoute  = $i18n->r("/movie/{0}/lobby-cards/upload", [ $this->model->id ]);
+    $this->uploadRoute  = $i18n->rp("/movie/{0}/lobby-cards/upload", [ $this->model->id ]);
     $this->editRoute    = $i18n->r("/movie/{0}/lobby-card/{1}/edit", [ $this->model->id, $this->image->imageId ]);
     $this->lastImageId = $this->image->getTotalCount();
     $this->namePattern = "Lobby Card {0} of {1} from “{2}”";

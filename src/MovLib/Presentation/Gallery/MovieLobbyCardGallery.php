@@ -54,7 +54,7 @@ class MovieLobbyCardGallery extends \MovLib\Presentation\Movie\AbstractMoviePage
       $i18n->r("/movie/{0}/poster", [ $this->model->id ]),
       $this->entityTitle)
     )->getOrderedByCreatedAsc($startId);
-    $this->uploadRoute = $i18n->r("/movie/{0}/lobby-cards/upload", [ $this->model->id ]);
+    $this->uploadRoute = $i18n->rp("/movie/{0}/lobby-cards/upload", [ $this->model->id ]);
     $this->noImagesText = $i18n->t("No Lobby Cards for “{0}”.", [ $this->entityTitle ]);
     $this->uploadText = $i18n->t("Want to upload your Lobby Cards? {0}", [
         $this->a($this->uploadRoute, "Click here to do so.")

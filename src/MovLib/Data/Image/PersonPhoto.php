@@ -123,7 +123,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
       $this->route = $i18n->r("/person/{0}/photo/{1}", [ $personId, $this->id ]);
     }
     else {
-      $this->route = $i18n->r("/person/{0}/photos/upload", [ $personId ]);
+      $this->route = $i18n->rp("/person/{0}/photos/upload", [ $personId ]);
     }
   }
 

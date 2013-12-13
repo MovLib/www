@@ -61,7 +61,7 @@ class Create extends \MovLib\Presentation\Page {
    */
   protected function getBreadcrumbs() {
     global $i18n;
-    return [[ $i18n->r("/movies"), $i18n->t("Movies") ]];
+    return [[ $i18n->rp("/movies"), $i18n->t("Movies") ]];
   }
 
   /**
