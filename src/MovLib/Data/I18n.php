@@ -213,7 +213,7 @@ class I18n {
   }
 
   /**
-   * Format and translate the given route.
+   * Format and translate the given route for singular forms.
    *
    * @global \MovLib\Kernel $kernel
    * @staticvar array $routes
@@ -235,6 +235,44 @@ class I18n {
       // Check if we already have the route translations for this locale cached.
       if (!isset($routes[$this->locale])) {
         $routes[$this->locale] = require "{$kernel->pathTranslations}/routes/{$this->locale}.php";
+      }
+
+      // Check if we have a translation for this route and use it if we have one.
+      // @todo All routes should be translated in production, remove this check?
+      if (isset($routes[$this->locale][$route])) {
+        $route = $routes[$this->locale][$route];
+      }
+    }
+
+    if ($args) {
+      return \MessageFormatter::formatMessage($this->locale, $route, $args);
+    }
+    return $route;
+  }
+
+  /**
+   * Format and translate the given route for plural forms.
+   *
+   * @global \MovLib\Kernel $kernel
+   * @staticvar array $routes
+   * @param string $route
+   *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
+   * @param array $args [optional]
+   *   Array of arguments that should be inserted into <var>$route</var>.
+   * @return string
+   *   The formatted and translated <var>$route</var>.
+   * @throws \ErrorException
+   * @throws \IntlException
+   */
+  public function rp($route, array $args = null) {
+    global $kernel;
+    static $routes = [];
+
+    // We only need to translate the route if it isn't in the default locale.
+    if ($this->locale != $this->defaultLocale) {
+      // Check if we already have the route translations for this locale cached.
+      if (!isset($routes[$this->locale])) {
+        $routes[$this->locale] = require "{$kernel->pathTranslations}/routes/{$this->locale}.plural.php";
       }
 
       // Check if we have a translation for this route and use it if we have one.
