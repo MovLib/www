@@ -49,10 +49,11 @@ button,
 label,
 select,
 input[type="button"],
+input[type="checkbox"],
+input[type="radio"],
 input[type="reset"],
 input[type="submit"],
-input[type="radio"],
-input[type="checkbox"] {
+.file-input input {
   cursor: pointer;
 }
 
@@ -80,6 +81,7 @@ legend {
 input[type="checkbox"],
 input[type="radio"] {
   margin: 4px 0 0;
+  outline-offset: -8px;
 }
 
 input[type="search"] {
@@ -100,7 +102,14 @@ textarea,
   border: 1px solid #ccc;
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.075) inset;
   transition: 0.2s linear;
-  transition-property: border, box-shadow;
+  transition-property: border-color, box-shadow;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.inputhtml .focus {
+  outline: 0;
 }
 
 input:focus,
@@ -108,7 +117,6 @@ select:focus,
 textarea:focus,
 .inputhtml .focus {
   border-color: rgba(82, 168, 236, 0.8);
-  outline: 0;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(82, 168, 236, 0.6);
 }
 
@@ -117,7 +125,6 @@ input:invalid:not(:empty),
 textarea:invalid:not(:empty),
 .inputhtml .invalid {
   border-color: #ee5f5b;
-  outline: 0;
 }
 
 input:focus:invalid:focus:not(:empty),
@@ -125,7 +132,6 @@ input:focus:invalid:focus:not(:empty),
 textarea:focus:invalid:focus:not(:empty),
 .inputhtml .focus.invalid {
   border-color: rgba(233, 50, 45, 0.8);
-  outline: 0;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(233, 50, 45, 0.6);
 }
 
@@ -192,14 +198,6 @@ textarea,
   z-index: 1;
 }
 
-input[type="file"]:focus,
-input[type="radio"]:focus,
-input[type="checkbox"]:focus {
-  outline: thin dotted #353535;
-  outline: 5px auto -webkit-focus-ring-color;
-  outline-offset: -2px;
-}
-
 select:-moz-focusring {
   color: transparent;
   text-shadow: 0 0 0 #656565;
@@ -217,7 +215,8 @@ option[value=""] {
   font-style: italic;
 }
 
-.file-input {
+.button.file-input {
+  padding-bottom: 3px;
   position: relative;
   overflow: hidden;
 }
@@ -229,7 +228,16 @@ option[value=""] {
   bottom: 0;
   left: 0;
   opacity: 0;
-  cursor: pointer;
+}
+
+.file-input ~ .button {
+  position: relative;
+  z-index: 1;
+}
+
+.file-input.focus,
+.file-input:hover {
+  z-index: 2;
 }
 
 .checkbox,

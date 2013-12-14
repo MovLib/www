@@ -42,13 +42,9 @@
    */
   MovLib.modules.Movie = function (context) {
     var movieRating = context.getElementById("movie-rating");
-    movieRating.addEventListener("focus", function () {
-      this.classList.add("focus");
-    }, true);
-    movieRating.addEventListener("blur", function () {
-      this.classList.remove("focus");
-    }, true);
-    
+    movieRating.addEventListener("focus", MovLib.classFocusAdd, true);
+    movieRating.addEventListener("blur", MovLib.classFocusRemove, true);
+
     return MovLib;
   };
 

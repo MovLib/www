@@ -73,6 +73,24 @@
   MovLib.prototype = {
 
     /**
+     * Helper method to apply focus class to element.
+     *
+     * @returns {undefined}
+     */
+    classFocusAdd: function () {
+      this.classList.add("focus");
+    },
+
+    /**
+     * Helper method to remove focus class from element.
+     *
+     * @returns {undefined}
+     */
+    classFocusRemove: function () {
+      this.classList.remove("focus");
+    },
+
+    /**
      * Initialize page features that are available on every page.
      *
      * The code within this method is only executed during the initial page load, not for any subsequent AJAX loads
@@ -100,16 +118,6 @@
 
       // Ensure focused elements don't hide themselve beneath our fixed header.
       document.body.addEventListener("focus", this.fixFocusScrollPosition, true);
-
-      // Add focus class to expander for CSS styling.
-      var expanderFocus = function () {
-        this.classList.add("focus");
-      };
-
-      // Remove focus class and CSS styles on blur.
-      var expanderBlur = function () {
-        this.classList.remove("focus");
-      };
 
       // Check if there is any active element and if there is check if it's a child of the currently opened navigation.
       // If none of both is true remove the open class and close the navigation.
@@ -171,8 +179,8 @@
       var expanders = document.header.getElementsByClassName("expander");
       var c         = expanders.length;
       for (var i = 0; i < c; ++i) {
-        expanders[i].addEventListener("focus", expanderFocus, false);
-        expanders[i].addEventListener("blur", expanderBlur, false);
+        expanders[i].addEventListener("focus", this.classFocusAdd, false);
+        expanders[i].addEventListener("blur", this.classFocusRemove, false);
         expanders[i].addEventListener("blur", expanderCapturingBlur, true);
         expanders[i].addEventListener("keypress", expanderKeypress, false);
         expanders[i].getElementsByClassName("clicker")[0].addEventListener("click", clickerClick, false);
@@ -195,6 +203,12 @@
      * @returns {MovLib}
      */
     execute: function (context) {
+      var fileInputs = context.getElementsByClassName("file-input");
+      var c          = fileInputs.length;
+      for (var i = 0; i < c; ++i) {
+        fileInputs[i].addEventListener("focus", this.classFocusAdd, true);
+        fileInputs[i].addEventListener("blur", this.classFocusRemove, true);
+      }
 
       return this;
     },
