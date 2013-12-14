@@ -82,11 +82,8 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *   <code>"img-list"</code> is always applied.
    */
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null) {
-    if (!$attributes) {
-      $attributes = [ "class" => "no-list" ];
-    }
     parent::__construct($listItems, $noItemsText, $attributes);
-    $this->addClass("img-list", $this->attributes);
+    $this->addClass("img-list no-list", $this->attributes);
     $this->listItemsAttributes = $listItemsAttributes ?: [ "class" => "span span--2" ];
   }
 

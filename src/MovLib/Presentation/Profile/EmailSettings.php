@@ -67,6 +67,9 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
   public function __construct() {
     global $i18n, $kernel, $session;
 
+    // Disallow caching of email settings.
+    session_cache_limiter("nocache");
+
     // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
     $session->checkAuthorization($i18n->t("You need to sign in to change your email address."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
@@ -186,7 +189,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
   protected function validateToken() {
     global $i18n, $kernel;
     $tmp = new Temporary();
-    
+
     if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["new_email"])) {
       $kernel->alerts .= new Alert(
         $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
@@ -195,7 +198,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
       );
       throw new RedirectSeeOtherException($kernel->requestPath);
     }
-    
+
     if ($data["user_id"] !== $this->user->id) {
       throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
     }
@@ -208,7 +211,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
       $i18n->t("Email Changed Successfully"),
       Alert::SEVERITY_SUCCESS
     );
-    
+
     return $this;
   }
 

@@ -87,6 +87,9 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
   public function __construct() {
     global $i18n, $kernel, $session;
 
+    // Disallow caching of danger zone settings.
+    session_cache_limiter("nocache");
+
     // We call both auth-methods the session has to ensure that the error message we display is as accurate as possible.
     $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));

@@ -141,6 +141,9 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
   public function __construct() {
     global $i18n, $kernel, $session;
 
+    // Disallow caching of account settings.
+    session_cache_limiter("nocache");
+
     $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 

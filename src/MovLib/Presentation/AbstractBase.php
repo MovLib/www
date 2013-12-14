@@ -220,6 +220,7 @@ abstract class AbstractBase {
     $attributes["height"] = $style->height;
     $image                = "<img{$this->expandTagAttributes($attributes)}>";
     if ($route !== false) {
+      $this->addClass("img", $anchorAttributes);
       $anchorAttributes["href"] = $route === true ? $style->route : $route;
       $image                    = "<a{$this->expandTagAttributes($anchorAttributes)}>{$image}</a>";
     }

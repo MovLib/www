@@ -42,11 +42,41 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
    */
   protected $movie;
 
+  /**
+   * The movie's translated discussion route.
+   *
+   * @var string
+   */
   protected $routeDiscussion;
+
+  /**
+   * The movie's translated edit route.
+   *
+   * @var string
+   */
   protected $routeEdit;
+
+  /**
+   * The movie's translated history route.
+   *
+   * @var string
+   */
   protected $routeHistory;
+
+  /**
+   * The movie's translated route.
+   *
+   * @var string
+   */
   protected $routeMovie;
+
+  /**
+   * The translted route to the movies page.
+   *
+   * @var string
+   */
   protected $routeMovies;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -56,7 +86,6 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
    */
   protected function init($title) {
     global $i18n;
-    parent::init($title);
 
     // Substitue all routes for this movie once and for all (this has nothing to do with caching, we just don't want to
     // keep repeating us as these routes are needed A LOT).
@@ -64,6 +93,9 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
     $this->routeEdit       = $i18n->r("/movie/{0}/edit", [ $_SERVER["MOVIE_ID"] ]);
     $this->routeHistory    = $i18n->r("/movie/{0}/history", [ $_SERVER["MOVIE_ID"] ]);
     $this->routeMovie      = $i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]);
+
+    // Initialize the presentation.
+    parent::init($title);
 
     // Initialize the sidebar navigation.
     $this->initSidebar([

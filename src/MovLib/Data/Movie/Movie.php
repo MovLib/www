@@ -130,6 +130,46 @@ class Movie {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+  public function getImageResult($typeId, $offset, $rowCount) {
+    global $db;
+    return $db->query(
+      "SELECT
+        `id`,
+        `country_code` AS `countryCode`,
+        `width`,
+        `height`,
+        `extension`,
+        UNIX_TIMESTAMP(`changed`) AS `changed`,
+        `upvotes`,
+        `styles`
+      FROM `movies_images`
+      WHERE `movie_id` = ?
+        AND `type_id` = ?
+      ORDER BY `upvotes` DESC, `id` ASC
+      LIMIT ? OFFSET ?",
+      "diii",
+      [ $this->id, $typeId, $rowCount, $offset ]
+    )->get_result();
+  }
+
+  /**
+   * Get the total image count for this movie and the given image type.
+   *
+   * @global \MovLib\Data\Database $db
+   * @param integer $typeId
+   *   The desired image type identifier, use the class constants of the movie images.
+   * @return integer
+   *   The total image count for this movie and the given image type.
+   */
+  public function getImageCount($typeId) {
+    global $db;
+    return $db->query(
+      "SELECT COUNT(*) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? GROUP BY `type_id`",
+      "di",
+      [ $this->id, $typeId ]
+    )->get_result()->fetch_row()[0];
+  }
+
   public static function getUndeletedMoviesCount() {
     global $db;
     static $count = null;

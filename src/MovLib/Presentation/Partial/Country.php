@@ -89,6 +89,21 @@ class Country extends \MovLib\Presentation\AbstractBase {
 
 
   /**
+   * Get the string represntation of the country including a small flag icon.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @return string
+   *   The string represntation of the country including a small flag icon.
+   */
+  public function getFlag() {
+    global $i18n, $kernel;
+    return "<{$this->tag}{$this->expandTagAttributes($this->attributes)}><img alt='{$i18n->t("Flag of {country_name}", [
+      "country_name" => $this->country->name
+    ])}' height='11' itemprop='image' src='{$kernel->getAssetURL("flag/{$this->country->code}", "png")}' width='16'><meta itemprop='name' content='{$this->country->name}'></{$this->tag}>";
+  }
+
+  /**
    * Get all supported and translated countries.
    *
    * @return array

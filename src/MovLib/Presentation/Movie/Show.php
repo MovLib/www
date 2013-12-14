@@ -171,7 +171,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
         "</div>" . // close .span
         "<div id='movie-poster' class='span span--3 tac'>{$this->getImage(
           $this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03),
-          $i18n->r("/movie/{0}/posters", [ $this->movie->id ]),
+          $i18n->rp("/movie/{0}/posters", [ $this->movie->id ]),
           [ "itemprop" => "image" ]
         )}<div id='movie-rating-mean'>" .
           \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean) .

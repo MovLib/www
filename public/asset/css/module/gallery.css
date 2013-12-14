@@ -25,21 +25,38 @@
  * @since 0.0.1-dev
  */
 
-#gallery-list {
-  list-style: none;
-  padding: 0;
-}
-
-#gallery-list li {
-  background-color: #fcfcfc;
-  border: 1px solid #c7c7c7;
+.img-grid .span {
   margin-bottom: 20px;
-  padding: 5px;
-  text-align: center;
 }
 
-#gallery-list li a {
-  border: 0 none;
+/* This ensures that we have proper rows for the images in the grid. */
+.span--10 .img-grid .span--2:nth-child(5n+1),
+.span--10 .img-grid .span--1:nth-child(10n+1) {
+  clear: left;
+}
+
+.img-grid .grid-img {
+  opacity: 0.75;
+  outline: 1px solid #e5e5e5;
+  transition: 0.4s ease-in-out;
+  transition-property: opacity, outline-color;
+}
+
+.img-grid a {
+  margin-bottom: 5px;
   display: block;
-  text-decoration: none;
+  transition: box-shadow 0.4s ease-in-out;
+}
+
+.img-grid a:active,
+.img-grid a:focus,
+.img-grid a:hover {
+  box-shadow: 0 0 10px rgba(82, 168, 236, 0.6);
+}
+
+.img-grid a:active .grid-img,
+.img-grid a:focus .grid-img,
+.img-grid a:hover .grid-img {
+  opacity: 1;
+  outline-color: rgba(82, 168, 236, 0.8);
 }

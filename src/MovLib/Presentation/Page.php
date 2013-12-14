@@ -61,6 +61,13 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected $breadcrumb;
 
   /**
+   * The title of the current page in the breadcrumb.
+   *
+   * @var string
+   */
+  protected $breadcrumbTitle;
+
+  /**
    * HTML that should be included after the page's content.
    *
    * @var string
@@ -543,7 +550,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
       }
       $trail[] = $breadcrumbs[$i];
     }
-    $trail[] = [ $kernel->requestPath, $this->title ];
+    $trail[] = [ $kernel->requestPath, $this->breadcrumbTitle ?: $this->title ];
 
     // Create the actual navigation with the trail we just built.
     $this->breadcrumb            = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "container small" ]);

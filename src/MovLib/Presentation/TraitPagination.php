@@ -111,7 +111,8 @@ trait TraitPagination {
 
       // Generate the previous link if it isn't the first page.
       if ($x >= 1) {
-        $pages[] = [ "{$route}{$x}", $i18n->t("« previous"), [ "rel" => "previous prerender" ] ];
+        // Only include the query string if we aren't linking to the very first page.
+        $pages[] = [ ($x > 1 ? "{$route}{$x}" : $kernel->requestPath), $i18n->t("« previous"), [ "rel" => "previous prerender" ] ];
       }
       // We totally mute this pagination item for screen readers and alike because it has no value anymore for them. But
       // we keep it on normal screens to ensure that the pagination navigation always looks the same on all pages.
