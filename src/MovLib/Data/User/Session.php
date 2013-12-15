@@ -227,7 +227,13 @@ class Session implements \ArrayAccess {
 
     // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
     // ID and if not generate a completely new session.
-    session_status() === PHP_SESSION_ACTIVE ? $this->regenerate() : $this->start();
+    if (session_status() === PHP_SESSION_ACTIVE) {
+      $this->regenerate();
+    }
+    else {
+      $this->start();
+      $kernel->delayMethodCall([ $this, "insert" ]);
+    }
 
     // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
     //       only way to update the password's of all users. We execute it delayed, so there's only the server load we
@@ -516,10 +522,6 @@ class Session implements \ArrayAccess {
     // Restore session data.
     if ($sessionData) {
       $_SESSION += $sessionData;
-    }
-
-    if (isset($_SESSION["id"]) && $_SESSION["id"] > 0) {
-      $kernel->delayMethodCall([ $this, "insert" ]);
     }
 
     return $this;
