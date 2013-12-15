@@ -203,12 +203,6 @@
      * @returns {MovLib}
      */
     execute: function (context) {
-      var fileInputs = context.getElementsByClassName("file-input");
-      var c          = fileInputs.length;
-      for (var i = 0; i < c; ++i) {
-        fileInputs[i].addEventListener("focus", this.classFocusAdd, true);
-        fileInputs[i].addEventListener("blur", this.classFocusRemove, true);
-      }
 
       return this;
     },

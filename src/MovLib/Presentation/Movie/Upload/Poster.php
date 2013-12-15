@@ -21,7 +21,6 @@ use \MovLib\Data\Country;
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\License;
 use \MovLib\Data\Movie\Movie;
-use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
@@ -38,8 +37,7 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Poster extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
+class Poster extends \MovLib\Presentation\Movie\AbstractMoviePage {
   use \MovLib\Presentation\TraitFormPage;
 
 
@@ -88,6 +86,13 @@ class Poster extends \MovLib\Presentation\Page {
    */
   protected $license;
 
+  /**
+   * Translated short title for this presentation.
+   *
+   * @var string
+   */
+  protected $shortTitle;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -99,48 +104,63 @@ class Poster extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n;
+
+    // Try to load referenced movie
     try {
       $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-      if ($this->movie->deleted === true) {
-        // @todo Display appropriate information if movie is deleted.
-      }
-      elseif (isset($_SERVER["IMAGE_ID"])) {
-        $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear, $_SERVER["IMAGE_ID"]);
-      }
-      else {
-        $title = "<a href='{$i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ])}'>{$this->movie->displayTitle}</a>";
-        if ($this->movie->year) {
-          $title = $i18n->t("{movie_title} ({movie_year})", [ "movie_title" => $title, "movie_year" => $this->movie->year ]);
-        }
-        $title = $i18n->t("Upload new poster for {movie_title}", [ "movie_title" => $title ]);
-        $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear);
-      }
-      $this->init($title);
-      $this->initSidebar([]);
-      $this->inputImage  = new InputImage("poster", $i18n->t("Poster"), $this->image, [ "required" ]);
-      $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description, [ "required" ]);
-      $this->country     = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
-      $this->license     = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ? : 1, [ "required" ]);
-
-      $this->form = new Form($this, [
-        $this->inputImage,
-        $this->description,
-        $this->country,
-        $this->license,
-      ]);
-      $this->form->actionElements[] = new InputSubmit($i18n->t("Upload Poster"), [
-        "class" => "btn btn-large btn-success",
-        "title" => $i18n->t("Continue here after you filled out all mandatory fields."),
-      ]);
     }
     catch (\OutOfBoundsException $e) {
-      throw new ErrorNotFoundException("No movie with ID '{$_SERVER["MOVIE_ID"]}'.");
+      throw $e;
     }
+
+    // Initialize presentation
+    $this->image      = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear);
+    $this->shortTitle = $i18n->t("Upload Poster");
+    $this->init($i18n->t("Upload poster for {movie_title}", [ "movie_title" => $this->movie->displayTitleWithYear ]), $this->shortTitle);
+    $this->pageTitle  = $i18n->t("Upload poster for {movie_title}", [ "movie_title" => "<a href='{$this->routeMovie}'>{$this->movie->displayTitleWithYear}</a>" ]);
+
+    // Alter the sidebar navigation and include the various image types.
+    $this->sidebarNavigation->menuitems[0][1] = $i18n->t("Back to movie");
+    $this->sidebarNavigation->menuitems[] = [ $i18n->rp("/movie/{0}/posters", [ $this->movie->id ]), $i18n->t("Posters"), [ "class" => "active" ] ];
+    $this->sidebarNavigation->menuitems[] = [ $i18n->rp("/movie/{0}/lobby-cards", [ $this->movie->id ]), $i18n->t("Lobby Cards") ];
+    $this->sidebarNavigation->menuitems[] = [ $i18n->rp("/movie/{0}/photos", [ $this->movie->id ]), $i18n->t("Photos") ];
+
+    // Initialize form elements.
+    $this->inputImage  = new InputImage("poster", $i18n->t("Poster"), $this->image, [ "required" ]);
+    $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description); //, [ "required" ]
+    $this->country     = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
+    $this->license     = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ? : 1, [ "required" ]);
+
+    // Initialize form
+    $this->form = new Form($this, [
+      $this->inputImage,
+      $this->description,
+      $this->country,
+      $this->license,
+    ]);
+
+    // Add submit button
+    $this->form->actionElements[] = new InputSubmit($this->shortTitle, [
+      "class" => "btn btn-large btn-success",
+      "title" => $i18n->t("Continue here after you filled out all mandatory fields."),
+    ]);
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    $trail = parent::getBreadcrumbs();
+    $trail[] = [ $this->routeMovie, $this->movie->displayTitleWithYear ];
+    $trail[] = [ $i18n->rp("/movie/{0}/posters", [ $this->movie->id ]), $i18n->t("Posters") ];
+    return $trail;
+  }
 
   /**
    * @inheritdoc
@@ -153,7 +173,6 @@ class Poster extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   public function validate(array $errors = null) {
-    global $i18n;
     if ($this->checkErrors($errors) === false) {
       $this->image->countryCode = $this->country->value;
       $this->image->description = $this->description->value;

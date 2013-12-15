@@ -64,15 +64,6 @@ class Show extends \MovLib\Presentation\Page {
 
 
   /**
-   * @inhertidoc
-   * @global \MovLib\Data\I18n $i18n
-   */
-  protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->r("/profile"), $i18n->t("Profile") ]];
-  }
-
-  /**
    * @inheritdoc
    */
   protected function getPageContent() {
@@ -110,9 +101,9 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    */
-  protected function init($title) {
+  protected function init($title, $breadcrumbTitle = null) {
     global $i18n, $session;
-    parent::init($title);
+    parent::init($title, $breadcrumbTitle);
 
     $sidebar = [
       [ $i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "separator ico ico-info" ] ],

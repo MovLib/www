@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Movie\ImageDetails;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * @todo Description of Photo
+ * @todo Description of LobbyCard
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,11 +28,11 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Photo extends \MovLib\Presentation\Page {
+class LobbyCardShow extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    $this->init("Movie Photo");
+    $this->init("Movie LobbyCard");
     $this->alerts .= new Alert("Not implemented yet!");
   }
 

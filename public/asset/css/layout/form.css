@@ -50,10 +50,10 @@ label,
 select,
 input[type="button"],
 input[type="checkbox"],
+input[type="file"],
 input[type="radio"],
 input[type="reset"],
-input[type="submit"],
-.file-input input {
+input[type="submit"] {
   cursor: pointer;
 }
 
@@ -215,13 +215,30 @@ option[value=""] {
   color: #999;
 }
 
-.button.file-input {
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Input image styles, also see the associated JavaScript module.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+.inputimage .alert {
+  margin-top: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transition-duration: 0.4s;
+  transition-property: opacity, visibility;
+}
+
+.inputimage .fade-in {
+  opacity: 1;
+  visibility: visible;
+}
+
+.btn.input-file {
   position: relative;
   padding-bottom: 3px;
   overflow: hidden;
 }
 
-.file-input input {
+.input-file input {
   position: absolute;
   top: 0;
   right: 0;
@@ -230,15 +247,20 @@ option[value=""] {
   opacity: 0;
 }
 
-.file-input ~ .button {
+.input-file ~ .btn {
   position: relative;
   z-index: 1;
 }
 
-.file-input.focus,
-.file-input:hover {
+.input-file:active,
+.input-file.focus,
+.input-file:hover {
   z-index: 2;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Radio and checkbox styles.
+ * ------------------------------------------------------------------------------------------------------------------ */
 
 .checkbox,
 .radio {
@@ -261,6 +283,10 @@ option[value=""] {
   margin-left: -20px;
 }
 
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Special formatting for help partials within forms.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
 .form-help {
   float: right;
   margin: 0;
@@ -279,6 +305,10 @@ option[value=""] {
   left: auto;
   margin: 0;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Ensure inputs and buttons have some margin to the right.
+ * ------------------------------------------------------------------------------------------------------------------ */
 
 .form-actions input,
 .form-actions button {

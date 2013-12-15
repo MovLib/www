@@ -61,13 +61,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected $breadcrumb;
 
   /**
-   * The title of the current page in the breadcrumb.
-   *
-   * @var string
-   */
-  protected $breadcrumbTitle;
-
-  /**
    * HTML that should be included after the page's content.
    *
    * @var string
@@ -347,7 +340,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         // wants us to use multiple <h1>s for multiple sections, so here we go. The header is always the MovLib header.
         "<h1 class='s s3'>{$this->a(
           "/",
-          "<img alt='' height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}",
+          "<img height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}",
           [ "id" => "l", "title" => $i18n->t("Go back to the home page.") ]
         )}</h1>" .
         "<div class='s s9'>" .
@@ -507,9 +500,11 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *
    * @param string $title
    *   The already translated title of this page.
+   * @param string $breadcrumbTitle [optional]
+   *   Override the usage of <var>$title</var> as the title within the breadcrumb for the current page.
    * @return this
    */
-  protected function init($title) {
+  protected function init($title, $breadcrumbTitle = null) {
     global $i18n, $kernel;
 
     // The substr() removes the \MovLib\Presentation\ part!
@@ -550,7 +545,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
       }
       $trail[] = $breadcrumbs[$i];
     }
-    $trail[] = [ $kernel->requestPath, $this->breadcrumbTitle ?: $this->title ];
+    $trail[] = [ $kernel->requestPath, $breadcrumbTitle ?: $this->title ];
 
     // Create the actual navigation with the trail we just built.
     $this->breadcrumb            = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "c small" ]);

@@ -152,6 +152,24 @@ class Movie {
     )->get_result();
   }
 
+  public function getImageStreamResult($typeId, $id) {
+    global $db;
+    return $db->query(
+      "SELECT
+        `id`,
+        `extension`,
+        UNIX_TIMESTAMP(`changed`) AS `changed`,
+        `styles`
+      FROM `movies_images`
+      WHERE `movie_id` = ?
+        AND `type_id` = ?
+        AND `id` != ?
+      ORDER BY `upvotes` DESC, `id` ASC",
+      "dii",
+      [ $this->id, $typeId, $id ]
+    )->get_result();
+  }
+
   /**
    * Get the total image count for this movie and the given image type.
    *

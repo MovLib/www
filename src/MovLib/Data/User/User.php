@@ -170,6 +170,9 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
       $stmt->close();
+    }
+
+    if ($this->id) {
       $this->exists   = (boolean) $this->changed;
       $this->filename = rawurlencode(mb_strtolower($this->name));
       $this->route    = $i18n->r("/user/{0}", [ $this->filename ]);

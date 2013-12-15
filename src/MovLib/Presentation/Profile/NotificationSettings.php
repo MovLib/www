@@ -46,6 +46,15 @@ class NotificationSettings extends \MovLib\Presentation\Profile\Show {
   }
 
   /**
+   * @inhertidoc
+   * @global \MovLib\Data\I18n $i18n
+   */
+  protected function getBreadcrumbs() {
+    global $i18n;
+    return [[ $i18n->r("/profile"), $i18n->t("Profile") ]];
+  }
+
+  /**
    * @inheritdoc
    */
   protected function getPageContent() {

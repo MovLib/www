@@ -47,12 +47,8 @@ class Posters extends \MovLib\Presentation\Movie\AbstractMoviePage {
       throw $e;
     }
 
-    // Shorter breadcrumb title for this page, the movie title is preceding us. Note that we have to set this before
-    // calling init().
-    $this->breadcrumbTitle = $i18n->t("Posters");
-
     // Initialize the page with the full unlinked title. This is displayed in the browser tab.
-    $this->init($i18n->t("Posters for {title}", [ "title" => $this->movie->displayTitleWithYear ]));
+    $this->init($i18n->t("Posters for {title}", [ "title" => $this->movie->displayTitleWithYear ]), $i18n->t("Posters"));
 
     // We want the title in the page header linked back to the movie.
     $this->pageTitle = $i18n->t("Posters for {title}", [ "title" => "<a href='{$this->routeMovie}'>{$this->movie->displayTitleWithYear}</a>" ]);
@@ -96,17 +92,18 @@ class Posters extends \MovLib\Presentation\Movie\AbstractMoviePage {
     while ($poster = $posters->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->movie->id, $this->movie->displayTitleWithYear ])) {
       $country = null;
       if ($poster->countryCode) {
-        $country = new Country($poster->countryCode);
+        $country = (new Country($poster->countryCode, [ "itemprop" => "contentLocation" ]))->getFlag();
       }
       $list .=
         "<li class='s s2 tac' itemscope itemtype='http://schema.org/ImageObject'>{$this->getImage(
           $poster->getStyle(),
           true,
-          [ "class" => "grid-img", "itemprop" => "image" ],
+          [ "class" => "grid-img", "itemprop" => "thumbnail" ],
           [ "itemprop" => "url" ]
-        )}{$country->getFlag()} {$i18n->t("{width}×{height}", [
-          "width"  => "<span itemprop='width'>{$poster->width}</span>",
-          "height" => "<span itemprop='height'>{$poster->height}</span>",
+        )}{$country} {$i18n->t("{width}×{height}", [
+          // The length unit is mandatory for distances: http://schema.org/Distance
+          "width"  => "<span itemprop='width'>{$poster->width}<span class='vh'> px</span></span>",
+          "height" => "<span itemprop='height'>{$poster->height}<span class='vh'> px</span></span>",
         ])}</li>"
       ;
     }

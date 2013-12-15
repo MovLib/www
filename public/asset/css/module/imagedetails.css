@@ -25,6 +25,68 @@
  * @since 0.0.1-dev
  */
 
+/* ---------------------------------------------------------------------------------------------------------------------
+ * The stream above the preview
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+#imagestream {
+  background-color: #252525;
+  overflow: hidden;
+  padding: 20px 0;
+  position: relative;
+}
+
+#imagestream a {
+  border: 0;
+  opacity: 0.5;
+  overflow: hidden;
+  position: relative;
+  transition: opacity 0.4s ease-in-out;
+}
+
+#imagestream a.active,
+#imagestream a:active,
+#imagestream a:focus,
+#imagestream a:hover {
+  opacity: 1;
+}
+
+/*#imagestream .first,
+#imagestream .last {
+  width: 40px;
+}
+
+#imagestream .first img,
+#imagestream .last img {
+  position: relative;
+  left: -10px;
+}
+
+#imagestream .last img {
+  right: -10px;
+  left: 0;
+}
+
+#imagestream .first:after,
+#imagestream .last:after {
+  background-image: linear-gradient(to left, transparent, #252525);
+  bottom: 0;
+  content: "";
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#imagestream .last:after {
+  background-image: linear-gradient(to right, transparent, #252525);
+}*/
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * The pager to the left/right of the preview.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+
 .imagedetails-pager {
   bottom: 0;
   color: #fff;
@@ -58,7 +120,11 @@
   margin-top: -36.5px;
 }
 
-#image-details--image {
+/* ---------------------------------------------------------------------------------------------------------------------
+ * The preview of the actual image.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+#imagedetails {
   background-color: #555;
   border: 1px solid #252525;
   padding: 20px;
@@ -66,7 +132,7 @@
   text-align: center;
 }
 
-#image-details--image:before {
+#imagedetails:before {
   border: 10px solid transparent;
   border-top-color: #252525;
   content: "";
@@ -74,62 +140,4 @@
   margin-left: -10px;
   position: absolute;
   top: 0;
-}
-
-#image-details--stream {
-  background-color: #252525;
-  overflow: hidden;
-  padding: 20px 0;
-  position: relative;
-  text-align: center;
-}
-
-#image-details--stream a {
-  border: none;
-  opacity: 0.5;
-  overflow: hidden;
-  position: relative;
-  transition: opacity 0.4s ease-in-out;
-}
-
-#image-details--stream a:hover,
-#image-details--stream a:focus,
-#image-details--stream a.active {
-  opacity: 1;
-}
-
-#image-details--stream .s:first-child,
-#image-details--stream .s:last-child {
-  width: 40px;
-}
-
-#image-details--stream .s:first-child img {
-  left: -10px;
-  position: relative;
-}
-
-#image-details--stream .gradient-left:after,
-#image-details--stream .gradient-right:after {
-  background-image: linear-gradient(to left, transparent, #252525);
-  bottom: 0;
-  content: "";
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-#image-details--stream .gradient-right:after {
-  background-image: linear-gradient(to right, transparent, #252525);
-}
-
-#image-details--stream img {
-  display: inline-block;
-  margin: 0 !important;
-  margin-left: 5px;
-}
-
-#image-details--details dt,
-#image-details--details dd {
-  margin-top: 1.39em;
 }

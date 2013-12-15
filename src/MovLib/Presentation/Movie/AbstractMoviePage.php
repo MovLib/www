@@ -84,7 +84,7 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    */
-  protected function init($title) {
+  protected function init($title, $breadcrumbTitle = null) {
     global $i18n;
 
     // Substitue all routes for this movie once and for all (this has nothing to do with caching, we just don't want to
@@ -95,7 +95,7 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
     $this->routeMovie      = $i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]);
 
     // Initialize the presentation.
-    parent::init($title);
+    parent::init($title, $breadcrumbTitle);
 
     // Initialize the sidebar navigation.
     $this->initSidebar([

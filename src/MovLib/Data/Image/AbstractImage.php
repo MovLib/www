@@ -192,7 +192,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    */
   public function moveOriginal($source) {
     if (sh::execute("mv '{$source}' '{$this->getPath()}' && rm '{$source}'") === false) {
-      error_log("Couldn't move uploaded image from temporary folder to persistent storage.");
+      error_log(__FILE__ . "(" . __LINE__ . "): Couldn't move uploaded image from temporary folder to persistent storage.");
     }
     return $this;
   }

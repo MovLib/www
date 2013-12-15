@@ -48,7 +48,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
    *
    * @var integer
    */
-  const STYLE_SPAN_08 = \MovLib\Data\Image\SPAN_08;
+  const STYLE_SPAN_05 = \MovLib\Data\Image\SPAN_05;
 
   /**
    * The movie image's type identifier.
@@ -113,13 +113,12 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
           `country_code`,
           `width`,
           `height`,
-          `size`,
+          `filesize`,
           `extension`,
           UNIX_TIMESTAMP(`changed`),
           UNIX_TIMESTAMP(`created`),
           `upvotes`,
           COLUMN_GET(`dyn_descriptions`, ? AS BINARY),
-          `source`,
           `styles`
         FROM `movies_images`
         WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?
@@ -140,7 +139,6 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         $this->created,
         $this->upvotes,
         $this->description,
-        $this->source,
         $this->styles
       );
       if (!$stmt->fetch()) {
@@ -205,8 +203,8 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
     }
 
     // Generate the various image's styles and always go from best quality down to worst quality.
-    $span08 = $this->convert($source, self::STYLE_SPAN_08);
-    $span03 = $this->convert($span08, self::STYLE_SPAN_03);
+    $span05 = $this->convert($source, self::STYLE_SPAN_05);
+    $span03 = $this->convert($span05, self::STYLE_SPAN_03);
     $span02 = $this->convert($span03, self::STYLE_SPAN_02);
     $this->convert($span02, self::STYLE_SPAN_01);
 
@@ -222,9 +220,10 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         `license_id`       = ?,
         `styles`           = ?,
         `user_id`          = ?,
-        `width`            = ?
+        `width`            = ?,
+        `country_code`     = ?
       WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
-      "ssssiiisdiidi",
+      "ssssiiisdisidi",
       [
         $_SERVER["REQUEST_TIME"],
         $i18n->languageCode,
@@ -236,6 +235,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         serialize($this->styles),
         $session->userId,
         $this->width,
+        $this->countryCode,
         $this->id,
         $this->movieId,
         static::TYPE_ID,

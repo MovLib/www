@@ -20,6 +20,7 @@ namespace MovLib\Presentation\Partial\FormElement;
 use \MovLib\Data\Image\AbstractBaseImage as Image;
 use \MovLib\Exception\Client\UnauthorizedException;
 use \MovLib\Exception\ValidationException;
+use \MovLib\Presentation\Partial\Alert;
 
 /**
  * HTML input type file form element specialized for image uploads.
@@ -129,6 +130,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
       ));
     }
     parent::__construct($id, $label, $attributes);
+    $kernel->javascripts[]                 = "InputImage";
     $this->attributes["accept"]            = "image/jpeg,image/png";
     $this->attributes["data-max-filesize"] = ini_get("upload_max_filesize");
     $this->attributes["data-min-height"]   = isset($this->image->height) ? $this->image->height : Image::IMAGE_MIN_HEIGHT;
@@ -150,18 +152,15 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    */
   protected function render() {
     global $i18n;
-
-    $preview = null;
-    if ($this->image->exists === true) {
-      $preview = $this->getImage($this->image->getStyle(Image::STYLE_SPAN_01), false);
-    }
+    $previewAlert           = new Alert($i18n->t("The image you see is only a preview, you still have to submit the form."));
+    $previewAlert->severity = Alert::SEVERITY_INFO;
     return
-      "<div class='r'>" .
-        "<div class='s s1'>{$preview}</div>" .
-        "<div class='s s9'>{$this->help}<label for='{$this->id}'>{$this->label}</label>" .
-          "<span class='btn file-input'><span aria-hidden='true'>{$i18n->t("Choose Image …")}</span>" .
+      "<div class='inputimage r'>" .
+        "<div class='s s2'><div class='wrapper'>{$this->getImage($this->image->getStyle(Image::STYLE_SPAN_02), false)}</div></div>" .
+        "<div class='s s8'>{$this->help}<label for='{$this->id}'>{$this->label}</label>" .
+          "<span class='btn input-file'><span aria-hidden='true'>{$i18n->t("Choose Image …")}</span>" .
             "<input{$this->expandTagAttributes($this->attributes)}>" .
-          "</span>{$this->inputFileAfter}" .
+          "</span>{$this->inputFileAfter}{$previewAlert}" .
         "</div>" .
       "</div>"
     ;

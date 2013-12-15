@@ -42,7 +42,7 @@ INSERT INTO `users` SET
     'de', '&lt;p&gt;Mein deutscher Profiltext.&lt;/p&gt;'
   ),
   `email`                = 'richard@fussenegger.info',
-  `image_changed`        = CURRENT_TIMESTAMP,
+  `image_changed`        = '2013-04-22 19:15:35', -- initial commit
   `image_extension`      = 'jpg',
   `password`             = '$2y$13$LFDTAUaaxs5D6XulZkDU4uKtYgJBuyjDBS2ax7k.oqsASEXstzQDu',
   `real_name`            = 'Richard Fussenegger',
@@ -85,6 +85,8 @@ INSERT INTO `users` SET
   `created`              = '2013-05-27 01:29:57', -- initial commit
   `currency_code`        = 'EUR',
   `email`                = 'franz@torghele.at',
+  `image_changed`        = '2013-05-27 01:29:57', -- initial commit
+  `image_extension`      = 'jpg',
   `password`             = '$2y$13$UZQYCsImiKIDQQu1OPfaTe9pZSsOd5OCgsEPVXgAVm98ygQLN0Mje',
   `real_name`            = 'Franz Torghele',
   `sex`                  = 1,
