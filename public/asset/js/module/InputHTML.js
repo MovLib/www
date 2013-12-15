@@ -41,6 +41,7 @@
    * @constructor
    * @param {HTMLElement} element
    *   The <b>.inputhtml</b> element to work with.
+   * @return {InputHTML}
    */
   function InputHTML(element) {
 
@@ -461,14 +462,10 @@
    */
   MovLib.modules.InputHTML = function (context) {
     var elements = context.getElementsByClassName("inputhtml");
-
-    // Go through all matching HTMLElements and enhance them if they aren't already enhanced.
-    for (var i = 0; i < elements.length; ++i) {
-      if (!elements[i].inputhtml) {
-        elements[i].inputhtml = new InputHTML(elements[i]);
-      }
+    var c        = elements.length;
+    for (var i = 0; i < c; ++i) {
+      elements[i].inputhtml = new InputHTML(elements[i]);
     }
-
     return MovLib;
   };
 
