@@ -15,117 +15,46 @@
  */
 
 /**
- * Generic classes that can be used globally to style things.
+ * Table styles
  *
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 
-iframe {
-  border: 0 none;
-}
-
-
-/* ==== PAGE LAYOUT ================================================================================================= */
-
-
-.text-hide {
+table {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 20px;
   background-color: transparent;
-  border: 0;
-  color: transparent;
-  font: 0/0 a;
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
-.pull-right {
-  float: right !important;
+caption {
+  margin: 1.39em 0; /* same margin as paragraphs */
+  text-align: left;
+  caption-side: top;
 }
 
-.pull-left {
-  float: left !important;
-}
-
-.clear-fix:after,
-.row:after {
-  content: "";
-  display: table;
-  line-height: 0;
-}
-
-.clear-fix:after,
-.row:after {
-  clear: both;
-}
-
-.hidden,
-#js .jshidden,
-#nojs .nojshidden,
-.inputhtml .not-empty .placeholder {
-  display: none !important;
-  visibility: hidden;
-}
-
-.visuallyhidden {
-  border: 0;
-  clip: rect(0, 0, 0, 0);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  width: 1px;
-}
-
-
-/* ==== TYPOGRAPHY ================================================================================================== */
-
-
-.label,
-.small {
-  font-size: 0.82em;
-}
-
-.lead {
-  font-size: 21px;
-  line-height: 26.25px;
-}
-
-.hero {
-  font-size: 38.5px;
-  font-weight: bold;
-  line-height: 77px;
-}
-
-.lead,
-.lead h1,
-.lead h2,
-.lead h3 {
-  color: #fff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
-}
-
-.menuitem--delete {
-  color: #c00;
-}
-
-.tac {
-  text-align: center;
-}
-
-.tal {
+td {
+  padding: 8px;
   text-align: left;
 }
 
-.tar {
-  text-align: right;
+thead {
+  vertical-align: bottom;
+  background-color: #252525;
 }
 
-
-/* ==== TABLES ====================================================================================================== */
-
+th {
+  padding: 8px;
+  font-weight: 200;
+  color: #fff;
+  text-align: center;
+}
 
 .table-condensed th,
 .table-condensed td {
@@ -133,9 +62,9 @@ iframe {
 }
 
 .table-bordered {
+  border: 1px solid #ddd;
   border-collapse: separate;
   border-left: 0;
-  border: 1px solid #ddd;
 }
 
 .table-bordered th,

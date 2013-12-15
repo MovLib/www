@@ -63,7 +63,7 @@ class Show extends \MovLib\Presentation\Page {
   protected function getContent() {
     $list = new Images($this->users);
     $list->closure = [ $this, "renderAvatar" ];
-    return "<div class='container'><div class='row'>{$list}</div></div>";
+    return "<div class='c'><div class='r'>{$list}</div></div>";
   }
 
   /**

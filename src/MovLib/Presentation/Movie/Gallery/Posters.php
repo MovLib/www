@@ -67,7 +67,7 @@ class Posters extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->sidebarNavigation->menuitems[] = [ $i18n->rp("/movie/{0}/photos", [ $this->movie->id ]), $i18n->t("Photos") ];
 
     // Make sure it's easy for users to upload new posters.
-    $this->headingBefore = "<a class='button button--large button--success pull-right' href='{$i18n->r("/movie/{0}/poster/upload", [ $this->movie->id ])}'>{$i18n->t("Upload New Poster")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/{0}/poster/upload", [ $this->movie->id ])}'>{$i18n->t("Upload New Poster")}</a>";
   }
 
 
@@ -99,7 +99,7 @@ class Posters extends \MovLib\Presentation\Movie\AbstractMoviePage {
         $country = new Country($poster->countryCode);
       }
       $list .=
-        "<li class='span span--2 tac' itemscope itemtype='http://schema.org/ImageObject'>{$this->getImage(
+        "<li class='s s2 tac' itemscope itemtype='http://schema.org/ImageObject'>{$this->getImage(
           $poster->getStyle(),
           true,
           [ "class" => "grid-img", "itemprop" => "image" ],
@@ -111,7 +111,7 @@ class Posters extends \MovLib\Presentation\Movie\AbstractMoviePage {
       ;
     }
     if ($list) {
-      return "<div id='filter'>LIMIT {$this->resultsPerPage} OFFSET {$this->resultsOffset}</div><ol class='img-grid no-list row'>{$list}</ol>";
+      return "<div id='filter'>LIMIT {$this->resultsPerPage} OFFSET {$this->resultsOffset}</div><ol class='img-grid no-list r'>{$list}</ol>";
     }
     return $i18n->t("No posters …");
   }

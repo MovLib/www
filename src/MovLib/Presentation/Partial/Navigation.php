@@ -78,7 +78,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
   /**
    * Flag indicating if the navigation's title should be hidden via CSS.
    *
-   * If set to <code>TRUE</code> (default) the CSS class <i>visuallyhidden</i> will be added to the title of the
+   * If set to <code>TRUE</code> (default) the CSS class <i>vh</i> will be added to the title of the
    * navigation. Set it to <code>FALSE</code> if you want the title displayed.
    *
    * @var boolean
@@ -172,7 +172,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
       $menuitems = "<ul class='no-list'>{$menuitems}</ul>";
     }
     $this->attributes["role"] = "navigation";
-    $hideTitle                = $this->hideTitle ? " class='visuallyhidden'" : null;
+    $hideTitle                = $this->hideTitle ? " class='vh'" : null;
     return "<nav{$this->expandTagAttributes($this->attributes)}><h{$this->headingLevel}{$hideTitle}>{$this->title}</h{$this->headingLevel}><div role='menu'>{$menuitems}</div></nav>";
   }
 

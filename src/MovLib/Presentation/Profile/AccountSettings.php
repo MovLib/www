@@ -156,7 +156,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
     ]);
 
     $this->avatar                 = new InputImage("avatar", $i18n->t("Avatar"), $this->user);
-    $this->avatar->inputFileAfter = " <input class='button button--danger' name='delete_avatar' type='submit' value='{$i18n->t("Delete")}'>";
+    $this->avatar->inputFileAfter = " <input class='btn btn-danger' name='delete_avatar' type='submit' value='{$i18n->t("Delete")}'>";
 
     $this->sex = new RadioGroup("sex", $i18n->t("Sex"), [
       2 => $i18n->t("Female"),
@@ -219,7 +219,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
       $this->private,
     ]);
 
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Update Account Settings"), [ "class" => "button button--large button--success" ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Update Account Settings"), [ "class" => "btn btn-large btn-success" ]);
   }
 
 

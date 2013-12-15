@@ -25,61 +25,60 @@
  * @since 0.0.1-dev
  */
 
-#footer,
-#footer-team a {
+#f,
+#f-team a {
   color: #c7c7c7;
 }
 
-#footer {
+#f {
   padding: 20px 0;
   font-size: 12px;
-  z-index: -1;
 }
 
-#footer .span {
-  border-bottom: 1px solid #595959;
+#f .s {
   padding: 20px 0;
+  border-bottom: 1px solid #595959;
 }
 
-#footer .last {
-  border-bottom: 0 none;
+#f .last {
+  border-bottom: 0;
 }
 
-#footer-logos a,
-#footer-team a {
+#f-logos a,
+#f-team a {
   opacity: 0.5;
   transition: opacity 0.4s ease-out;
 }
 
-#footer-logos a {
+#f-logos a {
   margin: 0 20px;
 }
 
-#footer-team a:active,
-#footer-team a:focus,
-#footer-team a:hover,
-#footer-logos a:active,
-#footer-logos a:focus,
-#footer-logos a:hover {
+#f-team a:active,
+#f-team a:focus,
+#f-team a:hover,
+#f-logos a:active,
+#f-logos a:focus,
+#f-logos a:hover {
   opacity: 1;
 }
 
-#footer-team h3 {
+#f-team h3 {
   font-size: 14px;
 }
 
-#footer-team a:active,
-#footer-team a:focus,
-#footer-team a:hover {
+#f-team a:active,
+#f-team a:focus,
+#f-team a:hover {
   border-bottom-color: #c7c7c7;
 }
 
-#footer-team .ico-heart {
+#f-team .ico-heart {
   transition: color 0.4s ease-out;
 }
 
-#footer-team a:active .ico-heart,
-#footer-team a:focus .ico-heart,
-#footer-team a:hover .ico-heart {
+#f-team a:active .ico-heart,
+#f-team a:focus .ico-heart,
+#f-team a:hover .ico-heart {
   color: #c00;
 }

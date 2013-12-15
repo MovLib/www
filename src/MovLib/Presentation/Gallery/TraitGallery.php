@@ -92,7 +92,7 @@ trait TraitGallery {
       "<p>{$this->noImagesText}</p><p>{$this->uploadText}</p>",
       $this->getImages($this->entities, null, true),
       [ "id" => "gallery-list" ],
-      [ "class" => "span span--2" ]
+      [ "class" => "s s2" ]
     );
   }
 

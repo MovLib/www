@@ -118,7 +118,7 @@ trait TraitImageDetails {
   private function pager($direction, $id, $text) {
     return
       "<a class='imagedetails-pager' id='imagedetails-{$direction}' href='{$this->imagesRoute}/{$id}'>" .
-        "<i class='ico-chevron-{$direction}'></i><span class='visuallyhidden'>{$text}</span>" .
+        "<i class='ico-chevron-{$direction}'></i><span class='vh'>{$text}</span>" .
       "</a>"
     ;
   }
@@ -142,13 +142,13 @@ trait TraitImageDetails {
     }
 
     $activeImageIndex = MovieImages::STREAM_IMAGE_COUNT / 2;
-    $stream = array_fill(0, MovieImages::STREAM_IMAGE_COUNT + 1, "<span class='span span--1'></span>");
+    $stream = array_fill(0, MovieImages::STREAM_IMAGE_COUNT + 1, "<span class='s s1'></span>");
     $stream[$activeImageIndex] = $this->getImage(
       $this->image,
       AbstractBaseImage::IMAGESTYLE_DETAILS_STREAM,
       null,
       $this->image->imageUri,
-      [ "alt" => $this->image->imageAlt, "class" => "active span span--1" ]
+      [ "alt" => $this->image->imageAlt, "class" => "active s s1" ]
     );
     $streamImages = $this->getStreamImages($this->image->imageId);
     for ($i = 0; $i < MovieImages::STREAM_IMAGE_COUNT; ++$i) {
@@ -163,7 +163,7 @@ trait TraitImageDetails {
       elseif ($index === MovieImages::STREAM_IMAGE_COUNT) {
         $gradientClass = "gradient-right ";
       }
-      $stream[$index] = "<a class='{$gradientClass}span span--1' href='{$this->imagesRoute}/{$streamImages[$i]["image_id"]}'><img src='{$streamImages[$i]["src"]}'></a>";
+      $stream[$index] = "<a class='{$gradientClass}s s1' href='{$this->imagesRoute}/{$streamImages[$i]["image_id"]}'><img src='{$streamImages[$i]["src"]}'></a>";
     }
     $stream = implode("", $stream);
 

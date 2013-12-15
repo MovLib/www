@@ -86,7 +86,7 @@ class LanguageSelection extends \MovLib\Presentation\Page {
   protected function getFooter() {
     global $i18n, $kernel;
     return
-      "<footer id='footer'><div class='container'><div class='row'><p>{$i18n->t(
+      "<footer id='f'><div class='c'><div class='r'><p>{$i18n->t(
         "Is your language missing from our list? Help us translate {0} to your language. More information can be found at {1}our translation portal{2}.",
         [ $kernel->siteName, "<a href='//{$kernel->domainLocalize}/'>", "</a>" ]
       )}</p></div></div></footer>"
@@ -112,8 +112,8 @@ class LanguageSelection extends \MovLib\Presentation\Page {
     $navigation->callback = [ $this, "formatSystemLanguage" ];
 
     return
-      "<main class='{$this->id}-content' id='main' role='main'><div class='container'>" .
-        "<h1 class='clear-fix'>" .
+      "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
+        "<h1 class='cf'>" .
           "<img alt='{$kernel->siteName} {$i18n->t("logo")}' height='192' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='192'>" .
           "<span>{$kernel->siteNameAndSloganHTML}</span>" .
         "</h1>" .

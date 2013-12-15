@@ -18,62 +18,9 @@
  * Styles exclusive to the movies page.
  *
  * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-
-div.container div.row:first-of-type {
-  margin-bottom: 20px;
-}
-
-#latest-additions,
-#latest-additions li,
-#latest-additions p {
-  margin: 0;
-  padding: 0;
-}
-
-#latest-additions {
-  list-style: none;
-}
-
-#latest-additions a {
-  background-color: #fff;
-  border: 0 none;
-  color: #353535;
-  display: block;
-  padding: 7.5px;
-  transition: background-color 0.4s ease-in-out;
-}
-
-#latest-additions a:hover,
-#latest-additions a:focus {
-  background-color: #d9edf7;
-}
-
-#latest-additions div {
-  height: 100%;
-}
-
-#latest-additions h2 {
-  color: #09c;
-  font-size: 25px;
-  line-height: 1.46;
-  margin: 0;
-}
-
-.latest-additions__image {
-  float: left;
-  line-height: 1;
-  text-align: center;
-  width: 75px;
-}
-
-.latest-additions__info {
-  border-left: 1px solid #c7c7c7;
-  margin-left: 92.5px;
-  padding-left: 17.5px;
-}

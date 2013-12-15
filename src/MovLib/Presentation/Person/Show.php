@@ -75,8 +75,8 @@ class Show extends \MovLib\Presentation\Page {
         [ "itemprop" => "image" ]
       );
 
-      $this->headingBefore = "<div class='row'><div class='span span--10'>";
-      $this->headingAfter  = "</div><div class='span span--2'>{$photo}</div></div>";
+      $this->headingBefore = "<div class='r'><div class='s s10'>";
+      $this->headingAfter  = "</div><div class='s s2'>{$photo}</div></div>";
     }
     catch (\OutOfBoundsException $e) {
       throw new ErrorNotFoundException("Couldn't find person for identifier '{$_SERVER["PERSON_ID"]}'");

@@ -60,7 +60,7 @@
   margin: 0;
   background: left 0 url("/asset/img/star.svg#i") no-repeat transparent;
   background-size: 20px 20px; /* Important for older WebKit browsers! */
-  border: 0 none;
+  border: 0;
   float: left;
   overflow: visible; /* Important for Internet Explorer, otherwise the popup's aren't visible! */
 }

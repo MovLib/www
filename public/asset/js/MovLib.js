@@ -59,7 +59,7 @@
      * @property settings
      * @type Object
      */
-    this.settings = JSON.parse(document.getElementById("js-settings").innerHTML);
+    this.settings = JSON.parse(document.getElementById("jss").innerHTML);
 
     // Initialize all basic page features.
     this.init();
@@ -112,9 +112,9 @@
       }
 
       // Extend our document with the most important sections.
-      document.header = document.getElementById("header");
-      document.main   = document.getElementById("main");
-      document.footer = document.getElementById("footer");
+      document.header = document.getElementById("h");
+      document.main   = document.getElementById("m");
+      document.footer = document.getElementById("f");
 
       // Ensure focused elements don't hide themselve beneath our fixed header.
       document.body.addEventListener("focus", this.fixFocusScrollPosition, true);

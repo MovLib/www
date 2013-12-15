@@ -25,13 +25,13 @@
  * @since 0.0.1-dev
  */
 
-.img-grid .span {
+.img-grid .s {
   margin-bottom: 20px;
 }
 
 /* This ensures that we have proper rows for the images in the grid. */
-.span--10 .img-grid .span--2:nth-child(5n+1),
-.span--10 .img-grid .span--1:nth-child(10n+1) {
+.s10 .img-grid .s2:nth-child(5n+1),
+.s10 .img-grid .s1:nth-child(10n+1) {
   clear: left;
 }
 

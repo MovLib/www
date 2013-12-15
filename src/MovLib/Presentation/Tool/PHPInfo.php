@@ -42,7 +42,7 @@ class PHPInfo extends \MovLib\Presentation\Tool\Page {
     ob_start();
     phpinfo();
     $phpinfo = ob_get_clean();
-    return "<div class='container'>{$phpinfo}</div>";
+    return "<div class='c'>{$phpinfo}</div>";
   }
 
 }

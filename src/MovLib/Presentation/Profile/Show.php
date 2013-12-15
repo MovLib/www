@@ -88,8 +88,8 @@ class Show extends \MovLib\Presentation\Page {
     }
     return
       "<h2>{$i18n->t("Your Account Summary")}</h2>" .
-      "<div class='row'>" .
-        "<dl class='dl--horizontal span span--7'>" .
+      "<div class='r'>" .
+        "<dl class='dl--horizontal s s7'>" .
           "<dt>{$i18n->t("Username")}</dt><dd>{$this->user->name}</dd>" .
           "<dt>{$i18n->t("User ID")}</dt><dd>{$this->user->id}</dd>" .
           "<dt>{$i18n->t("Edits")}</dt><dd>{$this->user->edits}</dd>" .
@@ -98,7 +98,7 @@ class Show extends \MovLib\Presentation\Page {
           "<dt>{$i18n->t("Joined")}</dt><dd>{$i18n->formatDate($this->user->created, $this->user->timeZoneIdentifier)}</dd>" .
           "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->user->access, $this->user->timeZoneIdentifier)}</dd>" .
         "</dl>" .
-        "<div class='span span--2'>{$this->getImage($this->user->getStyle(), $this->user->route)}</div>" .
+        "<div class='s s2'>{$this->getImage($this->user->getStyle(), $this->user->route)}</div>" .
       "</div>" .
       "<h2>User</h2><pre>{$var[0]}</pre>" .
       "<h2>Session</h2><pre>{$var[1]}</pre>" .
@@ -113,7 +113,7 @@ class Show extends \MovLib\Presentation\Page {
   protected function init($title) {
     global $i18n, $session;
     parent::init($title);
-    
+
     $sidebar = [
       [ $i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "separator ico ico-info" ] ],
       [ $i18n->r("/profile/account-settings"), $i18n->t("Account"), [ "class" => "ico ico-user" ] ],

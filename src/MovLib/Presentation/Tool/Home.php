@@ -40,14 +40,9 @@ class Home extends \MovLib\Presentation\Tool\Page {
 
   /**
    * Instantiate new tools homepage.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
    */
   public function __construct() {
-    global $kernel;
     $this->init("Tools");
-    $kernel->stylesheets[] = "label";
-    $kernel->stylesheets[] = "list-group";
     if (!empty($_SERVER["SSL_CLIENT_VERIFY"])) {
       $this->sslClientVerified = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS";
     }
@@ -75,7 +70,7 @@ class Home extends \MovLib\Presentation\Tool\Page {
         $route = "//{$kernel->domainSecureTools}{$route}";
         $label = $this->sslClientVerified === true ? [ "success", "verified" ] : [ "danger", "not verified" ];
       }
-      return [ $route, "<span class='label label-{$label[0]} pull-right'>{$label[1]}</span><h4 class='title'>{$tool[0]}</h4><p>{$tool[2]}</p>", [
+      return [ $route, "<span class='label label-{$label[0]} fr'>{$label[1]}</span><h4 class='title'>{$tool[0]}</h4><p>{$tool[2]}</p>", [
         "class" => "list-group-item"
       ]];
     };
@@ -93,7 +88,7 @@ class Home extends \MovLib\Presentation\Tool\Page {
       $devs = "<small>{$i18n->t("Developer specific coverage reports:")} {$devs}</small>";
     }
 
-    return "<div class='container'>{$tools}{$devs}</div>";
+    return "<div class='c'>{$tools}{$devs}</div>";
   }
 
 }

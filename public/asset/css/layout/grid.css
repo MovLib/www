@@ -15,10 +15,10 @@
  */
 
 /**
- * Our grid system, based on flatstrap.
+ * The grid system including floating and clearing styles.
  *
  * @link http://littlesparkvt.com/flatstrap/
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
+ * @link http://engineering.appfolio.com/2012/11/16/cssarchitecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -26,117 +26,137 @@
  * @since 0.0.1-dev
  */
 
-.container {
-  margin: 0 auto;
+.c {
   width: 940px;
+  margin: 0 auto;
 }
 
-.container .container {
+.c .c {
   width: auto;
 }
 
-.row {
+.r {
   margin-left: -20px;
 }
 
-.span {
-  float: left;
-  margin-left: 20px;
-  min-height: 1px;
+.cf:after,
+.r:after {
+  display: table;
+  line-height: 0;
+  content: "";
 }
 
-.span--1 {
+.cf:after,
+.r:after {
+  clear: both;
+}
+
+.fr {
+  float: right;
+}
+
+.fl {
+  float: left;
+}
+
+.s {
+  float: left;
+  min-height: 1px;
+  margin-left: 20px;
+}
+
+.s1 {
   width: 60px;
 }
 
-.span--2 {
+.s2 {
   width: 140px;
 }
 
-.span--3 {
+.s3 {
   width: 220px;
 }
 
-.span--4 {
+.s4 {
   width: 300px;
 }
 
-.span--5 {
+.s5 {
   width: 380px;
 }
 
-.span--6 {
+.s6 {
   width: 460px;
 }
 
-.span--7 {
+.s7 {
   width: 540px;
 }
 
-.span--8 {
+.s8 {
   width: 620px;
 }
 
-.span--9 {
+.s9 {
   width: 700px;
 }
 
-.span--10 {
+.s10 {
   width: 780px;
 }
 
-.span--11 {
+.s11 {
   width: 860px;
 }
 
-.span--12 {
+.s12 {
   width: 940px;
 }
 
-.offset--1 {
+.o1 {
   margin-left: 100px;
 }
 
-.offset--2 {
+.o2 {
   margin-left: 180px;
 }
 
-.offset--3 {
+.o3 {
   margin-left: 260px;
 }
 
-.offset--4 {
+.o4 {
   margin-left: 340px;
 }
 
-.offset--5 {
+.o5 {
   margin-left: 420px;
 }
 
-.offset--6 {
+.o6 {
   margin-left: 500px;
 }
 
-.offset--7 {
+.o7 {
   margin-left: 580px;
 }
 
-.offset--8 {
+.o8 {
   margin-left: 660px;
 }
 
-.offset--9 {
+.o9 {
   margin-left: 740px;
 }
 
-.offset--10 {
+.o10 {
   margin-left: 820px;
 }
 
-.offset--11 {
+.o11 {
   margin-left: 900px;
 }
 
-.offset--12 {
+.o12 {
   margin-left: 980px;
 }

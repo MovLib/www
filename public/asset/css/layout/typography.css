@@ -25,10 +25,66 @@
  */
 
 /* ---------------------------------------------------------------------------------------------------------------------
- * Body text
+ * About the MovLib font stack:
  *
- * The hr, p, and small tags are considered paragraph elements and should be used as such. For more information have a
- * look at {@link http://html5doctor.com/small-hr-element/}.
+ * Our main goal is it to ensure users of Microsoft and Apple computers have the best viewing pleasure. Why not Linux
+ * you may ask. The reason is pretty easy, Linux users are most of the time very advanced users who 1) set up their
+ * fonts as they like it 2) do not care about the font that is used at all. In general, Linux users do not find a font
+ * stack that suits their needs on any popular website. The problem is, that there is no common ground to include fonts.
+ * Most users will have Arial installed if they are using a desktop Linux system or a browser that is capable of
+ * downloading a font that is specified via the @font-face rule.
+ *
+ * - "Open Sans": The default font at MovLib. It is free and open source and deserves our support. We use the complete
+ *   character set that is available along with Open Sans, to ensure that most text will be rendered with it.
+ * - "Arial": Main fallback font for browsers who do not support the @font-face rule. Should be installed on nearly
+ *   every system on this planet.
+ * - "Meiryo": Very beautiful Japanese font that was released along Windows Vista and Office Mac 2008. More info can be
+ *   found here: http://en.wikipedia.org/wiki/Meiryo
+ * - "Microsoft YaHei": Beautiful Chinese font that was release along Windows Vista and is available as update for
+ *   Windows XP systems. More info can be found here: http://en.wikipedia.org/wiki/Microsoft_YaHei
+ * - "sans-serif": Fallback if everything else fails.
+ *
+ * More interesting links:
+ * - http://www.markboulton.co.uk/journal/five-simple-steps-to-better-typography-part-4
+ * - http://www.smashingmagazine.com/2013/05/17/typographic-design-patterns-practices-case-study-2013/
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+html,
+input,
+button,
+select,
+textarea,
+table {
+  font: normal 14px/1.46 "Open Sans", Arial, Meiryo, "Microsoft Yahei", "MS Yahei", Yahei, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #656565;
+  text-rendering: geometricPrecision;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Ensure Chinese strings are displayed with the correct font choice.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+[lang="zh"] {
+  font-family: "Open Sans", Arial, "Microsoft Yahei", "MS Yahei", Yahei, Meiryo, sans-serif;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Monospace elements
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+pre,
+code,
+kbd,
+samp,
+tt,
+var {
+  font: normal 12px/1 Consolas, monospace, serif;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * `hr`, `p`, and `small` are considered paragraph elements and should be used as such. For more information have a look
+ * at {@link http://html5doctor.com/small-hr-element/}.
  * ------------------------------------------------------------------------------------------------------------------ */
 
 hr {
@@ -110,8 +166,8 @@ h6 {
 h1 .edit,
 h2 .edit,
 h3 .edit {
-  font-size: 12px;
   margin-left: 1em;
+  font-size: 12px;
   vertical-align: top;
 }
 
@@ -119,16 +175,38 @@ h3 .edit {
  * Alignment helpers
  * ------------------------------------------------------------------------------------------------------------------ */
 
-.text-left {
-  text-align: left;
-}
-
-.text-center {
+.tac {
   text-align: center;
 }
 
-.text-right {
+.taj {
+  text-align: justify;
+}
+
+.tal {
+  text-align: left;
+}
+
+.tar {
   text-align: right;
+}
+
+.th {
+  font: 0/0 a;
+  color: transparent;
+  background-color: transparent;
+  border: 0;
+}
+
+.vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------

@@ -90,7 +90,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       }
 
       // Enhance the header, insert row and span before the title.
-      $this->headingBefore = "<div class='row'><div class='span span--9'>";
+      $this->headingBefore = "<div class='r'><div class='s s9'>";
 
       // Instantiate the rating form.
       $this->form = new Form($this);
@@ -109,9 +109,9 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       for ($i = 1; $i < 6; ++$i) {
         $rated  = $i <= $this->movie->userRating ? " rated" : null;
         $stars .=
-          "<button class='popup-container{$rated}' name='rating' type='submit' value='{$i}'>" .
+          "<button class='popup-c{$rated}' name='rating' type='submit' value='{$i}'>" .
             "<small class='popup tac'>{$ratings[$i]}</small>" .
-            "<span class='visuallyhidden'>{$i18n->t("Rate with {0, plural, one {one star} other {# stars}}", [ $i ])}</span>" .
+            "<span class='vh'>{$i18n->t("Rate with {0, plural, one {one star} other {# stars}}", [ $i ])}</span>" .
           "</button>"
         ;
       }
@@ -161,15 +161,15 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       $this->headingAfter  =
           "<p>{$i18n->t("“{original_title}” ({0}original title{1})", [ "original_title" => $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
           "{$this->form->open()}<fieldset id='movie-rating'>{$ratingHelp}" .
-            "<legend class='visuallyhidden'>{$i18n->t("Rate this movie:")}</legend>" .
+            "<legend class='vh'>{$i18n->t("Rate this movie:")}</legend>" .
             "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
             "<div class='front'>{$stars}</div>" .
           "</fieldset>{$this->form->close()}" .
           "<small>{$ratingSummary}</small>" .
-          "<small><span class='visuallyhidden'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='visuallyhidden'>{$i18n->t("Countries:")} </span>{$countries}</small>" .
-          "<small><span class='visuallyhidden'>{$i18n->t("Genres:")} </span>{$genres}</small>" .
+          "<small><span class='vh'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='vh'>{$i18n->t("Countries:")} </span>{$countries}</small>" .
+          "<small><span class='vh'>{$i18n->t("Genres:")} </span>{$genres}</small>" .
         "</div>" . // close .span
-        "<div id='movie-poster' class='span span--3 tac'>{$this->getImage(
+        "<div id='movie-poster' class='s s3 tac'>{$this->getImage(
           $this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03),
           $i18n->rp("/movie/{0}/posters", [ $this->movie->id ]),
           [ "itemprop" => "image" ]

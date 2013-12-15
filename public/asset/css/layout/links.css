@@ -15,41 +15,61 @@
  */
 
 /**
- * Styles exclusive to the homepage.
+ * Link styles
  *
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 
-/* ---------------------------------------------------------------------------------------------------------------------
- * @todo The image will be generated once per day; the background image should go to the view to generate the timestamp
- *       and to ensure that we are able to cache the stylesheet forever while still delivering a different image per
- *       day.
- * ------------------------------------------------------------------------------------------------------------------ */
-
-#banner {
-  background: center no-repeat url(/asset/img/home/1920.jpg) #000;
-  height: 200px;
-  padding: 20px;
+a {
+  color: #09c;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: 0.4s ease-out;
+  transition-property: color, border-color;
 }
 
-#banner .c {
-  font-size: 36px;
-  font-weight: bold;
-  line-height: 77px;
-  color: #fff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+a:active,
+a:hover,
+a:focus {
+  border-bottom-color: #09c;
+}
+
+input[type="radio"]:focus,
+input[type="checkbox"]:focus,
+a:focus {
+  outline: 1px dotted #656565;
+}
+
+a:active,
+a:hover {
+  outline: 0;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
- * More white space for our description boxes than usual.
+ * Special styles for active links. Note that active links usually have to `href` attribute and if this is the case we
+ * ensure that no pointer cursor is used. On the other hand if it has a `href` attribute it's clickable again and we
+ * want to display it.
  * ------------------------------------------------------------------------------------------------------------------ */
 
-#home article {
-  margin-top: 40px;
-  margin-bottom: 40px;
+a.active {
+  color: #656565;
+  cursor: default;
+  border-bottom-color: transparent;
+}
+
+a.active[href] {
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Special styles for links wrapping images.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+a.img {
+  display: inline-block;
+  border: 0;
 }

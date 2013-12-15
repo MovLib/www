@@ -129,7 +129,7 @@ class Poster extends \MovLib\Presentation\Page {
         $this->license,
       ]);
       $this->form->actionElements[] = new InputSubmit($i18n->t("Upload Poster"), [
-        "class" => "button button--large button--success",
+        "class" => "btn btn-large btn-success",
         "title" => $i18n->t("Continue here after you filled out all mandatory fields."),
       ]);
     }

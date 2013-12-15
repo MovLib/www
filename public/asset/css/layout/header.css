@@ -25,22 +25,22 @@
  * @since 0.0.1-dev
  */
 
-#header,
-#header section h2,
-#header .button,
-#search,
-#search-input,
-#search .ico-search {
+#h,
+#h section h2,
+#h .btn,
+#s,
+#s input,
+#s .ico {
   height: 50px;
   padding: 0;
 }
 
-#header,
-#header > .container:before {
+#h,
+#h > .c:before {
   background-color: #fff;
 }
 
-#header {
+#h {
   position: fixed;
   top: 0;
   right: 0;
@@ -48,11 +48,11 @@
   z-index: 999999;
 }
 
-#header > .container {
+#h > .c {
   position: relative;
 }
 
-#header > .container:before {
+#h > .c:before {
   position: absolute;
   top: 0;
   right: -2000px;
@@ -63,15 +63,15 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
 
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Logo
+ * ------------------------------------------------------------------------------------------------------------------ */
 
-/* ==== Logo ======================================================================================================== */
-
-
-#header h1 {
+#h h1 {
   margin-bottom: 0;
 }
 
-#logo {
+#l {
   position: relative;
   top: -1px;
   display: inline-block;
@@ -87,35 +87,35 @@
   transition: color 0.4s linear;
 }
 
-#logo:active
-#logo:focus,
-#logo:hover {
+#l:active
+#l:focus,
+#l:hover {
   color: #353535;
 }
 
-#logo img {
+#l img {
   position: relative;
   top: -4px;
 }
 
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Main navigation
+ * ------------------------------------------------------------------------------------------------------------------ */
 
-/* ==== Main Navigation ============================================================================================= */
-
-
-#header .span--9 {
+#h .s9 {
   float: right;
   width: auto;
 }
 
-#header .expander {
+#h .expander {
   float: left;
 }
 
-#header .clicker {
+#h .clicker {
   cursor: pointer;
 }
 
-#header .visible {
+#h .visible {
   position: relative;
   min-width: 50px;
   padding: 0 20px 0 25px;
@@ -127,8 +127,8 @@
   transition-property: color, background-color;
 }
 
-#header .open .visible:before,
-#header .visible:before {
+#h .open .visible:before,
+#h .visible:before {
   position: absolute;
   bottom: -12px;
   left: 50%;
@@ -140,23 +140,23 @@
   transition: opacity 0.2s linear 0.1s;
 }
 
-#header .visible:after {
+#h .visible:after {
   content: " ▾";
 }
 
-#header .focus .visible,
-#header .open .visible,
-#header .expander:hover .visible {
+#h .focus .visible,
+#h .open .visible,
+#h .expander:hover .visible {
   color: #fff;
   background-color: #09c;
 }
 
-#header .open .visible:before,
-#header .expander:hover .visible:before {
+#h .open .visible:before,
+#h .expander:hover .visible:before {
   opacity: 1;
 }
 
-#header .concealed {
+#h .concealed {
   position: absolute;
   top: 0;
   right: 0;
@@ -173,28 +173,28 @@
   transition-property: opacity, top, visibility;
 }
 
-/*
-Fix for Gecko (Firefox) bug, visibility hidden isn't really hidden and the elements can still receive pointer events.
-We can't use display none because it would break the animation of the drop downs.
-*/
-#header:hover .concealed {
+/**
+ * Fix for Gecko (Firefox) bug, visibility hidden isn't really hidden and the elements can still receive pointer events.
+ * We can't use display none because it would break the animation of the drop downs.
+ */
+#h:hover .concealed {
   pointer-events: auto;
 }
 
-#header .open .concealed,
-#header .expander:hover .concealed {
+#h .open .concealed,
+#h .expander:hover .concealed {
   top: 50px;
   opacity: 1;
   visibility: visible;
 }
 
-#header .concealed h3 {
+#h .concealed h3 {
   margin-top: 0;
 }
 
-#search-input,
-#search .ico-search,
-#header .button {
+#s input,
+#s .ico,
+#h .btn {
   font-size: 24px;
   line-height: 50px;
 }
@@ -203,7 +203,7 @@ We can't use display none because it would break the animation of the drop downs
   margin-left: 50px;
 }
 
-#header .button {
+#h .btn {
   width: 50px;
 }
 
@@ -217,11 +217,11 @@ We can't use display none because it would break the animation of the drop downs
 
 }
 
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Search form styles
+ * ------------------------------------------------------------------------------------------------------------------ */
 
-/* ==== SEARCH FORM ================================================================================================= */
-
-
-#search {
+#s {
   position: absolute;
   top: 0;
   right: 50px;
@@ -229,36 +229,36 @@ We can't use display none because it would break the animation of the drop downs
   overflow: hidden;
 }
 
-#search-input,
-#search .ico-search {
+#s input,
+#s .ico {
   color: #fff;
   background-color: #252525;
   border: 0;
   box-shadow: none;
 }
 
-#search .ico-search {
+#s .ico {
   float: left;
   width: 50px;
   transition: background-color 0.2s linear;
 }
 
-#search .ico-search:active,
-#search .ico-search:focus,
-#search .ico-search:hover {
+#s .ico:active,
+#s .ico:focus,
+#s .ico:hover {
   background-color: #09c;
 }
 
-#search-input {
+#s input {
   float: right;
   width: 0;
   font-weight: 200;
   transition: width 0.5s ease-in-out;
 }
 
-#search-input:focus,
-#search .ico-search:focus + #search-input,
-#search:focus #search-input,
-#search:hover #search-input {
+#s input:focus,
+#s .ico:focus + #s input,
+#s:focus input,
+#s:hover input {
   width: 660px;
 }

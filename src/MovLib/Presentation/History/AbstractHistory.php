@@ -32,8 +32,8 @@ use \MovLib\Presentation\Partial\Lists\Unordered;
  */
 abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   use \MovLib\Presentation\History\TraitHistory;
-  
-  
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -43,7 +43,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
    * @var \MovLib\Data\History\AbstractHistory
    */
   protected $historyModel;
-  
+
   /**
    * Current revision item hash to be used in closure.
    *
@@ -53,10 +53,10 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
-  
+
   /**
    * Helper mothod to format changes file.
-   * 
+   *
    * @global \MovLib\Data\I18n
    * @param string $listItem
    *   Name of the changed file.
@@ -72,11 +72,11 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
         $listItem
       ]), $listItem
     );
-  }  
-  
+  }
+
   /**
    * Helper mothod to format diff items.
-   * 
+   *
    * @param string $listItem
    *   Name of the list item.
    * @return string
@@ -90,10 +90,10 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
       $listItem
     )}</div>";
   }
-  
+
   /**
    * Helper mothod to format revision items.
-   * 
+   *
    * @global \MovLib\Data\I18n
    * @param string $revisionItem
    *   Name of the revision item.
@@ -108,7 +108,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
       "class" => "well well--small no-list"
     ]);
     $list->closure = [ $this, "formatChangedFile" ];
-    
+
     return
       "{$this->a(
         $i18n->r("/{0}/{1}/diff/{2}", [
@@ -126,7 +126,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
         [ "title" => $i18n->t("Profile of {0}", [ $revisionItem["author_name"] ]) ]
       )}: {$revisionItem["subject"]}{$list}";
   }
-  
+
   /**
    * Method to build diff page.
    *
@@ -145,11 +145,11 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
       "<div id='revision-diff'>{$this->a(
         $i18n->r("/{0}/{1}/history", [ $this->historyModel->type, $this->historyModel->id ]),
         $i18n->t("go back"),
-        [ "class" => "pull-right" ]
+        [ "class" => "fr" ]
       )}<h2>{$i18n->t("Difference between revisions")}</h2>{$list}</div>"
     ;
   }
- 
+
   /**
    * Helper function to build revision history.
    *
@@ -160,7 +160,7 @@ abstract class AbstractHistory extends \MovLib\Presentation\AbstractSecondaryNav
   protected function revisionsPage() {
     global $i18n;
     $commits = $this->historyModel->getLastCommits();
-    
+
     $userIds = [];
     $c = count($commits);
     for ($i = 0; $i < $c; ++$i) {

@@ -15,8 +15,7 @@
  */
 
 /**
- * Main CSS file which will contain the minified and optimized contents of all CSS files that reside in the layout
- * directory. We stick to @import rules in production.
+ * Basic page layout styles.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
@@ -25,59 +24,59 @@
  * @since 0.0.1-dev
  */
 
-/* Generic styling */
-@import "layout/font.css";
-@import "layout/normalize.css";
-@import "layout/scaffold.css";
-@import "layout/grid.css";
-@import "layout/typography.css";
-@import "layout/links.css";
-@import "layout/icon.css";
+body {
+  padding: 0;
+  margin: 0;
+  overflow-y: scroll;
+  background-color: #252525;
+}
 
-/* Specific styling */
-@import "layout/alert.css";
-@import "layout/form.css";
-@import "layout/button.css";
-@import "layout/label.css";
-@import "layout/list.css";
-@import "layout/list-group.css";
-@import "layout/popup.css";
-@import "layout/well.css";
+code,
+pre,
+var {
+  background-color: #fbfbfb;
+  border: 1px solid;
+}
 
-/* Specific page area styling */
-@import "layout/header.css";
-@import "layout/content.css";
-@import "layout/sidebar.css";
-@import "layout/pagination.css";
-@import "layout/footer.css";
+code,
+var {
+  padding: 2px 4px;
+  white-space: nowrap;
+  border-color: #d4d4d4;
+}
+
+pre {
+  display: block;
+  padding: 9.5px;
+  margin: 0 0 10px;
+  word-break: break-all;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  border-color: #aeaeae;
+}
+
+var {
+  color: #d14;
+}
+
+img {
+  vertical-align: middle;
+  border: 0;
+  -ms-interpolation-mode: bicubic;
+}
+
+iframe {
+  border: 0;
+}
 
 /* ---------------------------------------------------------------------------------------------------------------------
- * Summary of important IDs and class names:
- *
- * #h - page header
- *   #l - page header logo
- *   #s - page header search
- * #m - page main content
- *   #b - breadcrumb
- * #f - page footer
- *
- * .c - grid container
- * .r - grid row
- * .s - grid span
- *   .s[1-12] - grid span from 1 to 12
- *   .o[1-12] - grid offset from 1 to 12
- *
- * .cf - clear fix
- * .fl - float left
- * .fr - float right
- *
- * .tac - text align center
- * .taj - text align justify
- * .tal - text align left
- * .tar - text align right
- *
- * .vh - visually hidden
- *
- * We choose the very short class names for lesser writing, lesser mark-up and to ensure that modules wouldn't override
- * the most important IDs and class names, as everyone tends to write verbose names.
+ * Hidden elements
  * ------------------------------------------------------------------------------------------------------------------ */
+
+[hidden],
+.hidden,
+#js .jshidden,
+#nojs .nojshidden {
+  display: none !important;
+  visibility: hidden;
+}

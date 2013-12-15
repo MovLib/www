@@ -59,8 +59,8 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
    */
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null) {
     parent::__construct($listItems, $noItemsText, $listItemsAttributes, $attributes);
-    $this->addClass("row", $this->attributes);
-    $this->addClass("span span--5 row", $this->listItemsAttributes);
+    $this->addClass("r", $this->attributes);
+    $this->addClass("s s5 r", $this->listItemsAttributes);
     $this->listItemsAttributes[]           = "itemscope";
     $this->listItemsAttributes["itemtype"] = "http://schema.org/Person";
   }
@@ -83,9 +83,9 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
     while ($person = $this->listItems->fetch_object("\\MovLib\\Data\\Person\\Person")) {
       $list .=
         "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-          "<a class='img row' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
-            $this->getImage($person->displayPhoto->getStyle($this->imageStyle), false, [ "class" => "span span--1", "itemprop" => "image" ]) .
-            "<span class='span span--4' itemprop='name'>{$person->name}</span>" .
+          "<a class='img r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
+            $this->getImage($person->displayPhoto->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
+            "<span class='s s4' itemprop='name'>{$person->name}</span>" .
           "</a>" .
         "</li>"
       ;

@@ -28,41 +28,41 @@
  * @since 0.0.1-dev
  */
 
-#main {
+#m {
   min-height: 500px;
-  margin-top: 50px;
   padding-bottom: 40px;
+  margin-top: 50px;
   background-color: #fff;
 }
 
-#main-header {
+#header {
   margin-bottom: 40px;
   background-color: #252525;
 }
 
-#main-header > .container {
+#header > .c {
   padding: 20px 0;
   color: #c7c7c7;
 }
 
-#breadcrumb {
+#b {
   padding: 5px 0;
   background-color: #f5f5f5;
 }
 
-#breadcrumb h2 {
+#b h2 {
   font: inherit;
 }
 
-#breadcrumb h2,
-#breadcrumb div {
+#b h2,
+#b div {
   display: inline;
 }
 
 #filter {
+  padding: 8px 20px;
+  margin: 1px 0 0 -20px;
+  font-size: 12px;
   border-top: 1px solid #e5e5e5;
   border-bottom: 1px solid #e5e5e5;
-  margin: 1px 0 0 -20px;
-  padding: 8px 20px;
-  font-size: 12px;
 }

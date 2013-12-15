@@ -228,20 +228,20 @@ class Page extends \MovLib\Presentation\AbstractBase {
 //    $languageLinks->callback = [ $this, "formatFooterSystemLanguage" ];
 
     return
-      "<footer id='footer' role='contentinfo'>" .
-        "<h1 class='visuallyhidden'>{$i18n->t("Infos all around {sitename}", [ "sitename" => $kernel->siteName ])}</h1>" .
-        "<div class='container'><div class='row'>" .
-          "<section class='span span--12'>" .
-            "<h3 class='visuallyhidden'>{$i18n->t("Copyright and licensing information")}</h3>" .
-            "<p id='footer-copyright'><span class='ico ico-cc'></span> <span class='ico ico-cc-zero'></span> {$i18n->t(
+      "<footer id='f' role='contentinfo'>" .
+        "<h1 class='vh'>{$i18n->t("Infos all around {sitename}", [ "sitename" => $kernel->siteName ])}</h1>" .
+        "<div class='c'><div class='r'>" .
+          "<section class='s s12'>" .
+            "<h3 class='vh'>{$i18n->t("Copyright and licensing information")}</h3>" .
+            "<p id='f-copyright'><span class='ico ico-cc'></span> <span class='ico ico-cc-zero'></span> {$i18n->t(
               "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
               [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
             )}<br>{$i18n->t(
               "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
             )}</p>" .
           "</section>" .
-          "<section id='footer-logos' class='span span--12 tac'>" .
-            "<h3 class='visuallyhidden'>{$i18n->t("Sponsors and external resources")}</h3>" .
+          "<section id='f-logos' class='s s12 tac'>" .
+            "<h3 class='vh'>{$i18n->t("Sponsors and external resources")}</h3>" .
             "<a class='img' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
               "<img alt='Fachhochschule Salzburg' height='30' src='{$kernel->getAssetURL("footer/fachhochschule-salzburg", "svg")}' width='48'>" .
             "</a>" .
@@ -249,17 +249,17 @@ class Page extends \MovLib\Presentation\AbstractBase {
               "<img alt='GitHub' height='30' src='{$kernel->getAssetURL("footer/github", "svg")}' width='48'>" .
             "</a>" .
           "</section>" .
-          "<section class='last span span--4'>" .
-            "<h3 class='visuallyhidden'>{$i18n->t("Language Selection")}</h3>" .
+          "<section class='last s s4'>" .
+            "<h3 class='vh'>{$i18n->t("Language Selection")}</h3>" .
             // @todo Add language selection.
-//            "<button class='button button--inverse'>{$i18n->t("Language")}: {$displayLanguage}</button>" .
+//            "<button class='btn btn-inverse'>{$i18n->t("Language")}: {$displayLanguage}</button>" .
 //            "<div class='well'>{$languageLinks}</div>" .
           "</section>" .
-          "<section id='footer-team' class='last span span--4 tac'><h3>{$this->a($i18n->r("/team"), $i18n->t("Made with {love} in Austria", [
-            "love" => "<span class='ico ico-heart'></span><span class='visuallyhidden'>{$i18n->t("love")}</span>"
+          "<section id='f-team' class='last s s4 tac'><h3>{$this->a($i18n->r("/team"), $i18n->t("Made with {love} in Austria", [
+            "love" => "<span class='ico ico-heart'></span><span class='vh'>{$i18n->t("love")}</span>"
           ]))}</h3></section>" .
-          "<section class='last span span--4 tar'>" .
-            "<h3 class='visuallyhidden'>{$i18n->t("Legal Links")}</h3>" .
+          "<section class='last s s4 tar'>" .
+            "<h3 class='vh'>{$i18n->t("Legal Links")}</h3>" .
             "{$this->a($i18n->r("/imprint"), $i18n->t("Imprint"))} · " .
             "{$this->a($i18n->r("/privacy-policy"), $i18n->t("Privacy Policy"))} · " .
             "{$this->a($i18n->r("/terms-of-use"), $i18n->t("Terms of Use"))}" .
@@ -312,7 +312,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         [ $i18n->rp("/articles"), $i18n->t("Explore all articles") ],
       ]],
     ] as $name => $nav) {
-      $navs[$name]                = new Navigation($nav[0], $nav[1], [ "class" => "span span--3" ]);
+      $navs[$name]                = new Navigation($nav[0], $nav[1], [ "class" => "s s3" ]);
       $navs[$name]->headingLevel  = "3";
       $navs[$name]->hideTitle     = false;
       $navs[$name]->unorderedList = true;
@@ -328,7 +328,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
       ;
     }
     else {
-      $userIcon = "<span class='button button--inverse clicker ico ico-user-add'></span>";
+      $userIcon = "<span class='btn btn-inverse clicker ico ico-user-add'></span>";
       $userNavigation =
         "<ul>" .
           "<li>{$this->a($i18n->r("/profile/sign-in"), $i18n->t("Sign In"))}</li>" .
@@ -342,42 +342,42 @@ class Page extends \MovLib\Presentation\AbstractBase {
 
     return
       // No skip-to-content link! We have proper headings, semantic HTML5 elements and proper ARIA landmarks!
-      "<header id='header' role='banner'><div class='container'><div class='row'>" .
+      "<header id='h' role='banner'><div class='c'><div class='r'>" .
         // Only one <h1> per page? No problem according to Google https://www.youtube.com/watch?v=GIn5qJKU8VM plus HTML5
         // wants us to use multiple <h1>s for multiple sections, so here we go. The header is always the MovLib header.
-        "<h1 class='span span--3'>{$this->a(
+        "<h1 class='s s3'>{$this->a(
           "/",
           "<img alt='' height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}",
-          [ "id" => "logo", "title" => $i18n->t("Go back to the home page.") ]
+          [ "id" => "l", "title" => $i18n->t("Go back to the home page.") ]
         )}</h1>" .
-        "<div class='span span--9'>" .
+        "<div class='s s9'>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='explore-nav' role='navigation' tabindex='0'>" .
             "<h2 class='visible clicker'>{$i18n->t("Explore")}</h2>" .
-            "<div class='concealed row'>" .
-              "{$navs["movies"]}{$navs["series"]}<div class='span span--3'>{$navs["persons"]}{$navs["companies"]}</div>{$navs["more"]}" .
+            "<div class='concealed r'>" .
+              "{$navs["movies"]}{$navs["series"]}<div class='s s3'>{$navs["persons"]}{$navs["companies"]}</div>{$navs["more"]}" .
             "</div>" .
           "</nav>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='marketplace-nav' role='navigation' tabindex='0'>" .
             "<h2 class='visible clicker'>{$i18n->t("Marketplace")}</h2>" .
-            "<div class='concealed row'><div class='span span--12'>{$notImplemented}</div></div>" .
+            "<div class='concealed r'><div class='s s12'>{$notImplemented}</div></div>" .
           "</nav>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='community-nav' role='navigation' tabindex='0'>" .
             "<h2 class='visible clicker'>{$i18n->t("Community")}</h2>" .
-            "<div class='concealed row'><div class='span span--12'>{$notImplemented}</div></div>" .
+            "<div class='concealed r'><div class='s s12'>{$notImplemented}</div></div>" .
           "</nav>" .
-          "<form action='{$i18n->t("/search")}' class='span' id='search' method='post' role='search'>" .
+          "<form action='{$i18n->t("/search")}' class='s' id='s' method='post' role='search'>" .
             "<input type='hidden' name='form_id' value='header_search'>" .
-            "<label class='visuallyhidden' for='search-input'>{$i18n->t("Search the {sitename} database.", [ "sitename" => $kernel->siteName ])}</label>" .
-            "<button class='ico ico-search' tabindex='2' type='submit'><span class='visuallyhidden'>{$i18n->t(
+            "<label class='vh' for='search-input'>{$i18n->t("Search the {sitename} database.", [ "sitename" => $kernel->siteName ])}</label>" .
+            "<button class='ico ico-search' tabindex='2' type='submit'><span class='vh'>{$i18n->t(
               "Start searching for the entered keyword."
             )}</span></button>" .
-            "<input id='search-input' name='searchterm' required tabindex='1' title='{$i18n->t(
+            "<input name='searchterm' required tabindex='1' title='{$i18n->t(
               "Enter the search term you wish to search for and hit enter."
             )}' type='search'>" .
           "</form>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='user-nav' role='navigation' tabindex='0'>" .
-            "<h2 class='visuallyhidden'>{$i18n->t("User Navigation")}</h2>{$userIcon}" .
-            "<div class='concealed row'><div class='span span--12'>{$userNavigation}</div></div>" .
+            "<h2 class='vh'>{$i18n->t("User Navigation")}</h2>{$userIcon}" .
+            "<div class='concealed r'><div class='s s12'>{$userNavigation}</div></div>" .
           "</nav>" .
         "</div>" .
       "</div></div></header>"
@@ -461,7 +461,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
       "</head>" .
       "<body id='{$this->id}' class='{$this->bodyClasses}'>" .
         "{$this->getHeader()}{$this->getMainContent()}{$this->getFooter()}" .
-        "<script id='js-settings' type='application/json'>{$jsSettings}</script>" .
+        "<script id='jss' type='application/json'>{$jsSettings}</script>" .
         "<script async src='{$kernel->getAssetURL("MovLib", "js")}'></script>"
     ;
   }
@@ -491,11 +491,11 @@ class Page extends \MovLib\Presentation\AbstractBase {
     // Render the page's main element (note that we still include the ARIA role "main" at this point because not all
     // user agents support the new HTML5 element yet).
     return
-      "<main id='main' role='main'{$schema}>" .
-        "<header id='main-header'>" .
+      "<main id='m' role='main'{$schema}>" .
+        "<header id='header'>" .
           "<div id='alerts'>{$this->alerts}</div>" .
-          "<div class='container'>{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
-          "<div id='breadcrumb'>{$this->breadcrumb}</div>" .
+          "<div class='c'>{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
+          "<div id='b'>{$this->breadcrumb}</div>" .
         "</header>" .
         "{$this->contentBefore}{$this->getContent()}{$this->contentAfter}" .
       "</main>"
@@ -553,7 +553,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     $trail[] = [ $kernel->requestPath, $this->breadcrumbTitle ?: $this->title ];
 
     // Create the actual navigation with the trail we just built.
-    $this->breadcrumb            = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "container small" ]);
+    $this->breadcrumb            = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "c small" ]);
     $this->breadcrumb->glue      = " › ";
     $this->breadcrumb->hideTitle = false;
 

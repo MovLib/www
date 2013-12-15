@@ -29,13 +29,13 @@ button::-moz-focus-inner,
 input::-moz-focus-inner {
   padding: 0;
   margin: 0;
-  border: 0 none;
+  border: 0;
 }
 
 fieldset {
   padding: 0;
   margin: 0;
-  border: 0 none;
+  border: 0;
 }
 
 button,
@@ -193,9 +193,9 @@ textarea:focus::-webkit-input-placeholder {
 
 textarea,
 .inputhtml .content {
+  z-index: 1;
   min-height: 150px; /* input has 30px, 30 * 5 = 150px (we want people to write a lot). */
   resize: vertical;
-  z-index: 1;
 }
 
 select:-moz-focusring {
@@ -204,20 +204,20 @@ select:-moz-focusring {
 }
 
 fieldset,
-form .row,
+form .r,
 form p {
   margin-top: 20px;
   margin-bottom: 20px;
 }
 
 option[value=""] {
-  color: #999;
   font-style: italic;
+  color: #999;
 }
 
 .button.file-input {
-  padding-bottom: 3px;
   position: relative;
+  padding-bottom: 3px;
   overflow: hidden;
 }
 
@@ -249,9 +249,9 @@ option[value=""] {
 
 .checkbox.inline,
 .radio.inline {
-  margin-bottom: 0;
-  margin-right: 25px;
   padding-top: 5px;
+  margin-right: 25px;
+  margin-bottom: 0;
   vertical-align: middle;
 }
 
@@ -262,21 +262,21 @@ option[value=""] {
 }
 
 .form-help {
-  cursor: help;
-  margin: 0;
   float: right;
+  margin: 0;
+  cursor: help;
 }
 
 .form-help .popup {
-  padding: 20px;
-  left: auto;
   right: -32px;
+  left: auto;
   width: 320px;
+  padding: 20px;
 }
 
 .form-help .popup:after {
-  left: auto;
   right: 34px;
+  left: auto;
   margin: 0;
 }
 

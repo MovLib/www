@@ -76,7 +76,7 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *   The list's translated text if no items are present, defaults to no text.
    * @param array $listItemsAttributes [optional]
    *   The list's items attributes, will be applied to each list item's <code><li></code> element. Defaults to
-   *   <code>[ "class" => "span span--2" ]</code>.
+   *   <code>[ "class" => "s s2" ]</code>.
    * @param array $attributes [optional]
    *   The list's attributes, defaults to <code>[ "class" => "no-list" ]</code>. Also note that the class
    *   <code>"img-list"</code> is always applied.
@@ -84,7 +84,7 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null) {
     parent::__construct($listItems, $noItemsText, $attributes);
     $this->addClass("img-list no-list", $this->attributes);
-    $this->listItemsAttributes = $listItemsAttributes ?: [ "class" => "span span--2" ];
+    $this->listItemsAttributes = $listItemsAttributes ?: [ "class" => "s s2" ];
   }
 
 

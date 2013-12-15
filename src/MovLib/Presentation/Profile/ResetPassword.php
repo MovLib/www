@@ -38,6 +38,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  */
 class ResetPassword extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\Users\TraitUsers;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -101,7 +102,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
 
       // The submit button.
       $this->form->actionElements[] = new InputSubmit($i18n->t("Reset Password"), [
-        "class" => "button button--large button--success",
+        "class" => "btn btn-large btn-success",
         "title" => $i18n->t("Continue here to reset your password after you filled out all fields."),
       ]);
     }
@@ -112,19 +113,19 @@ class ResetPassword extends \MovLib\Presentation\Page {
       $this->form = new Form($this, [ $this->email ], "{$this->id}-email", "validateEmail");
 
       $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Reset"), [
-        "class" => "button button--large button--success",
+        "class" => "btn btn-large btn-success",
         "title" => $i18n->t("Continue here to request a password reset for the entered email address"),
       ]);
     }
 
-    $this->form->attributes["class"] = "span span--6 offset--3";
+    $this->form->attributes["class"] = "s s6 o3";
   }
 
   /**
    * @inheritdoc
    */
   public function getContent() {
-    return "<div class='container'><div class='row'>{$this->form}</div></div>";
+    return "<div class='c'><div class='r'>{$this->form}</div></div>";
   }
 
   /**
@@ -204,7 +205,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
    */
   protected function validateToken() {
     global $i18n, $kernel;
-    
+
     if (($data = (new Temporary())->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["reset_password"])) {
       $kernel->alerts .= new Alert(
         $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),

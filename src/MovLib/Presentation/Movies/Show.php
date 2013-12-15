@@ -67,7 +67,7 @@ class Show extends \MovLib\Presentation\Page {
     ]);
     $this->initPagination(Movie::getUndeletedMoviesCount());
     $this->movies        = Movie::getMovies($this->resultsOffset, $this->resultsPerPage);
-    $this->headingBefore = "<a class='button button--large button--success pull-right' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
   }
 
 
@@ -107,9 +107,9 @@ class Show extends \MovLib\Presentation\Page {
 
     // Put it all together.
     return
-      "<a class='img row' href='{$i18n->r("/movie/{0}", [ $movie->id ])}' itemprop='url'>" .
-        "<span class='span span--1'>{$image}</span>" .
-        "<span class='span span--9'>{$title}</span>" .
+      "<a class='img r' href='{$i18n->r("/movie/{0}", [ $movie->id ])}' itemprop='url'>" .
+        "<span class='s s1'>{$image}</span>" .
+        "<span class='s s9'>{$title}</span>" .
       "</a>"
     ;
   }

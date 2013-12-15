@@ -37,7 +37,7 @@ class Page extends \MovLib\Presentation\Page {
     global $i18n, $kernel;
     $year = date("Y");
     return
-      "<footer id='footer' role='contentinfo'><div class='container'><p>" .
+      "<footer id='f' role='contentinfo'><div class='c'><p>" .
         "© {$year} {$kernel->siteName}™ " .
         "<a href='mailto:{$kernel->emailWebmaster}'>{$i18n->t("Contact")}</a> " .
         "<a href='//{$kernel->domainStatic}/asset/ssl/ca.crt'>{$i18n->t("CA Certificate")}</a> " .
@@ -52,11 +52,11 @@ class Page extends \MovLib\Presentation\Page {
    * @global \MovLib\Tool\Kernel $kernel
    */
   protected function getHeader() {
-    global $i18n, $kernel;
+    global $kernel;
     return
-      "<header id='header' role='banner'><div class='container'><div class='row'>" .
-        "<h1 class='span span--3'>{$this->a("/", "<img alt='' height='42' src='{$kernel->getAssetURL("logo/tools-vector", "svg")}' width='42'> {$kernel->siteName}", [ "id" => "logo" ])}</h1>" .
-        "<div class='span span--9'><h2><a href='//{$kernel->domainDefault}/'>{$kernel->siteName}</a></h2></div>" .
+      "<header id='header' role='banner'><div class='c'><div class='r'>" .
+        "<h1 class='s s3'>{$this->a("/", "<img alt='' height='42' src='{$kernel->getAssetURL("logo/tools-vector", "svg")}' width='42'> {$kernel->siteName}", [ "id" => "logo" ])}</h1>" .
+        "<div class='s s9'><h2><a href='//{$kernel->domainDefault}/'>{$kernel->siteName}</a></h2></div>" .
       "</div></div></header>"
     ;
   }

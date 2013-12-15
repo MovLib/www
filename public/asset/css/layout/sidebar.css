@@ -26,22 +26,22 @@
  */
 
 #sidebar-nav .no-list:after {
-  bottom: 0;
-  box-shadow: 0 0 10px 10px #fff;
-  content: "";
-  display: block;
   position: absolute;
-  right: -100%;
   top: 0;
-  width: 100%;
+  right: -100%;
+  bottom: 0;
   z-index: 1;
+  display: block;
+  width: 100%;
+  content: "";
+  box-shadow: 0 0 10px 10px #fff;
 }
 
 #sidebar-nav .no-list {
+  position: relative;
+  padding: 1px 0 30px;
   margin: 0 0 0 -20px;
   overflow: hidden;
-  padding: 1px 0 30px;
-  position: relative;
   font-size: 12px;
 }
 
@@ -50,27 +50,27 @@
 }
 
 #sidebar-nav a:after {
-  background-color: #e5e5e5;
-  bottom: -1px;
-  content: "";
-  left: -5px;
   position: absolute;
   top: -1px;
-  transition: background-color 0.4s ease-out;
+  bottom: -1px;
+  left: -5px;
   width: 5px;
+  background-color: #e5e5e5;
+  content: "";
+  transition: background-color 0.4s ease-out;
 }
 
 #sidebar-nav a,
 #sidebar-nav a.active {
+  position: relative;
+  display: block;
+  padding: 8px 10px;
+  margin-bottom: -1px;
+  margin-left: 20px;
+  color: #656565;
   background-color: #fcfcfc;
   border: 1px solid #e5e5e5;
   border-right: 0;
-  color: #656565;
-  display: block;
-  margin-bottom: -1px;
-  margin-left: 20px;
-  padding: 8px 10px;
-  position: relative;
   transition: 0.4s ease-out;
   transition-property: color, background-color, border-color, margin-left;
 }
@@ -79,8 +79,8 @@
 #sidebar-nav a:active,
 #sidebar-nav a:focus,
 #sidebar-nav a:hover {
-  background-color: #fff;
   z-index: 2;
+  background-color: #fff;
 }
 
 #sidebar-nav a:focus:after,
@@ -92,8 +92,8 @@
 #sidebar-nav a:focus,
 #sidebar-nav a:hover,
 #sidebar-nav a.active {
-  color: #09c;
   margin-left: 5px;
+  color: #09c;
 }
 
 #sidebar-nav a.separator {
@@ -113,6 +113,6 @@
 }
 
 #sidebar-nav .ico:before {
-  margin-right: 5px;
   width: 15px;
+  margin-right: 5px;
 }

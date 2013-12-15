@@ -156,10 +156,10 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
       $preview = $this->getImage($this->image->getStyle(Image::STYLE_SPAN_01), false);
     }
     return
-      "<div class='row'>" .
-        "<div class='span span--1'>{$preview}</div>" .
-        "<div class='span span--9'>{$this->help}<label for='{$this->id}'>{$this->label}</label>" .
-          "<span class='button file-input'><span aria-hidden='true'>{$i18n->t("Choose Image …")}</span>" .
+      "<div class='r'>" .
+        "<div class='s s1'>{$preview}</div>" .
+        "<div class='s s9'>{$this->help}<label for='{$this->id}'>{$this->label}</label>" .
+          "<span class='btn file-input'><span aria-hidden='true'>{$i18n->t("Choose Image …")}</span>" .
             "<input{$this->expandTagAttributes($this->attributes)}>" .
           "</span>{$this->inputFileAfter}" .
         "</div>" .

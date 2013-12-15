@@ -98,12 +98,12 @@
   opacity: 1;
 }
 
-#image-details--stream .span:first-child,
-#image-details--stream .span:last-child {
+#image-details--stream .s:first-child,
+#image-details--stream .s:last-child {
   width: 40px;
 }
 
-#image-details--stream .span:first-child img {
+#image-details--stream .s:first-child img {
   left: -10px;
   position: relative;
 }

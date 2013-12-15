@@ -84,7 +84,7 @@ class Show extends \MovLib\Presentation\Page {
       $this->headingSchemaProperty = "additionalName";
 
       // Wrap the complete header content in a row and the heading itself in a span.
-      $this->headingBefore = "<div class='row'><div class='span span--10'>";
+      $this->headingBefore = "<div class='r'><div class='s s10'>";
 
       // Create user info.
       $personalData = null;
@@ -127,14 +127,14 @@ class Show extends \MovLib\Presentation\Page {
 
       $avatar = $this->getImage($this->user->getStyle(), false, [ "itemprop" => "image" ]);
       if ($session->userId === $this->user->id) {
-        $avatar = "<a class='img text-center' href='{$this->routeAccountSettings}'>{$avatar}<span>{$i18n->t("Change Avatar")}</span></a>";
+        $avatar = "<a class='img tac' href='{$this->routeAccountSettings}'>{$avatar}<span>{$i18n->t("Change Avatar")}</span></a>";
       }
 
       // Display additional info about this user after the name and the avatar to the right of it.
       $this->headingAfter = "{$personalData}<small>{$i18n->t("Joined {0} and was last seen {1}.", [
         (new Date($this->user->created))->intlFormat(),
         (new Time($this->user->access))->formatRelative(),
-      ])}</small></div><div class='span span--2'>{$avatar}</div></div>";
+      ])}</small></div><div class='s s2'>{$avatar}</div></div>";
     }
     catch (\DomainException $e) {
       throw new ErrorNotFoundException("No user with this name.");

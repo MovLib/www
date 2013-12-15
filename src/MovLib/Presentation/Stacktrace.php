@@ -108,7 +108,7 @@ class Stacktrace extends \MovLib\Presentation\Page {
       $i18n->t("Stacktrace for {0}", [ $this->placeholder($this->fatal === true ? "Fatal Error" : get_class($this->exception)) ]),
       Alert::SEVERITY_INFO
     );
-    return "<div class='container'>{$stacktrace}</div>";
+    return "<div class='c'>{$stacktrace}</div>";
   }
 
 

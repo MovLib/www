@@ -118,7 +118,7 @@ class Alert {
    */
   public function __toString() {
     $title = $this->title ? "<h4 class='title'>{$this->title}</h4>" : null;
-    return "<div class='alert{$this->severity}' role='alert'><div class='container'>{$title}{$this->message}</div></div>";
+    return "<div class='alert{$this->severity}' role='alert'><div class='c'>{$title}{$this->message}</div></div>";
   }
 
 }

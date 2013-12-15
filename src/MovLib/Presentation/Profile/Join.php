@@ -107,6 +107,7 @@ class Join extends \MovLib\Presentation\Page {
 
     // Start rendering the page.
     $this->init($i18n->t("Join"));
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>";
 
     $this->username = new InputText("username", $i18n->t("Username"), [
       "maxlength"   => UserFull::NAME_MAXIMUM_LENGTH,
@@ -119,7 +120,6 @@ class Join extends \MovLib\Presentation\Page {
         [ UserFull::NAME_ILLEGAL_CHARACTERS, UserFull::NAME_MAXIMUM_LENGTH ]
       ),
     ]);
-    $this->username->setHelp("<a href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Already have an account?")}</a>", false);
 
     $this->email    = new InputEmail();
     $this->password = new InputPassword();
@@ -132,10 +132,10 @@ class Join extends \MovLib\Presentation\Page {
     $this->form                             = new Form($this, [ $this->username, $this->email, $this->password, $this->terms ]);
     $this->form->attributes["action"]       = $kernel->requestURI;
     $this->form->attributes["autocomplete"] = "off";
-    $this->form->attributes["class"]        = "span span--6 offset--3";
+    $this->form->attributes["class"]        = "s s6 o3";
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Sign Up"), [
-      "class" => "button button--large button--success",
+      "class" => "btn btn-large btn-success",
       "title" => $i18n->t("Click here to sign up after you filled out all fields"),
     ]);
 
@@ -157,13 +157,13 @@ class Join extends \MovLib\Presentation\Page {
     global $i18n, $kernel;
 
     if ($this->accepted === true) {
-      return "<div class='container'><small>{$i18n->t(
+      return "<div class='c'><small>{$i18n->t(
         "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
         [ "<a href='{$kernel->requestURI}'>", "</a>" ]
       )}</small></div>";
     }
 
-    return "<div class='container'><div class='row'>{$this->form}</div></div>";
+    return "<div class='c'><div class='r'>{$this->form}</div></div>";
   }
 
   /**

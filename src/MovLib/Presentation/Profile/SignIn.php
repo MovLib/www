@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use MovLib\Exception\DatabaseException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -79,6 +78,9 @@ class SignIn extends \MovLib\Presentation\Page {
 
     // Start rendering the page.
     $this->init($i18n->t("Sign In"));
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [
+      "sitename" => $kernel->siteName
+    ])}</a>";
 
     // We need to know the translated version of the sign in route for comparison.
     $routeSignIn = $action = $i18n->r("/profile/sign-in");
@@ -98,14 +100,14 @@ class SignIn extends \MovLib\Presentation\Page {
     $kernel->requestURI = $routeSignIn;
 
     $this->email                      = new InputEmail();
-    $this->email->setHelp("<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
     $this->password                   = new InputPassword();
+    $this->password->setHelp("<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
     $this->form                       = new Form($this, [ $this->email, $this->password ]);
     $this->form->attributes["action"] = $action;
-    $this->form->attributes["class"]  = "span span--6 offset--3";
+    $this->form->attributes["class"]  = "s s6 o3";
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Sign In"), [
-      "class" => "button button--large button--success",
+      "class" => "btn btn-large btn-success",
       "title" => $i18n->t("Click here to sign in after you filled out all fields"),
     ]);
   }
@@ -114,7 +116,7 @@ class SignIn extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getContent() {
-    return "<div class='container'><div class='row'>{$this->form}</div></div>";
+    return "<div class='c'><div class='r'>{$this->form}</div></div>";
   }
 
   /**

@@ -115,7 +115,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
       $activeSession["ip_address"]     = inet_ntop($activeSession["ip_address"]);
       $active                          = null;
       $button                          = new Button("session_id", $buttonText, [
-        "class" => "button button--danger",
+        "class" => "btn btn-danger",
         "type"  => "submit",
         "value" => $activeSession["id"],
         "title" => $buttonTitle,
@@ -139,7 +139,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     }
 
     $this->form                   = new Form($this);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "button button--large button--danger" ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "btn btn-large btn-danger" ]);
   }
 
 

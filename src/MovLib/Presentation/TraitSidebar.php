@@ -69,9 +69,9 @@ trait TraitSidebar {
     // Allow implementing class to alter the sidebar within the getPageContent method.
     $content = $this->getPageContent();
     return
-      "<div class='container sidebar-container'><div class='row sidebar-row'>" .
-        "<aside id='sidebar' class='span span--2' role='complementary'><h2 class='visuallyhidden'>{$i18n->t("Sidebar")}</h2>{$this->sidebarNavigation}</aside>" .
-        "<div class='page-content span span--10'>{$content}</div>" .
+      "<div class='c sidebar-c'><div class='r sidebar-r'>" .
+        "<aside id='sidebar' class='s s2' role='complementary'><h2 class='vh'>{$i18n->t("Sidebar")}</h2>{$this->sidebarNavigation}</aside>" .
+        "<div class='page-content s s10'>{$content}</div>" .
       "</div></div>"
     ;
   }
@@ -91,7 +91,6 @@ trait TraitSidebar {
    */
   protected function initSidebar($menuitems) {
     global $i18n, $kernel;
-    $kernel->stylesheets[] = "sidebar";
     $this->addBodyClass("sidebar");
     $this->sidebarNavigation                = new Navigation($i18n->t("Secondary Navigation"), $menuitems, [ "id" => "sidebar-nav" ]);
     $this->sidebarNavigation->ignoreQuery   = true;

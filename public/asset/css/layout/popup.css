@@ -1,16 +1,16 @@
 /*!
- * This file is part of {@link Expression prj is undefined on line 2, column 48 in Templates/Licenses/license-movlib.txt. Expression prj is undefined on line 2, column 66 in Templates/Licenses/license-movlib.txt.}.
+ * This file is part of {@link https://github.com/MovLib MovLib}.
  *
- * Copyright © 2013-present {@link Expression prj is undefined on line 4, column 52 in Templates/Licenses/license-movlib.txt. Expression prj is undefined on line 4, column 67 in Templates/Licenses/license-movlib.txt.}.
+ * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
  *
- * Expression prj is undefined on line 6, column 20 in Templates/Licenses/license-movlib.txt. is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+ * MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
  * License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
  * version.
  *
- * Expression prj is undefined on line 10, column 20 in Templates/Licenses/license-movlib.txt. is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with Expression prj is undefined on line 13, column 104 in Templates/Licenses/license-movlib.txt..
+ * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
@@ -24,52 +24,52 @@
  * @since 0.0.1-dev
  */
 
-.popup-container {
+.popup-c {
   position: relative;
-  outline: 0 none !important;
+  outline: 0 !important;
 }
 
 .popup:after,
 .popup {
-  display: block;
-  opacity: 0;
-  pointer-events: none;
   position: absolute;
-  transition: 0.3s ease;
-  visibility: hidden;
   z-index: 10;
+  display: block;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s ease;
 }
 
 .popup {
-  background-color: #fff;
-  bottom: 0;
   right: auto; /* Important for Internet Explorer, otherwise the popup's are too much to the left! */
+  bottom: 0;
   left: -50%;
-  margin: 0 0 6px 0;
-  padding: 10px;
   max-width: 320px;
+  padding: 10px;
+  margin: 0 0 6px 0;
   color: #656565;
+  background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
 
 .popup:after {
-  border: 6px solid transparent;
-  border-top-color: #fff;
   bottom: -12px;
-  content: "";
   left: 50%;
   margin-left: -6px;
+  border: 6px solid transparent;
+  border-top-color: #fff;
+  content: "";
 }
 
-.popup-container:focus .popup,
-.popup-container:hover .popup {
+.popup-c:focus .popup,
+.popup-c:hover .popup {
   bottom: 100%;
 }
 
-.popup-container:focus .popup,
-.popup-container:hover .popup,
-.popup-container:focus .popup:after,
-.popup-container:hover .popup:after {
+.popup-c:focus .popup,
+.popup-c:hover .popup,
+.popup-c:focus .popup:after,
+.popup-c:hover .popup:after {
   opacity: 1;
   visibility: visible;
 }

@@ -103,7 +103,7 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
 
     // The submit button.
     $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Change"), [
-      "class" => "button button--large button--success",
+      "class" => "btn btn-large btn-success",
       "title" => $i18n->t("Continue here to request the password change after you filled out all fields."),
     ]);
   }
