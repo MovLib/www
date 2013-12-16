@@ -52,7 +52,7 @@ class MovieLobbyCardDetails extends \MovLib\Presentation\Movie\AbstractMoviePage
     $this->editRoute    = $i18n->r("/movie/{0}/lobby-card/{1}/edit", [ $this->model->id, $this->image->imageId ]);
     $this->lastImageId = $this->image->getTotalCount();
     $this->namePattern = "Lobby Card {0} of {1} from “{2}”";
-    $this->init($i18n->t($this->namePattern, [ $this->image->imageId, $this->lastImageId, $this->title ]));
+    $this->initPage($i18n->t($this->namePattern, [ $this->image->imageId, $this->lastImageId, $this->title ]));
     $this->streamImages = (new MovieImages(
       $this->model->id,
       MovieImage::IMAGETYPE_LOBBYCARD,

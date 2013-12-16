@@ -40,7 +40,7 @@ class Contact extends \MovLib\Presentation\Page {
    */
   public function __construct(){
     global $i18n;
-    $this->init($i18n->t("Contact {0}", [ $_SERVER["USER_NAME"] ]));
+    $this->initPage($i18n->t("Contact {0}", [ $_SERVER["USER_NAME"] ]));
     $this->alerts .= new Alert("Not implemented yet!");
   }
 

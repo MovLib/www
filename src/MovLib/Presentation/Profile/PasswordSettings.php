@@ -85,7 +85,7 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     }
 
     // Translate and set the page title.
-    $this->init($i18n->t("Password Settings"));
+    $this->init($i18n->t("Password Settings"), "/profile/password-settings");
 
     // First field to enter the new password.
     $this->newPassword = new InputPassword("new-password", $i18n->t("New Password"), [

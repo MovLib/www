@@ -35,10 +35,14 @@ class Home extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $kernel;
-    $this->init($kernel->siteName);
+    $this->initPage($kernel->siteName);
     $kernel->stylesheets[] = "home";
+
     // A link to the current page would be redundant!
+    $this->initBreadcrumb();
     unset($this->breadcrumb->menuitems[1]);
+
+    $this->initLanguageLinks("/");
   }
 
   /**

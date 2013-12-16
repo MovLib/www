@@ -32,7 +32,7 @@ class PHPInfo extends \MovLib\Presentation\Tool\Page {
    * Instantiate new phpinfo() presentation.
    */
   public function __construct() {
-    $this->init("PHPInfo");
+    $this->initPage("PHPInfo");
   }
 
   /**

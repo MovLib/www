@@ -72,12 +72,12 @@ class SignIn extends \MovLib\Presentation\Page {
     global $i18n, $kernel, $session;
 
     // We need to know the translated version of the sign in route for comparison.
-    $routeSignIn = $action = $i18n->r("/profile/sign-in");
+    $this->initLanguageLinks("/profile/sign-in");
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
-    if ($kernel->requestURI != $routeSignIn) {
+    if ($kernel->requestURI != $this->languageLinks[$i18n->languageCode]) {
       if (empty($_GET["redirect_to"])) {
         $_GET["redirect_to"] = rawurlencode($kernel->requestURI);
       }
@@ -87,15 +87,18 @@ class SignIn extends \MovLib\Presentation\Page {
       throw new RedirectSeeOtherException($i18n->r("/my"));
     }
 
+    // Ensure all views are using the correct path info to render themselves.
+    $kernel->requestURI = $kernel->requestPath = $this->languageLinks[$i18n->languageCode];
+
+    // Append the URL to the action attribute of our form.
     if (isset($_GET["redirect_to"])) {
-      $action .= "?redirect_to={$_GET["redirect_to"]}";
+      $kernel->requestURI .= "?redirect_to={$_GET["redirect_to"]}";
     }
 
-    // Ensure all views are using the correct path info to render themselves.
-    $kernel->requestURI = $routeSignIn;
-
     // Start rendering the page.
-    $this->init($i18n->t("Sign In"));
+    $this->initPage($i18n->t("Sign In"));
+    $this->initBreadcrumb();
+
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [
       "sitename" => $kernel->siteName
     ])}</a>";
@@ -104,7 +107,6 @@ class SignIn extends \MovLib\Presentation\Page {
     $this->password                   = new InputPassword();
     $this->password->setHelp("<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
     $this->form                       = new Form($this, [ $this->email, $this->password ]);
-    $this->form->attributes["action"] = $action;
     $this->form->attributes["class"]  = "s s6 o3";
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Sign In"), [

@@ -57,9 +57,11 @@ class Show extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n;
-    $this->init($i18n->t("Movies"));
+    $this->initPage($i18n->t("Movies"));
+    $this->initBreadcrumb();
+    $this->initLanguageLinks("/movies", null, true);
     $this->initSidebar([
-      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
+      [ $this->languageLinks[$i18n->languageCode], $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
       [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
       [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
       [ $i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ] ],

@@ -52,7 +52,7 @@ class MoviePosterDetails extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->editRoute    = $i18n->r("/movie/{0}/poster/{1}/edit", [ $this->model->id, $this->image->imageId ]);
     $this->lastImageId = $this->image->getTotalCount();
     $this->namePattern = "Poster {0} of {1} from “{2}”";
-    $this->init($i18n->t($this->namePattern, [ $this->image->imageId, $this->lastImageId, $this->title ]));
+    $this->initPage($i18n->t($this->namePattern, [ $this->image->imageId, $this->lastImageId, $this->title ]));
   }
 
   /**

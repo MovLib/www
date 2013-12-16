@@ -60,7 +60,9 @@ class Show extends \MovLib\Presentation\Page {
       $this->person                = new FullPerson($_SERVER["PERSON_ID"]);
       $this->schemaType            = "Person";
       $this->headingSchemaProperty = "name";
-      $this->init($this->person->name);
+      $this->initPage($this->person->name);
+      $this->initBreadcrumb();
+      $this->initLanguageLinks("/person/{0}", [ $this->person->id ]);
       $this->initSidebar([]);
 
       // Display gone page if this person was deleted.

@@ -50,7 +50,7 @@ class Show extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     $this->systemPage = new SystemPage($_SERVER["ID"]);
-    $this->init($this->systemPage->title);
+    $this->initPage($this->systemPage->title);
   }
 
 

@@ -34,7 +34,7 @@ class Delete extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * Instantiate new delete movie presentation.
    */
   public function __construct() {
-    $this->init("Delete Movie");
+    $this->initPage("Delete Movie");
     $this->alerts .= new Alert("Not implemented yet!");
   }
 

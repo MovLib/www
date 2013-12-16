@@ -41,8 +41,7 @@ class NotificationSettings extends \MovLib\Presentation\Profile\Show {
   public function __construct() {
     global $i18n, $session;
     $session->checkAuthorization($i18n->t("You must be signed in to change your notification settings."));
-    $this->init($i18n->t("Notification Settings"));
-    $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
+    $this->init($i18n->t("Notification Settings"), "/profile/notification-settings");
   }
 
   /**

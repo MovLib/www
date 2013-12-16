@@ -106,7 +106,10 @@ class Join extends \MovLib\Presentation\Page {
     }
 
     // Start rendering the page.
-    $this->init($i18n->t("Join"));
+    $this->initPage($i18n->t("Join"));
+    $this->initBreadcrumb();
+    $this->initLanguageLinks("/profile/join");
+
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>";
 
     $this->username = new InputText("username", $i18n->t("Username"), [

@@ -40,15 +40,10 @@ class Posters extends \MovLib\Presentation\Movie\AbstractMoviePage {
   public function __construct() {
     global $i18n;
 
-    try {
-      $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    }
-    catch (\Exception $e) {
-      throw $e;
-    }
-
-    // Initialize the page with the full unlinked title. This is displayed in the browser tab.
-    $this->init($i18n->t("Posters for {title}", [ "title" => $this->movie->displayTitleWithYear ]), $i18n->t("Posters"));
+    $this->init();
+    $this->initPage($i18n->t("Posters for {title}", [ "title" => $this->movie->displayTitleWithYear ]));
+    $this->initBreadcrumb($i18n->t("Posters"));
+    $this->initLanguageLinks("/movie/{0}/posters", [ $this->movie->id ], true);
 
     // We want the title in the page header linked back to the movie.
     $this->pageTitle = $i18n->t("Posters for {title}", [ "title" => "<a href='{$this->routeMovie}'>{$this->movie->displayTitleWithYear}</a>" ]);
@@ -58,7 +53,7 @@ class Posters extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
     // Alter the sidebar navigation and include the various image types.
     $this->sidebarNavigation->menuitems[0][1] = $i18n->t("Back to movie");
-    $this->sidebarNavigation->menuitems[] = [ $i18n->rp("/movie/{0}/posters", [ $this->movie->id ]), $i18n->t("Posters") ];
+    $this->sidebarNavigation->menuitems[] = [ $this->languageLinks[$i18n->languageCode], $i18n->t("Posters") ];
     $this->sidebarNavigation->menuitems[] = [ $i18n->rp("/movie/{0}/lobby-cards", [ $this->movie->id ]), $i18n->t("Lobby Cards") ];
     $this->sidebarNavigation->menuitems[] = [ $i18n->rp("/movie/{0}/photos", [ $this->movie->id ]), $i18n->t("Photos") ];
 

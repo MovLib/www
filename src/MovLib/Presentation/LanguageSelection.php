@@ -58,7 +58,7 @@ class LanguageSelection extends \MovLib\Presentation\Page {
     }
 
     // If not render the page.
-    $this->init($i18n->t("Language Selection"));
+    $this->initPage($i18n->t("Language Selection"));
     $kernel->stylesheets[] = "language-selection";
   }
 

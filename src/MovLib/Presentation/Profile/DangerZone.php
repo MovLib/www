@@ -94,14 +94,11 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
-    // Start rendering the page.
-    $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
+    $this->init($i18n->t("Danger Zone"), "/profile/danger-zone");
 
     if (!empty($_GET["token"])) {
       $this->validateToken();
     }
-
-    $this->init($i18n->t("Danger Zone Settings"));
 
     // We must instantiate the form before we create the sessions table, otherwise deletions would happen after the
     // table containing the sessions listing was built. Deleted sessions would still be displayed!

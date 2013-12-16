@@ -32,7 +32,7 @@ class Photos extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    $this->init("Movie Photos");
+    $this->initPage("Movie Photos");
     $this->alerts .= new Alert("Not implemented yet!");
   }
 

@@ -67,12 +67,7 @@ class PosterShow extends \MovLib\Presentation\Movie\AbstractMoviePage {
   public function __construct() {
     global $i18n;
 
-    try {
-      $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    }
-    catch (\OutOfBoundsException $e) {
-      throw $e;
-    }
+    $this->init();
 
     try {
       $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear, $_SERVER["IMAGE_ID"]);
@@ -83,7 +78,9 @@ class PosterShow extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
     // Initialize presentation
     $this->shortTitle = $i18n->t("Poster {id}", [ "id" => $this->image->id ]);
-    $this->init($i18n->t("Poster {id} of {movie_title}", [ "id" => $this->image->id, "movie_title" => $this->movie->displayTitleWithYear ]), $this->shortTitle);
+    $this->initPage($i18n->t("Poster {id} of {movie_title}", [ "id" => $this->image->id, "movie_title" => $this->movie->displayTitleWithYear ]));
+    $this->initBreadcrumb($this->shortTitle);
+    $this->initLanguageLinks("/movie/{0}/poster/{1}", [ $this->movie->id, $this->image->id ]);
     $this->pageTitle  = $i18n->t("Poster {id} of {movie_title}", [
       "id" => $this->image->id,
       "movie_title" => "<a href='{$i18n->r("/movie/{0}", [ $this->movie->id ])}' itemprop='about'>{$this->movie->displayTitleWithYear}</a>",

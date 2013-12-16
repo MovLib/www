@@ -85,7 +85,7 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     $this->systemPage = new SystemPage($_SERVER["ID"]);
-    $this->init($i18n->t("Edit {0}", [ $this->systemPage->title ]), $i18n->t("Edit"));
+    $this->initPage($i18n->t("Edit {0}", [ $this->systemPage->title ]), $i18n->t("Edit"));
 
     $this->inputPageTitle = new InputText("page-title", $i18n->t("Page Title"), [ "required" => "required", "value" => $this->systemPage->title ]);
 

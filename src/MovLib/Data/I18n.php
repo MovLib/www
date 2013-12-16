@@ -221,31 +221,36 @@ class I18n {
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
    * @param array $args [optional]
    *   Array of arguments that should be inserted into <var>$route</var>.
+   * @param string $locale [optional]
+   *   Use this locale to translate the route instead of the current display locale. Must be a valid system locale!
    * @return string
    *   The formatted and translated <var>$route</var>.
    * @throws \ErrorException
    * @throws \IntlException
    */
-  public function r($route, array $args = null) {
+  public function r($route, array $args = null, $locale = null) {
     global $kernel;
     static $routes = [];
+    if (!$locale) {
+      $locale = $this->locale;
+    }
 
     // We only need to translate the route if it isn't in the default locale.
-    if ($this->locale != $this->defaultLocale) {
+    if ($locale != $this->defaultLocale) {
       // Check if we already have the route translations for this locale cached.
-      if (!isset($routes[$this->locale])) {
-        $routes[$this->locale] = require "{$kernel->pathTranslations}/routes/{$this->locale}.php";
+      if (!isset($routes[$locale])) {
+        $routes[$locale] = require "{$kernel->pathTranslations}/routes/{$locale}.php";
       }
 
       // Check if we have a translation for this route and use it if we have one.
       // @todo All routes should be translated in production, remove this check?
-      if (isset($routes[$this->locale][$route])) {
-        $route = $routes[$this->locale][$route];
+      if (isset($routes[$locale][$route])) {
+        $route = $routes[$locale][$route];
       }
     }
 
     if ($args) {
-      return \MessageFormatter::formatMessage($this->locale, $route, $args);
+      return \MessageFormatter::formatMessage($locale, $route, $args);
     }
     return $route;
   }
@@ -259,31 +264,36 @@ class I18n {
    *   The translation pattern in {@link http://userguide.icu-project.org/formatparse/messages ICU message format}.
    * @param array $args [optional]
    *   Array of arguments that should be inserted into <var>$route</var>.
+   * @param string $locale [optional]
+   *   Use this locale to translate the route instead of the current display locale. Must be a valid system locale!
    * @return string
    *   The formatted and translated <var>$route</var>.
    * @throws \ErrorException
    * @throws \IntlException
    */
-  public function rp($route, array $args = null) {
+  public function rp($route, array $args = null, $locale = null) {
     global $kernel;
     static $routes = [];
+    if (!$locale) {
+      $locale = $this->locale;
+    }
 
     // We only need to translate the route if it isn't in the default locale.
-    if ($this->locale != $this->defaultLocale) {
+    if ($locale != $this->defaultLocale) {
       // Check if we already have the route translations for this locale cached.
-      if (!isset($routes[$this->locale])) {
-        $routes[$this->locale] = require "{$kernel->pathTranslations}/routes/{$this->locale}.plural.php";
+      if (!isset($routes[$locale])) {
+        $routes[$locale] = require "{$kernel->pathTranslations}/routes/{$locale}.plural.php";
       }
 
       // Check if we have a translation for this route and use it if we have one.
       // @todo All routes should be translated in production, remove this check?
-      if (isset($routes[$this->locale][$route])) {
-        $route = $routes[$this->locale][$route];
+      if (isset($routes[$locale][$route])) {
+        $route = $routes[$locale][$route];
       }
     }
 
     if ($args) {
-      return \MessageFormatter::formatMessage($this->locale, $route, $args);
+      return \MessageFormatter::formatMessage($locale, $route, $args);
     }
     return $route;
   }

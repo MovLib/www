@@ -84,7 +84,9 @@ class ResetPassword extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n;
-    $this->init($i18n->t("Reset Password"));
+    $this->initPage($i18n->t("Reset Password"));
+    $this->initBreadcrumb();
+    $this->initLanguageLinks("/profile/reset-password");
 
     if (!empty($_GET["token"]) && $this->validateToken() === true) {
       // First field to enter the new password.

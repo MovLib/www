@@ -148,9 +148,8 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
     $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
-    $this->init($i18n->t("Account Settings"));
-    $this->user = new FullUser(FullUser::FROM_ID, $session->userId);
-    
+    $this->init($i18n->t("Account Settings"), "/profile/account-settings");
+
     if (!empty($_GET["delete_avatar"])) {
       $this->user->deleteAvatar();
       $this->user->commit();
@@ -168,7 +167,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
     ]);
 
     $this->avatar = new InputImage("avatar", $i18n->t("Avatar"), $this->user);
-    
+
     $this->sex = new RadioGroup("sex", $i18n->t("Sex"), [
       2 => $i18n->t("Female"),
       1 => $i18n->t("Male"),

@@ -42,7 +42,7 @@ class Home extends \MovLib\Presentation\Tool\Page {
    * Instantiate new tools homepage.
    */
   public function __construct() {
-    $this->init("Tools");
+    $this->initPage("Tools");
     if (!empty($_SERVER["SSL_CLIENT_VERIFY"])) {
       $this->sslClientVerified = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS";
     }

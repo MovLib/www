@@ -56,7 +56,7 @@ class Show extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n, $session;
     $session->checkAuthorization($i18n->t("You must be signed in to view your profile."));
-    $this->init($i18n->t("Profile"));
+    $this->init($i18n->t("Profile"), "/profile");
   }
 
 
@@ -99,11 +99,22 @@ class Show extends \MovLib\Presentation\Page {
   }
 
   /**
-   * @inheritdoc
+   * Initialize profile page.
+   *
+   * This automatically calls {@see initPage()}, {@see initBreadcrumb()}, {@see initLanguageLinks()}, {@see initSidebar()},
+   * and instantiates a {@see \MovLib\Data\User\Full} object (available via {@see Show::$user}).
+   *
+   * @param string $title
+   *   The translated profile page's title.
+   * @param string $route
+   *   The route key of this profile page.
+   * @return this
    */
-  protected function init($title, $breadcrumbTitle = null) {
+  protected function init($title, $route) {
     global $i18n, $session;
-    parent::init($title, $breadcrumbTitle);
+    $this->initPage($title);
+    $this->initBreadcrumb();
+    $this->initLanguageLinks($route);
 
     $sidebar = [
       [ $i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "separator ico ico-info" ] ],
@@ -113,7 +124,6 @@ class Show extends \MovLib\Presentation\Page {
       [ $i18n->r("/profile/password-settings"), $i18n->t("Password"), [ "class" => "ico ico-lock" ] ],
       [ $i18n->r("/profile/danger-zone"), $i18n->t("Danger Zone"), [ "class" => "ico ico-alert" ] ],
     ];
-
     $this->initSidebar($sidebar);
 
     $this->user = new UserFull(UserFull::FROM_ID, $session->userId);

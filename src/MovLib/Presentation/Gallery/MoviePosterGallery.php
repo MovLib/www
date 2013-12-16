@@ -45,7 +45,7 @@ class MoviePosterGallery extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->initMovie();
     $this->entityTitle = $this->title;
     $this->title = "{$i18n->t("Posters of")} “{$this->title}”";
-    $this->init($this->title);
+    $this->initPage($this->title);
     $startId = empty($_GET["last_id"]) ? 0 : $_GET["last_id"];
     $this->images = (new MovieImages(
       $this->model->id,

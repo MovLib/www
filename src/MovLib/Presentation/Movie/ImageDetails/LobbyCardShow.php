@@ -32,7 +32,7 @@ class LobbyCardShow extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    $this->init("Movie LobbyCard");
+    $this->initPage("Movie LobbyCard");
     $this->alerts .= new Alert("Not implemented yet!");
   }
 

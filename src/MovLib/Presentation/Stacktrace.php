@@ -70,7 +70,7 @@ class Stacktrace extends \MovLib\Presentation\Page {
   public function __construct($exception, $fatal = false) {
     global $i18n, $kernel;
     http_response_code(500);
-    $this->init($i18n->t("Internal Server Error"));
+    $this->initPage($i18n->t("Internal Server Error"));
     $kernel->stylesheets[] = "stacktrace";
     $this->exception = $exception;
     $this->fatal     = $fatal;

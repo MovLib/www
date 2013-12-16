@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\Movie\Full as FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -82,10 +83,14 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
 
 
   /**
-   * @inheritdoc
+   * Initialize movie.
+   *
+   * @return this
    */
-  protected function init($title, $breadcrumbTitle = null) {
+  protected function init() {
     global $i18n;
+
+    $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
 
     // Substitue all routes for this movie once and for all (this has nothing to do with caching, we just don't want to
     // keep repeating us as these routes are needed A LOT).
@@ -93,9 +98,6 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
     $this->routeEdit       = $i18n->r("/movie/{0}/edit", [ $_SERVER["MOVIE_ID"] ]);
     $this->routeHistory    = $i18n->r("/movie/{0}/history", [ $_SERVER["MOVIE_ID"] ]);
     $this->routeMovie      = $i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]);
-
-    // Initialize the presentation.
-    parent::init($title, $breadcrumbTitle);
 
     // Initialize the sidebar navigation.
     $this->initSidebar([

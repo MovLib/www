@@ -114,17 +114,14 @@ class Poster extends \MovLib\Presentation\Movie\AbstractMoviePage {
     global $i18n;
 
     // Try to load referenced movie
-    try {
-      $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    }
-    catch (\OutOfBoundsException $e) {
-      throw $e;
-    }
+    $this->init();
 
     // Initialize presentation
     $this->image      = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear);
     $this->shortTitle = $i18n->t("Upload Poster");
-    $this->init($i18n->t("Upload poster for {movie_title}", [ "movie_title" => $this->movie->displayTitleWithYear ]), $this->shortTitle);
+    $this->initPage($i18n->t("Upload poster for {movie_title}", [ "movie_title" => $this->movie->displayTitleWithYear ]));
+    $this->initBreadcrumb($this->shortTitle);
+    $this->initLanguageLinks("/movie/{0}/poster/upload", [ $this->movie->id ]);
     $this->pageTitle  = $i18n->t("Upload poster for {movie_title}", [ "movie_title" => "<a href='{$this->routeMovie}'>{$this->movie->displayTitleWithYear}</a>" ]);
 
     // Alter the sidebar navigation and include the various image types.

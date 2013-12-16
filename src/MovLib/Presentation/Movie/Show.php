@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Data\Movie\Full as FullMovie;
 use \MovLib\Exception\Client\ErrorNotFoundException;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
@@ -68,8 +67,10 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
     try {
       // Instantiate movie, initialize page and set the microdata schema.
-      $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
-      $this->init($this->movie->displayTitleWithYear);
+      $this->init();
+      $this->initPage($this->movie->displayTitleWithYear);
+      $this->initBreadcrumb();
+      $this->initLanguageLinks("/movie/{0}", [ $this->movie->id ]);
       $this->schemaType = "Movie";
 
       // Enhance the page's title with microdata.

@@ -110,6 +110,15 @@ class Page extends \MovLib\Presentation\AbstractBase {
   public $id;
 
   /**
+   * The page's translated routes.
+   *
+   * Associative array where the key is the system language code and the value the translated route.
+   *
+   * @var null|array
+   */
+  protected $languageLinks;
+
+  /**
    * Contains the namespace parts as array.
    *
    * @var array
@@ -216,16 +225,36 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected function getFooter() {
     global $kernel, $i18n;
 
-    $languageLinks = $currentLanguageName = null;
-    foreach ($kernel->systemLanguages as $code => $locale) {
-      $language = new \MovLib\Data\Language($code);
-      if ($code == $i18n->languageCode) {
-        $currentLanguageName = $language->name;
-        $languageLinks .= $language->name;
+    // Only build the language links if we have routes to build them. For example the internal server error page doesn't
+    // need language links ;)
+    if ($this->languageLinks) {
+      $languageLinks = $currentLanguageName = null;
+      foreach ($this->languageLinks as $code => $route) {
+        $language = new \MovLib\Data\Language($code);
+        if ($code == $i18n->languageCode) {
+          $currentLanguageName = $language->name;
+          $languageLinks      .=
+            "<a class='active' href='{$route}' tabindex='0' title='{$i18n->t("You’re currently viewing this page.")}'>{$language->name}</a>"
+          ;
+        }
+        else {
+          $languageLinks .=
+            "<a href='{$kernel->scheme}://{$code}.{$kernel->domainDefault}{$route}'>{$i18n->t("{0} ({1})", [ $language->name, $language->native ])}</a>"
+          ;
+        }
       }
-      else {
-        $languageLinks .= $i18n->t("{0} ({1})", [ $language->name, $language->native ]);
-      }
+      $languageLinks =
+        "<section class='last s s4'>" .
+          "<div class='popup-c ico ico-earth'>" .
+            "<div class='popup'><h3>{$i18n->t("Choose your language")}</h3>{$languageLinks}</div>" .
+            "{$i18n->t("Language")}: {$currentLanguageName}" .
+          "</div>" .
+        "</section>"
+      ;
+    }
+    // Insert placeholder and be sure to use div tags instead of section tags.
+    else {
+      $languageLinks = "<div class='last s o4'></div>";
     }
 
     return
@@ -250,12 +279,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
               "<img alt='GitHub' height='30' src='{$kernel->getAssetURL("footer/github", "svg")}' width='48'>" .
             "</a>" .
           "</section>" .
-          "<section class='last s s4'>" .
-            "<div class='popup-c ico ico-earth'>" .
-              "<div class='popup'><h3>{$i18n->t("Choose your language")}</h3>{$languageLinks}</div>" .
-              "{$i18n->t("Language")}: {$currentLanguageName}" .
-            "</div>" .
-          "</section>" .
+          $languageLinks .
           "<section id='f-team' class='last s s4 tac'><h3>{$this->a($i18n->r("/team"), $i18n->t("Made with {love} in Austria", [
             "love" => "<span class='ico ico-heart'></span><span class='vh'>{$i18n->t("love")}</span>"
           ]))}</h3></section>" .
@@ -511,15 +535,80 @@ class Page extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Initialize this presentation.
+   * Initialize the page's breadcrumb.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @param string $title [optional]
+   *   Set custom title for the last breadcrumb trail (the current page).
+   * @return this
+   */
+  protected function initBreadcrumb($title = null) {
+    global $i18n, $kernel;
+
+    // Initialize the breadcrumb navigation and always include the home page's link and the currently displayed page.
+    $trail       = [[ "/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ] ] ];
+    $breadcrumbs = $this->getBreadcrumbs();
+    $c           = count($breadcrumbs);
+    for ($i = 0; $i < $c; ++$i) {
+      // 0 => route
+      // 1 => linktext
+      // 2 => attributes
+      if (mb_strlen($breadcrumbs[$i][1]) > 25) {
+        $breadcrumbs[$i][2]["title"] = $breadcrumbs[$i][1];
+        $breadcrumbs[$i][1]          = mb_strimwidth($breadcrumbs[$i][1], 0, 25, $i18n->t("…"));
+      }
+      $trail[] = $breadcrumbs[$i];
+    }
+    $trail[] = [ $kernel->requestPath, $title ?: $this->title ];
+
+    // Create the actual navigation with the trail we just built.
+    $this->breadcrumb            = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "c small" ]);
+    $this->breadcrumb->glue      = " › ";
+    $this->breadcrumb->hideTitle = false;
+
+    return $this;
+  }
+
+  /**
+   * Initialize the language links for the current page.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @param string $route
+   *   The key of this route.
+   * @param array $args [optional]
+   *   The route arguments, defaults to no arguments.
+   * @param boolean $plural [optional]
+   *   Set to <code>TRUE</code> if the current page has a plural route, defaults to <code>FALSE</code>.
+   * @return this
+   */
+  protected function initLanguageLinks($route, array $args = null, $plural = false) {
+    global $i18n, $kernel;
+
+    // Not pretty but efficient, only check once if we have plural form or singular.
+    if ($plural === true) {
+      foreach ($kernel->systemLanguages as $code => $locale) {
+        $this->languageLinks[$code] = $i18n->rp($route, $args, $locale);
+      }
+    }
+    else {
+      foreach ($kernel->systemLanguages as $code => $locale) {
+        $this->languageLinks[$code] = $i18n->r($route, $args, $locale);
+      }
+    }
+
+    return $this;
+  }
+
+  /**
+   * Initialize the page.
    *
    * @param string $title
    *   The already translated title of this page.
-   * @param string $breadcrumbTitle [optional]
-   *   Override the usage of <var>$title</var> as the title within the breadcrumb for the current page.
    * @return this
    */
-  protected function init($title, $breadcrumbTitle = null) {
+  protected function initPage($title) {
     global $i18n, $kernel;
 
     // The substr() removes the \MovLib\Presentation\ part!
@@ -545,27 +634,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
       $this->alerts .= $_COOKIE["alerts"];
       setcookie("alerts", "", 1, "/", $kernel->domainDefault);
     }
-
-    // Initialize the breadcrumb navigation and always include the home page's link and the currently displayed page.
-    $trail       = [[ "/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ] ] ];
-    $breadcrumbs = $this->getBreadcrumbs();
-    $c           = count($breadcrumbs);
-    for ($i = 0; $i < $c; ++$i) {
-      // 0 => route
-      // 1 => linktext
-      // 2 => attributes
-      if (mb_strlen($breadcrumbs[$i][1]) > 25) {
-        $breadcrumbs[$i][2]["title"] = $breadcrumbs[$i][1];
-        $breadcrumbs[$i][1]          = mb_strimwidth($breadcrumbs[$i][1], 0, 25, $i18n->t("…"));
-      }
-      $trail[] = $breadcrumbs[$i];
-    }
-    $trail[] = [ $kernel->requestPath, $breadcrumbTitle ?: $this->title ];
-
-    // Create the actual navigation with the trail we just built.
-    $this->breadcrumb            = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "c small" ]);
-    $this->breadcrumb->glue      = " › ";
-    $this->breadcrumb->hideTitle = false;
 
     return $this;
   }

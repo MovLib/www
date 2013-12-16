@@ -31,7 +31,7 @@ use \MovLib\Presentation\Partial\Alert;
 class LobbyCard extends \MovLib\Presentation\Movie\Upload\Poster {
 
   public function __construct() {
-    $this->init("Movie Lobby Card Upload");
+    $this->initPage("Movie Lobby Card Upload");
     $this->alerts .= new Alert("Not implemented yet!");
   }
 

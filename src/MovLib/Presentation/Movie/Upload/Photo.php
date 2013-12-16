@@ -31,7 +31,7 @@ use \MovLib\Presentation\Partial\Alert;
 class Photo extends \MovLib\Presentation\Movie\Upload\Poster {
 
   public function __construct() {
-    $this->init("Movie Photo Upload");
+    $this->initPage("Movie Photo Upload");
     $this->alerts .= new Alert("Not implemented yet!");
   }
 

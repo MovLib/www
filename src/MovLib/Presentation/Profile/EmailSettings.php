@@ -75,10 +75,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     // Translate and set the page title.
-    $this->init($i18n->t("Email Settings"));
-
-    // We want to display the current email address to the user, therefor we need a full user instance.
-    $this->user  = new UserFull(UserFull::FROM_ID, $session->userId);
+    $this->init($i18n->t("Email Settings"), "/profile/email-settings");
 
     // Field to enter the new email address.
     $this->email = new InputEmail();

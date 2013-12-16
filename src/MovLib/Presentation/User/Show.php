@@ -74,7 +74,7 @@ class Show extends \MovLib\Presentation\Page {
       if ($this->user->route != $kernel->requestPath) {
         throw new RedirectPermanentException($this->user->route);
       }
-      $this->init($this->user->name);
+      $this->initPage($this->user->name);
       $this->routeAccountSettings = $i18n->r("/profile/account-settings");
 
       // http://schema.org/Person

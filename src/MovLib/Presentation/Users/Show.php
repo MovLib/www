@@ -52,7 +52,7 @@ class Show extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n;
-    $this->init($i18n->t("Users"));
+    $this->initPage($i18n->t("Users"));
     $this->users     = (new Users())->orderByNewest();
     $this->userRoute = "{$i18n->r("/user")}/";
   }
