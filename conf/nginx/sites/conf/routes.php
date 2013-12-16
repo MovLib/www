@@ -278,7 +278,7 @@ location ^~ <?= $r("/movie") ?> {
     try_files $movlib_cache @php;
   }
 
-  return 404;
+  rewrite .* /error/NotFound last;
 }
 
 
@@ -369,7 +369,7 @@ location ^~ <?= $r("/person") ?> {
     try_files $movlib_cache @php;
   }
 
-  return 404;
+  rewrite .* /error/NotFound last;
 }
 
 
@@ -441,7 +441,7 @@ location ^~ <?= $r("/profile") ?> {
     include sites/conf/fastcgi_params.conf;
   }
 
-  return 404;
+  rewrite .* /error/NotFound last;
 }
 
 
@@ -474,7 +474,7 @@ location ^~ <?= $r("/user") ?> {
     try_files $movlib_cache @php;
   }
 
-  return 404;
+  rewrite .* /error/NotFound last;
 }
 
 
