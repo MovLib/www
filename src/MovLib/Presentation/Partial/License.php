@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Partial;
 
 /**
- * Represents a single language in HTML and provides an interface to all available languages.
+ * Represents a single license in HTML and provides an interface to all available licenses.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Language extends \MovLib\Presentation\AbstractBase {
+class License extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -40,14 +40,14 @@ class Language extends \MovLib\Presentation\AbstractBase {
   protected $attributes;
 
   /**
-   * The language to present.
+   * The license to present.
    *
-   * @var \MovLib\Data\Language
+   * @var \MovLib\Data\License
    */
-  protected $language;
+  protected $license;
 
   /**
-   * The HTML tag to wrap the language.
+   * The HTML tag to wrap the license.
    *
    * @var string
    */
@@ -58,29 +58,20 @@ class Language extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Instantiate new language partial.
+   * Instantiate new license partial.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param string $code
-   *   The ISO 639-1 code of the language.
+   * @param string $id
+   *   The unique license identifier.
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the element.
    * @param string $tag [optional]
-   *   The tag that should be used to wrap this language, defaults to <code>"span"</code>.
+   *   The tag that should be used to wrap this license, defaults to <code>"span"</code>.
    */
-  public function __construct($code, array $attributes = null, $tag = "span") {
-    global $i18n;
-    $this->attributes             = $attributes;
-    $this->attributes[]           = "itemscope";
-    $this->attributes["itemtype"] = "http://schema.org/Language";
-    $this->language               = new \MovLib\Data\Language($code);
-    $this->tag                    = $tag;
-
-    // The special code xx isn't valid if we use it as lang attribute, but the ISO 639-2 code zxx is, make sure we use
-    // the right language code.
-    if ($this->language->code != $i18n->languageCode) {
-      $this->attributes["lang"] = $this->language->code == "xx" ? "zxx" : $this->language->code;
-    }
+  public function __construct($id, array $attributes = null, $tag = "span") {
+    $this->attributes = $attributes;
+    $this->language   = new \MovLib\Data\License($id);
+    $this->tag        = $tag;
   }
 
   /**
@@ -97,29 +88,27 @@ class Language extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Get all supported and translated languages.
+   * Get all supported and translated licenses.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @staticvar array $languages
+   * @staticvar array $licenses
    *   Associative array used for caching.
    * @return array
-   *   All supported and translated languages.
+   *   All supported and translated licenses.
    */
-  public static function getLanguages() {
+  public static function getLicenses() {
     global $i18n;
-    static $languages = null;
+    static $licenses = null;
 
     // If we haven't built the array for this locale build it.
-    if (!isset($languages[$i18n->locale])) {
-      // @todo We can't use the native name as title because it has a different language and we have no possiblity to
-      //       indicate that to the user agent. On the other hand this isn't only used for form elements and in those
-      //       other use cases the native name might be from interest.
-      foreach (\MovLib\Data\Language::getLanguages() as $code => $language) {
-        $languages[$i18n->locale][$code] = $language["name"];
+    if (!isset($licenses[$i18n->locale])) {
+      $result = \MovLib\Data\License::getLicensesResult();
+      while ($license = $result->fetch_assoc()) {
+        $licenses[$i18n->locale][$license["id"]] = $i18n->t("{0} ({1})", [ $license["abbreviation"], $license["name"] ]);
       }
     }
 
-    return $languages[$i18n->locale];
+    return $licenses[$i18n->locale];
   }
 
 }

@@ -181,6 +181,7 @@ INSERT INTO `movies_images` SET
   `type_id`          = 1,
   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
   `country_code`     = 'US',
+  `language_code`    = 'en',
   `deleted`          = false,
   `width`            = 1500,
   `height`           = 2107,
@@ -191,7 +192,7 @@ INSERT INTO `movies_images` SET
   `dyn_descriptions` = COLUMN_CREATE(
     'en', '&lt;p&gt;&lt;a href="http://download.blender.org/peach/presskit.zip"&gt;“Big Buck Bunny” presskit&lt;/a&gt;&lt;/p&gt;'
   ),
-  `styles`           = 'a:4:{i:60;a:2:{s:5:"width";i:60;s:6:"height";i:84;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:197;}i:220;a:2:{s:5:"width";i:220;s:6:"height";i:309;}i:620;a:2:{s:5:"width";i:620;s:6:"height";i:871;}}',
+  `styles`           = 'a:4:{i:60;a:2:{s:5:"width";i:60;s:6:"height";i:84;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:197;}i:220;a:2:{s:5:"width";i:220;s:6:"height";i:309;}i:380;a:2:{s:5:"width";i:380;s:6:"height";i:534;}}',
   `user_id`          = 1
 ;
 

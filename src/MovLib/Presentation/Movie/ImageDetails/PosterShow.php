@@ -17,10 +17,14 @@
  */
 namespace MovLib\Presentation\Movie\ImageDetails;
 
-use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Presentation\Partial\Lists\Description;
+use \MovLib\Data\License;
+use \MovLib\Data\Movie\Movie;
+use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\Country;
+use \MovLib\Presentation\Partial\Language;
+use \MovLib\Presentation\Partial\Lists\Description;
+use \MovLib\Presentation\Partial\DateTime;
 
 /**
  * @todo Description of Poster
@@ -80,7 +84,11 @@ class PosterShow extends \MovLib\Presentation\Movie\AbstractMoviePage {
     // Initialize presentation
     $this->shortTitle = $i18n->t("Poster {id}", [ "id" => $this->image->id ]);
     $this->init($i18n->t("Poster {id} of {movie_title}", [ "id" => $this->image->id, "movie_title" => $this->movie->displayTitleWithYear ]), $this->shortTitle);
-    $this->pageTitle  = $i18n->t("Poster {id} of {movie_title}", [ "id" => $this->image->id, "movie_title" => $this->movie->displayTitleWithYear ]);
+    $this->pageTitle  = $i18n->t("Poster {id} of {movie_title}", [
+      "id" => $this->image->id,
+      "movie_title" => "<a href='{$i18n->r("/movie/{0}", [ $this->movie->id ])}' itemprop='about'>{$this->movie->displayTitleWithYear}</a>",
+    ]);
+    $this->schemaType = "ImageObject";
 
     // Alter the sidebar navigation and include the various image types.
     $this->sidebarNavigation->menuitems[0][1] = $i18n->t("Back to movie");
@@ -120,6 +128,7 @@ class PosterShow extends \MovLib\Presentation\Movie\AbstractMoviePage {
     while ($poster = $posters->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->movie->id, $this->movie->displayTitleWithYear ])) {
       $streamJSON[$poster->id] = [ $poster->getStyle()->src ];
     }
+    $posters->free();
 
     // TEST
     $img = $this->getImage($this->image->getStyle(MoviePoster::STYLE_SPAN_01));
@@ -137,19 +146,58 @@ class PosterShow extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $stream     = implode("", $stream);
     $streamJSON = json_encode($streamJSON);
 
-    $description                      = new Description([
-      $i18n->t("Description") => $kernel->htmlDecode($this->image->description),
-      $i18n->t("Country")     => (new Country($this->image->countryCode))->getFlag(true),
+    $descriptionItems = null;
+
+    // The user supplied description text for this image.
+    if (!empty($this->image->description)) {
+      $descriptionItems[$i18n->t("Description")] = [
+        $kernel->htmlDecode($this->image->description),
+        [ "itemprop" => "text" ]
+      ];
+    }
+
+    // Format meta data information.
+    if ($this->image->countryCode) {
+      $descriptionItems[$i18n->t("Country")] = (new Country($this->image->countryCode, [ "itemprop" => "contentLocation" ]))->getFlag(true);
+    }
+    if ($this->image->languageCode) {
+      $descriptionItems[$i18n->t("Language")] = (new Language($this->image->languageCode, [ "itemprop" => "inLanguage" ]));
+    }
+    $license = new License($this->image->licenseId);
+    $descriptionItems[$i18n->t("License")] = "<a href='{$license->url}' rel='license' target='_blank'><abbr title='{$license->name}'>{$license->abbreviation}</abbr></a>";
+
+    // The uploader of the current image version.
+    $uploader = new User(User::FROM_ID, $this->image->uploaderId);
+    $descriptionItems[$i18n->t("Uploader")] = "<a href='{$uploader->route}' itemprop='provider'>{$uploader->name}</a>";
+
+    // Format technical details about the original file.
+    $descriptionItems[$i18n->t("Dimensions")] = $i18n->t("{width} × {height}", [
+      "width"  => "<span itemprop='width'>{$this->image->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+      "height" => "<span itemprop='height'>{$this->image->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
     ]);
-    $description->attributes["class"] = "dl--horizontal";
-    $description->attributes["id"]    = "imagedescription";
+    $descriptionItems[$i18n->t("File Size")] = [
+      $i18n->t("{0, number} {1}", $this->formatBytes($this->image->filesize)),
+      [ "itemprop" => "contentSize" ],
+    ];
+    $descriptionItems[$i18n->t("Uploaded")] = new DateTime($this->image->changed, [ "itemprop" => "uploadDate" ]);
+
+    $description = new Description($descriptionItems, null, [ "class" => "s s3", "id" => "imagedescription" ]);
 
     return
-      // js-jis = JavaScript - Image Stream JSON
-      "<script id='js-isj' type='application/json'>{$streamJSON}</script>" .
+      "<meta itemprop='representativeOfPage' content='true'>" .
+      "<div class='r' id='imagedetails'>" .
+        // Link to the full-sized poster image
+        "<div class='s s7 tac'>{$this->getImage($this->image->getStyle(MoviePoster::STYLE_SPAN_05), $this->image->getURL(), [
+          "itemprop" => "thumbnail"
+        ], [
+          "itemprop" => "contentUrl",
+          "target"   => "_blank",
+        ])}</div>" .
+        $description .
+      "</div>" .
       "<div id='imagestream'>{$stream}</div>" .
-      "<div id='imagedetails'>{$this->getImage($this->image->getStyle(MoviePoster::STYLE_SPAN_05), false)}</div>" .
-      $description
+      // js-jis = JavaScript - Image Stream JSON
+      "<script id='js-isj' type='application/json'>{$streamJSON}</script>"
     ;
   }
 

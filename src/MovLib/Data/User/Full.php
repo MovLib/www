@@ -375,7 +375,7 @@ class Full extends \MovLib\Data\User\User {
   public function deleteAvatar() {
     global $session;
     if ($this->exists == true) {
-      foreach ([ self::STYLE_SPAN_01, self::STYLE_SPAN_02 ] as $style) {
+      foreach ([ self::STYLE_SPAN_02, self::STYLE_SPAN_01, self::STYLE_HEADER_USER_NAVIGATION ] as $style) {
         try {
           $path = $this->getPath($style);
           unlink($path);

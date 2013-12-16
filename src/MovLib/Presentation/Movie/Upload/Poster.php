@@ -19,7 +19,6 @@ namespace MovLib\Presentation\Movie\Upload;
 
 use \MovLib\Data\Country;
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Data\License;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Form;
@@ -27,6 +26,8 @@ use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\Select;
+use \MovLib\Presentation\Partial\License;
+use \MovLib\Presentation\Partial\Language;
 
 /**
  * Form to upload a new poster or update an existing one.
@@ -71,6 +72,13 @@ class Poster extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * @var \MovLib\Presentation\Partial\FormElement\InputImage
    */
   protected $inputImage;
+
+  /**
+   * The form's language selection.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\Select
+   */
+  protected $language;
 
   /**
    * The movie this image belongs to.
@@ -127,15 +135,17 @@ class Poster extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
     // Initialize form elements.
     $this->inputImage  = new InputImage("poster", $i18n->t("Poster"), $this->image, [ "required" ]);
-    $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description); //, [ "required" ]
-    $this->country     = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
-    $this->license     = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ? : 1, [ "required" ]);
+    $this->description = new InputHTML("description", $i18n->t("Description")); //, [ "required" ]
+    $this->country     = new Select("country", $i18n->t("Country"), Country::getCountries());
+    $this->language    = new Select("language", $i18n->t("Language"), Language::getLanguages(), null, [ "required" ]);
+    $this->license     = new Select("license", $i18n->t("License"), License::getLicenses(), null, [ "required" ]);
 
     // Initialize form
     $this->form = new Form($this, [
       $this->inputImage,
       $this->description,
       $this->country,
+      $this->language,
       $this->license,
     ]);
 
@@ -174,9 +184,10 @@ class Poster extends \MovLib\Presentation\Movie\AbstractMoviePage {
    */
   public function validate(array $errors = null) {
     if ($this->checkErrors($errors) === false) {
-      $this->image->countryCode = $this->country->value;
-      $this->image->description = $this->description->value;
-      $this->image->licenseId   = $this->license->value;
+      $this->image->countryCode  = $this->country->value;
+      $this->image->description  = $this->description->value;
+      $this->image->languageCode = $this->language->value;
+      $this->image->licenseId    = $this->license->value;
       $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
       throw new RedirectSeeOtherException($this->image->route);
     }

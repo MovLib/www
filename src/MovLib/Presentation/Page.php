@@ -340,7 +340,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         // wants us to use multiple <h1>s for multiple sections, so here we go. The header is always the MovLib header.
         "<h1 class='s s3'>{$this->a(
           "/",
-          "<img height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}",
+          "<img alt='' height='42' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='42'> {$kernel->siteName}",
           [ "id" => "l", "title" => $i18n->t("Go back to the home page.") ]
         )}</h1>" .
         "<div class='s s9'>" .
@@ -360,7 +360,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "</nav>" .
           "<form action='{$i18n->t("/search")}' class='s' id='s' method='post' role='search'>" .
             "<input type='hidden' name='form_id' value='header_search'>" .
-            "<label class='vh' for='search-input'>{$i18n->t("Search the {sitename} database.", [ "sitename" => $kernel->siteName ])}</label>" .
             "<button class='ico ico-search' tabindex='2' type='submit'><span class='vh'>{$i18n->t(
               "Start searching for the entered keyword."
             )}</span></button>" .

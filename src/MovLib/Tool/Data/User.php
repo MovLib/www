@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
+namespace MovLib\Tool\Data;
 
 /**
- * @todo Description of TraitUser
+ * Extended user class for internal usage.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,30 +26,31 @@ namespace MovLib\Presentation\User;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitUser {
-  use \MovLib\Presentation\TraitSidebar;
+class User extends \MovLib\Data\User\Full {
 
   /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
+   * Regenerate all image styles of the user's avatar.
+   *
+   * @return this
+   * @throws \ErrorException
    */
-  protected function init($title, $breadcrumbTitle = null) {
-    global $i18n;
-    parent::init($title, $breadcrumbTitle);
-    $this->initSidebar([
-      [ $i18n->r("/user/{0}", [ $_SERVER["USER_NAME"] ]), $i18n->t("User page"), [ "class" => "separator" ] ],
-      [ $i18n->r("/user/{0}/collection", [ $_SERVER["USER_NAME"] ]), $i18n->t("Collection") ],
-      [ $i18n->r("/user/{0}/contact", [ $_SERVER["USER_NAME"] ]), $i18n->t("Contact") ],
-    ]);
+  public function regenerateImageStyles() {
+    // Only regenerate if we have an avatar.
+    if ($this->exists === false) {
+      return $this;
+    }
+
+    // Remove all styles that were previously generated.
+    foreach ($this->styles as $style => $styleData) {
+      if ($style !== self::STYLE_SPAN_02) {
+        unlink($this->getPath($style));
+      }
+    }
+
+    // Upload our own avatar again.
+    $this->upload($this->getPath(self::STYLE_SPAN_02), $this->extension, -1, -1);
+
     return $this;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->rp("/users"), $i18n->t("Users") ]];
   }
 
 }

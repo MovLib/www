@@ -46,6 +46,13 @@ class Language {
    */
   public $name;
 
+  /**
+   * The language's native full name.
+   *
+   * @var string
+   */
+  public $native;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -65,8 +72,9 @@ class Language {
       if (!isset($languages[$code])) {
         throw new \OutOfBoundsException("Couldn't find language for code '{$code}'");
       }
-      $this->code = $code;
-      $this->name = $languages[$code];
+      $this->code   = $code;
+      $this->name   = $languages[$code]["name"];
+      $this->native = $languages[$code]["native"];
     }
   }
 

@@ -403,7 +403,13 @@ class Kernel {
     }
     catch (\Exception $exception) {
       error_log($exception);
-      $presentation = (new Stacktrace($exception))->getPresentation();
+      try {
+        $presentation = (new Stacktrace($exception))->getPresentation();
+      }
+      catch (\Exception $e) {
+        header("content-type: text/plain");
+        exit("==== FATAL ERROR ====\n\n{$e}");
+      }
     }
     finally {
       // Set alert messages for next page view. No need for secure nor HTTP only, alerts never contain sensitive data.
