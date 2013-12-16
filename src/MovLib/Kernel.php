@@ -371,14 +371,6 @@ class Kernel {
       // Prepare global database connection.
       $db = new Database();
 
-      // Always create an I18n instance for translating any kind of presentation.
-      $i18n = new I18n();
-
-      // Translate the slogan variations but not the site name itself.
-      $this->siteNameAndSlogan     = $i18n->t("{0}, the free movie library.", [ $this->siteName ]);
-      $this->siteNameAndSloganHTML = $i18n->t("{0} {1}the {2}free{3} movie library.{4}", [ $this->siteName, "<small>", "<em>", "</em>", "</small>" ]);
-      $this->siteSlogan            = $i18n->t("the free movie library");
-
       // If either the client's IP address or user agent string are invalid or empty abort execution.
       if ($this->remoteAddress === false || $this->userAgent === false) {
         throw new ErrorForbiddenException(
@@ -393,6 +385,35 @@ class Kernel {
 
       // If we have a valid IP address and user agent string initialize a session for the client.
       $session = new Session();
+
+      // Only check user authorization, see nginx configuration for details on this.
+      if ($_SERVER["PRESENTER"] == "CheckAuthorization") {
+        if ($session->isAuthenticated === true) {
+          $path = str_replace("upload/private", "private/upload", $this->requestPath);
+          switch (pathinfo($path, PATHINFO_EXTENSION)) {
+            case "jpg":
+              $type = "image/jpeg";
+              break;
+
+            case "png":
+              $type = "image/png";
+              break;
+          }
+          header("Content-Type: image/jpeg");
+          header("X-Accel-Redirect: {$path}");
+          exit();
+        }
+        $i18n = new I18n();
+        throw new \MovLib\Exception\Client\ErrorUnauthorizedException;
+      }
+
+      // Always create an I18n instance for translating any kind of presentation.
+      $i18n = new I18n();
+
+      // Translate the slogan variations but not the site name itself.
+      $this->siteNameAndSlogan     = $i18n->t("{0}, the free movie library.", [ $this->siteName ]);
+      $this->siteNameAndSloganHTML = $i18n->t("{0} {1}the {2}free{3} movie library.{4}", [ $this->siteName, "<small>", "<em>", "</em>", "</small>" ]);
+      $this->siteSlogan            = $i18n->t("the free movie library");
 
       // Try to create presentation based on the presenter set by nginx.
       $presentationClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";

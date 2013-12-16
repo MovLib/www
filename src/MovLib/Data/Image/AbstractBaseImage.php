@@ -289,7 +289,7 @@ abstract class AbstractBaseImage {
   }
 
   /**
-   * Get the absolute (static) URL to the image.
+   * Get the absolute URL to the image.
    *
    * @global \MovLib\Kernel $kernel
    * @param mixed $style [optional]
@@ -313,7 +313,7 @@ abstract class AbstractBaseImage {
 
     // If no style was given the URL to the original is desired.
     if (empty($style)) {
-      return "//{$kernel->domainStatic}/private/upload/{$this->directory}/{$this->filename}.{$this->extension}?c={$this->changed}";
+      return "/upload/private/{$this->directory}/{$this->filename}.{$this->extension}?c={$this->changed}";
     }
 
     // Otherwise the URL to the given style.

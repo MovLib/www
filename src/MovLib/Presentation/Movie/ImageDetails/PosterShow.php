@@ -18,13 +18,13 @@
 namespace MovLib\Presentation\Movie\ImageDetails;
 
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Data\License;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Language;
 use \MovLib\Presentation\Partial\Lists\Description;
 use \MovLib\Presentation\Partial\DateTime;
+use \MovLib\Presentation\Partial\License;
 
 /**
  * @todo Description of Poster
@@ -163,8 +163,8 @@ class PosterShow extends \MovLib\Presentation\Movie\AbstractMoviePage {
     if ($this->image->languageCode) {
       $descriptionItems[$i18n->t("Language")] = (new Language($this->image->languageCode, [ "itemprop" => "inLanguage" ]));
     }
-    $license = new License($this->image->licenseId);
-    $descriptionItems[$i18n->t("License")] = "<a href='{$license->url}' rel='license' target='_blank'><abbr title='{$license->name}'>{$license->abbreviation}</abbr></a>";
+
+    $descriptionItems[$i18n->t("License")] = new License($this->image->licenseId);
 
     // The uploader of the current image version.
     $uploader = new User(User::FROM_ID, $this->image->uploaderId);

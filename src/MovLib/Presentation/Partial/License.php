@@ -46,13 +46,6 @@ class License extends \MovLib\Presentation\AbstractBase {
    */
   protected $license;
 
-  /**
-   * The HTML tag to wrap the license.
-   *
-   * @var string
-   */
-  protected $tag;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -65,22 +58,25 @@ class License extends \MovLib\Presentation\AbstractBase {
    *   The unique license identifier.
    * @param array $attributes [optional]
    *   Additional attributes that should be applied to the element.
-   * @param string $tag [optional]
-   *   The tag that should be used to wrap this license, defaults to <code>"span"</code>.
    */
-  public function __construct($id, array $attributes = null, $tag = "span") {
-    $this->attributes = $attributes;
-    $this->language   = new \MovLib\Data\License($id);
-    $this->tag        = $tag;
+  public function __construct($id, array $attributes = null) {
+    $this->attributes           = $attributes;
+    $this->license              = new \MovLib\Data\License($id);
+    $this->attributes["href"]   = $this->license->url;
+    $this->attributes["rel"]    = "license";
+    $this->attributes["target"] = "_blank";
   }
 
   /**
-   * Get the string representation of the language.
+   * Get the string representation of the license.
    *
    * @return string
+   *   The string representation of the license.
    */
   public function __toString() {
-    return "<{$this->tag}{$this->expandTagAttributes($this->attributes)}><span itemprop='name'>{$this->language->name}</span><meta itemprop='alternateName' content='{$this->language->native}'></{$this->tag}>";
+    return
+      "<abbr title='{$this->license->name}'><a{$this->expandTagAttributes($this->attributes)}>{$this->license->abbreviation}</a></abbr>"
+    ;
   }
 
 

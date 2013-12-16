@@ -26,7 +26,7 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class License extends \MovLib\Data\Image\AbstractImage {
+class License {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -92,36 +92,23 @@ class License extends \MovLib\Data\Image\AbstractImage {
           IFNULL(COLUMN_GET(`dyn_names`, ? AS CHAR(255)), COLUMN_GET(`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR(255))) AS `name`,
           COLUMN_GET(`dyn_descriptions`, ? AS CHAR) AS `description`,
           `abbreviation`,
-          COLUMN_GET(`dyn_url`, ? AS CHAR(255)) AS `url`,
-          UNIX_TIMESTAMP(`icon_changed`) AS `changed`,
-          `icon_extension` AS `extension`
+          COLUMN_GET(`dyn_url`, ? AS CHAR(255)) AS `url`
         FROM `licenses`
         WHERE `id` = ? LIMIT 1",
         "sssi",
         [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $id ]
       );
-      $stmt->bind_result($this->id, $this->name, $this->description, $this->abbreviation, $this->url, $this->changed, $this->extension);
+      $stmt->bind_result($this->id, $this->name, $this->description, $this->abbreviation, $this->url);
       if (!$stmt->fetch()) {
         throw new \OutOfBoundsException("Couldn't find license for identifier '{$id}'");
       }
       $stmt->close();
-    }
-
-    if ($this->id) {
-      $this->exists = (boolean) $this->changed;
     }
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * @inheritdoc
-   */
-  protected function generateStyles($source) {
-    throw new \LogicException("Not implemented yet!");
-  }
 
   /**
    * Get all available licenses.
