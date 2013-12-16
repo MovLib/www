@@ -143,7 +143,6 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    * If no <var>$from</var> or <var>$value</var> is given, an empty user model will be created.
    *
    * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
    * @param string $from [optional]
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
    * @param mixed $value [optional]
@@ -151,17 +150,11 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    * @throws \OutOfBoundsException
    */
   public function __construct($from = null, $value = null) {
-    global $db, $i18n;
+    global $db;
+
     if ($from && $value) {
       $stmt = $db->query(
-        "SELECT
-          `id`,
-          `name`,
-          `time_zone_identifier`,
-          UNIX_TIMESTAMP(`image_changed`),
-          `image_extension`
-        FROM `users`
-        WHERE `{$from}` = ?",
+        "SELECT `id`, `name`, `time_zone_identifier`, UNIX_TIMESTAMP(`image_changed`), `image_extension` FROM `users` WHERE `{$from}` = ?",
         $this->types[$from],
         [ $value ]
       );
@@ -173,9 +166,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
     }
 
     if ($this->id) {
-      $this->exists   = (boolean) $this->changed;
-      $this->filename = rawurlencode(mb_strtolower($this->name));
-      $this->route    = $i18n->r("/user/{0}", [ $this->filename ]);
+      $this->initImage();
     }
   }
 
@@ -220,6 +211,20 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
       );
     }
     return $this->stylesCache[$style];
+  }
+
+  /**
+   * Initialize image properties and user page route.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return this
+   */
+  public function initImage() {
+    global $i18n;
+    $this->exists   = (boolean) $this->changed;
+    $this->filename = rawurlencode(mb_strtolower($this->name));
+    $this->route    = $i18n->r("/user/{0}", [ rawurlencode($this->filename) ]);
+    return $this;
   }
 
   /**

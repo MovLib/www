@@ -177,6 +177,7 @@ class Full extends \MovLib\Data\User\User {
    */
   public function __construct($from = null, $value = null) {
     global $db, $i18n;
+
     if ($from && $value) {
       $stmt = $db->query(
         "SELECT
@@ -233,11 +234,11 @@ class Full extends \MovLib\Data\User\User {
         throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
       }
       $stmt->close();
-      $this->exists   = (boolean) $this->changed;
-      $this->filename = rawurlencode(mb_strtolower($this->name));
+    }
+
+    if ($this->id) {
+      $this->initImage();
       $this->private  = (boolean) $this->private;
-      // The image name already has all unsave characters removed.
-      $this->route    = $i18n->r("/user/{0}", [ rawurlencode($this->filename) ]);
       if (!$this->currencyCode) {
         $this->currencyCode = Currency::getDefaultCode();
       }
