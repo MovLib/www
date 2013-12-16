@@ -165,7 +165,7 @@ abstract class AbstractBase {
    * Format given Bytes to human readable form.
    *
    * <b>Example usages with Intl ICU</b>
-   * <pre>$i18n->t("{0,number} {1}", [ $this->formatBytes($bytes) ]);</pre>
+   * <pre>$i18n->t("{0,number} {1}", $this->formatBytes($bytes));</pre>
    *
    * @internal
    *   A loop is actually slower than the current implementation.
@@ -177,19 +177,19 @@ abstract class AbstractBase {
    *   Numeric array containing the truncated number in offset 0 and the unit in offset 1.
    */
   protected final function formatBytes($bytes) {
-    if ($bytes >= 1e12) {
-      return [ round($bytes / 1e12, 2), "TB" ];
+    if ($bytes >= 1.024e12) {
+      return [ ceil($bytes / 1.024e12), "<abbr title='Tebibyte'>TiB</abbr>" ];
     }
-    if ($bytes >= 1e9) {
-      return [ round($bytes / 1e9, 2), "GB" ];
+    if ($bytes >= 1.024e9) {
+      return [ ceil($bytes / 1.024e9), "<abbr title='Gibibyte'>GiB</abbr>" ];
     }
-    if ($bytes >= 1e6) {
-      return [ round($bytes / 1e6, 2), "MB" ];
+    if ($bytes >= 1.024e6) {
+      return [ ceil($bytes / 1.024e6), "<abbr title='Mebibyte'>MiB</abbr>" ];
     }
-    if ($bytes >= 1e3) {
-      return [ round($bytes / 13, 2), "kB" ];
+    if ($bytes >= 1.024e3) {
+      return [ ceil($bytes / 1.024e3), "<abbr title='Kibibyte'>KiB</abbr>" ];
     }
-    return [ round($bytes, 2), "B" ];
+    return [ $bytes, "<abbr title='Byte'>B</abbr>" ];
   }
 
   /**
@@ -222,7 +222,7 @@ abstract class AbstractBase {
 
     if ($route !== false) {
       $this->addClass("img", $anchorAttributes);
-      return $this->a($route, $image, $anchorAttributes);
+      return $this->a(($route === true ? $style->route : $route), $image, $anchorAttributes);
     }
     return $image;
   }

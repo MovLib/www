@@ -91,8 +91,6 @@ class Country extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the string represntation of the country including a small flag icon.
    *
-   * @internal
-   *   No need for an <code>alt</code> attribute, the name is directly behind the image and we have microdata.
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @param boolean $nameVisible [optional]
@@ -106,7 +104,11 @@ class Country extends \MovLib\Presentation\AbstractBase {
       ? " <span itemprop='name'>{$this->country->name}</span>"
       : "<meta itemprop='name' content='{$this->country->name}'>"
     ;
-    return "<{$this->tag}{$this->expandTagAttributes($this->attributes)}><img class='inline' height='11' itemprop='image' src='{$kernel->getAssetURL("flag/{$this->country->code}", "png")}' width='16'>{$name}</{$this->tag}>";
+    return
+      "<{$this->tag}{$this->expandTagAttributes($this->attributes)}>" .
+        "<img alt='' class='inline' height='11' itemprop='image' src='{$kernel->getAssetURL("flag/{$this->country->code}", "png")}' width='16'>{$name}" .
+      "</{$this->tag}>"
+    ;
   }
 
   /**

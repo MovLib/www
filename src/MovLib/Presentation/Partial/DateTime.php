@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Partial;
 
 /**
- * Time presentation.
+ * DateTime presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Time extends \MovLib\Presentation\AbstractBase {
+class DateTime extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -40,11 +40,18 @@ class Time extends \MovLib\Presentation\AbstractBase {
   protected $attributes;
 
   /**
+   * The Intl ICU date format to use for formatting.
+   *
+   * @var integer
+   */
+  public $dateFormat = \IntlDateFormatter::SHORT;
+
+  /**
    * The time's {@see \DateTime} instance.
    *
    * @var \DateTime
    */
-  protected $time;
+  protected $dateTime;
 
   /**
    * The Intl ICU time format to use for formatting.
@@ -70,8 +77,9 @@ class Time extends \MovLib\Presentation\AbstractBase {
     if (is_int($time)) {
       $time = "@{$time}";
     }
-    $this->time       = new \DateTime($time);
-    $this->attributes = $attributes;
+    $this->dateTime               = new \DateTime($time);
+    $this->attributes             = $attributes;
+    $this->attributes["datetime"] = $this->dateTime->format(\DateTime::W3C);
   }
 
   /**
@@ -84,54 +92,8 @@ class Time extends \MovLib\Presentation\AbstractBase {
    */
   public function __toString() {
     global $i18n, $session;
-    $time = new \IntlDateFormatter($i18n->locale, \IntlDateFormatter::NONE, $this->timeFormat, $session->userTimeZoneId);
-    return "<time>{$time->format($this->time)}</time>";
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * Get a relative string representation of the time.
-   *
-   * The usage of magic numbers is intended, these calculations will never change!
-   *
-   * @link http://stackoverflow.com/questions/11
-   * @global \MovLib\Data\I18n $i18n
-   * @return string
-   *   Relative string representation of the time.
-   */
-  public function formatRelative() {
-    global $i18n;
-    $delta = $_SERVER["REQUEST_TIME"] - $this->time->getTimestamp();
-    if ($delta < 60) {
-      return $delta < 2 ? $i18n->t("one second ago") : $i18n->t("{0,number,integer} seconds ago", [ $delta ]);
-    }
-    if ($delta < 120) {
-      return $i18n->t("a minute ago");
-    }
-    if ($delta < 2700) { // 45 minutes
-      return $i18n->t("{0,number,integer} minutes ago", [ ($delta / 60) ]);
-    }
-    if ($delta < 5400) { // 90 minutes
-      return $i18n->t("an hour ago");
-    }
-    if ($delta < 86400) { // 1 day
-      return $i18n->t("{0,number,integer} hours ago", [ ($delta / 3600) ]);
-    }
-    if ($delta < 172800) { // 2 days
-      return $i18n->t("yesterday");
-    }
-    if ($delta < 2592000) { // 30 days
-      return $i18n->t("{0,number,integer} days ago", [ ($delta / 86400) ]);
-    }
-    if ($delta < 3.15569e7) { // 1 year
-      $months = $delta / 2592000;
-      return $months < 2 ? $i18n->t("one month ago") : $i18n->t("{0,number,integer} months ago", [ $months ]);
-    }
-    $years = $delta / 3.15569e7;
-    return $years < 2 ? $i18n->t("one year ago") : $i18n->t("{0,number,integer} years ago", [ $years ]);
+    $time = new \IntlDateFormatter($i18n->locale, $this->dateFormat, $this->timeFormat, $session->userTimeZoneId);
+    return "<time{$this->expandTagAttributes($this->attributes)}>{$time->format($this->dateTime)}</time>";
   }
 
 }

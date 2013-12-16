@@ -26,18 +26,27 @@
 
 .popup-c {
   position: relative;
-  outline: 0 !important;
+}
+
+.popup-c:after {
+  content: "";
+  position: absolute;
+}
+
+.popup-c:hover:after {
+  top: -20px;
+  right: -50px;
+  bottom: -10px;
+  left: -50px;
 }
 
 .popup:after,
 .popup {
   position: absolute;
-  z-index: 10;
-  display: block;
-  pointer-events: none;
+  z-index: -999999;
   opacity: 0;
-  visibility: hidden;
-  transition: 0.3s ease;
+  transition-duration: 0.3s;
+  transition-property: bottom, opacity;
 }
 
 .popup {
@@ -70,6 +79,6 @@
 .popup-c:hover .popup,
 .popup-c:focus .popup:after,
 .popup-c:hover .popup:after {
+  z-index: 1;
   opacity: 1;
-  visibility: visible;
 }

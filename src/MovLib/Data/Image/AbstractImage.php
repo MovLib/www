@@ -47,7 +47,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    *
    * @var int
    */
-  protected $created;
+  public $created;
 
   /**
    * The image's translated description.
@@ -83,6 +83,13 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    * @var string
    */
   public $source;
+
+  /**
+   * The unique uploader (user) identifier.
+   *
+   * @var integer
+   */
+  public $uploaderId;
 
   /**
    * The image's upvotes.

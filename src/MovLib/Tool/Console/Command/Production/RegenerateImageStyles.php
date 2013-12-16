@@ -17,8 +17,6 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
-use \MovLib\Data\UnixShell as sh;
-use \MovLib\Data\User\User;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
 
@@ -51,27 +49,23 @@ class RegenerateImageStyles extends \MovLib\Tool\Console\Command\AbstractCommand
    * @inheritdoc
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\Tool\Kernel $kernel
+   * @param \Symfony\Component\Console\Input\InputInterface $input
+   *   {@inheritdoc}
+   * @param \Symfony\Component\Console\Output\OutputInterface $output
+   *   {@inheritdoc}
+   * @return array
+   *   The passed options.
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
-    global $db, $kernel;
+    global $db;
     $options = parent::execute($input, $output);
 
-    // Purge all styles from all uploaded files but don't touch the 140 styles of the avatar images because they are
-    // the source for all styles.
-    if (sh::execute("find {$kernel->documentRoot}/public/upload -not -regex '.*\\/user\\/.*\\.140\\.[a-z]+' -type f -delete") === false) {
-      throw new \RuntimeException("Couldn't delete all image styles (try fixing permissions and run me again).");
-    }
-
     // Regenerate all avatar images.
-    $stmt  = $db->query("SELECT `id`, `name`, UNIX_TIMESTAMP(`image_changed`) AS `changed`, `image_extension` AS `extension` FROM `users` WHERE `image_changed` IS NOT NULL");
+    $stmt  = $db->query("SELECT `id`, `name`, UNIX_TIMESTAMP(`image_changed`) AS `changed`, `image_extension` AS `extension` FROM `users` WHERE `email` IS NOT NULL AND `image_changed` IS NOT NULL");
     $users = $stmt->get_result();
-    /* @var $user \MovLib\Data\User\User */
-    while ($user = $users->fetch_object("\\MovLib\\Data\\User\\User")) {
-      $rm   = new \ReflectionMethod($user, "getPath");
-      $rm->setAccessible(true);
-      $path = $rm->invoke($user, User::STYLE_SPAN_02);
-      $user->upload($path, pathinfo($path, PATHINFO_EXTENSION), -1, -1);
-      $this->write($user->name);
+    /* @var $user \MovLib\Tool\Data\User */
+    while ($user = $users->fetch_object("\\MovLib\\Tool\\Data\\User")) {
+      $user->regenerateImageStyles();
     }
     $stmt->close();
 

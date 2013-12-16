@@ -100,7 +100,7 @@ class Posters extends \MovLib\Presentation\Movie\AbstractMoviePage {
           true,
           [ "class" => "grid-img", "itemprop" => "thumbnail" ],
           [ "itemprop" => "url" ]
-        )}{$country} {$i18n->t("{width}×{height}", [
+        )}{$country} {$i18n->t("{width} × {height}", [
           // The length unit is mandatory for distances: http://schema.org/Distance
           "width"  => "<span itemprop='width'>{$poster->width}<span class='vh'> px</span></span>",
           "height" => "<span itemprop='height'>{$poster->height}<span class='vh'> px</span></span>",

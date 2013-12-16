@@ -124,12 +124,27 @@
  * The preview of the actual image.
  * ------------------------------------------------------------------------------------------------------------------ */
 
-#imagedetails {
-  background-color: #555;
-  border: 1px solid #252525;
-  padding: 20px;
-  position: relative;
-  text-align: center;
+#imagedetails .s7 .img {
+  margin-bottom: 40px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+  transition: box-shadow 0.4s ease-in-out;
+}
+
+#imagedetails .s7 img {
+  outline: 1px solid transparent;
+  transition: outline-color 0.4s ease-in-out;
+}
+
+#imagedetails .s7 .img:active,
+#imagedetails .s7 .img:focus,
+#imagedetails .s7 .img:hover {
+  box-shadow: 0 0 10px rgba(82, 168, 236, 0.6);
+}
+
+#imagedetails .s7 .img:active img,
+#imagedetails .s7 .img:focus img,
+#imagedetails .s7 .img:hover img {
+  outline-color: rgba(82, 168, 236, 0.8);
 }
 
 #imagedetails:before {

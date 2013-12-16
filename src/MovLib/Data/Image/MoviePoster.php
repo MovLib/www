@@ -77,6 +77,13 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   protected $directory = "movie";
 
   /**
+   * The image's language code.
+   *
+   * @var null|string
+   */
+  public $languageCode;
+
+  /**
    * The image's unique movie ID.
    *
    * @var integer
@@ -92,6 +99,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @param integer $movieId
    *   The unique movie ID this poster belongs to.
    * @param string $displayTitleWithYear
@@ -111,6 +119,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
           `user_id`,
           `license_id`,
           `country_code`,
+          `language_code`,
           `width`,
           `height`,
           `filesize`,
@@ -128,9 +137,10 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
       );
       $stmt->bind_result(
         $this->id,
-        $this->userId,
+        $this->uploaderId,
         $this->licenseId,
         $this->countryCode,
+        $this->languageCode,
         $this->width,
         $this->height,
         $this->filesize,
@@ -221,9 +231,10 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         `styles`           = ?,
         `user_id`          = ?,
         `width`            = ?,
-        `country_code`     = ?
+        `country_code`     = ?,
+        `language_code`    = ?
       WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
-      "ssssiiisdisidi",
+      "ssssiiisdissidi",
       [
         $_SERVER["REQUEST_TIME"],
         $i18n->languageCode,
@@ -236,6 +247,7 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
         $session->userId,
         $this->width,
         $this->countryCode,
+        $this->languageCode,
         $this->id,
         $this->movieId,
         static::TYPE_ID,

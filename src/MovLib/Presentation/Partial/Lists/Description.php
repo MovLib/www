@@ -39,9 +39,10 @@ class Description extends \MovLib\Presentation\Partial\Lists\AbstractList {
 
     $list = null;
     foreach ($this->listItems as $dt => $dd) {
-      $list .= "<dt>{$dt}</dt><dd>{$dd}</dd>";
+      $dd    = is_array($dd) ? "<dd{$this->expandTagAttributes($dd[1])}>{$dd[0]}</dd>" : "<dd>{$dd}</dd>";
+      $list .= "<dt>{$dt}</dt>{$dd}";
     }
-    return "<dl{$this->expandTagAttributes($this->attributes)}>{$list}</dd>";
+    return "<dl{$this->expandTagAttributes($this->attributes)}>{$list}</dl>";
   }
 
 }

@@ -130,12 +130,27 @@ class Movie {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+  /**
+   * Get all images as mysqli result for the given type with the desired offset and row count.
+   *
+   * @global \MovLib\Data\Database $db
+   * @param integer $typeId
+   *   The image type identifier, use the class constants of the various movie images.
+   * @param integer $offset
+   *   The offset, usually provided by the pagination trait.
+   * @param integer $rowCount
+   *   The row count, usually provided by the pagination trait.
+   * @return \mysqli_result
+   *   The mysqli result of the query.
+   * @throws \MovLib\Exception\DatabaseException
+   */
   public function getImageResult($typeId, $offset, $rowCount) {
     global $db;
     return $db->query(
       "SELECT
         `id`,
         `country_code` AS `countryCode`,
+        `language_code` AS `languageCode`,
         `width`,
         `height`,
         `extension`,
@@ -145,6 +160,7 @@ class Movie {
       FROM `movies_images`
       WHERE `movie_id` = ?
         AND `type_id` = ?
+        AND `deleted` = false
       ORDER BY `upvotes` DESC, `id` ASC
       LIMIT ? OFFSET ?",
       "diii",
@@ -268,7 +284,8 @@ class Movie {
         UNIX_TIMESTAMP(`changed`) AS `changed`,
         `styles`
       FROM `movies_images`
-      WHERE `movie_id` = ? AND `type_id` = ?
+      WHERE `movie_id` = ?
+        AND `type_id` = ?
       ORDER BY `upvotes` DESC
       LIMIT 1",
       "di",

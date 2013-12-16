@@ -100,7 +100,7 @@ abstract class AbstractBaseImage {
    *
    * @var int
    */
-  protected $changed;
+  public $changed;
 
   /**
    * The image's directory within the uploads directory.
@@ -135,7 +135,7 @@ abstract class AbstractBaseImage {
    *
    * @var integer
    */
-  protected $filesize;
+  public $filesize;
 
   /**
    * The image's height.
@@ -298,7 +298,7 @@ abstract class AbstractBaseImage {
    *   The absolute (static) URL to the image.
    * @throws \LogicException
    */
-  protected function getURL($style = null) {
+  public function getURL($style = null) {
     global $kernel;
 
     // If the image doesn't exist but a URL is claimed return the placeholder.
