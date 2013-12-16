@@ -82,6 +82,7 @@ class ErrorUnauthorizedException extends \MovLib\Exception\Client\AbstractClient
 
     // If the current session should be destroyed, do so.
     if ($destroySession === true) {
+      $kernel->requestURI = $kernel->requestPath;
       $session->destroy();
     }
 
@@ -101,7 +102,7 @@ class ErrorUnauthorizedException extends \MovLib\Exception\Client\AbstractClient
    */
   public function getPresentation() {
     global $i18n;
-    header("WWW-Authenticate: MovLib loation='{$i18n->r("/profile/sign-in")}'", true, 401);
+    header("WWW-Authenticate: MovLib location='{$i18n->r("/profile/sign-in")}'", true, 401);
     return $this->signInPresentation->getPresentation();
   }
 

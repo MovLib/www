@@ -284,7 +284,13 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     }
 
     if ($data["user_id"] !== $session->userId) {
-      throw new ErrorUnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your password."));
+      $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
+      throw new ErrorUnauthorizedException(
+        $i18n->t("The confirmation token is invalid, please sign in again and request a new token."),
+        $i18n->t("Token Invalid"),
+        Alert::SEVERITY_ERROR,
+        true
+      );
     }
 
     $this->user->deleteAccount();

@@ -209,7 +209,13 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     }
 
     if ($data["user_id"] !== $this->user->id) {
-      throw new ErrorUnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
+      $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
+      throw new ErrorUnauthorizedException(
+        $i18n->t("The confirmation token is invalid, please sign in again and request a new token."),
+        $i18n->t("Token Invalid"),
+        Alert::SEVERITY_ERROR,
+        true
+      );
     }
 
     $this->user->updateEmail($data["new_email"]);

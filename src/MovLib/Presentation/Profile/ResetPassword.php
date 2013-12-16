@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Exception\Client\ErrorUnauthorizedException;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
 use \MovLib\Presentation\Partial\Alert;
@@ -201,18 +202,29 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * @global \MovLib\Data\Session $session
    * @return boolean
    *   <code>FALSE</code> if the token is invalid, otherwise <code>TRUE</code>
-   * @throws \MovLib\Exception\Client\UnauthorizedException
+   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   protected function validateToken() {
-    global $i18n, $kernel;
+    global $i18n, $kernel, $session;
+    $tmp = new Temporary();
 
-    if (($data = (new Temporary())->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["reset_password"])) {
+    if (($data = $tmp->get($_GET["token"])) === false || empty($data["user_id"]) || empty($data["reset_password"])) {
       $kernel->alerts .= new Alert(
         $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
         $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
       throw new RedirectSeeOtherException($kernel->requestPath);
+    }
+
+    if ($session->userId !== $data["user_id"]) {
+      $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
+      throw new ErrorUnauthorizedException(
+        $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
+        $i18n->t("Token Invalid"),
+        Alert::SEVERITY_ERROR,
+        true
+      );
     }
 
     if ($kernel->requestMethod == "POST") {
