@@ -313,7 +313,7 @@ abstract class AbstractBaseImage {
 
     // If no style was given the URL to the original is desired.
     if (empty($style)) {
-      return "/upload/private/{$this->directory}/{$this->filename}.{$this->extension}?c={$this->changed}";
+      return "//{$kernel->domainStatic}/upload/private/{$this->directory}/{$this->filename}.{$this->extension}?c={$this->changed}";
     }
 
     // Otherwise the URL to the given style.
