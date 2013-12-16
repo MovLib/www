@@ -148,6 +148,20 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected $title;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new empty page.
+   *
+   * @param string $title
+   *   The translated page's title.
+   */
+  public function __construct($title) {
+    $this->initPage($title);
+  }
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
