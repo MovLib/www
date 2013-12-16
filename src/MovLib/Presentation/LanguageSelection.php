@@ -17,8 +17,8 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Exception\Client\RedirectTemporaryException;
+use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Presentation\Redirect\Temporary as TemporaryRedirect;
 use \MovLib\Presentation\Partial\Navigation;
 
 /**
@@ -47,14 +47,15 @@ class LanguageSelection extends \MovLib\Presentation\Page {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
+   * @throws \MovLib\Presentation\Redirect\Temporary
    */
   public function __construct() {
     global $i18n, $kernel, $session;
 
     // If a signed in user is requesting this page we know where to send her or him.
     if ($session->isAuthenticated === true) {
-      $user = new UserFull(UserFull::FROM_ID, $session->userId);
-      throw new RedirectTemporaryException("{$kernel->scheme}://{$user->systemLanguageCode}.{$kernel->domainDefault}/");
+      $user = new FullUser(FullUser::FROM_ID, $session->userId);
+      throw new TemporaryRedirect("{$kernel->scheme}://{$user->systemLanguageCode}.{$kernel->domainDefault}/");
     }
 
     // If not render the page.

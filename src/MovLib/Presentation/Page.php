@@ -189,23 +189,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Get additional breadcrumbs.
-   *
-   * This method is called automatically from the reference implementation of
-   * {@see \MovLib\Presentation\Page::getBreadcrumb()}. If a presentation has additional breadcrumbs that should be
-   * added to the trail it should override this method and return them. Please note that the home link and the current
-   * page are always part of the trail and don't have to be created in this method.
-   *
-   * @internal
-   *   The reference implementation doesn't add any breadcrumbs to the trail!
-   * @see \MovLib\Presentation\Partial\Navigation
-   * @return null|array
-   *   Additional breadcrumbs that should be added to the trail. Please have a look at the navigation partial for an in
-   *   depth disucssion about the format of the returned array.
-   */
-  protected function getBreadcrumbs() {}
-
-  /**
    * Get the presentation's page content.
    *
    * @internal
@@ -539,16 +522,17 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
+   * @param array $breadcrumbs [optional]
+   *   Numeric array containing additional breadcrumbs to put between home and the current page.
    * @param string $title [optional]
    *   Set custom title for the last breadcrumb trail (the current page).
    * @return this
    */
-  protected function initBreadcrumb($title = null) {
+  protected function initBreadcrumb(array $breadcrumbs = [], $title = null) {
     global $i18n, $kernel;
 
     // Initialize the breadcrumb navigation and always include the home page's link and the currently displayed page.
     $trail       = [[ "/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ] ] ];
-    $breadcrumbs = $this->getBreadcrumbs();
     $c           = count($breadcrumbs);
     for ($i = 0; $i < $c; ++$i) {
       // 0 => route

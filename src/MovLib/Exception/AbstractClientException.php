@@ -15,14 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
+namespace MovLib\Exception;
 
 /**
- * Temporarily redirect the user.
- *
- * Sends a temporary redirect back to the client, please note that this might preserve the HTTP method (GET, POST). The
- * {@link http://www.ietf.org/rfc/rfc2616.txt RFC 2616} says that clients should preserve the HTTP method and that any
- * other behavior is "erroneous".
+ * Base class for all client exceptions.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -30,23 +26,13 @@ namespace MovLib\Exception\Client;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class RedirectTemporaryException extends \MovLib\Exception\Client\AbstractRedirectException {
+abstract class AbstractClientException extends \RuntimeException {
 
   /**
-   * Instantiate new temporary redirect.
+   * Get the exceptions presentation.
    *
-   * @global \MovLib\Kernel $kernel
-   * @param string $route
-   *   {@inheritdoc}
+   * @return string
    */
-  public function __construct($route) {
-    global $kernel;
-    if ($kernel->protocol == "HTTP/1.0") {
-      parent::__construct(302, $route, "Moved Temporarily");
-    }
-    else {
-      parent::__construct(307, $route, "Temporary Redirect");
-    }
-  }
+  public abstract function getPresentation();
 
 }

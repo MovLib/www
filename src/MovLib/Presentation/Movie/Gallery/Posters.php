@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Movie\Gallery;
 
-use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Presentation\Partial\Country;
 
@@ -42,11 +41,14 @@ class Posters extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
     $this->init();
     $this->initPage($i18n->t("Posters for {title}", [ "title" => $this->movie->displayTitleWithYear ]));
-    $this->initBreadcrumb($i18n->t("Posters"));
+    $this->initBreadcrumb([
+      [ $i18n->rp("/movies"), $i18n->t("Movies") ],
+      [ $i18n->r("/movie/{0}", [ $this->movie->id ]), $this->movie->displayTitleWithYear ],
+    ], $i18n->t("Posters"));
     $this->initLanguageLinks("/movie/{0}/posters", [ $this->movie->id ], true);
 
     // We want the title in the page header linked back to the movie.
-    $this->pageTitle = $i18n->t("Posters for {title}", [ "title" => "<a href='{$this->routeMovie}'>{$this->movie->displayTitleWithYear}</a>" ]);
+    $this->pageTitle = $i18n->t("Posters for {title}", [ "title" => "<a href='{$i18n->r("/movie/{0}", [ $this->movie->id ])}'>{$this->movie->displayTitleWithYear}</a>" ]);
 
     // Initialize pagination with total poster count.
     $this->initPagination($this->movie->getImageCount(MoviePoster::TYPE_ID));

@@ -30,6 +30,7 @@ use \MovLib\Presentation\Partial\Alert;
  */
 class Create extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -49,7 +50,9 @@ class Create extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n;
     $this->initPage($i18n->t("Create New Movie"));
-    $this->alerts .= new Alert("Not implemented yet!");
+    $this->initBreadcrumb([[ $i18n->rp("/movies"), $i18n->t("Movies") ]]);
+    $this->initLanguageLinks("/movie/create");
+    $this->initSidebar([]);
   }
 
 
@@ -59,14 +62,18 @@ class Create extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    */
-  protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->rp("/movies"), $i18n->t("Movies") ]];
+  protected function getPageContent() {
+    return new Alert("Not implemented yet!");
   }
 
   /**
    * @inheritdoc
    */
-  protected function getPageContent() {}
+  public function validate(array $errors = null) {
+    if ($this->checkErrors($errors) === false) {
+
+    }
+    return $this;
+  }
 
 }

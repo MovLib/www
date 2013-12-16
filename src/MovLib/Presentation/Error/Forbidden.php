@@ -15,31 +15,36 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
+namespace MovLib\Presentation\Error;
 
 /**
- * Permanently redirect the user.
+ * Represents the "forbidden" client error.
  *
- * Sends a permanent redirect back to the client, please note that this might preserve the HTTP method (GET, POST). The
- * {@link http://www.ietf.org/rfc/rfc2616.txt RFC 2616} says that clients should preserve the HTTP method and that any
- * other behavior is "erroneous".
- *
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class RedirectPermanentException extends \MovLib\Exception\Client\AbstractRedirectException {
+class Forbidden extends \MovLib\Presentation\Error\AbstractError {
 
   /**
-   * Instantiate new permanent redirect.
+   * Instantiate forbidden exception.
    *
-   * @param string $route
-   *   {@inheritdoc}
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $message [optional]
+   *   Explain why access to this resource is forbidden.
    */
-  public function __construct($route) {
-    parent::__construct(301, $route, "Moved Permanently");
+  public function __construct($message = null) {
+    global $i18n;
+    if (!$message) {
+      $message = $i18n->t(
+        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
+        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
+      );
+    }
+    parent::__construct(403, $i18n->t("Forbidden"), $i18n->t("Access to the requested page is forbidden."), $message);
   }
 
 }

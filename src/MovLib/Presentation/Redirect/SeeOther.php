@@ -15,36 +15,37 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
+namespace MovLib\Presentation\Redirect;
 
 /**
- * Represents the "bad request" client error.
+ * Temporarily redirect the user and transform the HTTP method to GET.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * This redirect should be used if the requested operation has completed and the client should continue elsewhere while
+ * transforming the request method to GET.
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorBadRequestException extends \MovLib\Exception\Client\AbstractErrorException {
+class SeeOther extends \MovLib\Presentation\Redirect\AbstractRedirect {
 
   /**
-   * Instantiate bad request exception.
+   * Instantiate new see other redirect.
    *
-   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @param string $route
+   *   {@inheritdoc}
    */
-  public function __construct() {
-    global $i18n;
-    parent::__construct(
-      400,
-      $i18n->t("Bad Request"),
-      $i18n->t("Your browser sent a request that we could not understand."),
-      $i18n->t(
-        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
-      )
-    );
+  public function __construct($route) {
+    global $kernel;
+    if ($kernel->protocol == "HTTP/1.0") {
+      parent::__construct(302, $route, "Moved Temporarily");
+    }
+    else {
+      parent::__construct(303, $route, "See Other");
+    }
   }
 
 }

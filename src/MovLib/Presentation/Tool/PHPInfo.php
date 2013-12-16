@@ -33,6 +33,7 @@ class PHPInfo extends \MovLib\Presentation\Tool\Page {
    */
   public function __construct() {
     $this->initPage("PHPInfo");
+    $this->initBreadcrumb();
   }
 
   /**

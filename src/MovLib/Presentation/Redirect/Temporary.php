@@ -15,36 +15,38 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
+namespace MovLib\Presentation\Redirect;
 
 /**
- * Represents the "not found" client error.
+ * Temporarily redirect the user.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * Sends a temporary redirect back to the client, please note that this might preserve the HTTP method (GET, POST). The
+ * {@link http://www.ietf.org/rfc/rfc2616.txt RFC 2616} says that clients should preserve the HTTP method and that any
+ * other behavior is "erroneous".
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorNotFoundException extends \MovLib\Exception\Client\AbstractErrorException {
+class Temporary extends \MovLib\Presentation\Redirect\AbstractRedirect {
 
   /**
-   * Instantiate new not found exception.
+   * Instantiate new temporary redirect.
    *
-   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @param string $route
+   *   {@inheritdoc}
    */
-  public function __construct() {
-    global $i18n;
-    parent::__construct(
-      404,
-      $i18n->t("Not Found"),
-      $i18n->t("The requested page could not be found."),
-      $i18n->t(
-        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
-      )
-    );
+  public function __construct($route) {
+    global $kernel;
+    if ($kernel->protocol == "HTTP/1.0") {
+      parent::__construct(302, $route, "Moved Temporarily");
+    }
+    else {
+      parent::__construct(307, $route, "Temporary Redirect");
+    }
   }
 
 }

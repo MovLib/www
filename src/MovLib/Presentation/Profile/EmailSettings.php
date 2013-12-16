@@ -18,14 +18,13 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
-use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\Client\ErrorUnauthorizedException;
 use \MovLib\Presentation\Email\User\EmailChange;
+use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Allows a user to change her or his email address.
@@ -62,7 +61,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\Session $session
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
     global $i18n, $kernel, $session;
@@ -75,7 +74,12 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     // Translate and set the page title.
-    $this->init($i18n->t("Email Settings"), "/profile/email-settings");
+    $this->init($i18n->t("Email Settings"), "/profile/email-settings", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
+
+    // Validate the token if the page was requested via GET and a token is actually present.
+    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
+      $this->validateToken();
+    }
 
     // Field to enter the new email address.
     $this->email = new InputEmail();
@@ -93,11 +97,6 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
       "class" => "btn btn-large btn-success",
       "title" => $i18n->t("Click here to request the change of your email address after you filled out all fields."),
     ]);
-
-    // Validate the token if the page was requested via GET and a token is actually present.
-    if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
-      $this->validateToken();
-    }
   }
 
 
@@ -190,7 +189,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @return this
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
   protected function validateToken() {
     global $i18n, $kernel;
@@ -202,12 +201,12 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
         $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
-      throw new RedirectSeeOtherException($kernel->requestPath);
+      throw new SeeOtherRedirect($kernel->requestPath);
     }
 
     if ($data["user_id"] !== $this->user->id) {
       $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
-      throw new ErrorUnauthorizedException(
+      throw new Unauthorized(
         $i18n->t("The confirmation token is invalid, please sign in again and request a new token."),
         $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR,

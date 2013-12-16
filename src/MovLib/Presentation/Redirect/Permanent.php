@@ -15,13 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
+namespace MovLib\Presentation\Redirect;
 
 /**
- * Temporarily redirect the user and transform the HTTP method to GET.
+ * Permanently redirect the user.
  *
- * This redirect should be used if the requested operation has completed and the client should continue elsewhere while
- * transforming the request method to GET.
+ * Sends a permanent redirect back to the client, please note that this might preserve the HTTP method (GET, POST). The
+ * {@link http://www.ietf.org/rfc/rfc2616.txt RFC 2616} says that clients should preserve the HTTP method and that any
+ * other behavior is "erroneous".
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -29,23 +30,16 @@ namespace MovLib\Exception\Client;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class RedirectSeeOtherException extends \MovLib\Exception\Client\AbstractRedirectException {
+class Permanent extends \MovLib\Presentation\Redirect\AbstractRedirect {
 
   /**
-   * Instantiate new see other redirect.
+   * Instantiate new permanent redirect.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $route
    *   {@inheritdoc}
    */
   public function __construct($route) {
-    global $kernel;
-    if ($kernel->protocol == "HTTP/1.0") {
-      parent::__construct(302, $route, "Moved Temporarily");
-    }
-    else {
-      parent::__construct(303, $route, "See Other");
-    }
+    parent::__construct(301, $route, "Moved Permanently");
   }
 
 }

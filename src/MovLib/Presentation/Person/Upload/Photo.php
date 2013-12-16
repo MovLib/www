@@ -20,14 +20,14 @@ namespace MovLib\Presentation\Person\Upload;
 use \MovLib\Data\Image\PersonPhoto;
 use \MovLib\Data\License;
 use \MovLib\Data\Person\Person;
-use \MovLib\Exception\Client\ErrorNotFoundException;
-use \MovLib\Exception\Client\RedirectSeeOtherException;
+use \MovLib\Presentation\Error\NotFound;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputURL;
 use \MovLib\Presentation\Partial\FormElement\Select;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * @todo Description of UploadPhoto
@@ -95,6 +95,7 @@ class Photo extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    * Instantiate new person upload photo presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
     global $i18n;
@@ -132,7 +133,7 @@ class Photo extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       ]);
     }
     catch (\OutOfBoundsException $e) {
-      throw new ErrorNotFoundException("No person with identifier '{$_SERVER["PERSON_ID"]}'");
+      throw new NotFound("No person with identifier '{$_SERVER["PERSON_ID"]}'");
     }
   }
 
@@ -170,7 +171,7 @@ class Photo extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
       $this->image->licenseId   = $this->license->value;
       $this->image->source      = $this->source->value;
       $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
-      throw new RedirectSeeOtherException($this->image->route);
+      throw new SeeOtherRedirect($this->image->route);
     }
 
     return $this;

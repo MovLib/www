@@ -17,10 +17,10 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\User\User;
 use \MovLib\Data\User\Full as FullUser;
-use \MovLib\Exception\Client\ErrorForbiddenException;
-use \MovLib\Exception\Client\ErrorUnauthorizedException;
+use \MovLib\Data\User\User;
+use \MovLib\Presentation\Error\Forbidden;
+use \MovLib\Presentation\Error\Unauthorized;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -250,11 +250,11 @@ class Session implements \ArrayAccess {
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 401.
    * @return this
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function checkAuthorization($message) {
     if ($this->isAuthenticated === false) {
-      throw new ErrorUnauthorizedException($message);
+      throw new Unauthorized($message);
     }
     return $this;
   }
@@ -266,7 +266,7 @@ class Session implements \ArrayAccess {
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 403.
    * @return this
-   * @throws \MovLib\Exception\Client\ErrorForbiddenException
+   * @throws \MovLib\Presentation\Error\Forbidden
    */
   public function checkAuthorizationAdmin($message) {
     global $db;
@@ -276,7 +276,7 @@ class Session implements \ArrayAccess {
         return $this;
       }
     }
-    throw new ErrorForbiddenException($message);
+    throw new Forbidden($message);
   }
 
   /**
@@ -285,11 +285,11 @@ class Session implements \ArrayAccess {
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 401.
    * @return this
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function checkAuthorizationTimestamp($message) {
     if ($this->isAuthenticated === false || $this->authentication + 3600 < $_SERVER["REQUEST_TIME"]) {
-      throw new ErrorUnauthorizedException($message);
+      throw new Unauthorized($message);
     }
     return $this;
   }

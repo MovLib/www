@@ -17,12 +17,12 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Time;
-use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Exception\Client\ErrorNotFoundException;
-use \MovLib\Exception\Client\RedirectPermanentException;
-use \MovLib\Presentation\Partial\Country;
+use \MovLib\Presentation\Redirect\Permanent as PermanentRedirect;
 
 /**
  * @todo Description of Show
@@ -65,14 +65,14 @@ class Show extends \MovLib\Presentation\Page {
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Exception\NotFoundException
-   * @throws \MovLib\Exception\Client\RedirectPermanentException
+   * @throws \MovLib\Presentation\Redirect\Permanent
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
+    global $i18n, $kernel;
     try {
-      $this->user = new UserFull(UserFull::FROM_NAME, $_SERVER["USER_NAME"]);
+      $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
       if ($this->user->route != $kernel->requestPath) {
-        throw new RedirectPermanentException($this->user->route);
+        throw new PermanentRedirect($this->user->route);
       }
       $this->initPage($this->user->name);
       $this->routeAccountSettings = $i18n->r("/profile/account-settings");
@@ -133,8 +133,8 @@ class Show extends \MovLib\Presentation\Page {
         (new Time($this->user->access))->formatRelative(),
       ])}</small></div><div class='s s2'>{$avatar}</div></div>";
     }
-    catch (\DomainException $e) {
-      throw new ErrorNotFoundException("No user with this name.");
+    catch (\OutOfBoundsException $e) {
+      throw new NotFound("No user with this name.");
     }
   }
 

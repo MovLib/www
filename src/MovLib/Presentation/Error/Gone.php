@@ -15,25 +15,36 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Users;
+namespace MovLib\Presentation\Error;
 
 /**
- * Shared methods for pages in the Users namespace.
+ * Represents the "gone" client error.
  *
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitUsers {
+class Gone extends \MovLib\Presentation\Error\AbstractError {
 
   /**
-   * @inheritdoc
+   * Instantiate new gone exception.
+   *
+   * @global \MovLib\Data\I18n $i18n
    */
-  protected function getBreadcrumbs() {
+  public function __construct() {
     global $i18n;
-    return [[ $i18n->rp("/users"), $i18n->t("Users") ]];
+    parent::__construct(
+      410,
+      $i18n->t("Gone"),
+      $i18n->t("The requested page is no longer available."),
+      $i18n->t(
+        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
+        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
+      )
+    );
   }
 
 }

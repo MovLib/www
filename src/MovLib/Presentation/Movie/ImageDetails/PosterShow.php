@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Movie\ImageDetails;
 
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Language;
@@ -79,7 +78,11 @@ class PosterShow extends \MovLib\Presentation\Movie\AbstractMoviePage {
     // Initialize presentation
     $this->shortTitle = $i18n->t("Poster {id}", [ "id" => $this->image->id ]);
     $this->initPage($i18n->t("Poster {id} of {movie_title}", [ "id" => $this->image->id, "movie_title" => $this->movie->displayTitleWithYear ]));
-    $this->initBreadcrumb($this->shortTitle);
+    $this->initBreadcrumb([
+      [ $i18n->rp("/movies"), $i18n->t("Movies") ],
+      [ $i18n->r("/movie/{0}", [ $this->movie->id ]), $this->movie->displayTitleWithYear ],
+      [ $i18n->rp("/movie/{0}/posters", [ $this->movie->id ]), $i18n->t("Posters") ],
+    ], $this->shortTitle);
     $this->initLanguageLinks("/movie/{0}/poster/{1}", [ $this->movie->id, $this->image->id ]);
     $this->pageTitle  = $i18n->t("Poster {id} of {movie_title}", [
       "id" => $this->image->id,

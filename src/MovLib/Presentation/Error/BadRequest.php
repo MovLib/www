@@ -15,24 +15,36 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
+namespace MovLib\Presentation\Error;
 
 /**
- * Base class for all client exceptions.
+ * Represents the "bad request" client error.
  *
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractClientException extends \RuntimeException {
+class BadRequest extends \MovLib\Presentation\Error\AbstractError {
 
   /**
-   * Get the exceptions presentation.
+   * Instantiate bad request exception.
    *
-   * @return string
+   * @global \MovLib\Data\I18n $i18n
    */
-  public abstract function getPresentation();
+  public function __construct() {
+    global $i18n;
+    parent::__construct(
+      400,
+      $i18n->t("Bad Request"),
+      $i18n->t("Your browser sent a request that we could not understand."),
+      $i18n->t(
+        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
+        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
+      )
+    );
+  }
 
 }

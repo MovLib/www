@@ -18,7 +18,7 @@
 namespace MovLib\Tool\Console\Command\Development;
 
 use \MovLib\Data\UnixShell as sh;
-use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Data\User\Full as FullUser;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -130,7 +130,7 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     $this->setAmount($amount);
     $values          = $params          = $usersWithAvatar = null;
     $this->progress->start($this->output, $this->amount);
-    $user            = new UserFull();
+    $user            = new FullUser();
     $min             = strtotime("-1 year");
     $max             = time();
 
@@ -174,7 +174,7 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     if (($c = count($usersWithAvatar))) {
       $this->write("Generating avatar images (every 6th user has none) ...");
-      $dim    = UserFull::STYLE_SPAN_02;
+      $dim    = FullUser::STYLE_SPAN_02;
       $tmp    = ini_get("upload_tmp_dir") . "/movdev-command-create-users.jpg";
       if (sh::execute("convert -size {$dim}x{$dim} xc: +noise Random {$tmp}") === false) {
         throw new \RuntimeException("Couldn't create random image with ImageMagick!");
@@ -185,8 +185,8 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       $result = $db->query("SELECT `user_id`, `name` FROM `users` WHERE `name` IN ({$in})", str_repeat("s", $c), $usersWithAvatar)->get_result();
       while ($row = $result->fetch_assoc()) {
         $this->setProperty($user, "imageName", $row["name"]);
-        $this->invoke($user, "convertImage", [ $tmp, UserFull::STYLE_SPAN_02 ]);
-        $this->invoke($user, "convertImage", [ $tmp, UserFull::STYLE_SPAN_01 ]);
+        $this->invoke($user, "convertImage", [ $tmp, FullUser::STYLE_SPAN_02 ]);
+        $this->invoke($user, "convertImage", [ $tmp, FullUser::STYLE_SPAN_01 ]);
         $this->progress->advance();
       }
       unlink($tmp);
@@ -207,7 +207,7 @@ class RandomUser extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
 
     do {
       // 1 to NAME_MAXIMUM_LENGTH, all variations are valid!
-      $length   = mt_rand(1, UserFull::NAME_MAXIMUM_LENGTH);
+      $length   = mt_rand(1, FullUser::NAME_MAXIMUM_LENGTH);
       for ($i = 0; $i < $length; ++$i) {
         $username .= $this->characters[mt_rand(0, $this->charactersCount)];
       }

@@ -43,6 +43,8 @@ class Home extends \MovLib\Presentation\Tool\Page {
    */
   public function __construct() {
     $this->initPage("Tools");
+    $this->initBreadcrumb();
+    unset($this->breadcrumb->menuitems[1]);
     if (!empty($_SERVER["SSL_CLIENT_VERIFY"])) {
       $this->sslClientVerified = $_SERVER["SSL_CLIENT_VERIFY"] == "SUCCESS";
     }

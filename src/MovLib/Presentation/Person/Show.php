@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\Full as FullPerson;
-use \MovLib\Exception\Client\ErrorNotFoundException;
+use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Presentation of a single person.
@@ -51,7 +51,7 @@ class Show extends \MovLib\Presentation\Page {
    * Instantiate new person presentation.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @throws \MovLib\Exception\Client\ErrorNotFoundException
+   * @throws \MovLib\Presentation\Error\NotFound
    * @throws \LogicException
    */
   public function __construct() {
@@ -81,7 +81,7 @@ class Show extends \MovLib\Presentation\Page {
       $this->headingAfter  = "</div><div class='s s2'>{$photo}</div></div>";
     }
     catch (\OutOfBoundsException $e) {
-      throw new ErrorNotFoundException("Couldn't find person for identifier '{$_SERVER["PERSON_ID"]}'");
+      throw new NotFound("Couldn't find person for identifier '{$_SERVER["PERSON_ID"]}'");
     }
   }
 

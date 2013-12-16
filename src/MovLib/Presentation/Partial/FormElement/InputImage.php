@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Data\Image\AbstractBaseImage as Image;
-use \MovLib\Exception\Client\ErrorUnauthorizedException;
+use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Exception\ValidationException;
 use \MovLib\Presentation\Partial\Alert;
 
@@ -118,12 +118,12 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    *   The abstract image instance that's responsible for this image.
    * @param array $attributes [optional]
    *   Additional attributes.
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct($id, $label, $concreteImage, array $attributes = null) {
     global $i18n, $kernel, $session;
     if ($session->isAuthenticated === false) {
-      throw new ErrorUnauthorizedException($i18n->t(
+      throw new Unauthorized($i18n->t(
         "You must be signed in to upload images. If you don’t have an account yet why not {0}join {sitename}{1}?.", [
           "<a href='{$i18n->r("/profile/join")}'>", "</a>", "sitename" => $kernel->siteName,
         ]
@@ -180,7 +180,7 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
 
     // Only authenticated user's are allowed to upload images.
     if ($session->isAuthenticated === false) {
-      throw new ErrorUnauthorizedException;
+      throw new Unauthorized;
     }
 
     if (empty($_FILES[$this->id]) || $_FILES[$this->id]["error"] === UPLOAD_ERR_NO_FILE) {

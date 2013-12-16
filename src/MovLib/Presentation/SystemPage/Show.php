@@ -51,6 +51,8 @@ class Show extends \MovLib\Presentation\Page {
   public function __construct() {
     $this->systemPage = new SystemPage($_SERVER["ID"]);
     $this->initPage($this->systemPage->title);
+    $this->initBreadcrumb();
+    $this->initLanguageLinks($this->systemPage->route);
   }
 
 

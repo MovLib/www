@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Exception\Client\ErrorNotFoundException;
+use \MovLib\Presentation\Error\NotFound;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
@@ -60,6 +60,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
+   * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
     global $i18n, $kernel, $session;
@@ -69,7 +70,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
       // Instantiate movie, initialize page and set the microdata schema.
       $this->init();
       $this->initPage($this->movie->displayTitleWithYear);
-      $this->initBreadcrumb();
+      $this->initBreadcrumb([[ $i18n->rp("/movies"), $i18n->t("Movies") ]]);
       $this->initLanguageLinks("/movie/{0}", [ $this->movie->id ]);
       $this->schemaType = "Movie";
 
@@ -181,7 +182,7 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     }
     // We don't have any movie with the given identifier.
     catch (\OutOfBoundsException $e) {
-      throw new ErrorNotFoundException("Couldn't find movie for identifier '{$_SERVER["MOVIE_ID"]}'");
+      throw new NotFound("Couldn't find movie for identifier '{$_SERVER["MOVIE_ID"]}'");
     }
   }
 

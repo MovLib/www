@@ -18,15 +18,14 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
-use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Data\UnixShell as sh;
-use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\Client\ErrorUnauthorizedException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
+use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputPassword;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Allows a user to change her or his password.
@@ -79,13 +78,13 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     $session->checkAuthorization($i18n->t("You need to sign in to change your password."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
+    // Translate and set the page title.
+    $this->init($i18n->t("Password Settings"), "/profile/password-settings", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
+
     // Validate the token if the page was requested via GET and a token is actually present.
     if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
       $this->validateToken();
     }
-
-    // Translate and set the page title.
-    $this->init($i18n->t("Password Settings"), "/profile/password-settings");
 
     // First field to enter the new password.
     $this->newPassword = new InputPassword("new-password", $i18n->t("New Password"), [
@@ -150,13 +149,12 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
    *       this is very welcome.
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @param array $errors [optional]
    *   {@inheritdoc}
    * @return this
    */
   public function validate(array $errors = null) {
-    global $kernel, $i18n, $session;
+    global $kernel, $i18n;
 
     // Both password's have to be equal.
     if ($this->newPassword->value != $this->newPasswordConfirm->value) {
@@ -167,8 +165,6 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
 
     // Instantiate full user object if we have no errors so far.
     if (!$errors) {
-      $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
-
       // The new password shouldn't be the same as the old password.
       if ($this->user->verifyPassword($this->newPassword->value) === true) {
         $this->newPassword->invalid();
@@ -209,6 +205,8 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\Session $session
    * @return this
+   * @throws \MovLib\Presentation\Error\Unauthorized
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   protected function validateToken() {
     global $i18n, $kernel, $session;
@@ -220,12 +218,12 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
         $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
-      throw new RedirectSeeOtherException($kernel->requestPath);
+      throw new SeeOtherRedirect($kernel->requestPath);
     }
 
     if ($data["user_id"] !== $session->userId) {
       $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
-      throw new ErrorUnauthorizedException(
+      throw new Unauthorized(
         $i18n->t("The confirmation token is invalid, please sign in again and request a new token."),
         $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR,
@@ -233,7 +231,7 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
       );
     }
 
-    $kernel->delayMethodCall([ new UserFull(UserFull::FROM_ID, $data["user_id"]), "updatePassword" ], [ $data["new_password"] ]);
+    $kernel->delayMethodCall([ $this->user, "updatePassword" ], [ $data["new_password"] ]);
     $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
 
     $this->alerts .= new Alert(

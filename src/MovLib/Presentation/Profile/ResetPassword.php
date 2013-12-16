@@ -18,15 +18,15 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
-use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Exception\Client\ErrorUnauthorizedException;
-use \MovLib\Exception\Client\RedirectSeeOtherException;
+use \MovLib\Data\User\Full as FullUser;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
+use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputPassword;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * User reset password presentation.
@@ -85,7 +85,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n;
     $this->initPage($i18n->t("Reset Password"));
-    $this->initBreadcrumb();
+    $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
     $this->initLanguageLinks("/profile/reset-password");
 
     if (!empty($_GET["token"]) && $this->validateToken() === true) {
@@ -171,6 +171,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * @param array $errors [optional]
    *   {@inheritdoc}
    * @return this
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function validatePassword(array $errors = null) {
     global $i18n, $kernel;
@@ -190,7 +191,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
         Alert::SEVERITY_SUCCESS
       );
 
-      throw new RedirectSeeOtherException($i18n->r("/profile/sign-in"));
+      throw new SeeOtherRedirect($i18n->r("/profile/sign-in"));
     }
 
     return $this;
@@ -204,7 +205,8 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * @global \MovLib\Data\Session $session
    * @return boolean
    *   <code>FALSE</code> if the token is invalid, otherwise <code>TRUE</code>
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Unauthorized
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   protected function validateToken() {
     global $i18n, $kernel, $session;
@@ -216,12 +218,12 @@ class ResetPassword extends \MovLib\Presentation\Page {
         $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
-      throw new RedirectSeeOtherException($kernel->requestPath);
+      throw new SeeOtherRedirect($kernel->requestPath);
     }
 
     if ($session->userId !== $data["user_id"]) {
       $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
-      throw new ErrorUnauthorizedException(
+      throw new Unauthorized(
         $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),
         $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR,
@@ -230,7 +232,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
     }
 
     if ($kernel->requestMethod == "POST") {
-      $this->user = new UserFull(UserFull::FROM_ID, $data["user_id"]);
+      $this->user = new FullUser(FullUser::FROM_ID, $data["user_id"]);
     }
 
     return true;

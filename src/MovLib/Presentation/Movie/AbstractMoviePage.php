@@ -65,13 +65,6 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
   protected $routeHistory;
 
   /**
-   * The movie's translated route.
-   *
-   * @var string
-   */
-  protected $routeMovie;
-
-  /**
    * The translted route to the movies page.
    *
    * @var string
@@ -94,28 +87,19 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
 
     // Substitue all routes for this movie once and for all (this has nothing to do with caching, we just don't want to
     // keep repeating us as these routes are needed A LOT).
-    $this->routeDiscussion = $i18n->r("/movie/{0}/discussion", [ $_SERVER["MOVIE_ID"] ]);
-    $this->routeEdit       = $i18n->r("/movie/{0}/edit", [ $_SERVER["MOVIE_ID"] ]);
-    $this->routeHistory    = $i18n->r("/movie/{0}/history", [ $_SERVER["MOVIE_ID"] ]);
-    $this->routeMovie      = $i18n->r("/movie/{0}", [ $_SERVER["MOVIE_ID"] ]);
+    $this->routeDiscussion = $i18n->r("/movie/{0}/discussion", [ $this->movie->id ]);
+    $this->routeEdit       = $i18n->r("/movie/{0}/edit", [ $this->movie->id ]);
+    $this->routeHistory    = $i18n->r("/movie/{0}/history", [ $this->movie->id ]);
 
     // Initialize the sidebar navigation.
     $this->initSidebar([
-      [ $this->routeMovie, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $this->languageLinks[$i18n->languageCode], $i18n->t("View"), [ "class" => "ico ico-view" ] ],
       [ $this->routeDiscussion, $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "itemprop" => "discussionUrl" ] ],
       [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $this->routeHistory, $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
     ]);
 
     return $this;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->rp("/movies"), $i18n->t("Movies") ]];
   }
 
   /**

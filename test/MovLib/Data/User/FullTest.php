@@ -18,7 +18,7 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Tool\Console\Command\Development\SeedImport;
-use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Data\User\Full as FullUser;
 
 /**
  * @coversDefaultClass \MovLib\Data\User\Full
@@ -45,7 +45,7 @@ class FullTest extends \MovLib\TestCase {
    * Called before each test.
    */
   protected function setUp() {
-    $this->userFull = new UserFull();
+    $this->userFull = new FullUser();
   }
 
   /**
@@ -63,20 +63,20 @@ class FullTest extends \MovLib\TestCase {
 
   public function dataProviderConstructValid() {
     return [
-      [ UserFull::FROM_ID, 1 ],
-      [ UserFull::FROM_EMAIL, "richard@fussenegger.info" ],
-      [ UserFull::FROM_NAME, "Fleshgrinder" ],
-      [ UserFull::FROM_NAME, "fleshgrinder" ],
-      [ UserFull::FROM_NAME, "FlEsHgRiNdEr" ],
-      [ UserFull::FROM_NAME, "FLESHGRINDER" ],
+      [ FullUser::FROM_ID, 1 ],
+      [ FullUser::FROM_EMAIL, "richard@fussenegger.info" ],
+      [ FullUser::FROM_NAME, "Fleshgrinder" ],
+      [ FullUser::FROM_NAME, "fleshgrinder" ],
+      [ FullUser::FROM_NAME, "FlEsHgRiNdEr" ],
+      [ FullUser::FROM_NAME, "FLESHGRINDER" ],
     ];
   }
 
   public function dataProviderConstructInvalid() {
     return [
-      [ UserFull::FROM_ID, 99 ],
-      [ UserFull::FROM_EMAIL, "phpunit@movlib.org" ],
-      [ UserFull::FROM_NAME, "PHPUnit" ],
+      [ FullUser::FROM_ID, 99 ],
+      [ FullUser::FROM_EMAIL, "phpunit@movlib.org" ],
+      [ FullUser::FROM_NAME, "PHPUnit" ],
     ];
   }
 
@@ -127,7 +127,7 @@ class FullTest extends \MovLib\TestCase {
    */
   public function testCommit() {
     // Setup
-    $this->userFull                     = new UserFull(UserFull::FROM_ID, 1);
+    $this->userFull                     = new FullUser(FullUser::FROM_ID, 1);
     $this->userFull->aboutMe            = "PHPUnit";
     $this->userFull->birthday           = "2000-01-01";
     $this->userFull->countryCode        = "AT";
@@ -140,7 +140,7 @@ class FullTest extends \MovLib\TestCase {
     $this->userFull->commit();
 
     // Test
-    $this->userFull = new UserFull(UserFull::FROM_ID, 1);
+    $this->userFull = new FullUser(FullUser::FROM_ID, 1);
     $this->assertEquals("PHPUnit", $this->userFull->aboutMe);
     $this->assertEquals("2000-01-01", $this->userFull->birthday);
     $this->assertEquals("AT", $this->userFull->countryCode);
@@ -160,7 +160,7 @@ class FullTest extends \MovLib\TestCase {
    * @dataProvider dataProviderConstructValid
    */
   public function testConstruct($from, $value) {
-    $this->userFull = new UserFull($from, $value);
+    $this->userFull = new FullUser($from, $value);
     $this->assertEquals(strtolower($this->userFull->{$from}), strtolower($value));
   }
 
@@ -171,7 +171,7 @@ class FullTest extends \MovLib\TestCase {
    * @dataProvider dataProviderConstructInvalid
    */
   public function testConstructInvalid($from, $value) {
-    new UserFull($from, $value);
+    new FullUser($from, $value);
   }
 
   /**
@@ -182,7 +182,7 @@ class FullTest extends \MovLib\TestCase {
     global $db;
 
     // Setup
-    $user = new UserFull(UserFull::FROM_ID, 1);
+    $user = new FullUser(FullUser::FROM_ID, 1);
     $email = $user->email;
 
     // Test
@@ -215,7 +215,7 @@ class FullTest extends \MovLib\TestCase {
     global $db, $i18n;
 
     // Setup
-    $user           = new UserFull();
+    $user           = new FullUser();
     $user->name     = "PHPUnit";
     $user->email    = "phpunit@movlib.org";
     $user->password = $user->hashPassword("PHPUnitPassword1234");
@@ -243,7 +243,7 @@ class FullTest extends \MovLib\TestCase {
     global $db;
 
     // Setup
-    $user = new UserFull(UserFull::FROM_ID, 1);
+    $user = new FullUser(FullUser::FROM_ID, 1);
 
     // Test
     $user->updateEmail("phpunit@movlib.org");
@@ -261,7 +261,7 @@ class FullTest extends \MovLib\TestCase {
     global $session;
 
     // Setup
-    $user = new UserFull(UserFull::FROM_ID, 1);
+    $user = new FullUser(FullUser::FROM_ID, 1);
 
     // Test
     $user->updatePassword($user->hashPassword("PHPUnitPassword1234"));
@@ -275,7 +275,7 @@ class FullTest extends \MovLib\TestCase {
    * @covers ::verifyPassword
    */
   public function testVerifyPassword() {
-    $this->userFull = new UserFull(UserFull::FROM_ID, 1);
+    $this->userFull = new FullUser(FullUser::FROM_ID, 1);
     $this->userFull->verifyPassword("Test1234");
   }
 

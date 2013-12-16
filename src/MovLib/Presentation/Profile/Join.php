@@ -19,12 +19,11 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Memcached;
 use \MovLib\Data\Temporary;
-use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\Client\ErrorUnauthorizedException;
+use \MovLib\Data\User\Full as FullUser;
 use \MovLib\Exception\ValidationException;
-use \MovLib\Presentation\Email\Users\Join as JoinEmail;
 use \MovLib\Presentation\Email\Users\EmailExists;
+use \MovLib\Presentation\Email\Users\Join as JoinEmail;
+use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
@@ -32,6 +31,7 @@ use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputPassword;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * User join presentation.
@@ -95,32 +95,32 @@ class Join extends \MovLib\Presentation\Page {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
-   * @throws \MovLib\Exception\Client\RedirectSeeOtherException
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
     global $i18n, $kernel, $session;
 
     // If the user is signed in, no need for joining.
     if ($session->isAuthenticated === true) {
-      throw new RedirectSeeOtherException($i18n->r("/my"));
+      throw new SeeOtherRedirect($i18n->r("/my"));
     }
 
     // Start rendering the page.
     $this->initPage($i18n->t("Join"));
-    $this->initBreadcrumb();
+    $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
     $this->initLanguageLinks("/profile/join");
 
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>";
 
     $this->username = new InputText("username", $i18n->t("Username"), [
-      "maxlength"   => UserFull::NAME_MAXIMUM_LENGTH,
-      "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(UserFull::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
+      "maxlength"   => FullUser::NAME_MAXIMUM_LENGTH,
+      "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(FullUser::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
       "placeholder" => $i18n->t("Enter your desired username"),
       "required",
       "title"       => $i18n->t(
         "A username must be valid UTF-8, cannot contain spaces at the beginning and end or more than one space in a row, " .
         "it cannot contain any of the following characters {0} and it cannot be longer than {1,number,integer} characters.",
-        [ UserFull::NAME_ILLEGAL_CHARACTERS, UserFull::NAME_MAXIMUM_LENGTH ]
+        [ FullUser::NAME_ILLEGAL_CHARACTERS, FullUser::NAME_MAXIMUM_LENGTH ]
       ),
     ]);
 
@@ -183,7 +183,7 @@ class Join extends \MovLib\Presentation\Page {
    */
   public function validate(array $errors = null) {
     global $i18n, $kernel;
-    $user           = new UserFull();
+    $user           = new FullUser();
     $user->name     = $_POST[$this->username->id]; // We want to validate the original data again
     $usernameErrors = null;
 
@@ -202,17 +202,17 @@ class Join extends \MovLib\Presentation\Page {
     // Switch to sanitized data
     $user->name = $this->username->value;
 
-    if (strpbrk($user->name, UserFull::NAME_ILLEGAL_CHARACTERS) !== false) {
+    if (strpbrk($user->name, FullUser::NAME_ILLEGAL_CHARACTERS) !== false) {
       $usernameErrors[] = $i18n->t(
         "The username cannot contain any of the following characters: {0}",
-        [ "<code>{$kernel->htmlEncode(UserFull::NAME_ILLEGAL_CHARACTERS)}</code>" ]
+        [ "<code>{$kernel->htmlEncode(FullUser::NAME_ILLEGAL_CHARACTERS)}</code>" ]
       );
     }
 
-    if (mb_strlen($user->name) > UserFull::NAME_MAXIMUM_LENGTH) {
+    if (mb_strlen($user->name) > FullUser::NAME_MAXIMUM_LENGTH) {
       $usernameErrors[] = $i18n->t(
         "The username is too long: it must be {0,number,integer} characters or less.",
-        [ UserFull::NAME_MAXIMUM_LENGTH ]
+        [ FullUser::NAME_MAXIMUM_LENGTH ]
       );
     }
 
@@ -283,7 +283,7 @@ class Join extends \MovLib\Presentation\Page {
       // Email is valid, try to load the user from the temporary database.
       $tmp  = new Temporary();
       $user = $tmp->get("jointoken{$email}");
-      if (!($user instanceof UserFull)) {
+      if (!($user instanceof FullUser)) {
         throw new ValidationException(
           "<p>{$i18n->t("We couldn’t find any activation data for your token.")}</p>" .
           "<ul>" .
@@ -296,7 +296,7 @@ class Join extends \MovLib\Presentation\Page {
 
       // Check if the email is already activated.
       if ($user->checkEmail($user->email) === true) {
-        throw new ErrorUnauthorizedException(
+        throw new Unauthorized(
           $i18n->t("Seems like you’ve already activated your account, please sign in."),
           $i18n->t("Already Activated"),
           Alert::SEVERITY_INFO
@@ -322,7 +322,7 @@ class Join extends \MovLib\Presentation\Page {
       // validate method of this class, so even we have no clue what it is). Even if somebody was able to activate an
       // account for another person (man in the middle; very unlikely) she or he couldn't access that new account
       // because that person would also need the secret password.
-      throw new ErrorUnauthorizedException(
+      throw new Unauthorized(
         $i18n->t("Your account has been activated, please sign in with your email address and your secret password."),
         $i18n->t("Hi there {0}!", [ $user->name ]),
         Alert::SEVERITY_SUCCESS
@@ -331,7 +331,7 @@ class Join extends \MovLib\Presentation\Page {
     catch (ValidationException $e) {
       $this->checkErrors($e->getMessage());
     }
-    catch (ErrorUnauthorizedException $e) {
+    catch (Unauthorized $e) {
       if (isset($user) && isset($user->email)) {
         $e->signInPresentation->email->attributes["value"] = $user->email;
       }

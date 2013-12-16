@@ -17,8 +17,8 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Sign the current user out and redirect to sign in presentation.
@@ -37,7 +37,7 @@ class SignOut {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
-   * @throws \MovLib\Exception\Client\RedirectSeeOtherException
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
     global $i18n, $kernel, $session;
@@ -49,7 +49,7 @@ class SignOut {
         Alert::SEVERITY_SUCCESS
       );
     }
-    throw new RedirectSeeOtherException($i18n->r("/profile/sign-in"));
+    throw new SeeOtherRedirect($i18n->r("/profile/sign-in"));
   }
 
 }

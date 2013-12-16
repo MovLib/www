@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
+namespace MovLib\Presentation\Error;
 
 /**
- * Represents the "forbidden" client error.
+ * Represents the "not found" client error.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -27,24 +27,24 @@ namespace MovLib\Exception\Client;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorForbiddenException extends \MovLib\Exception\Client\AbstractErrorException {
+class NotFound extends \MovLib\Presentation\Error\AbstractError {
 
   /**
-   * Instantiate forbidden exception.
+   * Instantiate new not found exception.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @param string $message [optional]
-   *   Explain why access to this resource is forbidden.
    */
-  public function __construct($message = null) {
+  public function __construct() {
     global $i18n;
-    if (!$message) {
-      $message = $i18n->t(
+    parent::__construct(
+      404,
+      $i18n->t("Not Found"),
+      $i18n->t("The requested page could not be found."),
+      $i18n->t(
         "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
         [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
-      );
-    }
-    parent::__construct(403, $i18n->t("Forbidden"), $i18n->t("Access to the requested page is forbidden."), $message);
+      )
+    );
   }
 
 }

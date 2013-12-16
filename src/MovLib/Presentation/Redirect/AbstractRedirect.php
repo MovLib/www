@@ -15,45 +15,39 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
-
-use \MovLib\Presentation\Page;
-use \MovLib\Presentation\Partial\Alert;
+namespace MovLib\Presentation\Redirect;
 
 /**
- * Parent class for all HTTP client presentation errors.
+ * Base implementation for redirect exceptions.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractErrorException extends \MovLib\Exception\Client\AbstractClientException {
+abstract class AbstractRedirect extends \MovLib\Exception\AbstractClientException {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The error page's alert message explaining the error.
-   *
-   * @internal
-   *   Keep this public and allow instantiating classes to override the alert's properties.
-   * @var \MovLib\Presentation\Partial\Alert
-   */
-  public $alert;
-
-  /**
-   * The HTTP response code.
+   * The HTTP status code.
    *
    * @var integer
    */
   protected $responseCode;
 
   /**
-   * The presentation's title.
+   * The HTTP location route.
+   *
+   * @var string
+   */
+  protected $locationRoute;
+
+  /**
+   * The redirect title.
    *
    * @var string
    */
@@ -64,22 +58,25 @@ abstract class AbstractErrorException extends \MovLib\Exception\Client\AbstractC
 
 
   /**
-   * Instantiate new client exception.
+   * Instantiate new redirect exception.
    *
+   * @global \MovLib\Kernel $kernel
    * @param int $httpResponseCode
-   *   The HTTP response code.
-   * @param string $pageTitle
-   *   The error page's translated title.
-   * @param string $alertTitle
-   *   The alert's translated title.
-   * @param string $alertMessage
-   *   The alert's translated message.
+   *   The redirect's status code.
+   * @param string $route
+   *   The redirect's translated target route (location).
+   * @param string $title
+   *   The redirect's translated payload title.
    */
-  public function __construct($httpResponseCode, $pageTitle, $alertTitle, $alertMessage) {
-    parent::__construct("Client error '" . get_class($this) . "'");
-    $this->alert        = new Alert($alertMessage, $alertTitle, Alert::SEVERITY_ERROR);
-    $this->responseCode = $httpResponseCode;
-    $this->title        = $pageTitle;
+  public function __construct($httpResponseCode, $route, $title) {
+    global $kernel;
+    if (strpos($route, "http") === false) {
+      $route = "{$kernel->scheme}://{$kernel->hostname}{$route}";
+    }
+    parent::__construct("Redirecting user to {$route} with status {$httpResponseCode}.");
+    $this->responseCode  = $httpResponseCode;
+    $this->locationRoute = $route;
+    $this->title         = $title;
   }
 
 
@@ -91,9 +88,14 @@ abstract class AbstractErrorException extends \MovLib\Exception\Client\AbstractC
    */
   public function getPresentation() {
     http_response_code($this->responseCode);
-    $page          = new Page($this->title);
-    $page->alerts .= $this->alert;
-    return $page->getPresentation();
+    header("Location: {$this->locationRoute}");
+    return
+      "<!doctype html>" .
+      "<html>" .
+      "<head><title>{$this->responseCode} {$this->title}</title></head>" .
+      "<body style='text-align:center'><h1>{$this->responseCode} {$this->title}</h1><hr>{$_SERVER["SERVER_SOFTWARE"]}</body>" .
+      "</html>"
+    ;
   }
 
 }

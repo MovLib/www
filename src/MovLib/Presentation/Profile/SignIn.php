@@ -17,12 +17,12 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputPassword;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * User sign in presentation.
@@ -35,7 +35,6 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  */
 class SignIn extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
-  use \MovLib\Presentation\Users\TraitUsers;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -66,7 +65,7 @@ class SignIn extends \MovLib\Presentation\Page {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
-   * @throws \MovLib\Exception\Client\RedirectSeeOtherException
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function __construct() {
     global $i18n, $kernel, $session;
@@ -84,7 +83,7 @@ class SignIn extends \MovLib\Presentation\Page {
     }
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
     elseif ($session->isAuthenticated === true) {
-      throw new RedirectSeeOtherException($i18n->r("/my"));
+      throw new SeeOtherRedirect($i18n->r("/my"));
     }
 
     // Ensure all views are using the correct path info to render themselves.
@@ -97,7 +96,7 @@ class SignIn extends \MovLib\Presentation\Page {
 
     // Start rendering the page.
     $this->initPage($i18n->t("Sign In"));
-    $this->initBreadcrumb();
+    $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
 
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [
       "sitename" => $kernel->siteName
@@ -132,7 +131,7 @@ class SignIn extends \MovLib\Presentation\Page {
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @return this
-   * @throws \MovLib\Exception\Client\RedirectSeeOther
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function validate(array $errors = null) {
     global $i18n, $kernel, $session;
@@ -151,7 +150,7 @@ class SignIn extends \MovLib\Presentation\Page {
         Alert::SEVERITY_SUCCESS
       );
 
-      throw new RedirectSeeOtherException(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
+      throw new SeeOtherRedirect(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
     }
     return $this;
   }

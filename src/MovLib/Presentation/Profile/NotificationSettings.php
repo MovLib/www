@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -36,12 +35,12 @@ class NotificationSettings extends \MovLib\Presentation\Profile\Show {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
     global $i18n, $session;
     $session->checkAuthorization($i18n->t("You must be signed in to change your notification settings."));
-    $this->init($i18n->t("Notification Settings"), "/profile/notification-settings");
+    $this->init($i18n->t("Notification Settings"), "/profile/notification-settings", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
   }
 
   /**

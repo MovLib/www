@@ -17,14 +17,13 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
-use \MovLib\Exception\Client\ErrorForbiddenException;
-use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Data\SystemPage;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Allows administrators to edit system pages.
@@ -73,8 +72,8 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
-   * @throws \MovLib\Exception\Client\ErrorForbiddenException
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Forbidden
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
     global $i18n, $kernel, $session;
@@ -85,9 +84,11 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     $this->systemPage = new SystemPage($_SERVER["ID"]);
-    $this->initPage($i18n->t("Edit {0}", [ $this->systemPage->title ]), $i18n->t("Edit"));
+    $this->initPage($i18n->t("Edit {0}", [ $this->systemPage->title ]));
+    $this->initBreadcrumb([[ $this->systemPage->route, $this->systemPage->title ]], $i18n->t("Edit"));
+    $this->initLanguageLinks("{$this->systemPage->route}/edit");
 
-    $this->inputPageTitle = new InputText("page-title", $i18n->t("Page Title"), [ "required" => "required", "value" => $this->systemPage->title ]);
+    $this->inputPageTitle = new InputText("page_title", $i18n->t("Page Title"), [ "required" => "required", "value" => $this->systemPage->title ]);
 
     $this->inputPageText  = new InputHTML(
       "page-text",
@@ -131,20 +132,24 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function validate(array $errors = null) {
     global $i18n, $kernel;
+
     if ($this->checkErrors($errors) === false) {
       $this->systemPage->title = $this->inputPageTitle->value;
       $this->systemPage->text  = $this->inputPageText->value;
       $this->systemPage->commit();
+
       $kernel->alerts .= new Alert(
         $i18n->t("You successfully updated the system page {0}.", [ $this->systemPage->title ]),
         $i18n->t("{0} updated successfully", [ $this->systemPage->title ]),
         Alert::SEVERITY_SUCCESS
       );
-      throw new RedirectSeeOtherException($i18n->r($this->systemPage->route));
+      throw new SeeOtherRedirect($i18n->r($this->systemPage->route));
     }
+
     return $this;
   }
 

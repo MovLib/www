@@ -19,8 +19,6 @@ namespace MovLib\Presentation\Movie\Upload;
 
 use \MovLib\Data\Country;
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Data\Movie\Movie;
-use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
@@ -28,6 +26,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\Select;
 use \MovLib\Presentation\Partial\License;
 use \MovLib\Presentation\Partial\Language;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Form to upload a new poster or update an existing one.
@@ -120,9 +119,15 @@ class Poster extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->image      = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear);
     $this->shortTitle = $i18n->t("Upload Poster");
     $this->initPage($i18n->t("Upload poster for {movie_title}", [ "movie_title" => $this->movie->displayTitleWithYear ]));
-    $this->initBreadcrumb($this->shortTitle);
+    $this->initBreadcrumb([
+      [ $i18n->rp("/movies"), $i18n->t("Movies") ],
+      [ $i18n->r("/movie/{0}", [ $this->movie->id ]), $this->movie->displayTitleWithYear ],
+      [ $i18n->rp("/movie/{0}/posters", [ $this->movie->id ]), $i18n->t("Posters") ],
+    ], $this->shortTitle);
     $this->initLanguageLinks("/movie/{0}/poster/upload", [ $this->movie->id ]);
-    $this->pageTitle  = $i18n->t("Upload poster for {movie_title}", [ "movie_title" => "<a href='{$this->routeMovie}'>{$this->movie->displayTitleWithYear}</a>" ]);
+    $this->pageTitle  = $i18n->t("Upload poster for {movie_title}", [
+      "movie_title" => "<a href='{$i18n->r("/movie/{0}", [ $this->movie->id ])}'>{$this->movie->displayTitleWithYear}</a>"
+    ]);
 
     // Alter the sidebar navigation and include the various image types.
     $this->sidebarNavigation->menuitems[0][1] = $i18n->t("Back to movie");
@@ -186,7 +191,7 @@ class Poster extends \MovLib\Presentation\Movie\AbstractMoviePage {
       $this->image->languageCode = $this->language->value;
       $this->image->licenseId    = $this->license->value;
       $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
-      throw new RedirectSeeOtherException($this->image->route);
+      throw new SeeOtherRedirect($this->image->route);
     }
     return $this;
   }

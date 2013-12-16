@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Exception\Client;
+namespace MovLib\Presentation\Error;
 
 use \MovLib\Presentation\Profile\SignIn;
 use \MovLib\Presentation\Partial\Alert;
@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ErrorUnauthorizedException extends \MovLib\Exception\Client\AbstractClientException {
+class Unauthorized extends \MovLib\Exception\AbstractClientException {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

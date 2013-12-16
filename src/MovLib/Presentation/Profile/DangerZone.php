@@ -18,15 +18,14 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
-use \MovLib\Data\User\Full as UserFull;
-use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\Client\ErrorUnauthorizedException;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Email\User\Deletion;
+use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\Button;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Allows a user to terminate sessions and deactivate the account.
@@ -82,7 +81,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
     global $i18n, $kernel, $session;
@@ -94,7 +93,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
-    $this->init($i18n->t("Danger Zone"), "/profile/danger-zone");
+    $this->init($i18n->t("Danger Zone"), "/profile/danger-zone", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
 
     if (!empty($_GET["token"])) {
       $this->validateToken();
@@ -197,7 +196,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
    * @return this
-   * @throws \MovLib\Exception\Client\RedirectSeeOtherException
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   public function deleteSession() {
     global $i18n, $session;
@@ -210,7 +209,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     // Delete own session means sign out.
     if ($_POST["session_id"] == $session->id) {
       $session->destroy();
-      throw new RedirectSeeOtherException($i18n->r("/profile/sign-in"));
+      throw new SeeOtherRedirect($i18n->r("/profile/sign-in"));
     }
 
     // Delete the session from Memcached and our persistent storage.
@@ -277,12 +276,12 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
         $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
-      throw new RedirectSeeOtherException($kernel->requestPath);
+      throw new SeeOtherRedirect($kernel->requestPath);
     }
 
     if ($data["user_id"] !== $session->userId) {
       $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
-      throw new ErrorUnauthorizedException(
+      throw new Unauthorized(
         $i18n->t("The confirmation token is invalid, please sign in again and request a new token."),
         $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR,
@@ -301,7 +300,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
       Alert::SEVERITY_SUCCESS
     );
 
-    throw new RedirectSeeOtherException("/");
+    throw new SeeOtherRedirect("/");
   }
 
 }

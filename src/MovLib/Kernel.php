@@ -21,9 +21,10 @@ use \MovLib\Data\Database;
 use \MovLib\Data\I18n;
 use \MovLib\Data\Mailer;
 use \MovLib\Data\User\Session;
-use \MovLib\Exception\Client\AbstractClientException;
-use \MovLib\Exception\Client\ErrorForbiddenException;
+use \MovLib\Exception\AbstractClientException;
 use \MovLib\Presentation\Email\FatalErrorEmail;
+use \MovLib\Presentation\Error\Forbidden;
+use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Stacktrace;
 
 /**
@@ -373,7 +374,7 @@ class Kernel {
 
       // If either the client's IP address or user agent string are invalid or empty abort execution.
       if ($this->remoteAddress === false || $this->userAgent === false) {
-        throw new ErrorForbiddenException(
+        throw new Forbidden(
           "<p>{$i18n->t("IP address or user agent string is invalid or empty.")}</p>" .
           "<p>{$i18n->t(
             "Please note that you have to submit your IP address and user agent string to identify yourself as being " .
@@ -404,7 +405,7 @@ class Kernel {
           exit();
         }
         $i18n = new I18n();
-        throw new \MovLib\Exception\Client\ErrorUnauthorizedException;
+        throw new Unauthorized;
       }
 
       // Always create an I18n instance for translating any kind of presentation.

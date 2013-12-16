@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Data\User\Full as UserFull;
+use \MovLib\Data\User\Full as FullUser;
 
 /**
  * User account summary for logged in user's.
@@ -51,7 +51,7 @@ class Show extends \MovLib\Presentation\Page {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
     global $i18n, $session;
@@ -108,12 +108,14 @@ class Show extends \MovLib\Presentation\Page {
    *   The translated profile page's title.
    * @param string $route
    *   The route key of this profile page.
+   * @param array $breadcrumbs [optional]
+   *   Numeric array containing additional breadcrumbs to put between home and the current page.
    * @return this
    */
-  protected function init($title, $route) {
+  protected function init($title, $route, array $breadcrumbs = []) {
     global $i18n, $session;
     $this->initPage($title);
-    $this->initBreadcrumb();
+    $this->initBreadcrumb($breadcrumbs);
     $this->initLanguageLinks($route);
 
     $sidebar = [
@@ -126,7 +128,7 @@ class Show extends \MovLib\Presentation\Page {
     ];
     $this->initSidebar($sidebar);
 
-    $this->user = new UserFull(UserFull::FROM_ID, $session->userId);
+    $this->user = new FullUser(FullUser::FROM_ID, $session->userId);
 
     return $this;
   }

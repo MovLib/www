@@ -18,8 +18,6 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\DateTimeZone;
-use \MovLib\Data\User\Full as FullUser;
-use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Currency;
@@ -33,6 +31,7 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputURL;
 use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\Select;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Allows the user to manage his personalized settings.
@@ -137,7 +136,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\Session $session
-   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
   public function __construct() {
     global $i18n, $kernel, $session;
@@ -148,17 +147,16 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
     $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
-    $this->init($i18n->t("Account Settings"), "/profile/account-settings");
+    $this->init($i18n->t("Account Settings"), "/profile/account-settings", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
 
-    if (!empty($_GET["delete_avatar"])) {
-      $this->user->deleteAvatar();
-      $this->user->commit();
+    if (isset($_GET["delete_avatar"])) {
+      $this->user->deleteAvatar()->commit();
       $kernel->alerts .= new Alert(
         $i18n->t("Your avatar image was deleted successfully"),
         $i18n->t("Avatar Deleted Successfully"),
         Alert::SEVERITY_SUCCESS
       );
-      throw new RedirectSeeOtherException($kernel->requestPath);
+      throw new SeeOtherRedirect($kernel->requestPath);
     }
 
     $this->realName = new InputText("real_name", $i18n->t("Real Name"), [
