@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Profile;
 use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\Client\UnauthorizedException;
+use \MovLib\Exception\Client\ErrorUnauthorizedException;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Email\User\Deletion;
 use \MovLib\Presentation\Partial\Alert;
@@ -82,7 +82,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
-   * @throws \MovLib\Exception\Client\UnauthorizedException
+   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   public function __construct() {
     global $i18n, $kernel, $session;
@@ -284,7 +284,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     }
 
     if ($data["user_id"] !== $session->userId) {
-      throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your password."));
+      throw new ErrorUnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token to change your password."));
     }
 
     $this->user->deleteAccount();

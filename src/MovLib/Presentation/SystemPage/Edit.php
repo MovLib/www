@@ -74,7 +74,7 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Exception\Client\ErrorForbiddenException
-   * @throws \MovLib\Exception\Client\UnauthorizedException
+   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   public function __construct() {
     global $i18n, $kernel, $session;

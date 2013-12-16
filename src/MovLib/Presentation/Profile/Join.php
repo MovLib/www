@@ -21,7 +21,7 @@ use \MovLib\Data\Memcached;
 use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\Client\UnauthorizedException;
+use \MovLib\Exception\Client\ErrorUnauthorizedException;
 use \MovLib\Exception\ValidationException;
 use \MovLib\Presentation\Email\Users\Join as JoinEmail;
 use \MovLib\Presentation\Email\Users\EmailExists;
@@ -293,7 +293,7 @@ class Join extends \MovLib\Presentation\Page {
 
       // Check if the email is already activated.
       if ($user->checkEmail($user->email) === true) {
-        throw new UnauthorizedException(
+        throw new ErrorUnauthorizedException(
           $i18n->t("Seems like you’ve already activated your account, please sign in."),
           $i18n->t("Already Activated"),
           Alert::SEVERITY_INFO
@@ -319,7 +319,7 @@ class Join extends \MovLib\Presentation\Page {
       // validate method of this class, so even we have no clue what it is). Even if somebody was able to activate an
       // account for another person (man in the middle; very unlikely) she or he couldn't access that new account
       // because that person would also need the secret password.
-      throw new UnauthorizedException(
+      throw new ErrorUnauthorizedException(
         $i18n->t("Your account has been activated, please sign in with your email address and your secret password."),
         $i18n->t("Hi there {0}!", [ $user->name ]),
         Alert::SEVERITY_SUCCESS
@@ -328,7 +328,7 @@ class Join extends \MovLib\Presentation\Page {
     catch (ValidationException $e) {
       $this->checkErrors($e->getMessage());
     }
-    catch (UnauthorizedException $e) {
+    catch (ErrorUnauthorizedException $e) {
       if (isset($user) && isset($user->email)) {
         $e->signInPresentation->email->attributes["value"] = $user->email;
       }

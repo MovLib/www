@@ -98,7 +98,7 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::checkAuthorization
-   * @expectedException \MovLib\Exception\Client\UnauthorizedException
+   * @expectedException \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   public function testCheckAuthorizationNotAuthenticated() {
     $this->session->checkAuthorization("phpunit");
@@ -115,7 +115,7 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::checkAuthorizationTimestamp
-   * @expectedException \MovLib\Exception\Client\UnauthorizedException
+   * @expectedException \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   public function testCheckAuthorizationTimestampNotAuthenticated() {
     $this->session->authentication  = $_SERVER["REQUEST_TIME"] - 86400;
@@ -125,7 +125,7 @@ class SessionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::checkAuthorizationTimestamp
-   * @expectedException \MovLib\Exception\Client\UnauthorizedException
+   * @expectedException \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   public function testCheckAuthorizationTimestampExpired() {
     $this->session->authentication  = $_SERVER["REQUEST_TIME"] - 86400;

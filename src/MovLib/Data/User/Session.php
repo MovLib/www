@@ -20,7 +20,7 @@ namespace MovLib\Data\User;
 use \MovLib\Data\User\User;
 use \MovLib\Data\User\Full as FullUser;
 use \MovLib\Exception\Client\ErrorForbiddenException;
-use \MovLib\Exception\Client\UnauthorizedException;
+use \MovLib\Exception\Client\ErrorUnauthorizedException;
 
 /**
  * The session model loads the basic user information, creates, updates and deletes sessions.
@@ -250,11 +250,11 @@ class Session implements \ArrayAccess {
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 401.
    * @return this
-   * @throws \MovLib\Exception\Client\UnauthorizedException
+   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   public function checkAuthorization($message) {
     if ($this->isAuthenticated === false) {
-      throw new UnauthorizedException($message);
+      throw new ErrorUnauthorizedException($message);
     }
     return $this;
   }
@@ -285,11 +285,11 @@ class Session implements \ArrayAccess {
    * @param string $message
    *   The already translated message that should be passed to the exception as reason for the 401.
    * @return this
-   * @throws \MovLib\Exception\Client\UnauthorizedException
+   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   public function checkAuthorizationTimestamp($message) {
     if ($this->isAuthenticated === false || $this->authentication + 3600 < $_SERVER["REQUEST_TIME"]) {
-      throw new UnauthorizedException($message);
+      throw new ErrorUnauthorizedException($message);
     }
     return $this;
   }
