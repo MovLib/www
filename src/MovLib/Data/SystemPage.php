@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Data\FileSystem;
+
 /**
  * Handling of one system page.
  *
@@ -38,6 +40,13 @@ class SystemPage extends \MovLib\Data\Database {
    * @var integer
    */
   public $id;
+
+  /**
+   * The page's localized route.
+   *
+   * @var string
+   */
+  public $route;
 
   /**
    * The page's localized title.
@@ -71,6 +80,7 @@ class SystemPage extends \MovLib\Data\Database {
       "SELECT
         `id`,
         IFNULL(COLUMN_GET(`dyn_titles`, ? AS CHAR(255)), COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR(255))) AS `title`,
+        COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR(255)) AS `route`,
         COLUMN_GET(`dyn_texts`, ? AS BINARY) AS `text`
       FROM `system_pages`
       WHERE `id` = ?
@@ -78,14 +88,46 @@ class SystemPage extends \MovLib\Data\Database {
       "ssi",
       [ $i18n->languageCode, $i18n->languageCode, $id ]
     );
-    $stmt->bind_result($this->id, $this->title, $this->text);
+    $stmt->bind_result($this->id, $this->title, $this->route, $this->text);
     if (!$stmt->fetch()) {
       throw new \OutOfBoundsException("Couldn't fetch system page with '{$id}'");
     }
+    $this->route = FileSystem::sanitizeFilename($this->route);
+    $this->route = "/{$this->route}";
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Write changes to the system page to the database.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function commit() {
+    global $db, $i18n;
+
+    $db->query(
+      "UPDATE `system_pages` SET
+        `dyn_titles` = COLUMN_ADD(`dyn_titles`, ?, ?),
+        `dyn_texts` = COLUMN_ADD(`dyn_titles`, ?, ?)
+      WHERE `id` = ?
+      LIMIT 1",
+      "ssssi",
+      [
+        $i18n->languageCode,
+        $this->title,
+        $i18n->languageCode,
+        $this->text,
+        $this->id,
+      ]
+    );
+
+    return $this;
+  }
 
 }

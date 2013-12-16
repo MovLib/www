@@ -36,7 +36,7 @@ class NotificationSettings extends \MovLib\Presentation\Profile\Show {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Session $session
-   * @throws \MovLib\Exception\Client\UnauthorizedException
+   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   public function __construct() {
     global $i18n, $session;

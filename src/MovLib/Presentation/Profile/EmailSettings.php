@@ -20,7 +20,7 @@ namespace MovLib\Presentation\Profile;
 use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\Client\UnauthorizedException;
+use \MovLib\Exception\Client\ErrorUnauthorizedException;
 use \MovLib\Presentation\Email\User\EmailChange;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -62,7 +62,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\Session $session
-   * @throws \MovLib\Exception\Client\UnauthorizedException
+   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   public function __construct() {
     global $i18n, $kernel, $session;
@@ -193,7 +193,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @return this
-   * @throws \MovLib\Exception\Client\UnauthorizedException
+   * @throws \MovLib\Exception\Client\ErrorUnauthorizedException
    */
   protected function validateToken() {
     global $i18n, $kernel;
@@ -209,7 +209,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     }
 
     if ($data["user_id"] !== $this->user->id) {
-      throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
+      throw new ErrorUnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
     }
 
     $this->user->updateEmail($data["new_email"]);

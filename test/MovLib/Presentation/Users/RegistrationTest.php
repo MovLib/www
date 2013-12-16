@@ -302,7 +302,7 @@ class RegistrationTest extends \MovLib\TestCase {
 
   /**
    * @covers ::validateToken
-   * @expectedException \MovLib\Exception\Client\UnauthorizedException
+   * @expectedException \MovLib\Exception\Client\ErrorUnauthorizedException
    * @expectedExceptionMessage User has to authenticate to view this content.
    * @global \MovLib\Tool\Database $db
    * @global \MovLib\TestKernel $kernel
@@ -356,7 +356,7 @@ class RegistrationTest extends \MovLib\TestCase {
 
   /**
    * @covers ::validate
-   * @expectedException \MovLib\Exception\Client\UnauthorizedException
+   * @expectedException \MovLib\Exception\Client\ErrorUnauthorizedException
    * @expectedExceptionMessage User has to authenticate to view this content.
    */
   public function testValidateTokenAlreadyActivated() {

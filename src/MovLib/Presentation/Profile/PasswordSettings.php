@@ -21,7 +21,7 @@ use \MovLib\Data\Temporary;
 use \MovLib\Data\User\Full as UserFull;
 use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\Client\RedirectSeeOtherException;
-use \MovLib\Exception\Client\UnauthorizedException;
+use \MovLib\Exception\Client\ErrorUnauthorizedException;
 use \MovLib\Presentation\Email\User\PasswordChange as PasswordChangeEmail;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
@@ -224,7 +224,7 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     }
 
     if ($data["user_id"] !== $session->userId) {
-      throw new UnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
+      throw new ErrorUnauthorizedException($i18n->t("The confirmation token is invalid, please sign in again and request a new token."));
     }
 
     $kernel->delayMethodCall([ new UserFull(UserFull::FROM_ID, $data["user_id"]), "updatePassword" ], [ $data["new_password"] ]);

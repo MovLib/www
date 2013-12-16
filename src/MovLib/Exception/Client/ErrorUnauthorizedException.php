@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class UnauthorizedException extends \MovLib\Exception\Client\AbstractClientException {
+class ErrorUnauthorizedException extends \MovLib\Exception\Client\AbstractClientException {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

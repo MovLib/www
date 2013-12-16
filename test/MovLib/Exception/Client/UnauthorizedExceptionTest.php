@@ -17,7 +17,7 @@
  */
 namespace MovLib\Exception\Client;
 
-use \MovLib\Exception\Client\UnauthorizedException;
+use \MovLib\Exception\Client\ErrorUnauthorizedException;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -32,7 +32,7 @@ class UnauthorizedExceptionTest extends \MovLib\TestCase {
 
   /**
    * @covers ::__construct
-   * @expectedException \MovLib\Exception\Client\UnauthorizedException
+   * @expectedException \MovLib\Exception\Client\ErrorUnauthorizedException
    * @expectedExceptionMessage has to authenticate
    * @global \MovLib\TestKernel $kernel
    * @global \MovLib\Data\User\Session $session
@@ -41,7 +41,7 @@ class UnauthorizedExceptionTest extends \MovLib\TestCase {
     global $kernel, $session;
     $kernel->requestMethod = "POST";
     $_POST                 = [ "secret" => "data" ];
-    $unauthorizedException = new UnauthorizedException("phpunit-msg", "phpunit-title", Alert::SEVERITY_WARNING);
+    $unauthorizedException = new ErrorUnauthorizedException("phpunit-msg", "phpunit-title", Alert::SEVERITY_WARNING);
     $session               = $this->getMock("\\MovLib\\Data\\User\\Session", [ "destroy" ]);
     $session->expects($this->once())->method("destroy");
     $this->assertEquals("GET", $kernel->requestMethod);
