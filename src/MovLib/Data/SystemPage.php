@@ -18,7 +18,7 @@
 namespace MovLib\Data;
 
 /**
- * Handling of one protected page.
+ * Handling of one system page.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,7 +26,11 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ProtectedPage extends \MovLib\Data\Database {
+class SystemPage extends \MovLib\Data\Database {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The page's unique identifier.
@@ -49,6 +53,10 @@ class ProtectedPage extends \MovLib\Data\Database {
    */
   public $text;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
    * Instantiate new protected page.
    *
@@ -57,36 +65,27 @@ class ProtectedPage extends \MovLib\Data\Database {
    * @param integer $id [optional]
    *   The page's unique ID.
    */
-  public function __construct($id = null) {
+  public function __construct($id) {
     global $db, $i18n;
-
-    if ($id) {
-      $query = self::getQuery();
-      $stmt = $db->query("{$query} WHERE `id` = ? LIMIT 1", "ssi", [ $i18n->languageCode, $i18n->languageCode, $id ]);
-      $stmt->bind_result($this->id, $this->title, $this->text);
-      $stmt->close();
+    $stmt = $db->query(
+      "SELECT
+        `id`,
+        IFNULL(COLUMN_GET(`dyn_titles`, ? AS CHAR(255)), COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR(255))) AS `title`,
+        COLUMN_GET(`dyn_texts`, ? AS BINARY) AS `text`
+      FROM `system_pages`
+      WHERE `id` = ?
+      LIMIT 1",
+      "ssi",
+      [ $i18n->languageCode, $i18n->languageCode, $id ]
+    );
+    $stmt->bind_result($this->id, $this->title, $this->text);
+    if (!$stmt->fetch()) {
+      throw new \OutOfBoundsException("Couldn't fetch system page with '{$id}'");
     }
   }
 
-  /**
-   * Get the default query.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @staticvar string $query
-   *   Used to cache the default query.
-   * @return string
-   *   The default query.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected static function getQuery() {
-    global $i18n;
-    return
-      "SELECT
-        `id`,
-        IFNULL(COLUMN_GET(`dyn_titles`, ? AS CHAR), COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `title`,
-        COLUMN_GET(`dyn_text`, ? AS CHAR) AS `text`
-      FROM `protected_pages`"
-    ;
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
 }

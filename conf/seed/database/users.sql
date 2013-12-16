@@ -33,6 +33,7 @@ TRUNCATE TABLE `users`;
 INSERT INTO `users` SET
   `name`                 = 'Fleshgrinder',
   `access`               = CURRENT_TIMESTAMP,
+  `admin`                = TRUE,
   `birthday`             = '1985-06-27',
   `country_code`         = 'AT',
   `created`              = '2013-04-22 19:15:35', -- initial commit
@@ -66,6 +67,7 @@ UPDATE `movies` SET `rating` = (1 / (1 + 100)) * 4 + (100 / (1 + 100)), `mean_ra
 INSERT INTO `users` SET
   `name`                 = 'Ravenlord',
   `access`               = CURRENT_TIMESTAMP,
+  `admin`                = TRUE,
   `country_code`         = 'AT',
   `created`              = '2013-05-03 07:48:30', -- initial commit
   `currency_code`        = 'EUR',
@@ -81,6 +83,7 @@ INSERT INTO `users` SET
 INSERT INTO `users` SET
   `name`                 = 'ftorghele',
   `access`               = CURRENT_TIMESTAMP,
+  `admin`                = TRUE,
   `country_code`         = 'AT',
   `created`              = '2013-05-27 01:29:57', -- initial commit
   `currency_code`        = 'EUR',

@@ -414,6 +414,24 @@ class Session implements \ArrayAccess {
   }
 
   /**
+   * Check whether the user is an admin or not.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return boolean
+   *   <code>TRUE</code> if user has admin rights, otherwise <code>FALSE</code>.
+   */
+  public function isAdmin() {
+    global $db;
+    if ($this->userId > 0) {
+      $result = $db->query("SELECT `admin` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->userId ])->get_result()->fetch_row();
+      if (!empty($result[0])) {
+        return (boolean) $result["admin"];
+      }
+    }
+    return false;
+  }
+
+  /**
    * Test after every authentication if the password needs to be rehashed.
    *
    * @global \MovLib\Kernel $kernel
