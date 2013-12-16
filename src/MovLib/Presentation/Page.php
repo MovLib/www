@@ -313,11 +313,19 @@ class Page extends \MovLib\Presentation\AbstractBase {
 
     if ($session->isAuthenticated === true) {
       $userIcon = "<div id='user-nav-settings' class='clicker ico ico-settings'>{$this->getImage($session->userAvatar, false)}</div>";
+      $userNavigationLinks = new Navigation($i18n->t("User"), [
+        [ $i18n->r("/profile"), $i18n->t("My Profile") ],
+        [ $i18n->r("/profile/collection"), $i18n->t("My Collection") ],
+        [ $i18n->r("/profile/sign-out"), $i18n->t("Sign Out") ],
+      ], [ "class" => "s2" ]);
+      $userNavigationLinks->headingLevel  = "3";
+      $userNavigationLinks->unorderedList = true;
+      
       $userNavigation =
-        "<ul>" .
-          "<li>{$this->a($i18n->r("/profile"), $i18n->t("Profil"))}</li>" .
-          "<li>{$this->a($i18n->r("/profile/sign-out"), $i18n->t("Sign Out"))}</li>" .
-        "</ul>"
+        "<div class='r'>" .
+          "<div class='s s1'>{$this->getImage($session->userAvatar, false)}</div>" .
+          "<div class='s s2'>{$userNavigationLinks}{$session->userName}</div>" .
+        "</div>"
       ;
     }
     else {
@@ -370,7 +378,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "</form>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='user-nav' role='navigation' tabindex='0'>" .
             "<h2 class='vh'>{$i18n->t("User Navigation")}</h2>{$userIcon}" .
-            "<div class='concealed r'><div class='s s12'>{$userNavigation}</div></div>" .
+            "<div class='concealed s3'><div class='s3'>{$userNavigation}</div></div>" .
           "</nav>" .
         "</div>" .
       "</div></div></header>"

@@ -126,9 +126,6 @@ class Show extends \MovLib\Presentation\Page {
       }
 
       $avatar = $this->getImage($this->user->getStyle(), false, [ "itemprop" => "image" ]);
-      if ($session->userId === $this->user->id) {
-        $avatar = "<a class='img tac' href='{$this->routeAccountSettings}'>{$avatar}<span>{$i18n->t("Change Avatar")}</span></a>";
-      }
 
       // Display additional info about this user after the name and the avatar to the right of it.
       $this->headingAfter = "{$personalData}<small>{$i18n->t("Joined {0} and was last seen {1}.", [

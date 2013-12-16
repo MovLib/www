@@ -208,6 +208,10 @@
   margin-left: 50px;
 }
 
+#user-nav .concealed {
+  left: auto;
+}
+
 #h .btn,
 #user-nav-settings:before {
   width: 50px;
