@@ -61,8 +61,11 @@ class ErrorUnauthorizedException extends \MovLib\Exception\Client\AbstractClient
    *   The alert's translated title, defaults to <code>$i18n->t("You must be signed in to access this content.")</code>.
    * @param string $severity [optional]
    *   The alert's severity level, default to <code>Alert::SEVERITY_ERROR</code>.
+   * @param boolean $destroySession [optional]
+   *   Flag to determine if the current session should be destroyed (<code>TRUE</code>) or not (<code>FALSE</code>).
+   *   Defaults to <code>FALSE</code>.
    */
-  public function __construct($message = null, $title = null, $severity = Alert::SEVERITY_ERROR) {
+  public function __construct($message = null, $title = null, $severity = Alert::SEVERITY_ERROR, $destroySession = false) {
     global $i18n, $kernel, $session;
     parent::__construct("User has to authenticate to view this content.");
 
@@ -77,8 +80,10 @@ class ErrorUnauthorizedException extends \MovLib\Exception\Client\AbstractClient
       $title = $i18n->t("You must be signed in to access this content.");
     }
 
-    // Ensure any active session is destroyed.
-    $session->destroy();
+    // If the current session should be destroyed, do so.
+    if ($destroySession === true) {
+      $session->destroy();
+    }
 
     // Instantiate the sign in page and add the alert message to the presentation.
     $this->signInPresentation          = new SignIn();

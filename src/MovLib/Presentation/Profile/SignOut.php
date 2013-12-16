@@ -42,7 +42,7 @@ class SignOut {
   public function __construct() {
     global $i18n, $kernel, $session;
     if ($session->isAuthenticated === true) {
-      $session->destroy();
+      $session->destroy(true);
       $kernel->alerts .= new Alert(
         $i18n->t("We hope to see you again soon."),
         $i18n->t("Sign Out Successfull"),

@@ -350,16 +350,18 @@ class Session implements \ArrayAccess {
   }
 
   /**
-   * Destroy this session.
+   * Destroy this session and optionally all sessions.
    *
-   * Removes this session from our Memcached and persistent storage, additionally a delete cookie is sent, requesting
-   * the user's user agent to delete this session cookie. As you know, this is something that is up to the user, that's
-   * why it's important for us to delete this session from all our storage devices.
+   * Removes this session (or all sessions) from our Memcached and persistent storage, additionally a delete cookie
+   * is sent, requesting the user's user agent to delete this session cookie. As you know, this is something that is
+   * up to the user, that's why it's important for us to delete this session (or all sessions) from all our storage devices.
    *
    * @global \MovLib\Kernel $kernel
+   * @param boolean $deleteAllSessions [optional]
+   *   <code>TRUE</code> to delete all sessions. Defaults to <code>FALSE</code>
    * @return this
    */
-  public function destroy() {
+  public function destroy($deleteAllSessions = false) {
     global $kernel;
 
     // Only execute the following if this request was made through nginx.
@@ -375,8 +377,14 @@ class Session implements \ArrayAccess {
       $cookie = session_get_cookie_params();
       setcookie($this->name, "", 1, $cookie["path"], $cookie["domain"], $cookie["secure"], $cookie["httponly"]);
 
-      // Remove ALL sessions from Memcached and the persistent storage.
-      $this->delete();
+      // Delete all sessions if the flag is set.
+      if ($deleteAllSessions === true) {
+        $this->delete();
+      }
+      // Otherwise only delete the current session.
+      else {
+        $this->delete($this->id);
+      }
     }
 
     // The user is no longer authenticated, keep this outside of the if for PHPUnit tests.
