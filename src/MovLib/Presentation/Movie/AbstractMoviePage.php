@@ -79,6 +79,7 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
    * Initialize movie.
    *
    * @return this
+   * @throws \MovLib\Presentation\Error\NotFound
    */
   protected function init() {
     global $i18n;

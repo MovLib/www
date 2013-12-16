@@ -18,6 +18,7 @@
 namespace MovLib\Data\Movie;
 
 use \MovLib\Data\Country;
+use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Represents a single movie containing all available properties.
@@ -63,7 +64,7 @@ class Full extends \MovLib\Data\Movie\Movie {
    * @param integer $id
    *   The unique movie's ID to load.
    * @throws \MovLib\Exception\DatabaseException
-   * @throws \OutOfBoundsException
+   * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id) {
     global $db, $i18n, $session;
@@ -104,7 +105,7 @@ class Full extends \MovLib\Data\Movie\Movie {
       $this->displayTitle
     );
     if (!$stmt->fetch()) {
-      throw new \OutOfBoundsException("Couldn't find movie for ID '{$id}'.");
+      throw new NotFound;
     }
     $stmt->close();
     $this->init();

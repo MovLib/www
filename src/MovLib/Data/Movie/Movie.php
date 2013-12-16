@@ -18,6 +18,7 @@
 namespace MovLib\Data\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
+use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Represents a single movie.
@@ -97,7 +98,7 @@ class Movie {
    * @param integer $id [optional]
    *   The unique movie's ID to load.
    * @throws \MovLib\Exception\DatabaseException
-   * @throws \OutOfBoundsException
+   * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
     global $i18n, $db;
@@ -114,7 +115,7 @@ class Movie {
         $this->year
       );
       if (!$stmt->fetch()) {
-        throw new \OutOfBoundsException("Couldn't find movie for ID '{$id}'");
+        throw new NotFound;
       }
       $stmt->close();
     }

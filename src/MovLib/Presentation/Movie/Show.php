@@ -66,124 +66,118 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
     global $i18n, $kernel, $session;
     $kernel->javascripts[] = "Movie";
 
-    try {
-      // Instantiate movie, initialize page and set the microdata schema.
-      $this->init();
-      $this->initPage($this->movie->displayTitleWithYear);
-      $this->initBreadcrumb([[ $i18n->rp("/movies"), $i18n->t("Movies") ]]);
-      $this->initLanguageLinks("/movie/{0}", [ $this->movie->id ]);
-      $this->schemaType = "Movie";
+    // Instantiate movie, initialize page and set the microdata schema.
+    $this->init();
+    $this->initPage($this->movie->displayTitleWithYear);
+    $this->initBreadcrumb([[ $i18n->rp("/movies"), $i18n->t("Movies") ]]);
+    $this->initLanguageLinks("/movie/{0}", [ $this->movie->id ]);
+    $this->schemaType = "Movie";
 
-      // Enhance the page's title with microdata.
-      if ($this->movie->year) {
-        $this->pageTitle = $i18n->t("{0} ({1})", [
-          "<span itemprop='name'>{$this->movie->displayTitle}</span>",
-          "<a itemprop='datePublished' href='{$i18n->r("/year/{0}", [ $this->movie->year ])}'>{$this->movie->year}</a>",
-        ]);
-      }
-      else {
-        $this->pageTitle = "<span itemprop='name'>{$this->movie->displayTitle}</span>";
-      }
+    // Enhance the page's title with microdata.
+    if ($this->movie->year) {
+      $this->pageTitle = $i18n->t("{0} ({1})", [
+        "<span itemprop='name'>{$this->movie->displayTitle}</span>",
+        "<a itemprop='datePublished' href='{$i18n->r("/year/{0}", [ $this->movie->year ])}'>{$this->movie->year}</a>",
+      ]);
+    }
+    else {
+      $this->pageTitle = "<span itemprop='name'>{$this->movie->displayTitle}</span>";
+    }
 
-      // Display gone page if this movie was deleted.
-      if ($this->movie->deleted === true) {
-        // @todo Implement gone presentation for movies.
-        throw new \LogicException("Not implemented yet!");
-      }
+    // Display gone page if this movie was deleted.
+    if ($this->movie->deleted === true) {
+      // @todo Implement gone presentation for movies.
+      throw new \LogicException("Not implemented yet!");
+    }
 
-      // Enhance the header, insert row and span before the title.
-      $this->headingBefore = "<div class='r'><div class='s s9'>";
+    // Enhance the header, insert row and span before the title.
+    $this->headingBefore = "<div class='r'><div class='s s9'>";
 
-      // Instantiate the rating form.
-      $this->form = new Form($this);
+    // Instantiate the rating form.
+    $this->form = new Form($this);
 
-      // The five available ratings.
-      $ratings = [
-        1 => $i18n->t("Awful"),
-        2 => $i18n->t("Bad"),
-        3 => $i18n->t("Okay"),
-        4 => $i18n->t("Fine"),
-        5 => $i18n->t("Awesome"),
-      ];
+    // The five available ratings.
+    $ratings = [
+      1 => $i18n->t("Awful"),
+      2 => $i18n->t("Bad"),
+      3 => $i18n->t("Okay"),
+      4 => $i18n->t("Fine"),
+      5 => $i18n->t("Awesome"),
+    ];
 
-      // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
-      $stars = null;
-      for ($i = 1; $i < 6; ++$i) {
-        $rated  = $i <= $this->movie->userRating ? " rated" : null;
-        $stars .=
-          "<button class='popup-c{$rated}' name='rating' type='submit' value='{$i}'>" .
-            "<small class='popup tac'>{$ratings[$i]}</small>" .
-            "<span class='vh'>{$i18n->t("Rate with {0, plural, one {one star} other {# stars}}", [ $i ])}</span>" .
-          "</button>"
-        ;
-      }
+    // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
+    $stars = null;
+    for ($i = 1; $i < 6; ++$i) {
+      $rated  = $i <= $this->movie->userRating ? " rated" : null;
+      $stars .=
+        "<button class='popup-c{$rated}' name='rating' type='submit' value='{$i}'>" .
+          "<small class='popup tac'>{$ratings[$i]}</small>" .
+          "<span class='vh'>{$i18n->t("Rate with {0, plural, one {one star} other {# stars}}", [ $i ])}</span>" .
+        "</button>"
+      ;
+    }
 
-      $ratingHelp = null;
-      // Build an explanation based on available rating data.
-      if ($this->movie->votes === 1 && $this->movie->userRating) {
-        $ratingSummary = $i18n->t("You’re the only one who voted for this movie (yet).");
-      }
-      else {
-        $ratingSummary = $i18n->t(
-          "Rated by {votes, plural,
-  zero  {nobody}
-  one   {one user with {mean_rating, plural, one {1 star} other {# stars}}}
-  other {{link_rating_demographics}# users{link_close} with a {link_rating_help}mean rating{link_close} of {mean_rating, number}}
+    $ratingHelp = null;
+    // Build an explanation based on available rating data.
+    if ($this->movie->votes === 1 && $this->movie->userRating) {
+      $ratingSummary = $i18n->t("You’re the only one who voted for this movie (yet).");
+    }
+    else {
+      $ratingSummary = $i18n->t(
+        "Rated by {votes, plural,
+zero  {nobody}
+one   {one user with {mean_rating, plural, one {1 star} other {# stars}}}
+other {{link_rating_demographics}# users{link_close} with a {link_rating_help}mean rating{link_close} of {mean_rating, number}}
 }.",
-          [
-            "link_rating_demographics" => "<a href='{$i18n->r("/movie/{0}/rating-demographics", [ $this->movie->id ])}' title='{$i18n->t("View the rating demographics.")}'>",
-            "votes"                    => $this->movie->votes,
-            "link_close"               => "</a>",
-            "link_rating_help"         => "<a href='{$i18n->r("/help/movies/ratings")}' title='{$i18n->t("Go to the rating help page to find out more.")}'>",
-            "mean_rating"              => $this->movie->ratingMean,
-          ]
-        );
+        [
+          "link_rating_demographics" => "<a href='{$i18n->r("/movie/{0}/rating-demographics", [ $this->movie->id ])}' title='{$i18n->t("View the rating demographics.")}'>",
+          "votes"                    => $this->movie->votes,
+          "link_close"               => "</a>",
+          "link_rating_help"         => "<a href='{$i18n->r("/help/movies/ratings")}' title='{$i18n->t("Go to the rating help page to find out more.")}'>",
+          "mean_rating"              => $this->movie->ratingMean,
+        ]
+      );
 
-        // Don't tell a user who isn't signed in that she or he has to sign in. We tell this to the user on click / submit.
-        if ($session->isAuthenticated === true) {
-          $ratingHelp = new Help(($this->movie->userRating === null
-            ? $i18n->t("You haven’t rated this movie yet.")
-            : $i18n->t("Your current rating is {0,number}, simply vote again to update it.", [ $this->movie->userRating ])
-          ), "movie-rating");
-        }
+      // Don't tell a user who isn't signed in that she or he has to sign in. We tell this to the user on click / submit.
+      if ($session->isAuthenticated === true) {
+        $ratingHelp = new Help(($this->movie->userRating === null
+          ? $i18n->t("You haven’t rated this movie yet.")
+          : $i18n->t("Your current rating is {0,number}, simply vote again to update it.", [ $this->movie->userRating ])
+        ), "movie-rating");
       }
-
-      // Format the movie's countries and enhance them with microdata.
-      $countries          = new GlueSeparated($this->movie->countries, $i18n->t("No countries assigned yet, {0}add countries{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
-      $countries->closure = [ $this, "formatCountry" ];
-
-      // Format the movie's duration and enhance it with microdata.
-      $runtime = new Duration($this->movie->runtime, [ "itemprop" => "duration" ], Duration::MINUTES);
-
-      // Format the movie's genres.
-      $genres          = new GlueSeparated($this->movie->genres, $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
-      $genres->closure = [ $this, "formatGenre" ];
-
-      // But it all together after the closing title.
-      $this->headingAfter  =
-          "<p>{$i18n->t("“{original_title}” ({0}original title{1})", [ "original_title" => $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
-          "{$this->form->open()}<fieldset id='movie-rating'>{$ratingHelp}" .
-            "<legend class='vh'>{$i18n->t("Rate this movie:")}</legend>" .
-            "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
-            "<div class='front'>{$stars}</div>" .
-          "</fieldset>{$this->form->close()}" .
-          "<small>{$ratingSummary}</small>" .
-          "<small><span class='vh'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='vh'>{$i18n->t("Countries:")} </span>{$countries}</small>" .
-          "<small><span class='vh'>{$i18n->t("Genres:")} </span>{$genres}</small>" .
-        "</div>" . // close .span
-        "<div id='movie-poster' class='s s3 tac'>{$this->getImage(
-          $this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03),
-          $i18n->rp("/movie/{0}/posters", [ $this->movie->id ]),
-          [ "itemprop" => "image" ]
-        )}<div id='movie-rating-mean'>" .
-          \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean) .
-        "</div></div>" .
-      "</div>"; // close .row
     }
-    // We don't have any movie with the given identifier.
-    catch (\OutOfBoundsException $e) {
-      throw new NotFound("Couldn't find movie for identifier '{$_SERVER["MOVIE_ID"]}'");
-    }
+
+    // Format the movie's countries and enhance them with microdata.
+    $countries          = new GlueSeparated($this->movie->countries, $i18n->t("No countries assigned yet, {0}add countries{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
+    $countries->closure = [ $this, "formatCountry" ];
+
+    // Format the movie's duration and enhance it with microdata.
+    $runtime = new Duration($this->movie->runtime, [ "itemprop" => "duration" ], Duration::MINUTES);
+
+    // Format the movie's genres.
+    $genres          = new GlueSeparated($this->movie->genres, $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
+    $genres->closure = [ $this, "formatGenre" ];
+
+    // But it all together after the closing title.
+    $this->headingAfter  =
+        "<p>{$i18n->t("“{original_title}” ({0}original title{1})", [ "original_title" => $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
+        "{$this->form->open()}<fieldset id='movie-rating'>{$ratingHelp}" .
+          "<legend class='vh'>{$i18n->t("Rate this movie:")}</legend>" .
+          "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
+          "<div class='front'>{$stars}</div>" .
+        "</fieldset>{$this->form->close()}" .
+        "<small>{$ratingSummary}</small>" .
+        "<small><span class='vh'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='vh'>{$i18n->t("Countries:")} </span>{$countries}</small>" .
+        "<small><span class='vh'>{$i18n->t("Genres:")} </span>{$genres}</small>" .
+      "</div>" . // close .span
+      "<div id='movie-poster' class='s s3 tac'>{$this->getImage(
+        $this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03),
+        $i18n->rp("/movie/{0}/posters", [ $this->movie->id ]),
+        [ "itemprop" => "image" ]
+      )}<div id='movie-rating-mean'>" .
+        \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean) .
+      "</div></div>" .
+    "</div>"; // close .row
   }
 
 
