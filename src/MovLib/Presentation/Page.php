@@ -312,7 +312,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     }
 
     if ($session->isAuthenticated === true) {
-      $userIcon = $this->getImage($session->userAvatar, false, [ "class" => "avatar clicker" ]);
+      $userIcon = "<div id='user-nav-settings' class='clicker ico ico-settings'>{$this->getImage($session->userAvatar, false)}</div>";
       $userNavigation =
         "<ul>" .
           "<li>{$this->a($i18n->r("/profile"), $i18n->t("Profil"))}</li>" .
@@ -321,7 +321,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
       ;
     }
     else {
-      $userIcon = "<span class='btn btn-inverse clicker ico ico-user-add'></span>";
+      $userIcon = "<span id='user-nav-add' class='btn btn-inverse clicker ico ico-user-add'></span>";
       $userNavigation =
         "<ul>" .
           "<li>{$this->a($i18n->r("/profile/sign-in"), $i18n->t("Sign In"))}</li>" .
