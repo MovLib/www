@@ -209,7 +209,7 @@ abstract class AbstractBase {
    *   The image.
    */
   protected final function getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null) {
-    if (!isset($attributes["alt"]) && $style->alt) {
+    if (!isset($attributes["alt"])) {
       $attributes["alt"] = $style->alt;
     }
     if ($style->placeholder === true) {

@@ -309,6 +309,8 @@ option[value=""] {
  * Ensure inputs and buttons have some margin to the right.
  * ------------------------------------------------------------------------------------------------------------------ */
 
+.inputimage input,
+.inputimage .btn,
 .form-actions input,
 .form-actions button {
   margin-right: 10px;

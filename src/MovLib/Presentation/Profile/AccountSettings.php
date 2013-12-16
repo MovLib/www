@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\DateTimeZone;
 use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Exception\Client\RedirectSeeOtherException;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Currency;
@@ -149,15 +150,25 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
 
     $this->init($i18n->t("Account Settings"));
     $this->user = new FullUser(FullUser::FROM_ID, $session->userId);
+    
+    if (!empty($_GET["delete_avatar"])) {
+      $this->user->deleteAvatar();
+      $this->user->commit();
+      $kernel->alerts .= new Alert(
+        $i18n->t("Your avatar image was deleted successfully"),
+        $i18n->t("Avatar Deleted Successfully"),
+        Alert::SEVERITY_SUCCESS
+      );
+      throw new RedirectSeeOtherException($kernel->requestPath);
+    }
 
     $this->realName = new InputText("real_name", $i18n->t("Real Name"), [
       "placeholder" => $i18n->t("Entery our real name"),
       "value"       => $this->user->realName,
     ]);
 
-    $this->avatar                 = new InputImage("avatar", $i18n->t("Avatar"), $this->user);
-    $this->avatar->inputFileAfter = " <input class='btn btn-danger' name='delete_avatar' type='submit' value='{$i18n->t("Delete")}'>";
-
+    $this->avatar = new InputImage("avatar", $i18n->t("Avatar"), $this->user);
+    
     $this->sex = new RadioGroup("sex", $i18n->t("Sex"), [
       2 => $i18n->t("Female"),
       1 => $i18n->t("Male"),
@@ -220,6 +231,11 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
     ]);
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Update Account Settings"), [ "class" => "btn btn-large btn-success" ]);
+
+    // Display delete button if the user just uploaded a new avatar or one is already present.
+    if ($this->user->exists === true) {
+      $this->avatar->inputFileAfter = $this->a("?delete_avatar=true", $i18n->t("Delete"), [ "class" => "btn btn-danger"]);
+    }
   }
 
 
@@ -253,10 +269,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
   public function validate(array $errors = null) {
     global $i18n;
     if ($this->checkErrors($errors) === false) {
-      if (!empty($_POST["delete_avatar"])) {
-        $this->user->deleteAvatar();
-      }
-      elseif ($this->avatar->path) {
+      if ($this->avatar->path) {
         $this->user->upload($this->avatar->path, $this->avatar->extension, $this->avatar->height, $this->avatar->width);
       }
       $this->user->birthday           = $this->birthday->value;
