@@ -71,25 +71,20 @@ class SignIn extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n, $kernel, $session;
 
-    // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
-    if ($session->isAuthenticated === true) {
-      throw new RedirectSeeOtherException($i18n->r("/my"));
-    }
-
-    // Start rendering the page.
-    $this->init($i18n->t("Sign In"));
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [
-      "sitename" => $kernel->siteName
-    ])}</a>";
-
     // We need to know the translated version of the sign in route for comparison.
     $routeSignIn = $action = $i18n->r("/profile/sign-in");
 
     // Snatch the current requested URI if a redirect was requested and no redirect is already active. We have to build
     // the complete target URI to ensure that this presenter will receive the submitted form, but at the same time we
     // want to enable ourself to redirect the user after successful sign in to the page she or he requested.
-    if ($kernel->requestURI != $routeSignIn && empty($_GET["redirect_to"])) {
-      $_GET["redirect_to"] = rawurlencode($kernel->requestURI);
+    if ($kernel->requestURI != $routeSignIn) {
+      if (empty($_GET["redirect_to"])) {
+        $_GET["redirect_to"] = rawurlencode($kernel->requestURI);
+      }
+    }
+    // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
+    elseif ($session->isAuthenticated === true) {
+      throw new RedirectSeeOtherException($i18n->r("/my"));
     }
 
     if (isset($_GET["redirect_to"])) {
@@ -98,6 +93,12 @@ class SignIn extends \MovLib\Presentation\Page {
 
     // Ensure all views are using the correct path info to render themselves.
     $kernel->requestURI = $routeSignIn;
+
+    // Start rendering the page.
+    $this->init($i18n->t("Sign In"));
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [
+      "sitename" => $kernel->siteName
+    ])}</a>";
 
     $this->email                      = new InputEmail();
     $this->password                   = new InputPassword();

@@ -216,9 +216,17 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected function getFooter() {
     global $kernel, $i18n;
 
-//    $displayLanguage        = \Locale::getDisplayLanguage($i18n->languageCode, $i18n->locale);
-//    $languageLinks          = new Navigation($i18n->t("Language Links"), array_keys($kernel->systemLanguages));
-//    $languageLinks->callback = [ $this, "formatFooterSystemLanguage" ];
+    $languageLinks = $currentLanguageName = null;
+    foreach ($kernel->systemLanguages as $code => $locale) {
+      $language = new \MovLib\Data\Language($code);
+      if ($code == $i18n->languageCode) {
+        $currentLanguageName = $language->name;
+        $languageLinks .= $language->name;
+      }
+      else {
+        $languageLinks .= $i18n->t("{0} ({1})", [ $language->name, $language->native ]);
+      }
+    }
 
     return
       "<footer id='f' role='contentinfo'>" .
@@ -243,10 +251,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
             "</a>" .
           "</section>" .
           "<section class='last s s4'>" .
-            "<h3 class='vh'>{$i18n->t("Language Selection")}</h3>" .
-            // @todo Add language selection.
-//            "<button class='btn btn-inverse'>{$i18n->t("Language")}: {$displayLanguage}</button>" .
-//            "<div class='well'>{$languageLinks}</div>" .
+            "<div class='popup-c ico ico-earth'>" .
+              "<div class='popup'><h3>{$i18n->t("Choose your language")}</h3>{$languageLinks}</div>" .
+              "{$i18n->t("Language")}: {$currentLanguageName}" .
+            "</div>" .
           "</section>" .
           "<section id='f-team' class='last s s4 tac'><h3>{$this->a($i18n->r("/team"), $i18n->t("Made with {love} in Austria", [
             "love" => "<span class='ico ico-heart'></span><span class='vh'>{$i18n->t("love")}</span>"
@@ -320,7 +328,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
       ], [ "class" => "s2" ]);
       $userNavigationLinks->headingLevel  = "3";
       $userNavigationLinks->unorderedList = true;
-      
+
       $userNavigation =
         "<div class='r'>" .
           "<div class='s s1'>{$this->getImage($session->userAvatar, false)}</div>" .
