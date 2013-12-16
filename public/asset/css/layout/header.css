@@ -127,6 +127,8 @@
   transition-property: color, background-color;
 }
 
+#user-nav-settings:after,
+#user-nav-add:after,
 #h .open .visible:before,
 #h .visible:before {
   position: absolute;
@@ -152,7 +154,9 @@
 }
 
 #h .open .visible:before,
-#h .expander:hover .visible:before {
+#h .expander:hover .visible:before,
+#user-nav:hover #user-nav-settings:after,
+#user-nav:hover #user-nav-add:after {
   opacity: 1;
 }
 
@@ -194,7 +198,8 @@
 
 #s input,
 #s .ico,
-#h .btn {
+#h .btn,
+#user-nav-settings:before {
   font-size: 24px;
   line-height: 50px;
 }
@@ -203,18 +208,36 @@
   margin-left: 50px;
 }
 
-#h .btn {
+#h .btn,
+#user-nav-settings:before {
   width: 50px;
 }
 
-#user-nav .avatar {
-
+#user-nav-settings,
+#user-nav-add {
+  position: relative;
 }
 
-#user-nav.focus .avatar,
-#user-nav .avatar:active,
-#user-nav .avatar:hover {
+#user-nav-settings:before {
+  position: absolute;
+  right: 0;
+  color: #fff;
+  background-color: #09c;
+  opacity: 0;
+  transition: opacity 0.2s linear 0.1s;
+}
 
+#user-nav.focus #user-nav-settings:before,
+#user-nav:active #user-nav-settings:before,
+#user-nav:hover #user-nav-settings:before {
+  opacity: 1;
+}
+
+#user-nav.focus #user-nav-add,
+#user-nav:active #user-nav-add,
+#user-nav:hover #user-nav-add {
+  color: #fff;
+  background-color: #09c;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
