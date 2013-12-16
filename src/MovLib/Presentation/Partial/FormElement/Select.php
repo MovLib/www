@@ -91,7 +91,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
     $emptyValue = empty($this->value);
     $selected   = $emptyValue ? " selected" : null;
     if (in_array("required", $this->attributes)) {
-      $options = "<option disabled{$selected}>{$i18n->t("Please Select …")}</option>";
+      $options = "<option disabled{$selected} value=''>{$i18n->t("Please Select …")}</option>";
     }
     else {
       $options = "<option{$selected} value=''>{$i18n->t("None")}</option>";
