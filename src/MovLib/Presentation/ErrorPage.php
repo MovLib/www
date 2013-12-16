@@ -15,60 +15,59 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Error;
-
-use \MovLib\Presentation\ErrorPage;
-use \MovLib\Presentation\Partial\Alert;
+namespace MovLib\Presentation;
 
 /**
- * Represents the "forbidden" client error.
+ * Special page for error presentations.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Forbidden extends \MovLib\Exception\AbstractClientException {
+class ErrorPage extends \MovLib\Presentation\Page {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * Alter the message that is displayed in the error alert.
+   * The translated page's content.
    *
-   * @var string
+   * @var mixed
    */
-  public $message;
+  public $content;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * @inheritdoc
+   * Instantiate new empty page.
+   *
+   * @param string $title
+   *   The translated page's title.
+   * @param mixed $content
+   *   The translated page's content.
    */
-  public function getPresentation() {
-    global $i18n;
-    http_response_code(403);
+  public function __construct($title, $content) {
+    $this->initPage($title);
+    $this->initBreadcrumb();
+    $this->content = $content;
+  }
 
-    if (!$this->message) {
-      $this->message = $i18n->t(
-        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
-      );
-    }
 
-    return (new ErrorPage(
-      $i18n->t("Forbidden"),
-      new Alert(
-        $this->message,
-        $i18n->t("Access to the requested page is forbidden."),
-        Alert::SEVERITY_ERROR
-      )
-    ))->getPresentation();
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Get the presentation's page content.
+   *
+   * @return string
+   */
+  protected function getContent() {
+    return $this->content;
   }
 
 }

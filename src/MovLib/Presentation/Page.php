@@ -148,20 +148,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected $title;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new empty page.
-   *
-   * @param string $title
-   *   The translated page's title.
-   */
-  public function __construct($title) {
-    $this->initPage($title);
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -225,7 +211,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     // Only build the language links if we have routes to build them. For example the internal server error page doesn't
     // need language links ;)
     if ($this->languageLinks) {
-      $languageLinks = $currentLanguageName = null;
+      $languageLinks = $currentLanguageName = $teamOffset = null;
       foreach ($this->languageLinks as $code => $route) {
         $language = new \MovLib\Data\Language($code);
         if ($code == $i18n->languageCode) {
@@ -251,7 +237,8 @@ class Page extends \MovLib\Presentation\AbstractBase {
     }
     // Insert placeholder and be sure to use div tags instead of section tags.
     else {
-      $languageLinks = "<div class='last s o4'></div>";
+      $languageLinks = null;
+      $teamOffset    = " o4";
     }
 
     return
@@ -277,7 +264,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
             "</a>" .
           "</section>" .
           $languageLinks .
-          "<section id='f-team' class='last s s4 tac'><h3>{$this->a($i18n->r("/team"), $i18n->t("Made with {love} in Austria", [
+          "<section id='f-team' class='last{$teamOffset} s s4 tac'><h3>{$this->a($i18n->r("/team"), $i18n->t("Made with {love} in Austria", [
             "love" => "<span class='ico ico-heart'></span><span class='vh'>{$i18n->t("love")}</span>"
           ]))}</h3></section>" .
           "<section class='last s s4 tar'>" .
@@ -521,8 +508,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     // user agents support the new HTML5 element yet).
     return
       "<main id='m' role='main'{$schema}>" .
-        "<header id='header'>" .
-          "<div id='alerts'>{$this->alerts}</div>" .
+        "<header id='header'>{$this->alerts}" .
           "<div class='c'>{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
           "<div id='b'>{$this->breadcrumb}</div>" .
         "</header>" .

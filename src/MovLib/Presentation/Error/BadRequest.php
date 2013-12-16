@@ -17,6 +17,9 @@
  */
 namespace MovLib\Presentation\Error;
 
+use \MovLib\Presentation\ErrorPage;
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * Represents the "bad request" client error.
  *
@@ -27,24 +30,25 @@ namespace MovLib\Presentation\Error;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class BadRequest extends \MovLib\Presentation\Error\AbstractError {
+class BadRequest extends \MovLib\Exception\AbstractClientException {
 
   /**
-   * Instantiate bad request exception.
-   *
-   * @global \MovLib\Data\I18n $i18n
+   * @inheritdoc
    */
-  public function __construct() {
+  public function getPresentation() {
     global $i18n;
-    parent::__construct(
-      400,
+    http_response_code(400);
+    return (new ErrorPage(
       $i18n->t("Bad Request"),
-      $i18n->t("Your browser sent a request that we could not understand."),
-      $i18n->t(
-        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
+      new Alert(
+        $i18n->t(
+          "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
+          [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
+        ),
+        $i18n->t("Your browser sent a request that we could not understand."),
+        Alert::SEVERITY_ERROR
       )
-    );
+    ))->getPresentation();
   }
 
 }

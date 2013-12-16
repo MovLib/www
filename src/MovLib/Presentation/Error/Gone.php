@@ -17,6 +17,9 @@
  */
 namespace MovLib\Presentation\Error;
 
+use \MovLib\Presentation\ErrorPage;
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * Represents the "gone" client error.
  *
@@ -27,24 +30,25 @@ namespace MovLib\Presentation\Error;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Gone extends \MovLib\Presentation\Error\AbstractError {
+class Gone extends \MovLib\Exception\AbstractClientException {
 
   /**
-   * Instantiate new gone exception.
-   *
-   * @global \MovLib\Data\I18n $i18n
+   * @inheritdoc
    */
-  public function __construct() {
+  public function getPresentation() {
     global $i18n;
-    parent::__construct(
-      410,
+    http_response_code(410);
+    return (new ErrorPage(
       $i18n->t("Gone"),
-      $i18n->t("The requested page is no longer available."),
-      $i18n->t(
-        "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
-        [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
+      new Alert(
+        $i18n->t(
+          "There can be various reasons why you might see this error message. If you feel that receiving this error is a mistake please {0}contact us{1}.",
+          [ "<a href='{$i18n->r("/contact")}'>", "</a>" ]
+        ),
+        $i18n->t("The requested page is no longer available."),
+        Alert::SEVERITY_ERROR
       )
-    );
+    ))->getPresentation();
   }
 
 }
