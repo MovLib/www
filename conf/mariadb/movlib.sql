@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`users` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The user’s unique ID.',
   `name` VARCHAR(40) NOT NULL COMMENT 'The user’s unique name.',
   `access` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The user’s last access timestamp.',
+  `admin` TINYINT(1) NULL DEFAULT FALSE,
   `birthday` DATE NULL DEFAULT NULL COMMENT 'The user’s date of birth.',
   `country_code` CHAR(2) NULL COMMENT 'The user’s ISO alpha-2 country code.',
   `created` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The user’s accout creation timestamp.',
