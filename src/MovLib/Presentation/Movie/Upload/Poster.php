@@ -138,7 +138,7 @@ class Poster extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->description = new InputHTML("description", $i18n->t("Description")); //, [ "required" ]
     $this->country     = new Select("country", $i18n->t("Country"), Country::getCountries());
     $this->language    = new Select("language", $i18n->t("Language"), Language::getLanguages(), null, [ "required" ]);
-    $this->license     = new Select("license", $i18n->t("License"), License::getLicenses(), null, [ "required" ]);
+    $this->license     = new Select("license", $i18n->t("License"), License::getLicenses(), 1, [ "required" ]);
 
     // Initialize form
     $this->form = new Form($this, [
