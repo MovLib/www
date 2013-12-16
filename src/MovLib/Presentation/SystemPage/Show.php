@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
+use \MovLib\Data\SystemPage;
+
 /**
  * Single system page presentation.
  *
@@ -28,6 +30,10 @@ namespace MovLib\Presentation\SystemPage;
  */
 class Show extends \MovLib\Presentation\Page {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
    * The system page to present.
    *
@@ -35,24 +41,29 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected $systemPage;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
-   * * Instantiate new system page presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
+   * Instantiate new system page presentation.
    */
   public function __construct() {
-    // Instantiate the data model.
-    $this->systemPage = new \MovLib\Data\SystemPage($_SERVER["ID"]);
+    $this->systemPage = new SystemPage($_SERVER["ID"]);
     $this->init($this->systemPage->title);
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * @inheritdoc
+   * @global \MovLib\Kernel $kernel
    */
   protected function getContent() {
-    return "<div class='c'><div class='r'><div class='s s12'>{$this->systemPage->text}</div></div></div>";
+    global $kernel;
+    return "<div class='c'><div class='r'><div class='s s12'>{$kernel->htmlDecode($this->systemPage->text)}</div></div></div>";
   }
 
 }

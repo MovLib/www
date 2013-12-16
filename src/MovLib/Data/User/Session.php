@@ -19,6 +19,7 @@ namespace MovLib\Data\User;
 
 use \MovLib\Data\User\User;
 use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Exception\Client\ErrorForbiddenException;
 use \MovLib\Exception\Client\UnauthorizedException;
 
 /**
@@ -259,6 +260,26 @@ class Session implements \ArrayAccess {
   }
 
   /**
+   * Check whether the user is an admin and if not throw a forbidden exception.
+   *
+   * @global \MovLib\Data\Database $db
+   * @param string $message
+   *   The already translated message that should be passed to the exception as reason for the 403.
+   * @return this
+   * @throws \MovLib\Exception\Client\ErrorForbiddenException
+   */
+  public function checkAuthorizationAdmin($message) {
+    global $db;
+    if ($this->userId > 0) {
+      $result = $db->query("SELECT `admin` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->userId ])->get_result()->fetch_row();
+      if (!empty($result[0]) && (boolean) $result[0] === true) {
+        return $this;
+      }
+    }
+    throw new ErrorForbiddenException($message);
+  }
+
+  /**
    * Check if the user is authenticated and if the she or he authenticated recently.
    *
    * @param string $message
@@ -411,24 +432,6 @@ class Session implements \ArrayAccess {
       [ $this->id, $this->userId, $kernel->userAgent, inet_pton($kernel->remoteAddress), $this->authentication ]
     );
     return $this;
-  }
-
-  /**
-   * Check whether the user is an admin or not.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return boolean
-   *   <code>TRUE</code> if user has admin rights, otherwise <code>FALSE</code>.
-   */
-  public function isAdmin() {
-    global $db;
-    if ($this->userId > 0) {
-      $result = $db->query("SELECT `admin` FROM `users` WHERE `id` = ? LIMIT 1", "d", [ $this->userId ])->get_result()->fetch_row();
-      if (!empty($result[0])) {
-        return (boolean) $result["admin"];
-      }
-    }
-    return false;
   }
 
   /**
