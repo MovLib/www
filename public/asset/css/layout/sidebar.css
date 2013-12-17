@@ -46,7 +46,19 @@
 }
 
 #sidebar-nav .no-list:after {
-  box-shadow: 0 0 10px #dfdfdf;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#sidebar-nav a .fr {
+  color: #c7c7c7;
+  transition: inherit;
+  transition-property: color;
+}
+
+#sidebar-nav a:active .fr,
+#sidebar-nav a:focus .fr,
+#sidebar-nav a:hover .fr {
+  color: #656565;
 }
 
 #sidebar-nav a:after {

@@ -93,7 +93,7 @@ class Person {
     if ($this->id) {
       $this->deleted = (boolean) $this->deleted;
       $this->displayPhoto = $db->query(
-        "SELECT `id`, `extension`, UNIX_TIMESTAMP(`changed`) AS `changed`, `styles` FROM `persons_photos` WHERE `person_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
+        "SELECT `id`, `extension`, UNIX_TIMESTAMP(`changed`) AS `changed`, `styles` FROM `persons_images` WHERE `person_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
         "d",
         [ $this->id ]
       )->get_result()->fetch_object("\\MovLib\\Data\\Image\\PersonPhoto", [ $this->id, $this->name ]);

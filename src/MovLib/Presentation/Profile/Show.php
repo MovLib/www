@@ -89,7 +89,7 @@ class Show extends \MovLib\Presentation\Page {
           "<dt>{$i18n->t("Joined")}</dt><dd>{$i18n->formatDate($this->user->created, $this->user->timeZoneIdentifier)}</dd>" .
           "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->user->access, $this->user->timeZoneIdentifier)}</dd>" .
         "</dl>" .
-        "<div class='s s2'>{$this->getImage($this->user->getStyle(), $this->user->route)}</div>" .
+        "<div class='s s2'>{$this->getImage($this->user->getStyle(), $i18n->r("/user/{0}", [ $this->user->filename ]))}</div>" .
       "</div>" .
       "<h2>User</h2><pre>{$var[0]}</pre>" .
       "<h2>Session</h2><pre>{$var[1]}</pre>" .

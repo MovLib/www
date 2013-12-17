@@ -18,6 +18,7 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Data\Currency;
+use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Extended user.
@@ -173,7 +174,7 @@ class Full extends \MovLib\Data\User\User {
    *   Defines how the object should be filled with data, use the various <var>FROM_*</var> class constants.
    * @param mixed $value [optional]
    *   Data to identify the user, see the various <var>FROM_*</var> class constants.
-   * @throws \OutOfBoundsException
+   * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($from = null, $value = null) {
     global $db, $i18n;
@@ -231,14 +232,14 @@ class Full extends \MovLib\Data\User\User {
         $this->website
       );
       if (!$stmt->fetch()) {
-        throw new \OutOfBoundsException("Couldn't find user for {$from} '{$value}'");
+        throw new NotFound;
       }
       $stmt->close();
     }
 
     if ($this->id) {
-      $this->initImage();
-      $this->private  = (boolean) $this->private;
+      $this->init();
+      $this->private = (boolean) $this->private;
       if (!$this->currencyCode) {
         $this->currencyCode = Currency::getDefaultCode();
       }
@@ -389,6 +390,56 @@ class Full extends \MovLib\Data\User\User {
       $session->userAvatar = $this->getStyle(self::STYLE_HEADER_USER_NAVIGATION);
     }
     return $this;
+  }
+
+  /**
+   * Get the user's total collection count.
+   *
+   * @todo We should propably save this within the user table.
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The user's total collection count.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getTotalCollectionCount() {
+    global $db;
+    return $db->query("SELECT COUNT(*) FROM `users_collections` WHERE `user_id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
+  }
+
+  /**
+   * Get the user's total count of movie ratings.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The user's total count of movie ratings.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getTotalRatingsCount() {
+    global $db;
+    return $db->query("SELECT COUNT(*) FROM `movies_ratings` WHERE `user_id` = ? LIMIT 1", "d", [ $this->id ])->get_result()->fetch_row()[0];
+  }
+
+  /**
+   * Get the user's total count of all uploaded images.
+   *
+   * @todo We should propably save this within the user table.
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The user's total count of all uploaded images.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getTotalUploadsCount() {
+    global $db;
+    return $db->query(
+      "SELECT
+      (SELECT COUNT(*) FROM `movies_images` WHERE `user_id` = ?)
+      +
+      (SELECT COUNT(*) FROM `persons_images` WHERE `user_id` = ?)
+      +
+      (SELECT COUNT(*) FROM `companies_images` WHERE `user_id` = ?)",
+      "ddd",
+      [ $this->id, $this->id, $this->id ]
+    )->get_result()->fetch_row()[0];
   }
 
   /**

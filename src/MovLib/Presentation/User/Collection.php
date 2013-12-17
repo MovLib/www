@@ -29,32 +29,27 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Collection extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\User\TraitUser;
+class Collection extends \MovLib\Presentation\User\AbstractUserPage {
 
   /**
-   *
    * Instantiate new user collection presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    */
   public function __construct(){
     global $i18n;
-    $this->initPage($i18n->t("Collection of {0}", [ $_SERVER["USER_NAME"] ]));
-    $this->alerts .= new Alert("Not implemented yet!");
+    $this->init();
+    $this->initPage($i18n->t("Collection {0}", [ $this->user->name ]));
+    $this->initLanguageLinks("/user/{0}/collection", [ $this->user->name ]);
+    $this->pageTitle       = $i18n->t("Collection of {username}", [ "username" => "<a href='{$this->user->route}'>{$this->user->name}</a>" ]);
+    $this->breadcrumbTitle = $i18n->t("Collection");
   }
 
   /**
    * @inheritdoc
    */
-  protected function getPageContent(){}
-
-  /**
-   * @inheritdoc
-   */
-  protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->r("/user/{0}", [ $_SERVER["USER_NAME"] ]), $_SERVER["USER_NAME"] ]];
+  protected function getPageContent(){
+    return new Alert("Not implemented yet!");
   }
 
 }

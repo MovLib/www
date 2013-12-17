@@ -127,6 +127,20 @@ class I18n {
 
 
   /**
+   * Format a message without translation, very useful for inline number formatting.
+   *
+   * @param string $message
+   *   The message to format.
+   * @param array $args
+   *   The message arguments.
+   * @return string
+   *   The formatted message.
+   */
+  public function format($message, array $args) {
+    return \MessageFormatter::formatMessage($this->locale, $message, $args);
+  }
+
+  /**
    * Format the given timestamp for output.
    *
    * @link http://www.php.net/manual/en/class.intldateformatter.php#intl.intldateformatter-constants

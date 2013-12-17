@@ -85,7 +85,8 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
 
     $this->systemPage = new SystemPage($_SERVER["ID"]);
     $this->initPage($i18n->t("Edit {0}", [ $this->systemPage->title ]));
-    $this->initBreadcrumb([[ $this->systemPage->route, $this->systemPage->title ]], $i18n->t("Edit"));
+    $this->initBreadcrumb([[ $this->systemPage->route, $this->systemPage->title ]]);
+    $this->breadcrumbTitle = $i18n->t("Edit");
     $this->initLanguageLinks("{$this->systemPage->route}/edit");
 
     $this->inputPageTitle = new InputText("page_title", $i18n->t("Page Title"), [ "required" => "required", "value" => $this->systemPage->title ]);

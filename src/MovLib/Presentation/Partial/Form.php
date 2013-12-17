@@ -181,10 +181,12 @@ class Form extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Get the closing <code><form></code>-tag, including all form elements from <code>Form::$actionElements</code>.
+   * Get the closing <code><form></code> tag.
+   *
+   * The closing form tag contains all action and hidden elements.
    *
    * @return string
-   *   The closing <code><form></code>-tag, including all form elements from <code>Form::$actionElements</code>.
+   *   The closing <code><form></code> tag.
    */
   public function close() {
     $actions = null;
@@ -192,17 +194,20 @@ class Form extends \MovLib\Presentation\AbstractBase {
     for ($i = 0; $i < $c; ++$i) {
       $actions .= $this->actionElements[$i];
     }
-    return "<p class='form-actions'>{$actions}</p></form>";
+    if ($actions) {
+      $actions = "<p class='form-actions'>{$actions}</p>";
+    }
+    return "{$actions}{$this->hiddenElements}</form>";
   }
 
   /**
-   * Get the opening <code><form></code>-tag, including all hidden input elements.
+   * Get the opening <code><form></code> tag.
    *
    * @return string
-   *   The opening <code><form></code>-tag, including all hidden input elements.
+   *   The opening <code><form></code> tag.
    */
   public function open() {
-    return "<form{$this->expandTagAttributes($this->attributes)}>{$this->hiddenElements}";
+    return "<form{$this->expandTagAttributes($this->attributes)}>";
   }
 
 }

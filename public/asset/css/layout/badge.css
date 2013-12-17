@@ -1,6 +1,4 @@
-<?php
-
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -15,41 +13,37 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\User;
 
 /**
- * @todo Description of TraitUser
+ * Badge styles
  *
+ * @link https://github.com/twbs/bootstrap/blob/master/less/badges.less
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-trait TraitUser {
-  use \MovLib\Presentation\TraitSidebar;
 
-  /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   */
-  protected function init($title, $breadcrumbTitle = null) {
-    global $i18n;
-    parent::init($title, $breadcrumbTitle);
-    $this->initSidebar([
-      [ $i18n->r("/user/{0}", [ $_SERVER["USER_NAME"] ]), $i18n->t("User page"), [ "class" => "separator" ] ],
-      [ $i18n->r("/user/{0}/collection", [ $_SERVER["USER_NAME"] ]), $i18n->t("Collection") ],
-      [ $i18n->r("/user/{0}/contact", [ $_SERVER["USER_NAME"] ]), $i18n->t("Contact") ],
-    ]);
-    return $this;
-  }
+.badge {
+  display: inline-block;
+  min-width: 10px;
+  padding: 3px 7px;
+  font-size: 12px;
+  font-weight: 200;
+  line-height: 1;
+  background-color: #656565;
+  color: #fff;
+  text-align: center;
+  vertical-align: baseline;
+  white-space: nowrap;
+  transition: inherit;
+  transition-property: background-color;
+}
 
-  /**
-   * @inheritdoc
-   */
-  protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->rp("/users"), $i18n->t("Users") ]];
-  }
-
+a.focus .badge,
+a:active .badge,
+a:focus .badge,
+a:hover .badge {
+  background-color: #09c;
 }

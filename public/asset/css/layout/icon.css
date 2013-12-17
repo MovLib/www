@@ -15,7 +15,7 @@
  */
 
 /**
- * We are using a custom font created with the IcoMoon app that only contains the icons we really use.
+ * We are using a custom font created with the IcoMoon app that only  contains the icons we really use.
  * Please have a look at the LICENSE.txt file in the font directory for more information.
  *
  * @author Dave Gandy
@@ -68,157 +68,157 @@
 }
 
 .ico-star:before {
-	content: "\e600";
+  content: "\e600";
 }
 
 .ico-lock:before {
-	content: "\e601";
+  content: "\e601";
 }
 
 .ico-upload:before {
-	content: "\e602";
+  content: "\e602";
 }
 
 .ico-align-left:before {
-	content: "\e603";
+  content: "\e603";
 }
 
 .ico-align-center:before {
-	content: "\e604";
+  content: "\e604";
 }
 
 .ico-align-right:before {
-	content: "\e605";
+  content: "\e605";
 }
 
 .ico-bold:before {
-	content: "\e606";
+  content: "\e606";
 }
 
 .ico-italic:before {
-	content: "\e607";
+  content: "\e607";
 }
 
 .ico-image:before {
-	content: "\e608";
+  content: "\e608";
 }
 
 .ico-ul:before {
-	content: "\e609";
+  content: "\e609";
 }
 
 .ico-ol:before {
-	content: "\e60a";
+  content: "\e60a";
 }
 
 .ico-quotation:before {
-	content: "\e60b";
+  content: "\e60b";
 }
 
 .ico-unlink:before {
-	content: "\e60c";
+  content: "\e60c";
 }
 
 .ico-link:before {
-	content: "\e60d";
+  content: "\e60d";
 }
 
 .ico-indent-left:before {
-	content: "\e60e";
+  content: "\e60e";
 }
 
 .ico-indent-right:before {
-	content: "\e60f";
+  content: "\e60f";
 }
 
 .ico-heart:before {
-	content: "\e610";
+  content: "\e610";
 }
 
 .ico-settings:before {
-	content: "\e611";
+  content: "\e611";
 }
 
 .ico-languages:before {
-	content: "\e612";
+  content: "\e612";
 }
 
 .ico-search:before {
-	content: "\e613";
+  content: "\e613";
 }
 
 .ico-cc:before {
-	content: "\e614";
+  content: "\e614";
 }
 
 .ico-cc-zero:before {
-	content: "\e615";
+  content: "\e615";
 }
 
 .ico-user:before {
-	content: "\e616";
+  content: "\e616";
 }
 
 .ico-notification:before {
-	content: "\e617";
+  content: "\e617";
 }
 
 .ico-email:before {
-	content: "\e618";
+  content: "\e618";
 }
 
 .ico-alert:before {
-	content: "\e619";
+  content: "\e619";
 }
 
 .ico-view:before {
-	content: "\e61a";
+  content: "\e61a";
 }
 
 .ico-discussion:before {
-	content: "\e61b";
+  content: "\e61b";
 }
 
 .ico-edit:before {
-	content: "\e61c";
+  content: "\e61c";
 }
 
 .ico-history:before {
-	content: "\e61d";
+  content: "\e61d";
 }
 
 .ico-person:before {
-	content: "\e61e";
+  content: "\e61e";
 }
 
 .ico-help:before {
-	content: "\e61f";
+  content: "\e61f";
 }
 
 .ico-info:before {
-	content: "\e620";
+  content: "\e620";
 }
 
 .ico-chevron-left:before {
-	content: "\e621";
+  content: "\e621";
 }
 
 .ico-chevron-right:before {
-	content: "\e622";
+  content: "\e622";
 }
 
 .ico-user-add:before {
-	content: "\e623";
+  content: "\e623";
 }
 
 .ico-release:before {
-	content: "\e624";
+  content: "\e624";
 }
 
 .ico-movie:before {
-	content: "\e625";
+  content: "\e625";
 }
 
 .ico-series:before {
-	content: "\e626";
+  content: "\e626";
 }

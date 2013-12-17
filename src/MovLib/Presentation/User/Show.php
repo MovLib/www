@@ -18,14 +18,12 @@
 namespace MovLib\Presentation\User;
 
 use \MovLib\Data\User\Full as FullUser;
-use \MovLib\Presentation\Error\NotFound;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Time;
-use \MovLib\Presentation\Redirect\Permanent as PermanentRedirect;
 
 /**
- * @todo Description of Show
+ * Public user profile presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -34,7 +32,7 @@ use \MovLib\Presentation\Redirect\Permanent as PermanentRedirect;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\User\TraitUser;
+  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -43,16 +41,9 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * The user we are currently displaying.
    *
-   * @var \MovLib\Data\Full
+   * @var \MovLib\Data\User\Full
    */
   protected $user;
-
-  /**
-   * Route to profile account settings.
-   *
-   * @var string
-   */
-  protected $routeAccountSettings;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -62,80 +53,26 @@ class Show extends \MovLib\Presentation\Page {
    * Instantiate new user presentation.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
-   * @throws \MovLib\Exception\NotFoundException
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Presentation\Error\NotFound
    * @throws \MovLib\Presentation\Redirect\Permanent
    */
   public function __construct() {
-    global $i18n, $kernel;
-    try {
-      $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
-      if ($this->user->route != $kernel->requestPath) {
-        throw new PermanentRedirect($this->user->route);
-      }
-      $this->initPage($this->user->name);
-      $this->routeAccountSettings = $i18n->r("/profile/account-settings");
-
-      // http://schema.org/Person
-      $this->schemaType = "Person";
-
-      // Mark the username as additional name.
-      $this->headingSchemaProperty = "additionalName";
-
-      // Wrap the complete header content in a row and the heading itself in a span.
-      $this->headingBefore = "<div class='r'><div class='s s10'>";
-
-      // Create user info.
-      $personalData = null;
-
-      // Format the user's birthday if available.
-      if ($this->user->birthday) {
-        $date = new Date($this->user->birthday);
-        $personalData[] = "<time itemprop='birthDate' datetime='{$date->format()}'>{$date->getAge()}</time>";
-      }
-      if ($this->user->sex > 0) {
-        $gender     = $this->user->sex === 1 ? $i18n->t("Male") : $i18n->t("Female");
-        $personalData[] = "<span itemprop='gender'>{$gender}</span>";
-      }
-      if ($this->user->countryCode) {
-        $country        = new Country($this->user->countryCode);
-        $personalData[] = "<span itemprop='nationality'>{$country}</span>";
-      }
-
-      // Link the user's real name to the website if we have both properties.
-      if ($this->user->realName) {
-        // http://microformats.org/wiki/rel-me
-        // http://microformats.org/wiki/rel-nofollow
-        if ($this->user->website) {
-          array_unshift($personalData, "<a href='{$this->user->website}' itemprop='url name' rel='me nofollow' target='_blank'>{$this->user->realName}</a>");
-        }
-        else {
-          array_unshift($personalData, "<span itemprop='name'>{$this->user->realName}</span>");
-        }
-      }
-      // If not use the hostname.
-      elseif ($this->user->website) {
-        $hostname = parse_url($this->user->website, PHP_URL_HOST);
-        $personalData[] = "<br><a href='{$this->user->website}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a>";
-      }
-
-      if ($personalData) {
-        $personalData = implode(", ", $personalData);
-        $personalData = "<p>{$personalData}</p>";
-      }
-
-      $avatar = $this->getImage($this->user->getStyle(), false, [ "itemprop" => "image" ]);
-
-      // Display additional info about this user after the name and the avatar to the right of it.
-      $this->headingAfter = "{$personalData}<small>{$i18n->t("Joined {0} and was last seen {1}.", [
-        (new Date($this->user->created))->intlFormat(),
-        (new Time($this->user->access))->formatRelative(),
-      ])}</small></div><div class='s s2'>{$avatar}</div></div>";
-    }
-    catch (\OutOfBoundsException $e) {
-      throw new NotFound("No user with this name.");
-    }
+    global $i18n;
+    $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
+    $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
+    $routeArgs  = [ $this->user->filename ];
+    $this->initSidebar([
+      [ $i18n->r("/user/{0}/uploads", $routeArgs), "{$i18n->t("Uploads")} <span class='fr'>{$i18n->format(
+        "{0, number}", [ $this->user->getTotalUploadsCount() ]
+      )}</span>" ],
+      [ $i18n->r("/user/{0}/collection", $routeArgs), "{$i18n->t("Collection")} <span class='fr'>{$i18n->format(
+        "{0, number}", [ $this->user->getTotalCollectionCount() ]
+      )}</span>" ],
+      [ $i18n->r("/user/{0}/contact", $routeArgs), $i18n->t("Contact") ],
+    ]);
+    $this->initPage($this->user->name);
+    $this->initLanguageLinks("/user/{0}", $routeArgs);
   }
 
 
@@ -151,25 +88,103 @@ class Show extends \MovLib\Presentation\Page {
   protected function getPageContent(){
     global $i18n, $kernel, $session;
 
-    // -------------------- About Me
+    // http://schema.org/Person
+    $this->schemaType = "Person";
 
-    $aboutMe = $edit = null;
+    // Mark the username as additional name.
+    $this->headingSchemaProperty = "additionalName";
+
+    // Wrap the complete header content in a row and the heading itself in a span.
+    $this->headingBefore = "<div class='r'><div class='s s10'>";
+
+    // Create user info.
+    $personalData = null;
+
+    // Format the user's birthday if available.
+    if ($this->user->birthday) {
+      $date = new Date($this->user->birthday);
+      $personalData[] = "<time itemprop='birthDate' datetime='{$date->format()}'>{$date->getAge()}</time>";
+    }
+    if ($this->user->sex > 0) {
+      $gender     = $this->user->sex === 1 ? $i18n->t("Male") : $i18n->t("Female");
+      $personalData[] = "<span itemprop='gender'>{$gender}</span>";
+    }
+    if ($this->user->countryCode) {
+      $country        = new Country($this->user->countryCode);
+      $personalData[] = "<span itemprop='nationality'>{$country}</span>";
+    }
+
+    // Link the user's real name to the website if we have both properties.
+    if ($this->user->realName) {
+      // http://microformats.org/wiki/rel-me
+      // http://microformats.org/wiki/rel-nofollow
+      if ($this->user->website) {
+        array_unshift($personalData, "<a href='{$this->user->website}' itemprop='url name' rel='me nofollow' target='_blank'>{$this->user->realName}</a>");
+      }
+      else {
+        array_unshift($personalData, "<span itemprop='name'>{$this->user->realName}</span>");
+      }
+    }
+    // If not use the hostname.
+    elseif ($this->user->website) {
+      $hostname = parse_url($this->user->website, PHP_URL_HOST);
+      $personalData[] = "<br><a href='{$this->user->website}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a>";
+    }
+
+    if ($personalData) {
+      $personalData = implode(", ", $personalData);
+      $personalData = "<p>{$personalData}</p>";
+    }
+
+    $avatar = $this->getImage($this->user->getStyle(), false, [ "itemprop" => "image" ]);
+
+    // Display additional info about this user after the name and the avatar to the right of it.
+    $this->headingAfter = "{$personalData}<small>{$i18n->t("Joined {0} and was last seen {1}.", [
+      (new Date($this->user->created))->intlFormat(),
+      (new Time($this->user->access))->formatRelative(),
+    ])}</small></div><div class='s s2'>{$avatar}</div></div>";
+
+    $publicProfile = $edit = null;
+
+    // ----------------------------------------------------------------------------------------------------------------- About Me
+
+    $aboutMe = null;
     if (empty($this->user->aboutMe) && $session->userId === $this->user->id) {
       $aboutMe = "<p>{$i18n->t("Your profile is currently empty, {0}click here to edit{1}.", [
-        "<a href='{$this->routeAccountSettings}'>", "</a>"
+        "<a href='{$i18n->r("/profile/account-settings")}'>", "</a>"
       ])}</p>";
     }
     else {
       $aboutMe = $kernel->htmlDecode($this->user->aboutMe);
       if ($session->userId === $this->user->id) {
-        $edit = "<a class='small edit' href='{$this->routeAccountSettings}'>{$i18n->t("edit")}</a>";
+        $edit = "<a class='small edit' href='{$i18n->r("/profile/account-settings")}'>{$i18n->t("edit")}</a>";
       }
     }
     if ($aboutMe) {
-      $aboutMe = "<h2>{$i18n->t("About Me")}{$edit}</h2><div itemprop='description'>{$aboutMe}</div>";
+      $publicProfile .= "<h2>{$i18n->t("About Me")}{$edit}</h2><div itemprop='description'>{$aboutMe}</div>";
     }
 
-    return "{$aboutMe}";
+    // ----------------------------------------------------------------------------------------------------------------- Rating Stream
+
+    $publicProfile .= "<h2>{$i18n->t("Recently Rated Movies")}</h2>";
+    $ratings        = $this->user->getTotalRatingsCount();
+    if ($ratings === 0) {
+      if ($session->userId === $this->user->id) {
+        $publicProfile .= "<p>{$i18n->t("You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.", [
+          "<a href='{$i18n->r("/search")}'>", "</a>"
+        ])}</p>";
+      }
+      else {
+        $publicProfile .= "<p>{$i18n->t("{username} hasn’t rated a single movie yet, that makes us a sad panda.", [
+          "username" => $this->user->name
+        ])}</p>";
+      }
+    }
+    else {
+      $publicProfile .= "<p>rating stream ... rating stream ... rating stream</p>";
+    }
+
+    return $publicProfile;
   }
 
 }

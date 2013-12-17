@@ -131,6 +131,13 @@ abstract class AbstractBaseImage {
   protected $filename;
 
   /**
+   * Raw URL encoded version of filename.
+   *
+   * @var string
+   */
+  private $filenameEncoded;
+
+  /**
    * The original image's filesize.
    *
    * @var integer
@@ -311,13 +318,20 @@ abstract class AbstractBaseImage {
       throw new \LogicException("Directory, filename and/or extension cannot be empty.");
     }
 
-    // If no style was given the URL to the original is desired.
+    // The file's name might still contain characters that aren't save to use in HTML or in requests.
+    if (!$this->filenameEncoded) {
+      $this->filenameEncoded = rawurlencode($this->filename);
+    }
+
+    // If no style was given the URL to the original is desired. The originals are always delivered from the current
+    // subdomain. While this busts the user's cache for this file if she or he changed the language it ensure that the
+    // correct interface is shown to users who aren't authenticated and therefor aren't allowed to access the originals.
     if (empty($style)) {
-      return "/upload/private/{$this->directory}/{$this->filename}.{$this->extension}?c={$this->changed}";
+      return "/upload/private/{$this->directory}/{$this->filenameEncoded}.{$this->extension}?c={$this->changed}";
     }
 
     // Otherwise the URL to the given style.
-    return "//{$kernel->domainStatic}/upload/{$this->directory}/{$this->filename}.{$style}.{$this->extension}?c={$this->changed}";
+    return "//{$kernel->domainStatic}/upload/{$this->directory}/{$this->filenameEncoded}.{$style}.{$this->extension}?c={$this->changed}";
   }
 
 }

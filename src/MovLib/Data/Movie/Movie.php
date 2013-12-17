@@ -80,6 +80,13 @@ class Movie {
   public $originalTitle;
 
   /**
+   * The movie's translated route.
+   *
+   * @var string
+   */
+  public $route;
+
+  /**
    * The movie's release year.
    *
    * @var integer
@@ -297,6 +304,8 @@ class Movie {
     if (!$this->displayPoster) {
       $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
     }
+
+    $this->route = $i18n->r("/movie/{0}", [ $this->id ]);
 
     return $this;
   }

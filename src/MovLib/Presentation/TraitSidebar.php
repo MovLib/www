@@ -90,7 +90,7 @@ trait TraitSidebar {
    * @return this
    */
   protected function initSidebar($menuitems) {
-    global $i18n, $kernel;
+    global $i18n;
     $this->addBodyClass("sidebar");
     $this->sidebarNavigation                = new Navigation($i18n->t("Secondary Navigation"), $menuitems, [ "id" => "sidebar-nav" ]);
     $this->sidebarNavigation->ignoreQuery   = true;

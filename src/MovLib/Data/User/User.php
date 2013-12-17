@@ -102,6 +102,13 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   protected $directory = "user";
 
   /**
+   * The user's unique name sanitized for routes.
+   *
+   * @var string
+   */
+  public $filename;
+
+  /**
    * The user's unique name.
    *
    * @var string
@@ -109,11 +116,16 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
   public $name;
 
   /**
-   * The user's route.
+   * The user's translated route.
    *
    * @var string
    */
   public $route;
+
+  /**
+   * @inheritdoc
+   */
+  protected $placeholder = "avatar";
 
   /**
    * The user's time zone ID (e.g. <code>"Europe/Vienna"</code>).
@@ -166,7 +178,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
     }
 
     if ($this->id) {
-      $this->initImage();
+      $this->init();
     }
   }
 
@@ -219,11 +231,11 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    * @global \MovLib\Data\I18n $i18n
    * @return this
    */
-  public function initImage() {
+  public function init() {
     global $i18n;
     $this->exists   = (boolean) $this->changed;
-    $this->filename = rawurlencode(mb_strtolower($this->name));
-    $this->route    = $i18n->r("/user/{0}", [ rawurlencode($this->filename) ]);
+    $this->filename = mb_strtolower($this->name);
+    $this->route    = $i18n->r("/user/{0}", [ $this->filename ]);
     return $this;
   }
 

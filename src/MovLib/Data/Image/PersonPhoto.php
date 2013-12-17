@@ -83,7 +83,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
           COLUMN_GET(`dyn_descriptions`, ? AS BINARY),
           `source`,
           `styles`
-        FROM `persons_photos`
+        FROM `persons_images`
         WHERE `id` = ? AND `person_id` = ?
         LIMIT 1",
         "id",
@@ -147,8 +147,8 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
       // the future plus the creation timestamp. We still keep the image in the deleted state because we don't want
       // that any request that might come in right now while we generate the new image styles is considered to exists.
       $db->query(
-        "INSERT INTO `persons_photos` SET
-          `id`        = (SELECT IFNULL(MAX(`s`.`id`), 0) + 1 FROM `persons_photos` AS `s` WHERE `s`.`person_id` = ? LIMIT 1),
+        "INSERT INTO `persons_images` SET
+          `id`        = (SELECT IFNULL(MAX(`s`.`id`), 0) + 1 FROM `persons_images` AS `s` WHERE `s`.`person_id` = ? LIMIT 1),
           `person_id` = ?,
           `created`   = FROM_UNIXTIME(?)",
         "dds",
@@ -157,7 +157,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
 
       // Snatch the just inserted identifier from the database and prepare filename, identifier and route which allows
       // us to generate the directory for the images and the various image styles.
-      $stmt           = $db->query("SELECT MAX(`id`) FROM `persons_photos` WHERE `person_id` = ? LIMIT 1", "d", [ $this->personId ]);
+      $stmt           = $db->query("SELECT MAX(`id`) FROM `persons_images` WHERE `person_id` = ? LIMIT 1", "d", [ $this->personId ]);
       $this->filename = $this->id = $stmt->get_result()->fetch_row()[0];
       $this->route    = $i18n->r("/person/{0}/photo/{1}", [ $this->personId, $this->id ]);
       $stmt->close();
@@ -170,7 +170,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
     // Now we have to update the existing record with the new data. We always set deleted to false at this point as a
     // user wouldn't even be able to upload (trigger the call of this method) if the image is deleted.
     $db->query(
-      "UPDATE `persons_photos` SET
+      "UPDATE `persons_images` SET
         `changed`          = FROM_UNIXTIME(?),
         `deleted`          = false,
         `dyn_descriptions` = COLUMN_CREATE(?, ?),

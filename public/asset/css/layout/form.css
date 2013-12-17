@@ -25,6 +25,10 @@
  * @since 0.0.1-dev
  */
 
+form :first-child {
+  margin-top: 0;
+}
+
 button::-moz-focus-inner,
 input::-moz-focus-inner {
   padding: 0;

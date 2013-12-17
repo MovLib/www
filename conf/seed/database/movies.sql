@@ -64,7 +64,7 @@ INSERT INTO `persons` SET
 SET @louis_le_prince_id = LAST_INSERT_ID();
 
 INSERT INTO `movies_directors` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @louis_le_prince_id;
-INSERT INTO `persons_photos` SET
+INSERT INTO `persons_images` SET
   `id`               = 1,
   `person_id`        = @louis_le_prince_id,
   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'PD' LIMIT 1),
@@ -153,7 +153,7 @@ INSERT INTO `persons` SET
   `country`         = 'NL'
 ;
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
-INSERT INTO `persons_photos` SET
+INSERT INTO `persons_images` SET
   `id`               = 1,
   `person_id`        = @sacha_goedegebure_id,
   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),

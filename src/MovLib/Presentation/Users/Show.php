@@ -85,13 +85,14 @@ class Show extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getPageContent() {
+    global $i18n;
     $list  = null;
     $users = $this->users->getOrderedByCreatedResult($this->resultsOffset, $this->resultsPerPage);
     /* @var $user \MovLib\Data\User\User */
     while ($user = $users->fetch_object("\\MovLib\\Data\\User\\User")) {
       $list .=
         "<li class='s s5' itemscope itemtype='http://schema.org/Person'>" .
-          "<a class='img r' href='{$user->route}' itemprop='url'>" .
+          "<a class='img r' href='{$i18n->r("/user/{0}", [ $user->filename ])}' itemprop='url'>" .
             $this->getImage($user->getStyle(User::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
             "<span class='s s4' itemprop='name'>{$user->name}</span>" .
           "</a>" .

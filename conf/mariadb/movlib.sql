@@ -231,9 +231,9 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`persons_photos`
+-- Table `movlib`.`persons_images`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
+CREATE TABLE IF NOT EXISTS `movlib`.`persons_images` (
   `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The person photo’s unique ID within the person.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
   `deleted` TINYINT(1) NOT NULL DEFAULT true COMMENT 'The flag that determines whether this person photo is marked as deleted (TRUE(1)) or not (FALSE(0)), default is TRUE(1).',
@@ -249,22 +249,21 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons_photos` (
   `styles` BLOB NULL COMMENT 'Serialized array containing width and height of various image styles.',
   `width` SMALLINT UNSIGNED NULL COMMENT 'The person photo’s original width.',
   PRIMARY KEY (`id`, `person_id`),
-  INDEX `fk_persons_photos_persons` (`person_id` ASC),
-  INDEX `fk_persons_photos_images` (`id` ASC),
-  INDEX `fk_persons_photos_licenses` (`license_id` ASC),
-  INDEX `persons_photos_order_by_upvotes` (`upvotes` ASC),
-  INDEX `fk_persons_photos_users_idx` (`user_id` ASC),
-  CONSTRAINT `fk_persons_photos_persons`
+  INDEX `fk_persons_images_persons` (`person_id` ASC),
+  INDEX `fk_persons_images_licenses` (`license_id` ASC),
+  INDEX `persons_images_order_by_upvotes` (`upvotes` ASC),
+  INDEX `fk_persons_images_users` (`user_id` ASC),
+  CONSTRAINT `fk_persons_images_persons`
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_photos_licenses`
+  CONSTRAINT `fk_persons_images_licenses`
     FOREIGN KEY (`license_id`)
     REFERENCES `movlib`.`licenses` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_photos_users`
+  CONSTRAINT `fk_persons_images_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
