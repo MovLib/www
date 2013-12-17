@@ -244,6 +244,21 @@
   background-color: #09c;
 }
 
+.authenticated #user-nav .concealed:before {
+  content: "My";
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  font-weight: 200;
+  font-size: 30px;
+}
+
+#user-nav .concealed img {
+  position: absolute;
+  bottom: 28px;
+  left: 28px;
+}
+
 /* ---------------------------------------------------------------------------------------------------------------------
  * Search form styles
  * ------------------------------------------------------------------------------------------------------------------ */

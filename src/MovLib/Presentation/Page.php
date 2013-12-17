@@ -329,25 +329,24 @@ class Page extends \MovLib\Presentation\AbstractBase {
 
     if ($session->isAuthenticated === true) {
       $userIcon = "<div id='user-nav-settings' class='clicker ico ico-settings'>{$this->getImage($session->userAvatar, false)}</div>";
-      $userNavigationLinks = new Navigation($i18n->t("User"), [
-        [ $i18n->r("/profile"), $i18n->t("My Profile") ],
-        [ $i18n->r("/profile/collection"), $i18n->t("My Collection") ],
-        [ $i18n->r("/profile/sign-out"), $i18n->t("Sign Out") ],
-      ], [ "class" => "s2" ]);
-      $userNavigationLinks->headingLevel  = "3";
-      $userNavigationLinks->unorderedList = true;
-
       $userNavigation =
-        "<div class='r'>" .
-          "<div class='s s1'>{$this->getImage($session->userAvatar, false)}</div>" .
-          "<div class='s s2'>{$userNavigationLinks}{$session->userName}</div>" .
-        "</div>"
+        "<ul class='o1 s2 no-list'>" .
+          "<li>{$this->a($i18n->r("/profile"), $i18n->t("Profile"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/collection"), $i18n->t("Collection"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile"), $i18n->t("Profile"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/collection"), $i18n->t("Collection"))}</li>" .
+        "</ul>" .
+        "<ul class='o1 s2 no-list'>" .
+          "<li>{$session->userName}</li>" .
+          "<li>{$this->a($i18n->r("/profile/sign-out"), $i18n->t("Sign Out"), [ "class" => "danger" ])}</li>" .
+        "</ul>" .
+        $this->getImage($session->userAvatar, false)
       ;
     }
     else {
       $userIcon = "<span id='user-nav-add' class='btn btn-inverse clicker ico ico-user-add'></span>";
       $userNavigation =
-        "<ul>" .
+        "<ul class='o1 s2 no-list'>" .
           "<li>{$this->a($i18n->r("/profile/sign-in"), $i18n->t("Sign In"))}</li>" .
           "<li>{$this->a($i18n->r("/profile/join"), $i18n->t("Join"))}</li>" .
           "<li>{$this->a($i18n->r("/profile/reset-password"), $i18n->t("Reset Password"))}</li>" .
@@ -393,7 +392,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "</form>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='user-nav' role='navigation' tabindex='0'>" .
             "<h2 class='vh'>{$i18n->t("User Navigation")}</h2>{$userIcon}" .
-            "<div class='concealed s3'><div class='s3'>{$userNavigation}</div></div>" .
+            "<div class='concealed s s3'>{$userNavigation}</div>" .
           "</nav>" .
         "</div>" .
       "</div></div></header>"

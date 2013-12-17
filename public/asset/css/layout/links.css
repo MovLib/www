@@ -73,3 +73,13 @@ a.img {
   display: inline-block;
   border: 0;
 }
+
+a.danger {
+  color: #da4f49;
+}
+
+a.danger:hover,
+a.danger:active,
+a.danger:focus {
+  border-bottom-color: #da4f49;
+}
