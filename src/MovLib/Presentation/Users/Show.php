@@ -17,8 +17,8 @@
  */
 namespace MovLib\Presentation\Users;
 
+use \MovLib\Data\User\User;
 use \MovLib\Data\User\Users;
-use \MovLib\Presentation\Partial\Lists\Images;
 
 /**
  * @todo Description of Show
@@ -30,6 +30,12 @@ use \MovLib\Presentation\Partial\Lists\Images;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitPagination;
+  use \MovLib\Presentation\TraitSidebar;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The users database instance.
@@ -45,40 +51,54 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected $userRoute;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
   /**
    * Instantiate new users show presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
    */
   public function __construct() {
-    global $i18n;
+    global $i18n, $kernel, $session;
+    $this->users = new Users();
     $this->initPage($i18n->t("Users"));
-    $this->users     = (new Users())->orderByNewest();
-    $this->userRoute = "{$i18n->r("/user")}/";
+    $this->initBreadcrumb();
+    $this->initLanguageLinks("/users");
+    $this->initPagination($this->users->getTotalCount());
+    $this->initSidebar([
+      [ $kernel->requestPath, $this->title ],
+    ]);
+    if ($session->isAuthenticated === false) {
+      $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ])}</a>";
+    }
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc
    */
-  protected function getContent() {
-    $list = new Images($this->users);
-    $list->closure = [ $this, "renderAvatar" ];
-    return "<div class='c'><div class='r'>{$list}</div></div>";
-  }
-
-  /**
-   *
-   * @param \MovLib\Data\Stub\User $user
-   * @param type $attributes
-   * @param type $i
-   * @return type
-   */
-  public function renderAvatar($user, $attributes, $i) {
-    $routeName = rawurlencode($user->filename);
-    if ($user->exists == false) {
-      $attributes["src"] = "https://alpha.movlib.org/img/logo/vector.svg";
+  protected function getPageContent() {
+    $list  = null;
+    $users = $this->users->getOrderedByCreatedResult($this->resultsOffset, $this->resultsPerPage);
+    /* @var $user \MovLib\Data\User\User */
+    while ($user = $users->fetch_object("\\MovLib\\Data\\User\\User")) {
+      $list .=
+        "<li class='s s5' itemscope itemtype='http://schema.org/Person'>" .
+          "<a class='img r' href='{$user->route}' itemprop='url'>" .
+            $this->getImage($user->getStyle(User::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
+            "<span class='s s4' itemprop='name'>{$user->name}</span>" .
+          "</a>" .
+        "</li>"
+      ;
     }
-    return "<a class='ia' href='{$this->userRoute}{$routeName}'><img{$this->expandTagAttributes($attributes)}><br><small>{$user->filename}</small></a>";
+    return "<div id='filter'>filter filter filter</div><ol class='img-list no-list r'>{$list}</ol>";
   }
 
 }

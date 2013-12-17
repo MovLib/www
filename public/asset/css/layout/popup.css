@@ -24,20 +24,36 @@
  * @since 0.0.1-dev
  */
 
-.popup-c {
+.popup-c,
+.popup-l,
+.popup-r {
   position: relative;
 }
 
-.popup-c:after {
+.popup-c:after,
+.popup-l:after,
+.popup-r:after {
   content: "";
   position: absolute;
 }
 
+.popup-c:hover:after,
+.popup-l:hover:after,
 .popup-c:hover:after {
   top: -20px;
   right: -50px;
   bottom: -10px;
   left: -50px;
+}
+
+.popup-l:hover:after {
+  left: -20px;
+  right: -70px;
+}
+
+.popup-r:hover:after {
+  left: -70px;
+  right: -20px;
 }
 
 .popup:after,
@@ -50,35 +66,71 @@
 }
 
 .popup {
-  right: auto; /* Important for Internet Explorer, otherwise the popup's are too much to the left! */
+  background-color: #fff;
   bottom: 0;
-  left: -50%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+  color: #656565;
+  margin-bottom: 6px;
   max-width: 320px;
   padding: 10px;
-  margin: 0 0 6px 0;
-  color: #656565;
-  background-color: #fff;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+}
+
+.popup-c .popup {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.popup-l .popup {
+  left: -34px;
+  padding-left: 44px;
+}
+
+.popup-r .popup {
+  right: -34px;
+  padding-right: 44px;
 }
 
 .popup:after {
   bottom: -12px;
-  left: 50%;
-  margin-left: -6px;
   border: 6px solid transparent;
   border-top-color: #fff;
   content: "";
 }
 
+.popup-c .popup:after {
+  left: 50%;
+  margin-left: -3px;
+}
+
+.popup-l .popup:after {
+  left: 34px;
+}
+
+.popup-r .popup:after {
+  right: 34px;
+}
+
 .popup-c:focus .popup,
-.popup-c:hover .popup {
+.popup-c:hover .popup,
+.popup-l:focus .popup,
+.popup-l:hover .popup,
+.popup-r:focus .popup,
+.popup-r:hover .popup {
   bottom: 100%;
 }
 
 .popup-c:focus .popup,
 .popup-c:hover .popup,
 .popup-c:focus .popup:after,
-.popup-c:hover .popup:after {
+.popup-c:hover .popup:after,
+.popup-l:focus .popup,
+.popup-l:hover .popup,
+.popup-l:focus .popup:after,
+.popup-l:hover .popup:after,
+.popup-r:focus .popup,
+.popup-r:hover .popup,
+.popup-r:focus .popup:after,
+.popup-r:hover .popup:after {
   z-index: 1;
   opacity: 1;
 }
