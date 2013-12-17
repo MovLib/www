@@ -39,7 +39,7 @@
 
 .popup-c:hover:after,
 .popup-l:hover:after,
-.popup-c:hover:after {
+.popup-r:hover:after {
   top: -20px;
   right: -50px;
   bottom: -10px;
@@ -56,23 +56,25 @@
   right: -20px;
 }
 
+.popup:before,
 .popup:after,
 .popup {
   position: absolute;
-  z-index: -999999;
+  visibility: hidden;
   opacity: 0;
   transition-duration: 0.3s;
-  transition-property: bottom, opacity;
+  transition-property: bottom, opacity, visibility;
 }
 
 .popup {
   background-color: #fff;
   bottom: 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   color: #656565;
   margin-bottom: 6px;
   max-width: 320px;
-  padding: 10px;
+  padding: 20px;
 }
 
 .popup-c .popup {
@@ -81,13 +83,18 @@
 }
 
 .popup-l .popup {
-  left: -34px;
-  padding-left: 44px;
+  left: -20px;
 }
 
 .popup-r .popup {
-  right: -34px;
-  padding-right: 44px;
+  right: -20px;
+}
+
+.popup:before {
+  bottom: -14px;
+  border: 7px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.2);
+  content: "";
 }
 
 .popup:after {
@@ -97,40 +104,62 @@
   content: "";
 }
 
+.popup-c .popup:before,
 .popup-c .popup:after {
   left: 50%;
+}
+
+.popup-c .popup:before {
+  margin-left: -3.5px;
+}
+
+.popup-c .popup:after {
   margin-left: -3px;
 }
 
+.popup-l .popup:before {
+  left: 19px;
+}
+
 .popup-l .popup:after {
-  left: 34px;
+  left: 20px;
+}
+
+.popup-r .popup:before {
+  right: 19px;
 }
 
 .popup-r .popup:after {
-  right: 34px;
+  right: 20px;
 }
 
-.popup-c:focus .popup,
+.popup-c.focus .popup,
 .popup-c:hover .popup,
-.popup-l:focus .popup,
+.popup-l.focus .popup,
 .popup-l:hover .popup,
-.popup-r:focus .popup,
+.popup-r.focus .popup,
 .popup-r:hover .popup {
   bottom: 100%;
 }
 
-.popup-c:focus .popup,
+.popup-c.focus .popup,
 .popup-c:hover .popup,
-.popup-c:focus .popup:after,
+.popup-c.focus .popup:before,
+.popup-c:hover .popup:before,
+.popup-c.focus .popup:after,
 .popup-c:hover .popup:after,
-.popup-l:focus .popup,
+.popup-l.focus .popup,
 .popup-l:hover .popup,
-.popup-l:focus .popup:after,
+.popup-l.focus .popup:before,
+.popup-l:hover .popup:before,
+.popup-l.focus .popup:after,
 .popup-l:hover .popup:after,
-.popup-r:focus .popup,
+.popup-r.focus .popup,
 .popup-r:hover .popup,
-.popup-r:focus .popup:after,
+.popup-r.focus .popup:before,
+.popup-r:hover .popup:before,
+.popup-r.focus .popup:after,
 .popup-r:hover .popup:after {
-  z-index: 1;
   opacity: 1;
+  visibility: visible;
 }

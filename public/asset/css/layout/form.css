@@ -293,16 +293,7 @@ option[value=""] {
 }
 
 .form-help .popup {
-  right: -32px;
-  left: auto;
   width: 320px;
-  padding: 20px;
-}
-
-.form-help .popup:after {
-  right: 34px;
-  left: auto;
-  margin: 0;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
