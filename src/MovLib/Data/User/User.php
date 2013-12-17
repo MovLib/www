@@ -218,7 +218,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         $this->getURL($style),
         $style,
         $style,
-        $this->exists,
+        !$this->exists,
         $this->route
       );
     }

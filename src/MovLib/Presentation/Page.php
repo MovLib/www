@@ -61,6 +61,13 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected $breadcrumb;
 
   /**
+   * The title used for the current page in the breadcrumb, defaults to the current title if not given.
+   *
+   * @var string
+   */
+  protected $breadcrumbTitle;
+
+  /**
    * HTML that should be included after the page's content.
    *
    * @var string
@@ -69,6 +76,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
 
   /**
    * HTML that should be included before the page's content.
+   *
    * @var string
    */
   protected $contentBefore;
@@ -328,23 +336,24 @@ class Page extends \MovLib\Presentation\AbstractBase {
     }
 
     if ($session->isAuthenticated === true) {
-      $userIcon = "<div id='user-nav-settings' class='clicker ico ico-settings'>{$this->getImage($session->userAvatar, false)}</div>";
+      $userIcon = "<div class='clicker ico ico-settings authenticated'>{$this->getImage($session->userAvatar, false)}<span class='badge'>2</span></div>";
       $userNavigation =
         "<ul class='o1 s2 no-list'>" .
-          "<li>{$this->a($i18n->r("/profile"), $i18n->t("Profile"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/messages"), $i18n->t("Messages"), [ "class" => "ico ico-email" ])}</li>" .
           "<li>{$this->a($i18n->r("/profile/collection"), $i18n->t("Collection"))}</li>" .
-          "<li>{$this->a($i18n->r("/profile"), $i18n->t("Profile"))}</li>" .
-          "<li>{$this->a($i18n->r("/profile/collection"), $i18n->t("Collection"))}</li>" .
-        "</ul>" .
-        "<ul class='o1 s2 no-list'>" .
-          "<li>{$session->userName}</li>" .
+          "<li>{$this->a($i18n->r("/profile/wantlist"), $i18n->t("Wantlist"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/lists"), $i18n->t("Lists"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/watchlist"), $i18n->t("Watchlist"))}</li>" .
+          "<li class='separator'>{$this->a($i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "ico ico-user" ])}</li>" .
+          "<li>{$this->a($i18n->r("/profile/account-settings"), $i18n->t("Settings"), [ "class" => "ico ico-settings" ])}</li>" .
+          "<li class='separator name'>{$session->userName}</li>" .
           "<li>{$this->a($i18n->r("/profile/sign-out"), $i18n->t("Sign Out"), [ "class" => "danger" ])}</li>" .
         "</ul>" .
-        $this->getImage($session->userAvatar, false)
+        $this->getImage($session->userAvatar)
       ;
     }
     else {
-      $userIcon = "<span id='user-nav-add' class='btn btn-inverse clicker ico ico-user-add'></span>";
+      $userIcon = "<div class='btn btn-inverse clicker ico ico-user-add'></div>";
       $userNavigation =
         "<ul class='o1 s2 no-list'>" .
           "<li>{$this->a($i18n->r("/profile/sign-in"), $i18n->t("Sign In"))}</li>" .
@@ -436,6 +445,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
   public function getPresentation() {
     global $i18n, $kernel, $session;
 
+    // Allow the presentation to alter presentation in getContent() method.
+    $content = $this->getMainContent();
+
     // Build a link for each stylesheet of this page.
     $stylesheets = null;
     $c           = count($kernel->stylesheets);
@@ -475,7 +487,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         // @todo Add opensearch tag (rel="search").
       "</head>" .
       "<body id='{$this->id}' class='{$this->bodyClasses}'>" .
-        "{$this->getHeader()}{$this->getMainContent()}{$this->getFooter()}" .
+        "{$this->getHeader()}{$content}{$this->getFooter()}" .
         "<script id='jss' type='application/json'>{$jsSettings}</script>" .
         "<script async src='{$kernel->getAssetURL("MovLib", "js")}'></script>"
     ;
@@ -484,12 +496,21 @@ class Page extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the wrapped content, including heading.
    *
+   * @global \MovLib\Kernel $kernel
    * @return string
    *   The wrapped content, including heading.
    */
   protected function getMainContent() {
+    global $kernel;
+
+    // Allow the presentation to alter the main content in getContent() method.
+    $content = $this->getContent();
+
     // Allow the presentation to set a heading that includes HTML mark-up.
     $title = $this->pageTitle ?: $this->title;
+
+    // Add the current page to the breadcrumb.
+    $this->breadcrumb->menuitems[] = [ $kernel->requestPath, $this->breadcrumbTitle ?: $this->title ];
 
     // The schema for the complete page content.
     $schema = null;
@@ -511,7 +532,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "<div class='c'>{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
           "<div id='b'>{$this->breadcrumb}</div>" .
         "</header>" .
-        "{$this->contentBefore}{$this->getContent()}{$this->contentAfter}" .
+        "{$this->contentBefore}{$content}{$this->contentAfter}" .
       "</main>"
     ;
   }
@@ -523,11 +544,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
    * @global \MovLib\Kernel $kernel
    * @param array $breadcrumbs [optional]
    *   Numeric array containing additional breadcrumbs to put between home and the current page.
-   * @param string $title [optional]
-   *   Set custom title for the last breadcrumb trail (the current page).
    * @return this
    */
-  protected function initBreadcrumb(array $breadcrumbs = [], $title = null) {
+  protected function initBreadcrumb(array $breadcrumbs = []) {
     global $i18n, $kernel;
 
     // Initialize the breadcrumb navigation and always include the home page's link and the currently displayed page.
@@ -543,7 +562,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
       }
       $trail[] = $breadcrumbs[$i];
     }
-    $trail[] = [ $kernel->requestPath, $title ?: $this->title ];
 
     // Create the actual navigation with the trail we just built.
     $this->breadcrumb            = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "c small" ]);
