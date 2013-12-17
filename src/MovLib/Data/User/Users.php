@@ -17,8 +17,6 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\Pagination;
-
 /**
  * Handling of large amounts of user data.
  *
@@ -29,7 +27,7 @@ use \MovLib\Data\Pagination;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Users extends \MovLib\Data\DatabaseArrayObject {
+class Users {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -44,9 +42,8 @@ class Users extends \MovLib\Data\DatabaseArrayObject {
     "SELECT
       `id`,
       `name`,
-      UNIX_TIMESTAMP(`image_changed`) AS `imageChanged`,
-      `image_extension` AS `imageExtension`,
-      `image_changed` IS NOT NULL AS `imageExists`
+      UNIX_TIMESTAMP(`image_changed`) AS `changed`,
+      `image_extension` AS `extension`
     FROM `users`"
   ;
 
@@ -55,65 +52,32 @@ class Users extends \MovLib\Data\DatabaseArrayObject {
 
 
   /**
-   * Order selected users by ID.
+   * Get the total count of undeleted users.
    *
-   * @param array $filter
-   *   Array containing the user IDs to fetch.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
+   * @global \MovLib\Data\Database $db
+   * @return integer
+   *   The total count of undeleted users.
    */
-  public function orderById(array $filter) {
-    $this->objectsArray = [];
-    if (!empty($filter)) {
-      $c      = count($filter);
-      $in     = rtrim(str_repeat("?,", $c), ",");
-      $result = $this->query("{$this->query} WHERE `id` IN ({$in}) ORDER BY `id` ASC", str_repeat("d", $c), $filter)->get_result();
-      /* @var $user \MovLib\Data\User\User */
-      while ($user = $result->fetch_object("\\MovLib\\Data\\User\\User")) {
-        $this->objectsArray[$user->id] = $user;
-      }
-    }
-    return $this;
+  public function getTotalCount() {
+    global $db;
+    return $db->query("SELECT COUNT(*) FROM `users` WHERE `email` IS NOT NULL")->get_result()->fetch_row()[0];
   }
 
   /**
-   * Order by creation time, newest first.
+   * Get all undeleted users ordered by their creation timestamp.
    *
-   * @param int $offset [optional]
-   *   The offset within all users, defaults to <code>0</code>.
-   * @param int $rowCount [optional]
-   *   Defines how many users are fetched from <var>$offset</var>, defaults to <code>Pagination::SPAN8</code>.
-   * @return this
+   * @global \MovLib\Data\Database $db
+   * @param integer $offset
+   *   The offset, usually provided by the pagination trait.
+   * @param integer $rowCount
+   *   The row count, usually provided by the pagination trait.
+   * @return \mysqli_result
+   *   The mysqli result of the query.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function orderByNewest($offset = 0, $rowCount = Pagination::SPAN_08) {
-    $this->objectsArray = [];
-    $result = $this->query("{$this->query} WHERE `email` IS NOT NULL ORDER BY `created` DESC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
-    /* @var $user \MovLib\Data\User\User */
-    while ($user = $result->fetch_object("\\MovLib\\Data\\User\\User")) {
-      $this->objectsArray[] = $user;
-    }
-    return $this;
-  }
-
-  /**
-   * Order by username.
-   *
-   * @param int $offset [optional]
-   *   The offset within all users, defaults to <code>0</code>.
-   * @param int $rowCount [optional]
-   *   Defines how many users are fetched from <var>$offset</var>, defaults to <code>Pagination::SPAN8</code>.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function orderByName($offset = 0, $rowCount = Pagination::SPAN_08) {
-    $this->objectsArray = [];
-    $result = $this->query("{$this->query} WHERE `email` IS NOT NULL ORDER BY `name` ASC LIMIT ?, ?", "ii", [ $offset, $rowCount ])->get_result();
-    /* @var $user \MovLib\Data\User\User */
-    while ($user = $result->fetch_object("\\MovLib\\Data\\User\\User")) {
-      $this->objectsArray[$user->name] = $user;
-    }
-    return $this;
+  public function getOrderedByCreatedResult($offset, $rowCount) {
+    global $db;
+    return $db->query("{$this->query} WHERE `email` IS NOT NULL ORDER BY `created` DESC LIMIT ? OFFSET ?", "ii", [ $rowCount, $offset ])->get_result();
   }
 
 }
