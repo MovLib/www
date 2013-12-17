@@ -82,10 +82,12 @@
 
 .popup-l .popup {
   left: -34px;
+  padding-left: 44px;
 }
 
 .popup-r .popup {
   right: -34px;
+  padding-right: 44px;
 }
 
 .popup:after {
