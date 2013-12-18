@@ -99,42 +99,38 @@ class Photo extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
    */
   public function __construct() {
     global $i18n;
-    try {
-      $this->person = new Person($_SERVER["PERSON_ID"]);
-      if ($this->person->deleted === true) {
-        // @todo Display appropriate information if person is deleted.
-      }
-      elseif (isset($_SERVER["IMAGE_ID"])) {
-        $title       = $i18n->t("Update photo of {0}", [ $this->person->name ]);
-        $submit      = $i18n->t("Update Photo");
-        $this->image = new PersonPhoto($this->person->id, $this->person->name, $_SERVER["IMAGE_ID"]);
-      }
-      else {
-        $title       = $i18n->t("Upload new photo for {0}", [ $this->person->name ]);
-        $submit      = $i18n->t("Upload Photo");
-        $this->image = new PersonPhoto($this->person->id, $this->person->name);
-      }
-      $this->init($title);
 
-      $this->inputImage  = new InputImage("photo", $i18n->t("Photo"), $this->image, [ "required" ]);
-      $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description);
-      $this->source      = new InputURL("source", $i18n->t("Source"), [ "data-allow-external" => true, "value" => $this->image->source ]);
-      $this->license     = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ? : 1, [ "required" ]);
+    $this->person = new Person($_SERVER["PERSON_ID"]);
+    if ($this->person->deleted === true) {
+      // @todo Display appropriate information if person is deleted.
+    }
+    elseif (isset($_SERVER["IMAGE_ID"])) {
+      $title       = $i18n->t("Update photo of {0}", [ $this->person->name ]);
+      $submit      = $i18n->t("Update Photo");
+      $this->image = new PersonPhoto($this->person->id, $this->person->name, $_SERVER["IMAGE_ID"]);
+    }
+    else {
+      $title       = $i18n->t("Upload new photo for {0}", [ $this->person->name ]);
+      $submit      = $i18n->t("Upload Photo");
+      $this->image = new PersonPhoto($this->person->id, $this->person->name);
+    }
+    $this->init($title);
 
-      $this->form = new Form($this, [
-        $this->inputImage,
-        $this->description,
-        $this->source,
-        $this->license,
-      ]);
-      $this->form->actionElements[] = new InputSubmit($submit, [
-        "class" => "btn btn-large btn-success",
-        "title" => $i18n->t("Continue here after you filled out all mandatory fields."),
-      ]);
-    }
-    catch (\OutOfBoundsException $e) {
-      throw new NotFound("No person with identifier '{$_SERVER["PERSON_ID"]}'");
-    }
+    $this->inputImage  = new InputImage("photo", $i18n->t("Photo"), $this->image, [ "required" ]);
+    $this->description = new InputHTML("description", $i18n->t("Description"), $this->image->description);
+    $this->source      = new InputURL("source", $i18n->t("Source"), [ "data-allow-external" => true, "value" => $this->image->source ]);
+    $this->license     = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ? : 1, [ "required" ]);
+
+    $this->form = new Form($this, [
+      $this->inputImage,
+      $this->description,
+      $this->source,
+      $this->license,
+    ]);
+    $this->form->actionElements[] = new InputSubmit($submit, [
+      "class" => "btn btn-large btn-success",
+      "title" => $i18n->t("Continue here after you filled out all mandatory fields."),
+    ]);
   }
 
 
@@ -151,30 +147,12 @@ class Photo extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   /**
    * @inheritdoc
    */
-  protected function getSecondaryNavigationMenuitems() {
-    return [];
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function validate(array $errors = null) {
-    global $i18n;
-
-    // The description can't be empty if the source is empty and vice versa.
-    if (empty($this->description->value) && empty($this->source->value)) {
-      $errors = $i18n->t("Description and source URL missing, you have to fill out at least one of these fields.");
-    }
-
-    if ($this->checkErrors($errors) === false) {
-      $this->image->description = $this->description->value;
-      $this->image->licenseId   = $this->license->value;
-      $this->image->source      = $this->source->value;
-      $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
-      throw new SeeOtherRedirect($this->image->route);
-    }
-
-    return $this;
+  protected function valid() {
+    $this->image->description = $this->description->value;
+    $this->image->licenseId   = $this->license->value;
+    $this->image->source      = $this->source->value;
+    $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
+    throw new SeeOtherRedirect($this->image->route);
   }
 
 }

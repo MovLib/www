@@ -115,15 +115,6 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   */
-  public function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->r($this->systemPage->route), $this->systemPage->title ]];
-  }
-
-  /**
-   * @inheritdoc
    */
   public function getContent() {
     return "<div class='c'><div class='r'><div class='s s12'>{$this->form}</div></div></div>";
@@ -135,23 +126,20 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
    * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
-  public function validate(array $errors = null) {
+  public function valid() {
     global $i18n, $kernel;
 
-    if ($this->checkErrors($errors) === false) {
-      $this->systemPage->title = $this->inputPageTitle->value;
-      $this->systemPage->text  = $this->inputPageText->value;
-      $this->systemPage->commit();
+    $this->systemPage->title = $this->inputPageTitle->value;
+    $this->systemPage->text  = $this->inputPageText->value;
+    $this->systemPage->commit();
 
-      $kernel->alerts .= new Alert(
-        $i18n->t("You successfully updated the system page {0}.", [ $this->systemPage->title ]),
-        $i18n->t("{0} updated successfully", [ $this->systemPage->title ]),
-        Alert::SEVERITY_SUCCESS
-      );
-      throw new SeeOtherRedirect($i18n->r($this->systemPage->route));
-    }
+    $kernel->alerts .= new Alert(
+      $i18n->t("You successfully updated the system page {0}.", [ $this->systemPage->title ]),
+      $i18n->t("{0} updated successfully", [ $this->systemPage->title ]),
+      Alert::SEVERITY_SUCCESS
+    );
 
-    return $this;
+    throw new SeeOtherRedirect($i18n->r($this->systemPage->route));
   }
 
 }

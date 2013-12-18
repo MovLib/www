@@ -42,6 +42,17 @@ trait TraitFormPage {
   protected $form;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
+  /**
+   * Called if the form's auto-validation didn't came up with any errors.
+   * 
+   * @return this
+   */
+  protected abstract function valid();
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -72,13 +83,17 @@ trait TraitFormPage {
 
   /**
    * The page's validation callback, this must be public to enable a form instance to call this method.
+   * 
+   * The {@see valid()} method is automatically called if no errors were encountered.
    *
    * @param array $errors [optional]
    *   Array containing all validation exception message from the form, if any.
    * @return this
    */
   public function validate(array $errors = null) {
-    $this->checkErrors($errors);
+    if ($this->checkErrors($errors) === false) {
+      $this->valid();
+    }
     return $this;
   }
 

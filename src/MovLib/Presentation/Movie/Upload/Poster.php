@@ -184,16 +184,13 @@ class Poster extends \MovLib\Presentation\Movie\AbstractMoviePage {
   /**
    * @inheritdoc
    */
-  public function validate(array $errors = null) {
-    if ($this->checkErrors($errors) === false) {
-      $this->image->countryCode  = $this->country->value;
-      $this->image->description  = $this->description->value;
-      $this->image->languageCode = $this->language->value;
-      $this->image->licenseId    = $this->license->value;
-      $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
-      throw new SeeOtherRedirect($this->image->route);
-    }
-    return $this;
+  protected function valid() {
+    $this->image->countryCode  = $this->country->value;
+    $this->image->description  = $this->description->value;
+    $this->image->languageCode = $this->language->value;
+    $this->image->licenseId    = $this->license->value;
+    $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
+    throw new SeeOtherRedirect($this->image->route);
   }
 
 }

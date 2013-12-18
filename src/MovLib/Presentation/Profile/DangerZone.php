@@ -203,36 +203,28 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
 
     // Nothing to do if we have no session ID.
     if (empty($_POST["session_id"])) {
+      $this->checkErrors($i18n->t("The submitted session ID was invalid."));
       return $this;
     }
 
     // Delete own session means sign out.
     if ($_POST["session_id"] == $session->id) {
-      $session->destroy();
+      $session->destroy(true);
       throw new SeeOtherRedirect($i18n->r("/profile/sign-in"));
     }
 
     // Delete the session from Memcached and our persistent storage.
-    try {
-      $session->delete($_POST["session_id"]);
-    }
-    catch (DatabaseException $e) {
-      $this->checkErrors($i18n->t("The submitted session ID was invalid."));
-    }
+    $session->delete($_POST["session_id"]);
 
     return $this;
   }
 
   /**
-   * No validation at this point, just send the email and display more information to the user.
-   *
+   * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @param array $errors [optional]
-   *   {@inheritdoc}
-   * @return $this
    */
-  public function validate(array $errors = null) {
+  protected function valid() {
     global $i18n, $kernel;
 
     // Send the email for verification of this action.
