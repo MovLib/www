@@ -33,6 +33,14 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
+  /**
+   * 60x60>
+   *
+   * Image style used on places were a square image is needed.
+   *
+   * @var string
+   */
+  const STYLE_SPAN_01_SQUARE = "60x60";
 
   /**
    * 220x>
@@ -161,9 +169,7 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
     $span05 = $this->convert($source, self::STYLE_SPAN_05);
     $span03 = $this->convert($span05, self::STYLE_SPAN_03);
     $span02 = $this->convert($span03, self::STYLE_SPAN_02);
-
-    // Create a square image for streams and other presentation purposes like the user rating stream.
-    $this->convert($span02, self::STYLE_SPAN_01, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true);
+    $this->convert($span02, self::STYLE_SPAN_01);
 
     // Update the existing record with the image style data that we just generated.
     $db->query(
