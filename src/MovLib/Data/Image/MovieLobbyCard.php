@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -26,7 +26,7 @@ namespace MovLib\Data\Image;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieLobbyCard extends \MovLib\Data\Image\MoviePoster {
+class MovieLobbyCard extends \MovLib\Data\Image\MovieImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
