@@ -50,3 +50,28 @@
 #content-header .img:active span {
   bottom: 0;
 }
+
+#movie-rating .rating td {
+  position: relative;
+}
+
+#movie-rating .rating {
+  transition: background-color 0.4s ease-out;
+}
+
+#movie-rating .rating:hover {
+  background-color: #e2f4fb;
+}
+
+#movie-rating .star {
+  background: url("/asset/img/star.svg") no-repeat;
+  background-size: 34px 34px;
+  color: #252525;
+  font-weight: bold;
+  line-height: 35px;
+  text-align: center;
+  position: absolute;
+  top: 21px;
+  text-shadow: 0 0 5px #fff, 0 0 20px #fff;
+  width: 34px;
+}

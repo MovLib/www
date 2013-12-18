@@ -15,17 +15,50 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Data\Movie;
 
 /**
- * @todo Description of RatingModel
+ * Handling of one Rating
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Rating {
+class MovieRating extends \MovLib\Data\Database {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+  
+  /**
+   * The movie rating's creation timestamp.
+   *
+   * @var int
+   */
+  public $created;
+  
+  /**
+   * The movie rating's movie id.
+   *
+   * @var int
+   */
+  public $movieId;
+  
+  /**
+   * The rating.
+   *
+   * @var int
+   */
+  public $rating;
+  
+  /**
+   * The movie ratings's user id.
+   *
+   * @var int
+   */
+  public $userId;
+  
 }

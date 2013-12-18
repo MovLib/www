@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\User;
 
+use \MovLib\Data\Movie\Movie;
+use \MovLib\Data\Movie\MovieRatings;
 use \MovLib\Data\User\Full as FullUser;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Date;
@@ -78,7 +80,7 @@ class Show extends \MovLib\Presentation\Page {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
+  
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
@@ -181,7 +183,38 @@ class Show extends \MovLib\Presentation\Page {
       }
     }
     else {
-      $publicProfile .= "<p>rating stream ... rating stream ... rating stream</p>";
+      $publicProfile .= "<table id='movie-rating'>";
+      $movieRatings   = (new MovieRatings())->getOrderedByCreated(MovieRatings::FROM_USER_ID, $this->user->id);
+      $c = count($movieRatings);
+      for ($i = 0; $i < $c; ++$i) {
+        $movie = new Movie($movieRatings[$i]->movieId);
+        
+        // Format the display title for the list.
+        if ($movie->year) {
+          $title = $i18n->t("{movie_title} ({movie_year})", [
+            "movie_title" => "<span itemprop='name'>{$movie->displayTitle}</span>",
+            "movie_year"  => "<span itemprop='datePublished'>{$movie->year}</span>",
+          ]);
+        }
+        else {
+          $title = "<span itemprop='name'>{$movie->displayTitle}</span>";
+        }
+
+        // Append the original title to the output if it differs from the localized title.
+        if ($movie->displayTitle != $movie->originalTitle) {
+          $title .= "<br><span class='small'>{$i18n->t("Original title: “{original_title}”", [
+            "original_title" => "<span itemprop='alternateName'>{$movie->originalTitle}</span>",
+          ])}</span>";
+        }
+        
+        $publicProfile .= 
+          "<tr class='rating'>" .
+            "<td>{$this->getImage($movie->displayPoster->getStyle(\MovLib\Data\Image\MoviePoster::STYLE_SPAN_01), false)}<td>" .
+            "<td>{$this->a($i18n->r("/movie/{0}", [ $movie->id ]), $title)}<td>" .
+            "<td><span class='star'>{$movieRatings[$i]->rating}</span><td>" .
+          "</tr>";        
+      }
+      $publicProfile .= "</table>";
     }
 
     return $publicProfile;
