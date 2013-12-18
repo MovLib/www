@@ -57,6 +57,13 @@ abstract class AbstractUserPage extends \MovLib\Presentation\Page {
   protected $routeUploads;
 
   /**
+   * The translated route to the users page.
+   *
+   * @var string
+   */
+  protected $routeUsers;
+
+  /**
    * The user we are currently displaying.
    *
    * @var \MovLib\Data\User\Full
@@ -81,21 +88,22 @@ abstract class AbstractUserPage extends \MovLib\Presentation\Page {
     $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
 
     // Display the avatar within the header if the user has one.
-    if ($this->user->exists === true) {
+    if ($this->user->imageExists === true) {
       $this->headingBefore = $this->getImage($this->user->getStyle(FullUser::STYLE_SPAN_01), true, null, [ "class" => "fr" ]);
     }
-
-    // Initialize the breadcrumb with all parent trails.
-    $this->initBreadcrumb([
-      [ $i18n->rp("/users"), $i18n->t("Users") ],
-      [ $this->user->route, $this->user->name ],
-    ]);
 
     // Just for ease of use.
     $routeArgs             = [ $this->user->filename ];
     $this->routeCollection = $i18n->r("/user/{0}/collection", $routeArgs);
-    $this->routeUploads    = $i18n->r("/user/{0}/uploads", $routeArgs);
     $this->routeContact    = $i18n->r("/user/{0}/contact", $routeArgs);
+    $this->routeUploads    = $i18n->r("/user/{0}/uploads", $routeArgs);
+    $this->routeUsers      = $i18n->rp("/users");
+
+    // Initialize the breadcrumb with all parent trails.
+    $this->initBreadcrumb([
+      [ $this->routeUsers, $i18n->t("Users") ],
+      [ $this->user->route, $this->user->name ],
+    ]);
 
     // Initialize the sidebar with all direct sub pages.
     $this->initSidebar([

@@ -130,12 +130,9 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * Deletes the original image, all styles and the directory (if empty) from the persistent storage.
    *
-   * @global \MovLib\Kernel $kernel
    * @return this
    */
   protected function delete() {
-    global $kernel;
-
     // Unserialize the styles if they are still serialized.
     if (!is_array($this->styles)) {
       $this->styles = unserialize($this->styles);
@@ -155,10 +152,15 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
       }
       catch (\ErrorException $e) {
         error_log($e);
+        // @devStart
+        // @codeCoverageIgnoreStart
+        throw $e;
+        // @codeCoverageIgnoreEnd
+        // @devEnd
       }
     }
 
-    $this->exists = false;
+    $this->imageExists = false;
     return $this;
   }
 
@@ -167,8 +169,8 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    */
   public function getStyle($style = self::STYLE_SPAN_02) {
     // Use the style itself for width and height if this image doesn't exist.
-    if ($this->exists === false) {
-      $this->styles[$style]["width"] = $this->styles[$style]["height"] = $style;
+    if ($this->imageExists === false) {
+      $this->styles = [ $style => [ "width" => $style, "height" => $style ] ];
     }
     elseif (!is_array($this->styles)) {
       $this->styles = unserialize($this->styles);
@@ -181,7 +183,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
         $this->getURL($style),
         $this->styles[$style]["width"],
         $this->styles[$style]["height"],
-        $this->exists,
+        $this->imageExists,
         $this->route
       );
     }
@@ -200,6 +202,11 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   public function moveOriginal($source) {
     if (sh::execute("mv '{$source}' '{$this->getPath()}' && rm '{$source}'") === false) {
       error_log(__FILE__ . "(" . __LINE__ . "): Couldn't move uploaded image from temporary folder to persistent storage.");
+      // @devStart
+      // @codeCoverageIgnoreStart
+      throw new \LogicException("Couldn't move uploaded image from temporary folder to persistent storage.");
+      // @codeCoverageIgnoreEnd
+      // @devEnd
     }
     return $this;
   }
@@ -239,16 +246,20 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
 
     // Let the concrete class create the various image styles.
     $this->generateStyles($source);
+
+    // @devStart
+    // @codeCoverageIgnoreStart
     if (!isset($this->styles[self::STYLE_SPAN_01]) || !isset($this->styles[self::STYLE_SPAN_02])) {
       throw new \LogicException("Every image instance has to generate the default styles!");
     }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
     // Must be last because extending classes use it to determine if they have to update or insert.
-    $this->exists = true;
+    $this->imageExists = true;
 
     $kernel->delayMethodCall([ $this, "moveOriginal" ], [ $source ]);
     return $this;
   }
-
 
 }

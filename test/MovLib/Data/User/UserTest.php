@@ -130,7 +130,7 @@ class UserTest extends \MovLib\TestCase {
     foreach ([ User::STYLE_SPAN_01, User::STYLE_SPAN_02 ] as $style) {
       $this->assertFileNotExists($this->invoke($this->user, "getImagePath", [ $style ]));
     }
-    $this->assertFalse($this->user->exists);
+    $this->assertFalse($this->user->imageExists);
     $this->assertNull($this->getProperty($this->user, "imageChanged"));
     $this->assertNull($this->getProperty($this->user, "imageExtension"));
 

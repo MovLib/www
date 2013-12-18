@@ -218,7 +218,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
         $this->getURL($style),
         $style,
         $style,
-        !$this->exists,
+        !$this->imageExists,
         $this->route
       );
     }
@@ -233,7 +233,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
    */
   public function init() {
     global $i18n;
-    $this->exists   = (boolean) $this->changed;
+    $this->imageExists   = (boolean) $this->changed;
     $this->filename = mb_strtolower($this->name);
     $this->route    = $i18n->r("/user/{0}", [ $this->filename ]);
     return $this;
@@ -258,7 +258,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
     global $session;
 
     $this->changed     = $_SERVER["REQUEST_TIME"];
-    $this->exists      = true;
+    $this->imageExists      = true;
     $this->extension   = $extension;
     $this->stylesCache = null;
     $span2             = $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);

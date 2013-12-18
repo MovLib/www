@@ -130,7 +130,7 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
     global $db, $i18n, $session;
 
     // Reserve identifier if this is a new upload.
-    if ($this->exists === false) {
+    if ($this->imageExists === false) {
       // Do not add LIMIT 1 to subquery, this logs an "unsafe statement" warning in the binary logs.
       $db->query(
         "INSERT INTO `movies_images` SET
@@ -284,8 +284,8 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
     }
 
     // Export everything to class scope for which we have to ask the database.
-    $this->exists = (boolean) $this->changed;
-    $this->route  = $this->exists === true
+    $this->imageExists = (boolean) $this->changed;
+    $this->route  = $this->imageExists === true
       ? $i18n->r("/movie/{0}/{$name}/{1}", [ $this->movieId, $this->id ])
       : $i18n->r("/movie/{0}/{$name}/upload", [ $this->movieId ])
     ;

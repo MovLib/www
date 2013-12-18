@@ -36,7 +36,7 @@ class User extends \MovLib\Data\User\Full {
    */
   public function regenerateImageStyles() {
     // Only regenerate if we have an avatar.
-    if ($this->exists === false) {
+    if ($this->imageExists === false) {
       return $this;
     }
 

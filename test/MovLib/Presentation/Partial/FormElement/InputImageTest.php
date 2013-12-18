@@ -73,7 +73,7 @@ class InputImageTest extends \MovLib\TestCase {
    */
   public function testToStringNoImage() {
     $concreteImage              = new User(User::FROM_ID, 1);
-    $concreteImage->exists = false;
+    $concreteImage->imageExists = false;
     $inputImage                 = (string) new InputImage("phpunit", "PHPUnit", $concreteImage);
     $this->assertNotContains("<img", $inputImage);
     $this->assertContains("<label for='phpunit'>PHPUnit</label>", $inputImage);

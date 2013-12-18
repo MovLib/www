@@ -114,7 +114,7 @@ abstract class AbstractBaseImage {
    *
    * @var boolean
    */
-  public $exists = false;
+  public $imageExists = false;
 
   /**
    * The image's extension.
@@ -309,7 +309,7 @@ abstract class AbstractBaseImage {
     global $kernel;
 
     // If the image doesn't exist but a URL is claimed return the placeholder.
-    if ($this->exists === false) {
+    if ($this->imageExists === false) {
       return $kernel->getAssetURL($this->placeholder, $this->placeholderExtension);
     }
 

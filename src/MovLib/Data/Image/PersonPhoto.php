@@ -108,10 +108,10 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
         throw new \OutOfBoundsException("Couldn't find person photo for identifier '{$id}' (person identifier '{$personId}')");
       }
       $stmt->close();
-      $this->exists = true;
+      $this->imageExists = true;
     }
     elseif ($this->id) {
-      $this->exists = true;
+      $this->imageExists = true;
     }
 
     $this->alternativeText = $i18n->t("Photo of {person_name}.", [ "person_name" => $personName ]);
@@ -119,7 +119,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
     $this->personId        = $personId;
     $this->filename        = $this->id;
 
-    if ($this->exists === true) {
+    if ($this->imageExists === true) {
       $this->route = $i18n->r("/person/{0}/photo/{1}", [ $personId, $this->id ]);
     }
     else {
@@ -142,7 +142,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
     global $db, $i18n, $session;
 
     // If this is a new upload insert the just uploaded image.
-    if ($this->exists === false) {
+    if ($this->imageExists === false) {
       // Reserve the identifier in the table and directly insert the person's identifier as well, as it can't change in
       // the future plus the creation timestamp. We still keep the image in the deleted state because we don't want
       // that any request that might come in right now while we generate the new image styles is considered to exists.

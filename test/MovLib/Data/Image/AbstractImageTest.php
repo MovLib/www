@@ -116,7 +116,7 @@ class AbstractImageTest extends \MovLib\TestCase {
    * @covers ::deleteImage
    */
   public function testDeleteImage() {
-    $this->image->exists = true;
+    $this->image->imageExists = true;
     $imageName                = $this->getProperty($this->image, "imageName");
     $imageExtension           = $this->getProperty($this->image, "imageExtension");
     $imageStyles              = [ Image::STYLE_SPAN_01 => [ ], Image::STYLE_SPAN_02 => [ ] ];

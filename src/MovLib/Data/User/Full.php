@@ -375,7 +375,7 @@ class Full extends \MovLib\Data\User\User {
    */
   public function deleteAvatar() {
     global $session;
-    if ($this->exists == true) {
+    if ($this->imageExists == true) {
       foreach ([ self::STYLE_SPAN_02, self::STYLE_SPAN_01, self::STYLE_HEADER_USER_NAVIGATION ] as $style) {
         try {
           $path = $this->getPath($style);
@@ -385,7 +385,7 @@ class Full extends \MovLib\Data\User\User {
           error_log("Couldn't delete '{$path}'.");
         }
       }
-      $this->exists        = false;
+      $this->imageExists        = false;
       $this->changed       = $this->extension = null;
       $session->userAvatar = $this->getStyle(self::STYLE_HEADER_USER_NAVIGATION);
     }

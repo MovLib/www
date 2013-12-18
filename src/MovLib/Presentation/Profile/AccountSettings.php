@@ -230,7 +230,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
     $this->form->actionElements[] = new InputSubmit($i18n->t("Update Account Settings"), [ "class" => "btn btn-large btn-success" ]);
 
     // Display delete button if the user just uploaded a new avatar or one is already present.
-    if ($this->user->exists === true) {
+    if ($this->user->imageExists === true) {
       $this->avatar->inputFileAfter = $this->a("?delete_avatar=true", $i18n->t("Delete"), [ "class" => "btn btn-danger"]);
     }
   }
