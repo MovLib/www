@@ -330,14 +330,20 @@
 @keyframes bounceIn {
   0% {
     opacity: 0;
-    bottom: 53px;
+    bottom: 45px;
+  }
+  60% {
+    bottom: -5px;
+  }
+  70% {
+    bottom: 2px;
   }
   80% {
     opacity: 1;
-    bottom: -6px;
+    bottom: -4px;
   }
   90% {
-    bottom: 3px;
+    bottom: 0px;
   }
   100% {
     bottom: -3px;
