@@ -17,10 +17,8 @@
  */
 namespace MovLib\Presentation\Movie\Gallery;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
- * @todo Description of Poster
+ * Movie lobby cards gallery presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,14 +26,39 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class LobbyCards extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
+class LobbyCards extends \MovLib\Presentation\Movie\Gallery\Images {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * The movie image's type identifier.
+   *
+   * @var integer
+   */
+  const TYPE_ID = \MovLib\Data\Image\MovieLobbyCard::TYPE_ID;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new movie lobby cards presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Presentation\Error\NotFound
+   */
   public function __construct() {
-    $this->initPage("Movie LobbyCards");
-    $this->alerts .= new Alert("Not implemented yet!");
+    global $i18n;
+    $this->init($i18n->t("Lobby Cards"));
+    $this->initGallery(
+      "lobby-cards",
+      "lobby-card",
+      "LobbyCard",
+      $i18n->t("Lobby Cards for {title}", [ "title" => $this->movie->displayTitleWithYear ]),
+      $i18n->t("Lobby Cards for {title}", [ "title" => "<a href='{$i18n->r("/movie/{0}", [ $this->movie->id ])}'>{$this->movie->displayTitleWithYear}</a>" ])
+    );
   }
-
-  protected function getPageContent() {}
 
 }
