@@ -56,6 +56,7 @@ select,
 textarea,
 table {
   font: normal 14px/1.46 "Open Sans", Arial, Meiryo, "Microsoft Yahei", "MS Yahei", Yahei, sans-serif;
+  -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   color: #656565;
   text-rendering: geometricPrecision;
