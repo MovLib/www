@@ -1,6 +1,6 @@
 <?php
 
-/*!
+/* !
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -18,7 +18,7 @@
 namespace MovLib\Data\Image;
 
 /**
- * Represents a single poster of a movie.
+ * Represents a single lobby card of a movie.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,7 +26,7 @@ namespace MovLib\Data\Image;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MoviePoster extends \MovLib\Data\Image\MovieImage {
+class MovieLobbyCard extends \MovLib\Data\Image\MoviePoster {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -37,7 +37,7 @@ class MoviePoster extends \MovLib\Data\Image\MovieImage {
    *
    * @var integer
    */
-  const TYPE_ID = 2;
+  const TYPE_ID = 3;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -46,6 +46,7 @@ class MoviePoster extends \MovLib\Data\Image\MovieImage {
   /**
    * Instantiate new movie poster.
    *
+   * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @param integer $movieId
    *   The unique movie's identifier this image belongs to.
@@ -59,7 +60,7 @@ class MoviePoster extends \MovLib\Data\Image\MovieImage {
    */
   public function __construct($movieId, $movieTitle, $id = null) {
     global $i18n;
-    $this->init($movieId, $id, "poster", $i18n->t("Poster for {title}", [ "title" => $movieTitle ]));
+    $this->init($movieId, $id, "lobby-card", $i18n->t("Lobby card for {title}", [ "title" => $movieTitle ]));
   }
 
 }
