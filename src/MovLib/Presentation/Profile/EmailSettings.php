@@ -49,7 +49,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputEmail
    */
-  private $email;
+  protected $email;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -84,12 +84,13 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     // Field to enter the new email address.
     $this->email = new InputEmail();
     $this->email->setHelp($i18n->t(
-        "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
-        "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to your " .
-        "{0}notification settings{1}.", [ "<a href='{$i18n->r("/profile/notification-settings")}'>", "</a>" ]
+      "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
+      "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to your " .
+      "{0}notification settings{1}.",
+      [ "<a href='{$i18n->r("/profile/notification-settings")}'>", "</a>" ]
     ));
 
-        // Initialize the actual form of this page.
+    // Initialize the actual form of this page.
     $this->form  = new Form($this, [ $this->email ]);
 
     // The submit button.
@@ -104,15 +105,6 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
 
 
   /**
-   * @inhertidoc
-   * @global \MovLib\Data\I18n $i18n
-   */
-  protected function getBreadcrumbs() {
-    global $i18n;
-    return [[ $i18n->r("/profile"), $i18n->t("Profile") ]];
-  }
-
-  /**
    * @inheritdoc
    */
   protected function getPageContent() {
@@ -120,6 +112,35 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     $currentEmail           = new Alert($i18n->t("Your current email address is {0}.", [ $this->placeholder($this->user->email) ]));
     $currentEmail->severity = Alert::SEVERITY_INFO;
     return "{$currentEmail}{$this->form}";
+  }
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   */
+  protected function valid() {
+    global $i18n, $kernel;
+    $kernel->sendEmail(new EmailChange($this->user, $this->email->value));
+
+    // The request has been accepted, but further action is required to complete it.
+    http_response_code(202);
+
+    // Explain to the user where to find this further action to complete the request.
+    $this->alerts .= new Alert(
+      $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]),
+      $i18n->t("Successfully Requested Email Change"),
+      Alert::SEVERITY_SUCCESS
+    );
+
+    // Also explain that this change is no immidiate action and that our system is still using the old email address.
+    $this->alerts .= new Alert(
+      $i18n->t("You have to sign in with your old email address until you’ve successfully confirmed your email change via the link that we’ve just sent you."),
+      $i18n->t("Important!"),
+      Alert::SEVERITY_INFO
+    );
+    
+    return $this;
   }
 
   /**
@@ -159,24 +180,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     }
 
     if ($this->checkErrors($errors) === false) {
-      $kernel->sendEmail(new EmailChange($this->user, $this->email->value));
-
-      // The request has been accepted, but further action is required to complete it.
-      http_response_code(202);
-
-      // Explain to the user where to find this further action to complete the request.
-      $this->alerts .= new Alert(
-        $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->email->value) ]),
-        $i18n->t("Successfully Requested Email Change"),
-        Alert::SEVERITY_SUCCESS
-      );
-
-      // Also explain that this change is no immidiate action and that our system is still using the old email address.
-      $this->alerts .= new Alert(
-        $i18n->t("You have to sign in with your old email address until you’ve successfully confirmed your email change via the link that we’ve just sent you."),
-        $i18n->t("Important!"),
-        Alert::SEVERITY_INFO
-      );
+      $this->valid();
     }
 
     return $this;

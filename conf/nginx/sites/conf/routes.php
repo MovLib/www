@@ -394,35 +394,20 @@ location ^~ <?= $r("/profile") ?> {
     return 301 <?= $r("/profile") ?>;
   }
 
-  location = <?= $r("/profile/sign-in") ?> {
-    set $movlib_presenter "Profile\\SignIn";
-    try_files $movlib_cache @php;
-  }
-
-  location = <?= $r("/profile/join") ?> {
-    set $movlib_presenter "Profile\\Join";
-    try_files $movlib_cache @php;
-  }
-
-  location = <?= $r("/profile/reset-password") ?> {
-    set $movlib_presenter "Profile\\ResetPassword";
-    include sites/conf/fastcgi_params.conf;
-  }
-
-  location = <?= $r("/profile/sign-out") ?> {
-    set $movlib_presenter "Profile\\SignOut";
-    include sites/conf/fastcgi_params.conf;
-  }
-
   location = <?= $r("/profile/account-settings") ?> {
     error_page 413 @profile_account_settings;
     set $movlib_multipart 0;
     set $movlib_presenter "Profile\\AccountSettings";
     include sites/conf/fastcgi_params.conf;
   }
+  
+  location = <?= $r("/profile/collection") ?> {
+    set $movlib_presenter "Profile\\Collection";
+    try_files $movlib_cache @php;
+  }
 
-  location = <?= $r("/profile/notification-settings") ?> {
-    set $movlib_presenter "Profile\\NotificationSettings";
+  location = <?= $r("/profile/danger-zone") ?> {
+    set $movlib_presenter "Profile\\DangerZone";
     include sites/conf/fastcgi_params.conf;
   }
 
@@ -431,14 +416,49 @@ location ^~ <?= $r("/profile") ?> {
     include sites/conf/fastcgi_params.conf;
   }
 
+  location = <?= $r("/profile/join") ?> {
+    set $movlib_presenter "Profile\\Join";
+    try_files $movlib_cache @php;
+  }
+  
+  location = <?= $r("/profile/messages") ?> {
+    set $movlib_presenter "Profile\\Messages";
+    try_files $movlib_cache @php;
+  }
+
+  location = <?= $r("/profile/notification-settings") ?> {
+    set $movlib_presenter "Profile\\NotificationSettings";
+    include sites/conf/fastcgi_params.conf;
+  }
+  
+  location = <?= $r("/profile/lists") ?> {
+    set $movlib_presenter "Profile\\Lists";
+    try_files $movlib_cache @php;
+  }
+
   location = <?= $r("/profile/password-settings") ?> {
     set $movlib_presenter "Profile\\PasswordSettings";
     include sites/conf/fastcgi_params.conf;
   }
 
-  location = <?= $r("/profile/danger-zone") ?> {
-    set $movlib_presenter "Profile\\DangerZone";
+  location = <?= $r("/profile/reset-password") ?> {
+    set $movlib_presenter "Profile\\ResetPassword";
     include sites/conf/fastcgi_params.conf;
+  }
+
+  location = <?= $r("/profile/sign-in") ?> {
+    set $movlib_presenter "Profile\\SignIn";
+    try_files $movlib_cache @php;
+  }
+
+  location = <?= $r("/profile/sign-out") ?> {
+    set $movlib_presenter "Profile\\SignOut";
+    include sites/conf/fastcgi_params.conf;
+  }
+  
+  location = <?= $r("/profile/watchlist") ?> {
+    set $movlib_presenter "Profile\\Watchlist";
+    try_files $movlib_cache @php;
   }
 
   rewrite .* /error/NotFound last;

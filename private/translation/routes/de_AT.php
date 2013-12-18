@@ -87,6 +87,10 @@ return [
   "/profile/email-settings"        => "/profil/e-mail-einstellungen",
   "/profile/password-settings"     => "/profil/passworteinstellungen",
   "/profile/danger-zone"           => "/profil/gefahrenzone",
+  "/profile/collection"            => "/profil/sammlung",
+  "/profile/messages"              => "/profil/nachrichten",
+  "/profile/lists"                 => "/profil/listen",
+  "/profile/watchlist"             => "/profil/beobachtungsliste",
 
   // ------------------------------------------------------------------------------------------------------------------- User
   "/user"                => "/benutzer",

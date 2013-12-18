@@ -77,6 +77,13 @@ class Join extends \MovLib\Presentation\Page {
    * @var \MovLib\Presentation\Partial\FormElement\InputCheckbox
    */
   protected $terms;
+  
+  /**
+   * The full user object we create during a valid join attempt.
+   * 
+   * @var \MovLib\Data\User\Full
+   */
+  protected $user;
 
   /**
    * The input text form element for the username.
@@ -170,6 +177,44 @@ class Join extends \MovLib\Presentation\Page {
   }
 
   /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   */
+  protected function valid() {
+    global $i18n, $kernel;
+
+    $this->user->email    = $this->email->value;
+    $this->user->password = $this->user->hashPassword($this->password->value);
+    if ((new Memcached())->isRemoteAddressFlooding("join") === true) {
+      $this->checkErrors($i18n->t("Too many joining attempts from this IP address. Please wait one hour before trying again."));
+    }
+
+    // Don't tell the user who's trying to join that we already have this email, otherwise it would be possible to
+    // find out which emails we have in our system. Instead we send a message to the user this email belongs to.
+    if ($this->user->checkEmail($this->user->email) === true) {
+      $kernel->sendEmail(new EmailExists($this->user->email));
+    }
+    // Send email with activation token if this emai isn't already in use.
+    else {
+      $kernel->sendEmail(new JoinEmail($this->user));
+    }
+
+    // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
+    $this->accepted = true;
+
+    // Accepted but further action is required!
+    http_response_code(202);
+    $this->alerts .= new Alert(
+      $i18n->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email->value) ]),
+      $i18n->t("Successfully Joined"),
+      Alert::SEVERITY_SUCCESS
+    );
+    
+    return $this;
+  }
+
+  /**
    * {@inheritdoc}
    *
    * The redirect exception is thrown if the supplied data is valid. The user will be redirected to her or his personal
@@ -183,40 +228,40 @@ class Join extends \MovLib\Presentation\Page {
    */
   public function validate(array $errors = null) {
     global $i18n, $kernel;
-    $user           = new FullUser();
-    $user->name     = $_POST[$this->username->id]; // We want to validate the original data again
-    $usernameErrors = null;
+    $this->user       = new FullUser();
+    $this->user->name = $_POST[$this->username->id]; // We want to validate the original data again
+    $usernameErrors   = null;
 
-    if ($user->name[0] == " ") {
+    if ($this->user->name[0] == " ") {
       $usernameErrors[] = $i18n->t("The username cannot begin with a space.");
     }
 
-    if (substr($user->name, -1) == " ") {
+    if (substr($this->user->name, -1) == " ") {
       $usernameErrors[] = $i18n->t("The username cannot end with a space.");
     }
 
-    if (strpos($user->name, "  ") !== false) {
+    if (strpos($this->user->name, "  ") !== false) {
       $usernameErrors[] = $i18n->t("The username cannot contain multiple spaces in a row.");
     }
 
     // Switch to sanitized data
-    $user->name = $this->username->value;
+    $this->user->name = $this->username->value;
 
-    if (strpbrk($user->name, FullUser::NAME_ILLEGAL_CHARACTERS) !== false) {
+    if (strpbrk($this->user->name, FullUser::NAME_ILLEGAL_CHARACTERS) !== false) {
       $usernameErrors[] = $i18n->t(
         "The username cannot contain any of the following characters: {0}",
         [ "<code>{$kernel->htmlEncode(FullUser::NAME_ILLEGAL_CHARACTERS)}</code>" ]
       );
     }
 
-    if (mb_strlen($user->name) > FullUser::NAME_MAXIMUM_LENGTH) {
+    if (mb_strlen($this->user->name) > FullUser::NAME_MAXIMUM_LENGTH) {
       $usernameErrors[] = $i18n->t(
         "The username is too long: it must be {0,number,integer} characters or less.",
         [ FullUser::NAME_MAXIMUM_LENGTH ]
       );
     }
 
-    if (!$usernameErrors && $user->checkName($user->name) === true) {
+    if (!$usernameErrors && $this->user->checkName($this->user->name) === true) {
       $usernameErrors[] = $i18n->t("The username is already taken, please choose another one.");
     }
 
@@ -233,32 +278,7 @@ class Join extends \MovLib\Presentation\Page {
     }
 
     if ($this->checkErrors($errors) === false) {
-      $user->email    = $this->email->value;
-      $user->password = $user->hashPassword($this->password->value);
-      if ((new Memcached())->isRemoteAddressFlooding("join") === true) {
-        $this->checkErrors($i18n->t("Too many joining attempts from this IP address. Please wait one hour before trying again."));
-      }
-
-      // Don't tell the user who's trying to join that we already have this email, otherwise it would be possible to
-      // find out which emails we have in our system. Instead we send a message to the user this email belongs to.
-      if ($user->checkEmail($user->email) === true) {
-        $kernel->sendEmail(new EmailExists($user->email));
-      }
-      // Send email with activation token if this emai isn't already in use.
-      else {
-        $kernel->sendEmail(new JoinEmail($user));
-      }
-
-      // Settings this to true ensures that the user isn't going to see the form again. Check getContent()!
-      $this->accepted = true;
-
-      // Accepted but further action is required!
-      http_response_code(202);
-      $this->alerts .= new Alert(
-        $i18n->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email->value) ]),
-        $i18n->t("Successfully Joined"),
-        Alert::SEVERITY_SUCCESS
-      );
+      $this->valid();
     }
 
     return $this;

@@ -111,11 +111,9 @@ class Contact extends \MovLib\Presentation\User\AbstractUserPage {
   /**
    * @inheritdoc
    */
-  public function validate(array $errors = null) {
+  protected function valid() {
     global $i18n;
-    if ($this->checkErrors($errors) === false) {
-      $this->alerts .= new Alert($i18n->t("Not implemented yet!"));
-    }
+    $this->alerts .= new Alert($i18n->t("Not implemented yet!"));
     return $this;
   }
 

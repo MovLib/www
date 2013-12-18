@@ -69,9 +69,16 @@ class Create extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    */
+  protected function valid() {
+    return $this;
+  }
+
+  /**
+   * @inheritdoc
+   */
   public function validate(array $errors = null) {
     if ($this->checkErrors($errors) === false) {
-
+      $this->valid();
     }
     return $this;
   }

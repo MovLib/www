@@ -278,7 +278,7 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
    * @global \MovLib\Data\User\Session $session
    * @return this
    */
-  public function validate() {
+  protected function valid() {
     global $i18n, $kernel, $session;
 
     if ($session->isAuthenticated === false) {

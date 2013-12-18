@@ -256,36 +256,30 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
   }
 
   /**
-   * Validate data that couldn't be auto-validated and update the user's account settings.
-   *
+   * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
-   * @param array $errors
-   *   {@inheritdoc}
-   * @return this
    */
-  public function validate(array $errors = null) {
+  protected function valid() {
     global $i18n;
-    if ($this->checkErrors($errors) === false) {
-      if ($this->avatar->path) {
-        $this->user->upload($this->avatar->path, $this->avatar->extension, $this->avatar->height, $this->avatar->width);
-      }
-      $this->user->birthday           = $this->birthday->value;
-      $this->user->countryCode        = $this->country->value;
-      $this->user->currencyCode       = $this->currency->value;
-      $this->user->private            = $this->private->value;
-      $this->user->aboutMe            = $this->aboutMe->value;
-      $this->user->realName           = $this->realName->value;
-      $this->user->sex                = $this->sex->value;
-      $this->user->systemLanguageCode = $this->language->value;
-      $this->user->timeZoneIdentifier = $this->timezone->value;
-      $this->user->website            = $this->website->value;
-      $this->user->commit();
-      $this->alerts                  .= new Alert(
-        $i18n->t("Your account settings were updated successfully."),
-        $i18n->t("Account Settings Updated Successfully"),
-        Alert::SEVERITY_SUCCESS
-      );
+    if ($this->avatar->path) {
+      $this->user->upload($this->avatar->path, $this->avatar->extension, $this->avatar->height, $this->avatar->width);
     }
+    $this->user->birthday           = $this->birthday->value;
+    $this->user->countryCode        = $this->country->value;
+    $this->user->currencyCode       = $this->currency->value;
+    $this->user->private            = $this->private->value;
+    $this->user->aboutMe            = $this->aboutMe->value;
+    $this->user->realName           = $this->realName->value;
+    $this->user->sex                = $this->sex->value;
+    $this->user->systemLanguageCode = $this->language->value;
+    $this->user->timeZoneIdentifier = $this->timezone->value;
+    $this->user->website            = $this->website->value;
+    $this->user->commit();
+    $this->alerts                  .= new Alert(
+      $i18n->t("Your account settings were updated successfully."),
+      $i18n->t("Account Settings Updated Successfully"),
+      Alert::SEVERITY_SUCCESS
+    );
     return $this;
   }
 

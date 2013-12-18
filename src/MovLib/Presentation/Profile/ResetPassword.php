@@ -113,7 +113,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
       $this->email = new InputEmail();
       $this->email->attributes["placeholder"] = $i18n->t("Enter your email address");
 
-      $this->form = new Form($this, [ $this->email ], "{$this->id}-email", "validateEmail");
+      $this->form = new Form($this, [ $this->email ], "{$this->id}-email");
 
       $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Reset"), [
         "class" => "btn btn-large btn-success",
@@ -132,30 +132,21 @@ class ResetPassword extends \MovLib\Presentation\Page {
   }
 
   /**
-   * Validation callback after auto-validation of reset password form has succeeded.
-   *
-   * The redirect exception is thrown if the supplied data is valid.
-   *
+   * @inheritdoc
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
-   * @param array $errors [optional]
-   *   {@inheritdoc}
-   * @return this
    */
-  public function validateEmail(array $errors = null) {
+  protected function valid() {
     global $kernel, $i18n;
+    $kernel->sendEmail(new ResetPasswordEmail($this->email->value));
 
-    if ($this->checkErrors($errors) === false) {
-      $kernel->sendEmail(new ResetPasswordEmail($this->email->value));
+    http_response_code(202);
 
-      http_response_code(202);
-
-      $this->alerts .= new Alert(
-        $i18n->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email->value) ]),
-        $i18n->t("Successfully Requested Password Reset"),
-        Alert::SEVERITY_SUCCESS
-      );
-    }
+    $this->alerts .= new Alert(
+      $i18n->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email->value) ]),
+      $i18n->t("Successfully Requested Password Reset"),
+      Alert::SEVERITY_SUCCESS
+    );
 
     return $this;
   }

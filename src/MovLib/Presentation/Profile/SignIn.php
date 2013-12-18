@@ -122,10 +122,7 @@ class SignIn extends \MovLib\Presentation\Page {
   }
 
   /**
-   * Validation callback after auto-validation of form has succeeded.
-   *
-   * The redirect exception is thrown if the supplied data is valid. The user will be redirected to her or his personal
-   * dashboard. The session exception is thrown if our system isn't able to start a new session at all.
+   * {@inheritdoc}
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
@@ -133,26 +130,23 @@ class SignIn extends \MovLib\Presentation\Page {
    * @return this
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
-  public function validate(array $errors = null) {
+  protected function valid() {
     global $i18n, $kernel, $session;
-    if ($this->checkErrors($errors) === false) {
-      try {
-        $session->authenticate($this->email->value, $this->password->value);
-      }
-      catch (\Exception $e) {
-        $this->checkErrors($i18n->t("We either don’t know the email address, or the password was wrong."));
-        return $this;
-      }
-
-      $kernel->alerts .= new Alert(
-        $i18n->t("Successfully Signed In!"),
-        $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]),
-        Alert::SEVERITY_SUCCESS
-      );
-
-      throw new SeeOtherRedirect(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
+    try {
+      $session->authenticate($this->email->value, $this->password->value);
     }
-    return $this;
+    catch (\Exception $e) {
+      $this->checkErrors($i18n->t("We either don’t know the email address, or the password was wrong."));
+      return $this;
+    }
+
+    $kernel->alerts .= new Alert(
+      $i18n->t("Successfully Signed In!"),
+      $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]),
+      Alert::SEVERITY_SUCCESS
+    );
+
+    throw new SeeOtherRedirect(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
   }
 
 }

@@ -140,21 +140,45 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
 
     return "{$info}{$this->form}";
   }
+  
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   */
+  protected function valid() {
+    global $i18n, $kernel;
+    $kernel->sendEmail(new PasswordChangeEmail($this->user, $this->newPassword->value));
+
+    // The request has been accepted, but further action is required to complete it.
+    http_response_code(202);
+
+    // Explain to the user where to find this further action to complete the request.
+    $this->alerts .= new Alert(
+      $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
+      $i18n->t("Successfully Requested Password Change"),
+      Alert::SEVERITY_SUCCESS
+    );
+
+    // Also explain that this change is no immidiate action and that our system is still using the old password.
+    $this->alerts .= new Alert(
+      $i18n->t("You have to sign in with your old password until you’ve successfully confirmed your password change via the link we’ve just sent you."),
+      $i18n->t("Important!"),
+      Alert::SEVERITY_INFO
+    );
+    
+    return $this;
+  }
 
   /**
-   * Validation callback after auto-validation of form has succeeded.
-   *
+   * @inheritdoc
    * @todo OWASP and other sources recommend to store a password history for each user and check that the new password
    *       isn't one of the old passwords. This would increase the account's security a lot. Anyone willing to implement
    *       this is very welcome.
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\I18n $i18n
-   * @param array $errors [optional]
-   *   {@inheritdoc}
-   * @return this
    */
   public function validate(array $errors = null) {
-    global $kernel, $i18n;
+    global $i18n;
 
     // Both password's have to be equal.
     if ($this->newPassword->value != $this->newPasswordConfirm->value) {
@@ -175,24 +199,7 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
 
     // If we have no errors at this point send the email to the user's email address to confirm the password change.
     if ($this->checkErrors($errors) === false) {
-      $kernel->sendEmail(new PasswordChangeEmail($this->user, $this->newPassword->value));
-
-      // The request has been accepted, but further action is required to complete it.
-      http_response_code(202);
-
-      // Explain to the user where to find this further action to complete the request.
-      $this->alerts .= new Alert(
-        $i18n->t("An email with further instructions has been sent to {0}.", [ $this->placeholder($this->user->email) ]),
-        $i18n->t("Successfully Requested Password Change"),
-        Alert::SEVERITY_SUCCESS
-      );
-
-      // Also explain that this change is no immidiate action and that our system is still using the old password.
-      $this->alerts .= new Alert(
-        $i18n->t("You have to sign in with your old password until you’ve successfully confirmed your password change via the link we’ve just sent you."),
-        $i18n->t("Important!"),
-        Alert::SEVERITY_INFO
-      );
+      $this->valid();
     }
 
     return $this;
