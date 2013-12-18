@@ -122,7 +122,7 @@ class Image extends \MovLib\Presentation\Movie\Gallery\Images {
     $this->image->languageCode = $this->selectLanguage->value;
     $this->image->licenseId    = $this->selectLicense->value;
     $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
-    throw new SeeOtherRedirect($this->image->routeKey);
+    throw new SeeOtherRedirect($this->image->route);
   }
 
 }
