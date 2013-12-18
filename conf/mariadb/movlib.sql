@@ -1044,6 +1044,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique identifier.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date and time of the movie rating as timestamp.',
   `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user’s rating for a certain movie (1-5).',
   PRIMARY KEY (`movie_id`, `user_id`),
   INDEX `fk_movies_ratings_users` (`user_id` ASC),
