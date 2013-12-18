@@ -258,11 +258,12 @@ class I18n {
         $routes[$locale] = require "{$kernel->pathTranslations}/routes/{$locale}.php";
       }
 
-      // Check if we have a translation for this route and use it if we have one.
-      // @todo All routes should be translated in production, remove this check?
-      if (isset($routes[$locale][$route])) {
-        $route = $routes[$locale][$route];
-      }
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (isset($routes[$locale][$route]))
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      $route = $routes[$locale][$route];
     }
 
     if ($args) {
@@ -301,11 +302,12 @@ class I18n {
         $routes[$locale] = require "{$kernel->pathTranslations}/routes/{$locale}.plural.php";
       }
 
-      // Check if we have a translation for this route and use it if we have one.
-      // @todo All routes should be translated in production, remove this check?
-      if (isset($routes[$locale][$route])) {
-        $route = $routes[$locale][$route];
-      }
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (isset($routes[$locale][$route]))
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      $route = $routes[$locale][$route];
     }
 
     if ($args) {
