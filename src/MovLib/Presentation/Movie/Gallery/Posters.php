@@ -28,37 +28,15 @@ namespace MovLib\Presentation\Movie\Gallery;
  */
 class Posters extends \MovLib\Presentation\Movie\Gallery\Images {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Constants
-
-
   /**
-   * The movie image's type identifier.
-   *
-   * @var integer
-   */
-  const TYPE_ID = \MovLib\Data\Image\MoviePoster::TYPE_ID;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new movie lobby cards presentation.
+   * Instantiate new movie images presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
     global $i18n;
-    $this->init($i18n->t("Posters"));
-    $this->initGallery(
-      "posters",
-      "poster",
-      "Poster",
-      $i18n->t("Posters for {title}", [ "title" => $this->movie->displayTitleWithYear ]),
-      $i18n->t("Posters for {title}", [ "title" => "<a href='{$i18n->r("/movie/{0}", [ $this->movie->id ])}'>{$this->movie->displayTitleWithYear}</a>" ])
-    );
+    $this->initImagePage(\MovLib\Data\Image\MoviePoster::TYPE_ID, $i18n->t("Posters"))->initGallery();
   }
 
 }

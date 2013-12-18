@@ -29,18 +29,38 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 class Delete extends \MovLib\Presentation\Movie\AbstractMoviePage {
+  use \MovLib\Presentation\TraitFormPage;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
    * Instantiate new delete movie presentation.
    */
   public function __construct() {
+    $this->initMoviePage();
     $this->initPage("Delete Movie");
-    $this->alerts .= new Alert("Not implemented yet!");
+    $this->initLanguageLinks("/movie/{0}/delete", [ $this->movie->id ]);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  protected function getPageContent() {
+    return new Alert("Not implemented yet!");
   }
 
   /**
    * @inheritdoc
    */
-  protected function getPageContent() {}
+  protected function valid() {
+    $this->movie->delete();
+    return $this;
+  }
 
 }

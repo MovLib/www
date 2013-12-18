@@ -66,7 +66,7 @@ class PosterShow extends \MovLib\Presentation\Movie\AbstractMoviePage {
   public function __construct() {
     global $i18n;
 
-    $this->init();
+    $this->initMoviePage();
 
     try {
       $this->image = new MoviePoster($this->movie->id, $this->movie->displayTitleWithYear, $_SERVER["IMAGE_ID"]);

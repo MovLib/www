@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
+use \MovLib\Data\Movie\Full as FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
@@ -35,12 +36,27 @@ use \MovLib\Presentation\Partial\Lists\Persons;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
+class Show extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The movie we are currently working with.
+   *
+   * @var \MovLib\Data\Movie\Full
+   */
+  protected $movie;
+
+  /**
+   * The translated route to the movie's edit page.
+   *
+   * @var string
+   */
+  protected $routeEdit;
 
   /**
    * The user's movie rating.
@@ -58,18 +74,37 @@ class Show extends \MovLib\Presentation\Movie\AbstractMoviePage {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
+    global $i18n, $kernel;
     $kernel->javascripts[] = "Movie";
-
-    // Instantiate movie, initialize page and set the microdata schema.
-    $this->init();
+    $this->movie           = new FullMovie($_SERVER["MOVIE_ID"]);
     $this->initPage($this->movie->displayTitleWithYear);
     $this->initBreadcrumb([[ $i18n->rp("/movies"), $i18n->t("Movies") ]]);
     $this->initLanguageLinks("/movie/{0}", [ $this->movie->id ]);
+    $routeArgs = [ $this->movie->id ];
+    $this->routeEdit = $i18n->r("/movie/{0}/edit", $routeArgs);
+    $this->initSidebar([
+      [ $this->movie->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "itemprop" => "discussionUrl" ] ],
+      [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
+    ]);
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
+   */
+  protected function getPageContent() {
+    global $i18n, $kernel, $session;
     $this->schemaType = "Movie";
 
     // Enhance the page's title with microdata.
@@ -177,19 +212,6 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
         \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean) .
       "</div></div>" .
     "</div>"; // close .row
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\I18n $i18n
-   */
-  protected function getPageContent() {
-    global $i18n, $kernel;
 
     $sections["synopsis"] = [
       $i18n->t("Synopsis"),

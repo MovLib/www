@@ -23,14 +23,16 @@ use \MovLib\Presentation\Partial\Alert;
 /**
  * Provides secondary breadcrumb, menu points and stylesheets for movie presentations.
  *
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Presentation\TraitSidebar {
+    initSidebar as initSidebarTrait;
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -43,64 +45,51 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
    */
   protected $movie;
 
-  /**
-   * The movie's translated discussion route.
-   *
-   * @var string
-   */
-  protected $routeDiscussion;
-
-  /**
-   * The movie's translated edit route.
-   *
-   * @var string
-   */
-  protected $routeEdit;
-
-  /**
-   * The movie's translated history route.
-   *
-   * @var string
-   */
-  protected $routeHistory;
-
-  /**
-   * The translted route to the movies page.
-   *
-   * @var string
-   */
-  protected $routeMovies;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * Initialize movie.
+   * Initialize movie sub page.
    *
+   * This will load a full movie object with the server submitted movie identifier. A not found exception is thrown if
+   * no movie exists for the given identifier. If a movie exists the most commonly used routes are translated and
+   * exported to class scope. The breadcrumb is initialized with movies and the route to the current movie. The
+   * sidebar is initialized with the most important actions that are directly related to the movie presentation.
+   *
+   * You should call the following methods after calling this method: <code>initPage()</code> and
+   * <code>initLanguageLinks()</code>
+   *
+   * @param string $breadcrumbTitle
+   *   The short page title for the breadcrumb.
    * @return this
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  protected function init() {
+  protected function initMoviePage($breadcrumbTitle) {
     global $i18n;
-
-    $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
-
-    // Substitue all routes for this movie once and for all (this has nothing to do with caching, we just don't want to
-    // keep repeating us as these routes are needed A LOT).
-    $this->routeDiscussion = $i18n->r("/movie/{0}/discussion", [ $this->movie->id ]);
-    $this->routeEdit       = $i18n->r("/movie/{0}/edit", [ $this->movie->id ]);
-    $this->routeHistory    = $i18n->r("/movie/{0}/history", [ $this->movie->id ]);
-
-    // Initialize the sidebar navigation.
-    $this->initSidebar([
-      [ $this->languageLinks[$i18n->languageCode], $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $this->routeDiscussion, $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "itemprop" => "discussionUrl" ] ],
-      [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $this->routeHistory, $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
+    $this->movie           = new FullMovie($_SERVER["MOVIE_ID"]);
+    $this->breadcrumbTitle = $breadcrumbTitle;
+    return $this->initSidebar()->initBreadcrumb([
+      [ $i18n->rp("/movies"), $i18n->t("Movies") ],
+      [ $this->movie->route, $this->movie->displayTitleWithYear ],
     ]);
+  }
 
-    return $this;
+  /**
+   * Initialize the movie sidebar.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return this
+   */
+  protected function initSidebar() {
+    global $i18n;
+    $routeArgs = [ $this->movie->id ];
+    return $this->initSidebarTrait([
+      [ $this->movie->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "itemprop" => "discussionUrl" ] ],
+      [ $i18n->r("/movie/{0}/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
+    ]);
   }
 
   /**

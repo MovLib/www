@@ -28,9 +28,8 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\Page {
+class Create extends \MovLib\Presentation\Movie\AbstractMoviePage {
   use \MovLib\Presentation\TraitFormPage;
-  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -41,7 +40,6 @@ class Create extends \MovLib\Presentation\Page {
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-
   /**
    * Instantiate new delete movie presentation.
    *
@@ -49,10 +47,9 @@ class Create extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n;
+    $this->initMoviePage();
     $this->initPage($i18n->t("Create New Movie"));
-    $this->initBreadcrumb([[ $i18n->rp("/movies"), $i18n->t("Movies") ]]);
     $this->initLanguageLinks("/movie/create");
-    $this->initSidebar([]);
   }
 
 

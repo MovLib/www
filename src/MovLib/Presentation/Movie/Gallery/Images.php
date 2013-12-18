@@ -36,36 +36,43 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
   use \MovLib\Presentation\TraitPagination;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Constants
+  // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The movie image's type identifier.
-   *
-   * @var integer
-   */
-  const TYPE_ID = MovieImage::TYPE_ID;
-
-  /**
-   * The name of the image class to instantiate in the loop.
+   * The image class's variable name suffix (e.g. <code>"LobbyCard"</code>).
    *
    * @var string
    */
-  private $imageClassName;
+  protected $imageClassName;
 
   /**
-   * The plural route key for this gallery.
+   * The image type's unique identifier.
    *
    * @var string
    */
-  private $routeKeyPlural;
+  protected $imageTypeId;
 
   /**
-   * The route key for this gallery's images.
+   * The image type's translated name (e.g. <code>"Lobby Card"</code>).
    *
    * @var string
    */
-  private $routeKey;
+  protected $imageTypeName;
+
+  /**
+   * The image route's variable name part (e.g. <code>"lobby-card"</code>).
+   *
+   * @var string
+   */
+  protected $routeKey;
+
+  /**
+   * The image route's variable plural name part (e.g. <code>"lobby-cards"</code>.
+   *
+   * @var string
+   */
+  protected $routeKeyPlural;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -79,14 +86,7 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
    */
   public function __construct() {
     global $i18n;
-    $this->init($i18n->t("Images"));
-    $this->initGallery(
-      "images",
-      "image",
-      "Image",
-      $i18n->t("Images for {title}", [ "title" => $this->movie->displayTitleWithYear ]),
-      $i18n->t("Images for {title}", [ "title" => "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>" ])
-    );
+    $this->initImagePage(MovieImage::TYPE_ID, $i18n->t("Images"))->initGallery();
   }
 
 
@@ -104,7 +104,7 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ])}'>{$i18n->t("Upload New")}</a>";
 
     // Get all images of the current movie image type and go through them to create the image grid.
-    $images = $this->movie->getImageResult(static::TYPE_ID, $this->resultsOffset, $this->resultsPerPage);
+    $images = $this->movie->getImageResult($this->imageTypeId, $this->resultsOffset, $this->resultsPerPage);
     $list   = null;
     /* @var $image \MovLib\Data\Image\MovieImage */
     while ($image = $images->fetch_object("\\MovLib\\Data\\Image\\Movie{$this->imageClassName}", [ $this->movie->id, $this->movie->displayTitleWithYear ])) {
@@ -129,9 +129,10 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
       return "<div id='filter'>LIMIT {$this->resultsPerPage} OFFSET {$this->resultsPerPage}</div><ol class='img-grid no-list r'>{$list}</ol>";
     }
     return new Alert(
-      $i18n->t("We couldn’t find any images matching your filter criteria, or there simply aren’t any images available. Would you like to {0}upload a new image{1}?", [
-        "<a href='{$i18n->r("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ])}'>", "</a>"
-      ]),
+      $i18n->t(
+        "We couldn’t find any images matching your filter criteria, or there simply aren’t any images available. Would you like to {0}upload a new image{1}?",
+        [ "<a href='{$i18n->r("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ])}'>", "</a>" ]
+      ),
       $i18n->t("No Images"),
       Alert::SEVERITY_INFO
     );
@@ -140,26 +141,48 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
   /**
    * Initialize the gallery presentation.
    *
-   * @param string $routeKeyPlural
-   *   The plural route key without the <code>"/movie/{0}/"</code> part.
-   * @param string $routeKey
-   *   The route key without the <code>"/movie/{0}/"</code> part.
-   * @param string $imageClassName
-   *   The image class's name without namespace and the <code>"Movie"</code> prefix.
-   * @param string $title
-   *   The title for the <code><title></code> tag.
-   * @param string $pageTitle
-   *   The title for the <code><h1></code> tag.
+   * @global \MovLib\Data\I18n $i18n
    * @return this
    */
-  protected function initGallery($routeKeyPlural, $routeKey, $imageClassName, $title, $pageTitle) {
-    $this->routeKeyPlural = $routeKeyPlural;
-    $this->routeKey       = $routeKey;
-    $this->imageClassName = $imageClassName;
-    $this->initPage($title);
-    $this->initLanguageLinks("/movie/{0}/{$routeKeyPlural}", [ $this->movie->id ], true);
-    $this->initPagination($this->movie->getImageCount(static::TYPE_ID));
-    $this->pageTitle      = $pageTitle;
+  protected function initGallery() {
+    global $i18n;
+    $this->initMoviePage($this->imageTypeName);
+    $this->initPage($i18n->t("{image_type_name} for {title}", [
+        "image_type_name" => $this->imageTypeName,
+        "title"           => $this->movie->displayTitleWithYear,
+    ]));
+    $this->initLanguageLinks("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id ], true);
+    $this->initPagination($this->movie->getImageCount($this->imageTypeId));
+    $this->pageTitle           = $i18n->t("{image_type_name} for {title}", [
+      "image_type_name" => $this->imageTypeName,
+      "title"           => "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>",
+    ]);
+    return $this;
+  }
+
+  /**
+   * Initialize the image page.
+   *
+   * @internal
+   *   We let the caller translate the image type, otherwise we'd have to translate all possible image type name
+   *   combination within this method.
+   * @param integer $typeId
+   *   The movie image's type identifier, use the class constant of your image.
+   * @param string $typeName
+   *   The translated image type name.
+   * @return this
+   */
+  protected function initImagePage($typeId, $typeName) {
+    $this->imageTypeId   = $typeId;
+    $this->imageTypeName = $typeName;
+    $imageTypeInfo       = [
+      MovieImage::TYPE_ID     => [ "Image", "image", "images" ],
+      MoviePoster::TYPE_ID    => [ "Poster", "poster", "posters" ],
+      MovieLobbyCard::TYPE_ID => [ "LobbyCard", "lobby-card", "lobby-cards" ],
+    ];
+    $this->imageClassName = $imageTypeInfo[$typeId][0];
+    $this->routeKey       = $imageTypeInfo[$typeId][1];
+    $this->routeKeyPlural = $imageTypeInfo[$typeId][2];
     return $this;
   }
 
@@ -184,14 +207,14 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
     // Initialize the sidebar menuitems with the menuitem for the current movie image type first and the corresponding
     // upload page second.
     $sidebarMenuitems = [
-      $typePages[static::TYPE_ID],
+      $typePages[$this->imageTypeId],
       [ $i18n->r("/movie/{0}/{$this->routeKey}/upload", $args), $i18n->t("Upload"), [ "class" => "ico ico-upload" ] ],
       [ $this->movie->route, $i18n->t("Back to movie"), [ "class" => "ico ico-movie separator" ] ],
     ];
 
     // Remove the current movie image sidebar menuitem from the movie image types array and iterate over the remaining
     // pages and add them to the sidebar menuitems.
-    unset($typePages[static::TYPE_ID]);
+    unset($typePages[$this->imageTypeId]);
     foreach ($typePages as $sidebarMenuitem) {
       $sidebarMenuitems[] = $sidebarMenuitem;
     }

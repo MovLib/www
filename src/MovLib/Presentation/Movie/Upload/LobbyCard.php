@@ -17,10 +17,8 @@
  */
 namespace MovLib\Presentation\Movie\Upload;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
- * @todo Description of LobbyCard
+ * Form to upload a new or edit an existing movie lobby card.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,11 +26,17 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class LobbyCard extends \MovLib\Presentation\Movie\Upload\Poster {
+class LobbyCard extends \MovLib\Presentation\Movie\Upload\Image {
 
+  /**
+   * Instantiate new upload new or edit existing movie lobby card presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Presentation\Error\NotFound
+   */
   public function __construct() {
-    $this->initPage("Movie Lobby Card Upload");
-    $this->alerts .= new Alert("Not implemented yet!");
+    global $i18n;
+    $this->initImagePage(\MovLib\Data\Image\MovieLobbyCard::TYPE_ID, $i18n->t("Lobby Card"))->initUpload();
   }
 
 }

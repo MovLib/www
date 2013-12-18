@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie\Upload;
+namespace MovLib\Presentation\Movie\ImageDetails;
 
 use \MovLib\Presentation\Partial\Alert;
 
@@ -28,11 +28,15 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Photo extends \MovLib\Presentation\Movie\Upload\Poster {
+class Show extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
 
   public function __construct() {
-    $this->initPage("Movie Photo Upload");
+    global $i18n;
+    $this->initPage("Movie Image");
     $this->alerts .= new Alert("Not implemented yet!");
   }
+
+  protected function getPageContent() {}
 
 }
