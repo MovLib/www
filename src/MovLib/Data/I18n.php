@@ -133,11 +133,13 @@ class I18n {
    *   The message to format.
    * @param array $args
    *   The message arguments.
+   * @param string $locale [optional]
+   *   Use this locale to translate the route instead of the current display locale.
    * @return string
    *   The formatted message.
    */
-  public function format($message, array $args) {
-    return \MessageFormatter::formatMessage($this->locale, $message, $args);
+  public function format($message, array $args, $locale = null) {
+    return \MessageFormatter::formatMessage(($locale ?: $this->locale), $message, $args);
   }
 
   /**
