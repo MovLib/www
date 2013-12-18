@@ -224,21 +224,30 @@ class Page extends \MovLib\Presentation\AbstractBase {
         $language = new \MovLib\Data\Language($code);
         if ($code == $i18n->languageCode) {
           $currentLanguageName = $language->name;
-          $languageLinks      .=
+          $languageLinks[$language->name] =
             "<a class='active' href='{$route}' tabindex='0' title='{$i18n->t("You’re currently viewing this page.")}'>{$language->name}</a>"
           ;
         }
         else {
-          $languageLinks .=
-            "<a href='{$kernel->scheme}://{$code}.{$kernel->domainDefault}{$route}'>{$i18n->t("{0} ({1})", [ $language->name, $language->native ])}</a>"
+          $languageLinks[$language->name] =
+            "<a href='{$kernel->scheme}://{$code}.{$kernel->domainDefault}{$route}'>{$i18n->t("{0} ({1})", [
+              $language->name, "<span lang='{$language->code}'>{$language->native}</span>"
+            ])}</a>"
           ;
         }
       }
+
+      $i18n->getCollator()->ksort($languageLinks);
+      $languageLinks = implode(" ", $languageLinks);
+
       $languageLinks =
         "<section class='last s s4'>" .
-          "<div class='popup-c ico ico-earth'>" .
-            "<div class='popup'><h3>{$i18n->t("Choose your language")}</h3>{$languageLinks}</div>" .
-            "{$i18n->t("Language")}: {$currentLanguageName}" .
+          "<div class='popup-c'>" .
+            "<div class='popup'><h2>{$i18n->t("Choose your language")}</h2><small>{$i18n->t(
+              "Is your language missing from our list? {0}Help us translate {1}.{2}",
+              [ "<a href='//{$kernel->domainLocalize}/'>", $kernel->siteName, "</a>" ]
+            )}</small>{$languageLinks}</div>" .
+            "<a class='ico ico-languages' id='f-language'>{$i18n->t("Language")}: {$currentLanguageName}</a>" .
           "</div>" .
         "</section>"
       ;

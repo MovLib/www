@@ -83,3 +83,44 @@
 #f-team a:hover .ico-heart {
   color: #c00;
 }
+
+#f .popup-c:hover:after {
+  left: -20px;
+  right: -70px;
+}
+
+#f .popup {
+  left: -20px;
+  width: 480px;
+}
+
+#f .popup:before {
+  left: 20.5px;
+}
+
+#f .popup:after {
+  left: 21.5px;
+}
+
+#f .popup h2 {
+  font-size: 18px;
+  margin-top: 0;
+}
+
+#f .popup small:first-of-type {
+  border-bottom: 1px solid #c7c7c7;
+  padding-bottom: 10px;
+}
+
+#f .popup a {
+  margin-right: 10px;
+  white-space: pre;
+}
+
+#f-language:before {
+  margin-right: 5px;
+}
+
+#f-language {
+  cursor: pointer;
+}
