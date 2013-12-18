@@ -351,7 +351,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "<li>{$this->a($i18n->r("/profile/messages"), $i18n->t("Messages"), [ "class" => "ico ico-email" ])}</li>" .
           "<li>{$this->a($i18n->r("/profile/collection"), $i18n->t("Collection"))}</li>" .
           "<li>{$this->a($i18n->r("/profile/wantlist"), $i18n->t("Wantlist"))}</li>" .
-          "<li>{$this->a($i18n->r("/profile/lists"), $i18n->t("Lists"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/lists"), $i18n->t("Lists"), [ "class" => "ico ico-ul" ])}</li>" .
           "<li>{$this->a($i18n->r("/profile/watchlist"), $i18n->t("Watchlist"))}</li>" .
           "<li class='separator'>{$this->a($i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "ico ico-user" ])}</li>" .
           "<li>{$this->a($i18n->r("/profile/account-settings"), $i18n->t("Settings"), [ "class" => "ico ico-settings" ])}</li>" .
