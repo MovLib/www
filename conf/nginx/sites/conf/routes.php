@@ -78,6 +78,47 @@ location ^~ <?= $r("/movie") ?> {
   }
 
   #
+  # Movie Images
+  #
+
+  location ~ "^<?= $rp("/movie/{0}/images", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\Gallery\\Images";
+    set $movlib_movie_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/movie/{0}/image/upload", [ $idRegExp ]) ?>$" {
+    error_page 413 @movie_photo_upload;
+    set $movlib_multipart 0;
+    set $movlib_presenter "Movie\\Upload\\Image";
+    set $movlib_movie_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/movie/{0}/image/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\ImageDetails\\Show";
+    set $movlib_movie_id $1;
+    set $movlib_image_id $2;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/movie/{0}/image/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
+    error_page 413 @movie_photo_upload;
+    set $movlib_multipart 0;
+    set $movlib_presenter "Movie\\Upload\\Image";
+    set $movlib_movie_id $1;
+    set $movlib_image_id $2;
+    try_files $movlib_cache @php;
+  }
+
+  location ~ "^<?= $r("/movie/{0}/image/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\ImageDetails\\Delete";
+    set $movlib_movie_id $1;
+    set $movlib_image_id $2;
+    try_files $movlib_cache @php;
+  }
+
+  #
   # Movie Posters
   #
 
@@ -105,7 +146,7 @@ location ^~ <?= $r("/movie") ?> {
   location ~ "^<?= $r("/movie/{0}/poster/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
     error_page 413 @movie_poster_upload;
     set $movlib_multipart 0;
-    set $movlib_presenter "Movie\\ImageDetails\\PosterEdit";
+    set $movlib_presenter "Movie\\Upload\\Poster";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
@@ -146,7 +187,7 @@ location ^~ <?= $r("/movie") ?> {
   location ~ "^<?= $r("/movie/{0}/lobby-card/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
     error_page 413 @movie_lobby_card_upload;
     set $movlib_multipart 0;
-    set $movlib_presenter "Movie\\ImageDetails\\LobbyCardEdit";
+    set $movlib_presenter "Movie\\Upload\\LobbyCard";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
@@ -154,47 +195,6 @@ location ^~ <?= $r("/movie") ?> {
 
   location ~ "^<?= $r("/movie/{0}/lobby-card/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
     set $movlib_presenter "Movie\\ImageDetails\\LobbyCardDelete";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    try_files $movlib_cache @php;
-  }
-
-  #
-  # Movie Images
-  #
-
-  location ~ "^<?= $rp("/movie/{0}/photos", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Gallery\\Photos";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/movie/{0}/photo/upload", [ $idRegExp ]) ?>$" {
-    error_page 413 @movie_photo_upload;
-    set $movlib_multipart 0;
-    set $movlib_presenter "Movie\\Upload\\Photo";
-    set $movlib_movie_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/movie/{0}/photo/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDetails\\PhotoShow";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/movie/{0}/photo/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
-    error_page 413 @movie_photo_upload;
-    set $movlib_multipart 0;
-    set $movlib_presenter "Movie\\ImageDetails\\PhotoEdit";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~ "^<?= $r("/movie/{0}/photo/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDetails\\PhotoDelete";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
@@ -400,7 +400,7 @@ location ^~ <?= $r("/profile") ?> {
     set $movlib_presenter "Profile\\AccountSettings";
     include sites/conf/fastcgi_params.conf;
   }
-  
+
   location = <?= $r("/profile/collection") ?> {
     set $movlib_presenter "Profile\\Collection";
     try_files $movlib_cache @php;
@@ -420,7 +420,7 @@ location ^~ <?= $r("/profile") ?> {
     set $movlib_presenter "Profile\\Join";
     try_files $movlib_cache @php;
   }
-  
+
   location = <?= $r("/profile/messages") ?> {
     set $movlib_presenter "Profile\\Messages";
     try_files $movlib_cache @php;
@@ -430,7 +430,7 @@ location ^~ <?= $r("/profile") ?> {
     set $movlib_presenter "Profile\\NotificationSettings";
     include sites/conf/fastcgi_params.conf;
   }
-  
+
   location = <?= $r("/profile/lists") ?> {
     set $movlib_presenter "Profile\\Lists";
     try_files $movlib_cache @php;
@@ -455,7 +455,7 @@ location ^~ <?= $r("/profile") ?> {
     set $movlib_presenter "Profile\\SignOut";
     include sites/conf/fastcgi_params.conf;
   }
-  
+
   location = <?= $r("/profile/watchlist") ?> {
     set $movlib_presenter "Profile\\Watchlist";
     try_files $movlib_cache @php;

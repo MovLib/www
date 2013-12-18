@@ -37,6 +37,12 @@ return [
   "/movie/{0}/edit"       => "/film/{0}/bearbeiten",
   "/movie/{0}/delete"     => "/film/{0}/löschen",
 
+  // ------------------------------------------------------------------------------------------------------------------- Movie Photo
+  "/movie/{0}/image/upload"     => "/film/{0}/bild/hochladen",
+  "/movie/{0}/image/{1}"        => "/film/{0}/bild/{1}",
+  "/movie/{0}/image/{1}/edit"   => "/film/{0}/bild/{1}/bearbeiten",
+  "/movie/{0}/image/{1}/delete" => "/film/{0}/bild/{1}/löschen",
+
   // ------------------------------------------------------------------------------------------------------------------- Movie Poster
   "/movie/{0}/poster/upload"     => "/film/{0}/poster/hochladen",
   "/movie/{0}/poster/{1}"        => "/film/{0}/poster/{1}",
@@ -48,12 +54,6 @@ return [
   "/movie/{0}/lobby-card/{1}"        => "/film/{0}/aushangbild/{1}",
   "/movie/{0}/lobby-card/{1}/edit"   => "/film/{0}/aushangbild/{1}/bearbeiten",
   "/movie/{0}/lobby-card/{1}/delete" => "/film/{0}/aushangbild/{1}/löschen",
-
-  // ------------------------------------------------------------------------------------------------------------------- Movie Photo
-  "/movie/{0}/photo/upload"     => "/film/{0}/foto/hochladen",
-  "/movie/{0}/photo/{1}"        => "/film/{0}/foto/{1}",
-  "/movie/{0}/photo/{1}/edit"   => "/film/{0}/foto/{1}/bearbeiten",
-  "/movie/{0}/photo/{1}/delete" => "/film/{0}/foto/{1}/löschen",
 
   // ------------------------------------------------------------------------------------------------------------------- Movie Release
   "/movie/{0}/release/create"         => "/film/{0}/veröffentlichung/erstellen",

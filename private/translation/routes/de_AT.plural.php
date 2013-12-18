@@ -31,9 +31,9 @@ return [
 
   // ------------------------------------------------------------------------------------------------------------------- Movies
   "/movies"                => "/filme",
+  "/movie/{0}/images"      => "/film/{0}/bilder",
   "/movie/{0}/posters"     => "/film/{0}/poster",
   "/movie/{0}/lobby-cards" => "/film/{0}/aushangbilder",
-  "/movie/{0}/photos"      => "/film/{0}/fotos",
   "/movie/{0}/releases"    => "/film/{0}/veröffentlichungen",
   "/movie/{0}/titles"      => "/film/{0}/titel",
 

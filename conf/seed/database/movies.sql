@@ -178,7 +178,7 @@ INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (S
 INSERT INTO `movies_images` SET
   `id`               = 1,
   `movie_id`         = @big_buck_bunny_id,
-  `type_id`          = 1,
+  `type_id`          = 2,
   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
   `country_code`     = 'US',
   `language_code`    = 'en',
