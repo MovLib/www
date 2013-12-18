@@ -61,6 +61,13 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
   protected $imageTypeName;
 
   /**
+   * The image type's translated plural name (e.g. <code>"Lobby Cards"</code>).
+   *
+   * @var string
+   */
+  protected $imageTypeNamePlural;
+
+  /**
    * The image route's variable name part (e.g. <code>"lobby-card"</code>).
    *
    * @var string
@@ -86,7 +93,13 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
    */
   public function __construct() {
     global $i18n;
-    $this->initImagePage(MovieImage::TYPE_ID, $i18n->t("Images"))->initGallery();
+    $this->imageClassName      = "Image";
+    $this->imageTypeId         = MovieImage::TYPE_ID;
+    $this->imageTypeName       = $i18n->t("Image");
+    $this->imageTypeNamePlural = $i18n->t("Images");
+    $this->routeKey            = "image";
+    $this->routeKeyPlural      = "images";
+    $this->initImagePage();
   }
 
 
@@ -144,45 +157,19 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * @global \MovLib\Data\I18n $i18n
    * @return this
    */
-  protected function initGallery() {
+  protected function initImagePage() {
     global $i18n;
-    $this->initMoviePage($this->imageTypeName);
+    $this->initMoviePage($this->imageTypeNamePlural);
     $this->initPage($i18n->t("{image_type_name} for {title}", [
-        "image_type_name" => $this->imageTypeName,
+        "image_type_name" => $this->imageTypeNamePlural,
         "title"           => $this->movie->displayTitleWithYear,
     ]));
     $this->initLanguageLinks("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id ], true);
     $this->initPagination($this->movie->getImageCount($this->imageTypeId));
     $this->pageTitle           = $i18n->t("{image_type_name} for {title}", [
-      "image_type_name" => $this->imageTypeName,
+      "image_type_name" => $this->imageTypeNamePlural,
       "title"           => "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>",
     ]);
-    return $this;
-  }
-
-  /**
-   * Initialize the image page.
-   *
-   * @internal
-   *   We let the caller translate the image type, otherwise we'd have to translate all possible image type name
-   *   combination within this method.
-   * @param integer $typeId
-   *   The movie image's type identifier, use the class constant of your image.
-   * @param string $typeName
-   *   The translated image type name.
-   * @return this
-   */
-  protected function initImagePage($typeId, $typeName) {
-    $this->imageTypeId   = $typeId;
-    $this->imageTypeName = $typeName;
-    $imageTypeInfo       = [
-      MovieImage::TYPE_ID     => [ "Image", "image", "images" ],
-      MoviePoster::TYPE_ID    => [ "Poster", "poster", "posters" ],
-      MovieLobbyCard::TYPE_ID => [ "LobbyCard", "lobby-card", "lobby-cards" ],
-    ];
-    $this->imageClassName = $imageTypeInfo[$typeId][0];
-    $this->routeKey       = $imageTypeInfo[$typeId][1];
-    $this->routeKeyPlural = $imageTypeInfo[$typeId][2];
     return $this;
   }
 

@@ -36,7 +36,13 @@ class Posters extends \MovLib\Presentation\Movie\Gallery\Images {
    */
   public function __construct() {
     global $i18n;
-    $this->initImagePage(\MovLib\Data\Image\MoviePoster::TYPE_ID, $i18n->t("Posters"))->initGallery();
+    $this->imageClassName      = "Poster";
+    $this->imageTypeId         = \MovLib\Data\Image\MoviePoster::TYPE_ID;
+    $this->imageTypeName       = $i18n->t("Poster");
+    $this->imageTypeNamePlural = $i18n->t("Posters");
+    $this->routeKey            = "poster";
+    $this->routeKeyPlural      = "posters";
+    $this->initImagePage();
   }
 
 }

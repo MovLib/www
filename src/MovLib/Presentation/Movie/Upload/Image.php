@@ -32,9 +32,7 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @since 0.0.1-dev
  */
 class Image extends \MovLib\Presentation\Movie\Gallery\Images {
-  use \MovLib\Presentation\TraitUpload {
-    initUpload as initUploadTrait;
-  }
+  use \MovLib\Presentation\TraitUpload;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -55,21 +53,6 @@ class Image extends \MovLib\Presentation\Movie\Gallery\Images {
   protected $selectLanguage;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new upload new or edit existing movie image presentation.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @throws \MovLib\Presentation\Error\NotFound
-   */
-  public function __construct() {
-    global $i18n;
-    $this->initImagePage(\MovLib\Data\Image\MovieImage::TYPE_ID, $i18n->t("Image"))->initUpload();
-  }
-
-
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -87,14 +70,13 @@ class Image extends \MovLib\Presentation\Movie\Gallery\Images {
    * @return this
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  protected function initUpload() {
+  protected function initImagePage() {
     global $i18n;
-    $this->initMoviePage($i18n->t("Edit {image_type_name}", [ "image_type_name" => $this->imageTypeName ]));
 
     if (isset($_SERVER["IMAGE_ID"])) {
-      $imageId = $_SERVER["IMAGE_ID"];
+      $imageId   = $_SERVER["IMAGE_ID"];
       $this->initMoviePage($i18n->t("Edit {image_type_name}", [ "image_type_name" => $this->imageTypeName ]));
-      $title = $i18n->t("Edit {title} {image_type_name} {id, number, integer}", [
+      $title     = $i18n->t("Edit {title} {image_type_name} {id, number, integer}", [
         "title"           => $this->movie->displayTitleWithYear,
         "id"              => $imageId,
         "image_type_name" => $this->imageTypeName,
@@ -106,9 +88,9 @@ class Image extends \MovLib\Presentation\Movie\Gallery\Images {
       ]);
     }
     else {
-      $imageId = null;
+      $imageId   = null;
       $this->initMoviePage($i18n->t("Upload New {image_type_name}", [ "image_type_name" => $this->imageTypeName ]));
-      $title = $i18n->t("Upload new {image_type_name} for {title}", [
+      $title     = $i18n->t("Upload new {image_type_name} for {title}", [
         "title"           => $this->movie->displayTitleWithYear,
         "image_type_name" => $this->imageTypeName,
       ]);
@@ -118,14 +100,15 @@ class Image extends \MovLib\Presentation\Movie\Gallery\Images {
       ]);
     }
 
-    $class                = "\\MovLib\\Data\\Image\\Movie{$this->imageClassName}";
-    $this->image          = new $class($this->movie->id, $this->movie->displayTitleWithYear, $imageId);
+    $class                         = "\\MovLib\\Data\\Image\\Movie{$this->imageClassName}";
+    $this->image                   = new $class($this->movie->id, $this->movie->displayTitleWithYear, $imageId);
     $this->initPage($title);
     $this->initLanguageLinks("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ]);
-    $this->pageTitle      = $pageTitle;
-    $this->selectCountry  = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
-    $this->selectLanguage = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode, [ "required" ]);
-    $this->initUploadTrait($this->image, [ $this->selectCountry, $this->selectLanguage ]);
+    $this->pageTitle               = $pageTitle;
+    $this->breadcrumb->menuitems[] = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id ]), $this->imageTypeNamePlural ];
+    $this->selectCountry           = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
+    $this->selectLanguage          = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode, [ "required" ]);
+    $this->initUpload($this->image, [ $this->selectCountry, $this->selectLanguage ]);
 
     return $this;
   }
@@ -139,7 +122,7 @@ class Image extends \MovLib\Presentation\Movie\Gallery\Images {
     $this->image->languageCode = $this->selectLanguage->value;
     $this->image->licenseId    = $this->selectLicense->value;
     $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
-    throw new SeeOtherRedirect($this->image->route);
+    throw new SeeOtherRedirect($this->image->routeKey);
   }
 
 }

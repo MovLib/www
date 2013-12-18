@@ -36,7 +36,13 @@ class LobbyCards extends \MovLib\Presentation\Movie\Gallery\Images {
    */
   public function __construct() {
     global $i18n;
-    $this->initImagePage(\MovLib\Data\Image\MovieLobbyCard::TYPE_ID, $i18n->t("Lobby Cards"))->initGallery();
+    $this->imageClassName      = "LobbyCard";
+    $this->imageTypeId         = \MovLib\Data\Image\MovieLobbyCard::TYPE_ID;
+    $this->imageTypeName       = $i18n->t("Lobby Card");
+    $this->imageTypeNamePlural = $i18n->t("Lobby Cards");
+    $this->routeKey            = "lobby-card";
+    $this->routeKeyPlural      = "lobby-cards";
+    $this->initImagePage();
   }
 
 }
