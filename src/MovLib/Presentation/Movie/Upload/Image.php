@@ -75,21 +75,21 @@ class Image extends \MovLib\Presentation\Movie\Gallery\Images {
 
     if (isset($_SERVER["IMAGE_ID"])) {
       $imageId   = $_SERVER["IMAGE_ID"];
-      $this->initMoviePage($i18n->t("Edit {image_type_name}", [ "image_type_name" => $this->imageTypeName ]));
-      $title     = $i18n->t("Edit {title} {image_type_name} {id, number, integer}", [
+      $this->initMoviePage($i18n->t("Edit {image_type_name}", [ "image_type_name" => $this->imageTypeName]));
+      $title     = $i18n->t("Edit {title} {image_type_name} {id}", [
         "title"           => $this->movie->displayTitleWithYear,
-        "id"              => $imageId,
+        "id"              => $i18n->t("{0,number,integer}", [ $imageId]),
         "image_type_name" => $this->imageTypeName,
       ]);
-      $pageTitle = $i18n->t("Edit {title} {image_type_name} {id, number, integer}", [
+      $pageTitle = $i18n->t("Edit {title} {image_type_name} {id}", [
         "title"           => "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>",
-        "id"              => "<a href='{$i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movie->id, $imageId ])}'>{$imageId}</a>",
+        "id"              => "<a href='{$i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movie->id, $imageId])}'>{$i18n->format("{0,number,integer}", [ $imageId])}</a>",
         "image_type_name" => $this->imageTypeName,
       ]);
     }
     else {
       $imageId   = null;
-      $this->initMoviePage($i18n->t("Upload New {image_type_name}", [ "image_type_name" => $this->imageTypeName ]));
+      $this->initMoviePage($i18n->t("Upload New {image_type_name}", [ "image_type_name" => $this->imageTypeName]));
       $title     = $i18n->t("Upload new {image_type_name} for {title}", [
         "title"           => $this->movie->displayTitleWithYear,
         "image_type_name" => $this->imageTypeName,
@@ -103,12 +103,18 @@ class Image extends \MovLib\Presentation\Movie\Gallery\Images {
     $class                         = "\\MovLib\\Data\\Image\\Movie{$this->imageClassName}";
     $this->image                   = new $class($this->movie->id, $this->movie->displayTitleWithYear, $imageId);
     $this->initPage($title);
-    $this->initLanguageLinks("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ]);
+    $this->initLanguageLinks("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id]);
     $this->pageTitle               = $pageTitle;
-    $this->breadcrumb->menuitems[] = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id ]), $this->imageTypeNamePlural ];
-    $this->selectCountry           = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
-    $this->selectLanguage          = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode, [ "required" ]);
-    $this->initUpload($this->image, [ $this->selectCountry, $this->selectLanguage ]);
+    $this->breadcrumb->menuitems[] = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id]), $this->imageTypeNamePlural];
+    if ($imageId) {
+      $this->breadcrumb->menuitems[] = [
+        $i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movie->id, $imageId]),
+        "{$this->imageTypeName} {$imageId}",
+      ];
+    }
+    $this->selectCountry  = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
+    $this->selectLanguage = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode, [ "required"]);
+    $this->initUpload($this->image, [ $this->selectCountry, $this->selectLanguage]);
 
     return $this;
   }
