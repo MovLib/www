@@ -15,30 +15,48 @@
  */
 
 /**
- * Styles specific to \MovLib\Presentation\Profile
+ * Image grid styles.
  *
- * @link http://littlesparkvt.com/flatstrap/base-css.html#buttons
  * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
- * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 
-#profile-sessions th,
-#profile-sessions td {
-  white-space: pre;
+.img-grid .s {
+  margin-bottom: 20px;
 }
 
-#profile-sessions code {
-  background: none;
-  border: 0;
-  padding: 0;
-  white-space: normal;
+/* This ensures that we have proper rows for the images in the grid. */
+.s10 .img-grid .s2:nth-child(5n+1),
+.s10 .img-grid .s1:nth-child(10n+1) {
+  clear: left;
 }
 
-#profile-deactivated .form-actions,
-#profile-sessions .form-actions {
-  text-align: center;
+.img-grid .grid-img {
+  opacity: 0.75;
+  outline: 1px solid #e5e5e5;
+  transition: 0.4s ease-in-out;
+  transition-property: opacity, outline-color;
+}
+
+.img-grid a {
+  margin-bottom: 5px;
+  display: block;
+  transition: box-shadow 0.4s ease-in-out;
+}
+
+.img-grid a:active,
+.img-grid a:focus,
+.img-grid a:hover {
+  box-shadow: 0 0 10px rgba(82, 168, 236, 0.6);
+}
+
+.img-grid a:active .grid-img,
+.img-grid a:focus .grid-img,
+.img-grid a:hover .grid-img {
+  opacity: 1;
+  outline-color: rgba(82, 168, 236, 0.8);
 }
