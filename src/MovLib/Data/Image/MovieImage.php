@@ -33,14 +33,6 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
-  /**
-   * 60x60>
-   *
-   * Image style used on places were a square image is needed.
-   *
-   * @var string
-   */
-  const STYLE_SPAN_01_SQUARE = "60x60";
 
   /**
    * 220x>
@@ -132,10 +124,9 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
    * @inheritdoc
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    */
   protected function generateStyles($source) {
-    global $db, $i18n, $session;
+    global $db, $i18n;
 
     // Reserve identifier if this is a new upload.
     if ($this->imageExists === false) {
@@ -171,44 +162,7 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
     $span02 = $this->convert($span03, self::STYLE_SPAN_02);
     $this->convert($span02, self::STYLE_SPAN_01);
 
-    // Update the existing record with the image style data that we just generated.
-    $db->query(
-      "UPDATE `movies_images` SET
-        `changed`          = FROM_UNIXTIME(?),
-        `country_code`     = ?,
-        `deleted`          = false,
-        `dyn_descriptions` = COLUMN_CREATE(?, ?),
-        `extension`        = ?,
-        `filesize`         = ?,
-        `height`           = ?,
-        `language_code`    = ?,
-        `license_id`       = ?,
-        `styles`           = ?,
-        `user_id`          = ?,
-        `width`            = ?
-      WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
-      "sssssiisisdiidi",
-      [
-        $_SERVER["REQUEST_TIME"],
-        $this->countryCode,
-        $i18n->languageCode, $this->description,
-        $this->extension,
-        $this->filesize,
-        $this->height,
-        $this->languageCode,
-        $this->licenseId,
-        serialize($this->styles),
-        $session->userId,
-        $this->width,
-        $this->id,
-        $this->movieId,
-        static::TYPE_ID,
-      ]
-    )->close();
-
-    // @todo Create / update Git repository
-
-    return $this;
+    return $this->update();
   }
 
   /**
@@ -296,6 +250,52 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
       : $i18n->r("/movie/{0}/{$name}/upload", [ $this->movieId ])
     ;
 
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function update() {
+    global $db, $i18n, $session;
+    $db->query(
+      "UPDATE `movies_images` SET
+        `changed`          = FROM_UNIXTIME(?),
+        `country_code`     = ?,
+        `deleted`          = false,
+        `dyn_descriptions` = COLUMN_CREATE(?, ?),
+        `extension`        = ?,
+        `filesize`         = ?,
+        `height`           = ?,
+        `language_code`    = ?,
+        `license_id`       = ?,
+        `styles`           = ?,
+        `user_id`          = ?,
+        `width`            = ?
+      WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
+      "sssssiisisdiidi",
+      [
+        $_SERVER["REQUEST_TIME"],
+        $this->countryCode,
+        $i18n->languageCode, $this->description,
+        $this->extension,
+        $this->filesize,
+        $this->height,
+        $this->languageCode,
+        $this->licenseId,
+        serialize($this->styles),
+        $session->userId,
+        $this->width,
+        $this->id,
+        $this->movieId,
+        static::TYPE_ID,
+      ]
+    )->close();
     return $this;
   }
 

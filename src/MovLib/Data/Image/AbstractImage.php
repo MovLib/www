@@ -111,6 +111,13 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    */
   protected abstract function generateStyles($source);
 
+  /**
+   * Update the existing image's database record.
+   * 
+   * @return this
+   */
+  protected abstract function update();
+
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -229,6 +236,11 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    */
   public function upload($source, $extension, $height, $width) {
     global $kernel;
+    
+    // If we have no source path call the update method and we're done.
+    if (!$source) {
+      return $this->update();
+    }
 
     // We have to export the extension to class scope in order to move the original image.
     $this->extension = $extension;
