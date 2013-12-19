@@ -167,8 +167,19 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
     // Generate the various image's styles and always go from best quality down to worst quality.
     $this->convert($this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true), self::STYLE_SPAN_01);
 
-    // Now we have to update the existing record with the new data. We always set deleted to false at this point as a
-    // user wouldn't even be able to upload (trigger the call of this method) if the image is deleted.
+    return $this->update();
+  }
+  
+  /**
+   * {@inheritdoc}
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function update() {
+    global $db, $i18n, $session;
     $db->query(
       "UPDATE `persons_images` SET
         `changed`          = FROM_UNIXTIME(?),
@@ -195,7 +206,6 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
         $this->width,
       ]
     )->close();
-
     return $this;
   }
 
