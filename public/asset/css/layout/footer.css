@@ -84,35 +84,35 @@
   color: #c00;
 }
 
-#f .popup-c:hover:after {
+#f .popup:hover:after {
   left: -20px;
   right: -70px;
 }
 
-#f .popup {
+#f .popup .content {
   left: -20px;
   width: 480px;
 }
 
-#f .popup:before {
+#f .popup .content:before {
   left: 20.5px;
 }
 
-#f .popup:after {
+#f .popup .content:after {
   left: 21.5px;
 }
 
-#f .popup h2 {
+#f .popup .content h2 {
   font-size: 18px;
   margin-top: 0;
 }
 
-#f .popup small:first-of-type {
+#f .popup .content small:first-of-type {
   border-bottom: 1px solid #c7c7c7;
   padding-bottom: 10px;
 }
 
-#f .popup a {
+#f .popup .content a {
   margin-right: 10px;
   white-space: pre;
 }
