@@ -633,12 +633,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
     $noscript      = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."), $i18n->t("JavaScript Disabled"));
     $this->alerts .= "<noscript>{$noscript}</noscript>";
 
-    // Each sub-namespace within the presentation namespace is worth a stylsheet.
-    $c = count($this->namespace);
-    for ($i = 0; $i < $c; ++$i) {
-      $kernel->stylesheets[] = $this->namespace[$i];
-    }
-
     // Add all alerts that are stored in a cookie to the current presentation and remove them afterwards.
     if (isset($_COOKIE["alerts"])) {
       $this->alerts .= $_COOKIE["alerts"];

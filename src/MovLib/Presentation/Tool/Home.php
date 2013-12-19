@@ -40,8 +40,12 @@ class Home extends \MovLib\Presentation\Tool\Page {
 
   /**
    * Instantiate new tools homepage.
+   *
+   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
+    global $kernel;
+    $kernel->stylesheets[] = "tool";
     $this->initPage("Tools");
     $this->initBreadcrumb();
     unset($this->breadcrumb->menuitems[1]);

@@ -81,10 +81,12 @@ abstract class AbstractUserPage extends \MovLib\Presentation\Page {
    * page, and instantiate the sidebar with links to direct user sub pages.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @return this
    */
   protected function init() {
-    global $i18n;
+    global $i18n, $kernel;
+    $kernel->stylesheets[] = "user";
     $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
 
     // Display the avatar within the header if the user has one.

@@ -55,12 +55,14 @@ class Show extends \MovLib\Presentation\Page {
    * Instantiate new user presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    * @throws \MovLib\Presentation\Redirect\Permanent
    */
   public function __construct() {
-    global $i18n;
+    global $i18n, $kernel;
+    $kernel->stylesheets[] = "user";
     $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
     $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
     $routeArgs  = [ $this->user->filename ];
@@ -80,7 +82,7 @@ class Show extends \MovLib\Presentation\Page {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-  
+
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
@@ -188,7 +190,7 @@ class Show extends \MovLib\Presentation\Page {
       $c = count($movieRatings);
       for ($i = 0; $i < $c; ++$i) {
         $movie = new Movie($movieRatings[$i]->movieId);
-        
+
         // Format the display title for the list.
         if ($movie->year) {
           $title = $i18n->t("{movie_title} ({movie_year})", [
@@ -206,13 +208,13 @@ class Show extends \MovLib\Presentation\Page {
             "original_title" => "<span itemprop='alternateName'>{$movie->originalTitle}</span>",
           ])}</span>";
         }
-        
-        $publicProfile .= 
+
+        $publicProfile .=
           "<tr class='rating'>" .
             "<td>{$this->getImage($movie->displayPoster->getStyle(\MovLib\Data\Image\MoviePoster::STYLE_SPAN_01), false)}<td>" .
             "<td>{$this->a($i18n->r("/movie/{0}", [ $movie->id ]), $title)}<td>" .
             "<td><span class='star'>{$movieRatings[$i]->rating}</span><td>" .
-          "</tr>";        
+          "</tr>";
       }
       $publicProfile .= "</table>";
     }

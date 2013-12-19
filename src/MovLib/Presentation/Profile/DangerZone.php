@@ -93,6 +93,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
     $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
+    $kernel->stylesheets[] = "danger-zone";
     $this->init($i18n->t("Danger Zone"), "/profile/danger-zone", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
 
     if (!empty($_GET["token"])) {
