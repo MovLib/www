@@ -288,7 +288,7 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
         $this->height,
         $this->languageCode,
         $this->licenseId,
-        serialize($this->styles),
+        (is_array($this->styles) ? serialize($this->styles) : $this->styles),
         $session->userId,
         $this->width,
         $this->id,
