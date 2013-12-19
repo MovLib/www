@@ -242,9 +242,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
 
       $languageLinks =
         "<section class='last s s4'>" .
-          "<div class='popup-c'>" .
-            "<div class='popup'><h2>{$i18n->t("Choose your language")}</h2><small>{$i18n->t(
-              "Is your language missing from our list? {0}Help us translate {1}.{2}",
+          "<div class='popup'>" .
+            "<div class='content'><h2>{$i18n->t("Choose your language")}</h2><small>{$i18n->t(
+              "Is your language missing in our list? {0}Help us translate {1}.{2}",
               [ "<a href='//{$kernel->domainLocalize}/'>", $kernel->siteName, "</a>" ]
             )}</small>{$languageLinks}</div>" .
             "<a class='ico ico-languages' id='f-language'>{$i18n->t("Language")}: {$currentLanguageName}</a>" .
