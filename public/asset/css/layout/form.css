@@ -290,6 +290,7 @@ option[value=""] {
  * Special formatting for help partials within forms.
  * ------------------------------------------------------------------------------------------------------------------ */
 
+.form-help,
 form .popup {
   float: right;
   margin: 0;
