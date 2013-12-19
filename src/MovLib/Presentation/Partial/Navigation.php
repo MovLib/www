@@ -176,4 +176,26 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
     return "<nav{$this->expandTagAttributes($this->attributes)}><h{$this->headingLevel}{$hideTitle}>{$this->title}</h{$this->headingLevel}><div role='menu'>{$menuitems}</div></nav>";
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Set a menuitem active.
+   *
+   * @param integer $index
+   *   The index within the array to set active.
+   * @return this
+   */
+  public function setActive($index) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!isset($this->menuitems[$index])) {
+      throw new \LogicException("No menuitem with index '{$index}'");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return $this->addClass("active", $this->menuitems[$index][2]);
+  }
+
 }
