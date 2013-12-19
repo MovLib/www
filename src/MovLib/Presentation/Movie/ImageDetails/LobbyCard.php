@@ -17,10 +17,8 @@
  */
 namespace MovLib\Presentation\Movie\ImageDetails;
 
-use \MovLib\Presentation\Partial\Alert;
-
 /**
- * @todo Description of Photo
+ * Present a single lobby card.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -28,15 +26,23 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
+class LobbyCard extends \MovLib\Presentation\Movie\ImageDetails\Image {
 
+  /**
+   * Instantiate new single movie lobby card presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Presentation\Error\NotFound
+   */
   public function __construct() {
     global $i18n;
-    $this->initPage("Movie Image");
-    $this->alerts .= new Alert("Not implemented yet!");
+    $this->imageClassName      = "LobbyCard";
+    $this->imageTypeId         = \MovLib\Data\Image\MovieLobbyCard::TYPE_ID;
+    $this->imageTypeName       = $i18n->t("Lobby Card");
+    $this->imageTypeNamePlural = $i18n->t("Lobby Cards");
+    $this->routeKey            = "lobby-card";
+    $this->routeKeyPlural      = "lobby-cards";
+    $this->initImagePage();
   }
-
-  protected function getPageContent() {}
 
 }

@@ -34,7 +34,7 @@ use \MovLib\Presentation\Partial\License;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PosterShow extends \MovLib\Presentation\Movie\AbstractMoviePage {
+class Poster extends \MovLib\Presentation\Movie\AbstractMoviePage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
