@@ -82,6 +82,11 @@ trait TraitPagination {
    */
   protected function initPagination($resultsTotalCount) {
     global $i18n, $kernel;
+
+    // No need to get started if we only have one result.
+    if ($resultsTotalCount < 2) {
+      return $this;
+    }
     $this->resultsTotalCount = $resultsTotalCount;
 
     // Include the pagination stylesheet and let the complete design know that a pagination is present.
@@ -99,11 +104,21 @@ trait TraitPagination {
       $this->title                  .= " {$title}";
     }
 
+    // @todo Better documentation of the code below and we should get rid of all the magic numbers in there!
+
     // Only create a pagination navigation if we have at least two pages.
     $pagination = null;
     $to         = $this->resultsTotalCount;
     if ($this->resultsTotalCount > $this->resultsPerPage) {
-      $to    = $this->resultsOffset + $this->resultsPerPage;
+      // Calculate the maximum amount of results that we can show on this page.
+      $max = $this->resultsOffset + $this->resultsPerPage;
+      // If the current total count isn't smaller then the maximum, use the maximum as to (see bottom of method).
+      if ($this->resultsTotalCount > $max) {
+        $to = $max;
+      }
+
+      // Create the complete route string with the translated page query once. Initialize the page array and substract
+      // one from the current page's index.
       $route = "{$kernel->requestPath}?{$i18n->r("page")}=";
       $pages = [];
       $x     = $this->page - 1;
@@ -136,26 +151,28 @@ trait TraitPagination {
       }
 
       $y = $this->pageCount - 6;
-      if ($x > $y) {
-        $x = $y;
-      }
+      if ($y > 2) {
+        if ($x > $y) {
+          $x = $y;
+        }
 
-      // We can generate the next points in a loop, as they always have the same formatting.
-      $secondLast = $this->pageCount - 1;
-      for ($i = 0; $i < 5 && $x < $secondLast; ++$i, ++$x) {
-        $pages[] = [ "{$route}{$x}", $x ];
-      }
+        // We can generate the next points in a loop, as they always have the same formatting.
+        $secondLast = $this->pageCount - 1;
+        for ($i = 0; $i < 5 && $x < $secondLast; ++$i, ++$x) {
+          $pages[] = [ "{$route}{$x}", $x ];
+        }
 
-      // The second last pagination item is special again.
-      if ($x === $secondLast) {
-        $pages[] = [ "{$route}{$secondLast}", $secondLast ];
-      }
-      else {
-        $pages[] = "<span class='mute'>{$i18n->t("…")}</span>";
-      }
+        // The second last pagination item is special again.
+        if ($x === $secondLast) {
+          $pages[] = [ "{$route}{$secondLast}", $secondLast ];
+        }
+        else {
+          $pages[] = "<span class='mute'>{$i18n->t("…")}</span>";
+        }
 
-      // Always add the last page to the pagination for fast traveling.
-      $pages[] = [ "{$route}{$this->pageCount}", $this->pageCount, [ "rel" => "last prerender" ] ];
+        // Always add the last page to the pagination for fast traveling.
+        $pages[] = [ "{$route}{$this->pageCount}", $this->pageCount, [ "rel" => "last prerender" ] ];
+      }
 
       // Check if we have a next page and perform the same logic as we used for the previous link.
       if ($this->page < $this->pageCount) {
@@ -171,10 +188,13 @@ trait TraitPagination {
 
     // Tampering with the actual navigation partial of the pagination isn't allowed, the concrete class only has the
     // string representation to output it in its content area.
-    $this->contentAfter = "{$pagination}<small class='tac'>{$i18n->t(
-      "Results from {from, number, integer} to {to, number, integer} of {total, number, integer} results.",
-      [ "from" => $this->resultsOffset + 1, "to" => $to, "total" => $this->resultsTotalCount ]
-    )}</small>";
+    $this->contentAfter = "<div class='c'><div class='r'><div class='s s10 o2'>{$pagination}<small class='tac'>{$i18n->t(
+      "Results from {from,number,integer} to {to,number,integer} of {total,number,integer} results.", [
+        "from"  => $this->resultsOffset + 1,
+        "to"    => $to,
+        "total" => $this->resultsTotalCount,
+      ]
+    )}</small></div></div></div>";
 
     return $this;
   }
