@@ -177,18 +177,15 @@ abstract class AbstractBase {
    *   Numeric array containing the truncated number in offset 0 and the unit in offset 1.
    */
   protected final function formatBytes($bytes) {
-    if ($bytes >= 1.024e12) {
-      return [ ceil($bytes / 1.024e12), "<abbr title='Tebibyte'>TiB</abbr>" ];
+    // https://en.wikipedia.org/wiki/Mebibyte
+    if ($bytes >= 1048576) {
+      return [ ceil($bytes / 1048576), "<abbr title='Mebibyte'>MiB</abbr>" ];
     }
-    if ($bytes >= 1.024e9) {
-      return [ ceil($bytes / 1.024e9), "<abbr title='Gibibyte'>GiB</abbr>" ];
+    // https://en.wikipedia.org/wiki/Kibibyte
+    if ($bytes >= 1024) {
+      return [ ceil($bytes / 1024), "<abbr title='Kibibyte'>KiB</abbr>" ];
     }
-    if ($bytes >= 1.024e6) {
-      return [ ceil($bytes / 1.024e6), "<abbr title='Mebibyte'>MiB</abbr>" ];
-    }
-    if ($bytes >= 1.024e3) {
-      return [ ceil($bytes / 1.024e3), "<abbr title='Kibibyte'>KiB</abbr>" ];
-    }
+    // https://en.wikipedia.org/wiki/Byte
     return [ $bytes, "<abbr title='Byte'>B</abbr>" ];
   }
 
