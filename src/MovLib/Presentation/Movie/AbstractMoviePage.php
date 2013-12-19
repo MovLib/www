@@ -69,7 +69,7 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
     global $i18n;
     $this->movie           = new FullMovie($_SERVER["MOVIE_ID"]);
     $this->breadcrumbTitle = $breadcrumbTitle;
-    return $this->initSidebar()->initBreadcrumb([
+    return $this->initBreadcrumb([
       [ $i18n->rp("/movies"), $i18n->t("Movies") ],
       [ $this->movie->route, $this->movie->displayTitleWithYear ],
     ]);
