@@ -91,11 +91,17 @@ trait TraitUpload {
     if (empty($this->breadcrumb) || empty($this->breadcrumbTitle)) {
       throw new \LogicException("You have to initialize the breadcrumb and the breadcrumb title property first.");
     }
+    if (!($image instanceof \MovLib\Data\Image\AbstractImage)) {
+      throw new \LogicException("The \$image must be an instance of \\MovLib\\Data\\Image\\AbstractImage");
+    }
     // @codeCoverageIgnoreEnd
     // @devEnd
     $this->image                  = $image;
     $this->inputDescription       = new InputHTML("description", $i18n->t("Description"), $this->image->description); // @todo required
-    $this->inputImage             = new InputImage("image", $i18n->t("Image"), $this->image, [ "required" ]);
+    $this->inputImage             = new InputImage("image", $i18n->t("Image"), $this->image);
+    if (!isset($_SERVER["IMAGE_ID"])) {
+      $this->inputImage->attributes[] = "required";
+    }
     $this->selectLicense          = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ? : 1, [ "required" ]);
     $this->form                   = new Form($this, array_merge([ $this->inputImage, $this->inputDescription, $this->selectLicense ], $formElements));
     $this->form->actionElements[] = new InputSubmit($this->breadcrumbTitle, [ "class" => "btn btn-large btn-success" ]);
