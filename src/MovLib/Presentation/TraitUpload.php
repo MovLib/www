@@ -98,6 +98,7 @@ trait TraitUpload {
     // @devEnd
     $this->image                  = $image;
     $this->inputDescription       = new InputHTML("description", $i18n->t("Description"), $this->image->description); // @todo required
+    $this->inputDescription->allowExternalLinks();
     $this->inputImage             = new InputImage("image", $i18n->t("Image"), $this->image);
     if (!isset($_SERVER["IMAGE_ID"])) {
       $this->inputImage->attributes[] = "required";
