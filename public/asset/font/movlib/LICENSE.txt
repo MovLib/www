@@ -8,8 +8,11 @@ License:	CC BY-SA 3.0 -- http://creativecommons.org/licenses/by-sa/3.0/
 Icon Set: Brocclidry -- http://tridentdesign.com/broccoli-dry-icon-set/
 License: Custom -- http://licence.visualidiot.com/
 
+Icon Set: Brankic 1979 -- http://www.brankic1979.com/icons/
+License: Custom -- http://www.brankic1979.com/icons/
+
 Icon Set: wpzoom -- http://www.wpzoom.com/freebies/
 License: CC BY-SA 3.0 -- http://creativecommons.org/licenses/by-sa/3.0/
 
 Icon Set: WebHostingHub Glyphs -- https://github.com/whhglyphs/webhostinghub-glyphs
-License: CC BY 3.0 http://creativecommons.org/licenses/by/3.0/
+License: CC BY 3.0 -- http://creativecommons.org/licenses/by/3.0/
