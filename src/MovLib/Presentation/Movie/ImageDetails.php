@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MovieImage;
-use \MovLib\Data\Movie\Full as FullMovie;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\DateTime;
@@ -89,8 +88,8 @@ class ImageDetails extends \MovLib\Presentation\Movie\Images {
           // Create a copy of the images we have.
           $streamCopy  = $streamArray;
 
-          // Prepare an array that has four empty offset.
-          $streamArray = [ null, null, null, null ];
+          // Create new empty array that we can fill with the correct offsets.
+          $streamArray = [];
 
           // The formula is easy, we take the current index and add the result of the total available places minus the
           // total count of available element which gives us the new position.
