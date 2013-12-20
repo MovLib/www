@@ -71,6 +71,7 @@ INSERT INTO `users` SET
   `country_code`         = 'AT',
   `created`              = '2013-05-03 07:48:30', -- initial commit
   `currency_code`        = 'EUR',
+  `dyn_about_me`         = '',
   `email`                = 'markus@deutschl.at',
   `password`             = '$2y$13$xtl5jmUnz3F/Tss5qXyzt.fJ1Rppz/d2HGitxd.ig1MUM7gkXQCPC',
   `real_name`            = 'Markus Deutschl',
@@ -87,6 +88,7 @@ INSERT INTO `users` SET
   `country_code`         = 'AT',
   `created`              = '2013-05-27 01:29:57', -- initial commit
   `currency_code`        = 'EUR',
+  `dyn_about_me`         = '',
   `email`                = 'franz@torghele.at',
   `image_changed`        = '2013-05-27 01:29:57', -- initial commit
   `image_extension`      = 'jpg',
