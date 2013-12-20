@@ -41,6 +41,13 @@ trait TraitSidebar {
    */
   protected $sidebarNavigation;
 
+  /**
+   * Whether to create a small sidebar or not, default is a normal sidebar.
+   *
+   * @var boolean
+   */
+  public $smallSidebar = false;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
@@ -68,10 +75,27 @@ trait TraitSidebar {
     global $i18n;
     // Allow implementing class to alter the sidebar within the getPageContent method.
     $content = $this->getPageContent();
+
+    // We have to apply different HTML/CSS depending on the desired size of the sidebar.
+    if ($this->smallSidebar === true) {
+      $containerClass                    = " sidebar-s";
+      $sidebarClass                      = null;
+      $contentClass                      = "s12";
+      $this->sidebarNavigation->callback = function ($menuitem) {
+        $menuitem[1] = "<span class='text'>{$menuitem[1]}</span>";
+        return $menuitem;
+      };
+    }
+    else {
+      $containerClass = null;
+      $sidebarClass   = "s s2";
+      $contentClass   = "s10";
+    }
+
     return
-      "<div class='c sidebar-c'><div class='r sidebar-r'>" .
-        "<aside id='sidebar' class='s s2' role='complementary'><h2 class='vh'>{$i18n->t("Sidebar")}</h2>{$this->sidebarNavigation}</aside>" .
-        "<div class='page-content s s10'>{$content}</div>" .
+      "<div class='c sidebar-c{$containerClass}'><div class='r sidebar-r'>" .
+        "<aside id='sidebar' class='{$sidebarClass}' role='complementary'><h2 class='vh'>{$i18n->t("Sidebar")}</h2>{$this->sidebarNavigation}</aside>" .
+        "<div class='page-content s {$contentClass}'>{$content}</div>" .
       "</div></div>"
     ;
   }
@@ -91,10 +115,12 @@ trait TraitSidebar {
    */
   protected function initSidebar($menuitems) {
     global $i18n;
-    $this->addBodyClass("sidebar");
+
+    $this->bodyClasses                     .= " sidebar";
     $this->sidebarNavigation                = new Navigation($i18n->t("Secondary Navigation"), $menuitems, [ "id" => "sidebar-nav" ]);
     $this->sidebarNavigation->ignoreQuery   = true;
     $this->sidebarNavigation->unorderedList = true; // For CSS styling.
+
     return $this;
   }
 

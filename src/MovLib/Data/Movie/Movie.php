@@ -176,7 +176,19 @@ class Movie {
     )->get_result();
   }
 
-  public function getImageStreamResult($typeId, $id) {
+  /**
+   * Get the mysqli result for building an image stream.
+   *
+   * The images are sorted first by upvotes and then by identifier.
+   *
+   * @global \MovLib\Data\Database $db
+   * @param integer $typeId
+   *   The movie image type identifier, use the class constants from the movie image classes.
+   * @return \mysqli_result
+   *   The mysqli result for building an image stream.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getImageStreamResult($typeId) {
     global $db;
     return $db->query(
       "SELECT
@@ -187,10 +199,9 @@ class Movie {
       FROM `movies_images`
       WHERE `movie_id` = ?
         AND `type_id` = ?
-        AND `id` != ?
       ORDER BY `upvotes` DESC, `id` ASC",
-      "dii",
-      [ $this->id, $typeId, $id ]
+      "di",
+      [ $this->id, $typeId ]
     )->get_result();
   }
 

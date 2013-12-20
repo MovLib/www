@@ -34,18 +34,10 @@ use \MovLib\Presentation\Partial\License;
  * @since 0.0.1-dev
  */
 trait TraitUpload {
-  use \MovLib\Presentation\TraitFormPage;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The concrete image we're working with.
-   *
-   * @var \MovLib\Data\Image\AbstractImage
-   */
-  protected $image;
 
   /**
    * The input HTML form element for the image description.
@@ -77,26 +69,23 @@ trait TraitUpload {
    *
    * This will create the form elements that are needed by all image upload presentations.
    *
-   * @param \MovLib\Data\Image\AbstractImage $image
-   *   The concrete image we are working with.
    * @param array $formElements [optional]
    *   Additional form elements.
    * @return this
    * @throws \LogicException
    */
-  protected function initUpload($image, array $formElements = []) {
+  protected function initUpload(array $formElements = []) {
     global $i18n;
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($this->breadcrumb) || empty($this->breadcrumbTitle)) {
       throw new \LogicException("You have to initialize the breadcrumb and the breadcrumb title property first.");
     }
-    if (!($image instanceof \MovLib\Data\Image\AbstractImage)) {
-      throw new \LogicException("The \$image must be an instance of \\MovLib\\Data\\Image\\AbstractImage");
+    if (!isset($this->image)) {
+      throw new \LogicException("You have to define an \$image property in your upload class.");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->image                  = $image;
     $this->inputDescription       = new InputHTML("description", $i18n->t("Description"), $this->image->description); // @todo required
     $this->inputDescription->allowExternalLinks();
     $this->inputImage             = new InputImage("image", $i18n->t("Image"), $this->image);

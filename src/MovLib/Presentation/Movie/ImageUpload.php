@@ -15,10 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie\ImageDetails;
+namespace MovLib\Presentation\Movie;
+
+use \MovLib\Data\Country;
+use \MovLib\Presentation\Partial\FormElement\Select;
+use \MovLib\Presentation\Partial\Language;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
- * Present a single movie image.
+ * Form to upload a new or edit an existing movie image.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,38 +31,44 @@ namespace MovLib\Presentation\Movie\ImageDetails;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Image extends \MovLib\Presentation\Movie\Gallery\Images {
-  use \MovLib\Presentation\TraitFormPage;
+class ImageUpload extends \MovLib\Presentation\Movie\ImageDetails {
+  use \MovLib\Presentation\TraitUpload;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The movie image to present.
+   * The select form element for the country.
    *
-   * @var \MovLib\Data\Image\MovieImage
+   * @var \MovLib\Presentation\Partial\FormElement\Select
    */
-  protected $image;
+  protected $selectCountry;
 
-  
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-  
-  
   /**
-   * Get the page's content.
-   * 
-   * @return string
+   * The select form element for the language.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\Select
+   */
+  protected $selectLanguage;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
    */
   protected function getPageContent() {
-    return "";
+    return $this->form;
   }
 
   /**
-   * Initialize the movie image show page.
-   * 
+   * Initialize movie image upload page.
+   *
    * @global \MovLib\Data\I18n $i18n
    * @return this
+   * @throws \MovLib\Presentation\Error\NotFound
    */
   protected function initImagePage() {
     global $i18n;
@@ -89,29 +100,35 @@ class Image extends \MovLib\Presentation\Movie\Gallery\Images {
       ]);
     }
 
-    $formattedId = $i18n->format("{0,number,integer}", [ $_SERVER["IMAGE_ID"] ]);
-    $this->initMoviePage($i18n->t("{image_type_name} {id}", [ "id" => $formattedId, "image_type_name" => $this->imageTypeName ]));
     $class                         = "\\MovLib\\Data\\Image\\Movie{$this->imageClassName}";
-    $this->image                   = new $class($this->movie->id, $this->movie->displayTitleWithYear, $_SERVER["IMAGE_ID"]);
-    $this->initPage($i18n->t("{image_type_name} {id} of {title}", [ "image_type_name" => $this->imageTypeName, "id" => $formattedId ]));
+    $this->image                   = new $class($this->movie->id, $this->movie->displayTitleWithYear, $imageId);
+    $this->initPage($title);
     $this->initLanguageLinks("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id]);
-    $this->pageTitle               = $i18n->t("{image_type_name} {id} of {title}", [
-      "image_type_name" => $this->imageTypeName,
-      "id"              => $formattedId,
-      "title"           => "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>",
-    ]);
+    $this->pageTitle               = $pageTitle;
     $this->breadcrumb->menuitems[] = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id]), $this->imageTypeNamePlural];
+    if ($imageId) {
+      $this->breadcrumb->menuitems[] = [
+        $i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movie->id, $imageId]),
+        "{$this->imageTypeName} {$imageId}",
+      ];
+    }
+    $this->selectCountry  = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
+    $this->selectLanguage = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode ?: "xx", [ "required"]);
+    $this->initUpload([ $this->selectCountry, $this->selectLanguage]);
 
-    return $this;
+    return $this->initSidebar();
   }
 
   /**
-   * Valid form callback.
-   * 
-   * @return this
+   * @inheritdoc
    */
   protected function valid() {
-    return $this;
+    $this->image->countryCode  = $this->selectCountry->value;
+    $this->image->description  = $this->inputDescription->value;
+    $this->image->languageCode = $this->selectLanguage->value;
+    $this->image->licenseId    = $this->selectLicense->value;
+    $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
+    throw new SeeOtherRedirect($this->image->route);
   }
 
 }

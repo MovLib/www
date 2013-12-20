@@ -51,7 +51,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *
    * @var string
    */
-  private $bodyClasses;
+  protected $bodyClasses = "";
 
   /**
    * The presentation's breadcrumb navigation.
@@ -158,23 +158,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Add a class (or more) to the body's class attribute.
-   *
-   * @param string $class
-   *   The CSS class(es) that should be added to the body's class attribute.
-   * @return this
-   */
-  protected function addBodyClass($class) {
-    if (!$this->bodyClasses) {
-      $this->bodyClasses = $class;
-    }
-    else {
-      $this->bodyClasses .= " {$class}";
-    }
-    return $this;
-  }
 
   /**
    * Format system language for footer system language links.

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie\Gallery;
+namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MovieImage;
 use \MovLib\Data\Image\MovieLobbyCard;
@@ -102,7 +102,7 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $this->initImagePage();
   }
 
-  
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -155,10 +155,12 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
    * Initialize the gallery presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @return this
    */
   protected function initImagePage() {
-    global $i18n;
+    global $i18n, $kernel;
+    $kernel->stylesheets[] = "image-grid";
     $this->initMoviePage($this->imageTypeNamePlural);
     $this->initPage($i18n->t("{image_type_name} for {title}", [
         "image_type_name" => $this->imageTypeNamePlural,
@@ -170,7 +172,7 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
       "image_type_name" => $this->imageTypeNamePlural,
       "title"           => "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>",
     ]);
-    return $this;
+    return $this->initSidebar();
   }
 
   /**
@@ -184,7 +186,8 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
     // Compile arguments array once.
     $args = [ $this->movie->id ];
 
-    // Create array containing all available movie image types and their sidebar menuitems.
+    // Create array containing all available movie image types and their sidebar menuitems. We need all of them because
+    // we add the non active ones at the bottom of the sidebar navigation for easy switching between the different types.
     $typePages = [
       MovieImage::TYPE_ID     => [ $i18n->rp("/movie/{0}/images", $args), $i18n->t("Images"), [ "class" => "ico ico-image" ] ],
       MoviePoster::TYPE_ID    => [ $i18n->rp("/movie/{0}/posters", $args), $i18n->t("Posters"), [ "class" => "ico ico-poster" ] ],

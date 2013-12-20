@@ -78,6 +78,7 @@ class Show extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n, $kernel;
+    $kernel->stylesheets[] = "movie";
     $kernel->javascripts[] = "Movie";
     $this->movie           = new FullMovie($_SERVER["MOVIE_ID"]);
     $this->initPage($this->movie->displayTitleWithYear);

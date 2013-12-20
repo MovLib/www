@@ -246,20 +246,40 @@ abstract class AbstractBaseImage {
    * @throws \RuntimeException
    */
   protected function convert($source, $style, $width = null, $height = null, $crop = false) {
+    // Build the ImageMagick resize argument based on the passed parameters.
     if (!$width) {
       $width = $style;
     }
     if ($crop === true) {
-      $args = "'{$width}x{$height}>^' -gravity 'Center' -crop '{$width}x{$height}+0+0' +repage";
+      $resizeArg = "'{$width}x{$height}>^' -gravity 'Center' -crop '{$width}x{$height}+0+0' +repage";
     }
     else {
-      $args = "'{$width}x{$height}>'";
+      $resizeArg = "'{$width}x{$height}>'";
     }
+
+    // Get the absolute path within the file system.
     $destination = $this->getPath($style);
-    if (sh::execute("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 80 -unsharp '0x0.75+0.75+0.008' -resize {$args} '{$destination}'") === false) {
+
+    // Generate the desired image style with ImageMagick. We directly call the binary instead of using some kind of
+    // abstraction layer, we don't need any fancy object just to resize an image.
+    if (sh::execute("convert '{$source}' -define 'filter:support=2.5' -filter 'Lagrange' -quality 80 -unsharp '0x0.75+0.75+0.008' -resize {$resizeArg} '{$destination}'") === false) {
+      // No need to check for this exception, this only happens if the file system is full or ImageMagick is missing
+      // on the server. Both situations are so terrible that we don't need to cover these situations.
+      // @codeCoverageIgnoreStart
       throw new \RuntimeException("Couldn't convert '{$source}' to '{$style}'");
+      // @codeCoverageIgnoreEnd
     }
+
+    // Store width and height of the generated image in the database. This allows us to set the width and height
+    // attributes without any IO.
     list($this->styles[$style]["width"], $this->styles[$style]["height"]) = getimagesize($destination);
+
+    // We need to store the arguments as well, for efficient regeneration of styles; otherwise we don't know if the
+    // style has changed.
+    $this->styles[$style]["resizeArg"] = $resizeArg;
+
+    // We return the absolute path to the just generated image for chaining resize actions. This ensures best quality
+    // if we have to resize from a very huge image down to a very small one.
     return $destination;
   }
 

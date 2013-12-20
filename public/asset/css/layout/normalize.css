@@ -69,7 +69,7 @@ summary {
  * Prevent text size adjust after orientation change, without disabling user zoom.
  * ------------------------------------------------------------------------------------------------------------------ */
 html {
-  min-width: 980px; /* @todo Remove as soon as starting with responsiveness! */
+  min-width: 1024px; /* @todo Remove as soon as starting with responsiveness! */
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
 }

@@ -35,6 +35,15 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
+   * 60x60>
+   *
+   * Image style used on the image details page within the stream.
+   *
+   * @var string
+   */
+  const STYLE_SPAN_01_SQUARE = "60x60";
+
+  /**
    * 220x>
    *
    * Image style used on the show page to display the movie poster.
@@ -44,13 +53,13 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
   const STYLE_SPAN_03 = \MovLib\Data\Image\SPAN_03;
 
   /**
-   * 620x>
+   * 620x620>
    *
    * Image style used on the image details page for the big preview.
    *
    * @var integer
    */
-  const STYLE_SPAN_05 = \MovLib\Data\Image\SPAN_05;
+  const STYLE_SPAN_07 = \MovLib\Data\Image\SPAN_07;
 
   /**
    * The movie image's type identifier.
@@ -92,6 +101,11 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
    * @var integer
    */
   protected $movieId;
+
+  /**
+   * @inheritdoc
+   */
+  protected $placeholder = "image";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -157,10 +171,13 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
     }
 
     // Generate the various image's styles and always go from best quality down to worst quality.
-    $span05 = $this->convert($source, self::STYLE_SPAN_05);
-    $span03 = $this->convert($span05, self::STYLE_SPAN_03);
+    $span07 = $this->convert($source, self::STYLE_SPAN_07, self::STYLE_SPAN_07, self::STYLE_SPAN_07);
+    $span03 = $this->convert($span07, self::STYLE_SPAN_03);
     $span02 = $this->convert($span03, self::STYLE_SPAN_02);
-    $this->convert($span02, self::STYLE_SPAN_01);
+    $span01 = $this->convert($span02, self::STYLE_SPAN_01);
+
+    // Generate a square span 1 version for the image stream on the details page.
+    $this->convert($span01, self::STYLE_SPAN_01_SQUARE, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true);
 
     return $this->update();
   }
@@ -186,9 +203,11 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
    */
   protected function init($movieId, $id, $name, $alternativeText) {
     global $db, $i18n;
-    // Ensure that we aren't going to override our $id property if we were instantiated via fetch_object()
+    // Ensure that we aren't going to override our $id property if we were instantiated via fetch_object(). The cast
+    // is necessary because if the identifier was passed to us via nginx it's a string and not an integer (altought a
+    // valid integer because we apply a regular expression that ensures that for us).
     if (!$this->id) {
-      $this->id = $id;
+      $this->id = (integer) $id;
     }
 
     // Export everything that we know without asking the database right away.

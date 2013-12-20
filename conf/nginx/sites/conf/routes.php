@@ -82,7 +82,7 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ "^<?= $rp("/movie/{0}/images", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Gallery\\Images";
+    set $movlib_presenter "Movie\\Images";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
@@ -90,13 +90,13 @@ location ^~ <?= $r("/movie") ?> {
   location ~ "^<?= $r("/movie/{0}/image/upload", [ $idRegExp ]) ?>$" {
     error_page 413 @movie_photo_upload;
     set $movlib_multipart 0;
-    set $movlib_presenter "Movie\\Upload\\Image";
+    set $movlib_presenter "Movie\\ImageUpload";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
 
   location ~ "^<?= $r("/movie/{0}/image/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDetails\\Image";
+    set $movlib_presenter "Movie\\ImageDetails";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
@@ -105,14 +105,14 @@ location ^~ <?= $r("/movie") ?> {
   location ~ "^<?= $r("/movie/{0}/image/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
     error_page 413 @movie_photo_upload;
     set $movlib_multipart 0;
-    set $movlib_presenter "Movie\\Upload\\Image";
+    set $movlib_presenter "Movie\\ImageUpload";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
   }
 
   location ~ "^<?= $r("/movie/{0}/image/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDetails\\Delete";
+    set $movlib_presenter "Movie\\ImageDelete";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
@@ -123,7 +123,7 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ "^<?= $rp("/movie/{0}/posters", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Gallery\\Posters";
+    set $movlib_presenter "Movie\\Posters";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
@@ -131,13 +131,13 @@ location ^~ <?= $r("/movie") ?> {
   location ~ "^<?= $r("/movie/{0}/poster/upload", [ $idRegExp ]) ?>$" {
     error_page 413 @movie_poster_upload;
     set $movlib_multipart 0;
-    set $movlib_presenter "Movie\\Upload\\Poster";
+    set $movlib_presenter "Movie\\PosterUpload";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
 
   location ~ "^<?= $r("/movie/{0}/poster/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDetails\\Poster";
+    set $movlib_presenter "Movie\\PosterDetails";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
@@ -146,14 +146,14 @@ location ^~ <?= $r("/movie") ?> {
   location ~ "^<?= $r("/movie/{0}/poster/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
     error_page 413 @movie_poster_upload;
     set $movlib_multipart 0;
-    set $movlib_presenter "Movie\\Upload\\Poster";
+    set $movlib_presenter "Movie\\PosterUpload";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
   }
 
   location ~ "^<?= $r("/movie/{0}/poster/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDetails\\PosterDelete";
+    set $movlib_presenter "Movie\\PosterDelete";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
@@ -164,7 +164,7 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~ "^<?= $rp("/movie/{0}/lobby-cards", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Gallery\\LobbyCards";
+    set $movlib_presenter "Movie\\LobbyCards";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
@@ -172,13 +172,13 @@ location ^~ <?= $r("/movie") ?> {
   location ~ "^<?= $r("/movie/{0}/lobby-card/upload", [ $idRegExp ]) ?>$" {
     error_page 413 @movie_lobby_card_upload;
     set $movlib_multipart 0;
-    set $movlib_presenter "Movie\\Upload\\LobbyCard";
+    set $movlib_presenter "Movie\\LobbyCardUpload";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
 
   location ~ "^<?= $r("/movie/{0}/lobby-card/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDetails\\LobbyCard";
+    set $movlib_presenter "Movie\\LobbyCard";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
@@ -187,14 +187,14 @@ location ^~ <?= $r("/movie") ?> {
   location ~ "^<?= $r("/movie/{0}/lobby-card/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
     error_page 413 @movie_lobby_card_upload;
     set $movlib_multipart 0;
-    set $movlib_presenter "Movie\\Upload\\LobbyCard";
+    set $movlib_presenter "Movie\\LobbyCardUpload";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
   }
 
   location ~ "^<?= $r("/movie/{0}/lobby-card/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDetails\\LobbyCardDelete";
+    set $movlib_presenter "Movie\\DeleteLobbyCard";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;

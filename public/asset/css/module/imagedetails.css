@@ -26,17 +26,63 @@
  */
 
 /* ---------------------------------------------------------------------------------------------------------------------
+ * Images look better if the background isn't totally white. We also change the background of the active sidebar item
+ * because the eye sees relative and things are totally off if we aren't applying this.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+#imagedetails,
+.imagedetails #sidebar-nav a.active {
+  background-color: #f5f5f5;
+}
+
+#imagedetails:before {
+  content: "";
+  position: absolute;
+  width: 150px;
+  height: 1px;
+  background: #e5e5e5;
+  background: linear-gradient(to right, #e5e5e5, rgba(229, 229, 229, 0));
+}
+
+#imagedetails .image {
+  height: 620px;
+  padding: 40px 0;
+}
+
+#imagedetails .image a {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+  transition: box-shadow 0.4s ease-in-out;
+}
+
+#imagedetails .image img {
+  outline: 1px solid transparent;
+  transition: outline-color 0.4s ease-in-out;
+}
+
+#imagedetails .image a:active,
+#imagedetails .image a:focus,
+#imagedetails .image a:hover {
+  box-shadow: 0 0 10px rgba(82, 168, 236, 0.6);
+}
+
+#imagedetails .image a:active img,
+#imagedetails .image a:focus img,
+#imagedetails .image a:hover img {
+  outline-color: rgba(82, 168, 236, 0.8);
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
  * The stream above the preview
  * ------------------------------------------------------------------------------------------------------------------ */
 
-#imagestream {
+#imagedetails .stream {
   background-color: #252525;
   overflow: hidden;
   padding: 20px 0;
   position: relative;
 }
 
-#imagestream a {
+#imagedetails .stream a {
   border: 0;
   opacity: 0.5;
   overflow: hidden;
@@ -44,31 +90,31 @@
   transition: opacity 0.4s ease-in-out;
 }
 
-#imagestream a.active,
-#imagestream a:active,
-#imagestream a:focus,
-#imagestream a:hover {
+#imagedetails .stream a.active,
+#imagedetails .stream a:active,
+#imagedetails .stream a:focus,
+#imagedetails .stream a:hover {
   opacity: 1;
 }
 
-/*#imagestream .first,
-#imagestream .last {
+/*#imagedetails .stream .first,
+#imagedetails .stream .last {
   width: 40px;
 }
 
-#imagestream .first img,
-#imagestream .last img {
+#imagedetails .stream .first img,
+#imagedetails .stream .last img {
   position: relative;
   left: -10px;
 }
 
-#imagestream .last img {
+#imagedetails .stream .last img {
   right: -10px;
   left: 0;
 }
 
-#imagestream .first:after,
-#imagestream .last:after {
+#imagedetails .stream .first:after,
+#imagedetails .stream .last:after {
   background-image: linear-gradient(to left, transparent, #252525);
   bottom: 0;
   content: "";
@@ -78,7 +124,7 @@
   top: 0;
 }
 
-#imagestream .last:after {
+#imagedetails .stream .last:after {
   background-image: linear-gradient(to right, transparent, #252525);
 }*/
 
@@ -86,8 +132,7 @@
  * The pager to the left/right of the preview.
  * ------------------------------------------------------------------------------------------------------------------ */
 
-
-.imagedetails-pager {
+#imagedetails .pager {
   bottom: 0;
   color: #fff;
   font-size: 50px;
@@ -99,60 +144,23 @@
   z-index: 1;
 }
 
-.imagedetails-pager:hover,
-.imagedetails-pager:focus {
+#imagedetails .pager:hover,
+#imagedetails .pager:focus {
   opacity: 1;
 }
 
-#imagedetails-left,
-#imagedetails-left .icon {
+#imagedetails .left,
+#imagedetails .left .icon {
   left: 0;
 }
 
-#imagedetails-right,
-#imagedetails-right .icon {
+#imagedetails .right,
+#imagedetails .right .icon {
   right: 0;
 }
 
-.imagedetails-pager .icon {
+#imagedetails .pager .icon {
   position: absolute;
   top: 50%;
   margin-top: -36.5px;
-}
-
-/* ---------------------------------------------------------------------------------------------------------------------
- * The preview of the actual image.
- * ------------------------------------------------------------------------------------------------------------------ */
-
-#imagedetails .s7 .img {
-  margin-bottom: 40px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-  transition: box-shadow 0.4s ease-in-out;
-}
-
-#imagedetails .s7 img {
-  outline: 1px solid transparent;
-  transition: outline-color 0.4s ease-in-out;
-}
-
-#imagedetails .s7 .img:active,
-#imagedetails .s7 .img:focus,
-#imagedetails .s7 .img:hover {
-  box-shadow: 0 0 10px rgba(82, 168, 236, 0.6);
-}
-
-#imagedetails .s7 .img:active img,
-#imagedetails .s7 .img:focus img,
-#imagedetails .s7 .img:hover img {
-  outline-color: rgba(82, 168, 236, 0.8);
-}
-
-#imagedetails:before {
-  border: 10px solid transparent;
-  border-top-color: #252525;
-  content: "";
-  left: 50%;
-  margin-left: -10px;
-  position: absolute;
-  top: 0;
 }

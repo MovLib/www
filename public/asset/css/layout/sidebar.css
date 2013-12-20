@@ -39,8 +39,8 @@
 
 #sidebar-nav .no-list {
   position: relative;
-  padding: 1px 0 30px;
-  margin: 0 0 0 -20px;
+  padding: 0 0 30px;
+  margin: 0 0 0 -45px;
   overflow: hidden;
   font-size: 12px;
 }
@@ -55,7 +55,7 @@
   transition-property: color;
 }
 
-#sidebar-nav a:active .fr,
+#sidebar-nav a.active .fr,
 #sidebar-nav a:focus .fr,
 #sidebar-nav a:hover .fr {
   color: #656565;
@@ -73,44 +73,63 @@
 }
 
 #sidebar-nav a,
-#sidebar-nav a.active {
+#sidebar-nav a:before {
+  color: #656565;
+  transition: 0.4s ease-out;
+  transition-property: color;
+}
+
+#sidebar-nav a {
   position: relative;
   display: block;
   padding: 8px 10px;
   margin-bottom: -1px;
-  margin-left: 20px;
-  color: #656565;
+  margin-left: 15px;
   background-color: #fcfcfc;
   border: 1px solid #e5e5e5;
   border-right: 0;
-  transition: 0.4s ease-out;
   transition-property: color, background-color, border-color, margin-left;
+  outline-offset: -2px;
+}
+
+#sidebar-nav a.active {
+  z-index: 2;
 }
 
 #sidebar-nav a.active,
-#sidebar-nav a:active,
 #sidebar-nav a:focus,
 #sidebar-nav a:hover {
-  z-index: 2;
+  margin-left: 5px;
   background-color: #fff;
 }
 
+#sidebar-nav a.active:after,
 #sidebar-nav a:focus:after,
-#sidebar-nav a:hover:after,
-#sidebar-nav a.active:after {
+#sidebar-nav a:hover:after {
   background-color: #09c;
 }
 
+#sidebar-nav a.active,
 #sidebar-nav a:focus,
 #sidebar-nav a:hover,
-#sidebar-nav a.active {
-  margin-left: 5px;
+#sidebar-nav .ico.active:before,
+#sidebar-nav .ico:focus:before,
+#sidebar-nav .ico:hover:before {
   color: #09c;
 }
 
-#sidebar-nav a.separator {
+#sidebar-nav .ico:before {
+  width: 15px;
+  margin-right: 5px;
+}
+
+#sidebar-nav .separator {
   margin-bottom: 15px;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Special coloring for delete menuitems.
+ * ------------------------------------------------------------------------------------------------------------------ */
 
 #sidebar-nav .delete:focus:after,
 #sidebar-nav .delete:hover:after,
@@ -124,7 +143,34 @@
   color: #c00;
 }
 
-#sidebar-nav .ico:before {
-  width: 15px;
-  margin-right: 5px;
+/* ---------------------------------------------------------------------------------------------------------------------
+ * The small sidebar is inspired by GitHub (well the complete sidebar is) and used on pages where we need more space. We
+ * have to redefine the complete grid to make this work.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+.sidebar-s {
+  position: relative;
+}
+
+.sidebar-s #sidebar-nav {
+  position: absolute;
+  width: 20px;
+}
+
+.sidebar-s #sidebar-nav a {
+  margin-left: 35px;
+  padding: 6px 8px;
+}
+
+.sidebar-s #sidebar-nav a.active,
+.sidebar-s #sidebar-nav a:focus,
+.sidebar-s #sidebar-nav a:hover {
+  margin-left: 25px;
+}
+
+.sidebar-s #sidebar-nav .text {
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
 }

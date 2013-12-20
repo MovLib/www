@@ -1,3 +1,5 @@
+<?php
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -13,60 +15,34 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
+namespace MovLib\Presentation\Movie;
 
 /**
- * Global content styles.
+ * Movie lobby cards gallery presentation.
  *
- * The usage of IDs for the header and the title are intended, those elements can only appear once within any
- * presentation because they uniquely identify this single page within the entire website.
- *
- * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
+class LobbyCards extends \MovLib\Presentation\Movie\Images {
 
-#m {
-  min-height: 500px;
-  padding-bottom: 40px;
-  margin-top: 50px;
-  background-color: #fff;
-}
+  /**
+   * Instantiate new movie images presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Presentation\Error\NotFound
+   */
+  public function __construct() {
+    global $i18n;
+    $this->imageClassName      = "LobbyCard";
+    $this->imageTypeId         = \MovLib\Data\Image\MovieLobbyCard::TYPE_ID;
+    $this->imageTypeName       = $i18n->t("Lobby Card");
+    $this->imageTypeNamePlural = $i18n->t("Lobby Cards");
+    $this->routeKey            = "lobby-card";
+    $this->routeKeyPlural      = "lobby-cards";
+    $this->initImagePage();
+  }
 
-#header {
-  margin-bottom: 40px;
-  background-color: #252525;
-}
-
-#errorpage #header {
-  margin-bottom: 0;
-}
-
-#header > .c {
-  padding: 20px 0;
-  color: #c7c7c7;
-}
-
-#b {
-  padding: 5px 0;
-  background-color: #f5f5f5;
-}
-
-#b h2 {
-  font: inherit;
-}
-
-#b h2,
-#b div {
-  display: inline;
-}
-
-#filter {
-  padding: 8px 20px;
-  margin-left: -20px;
-  font-size: 12px;
-  border-top: 1px solid #e5e5e5;
-  border-bottom: 1px solid #e5e5e5;
 }

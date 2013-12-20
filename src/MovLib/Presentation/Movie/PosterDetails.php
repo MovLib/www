@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie\Gallery;
+namespace MovLib\Presentation\Movie;
 
 /**
- * Movie lobby cards gallery presentation.
+ * Present a single movie poster.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,10 +26,10 @@ namespace MovLib\Presentation\Movie\Gallery;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Posters extends \MovLib\Presentation\Movie\Gallery\Images {
+class PosterDetails extends \MovLib\Presentation\Movie\ImageDetails {
 
   /**
-   * Instantiate new movie images presentation.
+   * Instantiate new single movie lobby card presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Presentation\Error\NotFound

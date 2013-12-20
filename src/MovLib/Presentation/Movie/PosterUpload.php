@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie\ImageDetails;
+namespace MovLib\Presentation\Movie;
 
 /**
- * Present a single lobby card.
+ * Form to upload a new or edit an existing movie poster.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -26,22 +26,22 @@ namespace MovLib\Presentation\Movie\ImageDetails;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class LobbyCard extends \MovLib\Presentation\Movie\ImageDetails\Image {
+class PosterUpload extends \MovLib\Presentation\Movie\ImageUpload {
 
   /**
-   * Instantiate new single movie lobby card presentation.
+   * Instantiate new upload new or edit existing movie poster presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
     global $i18n;
-    $this->imageClassName      = "LobbyCard";
-    $this->imageTypeId         = \MovLib\Data\Image\MovieLobbyCard::TYPE_ID;
-    $this->imageTypeName       = $i18n->t("Lobby Card");
-    $this->imageTypeNamePlural = $i18n->t("Lobby Cards");
-    $this->routeKey            = "lobby-card";
-    $this->routeKeyPlural      = "lobby-cards";
+    $this->imageClassName      = "Poster";
+    $this->imageTypeId         = \MovLib\Data\Image\MoviePoster::TYPE_ID;
+    $this->imageTypeName       = $i18n->t("Poster");
+    $this->imageTypeNamePlural = $i18n->t("Posters");
+    $this->routeKey            = "poster";
+    $this->routeKeyPlural      = "posters";
     $this->initImagePage();
   }
 

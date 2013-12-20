@@ -90,7 +90,7 @@ trait TraitPagination {
     $this->resultsTotalCount = $resultsTotalCount;
 
     // Include the pagination stylesheet and let the complete design know that a pagination is present.
-    $this->addBodyClass("pagination");
+    $this->bodyClasses .= " pagination";
 
     // Initial calculations.
     $this->page = filter_input(INPUT_GET, $i18n->r("page"), FILTER_VALIDATE_INT, [
