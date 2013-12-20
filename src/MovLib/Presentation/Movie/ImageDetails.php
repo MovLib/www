@@ -44,7 +44,7 @@ class ImageDetails extends \MovLib\Presentation\Movie\Images {
    *
    * @var integer
    */
-  const STREAM_IMAGE_COUNT = 5;
+  const STREAM_IMAGE_COUNT = 4;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -99,9 +99,9 @@ class ImageDetails extends \MovLib\Presentation\Movie\Images {
           }
         }
 
-        // Finally add the current image to the stream array. We now have exactly five places consumed of this array.
-        $streamArray[] = $image;
-        $more          = self::STREAM_IMAGE_COUNT;
+        // Finally add the current image to the stream array exactly in the middle of the stream.
+        $streamArray[self::STREAM_IMAGE_COUNT] = $image;
+        $more                                  = self::STREAM_IMAGE_COUNT;
       }
       // $fourLeft has either to be NULL or greater than zero for us to put another image into it.
       elseif (!$more || $more > 0) {
