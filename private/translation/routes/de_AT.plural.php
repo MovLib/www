@@ -39,7 +39,7 @@ return [
 
   // ------------------------------------------------------------------------------------------------------------------- Persons
   "/persons"           => "/personen",
-  "/person/{0}/photos" => "/person/{0}/fotos",
+  "/person/{0}/images" => "/person/{0}/bilder",
 
   // ------------------------------------------------------------------------------------------------------------------- Users
   "/users" => "/benutzer",
@@ -49,14 +49,26 @@ return [
 
   // ------------------------------------------------------------------------------------------------------------------- Countries
   // Countries are created with Intl ICU data and aren"t editable.
-  "/countries" => "/länder",
+  "/countries"             => "/länder",
+  "/country/{0}/movies"    => "/land/{0}/filme",
+  "/country/{0}/series"    => "/land/{0}/serien",
+  "/country/{0}/releases"  => "/land/{0}/veröffentlichungen",
+  "/country/{0}/persons"   => "/land/{0}/personen",
+  "/country/{0}/companies" => "/land/{0}/unternehmen",
 
   // ------------------------------------------------------------------------------------------------------------------- Years
   // Years are generated dynamically and aren"t editable.
-  "/years" => "/jahre",
+  "/years"              => "/jahre",
+  "/year/{0}/movies"    => "/jahr/{0}/filme",
+  "/year/{0}/series"    => "/jahr/{0}/serien",
+  "/year/{0}/releases"  => "/jahr/{0}/veröffentlichungen",
+  "/year/{0}/persons"   => "/jahr/{0}/personen",
+  "/year/{0}/companies" => "/jahr/{0}/unternehmen",
 
   // ------------------------------------------------------------------------------------------------------------------- Genres
-  "/genres" => "/genres",
+  "/genres"           => "/genres",
+  "/genre/{0}/movies" => "/genre/{0}/filme",
+  "/genre/{0}/series" => "/genre/{0}/serien",
 
 ];
 // @codeCoverageIgnoreEnd

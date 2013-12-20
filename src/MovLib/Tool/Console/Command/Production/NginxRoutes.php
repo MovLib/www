@@ -75,6 +75,13 @@ class NginxRoutes extends \MovLib\Tool\Console\Command\AbstractCommand {
     $idRegExp = "([1-9][0-9]*)";
 
     /**
+     * Regular expression to match ISO alpha-2 codes.
+     *
+     * @var string
+     */
+    $isoAlpha2RegExp = "([a-z][a-z])";
+
+    /**
      * Associative array containing the currently untranlated singular forms for each locale.
      *
      * @var array
