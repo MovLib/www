@@ -64,24 +64,6 @@ class LanguageSelection extends \MovLib\Presentation\Page {
   }
 
   /**
-   * Format a single system language.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @param string $languageCode
-   *   The language code of the system language.
-   * @return array
-   */
-  public function formatSystemLanguage($languageCode) {
-    global $i18n, $kernel;
-    $attributes = [ "rel" => "prerender" ];
-    if ($languageCode != $i18n->languageCode) {
-      $attributes["lang"] = $languageCode;
-    }
-    return [ "//{$languageCode}.{$kernel->domainDefault}/", \Locale::getDisplayLanguage($languageCode, $languageCode), $attributes ];
-  }
-
-  /**
    * @inheritdoc
    */
   protected function getFooter() {
@@ -107,13 +89,21 @@ class LanguageSelection extends \MovLib\Presentation\Page {
   protected function getMainContent() {
     global $i18n, $kernel;
 
+    $prerender = $menuitems = null;
+    foreach ($kernel->systemLanguages as $code => $locale) {
+      $href = "//{$code}.{$kernel->domainDefault}/";
+      // Doesn't validate, but the browsers like it. Please note that Chrome doesn't prerender more than one URL and
+      // no HTTPS pages; there's nothing we can do about that. But it works great in Gecko and IE.
+      $prerender  .= "<link rel='prefetch' href='{$href}'><link rel='prerender' href='{$href}'>";
+      $menuitems[] = [ $href, \Locale::getDisplayLanguage($locale, $code), ($code == $i18n->languageCode ? null : [ "lang" => $code ]) ];
+    }
+
     // Build the navigation.
-    $navigation           = new Navigation($i18n->t("Available Languages"), array_keys($kernel->systemLanguages), [ "class" => "well well-lg" ]);
-    $navigation->glue     = " / ";
-    $navigation->callback = [ $this, "formatSystemLanguage" ];
+    $navigation       = new Navigation($i18n->t("Available Languages"), $menuitems, [ "class" => "well well-lg" ]);
+    $navigation->glue = " / ";
 
     return
-      "<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
+      "{$prerender}<main class='{$this->id}-content' id='m' role='main'><div class='c'>" .
         "<h1 class='cf'>" .
           "<img alt='' height='192' src='{$kernel->getAssetURL("logo/vector", "svg")}' width='192'>" .
           "<span>{$kernel->siteNameAndSloganHTML}</span>" .
