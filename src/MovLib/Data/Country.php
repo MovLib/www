@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data;
 
+use \MovLib\Presentation\Error\NotFound;
+
 /**
  * Represents a single country and provides an interface to all available countries.
  *
@@ -56,13 +58,13 @@ class Country {
    * @param string $code
    *   The ISO 3166-1 alpha-2 code of the country. You can also pass <code>NULL</code> which will create an empty
    *   instance.
-   * @throws \OutOfBoundsException
+   * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($code) {
     if ($code) {
       $countries  = self::getCountries();
       if (!isset($countries[$code])) {
-        throw new \OutOfBoundsException("Couldn't find country for code '{$code}'");
+        throw new NotFound;
       }
       $this->code = $code;
       $this->name = $countries[$code];
