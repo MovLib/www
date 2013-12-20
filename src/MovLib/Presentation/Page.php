@@ -533,13 +533,12 @@ class Page extends \MovLib\Presentation\AbstractBase {
    * Initialize the page's breadcrumb.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @param array $breadcrumbs [optional]
    *   Numeric array containing additional breadcrumbs to put between home and the current page.
    * @return this
    */
   protected function initBreadcrumb(array $breadcrumbs = []) {
-    global $i18n, $kernel;
+    global $i18n;
 
     // Initialize the breadcrumb navigation and always include the home page's link and the currently displayed page.
     $trail       = [[ "/", $i18n->t("Home"), [ "title" => $i18n->t("Go back to the home page.") ] ] ];
