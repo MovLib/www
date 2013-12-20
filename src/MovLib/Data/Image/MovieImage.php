@@ -203,11 +203,9 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
    */
   protected function init($movieId, $id, $name, $alternativeText) {
     global $db, $i18n;
-    // Ensure that we aren't going to override our $id property if we were instantiated via fetch_object(). The cast
-    // is necessary because if the identifier was passed to us via nginx it's a string and not an integer (altought a
-    // valid integer because we apply a regular expression that ensures that for us).
+    // Ensure that we aren't going to override our $id property if we were instantiated via fetch_object().
     if (!$this->id) {
-      $this->id = (integer) $id;
+      $this->id = $id;
     }
 
     // Export everything that we know without asking the database right away.
