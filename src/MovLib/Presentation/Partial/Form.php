@@ -108,16 +108,6 @@ class Form extends \MovLib\Presentation\AbstractBase {
     // Set default attributes, a dev can override them by accessing the properties directly.
     $this->attributes = [ "action" => $kernel->requestURI, "method" => "post" ];
 
-    // Configure our form as multipart form if it's configured in the route to be one.
-    if (isset($_SERVER["MULTIPART"])) {
-      $this->attributes["enctype"] = "multipart/form-data";
-      if ($_SERVER["MULTIPART"] == UPLOAD_ERR_INI_SIZE) {
-        $page->{$validationCallback}([
-          "multipart" => $i18n->t("The image is too large: it must be {0,number} {1} or less.", $this->formatBytes(ini_get("upload_max_filesize")))
-        ]);
-      }
-    }
-
     // Validate the form if we're receiving it.
     if (isset($_POST["form_id"]) && $_POST["form_id"] == $this->id) {
       $errors = null;
@@ -198,6 +188,16 @@ class Form extends \MovLib\Presentation\AbstractBase {
       $actions = "<p class='form-actions'>{$actions}</p>";
     }
     return "{$actions}{$this->hiddenElements}</form>";
+  }
+
+  /**
+   * Make this form a multipart form.
+   *
+   * @return this
+   */
+  public function multipart() {
+    $this->attributes["enctype"] = "multipart/form-data";
+    return $this;
   }
 
   /**

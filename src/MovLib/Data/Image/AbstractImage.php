@@ -113,7 +113,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
 
   /**
    * Update the existing image's database record.
-   * 
+   *
    * @return this
    */
   protected abstract function update();
@@ -172,12 +172,20 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   }
 
   /**
-   * @inheritdoc
+   * Get the <var>$style</var> for this image.
+   *
+   * @param mixed $style
+   *   The desired style, use the objects <var>STYLE_*</var> class constants. Defaults to <var>STYLE_SPAN_02</var>.
+   * @return \MovLib\Data\Image\Style
+   *   The image's desired style object.
    */
   public function getStyle($style = self::STYLE_SPAN_02) {
     // Use the style itself for width and height if this image doesn't exist.
-    if ($this->imageExists === false) {
-      $this->styles = [ $style => [ "width" => $style, "height" => $style ] ];
+    if ($this->imageExists === false && !isset($this->styles[$style])) {
+      if (!is_array($this->styles)) {
+        $this->styles = [];
+      }
+      $this->styles[$style] = [ "width" => $style, "height" => $style ];
     }
     elseif (!is_array($this->styles)) {
       $this->styles = unserialize($this->styles);
@@ -236,11 +244,6 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    */
   public function upload($source, $extension, $height, $width) {
     global $kernel;
-    
-    // If we have no source path call the update method and we're done.
-    if (!$source) {
-      return $this->update();
-    }
 
     // We have to export the extension to class scope in order to move the original image.
     $this->extension = $extension;

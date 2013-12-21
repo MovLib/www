@@ -95,6 +95,7 @@ trait TraitUpload {
     $this->selectLicense          = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ? : 1, [ "required" ]);
     $this->form                   = new Form($this, array_merge([ $this->inputImage, $this->inputDescription, $this->selectLicense ], $formElements));
     $this->form->actionElements[] = new InputSubmit($this->breadcrumbTitle, [ "class" => "btn btn-large btn-success" ]);
+    $this->form->multipart();
     return $this;
   }
 

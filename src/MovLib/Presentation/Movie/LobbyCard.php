@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class LobbyCardDetails extends \MovLib\Presentation\Movie\ImageDetails {
+class LobbyCard extends \MovLib\Presentation\Movie\Image {
 
   /**
    * Instantiate new single movie lobby card presentation.

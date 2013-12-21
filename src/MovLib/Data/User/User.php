@@ -258,7 +258,7 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
     global $session;
 
     $this->changed     = $_SERVER["REQUEST_TIME"];
-    $this->imageExists      = true;
+    $this->imageExists = true;
     $this->extension   = $extension;
     $this->stylesCache = null;
     $span2             = $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);

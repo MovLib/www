@@ -17,13 +17,8 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Country;
-use \MovLib\Presentation\Partial\FormElement\Select;
-use \MovLib\Presentation\Partial\Language;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
-
 /**
- * Form to upload a new or edit an existing movie image.
+ * @todo Description of ImageEdit
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -31,20 +26,12 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageUpload extends \MovLib\Presentation\Movie\Images {
-  use \MovLib\Presentation\TraitFormPage;
+class ImageEdit extends \MovLib\Presentation\Movie\Image {
   use \MovLib\Presentation\TraitUpload;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The concrete image that is going to be uploaded.
-   *
-   * @var \MovLib\Data\Image\AbstractImage
-   */
-  protected $image;
 
   /**
    * The select form element for the country.
@@ -72,7 +59,7 @@ class ImageUpload extends \MovLib\Presentation\Movie\Images {
   }
 
   /**
-   * Initialize movie image upload page.
+   * Initialize movie image edit page.
    *
    * @global \MovLib\Data\I18n $i18n
    * @return this
@@ -82,30 +69,37 @@ class ImageUpload extends \MovLib\Presentation\Movie\Images {
     global $i18n;
 
     // Try to load the movie with the identifier from the request and set the breadcrumb title.
-    $this->initMoviePage($i18n->t("Upload New {image_type_name}", [ "image_type_name" => $this->imageTypeName]));
+    $this->initMoviePage($i18n->t("Edit {image_type_name}", [ "image_type_name" => $this->imageTypeName ]));
 
-    // Create absolute for the image and instantiate an empty one.
+    // Create absolute class name for the image and try to load it with the identifier from the request.
     $class       = "\\MovLib\\Data\\Image\\Movie{$this->imageClassName}";
-    $this->image = new $class($this->movie->id, $this->movie->displayTitleWithYear);
+    $this->image = new $class($this->movie->id, $this->movie->displayTitleWithYear, (integer) $_SERVER["IMAGE_ID"]);
 
-    // Translate the title once, we don't need Intl for replacing. The head title has no anchors and the page title has.
-    $title           = $i18n->t("Upload new {image_type_name} for {title}");
-    $search          = [ "{image_type_name}", "{title}" ];
-    $this->initPage(str_replace($search, [ $this->imageTypeName, $this->movie->displayTitleWithYear ], $title));
-    $this->pageTitle = str_replace($search, [ $this->imageTypeName, "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>" ], $title);
+    // Initialize the page without anchor in it and then set the page title with the anchors.
+    $this->initPage($i18n->t("Edit {title} {image_type_name} {id}", [
+      "title" => $this->movie->displayTitleWithYear,
+      "id" => $i18n->format("{0,number}", [ $this->image->id ]),
+      "image_type_name" => $this->imageTypeName,
+    ]));
+    $this->pageTitle = $i18n->t("Edit {title} {image_type_name} {id}", [
+        "title"           => "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>",
+        "id"              => "<a href='{$i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movie->id, $this->image->id])}'>{$this->image->id}</a>",
+        "image_type_name" => $this->imageTypeName,
+    ]);
 
     // Initialize the language links for this page.
     $this->initLanguageLinks("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id]);
 
-    // Add entry to parent page.
+    // Add the necessary trails to the breadcrumb.
     $this->breadcrumb->menuitems[] = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id]), $this->imageTypeNamePlural];
+    $this->breadcrumb->menuitems[] = [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movie->id, $this->image->id ]), "{$this->imageTypeName} {$this->image->id}" ];
 
-    // Instantiate additional input elments and initialize the upload form.
+    // Instantiate the additional input elements and initialize the upload form.
     $this->selectCountry  = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
     $this->selectLanguage = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode ?: "xx", [ "required"]);
     $this->initUpload([ $this->selectCountry, $this->selectLanguage]);
 
-    // Initialize the sidebar.
+    // Lastly initialize the sidebar.
     return $this->initSidebar();
   }
 

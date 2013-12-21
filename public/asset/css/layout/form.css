@@ -224,15 +224,6 @@ option[value=""] {
 
 .inputimage .alert {
   margin-top: 10px;
-  opacity: 0;
-  visibility: hidden;
-  transition-duration: 0.4s;
-  transition-property: opacity, visibility;
-}
-
-.inputimage .fade-in {
-  opacity: 1;
-  visibility: visible;
 }
 
 .btn.input-file {

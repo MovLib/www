@@ -332,10 +332,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
       $userNavigation =
         "<ul class='o1 s2 no-list'>" .
           "<li>{$this->a($i18n->r("/profile/messages"), $i18n->t("Messages"), [ "class" => "ico ico-email" ])}</li>" .
-          "<li>{$this->a($i18n->r("/profile/collection"), $i18n->t("Collection"))}</li>" .
-          "<li>{$this->a($i18n->r("/profile/wantlist"), $i18n->t("Wantlist"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/collection"), $i18n->t("Collection"), [ "class" => "ico ico-release" ])}</li>" .
+          "<li>{$this->a($i18n->r("/profile/wantlist"), $i18n->t("Wantlist"), [ "class" => "ico ico-heart" ])}</li>" .
           "<li>{$this->a($i18n->r("/profile/lists"), $i18n->t("Lists"), [ "class" => "ico ico-ul" ])}</li>" .
-          "<li>{$this->a($i18n->r("/profile/watchlist"), $i18n->t("Watchlist"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/watchlist"), $i18n->t("Watchlist"), [ "class" => "ico ico-view" ])}</li>" .
           "<li class='separator'>{$this->a($i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "ico ico-user" ])}</li>" .
           "<li>{$this->a($i18n->r("/profile/account-settings"), $i18n->t("Settings"), [ "class" => "ico ico-settings" ])}</li>" .
           "<li class='separator name'>{$session->userName}</li>" .

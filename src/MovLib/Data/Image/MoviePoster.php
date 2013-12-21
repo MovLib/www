@@ -40,6 +40,15 @@ class MoviePoster extends \MovLib\Data\Image\MovieImage {
   const TYPE_ID = 2;
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * @inheritdoc
+   */
+  protected $placeholder = "poster";
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
@@ -60,6 +69,30 @@ class MoviePoster extends \MovLib\Data\Image\MovieImage {
   public function __construct($movieId, $movieTitle, $id = null) {
     global $i18n;
     $this->init($movieId, $id, "poster", $i18n->t("Poster for {title}", [ "title" => $movieTitle ]));
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get the <var>$style</var> for this movie poster.
+   *
+   * The movie poster placeholder has the US one sheet dimensions, unlike most other placeholder images which are square.
+   *
+   * @param mixed $style
+   *   The desired style, use the objects <var>STYLE_*</var> class constants. Defaults to <var>STYLE_SPAN_02</var>.
+   * @return \MovLib\Data\Image\Style
+   *   The image's desired style object.
+   */
+  public function getStyle($style = self::STYLE_SPAN_02) {
+    if ($this->imageExists === false && !isset($this->styles[$style])) {
+      if (!is_array($this->styles)) {
+        $this->styles = [];
+      }
+      $this->styles[$style] = [ "width" => $style, "height" => ceil(($style / 27) * 40) ];
+    }
+    return parent::getStyle($style);
   }
 
 }

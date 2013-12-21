@@ -43,10 +43,20 @@
    * @return {InputImage}
    */
   function InputImage(element) {
-    this.element = element;
-    this.img     = element.children[0].children[0].children[0];
-    this.button  = element.children[1].getElementsByClassName("input-file")[0];
-    this.input   = this.button.children[1];
+    this.element     = element;
+    this.maxFilesize = parseInt(element.getAttribute("data-max-filesize"), 10);
+    this.height      = parseInt(element.getAttribute("data-height"), 10);
+    this.width       = parseInt(element.getAttribute("data-width"), 10);
+    this.minHeight   = parseInt(element.getAttribute("data-min-height"), 10);
+    this.minWidth    = parseInt(element.getAttribute("data-min-width"), 10);
+    this.alerts      = JSON.parse(element.children[0].innerHTML);
+    this.fileReader  = (typeof FileReader !== undefined);
+    this.preview     = element.children[1];
+    this.img         = this.preview.children[0];
+    this.newImg      = document.createElement("img");
+    this.button      = element.children[2].getElementsByClassName("input-file")[0];
+    this.input       = this.button.children[1];
+    this.accept      = this.input.getAttribute("accept").split(",");
     this.init();
   }
 
@@ -62,9 +72,25 @@
     init: function () {
       this.button.addEventListener("focus", MovLib.classFocusAdd, true);
       this.button.addEventListener("blur", MovLib.classFocusRemove, true);
-      if (typeof FileReader !== undefined) {
+      if (this.fileReader === true) {
+        this.fileReader        = new FileReader();
+        this.fileReader.onload = this.fileReaderOnload.bind(this);
         this.input.addEventListener("change", this.previewImage.bind(this), false);
       }
+    },
+
+    insertNewImage: function () {
+      this.preview.removeChild(this.img);
+      this.preview.appendChild(this.newImg);
+      return this;
+    },
+
+    fileReaderOnload: function (event) {
+      this.newImg.src    = event.target.result;
+      this.newImg.setAttribute("width", this.img.width);
+      this.newImg.onload = this.previewImageOnload.bind(this);
+
+      return this;
     },
 
     /**
@@ -76,16 +102,70 @@
      * @returns {InputImage}
      */
     previewImage: function () {
+
+      // Check if the user selected an actual file.
       if (this.input.files && this.input.files[0]) {
-        this.previewAlert = this.previewAlert || this.element.getElementsByClassName("alert")[0];
-        var reader        = new FileReader();
-        reader.onload     = function (event) {
-          this.img.removeAttribute("height"); // Important if the user updates an existing image!
-          this.img.src = event.target.result;
-          this.previewAlert.classList.add("fade-in");
-        }.bind(this);
-        reader.readAsDataURL(this.input.files[0]);
+        // Validate the file's size.
+        if (this.input.files[0].size > this.maxFilesize) {
+          MovLib.invalidate(this.input, this.alerts.large);
+        }
+        // Validate the file's MIME type as reported by the browser.
+        else if (this.accept.indexOf(this.input.files[0].type) === -1) {
+          MovLib.invalidate(this.input, this.alerts.type);
+        }
+        // Instantiate file reader to load the file the user is trying to upload. Not supported in IE9!
+        else {
+          this.fileReader.readAsDataURL(this.input.files[0]);
+        }
       }
+
+      return this;
+    },
+
+    previewImageOnload: function () {
+      // Validate the image's dimensions.
+      if (this.newImg.naturalHeight < this.minHeight || this.newImg.naturalWidth < this.minWidth) {
+        MovLib.invalidate(this.input, this.alerts.small);
+        this.reset();
+      }
+      else {
+        // The new image should have better quality if we're updating an existing image.
+        if (this.height && this.width && (this.newImg.naturalHeight < this.height || this.newImg.naturalWidth < this.width)) {
+          if (confirm(this.alerts.quality.split("{height_new}").join(this.newImg.naturalHeight).split("{width_new}").join(this.newImg.naturalWidth)) === true) {
+            this.insertNewImage();
+          }
+          else {
+            this.reset();
+          }
+        }
+        // Make sure the user knows that this is only a preview.
+        else if (!this.element.classList.contains("preview-alert")) {
+          var previewAlert = MovLib.getAlert(this.alerts.preview, "", "info", { "aria-live": "polite" });
+          this.button.parentNode.appendChild(previewAlert);
+          previewAlert.classList.add("show");
+          this.element.classList.add("preview-alert");
+          this.insertNewImage();
+        }
+      }
+
+      return this;
+    },
+
+    /**
+     * Reset the input file form element.
+     *
+     * @link http://stackoverflow.com/a/16222877/1251219
+     * @returns {InputImage}
+     */
+    reset: function () {
+      try {
+        this.input.value = "";
+        if (this.input.value) {
+          this.input.type = "text";
+          this.input.type = "file";
+        }
+      }
+      catch (e) {}
       return this;
     }
 

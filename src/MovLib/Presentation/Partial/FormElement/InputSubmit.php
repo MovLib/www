@@ -41,13 +41,6 @@ class InputSubmit extends \MovLib\Presentation\AbstractBase {
    */
   public $attributes;
 
-  /**
-   * Global identifier to access this element.
-   *
-   * @var string
-   */
-  public $id;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -59,15 +52,15 @@ class InputSubmit extends \MovLib\Presentation\AbstractBase {
    *   The translated text of the input element.
    * @param array $attributes [optional]
    *   Additional attributes that should be applied.
-   * @param string $id [optional]
-   *   The global unique identifier.
    */
-  public function __construct($value, array $attributes = null, $id = "submit") {
+  public function __construct($value, array $attributes = null) {
     $this->attributes          = $attributes;
-    $this->attributes["id"]    = $id;
-    $this->attributes["type"]  = "submit";
     $this->attributes["value"] = $value;
-    $this->id                  = $id;
+
+    // We actually want the submit buttons to cover the native submit() function in JavaScript because executing the
+    // submit() function doesn't fire the onsubmit event, while a click on a submit button does and we always want the
+    // browser's validation to be executed before any form is submitted to the server.
+    $this->attributes["id"]    = $this->attributes["name"] = $this->attributes["type"]  = "submit";
   }
 
   /**

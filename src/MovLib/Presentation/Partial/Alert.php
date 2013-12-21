@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Alert {
+class Alert extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -63,6 +63,13 @@ class Alert {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The alert's attributes array.
+   *
+   * @var array
+   */
+  public $attributes = [ "class" => "alert" ];
 
   /**
    * The alert's message.
@@ -117,8 +124,12 @@ class Alert {
    *   HTML representation of this alert message.
    */
   public function __toString() {
-    $title = $this->title ? "<h4 class='title'>{$this->title}</h4>" : null;
-    return "<div class='alert{$this->severity}' role='alert'><div class='c'>{$title}{$this->message}</div></div>";
+    $title  = $this->title ? "<h4 class='title'>{$this->title}</h4>" : null;
+    if ($this->severity) {
+      $this->addClass($this->severity, $this->attributes);
+    }
+    $this->attributes["role"] = "alert";
+    return "<div{$this->expandTagAttributes($this->attributes)}><div class='c'>{$title}{$this->message}</div></div>";
   }
 
 }

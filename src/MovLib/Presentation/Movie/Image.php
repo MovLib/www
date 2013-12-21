@@ -32,7 +32,7 @@ use \MovLib\Presentation\Partial\Language;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageDetails extends \MovLib\Presentation\Movie\Images {
+class Image extends \MovLib\Presentation\Movie\Images {
   use \MovLib\Presentation\TraitFormPage;
 
 

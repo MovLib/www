@@ -120,7 +120,10 @@
 
 #sidebar-nav .ico:before {
   width: 15px;
-  margin-right: 5px;
+  margin-right: 10px;
+  font-size: 16px;
+  line-height: 12px;
+  vertical-align: -2px;
 }
 
 #sidebar-nav .separator {
@@ -131,15 +134,18 @@
  * Special coloring for delete menuitems.
  * ------------------------------------------------------------------------------------------------------------------ */
 
+#sidebar-nav .delete.active:after,
 #sidebar-nav .delete:focus:after,
-#sidebar-nav .delete:hover:after,
-#sidebar-nav .delete.active:after {
+#sidebar-nav .delete:hover:after {
   background-color: #c00;
 }
 
+#sidebar-nav .delete.active,
 #sidebar-nav .delete:focus,
 #sidebar-nav .delete:hover,
-#sidebar-nav .delete.active {
+#sidebar-nav .delete.active:before,
+#sidebar-nav .delete:focus:before,
+#sidebar-nav .delete:hover:before {
   color: #c00;
 }
 

@@ -179,6 +179,42 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
     // Generate a square span 1 version for the image stream on the details page.
     $this->convert($span01, self::STYLE_SPAN_01_SQUARE, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true);
 
+    // This is a new upload, therefor we have to update everything. We already reserved an ID for us at the beginning
+    // and we have to update that ID now.
+    $db->query(
+      "UPDATE `movies_images` SET
+        `changed`          = FROM_UNIXTIME(?),
+        `country_code`     = ?,
+        `deleted`          = false,
+        `dyn_descriptions` = COLUMN_CREATE(?, ?),
+        `extension`        = ?,
+        `filesize`         = ?,
+        `height`           = ?,
+        `language_code`    = ?,
+        `license_id`       = ?,
+        `styles`           = ?,
+        `user_id`          = ?,
+        `width`            = ?
+      WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
+      "sssssiisisdiidi",
+      [
+        $_SERVER["REQUEST_TIME"],
+        $this->countryCode,
+        $i18n->languageCode, $this->description,
+        $this->extension,
+        $this->filesize,
+        $this->height,
+        $this->languageCode,
+        $this->licenseId,
+        serialize($this->styles),
+        $this->uploaderId,
+        $this->width,
+        $this->id,
+        $this->movieId,
+        static::TYPE_ID,
+      ]
+    )->close();
+
     return $this->update();
   }
 
@@ -279,7 +315,7 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
    * @throws \MovLib\Exception\DatabaseException
    */
   protected function update() {
-    global $db, $i18n, $session;
+    global $db, $i18n;
     $db->query(
       "UPDATE `movies_images` SET
         `changed`          = FROM_UNIXTIME(?),
@@ -306,7 +342,7 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
         $this->languageCode,
         $this->licenseId,
         (is_array($this->styles) ? serialize($this->styles) : $this->styles),
-        $session->userId,
+        $this->uploaderId,
         $this->width,
         $this->id,
         $this->movieId,

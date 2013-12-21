@@ -91,3 +91,20 @@ img.inline {
   display: none !important;
   visibility: hidden;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Much like jQuery's fadeIn but via CSS.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+.hide,
+.show {
+  opacity: 0;
+  visibility: hidden;
+  transition-duration: 0.4s;
+  transition-property: opacity, visibility;
+}
+
+.show {
+  opacity: 1;
+  visibility: visible;
+}

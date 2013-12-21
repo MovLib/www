@@ -91,6 +91,40 @@
     },
 
     /**
+     * Get alert message.
+     *
+     * Please note that the alert has the CSS class <code>"hide"</code> and you have to add the class <code>"show"</code>
+     * after you inserted the element into the DOM.
+     *
+     * @param {String} message
+     *   The already translated alert's message.
+     * @param {String} [title]
+     *   The already translated alert's title.
+     * @param {String} [severity]
+     *   The alert's severity level, default is <code>"warning"</code>. Possible values are: <code>"error"</code>,
+     *   <code>"info"</code>, and <code>"success"</code>
+     * @param {Object} [attributes]
+     *   An array containing additional attributes that should be applied to the outermost div element surrounding the
+     *   alert.
+     * @returns {HTMLElement}
+     *   The alert message.
+     */
+    getAlert: function (message, title, severity, attributes) {
+      var alert = document.createElement("div");
+      attributes = attributes || {};
+      attributes.role = "alert";
+      for (var attribute in attributes) {
+        alert.setAttribute(attribute, attributes[attribute]);
+      }
+      if (severity) {
+        severity = "alert-" + severity;
+      }
+      alert.classList.add("alert", "hide", severity);
+      alert.innerHTML = "<div class='c'>" + (title || "") + message + "</div>";
+      return alert;
+    },
+
+    /**
      * Initialize page features that are available on every page.
      *
      * The code within this method is only executed during the initial page load, not for any subsequent AJAX loads
@@ -189,6 +223,28 @@
       }
 
       return this.execute(document);
+    },
+
+    invalidate: function (element, message) {
+      // Callback for the change event on the element.
+      this.invalidateReset = this.invalidateReset || function () {
+        element.setCustomValidity("");
+        element.removeEventListener(this.invalidateReset);
+      }.bind(this);
+
+      // Remove possible HTML from message and set the custom validity error message on the element.
+      var stripTags = document.createElement("div");
+      stripTags.innerHTML = message;
+      element.setCustomValidity((stripTags.textContent || stripTags.innerText));
+
+      // Only submit if the submit function of the form is masked by a submit input element, otherwise the onsubmit
+      // event isn't fired and the form is really submitted (and we only want to show the validity error message).
+      if (element.form.submit instanceof HTMLElement) {
+        element.form.submit.click();
+      }
+
+      // Observe any changes to this input field and reset the validity error message.
+      element.addEventListener("change", this.invalidateReset, false);
     },
 
     /**
