@@ -70,7 +70,6 @@
   color: #656565;
 }
 
-.alert-info a:active,
 .alert-info a:focus,
 .alert-info a:hover {
   border-bottom-color: #656565;

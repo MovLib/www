@@ -43,7 +43,6 @@
 .btn.focus,
 .btn:hover,
 .btn:focus,
-.btn:active,
 .btn.active {
   background-color: #cfcfcf;
 }
@@ -90,11 +89,10 @@
   background-color: #3498db;
 }
 
+.btn-primary.active,
 .btn-primary.focus,
-.btn-primary:hover,
 .btn-primary:focus,
-.btn-primary:active,
-.btn-primary.active {
+.btn-primary:hover {
   background-color: #256c9b;
 }
 
@@ -107,11 +105,10 @@
   background-color: #49afcd;
 }
 
+.btn-info.active,
 .btn-info.focus,
-.btn-info:hover,
 .btn-info:focus,
-.btn-info:active,
-.btn-info.active {
+.btn-info:hover {
   background-color: #32788d;
 }
 
@@ -124,11 +121,10 @@
   background-color: #5bb75b;
 }
 
+.btn-success.active,
 .btn-success.focus,
-.btn-success:hover,
 .btn-success:focus,
-.btn-success:active,
-.btn-success.active {
+.btn-success:hover {
   background-color: #3b773b;
 }
 
@@ -141,11 +137,10 @@
   background-color: #faa732;
 }
 
+.btn-warning.active,
 .btn-warning.focus,
-.btn-warning:hover,
 .btn-warning:focus,
-.btn-warning:active,
-.btn-warning.active {
+.btn-warning:hover {
   background-color: #cc8829;
 }
 
@@ -158,11 +153,10 @@
   background-color: #da4f49;
 }
 
+.btn-danger.active,
 .btn-danger.focus,
-.btn-danger:hover,
 .btn-danger:focus,
-.btn-danger:active,
-.btn-danger.active {
+.btn-danger:hover {
   background-color: #9a3834;
 }
 
@@ -175,11 +169,10 @@
   background-color: #555;
 }
 
+.btn-inverse.active,
 .btn-inverse.focus,
-.btn-inverse:hover,
 .btn-inverse:focus,
-.btn-inverse:active,
-.btn-inverse.active {
+.btn-inverse:hover {
   background-color: #000;
 }
 

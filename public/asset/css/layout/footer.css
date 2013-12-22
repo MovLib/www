@@ -54,10 +54,8 @@
   margin: 0 20px;
 }
 
-#f-team a:active,
 #f-team a:focus,
 #f-team a:hover,
-#f-logos a:active,
 #f-logos a:focus,
 #f-logos a:hover {
   opacity: 1;
@@ -68,7 +66,6 @@
   font-size: 14px;
 }
 
-#f-team a:active,
 #f-team a:focus,
 #f-team a:hover {
   border-bottom-color: #c7c7c7;
@@ -78,7 +75,6 @@
   transition: color 0.4s ease-out;
 }
 
-#f-team a:active .ico-heart,
 #f-team a:focus .ico-heart,
 #f-team a:hover .ico-heart {
   color: #c00;

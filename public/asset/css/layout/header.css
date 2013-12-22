@@ -93,7 +93,6 @@
   transition: color 0.4s linear;
 }
 
-#l:active
 #l:focus,
 #l:hover {
   color: #353535;
@@ -260,13 +259,11 @@
 }
 
 #user-nav.focus .authenticated:before,
-#user-nav:active .authenticated:before,
 #user-nav:hover .authenticated:before {
   opacity: 1;
 }
 
 #user-nav.focus .btn-inverse,
-#user-nav:active .btn-inverse,
 #user-nav:hover .btn-inverse {
   color: #fff;
   background-color: #09c;
@@ -310,14 +307,12 @@
   transition-property: background-color, color;
 }
 
-#user-nav .no-list a:active,
 #user-nav .no-list a:focus,
 #user-nav .no-list a:hover {
   color: #fff;
   background-color: #09c;
 }
 
-#user-nav .no-list a.danger:active,
 #user-nav .no-list a.danger:focus,
 #user-nav .no-list a.danger:hover {
   background-color: #da4f49;
@@ -396,7 +391,6 @@
   transition: background-color 0.2s linear;
 }
 
-#s .ico:active,
 #s .ico:focus,
 #s .ico:hover {
   background-color: #09c;

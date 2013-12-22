@@ -58,15 +58,12 @@ a.list-group-item:hover {
   background-color: #e5e5e5;
 }
 
-a.list-group-item:active,
 a.list-group-item.active {
   z-index: 1;
   background-color: #09c;
 }
 
-a.list-group-item:active,
 a.list-group-item.active,
-a.list-group-item:active .title,
 a.list-group-item.active .title {
   color: #fff;
 }

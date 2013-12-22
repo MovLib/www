@@ -44,12 +44,11 @@
   transition-property: background, color;
 }
 
-#pagination-nav a:hover,
-#pagination-nav a:focus {
+#pagination-nav a:focus,
+#pagination-nav a:hover {
   background-color: #eee;
 }
 
-#pagination-nav a:active,
 #pagination-nav a.active {
   color: #fff;
   background-color: #09c;

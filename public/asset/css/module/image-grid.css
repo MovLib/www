@@ -48,13 +48,11 @@
   transition: box-shadow 0.4s ease-in-out;
 }
 
-.img-grid a:active,
 .img-grid a:focus,
 .img-grid a:hover {
   box-shadow: 0 0 10px rgba(82, 168, 236, 0.6);
 }
 
-.img-grid a:active .grid-img,
 .img-grid a:focus .grid-img,
 .img-grid a:hover .grid-img {
   opacity: 1;

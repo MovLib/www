@@ -45,9 +45,8 @@
   transition: bottom 0.3s ease-in-out;
 }
 
-#content-header .img:hover span,
 #content-header .img:focus span,
-#content-header .img:active span {
+#content-header .img:hover span {
   bottom: 0;
 }
 

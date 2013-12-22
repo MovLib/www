@@ -59,108 +59,66 @@
   transition: outline-color 0.4s ease-in-out;
 }
 
-#imagedetails .image a:active,
 #imagedetails .image a:focus,
 #imagedetails .image a:hover {
   box-shadow: 0 0 10px rgba(82, 168, 236, 0.6);
 }
 
-#imagedetails .image a:active img,
 #imagedetails .image a:focus img,
 #imagedetails .image a:hover img {
   outline-color: rgba(82, 168, 236, 0.8);
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
- * The stream above the preview
+ * The image pagination stream.
  * ------------------------------------------------------------------------------------------------------------------ */
 
 #imagedetails .stream {
   background-color: #252525;
-  overflow: hidden;
-  padding: 20px 0;
+  padding: 20px 40px 20px 20px;
+  margin-top: 20px;
   position: relative;
 }
 
-#imagedetails .stream a {
-  border: 0;
-  opacity: 0.5;
-  overflow: hidden;
-  position: relative;
-  transition: opacity 0.4s ease-in-out;
+#imagedetails .stream:before {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 20px solid transparent;
+  border-bottom-color: #252525;
+  top: -40px;
+  left: calc(50% - 20px);
 }
 
 #imagedetails .stream a.active,
-#imagedetails .stream a:active,
 #imagedetails .stream a:focus,
 #imagedetails .stream a:hover {
   opacity: 1;
 }
 
-/*#imagedetails .stream .first,
-#imagedetails .stream .last {
-  width: 40px;
+#imagedetails .stream .img.active,
+#imagedetails .stream .img:focus,
+#imagedetails .stream .img:hover {
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
 }
 
-#imagedetails .stream .first img,
-#imagedetails .stream .last img {
-  position: relative;
-  left: -10px;
+#imagedetails .stream a,
+#imagedetails a.mute:focus,
+#imagedetails a.mute:hover {
+  border: 0;
+  opacity: 0.3;
+  transition-property: box-shadow, opacity;
 }
 
-#imagedetails .stream .last img {
-  right: -10px;
-  left: 0;
-}
-
-#imagedetails .stream .first:after,
-#imagedetails .stream .last:after {
-  background-image: linear-gradient(to left, transparent, #252525);
-  bottom: 0;
-  content: "";
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-#imagedetails .stream .last:after {
-  background-image: linear-gradient(to right, transparent, #252525);
-}*/
-
-/* ---------------------------------------------------------------------------------------------------------------------
- * The pager to the left/right of the preview.
- * ------------------------------------------------------------------------------------------------------------------ */
-
-#imagedetails .pager {
-  bottom: 0;
+#imagedetails .ico {
   color: #fff;
-  font-size: 50px;
-  opacity: 0.5;
-  position: absolute;
-  top: 0;
-  transition: opacity 0.4s ease-in-out;
-  width: 50px;
-  z-index: 1;
+  font-size: 60px;
+  line-height: 60px;
+  height: 60px;
 }
 
-#imagedetails .pager:hover,
-#imagedetails .pager:focus {
-  opacity: 1;
-}
-
-#imagedetails .left,
-#imagedetails .left .icon {
-  left: 0;
-}
-
-#imagedetails .right,
-#imagedetails .right .icon {
-  right: 0;
-}
-
-#imagedetails .pager .icon {
-  position: absolute;
-  top: 50%;
-  margin-top: -36.5px;
+#imagedetails a.mute:focus,
+#imagedetails a.mute:hover {
+  cursor: not-allowed;
 }

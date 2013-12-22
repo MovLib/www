@@ -18,6 +18,10 @@
  * Main CSS file which will contain the minified and optimized contents of all CSS files that reside in the layout
  * directory. We stick to @import rules in production.
  *
+ * An important note regarding pseudo states. Always honor the LVHA-order in your selectors:
+ *   :link — :visited — :hover — :active
+ * But in most cases it's enough to define the :focus and :hover state and leave the rest alone.
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013–present, MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

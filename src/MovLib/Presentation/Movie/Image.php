@@ -73,29 +73,31 @@ class Image extends \MovLib\Presentation\Movie\Images {
 
     // Build the image stream.
     $images      = $this->movie->getImageStreamResult($this->imageTypeId);
-    $streamArray = $streamJSON = [];
-    $more        = null;
+    $streamArray = $streamJSON = $more = null;
 
     /* @var $image \MovLib\Data\Image\MovieImage */
     while ($image = $images->fetch_object("\\MovLib\\Data\\Image\\Movie{$this->imageClassName}", [ $this->movie->id, $this->movie->displayTitleWithYear ])) {
       // If this is the current image start building the visible image stream.
       if ($image->id === $this->image->id) {
-        // Get the last four images that were added to the stream array.
-        $streamArray = array_slice($streamArray, -self::STREAM_IMAGE_COUNT, self::STREAM_IMAGE_COUNT);
+        // Only go through all of this if the $streamArray isn't still NULL / empty.
+        if ($streamArray) {
+          // Get the last four images that were added to the stream array.
+          $streamArray = array_slice($streamArray, -self::STREAM_IMAGE_COUNT, self::STREAM_IMAGE_COUNT);
 
-        // Count them, we desperately need four images.
-        if (($c = count($streamArray)) < self::STREAM_IMAGE_COUNT) {
-          // Create a copy of the images we have.
-          $streamCopy  = $streamArray;
+          // Count them, we desperately need four images.
+          if (($c = count($streamArray)) < self::STREAM_IMAGE_COUNT) {
+            // Create a copy of the images we have.
+            $streamCopy  = $streamArray;
 
-          // Create new empty array that we can fill with the correct offsets.
-          $streamArray = [];
+            // Create new empty array that we can fill with the correct offsets.
+            $streamArray = [];
 
-          // The formula is easy, we take the current index and add the result of the total available places minus the
-          // total count of available element which gives us the new position.
-          $x = self::STREAM_IMAGE_COUNT - $c;
-          for ($i = $c - 1; $i >= 0; --$i) {
-            $streamArray[$i + $x] = $streamCopy[$i];
+            // The formula is easy, we take the current index and add the result of the total available places minus the
+            // total count of available elements which gives us the new position.
+            $x = self::STREAM_IMAGE_COUNT - $c;
+            for ($i = $c - 1; $i >= 0; --$i) {
+              $streamArray[$i + $x] = $streamCopy[$i];
+            }
           }
         }
 
@@ -103,11 +105,11 @@ class Image extends \MovLib\Presentation\Movie\Images {
         $streamArray[self::STREAM_IMAGE_COUNT] = $image;
         $more                                  = self::STREAM_IMAGE_COUNT;
       }
-      // $fourLeft has either to be NULL or greater than zero for us to put another image into it.
+      // $more has either to be NULL or greater than zero for us to put another image into it.
       elseif (!$more || $more > 0) {
         $streamArray[] = $image;
 
-        // If $fourLeft isn't NULL decrease it to ensure that we reach zero and don't add too many images to this array
+        // If $more isn't NULL decrease it to ensure that we reach zero and don't add too many images to this array
         // for no reason.
         if ($more) {
           --$more;
@@ -128,8 +130,26 @@ class Image extends \MovLib\Presentation\Movie\Images {
     $stream = null;
     $c      = self::STREAM_IMAGE_COUNT * 2 + 1;
     for ($i = 0; $i < $c; ++$i) {
-      $image   = empty($streamArray[$i]) ? null : $this->getImage($streamArray[$i]->getStyle(MovieImage::STYLE_SPAN_01));
+      $image   = empty($streamArray[$i]) ? null : $this->getImage($streamArray[$i]->getStyle(MovieImage::STYLE_SPAN_01_SQUARE));
       $stream .= "<div class='s s1'>{$image}</div>";
+    }
+
+    // Check if we have a previous image.
+    $previous = self::STREAM_IMAGE_COUNT - 1;
+    if (!empty($streamArray[$previous])) {
+      $previous = [ "class" => "ico ico-chevron-left s s1", "href" => $streamArray[$previous]->route, "rel" => "previous" ];
+    }
+    else {
+      $previous = [ "aria-hidden" => "true", "class" => "ico ico-chevron-left mute s s1" ];
+    }
+
+    // Check if we have a next image.
+    $next = self::STREAM_IMAGE_COUNT + 1;
+    if (!empty($streamArray[$next])) {
+      $next = [ "class" => "ico ico-chevron-right s s1 tar", "href" => $streamArray[$next]->route, "rel" => "next" ];
+    }
+    else {
+      $next = [ "aria-hidden" => "true", "class" => "ico ico-chevron-right mute s s1 tar" ];
     }
 
     // Format the optional fields.
@@ -151,8 +171,8 @@ class Image extends \MovLib\Presentation\Movie\Images {
     // Render the final presentation.
     return
       "<meta itemprop='representativeOfPage' content='true'>" .
-      "<script id='streamjson'>{$streamJSON}</script>" .
       "<div class='c' id='imagedetails'>" .
+        "<script>{$streamJSON}</script>" .
         "<div class='r wrapper'>" .
           "<div class='s s8 tac image'>{$this->getImage(
             $this->image->getStyle(MovieImage::STYLE_SPAN_07),
@@ -171,7 +191,15 @@ class Image extends \MovLib\Presentation\Movie\Images {
             "<dt>{$i18n->t("Uploaded")}</dt><dd>{$dateTime}</dd>" .
           "</dl>" .
         "</div>" .
-        "<div class='stream'>{$stream}</div>" .
+        "<div class='cf stream'>" .
+          "<a{$this->expandTagAttributes($previous)}><span class='vh'>{$i18n->t("Previous {image_type_name}", [
+            "image_type_name" => $this->imageTypeName
+          ])}</span></a>" .
+          $stream .
+          "<a{$this->expandTagAttributes($next)}><span class='vh'>{$i18n->t("Next {image_type_name}", [
+            "image_type_name" => $this->imageTypeName
+          ])}</span></a>" .
+        "</div>" .
       "</div>"
     ;
   }
@@ -190,7 +218,7 @@ class Image extends \MovLib\Presentation\Movie\Images {
     $formattedId                       = $i18n->format("{0,number,integer}", [ $_SERVER["IMAGE_ID"] ]);
     $this->initMoviePage($i18n->t("{image_type_name} {id}", [ "id" => $formattedId, "image_type_name" => $this->imageTypeName ]));
     $class                             = "\\MovLib\\Data\\Image\\Movie{$this->imageClassName}";
-    $this->image                       = new $class($this->movie->id, $this->movie->displayTitleWithYear, $_SERVER["IMAGE_ID"]);
+    $this->image                       = new $class($this->movie->id, $this->movie->displayTitleWithYear, (integer) $_SERVER["IMAGE_ID"]);
     $this->initPage($i18n->t("{image_type_name} {id} of {title}", [
       "image_type_name" => $this->imageTypeName,
       "id"              => $formattedId,

@@ -246,7 +246,6 @@ option[value=""] {
   z-index: 1;
 }
 
-.input-file:active,
 .input-file.focus,
 .input-file:hover {
   z-index: 2;

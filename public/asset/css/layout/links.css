@@ -32,7 +32,6 @@ a {
   transition-property: color, border-color;
 }
 
-a:active,
 a:hover,
 a:focus {
   border-bottom-color: #09c;
@@ -44,7 +43,6 @@ a:focus {
   outline: 1px dotted #656565;
 }
 
-a:active,
 a:hover {
   outline: 0;
 }
@@ -79,7 +77,6 @@ a.danger {
 }
 
 a.danger:hover,
-a.danger:active,
 a.danger:focus {
   border-bottom-color: #da4f49;
 }

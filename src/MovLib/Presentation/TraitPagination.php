@@ -126,7 +126,7 @@ trait TraitPagination {
       // Generate the previous link if it isn't the first page.
       if ($x >= 1) {
         // Only include the query string if we aren't linking to the very first page.
-        $pages[] = [ ($x > 1 ? "{$route}{$x}" : $kernel->requestPath), $i18n->t("« previous"), [ "rel" => "previous prerender" ] ];
+        $pages[] = [ ($x > 1 ? "{$route}{$x}" : $kernel->requestPath), $i18n->t("« previous"), [ "rel" => "previous" ] ];
       }
       // We totally mute this pagination item for screen readers and alike because it has no value anymore for them. But
       // we keep it on normal screens to ensure that the pagination navigation always looks the same on all pages.
@@ -135,14 +135,14 @@ trait TraitPagination {
       }
 
       // Always add the first page to the pagination for fast jumps to the beginning.
-      $pages[] = [ $kernel->requestPath, "1", [ "rel" => "first prerender" ] ];
+      $pages[] = [ $kernel->requestPath, "1", [ "rel" => "first" ] ];
       if ($x <= 1) {
         $x = 2;
       }
 
       // The second pagination item is special and if we have a pagination it always exists, see above if.
       if ($x < 5) {
-        $pages[] = [ "{$route}2", "2", [ "rel" => "prerender" ] ];
+        $pages[] = [ "{$route}2", "2" ];
         $x = 3;
       }
       else {
@@ -171,13 +171,13 @@ trait TraitPagination {
         }
 
         // Always add the last page to the pagination for fast traveling.
-        $pages[] = [ "{$route}{$this->pageCount}", $this->pageCount, [ "rel" => "last prerender" ] ];
+        $pages[] = [ "{$route}{$this->pageCount}", $this->pageCount, [ "rel" => "last" ] ];
       }
 
       // Check if we have a next page and perform the same logic as we used for the previous link.
       if ($this->page < $this->pageCount) {
         $next    = $this->page + 1;
-        $pages[] = [ "{$route}{$next}", $i18n->t("next »"), [ "rel" => "next prerender" ] ];
+        $pages[] = [ "{$route}{$next}", $i18n->t("next »"), [ "rel" => "next" ] ];
       }
       else {
         $pages[] = "<span class='mute' aria-hidden='true'>{$i18n->t("next »")}</span>";

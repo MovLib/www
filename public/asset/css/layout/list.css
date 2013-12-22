@@ -42,7 +42,6 @@
   transition: background-color 0.4s ease-out;
 }
 
-.img-list a:active,
 .img-list a:hover,
 .img-list a:focus {
   position: relative;
