@@ -44,7 +44,6 @@ clean:
 	sudo movlib fix-permissions
 
 mariadb:
-	cp ${DOCUMENT_ROOT}/conf/mariadb/my.ini ~/my.ini && \
 	aptitude update
 	aptitude -y purge \
 	  libdb-mysql-perl \
@@ -57,9 +56,8 @@ mariadb:
 	  mysql-common && \
 	aptitude autoclean
 	rm -rf /etc/mysql /var/lib/mysql && \
-	mv ~/my.ini ${DOCUMENT_ROOT}/conf/mariadb/my.ini && \
 	mkdir -p /etc/mysql && \
-	ln -s ${DOCUMENT_ROOT}/conf/mariadb/my.ini /etc/mysql/my.cnf
+	cat ${DOCUMENT_ROOT}/conf/mariadb/my.ini > /etc/mysql/my.cnf
 	movlib fp
 	aptitude -y install mariadb-server-10.0
 	movlib si
