@@ -27,6 +27,8 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
+aptitude update && aptitude install -y libcloog-ppl0
+
 source $(pwd)/inc/conf.sh
 
 if [ ${#} == 1 ]; then
