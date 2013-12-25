@@ -78,8 +78,8 @@ msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
   --pid-path="/run/nginx.pid" \
   --lock-path="/var/lock/nginx.lock" \
   --error-log-path="/var/log/nginx/error.log" \
-  --http-client-body-temp-path="/run/shm/nginx/body" \
-  --http-fastcgi-temp-path="/run/shm/nginx/fastcgi" \
+  --http-client-body-temp-path="/run/www/uploads" \
+  --http-fastcgi-temp-path="/run/www/fastcgi" \
   --http-log-path="/var/log/nginx/access.log" \
   --with-cc-opt="-O2 -m64" \
   --with-ld-opt="-m64" \
