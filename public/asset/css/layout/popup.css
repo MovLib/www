@@ -70,14 +70,14 @@
 }
 
 .popup .content:before {
-  bottom: -14px;
+  bottom: -13px;
   border: 7px solid transparent;
   border-top-color: rgba(0, 0, 0, 0.2);
   content: "";
 }
 
 .popup .content:after {
-  bottom: -12px;
+  bottom: -11px;
   border: 6px solid transparent;
   border-top-color: #fff;
   content: "";

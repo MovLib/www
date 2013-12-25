@@ -146,7 +146,7 @@
 #h .open .visible:before,
 #h .visible:before {
   position: absolute;
-  bottom: -12px;
+  bottom: -11px;
   left: 50%;
   margin-left: -6px;
   border: 6px solid transparent;
