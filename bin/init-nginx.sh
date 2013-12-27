@@ -154,7 +154,7 @@ stop_service() {
 # Load OCSP file into nginx's cache. Executed as a detached process as it may take some time.
 ###
 load_ocsp_file() {
-  openssl s_client -connect 127.0.0.1:443 -tls1 -tlsextdebug -status <&- 1<&- 2<&- &
+  openssl s_client -connect movlib.org:443 -tls1 -tlsextdebug -status <&- 1<&- 2<&- &
 }
 
 
