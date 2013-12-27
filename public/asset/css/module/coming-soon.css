@@ -15,7 +15,7 @@
  */
 
 /**
- * Styles exclusive to the language selection view.
+ * Styles exclusive to the coming soon page.
  *
  * @link http://engineering.appfolio.com/2012/11/16/css-architecture/
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -25,16 +25,12 @@
  * @since 0.0.1-dev
  */
 
-#languageselection {
-  text-align: center;
-}
-
-#languageselection #m {
+#comingsoon #m {
   min-height: 50%;
   margin-top: 0;
 }
 
-#languageselection h1 {
+#comingsoon h1 {
   width: 512px;
   padding: 10% 0 0;
   margin: 0 auto;
@@ -44,17 +40,17 @@
   color: #353535;
 }
 
-#languageselection h1 img {
+#comingsoon h1 img {
   float: left;
 }
 
-#languageselection h1 span {
+#comingsoon h1 span {
   display: block;
   padding-top: 28px;
   margin-left: 205px;
 }
 
-#languageselection h1 small {
+#comingsoon h1 small {
   display: block;
   padding: 2px 0 0;
   margin: 0;
@@ -65,16 +61,6 @@
   white-space: pre;
 }
 
-#languageselection nav {
-  font-size: 16px;
-}
-
-#languageselection nav a {
-  margin: 0 25px;
-  color: #353535;
-}
-
-#languageselection nav a:hover,
-#languageselection nav a:focus {
-  border-bottom-color: #353535;
+#comingsoon #m .tac {
+  margin: 20px 0;
 }

@@ -12,7 +12,9 @@ Desktop.ini
 /conf/mariadb/movlib.mwb.bak
 /conf/movlib.ini
 /private/sandbox/
+/private/subscriptions.txt
 /public/components/
 /public/coverage/
 /public/doc/
 /vendor/
+/google*.html
