@@ -126,13 +126,17 @@ class Mailer {
    */
   protected function getHeaders() {
     global $kernel;
-    $headers  = <<<EOT
+
+    $headers = <<<EOT
+Auto-Submitted: auto-generated
 Content-Type: multipart/alternative;
 \tboundary="{$this->messageID}"
 From: "{$this->getFromName()}" <{$kernel->emailFrom}>
 Message-ID: <{$this->messageID}@{$kernel->domainDefault}>
 MIME-Version: 1.0
+Precedence: bulk
 EOT;
+
     if ($this->email->priority === 1) {
       $headers .= <<<EOT
 X-Priority: 1 (Highest)
@@ -140,6 +144,7 @@ X-MSMail-Priority: High
 Importance: High
 EOT;
     }
+
     return $headers;
   }
 
