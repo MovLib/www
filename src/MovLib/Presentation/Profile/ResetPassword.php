@@ -39,7 +39,6 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  */
 class ResetPassword extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
-  use \MovLib\Presentation\Users\TraitUsers;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

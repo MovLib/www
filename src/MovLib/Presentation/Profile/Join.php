@@ -44,7 +44,6 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  */
 class Join extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
-  use \MovLib\Presentation\Users\TraitUsers;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
