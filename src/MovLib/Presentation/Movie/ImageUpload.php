@@ -111,12 +111,15 @@ class ImageUpload extends \MovLib\Presentation\Movie\Images {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\User\Session $session
    */
   protected function valid() {
+    global $session;
     $this->image->countryCode  = $this->selectCountry->value;
     $this->image->description  = $this->inputDescription->value;
     $this->image->languageCode = $this->selectLanguage->value;
     $this->image->licenseId    = $this->selectLicense->value;
+    $this->image->uploaderId   = $session->userId;
     $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
     throw new SeeOtherRedirect($this->image->route);
   }

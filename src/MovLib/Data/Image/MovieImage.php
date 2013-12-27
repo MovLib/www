@@ -106,6 +106,13 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
    * @inheritdoc
    */
   protected $placeholder = "image";
+  
+  /**
+   * The image's route key.
+   * 
+   * @var string
+   */
+  protected $routeKey;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -161,9 +168,10 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
         "di",
         [ $this->movieId, static::TYPE_ID ]
       );
-      $this->filename = $this->id = $stmt->get_result()->fetch_row()[0];
+      $this->filename    = $this->id = $stmt->get_result()->fetch_row()[0];
       $stmt->close();
-      $this->route = $i18n->r("/movie/{0}/image/{1}", [ $this->movieId, $this->id ]);
+      $this->imageExists = true;
+      $this->route       = $i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movieId, $this->id]);
 
       // We always have to call this method even if our identifier is greater than one. It could be that all other
       // images have been deleted and if that's the case the directory was deleted as well.
@@ -228,16 +236,15 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
    * @param null|integer $id
    *   The identifier of the movie image that should be loaded from the database. If none is passed (default) an empty
    *   movie image is created, ready for creating a new movie image.
-   * @param string $name
-   *   The movie image name. As of writing this comment we have three different types and therefor three different names
-   *   which are: <code>"image"</code>, <code>"poster"</code>, and <code>"lobby-card"</code>
+   * @param string $routeKey
+   *   The movie image route key.
    * @param string $alternativeText
    *   The alternate text for the image.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Preentation\Error\NotFound
    */
-  protected function init($movieId, $id, $name, $alternativeText) {
+  protected function init($movieId, $id, $routeKey, $alternativeText) {
     global $db, $i18n;
     // Ensure that we aren't going to override our $id property if we were instantiated via fetch_object().
     if (!$this->id) {
@@ -247,8 +254,9 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
     // Export everything that we know without asking the database right away.
     $this->alternativeText = $alternativeText;
     $this->movieId         = $movieId;
-    $this->directory      .= "/{$this->movieId}/{$name}";
+    $this->directory      .= "/{$this->movieId}/{$routeKey}";
     $this->filename        = $this->id;
+    $this->routeKey        = $routeKey;
 
     // Only attempt to load the image from the database if we weren't called via fetch_object(). The local variable
     // $id is passed by the constructor down to us and contains the default value if this class was constructed by
@@ -299,8 +307,8 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
     // Export everything to class scope for which we have to ask the database.
     $this->imageExists = (boolean) $this->changed;
     $this->route  = $this->imageExists === true
-      ? $i18n->r("/movie/{0}/{$name}/{1}", [ $this->movieId, $this->id ])
-      : $i18n->r("/movie/{0}/{$name}/upload", [ $this->movieId ])
+      ? $i18n->r("/movie/{0}/{$routeKey}/{1}", [ $this->movieId, $this->id ])
+      : $i18n->r("/movie/{0}/{$routeKey}/upload", [ $this->movieId ])
     ;
 
     return $this;
