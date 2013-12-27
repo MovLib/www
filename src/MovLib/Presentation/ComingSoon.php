@@ -83,6 +83,7 @@ class ComingSoon extends \MovLib\Presentation\Page {
       "<footer id='f' role='contentinfo'>" .
         "<h1 class='vh'>{$i18n->t("Infos all around {sitename}", [ "sitename" => $kernel->siteName ])}</h1>" .
         "<div class='c'><div class='r'>" .
+          "<p class='s s12 tac'>{$i18n->t("The open beta is scheduled to start in April 2014.")}</p>" .
           "<section id='f-logos' class='s s12 tac'>" .
             "<h3 class='vh'>{$i18n->t("Sponsors and external resources")}</h3>" .
             "<a class='img' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
