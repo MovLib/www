@@ -143,11 +143,10 @@ class Show extends \MovLib\Presentation\Page {
     // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
     $stars = null;
     for ($i = 1; $i < 6; ++$i) {
-      $rated  = $i <= $this->movie->userRating ? " rated" : null;
+      $rated  = $i <= $this->movie->userRating ? " class='rated'" : null;
       $stars .=
-        "<button class='popup-c{$rated}' name='rating' type='submit' value='{$i}'>" .
-          "<small class='popup tac'>{$ratings[$i]}</small>" .
-          "<span class='vh'>{$i18n->t("Rate with {0, plural, one {one star} other {# stars}}", [ $i ])}</span>" .
+        "<button{$rated} name='rating' type='submit' value='{$i}' title='{$ratings[$i]}'>" .
+          "<span class='vh'>{$i18n->t("with {0, plural, one {one star} other {# stars}}", [ $i ])} </span>" .
         "</button>"
       ;
     }
@@ -197,7 +196,7 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
     $this->headingAfter  =
         "<p>{$i18n->t("“{original_title}” ({0}original title{1})", [ "original_title" => $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
         "{$this->form->open()}<fieldset id='movie-rating'>{$ratingHelp}" .
-          "<legend class='vh'>{$i18n->t("Rate this movie:")}</legend>" .
+          "<legend class='vh'>{$i18n->t("Rate this movie")}</legend> " .
           "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
           "<div class='front'>{$stars}</div>" .
         "</fieldset>{$this->form->close()}" .

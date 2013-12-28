@@ -44,7 +44,7 @@
   position: relative;
 }
 
-#movie-rating .back {
+#movie-rating > div {
   position: absolute;
   top: 0;
   right: 18px;
@@ -84,11 +84,6 @@
 #movie-rating button {
   opacity: 0;
   transition: opacity 0.4s ease-in-out;
-}
-
-#movie-rating .tac {
-  width: 100px;
-  left: -40px;
 }
 
 #movie-poster {
