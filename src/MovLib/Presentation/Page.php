@@ -520,9 +520,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
     // user agents support the new HTML5 element yet).
     return
       "<main id='m' role='main'{$schema}>" .
-        "<header id='header'>{$this->alerts}" .
+        "<header id='header'>" .
           "<div class='c'>{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
           "<div id='b'>{$this->breadcrumb}</div>" .
+          $this->alerts .
         "</header>" .
         "{$this->contentBefore}{$content}{$this->contentAfter}" .
       "</main>"
