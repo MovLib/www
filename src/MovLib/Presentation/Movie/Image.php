@@ -159,11 +159,11 @@ class Image extends \MovLib\Presentation\Movie\Images {
     }
     if ($this->image->countryCode) {
       $country = (new Country($this->image->countryCode, [ "itemprop" => "contentLocation" ]))->getFlag(true);
-      $dl .= "<dt>{$i18n->t("Country")}</dt><dd>{$country}</dt>";
+      $dl .= "<dt>{$i18n->t("Country")}</dt><dd>{$country}</dd>";
     }
     if ($this->image->languageCode && $this->image->languageCode != "xx") {
       $language = new Language($this->image->languageCode, [ "itemprop" => "inLanguage" ]);
-      $dl .= "<dt>{$i18n->t("Language")}</dt><dd>{$language}</dt>";
+      $dl .= "<dt>{$i18n->t("Language")}</dt><dd>{$language}</dd>";
     }
     $uploader = new User(User::FROM_ID, $this->image->uploaderId);
     $dateTime = new DateTime($this->image->changed, [ "itemprop" => "uploadDate" ]);
@@ -232,6 +232,7 @@ class Image extends \MovLib\Presentation\Movie\Images {
     ]);
     $this->breadcrumb->menuitems[]     = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id ]), $this->imageTypeNamePlural ];
     $this->bodyClasses                .= " imagedetails";
+    $this->schemaType                  = "ImageObject";
     $this->initSidebar()->smallSidebar = true;
 
     return $this;
