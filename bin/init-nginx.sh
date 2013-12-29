@@ -150,13 +150,6 @@ stop_service() {
   start-stop-daemon --stop --quiet --pidfile ${PIDFILE} --name ${NAME}
 }
 
-###
-# Load OCSP file into nginx's cache. Executed as a detached process as it may take some time.
-###
-load_ocsp_file() {
-  openssl s_client -connect movlib.org:443 -tls1 -tlsextdebug -status <&- 1<&- 2<&- &
-}
-
 
 # -----------------------------------------------------------------------------
 #                                                                  Handle Input
@@ -171,7 +164,6 @@ case ${1} in
     else
       log_daemon_msg ${NAME} "reloading configuration"
       reload_service || log_end_msg 1
-      load_ocsp_file
       log_end_msg 0
     fi
   ;;
@@ -184,7 +176,6 @@ case ${1} in
       stop_service || log_end_msg 1
       sleep 0.1
       start_service || log_end_msg 1
-      load_ocsp_file
       log_end_msg 0
     fi
   ;;
@@ -195,7 +186,6 @@ case ${1} in
     else
       log_daemon_msg ${NAME} "starting"
       start_service || log_end_msg 1
-      load_ocsp_file
       log_end_msg 0
     fi
   ;;
