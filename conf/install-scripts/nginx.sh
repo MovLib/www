@@ -32,7 +32,7 @@ source $(pwd)/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="1.5.7"
+  VERSION="1.5.8"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
