@@ -73,10 +73,14 @@
  * The image pagination stream.
  * ------------------------------------------------------------------------------------------------------------------ */
 
+.imagedetails #sidebar-nav {
+  top: 100px;
+}
+
 #imagedetails .stream {
   background-color: #252525;
   padding: 20px 40px 20px 20px;
-  margin-top: 20px;
+  margin-bottom: 20px;
   position: relative;
 }
 
@@ -86,8 +90,8 @@
   width: 0;
   height: 0;
   border: 20px solid transparent;
-  border-bottom-color: #252525;
-  top: -40px;
+  border-top-color: #252525;
+  bottom: -40px;
   left: calc(50% - 20px);
 }
 

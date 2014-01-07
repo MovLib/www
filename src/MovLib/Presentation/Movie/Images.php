@@ -143,10 +143,15 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
     }
     return new Alert(
       $i18n->t(
-        "We couldn’t find any images matching your filter criteria, or there simply aren’t any images available. Would you like to {0}upload a new image{1}?",
-        [ "<a href='{$i18n->r("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ])}'>", "</a>" ]
+        "We couldn’t find any {image_type_name_plural} matching your filter criteria, or there simply aren’t any {image_type_name_plural} available. Would you like to {0}upload a new {image_type_name}{1}?",
+        [
+          0                        => "<a href='{$i18n->r("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ])}'>",
+          1                        => "</a>",
+          "image_type_name"        => $this->imageTypeName,
+          "image_type_name_plural" => $this->imageTypeNamePlural
+        ]
       ),
-      $i18n->t("No Images"),
+      $i18n->t("No {image_type_name_plural}", [ "image_type_name_plural" => $this->imageTypeNamePlural ]),
       Alert::SEVERITY_INFO
     );
   }
@@ -189,9 +194,9 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
     // Create array containing all available movie image types and their sidebar menuitems. We need all of them because
     // we add the non active ones at the bottom of the sidebar navigation for easy switching between the different types.
     $typePages = [
-      MovieImage::TYPE_ID     => [ $i18n->rp("/movie/{0}/images", $args), $i18n->t("Images"), [ "class" => "ico ico-image" ] ],
       MoviePoster::TYPE_ID    => [ $i18n->rp("/movie/{0}/posters", $args), $i18n->t("Posters"), [ "class" => "ico ico-poster" ] ],
       MovieLobbyCard::TYPE_ID => [ $i18n->rp("/movie/{0}/lobby-cards", $args), $i18n->t("Lobby Cards"), [ "class" => "ico ico-lobby-card" ] ],
+      MovieImage::TYPE_ID     => [ $i18n->rp("/movie/{0}/images", $args), $i18n->t("Images"), [ "class" => "ico ico-image" ] ],
     ];
 
     // Initialize the sidebar menuitems with the menuitem for the current movie image type first and the corresponding

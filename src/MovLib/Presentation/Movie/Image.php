@@ -21,6 +21,8 @@ use \MovLib\Data\Image\MovieImage;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\DateTime;
+use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\Button;
 use \MovLib\Presentation\Partial\Language;
 
 /**
@@ -70,6 +72,9 @@ class Image extends \MovLib\Presentation\Movie\Images {
    */
   protected function getPageContent() {
     global $i18n, $kernel;
+
+    // Build the form to like this image.
+    $this->form = new Form($this, [ new Button("like", "<span class='vh'>{$i18n->t("")}</span>", []) ]);
 
     // Build the image stream.
     $images      = $this->movie->getImageStreamResult($this->imageTypeId);
@@ -173,6 +178,15 @@ class Image extends \MovLib\Presentation\Movie\Images {
       "<meta itemprop='representativeOfPage' content='true'>" .
       "<div class='c' id='imagedetails'>" .
         "<script>{$streamJSON}</script>" .
+        "<div class='cf stream'>" .
+          "<a{$this->expandTagAttributes($previous)}><span class='vh'>{$i18n->t("Previous {image_type_name}", [
+            "image_type_name" => $this->imageTypeName
+          ])}</span></a>" .
+          $stream .
+          "<a{$this->expandTagAttributes($next)}><span class='vh'>{$i18n->t("Next {image_type_name}", [
+            "image_type_name" => $this->imageTypeName
+          ])}</span></a>" .
+        "</div>" .
         "<div class='r wrapper'>" .
           "<div class='s s8 tac image'>{$this->getImage(
             $this->image->getStyle(MovieImage::STYLE_SPAN_07),
@@ -190,15 +204,6 @@ class Image extends \MovLib\Presentation\Movie\Images {
             "<dt>{$i18n->t("File Size")}</dt><dd itemprop='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->image->filesize))}</dd>" .
             "<dt>{$i18n->t("Uploaded")}</dt><dd>{$dateTime}</dd>" .
           "</dl>" .
-        "</div>" .
-        "<div class='cf stream'>" .
-          "<a{$this->expandTagAttributes($previous)}><span class='vh'>{$i18n->t("Previous {image_type_name}", [
-            "image_type_name" => $this->imageTypeName
-          ])}</span></a>" .
-          $stream .
-          "<a{$this->expandTagAttributes($next)}><span class='vh'>{$i18n->t("Next {image_type_name}", [
-            "image_type_name" => $this->imageTypeName
-          ])}</span></a>" .
         "</div>" .
       "</div>"
     ;
