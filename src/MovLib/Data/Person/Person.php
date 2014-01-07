@@ -23,6 +23,7 @@ use \MovLib\Data\Image\PersonPhoto;
  * Represents a single person.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -102,6 +103,40 @@ class Person {
         $this->displayPhoto = new PersonPhoto($this->id, $this->name);
       }
     }
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get the count of all persons which haven't been deleted.
+   *
+   * @global \MovLib\Data\Database $db
+   * @staticvar null|integer $count
+   * @return integer
+   */
+  public static function getTotalCount() {
+    global $db;
+    static $count = null;
+    if (!$count) {
+      $count = $db->query("SELECT COUNT(`id`) FROM `persons` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
+    }
+    return $count;
+  }
+
+  /**
+   * Get all movies matching the offset and row count.
+   *
+   * @param integer $offset
+   *   The offset in the result.
+   * @param integer $rowCount
+   *   The number of rows to retrieve.
+   * @return \mysqli_result
+   *   The query result.
+   */
+  public static function getPersons($offset, $rowCount) {
+    // @todo Implement.
   }
 
 }
