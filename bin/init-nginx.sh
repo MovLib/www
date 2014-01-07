@@ -65,14 +65,6 @@ DAEMON="/usr/local/sbin/${NAME}"
 # Arguments that should be passed to the executable.
 DAEMON_ARGS=""
 
-# Absolute path to the client body temporary directory. See compilation flag
-# --http-client-body-temp-path
-PATH_BODY="/run/shm/${NAME}/body"
-
-# Absolute path to the FastCGI temporary directory. See compilation flag
-# --http-fastcgi-temp-path
-PATH_FCGI="/run/shm/${NAME}/fastcgi/temp"
-
 # Absolute path to the PID file.
 PIDFILE="/run/${NAME}.pid"
 
@@ -81,13 +73,6 @@ PIDFILE="/run/${NAME}.pid"
 #                                                                     Bootstrap
 # -----------------------------------------------------------------------------
 
-
-# Always validate configuration, display problem if any and exit script.
-${DAEMON} -qt
-if [ ${?} -gt 0 ]; then
-  log_failure_msg ${NAME} "invalid configuration"
-  exit 1
-fi
 
 # Check return status of EVERY command
 set -e
@@ -103,10 +88,6 @@ if [ $(id -u) != 0 ]; then
   log_failure_msg "super user only!"
   exit 1
 fi
-
-# Create cache directories if the don't exist
-test -d ${PATH_BODY} || mkdir -p ${PATH_BODY}
-test -d ${FCGI_PATH} || mkdir -p ${FCGI_PATH}
 
 # Always check if service is already running.
 RUNNING=$(start-stop-daemon --start --quiet --pidfile ${PIDFILE} --exec ${DAEMON} --test && echo "false" || echo "true")
