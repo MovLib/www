@@ -72,6 +72,7 @@
   speak: none;
 }
 
+
 .ico-delete:before {
 	content: "\e600";
 }
@@ -168,74 +169,78 @@
 	content: "\e617";
 }
 
-.ico-search:before {
+.ico-like:before {
 	content: "\e618";
 }
 
-.ico-cc:before {
+.ico-search:before {
 	content: "\e619";
 }
 
-.ico-cc-zero:before {
+.ico-cc:before {
 	content: "\e61a";
 }
 
-.ico-user:before {
+.ico-cc-zero:before {
 	content: "\e61b";
 }
 
-.ico-person:before {
+.ico-user:before {
 	content: "\e61c";
 }
 
-.ico-user-add:before {
+.ico-person:before {
 	content: "\e61d";
 }
 
-.ico-notification:before {
+.ico-user-add:before {
 	content: "\e61e";
 }
 
-.ico-email:before {
+.ico-notification:before {
 	content: "\e61f";
 }
 
-.ico-history:before {
+.ico-email:before {
 	content: "\e620";
 }
 
-.ico-alert:before {
+.ico-history:before {
 	content: "\e621";
 }
 
-.ico-discussion:before {
+.ico-alert:before {
 	content: "\e622";
 }
 
-.ico-help:before {
+.ico-discussion:before {
 	content: "\e623";
 }
 
-.ico-info:before {
+.ico-help:before {
 	content: "\e624";
 }
 
-.ico-chevron-left:before {
+.ico-info:before {
 	content: "\e625";
 }
 
-.ico-chevron-right:before {
+.ico-chevron-left:before {
 	content: "\e626";
 }
 
-.ico-view:before {
+.ico-chevron-right:before {
 	content: "\e627";
 }
 
-.ico-edit:before {
+.ico-view:before {
 	content: "\e628";
 }
 
-.ico-series:before {
+.ico-edit:before {
 	content: "\e629";
+}
+
+.ico-series:before {
+	content: "\e62b";
 }
