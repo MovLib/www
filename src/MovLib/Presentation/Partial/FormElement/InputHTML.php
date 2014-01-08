@@ -668,6 +668,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   protected function validateFigure($node) {
     global $i18n, $kernel;
     $this->insertLastChild = "figure";
+    // @todo: set figure flag and change error message in validateDOM().
 
     // Of course we can communicate the caption as seperate element, as it's visible to the user.
     if (count($node->child) !== 2 || $node->child[1]->name != "figcaption" || empty($node->child[1]->child)) {
@@ -815,25 +816,25 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     $html = $this->normalizeLineFeeds("{$html}\n");
 
     // Normalize break tags.
-    $html = preg_replace("|<br */?>|", "<br>", $html);
+    $html = preg_replace("#<br */?>#", "<br>", $html);
 
     // Replace more than one break in a row with to line feeds.
-    $html = preg_replace("|<br>\s*<br>|", "\n\n", $html);
+    $html = preg_replace("#<br>\s*<br>#", "\n\n", $html);
 
     // Space things out a little
-    $allblocks = "(?:dl|dd|dt|ul|ol|li|blockquote|p|h[2-6]|figure|figcaption)";
+    $allblocks = "(?:dl|dd|dt|ul|ol|li|blockquote|p|h[2-6]|figure|figcaption|img)";
 
     // Insert one line feed before each block level tag.
-    $html = preg_replace("!(<{$allblocks}[^>]*>)!", "\n$1", $html);
+    $html = preg_replace("#(<{$allblocks}[^>]*>)#", "\n$1", $html);
 
     // Insert two line feeds after each block level tag.
-    $html = preg_replace("!(</{$allblocks}>)!", "$1\n\n", $html);
+    $html = preg_replace("#(</{$allblocks}>)#", "$1\n\n", $html);
 
     // Take care of duplicates
-    $html = preg_replace("/\n\n+/", "\n\n", $html);
+    $html = preg_replace("#\n\n+#", "\n\n", $html);
 
     // Make paragraphs, including one at the end
-    $lines = preg_split("/\n\s*\n/", $html, -1, PREG_SPLIT_NO_EMPTY);
+    $lines = preg_split("#\n\s*\n#", $html, -1, PREG_SPLIT_NO_EMPTY);
 
     // Enclose all paragraphs.
     $html = null;
@@ -844,30 +845,32 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     }
 
     // Don't pee all over a tag
-    $html = preg_replace("!<p>\s*(</?{$allblocks}[^>]*>)\s*</p>!", "$1", $html);
+    $html = preg_replace("#<p>\s*(</?{$allblocks}[^>]*>)\s*</p>#", "$1", $html);
 
-    // Problem with nested lists
-    $html = preg_replace("|<p>(<li.+?)</p>|", "$1", $html);
+    // Problem with nested lists and figure captions.
+    $html = preg_replace("#<p>(<(li|figcaption).+?)</p>#", "$1", $html);
+
+    \FB::send($html);
 
     // Move the opening paragraph inside the blockquote (opening and closing.
-    $html = preg_replace("|<p><blockquote([^>]*)>|i", "<blockquote$1><p>", $html);
+    $html = preg_replace("#<p><blockquote([^>]*)>#i", "<blockquote$1><p>", $html);
     $html = str_replace("</blockquote></p>", "</p></blockquote>", $html);
 
     // Don't pee all over a block tag.
-    $html = preg_replace("!<p>\s*(</?{$allblocks}[^>]*>)!", "$1", $html);
-    $html = preg_replace("!(</?{$allblocks}[^>]*>)\s*</p>!", "$1", $html);
+    $html = preg_replace("#<p>\s*(</?{$allblocks}[^>]*>)#", "$1", $html);
+    $html = preg_replace("#(</?{$allblocks}[^>]*>)\s*</p>#", "$1", $html);
 
     // Make line breaks
-    $html = preg_replace("|(?<!<br>)\s*\n|", "<br>\n", $html);
+    $html = preg_replace("#(?<!<br>)\s*\n#", "<br>\n", $html);
 
     // No breaks behind block elements.
-    $html = preg_replace("!(</?{$allblocks}[^>]*>)\s*<br>!", "$1", $html);
+    $html = preg_replace("#(</?{$allblocks}[^>]*>)\s*<br>#", "$1", $html);
 
     // No breaks before closing block elements if there is only whitespace.
-    $html = preg_replace("!<br>(\s*</?(?:p|li|dl|dd|dt|ul|ol)[^>]*>)!", "$1", $html);
+    $html = preg_replace("#<br>(\s*</?(?:p|li|dl|dd|dt|ul|ol)[^>]*>)#", "$1", $html);
 
     // Remove excess line feeds before closing paragraph tags.
-    return preg_replace("|\n</p>$|", "</p>", $html);
+    return preg_replace("#\n</p>$#", "</p>", $html);
   }
 
 }
