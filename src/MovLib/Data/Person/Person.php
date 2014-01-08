@@ -36,11 +36,25 @@ class Person {
 
 
   /**
-   * The person's unique identifier.
+   * The person's date of birth.
    *
-   * @var integer
+   * @var \DateTime
    */
-  public $id;
+  public $birthDate;
+
+  /**
+   * The person's birth name.
+   *
+   * @var string
+   */
+  public $bornName;
+
+  /**
+   * The person's date of death.
+   *
+   * @var \DateTime
+   */
+  public $deathDate;
 
   /**
    * The person's deletion state.
@@ -57,11 +71,32 @@ class Person {
   public $displayPhoto;
 
   /**
+   * The person's unique identifier.
+   *
+   * @var integer
+   */
+  public $id;
+
+  /**
    * The person's name.
    *
    * @var string
    */
   public $name;
+
+  /**
+   * The person's nickname.
+   *
+   * @var string
+   */
+  public $nickname;
+
+  /**
+   * The person's sex.
+   *
+   * @var integer
+   */
+  public $sex;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -128,6 +163,7 @@ class Person {
   /**
    * Get all movies matching the offset and row count.
    *
+   * @global \MovLib\Data\Database $db
    * @param integer $offset
    *   The offset in the result.
    * @param integer $rowCount
@@ -136,7 +172,25 @@ class Person {
    *   The query result.
    */
   public static function getPersons($offset, $rowCount) {
-    // @todo Implement.
+    global $db;
+    return $db->query("
+        SELECT
+          `id`,
+          `deleted`,
+          `name`,
+          `sex`,
+          `birthdate` AS `birthDate`,
+          `born_name` AS `bornName`,
+          `deathdate` AS `deathDate`,
+          `nickname`
+        FROM `persons`
+        WHERE
+          `deleted` = false
+        ORDER BY `id` DESC
+        LIMIT ? OFFSET ?",
+      "di",
+      [ $rowCount, $offset ]
+    )->get_result();
   }
 
 }

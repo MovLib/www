@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Date {
+class Date extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -69,6 +69,12 @@ class Date {
    */
   public function format($format = "Y-m-d") {
     return $this->date->format($format);
+  }
+  
+  public function formatSchemaProperty($property, array $attributes = []) {
+    $attributes["itemprop"] = $property;
+    $attributes["datetime"] = $this->format();
+    return "<time{$this->expandTagAttributes($attributes)}>{$this->intlFormat()}</time>";
   }
 
   /**
