@@ -56,7 +56,6 @@ INSERT INTO `persons` SET
   `born_name`       = 'Louis Aimé Augustin Le Prince',
   `birthdate`       = '1841-08-28',
   `deathdate`       = '1890-09-16',
-  `dyn_aliases`     = '',
   `dyn_biographies` = '',
   `dyn_links`       = '',
   `country`         = 'FR'
@@ -85,7 +84,6 @@ INSERT INTO `persons_images` SET
 
 INSERT INTO `persons` SET
   `name`            = 'Harriet Hartley',
-  `dyn_aliases`     = '',
   `dyn_biographies` = '',
   `dyn_links`       = ''
 ;
@@ -94,7 +92,6 @@ INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id
 
 INSERT INTO `persons` SET
   `name`            = 'Adolphe Le Prince',
-  `dyn_aliases`     = '',
   `dyn_biographies` = '',
   `dyn_links`       = ''
 ;
@@ -103,7 +100,6 @@ INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id
 
 INSERT INTO `persons` SET
   `name`            = 'Joseph Whitley',
-  `dyn_aliases`     = '',
   `dyn_biographies` = '',
   `dyn_links`       = ''
 ;
@@ -115,7 +111,6 @@ INSERT INTO `persons` SET
   `born_name`       = 'Sarah Robinson',
   /*`birthdate`       = '1816-00-00',*/
   `deathdate`       = '1888-10-24',
-  `dyn_aliases`     = '',
   `dyn_biographies` = '',
   `dyn_links`       = '',
   `country`         = 'UK'
@@ -147,7 +142,6 @@ SET @big_buck_bunny_id = LAST_INSERT_ID();
 
 INSERT INTO `persons` SET
   `name`            = 'Sacha Goedegebure',
-  `dyn_aliases`     = '',
   `dyn_biographies` = '',
   `dyn_links`       = '',
   `country`         = 'NL'
@@ -215,14 +209,25 @@ INSERT INTO `movies` SET
 ;
 SET @the_shawshank_redemption_id = LAST_INSERT_ID();
 
+INSERT INTO `places` SET
+  `place_id`     = 97967307,
+  `country_code` = 'FR',
+  `dyn_names`    = COLUMN_CREATE(
+    'en', 'Montbéliard',
+    'de', 'Mömpelgard'
+  ),
+  `latitude`     = 47.5102368,
+  `longitude`    = 6.7977564
+;
+
 INSERT INTO `persons` SET
   `name`            = 'Frank Darabont',
   `birthdate`       = '1959-01-28',
+  `birthplace_id`   = 97967307,
   `country`         = 'FR',
   `city`            = 'Montbéliard',
   `region`          = 'Doubs',
   `sex`             = 1,
-  `dyn_aliases`     = '',
   `dyn_biographies` = '',
   `dyn_links`       = ''
 ;
