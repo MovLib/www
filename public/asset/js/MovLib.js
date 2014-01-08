@@ -180,10 +180,7 @@
 
               // We have to ensure that the first anchor is actually visible before the transition finished in order to
               // give it focus right away.
-              var firstAnchor = this.getElementsByTagName("a")[0];
-              firstAnchor.style.visibility = "visible";
-              firstAnchor.focus();
-              firstAnchor.removeAttribute("style");
+              this.getElementsByTagName("a")[0].focus();
             }
             break;
 
@@ -221,6 +218,9 @@
         expanders[i].addEventListener("click", expanderClose, true);
         expanders[i].addEventListener("mouseout", expanderClose, false);
       }
+
+      var languageSelector = document.getElementById("f-language");
+      languageSelector.addEventListener("keypress", expanderKeypress.bind(languageSelector.parentNode.children[0]), false);
 
       return this.execute(document);
     },

@@ -230,7 +230,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
               "Is your language missing in our list? {0}Help us translate {1}.{2}",
               [ "<a href='//{$kernel->domainLocalize}/'>", $kernel->siteName, "</a>" ]
             )}</small>{$languageLinks}</div>" .
-            "<a class='ico ico-languages' id='f-language'>{$i18n->t("Language")}: {$currentLanguageName}</a>" .
+            "<a class='ico ico-languages' id='f-language' tabindex='0'>{$i18n->t("Language")}: {$currentLanguageName}</a>" .
           "</div>" .
         "</section>"
       ;
