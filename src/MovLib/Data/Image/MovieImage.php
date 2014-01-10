@@ -142,11 +142,18 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
-   * @inheritdoc
+   * Generate all supported image styles.
+   *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
+   * @param string $source
+   *   Absolute path to the uploaded image.
+   * @param boolean $regenerate [optional]
+   *   Whether to regenerate existing styles.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
-  protected function generateStyles($source) {
+  protected function generateStyles($source, $regenerate = false) {
     global $db, $i18n;
 
     // Reserve identifier if this is a new upload.
@@ -179,51 +186,29 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
     }
 
     // Generate the various image's styles and always go from best quality down to worst quality.
-    $span07 = $this->convert($source, self::STYLE_SPAN_07, self::STYLE_SPAN_07, self::STYLE_SPAN_07);
-    $span03 = $this->convert($span07, self::STYLE_SPAN_03);
-    $span02 = $this->convert($span03, self::STYLE_SPAN_02);
-    $span01 = $this->convert($span02, self::STYLE_SPAN_01);
+    $this->convert($source, self::STYLE_SPAN_07, self::STYLE_SPAN_07, self::STYLE_SPAN_07);
+    $this->convert($this->getPath(self::STYLE_SPAN_07), self::STYLE_SPAN_03);
+    $this->convert($this->getPath(self::STYLE_SPAN_03), self::STYLE_SPAN_02);
+    $this->convert($this->getPath(self::STYLE_SPAN_02), self::STYLE_SPAN_01);
 
     // Generate a square span 1 version for the image stream on the details page.
-    $this->convert($span01, self::STYLE_SPAN_01_SQUARE, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true);
+    $this->convert($this->getPath(self::STYLE_SPAN_01), self::STYLE_SPAN_01_SQUARE, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true);
 
     // This is a new upload, therefor we have to update everything. We already reserved an ID for us at the beginning
-    // and we have to update that ID now.
-    $db->query(
-      "UPDATE `movies_images` SET
-        `changed`          = FROM_UNIXTIME(?),
-        `country_code`     = ?,
-        `deleted`          = false,
-        `dyn_descriptions` = COLUMN_CREATE(?, ?),
-        `extension`        = ?,
-        `filesize`         = ?,
-        `height`           = ?,
-        `language_code`    = ?,
-        `license_id`       = ?,
-        `styles`           = ?,
-        `user_id`          = ?,
-        `width`            = ?
-      WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
-      "sssssiisisdiidi",
-      [
-        $_SERVER["REQUEST_TIME"],
-        $this->countryCode,
-        $i18n->languageCode, $this->description,
-        $this->extension,
-        $this->filesize,
-        $this->height,
-        $this->languageCode,
-        $this->licenseId,
+    // and we have to update that ID's record now with the just generated style data.
+    if ($regenerate === false) {
+      $this->update();
+    }
+    else {
+      $db->query("UPDATE `movies_images` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?", "sidi", [
         serialize($this->styles),
-        $this->uploaderId,
-        $this->width,
         $this->id,
         $this->movieId,
         static::TYPE_ID,
-      ]
-    )->close();
+      ])->close();
+    }
 
-    return $this->update();
+    return $this;
   }
 
   /**
@@ -308,10 +293,12 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
 
     // Export everything to class scope for which we have to ask the database.
     $this->imageExists = (boolean) $this->changed;
-    $this->route  = $this->imageExists === true
-      ? $i18n->r("/movie/{0}/{$routeKey}/{1}", [ $this->movieId, $this->id ])
-      : $i18n->r("/movie/{0}/{$routeKey}/upload", [ $this->movieId ])
-    ;
+    if ($this->imageExists === true) {
+      $this->route = $i18n->r("/movie/{0}/{$routeKey}/{1}", [ $this->movieId, $this->id ]);
+    }
+    else {
+      $this->route = $i18n->r("/movie/{0}/{$routeKey}/upload", [ $this->movieId ]);
+    }
 
     return $this;
   }

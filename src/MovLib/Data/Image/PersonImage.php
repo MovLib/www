@@ -26,7 +26,7 @@ namespace MovLib\Data\Image;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
+class PersonImage extends \MovLib\Data\Image\AbstractImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -34,7 +34,7 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
   /**
    * The photo's path within the upload directory.
    *
-   * @see PersonPhoto::__construct()
+   * @see PersonImage::__construct()
    * @var string
    */
   protected $directory = "person";
@@ -132,14 +132,19 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
-   * @inheritdoc
+   * Generate all supported image styles.
+   *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
+   * @param string $source
+   *   Absolute path to the uploaded image.
+   * @param boolean $regenerate [optional]
+   *   Whether to regenerate existing styles.
+   * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function generateStyles($source) {
-    global $db, $i18n, $session;
+  protected function generateStyles($source, $regenerate = false) {
+    global $db, $i18n;
 
     // If this is a new upload insert the just uploaded image.
     if ($this->imageExists === false) {
@@ -165,11 +170,23 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
     }
 
     // Generate the various image's styles and always go from best quality down to worst quality.
-    $this->convert($this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true), self::STYLE_SPAN_01);
+    $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
+    $this->convert($this->getPath(self::STYLE_SPAN_02), self::STYLE_SPAN_01);
 
-    return $this->update();
+    if ($regenerate === false) {
+      $this->update();
+    }
+    else {
+      $db->query("UPDATE `persons_images` SET `styles` = ? WHERE `id` = ? AND `person_id` = ?", "sid", [
+        serialize($this->styles),
+        $this->id,
+        $this->personId,
+      ])->close();
+    }
+
+    return $this;
   }
-  
+
   /**
    * {@inheritdoc}
    * @global \MovLib\Data\Database $db
@@ -191,8 +208,9 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
         `license_id`       = ?,
         `styles`           = ?,
         `user_id`          = ?,
-        `width`            = ?",
-      "ssssiiisdi",
+        `width`            = ?
+      WHERE `id` = ? AND `person_id` = ?",
+      "ssssiiisdiid",
       [
         $this->changed,
         $i18n->languageCode,
@@ -204,6 +222,8 @@ class PersonPhoto extends \MovLib\Data\Image\AbstractImage {
         serialize($this->styles),
         $session->userId,
         $this->width,
+        $this->id,
+        $this->personId,
       ]
     )->close();
     return $this;

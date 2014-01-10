@@ -241,8 +241,7 @@ abstract class AbstractBaseImage {
    * @param boolean $crop [optional]
    *   If set to <code>TRUE</code> the image will be resized first to width x height and then cropped to the center,
    *   defaults to no cropping.
-   * @return string
-   *   The absolute path to the converted image.
+   * @return this
    * @throws \RuntimeException
    */
   protected function convert($source, $style, $width = null, $height = null, $crop = false) {
@@ -257,7 +256,10 @@ abstract class AbstractBaseImage {
       $resizeArg = "'{$width}x{$height}>'";
     }
 
-    // Get the absolute path within the file system.
+    // Nothing to do if the style already exists and the arguments haven't changed.
+    if (isset($this->styles[$style]) && $this->styles[$style]["resizeArg"] == $resizeArg) {
+      return $this;
+    }
     $destination = $this->getPath($style);
 
     // Generate the desired image style with ImageMagick. We directly call the binary instead of using some kind of
@@ -275,9 +277,13 @@ abstract class AbstractBaseImage {
     // attributes without any IO.
     list($this->styles[$style]["width"], $this->styles[$style]["height"]) = getimagesize($destination);
 
+    // We need to store the arguments as well, for efficient regeneration of styles; otherwise we don't know if the
+    // style has changed.
+    $this->styles[$style]["resizeArg"] = $resizeArg;
+
     // We return the absolute path to the just generated image for chaining resize actions. This ensures best quality
     // if we have to resize from a very huge image down to a very small one.
-    return $destination;
+    return $this;
   }
 
   /**

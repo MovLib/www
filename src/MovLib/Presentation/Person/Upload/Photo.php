@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Person\Upload;
 
-use \MovLib\Data\Image\PersonPhoto;
+use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\License;
 use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Error\NotFound;
@@ -55,7 +55,7 @@ class Photo extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
   /**
    * The photo instance.
    *
-   * @var \MovLib\Data\Image\PersonPhoto
+   * @var \MovLib\Data\Image\PersonImage
    */
   protected $image;
 
@@ -107,12 +107,12 @@ class Photo extends \MovLib\Presentation\AbstractSecondaryNavigationPage {
     elseif (isset($_SERVER["IMAGE_ID"])) {
       $title       = $i18n->t("Update photo of {0}", [ $this->person->name ]);
       $submit      = $i18n->t("Update Photo");
-      $this->image = new PersonPhoto($this->person->id, $this->person->name, $_SERVER["IMAGE_ID"]);
+      $this->image = new PersonImage($this->person->id, $this->person->name, $_SERVER["IMAGE_ID"]);
     }
     else {
       $title       = $i18n->t("Upload new photo for {0}", [ $this->person->name ]);
       $submit      = $i18n->t("Upload Photo");
-      $this->image = new PersonPhoto($this->person->id, $this->person->name);
+      $this->image = new PersonImage($this->person->id, $this->person->name);
     }
     $this->init($title);
 

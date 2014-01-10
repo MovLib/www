@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\Lists;
 
-use \MovLib\Data\Image\PersonPhoto;
+use \MovLib\Data\Image\PersonImage;
 
 /**
  * Special images list for person instances.
@@ -39,7 +39,7 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
    *
    * @var integer
    */
-  public $imageStyle = PersonPhoto::STYLE_SPAN_01;
+  public $imageStyle = PersonImage::STYLE_SPAN_01;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods

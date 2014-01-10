@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Image\PersonPhoto;
+use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Person\Full as FullPerson;
 use \MovLib\Presentation\Error\Gone;
@@ -109,7 +109,7 @@ class Show extends \MovLib\Presentation\Page {
     $this->headingAfter =
       "</div>" . // close .s
       "<div id='person-photo' class='s s2'>{$this->getImage(
-        $this->person->displayPhoto->getStyle(PersonPhoto::STYLE_SPAN_02),
+        $this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02),
         $i18n->rp("/person/{0}/photos", [ $this->person->id ]),
         [ "itemprop" => "image" ]
       )}</div>" .

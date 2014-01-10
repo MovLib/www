@@ -114,9 +114,11 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    *
    * @param string $source
    *   Absolute path to the uploaded image.
+   * @param boolean $regenerate [optional]
+   *   Whether to regenerate existing styles.
    * @return this
    */
-  protected abstract function generateStyles($source);
+  protected abstract function generateStyles($source, $regenerate = false);
 
   /**
    * Update the existing image's database record.
@@ -160,20 +162,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
     sh::execute("rm -rf '{$kernel->documentRoot}/private/upload/{$this->directory}' '{$kernel->documentRoot}/public/upload/{$this->directory}'");
 
     $this->imageExists = false;
-    $this->styles = null;
-    return $this;
-  }
-
-  /**
-   * Delete all generated styles.
-   *
-   * @global \MovLib\Kernel $kernel
-   * @return this
-   */
-  protected function deleteStyles() {
-    global $kernel;
-    sh::execute("rm -f '{$kernel->documentRoot}/public/upload/{$this->directory}/*'");
-    $this->styles = null;
+    $this->styles      = null;
     return $this;
   }
 
@@ -193,17 +182,13 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
       }
       $this->styles[$style] = [ "width" => $style, "height" => $style ];
     }
-    // The image exists but we're missing this particular style. We assume that the styles have changed for this image
-    // and therefore delete all of them and generate them again.
-    //
-    // @todo It would be more efficient to generate only the missing style, but that would break the generation chain
-    //       (from best quality down to worst quality to get best quality for each resized image).
-    elseif (!isset($this->styles[$style])) {
-      $this->deleteStyles()->generateStyles($this->getPath());
-    }
-
-    if (!is_array($this->styles)) {
+    elseif (!is_array($this->styles)) {
       $this->styles = unserialize($this->styles);
+
+      // If this style is missing, assume that the styles have changed and regenerate them.
+      if (!isset($this->styles[$style])) {
+        $this->generateStyles($this->getPath(), true);
+      }
     }
 
     // Use cache entry if we already generated this style once.
@@ -276,6 +261,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
 
     // Let the concrete class create the various image styles.
     $this->generateStyles($source);
+    $this->imageExists = true;
 
     // @devStart
     // @codeCoverageIgnoreStart
@@ -284,9 +270,6 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-
-    // Must be last because extending classes use it to determine if they have to update or insert.
-    $this->imageExists = true;
 
     $kernel->delayMethodCall([ $this, "moveOriginal" ], [ $source ]);
     return $this;

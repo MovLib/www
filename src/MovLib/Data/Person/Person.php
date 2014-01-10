@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\Person;
 
-use \MovLib\Data\Image\PersonPhoto;
+use \MovLib\Data\Image\PersonImage;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -67,7 +67,7 @@ class Person {
   /**
    * The person's display photo.
    *
-   * @var \MovLib\Data\Image\PersonPhoto
+   * @var \MovLib\Data\Image\PersonImage
    */
   public $displayPhoto;
 
@@ -224,10 +224,10 @@ class Person {
       "SELECT `id`, `extension`, UNIX_TIMESTAMP(`changed`) AS `changed`, `styles` FROM `persons_images` WHERE `person_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
       "d",
       [ $this->id ]
-    )->get_result()->fetch_object("\\MovLib\\Data\\Image\\PersonPhoto", [ $this->id, $this->name ]);
+    )->get_result()->fetch_object("\\MovLib\\Data\\Image\\PersonImage", [ $this->id, $this->name ]);
 
     if (!$this->displayPhoto) {
-      $this->displayPhoto = new PersonPhoto($this->id, $this->name);
+      $this->displayPhoto = new PersonImage($this->id, $this->name);
     }
     $this->route = $i18n->r("/person/{0}", [ $this->id ]);
   }

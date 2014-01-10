@@ -106,7 +106,7 @@ class Show extends \MovLib\Presentation\Page {
       $list .=
         "<li itemscope itemtype='http://schema.org/Person'>" .
           "<a class='img r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
-            $this->getImage($person->displayPhoto->getStyle(\MovLib\Data\Image\PersonPhoto::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
+            $this->getImage($person->displayPhoto->getStyle(\MovLib\Data\Image\PersonImage::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
             "<span class='s s9'><span itemprop='name'>{$person->name}</span>" .
               "<span class='small'>{$additionalNames}{$lifeDates}</span>" .
             "</span>" .

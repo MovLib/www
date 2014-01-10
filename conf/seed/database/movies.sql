@@ -76,7 +76,7 @@ INSERT INTO `persons_images` SET
     'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;',
     'de', '&lt;p&gt;Der französische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen können der Quelle entnommen werden: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;'
   ),
-  `styles`           = 'a:2:{i:60;a:2:{s:5:"width";i:60;s:6:"height";i:60;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:140;}}',
+  `styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
   `deleted`          = false,
   `user_id`          = 1
 ;
@@ -155,7 +155,7 @@ INSERT INTO `persons_images` SET
   `changed`          = '2013-11-28 15:13:42',
   `created`          = '2013-11-28 15:13:42',
   `dyn_descriptions` = '',
-  `styles`           = 'a:2:{i:60;a:2:{s:5:"width";i:60;s:6:"height";i:60;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:140;}}',
+  `styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
   `deleted`          = false,
   `user_id`          = 1
 ;
@@ -183,7 +183,7 @@ INSERT INTO `movies_images` SET
   `dyn_descriptions` = COLUMN_CREATE(
     'en', '&lt;p&gt;&lt;a href="http://download.blender.org/peach/presskit.zip"&gt;“Big Buck Bunny” presskit&lt;/a&gt;&lt;/p&gt;'
   ),
-  `styles`           = 'a:5:{i:540;a:2:{s:6:"height";i:540;s:5:"width";i:384;}i:220;a:2:{s:6:"height";i:309;s:5:"width";i:220;}i:140;a:2:{s:6:"height";i:197;s:5:"width";i:140;}i:60;a:2:{s:6:"height";i:84;s:5:"width";i:60;}s:5:"60x60";a:2:{s:6:"height";i:60;s:5:"width";i:60;}}',
+  `styles`           = 'a:5:{i:540;a:3:{s:6:"height";i:540;s:5:"width";i:384;s:9:"resizeArg";s:10:"\'540x540>\'";}i:220;a:3:{s:6:"height";i:309;s:5:"width";i:220;s:9:"resizeArg";s:7:"\'220x>\'";}i:140;a:3:{s:6:"height";i:197;s:5:"width";i:140;s:9:"resizeArg";s:7:"\'140x>\'";}i:60;a:3:{s:6:"height";i:84;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}s:5:"60x60";a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:53:"\'60x60>^\' -gravity \'Center\' -crop \'60x60+0+0\' +repage";}}',
   `user_id`          = 1
 ;
 
