@@ -82,12 +82,12 @@ trait TraitPagination {
    */
   protected function initPagination($resultsTotalCount) {
     global $i18n, $kernel;
+    $this->resultsTotalCount = $resultsTotalCount;
 
-    // No need to get started if we only have one result.
+    // No need to get started if we only have one (or no) result.
     if ($resultsTotalCount < 2) {
       return $this;
     }
-    $this->resultsTotalCount = $resultsTotalCount;
 
     // Include the pagination stylesheet and let the complete design know that a pagination is present.
     $this->bodyClasses .= " pagination";

@@ -73,10 +73,9 @@ class Stacktrace extends \MovLib\Presentation\Page {
     $this->initPage($i18n->t("Internal Server Error"));
     $this->initBreadcrumb();
     $kernel->stylesheets[] = "stacktrace";
-    $this->exception = $exception;
-    $this->fatal     = $fatal;
-
-    $this->alerts .= new Alert(
+    $this->exception       = $exception;
+    $this->fatal           = $fatal;
+    $this->alerts         .= new Alert(
       $i18n->t("This error was reported to the system administrators, it should be fixed in no time. Please try again in a few minutes."),
       $i18n->t("An unexpected condition which prevented us from fulfilling the request was encountered."),
       Alert::SEVERITY_ERROR
@@ -98,7 +97,7 @@ class Stacktrace extends \MovLib\Presentation\Page {
     $stacktrace = new Alert(
       "<div id='stacktrace-details'>" .
         "<div class='title'><i class='ico ico-info'></i> {$i18n->t("{exception_message} in {class} on line {line, number}", [
-          "exception_message" => $this->exception->getMessage(),
+          "exception_message" => nl2br($this->exception->getMessage(), false),
           "class"             => str_replace([ $kernel->documentRoot, "/src/" ], "", $this->exception->getFile()),
           "line"              => $this->exception->getLine(),
         ])}</div>" .

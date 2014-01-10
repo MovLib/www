@@ -253,11 +253,16 @@ class Image extends \MovLib\Presentation\Movie\Images {
     // Combile arguments array once.
     $args = [ $this->movie->id, $this->image->id ];
 
+    $deletionRequest = null;
+    if (isset($_GET["deletion_request"])) {
+      $deletionRequest = "?deletion_request={$_GET["deletion_request"]}";
+    }
+
     return $this->initSidebarTrait([
       [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}", $args), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
       [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}/edit", $args), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}/history", $args), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-      [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}/delete", $args), $i18n->t("Delete"), [ "class" => "delete ico ico-delete" ] ],
+      [ "{$i18n->r("/movie/{0}/{$this->routeKey}/{1}/delete", $args)}{$deletionRequest}", $i18n->t("Delete"), [ "class" => "delete ico ico-delete" ] ],
     ]);
   }
 

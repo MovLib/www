@@ -17,9 +17,12 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\Deletion;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * Delete given image.
@@ -31,6 +34,21 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @since 0.0.1-dev
  */
 class ImageDelete extends \MovLib\Presentation\Movie\Image {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The reason for the deletion.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputHTML
+   */
+  protected $reason;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc
@@ -80,8 +98,16 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
     $this->breadcrumb->menuitems[] = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id]), $this->imageTypeNamePlural];
     $this->breadcrumb->menuitems[] = [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movie->id, $this->image->id ]), "{$this->imageTypeName} {$this->image->id}" ];
 
+    // Instantiate the textarea for stating the deletion reason.
+    $this->reason = new InputHTML("reason", $i18n->t("Reason"), null, [
+      "placeholder" => $i18n->t("Please state why this {image_type_name} should be deleted…", [
+        "image_type_name" => $this->imageTypeName
+      ]),
+      "required",
+    ]);
+
     // Instantiate the delete form.
-    $this->form = new Form($this);
+    $this->form = new Form($this, [ $this->reason ]);
     $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [
       "class" => "btn btn-danger btn-large"
     ]);
@@ -95,13 +121,19 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   protected function valid() {
-    $this->image->countryCode  = $this->selectCountry->value;
-    $this->image->description  = $this->inputDescription->value;
-    $this->image->languageCode = $this->selectLanguage->value;
-    $this->image->licenseId    = $this->selectLicense->value;
-    $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
+    global $i18n, $kernel;
+
+    // @todo Check if we already have a deletion request for this content.
+
+    Deletion::request($this->title, $this->reason->value, $this->image->route);
+    $kernel->alerts .= new Alert($i18n->t("You successfully requested the deletion of this {image_type_name} with the reason: {reason}", [
+      "image_type_name" => $this->imageTypeName,
+      "reason" => $kernel->htmlDecode($this->reason->value),
+    ]), $i18n->t("Successfully Requested Deletion"), Alert::SEVERITY_SUCCESS);
     throw new SeeOtherRedirect($this->image->route);
   }
 
