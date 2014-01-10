@@ -1551,6 +1551,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`deletions` (
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user who requested the deletion.',
   PRIMARY KEY (`id`),
   INDEX `fk_deletions_users` (`user_id` ASC),
+  INDEX `deletions_language_code` (`language_code` ASC),
+  INDEX `deletions_created` (`created` ASC),
   CONSTRAINT `fk_deletions_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
