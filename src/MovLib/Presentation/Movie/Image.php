@@ -17,8 +17,10 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\DeletionRequest;
 use \MovLib\Data\Image\MovieImage;
 use \MovLib\Data\User\User;
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\DateTime;
 use \MovLib\Presentation\Partial\Form;
@@ -58,6 +60,13 @@ class Image extends \MovLib\Presentation\Movie\Images {
    * @var \MovLib\Data\Image\MovieImage
    */
   protected $image;
+
+  /**
+   * Alert message explaining that the deletion of this image was requested.
+   *
+   * @var \MovLib\Presentation\Partial\Alert
+   */
+  protected $deletionRequestedAlert;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -187,6 +196,7 @@ class Image extends \MovLib\Presentation\Movie\Images {
             "image_type_name" => $this->imageTypeName
           ])}</span></a>" .
         "</div>" .
+        $this->deletionRequestedAlert .
         "<div class='r wrapper'>" .
           "<div class='s s8 tac image'>{$this->getImage(
             $this->image->getStyle(MovieImage::STYLE_SPAN_07),
@@ -240,6 +250,25 @@ class Image extends \MovLib\Presentation\Movie\Images {
     $this->schemaType                  = "ImageObject";
     $this->initSidebar()->smallSidebar = true;
 
+    // @todo Display full deletion request information and form if the user is an admin or has the reputation to do so.
+    if ($this->image->deletionId) {
+      try {
+        $deletionRequest              = new DeletionRequest($this->image->deletionId);
+        $this->deletionRequestedAlert = new Alert(
+          $i18n->t("{user} has requested that this {image_type_name} should be deleted for the reason: “{reason}”", [
+            "user"            => "<a href='{$deletionRequest->user->route}'>{$deletionRequest->user->name}</a>",
+            "image_type_name" => $this->imageTypeName,
+            "reason"          => $deletionRequest->reason,
+          ]),
+          $i18n->t("Deletion Requested"),
+          Alert::SEVERITY_ERROR
+        );
+      }
+      catch (\OutOfBoundsException $e) {
+        // Do nothing!
+      }
+    }
+
     return $this;
   }
 
@@ -262,7 +291,7 @@ class Image extends \MovLib\Presentation\Movie\Images {
       [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}", $args), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
       [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}/edit", $args), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}/history", $args), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-      [ "{$i18n->r("/movie/{0}/{$this->routeKey}/{1}/delete", $args)}{$deletionRequest}", $i18n->t("Delete"), [ "class" => "delete ico ico-delete" ] ],
+      [ "{$i18n->r("/movie/{0}/{$this->routeKey}/{1}/delete", $args)}{$deletionRequest}", $i18n->t("Delete"), [ "class" => "delete ico ico-delete" ] ]
     ]);
   }
 

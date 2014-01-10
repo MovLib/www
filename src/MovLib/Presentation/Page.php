@@ -290,41 +290,50 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected function getHeader() {
     global $i18n, $kernel, $session;
 
-    $navs = [];
+    $subNavigations = [];
     foreach ([
-      "movies" => [ $i18n->t("Movies"), [
-        [ $i18n->rp("/movies"), $i18n->t("Latest Entries") ],
-        [ $i18n->rp("/movies/charts"), $i18n->t("Charts") ],
-        [ $i18n->rp("/movie/create"), $i18n->t("Create New") ],
-        [ $i18n->rp("/movies/reviews"), $i18n->t("Latest Reviews") ],
-        [ $i18n->r("/movie/random"), $i18n->t("Random Movie") ],
-      ]],
-      "series" => [ $i18n->t("Series"), [
-        [ $i18n->rp("/series"), $i18n->t("Latest Entries") ],
-        [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
-        [ $i18n->rp("/series/create"), $i18n->t("Create New") ],
-        [ $i18n->rp("/series/reviews"), $i18n->t("Latest Reviews") ],
-        [ $i18n->r("/series/random"), $i18n->t("Random Series") ],
-      ]],
-      "persons" => [ $i18n->t("Persons"), [
-        [ $i18n->rp("/persons"), $i18n->t("Latest Entries") ],
-        [ $i18n->rp("/person/create"), $i18n->t("Create New") ],
-        [ $i18n->r("/person/random"), $i18n->t("Random Person") ],
-      ]],
-      "companies" => [ $i18n->t("Companies"), [
-        [ $i18n->rp("/companies"), $i18n->t("Latest Entries") ],
-        [ $i18n->rp("/company/create"), $i18n->t("Create New") ],
-        [ $i18n->r("/company/random"), $i18n->t("Random Company") ],
-      ]],
-      "more" => [ $i18n->t("More"), [
-        [ $i18n->rp("/genres"), $i18n->t("Explore all genres") ],
-        [ $i18n->rp("/articles"), $i18n->t("Explore all articles") ],
-      ]],
-    ] as $name => $nav) {
-      $navs[$name]                = new Navigation($nav[0], $nav[1], [ "class" => "s s3" ]);
-      $navs[$name]->headingLevel  = "3";
-      $navs[$name]->hideTitle     = false;
-      $navs[$name]->unorderedList = true;
+      "explore" => [
+        "movies" => [ $i18n->t("Movies"), [
+          [ $i18n->rp("/movies"), $i18n->t("Latest Entries") ],
+          [ $i18n->rp("/movies/charts"), $i18n->t("Charts") ],
+          [ $i18n->rp("/movie/create"), $i18n->t("Create New") ],
+          [ $i18n->rp("/movies/reviews"), $i18n->t("Latest Reviews") ],
+          [ $i18n->r("/movie/random"), $i18n->t("Random Movie") ],
+        ]],
+        "series" => [ $i18n->t("Series"), [
+          [ $i18n->rp("/series"), $i18n->t("Latest Entries") ],
+          [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
+          [ $i18n->rp("/series/create"), $i18n->t("Create New") ],
+          [ $i18n->rp("/series/reviews"), $i18n->t("Latest Reviews") ],
+          [ $i18n->r("/series/random"), $i18n->t("Random Series") ],
+        ]],
+        "persons" => [ $i18n->t("Persons"), [
+          [ $i18n->rp("/persons"), $i18n->t("Latest Entries") ],
+          [ $i18n->rp("/person/create"), $i18n->t("Create New") ],
+          [ $i18n->r("/person/random"), $i18n->t("Random Person") ],
+        ]],
+        "companies" => [ $i18n->t("Companies"), [
+          [ $i18n->rp("/companies"), $i18n->t("Latest Entries") ],
+          [ $i18n->rp("/company/create"), $i18n->t("Create New") ],
+          [ $i18n->r("/company/random"), $i18n->t("Random Company") ],
+        ]],
+        "more" => [ $i18n->t("More"), [
+          [ $i18n->rp("/genres"), $i18n->t("Explore all genres") ],
+          [ $i18n->rp("/articles"), $i18n->t("Explore all articles") ],
+        ]],
+      ],
+      "community" => [
+        "utilities" => [ $i18n->t("Utilities"), [
+          [ $i18n->rp("/deletion-requests"), $i18n->t("Deletion Requests") ],
+        ]],
+      ],
+    ] as $name => $subNavigation) {
+      foreach ($subNavigation as $subName => $subNav) {
+        $subNavigations[$name][$subName]                = new Navigation($subNav[0], $subNav[1], [ "class" => "s s3" ]);
+        $subNavigations[$name][$subName]->headingLevel  = "3";
+        $subNavigations[$name][$subName]->hideTitle     = false;
+        $subNavigations[$name][$subName]->unorderedList = true;
+      }
     }
 
     if ($session->isAuthenticated === true) {
@@ -371,7 +380,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='explore-nav' role='navigation' tabindex='0'>" .
             "<h2 class='visible clicker'>{$i18n->t("Explore")}</h2>" .
             "<div class='concealed r'>" .
-              "{$navs["movies"]}{$navs["series"]}<div class='s s3'>{$navs["persons"]}{$navs["companies"]}</div>{$navs["more"]}" .
+              $subNavigations["explore"]["movies"] .
+              $subNavigations["explore"]["series"] .
+              "<div class='s s3'>{$subNavigations["explore"]["persons"]}{$subNavigations["explore"]["companies"]}</div>" .
+              $subNavigations["explore"]["more"] .
             "</div>" .
           "</nav>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='marketplace-nav' role='navigation' tabindex='0'>" .
@@ -380,7 +392,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "</nav>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='community-nav' role='navigation' tabindex='0'>" .
             "<h2 class='visible clicker'>{$i18n->t("Community")}</h2>" .
-            "<div class='concealed r'><div class='s s12'>{$notImplemented}</div></div>" .
+            "<div class='concealed r'>{$subNavigations["community"]["utilities"]}</div>" .
           "</nav>" .
           "<form action='{$i18n->t("/search")}' class='s' id='s' method='post' role='search'>" .
             "<input type='hidden' name='form_id' value='header_search'>" .

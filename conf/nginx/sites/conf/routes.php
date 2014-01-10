@@ -605,6 +605,6 @@ location ^~ <?= $r("/year") ?> {
 
 
 location = <?= $rp("/deletion-requests") ?> {
-  set $movlib_presenter "Deletion\\Show";
+  set $movlib_presenter "DeletionRequests";
   try_files $movlib_cache @php;
 }

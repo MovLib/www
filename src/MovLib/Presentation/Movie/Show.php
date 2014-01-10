@@ -171,14 +171,6 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
           "mean_rating"              => $this->movie->ratingMean,
         ]
       );
-
-      // Don't tell a user who isn't signed in that she or he has to sign in. We tell this to the user on click / submit.
-      if ($session->isAuthenticated === true) {
-        $ratingHelp = new Help(($this->movie->userRating === null
-          ? $i18n->t("You haven’t rated this movie yet.")
-          : $i18n->t("Your current rating is {0,number}, simply vote again to update it.", [ $this->movie->userRating ])
-        ), "movie-rating");
-      }
     }
 
     // Format the movie's countries and enhance them with microdata.

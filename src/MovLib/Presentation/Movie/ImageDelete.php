@@ -17,11 +17,8 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Deletion;
+use \MovLib\Data\DeletionRequest;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\FormElement\InputHTML;
-use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
@@ -34,39 +31,29 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @since 0.0.1-dev
  */
 class ImageDelete extends \MovLib\Presentation\Movie\Image {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The reason for the deletion.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\InputHTML
-   */
-  protected $reason;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
+  use \MovLib\Presentation\TraitDeletion;
 
   /**
    * @inheritdoc
    */
   protected function getPageContent() {
-    return $this->form;
+    if ($this->deletionRequestedAlert) {
+      return $this->deletionRequestedAlert;
+    }
+    return $this->getTraitDeletionPageContent();
   }
 
   /**
    * Initialize movie image edit page.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    * @return this
    * @throws \MovLib\Presentation\Error\NotFound
    */
   protected function initImagePage() {
-    global $i18n, $session;
+    global $i18n, $kernel, $session;
 
     $session->checkAuthorization($i18n->t("Only authenticated users can request the deletion of an {image_type_name}.", [
       "image_type_name" => $this->imageTypeName
@@ -81,8 +68,8 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
 
     // Initialize the page without anchor in it and then set the page title with the anchors.
     $this->initPage($i18n->t("Delete {title} {image_type_name} {id}", [
-      "title" => $this->movie->displayTitleWithYear,
-      "id" => $i18n->format("{0,number}", [ $this->image->id ]),
+      "title"           => $this->movie->displayTitleWithYear,
+      "id"              => $i18n->format("{0,number}", [ $this->image->id ]),
       "image_type_name" => $this->imageTypeName,
     ]));
     $this->pageTitle = $i18n->t("Delete {title} {image_type_name} {id}", [
@@ -98,42 +85,59 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
     $this->breadcrumb->menuitems[] = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id]), $this->imageTypeNamePlural];
     $this->breadcrumb->menuitems[] = [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movie->id, $this->image->id ]), "{$this->imageTypeName} {$this->image->id}" ];
 
-    // Instantiate the textarea for stating the deletion reason.
-    $this->reason = new InputHTML("reason", $i18n->t("Reason"), null, [
-      "placeholder" => $i18n->t("Please state why this {image_type_name} should be deleted…", [
-        "image_type_name" => $this->imageTypeName
-      ]),
-      "required",
-    ]);
+    // @todo Display full deletion request information and form if the user is an admin or has the reputation to do so.
+    if ($this->image->deletionId) {
+      try {
+        $deletionRequest              = new DeletionRequest($this->image->deletionId);
+        $this->deletionRequestedAlert = new Alert(
+          "<p>{$i18n->t("{user} has requested that this {image_type_name} should be deleted for the reason: “{reason}”", [
+            "user"            => "<a href='{$deletionRequest->user->route}'>{$deletionRequest->user->name}</a>",
+            "image_type_name" => $this->imageTypeName,
+            "reason"          => $deletionRequest->reason,
+          ])}</p>",
+          $i18n->t("Deletion Requested"),
+          Alert::SEVERITY_ERROR
+        );
+        switch ($deletionRequest->reasonId) {
+          case DeletionRequest::REASON_OTHER:
+            $this->deletionRequestedAlert->message .= "<p>{$i18n->t("The following additional information was supplied by {user_name}: {additional_info}", [
+              "additional_info" => "</p><blockquote>{$kernel->htmlDecode($deletionRequest->info)}</blockquote>",
+              "user_name"       => $deletionRequest->user->name,
+            ])}";
+            break;
 
-    // Instantiate the delete form.
-    $this->form = new Form($this, [ $this->reason ]);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [
-      "class" => "btn btn-danger btn-large"
-    ]);
-    $this->form->actionElements[] = "<a class='btn btn-large' href='{$i18n->r("/movie/{0}/{$this->routeKey}/{1}", [
-      $this->movie->id, $this->image->id
-    ])}'>{$i18n->t("Cancel")}</a>";
+          case DeletionRequest::REASON_DUPLICATE:
+            $this->deletionRequestedAlert->message .= "<br>{$i18n->t("The {image_type_name} is a duplicate of {0}this image{1}.", [
+              "<a href='{$deletionRequest->info}'>", "</a>"
+            ])}";
+            break;
+        }
+      }
+      catch (\OutOfBoundsException $e) {
+        $this->initDeletion();
+      }
+    }
+    // Initialize the deletion form.
+    else {
+      $this->initDeletion();
+    }
 
     // Lastly initialize the sidebar.
     return $this->initSidebar();
   }
 
   /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
+   * Stores the deletion request's identifier in the movies images table.
+   *
+   * @global \MovLib\Data\Database $db
+   * @param integer $deletionRequestIdentifier
+   *   The unique identifier of the deletion request.
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
-  protected function valid() {
-    global $i18n, $kernel;
-
-    // @todo Check if we already have a deletion request for this content.
-
-    Deletion::request($this->title, $this->reason->value, $this->image->route);
-    $kernel->alerts .= new Alert($i18n->t("You successfully requested the deletion of this {image_type_name} with the reason: {reason}", [
-      "image_type_name" => $this->imageTypeName,
-      "reason" => $kernel->htmlDecode($this->reason->value),
-    ]), $i18n->t("Successfully Requested Deletion"), Alert::SEVERITY_SUCCESS);
+  protected function storeDeletionRequestIdentifier($deletionRequestIdentifier) {
+    global $db;
+    $db->query("UPDATE `movies_images` SET `deletion_id` = ?", "d", [ $deletionRequestIdentifier ]);
     throw new SeeOtherRedirect($this->image->route);
   }
 

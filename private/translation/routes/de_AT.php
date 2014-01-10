@@ -135,8 +135,9 @@ return [
   "/terms-of-use/edit"   => "/nutzungsbedingungen/bearbeiten",
 
   // ------------------------------------------------------------------------------------------------------------------- Queries
-  "page"  => "seite",
-  "token" => "token",
+  "page"   => "seite",
+  "token"  => "token",
+  "reason" => "grund",
 
 ];
 // @codeCoverageIgnoreEnd

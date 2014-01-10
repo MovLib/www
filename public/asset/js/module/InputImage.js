@@ -34,15 +34,22 @@
   "use strict";
 
   /**
+   * The name of this JavaScript module.
+   *
+   * @type String
+   */
+  var moduleName = "InputImage";
+
+  /**
    * Image upload advanced features.
    *
    * @class InputImage
    * @constructor
    * @param {HTMLElement} element
    *   The <b>.inputimage</b> element to work with.
-   * @return {InputImage}
+   * @return {Module}
    */
-  function InputImage(element) {
+  function Module(element) {
     this.element     = element;
     this.maxFilesize = parseInt(element.getAttribute("data-max-filesize"), 10);
     this.height      = parseInt(element.getAttribute("data-height"), 10);
@@ -60,7 +67,7 @@
     this.init();
   }
 
-  InputImage.prototype = {
+  Module.prototype = {
 
     /**
      * Initialize the <b>.inputimage</b> element.
@@ -178,11 +185,11 @@
    *   The context we are currently working with.
    * @returns {MovLib}
    */
-  MovLib.modules.InputImage = function (context) {
-    var elements = context.getElementsByClassName("inputimage");
+  MovLib.modules[moduleName] = function (context) {
+    var elements = context.getElementsByClassName(moduleName.toLowerCase());
     var c        = elements.length;
     for (var i = 0; i < c; ++i) {
-      elements[i].inputimage = new InputImage(elements[i]);
+      elements[i][moduleName] = new Module(elements[i]);
     }
     return MovLib;
   };

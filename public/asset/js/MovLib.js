@@ -220,7 +220,9 @@
       }
 
       var languageSelector = document.getElementById("f-language");
-      languageSelector.addEventListener("keypress", expanderKeypress.bind(languageSelector.parentNode.children[0]), false);
+      if (languageSelector) {
+        languageSelector.addEventListener("keypress", expanderKeypress.bind(languageSelector.parentNode.children[0]), false);
+      }
 
       return this.execute(document);
     },

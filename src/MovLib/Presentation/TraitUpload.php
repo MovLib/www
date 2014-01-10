@@ -25,7 +25,7 @@ use \MovLib\Presentation\Partial\FormElement\Select;
 use \MovLib\Presentation\Partial\License;
 
 /**
- * @todo Description of TraitImageUpload
+ * Implements the form elements that are necessary for any upload presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib

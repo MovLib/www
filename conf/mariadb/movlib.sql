@@ -626,6 +626,31 @@ COMMENT = 'Contains all movie trailsers.';
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
+-- Table `movlib`.`deletion_requests`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`deletion_requests` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The deletion request’s unique identifier.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user who requested the deletion.',
+  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The deletion request’s creation time.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The deletion request’s (system) language code.',
+  `reason_id` TINYINT UNSIGNED NOT NULL COMMENT 'The deletion request’s unique reason identifier.',
+  `routes` VARCHAR(255) NOT NULL COMMENT 'The routes of the content that should be deleted as serialized array.',
+  `info` TEXT NULL COMMENT 'The user supplied additional information for the deletion request.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_deletions_users` (`user_id` ASC),
+  INDEX `deletions_created` (`created` ASC),
+  UNIQUE INDEX `deletions_route_key` (`routes` ASC),
+  CONSTRAINT `fk_deletions_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains deletion requests for any kind of content.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
 -- Table `movlib`.`movies_images`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
@@ -634,6 +659,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The movie image’s type (enum from Data class).',
   `deleted` TINYINT(1) NOT NULL DEFAULT true COMMENT 'The flag that determines whether this movie image is marked as deleted (TRUE(1)) or not (FALSE(0)), default is TRUE(1).',
   `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie image’s upvote count.',
+  `deletion_id` BIGINT UNSIGNED NULL COMMENT 'The unique identifier of a possible deletion request of this image.',
   `license_id` BIGINT UNSIGNED NULL COMMENT 'The license’s unique ID.',
   `user_id` BIGINT UNSIGNED NULL COMMENT 'The user’s unique ID.',
   `changed` TIMESTAMP NULL COMMENT 'The last time this movie image was updated as timestamp.',
@@ -651,6 +677,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   INDEX `fk_movies_images_licenses` (`license_id` ASC),
   INDEX `movies_images_type_id` (`type_id` ASC, `upvotes` ASC),
   INDEX `fk_movies_images_users_idx` (`user_id` ASC),
+  INDEX `fk_movies_images_deletions1_idx` (`deletion_id` ASC),
   CONSTRAINT `fk_movies_images_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -664,6 +691,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   CONSTRAINT `fk_movies_images_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_images_deletions1`
+    FOREIGN KEY (`deletion_id`)
+    REFERENCES `movlib`.`deletion_requests` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1533,33 +1565,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies_images_votes` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all user votes for company images.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`deletions`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`deletions` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The deletion requests unique identifier.',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user who requested the deletion.',
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The deletion requests creation time.',
-  `language_code` CHAR(2) NOT NULL,
-  `reason` TINYINT UNSIGNED NOT NULL,
-  `route_key` VARCHAR(255) NOT NULL COMMENT 'The route key of the content that should be deleted.',
-  `route_plural` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether this is a plural route or not, defaults to no plural route.',
-  `info` TEXT NULL COMMENT 'The user supplied additional information for the deletion request.',
-  `route_args` BLOB NULL COMMENT 'The route arguments (if any) as serialized array.',
-  PRIMARY KEY (`id`),
-  INDEX `fk_deletions_users` (`user_id` ASC),
-  INDEX `deletions_created` (`created` ASC),
-  UNIQUE INDEX `deletions_route_key` (`route_key` ASC),
-  CONSTRAINT `fk_deletions_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains deletion requests for any kind of content.';
 
 SHOW WARNINGS;
 

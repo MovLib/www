@@ -45,9 +45,16 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * The image's creation timestamp.
    *
-   * @var int
+   * @var integer
    */
   public $created;
+
+  /**
+   * The deletion request's unique identifier (if any).
+   *
+   * @var null|integer
+   */
+  public $deletionId;
 
   /**
    * The image's translated description.

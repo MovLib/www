@@ -868,8 +868,6 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
     // Problem with nested lists and figure captions.
     $html = preg_replace("#<p>(<(li|figcaption).+?)</p>#", "$1", $html);
 
-    \FB::send($html);
-
     // Move the opening paragraph inside the blockquote (opening and closing.
     $html = preg_replace("#<p><blockquote([^>]*)>#i", "<blockquote$1><p>", $html);
     $html = str_replace("</blockquote></p>", "</p></blockquote>", $html);

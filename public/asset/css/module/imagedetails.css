@@ -44,6 +44,10 @@
   background: linear-gradient(to right, #e5e5e5, rgba(229, 229, 229, 0));
 }
 
+#imagedetails .alert {
+  margin-top: -20px;
+}
+
 #imagedetails .image {
   height: 620px;
   padding: 40px 0;

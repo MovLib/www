@@ -35,6 +35,13 @@
   "use strict";
 
   /**
+   * The name of this JavaScript module.
+   *
+   * @type String
+   */
+  var moduleName = "InputHTML";
+
+  /**
    * WYSIWYG editor for the InputHTML form elemement partial plus other handy features.
    *
    * @class InputHTML
@@ -43,7 +50,7 @@
    *   The <b>.inputhtml</b> element to work with.
    * @return {InputHTML}
    */
-  function InputHTML(element) {
+  function Module(element) {
 
     /**
      * The form's textarea, contains the HTML source.
@@ -73,7 +80,7 @@
     this.init(element);
   }
 
-  InputHTML.prototype = {
+  Module.prototype = {
 
     /**
      * Copy the content of the content editable element back into the textarea.
@@ -460,11 +467,11 @@
    *   The context we are currently working with.
    * @return {MovLib}
    */
-  MovLib.modules.InputHTML = function (context) {
-    var elements = context.getElementsByClassName("inputhtml");
+  MovLib.modules[moduleName] = function (context) {
+    var elements = context.getElementsByClassName(moduleName.toLowerCase());
     var c        = elements.length;
     for (var i = 0; i < c; ++i) {
-      elements[i].inputhtml = new InputHTML(elements[i]);
+      elements[i][moduleName] = new Module(elements[i]);
     }
     return MovLib;
   };
