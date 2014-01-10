@@ -1547,6 +1547,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`deletions` (
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The deletion requests creation time.',
   `language_code` CHAR(2) CHARACTER SET 'ascii' NOT NULL COMMENT 'The deletion’s language code.',
   `reason` TEXT NOT NULL COMMENT 'The user supplied reason for the deletion request.',
+  `title` VARCHAR(255) NOT NULL,
   `url` VARCHAR(255) NOT NULL COMMENT 'The URL of the content that should be deleted.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user who requested the deletion.',
   PRIMARY KEY (`id`),
