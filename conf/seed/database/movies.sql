@@ -57,7 +57,7 @@ INSERT INTO `persons` SET
   `birthdate`       = '1841-08-28',
   `deathdate`       = '1890-09-16',
   `dyn_biographies` = '',
-  `dyn_links`       = '',
+  `dyn_wikipedia`       = '',
   `country`         = 'FR'
 ;
 SET @louis_le_prince_id = LAST_INSERT_ID();
@@ -85,7 +85,7 @@ INSERT INTO `persons_images` SET
 INSERT INTO `persons` SET
   `name`            = 'Harriet Hartley',
   `dyn_biographies` = '',
-  `dyn_links`       = ''
+  `dyn_wikipedia`       = ''
 ;
 SET @harriet_hartley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
@@ -93,7 +93,7 @@ INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id
 INSERT INTO `persons` SET
   `name`            = 'Adolphe Le Prince',
   `dyn_biographies` = '',
-  `dyn_links`       = ''
+  `dyn_wikipedia`       = ''
 ;
 SET @adolphe_le_prince_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
@@ -101,7 +101,7 @@ INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id
 INSERT INTO `persons` SET
   `name`            = 'Joseph Whitley',
   `dyn_biographies` = '',
-  `dyn_links`       = ''
+  `dyn_wikipedia`       = ''
 ;
 SET @joseph_whitley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
@@ -112,7 +112,7 @@ INSERT INTO `persons` SET
   /*`birthdate`       = '1816-00-00',*/
   `deathdate`       = '1888-10-24',
   `dyn_biographies` = '',
-  `dyn_links`       = '',
+  `dyn_wikipedia`       = '',
   `country`         = 'UK'
 ;
 SET @sarah_whitley_id = LAST_INSERT_ID();
@@ -143,7 +143,7 @@ SET @big_buck_bunny_id = LAST_INSERT_ID();
 INSERT INTO `persons` SET
   `name`            = 'Sacha Goedegebure',
   `dyn_biographies` = '',
-  `dyn_links`       = '',
+  `dyn_wikipedia`       = '',
   `country`         = 'NL'
 ;
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
@@ -229,7 +229,7 @@ INSERT INTO `persons` SET
   `region`          = 'Doubs',
   `sex`             = 1,
   `dyn_biographies` = '',
-  `dyn_links`       = ''
+  `dyn_wikipedia`       = ''
 ;
 SET @frank_darabont_id = LAST_INSERT_ID();
 
