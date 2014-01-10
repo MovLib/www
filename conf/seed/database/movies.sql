@@ -57,8 +57,7 @@ INSERT INTO `persons` SET
   `birthdate`       = '1841-08-28',
   `deathdate`       = '1890-09-16',
   `dyn_biographies` = '',
-  `dyn_wikipedia`       = '',
-  `country`         = 'FR'
+  `dyn_wikipedia`       = ''
 ;
 SET @louis_le_prince_id = LAST_INSERT_ID();
 
@@ -112,8 +111,7 @@ INSERT INTO `persons` SET
   /*`birthdate`       = '1816-00-00',*/
   `deathdate`       = '1888-10-24',
   `dyn_biographies` = '',
-  `dyn_wikipedia`       = '',
-  `country`         = 'UK'
+  `dyn_wikipedia`       = ''
 ;
 SET @sarah_whitley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
@@ -143,8 +141,7 @@ SET @big_buck_bunny_id = LAST_INSERT_ID();
 INSERT INTO `persons` SET
   `name`            = 'Sacha Goedegebure',
   `dyn_biographies` = '',
-  `dyn_wikipedia`       = '',
-  `country`         = 'NL'
+  `dyn_wikipedia`       = ''
 ;
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
 INSERT INTO `persons_images` SET
@@ -224,9 +221,6 @@ INSERT INTO `persons` SET
   `name`            = 'Frank Darabont',
   `birthdate`       = '1959-01-28',
   `birthplace_id`   = 97967307,
-  `country`         = 'FR',
-  `city`            = 'Montbéliard',
-  `region`          = 'Doubs',
   `sex`             = 1,
   `dyn_biographies` = '',
   `dyn_wikipedia`       = ''
