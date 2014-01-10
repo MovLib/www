@@ -183,7 +183,7 @@ INSERT INTO `movies_images` SET
   `dyn_descriptions` = COLUMN_CREATE(
     'en', '&lt;p&gt;&lt;a href="http://download.blender.org/peach/presskit.zip"&gt;“Big Buck Bunny” presskit&lt;/a&gt;&lt;/p&gt;'
   ),
-  `styles`           = 'a:4:{i:60;a:2:{s:5:"width";i:60;s:6:"height";i:84;}i:140;a:2:{s:5:"width";i:140;s:6:"height";i:197;}i:220;a:2:{s:5:"width";i:220;s:6:"height";i:309;}i:380;a:2:{s:5:"width";i:380;s:6:"height";i:534;}}',
+  `styles`           = 'a:5:{i:540;a:2:{s:6:"height";i:540;s:5:"width";i:384;}i:220;a:2:{s:6:"height";i:309;s:5:"width";i:220;}i:140;a:2:{s:6:"height";i:197;s:5:"width";i:140;}i:60;a:2:{s:6:"height";i:84;s:5:"width";i:60;}s:5:"60x60";a:2:{s:6:"height";i:60;s:5:"width";i:60;}}',
   `user_id`          = 1
 ;
 

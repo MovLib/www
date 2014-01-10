@@ -106,10 +106,10 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
    * @inheritdoc
    */
   protected $placeholder = "image";
-  
+
   /**
    * The image's route key.
-   * 
+   *
    * @var string
    */
   protected $routeKey;

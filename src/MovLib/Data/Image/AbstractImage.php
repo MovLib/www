@@ -126,7 +126,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
    * Create the private and public upload directories for this image.
    *
    * @global \MovLib\Kernel $kernel
-   * @return $this
+   * @return this
    */
   protected function createDirectories() {
     global $kernel;
@@ -137,9 +137,12 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   /**
    * Deletes the original image, all styles and the directory (if empty) from the persistent storage.
    *
+   * @global \MovLib\Kernel $kernel
    * @return this
    */
   protected function delete() {
+    global $kernel;
+
     // Unserialize the styles if they are still serialized.
     if (!is_array($this->styles)) {
       $this->styles = unserialize($this->styles);
@@ -147,27 +150,23 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
 
     // Add the original file to the styles array (DRY), this is why getImagePath() and getImageURL() check with empty()
     // against their parameter.
-    $this->styles[""] = null;
-    foreach ($this->styles as $styleName => $styleInfo) {
-      try {
-        $imagePath = $this->getPath($styleName);
-        unlink($imagePath);
-
-        // Silently fail if attempting to delete a non-empty directory.
-        $imageDirectory = dirname($imagePath);
-        sh::executeDetached("rmdir -p '{$imageDirectory}'");
-      }
-      catch (\ErrorException $e) {
-        error_log($e);
-        // @devStart
-        // @codeCoverageIgnoreStart
-        throw $e;
-        // @codeCoverageIgnoreEnd
-        // @devEnd
-      }
-    }
+    sh::execute("rm -rf '{$kernel->documentRoot}/private/upload/{$this->directory}' '{$kernel->documentRoot}/public/upload/{$this->directory}'");
 
     $this->imageExists = false;
+    $this->styles = null;
+    return $this;
+  }
+
+  /**
+   * Delete all generated styles.
+   *
+   * @global \MovLib\Kernel $kernel
+   * @return this
+   */
+  protected function deleteStyles() {
+    global $kernel;
+    sh::execute("rm -f '{$kernel->documentRoot}/public/upload/{$this->directory}/*'");
+    $this->styles = null;
     return $this;
   }
 
@@ -187,7 +186,16 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
       }
       $this->styles[$style] = [ "width" => $style, "height" => $style ];
     }
-    elseif (!is_array($this->styles)) {
+    // The image exists but we're missing this particular style. We assume that the styles have changed for this image
+    // and therefore delete all of them and generate them again.
+    //
+    // @todo It would be more efficient to generate only the missing style, but that would break the generation chain
+    //       (from best quality down to worst quality to get best quality for each resized image).
+    elseif (!isset($this->styles[$style])) {
+      $this->deleteStyles()->generateStyles($this->getPath());
+    }
+
+    if (!is_array($this->styles)) {
       $this->styles = unserialize($this->styles);
     }
 
