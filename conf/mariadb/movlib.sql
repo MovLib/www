@@ -1537,42 +1537,25 @@ COMMENT = 'Contains all user votes for company images.';
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`deletion_types`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`deletion_types` (
-  `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The deletion type’s unique identifier.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The deletion type’s translated names.',
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-COMMENT = 'Contains all available deletion types.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`deletions`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`deletions` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The deletion requests unique identifier.',
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The deletion requests creation time.',
-  `deletion_type_id` TINYINT UNSIGNED NOT NULL,
-  `language_code` CHAR(2) CHARACTER SET 'ascii' NOT NULL COMMENT 'The deletion’s language code.',
-  `reason` TEXT NOT NULL COMMENT 'The user supplied reason for the deletion request.',
-  `title` VARCHAR(255) NOT NULL,
-  `url` VARCHAR(255) NOT NULL COMMENT 'The URL of the content that should be deleted.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user who requested the deletion.',
+  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The deletion requests creation time.',
+  `language_code` CHAR(2) NOT NULL,
+  `reason` TINYINT UNSIGNED NOT NULL,
+  `route_key` VARCHAR(255) NOT NULL COMMENT 'The route key of the content that should be deleted.',
+  `route_plural` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether this is a plural route or not, defaults to no plural route.',
+  `info` TEXT NULL COMMENT 'The user supplied additional information for the deletion request.',
+  `route_args` BLOB NULL COMMENT 'The route arguments (if any) as serialized array.',
   PRIMARY KEY (`id`),
   INDEX `fk_deletions_users` (`user_id` ASC),
-  INDEX `deletions_language_code` (`language_code` ASC),
   INDEX `deletions_created` (`created` ASC),
-  INDEX `fk_deletions_deletion_types1_idx` (`deletion_type_id` ASC),
+  UNIQUE INDEX `deletions_route_key` (`route_key` ASC),
   CONSTRAINT `fk_deletions_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_deletions_deletion_types1`
-    FOREIGN KEY (`deletion_type_id`)
-    REFERENCES `movlib`.`deletion_types` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
