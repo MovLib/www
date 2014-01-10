@@ -605,16 +605,6 @@ location ^~ <?= $r("/year") ?> {
 
 
 location = <?= $rp("/deletion-requests") ?> {
-  set $movlib_presenter "Deletion\\ShowAll";
+  set $movlib_presenter "Deletion\\Show";
   try_files $movlib_cache @php;
-}
-
-location ^~ <?= $r("/deletion-request") ?> {
-
-  location ~* "^<?= $r("/deletion-request/{0}", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Deletion\\Show";
-    set $movlib_id $1;
-    try_files $movlib_cache @php;
-  }
-
 }
