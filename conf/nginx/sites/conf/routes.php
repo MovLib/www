@@ -599,3 +599,22 @@ location ^~ <?= $r("/year") ?> {
 
   rewrite .* /error/NotFound last;
 }
+
+
+# ---------------------------------------------------------------------------------------------------------------------- Deletion(s)
+
+
+location = <?= $rp("/deletion-requests") ?> {
+  set $movlib_presenter "Deletion\\ShowAll";
+  try_files $movlib_cache @php;
+}
+
+location ^~ <?= $r("/deletion-request") ?> {
+
+  location ~* "^<?= $r("/deletion-request/{0}", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Deletion\\Show";
+    set $movlib_id $1;
+    try_files $movlib_cache @php;
+  }
+
+}
