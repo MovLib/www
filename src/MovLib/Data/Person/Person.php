@@ -18,6 +18,7 @@
 namespace MovLib\Data\Person;
 
 use \MovLib\Data\Image\PersonPhoto;
+use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Represents a single person.
@@ -92,6 +93,13 @@ class Person {
   public $nickname;
 
   /**
+   * The person's translated route.
+   *
+   * @var string
+   */
+  public $route;
+
+  /**
    * The person's sex.
    *
    * @var integer
@@ -108,17 +116,42 @@ class Person {
    * @global \MovLib\Data\Database $db
    * @param integer $id [optional]
    *   The unique person's identifier to load, leave empty to create empty instance.
-   * @throws \OutOfBoundsException
+   * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
     global $db;
 
     // Try to load the person for the given identifier.
     if ($id) {
-      $stmt = $db->query("SELECT `name`, `deleted` FROM `persons` WHERE `person_id` = ? LIMIT 1", "d", [ $id ]);
-      $stmt->bind_result($this->name, $this->deleted);
+      $stmt = $db->query("
+          SELECT
+            `id`,
+            `deleted`,
+            `name`,
+            `sex`,
+            `birthdate` AS `birthDate`,
+            `born_name` AS `bornName`,
+            `deathdate` AS `deathDate`,
+            `nickname`
+          FROM `persons`
+          WHERE
+            `id` = ?
+          LIMIT 1",
+        "d",
+        [ $id ]
+      );
+      $stmt->bind_result(
+        $this->id,
+        $this->deleted,
+        $this->name,
+        $this->sex,
+        $this->birthDate,
+        $this->bornName,
+        $this->deathDate,
+        $this->nickname
+      );
       if (!$stmt->fetch()) {
-        throw new \OutOfBoundsException("Couldn't find person for identifier '{$id}'");
+        throw new NotFound;
       }
       $stmt->close();
       $this->id = $id;
@@ -127,16 +160,7 @@ class Person {
     // If we have an identifier, either from the above query or directly set via PHP's fetch_object() method, try to
     // load the photo for this person.
     if ($this->id) {
-      $this->deleted = (boolean) $this->deleted;
-      $this->displayPhoto = $db->query(
-        "SELECT `id`, `extension`, UNIX_TIMESTAMP(`changed`) AS `changed`, `styles` FROM `persons_images` WHERE `person_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
-        "d",
-        [ $this->id ]
-      )->get_result()->fetch_object("\\MovLib\\Data\\Image\\PersonPhoto", [ $this->id, $this->name ]);
-
-      if (!$this->displayPhoto) {
-        $this->displayPhoto = new PersonPhoto($this->id, $this->name);
-      }
+      $this->init();
     }
   }
 
@@ -191,6 +215,21 @@ class Person {
       "di",
       [ $rowCount, $offset ]
     )->get_result();
+  }
+
+  protected function init() {
+    global $db, $i18n;
+    $this->deleted = (boolean) $this->deleted;
+    $this->displayPhoto = $db->query(
+      "SELECT `id`, `extension`, UNIX_TIMESTAMP(`changed`) AS `changed`, `styles` FROM `persons_images` WHERE `person_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
+      "d",
+      [ $this->id ]
+    )->get_result()->fetch_object("\\MovLib\\Data\\Image\\PersonPhoto", [ $this->id, $this->name ]);
+
+    if (!$this->displayPhoto) {
+      $this->displayPhoto = new PersonPhoto($this->id, $this->name);
+    }
+    $this->route = $i18n->r("/person/{0}", [ $this->id ]);
   }
 
 }

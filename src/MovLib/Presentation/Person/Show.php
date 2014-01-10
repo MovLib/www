@@ -17,8 +17,11 @@
  */
 namespace MovLib\Presentation\Person;
 
+use \MovLib\Data\Image\PersonPhoto;
+use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Person\Full as FullPerson;
-use \MovLib\Presentation\Error\NotFound;
+use \MovLib\Presentation\Error\Gone;
+use \MovLib\Presentation\Partial\Alert;
 
 /**
  * Presentation of a single person.
@@ -43,6 +46,13 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected $person;
 
+  /**
+   * The translated route to the person's edit page.
+   *
+   * @var string
+   */
+  protected $routeEdit;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -56,33 +66,18 @@ class Show extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n;
-    try {
-      $this->person                = new FullPerson($_SERVER["PERSON_ID"]);
-      $this->schemaType            = "Person";
-      $this->headingSchemaProperty = "name";
-      $this->initPage($this->person->name);
-      $this->initBreadcrumb();
-      $this->initLanguageLinks("/person/{0}", [ $this->person->id ]);
-      $this->initSidebar([]);
-
-      // Display gone page if this person was deleted.
-      if ($this->person->deleted === true) {
-        // @todo Implement gone presentation for persons.
-        throw new \LogicException("Not implemented yet!");
-      }
-
-      $photo = $this->getImage(
-        $this->person->displayPhoto->getStyle(),
-        $i18n->rp("/person/{0}/photos", [ $this->person->id ]),
-        [ "itemprop" => "image" ]
-      );
-
-      $this->headingBefore = "<div class='r'><div class='s s10'>";
-      $this->headingAfter  = "</div><div class='s s2'>{$photo}</div></div>";
-    }
-    catch (\OutOfBoundsException $e) {
-      throw new NotFound("Couldn't find person for identifier '{$_SERVER["PERSON_ID"]}'");
-    }
+    $this->person = new FullPerson($_SERVER["PERSON_ID"]);
+    $this->initPage($this->person->name);
+    $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ]]);
+    $routeArgs = [$this->person->id ];
+    $this->initLanguageLinks("/person/{0}", $routeArgs);
+    $this->routeEdit = $i18n->r("/person/{0}/edit", $routeArgs);
+    $this->initSidebar([
+      [ $this->person->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $i18n->r("/person/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
+      [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
+      [ $i18n->r("/person/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
+    ]);
   }
 
 
@@ -91,7 +86,138 @@ class Show extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
-  protected function getPageContent() {}
+  protected function getPageContent() {
+    global $i18n, $kernel;
+    $this->schemaType = "Person";
+
+    // Enhance the page title with microdata.
+    $this->pageTitle = "<span itemprop='name'>{$this->person->name}</span>";
+
+    // Display Gone page if this person was deleted.
+    if ($this->person->deleted === true) {
+      // @todo Implement Gone presentation for persons instead of this generic one.
+      throw new Gone;
+    }
+
+    // Enhance the header, insert row and span before the title.
+    $this->headingBefore = "<div class='r'><div class='s s10'>";
+
+    // Put all header information together after the closing title.
+    $this->headingAfter =
+      "</div>" . // close .s
+      "<div id='person-photo' class='s s2'>{$this->getImage(
+        $this->person->displayPhoto->getStyle(PersonPhoto::STYLE_SPAN_02),
+        $i18n->rp("/person/{0}/photos", [ $this->person->id ]),
+        [ "itemprop" => "image" ]
+      )}</div>" .
+    "</div>"; // close .r
+
+    $sections["biography"] = [
+      $i18n->t("Biography"),
+      empty($this->person->biography)
+        ? $i18n->t("No biography available, {0}write one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
+        : $kernel->htmlDecode($this->person->biography)
+      ,
+    ];
+
+    $filmography = null;
+    $result = $this->person->getMovieDirectorIdsResult();
+    $director = null;
+    while ($row = $result->fetch_assoc()) {
+      if ($row["movie_id"]) {
+        $entity = new Movie($row["movie_id"]);
+      }
+      else {
+        $entity = new Serial($row["serial_id"]);
+      }
+      $director .= "<li><a href='{$entity->route}'>{$entity->displayTitleWithYear}</a></li>";
+    }
+    if ($director) {
+      $filmography["director"] = [
+        $i18n->t("Director"),
+        "<ol>{$director}</ol>",
+      ];
+    }
+
+    $result = $this->person->getMovieCastIdsResult();
+    $cast = null;
+    while ($row = $result->fetch_assoc()) {
+      if ($row["movie_id"]) {
+        $entity = new Movie($row["movie_id"]);
+      }
+      else {
+        $entity = new Serial($row["serial_id"]);
+      }
+      $cast .= "<li><a href='{$entity->route}'>{$entity->displayTitleWithYear}</a></li>";
+    }
+    if ($cast) {
+      $filmography["cast"] = [
+        $i18n->t("Cast"),
+        "<ol>{$cast}</ol>",
+      ];
+    }
+
+    $result = $this->person->getMovieCrewIdsResult();
+    $crew = null;
+    while ($row = $result->fetch_assoc()) {
+      if ($row["movie_id"]) {
+        $entity = new Movie($row["movie_id"]);
+      }
+      else {
+        $entity = new Serial($row["serial_id"]);
+      }
+      $crew .= "<li><a href='{$entity->route}'>{$i18n->t("{0} as {1}", [ $entity->displayTitleWithYear, "<em>{$row["job_title"]}</em>" ])}</a></li>";
+    }
+    if ($crew) {
+      $filmography["cast"] = [
+        $i18n->t("Cast"),
+        "<ol>{$crew}</ol>",
+      ];
+    }
+
+    if (!$filmography) {
+      $filmography = $i18n->t("No jobs available, {0}add some{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
+    }
+    $sections["filmography"] = [
+      $i18n->t("Filmography"),
+      $filmography,
+    ];
+
+    $links = null;
+    if (empty($this->person->links)) {
+      $links = $i18n->t("No links available, {0}add some{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
+    }
+    else {
+      $links .= "<ul>";
+      foreach ($this->person->links as $website => $url) {
+        $links .= "<li><a href='{$url}' itemprop='url' target='_blank'>{$website}</a></li>";
+      }
+      $links .= "</ul>";
+    }
+    $sections["links"] = [
+      $i18n->t("External links"),
+      $links,
+    ];
+
+    $content = null;
+    foreach ($sections as $id => $section) {
+      $this->sidebarNavigation->menuitems[] = [ "#{$id}", $section[0] ];
+      $content .= "<div id='{$id}'><h2>{$section[0]}</h2>";
+      if (is_array($section[1])) {
+        foreach ($section[1] as $subId => $subSection) {
+          $this->sidebarNavigation->menuitems[] = [ "#{$id}-{$subId}", $subSection[0] ];
+          $content .= "<div id='{$id}-{$subId}'><h3>{$subSection[0]}</h3>{$subSection[1]}</div>";
+        }
+      }
+      else {
+        $content .= $section[1];
+      }
+      $content .= "</div>";
+    }
+    return $content;
+  }
 
 }
