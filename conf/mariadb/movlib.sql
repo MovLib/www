@@ -1542,14 +1542,15 @@ SHOW WARNINGS;
 -- Table `movlib`.`deletions`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`deletions` (
-  `id` BIGINT UNSIGNED NOT NULL COMMENT 'The deletion requests unique identifier.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The deletion requests unique identifier.',
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The deletion requests creation time.',
+  `language_code` CHAR(2) CHARACTER SET 'ascii' NOT NULL COMMENT 'The deletion’s language code.',
   `reason` TEXT NOT NULL COMMENT 'The user supplied reason for the deletion request.',
   `url` VARCHAR(255) NOT NULL COMMENT 'The URL of the content that should be deleted.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user who requested the deletion.',
   PRIMARY KEY (`id`),
-  INDEX `fk_deletions_users1_idx` (`user_id` ASC),
-  CONSTRAINT `fk_deletions_users1`
+  INDEX `fk_deletions_users` (`user_id` ASC),
+  CONSTRAINT `fk_deletions_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
