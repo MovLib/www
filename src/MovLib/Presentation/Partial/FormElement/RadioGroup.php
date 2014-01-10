@@ -66,17 +66,13 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    *   input's value-attribute and the array's value the label text for the radio input.
    * @param mixed $value
    *   The value of the checked radio input in the group.
-   * @param string $help [optional]
-   *   The radio group's help text, defaults to <code>NULL</code> (no help text).
-   * @param boolean $helpPopup
-   *   Whether the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
-  public function __construct($id, $legend, array $choices, $value, $help = null, $helpPopup = true) {
+  public function __construct($id, $legend, array $choices, $value) {
     parent::__construct($id, $legend, [
       "aria-expanded" => "true",
       "aria-required" => "false", // @todo Do we need support for radio groups without default values?
       "role"          => "radiogroup",
-    ], $help, $helpPopup);
+    ]);
     $this->choices = $choices;
     $this->value   = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }

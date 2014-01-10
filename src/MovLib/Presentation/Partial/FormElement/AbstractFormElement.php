@@ -81,7 +81,11 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * Instantiate new form element.
    *
    * @param string $id
-   *   The form element's global identifier.
+   *   The form element's unique global identifier.
+   * @param string $label
+   *   The form element's translated label text.
+   * @param array $attributes [optional]
+   *   The form element's attributes array.
    */
   public function __construct($id, $label, array $attributes = null) {
     $this->attributes = $attributes;

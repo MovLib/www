@@ -39,9 +39,11 @@ abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\Ab
    * Instantiate new input form element.
    *
    * @param string $id
-   *   The form element's global identifier.
-   * @param mixed $value [optional]
-   *   The default value for this concrete input form element.
+   *   The input element's unique global identifier.
+   * @param string $label
+   *   The input element's translated label text.
+   * @param array $attributes [optional]
+   *   The input element's attributes array.
    */
   public function __construct($id, $label, array $attributes = null) {
     parent::__construct($id, $label, $attributes);

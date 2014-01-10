@@ -45,11 +45,18 @@ use \MovLib\Exception\ValidationException;
 class InputURL extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
   /**
-   * @inheritdoc
+   * Instantiate new URL input element.
+   *
+   * @param string $id
+   *   The input element's unique global identifier.
+   * @param string $label
+   *   The input element's translated label text.
+   * @param array $attributes [optional]
+   *   The input element's attributes array.
    */
-  public function __construct($id, $label, array $attributes = null, $help = null, $helpPopup = true) {
+  public function __construct($id, $label, array $attributes = null) {
     global $i18n;
-    parent::__construct($id, $label, $attributes, $help, $helpPopup);
+    parent::__construct($id, $label, $attributes);
     $this->attributes["pattern"]     = "^https?://[a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*[a-z0-9_]\.[a-z]{2,6}(/.*)*$";
     $this->attributes["placeholder"] = "http(s)://";
     $this->attributes["title"]       = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");

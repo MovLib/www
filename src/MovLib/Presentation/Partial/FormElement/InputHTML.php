@@ -156,7 +156,6 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
   /**
    * Instantiate new HTML form element.
    *
-   * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @param string $id
    *   The text's global identifier.
@@ -172,7 +171,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\AbstractFormEle
    *   Whether the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
   public function __construct($id, $label, $value = null, array $attributes = null, $help = null, $helpPopup = true) {
-    global $i18n, $kernel;
+    global $kernel;
     parent::__construct($id, $label, $attributes, $help, $helpPopup);
     // We don't need the JS, because we only use <textarea> for now. This will change when InputHTML is finished.
     //    $kernel->javascripts[]              = "InputHTML";

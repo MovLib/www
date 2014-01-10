@@ -66,13 +66,9 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    *   The selected option's value, defaults to <code>NULL</code> (no option is selected).
    * @param array $attributes [optional]
    *   Additional attributes for the textarea, defaults to <code>NULL</code> (no additional attributes).
-   * @param string $help [optional]
-   *   The textarea's help text, defaults to <code>NULL</code> (no help text).
-   * @param boolean $helpPopup
-   *   Whether the help should be displayed as popup or not, defaults to <code>TRUE</code> (display as popup).
    */
-  public function __construct($id, $label, $options, $value = null, array $attributes = null, $help = null, $helpPopup = true) {
-    parent::__construct($id, $label, $attributes, $help, $helpPopup);
+  public function __construct($id, $label, $options, $value = null, array $attributes = null) {
+    parent::__construct($id, $label, $attributes);
     $this->options = $options;
     $this->value   = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
   }
