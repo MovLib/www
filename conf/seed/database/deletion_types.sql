@@ -15,7 +15,7 @@
 -- ---------------------------------------------------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------------------------------------------------
--- Deletions types seed data.
+-- Deletion types seed data.
 --
 -- @author Richard Fussenegger <richard@fussenegger.info>
 -- @copyright © 2013 MovLib
@@ -24,7 +24,7 @@
 -- @since 0.0.1-dev
 -- ---------------------------------------------------------------------------------------------------------------------
 
-INSERT INTO `deletions_types` (`dyn_names`) VALUES
+INSERT INTO `deletion_types` (`dyn_names`) VALUES
 (COLUMN_CREATE('en', 'Spam', 'de', 'Spam')),
 (COLUMN_CREATE('en', 'Duplicate', 'de', 'Duplikat')),
 (COLUMN_CREATE('en', 'Other', 'de', 'Sonstiges'));
