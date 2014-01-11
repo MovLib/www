@@ -31,7 +31,7 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @since 0.0.1-dev
  */
 class ImageDelete extends \MovLib\Presentation\Movie\Image {
-  use \MovLib\Presentation\TraitDeletion;
+  use \MovLib\Presentation\TraitDeletionRequest;
 
   /**
    * @inheritdoc
@@ -40,7 +40,7 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
     if ($this->deletionRequestedAlert) {
       return $this->deletionRequestedAlert;
     }
-    return $this->getTraitDeletionPageContent();
+    return $this->getDeletionRequestForm();
   }
 
   /**
@@ -60,7 +60,7 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
     ]));
 
     // Try to load the movie with the identifier from the request and set the breadcrumb title.
-    $this->initMoviePage($i18n->t("Delete {image_type_name}", [ "image_type_name" => $this->imageTypeName ]));
+    $this->initMoviePage($i18n->t("Delete"));
 
     // Create absolute class name for the image and try to load it with the identifier from the request.
     $class       = "\\MovLib\\Data\\Image\\Movie{$this->imageClassName}";
@@ -114,12 +114,12 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
         }
       }
       catch (\OutOfBoundsException $e) {
-        $this->initDeletion();
+        $this->initDeletionRequest();
       }
     }
     // Initialize the deletion form.
     else {
-      $this->initDeletion();
+      $this->initDeletionRequest();
     }
 
     // Lastly initialize the sidebar.

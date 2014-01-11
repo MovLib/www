@@ -34,60 +34,69 @@ class DeletionRequests extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
 
   /**
-   * Instantiate new show all deletion requests.
+   * Get the deletion requests page content.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\User\Session $session
+   * @return string
+   *   The deletion requests page content.
+   * @throws \MovLib\Exception\DatabaseException
    */
-  public function __construct() {
+  protected function getPageContent() {
     global $i18n, $session;
 
     // @todo Check user reputation, for now limited to admins.
     $session->checkAuthorizationAdmin($i18n->t("Only administrators can handle deletion requests."));
 
+    // Initialize presentation basics.
     $this->initPage($i18n->t("Deletion Requests"));
     $this->initLanguageLinks("/deletion-requests", null, true);
     $this->initBreadcrumb();
-    $this->initPagination(DeletionRequest::getCount());
 
+    // Create a filter for each predefined deletion request reason and of course one to list them all.
+    $spam      = DeletionRequest::REASON_SPAM;
+    $duplicate = DeletionRequest::REASON_DUPLICATE;
+    $other     = DeletionRequest::REASON_OTHER;
     $menuitems = [
-      [ $i18n->rp("/deletion-requests"), $i18n->t("All") ],
-      DeletionRequest::REASON_SPAM      => [ "{$i18n->rp("/deletion-requests")}?{$i18n->r("reason")}=" . DeletionRequest::REASON_SPAM, $i18n->t("Spam") ],
-      DeletionRequest::REASON_DUPLICATE => [ "{$i18n->rp("/deletion-requests")}?{$i18n->r("reason")}=" . DeletionRequest::REASON_DUPLICATE, $i18n->t("Duplicate") ],
-      DeletionRequest::REASON_OTHER     => [ "{$i18n->rp("/deletion-requests")}?{$i18n->r("reason")}=" . DeletionRequest::REASON_OTHER, $i18n->t("Other") ],
+      0          => [ $i18n->rp("/deletion-requests"), $i18n->t("All") ],
+      $spam      => [ "{$i18n->rp("/deletion-requests")}?{$i18n->r("reason")}={$spam}", $i18n->t("Spam") ],
+      $duplicate => [ "{$i18n->rp("/deletion-requests")}?{$i18n->r("reason")}={$duplicate}", $i18n->t("Duplicate") ],
+      $other     => [ "{$i18n->rp("/deletion-requests")}?{$i18n->r("reason")}={$other}", $i18n->t("Other") ],
     ];
 
-    if (isset($_GET[$i18n->r("reason")]) && isset($menuitems[$_GET[$i18n->r("reason")]])) {
-      $first = $menuitems[$_GET[$i18n->r("reason")]];
-      unset($menuitems[$_GET[$i18n->r("reason")]]);
+    // Extract possible filters from the requested URL.
+    $reasonId     = filter_input(INPUT_GET, $i18n->r("reason"), FILTER_VALIDATE_INT);
+    $languageCode = filter_input(INPUT_GET, $i18n->r("language_code"), FILTER_SANITIZE_STRING);
+
+    // Ensure currently active filter is on top of the sidebar navigation.
+    if (isset($menuitems[$reasonId])) {
+      $first = $menuitems[$reasonId];
+      unset($menuitems[$reasonId]);
       array_unshift($menuitems, $first);
     }
 
+    // The first item in the menu shall be displayed with a gap to the rest. Initialize the sidebar with the sorted
+    // menuitems and ignore the query string within the requested URI for determining which tab is active.
     $menuitems[0][2] = [ "class" => "separator" ];
-
     $this->initSidebar($menuitems);
     $this->sidebarNavigation->ignoreQuery = false;
-  }
 
-  /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   */
-  protected function getPageContent() {
-    global $i18n;
-
-    // Nothing to do if we have no requests at all.
+    // Nothing to do if we have no deletion requests at all.
+    $this->initPagination(DeletionRequest::getCount($reasonId, $languageCode));
     if ($this->resultsTotalCount === 0) {
       return new Alert($i18n->t("Great, not a single deletion request is waiting for approval."), $i18n->t("No Deletion Requests"), Alert::SEVERITY_SUCCESS);
     }
 
-    $requests = DeletionRequest::getResult($this->resultsOffset, $this->resultsPerPage);
+    // Build listing of all deletion requests.
+    $requests = DeletionRequest::getResult($this->resultsOffset, $this->resultsPerPage, $reasonId, $languageCode);
     $list     = null;
+
     /* @var $deletionRequest \MovLib\Data\DeletionRequest */
     while ($deletionRequest = $requests->fetch_object("\\MovLib\\Data\\DeletionRequest")) {
       $dateTime    = $i18n->formatDate($deletionRequest->created, null, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
       $contentLink = "<a href='{$deletionRequest->routes[$i18n->languageCode]}'>";
       $user        = "<a href='{$deletionRequest->user->route}'>{$deletionRequest->user->name}</a>";
+
       if (!isset($_GET[$i18n->t("reason")])) {
         $list .= $i18n->t("{date}: {user} has requested that {0}this content{1} should be deleted for the reason: “{reason}”", [
           "date" => $dateTime, "user" => $user, $contentLink, "</a>", "reason" => $deletionRequest->reason,
@@ -98,10 +107,12 @@ class DeletionRequests extends \MovLib\Presentation\Page {
           "date" => $dateTime, "user" => $user, $contentLink, "</a>",
         ]);
       }
+
       $list = "<li>{$list}</li>";
     }
+
     $requests->free();
-    $list = "{$list}{$list}{$list}{$list}{$list}{$list}{$list}{$list}{$list}";
+
     return "<div id='filter' class='tar'>{$i18n->t("You can filter the deletion requests via the sidebar menu.")}</div><ol class='no-list'>{$list}</ol>";
   }
 
