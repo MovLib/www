@@ -27,10 +27,67 @@
 
 TRUNCATE TABLE `system_pages`;
 
-INSERT INTO `system_pages` (`dyn_titles`, `dyn_texts`) VALUES
-  (COLUMN_CREATE('en', 'Contact', 'de', 'Kontakt'), '' ),
-  (COLUMN_CREATE('en', 'Imprint', 'de', 'Impressum'), COLUMN_CREATE('en', 'English imprint', 'de', 'Deutsches Impressum')),
-  (COLUMN_CREATE('en', 'Privacy Policy', 'de', 'Datenschutzerklärung'), ''),
-  (COLUMN_CREATE('en', 'Team', 'de', 'Team'), ''),
-  (COLUMN_CREATE('en', 'Terms of Use', 'de', 'Nutzungsbedingungen'), '')
+-- Contact
+
+INSERT INTO `system_pages` SET
+  `dyn_titles` = COLUMN_CREATE(
+    'en', 'Contact',
+    'de', 'Kontakt'
+  ),
+  `dyn_texts`  = COLUMN_CREATE(
+    'en', '',
+    'de', ''
+  )
+;
+
+-- Imprint
+
+INSERT INTO `system_pages` SET
+  `dyn_titles` = COLUMN_CREATE(
+    'en', 'Imprint',
+    'de', 'Impressum'
+  ),
+  `dyn_texts`  = COLUMN_CREATE(
+    'en', 'English imprint',
+    'de', '&lt;p&gt;Ein &lt;strong&gt;Impressum&lt;/strong&gt; ist eine gesetzlich vorgeschriebene Angabe zu den Eigentümern und Urhebern einer Websites, die in Deutschland, und bestimmten anderen deutschsprachigen Ländern wie Österreich und der Schweiz, veröffentlicht wurde.&lt;/p&gt;&lt;dl class=&apos;horizontal&apos;&gt;&lt;dt&gt;Vereinsname&lt;/dt&gt;&lt;dd&gt;MovLib&lt;/dd&gt;&lt;/dl&gt;'
+  )
+;
+
+-- Privacy Policy
+
+INSERT INTO `system_pages` SET
+  `dyn_titles` = COLUMN_CREATE(
+    'en', 'Privacy Policy',
+    'de', 'Datenschutzerklärung'
+  ),
+  `dyn_texts`  = COLUMN_CREATE(
+    'en', '',
+    'de', ''
+  )
+;
+
+-- Team
+
+INSERT INTO `system_pages` SET
+  `dyn_titles` = COLUMN_CREATE(
+    'en', 'Team',
+    'de', 'Team'
+  ),
+  `dyn_texts`  = COLUMN_CREATE(
+    'en', '',
+    'de', ''
+  )
+;
+
+-- Terms of Use
+
+INSERT INTO `system_pages` SET
+  `dyn_titles` = COLUMN_CREATE(
+    'en', 'Terms of Use',
+    'de', 'Nutzungsbedingungen'
+  ),
+  `dyn_texts`  = COLUMN_CREATE(
+    'en', '',
+    'de', ''
+  )
 ;

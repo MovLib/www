@@ -20,11 +20,11 @@ namespace MovLib\Presentation\Partial\FormElement;
 use \MovLib\Exception\ValidationException;
 
 /**
- * HTML contenteditable text form element.
+ * Raw HTML contenteditable text form element.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_Editable
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -74,8 +74,8 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
 
     if (!empty($_POST[$this->id])) {
       $normalized     = \Normalizer::normalize($_POST[$this->id]);
-      $this->value    = $kernel->htmlEncode($normalized);
       $this->valueRaw = $this->autoParagraph($normalized);
+      $this->value    = $kernel->htmlEncode($this->valueRaw);
     }
     elseif ($value) {
       $this->value    = $value;
@@ -155,8 +155,8 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     // No breaks before closing block elements if there is only whitespace.
     $html = preg_replace("#<br>(\s*</?(?:p|li|dl|dd|dt|ul|ol)[^>]*>)#", "$1", $html);
 
-    // Remove excess line feeds before closing paragraph tags.
-    return preg_replace("#\n</p>$#", "</p>", $html);
+    // Remove all left over line feeds.
+    return preg_replace("#\n+#", "", $html);
   }
   
   /**
@@ -174,7 +174,12 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     if ($tidy->getStatus() === 2) {
       throw new \ErrorException;
     }
-    $content = str_replace([ "<br>\n", "<br>", "<p>", "</p>" ], "", \Normalizer::normalize(tidy_get_output($tidy)));
+    
+    $content = str_replace(
+      [ "\n\n", "<br>\n", "<p>", "</p>" ],
+      [ "\n", "", "", "\n"],
+      tidy_get_output($tidy)
+    );
 
     // Use default placeholder text if none was provided.
     if (!isset($this->attributes["placeholder"])) {
