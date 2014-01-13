@@ -158,17 +158,14 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     // Remove all left over line feeds.
     return preg_replace("#\n+#", "", $html);
   }
-  
+
   /**
    * @inheritdoc
    */
   protected function render() {
     global $i18n;
 
-    // Important note: The majority of the code is commented out for a purpose, it is NOT dead code.
-    // We will need it again once the WYSIWYG editor works. For now we'll stick with a plain <textarea>.
-
-    // Pretty print HTML, since we only use <textarea> for now. This will change when InputHTML is finished.
+    // Pretty print HTML, since we only use <textarea> here.
     $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->valueRaw}</body></html>");
     $tidy->cleanRepair();
     if ($tidy->getStatus() === 2) {
@@ -185,7 +182,7 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     if (!isset($this->attributes["placeholder"])) {
       $this->attributes["placeholder"] = $i18n->t("Enter “{0}” text here …", [ $this->label ]);
     }
-    
+
     return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$content}</textarea></p>";
   }
 
