@@ -111,6 +111,27 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   }
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
+
+
+  /**
+   * Get the string representation of the form element.
+   *
+   * @return string
+   *   The string representation of the form element.
+   */
+  protected abstract function render();
+
+  /**
+   * Validate the user submitted data.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return this
+   * @throws \MovLib\Exception\ValidationException
+   */
+  public abstract function validate();
+
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
@@ -135,7 +156,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *
    * @param string $text
    *   The form element's translated help text, defaults to no help text.
-   * @param boolean $helpPopup [optional]
+   * @param boolean $popup [optional]
    *   Whether the help should be displayed as popup or not, defaults to display as popup.
    * @return this
    */
@@ -144,22 +165,5 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
     $this->help                           = new Help($text, $this->id, $popup);
     return $this;
   }
-
-  /**
-   * Get the string representation of the form element.
-   *
-   * @return string
-   *   The string representation of the form element.
-   */
-  protected abstract function render();
-
-  /**
-   * Validate the user submitted data.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return this
-   * @throws \MovLib\Exception\ValidationException
-   */
-  public abstract function validate();
 
 }
