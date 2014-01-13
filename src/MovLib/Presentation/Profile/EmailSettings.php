@@ -139,7 +139,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
       $i18n->t("Important!"),
       Alert::SEVERITY_INFO
     );
-    
+
     return $this;
   }
 
@@ -150,13 +150,12 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
    * dashboard.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @param array $errors [optional]
+   * @param null|array $errors
    *   {@inheritdoc}
    * @return this
    */
-  public function validate(array $errors = null) {
-    global $i18n, $kernel;
+  public function validate($errors) {
+    global $i18n;
 
     // Check if the user re-entered the email she or he is already using, if not check if this email address is taken
     // by another user. If a user enters a email address that is already in use, this might imply that the user has

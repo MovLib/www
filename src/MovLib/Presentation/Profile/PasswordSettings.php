@@ -140,7 +140,7 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
 
     return "{$info}{$this->form}";
   }
-  
+
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
@@ -166,7 +166,7 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
       $i18n->t("Important!"),
       Alert::SEVERITY_INFO
     );
-    
+
     return $this;
   }
 
@@ -176,8 +176,11 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
    *       isn't one of the old passwords. This would increase the account's security a lot. Anyone willing to implement
    *       this is very welcome.
    * @global \MovLib\Data\I18n $i18n
+   * @param null|array $errors
+   *   {@inheritdoc}
+   * @return this
    */
-  public function validate(array $errors = null) {
+  public function validate($errors) {
     global $i18n;
 
     // Both password's have to be equal.

@@ -18,7 +18,6 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
-use \MovLib\Exception\DatabaseException;
 use \MovLib\Presentation\Email\User\Deletion;
 use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;

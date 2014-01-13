@@ -60,7 +60,14 @@ class InputSubmit extends \MovLib\Presentation\AbstractBase {
     // We actually want the submit buttons to cover the native submit() function in JavaScript because executing the
     // submit() function doesn't fire the onsubmit event, while a click on a submit button does and we always want the
     // browser's validation to be executed before any form is submitted to the server.
-    $this->attributes["id"]    = $this->attributes["name"] = $this->attributes["type"]  = "submit";
+    $this->attributes["type"] = "submit";
+
+    if (!isset($this->attributes["id"])) {
+      $this->attributes["id"] = "submit";
+    }
+    if (!isset($this->attributes["name"])) {
+      $this->attributes["name"] = "submit";
+    }
   }
 
   /**

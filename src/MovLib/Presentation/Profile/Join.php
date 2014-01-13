@@ -76,10 +76,10 @@ class Join extends \MovLib\Presentation\Page {
    * @var \MovLib\Presentation\Partial\FormElement\InputCheckbox
    */
   protected $terms;
-  
+
   /**
    * The full user object we create during a valid join attempt.
-   * 
+   *
    * @var \MovLib\Data\User\Full
    */
   protected $user;
@@ -209,7 +209,7 @@ class Join extends \MovLib\Presentation\Page {
       $i18n->t("Successfully Joined"),
       Alert::SEVERITY_SUCCESS
     );
-    
+
     return $this;
   }
 
@@ -221,12 +221,13 @@ class Join extends \MovLib\Presentation\Page {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @param array $errors [optional]
+   * @param array $errors
    *   {@inheritdoc}
    * @return this
    */
-  public function validate(array $errors = null) {
+  public function validate($errors) {
     global $i18n, $kernel;
+
     $this->user       = new FullUser();
     $this->user->name = $_POST[$this->username->id]; // We want to validate the original data again
     $usernameErrors   = null;

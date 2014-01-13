@@ -23,7 +23,6 @@ use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\Help;
 use \MovLib\Presentation\Partial\Lists\GlueSeparated;
 use \MovLib\Presentation\Partial\Lists\Persons;
 

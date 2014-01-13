@@ -84,7 +84,11 @@ class DeletionRequests extends \MovLib\Presentation\Page {
     // Nothing to do if we have no deletion requests at all.
     $this->initPagination(DeletionRequest::getCount($reasonId, $languageCode));
     if ($this->resultsTotalCount === 0) {
-      return new Alert($i18n->t("Great, not a single deletion request is waiting for approval."), $i18n->t("No Deletion Requests"), Alert::SEVERITY_SUCCESS);
+      return new Alert(
+        $i18n->t("Great, not a single deletion request is waiting for approval."),
+        $i18n->t("No Deletion Requests"),
+        Alert::SEVERITY_SUCCESS
+      );
     }
 
     // Build listing of all deletion requests.
@@ -97,14 +101,15 @@ class DeletionRequests extends \MovLib\Presentation\Page {
       $contentLink = "<a href='{$deletionRequest->routes[$i18n->languageCode]}'>";
       $user        = "<a href='{$deletionRequest->user->route}'>{$deletionRequest->user->name}</a>";
 
-      if (!isset($_GET[$i18n->t("reason")])) {
-        $list .= $i18n->t("{date}: {user} has requested that {0}this content{1} should be deleted for the reason: “{reason}”", [
-          "date" => $dateTime, "user" => $user, $contentLink, "</a>", "reason" => $deletionRequest->reason,
+      // The content is already filtered, no need to state the reason with each entry.
+      if ($reasonId) {
+        $list .= $i18n->t("{date}: {user} has requested that {0}this content{1} should be deleted.", [
+          "date" => $dateTime, "user" => $user, $contentLink, "</a>",
         ]);
       }
       else {
-        $list .= $i18n->t("{date}: {user} has requested that {0}this content{1} should be deleted.", [
-          "date" => $dateTime, "user" => $user, $contentLink, "</a>",
+        $list .= $i18n->t("{date}: {user} has requested that {0}this content{1} should be deleted for the reason: “{reason}”", [
+          "date" => $dateTime, "user" => $user, $contentLink, "</a>", "reason" => $deletionRequest->reason,
         ]);
       }
 

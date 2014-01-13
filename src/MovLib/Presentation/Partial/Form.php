@@ -99,7 +99,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
    *   The name of the method that should be called if the form's auto-validation is completed an no errors were
    *   detected. Defaults to <code>"validate"</code>.
    */
-  public function __construct($page, array $elements = [], $id = null, $validationCallback = "validate") {
+  public function __construct($page, array $elements = null, $id = null, $validationCallback = "validate") {
     global $i18n, $kernel, $session;
     $this->elements        = $elements;
     $this->id              = $id ?: $page->id;

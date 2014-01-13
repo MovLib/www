@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -41,6 +41,27 @@ trait TraitDeletionRequest {
 
 
   /**
+   * Alert message explaining that the deletion of this image was requested.
+   *
+   * @var \MovLib\Presentation\Partial\Alert
+   */
+  protected $deletionRequestedAlert;
+
+  /**
+   * Submit input to delete the content.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputSubmit
+   */
+  protected $inputDelete;
+
+  /**
+   * Submit input to discard the deletion request.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputSubmit
+   */
+  protected $inputDiscard;
+
+  /**
    * Input URL form element where the user has to paste the full URL of the content that's already available.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputURL
@@ -79,15 +100,90 @@ trait TraitDeletionRequest {
 
 
   /**
-   * Get the deletion request form.
+   * Get unified deletion requested alert.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @param null|integer $id
+   *   The deletion request's unique identifier.
+   * @param boolean $extended [optional]
+   *   Whether to display extended deletion request information or not, defaults to no extended information.
+   * @return \MovLib\Presentation\Partial\Alert|null
+   *   Unified deletion requested alert or <code>NULL</code> if the deletion request identifier couldn't be found or
+   *   is <code>NULL</code> itself.
+   * @throws \OutOfBoundsException
+   */
+  public static function getDeletionRequestedAlert($id, $extended = false) {
+    global $i18n, $kernel;
+
+    // If the given identifier is NULL simply return and do nothing. This is mainly for calling presentations which
+    // don't care if there is an alert or not and only want to display it if there is one.
+    if (!$id) {
+      return;
+    }
+
+    // Try to load the deletion request.
+    try {
+      $deletionRequest = new DeletionRequest($id);
+
+      // Create the default deletion request alert message.
+      $alert = new Alert(
+        "<p>{$i18n->t("{user} has requested that this content should be deleted for the reason: “{reason}”", [
+          "user"   => "<a href='{$deletionRequest->user->route}'>{$deletionRequest->user->name}</a>",
+          "reason" => $deletionRequest->reason,
+        ])}</p>",
+        $i18n->t("Deletion Requested"),
+        Alert::SEVERITY_ERROR
+      );
+
+      // Some predefined reasons need additional information.
+      if ($extended === true) {
+        switch ($deletionRequest->reasonId) {
+          case DeletionRequest::REASON_OTHER:
+            $lang = null;
+            if ($i18n->languageCode != $deletionRequest->languageCode) {
+              $lang = " lang='{$deletionRequest->languageCode}'";
+            }
+            $alert->message .= "<blockquote><div{$lang}>{$kernel->htmlDecode($deletionRequest->info)}</div><cite>{$deletionRequest->user->name}</cite></blockquote>";
+            break;
+
+          case DeletionRequest::REASON_DUPLICATE:
+            $lang = null;
+            if ($i18n->languageCode != $deletionRequest->languageCode) {
+              $lang = " lang='{$deletionRequest->languageCode}'";
+            }
+            $alert->message .= "<p>{$i18n->t("The content is a duplicate of {0}this content{1}.", [
+              "<a href='{$deletionRequest->info}'{$lang}>", "</a>"
+            ])}</p>";
+            break;
+        }
+      }
+
+      return $alert;
+    }
+    catch (\OutOfBoundsException $e) {
+      // Do nothing! The deletion request might have been discarded right now.
+    }
+  }
+
+  /**
+   * Get the presentation's page content.
    *
    * @return string
-   *   The deletion request form.
+   *   The presentation's page content.
    */
-  protected function getDeletionRequestForm() {
-    $duplicate = DeletionRequest::REASON_DUPLICATE;
-    $other     = DeletionRequest::REASON_OTHER;
-    return "{$this->form->open()}{$this->selectReason}<div id='info-{$duplicate}' class='hidden info'>{$this->inputDuplicateURL}</div><div id='info-{$other}' class='hidden info'>{$this->inputOtherExplanation}</div>{$this->form->close()}";
+  protected function getPageContent() {
+    // We already have a deletion request if our init method has built the alert message.
+    if ($this->deletionRequestedAlert) {
+      $content = "{$this->deletionRequestedAlert}{$this->form}";
+    }
+    // Display the deletion request form if we have no request for this content yet.
+    else {
+      $duplicate = DeletionRequest::REASON_DUPLICATE;
+      $other     = DeletionRequest::REASON_OTHER;
+      $content   = "{$this->form->open()}{$this->selectReason}<div id='info-{$duplicate}' class='hidden info'>{$this->inputDuplicateURL}</div><div id='info-{$other}' class='hidden info'>{$this->inputOtherExplanation}</div>{$this->form->close()}";
+    }
+    return $content;
   }
 
   /**
@@ -95,11 +191,15 @@ trait TraitDeletionRequest {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
+   * @param null|integer $id
+   *   The possible deletion request identifier of the content. This will automatically construct the deletion request
+   *   alert for your presentation if the identifier matches an existing deletion request.
    * @return this
    * @throws \LogicException
    */
-  protected function initDeletionRequest() {
-    global $i18n, $kernel;
+  protected function initDeletionRequest($id) {
+    global $i18n, $kernel, $session;
 
     // @devStart
     // @codeCoverageIgnoreStart
@@ -124,28 +224,54 @@ trait TraitDeletionRequest {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // Conditionally show and require form elements, depending on selected reason.
-    $kernel->javascripts[] = "Deletion";
+    // Try to load the deletion request if an identifier was passed to the init method. If we were able to load an alert
+    // message for this content abort initialization and we're done. Please also note that this alert message always
+    // contains extended information because this is the actual deletion page.
+    if ($id && ($this->deletionRequestedAlert = self::getDeletionRequestedAlert($id, true))) {
+      // @todo Check user reputation and decide based on that if we should display the real deletion form. As of now
+      //       we limit it to administrators only.
+      if ($session->isAdmin() === true) {
+        $this->inputDelete            = new InputSubmit($i18n->t("Delete"), [
+          "class" => "btn btn-large btn-danger",
+          "id"    => "delete",
+          "name"  => "delete",
+          "title" => $i18n->t("Delete the content and resolve the deletion request."),
+        ]);
+        $this->inputDiscard           = new InputSubmit($i18n->t("Discard"), [
+          "class" => "btn btn-large",
+          "id"    => "discard",
+          "name"  => "discard",
+          "title" => $i18n->t("Discard this deletion request."),
+        ]);
+        $this->form                   = new Form($this, null, "handle-deletion", "validateDeletion");
+        $this->form->actionElements[] = $this->inputDelete;
+        $this->form->actionElements[] = $this->inputDiscard;
+      }
+    }
+    else {
+      // Conditionally show and require form elements, depending on selected reason.
+      $kernel->javascripts[] = "Deletion";
 
-    // Initialize the reason select form element with all available deletion request reasons, the user is required to
-    // select an option before submitting the deletion request.
-    $this->selectReason = new Select("reason", $i18n->t("Reason"), DeletionRequest::getTypes(), null, [ "required" ]);
+      // Initialize the reason select form element with all available deletion request reasons, the user is required to
+      // select an option before submitting the deletion request.
+      $this->selectReason = new Select("reason", $i18n->t("Reason"), DeletionRequest::getTypes(), null, [ "required" ]);
 
-    // The user has to give us the URL of the already existing content that is duplicated.
-    $this->inputDuplicateURL = new InputURL("duplicate", $i18n->t("URL"));
-    $this->inputDuplicateURL->setHelp($i18n->t("Enter the URL of the existing content."));
+      // The user has to give us the URL of the already existing content that is duplicated.
+      $this->inputDuplicateURL = new InputURL("duplicate", $i18n->t("URL"));
+      $this->inputDuplicateURL->setHelp($i18n->t("Enter the URL of the existing content."));
 
-    // The user has to explain why this particular content should be deleted if none of the predefined reasons is
-    // sufficient for the deletion request.
-    $this->inputOtherExplanation = new InputHTML("other", $i18n->t("Explanation"), null, [
-      "placeholder" => $i18n->t("Please explain why this content should be deleted…"),
-    ]);
+      // The user has to explain why this particular content should be deleted if none of the predefined reasons is
+      // sufficient for the deletion request.
+      $this->inputOtherExplanation = new InputHTML("other", $i18n->t("Explanation"), null, [
+        "placeholder" => $i18n->t("Please explain why this content should be deleted…"),
+      ]);
 
-    // Initialize the actual form and include a link back
-    $this->form                   = new Form($this, [ $this->selectReason, $this->inputDuplicateURL, $this->inputOtherExplanation ]);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "btn btn-danger btn-large" ]);
-    $cancel                       = end($this->breadcrumb->menuitems);
-    $this->form->actionElements[] = "<a class='btn btn-large' href='{$cancel[0]}'>{$i18n->t("Cancel")}</a>";
+      // Initialize the actual form and include a link back
+      $this->form                   = new Form($this, [ $this->selectReason, $this->inputDuplicateURL, $this->inputOtherExplanation ]);
+      $this->form->actionElements[] = new InputSubmit($i18n->t("Delete"), [ "class" => "btn btn-danger btn-large" ]);
+      $cancel                       = end($this->breadcrumb->menuitems);
+      $this->form->actionElements[] = "<a class='btn btn-large' href='{$cancel[0]}'>{$i18n->t("Cancel")}</a>";
+    }
 
     return $this;
   }
@@ -183,6 +309,31 @@ trait TraitDeletionRequest {
     // The concrete class has to update it's database record to include the reference to the newly created deletion
     // request. The call to DeletionRequest::request will return the just inserted identifier.
     $this->storeDeletionRequestIdentifier(DeletionRequest::request($this->selectReason->value, $info, $this->languageLinks));
+
+    return $this;
+  }
+
+  /**
+   * Validate the deletion request.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
+   * @return this
+   */
+  public function validateDeletion() {
+    global $i18n, $session;
+
+    // @todo Check user reputation instead of limiting action to administrators.
+    if ($session->isAdmin() === false) {
+      $this->alerts .= new Alert(
+        $i18n->t("Only administrators can delete content."),
+        $i18n->t("Not Allowed!"),
+        Alert::SEVERITY_ERROR
+      );
+      return $this;
+    }
+
+    // @todo Call actual deletion logic or discard deletion request.
 
     return $this;
   }

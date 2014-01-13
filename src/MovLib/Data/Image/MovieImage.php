@@ -142,6 +142,15 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
+   * Delete the image.
+   *
+   * @return this
+   */
+  public function delete() {
+    return $this;
+  }
+
+  /**
    * Generate all supported image styles.
    *
    * @global \MovLib\Data\Database $db
@@ -196,17 +205,47 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
 
     // This is a new upload, therefor we have to update everything. We already reserved an ID for us at the beginning
     // and we have to update that ID's record now with the just generated style data.
-    if ($regenerate === false) {
-      $this->update();
+    if ($regenerate === true) {
+      $query  = "UPDATE `movies_images` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?";
+      $types  = "sidi";
+      $params = [ serialize($this->styles), $this->id, $this->movieId, static::TYPE_ID ];
     }
     else {
-      $db->query("UPDATE `movies_images` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?", "sidi", [
-        serialize($this->styles),
+      $query =
+        "UPDATE `movies_images` SET
+          `changed`          = FROM_UNIXTIME(?),
+          `country_code`     = ?,
+          `deleted`          = false,
+          `dyn_descriptions` = COLUMN_CREATE(?, ?),
+          `extension`        = ?,
+          `filesize`         = ?,
+          `height`           = ?,
+          `language_code`    = ?,
+          `license_id`       = ?,
+          `styles`           = ?,
+          `user_id`          = ?,
+          `width`            = ?
+        WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?"
+      ;
+      $types  = "sssssiisisdiidi";
+      $params = [
+        $_SERVER["REQUEST_TIME"],
+        $this->countryCode,
+        $i18n->languageCode, $this->description,
+        $this->extension,
+        $this->filesize,
+        $this->height,
+        $this->languageCode,
+        $this->licenseId,
+        (is_array($this->styles) ? serialize($this->styles) : $this->styles),
+        $this->uploaderId,
+        $this->width,
         $this->id,
         $this->movieId,
         static::TYPE_ID,
-      ])->close();
+      ];
     }
+    $db->query($query, $types, $params)->close();
 
     return $this;
   }
@@ -304,47 +343,20 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
-   * {@inheritdoc}
+   * Set deletion request identifier.
+   *
    * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
+   * @param integer $id
+   *   The deletion request's unique identifier to set.
    * @return this
    * @throws \MovLib\Exception\DatabaseException
    */
-  protected function update() {
-    global $db, $i18n;
+  public function setDeletionRequest($id) {
+    global $db;
     $db->query(
-      "UPDATE `movies_images` SET
-        `changed`          = FROM_UNIXTIME(?),
-        `country_code`     = ?,
-        `deleted`          = false,
-        `dyn_descriptions` = COLUMN_CREATE(?, ?),
-        `extension`        = ?,
-        `filesize`         = ?,
-        `height`           = ?,
-        `language_code`    = ?,
-        `license_id`       = ?,
-        `styles`           = ?,
-        `user_id`          = ?,
-        `width`            = ?
-      WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
-      "sssssiisisdiidi",
-      [
-        $_SERVER["REQUEST_TIME"],
-        $this->countryCode,
-        $i18n->languageCode, $this->description,
-        $this->extension,
-        $this->filesize,
-        $this->height,
-        $this->languageCode,
-        $this->licenseId,
-        (is_array($this->styles) ? serialize($this->styles) : $this->styles),
-        $this->uploaderId,
-        $this->width,
-        $this->id,
-        $this->movieId,
-        static::TYPE_ID,
-      ]
+      "UPDATE `movies_images` SET `deletion_id` = ? WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
+      "didi",
+      [ $id, $this->id, $this->movieId, static::TYPE_ID ]
     )->close();
     return $this;
   }

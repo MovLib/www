@@ -132,6 +132,15 @@ class PersonImage extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
+   * Delete the image.
+   *
+   * @return this
+   */
+  public function delete() {
+    return $this;
+  }
+
+  /**
    * Generate all supported image styles.
    *
    * @global \MovLib\Data\Database $db
@@ -173,45 +182,28 @@ class PersonImage extends \MovLib\Data\Image\AbstractImage {
     $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
     $this->convert($this->getPath(self::STYLE_SPAN_02), self::STYLE_SPAN_01);
 
-    if ($regenerate === false) {
-      $this->update();
+    if ($regenerate === true) {
+      $query  = "UPDATE `persons_images` SET `styles` = ? WHERE `id` = ? AND `person_id` = ?";
+      $types  = "sid";
+      $params = [ serialize($this->styles), $this->id, $this->personId ];
     }
     else {
-      $db->query("UPDATE `persons_images` SET `styles` = ? WHERE `id` = ? AND `person_id` = ?", "sid", [
-        serialize($this->styles),
-        $this->id,
-        $this->personId,
-      ])->close();
-    }
-
-    return $this;
-  }
-
-  /**
-   * {@inheritdoc}
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected function update() {
-    global $db, $i18n, $session;
-    $db->query(
-      "UPDATE `persons_images` SET
-        `changed`          = FROM_UNIXTIME(?),
-        `deleted`          = false,
-        `dyn_descriptions` = COLUMN_CREATE(?, ?),
-        `extension`        = ?,
-        `filesize`         = ?,
-        `height`           = ?,
-        `license_id`       = ?,
-        `styles`           = ?,
-        `user_id`          = ?,
-        `width`            = ?
-      WHERE `id` = ? AND `person_id` = ?",
-      "ssssiiisdiid",
-      [
+      $query =
+        "UPDATE `persons_images` SET
+          `changed`          = FROM_UNIXTIME(?),
+          `deleted`          = false,
+          `dyn_descriptions` = COLUMN_CREATE(?, ?),
+          `extension`        = ?,
+          `filesize`         = ?,
+          `height`           = ?,
+          `license_id`       = ?,
+          `styles`           = ?,
+          `user_id`          = ?,
+          `width`            = ?
+        WHERE `id` = ? AND `person_id` = ?"
+      ;
+      $types  = "ssssiiisdiid";
+      $params = [
         $this->changed,
         $i18n->languageCode,
         $this->description,
@@ -220,12 +212,27 @@ class PersonImage extends \MovLib\Data\Image\AbstractImage {
         $this->height,
         $this->licenseId,
         serialize($this->styles),
-        $session->userId,
+        $this->uploaderId,
         $this->width,
         $this->id,
         $this->personId,
-      ]
-    )->close();
+      ];
+    }
+    $db->query($query, $types, $params)->close();
+
+    return $this;
+  }
+
+  /**
+   * Set deletion request identifier.
+   *
+   * @global \MovLib\Data\Database $db
+   * @param integer $id
+   *   The deletion request's unique identifier to set.
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function setDeletionRequest($id) {
     return $this;
   }
 

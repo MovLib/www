@@ -20,7 +20,6 @@ namespace MovLib\Presentation\Person\Upload;
 use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\License;
 use \MovLib\Data\Person\Person;
-use \MovLib\Presentation\Error\NotFound;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
