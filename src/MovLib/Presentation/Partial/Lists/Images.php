@@ -79,11 +79,11 @@ class Images extends \MovLib\Presentation\Partial\Lists\AbstractList {
    *   <code>[ "class" => "s s2" ]</code>.
    * @param array $attributes [optional]
    *   The list's attributes, defaults to <code>[ "class" => "no-list" ]</code>. Also note that the class
-   *   <code>"img-list"</code> is always applied.
+   *   <code>"hover-list"</code> is always applied.
    */
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null) {
     parent::__construct($listItems, $noItemsText, $attributes);
-    $this->addClass("img-list no-list", $this->attributes);
+    $this->addClass("hover-list no-list", $this->attributes);
     $this->listItemsAttributes = $listItemsAttributes ?: [ "class" => "s s2" ];
   }
 

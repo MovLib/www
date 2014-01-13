@@ -99,7 +99,7 @@ class Show extends \MovLib\Presentation\Page {
         "</li>"
       ;
     }
-    return "<div id='filter'>filter filter filter</div><ol class='img-list no-list r'>{$list}</ol>";
+    return "<div id='filter'>filter filter filter</div><ol class='hover-list no-list r'>{$list}</ol>";
   }
 
 }

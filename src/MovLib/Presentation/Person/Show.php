@@ -21,12 +21,14 @@ use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Person\Full as FullPerson;
 use \MovLib\Presentation\Error\Gone;
-use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Country;
+use \MovLib\Presentation\Partial\Date;
 
 /**
  * Presentation of a single person.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -61,11 +63,13 @@ class Show extends \MovLib\Presentation\Page {
    * Instantiate new person presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @throws \MovLib\Presentation\Error\NotFound
    * @throws \LogicException
    */
   public function __construct() {
-    global $i18n;
+    global $i18n, $kernel;
+    $kernel->stylesheets[] = "person";
     $this->person = new FullPerson($_SERVER["PERSON_ID"]);
     $this->initPage($this->person->name);
     $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ]]);
@@ -105,9 +109,30 @@ class Show extends \MovLib\Presentation\Page {
     // Enhance the header, insert row and span before the title.
     $this->headingBefore = "<div class='r'><div class='s s10'>";
 
+    // Put the personal information together.
+    $info = [];
+    if ($this->person->bornName) {
+      $info[] = "<span itemprop='additionalName'>{$this->person->bornName}</span>";
+    }
+    if (!$this->person->deathDate) {
+      $date = new Date($this->person->birthDate);
+      $info[] = "<time datetime='{$date->format()}'>{$date->getAge()}</time>";
+    }
+    if ($this->person->sex > 0) {
+      $gender     = $this->person->sex === 1 ? $i18n->t("Male") : $i18n->t("Female");
+      $info[] = "<span itemprop='gender'>{$gender}</span>";
+    }
+    if ($this->person->birthplace) {
+      $country = new Country($this->person->birthplace->countryCode);
+      $info[] = "<span itemprop='nationality'>{$country}</span>";
+    }
+
+    $info = implode(", ", $info);
+    $info = "<p>{$info}</p>";
+
     // Put all header information together after the closing title.
     $this->headingAfter =
-      "</div>" . // close .s
+      "{$info}</div>" . // close .s
       "<div id='person-photo' class='s s2'>{$this->getImage(
         $this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02),
         $i18n->rp("/person/{0}/photos", [ $this->person->id ]),
@@ -133,12 +158,12 @@ class Show extends \MovLib\Presentation\Page {
       else {
         $entity = new Serial($row["serial_id"]);
       }
-      $director .= "<li><a href='{$entity->route}'>{$entity->displayTitleWithYear}</a></li>";
+      $director .= "<li><a href='{$entity->route}'>{$entity->displayTitle}<span class='fr'>{$entity->year}</span></a></li>";
     }
     if ($director) {
       $filmography["director"] = [
         $i18n->t("Director"),
-        "<ol>{$director}</ol>",
+        "<ol class='hover-list no-list'>{$director}</ol>",
       ];
     }
 
@@ -151,12 +176,12 @@ class Show extends \MovLib\Presentation\Page {
       else {
         $entity = new Serial($row["serial_id"]);
       }
-      $cast .= "<li><a href='{$entity->route}'>{$entity->displayTitleWithYear}</a></li>";
+      $cast .= "<li><a href='{$entity->route}'>{$entity->displayTitle}<span class='fr'>{$entity->year}</span></a></li>";
     }
     if ($cast) {
       $filmography["cast"] = [
         $i18n->t("Cast"),
-        "<ol>{$cast}</ol>",
+        "<ol class='hover-list no-list'>{$cast}</ol>",
       ];
     }
 
@@ -169,12 +194,12 @@ class Show extends \MovLib\Presentation\Page {
       else {
         $entity = new Serial($row["serial_id"]);
       }
-      $crew .= "<li><a href='{$entity->route}'>{$i18n->t("{0} as {1}", [ $entity->displayTitleWithYear, "<em>{$row["job_title"]}</em>" ])}</a></li>";
+      $crew .= "<li><a href='{$entity->route}'>{$i18n->t("{0} as {1}{2}", [ $entity->displayTitle, "<em>{$row["job_title"]}</em>", "<span class='fr'>{$entity->year}</span>" ])}</a></li>";
     }
     if ($crew) {
       $filmography["cast"] = [
         $i18n->t("Cast"),
-        "<ol>{$crew}</ol>",
+        "<ol class='hover-list no-list'>{$crew}</ol>",
       ];
     }
 
@@ -191,7 +216,7 @@ class Show extends \MovLib\Presentation\Page {
       $links = $i18n->t("No links available, {0}add some{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
     }
     else {
-      $links .= "<ul>";
+      $links .= "<ul class='no-list'>";
       foreach ($this->person->links as $website => $url) {
         $links .= "<li><a href='{$url}' itemprop='url' target='_blank'>{$website}</a></li>";
       }

@@ -20,7 +20,7 @@ namespace MovLib\Presentation\SystemPage;
 use \MovLib\Data\SystemPage;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\FormElement\InputHTML;
+use \MovLib\Presentation\Partial\FormElement\InputHTMLRaw;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
@@ -91,19 +91,12 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
 
     $this->inputPageTitle = new InputText("page_title", $i18n->t("Page Title"), [ "required" => "required", "value" => $this->systemPage->title ]);
 
-    $this->inputPageText  = new InputHTML(
+    $this->inputPageText  = new InputHTMLRaw(
       "page-text",
       $i18n->t("Page Text"),
       $this->systemPage->text,
       [ "placeholder" => $i18n->t("Enter text for this system page"), "required" => "required" ]
     );
-    $this->inputPageText
-      ->allowBlockqoutes()
-      ->allowExternalLinks()
-      ->allowHeadings(2)
-      ->allowImages()
-      ->allowLists()
-    ;
 
     $this->form                   = new Form($this, [ $this->inputPageTitle, $this->inputPageText]);
     $this->form->actionElements[] = new InputSubmit($i18n->t("Update {0}", [ $this->systemPage->title ]), [ "class" => "btn btn-large btn-success" ]);

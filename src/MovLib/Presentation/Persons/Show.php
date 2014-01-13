@@ -115,7 +115,7 @@ class Show extends \MovLib\Presentation\Page {
       ;
     }
     if ($list) {
-      return "<div id='filter'>filter filter filter</div><ol class='img-list no-list'>{$list}</ol>";
+      return "<div id='filter'>filter filter filter</div><ol class='hover-list no-list'>{$list}</ol>";
     }
     return new Alert(
       $i18n->t(
