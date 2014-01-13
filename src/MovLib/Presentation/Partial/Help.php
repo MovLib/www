@@ -83,9 +83,12 @@ class Help {
    *   Help's string representation.
    */
   public function __toString() {
-    $id = $this->id ? " id='{$this->id}-help'" : null;
+    $id = null;
+    if ($this->id) {
+      $id = " id='{$this->id}-help'";
+    }
     if ($this->popup === true) {
-      return "<div class='ico ico-help popup'{$id} role='note'><small class='content'>{$this->content}</small></div>";
+      return "<div class='ico ico-help popup'{$id} role='note'><small class='popup-content'>{$this->content}</small></div>";
     }
     return "<small class='form-help'{$id} role='note'>{$this->content}</small>";
   }
