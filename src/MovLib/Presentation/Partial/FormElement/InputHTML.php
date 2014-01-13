@@ -154,7 +154,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\InputHTMLRaw {
    */
   public function __construct($id, $label, $value = null, array $attributes = null) {
     global $kernel;
-    parent::__construct($id, $label, $attributes);
+    parent::__construct($id, $label, $value, $attributes);
     // We don't need the JS, because we only use <textarea> for now. This will change when InputHTML is finished.
     //    $kernel->javascripts[]              = "InputHTML";
     $kernel->stylesheets[]              = "inputhtml";
@@ -166,112 +166,102 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\InputHTMLRaw {
 
   /**
    * @inheritdoc
+   * Important note: The method is commented out for a purpose, it is NOT dead code.
+   * We will need it again once the WYSIWYG editor works. For now we'll stick with a plain <textarea>.
    */
-  protected function render() {
-    global $i18n;
-
-    // Important note: The majority of the code is commented out for a purpose, it is NOT dead code.
-    // We will need it again once the WYSIWYG editor works. For now we'll stick with a plain <textarea>.
-
-    // Pretty print HTML, since we only use <textarea> for now. This will change when InputHTML is finished.
-    $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->autoParagraph($this->valueRaw)}</body></html>");
-    $tidy->cleanRepair();
-    if ($tidy->getStatus() === 2) {
-      throw new \ErrorException;
-    }
-    $content = str_replace([ "<br>\n", "<br>", "<p>", "</p>" ], "", \Normalizer::normalize(tidy_get_output($tidy)));
-
-    // We need to alter the div attributes in order to make them valid for this kind of HTML element. The div element
-    // also needs a class for easy identification via CSS and JS whilst the textarea doesn't need anything because the
-    // tag is more than sufficient for identification.
-    //    $iframeAttributes                    = $this->attributes;
-    //    $iframeAttributes["contenteditable"] = "true";
-    //    $iframeAttributes["role"]            = "textbox";
-    //    $iframeAttributes["seamless"]        = "seamless";
-    //    $iframeAttributes["tabindex"]        = 0;
-    //    $this->addClass("content", $iframeAttributes);
-    //
-    //    // The name attribute is always present for the textarea but nonsense for our div.
-    //    unset($iframeAttributes["id"], $iframeAttributes["name"]);
-    //
-    //    // The required attribute isn't allowed on our div element.
-    //    if (($key = array_search("required", $iframeAttributes)) !== false) {
-    //      unset($iframeAttributes[$key]);
-    //    }
-
-    // Use default placeholder text if none was provided.
-    if (!isset($this->attributes["placeholder"])) {
-      $this->attributes["placeholder"] = $i18n->t("Enter “{0}” text here …", [ $this->label ]);
-    }
-    //    // Unset the placeholder in the div attributes, since this attribute is not allowed by HTML standard.
-    //    else {
-    //      unset($iframeAttributes["placeholder"]);
-    //    }
-    //
-    //    // We need to add the aria-labelledby attribute to the textarea, since it won't have a label.
-    //    $this->attributes["aria-labelledby"] = "{$this->id}-legend";
-    //
-    //    // Build the editor based on allowed tags.
-    //    $editor = null;
-    //
-    //    // Check if any heading is allowed (checking against level 6 is enough as it's always part of the party if any level
-    //    // is allowed) and include the block level selector if we have any. Ommit if no headings are allowed.
-    //    if (isset($this->allowedTags["h6"])) {
-    //      $editor .= "<li data-handler='formatBlock' data-tag='p' href=''>{$i18n->t("Paragraph")}</li>";
-    //      for ($i = 2; $i <= 6; ++$i) {
-    //        if (isset($this->allowedTags["h{$i}"])) {
-    //          $editor .= "<li data-handler='formatBlock' data-tag='h{$i}' href=''>{$i18n->t("Heading {0, number, integer}", [ $i ])}</li>";
-    //        }
-    //      }
-    //      $editor = "<div class='btn formats' data-handler='formats'><span class='expander'>{$i18n->t("Paragraph")}</span><ul class='concealed no-list'>{$editor}</ul></div>";
-    //    }
-    //
-    //    $external = $this->allowExternalLinks === true ? " external" : null;
-    //    $editor .=
-    //      // Add the font styles.
-    //      "<span class='btn ico ico-bold' data-handler='formatInline' data-tag='bold'><span class='vh'>{$i18n->t("Bold")}</span></span>" .
-    //      "<span class='btn ico ico-italic' data-handler='formatInline' data-tag='italic'><span class='vh'>{$i18n->t("Italic")}</span></span>" .
-    //      // Add the alignment buttons.
-    //      "<span class='btn ico ico-align-left' data-direction='left' data-handler='align'><span class='vh'>{$i18n->t("Align left")}</span></span>" .
-    //      "<span class='btn ico ico-align-center' data-direction='center' data-handler='align'><span class='vh'>{$i18n->t("Align center")}</span></span>" .
-    //      "<span class='btn ico ico-align-right' data-direction='right' data-handler='align'><span class='vh'>{$i18n->t("Align right")}</span></span>" .
-    //      // Add the insert section according to configuration.
-    //      "<span class='btn ico ico-link{$external}' data-handler='link'><span class='vh'>{$i18n->t("Insert link")}</span></span>" .
-    //      "<span class='btn ico ico-unlink' data-handler='formatInline' data-tag='unlink'><span class='vh'>{$i18n->t("Unlink selection")}</span></span>"
-    //    ;
-    //
-    //    if (isset($this->allowedTags["blockquote"])) {
-    //      $editor .= "<span class='btn ico ico-quotation' data-handler='quotation'><span class='vh'>{$i18n->t("Insert quotation")}</span></span>";
-    //    }
-    //
-    //    if (isset($this->allowedTags["figure"])) {
-    //      $editor .= "<span class='btn ico ico-image' data-handler='image'><span class='vh'>{$i18n->t("Insert image")}</span></span>";
-    //    }
-    //
-    //    // Add list section, if lists are allowed.
-    //    if (isset($this->allowedTags["ul"])) {
-    //      $editor .=
-    //        "<span class='btn ico ico-ul' data-handler='list'><span class='vh'>{$i18n->t("Insert unordered list")}</span></span>" .
-    //        "<span class='btn ico ico-ol' data-handler='list'><span class='vh'>{$i18n->t("Insert ordered list")}</span></span>" .
-    //        "<span class='btn ico ico-indent-left' data-direction='left' data-handler='indent'><span class='vh'>{$i18n->t("Indent list item left")}</span></span>" .
-    //        "<span class='btn ico ico-indent-right' data-direction='right' data-handler='indent'><span class='vh'>{$i18n->t("Indent list item right")}</span></span>"
-    //      ;
-    //    }
-
-    //    return
-    //      "{$this->help}<fieldset class='inputhtml'>" .
-    //        // Set an id for the legend, since it labels our textarea.
-    //        "<legend id='{$this->id}-legend'>{$this->label}</legend>" .
-    //        // The jshidden class uses display:none to hide its elements, this means that these elements aren't part of the
-    //        // DOM tree and aren't parsed by user agents.
-    //        "<p class='jshidden'><textarea{$this->expandTagAttributes($this->attributes)}>{$this->valueRaw}</textarea></p>" .
-    //        // Same situation above but for user agents with disabled JavaScript. The content for the editable div is copied
-    //        // over from the textarea by the JS module. But we directly include the placeholder because it's very short.
-    //         "<div class='editor nojshidden'>{$editor}<iframe{$this->expandTagAttributes($iframeAttributes)}></iframe></div>" .
-    //      "</fieldset>"
-    //    ;
-    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$content}</textarea></p>";
-  }
+//  protected function render() {
+//    global $i18n;
+//
+//    // We need to alter the div attributes in order to make them valid for this kind of HTML element. The div element
+//    // also needs a class for easy identification via CSS and JS whilst the textarea doesn't need anything because the
+//    // tag is more than sufficient for identification.
+//    $iframeAttributes                    = $this->attributes;
+//    $iframeAttributes["contenteditable"] = "true";
+//    $iframeAttributes["role"]            = "textbox";
+//    $iframeAttributes["seamless"]        = "seamless";
+//    $iframeAttributes["tabindex"]        = 0;
+//    $this->addClass("content", $iframeAttributes);
+//
+//    // The name attribute is always present for the textarea but nonsense for our div.
+//    unset($iframeAttributes["id"], $iframeAttributes["name"]);
+//
+//    // The required attribute isn't allowed on our div element.
+//    if (($key = array_search("required", $iframeAttributes)) !== false) {
+//      unset($iframeAttributes[$key]);
+//    }
+//
+//    // Use default placeholder text if none was provided.
+//    if (!isset($this->attributes["placeholder"])) {
+//      $this->attributes["placeholder"] = $i18n->t("Enter “{0}” text here …", [ $this->label ]);
+//    }
+//    // Unset the placeholder in the div attributes, since this attribute is not allowed by HTML standard.
+//    else {
+//      unset($iframeAttributes["placeholder"]);
+//    }
+//
+//    // We need to add the aria-labelledby attribute to the textarea, since it won't have a label.
+//    $this->attributes["aria-labelledby"] = "{$this->id}-legend";
+//
+//    // Build the editor based on allowed tags.
+//    $editor = null;
+//
+//    // Check if any heading is allowed (checking against level 6 is enough as it's always part of the party if any level
+//    // is allowed) and include the block level selector if we have any. Ommit if no headings are allowed.
+//    if (isset($this->allowedTags["h6"])) {
+//      $editor .= "<li data-handler='formatBlock' data-tag='p' href=''>{$i18n->t("Paragraph")}</li>";
+//      for ($i = 2; $i <= 6; ++$i) {
+//        if (isset($this->allowedTags["h{$i}"])) {
+//          $editor .= "<li data-handler='formatBlock' data-tag='h{$i}' href=''>{$i18n->t("Heading {0, number, integer}", [ $i ])}</li>";
+//        }
+//      }
+//      $editor = "<div class='btn formats' data-handler='formats'><span class='expander'>{$i18n->t("Paragraph")}</span><ul class='concealed no-list'>{$editor}</ul></div>";
+//    }
+//
+//    $external = $this->allowExternalLinks === true ? " external" : null;
+//    $editor .=
+//      // Add the font styles.
+//      "<span class='btn ico ico-bold' data-handler='formatInline' data-tag='bold'><span class='vh'>{$i18n->t("Bold")}</span></span>" .
+//      "<span class='btn ico ico-italic' data-handler='formatInline' data-tag='italic'><span class='vh'>{$i18n->t("Italic")}</span></span>" .
+//      // Add the alignment buttons.
+//      "<span class='btn ico ico-align-left' data-direction='left' data-handler='align'><span class='vh'>{$i18n->t("Align left")}</span></span>" .
+//      "<span class='btn ico ico-align-center' data-direction='center' data-handler='align'><span class='vh'>{$i18n->t("Align center")}</span></span>" .
+//      "<span class='btn ico ico-align-right' data-direction='right' data-handler='align'><span class='vh'>{$i18n->t("Align right")}</span></span>" .
+//      // Add the insert section according to configuration.
+//      "<span class='btn ico ico-link{$external}' data-handler='link'><span class='vh'>{$i18n->t("Insert link")}</span></span>" .
+//      "<span class='btn ico ico-unlink' data-handler='formatInline' data-tag='unlink'><span class='vh'>{$i18n->t("Unlink selection")}</span></span>"
+//    ;
+//
+//    if (isset($this->allowedTags["blockquote"])) {
+//      $editor .= "<span class='btn ico ico-quotation' data-handler='quotation'><span class='vh'>{$i18n->t("Insert quotation")}</span></span>";
+//    }
+//
+//    if (isset($this->allowedTags["figure"])) {
+//      $editor .= "<span class='btn ico ico-image' data-handler='image'><span class='vh'>{$i18n->t("Insert image")}</span></span>";
+//    }
+//
+//    // Add list section, if lists are allowed.
+//    if (isset($this->allowedTags["ul"])) {
+//      $editor .=
+//        "<span class='btn ico ico-ul' data-handler='list'><span class='vh'>{$i18n->t("Insert unordered list")}</span></span>" .
+//        "<span class='btn ico ico-ol' data-handler='list'><span class='vh'>{$i18n->t("Insert ordered list")}</span></span>" .
+//        "<span class='btn ico ico-indent-left' data-direction='left' data-handler='indent'><span class='vh'>{$i18n->t("Indent list item left")}</span></span>" .
+//        "<span class='btn ico ico-indent-right' data-direction='right' data-handler='indent'><span class='vh'>{$i18n->t("Indent list item right")}</span></span>"
+//      ;
+//    }
+//
+//    return
+//      "{$this->help}<fieldset class='inputhtml'>" .
+//        // Set an id for the legend, since it labels our textarea.
+//        "<legend id='{$this->id}-legend'>{$this->label}</legend>" .
+//        // The jshidden class uses display:none to hide its elements, this means that these elements aren't part of the
+//        // DOM tree and aren't parsed by user agents.
+//        "<p class='jshidden'><textarea{$this->expandTagAttributes($this->attributes)}>{$this->valueRaw}</textarea></p>" .
+//        // Same situation above but for user agents with disabled JavaScript. The content for the editable div is copied
+//        // over from the textarea by the JS module. But we directly include the placeholder because it's very short.
+//         "<div class='editor nojshidden'>{$editor}<iframe{$this->expandTagAttributes($iframeAttributes)}></iframe></div>" .
+//      "</fieldset>"
+//    ;
+//  }
 
   /**
    * Allow <code><blockquote></code> elements.
@@ -335,7 +325,7 @@ class InputHTML extends \MovLib\Presentation\Partial\FormElement\InputHTMLRaw {
    */
   public function validate() {
     global $i18n, $kernel;
-    
+
     // Validate if this from element is required, if it isn't the value will be NULL and we abort.
     parent::validate();
     if (!$this->value) {
