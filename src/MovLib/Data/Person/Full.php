@@ -17,7 +17,8 @@
  */
 namespace MovLib\Data\Person;
 
-
+use \MovLib\Data\Place;
+use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Contains all available information about a person.
@@ -197,5 +198,8 @@ class Full extends \MovLib\Data\Person\Person {
   protected function init() {
     parent::init();
     $this->links = unserialize($this->links);
+    if ($this->birthplace) {
+      $this->birthplace = new Place($this->birthplace);
+    }
   }
 }
