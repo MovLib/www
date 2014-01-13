@@ -28,6 +28,9 @@
 
 source $(pwd)/inc/conf.sh
 
+CHECKINSTALL_ARGUMENTS="--provides=php,php-cgi,php-config,php-fpm,phpize"
+NAME="php"
+
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
@@ -35,7 +38,6 @@ else
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
-NAME="php"
 source ${ID}uninstall.sh
 source ${ID}wget.sh "http://us1.php.net/distributions/" "${NAME}-${VERSION}" ".tar.gz"
 
@@ -112,4 +114,5 @@ CFLAGS="-O3 -m64 -DMYSQLI_NO_CHANGE_USER_ON_PCONNECT" CXXFLAGS="-O3 -m64" ./conf
   --with-tidy \
   --with-zend-vm="GOTO" \
   --with-zlib
+
 source ${ID}install.sh

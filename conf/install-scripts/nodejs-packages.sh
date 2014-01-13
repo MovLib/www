@@ -17,7 +17,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Helper script to make, make install and clean-up.
+# Install all global nodejs packages.
 #
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT:  © 2013 MovLib
@@ -26,10 +26,4 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-make
-checkinstall --default --maintainer=webmaster@movlib.org --nodoc --pkgname=${NAME} --pkgversion=${VERSION} --type=debian ${CHECKINSTALL_ARGUMENTS:=""}
-make clean
-ldconfig
-LINE=$(msgline)
-msgsuccess "${LINE}\nSuccessfully installed ${NAME}-${VERSION}\n${LINE}"
-exit 0
+npm install -g recess

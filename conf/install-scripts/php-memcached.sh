@@ -29,13 +29,17 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 source $(pwd)/inc/conf.sh
+
 NAME="php-memcached"
 VERSION="2.1.0"
+
 source ${ID}uninstall.sh
 source ${ID}git.sh "${NAME}-dev" ${NAME}
+
 phpize
 CFLAGS="-O3 -m64" ./configure ${DEFAULT_FLAGS} \
   --disable-memcached-sasl \
   --enable-memcached \
   --enable-memcached-json
+
 source ${ID}install.sh

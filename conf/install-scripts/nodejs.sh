@@ -17,7 +17,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Helper script to make, make install and clean-up.
+# "nodejs" and "npm" installation script.
 #
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT:  © 2013 MovLib
@@ -26,10 +26,23 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-make
-checkinstall --default --maintainer=webmaster@movlib.org --nodoc --pkgname=${NAME} --pkgversion=${VERSION} --type=debian ${CHECKINSTALL_ARGUMENTS:=""}
-make clean
-ldconfig
-LINE=$(msgline)
-msgsuccess "${LINE}\nSuccessfully installed ${NAME}-${VERSION}\n${LINE}"
-exit 0
+source $(pwd)/inc/conf.sh
+
+NAME="node";
+VERSION="latest";
+
+source ${ID}uninstall.sh
+source ${ID}wget.sh "http://nodejs.org/dist/" "${NAME}-${VERSION}" ".tar.gz"
+
+VERSION=node-v*
+VERSION=$(echo $VERSION | cut -d v -f 2)
+msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
+cd "${NAME}-v${VERSION}"
+
+./configure
+
+source ${ID}install.sh
+
+# Install npm as well
+wget https://npmjs.org/install.sh | sh
+rm -f install.sh

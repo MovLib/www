@@ -32,7 +32,7 @@ if [ ! ${#} == 3 ]; then
 fi
 
 if [ ! -f ${2}${3} ] && [ ! -d ${2} ]; then
-  wget --no-check-certificate ${1}${2}${3}
+  wget --no-check-certificate --timestamping ${1}${2}${3}
   if [ $? != 0 ]; then
     msgerror "Could not download source files"
     exit 1
@@ -52,5 +52,7 @@ if [ -f ${2}${3} ]; then
   fi
 fi
 
-msginfo "Changing to directory: ${SD}${2}"
-cd ${2}
+if [ -d ${1} ]; then
+  msginfo "Changing to directory: ${SD}${2}"
+  cd ${2}
+fi
