@@ -73,9 +73,14 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     $this->attributes["aria-multiline"] = "true";
 
     if (!empty($_POST[$this->id])) {
-      $normalized     = \Normalizer::normalize($_POST[$this->id]);
-      $this->valueRaw = $this->autoParagraph($normalized);
-      $this->value    = $kernel->htmlEncode($this->valueRaw);
+      $normalized = \Normalizer::normalize(trim($_POST[$this->id]));
+      if (!empty($normalized)) {
+        $this->valueRaw = $this->autoParagraph($normalized);
+        $this->value    = $kernel->htmlEncode($this->valueRaw);
+      }
+      else {
+        $this->value = $this->valueRaw = null;
+      }
     }
     elseif ($value) {
       $this->value    = $value;
@@ -91,6 +96,7 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
    * Auto insert paragraphs (and breaks).
    *
    * @link http://core.trac.wordpress.org/browser/trunk/src/wp-includes/formatting.php WordPress source code
+   * @link https://github.com/trademark/VanillaPlugins/blob/master/AutoParagraph/class.autoparagraph.plugin.php
    * @param string $html
    *   The text which has to be formatted.
    * @return string
@@ -100,6 +106,9 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     // Just to make things a little easier, pad the end
     $html = $this->normalizeLineFeeds("{$html}\n");
 
+    // Trim each line.
+    $html = preg_replace("#^\s*(.*)#", "$1", $html);
+
     // Normalize break tags.
     $html = preg_replace("#<br */?>#", "<br>", $html);
 
@@ -107,7 +116,7 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     $html = preg_replace("#<br>\s*<br>#", "\n\n", $html);
 
     // Space things out a little
-    $allblocks = "(?:dl|dd|dt|ul|ol|li|blockquote|p|h[2-6]|figure|figcaption)";
+    $allblocks = "(?:table|thead|tfoot|caption|col|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|map|area|blockquote|address|math|p|h[1-6]|hr|section|article|aside|hgroup|header|footer|nav|figure|figcaption|details|menu|summary|code)";
 
     // Insert one line feed before each block level tag.
     $html = preg_replace("#(<{$allblocks}[^>]*>)#", "\n$1", $html);
@@ -119,26 +128,32 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     $html = preg_replace("#\n\n+#", "\n\n", $html);
 
     // Ensure no whitespace is present after an image tag and the following caption.
-    $html = preg_replace("#<img(.*)>\s+<#U", "<img$1><", $html);
+    //$html = preg_replace("#<img(.*)>\s+<#U", "<img$1><", $html);
 
     // Make paragraphs, including one at the end
     $lines = preg_split("#\n\s*\n#", $html, -1, PREG_SPLIT_NO_EMPTY);
 
     // Enclose all paragraphs.
     $html = null;
-    $c   = count($lines);
+    $c    = count($lines);
     for ($i = 0; $i < $c; ++$i) {
       $lines[$i] = trim($lines[$i], "\n");
       $html     .= "<p>{$lines[$i]}</p>\n";
     }
 
-    // Don't pee all over a tag
+    // Under certain conditions a paragraph might only contain whitespace characters.
+    $html = preg_replace("#<p>\s*</p>#", "", $html);
+
+    // Close paragraphs before cerating elements.
+    $html = preg_replace("#<p>([^<]+)</(div|address|form)>#", "<p>$1</p></$2>", $html);
+
+    // Don't wrap block tags in paragraphs.
     $html = preg_replace("#<p>\s*(</?{$allblocks}[^>]*>)\s*</p>#", "$1", $html);
 
-    // Problem with nested lists and figure captions.
-    $html = preg_replace("#<p>(<(li|figcaption).+?)</p>#", "$1", $html);
+    // Problem with nested lists captions.
+    $html = preg_replace("#<p>(<li.+?)</p>#", "$1", $html);
 
-    // Move the opening paragraph inside the blockquote (opening and closing.
+    // Move the opening paragraph inside the blockquote (opening and closing).
     $html = preg_replace("#<p><blockquote([^>]*)>#i", "<blockquote$1><p>", $html);
     $html = str_replace("</blockquote></p>", "</p></blockquote>", $html);
 
@@ -153,10 +168,13 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     $html = preg_replace("#(</?{$allblocks}[^>]*>)\s*<br>#", "$1", $html);
 
     // No breaks before closing block elements if there is only whitespace.
-    $html = preg_replace("#<br>(\s*</?(?:p|li|dl|dd|dt|ul|ol)[^>]*>)#", "$1", $html);
+    $html = preg_replace("#<br>(\s*</?(?:p|li|div|dl|dd|dt|th|pre|td|ul|ol|code)[^>]*>)#", "$1", $html);
 
     // Remove all left over line feeds.
-    return preg_replace("#\n+#", "", $html);
+    $html = preg_replace("#\n+#", "", $html);
+
+    // Collapse whitespace characters.
+    return $this->collapseWhitespace($html);
   }
 
   /**
@@ -171,7 +189,7 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     if ($tidy->getStatus() === 2) {
       throw new \ErrorException;
     }
-    
+
     $content = str_replace(
       [ "\n\n", "<br>\n", "<p>", "</p>" ],
       [ "\n", "", "", "\n"],
