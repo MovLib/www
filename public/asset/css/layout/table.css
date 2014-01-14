@@ -52,6 +52,10 @@ thead {
 th {
   padding: 8px;
   font-weight: 200;
+  vertical-align: top;
+}
+
+thead th {
   color: #fff;
   text-align: center;
 }
