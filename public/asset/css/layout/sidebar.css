@@ -88,8 +88,8 @@
   background-color: #fcfcfc;
   border: 1px solid #e5e5e5;
   border-right: 0;
-  transition-property: color, background-color, border-color, margin-left;
   outline-offset: -2px;
+  transition-property: color, background-color, border-color, margin-left;
 }
 
 #sidebar-nav a.active {
@@ -150,8 +150,7 @@
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
- * The small sidebar is inspired by GitHub (well the complete sidebar is) and used on pages where we need more space. We
- * have to redefine the complete grid to make this work.
+ * The small sidebar is inspired by GitHub (well the complete sidebar is) and used on pages where we need more space.
  * ------------------------------------------------------------------------------------------------------------------ */
 
 .sidebar-s {
@@ -163,9 +162,13 @@
   width: 20px;
 }
 
+.sidebar-s #sidebar-nav .no-list {
+  padding: 0 0 1px;
+}
+
 .sidebar-s #sidebar-nav a {
-  margin-left: 35px;
   padding: 6px 8px;
+  margin-left: 35px;
 }
 
 .sidebar-s #sidebar-nav a.active,

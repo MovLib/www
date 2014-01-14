@@ -30,18 +30,17 @@
  * because the eye sees relative and things are totally off if we aren't applying this.
  * ------------------------------------------------------------------------------------------------------------------ */
 
-#imagedetails,
-.imagedetails #sidebar-nav a.active {
+#imagedetails {
   background-color: #f5f5f5;
 }
 
 #imagedetails:before {
-  content: "";
   position: absolute;
   width: 150px;
   height: 1px;
   background: #e5e5e5;
   background: linear-gradient(to right, #e5e5e5, rgba(229, 229, 229, 0));
+  content: "";
 }
 
 #imagedetails .alert {
@@ -77,26 +76,22 @@
  * The image pagination stream.
  * ------------------------------------------------------------------------------------------------------------------ */
 
-.imagedetails #sidebar-nav {
-  top: 100px;
-}
-
 #imagedetails .stream {
-  background-color: #252525;
+  position: relative;
   padding: 20px 40px 20px 20px;
   margin-bottom: 20px;
-  position: relative;
+  background-color: #252525;
 }
 
 #imagedetails .stream:before {
-  content: "";
   position: absolute;
+  bottom: -40px;
+  left: calc(50% - 20px);
   width: 0;
   height: 0;
   border: 20px solid transparent;
   border-top-color: #252525;
-  bottom: -40px;
-  left: calc(50% - 20px);
+  content: "";
 }
 
 #imagedetails .stream a.active,
@@ -120,10 +115,10 @@
 }
 
 #imagedetails .ico {
-  color: #fff;
+  height: 60px;
   font-size: 60px;
   line-height: 60px;
-  height: 60px;
+  color: #fff;
 }
 
 #imagedetails a.mute:focus,
