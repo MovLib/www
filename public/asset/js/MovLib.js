@@ -227,6 +227,15 @@
       return this.execute(document);
     },
 
+    /**
+     * Invalidate a form element and display the browser generated error message to the user.
+     *
+     * @param {HTMLElement} element
+     *   The HTML element to invalidate.
+     * @param {String} message
+     *   The already translated custom error message to display.
+     * @returns {MovLib}
+     */
     invalidate: function (element, message) {
       // Callback for the change event on the element.
       this.invalidateReset = this.invalidateReset || function () {
@@ -247,6 +256,8 @@
 
       // Observe any changes to this input field and reset the validity error message.
       element.addEventListener("change", this.invalidateReset, false);
+
+      return this;
     },
 
     /**
@@ -310,8 +321,8 @@
      * @returns {undefined}
      */
     fixFocusScrollPosition: function (event) {
-      if (!document.header.contains(event.target)) {
-        var boundingClientRect = event.target.getBoundingClientRect();
+      var boundingClientRect = event.target.getBoundingClientRect();
+      if (!document.header.contains(event.target) && (event.target.type === "textarea" && boundingClientRect.top >= 0)) {
         if (boundingClientRect.top < boundingClientRect.height + 50) {
           window.scrollBy(0, -((boundingClientRect.top > 0 ? boundingClientRect.height : (boundingClientRect.top * -1 + boundingClientRect.height)) + 60));
         }
