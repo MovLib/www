@@ -257,10 +257,10 @@ abstract class AbstractBaseImage {
     }
 
     // Nothing to do if the style already exists and the arguments haven't changed.
-    if (isset($this->styles[$style]) && $this->styles[$style]["resizeArg"] == $resizeArg) {
+    $destination = $this->getPath($style);
+    if (is_file($destination) && isset($this->styles[$style]) && $this->styles[$style]["resizeArg"] == $resizeArg) {
       return $this;
     }
-    $destination = $this->getPath($style);
 
     // Generate the desired image style with ImageMagick. We directly call the binary instead of using some kind of
     // abstraction layer, we don't need any fancy object just to resize an image.

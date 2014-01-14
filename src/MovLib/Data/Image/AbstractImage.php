@@ -198,6 +198,14 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
       if (!isset($this->styles[$style])) {
         $this->generateStyles($this->getPath(), true);
       }
+
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (!is_file($this->getPath($style))) {
+        $this->generateStyles($this->getPath(), true);
+      }
+      // @devEnd
+      // @codeCoverageIgnoreEnd
     }
 
     // Use cache entry if we already generated this style once.
