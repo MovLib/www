@@ -25,12 +25,9 @@
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
- * @param {window} window
- * @param {document} document
  * @param {MovLib} MovLib
- * @return {undefined}
  */
-(function (window, document, MovLib) {
+(function (MovLib) {
   "use strict";
 
   /**
@@ -38,7 +35,7 @@
    *
    * @type String
    */
-  var moduleName = "Deletion";
+  var moduleName = "DeletionRequest";
 
   /**
    * Attach InputImage to the MovLib modules.
@@ -76,4 +73,4 @@
     return MovLib;
   };
 
-})(window, window.document, window.MovLib);
+})(window.MovLib);
