@@ -37,7 +37,7 @@ class Date extends \MovLib\Presentation\AbstractBase {
    *
    * @var \DateTime
    */
-  protected $date;
+  public $dateValue;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -54,7 +54,7 @@ class Date extends \MovLib\Presentation\AbstractBase {
     if (is_int($date)) {
       $date = "@{$date}";
     }
-    $this->date = new \DateTime($date);
+    $this->dateValue = new \DateTime($date);
   }
 
   /**
@@ -68,9 +68,9 @@ class Date extends \MovLib\Presentation\AbstractBase {
    *   The formatted date.
    */
   public function format($format = "Y-m-d") {
-    return $this->date->format($format);
+    return $this->dateValue->format($format);
   }
-  
+
   public function formatSchemaProperty($property, array $attributes = []) {
     $attributes["itemprop"] = $property;
     $attributes["datetime"] = $this->format();
@@ -80,11 +80,16 @@ class Date extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the age of the date in years.
    *
+   * @param \DateTime $date [optional]
+   *   The date to calculate the age to. Defaults to "now".
    * @return integer
    *   The age of the date in years.
    */
-  public function getAge() {
-    return $this->date->diff(new \DateTime("now"))->format("%y");
+  public function getAge($date = null) {
+    if (!$date) {
+      $date = new \DateTime("now");
+    }
+    return $this->dateValue->diff($date)->format("%y");
   }
 
   /**
@@ -99,7 +104,7 @@ class Date extends \MovLib\Presentation\AbstractBase {
    */
   public function intlFormat($datetype = \IntlDateFormatter::MEDIUM) {
     global $i18n, $session;
-    return (new \IntlDateFormatter($i18n->locale, $datetype, \IntlDateFormatter::NONE, new \DateTimeZone($session->userTimeZoneId)))->format($this->date);
+    return (new \IntlDateFormatter($i18n->locale, $datetype, \IntlDateFormatter::NONE, new \DateTimeZone($session->userTimeZoneId)))->format($this->dateValue);
   }
 
 }

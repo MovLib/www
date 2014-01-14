@@ -114,7 +114,7 @@ class Show extends \MovLib\Presentation\Page {
     if ($this->person->bornName) {
       $info[] = "<span itemprop='additionalName'>{$this->person->bornName}</span>";
     }
-    if (!$this->person->deathDate) {
+    if (!$this->person->deathDate && $this->person->birthDate) {
       $date = new Date($this->person->birthDate);
       $info[] = "<time datetime='{$date->format()}'>{$date->getAge()}</time>";
     }
@@ -122,13 +122,49 @@ class Show extends \MovLib\Presentation\Page {
       $gender     = $this->person->sex === 1 ? $i18n->t("Male") : $i18n->t("Female");
       $info[] = "<span itemprop='gender'>{$gender}</span>";
     }
-    if ($this->person->birthplace) {
-      $country = new Country($this->person->birthplace->countryCode);
-      $info[] = "<span itemprop='nationality'>{$country}</span>";
+
+    // Construct birth info in a translatable way.
+    $birthInfo = null;
+    if ($this->person->birthDate && $this->person->birthplace) {
+      $date = new Date($this->person->birthDate);
+      $birthInfo = "<br>{$i18n->t("Born on {0} in {1}, {2}", [ $date->formatSchemaProperty("birthDate"), $this->person->birthplace->name, new Country($this->person->birthplace->countryCode) ])}";
+    }
+    elseif ($this->person->birthDate && !$this->person->birthplace) {
+      $date = new Date($this->person->birthDate);
+      $birthInfo = "<br>{$i18n->t("Born on {0}", [ $date->formatSchemaProperty("birthDate") ])}";
+    }
+    elseif ($this->person->birthplace) {
+      $birthInfo = "<br>{$i18n->t("Born in {0}, {1}", [ $this->person->birthplace->name, new Country($this->person->birthplace->countryCode) ])}";
+    }
+
+    // Construct death info in a translatable way.
+    $deathInfo = null;
+    if ($this->person->deathDate && $this->person->deathplace) {
+      $date = new Date($this->person->deathDate);
+      if ($this->person->birthDate) {
+        $birthDate = new Date($this->person->birthDate);
+        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1} in {2}, {3}", [ $birthDate->getAge($date->dateValue), $date->formatSchemaProperty("deathDate"),  $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
+      }
+      else {
+        $deathInfo = "<br>{$i18n->t("Died on {0} in {1}, {2}", [ $date->formatSchemaProperty("deathDate"), $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
+      }
+    }
+    elseif ($this->person->deathDate && !$this->person->deathplace) {
+      $date = new Date($this->person->deathDate);
+      if ($this->person->birthDate) {
+        $birthDate = new Date($this->person->birthDate);
+        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1}", [ $birthDate->getAge($date->dateValue), $date->formatSchemaProperty("deathDate"),  ])}";
+      }
+      else {
+        $deathInfo = "<br>{$i18n->t("Died on {0}", [ $date->formatSchemaProperty("deathDate") ])}";
+      }
+    }
+    elseif ($this->person->deathplace) {
+      $deathInfo = "<br>{$i18n->t("Died in {0}, {1}", [ $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
     }
 
     $info = implode(", ", $info);
-    $info = "<p>{$info}</p>";
+    $info = "<p>{$info}{$birthInfo}{$deathInfo}</p>";
 
     // Put all header information together after the closing title.
     $this->headingAfter =
@@ -158,12 +194,13 @@ class Show extends \MovLib\Presentation\Page {
       else {
         $entity = new Serial($row["serial_id"]);
       }
-      $director .= "<li><a href='{$entity->route}'>{$entity->displayTitle}<span class='fr'>{$entity->year}</span></a></li>";
+      $director .= "<li><a class='r' href='{$entity->route}'><span class='link-color s'>{$entity->displayTitle}</span><span class='fr'>{$entity->year}</span></a></li>";
     }
     if ($director) {
       $filmography["director"] = [
         $i18n->t("Director"),
         "<ol class='hover-list no-list'>{$director}</ol>",
+        [ "itemprop" => "jobTitle" ],
       ];
     }
 
@@ -182,6 +219,7 @@ class Show extends \MovLib\Presentation\Page {
       $filmography["cast"] = [
         $i18n->t("Cast"),
         "<ol class='hover-list no-list'>{$cast}</ol>",
+        [ "itemprop" => "jobTitle" ],
       ];
     }
 
@@ -194,11 +232,11 @@ class Show extends \MovLib\Presentation\Page {
       else {
         $entity = new Serial($row["serial_id"]);
       }
-      $crew .= "<li><a href='{$entity->route}'>{$i18n->t("{0} as {1}{2}", [ $entity->displayTitle, "<em>{$row["job_title"]}</em>", "<span class='fr'>{$entity->year}</span>" ])}</a></li>";
+      $crew .= "<li><a href='{$entity->route}'>{$i18n->t("{0} as {1}{2}", [ $entity->displayTitle, "<em itemprop='jobTitle'>{$row["job_title"]}</em>", "<span class='fr'>{$entity->year}</span>" ])}</a></li>";
     }
     if ($crew) {
-      $filmography["cast"] = [
-        $i18n->t("Cast"),
+      $filmography["crew"] = [
+        $i18n->t("Crew"),
         "<ol class='hover-list no-list'>{$crew}</ol>",
       ];
     }
@@ -234,7 +272,8 @@ class Show extends \MovLib\Presentation\Page {
       if (is_array($section[1])) {
         foreach ($section[1] as $subId => $subSection) {
           $this->sidebarNavigation->menuitems[] = [ "#{$id}-{$subId}", $subSection[0] ];
-          $content .= "<div id='{$id}-{$subId}'><h3>{$subSection[0]}</h3>{$subSection[1]}</div>";
+          $attributes = isset($subSection[2]) ? $this->expandTagAttributes($subSection[2]) : null;
+          $content .= "<div id='{$id}-{$subId}'><h3{$attributes}>{$subSection[0]}</h3>{$subSection[1]}</div>";
         }
       }
       else {
