@@ -17,10 +17,6 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\DeletionRequest;
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
@@ -34,6 +30,15 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  */
 class ImageDelete extends \MovLib\Presentation\Movie\Image {
   use \MovLib\Presentation\TraitDeletionRequest;
+
+  /**
+   * Delete the movie image.
+   *
+   * @return this
+   */
+  protected function delete() {
+
+  }
 
   /**
    * Initialize movie image edit page.
@@ -81,15 +86,27 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
   }
 
   /**
+   * Remove the deletion request's identifier from the database record.
+   *
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Presentation\Redirect\SeeOther
+   */
+  protected function removeDeletionRequestIdentifier() {
+    $this->image->setDeletionRequest(null);
+    throw new SeeOtherRedirect($this->image->route);
+  }
+
+  /**
    * Stores the deletion request's identifier in the movies images table.
    *
-   * @param integer $deletionRequestIdentifier
+   * @param integer $id
    *   The unique identifier of the deletion request.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
-  protected function storeDeletionRequestIdentifier($deletionRequestIdentifier) {
-    $this->image->setDeletionRequest($deletionRequestIdentifier);
+  protected function storeDeletionRequestIdentifier($id) {
+    $this->image->setDeletionRequest($id);
     throw new SeeOtherRedirect($this->image->route);
   }
 

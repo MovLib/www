@@ -43,9 +43,16 @@ trait TraitDeletionRequest {
   /**
    * Alert message explaining that the deletion of this image was requested.
    *
-   * @var \MovLib\Presentation\Partial\Alert
+   * @var null|\MovLib\Presentation\Partial\Alert
    */
   protected $deletionRequestedAlert;
+
+  /**
+   * The deletion request's unique identifier.
+   *
+   * @var null|integer
+   */
+  protected $deletionRequestId;
 
   /**
    * Submit input to delete the content.
@@ -57,28 +64,28 @@ trait TraitDeletionRequest {
   /**
    * Submit input to discard the deletion request.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputSubmit
+   * @var null|\MovLib\Presentation\Partial\FormElement\InputSubmit
    */
   protected $inputDiscard;
 
   /**
    * Input URL form element where the user has to paste the full URL of the content that's already available.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputURL
+   * @var null|\MovLib\Presentation\Partial\FormElement\InputURL
    */
   protected $inputDuplicateURL;
 
   /**
    * Input HTML form element where the user has to write an explanation if none of the predefined reasons is used.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputHTML
+   * @var null|\MovLib\Presentation\Partial\FormElement\InputHTML
    */
   protected $inputOtherExplanation;
 
   /**
    * Select form element containing available reason's for a deletion request.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\Select
+   * @var null|\MovLib\Presentation\Partial\FormElement\Select
    */
   protected $selectReason;
 
@@ -87,13 +94,29 @@ trait TraitDeletionRequest {
 
 
   /**
-   * Stores the deletion request's identifier in the database record that should be deleted.
+   * Delete the content.
    *
-   * @param integer $deletionRequestIdentifier
+   * @return this
+   */
+  protected abstract function delete();
+
+  /**
+   * Remove the deletion request's identifier from the database record.
+   *
+   * @param integer $id
    *   The unique identifier of the deletion request.
    * @return this
    */
-  protected abstract function storeDeletionRequestIdentifier($deletionRequestIdentifier);
+  protected abstract function removeDeletionRequestIdentifier($id);
+
+  /**
+   * Stores the deletion request's identifier in the database record that should be deleted.
+   *
+   * @param integer $id
+   *   The unique identifier of the deletion request.
+   * @return this
+   */
+  protected abstract function storeDeletionRequestIdentifier($id);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -231,6 +254,7 @@ trait TraitDeletionRequest {
       // @todo Check user reputation and decide based on that if we should display the real deletion form. As of now
       //       we limit it to administrators only.
       if ($session->isAdmin() === true) {
+        $this->deletionRequestId      = $id;
         $this->inputDelete            = new InputSubmit($i18n->t("Delete"), [
           "class" => "btn btn-large btn-danger",
           "id"    => "delete",
@@ -250,7 +274,7 @@ trait TraitDeletionRequest {
     }
     else {
       // Conditionally show and require form elements, depending on selected reason.
-      $kernel->javascripts[] = "Deletion";
+      $kernel->javascripts[] = "DeletionRequest";
 
       // Initialize the reason select form element with all available deletion request reasons, the user is required to
       // select an option before submitting the deletion request.
@@ -334,6 +358,17 @@ trait TraitDeletionRequest {
     }
 
     // @todo Call actual deletion logic or discard deletion request.
+
+
+    // Delete the deletion request from the database.
+    if (isset($_POST[$this->inputDiscard->attributes["name"]])) {
+      DeletionRequest::discard($this->deletionRequestId);
+    }
+    // Delete the content but keep the deletion request for reference (so we know why this content was deleted and
+    // who deleted it).
+    elseif (isset($_POST[$this->inputDelete->attributes["name"]])) {
+      $this->delete();
+    }
 
     return $this;
   }

@@ -188,6 +188,20 @@ class DeletionRequest {
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
+  /**
+   * Helper method to complete query.
+   *
+   * @param null|integer $reasonId
+   *   The reason's unique identifier.
+   * @param null|string $languageCode
+   *   The language code to filter.
+   * @param null|string $query
+   *   The query including the <code>SELECT</code> and <code>FROM</code> part (or empty).
+   * @param null|string $types
+   *   The types string for the prepared statement.
+   * @param null|array $params
+   *   The parameter array for the prepared statement.
+   */
   protected static function checkReasonAndLanguage($reasonId, $languageCode, &$query, &$types, &$params) {
     if ($reasonId && $languageCode) {
       $query .= " WHERE `reason_id` = ? AND `language_code` = ?";
@@ -204,6 +218,21 @@ class DeletionRequest {
       $types  = "s";
       $params = [ $languageCode ];
     }
+  }
+
+  /**
+   * Delete deletion request with given identifier.
+   *
+   * @global \MovLib\Data\Database $db
+   * @param integer $id
+   *   The deletion request's unquie identifier which should be deleted.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function discard($id) {
+    global $db;
+    // Note that any table that is referencing this deletion request's unique identifier is automatically set to NULL
+    // by the ON DELETE foreign key clause. Check the database schema!
+    $db->query("DELETE FROM `deletion_requests` WHERE `id` = ?", "d", [ $id ])->close();
   }
 
   /**
