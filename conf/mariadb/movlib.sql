@@ -676,8 +676,8 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
   INDEX `fk_posters_movies` (`movie_id` ASC),
   INDEX `fk_movies_images_licenses` (`license_id` ASC),
   INDEX `movies_images_type_id` (`type_id` ASC, `upvotes` ASC),
-  INDEX `fk_movies_images_users_idx` (`user_id` ASC),
-  INDEX `fk_movies_images_deletions1_idx` (`deletion_id` ASC),
+  INDEX `fk_movies_images_users` (`user_id` ASC),
+  INDEX `fk_movies_images_deletion_requests` (`deletion_id` ASC),
   CONSTRAINT `fk_movies_images_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -693,10 +693,10 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
     REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_deletions1`
+  CONSTRAINT `fk_movies_images_deletion_requests`
     FOREIGN KEY (`deletion_id`)
     REFERENCES `movlib`.`deletion_requests` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE SET NULL
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 ROW_FORMAT = COMPRESSED
