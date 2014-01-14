@@ -24,8 +24,12 @@
  * @since 0.0.1-dev
  */
 
-a {
+a,
+.link-color {
   color: #09c;
+}
+
+a {
   text-decoration: none;
   border-bottom: 1px solid transparent;
   transition: 0.4s ease-out;
