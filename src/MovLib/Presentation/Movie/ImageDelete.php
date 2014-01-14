@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
@@ -34,10 +35,27 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
   /**
    * Delete the movie image.
    *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
   protected function delete() {
+    global $i18n, $kernel;
+    $this->image->delete();
 
+    // Let the user know that the deletion was correctly executed.
+    $kernel->alerts .= new Alert(
+      $i18n->t("The image has been deleted, to recover the image go to the history tab."),
+      $i18n->t("{image_type_name} {id} Deleted", [
+        "image_type_name" => $this->imageTypeName,
+        "id"              => $this->image->id,
+      ]),
+      Alert::SEVERITY_SUCCESS
+    );
+
+    // Redirect to movie image overview of this image type.
+    throw new SeeOtherRedirect($i18n->t("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id ]));
   }
 
   /**

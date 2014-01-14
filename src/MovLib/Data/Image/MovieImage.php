@@ -144,10 +144,18 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
   /**
    * Delete the image.
    *
+   * @global \MovLib\Data\Database $db
    * @return this
+   * @throws \MovLib\Exception\DatabaseException
    */
   public function delete() {
-    return $this;
+    global $db;
+    $db->query(
+      "UPDATE `movies_image` SET `deleted` = true, `styles` = null WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
+      "idi",
+      [ $this->id, $this->movieId, static::TYPE_ID ]
+    )->close();
+    return $this->deleteImageStyles();
   }
 
   /**
@@ -291,6 +299,7 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
           UNIX_TIMESTAMP(`changed`),
           `country_code`,
           UNIX_TIMESTAMP(`created`),
+          `deleted`,
           `deletion_id`,
           COLUMN_GET(`dyn_descriptions`, ? AS BINARY),
           `extension`,
@@ -312,6 +321,7 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
         $this->changed,
         $this->countryCode,
         $this->created,
+        $this->deleted,
         $this->deletionId,
         $this->description,
         $this->extension,
@@ -331,7 +341,9 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
     }
 
     // Export everything to class scope for which we have to ask the database.
+    $this->deleted     = (boolean) $this->deleted;
     $this->imageExists = (boolean) $this->changed;
+
     if ($this->imageExists === true) {
       $this->route = $i18n->r("/movie/{0}/{$routeKey}/{1}", [ $this->movieId, $this->id ]);
     }

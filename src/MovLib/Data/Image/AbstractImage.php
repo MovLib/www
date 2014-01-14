@@ -50,6 +50,19 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   public $created;
 
   /**
+   * Whether this image was deleted or not.
+   *
+   * There is a huge difference between an image that never existed in the first place and a deleted image. Every and
+   * any image always stays in our system and we only change the deleted attribute in the database (plus delete all
+   * generated styles). There's also a different error page displayed on the web page for the deleted image.
+   *
+   * @todo We also need the possibility to look deleted images if it comes to recovery. Total spam material should be
+   *       locked or their IDs reused.
+   * @var boolean
+   */
+  public $deleted = false;
+
+  /**
    * The deletion request's unique identifier (if any).
    *
    * @var null|integer
@@ -153,12 +166,12 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   }
 
   /**
-   * Deletes the original image, all styles and the directory (if empty) from the persistent storage.
+   * Delete all image styles and the directory.
    *
    * @global \MovLib\Kernel $kernel
    * @return this
    */
-  protected function deleteOriginalAndStyles() {
+  protected function deleteImageStyles() {
     global $kernel;
 
     // Unserialize the styles if they are still serialized.
@@ -166,12 +179,23 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
       $this->styles = unserialize($this->styles);
     }
 
-    // Add the original file to the styles array (DRY), this is why getImagePath() and getImageURL() check with empty()
-    // against their parameter.
-    sh::execute("rm -rf '{$kernel->documentRoot}/private/upload/{$this->directory}' '{$kernel->documentRoot}/public/upload/{$this->directory}'");
+    // Absolute path to the styles directory of this image.
+    $directoryPath = "{$kernel->documentRoot}/public/upload/{$this->directory}";
 
+    // Remove all generated image styles from persistent storage, we can easily regenerate them if we have to recover
+    // the record from the original upload.
+    if (sh::execute("rm --force --recursive '{$directoryPath}/*'") === false) {
+      error_log(new \RuntimeException("Couldn't delete image styles for: '{$this->directory}'"));
+    }
+
+    // Delete all empty directories within the complete path to the deleted image styles. This silently fails upon the
+    // first directory that's non empty.
+    sh::execute("rmdir --ignore-fail-on-non-empty --parent '{$directoryPath}'");
+
+    // Update the instance properties as well.
     $this->imageExists = false;
     $this->styles      = null;
+
     return $this;
   }
 

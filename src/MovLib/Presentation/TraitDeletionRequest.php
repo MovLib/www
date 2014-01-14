@@ -357,9 +357,6 @@ trait TraitDeletionRequest {
       return $this;
     }
 
-    // @todo Call actual deletion logic or discard deletion request.
-
-
     // Delete the deletion request from the database.
     if (isset($_POST[$this->inputDiscard->attributes["name"]])) {
       DeletionRequest::discard($this->deletionRequestId);
