@@ -151,7 +151,7 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
   public function delete() {
     global $db;
     $db->query(
-      "UPDATE `movies_image` SET `deleted` = true, `styles` = null WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
+      "UPDATE `movies_images` SET `deleted` = true, `styles` = null WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?",
       "idi",
       [ $this->id, $this->movieId, static::TYPE_ID ]
     )->close();

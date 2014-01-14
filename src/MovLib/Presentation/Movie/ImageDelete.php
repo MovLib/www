@@ -112,6 +112,7 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
    */
   protected function removeDeletionRequestIdentifier() {
     $this->image->setDeletionRequest(null);
+    $this->deletionRequestId = null;
     throw new SeeOtherRedirect($this->image->route);
   }
 
