@@ -108,9 +108,11 @@ class Edit extends \MovLib\Presentation\SystemPage\Show {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Kernel $kernel
    */
   public function getContent() {
-    return "<div class='c'><div class='r'><div class='s s12'>{$this->form}</div></div></div>";
+    global $kernel;
+    return "<div class='c'><div class='r'><div class='s s12'>{$this->form}</div></div><pre>{$kernel->htmlEncode($this->systemPage->text)}</pre></div>";
   }
 
   /**

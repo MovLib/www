@@ -65,7 +65,7 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected function getContent() {
     global $kernel;
-    return "<div class='c'><div class='r'><div class='s s12'>{$kernel->htmlDecode($this->systemPage->text)}</div></div><pre>{$kernel->htmlEncode($this->systemPage->text)}</pre></div>";
+    return "<div class='c'><div class='r'><div class='s s12'>{$kernel->htmlDecode($this->systemPage->text)}</div></div></div>";
   }
 
 }

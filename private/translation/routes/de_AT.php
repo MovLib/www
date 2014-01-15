@@ -122,17 +122,19 @@ return [
   "/genre/{0}/edit"       => "/genre/{0}/bearbeiten",
   "/genre/{0}/löschen"    => "/genre/{0}/löschen",
 
-  // ------------------------------------------------------------------------------------------------------------------- System Pages
-  "/contact"             => "/kontakt",
-  "/contact/edit"        => "/kontakt/bearbeiten",
-  "/imprint"             => "/impressum",
-  "/imprint/edit"        => "/impressum/bearbeiten",
-  "/privacy-policy"      => "/datenschutzerklärung",
-  "/privacy-policy/edit" => "/datenschutzerklärung/bearbeiten",
-  "/team"                => "/team",
-  "/team/edit"           => "/team/bearbeiten",
-  "/terms-of-use"        => "/nutzungsbedingungen",
-  "/terms-of-use/edit"   => "/nutzungsbedingungen/bearbeiten",
+  // ------------------------------------------------------------------------------------------------------------------- System Pages    
+  "/articles-of-association"      => "/vereins-statuten",       
+  "/articles-of-association/edit" => "/vereins-statuten/bearbeiten",  
+  "/contact"                      => "/kontakt",
+  "/contact/edit"                 => "/kontakt/bearbeiten",
+  "/imprint"                      => "/impressum",
+  "/imprint/edit"                 => "/impressum/bearbeiten",
+  "/privacy-policy"               => "/datenschutzerklärung",
+  "/privacy-policy/edit"          => "/datenschutzerklärung/bearbeiten",
+  "/team"                         => "/team",
+  "/team/edit"                    => "/team/bearbeiten",
+  "/terms-of-use"                 => "/nutzungsbedingungen",
+  "/terms-of-use/edit"            => "/nutzungsbedingungen/bearbeiten",
 
   // ------------------------------------------------------------------------------------------------------------------- Queries
   "page"   => "seite",
