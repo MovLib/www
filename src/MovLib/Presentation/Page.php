@@ -249,7 +249,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
             "<h3 class='vh'>{$i18n->t("Copyright and licensing information")}</h3>" .
             "<p id='f-copyright'><span class='ico ico-cc'></span> <span class='ico ico-cc-zero'></span> {$i18n->t(
               "Database data is available under the {0}Creative Commons — CC0 1.0 Universal{1} license.",
-              [ "<a href='http://creativecommons.org/protecteddomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
+              [ "<a href='https://creativecommons.org/publicdomain/zero/1.0/deed.{$i18n->languageCode}' rel='license'>", "</a>" ]
             )}<br>{$i18n->t(
               "Additional terms may apply for third-party content, please refer to any license or copyright information that is additionaly stated."
             )}</p>" .
