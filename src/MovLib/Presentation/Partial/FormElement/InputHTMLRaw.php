@@ -183,17 +183,11 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
   protected function render() {
     global $i18n;
 
-    // Pretty print HTML, since we only use <textarea> here.
-    $tidy = tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->valueRaw}</body></html>");
-    $tidy->cleanRepair();
-    if ($tidy->getStatus() === 2) {
-      throw new \ErrorException;
-    }
-
+    // Remove tags that are inserted by our auto-paragraph method and empty attributes (inserted by Tidy).
     $content = str_replace(
-      [ "\n\n", "<br>\n", "<p>", "</p>" ],
-      [ "\n", "", "", "\n"],
-      tidy_get_output($tidy)
+      [ "\n\n", "<br>\n", "<p>", "</p>", "=''", '=""' ],
+      [ "\n", "", "", "\n", "", "" ],
+      tidy_get_output(tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->valueRaw}</body></html>"))
     );
 
     // Use default placeholder text if none was provided.
