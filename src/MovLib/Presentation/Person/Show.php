@@ -140,10 +140,9 @@ class Show extends \MovLib\Presentation\Page {
     // Construct death info in a translatable way.
     $deathInfo = null;
     if ($this->person->deathDate && $this->person->deathplace) {
-      $date = new Date($this->person->deathDate);
       if ($this->person->birthDate) {
         $birthDate = new Date($this->person->birthDate);
-        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1} in {2}, {3}", [ $birthDate->getAge($date->dateValue), $date->formatSchemaProperty("deathDate"),  $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
+        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1} in {2}, {3}", [ $birthDate->getAge($this->person->deathDate), $date->formatSchemaProperty("deathDate"),  $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
       }
       else {
         $deathInfo = "<br>{$i18n->t("Died on {0} in {1}, {2}", [ $date->formatSchemaProperty("deathDate"), $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
@@ -153,7 +152,7 @@ class Show extends \MovLib\Presentation\Page {
       $date = new Date($this->person->deathDate);
       if ($this->person->birthDate) {
         $birthDate = new Date($this->person->birthDate);
-        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1}", [ $birthDate->getAge($date->dateValue), $date->formatSchemaProperty("deathDate"),  ])}";
+        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1}", [ $birthDate->getAge($this->person->deathDate), $date->formatSchemaProperty("deathDate"),  ])}";
       }
       else {
         $deathInfo = "<br>{$i18n->t("Died on {0}", [ $date->formatSchemaProperty("deathDate") ])}";
@@ -166,13 +165,19 @@ class Show extends \MovLib\Presentation\Page {
     $info = implode(", ", $info);
     $info = "<p>{$info}{$birthInfo}{$deathInfo}</p>";
 
+    // Check if the display photo is a placeholder. If so, don't mark it up as itemprop.
+    $imageAttributes = null;
+    if ($this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02)->placeholder === false) {
+      $imageAttributes = [ "itemprop" => "image" ];
+    }
+
     // Put all header information together after the closing title.
     $this->headingAfter =
       "{$info}</div>" . // close .s
       "<div id='person-photo' class='s s2'>{$this->getImage(
         $this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02),
         $i18n->rp("/person/{0}/photos", [ $this->person->id ]),
-        [ "itemprop" => "image" ]
+        $imageAttributes
       )}</div>" .
     "</div>"; // close .r
 
@@ -194,7 +199,7 @@ class Show extends \MovLib\Presentation\Page {
       else {
         $entity = new Serial($row["serial_id"]);
       }
-      $director .= "<li><a class='r' href='{$entity->route}'><span class='link-color s'>{$entity->displayTitle}</span><span class='fr'>{$entity->year}</span></a></li>";
+      $director .= "<li itemscope itemtype='http://schema.org/Movie'><a class='r' href='{$entity->route}' itemprop='url'><span class='link-color s' itemprop='name'>{$entity->displayTitle}</span><span class='fr' itemprop='datePublished'>{$entity->year}</span></a></li>";
     }
     if ($director) {
       $filmography["director"] = [
@@ -213,11 +218,20 @@ class Show extends \MovLib\Presentation\Page {
       else {
         $entity = new Serial($row["serial_id"]);
       }
-      $cast .= "<li><a href='{$entity->route}'>{$entity->displayTitle}<span class='fr'>{$entity->year}</span></a></li>";
+      $cast .= "<li itemscope itemtype='http://schema.org/Movie'><a class='r' href='{$entity->route}' itemprop='url'><span class='link-color s' itemprop='name'>{$entity->displayTitle}</span><span class='fr' itemprop='datePublished'>{$entity->year}</span></a></li>";
     }
     if ($cast) {
+      if ($this->person->sex === 1) {
+        $jobTitle = $i18n->t("Actor");
+      }
+      elseif ($this->person->sex === 1) {
+        $jobTitle = $i18n->t("Actress");
+      }
+      else {
+        $jobTitle = $i18n->t("Actor/Actress");
+      }
       $filmography["cast"] = [
-        $i18n->t("Cast"),
+        $jobTitle,
         "<ol class='hover-list no-list'>{$cast}</ol>",
         [ "itemprop" => "jobTitle" ],
       ];
@@ -232,7 +246,7 @@ class Show extends \MovLib\Presentation\Page {
       else {
         $entity = new Serial($row["serial_id"]);
       }
-      $crew .= "<li><a href='{$entity->route}'>{$i18n->t("{0} as {1}{2}", [ $entity->displayTitle, "<em itemprop='jobTitle'>{$row["job_title"]}</em>", "<span class='fr'>{$entity->year}</span>" ])}</a></li>";
+      $crew .= "<li itemscope itemtype='http://schema.org/Movie'><a class='r' href='{$entity->route}' itemprop='url'>{$i18n->t("{0} as {1}{2}", [ "<span class='link-color s' itemprop='name'>{$entity->displayTitle}</span>", $row["job_title"], "<span class='fr' itemprop='datePublished'>{$entity->year}</span>" ])}</a></li>";
     }
     if ($crew) {
       $filmography["crew"] = [

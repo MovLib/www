@@ -269,7 +269,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
           ]))}</h3></section>" .
           "<section class='last s s4 tar'>" .
             "<h3 class='vh'>{$i18n->t("Legal Links")}</h3>" .
-            "{$this->a($i18n->r("/imprint"), $i18n->t("Imprint"))} · " .
+            "{$this->a($i18n->r("/impressum"), $i18n->t("Impressum"))} · " .
             "{$this->a($i18n->r("/privacy-policy"), $i18n->t("Privacy Policy"))} · " .
             "{$this->a($i18n->r("/terms-of-use"), $i18n->t("Terms of Use"))}" .
           "</section>" .

@@ -123,12 +123,12 @@ return [
   "/genre/{0}/löschen"    => "/genre/{0}/löschen",
 
   // ------------------------------------------------------------------------------------------------------------------- System Pages    
-  "/articles-of-association"      => "/vereins-statuten",       
-  "/articles-of-association/edit" => "/vereins-statuten/bearbeiten",  
+  "/association-statutes"         => "/vereins-statuten",       
+  "/association-statutes/edit"    => "/vereins-statuten/bearbeiten",  
   "/contact"                      => "/kontakt",
   "/contact/edit"                 => "/kontakt/bearbeiten",
-  "/imprint"                      => "/impressum",
-  "/imprint/edit"                 => "/impressum/bearbeiten",
+  "/impressum"                    => "/impressum",
+  "/impressum/edit"               => "/impressum/bearbeiten",
   "/privacy-policy"               => "/datenschutzerklärung",
   "/privacy-policy/edit"          => "/datenschutzerklärung/bearbeiten",
   "/team"                         => "/team",

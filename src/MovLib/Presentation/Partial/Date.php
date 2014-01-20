@@ -85,10 +85,11 @@ class Date extends \MovLib\Presentation\AbstractBase {
    * @return integer
    *   The age of the date in years.
    */
-  public function getAge($date = null) {
-    if (!$date) {
-      $date = new \DateTime("now");
+  public function getAge($date = "now") {
+    if (is_int($date)) {
+      $date = "@{$date}";
     }
+    $date = new \DateTime($date);
     return $this->dateValue->diff($date)->format("%y");
   }
 
