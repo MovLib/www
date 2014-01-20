@@ -185,7 +185,7 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
 
     // Remove tags that are inserted by our auto-paragraph method and empty attributes (inserted by Tidy).
     $content = str_replace(
-      [ "\n\n", "<br>\n", "<p>", "</p>", "=''", '=""' ],
+      [ "\n\n", "<br>", "<p>", "</p>", "=''", '=""' ],
       [ "\n", "", "", "\n", "", "" ],
       tidy_get_output(tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->valueRaw}</body></html>"))
     );
