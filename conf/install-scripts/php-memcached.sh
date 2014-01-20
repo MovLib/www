@@ -37,7 +37,7 @@ source ${ID}uninstall.sh
 source ${ID}git.sh "${NAME}-dev" ${NAME}
 
 phpize
-CFLAGS="-O3 -m64" ./configure ${DEFAULT_FLAGS} \
+CFLAGS="-O3 -m64" ./configure \
   --disable-memcached-sasl \
   --enable-memcached \
   --enable-memcached-json
