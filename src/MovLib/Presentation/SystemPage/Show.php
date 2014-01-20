@@ -29,6 +29,7 @@ use \MovLib\Data\SystemPage;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -47,12 +48,21 @@ class Show extends \MovLib\Presentation\Page {
 
   /**
    * Instantiate new system page presentation.
+   * @global \MovLib\I18n $i18n
    */
   public function __construct() {
+    global $i18n;
     $this->systemPage = new SystemPage($_SERVER["ID"]);
     $this->initPage($this->systemPage->title);
     $this->initBreadcrumb();
     $this->initLanguageLinks($this->systemPage->route);
+    $this->initSidebar([
+      [ $i18n->r("/team"), $i18n->t("Team") ],
+      [ $i18n->r("/privacy-policy"), $i18n->t("Privacy Policy") ],
+      [ $i18n->r("/terms-of-use"), $i18n->t("Terms of Use") ],
+      [ $i18n->r("/association-statutes"), $i18n->t("Association Statutes") ],
+      [ $i18n->r("/impressum"), $i18n->t("Impressum") ],
+    ]);
   }
 
 
@@ -63,9 +73,9 @@ class Show extends \MovLib\Presentation\Page {
    * @inheritdoc
    * @global \MovLib\Kernel $kernel
    */
-  protected function getContent() {
+  protected function getPageContent() {
     global $kernel;
-    return "<div class='c'><div class='r'><div class='s s12'>{$kernel->htmlDecode($this->systemPage->text)}</div></div></div>";
+    return "<div class='c'><div class='r'><div class='s s10'>{$kernel->htmlDecode($this->systemPage->text)}</div></div></div>";
   }
-
+  
 }
