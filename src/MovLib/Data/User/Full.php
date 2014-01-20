@@ -185,7 +185,7 @@ class Full extends \MovLib\Data\User\User {
           `id`,
           `name`,
           UNIX_TIMESTAMP(`access`),
-          `birthday`,
+          `birthdate`,
           `country_code`,
           UNIX_TIMESTAMP(`created`),
           `currency_code`,

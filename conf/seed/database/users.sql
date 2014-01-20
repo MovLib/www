@@ -34,7 +34,7 @@ INSERT INTO `users` SET
   `name`                 = 'Fleshgrinder',
   `access`               = CURRENT_TIMESTAMP,
   `admin`                = TRUE,
-  `birthday`             = '1985-06-27',
+  `birthdate`             = '1985-06-27',
   `country_code`         = 'AT',
   `created`              = '2013-04-22 19:15:35', -- initial commit
   `currency_code`        = 'EUR',
