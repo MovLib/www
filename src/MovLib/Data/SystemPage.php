@@ -114,7 +114,7 @@ class SystemPage extends \MovLib\Data\Database {
     $db->query(
       "UPDATE `system_pages` SET
         `dyn_titles` = COLUMN_ADD(`dyn_titles`, ?, ?),
-        `dyn_texts` = COLUMN_ADD(`dyn_titles`, ?, ?)
+        `dyn_texts` = COLUMN_ADD(`dyn_texts`, ?, ?)
       WHERE `id` = ?
       LIMIT 1",
       "ssssi",
