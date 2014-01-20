@@ -62,6 +62,7 @@ class Show extends \MovLib\Presentation\Page {
       [ $i18n->r("/terms-of-use"), $i18n->t("Terms of Use") ],
       [ $i18n->r("/association-statutes"), $i18n->t("Association Statutes") ],
       [ $i18n->r("/impressum"), $i18n->t("Impressum") ],
+      [ $i18n->r("/contact"), $i18n->t("Contact") ]
     ]);
   }
 

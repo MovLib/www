@@ -542,6 +542,11 @@ endwhile;
 $stmt->close();
 ?>
 
+location = <?= $r("/contact") ?> {
+  set $movlib_presenter "SystemPage\\Contact";
+  try_files $movlib_cache @php;
+}
+
 
 # ---------------------------------------------------------------------------------------------------------------------- Country(ies)
 
