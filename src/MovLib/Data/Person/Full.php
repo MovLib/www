@@ -121,6 +121,40 @@ class Full extends \MovLib\Data\Person\Person {
 
 
   /**
+   * Insert a new person into the database.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return integer
+   *   The person's insert id.
+   */
+  public function create() {
+    global $db, $i18n;
+    return $db->query(
+      "INSERT INTO `persons` SET
+        `created` = CURRENT_TIMESTAMP,
+        `dyn_biographies` = COLUMN_CREATE('{$i18n->languageCode}', ?),
+        `dyn_wikipedia`= COLUMN_CREATE('{$i18n->languageCode}', ?),
+        `name` = ?,
+        `sex` = ?,
+        `birthdate` = ?,
+        `born_name` = ?,
+        `deathdate` = ?
+        ",
+      "bssisss",
+      [
+        $this->biography,
+        $this->wikipedia,
+        $this->name,
+        $this->sex,
+        $this->birthDate,
+        $this->bornName,
+        $this->deathDate,
+      ]
+    )->insert_id;
+  }
+
+  /**
    * Get the mysqli result for all movie IDs this person has played in.
    *
    * @global \MovLib\Data\Database $db

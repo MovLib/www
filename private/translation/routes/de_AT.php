@@ -20,6 +20,7 @@
  * German route translations for singular forms.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -126,7 +127,6 @@ return [
   "/association-statutes"         => "/vereins-statuten",       
   "/association-statutes/edit"    => "/vereins-statuten/bearbeiten",  
   "/contact"                      => "/kontakt",
-  "/contact/edit"                 => "/kontakt/bearbeiten",
   "/impressum"                    => "/impressum",
   "/impressum/edit"               => "/impressum/bearbeiten",
   "/privacy-policy"               => "/datenschutzerklärung",

@@ -56,6 +56,7 @@ class Show extends \MovLib\Presentation\Page {
       [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
     ]);
     $this->initPagination(Person::getTotalCount());
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/person/create")}'>{$i18n->t("Create New Person")}</a>";
   }
 
 

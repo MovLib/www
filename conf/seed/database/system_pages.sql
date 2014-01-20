@@ -18,7 +18,7 @@
 -- System pages seed data.
 --
 -- @author Richard Fussenegger <richard@fussenegger.info>
--- @author Markus Deutschl <ftorghele.mmt-m2012@fh-salzburg.ac.at>
+-- @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
 -- @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
 -- @copyright © 2013 MovLib
 -- @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

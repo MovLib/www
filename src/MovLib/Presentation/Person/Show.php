@@ -127,11 +127,12 @@ class Show extends \MovLib\Presentation\Page {
     $birthInfo = null;
     if ($this->person->birthDate && $this->person->birthplace) {
       $date = new Date($this->person->birthDate);
-      $birthInfo = "<br>{$i18n->t("Born on {0} in {1}, {2}", [ $date->formatSchemaProperty("birthDate"), $this->person->birthplace->name, new Country($this->person->birthplace->countryCode) ])}";
+      $birthCountry = new Country($this->person->birthplace->countryCode);
+      $birthInfo = "<br>{$i18n->t("Born on {0} in {1}, {2}", [ "<a href='{$i18n->rp("/year/{0}/persons", [ $date->format("Y") ])}'>{$date->formatSchemaProperty("birthDate")}</a>", $this->person->birthplace->name, $this->a($i18n->rp("/country/{0}/persons", [ $this->person->birthplace->countryCode ]), $birthCountry) ])}";
     }
     elseif ($this->person->birthDate && !$this->person->birthplace) {
       $date = new Date($this->person->birthDate);
-      $birthInfo = "<br>{$i18n->t("Born on {0}", [ $date->formatSchemaProperty("birthDate") ])}";
+      $birthInfo = "<br>{$i18n->t("Born on {0}", [ "<a href='{$i18n->rp("/year/{0}/persons", [ $date->format("Y") ])}'>{$date->formatSchemaProperty("birthDate")}</a>" ])}";
     }
     elseif ($this->person->birthplace) {
       $birthInfo = "<br>{$i18n->t("Born in {0}, {1}", [ $this->person->birthplace->name, new Country($this->person->birthplace->countryCode) ])}";
