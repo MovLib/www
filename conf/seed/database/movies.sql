@@ -173,6 +173,7 @@ INSERT INTO `movies_images` SET
   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
   `country_code`     = 'US',
   `language_code`    = 'en',
+  `date`             = '2008-03-25',
   `deleted`          = false,
   `width`            = 1500,
   `height`           = 2107,
@@ -180,9 +181,12 @@ INSERT INTO `movies_images` SET
   `extension`        = 'jpg',
   `changed`          = '2013-11-28 15:13:42',
   `created`          = '2013-11-28 15:13:42',
+  `dyn_authors`      = COLUMN_CREATE('en', '&lt;p&gt;Blender Foundation | www.blender.org&lt;/p&gt;'),
   `dyn_descriptions` = COLUMN_CREATE(
-    'en', '&lt;p&gt;&lt;a href="http://download.blender.org/peach/presskit.zip"&gt;“Big Buck Bunny” presskit&lt;/a&gt;&lt;/p&gt;'
+    'de', '&lt;p&gt;Offizielles Poster.&lt;/p&gt;',
+    'en', '&lt;p&gt;Official poster.&lt;/p&gt;'
   ),
+  `dyn_sources`      = COLUMN_CREATE('en', '&lt;a href="http://download.blender.org/peach/presskit.zip" rel="nofollow" target="_blank"&gt;http://download.blender.org/peach/presskit.zip&lt;/a&gt;'),
   `styles`           = 'a:5:{i:540;a:3:{s:6:"height";i:540;s:5:"width";i:384;s:9:"resizeArg";s:10:"\'540x540>\'";}i:220;a:3:{s:6:"height";i:309;s:5:"width";i:220;s:9:"resizeArg";s:7:"\'220x>\'";}i:140;a:3:{s:6:"height";i:197;s:5:"width";i:140;s:9:"resizeArg";s:7:"\'140x>\'";}i:60;a:3:{s:6:"height";i:84;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}s:5:"60x60";a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:53:"\'60x60>^\' -gravity \'Center\' -crop \'60x60+0+0\' +repage";}}',
   `user_id`          = 1
 ;

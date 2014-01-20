@@ -239,7 +239,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
         $this->getURL($style),
         $this->styles[$style]["width"],
         $this->styles[$style]["height"],
-        $this->imageExists,
+        !$this->imageExists,
         $this->route
       );
     }
@@ -290,7 +290,7 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
     $this->extension = $extension;
 
     // Clean the uploaded image, ImageMagick needs the extension to determine the algorithm.
-    sh::execute("convert '{$source}' -strip +repage '{$source}.{$extension}'");
+    sh::execute("convert '{$source}' +profile 'icm' -strip +repage -units PixelsPerInch image -density '72' '{$source}.{$extension}'");
     sh::executeDetached("rm '{$source}'");
     $source .= ".{$extension}";
 

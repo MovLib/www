@@ -20,10 +20,12 @@ namespace MovLib\Presentation\Movie;
 use \MovLib\Data\Image\MovieImage;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\Country;
+use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\DateTime;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\Button;
 use \MovLib\Presentation\Partial\Language;
+use \MovLib\Presentation\Partial\License;
 use \MovLib\Presentation\TraitDeletionRequest;
 
 /**
@@ -161,18 +163,55 @@ class Image extends \MovLib\Presentation\Movie\Images {
     // Format the optional fields.
     $dl = null;
     if (!empty($this->image->description)) {
-      $dl .= "<dt>{$i18n->t("Description")}</dt><dd itemprop='text'>{$kernel->htmlDecode($this->image->description)}</dd>";
+      $dl .= "<dt>{$i18n->t("Description")}</dt><dd itemprop='description'>{$kernel->htmlDecode($this->image->description)}</dd>";
+    }
+    if (!empty($this->image->date)) {
+      $date = new Date($this->image->date);
+      $dl  .= "<dt>{$i18n->t("Publishing Date")}</dt><dd>{$date->formatSchemaProperty("datePublished")}</dd>";
+    }
+    if (!empty($this->image->authors)) {
+      $dl .= "<dt>{$i18n->t("Author")}</dt><dd itemprop='copyrightHolder'>{$kernel->htmlDecode($this->image->authors)}</dd>";
     }
     if ($this->image->countryCode) {
       $country = (new Country($this->image->countryCode, [ "itemprop" => "contentLocation" ]))->getFlag(true);
-      $dl .= "<dt>{$i18n->t("Country")}</dt><dd>{$country}</dd>";
+      $dl     .= "<dt>{$i18n->t("Country")}</dt><dd>{$country}</dd>";
     }
     if ($this->image->languageCode && $this->image->languageCode != "xx") {
       $language = new Language($this->image->languageCode, [ "itemprop" => "inLanguage" ]);
-      $dl .= "<dt>{$i18n->t("Language")}</dt><dd>{$language}</dd>";
+      $dl      .= "<dt>{$i18n->t("Language")}</dt><dd>{$language}</dd>";
     }
     $uploader = new User(User::FROM_ID, $this->image->uploaderId);
     $dateTime = new DateTime($this->image->changed, [ "itemprop" => "uploadDate" ]);
+
+    // Create copyright / licensing information.
+    $copyright = null;
+    if ($this->image->licenseId === 1) {
+      $copyright =
+        "<div class='o1 s s10 taj'><p>{$i18n->t(
+          "The exclusive right of use for any purpose has been granted to {sitename} by the creator of this image. " .
+          "The image may be published on any kind of platform to display the respective product. Please refer to " .
+          "our {terms_of_use} for more information.", [
+            "sitename"     => $kernel->siteName,
+            "terms_of_use" => "<a href='{$i18n->r("/terms-of-use")}'>{$i18n->t("Terms of Use")}</a>",
+          ]
+        )}</p></div>"
+      ;
+    }
+    else {
+      $license = new License($this->image->licenseId);
+      $dl     .= "<dt>{$i18n->t("License")}</dt><dd>{$license}</dd>";
+    }
+
+    // Include shop links for this particular poser.
+    $offers = null;
+    // @todo Build shop links
+    if (!$offers) {
+      $offers = "<dd>{$i18n->t("No links have been added to this {image_type_name}, {0}add one{1}?", [
+        "<a href='{$i18n->r("/movie/{0}/{$this->routeKey}/{1}/edit", [
+          $this->movie->id, $this->image->id,
+        ])}'>", "</a>", "image_type_name" => $this->imageTypeName,
+      ])}</dd>";
+    }
 
     // Render the final presentation.
     return
@@ -193,19 +232,21 @@ class Image extends \MovLib\Presentation\Movie\Images {
           "<div class='s s8 tac image'>{$this->getImage(
             $this->image->getStyle(MovieImage::STYLE_SPAN_07),
             $this->image->getURL(),
-            [ "itemprop" => "thumbnail" ],
+            [ "itemprop" => "thumbnailUrl" ],
             [ "itemprop" => "contentUrl", "target" => "_blank" ]
           )}</div>" .
           "<dl class='s s4 description'>" .
             $dl .
-            "<dt>{$i18n->t("Uploader")}</dt><dd><a href='{$uploader->route}' itemprop='provider'>{$uploader->name}</a></dd>" .
+            "<dt>{$i18n->t("Uploader")}</dt><dd><a href='{$uploader->route}' itemprop='creator provider'>{$uploader->name}</a></dd>" .
             "<dt>{$i18n->t("Dimensions")}</dt><dd>{$i18n->t("{width} × {height}", [
               "width"  => "<span itemprop='width'>{$this->image->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
               "height" => "<span itemprop='height'>{$this->image->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
             ])}</dd>" .
             "<dt>{$i18n->t("File Size")}</dt><dd itemprop='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->image->filesize))}</dd>" .
             "<dt>{$i18n->t("Uploaded")}</dt><dd>{$dateTime}</dd>" .
+            "<dt>{$i18n->t("Buy this {image_type_name}", [ "image_type_name" => $this->imageTypeName ])}</dt>{$offers}" .
           "</dl>" .
+          $copyright .
         "</div>" .
       "</div>"
     ;

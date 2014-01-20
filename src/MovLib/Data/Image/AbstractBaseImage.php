@@ -264,7 +264,7 @@ abstract class AbstractBaseImage {
 
     // Generate the desired image style with ImageMagick. We directly call the binary instead of using some kind of
     // abstraction layer, we don't need any fancy object just to resize an image.
-    if (sh::execute("convert '{$source}' -colorspace RGB -filter 'Cosine' -quality 75 -resize {$resizeArg} -colorspace sRGB '{$destination}'", $output) === false) {
+    if (sh::execute("convert '{$source}' -filter LanczosRadius -distort Resize {$resizeArg} -quality 75 '{$destination}'", $output) === false) {
       // No need to check for this exception, this only happens if the file system is full or ImageMagick is missing
       // on the server. Both situations are so terrible that we don't need to cover these situations.
       // @codeCoverageIgnoreStart

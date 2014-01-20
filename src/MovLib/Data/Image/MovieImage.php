@@ -73,6 +73,20 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
 
 
   /**
+   * The image's authors (e.g. photographer, designer).
+   *
+   * @var string
+   */
+  public $authors;
+
+  /**
+   * The image's creation date, the date the actual real image was created!
+   *
+   * @var string
+   */
+  public $date;
+
+  /**
    * The image's path within the upload directory.
    *
    * @see MovieImage::init()
@@ -113,6 +127,13 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
    * @var string
    */
   protected $routeKey;
+
+  /**
+   * The image's source (e.g. weblink).
+   *
+   * @var string
+   */
+  public $source;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -173,87 +194,110 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
   protected function generateStyles($source, $regenerate = false) {
     global $db, $i18n;
 
-    // Reserve identifier if this is a new upload.
-    if ($this->imageExists === false) {
-      // Do not add LIMIT 1 to subquery, this logs an "unsafe statement" warning in the binary logs.
-      $db->query(
-        "INSERT INTO `movies_images` SET
-          `id`       = (SELECT IFNULL(MAX(`s`.`id`), 0) + 1 FROM `movies_images` AS `s` WHERE `s`.`movie_id` = ? AND `s`.`type_id` = ?),
-          `movie_id` = ?,
-          `type_id`  = ?,
-          `created`  = FROM_UNIXTIME(?)",
-        "didis",
-        [ $this->movieId, static::TYPE_ID, $this->movieId, static::TYPE_ID, $_SERVER["REQUEST_TIME"] ]
-      )->close();
+    // We need to know if we are inserting a totally new image to roll back if an exception is thrown while creating
+    // the new image.
+    $insert = !$this->imageExists;
 
-      // Fetch the just generated identifier from the database.
-      $stmt = $db->query(
-        "SELECT MAX(`id`) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1",
-        "di",
-        [ $this->movieId, static::TYPE_ID ]
-      );
-      $this->filename    = $this->id = $stmt->get_result()->fetch_row()[0];
-      $stmt->close();
-      $this->imageExists = true;
-      $this->route       = $i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movieId, $this->id]);
+    try {
+      // Reserve identifier if this is a new upload.
+      if ($this->imageExists === false) {
+        // Do not add LIMIT 1 to subquery, this logs an "unsafe statement" warning in the binary logs.
+        $db->query(
+          "INSERT INTO `movies_images` SET
+            `created`          = FROM_UNIXTIME(?),
+            `dyn_authors`      = '',
+            `dyn_descriptions` = '',
+            `dyn_sources`      = '',
+            `id`               = (SELECT IFNULL(MAX(`s`.`id`), 0) + 1 FROM `movies_images` AS `s` WHERE `s`.`movie_id` = ? AND `s`.`type_id` = ?),
+            `movie_id`         = ?,
+            `type_id`          = ?",
+          "didis",
+          [ $_SERVER["REQUEST_TIME"], $this->movieId, static::TYPE_ID, $this->movieId, static::TYPE_ID ]
+        )->close();
 
-      // We always have to call this method even if our identifier is greater than one. It could be that all other
-      // images have been deleted and if that's the case the directory was deleted as well.
-      $this->createDirectories();
+        // Fetch the just generated identifier from the database.
+        $stmt = $db->query(
+          "SELECT MAX(`id`) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? LIMIT 1",
+          "di",
+          [ $this->movieId, static::TYPE_ID ]
+        );
+        $this->filename    = $this->id = $stmt->get_result()->fetch_row()[0];
+        $stmt->close();
+        $this->imageExists = true;
+        $this->route       = $i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movieId, $this->id]);
+
+        // We always have to call this method even if our identifier is greater than one. It could be that all other
+        // images have been deleted and if that's the case the directory was deleted as well.
+        $this->createDirectories();
+      }
+
+      // Generate the various image's styles and always go from best quality down to worst quality.
+      $this->convert($source, self::STYLE_SPAN_07, self::STYLE_SPAN_07, self::STYLE_SPAN_07);
+      $this->convert($source, self::STYLE_SPAN_03);
+      $this->convert($source, self::STYLE_SPAN_02);
+      $this->convert($source, self::STYLE_SPAN_01);
+
+      // Generate a square span 1 version for the image stream on the details page.
+      $this->convert($source, self::STYLE_SPAN_01_SQUARE, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true);
+
+      // This is a new upload, therefor we have to update everything. We already reserved an ID for us at the beginning
+      // and we have to update that ID's record now with the just generated style data.
+      if ($regenerate === true) {
+        $query  = "UPDATE `movies_images` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?";
+        $types  = "sidi";
+        $params = [ serialize($this->styles), $this->id, $this->movieId, static::TYPE_ID ];
+      }
+      else {
+        $query =
+          "UPDATE `movies_images` SET
+            `date`             = ?,
+            `changed`          = FROM_UNIXTIME(?),
+            `country_code`     = ?,
+            `deleted`          = false,
+            `dyn_authors`      = COLUMN_ADD(`dyn_authors`, ?, ?),
+            `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, ?, ?),
+            `dyn_sources`      = COLUMN_ADD(`dyn_sources`, ?, ?),
+            `extension`        = ?,
+            `filesize`         = ?,
+            `height`           = ?,
+            `language_code`    = ?,
+            `license_id`       = ?,
+            `styles`           = ?,
+            `user_id`          = ?,
+            `width`            = ?
+          WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?"
+        ;
+        $types  = "ssssssssssiisisdiidi";
+        $params = [
+          $this->date,
+          $_SERVER["REQUEST_TIME"],
+          $this->countryCode,
+          $i18n->languageCode, $this->authors,
+          $i18n->languageCode, $this->description,
+          $i18n->languageCode, $this->source,
+          $this->extension,
+          $this->filesize,
+          $this->height,
+          $this->languageCode,
+          $this->licenseId,
+          (is_array($this->styles) ? serialize($this->styles) : $this->styles),
+          $this->uploaderId,
+          $this->width,
+          $this->id,
+          $this->movieId,
+          static::TYPE_ID,
+        ];
+      }
+      $db->query($query, $types, $params)->close();
     }
-
-    // Generate the various image's styles and always go from best quality down to worst quality.
-    $this->convert($source, self::STYLE_SPAN_07, self::STYLE_SPAN_07, self::STYLE_SPAN_07);
-    $this->convert($this->getPath(self::STYLE_SPAN_07), self::STYLE_SPAN_03);
-    $this->convert($this->getPath(self::STYLE_SPAN_03), self::STYLE_SPAN_02);
-    $this->convert($this->getPath(self::STYLE_SPAN_02), self::STYLE_SPAN_01);
-
-    // Generate a square span 1 version for the image stream on the details page.
-    $this->convert($this->getPath(self::STYLE_SPAN_01), self::STYLE_SPAN_01_SQUARE, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true);
-
-    // This is a new upload, therefor we have to update everything. We already reserved an ID for us at the beginning
-    // and we have to update that ID's record now with the just generated style data.
-    if ($regenerate === true) {
-      $query  = "UPDATE `movies_images` SET `styles` = ? WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?";
-      $types  = "sidi";
-      $params = [ serialize($this->styles), $this->id, $this->movieId, static::TYPE_ID ];
+    catch (\Exception $e) {
+      if ($insert === true) {
+        $db->query("DELETE FROM `movies_images` WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?", "idi", [
+          $this->id, $this->movieId, static::TYPE_ID
+        ])->close();
+      }
+      throw $e;
     }
-    else {
-      $query =
-        "UPDATE `movies_images` SET
-          `changed`          = FROM_UNIXTIME(?),
-          `country_code`     = ?,
-          `deleted`          = false,
-          `dyn_descriptions` = COLUMN_CREATE(?, ?),
-          `extension`        = ?,
-          `filesize`         = ?,
-          `height`           = ?,
-          `language_code`    = ?,
-          `license_id`       = ?,
-          `styles`           = ?,
-          `user_id`          = ?,
-          `width`            = ?
-        WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?"
-      ;
-      $types  = "sssssiisisdiidi";
-      $params = [
-        $_SERVER["REQUEST_TIME"],
-        $this->countryCode,
-        $i18n->languageCode, $this->description,
-        $this->extension,
-        $this->filesize,
-        $this->height,
-        $this->languageCode,
-        $this->licenseId,
-        (is_array($this->styles) ? serialize($this->styles) : $this->styles),
-        $this->uploaderId,
-        $this->width,
-        $this->id,
-        $this->movieId,
-        static::TYPE_ID,
-      ];
-    }
-    $db->query($query, $types, $params)->close();
 
     return $this;
   }
@@ -299,9 +343,12 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
           UNIX_TIMESTAMP(`changed`),
           `country_code`,
           UNIX_TIMESTAMP(`created`),
+          `date`,
           `deleted`,
           `deletion_id`,
-          COLUMN_GET(`dyn_descriptions`, ? AS BINARY),
+          IFNULL(COLUMN_GET(`dyn_authors`, ? AS BINARY), COLUMN_GET(`dyn_authors`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+          IFNULL(COLUMN_GET(`dyn_descriptions`, ? AS BINARY), COLUMN_GET(`dyn_descriptions`, '{$i18n->defaultLanguageCode}' AS BINARY)),
+          IFNULL(COLUMN_GET(`dyn_sources`, ? AS BINARY), COLUMN_GET(`dyn_sources`, '{$i18n->defaultLanguageCode}' AS BINARY)),
           `extension`,
           `filesize`,
           `height`,
@@ -314,16 +361,19 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
         FROM `movies_images`
         WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?
         LIMIT 1",
-        "sidi",
-        [ $i18n->languageCode, $this->id, $this->movieId, static::TYPE_ID ]
+        "sssidi",
+        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id, $this->movieId, static::TYPE_ID ]
       );
       $stmt->bind_result(
         $this->changed,
         $this->countryCode,
         $this->created,
+        $this->date,
         $this->deleted,
         $this->deletionId,
+        $this->authors,
         $this->description,
+        $this->source,
         $this->extension,
         $this->filesize,
         $this->height,

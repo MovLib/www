@@ -46,7 +46,11 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
 
     // Let the user know that the deletion was correctly executed.
     $kernel->alerts .= new Alert(
-      $i18n->t("The image has been deleted, to recover the image go to the history tab."),
+      $i18n->t("The {image_type_name} has been deleted, to recover the image {0}go to the history tab{1}.", [
+        "<a href='{$i18n->r("/movie/{0}/{$this->routeKey}/{1}/history", [ $this->movie->id, $this->image->id ])}'>",
+        "</a>",
+        "image_type_name" => $this->imageTypeName,
+      ]),
       $i18n->t("{image_type_name} {id} Deleted", [
         "image_type_name" => $this->imageTypeName,
         "id"              => $this->image->id,
@@ -55,7 +59,7 @@ class ImageDelete extends \MovLib\Presentation\Movie\Image {
     );
 
     // Redirect to movie image overview of this image type.
-    throw new SeeOtherRedirect($i18n->t("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id ]));
+    throw new SeeOtherRedirect($i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id ]));
   }
 
   /**

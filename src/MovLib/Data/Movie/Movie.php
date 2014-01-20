@@ -199,6 +199,7 @@ class Movie {
       FROM `movies_images`
       WHERE `movie_id` = ?
         AND `type_id` = ?
+        AND `deleted` = false
       ORDER BY `upvotes` DESC, `id` ASC",
       "di",
       [ $this->id, $typeId ]
@@ -217,7 +218,7 @@ class Movie {
   public function getImageCount($typeId) {
     global $db;
     return $db->query(
-      "SELECT COUNT(*) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? GROUP BY `type_id`",
+      "SELECT COUNT(*) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? AND `deleted` = false GROUP BY `type_id`",
       "di",
       [ $this->id, $typeId ]
     )->get_result()->fetch_row()[0];
