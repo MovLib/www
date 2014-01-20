@@ -17,10 +17,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# PHP memcached extension installation script.
+# Tidy HTML5 installation script.
 #
-# LINK:       https://github.com/$NAME-dev/$NAME/
-# LINK:       http://tldp.org/LDP/Bash-Beginners-Guide/html/index.html
+# LINK:       http://w3c.github.io/tidy-html5/
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT:  © 2013 MovLib
 # LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -30,16 +29,13 @@
 
 source $(pwd)/inc/conf.sh
 
-NAME="php-memcached"
-VERSION="2.1.0"
+NAME="tidy"
+VERSION="0.0.1"
 
 source ${ID}uninstall.sh
-source ${ID}git.sh "${NAME}-dev" ${NAME}
+source ${ID}git.sh "w3c" "tidy-html5"
 
-phpize
-CFLAGS="-O3 -m64" ./configure \
-  --disable-memcached-sasl \
-  --enable-memcached \
-  --enable-memcached-json
+sh build/gnuauto/setup.sh
+CFLAGS="-O3 -m64" ./configure
 
 source ${ID}install.sh

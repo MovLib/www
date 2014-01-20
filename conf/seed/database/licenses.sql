@@ -24,7 +24,9 @@
 -- @since 0.0.1-dev
 -- ---------------------------------------------------------------------------------------------------------------------
 
+-- Copyrighted is always 1
 INSERT INTO `licenses` SET
+  `id`                = 1,
   `dyn_names`         = COLUMN_CREATE('en', 'Copyrighted'),
   `dyn_descriptions`  = '',
   `dyn_url`           = COLUMN_CREATE(
@@ -36,7 +38,9 @@ INSERT INTO `licenses` SET
   `icon_changed`      = CURRENT_TIMESTAMP
 ;
 
+-- Public Domain is always 2
 INSERT INTO `licenses` SET
+  `id`                = 2,
   `dyn_names`         = COLUMN_CREATE('en', 'Public Domain', 'de', 'Gemeinfrei'),
   `dyn_descriptions`  = '',
   `dyn_url`           = COLUMN_CREATE(
@@ -47,6 +51,8 @@ INSERT INTO `licenses` SET
   `icon_extension`    = 'svg',
   `icon_changed`      = CURRENT_TIMESTAMP
 ;
+
+-- Anything else has a dynamic identifier!
 
 INSERT INTO `licenses` SET
   `dyn_names`         = COLUMN_CREATE('en', 'Creative Commons Zero 1.0 Universal'),
