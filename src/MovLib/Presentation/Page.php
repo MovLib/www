@@ -543,8 +543,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     return
       "<main id='m' role='main'{$schema}>" .
         "<header id='header'>" .
-          "<div class='c'>{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
-          "<div id='b'>{$this->breadcrumb}</div>" .
+          "<div class='c'>{$this->breadcrumb}{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
           $this->alerts .
         "</header>" .
         "{$this->contentBefore}{$content}{$this->contentAfter}" .
@@ -578,9 +577,8 @@ class Page extends \MovLib\Presentation\AbstractBase {
     }
 
     // Create the actual navigation with the trail we just built.
-    $this->breadcrumb            = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "c small" ]);
-    $this->breadcrumb->glue      = " › ";
-    $this->breadcrumb->hideTitle = false;
+    $this->breadcrumb       = new Navigation($i18n->t("You are here: "), $trail, [ "class" => "c", "id" => "b" ]);
+    $this->breadcrumb->glue = " › ";
 
     return $this;
   }
