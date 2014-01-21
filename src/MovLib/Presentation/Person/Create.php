@@ -21,15 +21,23 @@ namespace MovLib\Presentation\Person;
 use \MovLib\Data\Person\Full;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputDate;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
+use \MovLib\Presentation\Partial\FormElement\InputURL;
+use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Redirect\SeeOther;
 
 /**
  * Allows the creation of a new person.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2013 MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link https://movlib.org/
+ * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitFormPage;
@@ -37,6 +45,13 @@ class Create extends \MovLib\Presentation\Page {
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
+
+  /**
+   * The person's aliases textarea input element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputLinesText
+   */
+  protected $aliases;
 
   /**
    * The person's biography html input element.
@@ -60,6 +75,13 @@ class Create extends \MovLib\Presentation\Page {
   protected $bornName;
 
   /**
+   * Checkbox to confirm that this person is new, in case of similar existing persons.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputCheckbox
+   */
+  protected $confirmation;
+
+  /**
    * The person's deathdate input date element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputDate
@@ -79,6 +101,13 @@ class Create extends \MovLib\Presentation\Page {
    * @var \MovLib\Presentation\Partial\FormElement\RadioGroup
    */
   protected $sex;
+
+  /**
+   * The person's localized Wikipedia URL input element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputURL
+   */
+  protected $wikipedia;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -102,11 +131,16 @@ class Create extends \MovLib\Presentation\Page {
 
     $this->deathDate = new InputDate("deathdate", $i18n->t("Date of Death"));
 
-    $this->sex = new \MovLib\Presentation\Partial\FormElement\RadioGroup("sex", $i18n->t("Sex"), [
-      2 => $i18n->t("Female"),
-      1 => $i18n->t("Male"),
-      0 => $i18n->t("Unknown"),
-    ], 0);
+    $this->sex = new RadioGroup("sex", $i18n->t("Sex"), [
+        2 => $i18n->t("Female"),
+        1 => $i18n->t("Male"),
+        0 => $i18n->t("Unknown"),
+      ], 0
+    );
+
+    $this->wikipedia = new InputURL("wikipedia", $i18n->t("Wikipedia URL"), [ "data-allow-external" => true ]);
+
+    $this->aliases = new \MovLib\Presentation\Partial\FormElement\InputLinesText("aliases", $i18n->t("Additional Names"), [ "placeholder" => $i18n->t("Please supply one name per line") ]);
 
     $this->biography = new InputHTML("biography", $i18n->t("Biography"), null, [
       "placeholder" => $i18n->t("Enter the person's biography here"),
@@ -123,10 +157,13 @@ class Create extends \MovLib\Presentation\Page {
       $this->birthDate,
       $this->deathDate,
       $this->sex,
+      $this->wikipedia,
+      $this->aliases,
       $this->biography,
     ]);
 
-    $this->form->actionElements[] = new \MovLib\Presentation\Partial\FormElement\InputSubmit($i18n->t("Create Person"), [ "class" => "btn btn-large btn-success" ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Create Person"), [ "class" => "btn btn-large btn-success", "id" => "submit-create" ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Upload Image"), [ "class" => "btn btn-large btn-success", "id" => "submit-upload" ]);
   }
 
 
@@ -150,13 +187,15 @@ class Create extends \MovLib\Presentation\Page {
   protected function valid() {
     global $i18n, $kernel;
 
-    $person = new Full();
+    $person            = new Full();
+    $person->aliases   = $this->aliases->value;
     $person->biography = $this->biography->value;
     $person->birthDate = $this->birthDate->value;
     $person->bornName  = $this->bornName->value;
     $person->deathDate = $this->deathDate->value;
     $person->name      = $this->name->value;
     $person->sex       = $this->sex->value;
+    $person->wikipedia = $this->wikipedia->value;
 
     $id = $person->create();
 
@@ -169,7 +208,42 @@ class Create extends \MovLib\Presentation\Page {
       Alert::SEVERITY_SUCCESS
     );
 
-    throw new SeeOther($i18n->r("/person/{0}", [ $id ]));
+    // Redirect to Show presentation or upload form, depending on the button clicked.
+    if ($_POST["submit"] == $i18n->t("Create Person")) {
+      $route = $i18n->r("/person/{0}", [ $id ]);
+    }
+    else {
+      $route = $i18n->r("/person/{0}/photo/edit", [ $id ]);
+    }
+
+    throw new SeeOther($route);
+  }
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   */
+  public function validate($errors) {
+    global $i18n;
+
+    // Guardian pattern.
+    if ($this->checkErrors($errors) === true) {
+      return $this;
+    }
+
+    $searchResult = null;
+    if (!isset($_POST["confirmation"])) {
+      // @todo: Search for persons with name and born name in aliases and other names.
+    }
+
+    if ($searchResult && !isset($_POST["confirmation"])) {
+      $this->form->elements[] = new InputCheckbox("confirmation", $i18n->t("I confirm that this person is new"));
+      return $this;
+    }
+
+    // Save new person.
+    $this->valid();
+    return $this;
   }
 
 }

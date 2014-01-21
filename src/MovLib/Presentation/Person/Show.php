@@ -257,7 +257,7 @@ class Show extends \MovLib\Presentation\Page {
     }
 
     if (!$filmography) {
-      $filmography = $i18n->t("No jobs available, {0}add some{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
+      $filmography = $i18n->t("No jobs available. Please go to a movie or serial page and add them there.", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
     }
     $sections["filmography"] = [
       $i18n->t("Filmography"),
