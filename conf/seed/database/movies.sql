@@ -52,66 +52,71 @@ INSERT INTO `movies_genres` SET `movie_id` = @roundhay_garden_scene_id, `genre_i
 INSERT INTO `movies_trailers` SET `movie_id` = @roundhay_garden_scene_id, `id` = 1, `language_code` = 'xx', `country_code` = 'UK', `url` = 'nR2r__ZgO5g';
 
 INSERT INTO `persons` SET
-  `name`            = 'Louis Le Prince',
-  `born_name`       = 'Louis Aimé Augustin Le Prince',
-  `birthdate`       = '1841-08-28',
-  `deathdate`       = '1890-09-16',
-  `dyn_biographies` = '',
-  `dyn_wikipedia`       = ''
+  `name`                   = 'Louis Le Prince',
+  `born_name`              = 'Louis Aimé Augustin Le Prince',
+  `birthdate`              = '1841-08-28',
+  `deathdate`              = '1890-09-16',
+  `dyn_biographies`        = '',
+  `dyn_wikipedia`          = '',
+  `image_dyn_descriptions` = ''
 ;
 SET @louis_le_prince_id = LAST_INSERT_ID();
 
 INSERT INTO `movies_directors` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @louis_le_prince_id;
-INSERT INTO `persons_images` SET
-  `id`               = 1,
-  `person_id`        = @louis_le_prince_id,
-  `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'PD' LIMIT 1),
-  `width`            = 363,
-  `height`           = 363,
-  `filesize`         = 42010,
-  `extension`        = 'jpg',
-  `changed`          = '2013-11-28 15:13:42',
-  `created`          = '2013-11-28 15:13:42',
-  `dyn_descriptions` = COLUMN_CREATE(
-    'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;',
-    'de', '&lt;p&gt;Der französische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen können der Quelle entnommen werden: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;'
-  ),
-  `styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
-  `deleted`          = false,
-  `user_id`          = 1
-;
+-- INSERT INTO `persons_images` SET
+--   `id`               = 1,
+--   `person_id`        = @louis_le_prince_id,
+--   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'PD' LIMIT 1),
+--   `width`            = 363,
+--   `height`           = 363,
+--   `filesize`         = 42010,
+--   `extension`        = 'jpg',
+--   `changed`          = '2013-11-28 15:13:42',
+--   `created`          = '2013-11-28 15:13:42',
+--   `dyn_descriptions` = COLUMN_CREATE(
+--     'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;',
+--     'de', '&lt;p&gt;Der französische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen können der Quelle entnommen werden: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;'
+--   ),
+--   `styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
+--   `deleted`          = false,
+--   `user_id`          = 1
+-- ;
 
 INSERT INTO `persons` SET
-  `name`            = 'Harriet Hartley',
-  `dyn_biographies` = '',
-  `dyn_wikipedia`       = ''
+  `name`                   = 'Harriet Hartley',
+  `dyn_biographies`        = '',
+  `dyn_wikipedia`          = '',
+  `image_dyn_descriptions` = ''
 ;
 SET @harriet_hartley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
 
 INSERT INTO `persons` SET
-  `name`            = 'Adolphe Le Prince',
-  `dyn_biographies` = '',
-  `dyn_wikipedia`       = ''
+  `name`                   = 'Adolphe Le Prince',
+  `dyn_biographies`        = '',
+  `dyn_wikipedia`          = '',
+  `image_dyn_descriptions` = ''
 ;
 SET @adolphe_le_prince_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
 
 INSERT INTO `persons` SET
-  `name`            = 'Joseph Whitley',
-  `dyn_biographies` = '',
-  `dyn_wikipedia`       = ''
+  `name`                   = 'Joseph Whitley',
+  `dyn_biographies`        = '',
+  `dyn_wikipedia`          = '',
+  `image_dyn_descriptions` = ''
 ;
 SET @joseph_whitley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
 
 INSERT INTO `persons` SET
-  `name`            = 'Sarah Whitley',
-  `born_name`       = 'Sarah Robinson',
+  `name`                   = 'Sarah Whitley',
+  `born_name`              = 'Sarah Robinson',
   /*`birthdate`       = '1816-00-00',*/
-  `deathdate`       = '1888-10-24',
-  `dyn_biographies` = '',
-  `dyn_wikipedia`       = ''
+  `deathdate`              = '1888-10-24',
+  `dyn_biographies`        = '',
+  `dyn_wikipedia`          = '',
+  `image_dyn_descriptions` = ''
 ;
 SET @sarah_whitley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
@@ -139,26 +144,27 @@ INSERT INTO `movies` SET
 SET @big_buck_bunny_id = LAST_INSERT_ID();
 
 INSERT INTO `persons` SET
-  `name`            = 'Sacha Goedegebure',
-  `dyn_biographies` = '',
-  `dyn_wikipedia`       = ''
+  `name`                   = 'Sacha Goedegebure',
+  `dyn_biographies`        = '',
+  `dyn_wikipedia`          = '',
+  `image_dyn_descriptions` = ''
 ;
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
-INSERT INTO `persons_images` SET
-  `id`               = 1,
-  `person_id`        = @sacha_goedegebure_id,
-  `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
-  `width`            = 363,
-  `height`           = 363,
-  `filesize`         = 42010,
-  `extension`        = 'jpg',
-  `changed`          = '2013-11-28 15:13:42',
-  `created`          = '2013-11-28 15:13:42',
-  `dyn_descriptions` = '',
-  `styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
-  `deleted`          = false,
-  `user_id`          = 1
-;
+-- INSERT INTO `persons_images` SET
+--   `id`               = 1,
+--   `person_id`        = @sacha_goedegebure_id,
+--   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
+--   `width`            = 363,
+--   `height`           = 363,
+--   `filesize`         = 42010,
+--   `extension`        = 'jpg',
+--   `changed`          = '2013-11-28 15:13:42',
+--   `created`          = '2013-11-28 15:13:42',
+--   `dyn_descriptions` = '',
+--   `styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
+--   `deleted`          = false,
+--   `user_id`          = 1
+-- ;
 
 INSERT INTO `movies_directors` SET `movie_id` = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id;
 INSERT INTO `movies_countries` SET `movie_id` = @big_buck_bunny_id, `country_code` = 'US';
@@ -222,12 +228,13 @@ INSERT INTO `places` SET
 ;
 
 INSERT INTO `persons` SET
-  `name`            = 'Frank Darabont',
-  `birthdate`       = '1959-01-28',
-  `birthplace_id`   = 97967307,
-  `sex`             = 1,
-  `dyn_biographies` = '',
-  `dyn_wikipedia`       = ''
+  `name`                   = 'Frank Darabont',
+  `birthdate`              = '1959-01-28',
+  `birthplace_id`          = 97967307,
+  `sex`                    = 1,
+  `dyn_biographies`        = '',
+  `dyn_wikipedia`          = '',
+  `image_dyn_descriptions` = ''
 ;
 SET @frank_darabont_id = LAST_INSERT_ID();
 
