@@ -21,8 +21,6 @@ use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputImage;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
-use \MovLib\Presentation\Partial\FormElement\Select;
-use \MovLib\Presentation\Partial\License;
 
 /**
  * Implements the form elements that are necessary for any upload presentation.
@@ -53,13 +51,6 @@ trait TraitUpload {
    */
   protected $inputImage;
 
-  /**
-   * The select form element for the license.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\Select
-   */
-  protected $selectLicense;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
@@ -69,6 +60,7 @@ trait TraitUpload {
    *
    * This will create the form elements that are needed by all image upload presentations.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @param array $formElements [optional]
    *   Additional form elements.
    * @return this
@@ -76,6 +68,7 @@ trait TraitUpload {
    */
   protected function initUpload(array $formElements = []) {
     global $i18n;
+
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($this->breadcrumb) || empty($this->breadcrumbTitle)) {
@@ -86,16 +79,22 @@ trait TraitUpload {
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    $this->inputDescription       = new InputHTML("description", $i18n->t("Description"), $this->image->description); // @todo required
+
+    // The image's description.
+    $this->inputDescription = new InputHTML("description", $i18n->t("Description"), $this->image->description, [ "required" ]);
     $this->inputDescription->allowExternalLinks();
-    $this->inputImage             = new InputImage("image", $i18n->t("Image"), $this->image);
+
+    // The actual image.
+    $this->inputImage = new InputImage("image", $i18n->t("Image"), $this->image);
     if (!isset($_SERVER["IMAGE_ID"])) {
       $this->inputImage->attributes[] = "required";
     }
-    $this->selectLicense          = new Select("license", $i18n->t("License"), License::getLicenses(), $this->image->licenseId ? : 1, [ "required" ]);
-    $this->form                   = new Form($this, array_merge([ $this->inputImage, $this->inputDescription, $this->selectLicense ], $formElements));
-    $this->form->actionElements[] = new InputSubmit($this->breadcrumbTitle, [ "class" => "btn btn-large btn-success" ]);
+
+    // The upload form.
+    $this->form                   = new Form($this, array_merge([ $this->inputImage, $this->inputDescription ], $formElements));
+    $this->form->actionElements[] = new InputSubmit($this->breadcrumbTitle, [ "class" => "btn btn-large btn-success"]);
     $this->form->multipart();
+
     return $this;
   }
 

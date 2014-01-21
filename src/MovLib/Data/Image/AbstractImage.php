@@ -84,13 +84,6 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   public $id;
 
   /**
-   * The image's license identifier.
-   *
-   * @var integer
-   */
-  public $licenseId;
-
-  /**
    * The image's route to its own details page or to the upload page if this image doesn't exist yet.
    *
    * @var string

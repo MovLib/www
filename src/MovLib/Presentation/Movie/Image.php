@@ -183,25 +183,6 @@ class Image extends \MovLib\Presentation\Movie\Images {
     $uploader = new User(User::FROM_ID, $this->image->uploaderId);
     $dateTime = new DateTime($this->image->changed, [ "itemprop" => "uploadDate" ]);
 
-    // Create copyright / licensing information.
-    $copyright = null;
-    if ($this->image->licenseId === 1) {
-      $copyright =
-        "<div class='o1 s s10 taj'><p>{$i18n->t(
-          "The exclusive right of use for any purpose has been granted to {sitename} by the creator of this image. " .
-          "The image may be published on any kind of platform to display the respective product. Please refer to " .
-          "our {terms_of_use} for more information.", [
-            "sitename"     => $kernel->siteName,
-            "terms_of_use" => "<a href='{$i18n->r("/terms-of-use")}'>{$i18n->t("Terms of Use")}</a>",
-          ]
-        )}</p></div>"
-      ;
-    }
-    else {
-      $license = new License($this->image->licenseId);
-      $dl     .= "<dt>{$i18n->t("License")}</dt><dd>{$license}</dd>";
-    }
-
     // Include shop links for this particular poser.
     $offers = null;
     // @todo Build shop links
@@ -246,7 +227,6 @@ class Image extends \MovLib\Presentation\Movie\Images {
             "<dt>{$i18n->t("Uploaded")}</dt><dd>{$dateTime}</dd>" .
             "<dt>{$i18n->t("Buy this {image_type_name}", [ "image_type_name" => $this->imageTypeName ])}</dt>{$offers}" .
           "</dl>" .
-          $copyright .
         "</div>" .
       "</div>"
     ;

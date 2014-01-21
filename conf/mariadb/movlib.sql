@@ -547,107 +547,6 @@ COMMENT = 'Contains all movie trailsers.';
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`licenses`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license’s unique ID.',
-  `abbreviation` VARCHAR(20) NOT NULL COMMENT 'The license’s abbreviation.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The license’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The license’s name in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_url` BLOB NOT NULL COMMENT 'The license’s url pointing to various languages. Keys are ISO alpha-2 language codes.',
-  `icon_changed` TIMESTAMP NOT NULL COMMENT 'The license’s icon changed timestamp.',
-  `icon_extension` CHAR(3) NOT NULL COMMENT 'The license’s icon extension.',
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-COMMENT = 'Contains all licenses.'
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`deletion_requests`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`deletion_requests` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The deletion request’s unique identifier.',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user who requested the deletion.',
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The deletion request’s creation time.',
-  `language_code` CHAR(2) NOT NULL COMMENT 'The deletion request’s (system) language code.',
-  `reason_id` TINYINT UNSIGNED NOT NULL COMMENT 'The deletion request’s unique reason identifier.',
-  `routes` VARCHAR(255) NOT NULL COMMENT 'The routes of the content that should be deleted as serialized array.',
-  `info` TEXT NULL COMMENT 'The user supplied additional information for the deletion request.',
-  PRIMARY KEY (`id`),
-  INDEX `fk_deletions_users` (`user_id` ASC),
-  INDEX `deletions_created` (`created` ASC),
-  UNIQUE INDEX `deletions_route_key` (`routes` ASC),
-  CONSTRAINT `fk_deletions_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains deletion requests for any kind of content.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`movies_images`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`movies_images` (
-  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The movie image’s unique ID within the movie.',
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The movie image’s type (enum from Data class).',
-  `deleted` TINYINT(1) NOT NULL DEFAULT true COMMENT 'The flag that determines whether this movie image is marked as deleted (TRUE(1)) or not (FALSE(0)), default is TRUE(1).',
-  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie image’s upvote count.',
-  `deletion_id` BIGINT UNSIGNED NULL COMMENT 'The unique identifier of a possible deletion request of this image.',
-  `license_id` BIGINT UNSIGNED NULL COMMENT 'The license’s unique ID.',
-  `user_id` BIGINT UNSIGNED NULL COMMENT 'The user’s unique ID.',
-  `changed` TIMESTAMP NULL COMMENT 'The last time this movie image was updated as timestamp.',
-  `country_code` CHAR(2) NULL COMMENT 'The movie image’s ISO 3166-1 alpha-2 country code.',
-  `created` TIMESTAMP NULL COMMENT 'The movie image’s creation time as timestamp.',
-  `date` DATE NULL COMMENT 'The movie image’s creation date.',
-  `dyn_authors` BLOB NULL COMMENT 'The movie image’s translated original author (e.g. photographer, designer).',
-  `dyn_descriptions` BLOB NULL COMMENT 'The movie image’s translated descriptions.',
-  `dyn_sources` BLOB NULL COMMENT 'The movie image’s translated sources.',
-  `extension` CHAR(3) NULL COMMENT 'The movie image’s extension without leading dot.',
-  `filesize` INT UNSIGNED NULL COMMENT 'The movie image’s original size in Bytes.',
-  `height` SMALLINT UNSIGNED NULL COMMENT 'The movie image’s original height.',
-  `language_code` CHAR(2) NULL COMMENT 'The movie image’s ISO 639-1 alpha-2 language code.',
-  `styles` BLOB NULL COMMENT 'Serialized array containing width and height of various image styles.',
-  `width` SMALLINT UNSIGNED NULL COMMENT 'The movie image’s original width.',
-  PRIMARY KEY (`id`, `movie_id`, `type_id`),
-  INDEX `fk_posters_movies` (`movie_id` ASC),
-  INDEX `fk_movies_images_licenses` (`license_id` ASC),
-  INDEX `movies_images_type_id` (`type_id` ASC, `upvotes` ASC),
-  INDEX `fk_movies_images_users` (`user_id` ASC),
-  INDEX `fk_movies_images_deletion_requests` (`deletion_id` ASC),
-  CONSTRAINT `fk_movies_images_movies`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_licenses`
-    FOREIGN KEY (`license_id`)
-    REFERENCES `movlib`.`licenses` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_deletion_requests`
-    FOREIGN KEY (`deletion_id`)
-    REFERENCES `movlib`.`deletion_requests` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`series`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`series` (
@@ -1087,6 +986,25 @@ COMMENT = 'Contains all movie ratings by users.';
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
+-- Table `movlib`.`licenses`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license’s unique ID.',
+  `abbreviation` VARCHAR(20) NOT NULL COMMENT 'The license’s abbreviation.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The license’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The license’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_url` BLOB NOT NULL COMMENT 'The license’s url pointing to various languages. Keys are ISO alpha-2 language codes.',
+  `icon_changed` TIMESTAMP NOT NULL COMMENT 'The license’s icon changed timestamp.',
+  `icon_extension` CHAR(3) NOT NULL COMMENT 'The license’s icon extension.',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+COMMENT = 'Contains all licenses.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
 -- Table `movlib`.`movies_relationships`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_relationships` (
@@ -1430,6 +1348,143 @@ CREATE TABLE IF NOT EXISTS `movlib`.`system_pages` (
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all system pages, e.g. Imprint.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`deletion_requests`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`deletion_requests` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The deletion request’s unique identifier.',
+  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user who requested the deletion.',
+  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The deletion request’s creation time.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The deletion request’s (system) language code.',
+  `reason_id` TINYINT UNSIGNED NOT NULL COMMENT 'The deletion request’s unique reason identifier.',
+  `routes` VARCHAR(255) NOT NULL COMMENT 'The routes of the content that should be deleted as serialized array.',
+  `info` TEXT NULL COMMENT 'The user supplied additional information for the deletion request.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_deletions_users` (`user_id` ASC),
+  INDEX `deletions_created` (`created` ASC),
+  UNIQUE INDEX `deletions_route_key` (`routes` ASC),
+  CONSTRAINT `fk_deletions_users`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Contains deletion requests for any kind of content.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`posters`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`posters` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The poster’s unique identifier.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The poster’s unique movie’s identifier.',
+  `uploader_id` BIGINT UNSIGNED NOT NULL COMMENT 'The poster’s unique uploader’s identifier.',
+  `changed` TIMESTAMP NOT NULL COMMENT 'The poster’s changed timestamp.',
+  `country_code` CHAR(2) NULL COMMENT 'The poster’s ISO alpha-2 country code.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The poster’s creation timestamp.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The poster’s deletion flag.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The poster’s translated descriptions.',
+  `extension` CHAR(3) NOT NULL DEFAULT 'jpg' COMMENT 'The poster’s image extension.',
+  `filesize` INT NOT NULL COMMENT 'The poster’s filesize.',
+  `height` SMALLINT NOT NULL COMMENT 'The poster’s height in pixel.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The poster’s ISO alpha-2 language code.',
+  `publishing_date` DATE NULL COMMENT 'The poster’s publishing date.',
+  `representative` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag indicating if the poster is representative for the movie in the searched system language. Only one poster can be representative for one language code.',
+  `styles` BLOB NOT NULL COMMENT 'The poster’s styles.',
+  `width` SMALLINT NOT NULL COMMENT 'The poster’s width in pixel.',
+  PRIMARY KEY (`id`, `movie_id`),
+  INDEX `fk_posters_movies_idx` (`movie_id` ASC),
+  INDEX `fk_posters_users_idx` (`uploader_id` ASC),
+  CONSTRAINT `fk_posters_movies`
+    FOREIGN KEY (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_posters_users`
+    FOREIGN KEY (`uploader_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`lobby_cards`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`lobby_cards` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The lobby card’s unique identifier.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The lobby card’s unique movie’s identifier.',
+  `uploader_id` BIGINT UNSIGNED NOT NULL COMMENT 'The lobby card’s unique uploader’s identifier.',
+  `changed` TIMESTAMP NOT NULL COMMENT 'The lobby card’s changed timestamp.',
+  `country_code` CHAR(2) NULL COMMENT 'The lobby card’s ISO alpha-2 country code.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The lobby card’s creation timestamp.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The lobby card’s deletion flag.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The lobby card’s translated descriptions.',
+  `extension` CHAR(3) NOT NULL DEFAULT 'jpg' COMMENT 'The lobby card’s image extension.',
+  `filesize` INT NOT NULL COMMENT 'The lobby card’s filesize.',
+  `height` SMALLINT NOT NULL COMMENT 'The lobby card’s height in pixel.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The lobby card’s ISO alpha-2 language code.',
+  `publishing_date` DATE NULL COMMENT 'The lobby card’s publishing date.',
+  `styles` BLOB NOT NULL COMMENT 'The lobby card’s styles.',
+  `width` SMALLINT NOT NULL COMMENT 'The lobby card’s width in pixel.',
+  PRIMARY KEY (`id`, `movie_id`),
+  INDEX `fk_lobby_cards_movies_idx` (`movie_id` ASC),
+  INDEX `fk_lobby_cards_users_idx` (`uploader_id` ASC),
+  CONSTRAINT `fk_lobby_cards_movies`
+    FOREIGN KEY (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_lobby_cards_users`
+    FOREIGN KEY (`uploader_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`backdrops`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`backdrops` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The backdrop’s unique identifier.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The backdrop’s unique movie’s identifier.',
+  `uploader_id` BIGINT UNSIGNED NOT NULL COMMENT 'The backdrop’s unique uploader’s identifier.',
+  `changed` TIMESTAMP NOT NULL COMMENT 'The backdrop’s changed timestamp.',
+  `created` TIMESTAMP NOT NULL COMMENT 'The backdrop’s creation timestamp.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The backdrop’s deletion flag.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The backdrop’s translated descriptions.',
+  `extension` CHAR(3) NOT NULL DEFAULT 'jpg' COMMENT 'The backdrop’s image extension.',
+  `filesize` INT NOT NULL COMMENT 'The backdrop’s filesize.',
+  `height` SMALLINT NOT NULL COMMENT 'The backdrop’s height in pixel.',
+  `styles` BLOB NOT NULL COMMENT 'The backdrop’s styles.',
+  `width` SMALLINT NOT NULL COMMENT 'The backdrop’s width in pixel.',
+  PRIMARY KEY (`id`, `movie_id`),
+  INDEX `fk_posters_movies1_idx` (`movie_id` ASC),
+  INDEX `fk_posters_users1_idx` (`uploader_id` ASC),
+  CONSTRAINT `fk_posters_movies11`
+    FOREIGN KEY (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_posters_users11`
+    FOREIGN KEY (`uploader_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 

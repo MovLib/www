@@ -261,13 +261,12 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
             `filesize`         = ?,
             `height`           = ?,
             `language_code`    = ?,
-            `license_id`       = ?,
             `styles`           = ?,
             `user_id`          = ?,
             `width`            = ?
           WHERE `id` = ? AND `movie_id` = ? AND `type_id` = ?"
         ;
-        $types  = "ssssssssssiisisdiidi";
+        $types  = "ssssssssssiissdiidi";
         $params = [
           $this->date,
           $_SERVER["REQUEST_TIME"],
@@ -279,7 +278,6 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
           $this->filesize,
           $this->height,
           $this->languageCode,
-          $this->licenseId,
           (is_array($this->styles) ? serialize($this->styles) : $this->styles),
           $this->uploaderId,
           $this->width,
@@ -353,7 +351,6 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
           `filesize`,
           `height`,
           `language_code`,
-          `license_id`,
           `styles`,
           `upvotes`,
           `user_id`,
@@ -378,7 +375,6 @@ class MovieImage extends \MovLib\Data\Image\AbstractImage {
         $this->filesize,
         $this->height,
         $this->languageCode,
-        $this->licenseId,
         $this->styles,
         $this->upvotes,
         $this->uploaderId,
