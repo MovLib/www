@@ -261,11 +261,11 @@ class User extends \MovLib\Data\Image\AbstractBaseImage {
     $this->imageExists = true;
     $this->extension   = $extension;
     $this->stylesCache = null;
-    $span2             = $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
-
+    
+    $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
     // Generate the small ones based on the span2 result, this will give us best results.
-    $this->convert($span2, self::STYLE_SPAN_01);
-    $this->convert($span2, self::STYLE_HEADER_USER_NAVIGATION);
+    $this->convert($this->getPath(self::STYLE_SPAN_02), self::STYLE_SPAN_01);
+    $this->convert($this->getPath(self::STYLE_SPAN_02), self::STYLE_HEADER_USER_NAVIGATION);
 
     $session->userAvatar = $this->getStyle(self::STYLE_HEADER_USER_NAVIGATION);
 
