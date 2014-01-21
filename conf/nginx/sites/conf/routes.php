@@ -520,14 +520,14 @@ $stmt->close();
 # ---------------------------------------------------------------------------------------------------------------------- system pages
 
 <?php
-$stmt        = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title` FROM `system_pages`", "s", [ $i18n->defaultLanguageCode ]);
+$stmt        = $db->query("SELECT `id`, COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`, `presenter` FROM `system_pages`", "s", [ $i18n->defaultLanguageCode ]);
 $systemPages = $stmt->get_result();
 while ($systemPage = $systemPages->fetch_assoc()):
   $systemPage["title"] = \MovLib\Data\FileSystem::sanitizeFilename($systemPage["title"]);
 ?>
 
 location = <?= $r("/{$systemPage["title"]}") ?> {
-  set $movlib_presenter "SystemPage\\Show";
+  set $movlib_presenter "SystemPage\\<?= $systemPage["presenter"] ?>";
   set $movlib_id <?= $systemPage["id"] ?>;
   try_files $movlib_cache @php;
 }
@@ -541,11 +541,6 @@ location = <?= $r("/{$systemPage["title"]}/edit") ?> {
 endwhile;
 $stmt->close();
 ?>
-
-location = <?= $r("/contact") ?> {
-  set $movlib_presenter "SystemPage\\Contact";
-  try_files $movlib_cache @php;
-}
 
 
 # ---------------------------------------------------------------------------------------------------------------------- Country(ies)

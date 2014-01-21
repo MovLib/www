@@ -123,18 +123,21 @@ return [
   "/genre/{0}/edit"       => "/genre/{0}/bearbeiten",
   "/genre/{0}/löschen"    => "/genre/{0}/löschen",
 
-  // ------------------------------------------------------------------------------------------------------------------- System Pages    
-  "/association-statutes"         => "/vereins-statuten",       
-  "/association-statutes/edit"    => "/vereins-statuten/bearbeiten",  
-  "/contact"                      => "/kontakt",
-  "/impressum"                    => "/impressum",
-  "/impressum/edit"               => "/impressum/bearbeiten",
-  "/privacy-policy"               => "/datenschutzerklärung",
-  "/privacy-policy/edit"          => "/datenschutzerklärung/bearbeiten",
-  "/team"                         => "/team",
-  "/team/edit"                    => "/team/bearbeiten",
-  "/terms-of-use"                 => "/nutzungsbedingungen",
-  "/terms-of-use/edit"            => "/nutzungsbedingungen/bearbeiten",
+  // ------------------------------------------------------------------------------------------------------------------- System Pages
+  "/about-movlib"              => "/über-movlib",
+  "/about-movlib/edit"         => "/über-movlib/bearbeiten",
+  "/association-statutes"      => "/vereins-statuten",
+  "/association-statutes/edit" => "/vereins-statuten/bearbeiten",
+  "/contact"                   => "/kontakt",
+  "/contact/edit"              => "/kontakt/bearbeiten",
+  "/impressum"                 => "/impressum",
+  "/impressum/edit"            => "/impressum/bearbeiten",
+  "/privacy-policy"            => "/datenschutzerklärung",
+  "/privacy-policy/edit"       => "/datenschutzerklärung/bearbeiten",
+  "/team"                      => "/team",
+  "/team/edit"                 => "/team/bearbeiten",
+  "/terms-of-use"              => "/nutzungsbedingungen",
+  "/terms-of-use/edit"         => "/nutzungsbedingungen/bearbeiten",
 
   // ------------------------------------------------------------------------------------------------------------------- Queries
   "page"   => "seite",
