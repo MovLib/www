@@ -72,10 +72,8 @@ return [
   "/person/{0}/delete"     => "/person/{0}/löschen",
 
   // ------------------------------------------------------------------------------------------------------------------- Person Photo
-  "/person/{0}/image/upload"     => "/person/{0}/bild/hochladen",
-  "/person/{0}/image/{1}"        => "/person/{0}/bild/{1}",
-  "/person/{0}/image/{1}/edit"   => "/person/{0}/bild/{1}/bearbeiten",
-  "/person/{0}/image/{1}/delete" => "/person/{0}/bild/{1}/löschen",
+  "/person/{0}/photo"      => "/person/{0}/photo",
+  "/person/{0}/photo/edit" => "/person/{0}/photo/bearbeiten",
 
   // ------------------------------------------------------------------------------------------------------------------- Profile
   "/profile"                       => "/profil",
