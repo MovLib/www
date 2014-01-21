@@ -309,7 +309,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         ]],
         "persons" => [ $i18n->t("Persons"), [
           [ $i18n->rp("/persons"), $i18n->t("Latest Entries") ],
-          [ $i18n->rp("/person/create"), $i18n->t("Create New") ],
+          [ $i18n->r("/person/create"), $i18n->t("Create New") ],
           [ $i18n->r("/person/random"), $i18n->t("Random Person") ],
         ]],
         "companies" => [ $i18n->t("Companies"), [

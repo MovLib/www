@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Image\MovieImage;
+use \MovLib\Data\Image\MovieBackdrop;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Date;
@@ -58,7 +58,7 @@ class Image extends \MovLib\Presentation\Movie\Images {
   /**
    * The movie image to present.
    *
-   * @var \MovLib\Data\Image\MovieImage
+   * @var \MovLib\Data\Image\MovieBackdrop
    */
   protected $image;
 
@@ -83,7 +83,7 @@ class Image extends \MovLib\Presentation\Movie\Images {
     $images      = $this->movie->getImageStreamResult($this->imageTypeId);
     $streamArray = $streamJSON = $more = null;
 
-    /* @var $image \MovLib\Data\Image\MovieImage */
+    /* @var $image \MovLib\Data\Image\MovieBackdrop */
     while ($image = $images->fetch_object("\\MovLib\\Data\\Image\\Movie{$this->imageClassName}", [ $this->movie->id, $this->movie->displayTitleWithYear ])) {
       // If this is the current image start building the visible image stream.
       if ($image->id === $this->image->id) {
@@ -138,7 +138,7 @@ class Image extends \MovLib\Presentation\Movie\Images {
     $stream = null;
     $c      = self::STREAM_IMAGE_COUNT * 2 + 1;
     for ($i = 0; $i < $c; ++$i) {
-      $image   = empty($streamArray[$i]) ? null : $this->getImage($streamArray[$i]->getStyle(MovieImage::STYLE_SPAN_01_SQUARE));
+      $image   = empty($streamArray[$i]) ? null : $this->getImage($streamArray[$i]->getStyle(MovieBackdrop::STYLE_SPAN_01_SQUARE));
       $stream .= "<div class='s s1'>{$image}</div>";
     }
 
@@ -165,8 +165,8 @@ class Image extends \MovLib\Presentation\Movie\Images {
     if (!empty($this->image->description)) {
       $dl .= "<dt>{$i18n->t("Description")}</dt><dd itemprop='description'>{$kernel->htmlDecode($this->image->description)}</dd>";
     }
-    if (!empty($this->image->date)) {
-      $date = new Date($this->image->date);
+    if (!empty($this->image->publishingDate)) {
+      $date = new Date($this->image->publishingDate);
       $dl  .= "<dt>{$i18n->t("Publishing Date")}</dt><dd>{$date->formatSchemaProperty("datePublished")}</dd>";
     }
     if (!empty($this->image->authors)) {
@@ -211,7 +211,7 @@ class Image extends \MovLib\Presentation\Movie\Images {
         TraitDeletionRequest::getDeletionRequestedAlert($this->image->deletionId) .
         "<div class='r wrapper'>" .
           "<div class='s s8 tac image'>{$this->getImage(
-            $this->image->getStyle(MovieImage::STYLE_SPAN_07),
+            $this->image->getStyle(MovieBackdrop::STYLE_SPAN_07),
             $this->image->getURL(),
             [ "itemprop" => "thumbnailUrl" ],
             [ "itemprop" => "contentUrl", "target" => "_blank" ]

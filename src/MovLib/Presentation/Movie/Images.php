@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Image\MovieImage;
+use \MovLib\Data\Image\MovieBackdrop;
 use \MovLib\Data\Image\MovieLobbyCard;
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Presentation\Partial\Alert;
@@ -94,7 +94,7 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
   public function __construct() {
     global $i18n;
     $this->imageClassName      = "Image";
-    $this->imageTypeId         = MovieImage::TYPE_ID;
+    $this->imageTypeId         = MovieBackdrop::TYPE_ID;
     $this->imageTypeName       = $i18n->t("Image");
     $this->imageTypeNamePlural = $i18n->t("Images");
     $this->routeKey            = "image";
@@ -119,7 +119,7 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
     // Get all images of the current movie image type and go through them to create the image grid.
     $images = $this->movie->getImageResult($this->imageTypeId, $this->resultsOffset, $this->resultsPerPage);
     $list   = null;
-    /* @var $image \MovLib\Data\Image\MovieImage */
+    /* @var $image \MovLib\Data\Image\MovieBackdrop */
     while ($image = $images->fetch_object("\\MovLib\\Data\\Image\\Movie{$this->imageClassName}", [ $this->movie->id, $this->movie->displayTitleWithYear ])) {
       $country = null;
       if ($image->countryCode) {
@@ -127,7 +127,7 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
       }
       $list .=
         "<li class='s s2 tac' itemscope itemtype='http://schema.org/ImageObject'>{$this->getImage(
-          $image->getStyle(MovieImage::STYLE_SPAN_02),
+          $image->getStyle(MovieBackdrop::STYLE_SPAN_02),
           true,
           [ "class" => "grid-img", "itemprop" => "thumbnail" ],
           [ "itemprop" => "url" ]
@@ -196,7 +196,7 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
     $typePages = [
       MoviePoster::TYPE_ID    => [ $i18n->rp("/movie/{0}/posters", $args), $i18n->t("Posters"), [ "class" => "ico ico-poster" ] ],
       MovieLobbyCard::TYPE_ID => [ $i18n->rp("/movie/{0}/lobby-cards", $args), $i18n->t("Lobby Cards"), [ "class" => "ico ico-lobby-card" ] ],
-      MovieImage::TYPE_ID     => [ $i18n->rp("/movie/{0}/images", $args), $i18n->t("Images"), [ "class" => "ico ico-image" ] ],
+      MovieBackdrop::TYPE_ID     => [ $i18n->rp("/movie/{0}/images", $args), $i18n->t("Images"), [ "class" => "ico ico-image" ] ],
     ];
 
     // Initialize the sidebar menuitems with the menuitem for the current movie image type first and the corresponding
