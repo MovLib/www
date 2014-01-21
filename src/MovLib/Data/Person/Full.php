@@ -72,7 +72,6 @@ class Full extends \MovLib\Data\Person\Person {
             COLUMN_GET(`dyn_wikipedia`, '{$i18n->languageCode}' AS BINARY),
             `name`,
             `sex`,
-            `aliases`,
             `birthdate` AS `birthDate`,
             `birthplace_id`,
             `born_name` AS `bornName`,
@@ -95,7 +94,6 @@ class Full extends \MovLib\Data\Person\Person {
         $this->wikipedia,
         $this->name,
         $this->sex,
-        $this->aliases,
         $this->birthDate,
         $this->birthplace,
         $this->bornName,
@@ -123,6 +121,7 @@ class Full extends \MovLib\Data\Person\Person {
   /**
    * Insert a new person into the database.
    *
+   * @todo Index data with Elastic.
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return integer
@@ -130,7 +129,7 @@ class Full extends \MovLib\Data\Person\Person {
    */
   public function create() {
     global $db, $i18n;
-    return $db->query(
+    $this->id = $db->query(
       "INSERT INTO `persons` SET
         `created` = CURRENT_TIMESTAMP,
         `dyn_biographies` = COLUMN_CREATE('{$i18n->languageCode}', ?),
@@ -153,6 +152,27 @@ class Full extends \MovLib\Data\Person\Person {
         $this->deathDate,
       ]
     )->insert_id;
+    if ($this->aliases) {
+      // @todo Insert aliases into table.
+      $query = "INSERT INTO `persons_aliases` (`person_id`, `alias`) VALUES ";
+      $types = null;
+      $params = [];
+      $c = count($this->aliases);
+      for ($i = 0; $i < $c; ++$i) {
+        if ($i === 0) {
+          $query .= "(?, ?)";
+        }
+        else {
+          $query .= ", (?, ?)";
+        }
+        $types .= "ds";
+        $params[] = $this->id;
+        $params[] = $this->aliases[$i];
+      }
+      $db->query($query, $types, $params);
+    }
+
+    return $this->id;
   }
 
   /**

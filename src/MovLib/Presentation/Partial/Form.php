@@ -70,7 +70,7 @@ class Form extends \MovLib\Presentation\AbstractBase {
    *
    * @var array
    */
-  private $elements;
+  public $elements;
 
   /**
    * String containing all hidden elements.
