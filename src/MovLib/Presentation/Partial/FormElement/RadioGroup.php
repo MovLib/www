@@ -77,7 +77,7 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     if (isset($_POST[$this->id]) && isset($this->choices[$_POST[$this->id]])) {
       $this->value = $_POST[$this->id];
     }
-    elseif ($value) {
+    elseif (isset($value)) {
       $this->value = $value;
     }
   }
@@ -89,7 +89,7 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     $choices = null;
     foreach ($this->choices as $value => $choice) {
       $checked = null;
-      if ($this->value && $this->value == $value) {
+      if (isset($this->value) && $this->value == $value) {
         $checked = " checked";
       }
       $choices .= "<label class='radio inline'><input{$checked} id='{$this->id}-{$value}' name='{$this->id}' required type='radio' value='{$value}'>{$choice}</label>";

@@ -151,7 +151,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `dyn_image_descriptions` BLOB NOT NULL COMMENT 'The person’s translated photo description.',
   `name` VARCHAR(255) NOT NULL COMMENT 'The person’s full name.',
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The person\'s sex according to ISO 5218.\n\n0 = not known\n1 = male\n2 = female\n9 = not applicable',
-  `aliases` BLOB NULL COMMENT 'The person’s aliases (serialized PHP array).',
   `birthdate` DATE NULL COMMENT 'The person’s date of birth.',
   `birthplace_id` BIGINT UNSIGNED NULL COMMENT 'The person’s birthplace.',
   `born_name` MEDIUMTEXT NULL COMMENT 'The person’s born name.',
@@ -252,12 +251,31 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
+-- Table `movlib`.`persons_aliases`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`persons_aliases` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'The alias\' unique ID.',
+  `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
+  `alias` MEDIUMTEXT NOT NULL,
+  PRIMARY KEY (`id`),
+  CONSTRAINT `fk_persons_aliases_persons`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+ROW_FORMAT = COMPRESSED;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
 -- Table `movlib`.`movies_crew`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
   `crew_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The crew’s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `job_id` BIGINT UNSIGNED NOT NULL COMMENT 'The job’s unique ID.',
+  `alias_id` BIGINT NULL,
   `company_id` BIGINT UNSIGNED NULL COMMENT 'The company’s unique ID.',
   `person_id` BIGINT UNSIGNED NULL COMMENT 'The person’s unique ID.',
   PRIMARY KEY (`crew_id`, `movie_id`),
@@ -265,6 +283,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
   INDEX `fk_movies_crew_jobs` (`job_id` ASC),
   INDEX `fk_movies_crew_companies` (`company_id` ASC),
   INDEX `fk_movies_crew_persons` (`person_id` ASC),
+  INDEX `fk_movies_crew_persons_aliases` (`alias_id` ASC),
   CONSTRAINT `fk_movies_crew_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -284,6 +303,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`id`)
     ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_crew_persons_aliases1`
+    FOREIGN KEY (`alias_id`)
+    REFERENCES `movlib`.`persons_aliases` (`id`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains the crew of a movie.';
@@ -298,9 +322,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
   `roles` BLOB NOT NULL COMMENT 'The names of the role the person played in the movie as comma separated list.',
   `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s cast. Default is 0.',
+  `alias_id` BIGINT NULL,
   PRIMARY KEY (`movie_id`, `person_id`),
   INDEX `fk_movies_cast_movies` (`movie_id` ASC),
   INDEX `fk_movies_cast_persons` (`person_id` ASC),
+  INDEX `fk_movies_cast_persons_aliases` (`alias_id` ASC),
   CONSTRAINT `fk_movies_cast_persons`
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`id`)
@@ -309,6 +335,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   CONSTRAINT `fk_movies_cast_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_cast_persons_aliases1`
+    FOREIGN KEY (`alias_id`)
+    REFERENCES `movlib`.`persons_aliases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -375,9 +406,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
   `weight` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The weight (display order) of the movie’s director. Default is 0.',
+  `alias_id` BIGINT NULL,
   PRIMARY KEY (`movie_id`, `person_id`),
   INDEX `fk_movies_directors_persons` (`person_id` ASC),
   INDEX `fk_movies_directors_movies` (`movie_id` ASC),
+  INDEX `fk_movies_directors_persons_aliases` (`alias_id` ASC),
   CONSTRAINT `fk_movies_directors_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -386,6 +419,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
   CONSTRAINT `fk_movies_directors_persons`
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_directors_persons_aliases1`
+    FOREIGN KEY (`alias_id`)
+    REFERENCES `movlib`.`persons_aliases` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1389,6 +1427,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`posters` (
   `country_code` CHAR(2) NULL COMMENT 'The poster’s ISO alpha-2 country code.',
   `created` TIMESTAMP NOT NULL COMMENT 'The poster’s creation timestamp.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The poster’s deletion flag.',
+  `deletion_request_id` BIGINT UNSIGNED NULL COMMENT 'The poster’s deletion request identifier.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The poster’s translated descriptions.',
   `extension` CHAR(3) NOT NULL DEFAULT 'jpg' COMMENT 'The poster’s image extension.',
   `filesize` INT NOT NULL COMMENT 'The poster’s filesize.',
@@ -1396,11 +1435,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`posters` (
   `language_code` CHAR(2) NOT NULL COMMENT 'The poster’s ISO alpha-2 language code.',
   `publishing_date` DATE NULL COMMENT 'The poster’s publishing date.',
   `representative` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag indicating if the poster is representative for the movie in the searched system language. Only one poster can be representative for one language code.',
-  `styles` BLOB NOT NULL COMMENT 'The poster’s styles.',
+  `styles` BLOB NULL COMMENT 'The poster’s styles.',
   `width` SMALLINT NOT NULL COMMENT 'The poster’s width in pixel.',
   PRIMARY KEY (`id`, `movie_id`),
   INDEX `fk_posters_movies_idx` (`movie_id` ASC),
   INDEX `fk_posters_users_idx` (`uploader_id` ASC),
+  INDEX `fk_posters_deletion_requests_idx` (`deletion_request_id` ASC),
   CONSTRAINT `fk_posters_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -1409,6 +1449,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`posters` (
   CONSTRAINT `fk_posters_users`
     FOREIGN KEY (`uploader_id`)
     REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_posters_deletion_requests`
+    FOREIGN KEY (`deletion_request_id`)
+    REFERENCES `movlib`.`deletion_requests` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1428,17 +1473,19 @@ CREATE TABLE IF NOT EXISTS `movlib`.`lobby_cards` (
   `country_code` CHAR(2) NULL COMMENT 'The lobby card’s ISO alpha-2 country code.',
   `created` TIMESTAMP NOT NULL COMMENT 'The lobby card’s creation timestamp.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The lobby card’s deletion flag.',
+  `deletion_request_id` BIGINT UNSIGNED NULL COMMENT 'The lobby card’s deletion request identifier.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The lobby card’s translated descriptions.',
   `extension` CHAR(3) NOT NULL DEFAULT 'jpg' COMMENT 'The lobby card’s image extension.',
   `filesize` INT NOT NULL COMMENT 'The lobby card’s filesize.',
   `height` SMALLINT NOT NULL COMMENT 'The lobby card’s height in pixel.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The lobby card’s ISO alpha-2 language code.',
   `publishing_date` DATE NULL COMMENT 'The lobby card’s publishing date.',
-  `styles` BLOB NOT NULL COMMENT 'The lobby card’s styles.',
+  `styles` BLOB NULL COMMENT 'The lobby card’s styles.',
   `width` SMALLINT NOT NULL COMMENT 'The lobby card’s width in pixel.',
   PRIMARY KEY (`id`, `movie_id`),
   INDEX `fk_lobby_cards_movies_idx` (`movie_id` ASC),
   INDEX `fk_lobby_cards_users_idx` (`uploader_id` ASC),
+  INDEX `fk_lobby_cards_deletion_requests_idx` (`deletion_request_id` ASC),
   CONSTRAINT `fk_lobby_cards_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -1447,6 +1494,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`lobby_cards` (
   CONSTRAINT `fk_lobby_cards_users`
     FOREIGN KEY (`uploader_id`)
     REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_lobby_cards_deletion_requests`
+    FOREIGN KEY (`deletion_request_id`)
+    REFERENCES `movlib`.`deletion_requests` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1465,15 +1517,17 @@ CREATE TABLE IF NOT EXISTS `movlib`.`backdrops` (
   `changed` TIMESTAMP NOT NULL COMMENT 'The backdrop’s changed timestamp.',
   `created` TIMESTAMP NOT NULL COMMENT 'The backdrop’s creation timestamp.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The backdrop’s deletion flag.',
+  `deletion_request_id` BIGINT UNSIGNED NULL COMMENT 'The backdrop’s deletion request identifier.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The backdrop’s translated descriptions.',
   `extension` CHAR(3) NOT NULL DEFAULT 'jpg' COMMENT 'The backdrop’s image extension.',
   `filesize` INT NOT NULL COMMENT 'The backdrop’s filesize.',
   `height` SMALLINT NOT NULL COMMENT 'The backdrop’s height in pixel.',
-  `styles` BLOB NOT NULL COMMENT 'The backdrop’s styles.',
+  `styles` BLOB NULL COMMENT 'The backdrop’s styles.',
   `width` SMALLINT NOT NULL COMMENT 'The backdrop’s width in pixel.',
   PRIMARY KEY (`id`, `movie_id`),
   INDEX `fk_posters_movies1_idx` (`movie_id` ASC),
   INDEX `fk_posters_users1_idx` (`uploader_id` ASC),
+  INDEX `fk_backdrops_deletion_requests_idx` (`deletion_request_id` ASC),
   CONSTRAINT `fk_posters_movies11`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
@@ -1482,6 +1536,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`backdrops` (
   CONSTRAINT `fk_posters_users11`
     FOREIGN KEY (`uploader_id`)
     REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_backdrops_deletion_requests`
+    FOREIGN KEY (`deletion_request_id`)
+    REFERENCES `movlib`.`deletion_requests` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
