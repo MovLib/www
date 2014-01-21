@@ -276,41 +276,6 @@ option[value=""] {
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
- * Special formatting for help partials within forms.
- * ------------------------------------------------------------------------------------------------------------------ */
-
-.form-help,
-form .popup {
-  float: right;
-  margin: 0;
-  cursor: help;
-}
-
-form .popup:hover:after {
-  left: -70px;
-  right: -20px;
-}
-
-form .popup .content:before,
-form .popup .content:after {
-  left: auto;
-  margin-left: auto;
-}
-
-form .popup .content:before {
-  right: 19px;
-}
-
-form .popup .content:after {
-  right: 20px;
-}
-
-form .popup .content {
-  width: 320px;
-  right: -20px;
-}
-
-/* ---------------------------------------------------------------------------------------------------------------------
  * Ensure inputs and buttons have some margin to the right.
  * ------------------------------------------------------------------------------------------------------------------ */
 

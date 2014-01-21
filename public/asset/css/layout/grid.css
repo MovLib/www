@@ -51,6 +51,7 @@
   clear: both;
 }
 
+form .popup,
 .fr {
   float: right;
 }

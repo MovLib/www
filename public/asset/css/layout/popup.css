@@ -95,3 +95,36 @@
   opacity: 1;
   visibility: visible;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+ * Special formatting for help partial.
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+.popup.ico-help {
+  margin: 0;
+  cursor: help;
+}
+
+.popup.ico-help:hover:after {
+  left: -70px;
+  right: -20px;
+}
+
+.popup.ico-help .content:before,
+.popup.ico-help .content:after {
+  left: auto;
+  margin-left: auto;
+}
+
+.popup.ico-help .content:before {
+  right: 19px;
+}
+
+.popup.ico-help .content {
+  width: 320px;
+  right: -20px;
+}
+
+.popup.ico-help .content:after {
+  right: 20px;
+}
