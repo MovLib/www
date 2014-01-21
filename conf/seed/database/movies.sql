@@ -26,7 +26,7 @@
 
 TRUNCATE TABLE `movies_countries`;
 TRUNCATE TABLE `movies_directors`;
-TRUNCATE TABLE `movies_images`;
+-- TRUNCATE TABLE `movies_images`;
 TRUNCATE TABLE `movies`;
 TRUNCATE TABLE `persons`;
 
@@ -58,29 +58,22 @@ INSERT INTO `persons` SET
   `deathdate`              = '1890-09-16',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
-  `dyn_image_descriptions` = ''
+  `image_width`            = 363,
+  `image_height`           = 363,
+  `image_filesize`         = 42010,
+  `image_extension`        = 'jpg',
+  `image_changed`          = '2013-11-28 15:13:42',
+  `dyn_image_descriptions` = COLUMN_CREATE(
+    'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;',
+    'de', '&lt;p&gt;Der französische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen können der Quelle entnommen werden: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;'
+  ),
+  `image_styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
+  `image_uploader_id`          = 1
 ;
+
 SET @louis_le_prince_id = LAST_INSERT_ID();
 
 INSERT INTO `movies_directors` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @louis_le_prince_id;
--- INSERT INTO `persons_images` SET
---   `id`               = 1,
---   `person_id`        = @louis_le_prince_id,
---   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'PD' LIMIT 1),
---   `width`            = 363,
---   `height`           = 363,
---   `filesize`         = 42010,
---   `extension`        = 'jpg',
---   `changed`          = '2013-11-28 15:13:42',
---   `created`          = '2013-11-28 15:13:42',
---   `dyn_descriptions` = COLUMN_CREATE(
---     'en', '&lt;p&gt;French cinema pioneer “Louis Le Prince”, the photo was taken from an unknown photographer in the 1880s.&lt;/p&gt;&lt;p&gt;The photo is public domain, see image source for exact licensing information: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;',
---     'de', '&lt;p&gt;Der französische Kino-Pionier „Louis Le Prince”, das Foto wurde von einem unbekannten Fotografen in den 1880er Jahren erstellt.&lt;/p&gt;&lt;p&gt;Das Foto ist gemeinfrei, genaue Lizenzinformationen können der Quelle entnommen werden: &lt;a href="https://commons.wikimedia.org/wiki/File%3ALouis_Le_Prince.jpg" rel="nofollow" target=_blank"&gt;Wikimedia Commons&lt;/a&gt;&lt;/p&gt;'
---   ),
---   `styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
---   `deleted`          = false,
---   `user_id`          = 1
--- ;
 
 INSERT INTO `persons` SET
   `name`                   = 'Harriet Hartley',
@@ -147,24 +140,17 @@ INSERT INTO `persons` SET
   `name`                   = 'Sacha Goedegebure',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
-  `dyn_image_descriptions` = ''
+  `image_width`            = 363,
+  `image_height`           = 363,
+  `image_filesize`         = 42010,
+  `image_extension`        = 'jpg',
+  `image_changed`          = '2013-11-28 15:13:42',
+  `dyn_image_descriptions` = '',
+  `image_styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
+  `image_uploader_id`          = 1
 ;
+
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
--- INSERT INTO `persons_images` SET
---   `id`               = 1,
---   `person_id`        = @sacha_goedegebure_id,
---   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
---   `width`            = 363,
---   `height`           = 363,
---   `filesize`         = 42010,
---   `extension`        = 'jpg',
---   `changed`          = '2013-11-28 15:13:42',
---   `created`          = '2013-11-28 15:13:42',
---   `dyn_descriptions` = '',
---   `styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:57:"\'140x140>^\' -gravity \'Center\' -crop \'140x140+0+0\' +repage";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}}',
---   `deleted`          = false,
---   `user_id`          = 1
--- ;
 
 INSERT INTO `movies_directors` SET `movie_id` = @big_buck_bunny_id, `person_id` = @sacha_goedegebure_id;
 INSERT INTO `movies_countries` SET `movie_id` = @big_buck_bunny_id, `country_code` = 'US';
@@ -172,30 +158,30 @@ INSERT INTO `movies_languages` SET `movie_id` = @big_buck_bunny_id, `language_co
 INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Short' LIMIT 1);
 INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (SELECT `id` FROM `genres` WHERE COLUMN_GET(`dyn_names`, 'en' AS CHAR) = 'Animation' LIMIT 1);
 
-INSERT INTO `movies_images` SET
-  `id`               = 1,
-  `movie_id`         = @big_buck_bunny_id,
-  `type_id`          = 2,
-  `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
-  `country_code`     = 'US',
-  `language_code`    = 'en',
-  `date`             = '2008-03-25',
-  `deleted`          = false,
-  `width`            = 1500,
-  `height`           = 2107,
-  `filesize`         = 493629,
-  `extension`        = 'jpg',
-  `changed`          = '2013-11-28 15:13:42',
-  `created`          = '2013-11-28 15:13:42',
-  `dyn_authors`      = COLUMN_CREATE('en', '&lt;p&gt;Blender Foundation | www.blender.org&lt;/p&gt;'),
-  `dyn_descriptions` = COLUMN_CREATE(
-    'de', '&lt;p&gt;Offizielles Poster.&lt;/p&gt;',
-    'en', '&lt;p&gt;Official poster.&lt;/p&gt;'
-  ),
-  `dyn_sources`      = COLUMN_CREATE('en', '&lt;a href="http://download.blender.org/peach/presskit.zip" rel="nofollow" target="_blank"&gt;http://download.blender.org/peach/presskit.zip&lt;/a&gt;'),
-  `styles`           = 'a:5:{i:540;a:3:{s:6:"height";i:540;s:5:"width";i:384;s:9:"resizeArg";s:10:"\'540x540>\'";}i:220;a:3:{s:6:"height";i:309;s:5:"width";i:220;s:9:"resizeArg";s:7:"\'220x>\'";}i:140;a:3:{s:6:"height";i:197;s:5:"width";i:140;s:9:"resizeArg";s:7:"\'140x>\'";}i:60;a:3:{s:6:"height";i:84;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}s:5:"60x60";a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:53:"\'60x60>^\' -gravity \'Center\' -crop \'60x60+0+0\' +repage";}}',
-  `user_id`          = 1
-;
+-- INSERT INTO `movies_images` SET
+--   `id`               = 1,
+--   `movie_id`         = @big_buck_bunny_id,
+--   `type_id`          = 2,
+--   `license_id`       = (SELECT `id` FROM `licenses` WHERE `abbreviation` = 'CC BY 3.0' LIMIT 1),
+--   `country_code`     = 'US',
+--   `language_code`    = 'en',
+--   `date`             = '2008-03-25',
+--   `deleted`          = false,
+--   `width`            = 1500,
+--   `height`           = 2107,
+--   `filesize`         = 493629,
+--   `extension`        = 'jpg',
+--   `changed`          = '2013-11-28 15:13:42',
+--   `created`          = '2013-11-28 15:13:42',
+--   `dyn_authors`      = COLUMN_CREATE('en', '&lt;p&gt;Blender Foundation | www.blender.org&lt;/p&gt;'),
+--   `dyn_descriptions` = COLUMN_CREATE(
+--     'de', '&lt;p&gt;Offizielles Poster.&lt;/p&gt;',
+--     'en', '&lt;p&gt;Official poster.&lt;/p&gt;'
+--   ),
+--   `dyn_sources`      = COLUMN_CREATE('en', '&lt;a href="http://download.blender.org/peach/presskit.zip" rel="nofollow" target="_blank"&gt;http://download.blender.org/peach/presskit.zip&lt;/a&gt;'),
+--   `styles`           = 'a:5:{i:540;a:3:{s:6:"height";i:540;s:5:"width";i:384;s:9:"resizeArg";s:10:"\'540x540>\'";}i:220;a:3:{s:6:"height";i:309;s:5:"width";i:220;s:9:"resizeArg";s:7:"\'220x>\'";}i:140;a:3:{s:6:"height";i:197;s:5:"width";i:140;s:9:"resizeArg";s:7:"\'140x>\'";}i:60;a:3:{s:6:"height";i:84;s:5:"width";i:60;s:9:"resizeArg";s:6:"\'60x>\'";}s:5:"60x60";a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:53:"\'60x60>^\' -gravity \'Center\' -crop \'60x60+0+0\' +repage";}}',
+--   `user_id`          = 1
+-- ;
 
 -- END "Big Buck Bunny"
 
