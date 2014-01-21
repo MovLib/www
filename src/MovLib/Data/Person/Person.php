@@ -220,15 +220,8 @@ class Person {
   protected function init() {
     global $db, $i18n;
     $this->deleted = (boolean) $this->deleted;
-    $this->displayPhoto = $db->query(
-      "SELECT `id`, `extension`, UNIX_TIMESTAMP(`changed`) AS `changed`, `styles` FROM `persons_images` WHERE `person_id` = ? ORDER BY `upvotes` DESC LIMIT 1",
-      "d",
-      [ $this->id ]
-    )->get_result()->fetch_object("\\MovLib\\Data\\Image\\PersonImage", [ $this->id, $this->name ]);
+    $this->displayPhoto = new PersonImage($this->id, $this->name);
 
-    if (!$this->displayPhoto) {
-      $this->displayPhoto = new PersonImage($this->id, $this->name);
-    }
     $this->route = $i18n->r("/person/{0}", [ $this->id ]);
   }
 

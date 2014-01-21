@@ -135,6 +135,7 @@ class Full extends \MovLib\Data\Person\Person {
         `created` = CURRENT_TIMESTAMP,
         `dyn_biographies` = COLUMN_CREATE('{$i18n->languageCode}', ?),
         `dyn_wikipedia`= COLUMN_CREATE('{$i18n->languageCode}', ?),
+        `dyn_image_descriptions` = '',
         `name` = ?,
         `sex` = ?,
         `birthdate` = ?,
