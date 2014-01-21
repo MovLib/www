@@ -72,37 +72,37 @@ location ^~ <?= $r("/movie") ?> {
   }
 
   #
-  # ---------------------------------------- Movie Image(s)
+  # ---------------------------------------- Movie Backdrop(s)
   #
 
-  location ~* "^<?= $rp("/movie/{0}/images", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Images";
+  location ~* "^<?= $rp("/movie/{0}/backdrops", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\Backdrops";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
 
-  location ~* "^<?= $r("/movie/{0}/image/upload", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageUpload";
+  location ~* "^<?= $r("/movie/{0}/backdrop/upload", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\BackdropUpload";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
 
-  location ~* "^<?= $r("/movie/{0}/image/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image";
-    set $movlib_movie_id $1;
-    set $movlib_image_id $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/movie/{0}/image/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageEdit";
+  location ~* "^<?= $r("/movie/{0}/backdrop/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\Backdrop";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;
   }
 
-  location ~* "^<?= $r("/movie/{0}/image/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\ImageDelete";
+  location ~* "^<?= $r("/movie/{0}/backdrop/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\BackdropEdit";
+    set $movlib_movie_id $1;
+    set $movlib_image_id $2;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/movie/{0}/backdrop/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\BackdropDelete";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
     try_files $movlib_cache @php;

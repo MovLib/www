@@ -39,10 +39,10 @@ return [
   "/movie/{0}/delete"     => "/film/{0}/löschen",
 
   // ------------------------------------------------------------------------------------------------------------------- Movie Photo
-  "/movie/{0}/image/upload"     => "/film/{0}/bild/hochladen",
-  "/movie/{0}/image/{1}"        => "/film/{0}/bild/{1}",
-  "/movie/{0}/image/{1}/edit"   => "/film/{0}/bild/{1}/bearbeiten",
-  "/movie/{0}/image/{1}/delete" => "/film/{0}/bild/{1}/löschen",
+  "/movie/{0}/backdrop/upload"     => "/film/{0}/hintergrund/hochladen",
+  "/movie/{0}/backdrop/{1}"        => "/film/{0}/hintergrund/{1}",
+  "/movie/{0}/backdrop/{1}/edit"   => "/film/{0}/hintergrund/{1}/bearbeiten",
+  "/movie/{0}/backdrop/{1}/delete" => "/film/{0}/hintergrund/{1}/löschen",
 
   // ------------------------------------------------------------------------------------------------------------------- Movie Poster
   "/movie/{0}/poster/upload"     => "/film/{0}/poster/hochladen",

@@ -1434,7 +1434,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`posters` (
   `height` SMALLINT NOT NULL COMMENT 'The poster’s height in pixel.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The poster’s ISO alpha-2 language code.',
   `publishing_date` DATE NULL COMMENT 'The poster’s publishing date.',
-  `representative` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Flag indicating if the poster is representative for the movie in the searched system language. Only one poster can be representative for one language code.',
   `styles` BLOB NULL COMMENT 'The poster’s styles.',
   `width` SMALLINT NOT NULL COMMENT 'The poster’s width in pixel.',
   PRIMARY KEY (`id`, `movie_id`),
@@ -1457,6 +1456,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`posters` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
+COMMENT = 'Table containing all information related to movie posters.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -1502,6 +1502,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`lobby_cards` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
+COMMENT = 'Table containing all information related to movie lobby card /* comment truncated */ /*s.*/'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
 
@@ -1544,8 +1545,28 @@ CREATE TABLE IF NOT EXISTS `movlib`.`backdrops` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
+COMMENT = 'Table containing all information related to movie backdrops.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`display_posters`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`display_posters` (
+  `poster_id` BIGINT UNSIGNED NOT NULL COMMENT 'The display poster’s unique poster identifier.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The display poster’s unique movie identifier.',
+  `language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_bin' NOT NULL COMMENT 'The display poster’s ISO alpha-2 language code.',
+  PRIMARY KEY (`poster_id`, `movie_id`, `language_code`),
+  INDEX `fk_display_posters_posters_idx` (`poster_id` ASC, `movie_id` ASC),
+  CONSTRAINT `fk_display_posters_posters`
+    FOREIGN KEY (`poster_id` , `movie_id`)
+    REFERENCES `movlib`.`posters` (`id` , `movie_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Table containing information on which poster should be used  /* comment truncated */ /*for which language as display poster on the movie details page.*/';
 
 SHOW WARNINGS;
 
