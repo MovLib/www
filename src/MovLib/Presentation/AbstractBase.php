@@ -211,6 +211,11 @@ abstract class AbstractBase {
     }
     if ($style->placeholder === true) {
       $this->addClass("placeholder", $attributes);
+
+      // Ensure we don't declare any of our placeholder images as being an image for anything.
+      if (isset($attributes["itemprop"])) {
+        unset($attributes["itemprop"]);
+      }
     }
     $attributes["src"]    = $style->src;
     $attributes["width"]  = $style->width;
@@ -222,6 +227,21 @@ abstract class AbstractBase {
       return $this->a(($route === true ? $style->route : $route), $image, $anchorAttributes);
     }
     return $image;
+  }
+
+  /**
+   * Get global <code>lang</code> attribute for any HTML tag if language differs from current display language.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $lang
+   *   The ISO alpha-2 language code of the entity you want to display and have compared to the current language.
+   * @return null|string
+   *   <code>NULL</code> if given <var>$lang</var> matches current display language, otherwise the global <code>lang</code>
+   *   attribute ready for print (e.g. <code>" lang='de'"</code>).
+   */
+  protected final function lang($lang) {
+    global $i18n;
+    return $lang == $i18n->languageCode ? null : " lang='{$lang}'";
   }
 
   /**

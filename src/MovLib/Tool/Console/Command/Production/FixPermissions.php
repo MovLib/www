@@ -73,14 +73,30 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @return this
    * @throws \InvalidArgumentException
    */
-  public function fixPermissions($directory = "") {
+  public function fixPermissions($directory = null) {
     global $kernel;
-    if (strpos($directory, $kernel->documentRoot) === false) {
+
+    // No need to fix permissions under Windows.
+    if ($kernel->isWindows === true) {
+      return $this;
+    }
+
+    // No directory? No problem!
+    if (!isset($directory)) {
+      $directory = $kernel->documentRoot;
+    }
+    // Ensure that the given directory is within the globally defined document root. At this point, we don't even trust
+    // the person who's calling this method as it would simply break way too many things.
+    elseif (strpos($directory, $kernel->documentRoot) === false) {
       $directory = "{$kernel->documentRoot}/{$directory}";
     }
+
+    // If this isn't a valid directory abort.
     if (!is_dir($directory)) {
       throw new \InvalidArgumentException("Given directory '{$directory}' doesn't exist!");
     }
+
+    // Looks good so far, start fixing permissions in this directory.
     $this->write("Fixing permissions on all directories and files in <info>'{$directory}'</info> ...");
     foreach ([
       "chown -R {$kernel->phpUser}:{$kernel->phpGroup} '{$directory}'" => "User and group ownership fixed!",
@@ -94,6 +110,7 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
       $this->write($msg, self::MESSAGE_TYPE_INFO);
     }
+
     return $this;
   }
 

@@ -87,7 +87,9 @@ class Composer {
     global $kernel;
 
     // Create symbolic link for global access.
-    $this->symlink("{$this->vendorPath}/bin/apigen.php", "{$kernel->usrBinaryPath}/apigen");
+    if ($kernel->isWindows === false) {
+      $this->symlink("{$this->vendorPath}/bin/apigen.php", "{$kernel->usrBinaryPath}/apigen");
+    }
 
     // @see https://github.com/apigen/apigen/issues/252
     $patch = "{$this->vendorPath}/{$fullName}/ApiGen/Template.php";
@@ -123,10 +125,12 @@ class Composer {
     global $kernel, $db;
 
     // Create symbolic link to our phpMyAdmin configuration.
-    $this->symlink("{$kernel->documentRoot}/conf/phpmyadmin/config.inc.php", "{$this->vendorPath}/{$fullName}/config.inc.php");
+    if ($kernel->isWindows === false) {
+      $this->symlink("{$kernel->documentRoot}/conf/phpmyadmin/config.inc.php", "{$this->vendorPath}/{$fullName}/config.inc.php");
 
-    // Create all tables for the advanced phpMyAdmin features.
-    $db->queries(file_get_contents("{$this->vendorPath}/{$fullName}/examples/create_tables.sql"));
+      // Create all tables for the advanced phpMyAdmin features.
+      $db->queries(file_get_contents("{$this->vendorPath}/{$fullName}/examples/create_tables.sql"));
+    }
 
     return $this;
   }
@@ -139,7 +143,10 @@ class Composer {
    */
   public function phpunit() {
     global $kernel;
-    return $this->symlink("{$this->vendorPath}/bin/phpunit", "{$kernel->usrBinaryPath}/phpunit");
+    if ($kernel->isWindows === false) {
+      $this->symlink("{$this->vendorPath}/bin/phpunit", "{$kernel->usrBinaryPath}/phpunit");
+    }
+    return $this;
   }
 
   /**

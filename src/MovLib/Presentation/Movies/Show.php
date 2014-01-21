@@ -36,17 +36,6 @@ class Show extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitPagination;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * Numeric array containing the <code>\MovLib\Data\Movie</code> objects to display.
-   *
-   * @var array
-   */
-  protected $movies;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
@@ -67,54 +56,12 @@ class Show extends \MovLib\Presentation\Page {
       [ $i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ] ],
       [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
     ]);
-    $this->initPagination(Movie::getUndeletedMoviesCount());
-    $this->movies        = Movie::getMovies($this->resultsOffset, $this->resultsPerPage);
+    $this->initPagination(Movie::getMoviesCount());
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * Format a single movie.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @param \MovLib\Data\Movie\Movie $movie
-   * @return string
-   */
-  public function formatMovie($movie) {
-    global $i18n;
-
-    // Format the poster for the list.
-    $image = $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]);
-
-    // Format the display title for the list.
-    if ($movie->year) {
-      $title = $i18n->t("{movie_title} ({movie_year})", [
-        "movie_title" => "<span itemprop='name'>{$movie->displayTitle}</span>",
-        "movie_year"  => "<span itemprop='datePublished'>{$movie->year}</span>",
-      ]);
-    }
-    else {
-      $title = "<span itemprop='name'>{$movie->displayTitle}</span>";
-    }
-
-    // Append the original title to the output if it differs from the localized title.
-    if ($movie->displayTitle != $movie->originalTitle) {
-      $title .= "<br><span class='small'>{$i18n->t("Original title: “{original_title}”", [
-        "original_title" => "<span itemprop='alternateName'>{$movie->originalTitle}</span>",
-      ])}</span>";
-    }
-
-    // Put it all together.
-    return
-      "<a class='img r' href='{$i18n->r("/movie/{0}", [ $movie->id ])}' itemprop='url'>" .
-        "<span class='s s1'>{$image}</span>" .
-        "<span class='s s9'>{$title}</span>" .
-      "</a>"
-    ;
-  }
 
   /**
    * Get the presentation's page content.
@@ -126,16 +73,45 @@ class Show extends \MovLib\Presentation\Page {
   protected function getPageContent() {
     global $i18n;
 
-    // Instantiate the list that makes up all the content.
-    $movies = new Images(
-      $this->movies,
-      new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO),
-      [ "itemscope", "itemtype" => "http://schema.org/Movie" ]
-    );
-    $movies->closure = [ $this, "formatMovie" ];
+    // Nothing to display.
+    if ($this->resultsTotalCount < 1) {
+      return new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO);
+    }
 
-    // Add the filter interface to the current presentation.
-    return "<div id='filter'>filter filter filter</div>{$movies}";
+    // Fetch all movies matching the current pagination offset.
+    $list   = null;
+    $movies = Movie::getMovies($this->resultsOffset, $this->resultsPerPage);
+    /* @var $movie \MovLib\Data\Movie\Movie */
+    while ($movie = $movies->fetch_object("\\MovLib\\Data\\Movie\\Movie")) {
+      // We have to use different micro-data if display and original title differ.
+      if ($movie->displayTitle != $movie->originalTitle) {
+        $displayTitleItemprop = "alternateName";
+        $movie->originalTitle = "<br><span class='small'>{$i18n->t("Original title: “{original_title}”", [
+          "original_title" => "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>"
+        ])}</span>";
+      }
+      // Simplay clear the original title if it's the same as the display title.
+      else {
+        $displayTitleItemprop = "name";
+        $movie->originalTitle = null;
+      }
+      $movie->displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
+
+      // Append year enclosed in micro-data to display title if available.
+      if (isset($movie->year)) {
+        $movie->displayTitle = $i18n->t("{0} ({1})", [ $movie->displayTitle, "<span itemprop='datePublished'>{$movie->year}</span>" ]);
+      }
+
+      // Put the movie list entry together.
+      $list .= "<li itemscope itemtype='http://schema.org/Movie'><a class='img r' href='{$movie->route}' itemprop='url'>" .
+        "<span class='s s1'>{$this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ])}</span>" .
+        "<span class='s s9'>{$movie->displayTitle}{$movie->originalTitle}</span>" .
+      "</a></li>";
+    }
+    $movies->free();
+
+    // Put it all together and we're done.
+    return "<div id='filter' class='tar'>Filter</div><ol class='hover-list no-list'>{$list}</ol>";
   }
 
 }

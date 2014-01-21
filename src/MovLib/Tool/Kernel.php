@@ -41,6 +41,13 @@ class Kernel extends \MovLib\Kernel {
    */
   public $usrBinaryPath = "/usr/local/bin";
 
+  /**
+   * Flag indicating if we're running under Windows or not.
+   *
+   * @var boolean
+   */
+  public $isWindows = false;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -63,6 +70,7 @@ class Kernel extends \MovLib\Kernel {
     // tampering with any super global (which might destroy other software).
     $this->documentRoot     = dirname(dirname(dirname(__DIR__)));
     $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
+    $this->isWindows        = defined("PHP_WINDOWS_VERSION_MAJOR");
 
     // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied
     // software is casting various deprecated or strict errors.

@@ -64,6 +64,13 @@ class Movie {
   public $displayTitle;
 
   /**
+   * The movie's display title's ISO alpha-2 language code.
+   *
+   * @var string
+   */
+  public $displayTitleLanguageCode;
+
+  /**
    * The movie's display title with the year appended in brackets.
    *
    * @internal
@@ -78,6 +85,39 @@ class Movie {
    * @var string
    */
   public $originalTitle;
+
+  /**
+   * The movie's original title's ISO alpha-2 language code.
+   *
+   * @var string
+   */
+  public $originalTitleLanguageCode;
+
+  /**
+   * Default query to fetch a movie from the database.
+   *
+   * @var string
+   */
+  protected static $query =
+    "SELECT
+      `movies`.`id`,
+      `movies`.`deleted`,
+      IFNULL(`titles`.`title`, `movies`.`original_title`) AS `displayTitle`,
+      `titles`.`language_code` AS `displayTitleLanguageCode`,
+      `movies`.`original_title` AS `originalTitle`,
+      `movies`.`original_title_language_code` AS `originalTitleLanguageCode`,
+      `movies`.`year`,
+      `display_posters`.`poster_id` AS `displayPoster`
+    FROM `movies`
+      LEFT JOIN `movies_titles` ON `movies_titles`.`movie_id` = `movies`.`id`
+      LEFT JOIN `titles`
+        ON `titles`.`movie_id` = `movies`.`id`
+        AND `titles`.`language_code` = ?
+      LEFT JOIN `display_posters`
+        ON `display_posters`.`movie_id` = `movies`.`id`
+        AND `display_posters`.`language_code` = ?
+    "
+  ;
 
   /**
    * The movie's translated route.
@@ -103,23 +143,26 @@ class Movie {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Data\Database $db
    * @param integer $id [optional]
-   *   The unique movie's ID to load.
+   *   The movie's unique identifier to load, defaults to no identifier which creates an empty movie object.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id = null) {
     global $i18n, $db;
 
-    // Load the movie if an ID was passed to the constructor.
+    // Try to load the movie if an identifier was passed to the constructor.
     if ($id) {
-      $query = self::getQuery();
-      $stmt  = $db->query("{$query} WHERE `movies`.`id` = ? LIMIT 1", "sd", [ $i18n->languageCode, $id ]);
+      $query = self::$query;
+      $stmt  = $db->query("{$query} WHERE `movies`.`id` = ? LIMIT 1", "ssd", [ $i18n->languageCode, $i18n->languageCode, $id ]);
       $stmt->bind_result(
         $this->id,
         $this->deleted,
         $this->displayTitle,
+        $this->displayTitleLanguageCode,
         $this->originalTitle,
-        $this->year
+        $this->originalTitleLanguageCode,
+        $this->year,
+        $this->displayPoster
       );
       if (!$stmt->fetch()) {
         throw new NotFound;
@@ -127,10 +170,33 @@ class Movie {
       $stmt->close();
     }
 
-    // Load the display poster if the above query set the movie ID or this object was instantiated by PHP and the
-    // property is already set.
+    // Initialize the movie if we have an identifier, either from above query or from fetch object.
     if ($this->id) {
-      $this->init();
+      $this->route = $i18n->r("/movie/{0}", [ $this->id ]);
+
+      // Ensure deleted has to the correct type for later comparisons.
+      $this->deleted = (boolean) $this->deleted;
+
+      // Construct full display title including the year. This combination is needed all over the place.
+      $this->displayTitleWithYear = isset($this->year) ? $i18n->t("{0} ({1})", [ $this->displayTitle, $this->year ]) : $this->displayTitle;
+
+      // Load the oldest poster if we don't have a display poster for the current language.
+      if (!$this->displayPoster) {
+        $stmt   = $db->query("SELECT MIN(`id`) FROM `posters` WHERE `movie_id` = ?", "d", [ $this->id ]);
+        $result = $stmt->get_result()->fetch_row();
+        if (isset($result[0])) {
+          $this->displayPoster = $result[0];
+        }
+        $stmt->close();
+      }
+
+      // Load the actual display poster for this movie.
+      $stmt = $db->query("SELECT UNIX_TIMESTAMP(`changed`), `extension`, `styles` FROM `posters` WHERE `id` = ? LIMIT 1", "d", [ $this->displayPoster ]);
+      $this->displayPoster = $stmt->get_result()->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]);
+      $stmt->close();
+
+      // Load an empty poster if above query returned with no result (fetch object will simply return NULL in that case).
+      $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
     }
   }
 
@@ -224,102 +290,46 @@ class Movie {
     )->get_result()->fetch_row()[0];
   }
 
-  public static function getUndeletedMoviesCount() {
-    global $db;
-    static $count = null;
-    if (!$count) {
-      $count = $db->query("SELECT COUNT(`id`) FROM `movies` WHERE `deleted` = false LIMIT 1")->get_result()->fetch_row()[0];
-    }
-    return $count;
-  }
-
+  /**
+   * Get paginated movies result.
+   *
+   * @internal The returned {@see \mysqli_result} is prepared for direct instantiating via fetch object of this class.
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param integer $offset
+   *   The offset, usually provided by the pagination trait.
+   * @param integer $rowCount
+   *   The row count, usually provided by the pagination trait.
+   * @return \mysqli_result
+   *   Paginated movies result.
+   */
   public static function getMovies($offset, $rowCount) {
     global $db, $i18n;
-    static $movies = [];
-
-    if (!isset($movies[$i18n->locale])) {
-      $query  = self::getQuery();
-      $result = $db->query(
-        "{$query} WHERE `movies`.`deleted` = false ORDER BY `movies`.`id` DESC LIMIT ? OFFSET ?",
-        "sii",
-        [ $i18n->languageCode, $rowCount, $offset ]
-      )->get_result();
-      while ($movie = $result->fetch_object(__CLASS__)) {
-        $movies[$i18n->locale][$movie->id] = $movie;
-      }
-    }
-
-    return $movies[$i18n->locale];
+    $query = self::$query;
+    return $db->query("{$query} WHERE `movies`.`deleted` = false ORDER BY `movies`.`id` DESC LIMIT ? OFFSET ?", "ssii", [
+      $i18n->languageCode, $i18n->languageCode, $rowCount, $offset
+    ])->get_result();
   }
 
   /**
-   * Get the default query.
+   * Get total movies count.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @return string
-   *   The default query.
+   * @global \MovLib\Data\Database $db
+   * @param null|boolean $deleted [optional]
+   *   Pass <code>TRUE</code> to count only deleted movies, <code>NULL</code> to count absolutely all movies and
+   *   <code>FALSE</code> (default) to count only undeleted movies.
+   * @return integer
+   *   Total movies count.
+   * @throws \MovLib\Exception\DatabaseException
    */
-  private static function getQuery() {
-    global $i18n;
-    return
-      "SELECT
-        `movies`.`id`,
-        `movies`.`deleted`,
-        IFNULL(`titles`.`title`, `movies`.`original_title`) AS `displayTitle`,
-        `movies`.`original_title` AS `originalTitle`,
-        `movies`.`year`
-      FROM `movies`
-        LEFT JOIN `movies_titles` ON `movies_titles`.`movie_id` = `movies`.`id`
-        LEFT JOIN `titles`
-          ON `titles`.`movie_id` = `movies`.`id`
-          AND `titles`.`language_code` = ?
-      "
-    ;
-  }
-
-  protected function init() {
-    global $db, $i18n;
-
-    // Create the full default display title.
-    if ($this->year) {
-      $this->displayTitleWithYear = $i18n->t("{movie_title} ({movie_year})", [
-        "movie_title" => $this->displayTitle,
-        "movie_year"  => $this->year,
-      ]);
+  public static function getMoviesCount($deleted = false) {
+    global $db;
+    $query = "SELECT COUNT(*) FROM `movies` ";
+    if ($deleted === true || $deleted === false) {
+      $deleted = (integer) $deleted;
+      $query  .= "WHERE `deleted` = {$deleted} ";
     }
-    else {
-      $this->displayTitleWithYear = $this->displayTitle;
-    }
-
-    // Always cast deleted to a real boolean if we are instantiating a movie.
-    if ($this->deleted) {
-      $this->deleted = (boolean) $this->deleted;
-    }
-
-    // Fetch the display poster from the database.
-    $this->displayPoster = $db->query(
-      "SELECT
-        `id`,
-        `extension`,
-        UNIX_TIMESTAMP(`changed`) AS `changed`,
-        `styles`
-      FROM `movies_images`
-      WHERE `movie_id` = ?
-        AND `type_id` = ?
-      ORDER BY `upvotes` DESC
-      LIMIT 1",
-      "di",
-      [ $this->id, MoviePoster::TYPE_ID ]
-    )->get_result()->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]);
-
-    // Load an empty poster if we have no posters at all.
-    if (!$this->displayPoster) {
-      $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
-    }
-
-    $this->route = $i18n->r("/movie/{0}", [ $this->id ]);
-
-    return $this;
+    return $db->query("{$query} LIMIT 1")->get_result()->fetch_row()[0];
   }
 
 }

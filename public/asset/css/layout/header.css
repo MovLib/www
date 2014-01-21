@@ -441,3 +441,7 @@
 #b a:focus {
   border-bottom-color: #fff;
 }
+
+#b a.active {
+  border-bottom: none;
+}

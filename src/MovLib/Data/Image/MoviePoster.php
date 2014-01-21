@@ -135,14 +135,6 @@ class MoviePoster extends \MovLib\Data\Image\AbstractImage {
   public function __construct($movieId = null, $movieTitle = null, $id = null) {
     global $db, $i18n;
 
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!($this->movieId && $movieId) || !($this->movieTitle && $movieTitle)) {
-      throw new \LogicException("You either have to pass the movie parameters to the constructor or instantiate the poster via fetch object and load everything yourself.");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-
     // Ensure we aren't exporting the optional parameters if we were instantiated via fetch object.
     if (!$this->movieId) {
       $this->movieId    = $movieId;
