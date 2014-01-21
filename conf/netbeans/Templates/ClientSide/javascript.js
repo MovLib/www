@@ -1,7 +1,7 @@
 <#assign licenseFirst="/*!">
 <#assign licensePrefix=" *">
 <#assign licenseLast=" */">
-<#import "../Licenses/${project.license}.ftl" as prj>
+<#import "../${project.license}.ftl" as prj>
 <#include "../Licenses/license-${project.license}.txt">
 
 /* jshint browser:true */
