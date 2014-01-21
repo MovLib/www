@@ -58,7 +58,7 @@ INSERT INTO `persons` SET
   `deathdate`              = '1890-09-16',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
-  `image_dyn_descriptions` = ''
+  `dyn_image_descriptions` = ''
 ;
 SET @louis_le_prince_id = LAST_INSERT_ID();
 
@@ -86,7 +86,7 @@ INSERT INTO `persons` SET
   `name`                   = 'Harriet Hartley',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
-  `image_dyn_descriptions` = ''
+  `dyn_image_descriptions` = ''
 ;
 SET @harriet_hartley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @harriet_hartley_id, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
@@ -95,7 +95,7 @@ INSERT INTO `persons` SET
   `name`                   = 'Adolphe Le Prince',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
-  `image_dyn_descriptions` = ''
+  `dyn_image_descriptions` = ''
 ;
 SET @adolphe_le_prince_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @adolphe_le_prince_id, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
@@ -104,7 +104,7 @@ INSERT INTO `persons` SET
   `name`                   = 'Joseph Whitley',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
-  `image_dyn_descriptions` = ''
+  `dyn_image_descriptions` = ''
 ;
 SET @joseph_whitley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @joseph_whitley_id, `roles` = COLUMN_CREATE('en', 'Himself', 'de', 'Selbst');
@@ -116,7 +116,7 @@ INSERT INTO `persons` SET
   `deathdate`              = '1888-10-24',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
-  `image_dyn_descriptions` = ''
+  `dyn_image_descriptions` = ''
 ;
 SET @sarah_whitley_id = LAST_INSERT_ID();
 INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id` = @sarah_whitley_id, `roles` = COLUMN_CREATE('en', 'Herself', 'de', 'Selbst');
@@ -147,7 +147,7 @@ INSERT INTO `persons` SET
   `name`                   = 'Sacha Goedegebure',
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
-  `image_dyn_descriptions` = ''
+  `dyn_image_descriptions` = ''
 ;
 SET @sacha_goedegebure_id = LAST_INSERT_ID();
 -- INSERT INTO `persons_images` SET
@@ -234,7 +234,7 @@ INSERT INTO `persons` SET
   `sex`                    = 1,
   `dyn_biographies`        = '',
   `dyn_wikipedia`          = '',
-  `image_dyn_descriptions` = ''
+  `dyn_image_descriptions` = ''
 ;
 SET @frank_darabont_id = LAST_INSERT_ID();
 
