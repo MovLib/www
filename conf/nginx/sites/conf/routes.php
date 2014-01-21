@@ -308,39 +308,18 @@ location ^~ <?= $r("/person") ?> {
   }
 
   #
-  # ---------------------------------------- Person Image(s)
+  # ---------------------------------------- Person Photo
   #
 
-  location ~* "^<?= $rp("/person/{0}/images", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\Images";
+  location ~* "^<?= $r("/person/{0}/photo", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Person\\Photo\\Show";
     set $movlib_id $1;
     try_files $movlib_cache @gallery;
   }
 
-  location ~* "^<?= $r("/person/{0}/image/upload", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\ImageUpload";
+  location ~* "^<?= $r("/person/{0}/photo/edit", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Person\\Photo\\Edit";
     set $movlib_person_id $1;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/person/{0}/image/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\Image";
-    set $movlib_person_id $1;
-    set $movlib_image_id $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/person/{0}/image/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\ImageEdit";
-    set $movlib_person_id $1;
-    set $movlib_image_id $2;
-    try_files $movlib_cache @php;
-  }
-
-  location ~* "^<?= $r("/person/{0}/image/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\ImageDelete";
-    set $movlib_person_id $1;
-    set $movlib_image_id $2;
     try_files $movlib_cache @php;
   }
 
