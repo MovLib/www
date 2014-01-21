@@ -472,22 +472,32 @@ class Page extends \MovLib\Presentation\AbstractBase {
     }
     $jsSettings = json_encode($kernel->javascriptSettings, JSON_UNESCAPED_UNICODE);
 
+    $title   = $this->getHeadTitle();
+    $logo256 = $kernel->getAssetURL("logo/256", "png");
+
     return
       "<!doctype html>" .
-      "<html dir='{$i18n->direction}' id='nojs' lang='{$i18n->languageCode}'>" .
+      "<html dir='{$i18n->direction}' id='nojs' lang='{$i18n->languageCode}' prefix='og: http://ogp.me/ns#'>" .
       "<head>" .
-        "<title>{$this->getHeadTitle()}</title>" .
+        "<title>{$title}</title>" .
         // Include the global styles and any presentation specific ones.
         "<link href='{$kernel->getAssetURL("MovLib", "css")}' rel='stylesheet'>{$stylesheets}" .
         // Yes, we could create these in a loop, but why should we implement a loop for static data? To be honest, I
         // generated it with a loop and simply copied the output here.
         "<link href='{$kernel->getAssetURL("logo/vector", "svg")}' rel='icon' type='image/svg+xml'>" .
-        "<link href='{$kernel->getAssetURL("logo/256", "png")}' rel='icon' sizes='256x256' type='image/png'>" .
+        "<link href='{$logo256}' rel='icon' sizes='256x256' type='image/png'>" .
         "<link href='{$kernel->getAssetURL("logo/128", "png")}' rel='icon' sizes='128x128' type='image/png'>" .
         "<link href='{$kernel->getAssetURL("logo/64", "png")}' rel='icon' sizes='64x64' type='image/png'>" .
         "<link href='{$kernel->getAssetURL("logo/32", "png")}' rel='icon' sizes='32x32' type='image/png'>" .
         "<link href='{$kernel->getAssetURL("logo/24", "png")}' rel='icon' sizes='24x24' type='image/png'>" .
         "<link href='{$kernel->getAssetURL("logo/16", "png")}' rel='icon' sizes='16x16' type='image/png'>" .
+        "<link href='https://plus.google.com/115387876584819891316' rel='publisher'>" .
+        "<meta property='og:description' content='{$i18n->t("The free online movie database that anyone can edit.")}'>" .
+        "<meta property='og:image' content='{$kernel->scheme}:{$logo256}'>" .
+        "<meta property='og:site_name' content='{$kernel->siteName}'>" .
+        "<meta property='og:title' content='{$title}'>" .
+        "<meta property='og:type' content='website'>" .
+        "<meta property='og:url' content='{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}'>" .
         // @todo Add opensearch tag (rel="search").
       "</head>" .
       "<body id='{$this->id}' class='{$this->bodyClasses}'>" .
