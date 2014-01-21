@@ -30,7 +30,7 @@
   background-color: #fcf8e3;
 }
 
-#m .alert {
+#m > .c .alert {
   margin-bottom: 20px;
 }
 

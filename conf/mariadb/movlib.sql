@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this person is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s biography in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_wikipedia` BLOB NOT NULL COMMENT 'The person\'s Wikipedia link in various languages. The language code serves as key.',
-  `image_dyn_descriptions` BLOB NOT NULL COMMENT 'The person photo’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_image_descriptions` BLOB NOT NULL COMMENT 'The person’s translated photo description.',
   `name` VARCHAR(255) NOT NULL COMMENT 'The person’s full name.',
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The person\'s sex according to ISO 5218.\n\n0 = not known\n1 = male\n2 = female\n9 = not applicable',
   `aliases` BLOB NULL COMMENT 'The person’s aliases (serialized PHP array).',
@@ -221,11 +221,29 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The company’s unique ID.',
-  `created` TIMESTAMP NOT NULL COMMENT 'The creation date of the company as timestamp.',
-  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this company was marked as deleted or not. TRUE (1) if this company was marked as deleted, default is FALSE (0).',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_links` BLOB NOT NULL COMMENT 'External links belonging to this company. The link’s hostname serves as key.',
-  PRIMARY KEY (`id`))
+  `created` TIMESTAMP NOT NULL COMMENT 'The company’s creation timestamp.',
+  `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the company was deleted or not.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translated descriptions.',
+  `dyn_wikipedia` BLOB NOT NULL COMMENT 'The company’s translated Wikipedia links.',
+  `dyn_image_descriptions` BLOB NOT NULL COMMENT 'The company’s translated logo description.',
+  `aliases` BLOB NULL COMMENT 'The company’s aliases.',
+  `founding_date` DATE NULL COMMENT 'The company’s founding date.',
+  `defunct_date` DATE NULL COMMENT 'The company’s defunct date.',
+  `image_changed` TIMESTAMP NULL COMMENT 'The company’s logo changed timestamp.',
+  `image_extension` CHAR(3) NULL COMMENT 'The company’s logo extension.',
+  `image_filesize` INT NULL COMMENT 'The company’s logo filesize.',
+  `image_height` SMALLINT NULL COMMENT 'The company’s logo height.',
+  `image_styles` BLOB NULL COMMENT 'The company’s logo styles.',
+  `image_uploader_id` BIGINT UNSIGNED NULL COMMENT 'The company’s logo unique uploader identifier.',
+  `image_width` SMALLINT NULL COMMENT 'The company’s logo width.',
+  `links` BLOB NULL COMMENT 'The company’s weblinks as serialized PHP array.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_companies_users1_idx` (`image_uploader_id` ASC),
+  CONSTRAINT `fk_companies_users1`
+    FOREIGN KEY (`image_uploader_id`)
+    REFERENCES `movlib`.`users` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all companies.'
 ROW_FORMAT = COMPRESSED
