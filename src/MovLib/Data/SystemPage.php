@@ -18,6 +18,7 @@
 namespace MovLib\Data;
 
 use \MovLib\Data\FileSystem;
+use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Handling of one system page.
@@ -72,28 +73,35 @@ class SystemPage extends \MovLib\Data\Database {
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @param integer $id [optional]
-   *   The page's unique ID.
+   *   The page's unique identifier, defaults to no identifier which creates an empty object.
+   * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct($id) {
+  public function __construct($id = null) {
     global $db, $i18n;
-    $stmt = $db->query(
-      "SELECT
-        `id`,
-        IFNULL(COLUMN_GET(`dyn_titles`, ? AS CHAR(255)), COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR(255))) AS `title`,
-        COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR(255)) AS `route`,
-        COLUMN_GET(`dyn_texts`, ? AS BINARY) AS `text`
-      FROM `system_pages`
-      WHERE `id` = ?
-      LIMIT 1",
-      "ssi",
-      [ $i18n->languageCode, $i18n->languageCode, $id ]
-    );
-    $stmt->bind_result($this->id, $this->title, $this->route, $this->text);
-    if (!$stmt->fetch()) {
-      throw new \OutOfBoundsException("Couldn't fetch system page with '{$id}'");
+
+    if ($id) {
+      $stmt = $db->query(
+        "SELECT
+          `id`,
+          COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`,
+          COLUMN_GET(`dyn_texts`, ? AS BINARY) AS `text`,
+          COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR(255)) AS `route`
+        FROM `system_pages`
+        WHERE `id` = ?
+        LIMIT 1",
+        "ssi",
+        [ $i18n->languageCode, $i18n->languageCode, $id ]
+      );
+      $stmt->bind_result($this->id, $this->title, $this->text, $this->route);
+      if (!$stmt->fetch()) {
+        throw new NotFound;
+      }
     }
-    $this->route = FileSystem::sanitizeFilename($this->route);
-    $this->route = "/{$this->route}";
+
+    if ($this->route) {
+      $this->route = FileSystem::sanitizeFilename($this->route);
+      $this->route = "/{$this->route}";
+    }
   }
 
 
@@ -125,9 +133,31 @@ class SystemPage extends \MovLib\Data\Database {
         $this->text,
         $this->id,
       ]
-    );
+    )->close();
 
     return $this;
+  }
+
+  /**
+   * Get all available system pages.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   All available system pages.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public static function getSystemPages() {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `id`,
+        COLUMN_GET(`dyn_titles`, ? AS CHAR(255)) AS `title`,
+        COLUMN_GET(`dyn_titles`, '{$i18n->defaultLanguageCode}' AS CHAR(255)) AS `route`
+      FROM `system_pages`",
+      "s",
+      [ $i18n->languageCode ]
+    )->get_result();
   }
 
 }

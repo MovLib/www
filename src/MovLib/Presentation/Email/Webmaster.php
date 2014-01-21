@@ -27,22 +27,22 @@ namespace MovLib\Presentation\Email;
  * @since 0.0.1-dev
  */
 class Webmaster extends \MovLib\Presentation\Email\AbstractEmail {
-  
-  
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
-  
-  
+
+
   /**
    * The message that should be sent to the webmaster.
-   * 
+   *
    * @var string
    */
   protected $message;
-  
-  
+
+
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-  
-  
+
+
   /**
    * Instantiate new fatal error email.
    *
@@ -59,23 +59,25 @@ class Webmaster extends \MovLib\Presentation\Email\AbstractEmail {
     $this->recipient = $kernel->emailWebmaster;
   }
 
-  
+
   // ------------------------------------------------------------------------------------------------------------------- Methods
-  
-  
+
+
   /**
    * @inheritdoc
    */
   public function getHTML() {
-    return "<p>Hi webmaster!</p><p>{$this->message}</p>";
+    global $i18n;
+    return "<p>{$i18n->t("Hi webmaster!")}</p><p>{$this->message}</p>";
   }
 
   /**
    * @inheritdoc
    */
   public function getPlainText() {
+    global $i18n;
     return <<<EOT
-Hi webmaster!
+{$i18n->t("Hi webmaster!")}
 
 {$this->message}
 EOT;

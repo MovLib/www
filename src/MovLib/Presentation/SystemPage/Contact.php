@@ -1,6 +1,6 @@
 <?php
 
-/* !
+/*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
  * Copyright © 2013-present {@link https://movlib.org/ MovLib}.
@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
+use \MovLib\Presentation\Email\Webmaster;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
@@ -32,14 +33,20 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Contact extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
+class Contact extends \MovLib\Presentation\SystemPage\Show {
   use \MovLib\Presentation\TraitFormPage;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
-  
-  
+
+
+  /**
+   * The email's body.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputHTML
+   */
+  protected $message;
+
   /**
    * The email's subject.
    *
@@ -48,33 +55,32 @@ class Contact extends \MovLib\Presentation\Page {
   protected $subject;
 
   /**
-   * The email's body.
+   * The success alert message.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputHTML
+   * @var \MovLib\Presentation\Partial\Alert
    */
-  protected $message;
-  
+  protected $success;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new system page presentation.
-   * @global \MovLib\I18n $i18n
+   * Instantiate new contact system page.
+   *
+   * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
     global $i18n;
-    $this->initPage($i18n->t("Contact"));
-    $this->initBreadcrumb();
-    $this->initLanguageLinks($i18n->t("/contact"));
-    $this->initSidebar([
-      [ $i18n->r("/team"), $i18n->t("Team") ],
-      [ $i18n->r("/privacy-policy"), $i18n->t("Privacy Policy") ],
-      [ $i18n->r("/terms-of-use"), $i18n->t("Terms of Use") ],
-      [ $i18n->r("/association-statutes"), $i18n->t("Association Statutes") ],
-      [ $i18n->r("/impressum"), $i18n->t("Impressum") ],
-      [ $i18n->r("/contact"), $i18n->t("Contact") ]
+    parent::__construct();
+    $this->subject                = new InputText("subject", $i18n->t("Subject"), [
+      "placeholder" => $i18n->t("This will appear as subject of your message"),
+      "required",
     ]);
+    $this->message                = new InputHTML("message", $i18n->t("Message"));
+    $this->message->attributes[]  = "required";
+    $this->form                   = new Form($this, [ $this->subject, $this->message ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Send"), [ "class" => "btn btn-success btn-large" ]);
   }
 
 
@@ -83,33 +89,35 @@ class Contact extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent(){
-    global $i18n;
-
-    $this->subject = new InputText("subject", $i18n->t("Subject"), [
-      "placeholder" => $i18n->t("This will appear as subject of your message"),
-      "required",
-    ]);
-    $this->message = new InputHTML("message", $i18n->t("Message"), null, []);
-    $this->form = new Form($this, [ $this->subject, $this->message ]);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Send"), [ "class" => "btn btn-success btn-large" ]);
-
-    return 
-      "<div class='c'><div class='r'><div class='s s10'>" .
-      "<p>{$i18n->t("Thank you for your interest in contacting MovLib. Before proceeding, some important disclaimers:")}</p><ul>" .
-      "<li>{$i18n->t("MovLib has no central editorial board; contributions are made by a large number of volunteers at their own discretion. Edits are not the responsibility of MovLib (the organisation that hosts the site) nor of its staff.")}</li>" .
-      "<li>{$i18n->t("If you have questions about the concept of MovLib rather than a specific problem, the About MovLib page may help.")}</li>" .
-      "</ul>{$this->form}</div></div></div>";
+    global $kernel;
+    $append = $this->success ?: $this->form;
+    return "<div class='c'><div class='r'><div class='s s10'>{$kernel->htmlDecode($this->systemPage->text)}{$append}</div></div></div>";
   }
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   protected function valid() {
-    global $i18n;
-    $this->alerts .= new Alert($i18n->t("Not implemented yet!"));
+    global $i18n, $kernel;
+
+    // Send the contact email to the webmaster.
+    $kernel->sendEmail(new Webmaster($this->subject->value, $kernel->htmlDecode($this->message->value)));
+
+    // Submission was successful but further action is required, let the client know.
+    http_response_code(202);
+
+    // Display success alert so the user knows that the submission was successful.
+    $this->success = new Alert(
+      $i18n->t(""),
+      $i18n->t("Contact Successful"),
+      Alert::SEVERITY_SUCCESS
+    );
+
     return $this;
   }
 
