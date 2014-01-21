@@ -289,7 +289,7 @@ class Full extends \MovLib\Data\User\User {
     global $db, $i18n;
     $db->query(
       "UPDATE `users` SET
-        `birthday`             = ?,
+        `birthdate`            = ?,
         `country_code`         = ?,
         `currency_code`        = ?,
         `dyn_about_me`         = COLUMN_ADD(`dyn_about_me`, ?, ?),
@@ -352,7 +352,7 @@ class Full extends \MovLib\Data\User\User {
         `system_language_code` = NULL,
         `time_zone_identifier` = NULL,
         `country_code`         = NULL,
-        `birthday`             = NULL,
+        `birthdate`            = NULL,
         `image_changed`        = NULL,
         `image_extension`      = NULL,
         `real_name`            = NULL,

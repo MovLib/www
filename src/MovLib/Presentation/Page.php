@@ -350,7 +350,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "<li class='separator name'>{$session->userName}</li>" .
           "<li>{$this->a($i18n->r("/profile/sign-out"), $i18n->t("Sign Out"), [ "class" => "danger" ])}</li>" .
         "</ul>" .
-        $this->getImage($session->userAvatar)
+        $this->getImage($session->userAvatar, $i18n->r("/profile"))
       ;
     }
     else {
