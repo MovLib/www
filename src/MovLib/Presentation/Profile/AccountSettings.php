@@ -226,6 +226,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
       $this->website,
       $this->private,
     ]);
+    $this->form->multipart();
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Update Account Settings"), [ "class" => "btn btn-large btn-success" ]);
 
