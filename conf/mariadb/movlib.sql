@@ -148,6 +148,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this person is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_biographies` BLOB NOT NULL COMMENT 'The person’s biography in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_wikipedia` BLOB NOT NULL COMMENT 'The person\'s Wikipedia link in various languages. The language code serves as key.',
+  `image_dyn_descriptions` BLOB NOT NULL COMMENT 'The person photo’s description in various languages. Keys are ISO alpha-2 language codes.',
   `name` VARCHAR(255) NOT NULL COMMENT 'The person’s full name.',
   `sex` TINYINT NOT NULL DEFAULT 0 COMMENT 'The person\'s sex according to ISO 5218.\n\n0 = not known\n1 = male\n2 = female\n9 = not applicable',
   `aliases` BLOB NULL COMMENT 'The person’s aliases (serialized PHP array).',
@@ -158,12 +159,20 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `commit` CHAR(40) NULL COMMENT 'The person’s last history commit sha-1 hash.',
   `deathdate` DATE NULL COMMENT 'The person’s date of death.',
   `deathplace_id` BIGINT UNSIGNED NULL COMMENT 'The person’s death place.',
+  `image_changed` TIMESTAMP NULL COMMENT 'The last time this person\'s photo was updated as timestamp.',
+  `image_extension` CHAR(3) NULL COMMENT 'The person photo’s extension without leading dot.',
+  `image_filesize` INT NULL COMMENT 'The person photo’s original size in Bytes.',
+  `image_height` SMALLINT NULL COMMENT 'The person photo’s original height.',
+  `image_styles` BLOB NULL COMMENT 'Serialized array containing width and height of various image styles.',
+  `image_uploader_id` BIGINT UNSIGNED NULL COMMENT 'The uploader\'s unique user ID.',
+  `image_width` SMALLINT NULL COMMENT 'The person photo’s original width.',
   `links` BLOB NULL COMMENT 'External links belonging to this person. Stored as serialized PHP array.',
   `nickname` MEDIUMTEXT NULL COMMENT 'The person’s nickname.',
   PRIMARY KEY (`id`),
   INDEX `fk_persons_places1_idx` (`birthplace_id` ASC),
   INDEX `fk_persons_places2_idx` (`deathplace_id` ASC),
   INDEX `fk_persons_causes_of_death1_idx` (`cause_of_death_id` ASC),
+  INDEX `fk_persons_users1_idx` (`image_uploader_id` ASC),
   CONSTRAINT `fk_persons_places1`
     FOREIGN KEY (`birthplace_id`)
     REFERENCES `movlib`.`places` (`place_id`)
@@ -177,6 +186,11 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   CONSTRAINT `fk_persons_causes_of_death1`
     FOREIGN KEY (`cause_of_death_id`)
     REFERENCES `movlib`.`causes_of_death` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_persons_users1`
+    FOREIGN KEY (`image_uploader_id`)
+    REFERENCES `movlib`.`users` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -255,117 +269,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains the crew of a movie.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`licenses`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license’s unique ID.',
-  `abbreviation` VARCHAR(20) NOT NULL COMMENT 'The license’s abbreviation.',
-  `dyn_descriptions` BLOB NOT NULL COMMENT 'The license’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_names` BLOB NOT NULL COMMENT 'The license’s name in various languages. Keys are ISO alpha-2 language codes.',
-  `dyn_url` BLOB NOT NULL COMMENT 'The license’s url pointing to various languages. Keys are ISO alpha-2 language codes.',
-  `icon_changed` TIMESTAMP NOT NULL COMMENT 'The license’s icon changed timestamp.',
-  `icon_extension` CHAR(3) NOT NULL COMMENT 'The license’s icon extension.',
-  PRIMARY KEY (`id`))
-ENGINE = InnoDB
-COMMENT = 'Contains all licenses.'
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`persons_images`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`persons_images` (
-  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The person photo’s unique ID within the person.',
-  `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
-  `deleted` TINYINT(1) NOT NULL DEFAULT true COMMENT 'The flag that determines whether this person photo is marked as deleted (TRUE(1)) or not (FALSE(0)), default is TRUE(1).',
-  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The person photo’s upvote count.',
-  `license_id` BIGINT UNSIGNED NULL COMMENT 'The license’s unique ID.',
-  `user_id` BIGINT UNSIGNED NULL COMMENT 'The user’s unique ID.',
-  `changed` TIMESTAMP NULL COMMENT 'The last time this person photo was updated as timestamp.',
-  `created` TIMESTAMP NULL COMMENT 'The person photo’s creation time as timestamp.',
-  `dyn_descriptions` BLOB NULL COMMENT 'The person photo’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `extension` CHAR(3) NULL COMMENT 'The person photo’s extension without leading dot.',
-  `filesize` INT UNSIGNED NULL COMMENT 'The person photo’s original size in Bytes.',
-  `height` SMALLINT UNSIGNED NULL COMMENT 'The person photo’s original height.',
-  `styles` BLOB NULL COMMENT 'Serialized array containing width and height of various image styles.',
-  `width` SMALLINT UNSIGNED NULL COMMENT 'The person photo’s original width.',
-  PRIMARY KEY (`id`, `person_id`),
-  INDEX `fk_persons_images_persons` (`person_id` ASC),
-  INDEX `fk_persons_images_licenses` (`license_id` ASC),
-  INDEX `persons_images_order_by_upvotes` (`upvotes` ASC),
-  INDEX `fk_persons_images_users` (`user_id` ASC),
-  CONSTRAINT `fk_persons_images_persons`
-    FOREIGN KEY (`person_id`)
-    REFERENCES `movlib`.`persons` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_images_licenses`
-    FOREIGN KEY (`license_id`)
-    REFERENCES `movlib`.`licenses` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_images_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = '<double-click to overwrite multiple objects>'
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`companies_images`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`companies_images` (
-  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The company image’s unique ID within the company.',
-  `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company’s unique ID.',
-  `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The company image’s type (enum from Data class).',
-  `deleted` TINYINT(1) NOT NULL DEFAULT true COMMENT 'The flag that determines whether this person photo is marked as deleted (TRUE(1)) or not (FALSE(0)), default is TRUE(1).',
-  `upvotes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The company image’s upvote count.',
-  `license_id` BIGINT UNSIGNED NULL COMMENT 'The license’s unique ID.',
-  `user_id` BIGINT UNSIGNED NULL COMMENT 'The user’s unique ID.',
-  `changed` TIMESTAMP NULL COMMENT 'The last time this company image was updated as timestamp.',
-  `created` TIMESTAMP NULL COMMENT 'The company image’s creation time as timestamp.',
-  `dyn_descriptions` BLOB NULL COMMENT 'The company image’s description in various languages. Keys are ISO alpha-2 language codes.',
-  `extension` CHAR(3) NULL COMMENT 'The company image’s extension without leading dot.',
-  `filesize` INT UNSIGNED NULL COMMENT 'The company image’s original size in Bytes.',
-  `height` SMALLINT UNSIGNED NULL COMMENT 'The company image’s original height.',
-  `styles` BLOB NULL COMMENT 'Serialized array containing width and height of various image styles.',
-  `width` SMALLINT UNSIGNED NULL COMMENT 'The company image’s original width.',
-  PRIMARY KEY (`id`, `company_id`, `type_id`),
-  INDEX `fk_companies_images_companies` (`company_id` ASC),
-  INDEX `fk_companies_images_images` (`id` ASC),
-  INDEX `fk_companies_images_licenses` (`license_id` ASC),
-  INDEX `companies_images_order_by_upvotes` (`upvotes` ASC),
-  INDEX `fk_companies_images_users_idx` (`user_id` ASC),
-  CONSTRAINT `fk_companies_images_companies`
-    FOREIGN KEY (`company_id`)
-    REFERENCES `movlib`.`companies` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_companies_images_licenses`
-    FOREIGN KEY (`license_id`)
-    REFERENCES `movlib`.`licenses` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_companies_images_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = '<double-click to overwrite multiple objects>'
-ROW_FORMAT = COMPRESSED
-KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -622,6 +525,25 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all movie trailsers.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`licenses`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`licenses` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The license’s unique ID.',
+  `abbreviation` VARCHAR(20) NOT NULL COMMENT 'The license’s abbreviation.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The license’s description in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_names` BLOB NOT NULL COMMENT 'The license’s name in various languages. Keys are ISO alpha-2 language codes.',
+  `dyn_url` BLOB NOT NULL COMMENT 'The license’s url pointing to various languages. Keys are ISO alpha-2 language codes.',
+  `icon_changed` TIMESTAMP NOT NULL COMMENT 'The license’s icon changed timestamp.',
+  `icon_extension` CHAR(3) NOT NULL COMMENT 'The license’s icon extension.',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+COMMENT = 'Contains all licenses.'
+ROW_FORMAT = COMPRESSED
+KEY_BLOCK_SIZE = 8;
 
 SHOW WARNINGS;
 
@@ -1486,88 +1408,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`system_pages` (
   `dyn_titles` BLOB NOT NULL COMMENT 'Thepage’s text in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_texts` BLOB NOT NULL COMMENT 'The help’s title in various languages. Keys are ISO alpha-2 language codes.',
   `commit` CHAR(40) NULL COMMENT 'The article’s last history commit sha-1 hash.',
+  `presenter` VARCHAR(255) NOT NULL DEFAULT 'Show',
   PRIMARY KEY (`id`))
 ENGINE = InnoDB
 COMMENT = 'Contains all system pages, e.g. Imprint.'
 ROW_FORMAT = COMPRESSED
 KEY_BLOCK_SIZE = 8;
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`movies_images_votes`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`movies_images_votes` (
-  `image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The image’s identifier.',
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique identifier.',
-  `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The movie image’s type identifier.',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
-  INDEX `fk_movies_images_votes_movies_images` (`image_id` ASC, `movie_id` ASC, `type_id` ASC),
-  INDEX `fk_movies_images_votes_users` (`user_id` ASC),
-  PRIMARY KEY (`image_id`, `movie_id`, `type_id`, `user_id`),
-  CONSTRAINT `fk_movies_images_votes_movies_images`
-    FOREIGN KEY (`image_id` , `movie_id` , `type_id`)
-    REFERENCES `movlib`.`movies_images` (`id` , `movie_id` , `type_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_movies_images_votes_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains all user votes for movie images.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`persons_images_votes`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`persons_images_votes` (
-  `image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The image’s identifier.',
-  `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique identifier.',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
-  INDEX `fk_persons_images_votes_persons_images` (`image_id` ASC, `person_id` ASC),
-  INDEX `fk_persons_images_votes_users` (`user_id` ASC),
-  PRIMARY KEY (`image_id`, `person_id`, `user_id`),
-  CONSTRAINT `fk_persons_images_votes_persons_images`
-    FOREIGN KEY (`image_id` , `person_id`)
-    REFERENCES `movlib`.`persons_images` (`id` , `person_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_persons_images_votes_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains all user votes for person images.';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`companies_images_votes`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`companies_images_votes` (
-  `image_id` BIGINT UNSIGNED NOT NULL COMMENT 'The image’s identifier.',
-  `company_id` BIGINT UNSIGNED NOT NULL COMMENT 'The company’s unique identifier.',
-  `type_id` TINYINT UNSIGNED NOT NULL COMMENT 'The image’s type identifier.',
-  `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
-  INDEX `fk_companies_images_votes_companies_images` (`image_id` ASC, `company_id` ASC, `type_id` ASC),
-  INDEX `fk_companies_images_votes_users` (`user_id` ASC),
-  PRIMARY KEY (`image_id`, `company_id`, `type_id`, `user_id`),
-  CONSTRAINT `fk_companies_images_votes_companies_images`
-    FOREIGN KEY (`image_id` , `company_id` , `type_id`)
-    REFERENCES `movlib`.`companies_images` (`id` , `company_id` , `type_id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_companies_images_votes_users`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains all user votes for company images.';
 
 SHOW WARNINGS;
 
