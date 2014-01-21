@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\SystemPage;
 
+use \MovLib\Data\FileSystem;
 use \MovLib\Data\SystemPage;
 
 /**
@@ -48,22 +49,25 @@ class Show extends \MovLib\Presentation\Page {
 
   /**
    * Instantiate new system page presentation.
-   * @global \MovLib\I18n $i18n
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
     global $i18n;
+
     $this->systemPage = new SystemPage($_SERVER["ID"]);
     $this->initPage($this->systemPage->title);
-    $this->initBreadcrumb();
     $this->initLanguageLinks($this->systemPage->route);
-    $this->initSidebar([
-      [ $i18n->r("/team"), $i18n->t("Team") ],
-      [ $i18n->r("/privacy-policy"), $i18n->t("Privacy Policy") ],
-      [ $i18n->r("/terms-of-use"), $i18n->t("Terms of Use") ],
-      [ $i18n->r("/association-statutes"), $i18n->t("Association Statutes") ],
-      [ $i18n->r("/impressum"), $i18n->t("Impressum") ],
-      [ $i18n->r("/contact"), $i18n->t("Contact") ]
-    ]);
+    $this->initBreadcrumb();
+
+    $menuitems   = null;
+    $systemPages = SystemPage::getSystemPages();
+    /* @var $systemPage \MovLib\Data\SystemPage */
+    while ($systemPage = $systemPages->fetch_object("\\MovLib\\Data\\SystemPage")) {
+      $menuitems[] = [ $i18n->r($systemPage->route), $systemPage->title ];
+    }
+    $this->initSidebar($menuitems);
   }
 
 
@@ -78,5 +82,5 @@ class Show extends \MovLib\Presentation\Page {
     global $kernel;
     return "<div class='c'><div class='r'><div class='s s10'>{$kernel->htmlDecode($this->systemPage->text)}</div></div></div>";
   }
-  
+
 }
