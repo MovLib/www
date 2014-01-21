@@ -28,21 +28,6 @@ namespace MovLib\Presentation;
  */
 class ErrorPage extends \MovLib\Presentation\Page {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The translated page's content.
-   *
-   * @var mixed
-   */
-  public $content;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
   /**
    * Instantiate new empty page.
    *
@@ -54,20 +39,7 @@ class ErrorPage extends \MovLib\Presentation\Page {
   public function __construct($title, $content) {
     $this->initPage($title);
     $this->initBreadcrumb();
-    $this->content = $content;
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Get the presentation's page content.
-   *
-   * @return string
-   */
-  protected function getContent() {
-    return $this->content;
+    $this->alerts .= $content;
   }
 
 }
