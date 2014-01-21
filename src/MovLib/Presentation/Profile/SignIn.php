@@ -103,8 +103,8 @@ class SignIn extends \MovLib\Presentation\Page {
     ])}</a>";
 
     $this->email                      = new InputEmail();
+    $this->email->setHelp("<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
     $this->password                   = new InputPassword();
-    $this->password->setHelp("<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
     $this->form                       = new Form($this, [ $this->email, $this->password ]);
     $this->form->attributes["class"]  = "s s6 o3";
 
