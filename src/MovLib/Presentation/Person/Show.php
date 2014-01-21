@@ -177,7 +177,7 @@ class Show extends \MovLib\Presentation\Page {
       "{$info}</div>" . // close .s
       "<div id='person-photo' class='s s2'>{$this->getImage(
         $this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02),
-        $i18n->rp("/person/{0}/photos", [ $this->person->id ]),
+        $this->person->displayPhoto->route,
         $imageAttributes
       )}</div>" .
     "</div>"; // close .r

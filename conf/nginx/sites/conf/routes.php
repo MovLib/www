@@ -314,7 +314,7 @@ location ^~ <?= $r("/person") ?> {
   location ~* "^<?= $r("/person/{0}/photo", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Person\\Photo\\Show";
     set $movlib_id $1;
-    try_files $movlib_cache @gallery;
+    try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/person/{0}/photo/edit", [ $idRegExp ]) ?>$" {
