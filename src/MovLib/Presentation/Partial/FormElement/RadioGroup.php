@@ -64,17 +64,22 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    * @param array $choices
    *   The radio group's radio form elements as associative array where the array's key is the content of the radio
    *   input's value-attribute and the array's value the label text for the radio input.
-   * @param mixed $value
-   *   The value of the checked radio input in the group.
+   * @param mixed $value [optional]
+   *   The value of the checked radio input in the group, defaults to no selected option.
    */
-  public function __construct($id, $legend, array $choices, $value) {
+  public function __construct($id, $legend, array $choices, $value = null) {
     parent::__construct($id, $legend, [
       "aria-expanded" => "true",
       "aria-required" => "false", // @todo Do we need support for radio groups without default values?
       "role"          => "radiogroup",
     ]);
     $this->choices = $choices;
-    $this->value   = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
+    if (isset($_POST[$this->id]) && isset($this->choices[$_POST[$this->id]])) {
+      $this->value = $_POST[$this->id];
+    }
+    elseif ($value) {
+      $this->value = $value;
+    }
   }
 
   /**
@@ -83,7 +88,10 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   protected function render() {
     $choices = null;
     foreach ($this->choices as $value => $choice) {
-      $checked  = $this->value == $value ? " checked" : null;
+      $checked = null;
+      if ($this->value && $this->value == $value) {
+        $checked = " checked";
+      }
       $choices .= "<label class='radio inline'><input{$checked} id='{$this->id}-{$value}' name='{$this->id}' required type='radio' value='{$value}'>{$choice}</label>";
     }
     return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend>{$choices}</fieldset>";
