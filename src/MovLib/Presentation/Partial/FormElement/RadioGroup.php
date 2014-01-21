@@ -77,7 +77,7 @@ class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     if (isset($_POST[$this->id]) && isset($this->choices[$_POST[$this->id]])) {
       $this->value = $_POST[$this->id];
     }
-    elseif ($value) {
+    elseif (isset($value)) {
       $this->value = $value;
     }
   }
