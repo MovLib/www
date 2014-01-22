@@ -25,6 +25,6 @@
  * @since 0.0.1-dev
  */
 
-.person .hover-list a {
-  padding-right: 10px;
+.person #aliases .s {
+  word-break: break-all;
 }

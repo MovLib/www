@@ -124,8 +124,7 @@ class Full extends \MovLib\Data\Person\Person {
    * @todo Index data with Elastic.
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @return integer
-   *   The person's insert id.
+   * @return $this
    */
   public function create() {
     global $db, $i18n;
@@ -171,8 +170,10 @@ class Full extends \MovLib\Data\Person\Person {
       }
       $db->query($query, $types, $params);
     }
+    // Create a display photo.
+    parent::init();
 
-    return $this->id;
+    return $this;
   }
 
   /**
@@ -187,7 +188,8 @@ class Full extends \MovLib\Data\Person\Person {
     global $db;
     return $db->query(
       "SELECT
-        `movies`.`id` AS `movie_id`
+        `movies`.`id` AS `movie_id`,
+        `movies_cast`.`roles` AS `roles`
       FROM `movies_cast`
         INNER JOIN `movies` ON `movies`.`id` = `movies_cast`.`movie_id`
       WHERE `movies_cast`.`person_id` = ?
@@ -249,12 +251,19 @@ class Full extends \MovLib\Data\Person\Person {
 
   /**
    * @inheritdoc
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
    */
   protected function init() {
+    global $db, $i18n;
     parent::init();
     $this->links = unserialize($this->links);
     if ($this->birthplace) {
       $this->birthplace = new Place($this->birthplace);
+    }
+    $result = $db->query("SELECT `alias` FROM `persons_aliases` WHERE `person_id` = ? ORDER BY `alias` {$db->collations[$i18n->languageCode]}", "d", [ $this->id ])->get_result();
+    while ($row = $result->fetch_array(MYSQLI_NUM)) {
+      $this->aliases[] = $row[0];
     }
   }
 }

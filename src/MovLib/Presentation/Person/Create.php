@@ -127,7 +127,8 @@ class Create extends \MovLib\Presentation\Page {
 
     $this->bornName = new InputText("born-name", $i18n->t("Born as"), [ "placeholder" => $i18n->t("Enter the person's birth name") ]);
 
-    $this->birthDate = new InputDate("birthdate", $i18n->t("Date of Birth"));
+//    $this->birthDate = new InputDate("birthdate", $i18n->t("Date of Birth"));
+    $this->birthDate = new \MovLib\Presentation\Partial\FormElement\InputDateSeparate("birthdate", $i18n->t("Date of Birth"));
 
     $this->deathDate = new InputDate("deathdate", $i18n->t("Date of Death"));
 
@@ -163,7 +164,7 @@ class Create extends \MovLib\Presentation\Page {
     ]);
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Create Person"), [ "class" => "btn btn-large btn-success", "id" => "submit-create" ]);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Upload Image"), [ "class" => "btn btn-large btn-success", "id" => "submit-upload" ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Create and Upload Image"), [ "class" => "btn btn-large btn-success", "id" => "submit-upload" ]);
   }
 
 
@@ -197,23 +198,23 @@ class Create extends \MovLib\Presentation\Page {
     $person->sex       = $this->sex->value;
     $person->wikipedia = $this->wikipedia->value;
 
-    $id = $person->create();
+    $person->create();
 
     $kernel->alerts .= new Alert(
       $i18n->t(
-        "You have successfully created the person “{0}”! If you want to change something, click {1}here{2}.",
-        [ $person->name, "<a href='{$i18n->r("/person/{0}/edit", [ $id ])}'>", "</a>" ]
+        "If you want, you can {0}upload a photo{1} right away.",
+        [ "<a href='{$person->displayPhoto->route}'>", "</a>" ]
       ),
-      $i18n->t("Person created successfully"),
+      $i18n->t("Person Created Successfully"),
       Alert::SEVERITY_SUCCESS
     );
 
     // Redirect to Show presentation or upload form, depending on the button clicked.
     if ($_POST["submit"] == $i18n->t("Create Person")) {
-      $route = $i18n->r("/person/{0}", [ $id ]);
+      $route = $person->route;
     }
     else {
-      $route = $i18n->r("/person/{0}/photo/edit", [ $id ]);
+      $route = $person->displayPhoto->route;
     }
 
     throw new SeeOther($route);

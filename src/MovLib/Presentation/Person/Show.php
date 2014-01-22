@@ -23,6 +23,7 @@ use \MovLib\Data\Person\Full as FullPerson;
 use \MovLib\Presentation\Error\Gone;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Date;
+use \MovLib\Presentation\Partial\Lists\Ordered;
 
 /**
  * Presentation of a single person.
@@ -82,19 +83,6 @@ class Show extends \MovLib\Presentation\Page {
       [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $i18n->r("/person/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
     ]);
-  }
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
-  /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   */
-  protected function getPageContent() {
-    global $i18n, $kernel;
     $this->schemaType = "Person";
 
     // Enhance the page title with microdata.
@@ -105,7 +93,20 @@ class Show extends \MovLib\Presentation\Page {
       // @todo Implement Gone presentation for persons instead of this generic one.
       throw new Gone;
     }
+  }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Construct the header with formatted personal information.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return $this
+   */
+  protected function buildHeader() {
+    global $i18n;
     // Enhance the header, insert row and span before the title.
     $this->headingBefore = "<div class='r'><div class='s s10'>";
 
@@ -163,6 +164,12 @@ class Show extends \MovLib\Presentation\Page {
       $deathInfo = "<br>{$i18n->t("Died in {0}, {1}", [ $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
     }
 
+    // Construct the wikipedia link.
+    $wikipedia = null;
+    if ($this->person->wikipedia) {
+      $wikipedia = "<br><a href='{$this->person->wikipedia}' rel='nofollow' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
+    }
+
     $info = implode(", ", $info);
     $info = "<p>{$info}{$birthInfo}{$deathInfo}</p>";
 
@@ -182,50 +189,47 @@ class Show extends \MovLib\Presentation\Page {
       )}</div>" .
     "</div>"; // close .r
 
+      return $this;
+  }
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   */
+  protected function getPageContent() {
+    global $i18n, $kernel;
+
+    $editLinkOpen = "<a href='{$this->routeEdit}'>";
+
+    // Construct personal information and put them into the header.
+    $this->buildHeader();
+
+    // Biography section.
     $sections["biography"] = [
       $i18n->t("Biography"),
       empty($this->person->biography)
-        ? $i18n->t("No biography available, {0}write one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
+        ? $i18n->t("No biography available, {0}write one{1}?", [ $editLinkOpen, "</a>" ])
         : $kernel->htmlDecode($this->person->biography)
       ,
     ];
 
+    // Filmography section.
     $filmography = null;
-    $result = $this->person->getMovieDirectorIdsResult();
-    $director = null;
-    while ($row = $result->fetch_assoc()) {
-      if ($row["movie_id"]) {
-        $entity = new Movie($row["movie_id"]);
-      }
-      else {
-        $entity = new Serial($row["serial_id"]);
-      }
-      $director .= "<li itemscope itemtype='http://schema.org/Movie'><a class='r' href='{$entity->route}' itemprop='url'><span class='link-color s' itemprop='name'>{$entity->displayTitle}</span><span class='fr' itemprop='datePublished'>{$entity->year}</span></a></li>";
-    }
+    $director = $this->formatFilmographyList($this->person->getMovieDirectorIdsResult());
     if ($director) {
       $filmography["director"] = [
         $i18n->t("Director"),
-        "<ol class='hover-list no-list'>{$director}</ol>",
-        [ "itemprop" => "jobTitle" ],
+        $director
       ];
     }
 
-    $result = $this->person->getMovieCastIdsResult();
-    $cast = null;
-    while ($row = $result->fetch_assoc()) {
-      if ($row["movie_id"]) {
-        $entity = new Movie($row["movie_id"]);
-      }
-      else {
-        $entity = new Serial($row["serial_id"]);
-      }
-      $cast .= "<li itemscope itemtype='http://schema.org/Movie'><a class='r' href='{$entity->route}' itemprop='url'><span class='link-color s' itemprop='name'>{$entity->displayTitle}</span><span class='fr' itemprop='datePublished'>{$entity->year}</span></a></li>";
-    }
+    $cast = $this->formatFilmographyList($this->person->getMovieCastIdsResult());
     if ($cast) {
       if ($this->person->sex === 1) {
         $jobTitle = $i18n->t("Actor");
       }
-      elseif ($this->person->sex === 1) {
+      elseif ($this->person->sex === 2) {
         $jobTitle = $i18n->t("Actress");
       }
       else {
@@ -233,40 +237,36 @@ class Show extends \MovLib\Presentation\Page {
       }
       $filmography["cast"] = [
         $jobTitle,
-        "<ol class='hover-list no-list'>{$cast}</ol>",
-        [ "itemprop" => "jobTitle" ],
+        $cast
       ];
     }
 
-    $result = $this->person->getMovieCrewIdsResult();
-    $crew = null;
-    while ($row = $result->fetch_assoc()) {
-      if ($row["movie_id"]) {
-        $entity = new Movie($row["movie_id"]);
-      }
-      else {
-        $entity = new Serial($row["serial_id"]);
-      }
-      $crew .= "<li itemscope itemtype='http://schema.org/Movie'><a class='r' href='{$entity->route}' itemprop='url'>{$i18n->t("{0} as {1}{2}", [ "<span class='link-color s' itemprop='name'>{$entity->displayTitle}</span>", $row["job_title"], "<span class='fr' itemprop='datePublished'>{$entity->year}</span>" ])}</a></li>";
-    }
+    $crew = $this->formatFilmographyList($this->person->getMovieCrewIdsResult());
     if ($crew) {
       $filmography["crew"] = [
         $i18n->t("Crew"),
-        "<ol class='hover-list no-list'>{$crew}</ol>",
+        $crew,
       ];
     }
 
     if (!$filmography) {
-      $filmography = $i18n->t("No jobs available. Please go to a movie or serial page and add them there.", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
+      $filmography = $i18n->t("No jobs available. Please go to a movie or serial page and add them there.");
     }
     $sections["filmography"] = [
       $i18n->t("Filmography"),
       $filmography,
     ];
 
+    // Additional names section.
+    $sections["aliases"] = [
+      $i18n->t("Also Known As"),
+      new Ordered($this->person->aliases, $i18n->t("No additional names available, {0}add some{1}?", [ $editLinkOpen, "</a>" ]), [ "class" => "grid-list no-list r" ], [ "class" => "mb10 s s3", "itemprop" => "additionalName" ]),
+    ];
+
+    // External links section.
     $links = null;
     if (empty($this->person->links)) {
-      $links = $i18n->t("No links available, {0}add some{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
+      $links = $i18n->t("No links available, {0}add some{1}?", [ $editLinkOpen, "</a>" ]);
     }
     else {
       $links .= "<ul class='no-list'>";
@@ -280,6 +280,7 @@ class Show extends \MovLib\Presentation\Page {
       $links,
     ];
 
+    // Construct content and sidebar.
     $content = null;
     foreach ($sections as $id => $section) {
       $this->sidebarNavigation->menuitems[] = [ "#{$id}", $section[0] ];
@@ -297,6 +298,50 @@ class Show extends \MovLib\Presentation\Page {
       $content .= "</div>";
     }
     return $content;
+  }
+
+  /**
+   * Format a mysql result for display in the filmography section.
+   *
+   * @param \mysqli_result $result
+   *   The result set to format.
+   * @return string
+   *   The fomatted list.
+   */
+  protected function formatFilmographyList($result) {
+    $list = null;
+    while ($row = $result->fetch_assoc()) {
+      // Retrieve the correct entity.
+      if ($row["movie_id"]) {
+        $entity = new Movie($row["movie_id"]);
+      }
+      else {
+        $entity = new Serial($row["serial_id"]);
+      }
+
+      // Mark up roles or jobs, depending on being cast or crew.
+      $roleOrJob = null;
+      if (!empty($row["roles"])) {
+        // @todo: Link to role page and provide microdata.
+        $roleOrJob = "<br><span class='o1 s s9'>{$row["roles"]}</span>";
+      }
+      elseif (!empty($row["job_title"])) {
+        $roleOrJob = "<br><span class='o1 s s9'>{$row["job_title"]}</span>";
+      }
+
+      $list .=
+        "<li class='li r'>" .
+          "<span itemscope itemtype='http://schema.org/Movie'>" .
+            "<span class='s s1' itemprop='datePublished'>{$entity->year}</span>" .
+            "<span class='s s9'><a href='{$entity->route}' itemprop='url name'{$this->lang($entity->displayTitleLanguageCode)}>{$entity->displayTitle}</a></span>" .
+          "</span>" .
+          $roleOrJob .
+        "</li>"
+      ;
+    }
+    if ($list) {
+      return "<ol class='hover-list no-list'>{$list}</ol>";
+    }
   }
 
 }
