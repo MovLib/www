@@ -3,7 +3,7 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='';
 
 DROP SCHEMA IF EXISTS `movlib` ;
-CREATE SCHEMA IF NOT EXISTS `movlib` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+CREATE SCHEMA IF NOT EXISTS `movlib` DEFAULT CHARACTER SET utf8mb4 ;
 SHOW WARNINGS;
 USE `movlib` ;
 
@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The movie’s unique ID.',
   `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date of the movie as timestamp.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether the movie is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
-  `dyn_links` BLOB NOT NULL COMMENT 'External links to the official website in various languages. Keys are ISO alpha-2 language codes.',
   `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the movie in various languages. Keys are ISO alpha-2 language codes.',
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.',
   `original_title` BLOB NOT NULL COMMENT 'The movie’s original title.',
@@ -220,6 +219,7 @@ SHOW WARNINGS;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The company’s unique ID.',
+  `commit` CHAR(40) NULL,
   `created` TIMESTAMP NOT NULL COMMENT 'The company’s creation timestamp.',
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'Whether the company was deleted or not.',
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translated descriptions.',
@@ -501,17 +501,17 @@ COMMENT = 'Contains all awards belonging to movies.';
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`titles`
+-- Table `movlib`.`movies_titles`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
+CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The title’s unique identifier.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The title’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The title’s ISO alpha-2 language code.',
   `title` BLOB NOT NULL COMMENT 'The movie’s title.',
-  INDEX `fk_titles_movies` (`movie_id` ASC),
+  INDEX `fk_movies_titles_movies` (`movie_id` ASC),
   PRIMARY KEY (`id`, `movie_id`),
-  CONSTRAINT `fk_titles_movies`
+  CONSTRAINT `fk_movies_titles_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE CASCADE
@@ -524,17 +524,17 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`taglines`
+-- Table `movlib`.`movies_taglines`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
+CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The tagline’s unique identifier.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The taglines’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The tagline’s ISO alpha-2 language code.',
   `tagline` BLOB NOT NULL COMMENT 'The movie’s tagline.',
-  INDEX `fk_taglines_movies` (`movie_id` ASC),
+  INDEX `fk_movies_taglines_movies` (`movie_id` ASC),
   PRIMARY KEY (`id`, `movie_id`),
-  CONSTRAINT `fk_taglines_movies`
+  CONSTRAINT `fk_movies_taglines_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
     ON DELETE CASCADE
@@ -1095,42 +1095,6 @@ KEY_BLOCK_SIZE = 8;
 SHOW WARNINGS;
 
 -- -----------------------------------------------------
--- Table `movlib`.`movies_titles`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `commit` CHAR(40) NULL COMMENT 'The last history commit sha-1 hash for a set of titles belonging to a movie.',
-  INDEX `fk_movies_titles_movies` (`movie_id` ASC),
-  PRIMARY KEY (`movie_id`),
-  CONSTRAINT `fk_movies_titles_movie_id`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains the sha-1 commit hashes used in the movie title his /* comment truncated */ /*tory.*/';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
--- Table `movlib`.`movies_taglines`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
-  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `commit` CHAR(40) NULL COMMENT 'The last history commit sha-1 hash for a set of taglines belonging to a movie.',
-  INDEX `fk_movies_taglines_movies` (`movie_id` ASC),
-  PRIMARY KEY (`movie_id`),
-  CONSTRAINT `fk_movies_taglines_movie`
-    FOREIGN KEY (`movie_id`)
-    REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-COMMENT = 'Contains the sha-1 commit hashes used in the movie tagline h /* comment truncated */ /*istory.*/';
-
-SHOW WARNINGS;
-
--- -----------------------------------------------------
 -- Table `movlib`.`users_collections`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`users_collections` (
@@ -1403,7 +1367,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`deletion_requests` (
   PRIMARY KEY (`id`),
   INDEX `fk_deletions_users` (`user_id` ASC),
   INDEX `deletions_created` (`created` ASC),
-  UNIQUE INDEX `deletions_route_key` (`routes` ASC),
   CONSTRAINT `fk_deletions_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
@@ -1579,7 +1542,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_display_titles` (
   INDEX `fk_movies_display_titles_idx` (`title_id` ASC, `movie_id` ASC),
   CONSTRAINT `fk_movies_display_titles`
     FOREIGN KEY (`title_id` , `movie_id`)
-    REFERENCES `movlib`.`titles` (`id` , `movie_id`)
+    REFERENCES `movlib`.`movies_titles` (`id` , `movie_id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -1598,11 +1561,50 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_display_taglines` (
   INDEX `fk_movies_display_taglines_idx` (`tagline_id` ASC, `movie_id` ASC),
   CONSTRAINT `fk_movies_display_taglines`
     FOREIGN KEY (`tagline_id` , `movie_id`)
-    REFERENCES `movlib`.`taglines` (`id` , `movie_id`)
+    REFERENCES `movlib`.`movies_taglines` (`id` , `movie_id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Table containing information on which tagline should be used /* comment truncated */ /* for which language as display tagline on various listings.*/';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`links_categories`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`links_categories` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The links category’s unique identifier.',
+  `commit` CHAR(40) NOT NULL COMMENT 'The links category’s last commit hash.',
+  `dyn_titles` BLOB NOT NULL COMMENT 'The links category’s translated titles.',
+  `dyn_descriptions` BLOB NOT NULL COMMENT 'The links category’s translated description.',
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+COMMENT = 'Table containing categories for weblinks.';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_links`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`movies_links` (
+  `category_id` INT UNSIGNED NOT NULL,
+  `movie_id` BIGINT UNSIGNED NOT NULL,
+  `language_code` CHAR(2) NOT NULL,
+  `url` VARCHAR(255) CHARACTER SET 'ascii' COLLATE 'ascii_bin' NOT NULL,
+  PRIMARY KEY (`category_id`, `movie_id`, `language_code`, `url`),
+  INDEX `fk_movies_links_movies_idx` (`movie_id` ASC),
+  INDEX `fk_movies_links_categories_idx` (`category_id` ASC),
+  CONSTRAINT `fk_movies_links_movies`
+    FOREIGN KEY (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_links_categories`
+    FOREIGN KEY (`category_id`)
+    REFERENCES `movlib`.`links_categories` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
 SHOW WARNINGS;
 
