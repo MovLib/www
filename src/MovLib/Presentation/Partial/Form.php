@@ -139,9 +139,10 @@ class Form extends \MovLib\Presentation\AbstractBase {
 
     // Generate new CSRF token for this form if we have an active session.
     if ($session->active) {
-      $csrf                  = hash("sha512", openssl_random_pseudo_bytes(1024));
-      $session["csrf"]       = $csrf;
-      $this->hiddenElements .= "<input type='hidden' name='csrf' value='{$csrf}'>";
+      if (empty($session["csrf"])) {
+        $session["csrf"] = hash("sha512", openssl_random_pseudo_bytes(1024));
+      }
+      $this->hiddenElements .= "<input type='hidden' name='csrf' value='{$session["csrf"]}'>";
     }
   }
 

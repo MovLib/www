@@ -334,9 +334,9 @@ class Full extends \MovLib\Data\User\User {
    */
   public function deleteAccount() {
     global $db;
-    // Delete the avatar image.
-    $this->delete();
 
+    $this->deleteAvatar();
+    
     $db->query(
       "UPDATE `users` SET
         `email`                = NULL,

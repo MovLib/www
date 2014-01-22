@@ -192,7 +192,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\Session $session
+   * @global \MovLib\Data\User\Session $session
    * @return boolean
    *   <code>FALSE</code> if the token is invalid, otherwise <code>TRUE</code>
    * @throws \MovLib\Presentation\Error\Unauthorized
@@ -211,7 +211,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
       throw new SeeOtherRedirect($kernel->requestPath);
     }
 
-    if ($session->userId !== $data["user_id"]) {
+    if ($session->isAuthenticated === true && $session->userId !== $data["user_id"]) {
       $kernel->delayMethodCall([ $tmp, "delete" ], [ $_GET["token"] ]);
       throw new Unauthorized(
         $i18n->t("Your confirmation token is invalid or expired, please fill out the form again."),

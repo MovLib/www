@@ -19,6 +19,7 @@ namespace MovLib\Tool\Console\Command\Development;
 
 use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\DatabaseException;
+use \MovLib\Tool\Console\Command\Production\FixPermissions;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -604,6 +605,12 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
         }
       }
     }
+
+    // Fix permissions if executed as root.
+    if ($this->checkPrivileges(false) === true) {
+      (new FixPermissions())->fixPermissions();
+    }
+
     return $this->write("Successfully imported upload data for '" . implode("', '", array_keys($directories)) . "'.", self::MESSAGE_TYPE_INFO);
   }
 
