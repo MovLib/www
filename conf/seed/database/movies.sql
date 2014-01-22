@@ -224,17 +224,24 @@ INSERT INTO `persons` SET
 ;
 SET @frank_darabont_id = LAST_INSERT_ID();
 
-INSERT INTO `movies_directors` SET `movie_id` = @the_shawshank_redemption_id, `person_id` = @frank_darabont_id;
+INSERT INTO `movies_directors` SET
+  `movie_id`  = @the_shawshank_redemption_id,
+  `person_id` = @frank_darabont_id
+;
 
--- SET @the_shawshank_redemption_de_title1_id = (SELECT IFNULL(`id`, 0) + 1 FROM `titles` WHERE `movie_id` = @the_shawshank_redemption_id LIMIT 1);
 INSERT INTO `titles` SET
-  `id`            = 1,
   `movie_id`      = @the_shawshank_redemption_id,
   `language_code` = 'de',
   `title`         = 'Die Verurteilten',
   `dyn_comments`  = COLUMN_CREATE(
     'en', 'Official title in German speaking countries.',
     'de', 'Offizieller Titel im deutschsprachigen Raum.'
-  ),
-  `display`       = true
+  )
+;
+SET @die_verurteilten_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_display_titles` SET
+  `language_code` = 'de',
+  `movie_id`      = @the_shawshank_redemption_id,
+  `title_id`      = @die_verurteilten_id
 ;
