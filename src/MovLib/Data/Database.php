@@ -45,6 +45,18 @@ class Database {
   protected static $connections = [];
 
   /**
+   * Associative array containing language specific collation strings.
+   *
+   * The key is the system language code and the value contains the collate string that can be used within queries. This
+   * is most useful for <code>ORDER BY</code> statements, e.g.:
+   *
+   * <pre>SELECT * FROM `table` ORDER BY `field`{$db->collations[$i18n->languageCode]}</pre>
+   *
+   * @var array
+   */
+  public $collations = [ "en" => null, "de" => " COLLATE utf8mb4_german2_ci" ];
+
+  /**
    * Name of the database to which this instance is connected.
    *
    * @var string
