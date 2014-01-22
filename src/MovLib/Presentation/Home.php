@@ -55,10 +55,14 @@ class Home extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
    */
   protected function getMainContent() {
-    global $kernel, $i18n;
-    return
+    global $i18n, $kernel, $session;
+    $content =
       "<main id='m' role='main'>" .
         "<div id='banner'>" .
           "<h2 class='c'>{$i18n->t("Do you like movies?{0}Great, so do we!", [ "<br>" ])}</h2>" .
@@ -96,11 +100,17 @@ class Home extends \MovLib\Presentation\Page {
               "<p></p>" .
             "</article>" .
             "<article class='s s4 taj'>" .
-              "<h2 class='tac'>{$i18n->t("My {sitename}", [ "sitename" => $kernel->siteName ])}</h2>" .
+              "<h2 class='tac'>{$i18n->t("My {sitename}", [ "sitename" => $kernel->siteName ])}</h2>"
+    ;
+    if (!$session->isAuthenticated) {
+      $content .=
               "<p></p>" .
               "<p><a class='btn btn-success btn-large' href='{$i18n->r("/profile/join")}'>{$i18n->t(
                 "Join {sitename}", [ "sitename" => $kernel->siteName ])
-              }</a></p>" .
+              }</a></p>"
+      ;
+    }
+    $content .=
             "</article>" .
             "<article class='s s4 taj'>" .
               "<h2 class='tac'>{$i18n->t("<abbr title='Application Programming Interface'>API</abbr>")}</h2>" .
@@ -118,6 +128,7 @@ class Home extends \MovLib\Presentation\Page {
         "</div>" .
       "</main>"
     ;
+    return $content;
   }
 
 }
