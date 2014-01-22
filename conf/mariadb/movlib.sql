@@ -506,7 +506,6 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
   `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The title’s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `display` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this title is the display title for its language (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_comments` BLOB NOT NULL COMMENT 'The title’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The title’s ISO alpha-2 language code.',
   `title` BLOB NOT NULL COMMENT 'The movie’s title.',
@@ -530,7 +529,6 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
   `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The tagline’s unique ID within the movie.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
-  `display` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether this tagline is the display title for its language (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_comments` BLOB NOT NULL COMMENT 'The taglines’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The tagline’s ISO alpha-2 language code.',
   `tagline` BLOB NOT NULL COMMENT 'The movie’s tagline.',
@@ -1567,6 +1565,44 @@ CREATE TABLE IF NOT EXISTS `movlib`.`display_posters` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Table containing information on which poster should be used  /* comment truncated */ /*for which language as display poster on the movie details page.*/';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_display_titles`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`movies_display_titles` (
+  `language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_bin' NOT NULL COMMENT 'The movie’s display title’s ISO alpha-2 language code.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s display title’s unique movie identifier.',
+  `title_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s display title’s unique title identifier.',
+  PRIMARY KEY (`language_code`, `movie_id`, `title_id`),
+  INDEX `fk_movies_display_titles_idx` (`title_id` ASC, `movie_id` ASC),
+  CONSTRAINT `fk_movies_display_titles`
+    FOREIGN KEY (`title_id` , `movie_id`)
+    REFERENCES `movlib`.`titles` (`id` , `movie_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Table containing information on which title should be used f /* comment truncated */ /*or which language as display title on various listings.*/';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_display_taglines`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`movies_display_taglines` (
+  `language_code` CHAR(2) CHARACTER SET 'ascii' COLLATE 'ascii_bin' NOT NULL COMMENT 'The movie’s display tagline’s ISO alpha-2 language code.',
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s display tagline’s unique movie identifier.',
+  `tagline_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s display tagline’s unique tagline identifier.',
+  PRIMARY KEY (`language_code`, `movie_id`, `tagline_id`),
+  INDEX `fk_movies_display_taglines_idx` (`tagline_id` ASC, `movie_id` ASC),
+  CONSTRAINT `fk_movies_display_taglines`
+    FOREIGN KEY (`tagline_id` , `movie_id`)
+    REFERENCES `movlib`.`taglines` (`id` , `movie_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Table containing information on which tagline should be used /* comment truncated */ /* for which language as display tagline on various listings.*/';
 
 SHOW WARNINGS;
 
