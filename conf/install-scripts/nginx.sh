@@ -27,12 +27,14 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-source $(pwd)/inc/conf.sh
+# Set working directory and include configuration script.
+WD="$(cd `dirname ${0}`; pwd)/"
+source ${WD}/inc/conf.sh
 
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="1.5.8"
+  VERSION="1.5.9"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
@@ -41,14 +43,16 @@ fi
 # Uninstall old and download new nginx.
 NAME="nginx"
 source ${ID}uninstall.sh
+
 source ${ID}wget.sh "http://nginx.org/download/" "${NAME}-${VERSION}" ".tar.gz"
+
+msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
+cd ${SD}${NAME}-${VERSION}
 
 # Install OpenSSL
 OPENSSL_VERSION="1.0.1e"
 msginfo "Using OpenSSL version ${OPENSSL_VERSION}!"
-source ${ID}wget.sh "https://www.openssl.org/source/" "openssl-${OPENSSL_VERSION}" ".tar.gz"
-cd ..
-msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
+source ${ID}wget.sh "https://www.openssl.org/source/" "openssl-${OPENSSL_VERSION}" ".tar.gz" "false"
 
 # Install PCRE
 #msginfo "Using PCRE version trunk!"
@@ -60,15 +64,16 @@ msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
 #msginfo "Changing to directory: ${SD}${NAME}"
 PCRE_VERSION="8.33"
 msginfo "Using PCRE version ${PCRE_VERSION}!"
-source ${ID}wget.sh "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/" "pcre-${PCRE_VERSION}" ".tar.gz"
-cd ..
-msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
+source ${ID}wget.sh "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/" "pcre-${PCRE_VERSION}" ".tar.gz" "false"
 
 # Install Zlib
 source ${ID}git.sh madler zlib
-cd ..
-msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
 
+msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
+cd ${SD}${NAME}-${VERSION}
+
+CFLAGS="-O3 -m64 -march=native" \
+CXXFLAGS="${CFLAGS}" \
 ./configure \
   --user="www-data" \
   --group="www-data" \
@@ -81,21 +86,21 @@ msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
   --http-client-body-temp-path="/run/www/uploads" \
   --http-fastcgi-temp-path="/run/www/fastcgi" \
   --http-log-path="/var/log/nginx/access.log" \
-  --with-cc-opt="-O2 -m64" \
-  --with-ld-opt="-m64" \
+  --with-cc-opt="-O3 -m64 -march=native -ffunction-sections -fdata-sections -D FD_SETSIZE=131072" \
+  --with-ld-opt="-Wl,--gc-sections" \
   --with-ipv6 \
   --with-http_gzip_static_module \
   --with-http_ssl_module \
   --with-http_spdy_module \
-  --with-openssl-opt="enable-ec_nistp_64_gcc_128" \
-  --with-openssl="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
-  --with-md5="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
+  --with-openssl-opt="enable-ec_nistp_64_gcc_128 no-rc2 no-rc4 no-rc5 no-md2 no-md4 no-ssl2 no-ssl3 no-krb5 no-hw no-engines" \
+  --with-openssl="${SD}${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
+  --with-md5="${SD}${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
   --with-md5-asm \
-  --with-sha1="/usr/local/src/${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
+  --with-sha1="${SD}${NAME}-${VERSION}/openssl-${OPENSSL_VERSION}" \
   --with-sha1-asm \
-  --with-pcre="/usr/local/src/${NAME}-${VERSION}/pcre-${PCRE_VERSION}" \
+  --with-pcre="${SD}${NAME}-${VERSION}/pcre-${PCRE_VERSION}" \
   --with-pcre-jit \
-  --with-zlib="/usr/local/src/${NAME}-${VERSION}/zlib" \
+  --with-zlib="${SD}${NAME}-${VERSION}/zlib" \
   --without-http_access_module \
   --without-http_auth_basic_module \
   --without-http_autoindex_module \
@@ -122,19 +127,29 @@ service nginx stop
 set -e
 
 make
-checkinstall make install
+checkinstall --default --maintainer=webmaster@movlib.org --nodoc --pkgname=${NAME} --pkgversion=${VERSION} --type=debian ${CHECKINSTALL_ARGUMENTS:=""}
 make clean
 
-# Remove the default configuration files.
-cd conf
-for f in *; do
-  rm -f /etc/nginx/${f}
-done
-rm -f /etc/nginx/*.default
+# Remove default configuration files.
+rm -rf /etc/nginx/*
+
+# Create symbolic links for MovLib specific configuration files.
+CD="$(cd ${WD}/../nginx; pwd)"
+for f in $(find ${CD} -name '*.conf' -or -name '*.php' -type f); do
+  fs=${f#${CD}}
+  mkdir -p /etc/nginx${fs%/*}
+  ln -s ${f} /etc/nginx${fs}
+done;
+
+# Copy SSL certificates and other stuff from root's home.
+cp -r /root/ssl/* /etc/nginx/ssl
 
 ldconfig
 LINE=$(msgline)
 msgsuccess "${LINE}\nSuccessfully installed ${NAME}\n${LINE}"
+
+# Compile all routes.
+movlib nginx-routes
 
 # Start newly installed nginx.
 service nginx start

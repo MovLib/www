@@ -26,7 +26,9 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-source $(pwd)/inc/conf.sh
+# Define work directory and include configuration.
+WD=$(dirname $0)
+source "${WD}/inc/conf.sh"
 
 CHECKINSTALL_ARGUMENTS="--provides=php,php-cgi,php-config,php-fpm,phpize"
 NAME="php"

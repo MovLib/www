@@ -26,7 +26,7 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-if [ ! ${#} == 3 ]; then
+if [ ! ${#} < 3 ]; then
   msgerror "Missing arguments: download URL [1], name [2] and extension [3]!"
   exit 1
 fi
@@ -53,6 +53,8 @@ if [ -f ${2}${3} ]; then
 fi
 
 if [ -d ${1} ]; then
-  msginfo "Changing to directory: ${SD}${2}"
-  cd ${2}
+  if [ -n "${4}" ] || [ ${4} != "false" ]; then
+    msginfo "Changing to directory: ${SD}${2}"
+    cd ${SD}${2}
+  fi
 fi

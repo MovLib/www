@@ -61,3 +61,6 @@ mariadb:
 	movlib fp
 	aptitude -y install mariadb-server-10.0
 	movlib si
+
+nginx:
+	sh conf/install-scripts/nginx.sh

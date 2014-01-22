@@ -76,21 +76,21 @@ class Full extends \MovLib\Data\Movie\Movie {
         `movies`.`deleted`,
         COLUMN_GET(`movies`.`dyn_synopses`, ? AS CHAR),
         `movies`.`mean_rating`,
-        `movies`.`original_title`,
-        `movies`.`original_title_language_code`,
         `movies`.`rating`,
         `movies`.`votes`,
         `movies`.`commit`,
         `movies`.`rank`,
         `movies`.`runtime`,
         `movies`.`year`,
-        IFNULL(`movies_titles`.`title`, `movies`.`original_title`),
-        IFNULL(`movies_titles`.`language_code`, `movies`.`original_title_language_code`),
+        IFNULL(`dt`.`title`, `ot`.`title`),
+        IFNULL(`dt`.`language_code`, `ot`.`language_code`),
+        `ot`.`title`,
+        `ot`.`language_code`
       FROM `movies`
-        LEFT JOIN `movies_display_titles`
-          ON `movies_display_titles`.`movie_id` = `movies`.`id`
-          AND `movies_display_titles`.`language_code` = ?
-        
+        LEFT JOIN `movies_display_titles`  AS `mdt` ON `mdt`.`movie_id` = `movies`.`id` AND `mdt`.`language_code` = ?
+        LEFT JOIN `movies_titles`          AS `dt`  ON  `dt`.`title_id` = `mdt`.`title_id`
+        LEFT JOIN `movies_original_titles` AS `mot` ON `mot`.`movie_id` = `movies`.`id`
+        LEFT JOIN `movies_titles`          AS `ot`  ON  `ot`.`title_id` = `mot`.`title_id`
       WHERE `movies`.`id` = ?
       LIMIT 1",
       "sd",

@@ -65,7 +65,8 @@ fi
 # Exit on any error!
 set -e
 
-WD="$(pwd)/"          # Work directory
-ID="${WD}/inc/"       # Include directory
-SD="/usr/local/src/"  # Source directory
+ID="${WD}inc/"       # Include directory
+SD="/usr/local/src/" # Source directory
+
+msginfo "Changing to directory: ${SD}"
 cd ${SD}
