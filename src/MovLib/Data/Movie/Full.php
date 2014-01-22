@@ -36,6 +36,7 @@ class Full extends \MovLib\Data\Movie\Movie {
 
 
   public $cast;
+  public $commit;
   public $countries;
   public $created;
   public $directors;
@@ -69,40 +70,45 @@ class Full extends \MovLib\Data\Movie\Movie {
   public function __construct($id) {
     global $db, $i18n, $session;
     $this->id = $id;
-    $stmt     = $db->query(
+    $stmt = $db->query(
       "SELECT
-        `movies`.`original_title`,
-        `movies`.`rating`,
-        `movies`.`mean_rating`,
-        `movies`.`votes`,
-        `movies`.`deleted`,
-        `movies`.`year`,
-        `movies`.`runtime`,
-        `movies`.`rank`,
-        COLUMN_GET(`movies`.`dyn_synopses`, '{$i18n->languageCode}' AS BINARY),
         `movies`.`created`,
-        IFNULL(`titles`.`title`, `movies`.`original_title`)
+        `movies`.`deleted`,
+        COLUMN_GET(`movies`.`dyn_synopses`, ? AS CHAR),
+        `movies`.`mean_rating`,
+        `movies`.`original_title`,
+        `movies`.`original_title_language_code`,
+        `movies`.`rating`,
+        `movies`.`votes`,
+        `movies`.`commit`,
+        `movies`.`rank`,
+        `movies`.`runtime`,
+        `movies`.`year`,
+        IFNULL(`movies_titles`.`title`, `movies`.`original_title`),
+        IFNULL(`movies_titles`.`language_code`, `movies`.`original_title_language_code`),
       FROM `movies`
-        LEFT JOIN `titles`
-          ON `titles`.`movie_id` = `movies`.`id`
-          AND `titles`.`language_code` = ?
+        LEFT JOIN `movies_display_titles`
+          ON `movies_display_titles`.`movie_id` = `movies`.`id`
+          AND `movies_display_titles`.`language_code` = ?
+        
       WHERE `movies`.`id` = ?
       LIMIT 1",
       "sd",
-      [ $i18n->languageCode, $this->id ]
+      [ $i18n->languageCode, $id ]
     );
     $stmt->bind_result(
-      $this->originalTitle,
-      $this->rating,
-      $this->ratingMean,
-      $this->votes,
-      $this->deleted,
-      $this->year,
-      $this->runtime,
-      $this->rank,
-      $this->synopsis,
       $this->created,
-      $this->displayTitle
+      $this->deleted,
+      $this->synopsis,
+      $this->ratingMean,
+      $this->originalTitle,
+      $this->originalTitleLanguageCode,
+      $this->rating,
+      $this->votes,
+      $this->commit,
+      $this->rank,
+      $this->runtime,
+      $this->year
     );
     if (!$stmt->fetch()) {
       throw new NotFound;
