@@ -33,6 +33,7 @@ return [
   // ------------------------------------------------------------------------------------------------------------------- Movie
   "/movie"                => "/film",
   "/movie/create"         => "/film/erstellen",
+  "/movie/random"         => "/film/zufällig",
   "/movie/{0}"            => "/film/{0}",
   "/movie/{0}/discussion" => "/film/{0}/diskussion",
   "/movie/{0}/edit"       => "/film/{0}/bearbeiten",
@@ -63,9 +64,19 @@ return [
   "/movie/{0}/release/{1}/edit"       => "/film/{0}/veröffentlichung/{1}/bearbeiten",
   "/movie/{0}/release/{1}/delete"     => "/film/{0}/veröffentlichung/{1}/löschen",
 
+  // ------------------------------------------------------------------------------------------------------------------- Company
+  "/company"                => "/unternehmen",
+  "/company/create"         => "/unternehmen/erstellen",
+  "/company/random"         => "/unternehmen/zufällig",
+  "/company/{0}"            => "/unternehmen/{0}",
+  "/company/{0}/discussion" => "/unternehmen/{0}/diskussion",
+  "/company/{0}/edit"       => "/unternehmen/{0}/bearbeiten",
+  "/company/{0}/delete"     => "/unternehmen/{0}/löschen",
+
   // ------------------------------------------------------------------------------------------------------------------- Person
   "/person"                => "/person",
   "/person/create"         => "/person/erstellen",
+  "/person/random"         => "/person/zufällig",
   "/person/{0}"            => "/person/{0}",
   "/person/{0}/discussion" => "/person/{0}/diskussion",
   "/person/{0}/edit"       => "/person/{0}/bearbeiten",

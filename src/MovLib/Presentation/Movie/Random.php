@@ -15,10 +15,14 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Data;
+namespace MovLib\Presentation\Movie;
+
+use \MovLib\Data\Movie\Movie;
+use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
- * Handling of one Company.
+ * Random movie presentation.
  *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -26,41 +30,44 @@ namespace MovLib\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Company extends \MovLib\Data\Database {
+class Random {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The company's unique identifier.
+   * A random movie ID.
    *
-   * @var int
+   * @var integer
    */
-  public $id;
+  private $movieId;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
-   * The company's name.
+   * Redirect to random movie presentation.
    *
-   * @var string
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
-  public $name;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-  /**
-   * Get random company id.
-   *
-   * @global \MovLib\Data\Database $db
-   * @return integer|null
-   *   Random company id or null in case of failure.
-   */
-  public static function getRandomCompanyId() {
-    global $db;
-    $query = "SELECT `id` FROM `companies` WHERE `companies`.`deleted` = false ORDER BY RAND() LIMIT 1";
-    if ($result = $db->query($query)->get_result()) {
-      return $result->fetch_assoc()["id"];
+  public function __construct() {
+    global $i18n, $kernel;
+    $this->movieId = Movie::getRandomMovieId();
+    if (isset($this->movieId)) {
+      throw new SeeOtherRedirect($i18n->r("/movie/{0}", [ $this->movieId ]));
+    }
+    else {
+      $kernel->alerts .= new Alert(
+        $i18n->t("There is currently no movie in our database"),
+        $i18n->t("Check back later"),
+        Alert::SEVERITY_INFO
+      );
+      throw new SeeOtherRedirect("/");
     }
   }
+
 }

@@ -296,14 +296,14 @@ class Page extends \MovLib\Presentation\AbstractBase {
         "movies" => [ $i18n->t("Movies"), [
           [ $i18n->rp("/movies"), $i18n->t("Latest Entries") ],
           [ $i18n->rp("/movies/charts"), $i18n->t("Charts") ],
-          [ $i18n->rp("/movie/create"), $i18n->t("Create New") ],
+          [ $i18n->r("/movie/create"), $i18n->t("Create New") ],
           [ $i18n->rp("/movies/reviews"), $i18n->t("Latest Reviews") ],
           [ $i18n->r("/movie/random"), $i18n->t("Random Movie") ],
         ]],
         "series" => [ $i18n->t("Series"), [
           [ $i18n->rp("/series"), $i18n->t("Latest Entries") ],
           [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
-          [ $i18n->rp("/series/create"), $i18n->t("Create New") ],
+          [ $i18n->r("/series/create"), $i18n->t("Create New") ],
           [ $i18n->rp("/series/reviews"), $i18n->t("Latest Reviews") ],
           [ $i18n->r("/series/random"), $i18n->t("Random Series") ],
         ]],
@@ -314,7 +314,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
         ]],
         "companies" => [ $i18n->t("Companies"), [
           [ $i18n->rp("/companies"), $i18n->t("Latest Entries") ],
-          [ $i18n->rp("/company/create"), $i18n->t("Create New") ],
+          [ $i18n->r("/company/create"), $i18n->t("Create New") ],
           [ $i18n->r("/company/random"), $i18n->t("Random Company") ],
         ]],
         "more" => [ $i18n->t("More"), [

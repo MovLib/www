@@ -163,11 +163,11 @@ class Movie {
       $stmt->bind_result(
         $this->id,
         $this->deleted,
+        $this->year,
         $this->displayTitle,
         $this->displayTitleLanguageCode,
         $this->originalTitle,
         $this->originalTitleLanguageCode,
-        $this->year,
         $this->displayPoster
       );
       if (!$stmt->fetch()) {
@@ -336,6 +336,21 @@ class Movie {
       $query  .= "WHERE `deleted` = {$deleted} ";
     }
     return $db->query("{$query} LIMIT 1")->get_result()->fetch_row()[0];
+  }
+
+  /**
+   * Get random movie id.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer|null
+   *   Random movie id or null in case of failure.
+   */
+  public static function getRandomMovieId() {
+    global $db;
+    $query = "SELECT `id` FROM `movies` WHERE `movies`.`deleted` = false ORDER BY RAND() LIMIT 1";
+    if ($result = $db->query($query)->get_result()) {
+      return $result->fetch_assoc()["id"];
+    }
   }
 
 }
