@@ -41,6 +41,11 @@ location = <?= $r("/movie/create") ?> {
   try_files $movlib_cache @php;
 }
 
+location = <?= $r("/movie/random") ?> {
+  set $movlib_presenter "Movie\\Random";
+  try_files $movlib_cache @php;
+}
+
 location ^~ <?= $r("/movie") ?> {
 
   #
@@ -264,6 +269,58 @@ location ^~ <?= $r("/movie") ?> {
 }
 
 
+
+# ---------------------------------------------------------------------------------------------------------------------- company/companies
+
+
+location = <?= $rp("/companies") ?> {
+  set $movlib_presenter "Companies\\Show";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/company/create") ?> {
+  set $movlib_presenter "Company\\Create";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/company/random") ?> {
+  set $movlib_presenter "Company\\Random";
+  try_files $movlib_cache @php;
+}
+
+location ^~ <?= $r("/company") ?> {
+
+  #
+  # ---------------------------------------- Company
+  #
+
+  location ~* "^<?= $r("/company/{0}", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\Show";
+    set $movlib_company_id $1;
+    try_files $movlib_cache @php;
+  }
+  location ~* "^<?= $r("/company/{0}/discussion", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\Discussion";
+    set $movlib_company_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/company/{0}/edit", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\Edit";
+    set $movlib_company_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/company/{0}/delete", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\Delete";
+    set $movlib_company_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  rewrite .* /error/NotFound last;
+}
+
+
 # ---------------------------------------------------------------------------------------------------------------------- person(s)
 
 
@@ -274,6 +331,11 @@ location = <?= $rp("/persons") ?> {
 
 location = <?= $r("/person/create") ?> {
   set $movlib_presenter "Person\\Create";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/person/random") ?> {
+  set $movlib_presenter "Person\\Random";
   try_files $movlib_cache @php;
 }
 

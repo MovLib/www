@@ -217,6 +217,21 @@ class Person {
     )->get_result();
   }
 
+  /**
+   * Get random person id.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return integer|null
+   *   Random person id or null in case of failure.
+   */
+  public static function getRandomPersonId() {
+    global $db;
+    $query = "SELECT `id` FROM `persons` WHERE `persons`.`deleted` = false ORDER BY RAND() LIMIT 1";
+    if ($result = $db->query($query)->get_result()) {
+      return $result->fetch_assoc()["id"];
+    }
+  }
+
   protected function init() {
     global $db, $i18n;
     $this->deleted = (boolean) $this->deleted;
