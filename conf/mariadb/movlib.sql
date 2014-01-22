@@ -63,12 +63,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_genres` (
   CONSTRAINT `fk_movies_genres_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_genres_genres`
     FOREIGN KEY (`genre_id`)
     REFERENCES `movlib`.`genres` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'A movie has many genres, a genre has many movies.';
@@ -287,7 +287,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_crew` (
   CONSTRAINT `fk_movies_crew_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_crew_jobs`
     FOREIGN KEY (`job_id`)
@@ -335,7 +335,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_cast` (
   CONSTRAINT `fk_movies_cast_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_cast_persons_aliases1`
     FOREIGN KEY (`alias_id`)
@@ -374,7 +374,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_countries` (
   CONSTRAINT `fk_movies_countries_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'A movie has many countries, a country has many movies.';
@@ -392,7 +392,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_languages` (
   CONSTRAINT `fk_movies_languages_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'A movie has many languages, a language has many movies.';
@@ -414,7 +414,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_directors` (
   CONSTRAINT `fk_movies_directors_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_directors_persons`
     FOREIGN KEY (`person_id`)
@@ -483,7 +483,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_awards` (
   CONSTRAINT `fk_movies_awards_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_persons_awards_persons`
     FOREIGN KEY (`person_id`)
@@ -514,7 +514,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
   CONSTRAINT `fk_titles_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains movie titles.'
@@ -537,7 +537,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
   CONSTRAINT `fk_taglines_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all movie taglines.'
@@ -575,7 +575,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_trailers` (
   CONSTRAINT `fk_movies_trailers_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all movie trailsers.';
@@ -851,12 +851,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_releases` (
   CONSTRAINT `fk_movies_releases_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_releases_master_releases`
     FOREIGN KEY (`master_release_id`)
     REFERENCES `movlib`.`master_releases` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'A movie has many releases, a release has many movies.';
@@ -1001,7 +1001,7 @@ SHOW WARNINGS;
 CREATE TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique identifier.',
   `user_id` BIGINT UNSIGNED NOT NULL COMMENT 'The user’s unique identifier.',
-  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'The creation date and time of the movie rating as timestamp.',
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'The creation date and time of the movie rating as timestamp.',
   `rating` TINYINT(1) UNSIGNED NOT NULL COMMENT 'The user’s rating for a certain movie (1-5).',
   PRIMARY KEY (`movie_id`, `user_id`),
   INDEX `fk_movies_ratings_users` (`user_id` ASC),
@@ -1009,12 +1009,12 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_ratings` (
   CONSTRAINT `fk_movies_ratings_movies`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_ratings_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `movlib`.`users` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains all movie ratings by users.';
@@ -1054,17 +1054,17 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_relationships` (
   CONSTRAINT `fk_movies_relationships_relationship_types`
     FOREIGN KEY (`relationship_type_id`)
     REFERENCES `movlib`.`relationship_types` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_relationships_first_movie`
     FOREIGN KEY (`first_movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_movies_relationships_second_movie`
     FOREIGN KEY (`second_movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains relationships between movies.';
@@ -1105,7 +1105,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_titles` (
   CONSTRAINT `fk_movies_titles_movie_id`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains the sha-1 commit hashes used in the movie title his /* comment truncated */ /*tory.*/';
@@ -1123,7 +1123,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_taglines` (
   CONSTRAINT `fk_movies_taglines_movie`
     FOREIGN KEY (`movie_id`)
     REFERENCES `movlib`.`movies` (`id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Contains the sha-1 commit hashes used in the movie tagline h /* comment truncated */ /*istory.*/';
@@ -1561,7 +1561,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`display_posters` (
   CONSTRAINT `fk_display_posters_posters`
     FOREIGN KEY (`poster_id` , `movie_id`)
     REFERENCES `movlib`.`posters` (`id` , `movie_id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Table containing information on which poster should be used  /* comment truncated */ /*for which language as display poster on the movie details page.*/';
@@ -1580,7 +1580,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_display_titles` (
   CONSTRAINT `fk_movies_display_titles`
     FOREIGN KEY (`title_id` , `movie_id`)
     REFERENCES `movlib`.`titles` (`id` , `movie_id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Table containing information on which title should be used f /* comment truncated */ /*or which language as display title on various listings.*/';
@@ -1599,7 +1599,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_display_taglines` (
   CONSTRAINT `fk_movies_display_taglines`
     FOREIGN KEY (`tagline_id` , `movie_id`)
     REFERENCES `movlib`.`taglines` (`id` , `movie_id`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Table containing information on which tagline should be used /* comment truncated */ /* for which language as display tagline on various listings.*/';
