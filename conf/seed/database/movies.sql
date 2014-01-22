@@ -33,17 +33,28 @@ TRUNCATE TABLE `persons`;
 -- START "Roundhay Garden Scene"
 
 INSERT INTO `movies` SET
-  `created`                      = '2013-11-28 15:13:42',
-  `original_title`               = 'Roundhay Garden Scene',
-  `original_title_language_code` = 'en',
-  `year`                         = 1888,
-  `runtime`                      = 60, -- 1 minute
-  `dyn_synopses`                 = COLUMN_CREATE(
+  `created`      = '2013-11-28 15:13:42',
+  `year`         = 1888,
+  `runtime`      = 60, -- 1 minute
+  `dyn_synopses` = COLUMN_CREATE(
     'en', '&lt;p&gt;The scene features Adolphe Le Prince, Sarah Whitley, Joseph Whitley and Harriet Whitley in the Roundhay Garden.&lt;/p&gt;',
     'de', '&lt;p&gt;Die Szene zeigt Adolphe Le Prince, Sarah Whitley, Joseph Whitley und Harriet Whitley im Roundhay Garden.&lt;/p&gt;'
   )
 ;
 SET @roundhay_garden_scene_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_titles` SET
+  `movie_id`      = @roundhay_garden_scene_id,
+  `dyn_comments`  = '',
+  `title`         = 'Roundhay Garden Scene',
+  `language_code` = 'en'
+;
+SET @roundhay_garden_scene_ot = LAST_INSERT_ID();
+
+INSERT INTO `movies_original_titles` SET
+  `movie_id` = @roundhay_garden_scene_id,
+  `title_id` = @roundhay_garden_scene_ot
+;
 
 INSERT INTO `movies_countries` SET `movie_id` = @roundhay_garden_scene_id, `country_code` = 'UK';
 INSERT INTO `movies_languages` SET `movie_id` = @roundhay_garden_scene_id, `language_code` = 'xx';
@@ -120,17 +131,28 @@ INSERT INTO `movies_cast` SET `movie_id` = @roundhay_garden_scene_id, `person_id
 -- START "Big Buck Bunny"
 
 INSERT INTO `movies` SET
-  `created`                      = '2013-11-29 14:01:56',
-  `original_title`               = 'Big Buck Bunny',
-  `original_title_language_code` = 'en',
-  `year`                         = 2008,
-  `runtime`                      = 600, -- 10 minutes
-  `dyn_synopses`                 = COLUMN_CREATE(
+  `created`      = '2013-11-29 14:01:56',
+  `year`         = 2008,
+  `runtime`      = 600, -- 10 minutes
+  `dyn_synopses` = COLUMN_CREATE(
     'en', '&lt;p&gt;“Big” Buck is a chubby bunny who enjoys the beauty of nature. But he decides to shed his gentleness when the flying squirrel Frank, the squirrel Rinky and the chinchilla Gamera kill two butterflies and throw fruits and nuts at him. Buck prepares a well-deserved revenge for the three rodents.&lt;/p&gt;',
     'de', '&lt;p&gt;„Big” Buck is ein fülliges Kaninchen, dass sich an der schönen Natur erfreut. Als jedoch das Flughörnchen Frank, das Eichhörnchen Rinky und das Chinchilla Gamera auftauchen, zwei Schmetterlinge töten und das Kaninchen mit Früchten und Nüssen bewerfen, beschließt es, seine Sanftmütigkeit abzulegen und an den Nagetieren Rache zu nehmen.&lt;/p&gt;'
   )
 ;
 SET @big_buck_bunny_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_titles` SET
+  `movie_id`      = @big_buck_bunny_id,
+  `dyn_comments`  = '',
+  `language_code` = 'en',
+  `title`         = 'Big Buck Bunny'
+;
+SET @big_buck_bunny_ot = LAST_INSERT_ID();
+
+INSERT INTO `movies_original_titles` SET
+  `movie_id` = @big_buck_bunny_id,
+  `title_id` = @big_buck_bunny_ot
+;
 
 INSERT INTO `persons` SET
   `name`                   = 'Sacha Goedegebure',
@@ -187,13 +209,24 @@ INSERT INTO `movies_genres` SET `movie_id` = @big_buck_bunny_id, `genre_id` = (S
 
 INSERT INTO `movies` SET
   `created`                      = CURRENT_TIMESTAMP,
-  `original_title`               = 'The Shawshank Redemption',
-  `original_title_language_code` = 'en',
   `runtime`                      = 8520, -- 142 minutes
   `year`                         = 1994,
   `dyn_synopses`                 = ''
 ;
 SET @the_shawshank_redemption_id = LAST_INSERT_ID();
+
+INSERT INTO `movies_titles` SET
+  `movie_id`      = @the_shawshank_redemption_id,
+  `dyn_comments`  = '',
+  `language_code` = 'en',
+  `title`         = 'The Shawshank Redemption'
+;
+SET @the_shawshank_redemption_ot = LAST_INSERT_ID();
+
+INSERT INTO `movies_original_titles` SET
+  `movie_id` = @the_shawshank_redemption_id,
+  `title_id` = @the_shawshank_redemption_ot
+;
 
 INSERT INTO `places` SET
   `place_id`     = 97967307,
@@ -224,12 +257,12 @@ INSERT INTO `movies_directors` SET
 
 INSERT INTO `movies_titles` SET
   `movie_id`      = @the_shawshank_redemption_id,
-  `language_code` = 'de',
-  `title`         = 'Die Verurteilten',
   `dyn_comments`  = COLUMN_CREATE(
     'en', 'Official title in German speaking countries.',
     'de', 'Offizieller Titel im deutschsprachigen Raum.'
-  )
+  ),
+  `language_code` = 'de',
+  `title`         = 'Die Verurteilten'
 ;
 SET @die_verurteilten_id = LAST_INSERT_ID();
 

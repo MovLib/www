@@ -102,21 +102,27 @@ class Movie {
     "SELECT
       `movies`.`id`,
       `movies`.`deleted`,
-      IFNULL(`titles`.`title`, `movies`.`original_title`) AS `displayTitle`,
-      `titles`.`language_code` AS `displayTitleLanguageCode`,
-      `movies`.`original_title` AS `originalTitle`,
-      `movies`.`original_title_language_code` AS `originalTitleLanguageCode`,
       `movies`.`year`,
-      `display_posters`.`poster_id` AS `displayPoster`
-    FROM `movies`
-      LEFT JOIN `movies_titles` ON `movies_titles`.`movie_id` = `movies`.`id`
-      LEFT JOIN `titles`
-        ON `titles`.`movie_id` = `movies`.`id`
-        AND `titles`.`language_code` = ?
-      LEFT JOIN `display_posters`
-        ON `display_posters`.`movie_id` = `movies`.`id`
-        AND `display_posters`.`language_code` = ?
-    "
+      IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
+      IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
+      `ot`.`title` AS `originalTitle`,
+      `ot`.`language_code` AS `originalTitleLanguageCode`,
+      `p`.`poster_id` AS `displayPoster`
+    FROM `movies` FORCE INDEX (movies_deleted)
+      LEFT JOIN `movies_display_titles` AS `mdt`
+        ON `mdt`.`movie_id` = `movies`.`id`
+        AND `mdt`.`language_code` = ?
+      LEFT JOIN `movies_titles` AS `dt`
+        ON `dt`.`movie_id` = `movies`.`id`
+        AND `dt`.`id` = `mdt`.`title_id`
+      LEFT JOIN `movies_original_titles` AS `mot`
+        ON `mot`.`movie_id` = `movies`.`id`
+      LEFT JOIN `movies_titles` AS `ot`
+        ON `ot`.`movie_id` = `movies`.`id`
+        AND `ot`.`id` = `mot`.`title_id`
+      LEFT JOIN `display_posters` AS `p`
+        ON `p`.`movie_id` = `movies`.`id`
+        AND `p`.`language_code` = ?"
   ;
 
   /**

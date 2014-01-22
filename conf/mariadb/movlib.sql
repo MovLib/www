@@ -16,8 +16,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies` (
   `deleted` TINYINT(1) NOT NULL DEFAULT false COMMENT 'The flag that determines whether the movie is marked as deleted (TRUE(1)) or not (FALSE(0)), default is FALSE(0).',
   `dyn_synopses` BLOB NOT NULL COMMENT 'The synopsis of the movie in various languages. Keys are ISO alpha-2 language codes.',
   `mean_rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s arithmetic mean rating.',
-  `original_title` BLOB NOT NULL COMMENT 'The movie’s original title.',
-  `original_title_language_code` CHAR(2) NOT NULL COMMENT 'The movie’s original title ISO alpha-2 language code.',
   `rating` FLOAT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The Bayes\'theorem rating of this movie.\n\nrating = (s / (s + m)) * N + (m / (s + m)) * K\n\nN: arithmetic mean rating\ns: vote count\nm: minimum vote count\nK: arithmetic mean vote\n\nThe same formula is used by IMDb and OFDb.',
   `votes` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'The movie’s vote count.',
   `commit` CHAR(40) NULL COMMENT 'The movie\'s last history commit sha-1 hash.',
@@ -1605,6 +1603,29 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_links` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`movies_original_titles`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`movies_original_titles` (
+  `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The original title’s unique movie’s identifier.',
+  `title_id` BIGINT UNSIGNED NOT NULL COMMENT 'The original title’s unique title’s identifier.',
+  PRIMARY KEY (`movie_id`, `title_id`),
+  INDEX `fk_movies_original_titles_movies_idx` (`movie_id` ASC),
+  CONSTRAINT `fk_movies_original_titles_movies_titles`
+    FOREIGN KEY (`title_id`)
+    REFERENCES `movlib`.`movies_titles` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_movies_original_titles_movies`
+    FOREIGN KEY (`movie_id`)
+    REFERENCES `movlib`.`movies` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Table to create correct circular reference between titles an /* comment truncated */ /*d the original title of a movie.*/';
 
 SHOW WARNINGS;
 

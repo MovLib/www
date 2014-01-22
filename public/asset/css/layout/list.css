@@ -56,6 +56,41 @@ ol ol {
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
+ * Hover lists (`ul` and `ol`).
+ * ------------------------------------------------------------------------------------------------------------------ */
+
+/* This ensures that we have proper rows for the images in the grid. */
+.s10 .grid-list .s3:nth-child(3n+1),
+.s10 .grid-list .s2:nth-child(5n+1),
+.s10 .grid-list .s1:nth-child(10n+1) {
+  clear: left;
+}
+
+.grid-list img {
+  opacity: 0.75;
+  outline: 1px solid #e5e5e5;
+  transition: 0.4s ease-in-out;
+  transition-property: opacity, outline-color;
+}
+
+.grid-list a {
+  margin-bottom: 5px;
+  display: block;
+  transition: box-shadow 0.4s ease-in-out;
+}
+
+.grid-list a:focus,
+.grid-list a:hover {
+  box-shadow: 0 0 10px rgba(82, 168, 236, 0.6);
+}
+
+.grid-list a:focus img,
+.grid-list a:hover img {
+  opacity: 1;
+  outline-color: rgba(82, 168, 236, 0.8);
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
  * Description lists
  * ------------------------------------------------------------------------------------------------------------------ */
 
