@@ -504,7 +504,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`titles`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`titles` (
-  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The title’s unique ID within the movie.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The title’s unique identifier.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The title’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The title’s ISO alpha-2 language code.',
@@ -527,7 +527,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`taglines`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`taglines` (
-  `id` BIGINT UNSIGNED NOT NULL DEFAULT 1 COMMENT 'The tagline’s unique ID within the movie.',
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'The tagline’s unique identifier.',
   `movie_id` BIGINT UNSIGNED NOT NULL COMMENT 'The movie’s unique ID.',
   `dyn_comments` BLOB NOT NULL COMMENT 'The taglines’s comment in various languages. Keys are ISO alpha-2 language codes.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The tagline’s ISO alpha-2 language code.',
