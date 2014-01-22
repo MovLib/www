@@ -126,10 +126,10 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
         $country = (new Country($image->countryCode, [ "itemprop" => "contentLocation" ]))->getFlag();
       }
       $list .=
-        "<li class='s s2 tac' itemscope itemtype='http://schema.org/ImageObject'>{$this->getImage(
+        "<li class='mb20 s s2 tac' itemscope itemtype='http://schema.org/ImageObject'>{$this->getImage(
           $image->getStyle(MovieBackdrop::STYLE_SPAN_02),
           true,
-          [ "class" => "grid-img", "itemprop" => "thumbnail" ],
+          [ "itemprop" => "thumbnail" ],
           [ "itemprop" => "url" ]
         )}{$country} {$i18n->t("{width} × {height}", [
           // The length unit is mandatory for distances: http://schema.org/Distance
@@ -139,7 +139,7 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
       ;
     }
     if ($list) {
-      return "<div id='filter'>LIMIT {$this->resultsPerPage} OFFSET {$this->resultsPerPage}</div><ol class='img-grid no-list r'>{$list}</ol>";
+      return "<div id='filter'>LIMIT {$this->resultsPerPage} OFFSET {$this->resultsPerPage}</div><ol class='grid-list no-list r'>{$list}</ol>";
     }
     return new Alert(
       $i18n->t(
@@ -165,7 +165,6 @@ class Images extends \MovLib\Presentation\Movie\AbstractMoviePage {
    */
   protected function initImagePage() {
     global $i18n, $kernel;
-    $kernel->stylesheets[] = "image-grid";
     $this->initMoviePage($this->imageTypeNamePlural);
     $this->initPage($i18n->t("{image_type_name} for {title}", [
         "image_type_name" => $this->imageTypeNamePlural,
