@@ -323,6 +323,12 @@ location ^~ <?= $r("/person") ?> {
     try_files $movlib_cache @php;
   }
 
+  location ~* "^<?= $r("/person/{0}/photo/upload", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Person\\Photo\\Upload";
+    set $movlib_person_id $1;
+    try_files $movlib_cache @php;
+  }
+
   rewrite .* /error/NotFound last;
 }
 
@@ -394,6 +400,11 @@ location = <?= $r("/profile/sign-in") ?> {
 location = <?= $r("/profile/sign-out") ?> {
   set $movlib_presenter "Profile\\SignOut";
   include sites/conf/fastcgi_params.conf;
+}
+
+location = <?= $r("/profile/wantlist") ?> {
+  set $movlib_presenter "Profile\\Wantlist";
+  try_files $movlib_cache @php;
 }
 
 location = <?= $r("/profile/watchlist") ?> {

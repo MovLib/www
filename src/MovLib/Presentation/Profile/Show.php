@@ -119,7 +119,12 @@ class Show extends \MovLib\Presentation\Page {
     $this->initLanguageLinks($route);
 
     $sidebar = [
-      [ $i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "separator ico ico-user" ] ],
+      [ $i18n->r("/profile"), $i18n->t("Profile"), [ "class" => "ico ico-user" ] ],
+      [ $i18n->r("/profile/messages"), $i18n->t("Messages"), [ "class" => "ico ico-email" ] ],
+      [ $i18n->r("/profile/collection"), $i18n->t("Collection"), [ "class" => "ico ico-release" ] ],
+      [ $i18n->r("/profile/wantlist"), $i18n->t("Wantlist"), [ "class" => "ico ico-heart" ] ],
+      [ $i18n->r("/profile/lists"), $i18n->t("Lists"), [ "class" => "ico ico-ul" ] ],
+      [ $i18n->r("/profile/watchlist"), $i18n->t("Watchlist"), [ "class" => "separator ico ico-view" ] ],
       [ $i18n->r("/profile/account-settings"), $i18n->t("Account"), [ "class" => "ico ico-settings" ] ],
       [ $i18n->r("/profile/notification-settings"), $i18n->t("Notifications"), [ "class" => "ico ico-notification" ] ],
       [ $i18n->r("/profile/email-settings"), $i18n->t("Email"), [ "class" => "ico ico-email" ] ],

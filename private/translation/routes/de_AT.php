@@ -72,8 +72,9 @@ return [
   "/person/{0}/delete"     => "/person/{0}/löschen",
 
   // ------------------------------------------------------------------------------------------------------------------- Person Photo
-  "/person/{0}/photo"      => "/person/{0}/photo",
-  "/person/{0}/photo/edit" => "/person/{0}/photo/bearbeiten",
+  "/person/{0}/photo"        => "/person/{0}/photo",
+  "/person/{0}/photo/edit"   => "/person/{0}/photo/bearbeiten",
+  "/person/{0}/photo/upload" => "/person/{0}/photo/hochladen",
 
   // ------------------------------------------------------------------------------------------------------------------- Profile
   "/profile"                       => "/profil",
@@ -89,6 +90,7 @@ return [
   "/profile/collection"            => "/profil/sammlung",
   "/profile/messages"              => "/profil/nachrichten",
   "/profile/lists"                 => "/profil/listen",
+  "/profile/wantlist"              => "/profil/wunschliste",
   "/profile/watchlist"             => "/profil/beobachtungsliste",
 
   // ------------------------------------------------------------------------------------------------------------------- User

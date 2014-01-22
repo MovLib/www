@@ -68,16 +68,8 @@ class DeletionRequests extends \MovLib\Presentation\Page {
     $reasonId     = filter_input(INPUT_GET, $i18n->r("reason"), FILTER_VALIDATE_INT);
     $languageCode = filter_input(INPUT_GET, $i18n->r("language_code"), FILTER_SANITIZE_STRING);
 
-    // Ensure currently active filter is on top of the sidebar navigation.
-    if (isset($menuitems[$reasonId])) {
-      $first = $menuitems[$reasonId];
-      unset($menuitems[$reasonId]);
-      array_unshift($menuitems, $first);
-    }
-
-    // The first item in the menu shall be displayed with a gap to the rest. Initialize the sidebar with the sorted
-    // menuitems and ignore the query string within the requested URI for determining which tab is active.
-    $menuitems[0][2] = [ "class" => "separator" ];
+    // Initialize the sidebar with the sorted menuitems and ignore the query string within
+    // the requested URI for determining which tab is active.
     $this->initSidebar($menuitems);
     $this->sidebarNavigation->ignoreQuery = false;
 
