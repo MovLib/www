@@ -29,6 +29,7 @@ use \MovLib\Exception\ValidationException;
  * validation process can't be changed. The rules regarding the format of the various attributes are fixed by the W3C
  * and this form element will only accept exaclty that.
  *
+ * @todo Remove timestamp, fix validation of min and max.
  * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
  * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
