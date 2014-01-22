@@ -292,12 +292,24 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   /**
    * Check if the executing user has root privileges.
    *
-   * @return this
+   * @param boolean $exception [optional]
+   *   Flag indicating if the method should throw an exception or return <code>TRUE</code>/<code>FALSE</code>.
+   *   Defaults to throwing an exception.
+   * @return this|boolean
+   *   Depends on <var>$exception</var>.
    * @throws \RuntimeException
    */
-  protected final function checkPrivileges() {
+  protected final function checkPrivileges($exception = true) {
     if (posix_getuid() !== 0) {
-      throw new \RuntimeException("This script must be executed as privileged user (root or sudo).");
+      if ($exception === true) {
+        throw new \RuntimeException("This script must be executed as privileged user (root or sudo).");
+      }
+      else {
+        return false;
+      }
+    }
+    if ($exception === false) {
+      return true;
     }
     return $this;
   }
