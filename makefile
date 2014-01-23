@@ -64,3 +64,6 @@ mariadb:
 
 nginx:
 	sh conf/install-scripts/nginx.sh
+
+nodejs:
+	sh conf/install-scripts/nodejs.sh && sh conf/install-scripts/nodejs-packages.sh

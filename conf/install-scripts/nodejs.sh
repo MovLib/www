@@ -26,7 +26,9 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-source $(pwd)/inc/conf.sh
+# Set working directory and include configuration script.
+WD="$(cd `dirname ${0}`; pwd)/"
+source ${WD}/inc/conf.sh
 
 NAME="node";
 VERSION="latest";
@@ -36,13 +38,14 @@ source ${ID}wget.sh "http://nodejs.org/dist/" "${NAME}-${VERSION}" ".tar.gz"
 
 VERSION=node-v*
 VERSION=$(echo $VERSION | cut -d v -f 2)
-msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
-cd "${NAME}-v${VERSION}"
+msginfo "Changing to directory: ${SD}${NAME}-v${VERSION}"
+cd "${SD}${NAME}-v${VERSION}"
 
 ./configure
 
 source ${ID}install.sh
 
-# Install npm as well
+msginfo "Installing npm package manager"
 wget https://npmjs.org/install.sh | sh
 rm -f install.sh
+msgsuccess "${LINE}\nSuccessfully installed ${NAME}\n${LINE}"
