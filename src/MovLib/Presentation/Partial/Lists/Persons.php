@@ -74,23 +74,21 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
    */
   protected function render() {
     global $i18n;
-    if (empty($this->listItems)) {
-      return $this->noItemsText;
-    }
-
     $list = null;
     /* @var $person \MovLib\Data\Person\Person */
     while ($person = $this->listItems->fetch_object("\\MovLib\\Data\\Person\\Person")) {
       $list .=
         "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-          "<a class='img r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
+          "<a class='img li r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
             $this->getImage($person->displayPhoto->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
-            "<span class='s s4' itemprop='name'>{$person->name}</span>" .
+            "<span class='link-color s s4' itemprop='name'>{$person->name}</span>" .
           "</a>" .
         "</li>"
       ;
     }
-
+    if (!$list) {
+      return $this->noItemsText;
+    }
     return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
   }
 

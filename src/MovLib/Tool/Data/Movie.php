@@ -26,7 +26,7 @@ namespace MovLib\Tool\Data;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Movie extends \MovLib\Data\Movie\Full {
+class Movie extends \MovLib\Data\Movie\FullMovie {
 
   /**
    * Regenerate all image styles of all images that belong to this movie.

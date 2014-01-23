@@ -178,31 +178,7 @@ class Movie {
 
     // Initialize the movie if we have an identifier, either from above query or from fetch object.
     if ($this->id) {
-      $this->route = $i18n->r("/movie/{0}", [ $this->id ]);
-
-      // Ensure deleted has to the correct type for later comparisons.
-      $this->deleted = (boolean) $this->deleted;
-
-      // Construct full display title including the year. This combination is needed all over the place.
-      $this->displayTitleWithYear = isset($this->year) ? $i18n->t("{0} ({1})", [ $this->displayTitle, $this->year ]) : $this->displayTitle;
-
-      // Load the oldest poster if we don't have a display poster for the current language.
-      if (!$this->displayPoster) {
-        $stmt   = $db->query("SELECT MIN(`id`) FROM `posters` WHERE `movie_id` = ?", "d", [ $this->id ]);
-        $result = $stmt->get_result()->fetch_row();
-        if (isset($result[0])) {
-          $this->displayPoster = $result[0];
-        }
-        $stmt->close();
-      }
-
-      // Load the actual display poster for this movie.
-      $stmt = $db->query("SELECT UNIX_TIMESTAMP(`changed`), `extension`, `styles` FROM `posters` WHERE `id` = ? LIMIT 1", "d", [ $this->displayPoster ]);
-      $this->displayPoster = $stmt->get_result()->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]);
-      $stmt->close();
-
-      // Load an empty poster if above query returned with no result (fetch object will simply return NULL in that case).
-      $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
+      $this->init();
     }
   }
 
@@ -351,6 +327,47 @@ class Movie {
     if ($result = $db->query($query)->get_result()) {
       return $result->fetch_assoc()["id"];
     }
+  }
+
+  /**
+   * Initialize the loaded movie.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function init() {
+    global $db, $i18n;
+
+    // Build the route to the movie.
+    $this->route = $i18n->r("/movie/{0}", [ $this->id ]);
+
+    // Ensure deleted has to the correct type for later comparisons.
+    $this->deleted = (boolean) $this->deleted;
+
+    // Construct full display title including the year. This combination is needed all over the place.
+    $this->displayTitleWithYear = isset($this->year) ? $i18n->t("{0} ({1})", [ $this->displayTitle, $this->year ]) : $this->displayTitle;
+
+    // Load the oldest poster if we don't have a display poster for the current language.
+    if (!$this->displayPoster) {
+      $stmt   = $db->query("SELECT MIN(`id`) FROM `posters` WHERE `movie_id` = ?", "d", [ $this->id ]);
+      $result = $stmt->get_result()->fetch_row();
+      if (isset($result[0])) {
+        $this->displayPoster = $result[0];
+      }
+      $stmt->close();
+    }
+
+    // Load the actual display poster for this movie.
+    $stmt = $db->query("SELECT UNIX_TIMESTAMP(`changed`), `extension`, `styles` FROM `posters` WHERE `id` = ? LIMIT 1", "d", [ $this->displayPoster ]);
+    $this->displayPoster = $stmt->get_result()->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]);
+    $stmt->close();
+
+    // Load an empty poster if above query returned with no result (fetch object will simply return NULL in that case).
+    $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
+
+    return $this;
   }
 
 }

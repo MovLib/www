@@ -18,13 +18,13 @@
 namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Image\MoviePoster;
-use \MovLib\Data\Movie\Full as FullMovie;
+use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\Lists\GlueSeparated;
 use \MovLib\Presentation\Partial\Lists\Persons;
+use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Single movie presentation page.
@@ -46,7 +46,7 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * The movie we are currently working with.
    *
-   * @var \MovLib\Data\Movie\Full
+   * @var \MovLib\Data\Movie\FullMovie
    */
   protected $movie;
 
@@ -73,13 +73,20 @@ class Show extends \MovLib\Presentation\Page {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
+   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $kernel;
+    global $i18n, $kernel, $session;
+
+    // Try to load the full movie.
+    $this->movie = new FullMovie((integer) $_SERVER["MOVIE_ID"]);
+
+    // Only add CSS and JavaScript if the movie really exists.
     $kernel->stylesheets[] = "movie";
     $kernel->javascripts[] = "Movie";
-    $this->movie           = new FullMovie($_SERVER["MOVIE_ID"]);
+
+    // Initialize all presentation parts.
     $this->initPage($this->movie->displayTitleWithYear);
     $this->initBreadcrumb([[ $i18n->rp("/movies"), $i18n->t("Movies") ]]);
     $this->initLanguageLinks("/movie/{0}", [ $this->movie->id ]);
@@ -91,6 +98,11 @@ class Show extends \MovLib\Presentation\Page {
       [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
     ]);
+
+    // Try to load the authenticated user's rating for this movie.
+    if ($session->isAuthenticated === true) {
+      $this->userRating = $this->movie->getUserRating();
+    }
   }
 
 
@@ -98,24 +110,71 @@ class Show extends \MovLib\Presentation\Page {
 
 
   /**
+   * Get the movie's formatted countries.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The movie's formatted countries.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function getCountries() {
+    global $i18n;
+    $countries = null;
+    $result    = $this->movie->getCountries();
+    while ($row = $result->fetch_row()) {
+      if ($countries) {
+        $countries .= ", ";
+      }
+      $countries .= new Country($row[0], [ "itemprop" => "contentLocation"]);
+    }
+    if (!$countries) {
+      $countries = $i18n->t("No countries assigned yet, {0}add countries{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
+    }
+    return $countries;
+  }
+
+  /**
+   * Get the movie's formatted genres.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The movie's formatted genres.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  protected function getGenres() {
+    global $i18n;
+    $genres = null;
+    $result = $this->movie->getGenres();
+    $route  = $i18n->r("/genre/{0}");
+    while ($row = $result->fetch_assoc()) {
+      if ($genres) {
+        $genres .= ", ";
+      }
+      $row["route"] = str_replace("{0}", $row["id"], $route);
+      $genres      .= "<a href='{$row["route"]}' itemprop='genre'>{$row["name"]}</a>";
+    }
+    if (!$genres) {
+      return $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]);
+    }
+    return $genres;
+  }
+
+  /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    */
   protected function getPageContent() {
-    global $i18n, $kernel, $session;
+    global $i18n, $kernel;
     $this->schemaType = "Movie";
 
     // Enhance the page's title with microdata.
+    $this->pageTitle = "<span itemprop='name'>{$this->movie->displayTitle}</span>";
     if ($this->movie->year) {
       $this->pageTitle = $i18n->t("{0} ({1})", [
-        "<span itemprop='name'>{$this->movie->displayTitle}</span>",
-        "<a itemprop='datePublished' href='{$i18n->r("/year/{0}", [ $this->movie->year ])}'>{$this->movie->year}</a>",
+        $this->pageTitle,
+        "<a itemprop='datePublished' href='{$i18n->rp("/year/{0}/movies", [ $this->movie->year ])}'>{$this->movie->year}</a>",
       ]);
-    }
-    else {
-      $this->pageTitle = "<span itemprop='name'>{$this->movie->displayTitle}</span>";
     }
 
     // Display gone page if this movie was deleted.
@@ -142,7 +201,7 @@ class Show extends \MovLib\Presentation\Page {
     // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
     $stars = null;
     for ($i = 1; $i < 6; ++$i) {
-      $rated  = $i <= $this->movie->userRating ? " class='rated'" : null;
+      $rated  = $i <= $this->userRating ? " class='rated'" : null;
       $stars .=
         "<button{$rated} name='rating' type='submit' value='{$i}' title='{$ratings[$i]}'>" .
           "<span class='vh'>{$i18n->t("with {0, plural, one {one star} other {# stars}}", [ $i ])} </span>" .
@@ -150,9 +209,8 @@ class Show extends \MovLib\Presentation\Page {
       ;
     }
 
-    $ratingHelp = null;
     // Build an explanation based on available rating data.
-    if ($this->movie->votes === 1 && $this->movie->userRating) {
+    if ($this->movie->votes === 1 && $this->userRating) {
       $ratingSummary = $i18n->t("You’re the only one who voted for this movie (yet).");
     }
     else {
@@ -172,28 +230,20 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
       );
     }
 
-    // Format the movie's countries and enhance them with microdata.
-    $countries          = new GlueSeparated($this->movie->countries, $i18n->t("No countries assigned yet, {0}add countries{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
-    $countries->closure = [ $this, "formatCountry" ];
-
     // Format the movie's duration and enhance it with microdata.
     $runtime = new Duration($this->movie->runtime, [ "itemprop" => "duration" ], Duration::MINUTES);
-
-    // Format the movie's genres.
-    $genres          = new GlueSeparated($this->movie->genres, $i18n->t("No genres assigned yet, {0}add genres{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]));
-    $genres->closure = [ $this, "formatGenre" ];
 
     // But it all together after the closing title.
     $this->headingAfter  =
         "<p>{$i18n->t("“{original_title}” ({0}original title{1})", [ "original_title" => $this->movie->originalTitle, "<em>", "</em>" ])}</p>" .
-        "{$this->form->open()}<fieldset id='movie-rating'>{$ratingHelp}" .
+        "{$this->form->open()}<fieldset id='movie-rating'>" .
           "<legend class='vh'>{$i18n->t("Rate this movie")}</legend> " .
           "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
           "<div class='front'>{$stars}</div>" .
         "</fieldset>{$this->form->close()}" .
         "<small>{$ratingSummary}</small>" .
-        "<small><span class='vh'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='vh'>{$i18n->t("Countries:")} </span>{$countries}</small>" .
-        "<small><span class='vh'>{$i18n->t("Genres:")} </span>{$genres}</small>" .
+        "<small><span class='vh'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='vh'>{$i18n->t("Countries:")} </span>{$this->getCountries()}</small>" .
+        "<small><span class='vh'>{$i18n->t("Genres:")} </span>{$this->getGenres()}</small>" .
       "</div>" . // close .span
       "<div id='movie-poster' class='s s3 tac'>{$this->getImage(
         $this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03),
@@ -213,9 +263,9 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
     ];
 
     $sections["directors"] = [
-      $i18n->t("{0, plural, one {Director} other {Directors}}", [ count($this->movie->directors) ]),
+      $i18n->t("Directors"),
       new Persons(
-        $this->movie->getDirectorsResult(),
+        $this->movie->getDirectors(),
         $i18n->t("No directors assigned yet, {0}add directors{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
         [ "itemprop" => "director" ]
       ),
@@ -224,7 +274,7 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
     $sections["cast"] = [
       $i18n->t("Cast"),
       new Persons(
-        $this->movie->getCastResult(),
+        $this->movie->getCast(),
         $i18n->t("No cast assigned yet, {0}add cast{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ]),
         [ "itemprop" => "actor" ]
       ),
@@ -254,36 +304,6 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
   }
 
   /**
-   * Format a single country.
-   *
-   * @param string $name
-   *   <b>Unused!</b>
-   * @param string $code
-   *   The country's ISO 3166-1 alpha-2 code.
-   * @return \MovLib\Presentation\Partial\Country
-   *   The country partial that represents this country.
-   */
-  public function formatCountry($name, $code) {
-    return new Country($code, [ "itemprop" => "contentLocation" ]);
-  }
-
-  /**
-   * Format a single genre.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $name
-   *   The genre's translated name.
-   * @param integer $id
-   *   The genre's unique identifier.
-   * @return string
-   *   The formatted genre.
-   */
-  public function formatGenre($name, $id) {
-    global $i18n;
-    return "<a href='{$i18n->r("/genre/{0}", [ $id ])}' itemprop='genre'>{$name}</a>";
-  }
-
-  /**
    * Validate the user's rating and update the database.
    *
    * @global \MovLib\Data\I18n $i18n
@@ -296,20 +316,24 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
 
     if ($session->isAuthenticated === false) {
       $this->alerts .= new Alert(
-        $i18n->t("Please {0}sign in{1} or {2}join {sitename}{1} to rate this movie.", [
-          "<a href='{$i18n->r("/profile/sign-in")}'>", "</a>", "<a href='{$i18n->r("/profile/join")}'>", "sitename" => $kernel->siteName,
+        $i18n->t("Please {sign_in} or {join} to rate this movie.", [
+          "sign_in" => "<a href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>",
+          "join"    => "<a href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ])}</a>",
         ]),
         null,
         Alert::SEVERITY_INFO
       );
     }
-    elseif (!empty($_POST["rating"])) {
-      $_POST["rating"] = (integer) $_POST["rating"];
-      if ($_POST["rating"] > 0 && $_POST["rating"] < 6) {
-        $this->movie->rate($_POST["rating"]);
+    else {
+      $rating = filter_input(INPUT_POST, "rating", FILTER_VALIDATE_INT, [
+        "flags"   => FILTER_NULL_ON_FAILURE,
+        "options" => [ "min_range" => 1, "max_range" => 5 ],
+      ]);
+      if ($rating) {
+        $this->movie->rate($rating);
       }
       else {
-        $this->checkErrors($i18n->t("The submitted rating of {0,number,integer} isn’t valid. Valid ratings range from: 1 to 5", [ $_POST["rating"] ]));
+        $this->checkErrors($i18n->t("The submitted rating isn’t valid. Valid ratings range from: 1 to 5"));
       }
     }
 

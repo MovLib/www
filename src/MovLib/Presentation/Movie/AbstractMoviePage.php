@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\Full as FullMovie;
+use \MovLib\Data\Movie\FullMovie as FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -41,7 +41,7 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
   /**
    * The movie we are currently working with.
    *
-   * @var \MovLib\Data\Movie\Full
+   * @var \MovLib\Data\Movie\FullMovie
    */
   protected $movie;
 

@@ -17,7 +17,6 @@
  */
 namespace MovLib\Data\Movie;
 
-use \MovLib\Data\Country;
 use \MovLib\Presentation\Error\NotFound;
 
 /**
@@ -29,27 +28,25 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Full extends \MovLib\Data\Movie\Movie {
+class FullMovie extends \MovLib\Data\Movie\Movie {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  public $cast;
   public $commit;
   public $countries;
   public $created;
-  public $directors;
+  public $displayTagline;
+  public $displayTaglineLanguageCode;
   public $genres;
   public $rank;
   public $rating;
   public $ratingMean;
   public $runtime;
-  public $styles;
   public $synopsis;
   public $taglines;
   public $title;
-  public $userRating;
   public $votes;
 
 
@@ -57,18 +54,17 @@ class Full extends \MovLib\Data\Movie\Movie {
 
 
   /**
-   * Instantiate new movie.
+   * Instantiate full movie by given identifier.
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @param integer $id
-   *   The unique movie's ID to load.
+   *   The movie's unique identifier to load.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct($id) {
-    global $db, $i18n, $session;
+    global $db, $i18n;
     $this->id = $id;
     $stmt = $db->query(
       "SELECT
@@ -85,81 +81,48 @@ class Full extends \MovLib\Data\Movie\Movie {
         IFNULL(`dt`.`title`, `ot`.`title`),
         IFNULL(`dt`.`language_code`, `ot`.`language_code`),
         `ot`.`title`,
-        `ot`.`language_code`
+        `ot`.`language_code`,
+        `p`.`poster_id`
       FROM `movies`
-        LEFT JOIN `movies_display_titles`  AS `mdt` ON `mdt`.`movie_id` = `movies`.`id` AND `mdt`.`language_code` = ?
-        LEFT JOIN `movies_titles`          AS `dt`  ON  `dt`.`title_id` = `mdt`.`title_id`
-        LEFT JOIN `movies_original_titles` AS `mot` ON `mot`.`movie_id` = `movies`.`id`
-        LEFT JOIN `movies_titles`          AS `ot`  ON  `ot`.`title_id` = `mot`.`title_id`
+        LEFT JOIN `movies_display_titles` AS `mdt`
+          ON `mdt`.`movie_id` = `movies`.`id`
+          AND `mdt`.`language_code` = ?
+        LEFT JOIN `movies_titles` AS `dt`
+          ON `dt`.`id` = `mdt`.`title_id`
+        LEFT JOIN `movies_original_titles` AS `mot`
+          ON `mot`.`movie_id` = `movies`.`id`
+        LEFT JOIN `movies_titles` AS `ot`
+          ON `ot`.`id` = `mot`.`title_id`
+        LEFT JOIN `display_posters` AS `p`
+          ON `p`.`movie_id` = `movies`.`id`
+          AND `p`.`language_code` = ?
       WHERE `movies`.`id` = ?
       LIMIT 1",
-      "sd",
-      [ $i18n->languageCode, $id ]
+      "sssd",
+      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
     );
     $stmt->bind_result(
       $this->created,
       $this->deleted,
       $this->synopsis,
       $this->ratingMean,
-      $this->originalTitle,
-      $this->originalTitleLanguageCode,
       $this->rating,
       $this->votes,
       $this->commit,
       $this->rank,
       $this->runtime,
-      $this->year
+      $this->year,
+      $this->displayTitle,
+      $this->displayTitleLanguageCode,
+      $this->originalTitle,
+      $this->originalTitleLanguageCode,
+      $this->displayPoster
     );
     if (!$stmt->fetch()) {
       throw new NotFound;
     }
     $stmt->close();
     $this->init();
-
-    // ----------------------------------------------------------------------------------------------------------------- Countries
-
-    $countries = null;
-    $stmt      = $db->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ]);
-    $result    = $stmt->get_result();
-    while ($row = $result->fetch_row()) {
-      $countries[$row[0]] = "";
-    }
-    $stmt->close();
-    if ($countries) {
-      $this->countries = Country::getCountries($countries);
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------- Genres
-
-    $stmt = $db->query(
-      "SELECT
-        `genres`.`id`,
-        IFNULL(COLUMN_GET(`genres`.`dyn_names`, ? AS CHAR), COLUMN_GET(`genres`.`dyn_names`, '{$i18n->languageCode}' AS CHAR)) AS `name`
-      FROM `movies_genres`
-        INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`genre_id`
-      WHERE `movie_id` = ?
-      ORDER BY `name` ASC",
-      "sd",
-      [ $i18n->languageCode, $this->id ]
-    );
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_row()) {
-      $this->genres[$row[0]] = $row[1];
-    }
-    $stmt->close();
-
-    // ----------------------------------------------------------------------------------------------------------------- User Rating
-
-    $stmt = $db->query(
-      "SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1",
-      "dd",
-      [ $session->userId, $this->id ]
-    );
-    $result = $stmt->get_result()->fetch_row();
-    if (isset($result[0])) {
-      $this->userRating = $result[0];
-    }
-    $stmt->close();
   }
 
   /**
@@ -173,7 +136,7 @@ class Full extends \MovLib\Data\Movie\Movie {
    *   The mysqli result for the movie's cast.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getCastResult($limit = 8) {
+  public function getCast($limit = 8) {
     global $db;
     return $db->query(
       "SELECT
@@ -190,6 +153,19 @@ class Full extends \MovLib\Data\Movie\Movie {
   }
 
   /**
+   * Get the movie's countries.
+   *
+   * @global \MovLib\Data\Database $db
+   * @return \mysqli_result
+   *   The movie's countries.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getCountries() {
+    global $db;
+    return $db->query("SELECT `country_code` FROM `movies_countries` WHERE `movie_id` = ?", "d", [ $this->id ])->get_result();
+  }
+
+  /**
    * Get the mysqli result for the movie's directors.
    *
    * @todo Order directors by weight not by name!
@@ -198,7 +174,7 @@ class Full extends \MovLib\Data\Movie\Movie {
    *   The mysqli result for the movie's directors.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getDirectorsResult() {
+  public function getDirectors() {
     global $db;
     return $db->query(
       "SELECT
@@ -214,6 +190,29 @@ class Full extends \MovLib\Data\Movie\Movie {
   }
 
   /**
+   * Get the movie's genres.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return \mysqli_result
+   *   The movie's genres.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getGenres() {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `genres`.`id`,
+        IFNULL(COLUMN_GET(`genres`.`dyn_names`, ? AS CHAR), COLUMN_GET(`genres`.`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`
+      FROM `movies_genres`
+        INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`genre_id`
+      WHERE `movies_genres`.`movie_id` = ?",
+      "sd",
+      [ $i18n->languageCode, $this->id ]
+    )->get_result();
+  }
+
+  /**
    * Get the mysqli result for the movie's trailers.
    *
    * @global \MovLib\Data\Database $db
@@ -222,13 +221,33 @@ class Full extends \MovLib\Data\Movie\Movie {
    *   The mysqli result for the movie's trailers.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getTrailersResult() {
+  public function getTrailers() {
     global $db, $i18n;
     return $db->query(
       "SELECT `url` FROM `movies_trailers` WHERE `movie_id` = ? AND `language_code` IN(?, 'xx') ORDER BY `weight` DESC",
       "ds",
       [ $this->id, $i18n->languageCode ]
     )->get_result();
+  }
+
+  /**
+   * Get the currently authenticated user's rating for this movie.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\User\Session $session
+   * @return null|integer
+   *   The currently authenticated user's rating for this movie or <code>NULL</code> if the the current user isn't
+   *   authenticated or has no rating at all for this movie.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getUserRating() {
+    global $db, $session;
+    if ($session->isAuthenticated === true) {
+      $result = $db->query("SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1", "dd", [ $session->userId, $this->id ])->get_result()->fetch_row();
+      if (isset($result[0])) {
+        return $result[0];
+      }
+    }
   }
 
   /**
