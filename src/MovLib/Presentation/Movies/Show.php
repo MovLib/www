@@ -20,7 +20,6 @@ namespace MovLib\Presentation\Movies;
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Lists\Images;
 
 /**
  * The listing for the latest movie additions.
@@ -57,7 +56,6 @@ class Show extends \MovLib\Presentation\Page {
       [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
     ]);
     $this->initPagination(Movie::getMoviesCount());
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
   }
 
 
@@ -72,6 +70,9 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
+
+    // Ensure it's easy for users to find the page where the can create new movies.
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
 
     // Nothing to display.
     if ($this->resultsTotalCount < 1) {
@@ -103,7 +104,7 @@ class Show extends \MovLib\Presentation\Page {
       }
 
       // Put the movie list entry together.
-      $list .= "<li itemscope itemtype='http://schema.org/Movie'><a class='img r' href='{$movie->route}' itemprop='url'>" .
+      $list .= "<li itemscope itemtype='http://schema.org/Movie'><a class='img li r' href='{$movie->route}' itemprop='url'>" .
         "<span class='s s1'>{$this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ])}</span>" .
         "<span class='s s9'>{$movie->displayTitle}{$movie->originalTitle}</span>" .
       "</a></li>";

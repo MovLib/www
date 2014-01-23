@@ -315,17 +315,18 @@ class Movie {
   }
 
   /**
-   * Get random movie id.
+   * Get random movie identifier.
    *
    * @global \MovLib\Data\Database $db
    * @return integer|null
-   *   Random movie id or null in case of failure.
+   *   Random movie identifier, or <code>NULL</code> on failure.
+   * @throws \MovLib\Exception\DatabaseException
    */
   public static function getRandomMovieId() {
     global $db;
-    $query = "SELECT `id` FROM `movies` WHERE `movies`.`deleted` = false ORDER BY RAND() LIMIT 1";
-    if ($result = $db->query($query)->get_result()) {
-      return $result->fetch_assoc()["id"];
+    $result = $db->query("SELECT `id` FROM `movies` WHERE `deleted` = false ORDER BY RAND() LIMIT 1")->get_result()->fetch_row();
+    if (isset($result[0])) {
+      return $result[0];
     }
   }
 

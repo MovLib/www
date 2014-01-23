@@ -19,11 +19,12 @@ namespace MovLib\Presentation\Movie;
 
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Presentation\Redirect\SeeOther;
 
 /**
  * Random movie presentation.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -31,21 +32,6 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @since 0.0.1-dev
  */
 class Random {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * A random movie ID.
-   *
-   * @var integer
-   */
-  private $movieId;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
 
   /**
    * Redirect to random movie presentation.
@@ -56,18 +42,16 @@ class Random {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->movieId = Movie::getRandomMovieId();
-    if (isset($this->movieId)) {
-      throw new SeeOtherRedirect($i18n->r("/movie/{0}", [ $this->movieId ]));
+    $id = Movie::getRandomMovieId();
+    if (isset($id)) {
+      throw new SeeOther($i18n->r("/movie/{0}", [ $id ]));
     }
-    else {
-      $kernel->alerts .= new Alert(
-        $i18n->t("There is currently no movie in our database"),
-        $i18n->t("Check back later"),
-        Alert::SEVERITY_INFO
-      );
-      throw new SeeOtherRedirect("/");
-    }
+    $kernel->alerts .= new Alert(
+      $i18n->t("There is currently no movie in our database"),
+      $i18n->t("Check back later"),
+      Alert::SEVERITY_INFO
+    );
+    throw new SeeOther($i18n->rp("/movies"));
   }
 
 }
