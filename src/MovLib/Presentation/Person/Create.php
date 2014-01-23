@@ -22,7 +22,7 @@ use \MovLib\Data\Person\Full;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
-use \MovLib\Presentation\Partial\FormElement\InputDate;
+use \MovLib\Presentation\Partial\FormElement\InputDateSeparate;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
@@ -119,7 +119,8 @@ class Create extends \MovLib\Presentation\Page {
    * @global \MovLib\Data\I18n $i18n
    */
   public function __construct() {
-    global $i18n;
+    global $i18n, $kernel;
+    $kernel->stylesheets[] = "person";
     $this->initBreadcrumb([ [ $i18n->rp("/persons"), $i18n->t("Persons") ] ]);
     $this->initPage($i18n->t("Create Person"));
 
@@ -127,10 +128,11 @@ class Create extends \MovLib\Presentation\Page {
 
     $this->bornName = new InputText("born-name", $i18n->t("Born as"), [ "placeholder" => $i18n->t("Enter the person's birth name") ]);
 
-//    $this->birthDate = new InputDate("birthdate", $i18n->t("Date of Birth"));
-    $this->birthDate = new \MovLib\Presentation\Partial\FormElement\InputDateSeparate("birthdate", $i18n->t("Date of Birth"));
+    $now = date("Y-m-d");
 
-    $this->deathDate = new InputDate("deathdate", $i18n->t("Date of Death"));
+    $this->birthDate = new InputDateSeparate("birthdate", $i18n->t("Date of Birth"), [ "class" => "s s6", "min" => "1800-01-01", "max" => $now ], [ "class" => "s s2" ]);
+
+    $this->deathDate = new InputDateSeparate("deathdate", $i18n->t("Date of Death"), [ "class" => "s s6", "min" => "1800-01-01", "max" => $now ], [ "class" => "s s2" ]);
 
     $this->sex = new RadioGroup("sex", $i18n->t("Sex"), [
         2 => $i18n->t("Female"),
@@ -175,7 +177,13 @@ class Create extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getContent() {
-    return "<div class='c'><div class='r'>{$this->form}</div></div>";
+    // @todo: Continue with form building and date styling.
+    return
+      "<div class='c'>{$this->form->open()}" .
+        $this->name .
+        "<div class='r'>{$this->birthDate}{$this->deathDate}</div>" .
+      "{$this->form->close()}</div>"
+    ;
   }
 
   /**
