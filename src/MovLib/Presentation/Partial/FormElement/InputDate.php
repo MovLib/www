@@ -29,10 +29,10 @@ use \MovLib\Exception\ValidationException;
  * validation process can't be changed. The rules regarding the format of the various attributes are fixed by the W3C
  * and this form element will only accept exaclty that.
  *
- * @todo Remove timestamp, fix validation of min and max.
  * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
  * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -45,27 +45,18 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
 
   /**
-   * The maximum date as timestamp.
+   * The maximum date as string in the format <code>"Y-m-d"</code>.
    *
-   * @var int
+   * @var string
    */
   protected $max;
 
   /**
-   * The minimum date as timestamp.
+   * The minimum date as string in the format <code>"Y-m-d"</code>
    *
-   * @var int
+   * @var string
    */
   protected $min;
-
-  /**
-   * Contains <code>$this->value</code> as timestamp if it's a valid date.
-   *
-   * You shouldn't use this timestamp before a call to <code>$this->validate()</code> if you received the form via POST!
-   *
-   * @var boolean|int
-   */
-  public $timestamp = false;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -93,14 +84,9 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
     $this->attributes["type"]        = "date";
     if (isset($this->attributes["max"])) {
       $this->max = $this->attributes["max"];
-      $this->attributes["max"] = date($this->attributes["data-format"], $this->attributes["max"]);
     }
     if (isset($this->attributes["min"])) {
       $this->min = $this->attributes["min"];
-      $this->attributes["min"] = date($this->attributes["data-format"], $this->attributes["min"]);
-    }
-    if (isset($this->value)) {
-      $this->timestamp = strtotime($this->value);
     }
   }
 
@@ -139,23 +125,38 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
       return $this;
     }
 
-    $dateInfo = date_parse_from_format("Y-m-d", $this->value);
-    if ($dateInfo["warning_count"] !== 0 || $dateInfo["error_count"] !== 0) {
+    $timezone = new \DateTimeZone($session->userTimeZoneId);
+
+    // Validate date format.
+    $value = \DateTime::createFromFormat("Y-m-d", $this->value, $timezone);
+    if ($value === false) {
       throw new ValidationException($i18n->t("The “{0}” date is invalid.", [ $this->label ]));
     }
+    else {
+      $errors = $value->getLastErrors();
+      if ($errors["error_count"] !== 0 || $errors["warning_count"] !== 0) {
+        throw new ValidationException($i18n->t("The “{0}” date is invalid.", [ $this->label ]));
+      }
+    }
 
-    if ($this->max || $this->min) {
-      if ($this->max && $this->timestamp > $this->max) {
+    // Validate date maximum.
+    if ($this->max) {
+      $max = new \DateTime($this->max, $timezone);
+      if ($value > $max) {
         throw new ValidationException($i18n->t("The date {0} must not be greater than {1}.", [
-          $i18n->formatDate($this->timestamp, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
-          $i18n->formatDate($this->max, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE)
+          $i18n->formatDate($value, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
+          $i18n->formatDate($max, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
         ]));
       }
+    }
 
-      if ($this->min && $this->timestamp < $this->min) {
+    // Validate date minimum.
+    if ($this->min) {
+      $min = new \DateTime($this->min, $timezone);
+      if ($value < $min) {
         throw new ValidationException($i18n->t("The date {0} must not be less than {1}.", [
-          $i18n->formatDate($this->timestamp, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE),
-          $i18n->formatDate($this->min, $session->userTimeZoneId, IntlDateFormatter::MEDIUM, IntlDateFormatter::NONE)
+          $i18n->formatDate($value, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
+          $i18n->formatDate($min, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
         ]));
       }
     }
