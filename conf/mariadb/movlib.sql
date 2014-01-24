@@ -1632,7 +1632,7 @@ SHOW WARNINGS;
 -- Table `movlib`.`persons_links`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`persons_links` (
-  `id` BIGINT NOT NULL,
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The person’s link’s ISO alpha-2 language code.',
   `url` TEXT NOT NULL COMMENT 'The person’s link’s URL.',
