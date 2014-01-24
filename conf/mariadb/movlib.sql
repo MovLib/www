@@ -1632,11 +1632,11 @@ SHOW WARNINGS;
 -- Table `movlib`.`persons_links`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `movlib`.`persons_links` (
+  `id` BIGINT NOT NULL,
   `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
-  `hostname` VARCHAR(150) NOT NULL COMMENT 'The person’s link’s hostname.',
   `language_code` CHAR(2) NOT NULL COMMENT 'The person’s link’s ISO alpha-2 language code.',
   `url` TEXT NOT NULL COMMENT 'The person’s link’s URL.',
-  PRIMARY KEY (`person_id`, `hostname`, `language_code`),
+  PRIMARY KEY (`id`),
   CONSTRAINT `fk_persons_links_persons`
     FOREIGN KEY (`person_id`)
     REFERENCES `movlib`.`persons` (`id`)
