@@ -25,10 +25,16 @@
  * @since 0.0.1-dev
  */
 
+/* Show. */
+.person .ico-wikipedia:before {
+  margin-right: 5px;
+}
+
 .person #aliases .s {
   word-break: break-all;
 }
 
+/* Create form. */
 .person .date-separate {
   margin-bottom: 0;
 }

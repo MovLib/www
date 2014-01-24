@@ -167,11 +167,11 @@ class Show extends \MovLib\Presentation\Page {
     // Construct the wikipedia link.
     $wikipedia = null;
     if ($this->person->wikipedia) {
-      $wikipedia = "<br><a href='{$this->person->wikipedia}' rel='nofollow' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
+      $wikipedia = "<br><a class='ico ico-wikipedia' href='{$this->person->wikipedia}' rel='nofollow' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
     }
 
     $info = implode(", ", $info);
-    $info = "<p>{$info}{$birthInfo}{$deathInfo}</p>";
+    $info = "<p>{$info}{$birthInfo}{$deathInfo}{$wikipedia}</p>";
 
     // Check if the display photo is a placeholder. If so, don't mark it up as itemprop.
     $imageAttributes = null;

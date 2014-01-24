@@ -107,6 +107,7 @@ class Full extends \MovLib\Data\Person\Person {
         throw new NotFound;
       }
       $stmt->close();
+      \FB::send($this);
     }
 
     if ($this->id) {
@@ -140,7 +141,7 @@ class Full extends \MovLib\Data\Person\Person {
         `born_name` = ?,
         `deathdate` = ?
         ",
-      "bssisss",
+      "sssisss",
       [
         $this->biography,
         $this->wikipedia,
