@@ -70,10 +70,9 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\InputDa
    * @param array $attributes [optional]
    *   The date's additional attributes.
    */
-  public function __construct($id, $label, array $attributes = null, array $fieldAttributes = null) {
+  public function __construct($id, $label, array $attributes = null) {
     global $i18n;
     parent::__construct($id, $label, $attributes);
-    $this->attrs = $fieldAttributes;
     unset($this->attributes["name"]);
     unset($this->attributes["type"]);
     if (isset($this->attributes["required"])) {
@@ -105,9 +104,9 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\InputDa
     global $i18n;
     // @todo: Continue with form building and date styling.
     return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend><p>" .
-      "<label class='vh' for='{$this->id}-day'>{$i18n->t("Day")}</label><input id='{$this->id}-day' name='{$this->id}-day' type='number' value='{$this->day}' placeholder='{$i18n->t("Day")}'>" .
-      "<label class='vh' for='{$this->id}-month'>{$i18n->t("Month")}</label><input id='{$this->id}-month' name='{$this->id}-month' type='number' value='{$this->month}'>" .
-      "<label class='vh' for='{$this->id}-year'>{$i18n->t("Year")}</label><input id='{$this->id}-year' name='{$this->id}-year' type='number' value='{$this->year}'>" .
+      "<label class='vh' for='{$this->id}-day'>{$i18n->t("Day")}</label><input id='{$this->id}-day' name='{$this->id}-day' placeholder='{$i18n->t("dd")}' type='number' value='{$this->day}'>" .
+      "<label class='vh' for='{$this->id}-month'>{$i18n->t("Month")}</label><input id='{$this->id}-month' name='{$this->id}-month' placeholder='{$i18n->t("mm")}' type='number' value='{$this->month}'>" .
+      "<label class='vh' for='{$this->id}-year'>{$i18n->t("Year")}</label><input id='{$this->id}-year' name='{$this->id}-year' placeholder='{$i18n->t("yyyy")}' type='number' value='{$this->year}'>" .
     "</p></fieldset>";
   }
 

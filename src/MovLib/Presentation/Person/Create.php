@@ -24,6 +24,7 @@ use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputDateSeparate;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
+use \MovLib\Presentation\Partial\FormElement\InputLinesText;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputURL;
@@ -51,63 +52,63 @@ class Create extends \MovLib\Presentation\Page {
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputLinesText
    */
-  protected $aliases;
+  protected $inputAliases;
 
   /**
    * The person's biography html input element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputHTML
    */
-  protected $biography;
+  protected $inputBiography;
 
   /**
    * The person's birthdate input date element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputDate
    */
-  protected $birthDate;
+  protected $inputBirthDate;
 
   /**
    * The person's born name input text element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputText
    */
-  protected $bornName;
+  protected $inputBornName;
 
   /**
    * Checkbox to confirm that this person is new, in case of similar existing persons.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputCheckbox
    */
-  protected $confirmation;
+  protected $inputConfirmation;
 
   /**
    * The person's deathdate input date element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputDate
    */
-  protected $deathDate;
+  protected $inputDeathDate;
 
   /**
    * The person's name input text element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputText
    */
-  protected $name;
+  protected $inputName;
 
   /**
    * The person's sex radio group element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\RadioGroup
    */
-  protected $sex;
+  protected $inputSex;
 
   /**
    * The person's localized Wikipedia URL input element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\InputURL
    */
-  protected $wikipedia;
+  protected $inputWikipedia;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -124,45 +125,45 @@ class Create extends \MovLib\Presentation\Page {
     $this->initBreadcrumb([ [ $i18n->rp("/persons"), $i18n->t("Persons") ] ]);
     $this->initPage($i18n->t("Create Person"));
 
-    $this->name = new InputText("name", $i18n->t("Name"), [ "placeholder" => $i18n->t("Enter the person's name"), "required" => "required" ]);
+    $this->inputName = new InputText("name", $i18n->t("Name"), [ "placeholder" => $i18n->t("Enter the person's name"), "required" => "required" ]);
 
-    $this->bornName = new InputText("born-name", $i18n->t("Born as"), [ "placeholder" => $i18n->t("Enter the person's birth name") ]);
+    $this->inputBornName = new InputText("born-name", $i18n->t("Born as"), [ "placeholder" => $i18n->t("Enter the person's birth name") ]);
 
     $now = date("Y-m-d");
 
-    $this->birthDate = new InputDateSeparate("birthdate", $i18n->t("Date of Birth"), [ "class" => "s s6", "min" => "1800-01-01", "max" => $now ], [ "class" => "s s2" ]);
+    $this->inputBirthDate = new InputDateSeparate("birthdate", $i18n->t("Date of Birth"), [ "class" => "s s6", "min" => "1800-01-01", "max" => $now ]);
 
-    $this->deathDate = new InputDateSeparate("deathdate", $i18n->t("Date of Death"), [ "class" => "s s6", "min" => "1800-01-01", "max" => $now ], [ "class" => "s s2" ]);
+    $this->inputDeathDate = new InputDateSeparate("deathdate", $i18n->t("Date of Death"), [ "class" => "s s6", "min" => "1800-01-01", "max" => $now ]);
 
-    $this->sex = new RadioGroup("sex", $i18n->t("Sex"), [
+    $this->inputSex = new RadioGroup("sex", $i18n->t("Sex"), [
         2 => $i18n->t("Female"),
         1 => $i18n->t("Male"),
         0 => $i18n->t("Unknown"),
       ], 0
     );
 
-    $this->wikipedia = new InputURL("wikipedia", $i18n->t("Wikipedia URL"), [ "data-allow-external" => true ]);
+    $this->inputWikipedia = new InputURL("wikipedia", $i18n->t("Wikipedia URL"), [ "data-allow-external" => true ]);
 
-    $this->aliases = new \MovLib\Presentation\Partial\FormElement\InputLinesText("aliases", $i18n->t("Additional Names"), [ "placeholder" => $i18n->t("Please supply one name per line") ]);
+    $this->inputAliases = new InputLinesText("aliases", $i18n->t("Additional Names"), [ "placeholder" => $i18n->t("Please supply one name per line") ]);
 
-    $this->biography = new InputHTML("biography", $i18n->t("Biography"), null, [
+    $this->inputBiography = new InputHTML("biography", $i18n->t("Biography"), null, [
       "placeholder" => $i18n->t("Enter the person's biography here"),
     ]);
-    $this->biography
+    $this->inputBiography
       ->allowBlockqoutes()
       ->allowImages()
       ->allowLists()
     ;
 
     $this->form = new Form($this, [
-      $this->name,
-      $this->bornName,
-      $this->birthDate,
-      $this->deathDate,
-      $this->sex,
-      $this->wikipedia,
-      $this->aliases,
-      $this->biography,
+      $this->inputName,
+      $this->inputBornName,
+      $this->inputBirthDate,
+      $this->inputDeathDate,
+      $this->inputSex,
+      $this->inputWikipedia,
+      $this->inputAliases,
+      $this->inputBiography,
     ]);
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Create Person"), [ "class" => "btn btn-large btn-success", "id" => "submit-create" ]);
@@ -180,8 +181,13 @@ class Create extends \MovLib\Presentation\Page {
     // @todo: Continue with form building and date styling.
     return
       "<div class='c'>{$this->form->open()}" .
-        $this->name .
-        "<div class='r'>{$this->birthDate}{$this->deathDate}</div>" .
+        $this->inputName .
+        $this->inputBornName .
+        "<div class='r'>{$this->inputBirthDate}{$this->inputDeathDate}</div>" .
+        $this->inputSex .
+        $this->inputWikipedia .
+        $this->inputAliases .
+        $this->inputBiography .
       "{$this->form->close()}</div>"
     ;
   }
@@ -197,14 +203,14 @@ class Create extends \MovLib\Presentation\Page {
     global $i18n, $kernel;
 
     $person            = new Full();
-    $person->aliases   = $this->aliases->value;
-    $person->biography = $this->biography->value;
-    $person->birthDate = $this->birthDate->value;
-    $person->bornName  = $this->bornName->value;
-    $person->deathDate = $this->deathDate->value;
-    $person->name      = $this->name->value;
-    $person->sex       = $this->sex->value;
-    $person->wikipedia = $this->wikipedia->value;
+    $person->aliases   = $this->inputAliases->value;
+    $person->biography = $this->inputBiography->value;
+    $person->birthDate = $this->inputBirthDate->value;
+    $person->bornName  = $this->inputBornName->value;
+    $person->deathDate = $this->inputDeathDate->value;
+    $person->name      = $this->inputName->value;
+    $person->sex       = $this->inputSex->value;
+    $person->wikipedia = $this->inputWikipedia->value;
 
     $person->create();
 

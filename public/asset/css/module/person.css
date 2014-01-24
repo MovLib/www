@@ -28,3 +28,7 @@
 .person #aliases .s {
   word-break: break-all;
 }
+
+.person .date-separate {
+  margin-bottom: 0;
+}
