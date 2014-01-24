@@ -129,7 +129,6 @@ class Create extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $kernel->stylesheets[] = "person";
     $this->initBreadcrumb([ [ $i18n->rp("/persons"), $i18n->t("Persons") ] ]);
     $this->initPage($i18n->t("Create Person"));
 
@@ -179,6 +178,8 @@ class Create extends \MovLib\Presentation\Page {
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Create Person"), [ "class" => "btn btn-large btn-success", "id" => "submit-create" ]);
     $this->form->actionElements[] = new InputSubmit($i18n->t("Create and Upload Image"), [ "class" => "btn btn-large btn-success", "id" => "submit-upload" ]);
+    
+    $kernel->stylesheets[] = "person";
   }
 
 

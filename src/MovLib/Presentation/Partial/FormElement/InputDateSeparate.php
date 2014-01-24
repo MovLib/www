@@ -144,13 +144,15 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\InputDa
     elseif (!$monthEmpty) {
       $actualValue = "{$this->year}-{$this->month}";
       // We need a valid day for the validation, use value 1.
-      $this->value = "{$actualValue}-1";
+      $this->value = "{$actualValue}-01";
+      $actualValue .= "-00";
     }
     // Month and day are missing, the year is always present at this point.
     else {
       $actualValue    = "{$this->year}";
       // We need valid month and day for the validation, use value 1 for both.
-      $this->value = "{$actualValue}-1-1";
+      $this->value = "{$actualValue}-01-01";
+      $actualValue .= "-00-00";
     }
 
     // Make use of the full date validation and set the value to the actual one.

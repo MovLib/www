@@ -21,6 +21,7 @@ namespace MovLib\Presentation\Partial;
  * Date presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -33,9 +34,45 @@ class Date extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * The date's {@see \DateTime} instance.
+   * Associative array containing date formats for missing days.
    *
-   * @var \DateTime
+   * Structure: <code>[ "language_code" => [ "IntlDateFormatter_constant" => "format_string" ] ]</code>
+   *
+   * @var array
+   */
+  public static $dateFormats = [
+    "de" => [
+      \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
+      \IntlDateFormatter::SHORT       => "MM.yy",
+      \IntlDateFormatter::MEDIUM      => "MM.y",
+      \IntlDateFormatter::LONG        => "MMMM y",
+      \IntlDateFormatter::FULL        => "MMMM y",
+      \IntlDateFormatter::TRADITIONAL => "MMMM y",
+      \IntlDateFormatter::GREGORIAN   => "MMMM y",
+    ],
+    "en" => [
+      \IntlDateFormatter::NONE        => "yyyyMM hh:mm a",
+      \IntlDateFormatter::SHORT       => "M/yy",
+      \IntlDateFormatter::MEDIUM      => "MMM, y",
+      \IntlDateFormatter::LONG        => "MMMM, y",
+      \IntlDateFormatter::FULL        => "MMMM, y",
+      \IntlDateFormatter::TRADITIONAL => "MMMM, y",
+      \IntlDateFormatter::GREGORIAN   => "MMMM, y",
+    ],
+  ];
+
+  /**
+   * Internal information about the date, the output of the {@link http://www.php.net/manual/en/function.date-parse.php
+   *  date_parse} function.
+   *
+   * @var array
+   */
+  public $dateInfo;
+
+  /**
+   * The date's string representation in <code>"Y-m-d"</code> format.
+   *
+   * @var string
    */
   public $dateValue;
 
@@ -47,14 +84,18 @@ class Date extends \MovLib\Presentation\AbstractBase {
    * Instantiate new date partial.
    *
    * @param string $date [optional]
-   *   A date/time string in a valid format as explined in {@link http://www.php.net/manual/en/datetime.formats.php Date
+   *   A date/time string in a valid format as explained in {@link http://www.php.net/manual/en/datetime.formats.php Date
    *   and Time Formats} or an integer, which is treated as UNIX timestamp. Defaults to <code>"now"</code>.
    */
   public function __construct($date = "now") {
     if (is_int($date)) {
-      $date = "@{$date}";
+      $date = date("Y-m-d", $date);
     }
-    $this->dateValue = new \DateTime($date);
+    elseif ($date == "now") {
+      $date = date("Y-m-d", strtotime("now"));
+    }
+    $this->dateInfo = date_parse($date);
+    $this->dateValue = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-{$this->dateInfo["day"]}";
   }
 
   /**
@@ -71,9 +112,15 @@ class Date extends \MovLib\Presentation\AbstractBase {
     return $this->dateValue->format($format);
   }
 
-  public function formatSchemaProperty($property, array $attributes = []) {
-    $attributes["itemprop"] = $property;
-    $attributes["datetime"] = $this->format();
+  /**
+   * Format a date as <code><time></code> tag with additional attributes.
+   *
+   * @param array $attributes [optional]
+   *   Additional attributes to apply. <code>"datetime"</code> will be overridden!
+   * @return type
+   */
+  public function formatSchemaProperty(array $attributes = []) {
+    $attributes["datetime"] = $this->dateValue;
     return "<time{$this->expandTagAttributes($attributes)}>{$this->intlFormat()}</time>";
   }
 
@@ -81,31 +128,50 @@ class Date extends \MovLib\Presentation\AbstractBase {
    * Get the age of the date in years.
    *
    * @param \DateTime $date [optional]
-   *   The date to calculate the age to. Defaults to "now".
+   *   A date/time string in a valid format as explained in {@link http://www.php.net/manual/en/datetime.formats.php Date
+   *   and Time Formats} or an integer, which is treated as UNIX timestamp. Defaults to <code>"now"</code>.
    * @return integer
-   *   The age of the date in years.
+   *   The age of the date in years or <code>NULL</code> if this operation is not permitted (e.g. day is missing).
    */
   public function getAge($date = "now") {
     if (is_int($date)) {
       $date = "@{$date}";
     }
     $date = new \DateTime($date);
-    return $this->dateValue->diff($date)->format("%y");
+    $errors = \DateTime::getLastErrors();
+    if ($errors["warning_count"] === 0 && $errors["error_count"] === 0 && $this->dateInfo["month"] !== 0 && $this->dateInfo["month"] !== 0) {
+      return (new \DateTime($this->dateValue))->diff($date)->format("%y");
+    }
   }
 
   /**
    * Get the localized formatted date.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
    * @param integer $datetype [optional]
    *   Any of the {@see \IntlDateFormatter} constants, defaults to {@see \IntlDateFormatter::MEDIUM}.
    * @return string
    *   The localized and formatted date.
    */
   public function intlFormat($datetype = \IntlDateFormatter::MEDIUM) {
-    global $i18n, $session;
-    return (new \IntlDateFormatter($i18n->locale, $datetype, \IntlDateFormatter::NONE, new \DateTimeZone($session->userTimeZoneId)))->format($this->dateValue);
+    global $i18n;
+    // Month and day are empty, return year.
+    if ($this->dateInfo["month"] === 0 && $this->dateInfo["day"] === 0) {
+      return $this->dateInfo["year"];
+    }
+    // Day is missing, use format strings provided by this class.
+    if ($this->dateInfo["month"] !== 0 && $this->dateInfo["day"] === 0) {
+      return (new \IntlDateFormatter(
+        $i18n->locale,
+        $datetype,
+        \IntlDateFormatter::NONE,
+        null,
+        null,
+        self::$dateFormats[$i18n->languageCode][$datetype])
+      )->format(new \DateTime("{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-01"));
+    }
+    // Everything is there, let Intl do its magic.
+    return (new \IntlDateFormatter($i18n->locale, $datetype, \IntlDateFormatter::NONE))->format(new \DateTime($this->dateValue));
   }
 
 }

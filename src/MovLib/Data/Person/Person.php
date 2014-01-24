@@ -37,9 +37,9 @@ class Person {
 
 
   /**
-   * The person's date of birth.
+   * The person's date of birth in <code>"Y-m-d"</code> format.
    *
-   * @var \DateTime
+   * @var string
    */
   public $birthDate;
 
@@ -51,9 +51,9 @@ class Person {
   public $bornName;
 
   /**
-   * The person's date of death.
+   * The person's date of death in <code>"Y-m-d"</code> format.
    *
-   * @var \DateTime
+   * @var string
    */
   public $deathDate;
 
