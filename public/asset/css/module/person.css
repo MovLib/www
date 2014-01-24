@@ -26,12 +26,18 @@
  */
 
 /* Show. */
-.person .ico-wikipedia:before {
+.person #header .ico-wikipedia {
   margin-right: 5px;
 }
 
 .person #aliases .s {
   word-break: break-all;
+}
+
+.person #links .grid-list a {
+  box-shadow: none;
+  display: inline-block;
+  transition-property: color, border-color;
 }
 
 /* Create form. */

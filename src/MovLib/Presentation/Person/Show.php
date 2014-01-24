@@ -167,7 +167,7 @@ class Show extends \MovLib\Presentation\Page {
     // Construct the wikipedia link.
     $wikipedia = null;
     if ($this->person->wikipedia) {
-      $wikipedia = "<br><a class='ico ico-wikipedia' href='{$this->person->wikipedia}' rel='nofollow' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
+      $wikipedia = "<br><i class='ico ico-wikipedia'></i><a href='{$this->person->wikipedia}' rel='nofollow' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
     }
 
     $info = implode(", ", $info);
@@ -269,9 +269,11 @@ class Show extends \MovLib\Presentation\Page {
       $links = $i18n->t("No links available, {0}add some{1}?", [ $editLinkOpen, "</a>" ]);
     }
     else {
-      $links .= "<ul class='no-list'>";
-      foreach ($this->person->links as $website => $url) {
-        $links .= "<li><a href='{$url}' itemprop='url' target='_blank'>{$website}</a></li>";
+      $links .= "<ul class='grid-list no-list r'>";
+      $c = count($this->person->links);
+      for ($i = 0; $i < $c; ++$i) {
+        $hostname = parse_url($this->person->links[$i], PHP_URL_HOST);
+        $links .= "<li class='mb10 s s3'><a href='{$this->person->links[$i]}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
       }
       $links .= "</ul>";
     }

@@ -78,7 +78,6 @@ class Full extends \MovLib\Data\Person\Person {
             `cause_of_death_id`,
             `deathdate` AS `deathDate`,
             `deathplace_id`,
-            `links`,
             `nickname`
           FROM `persons`
           WHERE
@@ -100,14 +99,12 @@ class Full extends \MovLib\Data\Person\Person {
         $this->causeOfDeath,
         $this->deathDate,
         $this->deathplace,
-        $this->links,
         $this->nickname
       );
       if (!$stmt->fetch()) {
         throw new NotFound;
       }
       $stmt->close();
-      \FB::send($this);
     }
 
     if ($this->id) {
@@ -152,8 +149,9 @@ class Full extends \MovLib\Data\Person\Person {
         $this->deathDate,
       ]
     )->insert_id;
+
+    // Insert aliases.
     if ($this->aliases) {
-      // @todo Insert aliases into table.
       $query = "INSERT INTO `persons_aliases` (`person_id`, `alias`) VALUES ";
       $types = null;
       $params = [];
@@ -171,6 +169,28 @@ class Full extends \MovLib\Data\Person\Person {
       }
       $db->query($query, $types, $params);
     }
+
+    // Insert external links.
+    if ($this->links) {
+      $query = "INSERT INTO `persons_links` (`person_id`, `language_code`, `url`) VALUES ";
+      $types = null;
+      $params = [];
+      $c = count($this->links);
+      for ($i = 0; $i < $c; ++$i) {
+        if ($i === 0) {
+          $query .= "(?, ?, ?)";
+        }
+        else {
+          $query .= ", (?, ?, ?)";
+        }
+        $types .= "dss";
+        $params[] = $this->id;
+        $params[] = $i18n->languageCode;
+        $params[] = $this->links[$i];
+      }
+      $db->query($query, $types, $params);
+    }
+
     // Create a display photo.
     parent::init();
 
@@ -181,16 +201,17 @@ class Full extends \MovLib\Data\Person\Person {
    * Get the mysqli result for all movie IDs this person has played in.
    *
    * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
    *   The mysqli result for all acted movie IDs.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getMovieCastIdsResult() {
-    global $db;
+    global $db, $i18n;
     return $db->query(
       "SELECT
         `movies`.`id` AS `movie_id`,
-        `movies_cast`.`roles` AS `roles`
+        COLUMN_GET(`movies_cast`.`roles`, '{$i18n->languageCode}' AS BINARY) AS `roles`
       FROM `movies_cast`
         INNER JOIN `movies` ON `movies`.`id` = `movies_cast`.`movie_id`
       WHERE `movies_cast`.`person_id` = ?
@@ -258,13 +279,16 @@ class Full extends \MovLib\Data\Person\Person {
   protected function init() {
     global $db, $i18n;
     parent::init();
-    $this->links = unserialize($this->links);
     if ($this->birthplace) {
       $this->birthplace = new Place($this->birthplace);
     }
     $result = $db->query("SELECT `alias` FROM `persons_aliases` WHERE `person_id` = ? ORDER BY `alias` {$db->collations[$i18n->languageCode]}", "d", [ $this->id ])->get_result();
     while ($row = $result->fetch_array(MYSQLI_NUM)) {
       $this->aliases[] = $row[0];
+    }
+    $result = $db->query("SELECT `url` FROM `persons_links` WHERE `person_id` = ? AND `language_code` = ? ORDER BY `id` ASC", "ds", [ $this->id, $i18n->languageCode ])->get_result();
+    while ($row = $result->fetch_array(MYSQLI_NUM)) {
+      $this->links[] = $row[0];
     }
   }
 }

@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Persons;
 
+use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Date;
@@ -94,7 +95,7 @@ class Show extends \MovLib\Presentation\Page {
           $lifeDates .= (new Date($person->birthDate))->formatSchemaProperty("birthDate", [ "title" => $i18n->t("Date of Birth") ]);
         }
         else {
-          $lifeDates .= "?";
+          $lifeDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Date of Birth")}'>", "</em>" ]);
         }
 
         if ($person->deathDate) {
@@ -107,7 +108,7 @@ class Show extends \MovLib\Presentation\Page {
       $list .=
         "<li itemscope itemtype='http://schema.org/Person'>" .
           "<a class='img li r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
-            $this->getImage($person->displayPhoto->getStyle(\MovLib\Data\Image\PersonImage::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
+            $this->getImage($person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
             "<span class='s s9'><span class='link-color' itemprop='name'>{$person->name}</span>" .
               "<span class='small'>{$additionalNames}{$lifeDates}</span>" .
             "</span>" .

@@ -25,6 +25,7 @@ use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputDateSeparate;
 use \MovLib\Presentation\Partial\FormElement\InputHTML;
 use \MovLib\Presentation\Partial\FormElement\InputLinesText;
+use \MovLib\Presentation\Partial\FormElement\InputLinesURL;
 use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Partial\FormElement\InputURL;
@@ -88,6 +89,13 @@ class Create extends \MovLib\Presentation\Page {
    * @var \MovLib\Presentation\Partial\FormElement\InputDate
    */
   protected $inputDeathDate;
+
+  /**
+   * The person's external links textarea input element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputLinesURL
+   */
+  protected $inputLinks;
 
   /**
    * The person's name input text element.
@@ -155,6 +163,8 @@ class Create extends \MovLib\Presentation\Page {
       ->allowLists()
     ;
 
+    $this->inputLinks = new InputLinesURL("links", $i18n->t("External Links"), [ "data-allow-external" => true ,"placeholder" => $i18n->t("Please supply one URL per line") ]);
+
     $this->form = new Form($this, [
       $this->inputName,
       $this->inputBornName,
@@ -164,6 +174,7 @@ class Create extends \MovLib\Presentation\Page {
       $this->inputWikipedia,
       $this->inputAliases,
       $this->inputBiography,
+      $this->inputLinks,
     ]);
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Create Person"), [ "class" => "btn btn-large btn-success", "id" => "submit-create" ]);
@@ -188,6 +199,7 @@ class Create extends \MovLib\Presentation\Page {
         $this->inputWikipedia .
         $this->inputAliases .
         $this->inputBiography .
+        $this->inputLinks .
       "{$this->form->close()}</div>"
     ;
   }
@@ -208,6 +220,7 @@ class Create extends \MovLib\Presentation\Page {
     $person->birthDate = $this->inputBirthDate->value;
     $person->bornName  = $this->inputBornName->value;
     $person->deathDate = $this->inputDeathDate->value;
+    $person->links     = $this->inputLinks->value;
     $person->name      = $this->inputName->value;
     $person->sex       = $this->inputSex->value;
     $person->wikipedia = $this->inputWikipedia->value;
