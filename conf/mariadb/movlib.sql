@@ -162,7 +162,6 @@ CREATE TABLE IF NOT EXISTS `movlib`.`persons` (
   `image_styles` BLOB NULL COMMENT 'Serialized array containing width and height of various image styles.',
   `image_uploader_id` BIGINT UNSIGNED NULL COMMENT 'The uploader\'s unique user ID.',
   `image_width` SMALLINT NULL COMMENT 'The person photo’s original width.',
-  `links` BLOB NULL COMMENT 'External links belonging to this person. Stored as serialized PHP array.',
   `nickname` MEDIUMTEXT NULL COMMENT 'The person’s nickname.',
   PRIMARY KEY (`id`),
   INDEX `fk_persons_places1_idx` (`birthplace_id` ASC),
@@ -1626,6 +1625,25 @@ CREATE TABLE IF NOT EXISTS `movlib`.`movies_original_titles` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Table to create correct circular reference between titles an /* comment truncated */ /*d the original title of a movie.*/';
+
+SHOW WARNINGS;
+
+-- -----------------------------------------------------
+-- Table `movlib`.`persons_links`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `movlib`.`persons_links` (
+  `person_id` BIGINT UNSIGNED NOT NULL COMMENT 'The person’s unique ID.',
+  `hostname` VARCHAR(150) NOT NULL COMMENT 'The person’s link’s hostname.',
+  `language_code` CHAR(2) NOT NULL COMMENT 'The person’s link’s ISO alpha-2 language code.',
+  `url` TEXT NOT NULL COMMENT 'The person’s link’s URL.',
+  PRIMARY KEY (`person_id`, `hostname`, `language_code`),
+  CONSTRAINT `fk_persons_links_persons`
+    FOREIGN KEY (`person_id`)
+    REFERENCES `movlib`.`persons` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+ROW_FORMAT = COMPRESSED;
 
 SHOW WARNINGS;
 
