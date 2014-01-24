@@ -70,7 +70,7 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\InputDa
    * @param array $attributes [optional]
    *   The date's additional attributes.
    */
-  public function __construct($id, $label, array $attributes = null) {
+  public function __construct($id, $label, array $attributes = null, $max = 9999, $min = 0) {
     global $i18n;
     parent::__construct($id, $label, $attributes);
     unset($this->attributes["name"]);
@@ -79,12 +79,7 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\InputDa
       $this->required = true;
       unset($this->attributes["required"]);
     }
-    if (isset($this->attributes["max"])) {
-      unset($this->attributes["max"]);
-    }
-    if (isset($this->attributes["min"])) {
-      unset($this->attributes["min"]);
-    }
+
     $this->attributes["class"] = isset($this->attributes["class"]) ? $this->attributes["class"] . " date-separate" : "date-separate";
     if (isset($_POST["{$this->id}-day"])) {
       $this->day = (integer) $_POST["{$this->id}-day"];
@@ -104,9 +99,9 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\InputDa
     global $i18n;
     // @todo: Continue with form building and date styling.
     return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend><p>" .
-      "<label class='vh' for='{$this->id}-day'>{$i18n->t("Day")}</label><input id='{$this->id}-day' name='{$this->id}-day' placeholder='{$i18n->t("dd")}' type='number' value='{$this->day}'>" .
-      "<label class='vh' for='{$this->id}-month'>{$i18n->t("Month")}</label><input id='{$this->id}-month' name='{$this->id}-month' placeholder='{$i18n->t("mm")}' type='number' value='{$this->month}'>" .
-      "<label class='vh' for='{$this->id}-year'>{$i18n->t("Year")}</label><input id='{$this->id}-year' name='{$this->id}-year' placeholder='{$i18n->t("yyyy")}' type='number' value='{$this->year}'>" .
+      "<label class='s s1'><span class='vh'>{$i18n->t("Day")}</span><input id='{$this->id}-day' max='31' min='1' name='{$this->id}-day' placeholder='{$i18n->t("dd")}' type='number' value='{$this->day}'></label>" .
+      "<label class='s s1'><span class='vh'>{$i18n->t("Month")}</span><input id='{$this->id}-month' max='12' min='1' name='{$this->id}-month' placeholder='{$i18n->t("mm")}' type='number' value='{$this->month}'></label>" .
+      "<label class='s s2'><span class='vh'>{$i18n->t("Year")}</span><input id='{$this->id}-year' max='{}' min='{}' name='{$this->id}-year' placeholder='{$i18n->t("yyyy")}' type='number' value='{$this->year}'></label>" .
     "</p></fieldset>";
   }
 

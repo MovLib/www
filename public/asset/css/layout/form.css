@@ -282,18 +282,11 @@ option[value=""] {
 
 .date-separate input {
   display: inline-block;
-  float: left;
-  margin-left: 20px;
   text-align: right;
-  width: 60px;
 }
 
-.date-separate input:first-of-type {
+.date-separate label:first-of-type {
   margin-left: 0;
-}
-
-.date-separate input:last-of-type {
-  width: 140px;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
