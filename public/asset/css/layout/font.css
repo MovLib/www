@@ -174,11 +174,11 @@
 
 @font-face {
   font-family: MovLib;
-  src: url("/asset/font/movlib/movlib.eot?20140107");
-  src: url("/asset/font/movlib/movlib.eot?20140107#iefix") format("embedded-opentype"),
-       url("/asset/font/movlib/movlib.woff?20140107") format("woff"),
-       url("/asset/font/movlib/movlib.ttf?20140107") format("truetype"),
-       url("/asset/font/movlib/movlib.svg?20140107#movlib") format("svg")
+  src: url("/asset/font/movlib/movlib.eot?20140124");
+  src: url("/asset/font/movlib/movlib.eot?20140124#iefix") format("embedded-opentype"),
+       url("/asset/font/movlib/movlib.woff?20140124") format("woff"),
+       url("/asset/font/movlib/movlib.ttf?20140124") format("truetype"),
+       url("/asset/font/movlib/movlib.svg?20140124#movlib") format("svg")
   ;
   font-weight: normal;
   font-style: normal;

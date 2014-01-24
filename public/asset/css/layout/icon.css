@@ -242,5 +242,9 @@
 }
 
 .ico-series:before {
+	content: "\e62a";
+}
+
+.ico-wikipedia:before {
 	content: "\e62b";
 }
