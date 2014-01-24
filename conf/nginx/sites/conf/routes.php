@@ -81,7 +81,7 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~* "^<?= $rp("/movie/{0}/backdrops", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Backdrops";
+    set $movlib_presenter "Movie\\Images\\Backdrops";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
@@ -118,7 +118,7 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~* "^<?= $rp("/movie/{0}/posters", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Posters";
+    set $movlib_presenter "Movie\\Images\\Posters";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
@@ -155,7 +155,7 @@ location ^~ <?= $r("/movie") ?> {
   #
 
   location ~* "^<?= $rp("/movie/{0}/lobby-cards", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\LobbyCards";
+    set $movlib_presenter "Movie\\Images\\LobbyCards";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
