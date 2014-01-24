@@ -18,8 +18,10 @@
 
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Exception\ValidationException;
+
 /**
- * HTML textarea input supporting line by line entries for plain text.
+ * HTML textarea input supporting line by line entries for URLs.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -27,7 +29,7 @@ namespace MovLib\Presentation\Partial\FormElement;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputLinesText extends \MovLib\Presentation\Partial\FormElement\InputText {
+class InputLinesURL extends \MovLib\Presentation\Partial\FormElement\InputURL {
 
   /**
    * The user's raw input in this field.
@@ -41,7 +43,6 @@ class InputLinesText extends \MovLib\Presentation\Partial\FormElement\InputText 
   public function __construct($id, $label, array $attributes = null) {
     parent::__construct($id, $label, $attributes);
     unset($this->attributes["type"]);
-    $this->attributes["spellcheck"] = "true";
     if (!is_array($this->value)) {
       $this->valueRaw = $this->value;
     }
@@ -80,7 +81,7 @@ class InputLinesText extends \MovLib\Presentation\Partial\FormElement\InputText 
     $c = count($lines);
     try {
       for ($i = 0; $i < $c; ++$i) {
-        // Set value to current line and make use of the text validation function of InputText.
+        // Set value to current line and make use of the URL validation function of InputURL.
         $this->value = $lines[$i];
         $lines[$i] = parent::validate()->value;
       }

@@ -58,7 +58,7 @@ class InputURL extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
     global $i18n;
     parent::__construct($id, $label, $attributes);
     $this->attributes["pattern"]     = "^https?://[a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*[a-z0-9_]\.[a-z]{2,6}(/.*)*$";
-    $this->attributes["placeholder"] = "http(s)://";
+    $this->attributes["placeholder"] = isset($attributes["placeholder"]) ? $attributes["placeholder"] :"http(s)://";
     $this->attributes["title"]       = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
     $this->attributes["type"]        = "url";
     if (!isset($this->attributes["data-allow-external"])) {
