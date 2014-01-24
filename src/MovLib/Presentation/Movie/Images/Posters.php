@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\Movie\Images;
 
 /**
  * Movie lobby cards gallery presentation.
@@ -26,23 +26,18 @@ namespace MovLib\Presentation\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Posters extends \MovLib\Presentation\Movie\Images {
+class Posters extends \MovLib\Presentation\Movie\Images\AbstractBase {
 
   /**
-   * Instantiate new movie images presentation.
+   * Instantiate new posters presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
     global $i18n;
-    $this->imageClassName      = "Poster";
-    $this->imageTypeId         = \MovLib\Data\Image\MoviePoster::TYPE_ID;
-    $this->imageTypeName       = $i18n->t("Poster");
-    $this->imageTypeNamePlural = $i18n->t("Posters");
-    $this->routeKey            = "poster";
-    $this->routeKeyPlural      = "posters";
-    $this->initImagePage();
+    parent::__construct("Poster", $i18n->t("Poster"), $i18n->t("Posters"), "poster", "posters");
   }
 
 }
