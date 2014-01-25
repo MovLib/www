@@ -369,6 +369,8 @@ class Page extends \MovLib\Presentation\AbstractBase {
 
     $notImplemented = new Alert("Not implemented yet!");
 
+    $searchQuery = isset($_GET["q"]) ? $_GET["q"] : null;
+
     return
       // No skip-to-content link! We have proper headings, semantic HTML5 elements and proper ARIA landmarks!
       "<header id='h' role='banner'><div class='c'><div class='r'>" .
@@ -400,14 +402,13 @@ class Page extends \MovLib\Presentation\AbstractBase {
               $subNavigations["community"]["utilities"] .
             "</div>" .
           "</nav>" .
-          "<form action='{$i18n->t("/search")}' class='s' id='s' method='post' role='search'>" .
-            "<input type='hidden' name='form_id' value='header_search'>" .
+          "<form action='{$i18n->t("/search")}' class='s' id='s' method='get' role='search'>" .
             "<button class='ico ico-search' tabindex='2' type='submit'><span class='vh'>{$i18n->t(
               "Start searching for the entered keyword."
             )}</span></button>" .
-            "<input name='searchterm' required tabindex='1' title='{$i18n->t(
+            "<input name='q' required tabindex='1' title='{$i18n->t(
               "Enter the search term you wish to search for and hit enter."
-            )}' type='search'>" .
+            )}' type='search' value='{$searchQuery}'>" .
           "</form>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='user-nav' role='navigation' tabindex='0'>" .
             "<h2 class='vh'>{$i18n->t("User Navigation")}</h2>{$userIcon}" .
@@ -523,6 +524,14 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected function getMainContent() {
     global $kernel;
 
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!isset($this->breadcrumb) || !($this->breadcrumb instanceof Navigation)) {
+      throw new \LogicException("You have to initialize the breadcrumb!");
+    }
+    // @devEnd
+    // @codeCoverageIgnoreEnd
+
     // Allow the presentation to alter the main content in getContent() method.
     $content = $this->getContent();
 
@@ -600,20 +609,22 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *   The route arguments, defaults to no arguments.
    * @param boolean $plural [optional]
    *   Set to <code>TRUE</code> if the current page has a plural route, defaults to <code>FALSE</code>.
+   * @param string $query [optional]
+   *   Append string to each language link.
    * @return this
    */
-  protected function initLanguageLinks($route, array $args = null, $plural = false) {
+  protected function initLanguageLinks($route, array $args = null, $plural = false, $query = null) {
     global $i18n, $kernel;
 
     // Not pretty but efficient, only check once if we have plural form or singular.
     if ($plural === true) {
       foreach ($kernel->systemLanguages as $code => $locale) {
-        $this->languageLinks[$code] = $i18n->rp($route, $args, $locale);
+        $this->languageLinks[$code] = "{$i18n->rp($route, $args, $locale)}{$query}";
       }
     }
     else {
       foreach ($kernel->systemLanguages as $code => $locale) {
-        $this->languageLinks[$code] = $i18n->r($route, $args, $locale);
+        $this->languageLinks[$code] = "{$i18n->r($route, $args, $locale)}{$query}";
       }
     }
 
