@@ -87,29 +87,33 @@ location ^~ <?= $r("/movie") ?> {
   }
 
   location ~* "^<?= $r("/movie/{0}/backdrop/upload", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\BackdropUpload";
+    set $movlib_presenter "Movie\\ImageUpload";
     set $movlib_movie_id $1;
+    set $movlib_image_class "Backdrop";
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/movie/{0}/backdrop/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\Backdrop";
+    set $movlib_presenter "Movie\\Image";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
+    set $movlib_image_class "Backdrop";
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/movie/{0}/backdrop/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\BackdropEdit";
+    set $movlib_presenter "Movie\\ImageEdit";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
+    set $movlib_image_class "Backdrop";
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/movie/{0}/backdrop/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\BackdropDelete";
+    set $movlib_presenter "Movie\\ImageDelete";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
+    set $movlib_image_class "Backdrop";
     try_files $movlib_cache @php;
   }
 
@@ -120,33 +124,38 @@ location ^~ <?= $r("/movie") ?> {
   location ~* "^<?= $rp("/movie/{0}/posters", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Movie\\Images\\Posters";
     set $movlib_movie_id $1;
+    set $movlib_image_class "Poster";
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/movie/{0}/poster/upload", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\PosterUpload";
+    set $movlib_presenter "Movie\\ImageUpload";
     set $movlib_movie_id $1;
+    set $movlib_image_class "Poster";
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/movie/{0}/poster/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\Poster";
+    set $movlib_presenter "Movie\\Image";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
+    set $movlib_image_class "Poster";
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/movie/{0}/poster/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\PosterEdit";
+    set $movlib_presenter "Movie\\ImageEdit";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
+    set $movlib_image_class "Poster";
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/movie/{0}/poster/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\PosterDelete";
+    set $movlib_presenter "Movie\\ImageDelete";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
+    set $movlib_image_class "Poster";
     try_files $movlib_cache @php;
   }
 
@@ -161,29 +170,33 @@ location ^~ <?= $r("/movie") ?> {
   }
 
   location ~* "^<?= $r("/movie/{0}/lobby-card/upload", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\LobbyCardUpload";
+    set $movlib_presenter "Movie\\ImageUpload";
     set $movlib_movie_id $1;
+    set $movlib_image_class "LobbyCard";
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/movie/{0}/lobby-card/{1}", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\LobbyCard";
+    set $movlib_presenter "Movie\\Image";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
+    set $movlib_image_class "LobbyCard";
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/movie/{0}/lobby-card/{1}/edit", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\LobbyCardEdit";
+    set $movlib_presenter "Movie\\ImageEdit";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
+    set $movlib_image_class "LobbyCard";
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/movie/{0}/lobby-card/{1}/delete", [ $idRegExp, $idRegExp ]) ?>$" {
-    set $movlib_presenter "Movie\\Image\\DeleteLobbyCard";
+    set $movlib_presenter "Movie\\ImageDelete";
     set $movlib_movie_id $1;
     set $movlib_image_id $2;
+    set $movlib_image_class "LobbyCard";
     try_files $movlib_cache @php;
   }
 
