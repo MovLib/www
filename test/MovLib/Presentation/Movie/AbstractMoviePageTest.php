@@ -31,7 +31,7 @@ class AbstractMoviePageTest extends \MovLib\TestCase {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /** @var \MovLib\Presentation\Movie\AbstractMoviePage */
+  /** @var \MovLib\Presentation\Movie\AbstractBase */
   protected $abstractMoviePage;
 
 

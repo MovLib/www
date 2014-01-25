@@ -28,7 +28,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Create extends \MovLib\Presentation\Movie\AbstractMoviePage {
+class Create extends \MovLib\Presentation\Movie\AbstractBase {
   use \MovLib\Presentation\TraitFormPage;
 
 

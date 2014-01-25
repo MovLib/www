@@ -15,52 +15,43 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
-
-use \MovLib\Presentation\Partial\Alert;
+namespace MovLib\Presentation\Movie\Image;
 
 /**
- * Movie deletion presentation.
+ * Base class for all movie upload (and edit) classes.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Delete extends \MovLib\Presentation\Movie\AbstractBase {
-  use \MovLib\Presentation\TraitFormPage;
+abstract class AbstractUpload {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  protected $inputImage;
+
+  protected $inputDescription;
+
+  protected $inputCountryCode;
+
+  protected $inputLanguageCode;
+
+  protected $inputPublishedDate;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
-  /**
-   * Instantiate new delete movie presentation.
-   */
   public function __construct() {
-    $this->initMoviePage();
-    $this->initPage("Delete Movie");
-    $this->initLanguageLinks("/movie/{0}/delete", [ $this->movie->id ]);
+
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    return new Alert("Not implemented yet!");
-  }
-
-  /**
-   * @inheritdoc
-   */
-  protected function valid() {
-    $this->movie->delete();
-    return $this;
-  }
 
 }

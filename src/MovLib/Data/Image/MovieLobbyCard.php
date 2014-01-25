@@ -26,18 +26,18 @@ namespace MovLib\Data\Image;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class MovieLobbyCard extends \MovLib\Data\Image\MovieBackdrop {
+class MovieLobbyCard extends \MovLib\Data\Image\AbstractMovieImage {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
   /**
-   * The movie image's type identifier.
+   * The movie backdrop's database table name.
    *
-   * @var integer
+   * @var string
    */
-  const TYPE_ID = 3;
+  const TABLE_NAME = "lobby_cards";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -46,21 +46,22 @@ class MovieLobbyCard extends \MovLib\Data\Image\MovieBackdrop {
   /**
    * Instantiate new movie poster.
    *
-   * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
-   * @param integer $movieId
-   *   The unique movie's identifier this image belongs to.
-   * @param string $movieTitle
-   *   The display title (with year) of the movie this image belongs to.
-   * @param null|integer $id [optional]
-   *   The identifier of the movie image that should be loaded from the database. If none is passed (default) an empty
-   *   movie image is created, ready for creating a new movie image.
+   * @param null|integer $movieId [optional]
+   *   The movie's unique identifier this poster belongs to, defaults to no movie identifier which is reserved for
+   *   instantiation via fetch object.
+   * @param null|string $movieTitle [optional]
+   *   The movie's display title (and year) this poster belongs to, defaults to no movie title which is reserved for
+   *   instantiation via fetch object.
+   * @param integer $id [optional]
+   *   The poster's unique identifier, if not passed (default) an empty poster is created ready for creation of a
+   *   new movie poster.
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Preentation\Error\NotFound
    */
-  public function __construct($movieId, $movieTitle, $id = null) {
+  public function __construct($movieId = null, $movieTitle = null, $id = null) {
     global $i18n;
-    $this->init($movieId, $id, "lobby-card", $i18n->t("Lobby card for {title}", [ "title" => $movieTitle ]));
+    parent::__construct($id, $movieId, $movieTitle, $i18n->t("Lobby Card"), $i18n->t("Lobby Cards"), "lobby-card", "lobby-cards");
   }
 
 }

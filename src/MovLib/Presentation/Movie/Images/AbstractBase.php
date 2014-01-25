@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Movie\Images;
 
 use \MovLib\Data\Image\AbstractMovieImage;
+use \MovLib\Data\Movie\Movie;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -29,7 +30,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractMoviePage {
+abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
   use \MovLib\Presentation\TraitPagination;
 
 
@@ -95,7 +96,8 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractMoviePage
   public function __construct($className, $name, $namePlural, $routeKey, $routeKeyPlural) {
     global $i18n;
 
-    // Export all variables to class scope.
+    // Try to load the movie and export all variables to class scope.
+    $this->movie          = new Movie((integer) $_SERVER["MOVIE_ID"]);
     $this->class          = "\\MovLib\\Data\\Image\\Movie{$className}";
     $this->name           = $name;
     $this->namePlural     = $namePlural;
@@ -106,14 +108,12 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractMoviePage
     $title  = $i18n->t("{image_name} for {title}");
     $search = [ "{image_name}", "{title}" ];
 
-    // Initialize the presentation.
-    $this->initMoviePage($namePlural);
-    $this->initPage(str_replace($search, [ $namePlural, $this->movie->displayTitleWithYear ], $title));
-    $this->initLanguageLinks("/movie/{0}/{$routeKeyPlural}", [ $this->movie->id ], true);
-    $this->initPagination(call_user_func("{$this->class}::getMovieImagesCount", $this->movie->id));
-    $this->initSidebar();
+    // Initialize the breadcrumb ...
+    $this->initBreadcrumb();
+    $this->breadcrumbTitle = $namePlural;
 
-    // Extend the page's title with additional micro-data.
+    // ... initialize page and extend the page's visible title with a link and micro-data ...
+    $this->initPage(str_replace($search, [ $namePlural, $this->movie->displayTitleWithYear ], $title));
     $pageTitle = "<span itemprop='name'{$this->lang($this->movie->displayTitleLanguageCode)}>{$this->movie->displayTitle}</span>";
     if ($this->movie->year) {
       $pageTitle = $i18n->t("{0} ({1})", [ $pageTitle, "<span itemprop='datePublished'>{$this->movie->year}</span>" ]);
@@ -122,6 +122,11 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractMoviePage
       $namePlural,
       "<span itemscope itemtype='http://schema.org/Movie'><a href='{$this->movie->route}' itemprop='url'>{$pageTitle}</a></span>"
     ], $title);
+
+    // ... initialize the rest of the page.
+    $this->initLanguageLinks("/movie/{0}/{$routeKeyPlural}", [ $this->movie->id ], true);
+    $this->initPagination(call_user_func("{$this->class}::getCount", $this->movie->id));
+    $this->initSidebar();
   }
 
 
@@ -158,7 +163,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractMoviePage
     }
 
     // Get all images of the current movie and go through them to create the image grid list.
-    $images = call_user_func("{$this->class}::getMovieImages", $this->movie->id, $this->resultsOffset, $this->resultsPerPage);
+    $images = call_user_func("{$this->class}::getImages", $this->movie->id, $this->resultsOffset, $this->resultsPerPage);
     $list   = null;
 
     /* @var $image \MovLib\Data\Image\AbstractMovieImage */

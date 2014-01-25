@@ -77,6 +77,13 @@ abstract class AbstractImage extends \MovLib\Data\Image\AbstractBaseImage {
   public $description;
 
   /**
+   * The image's translated description's language code.
+   *
+   * @var string
+   */
+  public $descriptionLanguageCode;
+
+  /**
    * The image's identifier (unique together with the associated entity).
    *
    * @var integer

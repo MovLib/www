@@ -187,92 +187,6 @@ class Movie {
 
 
   /**
-   * Get all images as mysqli result for the given type with the desired offset and row count.
-   *
-   * @global \MovLib\Data\Database $db
-   * @param integer $typeId
-   *   The image type identifier, use the class constants of the various movie images.
-   * @param integer $offset
-   *   The offset, usually provided by the pagination trait.
-   * @param integer $rowCount
-   *   The row count, usually provided by the pagination trait.
-   * @return \mysqli_result
-   *   The mysqli result of the query.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getImageResult($typeId, $offset, $rowCount) {
-    global $db;
-    return $db->query(
-      "SELECT
-        `id`,
-        `country_code` AS `countryCode`,
-        `language_code` AS `languageCode`,
-        `width`,
-        `height`,
-        `extension`,
-        UNIX_TIMESTAMP(`changed`) AS `changed`,
-        `upvotes`,
-        `styles`
-      FROM `movies_images`
-      WHERE `movie_id` = ?
-        AND `type_id` = ?
-        AND `deleted` = false
-      ORDER BY `upvotes` DESC, `id` ASC
-      LIMIT ? OFFSET ?",
-      "diii",
-      [ $this->id, $typeId, $rowCount, $offset ]
-    )->get_result();
-  }
-
-  /**
-   * Get the mysqli result for building an image stream.
-   *
-   * The images are sorted first by upvotes and then by identifier.
-   *
-   * @global \MovLib\Data\Database $db
-   * @param integer $typeId
-   *   The movie image type identifier, use the class constants from the movie image classes.
-   * @return \mysqli_result
-   *   The mysqli result for building an image stream.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getImageStreamResult($typeId) {
-    global $db;
-    return $db->query(
-      "SELECT
-        `id`,
-        `extension`,
-        UNIX_TIMESTAMP(`changed`) AS `changed`,
-        `styles`
-      FROM `movies_images`
-      WHERE `movie_id` = ?
-        AND `type_id` = ?
-        AND `deleted` = false
-      ORDER BY `upvotes` DESC, `id` ASC",
-      "di",
-      [ $this->id, $typeId ]
-    )->get_result();
-  }
-
-  /**
-   * Get the total image count for this movie and the given image type.
-   *
-   * @global \MovLib\Data\Database $db
-   * @param integer $typeId
-   *   The desired image type identifier, use the class constants of the movie images.
-   * @return integer
-   *   The total image count for this movie and the given image type.
-   */
-  public function getImageCount($typeId) {
-    global $db;
-    return $db->query(
-      "SELECT COUNT(*) FROM `movies_images` WHERE `movie_id` = ? AND `type_id` = ? AND `deleted` = false GROUP BY `type_id`",
-      "di",
-      [ $this->id, $typeId ]
-    )->get_result()->fetch_row()[0];
-  }
-
-  /**
    * Get paginated movies result.
    *
    * @internal The returned {@see \mysqli_result} is prepared for direct instantiating via fetch object of this class.
@@ -306,12 +220,16 @@ class Movie {
    */
   public static function getMoviesCount($deleted = false) {
     global $db;
-    $query = "SELECT COUNT(*) FROM `movies` ";
+
+    // It's not a problem that we aren't usign a prepared statement to insert the deleted state because 99% of all
+    // queries calling this method will use the default.
+    $where = null;
     if ($deleted === true || $deleted === false) {
       $deleted = (integer) $deleted;
-      $query  .= "WHERE `deleted` = {$deleted} ";
+      $where   = "WHERE `deleted` = {$deleted}";
     }
-    return $db->query("{$query} LIMIT 1")->get_result()->fetch_row()[0];
+
+    return $db->query("SELECT COUNT(*) FROM `movies` {$where} LIMIT 1")->get_result()->fetch_row()[0];
   }
 
   /**
@@ -361,7 +279,7 @@ class Movie {
     }
 
     // Load the actual display poster for this movie.
-    $stmt = $db->query("SELECT UNIX_TIMESTAMP(`changed`), `extension`, `styles` FROM `posters` WHERE `id` = ? LIMIT 1", "d", [ $this->displayPoster ]);
+    $stmt = $db->query("SELECT `id`, UNIX_TIMESTAMP(`changed`), `extension`, `styles` FROM `posters` WHERE `id` = ? LIMIT 1", "d", [ $this->displayPoster ]);
     $this->displayPoster = $stmt->get_result()->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]);
     $stmt->close();
 

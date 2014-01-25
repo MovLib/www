@@ -17,11 +17,11 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\FullMovie as FullMovie;
+use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
- * Provides secondary breadcrumb, menu points and stylesheets for movie presentations.
+ * Abstract base class for all movie presentations.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
+abstract class AbstractBase extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar {
     initSidebar as initSidebarTrait;
   }
@@ -50,29 +50,19 @@ abstract class AbstractMoviePage extends \MovLib\Presentation\Page {
 
 
   /**
-   * Initialize movie sub page.
+   * Initialize the page's breadcrumb.
    *
-   * This will load a full movie object with the server submitted movie identifier. A not found exception is thrown if
-   * no movie exists for the given identifier. If a movie exists the most commonly used routes are translated and
-   * exported to class scope. The breadcrumb is initialized with movies and the route to the current movie. The
-   * sidebar is initialized with the most important actions that are directly related to the movie presentation.
-   *
-   * You should call the following methods after calling this method: <code>initPage()</code> and
-   * <code>initLanguageLinks()</code>
-   *
-   * @param string $breadcrumbTitle
-   *   The short page title for the breadcrumb.
+   * @global \MovLib\Data\I18n $i18n
+   * @param array $breadcrumbs [optional]
+   *   Numeric array containing additional breadcrumbs to put between home and the current page.
    * @return this
-   * @throws \MovLib\Presentation\Error\NotFound
    */
-  protected function initMoviePage($breadcrumbTitle) {
+  protected function initBreadcrumb(array $breadcrumbs = []) {
     global $i18n;
-    $this->movie           = new FullMovie($_SERVER["MOVIE_ID"]);
-    $this->breadcrumbTitle = $breadcrumbTitle;
-    return $this->initBreadcrumb([
+    return parent::initBreadcrumb([
       [ $i18n->rp("/movies"), $i18n->t("Movies") ],
       [ $this->movie->route, $this->movie->displayTitleWithYear ],
-    ]);
+    ] + $breadcrumbs);
   }
 
   /**
