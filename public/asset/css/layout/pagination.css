@@ -31,7 +31,7 @@
 }
 
 #pagination-nav a,
-#pagination-nav span {
+#pagination-nav .pager {
   display: table-cell;
   height: 40px;
   min-width: 40px;

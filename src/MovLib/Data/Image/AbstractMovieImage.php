@@ -17,6 +17,8 @@
  */
 namespace MovLib\Data\Image;
 
+use \MovLib\Presentation\Error\NotFound;
+
 /**
  * Base class for all movie images.
  *
@@ -204,9 +206,9 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
           `publishing_date`,
           `styles`
         FROM " . static::TABLE_NAME . "
-        WHERE `id` = ? AND `movie_id` = ?",
-        "ssdd",
-        [ $i18n->languageCode, $i18n->languageCode, $id, $movieId ]
+        WHERE `id` = ?",
+        "ssd",
+        [ $i18n->languageCode, $i18n->languageCode, $id ]
       );
       $stmt->bind_result(
         $this->uploaderId,
@@ -239,27 +241,50 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
       $this->deleted         = (boolean) $this->deleted;
       $this->filename        = $this->id;
       $this->imageExists     = (boolean) $this->changed && !$this->deleted;
-      $this->representative  = (boolean) $this->representative && ($this->languageCode == $i18n->languageCode);
     }
 
     // Always initialize the following, it doesn't matter if the image exists or not.
     $this->name       = $name;
     $this->namePlural = $namePlural;
-    $this->movieId         = $movieId;
-    $this->directory       = "movie/{$this->movieId}/{$routePluralKey}";
+    $this->movieId    = $movieId;
+    $this->directory  = "movie/{$this->movieId}/{$routePluralKey}";
 
     // Initialize the movie poster's route.
     if ($this->imageExists === true) {
       $this->route = $i18n->r("/movie/{0}/{$routeKey}/{1}", [ $this->movieId, $this->id ]);
     }
     else {
-      $this->route = $i18n->r("/movie/{0}/{$routePluralKey}/upload", [ $this->movieId ]);
+      $this->route = $i18n->r("/movie/{0}/{$routeKey}/upload", [ $this->movieId ]);
     }
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Update the image's properties.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @return this
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function commit() {
+    global $db, $i18n;
+    $db->query(
+      "UPDATE `" . static::TABLE_NAME . "` SET
+        `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, ?, ?),
+        `language_code`    = ?,
+        `country_code`     = ?,
+        `publishing_date`  = ?
+      WHERE `id` = ?",
+      "sssssd",
+      [ $i18n->languageCode, $this->description, $this->languageCode, $this->countryCode, $this->publishingDate, $this->id ]
+    )->close();
+    // @todo Commit update to Git repository
+    return $this;
+  }
 
   /**
    * Mark the movie image as deleted.
@@ -423,8 +448,35 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
       // Start transaction and prepare database record if this is a new upload.
       $db->transactionStart();
       if ($this->imageExists === false) {
-        $this->insert()->createDirectories();
-        $this->route = $i18n->t("/movie/{0}/{$this->routeKey}/{1}", [ $this->movieId, $this->id ]);
+        $stmt = $db->query(
+          "INSERT INTO `" . static::TABLE_NAME . "` SET
+            `movie_id`         = ?,
+            `uploader_id`      = ?,
+            `changed`          = FROM_UNIXTIME(?),
+            `created`          = FROM_UNIXTIME(?),
+            `dyn_descriptions` = COLUMN_CREATE(?, ?),
+            `extension`        = ?,
+            `filesize`         = ?,
+            `height`           = ?,
+            `width`            = ?",
+          "ddiisssiii",
+          [
+            $this->movieId,
+            $this->uploaderId,
+            $_SERVER["REQUEST_TIME"],
+            $_SERVER["REQUEST_TIME"],
+            $i18n->languageCode,
+            $this->description,
+            $this->extension,
+            $this->filesize,
+            $this->height,
+            $this->width,
+          ]
+        );
+        $this->filename = $this->id = $stmt->insert_id;
+        $stmt->close();
+        $this->createDirectories();
+        $this->route = $i18n->r("/movie/{0}/{$this->routeKey}/{1}", [ $this->movieId, $this->id ]);
       }
 
       // Generate the various image's styles and always go from best quality down to worst quality.
@@ -436,9 +488,8 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
         ->convert($source, self::STYLE_SPAN_01_SQUARE, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true)
       ;
 
-      // Only update the styles if this is a new upload or the only purpose of calling this method was to regenerate
-      // the styles.
-      if ($this->imageExists === false || $regenerate === true) {
+      // Only update the styles if we are regenerating.
+      if ($regenerate === true) {
         $query  = "UPDATE `" . static::TABLE_NAME . "` SET `styles` = ? WHERE `id` = ?";
         $types  = "sd";
         $params = [ serialize($this->styles), $this->id ];
@@ -447,17 +498,20 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
       else {
         $query =
           "UPDATE `" . static::TABLE_NAME . "` SET
-            `uploader_id`      = ?
+            `uploader_id`      = ?,
             `changed`          = FROM_UNIXTIME(?),
             `dyn_descriptions` = COLUMN_ADD(`dyn_descriptions`, ?, ?),
             `extension`        = ?,
             `filesize`         = ?,
             `height`           = ?,
             `styles`           = ?,
-            `width`            = ?
+            `width`            = ?,
+            `country_code`     = ?,
+            `language_code`    = ?,
+            `publishing_date`  = ?
           WHERE `id` = ?"
         ;
-        $types  = "disssiisi";
+        $types  = "disssiisisssd";
         $params = [
           $this->uploaderId,
           $_SERVER["REQUEST_TIME"],
@@ -468,6 +522,10 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
           $this->height,
           serialize($this->styles),
           $this->width,
+          $this->countryCode,
+          $this->languageCode,
+          $this->publishingDate,
+          $this->id,
         ];
       }
       $db->query($query, $types, $params)->close();
@@ -482,72 +540,6 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
   }
 
   /**
-   * Insert new backdrop.
-   *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  protected function insert() {
-    global $db, $i18n, $session;
-    $this->id = $db->query(
-      "INSERT INTO `" . static::TABLE_NAME . "` SET
-        `movie_id`         = ?,
-        `uploader_id`      = ?,
-        `changed`          = FROM_UNIXTIME(?),
-        `created`          = FROM_UNIXTIME(?),
-        `dyn_descriptions` = COLUMN_CREATE(?, ?),
-        `extension`        = ?,
-        `filesize`         = ?,
-        `height`           = ?,
-        `width`            = ?",
-      "ddiisssiii",
-      [
-        $this->movieId,
-        $session->id,
-        $_SERVER["REQUEST_TIME"],
-        $_SERVER["REQUEST_TIME"],
-        $i18n->languageCode,
-        $this->description,
-        $this->extension,
-        $this->filesize,
-        $this->height,
-        $this->width,
-      ]
-    )->insert_id;
-    $this->filename = $this->id;
-    return $this;
-  }
-
-  protected function update() {
-    global $db, $i18n;
-    $db->query(
-      "UPDATE `" . static::TABLE_NAME . "` SET"
-    )->close();
-    return $this;
-  }
-
-  /**
-   * Update the image's description.
-   *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\I18n $i18n
-   * @param string $description
-   *   The updated description text.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function updateDescription($description) {
-    global $db, $i18n;
-    $db->query("UPDATE `" . static::TABLE_NAME . "` SET `dyn_descriptions` = COLUMN_ADD(?, ?) WHERE `id` = ?", "ssd", [ $i18n->languageCode, $description, $this->id ])->close();
-    $this->description = $description;
-    // @todo Commit
-    return $this;
-  }
-
-  /**
    * Set deletion request identifier.
    *
    * @global \MovLib\Data\Database $db
@@ -558,7 +550,11 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
    */
   public function setDeletionRequest($id) {
     global $db;
-    $db->query("UPDATE `" . static::TABLE_NAME . "` SET `deletion_request_id` = ? WHERE `id` = ? AND `movie_id` = ?", "didi", [ $id, $this->id, $this->movieId ])->close();
+    $db->query(
+      "UPDATE `" . static::TABLE_NAME . "` SET `deletion_request_id` = ? WHERE `id` = ? AND `movie_id` = ?",
+      "didi",
+      [ $id, $this->id, $this->movieId ]
+    )->close();
     return $this;
   }
 

@@ -386,8 +386,8 @@ class Kernel {
           "<p>{$i18n->t("IP address or user agent string is invalid or empty.")}</p>" .
           "<p>{$i18n->t(
             "Please note that you have to submit your IP address and user agent string to identify yourself as being " .
-            "human; should you have privacy concerns read our {0}Privacy Policy{1}.",
-            [ "<a href='{$i18n->r("/privacy-policy")}'>" , "</a>" ]
+            "human; should you have privacy concerns read our {privacy_policy}.",
+            [ "privacy_policy" => "<a href='{$i18n->r("/privacy-policy")}'>{$i18n->t("Privacy Policy")}</a>" ]
           )}</p>"
         );
       }

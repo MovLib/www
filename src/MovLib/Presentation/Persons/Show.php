@@ -92,14 +92,14 @@ class Show extends \MovLib\Presentation\Page {
       $lifeDates = null;
       if ($person->birthDate || $person->deathDate) {
         if ($person->birthDate) {
-          $lifeDates .= (new Date($person->birthDate))->formatSchemaProperty([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
+          $lifeDates .= (new Date($person->birthDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
         }
         else {
           $lifeDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Date of Birth")}'>", "</em>" ]);
         }
 
         if ($person->deathDate) {
-          $lifeDates .= " – " . (new Date($person->deathDate))->formatSchemaProperty([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Death") ]);
+          $lifeDates .= " – " . (new Date($person->deathDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Death") ]);
         }
 
         $lifeDates = "<br>{$lifeDates}";

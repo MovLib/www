@@ -94,32 +94,23 @@ class Date extends \MovLib\Presentation\AbstractBase {
     elseif ($date == "now") {
       $date = date("Y-m-d", strtotime("now"));
     }
-    $this->dateInfo = date_parse($date);
+    $this->dateInfo  = date_parse($date);
     $this->dateValue = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-{$this->dateInfo["day"]}";
   }
 
-  /**
-   * Get the formatted date.
-   *
-   * @param string $format [optional]
-   *   The format string, see {@link http://www.php.net/manual/en/function.date.php} for formatting options, defaults to
-   *   <code>"Y-m-d"</code> ({@link http://www.ietf.org/rfc/rfc3339.txt RFC3339},
-   *   {@link https://en.wikipedia.org/wiki/ISO_8601 ISO 8601}, {@link http://www.w3.org/TR/NOTE-datetime W3CDTF}).
-   * @return string
-   *   The formatted date.
-   */
-  public function format($format = "Y-m-d") {
-    return $this->dateValue->format($format);
-  }
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Format a date as <code><time></code> tag with additional attributes.
    *
    * @param array $attributes [optional]
-   *   Additional attributes to apply. <code>"datetime"</code> will be overridden!
-   * @return type
+   *   Additional attributes to apply, <code>"datetime"</code> will be overridden!
+   * @return string
+   *   Formatted date as <code><time></code> tag with additional attributes.
    */
-  public function formatSchemaProperty(array $attributes = []) {
+  public function format(array $attributes = []) {
     $attributes["datetime"] = $this->dateValue;
     return "<time{$this->expandTagAttributes($attributes)}>{$this->intlFormat()}</time>";
   }
@@ -137,7 +128,7 @@ class Date extends \MovLib\Presentation\AbstractBase {
     if (is_int($date)) {
       $date = "@{$date}";
     }
-    $date = new \DateTime($date);
+    $date   = new \DateTime($date);
     $errors = \DateTime::getLastErrors();
     if ($errors["warning_count"] === 0 && $errors["error_count"] === 0 && $this->dateInfo["month"] !== 0 && $this->dateInfo["month"] !== 0) {
       return (new \DateTime($this->dateValue))->diff($date)->format("%y");
@@ -155,23 +146,23 @@ class Date extends \MovLib\Presentation\AbstractBase {
    */
   public function intlFormat($datetype = \IntlDateFormatter::MEDIUM) {
     global $i18n;
+
     // Month and day are empty, return year.
     if ($this->dateInfo["month"] === 0 && $this->dateInfo["day"] === 0) {
       return $this->dateInfo["year"];
     }
+
+    $date = $this->dateValue;
+    $fmt  = new \IntlDateFormatter($i18n->locale, $datetype, \IntlDateFormatter::NONE);
+
     // Day is missing, use format strings provided by this class.
     if ($this->dateInfo["month"] !== 0 && $this->dateInfo["day"] === 0) {
-      return (new \IntlDateFormatter(
-        $i18n->locale,
-        $datetype,
-        \IntlDateFormatter::NONE,
-        null,
-        null,
-        self::$dateFormats[$i18n->languageCode][$datetype])
-      )->format(new \DateTime("{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-01"));
+      $fmt->setPattern(self::$dateFormats[$i18n->languageCode][$datetype]);
+      $date = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-01";
     }
+
     // Everything is there, let Intl do its magic.
-    return (new \IntlDateFormatter($i18n->locale, $datetype, \IntlDateFormatter::NONE))->format(new \DateTime($this->dateValue));
+    return $fmt->format(new \DateTime($date));
   }
 
 }

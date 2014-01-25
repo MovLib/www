@@ -279,12 +279,14 @@ class Movie {
     }
 
     // Load the actual display poster for this movie.
-    $stmt = $db->query("SELECT `id`, UNIX_TIMESTAMP(`changed`), `extension`, `styles` FROM `posters` WHERE `id` = ? LIMIT 1", "d", [ $this->displayPoster ]);
+    $stmt = $db->query("SELECT `id`, UNIX_TIMESTAMP(`changed`) AS `changed`, `extension`, `styles` FROM `posters` WHERE `id` = ? LIMIT 1", "d", [ $this->displayPoster ]);
     $this->displayPoster = $stmt->get_result()->fetch_object("\\MovLib\\Data\\Image\\MoviePoster", [ $this->id, $this->displayTitleWithYear ]);
     $stmt->close();
 
     // Load an empty poster if above query returned with no result (fetch object will simply return NULL in that case).
-    $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
+    if (!$this->displayPoster) {
+      $this->displayPoster = new MoviePoster($this->id, $this->displayTitleWithYear);
+    }
 
     return $this;
   }

@@ -70,8 +70,8 @@ class LanguageSelection extends \MovLib\Presentation\Page {
     global $i18n, $kernel;
     return
       "<footer id='f'><div class='c'><div class='r'><p>{$i18n->t(
-        "Is your language missing from our list? Help us translate {0} to your language. More information can be found at {1}our translation portal{2}.",
-        [ $kernel->siteName, "<a href='//{$kernel->domainLocalize}/'>", "</a>" ]
+        "Is your language missing from our list? Help us translate {sitename} to your language. More information can be found at {0}our translation portal{1}.",
+        [ "<a href='//{$kernel->domainLocalize}/'>", "</a>", "sitename" => $kernel->siteName ]
       )}</p></div></div></footer>"
     ;
   }

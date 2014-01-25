@@ -113,12 +113,23 @@ class ImageUpload extends \MovLib\Presentation\Movie\AbstractBase {
     $this->image = new $this->class($this->movie->id, $this->movie->displayTitleWithYear);
 
     // Translate title once.
-    $title       = $i18n->t("Upload new {image_name} for {title}");
-    $search      = [ "{image_name}", "{title}" ];
+    switch ($this->image->routeKey) {
+      case "poster":
+        $title = $i18n->t("Upload new poster for {title}");
+        break;
+
+      case "lobby-card":
+        $title = $i18n->t("Upload new lobby card for {title}");
+        break;
+
+      case "backdrop":
+        $title = $i18n->t("Upload new backdrop for {title}");
+        break;
+    }
 
     // Initialize the page, no need for micro-data as this page is only accessible for authenticated users and no bots.
-    $this->initPage(str_replace($search, [ $this->image->name, $this->movie->displayTitleWithYear ], $title));
-    $this->pageTitle = str_replace($search, [ $this->image->name, "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>" ], $title);
+    $this->initPage(str_replace("{title}", $this->movie->displayTitleWithYear, $title));
+    $this->pageTitle = str_replace("{title}", "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>", $title);
 
     // Initialize the rest of the page.
     $this->initLanguageLinks("/movie/{0}/{$this->image->routeKey}/upload", [ $this->movie->id ]);
@@ -128,7 +139,8 @@ class ImageUpload extends \MovLib\Presentation\Movie\AbstractBase {
 
     // Initialize the upload form.
     $this->inputImage             = new InputImage("image", $this->image->name, $this->image);
-    $this->inputDescription       = new InputHTML("description", $i18n->t("Description"), $this->image->description, [ "required" ]);
+    $this->inputDescription       = new InputHTML("description", $i18n->t("Description"), $this->image->description);
+    $this->inputDescription->allowExternalLinks()->allowLists();
     $this->inputCountryCode       = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
     $this->inputLanguageCode      = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode, [ "required" ]);
     $this->inputPublishedDate     = new InputDateSeparate("date", $i18n->t("Publishing Date"), $this->image->publishingDate, date("Y"), 1800);
@@ -139,6 +151,22 @@ class ImageUpload extends \MovLib\Presentation\Movie\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Get the page's content.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The page's content.
+   */
+  protected function getPageContent() {
+    global $i18n;
+    return "{$this->form}<p>{$i18n->t(
+      "By clicking on upload you confirm that you created this photo or scan yourself. For more information about the " .
+      "licensing of your contributions read our {terms_of_use}.",
+      [ "terms_of_use" => "<a href='{$i18n->r("/terms-of-use")}'>{$i18n->t("Terms of Use")}</a>" ]
+    )}</p>";
+  }
 
   /**
    * Upload image after form validation.

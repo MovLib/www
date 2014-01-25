@@ -129,11 +129,11 @@ class Show extends \MovLib\Presentation\Page {
     if ($this->person->birthDate && $this->person->birthplace) {
       $date = new Date($this->person->birthDate);
       $birthCountry = new Country($this->person->birthplace->countryCode);
-      $birthInfo = "<br>{$i18n->t("Born on {0} in {1}, {2}", [ "<a href='{$i18n->rp("/year/{0}/persons", [ $date->dateInfo["year"] ])}'>{$date->formatSchemaProperty([ "itemprop" => "birthDate" ])}</a>", $this->person->birthplace->name, $this->a($i18n->rp("/country/{0}/persons", [ $this->person->birthplace->countryCode ]), $birthCountry) ])}";
+      $birthInfo = "<br>{$i18n->t("Born on {0} in {1}, {2}", [ "<a href='{$i18n->rp("/year/{0}/persons", [ $date->dateInfo["year"] ])}'>{$date->format([ "itemprop" => "birthDate" ])}</a>", $this->person->birthplace->name, $this->a($i18n->rp("/country/{0}/persons", [ $this->person->birthplace->countryCode ]), $birthCountry) ])}";
     }
     elseif ($this->person->birthDate && !$this->person->birthplace) {
       $date = new Date($this->person->birthDate);
-      $birthInfo = "<br>{$i18n->t("Born on {0}", [ "<a href='{$i18n->rp("/year/{0}/persons", [ $date->dateInfo["year"] ])}'>{$date->formatSchemaProperty([ "itemprop" => "birthDate" ])}</a>" ])}";
+      $birthInfo = "<br>{$i18n->t("Born on {0}", [ "<a href='{$i18n->rp("/year/{0}/persons", [ $date->dateInfo["year"] ])}'>{$date->format([ "itemprop" => "birthDate" ])}</a>" ])}";
     }
     elseif ($this->person->birthplace) {
       $birthInfo = "<br>{$i18n->t("Born in {0}, {1}", [ $this->person->birthplace->name, new Country($this->person->birthplace->countryCode) ])}";
@@ -144,20 +144,20 @@ class Show extends \MovLib\Presentation\Page {
     if ($this->person->deathDate && $this->person->deathplace) {
       if ($this->person->birthDate) {
         $birthDate = new Date($this->person->birthDate);
-        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1} in {2}, {3}", [ $birthDate->getAge($this->person->deathDate), $date->formatSchemaProperty([ "itemprop" => "deathDate" ]),  $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
+        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1} in {2}, {3}", [ $birthDate->getAge($this->person->deathDate), $date->format([ "itemprop" => "deathDate" ]),  $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
       }
       else {
-        $deathInfo = "<br>{$i18n->t("Died on {0} in {1}, {2}", [ $date->formatSchemaProperty("deathDate"), $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
+        $deathInfo = "<br>{$i18n->t("Died on {0} in {1}, {2}", [ $date->format("deathDate"), $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
       }
     }
     elseif ($this->person->deathDate && !$this->person->deathplace) {
       $date = new Date($this->person->deathDate);
       if ($this->person->birthDate) {
         $birthDate = new Date($this->person->birthDate);
-        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1}", [ $birthDate->getAge($this->person->deathDate), $date->formatSchemaProperty([ "itemprop" => "deathDate" ]),  ])}";
+        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1}", [ $birthDate->getAge($this->person->deathDate), $date->format([ "itemprop" => "deathDate" ]),  ])}";
       }
       else {
-        $deathInfo = "<br>{$i18n->t("Died on {0}", [ $date->formatSchemaProperty([ "itemprop" => "deathDate" ]) ])}";
+        $deathInfo = "<br>{$i18n->t("Died on {0}", [ $date->format([ "itemprop" => "deathDate" ]) ])}";
       }
     }
     elseif ($this->person->deathplace) {
@@ -278,7 +278,7 @@ class Show extends \MovLib\Presentation\Page {
       $links .= "</ul>";
     }
     $sections["links"] = [
-      $i18n->t("External links"),
+      $i18n->t("External Links"),
       $links,
     ];
 

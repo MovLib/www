@@ -295,16 +295,25 @@
   z-index: -1;
 }
 
+#user-nav .sm2 {
+  min-width: 140px;
+}
+
+#user-nav .sm3 {
+  min-width: 220px;
+}
+
 #user-nav .no-list {
   margin-bottom: 0;
 }
 
 #user-nav .no-list a {
   margin-left: -10px;
-  padding: 5px 0 5px 10px;
+  padding: 5px 10px;
   display: block;
   border-bottom: 0;
   transition-property: background-color, color;
+  white-space: pre;
 }
 
 #user-nav .no-list a:focus,

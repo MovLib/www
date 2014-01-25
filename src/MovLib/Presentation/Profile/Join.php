@@ -133,20 +133,17 @@ class Join extends \MovLib\Presentation\Page {
     $this->email    = new InputEmail();
     $this->password = new InputPassword();
 
-    $this->terms = new InputCheckbox("terms", $i18n->t(
-      "I accept the {0}Privacy Policy{2} and {1}Terms of Use{2}.",
-      [ "<a href='{$i18n->t("/privacy-policy")}'>", "<a href='{$i18n->r("/terms-of-use")}'>", "</a>" ]
-    ), [ "required" ]);
+    $this->terms = new InputCheckbox("terms", $i18n->t("I accept the {privacy_policy} and {terms_of_use}.", [
+      "privacy_policy" => "<a href='{$i18n->t("/privacy-policy")}'>{$i18n->t("Privacy Policy")}</a>",
+      "terms_of_use"   => "<a href='{$i18n->r("/terms-of-use")}'>{$i18n->t("Terms of Use")}</a>"
+    ]), [ "required" ]);
 
     $this->form                             = new Form($this, [ $this->username, $this->email, $this->password, $this->terms ]);
     $this->form->attributes["action"]       = $kernel->requestURI;
     $this->form->attributes["autocomplete"] = "off";
     $this->form->attributes["class"]        = "s s6 o3";
 
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Sign Up"), [
-      "class" => "btn btn-large btn-success",
-      "title" => $i18n->t("Click here to sign up after you filled out all fields"),
-    ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Sign Up"), [ "class" => "btn btn-large btn-success" ]);
 
     if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
       $this->validateToken();

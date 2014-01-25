@@ -101,10 +101,7 @@ class PasswordSettings extends \MovLib\Presentation\Profile\Show {
     $this->form->attributes["autocomplete"] = "off";
 
     // The submit button.
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Change"), [
-      "class" => "btn btn-large btn-success",
-      "title" => $i18n->t("Continue here to request the password change after you filled out all fields."),
-    ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Change"), [ "class" => "btn btn-large btn-success" ]);
   }
 
 

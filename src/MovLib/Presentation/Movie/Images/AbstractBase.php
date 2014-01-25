@@ -20,6 +20,7 @@ namespace MovLib\Presentation\Movie\Images;
 use \MovLib\Data\Image\AbstractMovieImage;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Country;
 
 /**
  * Base class for all movie images presentation pages.

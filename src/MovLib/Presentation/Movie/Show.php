@@ -24,7 +24,6 @@ use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Duration;
 use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\Lists\Persons;
-use \MovLib\Presentation\Error\NotFound;
 
 /**
  * Single movie presentation page.
@@ -242,22 +241,21 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
           "<div class='front'>{$stars}</div>" .
         "</fieldset>{$this->form->close()}" .
         "<small>{$ratingSummary}</small>" .
-        "<small><span class='vh'>{$i18n->t("Runtime:")} </span>{$runtime} | <span class='vh'>{$i18n->t("Countries:")} </span>{$this->getCountries()}</small>" .
-        "<small><span class='vh'>{$i18n->t("Genres:")} </span>{$this->getGenres()}</small>" .
+        "<small><span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Runtime") ])} </span>{$runtime} | <span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Countries") ])} </span>{$this->getCountries()}</small>" .
+        "<small><span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Genres") ])} </span>{$this->getGenres()}</small>" .
       "</div>" . // close .span
-      "<div id='movie-poster' class='s s3 tac'>{$this->getImage(
-        $this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03),
-        $i18n->rp("/movie/{0}/posters", [ $this->movie->id ]),
-        [ "itemprop" => "image" ]
-      )}<div id='movie-rating-mean'>" .
-        \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean) .
-      "</div></div>" .
+      "<div id='movie-poster' class='s s3 tac'>" .
+        $this->getImage($this->movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_03), true, [ "itemprop" => "image" ]) .
+        "<div id='movie-rating-mean'>" .
+          \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($this->movie->ratingMean) .
+        "</div>" .
+      "</div>" .
     "</div>"; // close .row
 
     $sections["synopsis"] = [
       $i18n->t("Synopsis"),
       empty($this->movie->synopsis)
-        ? $i18n->t("No synopsis available, {0}write one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
+        ? $i18n->t("No synopsis available, {0}write synopsis{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
         : $kernel->htmlDecode($this->movie->synopsis)
       ,
     ];
@@ -333,7 +331,7 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
         $this->movie->rate($rating);
       }
       else {
-        $this->checkErrors($i18n->t("The submitted rating isn’t valid. Valid ratings range from: 1 to 5"));
+        $this->checkErrors($i18n->t("The submitted rating isn’t valid. Valid ratings range from: {min} to {max}", [ "min" => 1, "max" => 5 ]));
       }
     }
 

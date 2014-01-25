@@ -80,9 +80,11 @@ class ResetPassword extends \MovLib\Presentation\Page {
    * Instantiate new user reset password presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
-    global $i18n;
+    global $i18n, $kernel;
+
     $this->initPage($i18n->t("Reset Password"));
     $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
     $this->initLanguageLinks("/profile/reset-password");
@@ -103,7 +105,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
       $this->form->attributes["autocomplete"] = "off";
 
       // The submit button.
-      $this->form->actionElements[] = new InputSubmit($i18n->t("Reset Password"), [
+      $this->form->actionElements[] = new InputSubmit($i18n->t("Reset"), [
         "class" => "btn btn-large btn-success",
         "title" => $i18n->t("Continue here to reset your password after you filled out all fields."),
       ]);
@@ -111,20 +113,21 @@ class ResetPassword extends \MovLib\Presentation\Page {
     else {
       $this->email = new InputEmail();
       $this->email->attributes["placeholder"] = $i18n->t("Enter your email address");
+      $this->email->setHelp($i18n->t("Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email.", [ "sitename" => $kernel->siteName ]));
 
       $this->form = new Form($this, [ $this->email ], "{$this->id}-email");
 
-      $this->form->actionElements[] = new InputSubmit($i18n->t("Request Password Reset"), [
-        "class" => "btn btn-large btn-success",
-        "title" => $i18n->t("Continue here to request a password reset for the entered email address"),
-      ]);
+      $this->form->actionElements[] = new InputSubmit($i18n->t("Reset"), [ "class" => "btn btn-large btn-success" ]);
     }
 
     $this->form->attributes["class"] = "s s6 o3";
   }
 
   /**
-   * @inheritdoc
+   * Get the page's content.
+   *
+   * @return string
+   *   The page's content.
    */
   public function getContent() {
     return "<div class='c'><div class='r'>{$this->form}</div></div>";

@@ -227,8 +227,8 @@ class Page extends \MovLib\Presentation\AbstractBase {
         "<section class='last s s4'>" .
           "<div class='popup'>" .
             "<div class='content'><h2>{$i18n->t("Choose your language")}</h2><small>{$i18n->t(
-              "Is your language missing in our list? {0}Help us translate {1}.{2}",
-              [ "<a href='//{$kernel->domainLocalize}/'>", $kernel->siteName, "</a>" ]
+              "Is your language missing in our list? {0}Help us translate {sitename}.{1}",
+              [ "<a href='//{$kernel->domainLocalize}/'>", "</a>", "sitename" => $kernel->siteName ]
             )}</small>{$languageLinks}</div>" .
             "<a class='ico ico-languages' id='f-language' tabindex='0'>{$i18n->t("Language")}: {$currentLanguageName}</a>" .
           "</div>" .
@@ -297,15 +297,13 @@ class Page extends \MovLib\Presentation\AbstractBase {
           [ $i18n->rp("/movies"), $i18n->t("Latest Entries") ],
           [ $i18n->rp("/movies/charts"), $i18n->t("Charts") ],
           [ $i18n->r("/movie/create"), $i18n->t("Create New") ],
-          [ $i18n->rp("/movies/reviews"), $i18n->t("Latest Reviews") ],
           [ $i18n->r("/movie/random"), $i18n->t("Random Movie") ],
         ]],
-        "series" => [ $i18n->t("Series"), [
-          [ $i18n->rp("/series"), $i18n->t("Latest Entries") ],
-          [ $i18n->rp("/series/charts"), $i18n->t("Charts") ],
-          [ $i18n->r("/series/create"), $i18n->t("Create New") ],
-          [ $i18n->rp("/series/reviews"), $i18n->t("Latest Reviews") ],
-          [ $i18n->r("/series/random"), $i18n->t("Random Series") ],
+        "serials" => [ $i18n->t("Serials"), [
+          [ $i18n->rp("/serials"), $i18n->t("Latest Entries") ],
+          [ $i18n->rp("/serials/charts"), $i18n->t("Charts") ],
+          [ $i18n->r("/serials/create"), $i18n->t("Create New") ],
+          [ $i18n->r("/serials/random"), $i18n->t("Random Serial") ],
         ]],
         "persons" => [ $i18n->t("Persons"), [
           [ $i18n->rp("/persons"), $i18n->t("Latest Entries") ],
@@ -342,7 +340,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     if ($session->isAuthenticated === true) {
       $userIcon = "<div class='clicker ico ico-settings authenticated'>{$this->getImage($session->userAvatar, false)}<span class='badge'>2</span></div>";
       $userNavigation =
-        "<ul class='o1 s2 no-list'>" .
+        "<ul class='o1 sm2 no-list'>" .
           "<li>{$this->a($i18n->r("/profile/messages"), $i18n->t("Messages"), [ "class" => "ico ico-email" ])}</li>" .
           "<li>{$this->a($i18n->r("/profile/collection"), $i18n->t("Collection"), [ "class" => "ico ico-release" ])}</li>" .
           "<li>{$this->a($i18n->r("/profile/wantlist"), $i18n->t("Wantlist"), [ "class" => "ico ico-heart" ])}</li>" .
@@ -359,10 +357,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
     else {
       $userIcon = "<div class='btn btn-inverse clicker ico ico-user-add'></div>";
       $userNavigation =
-        "<ul class='o1 s2 no-list'>" .
+        "<ul class='o1 sm2 no-list'>" .
           "<li>{$this->a($i18n->r("/profile/sign-in"), $i18n->t("Sign In"))}</li>" .
           "<li>{$this->a($i18n->r("/profile/join"), $i18n->t("Join"))}</li>" .
-          "<li>{$this->a($i18n->r("/profile/reset-password"), $i18n->t("Reset Password"))}</li>" .
+          "<li>{$this->a($i18n->r("/profile/reset-password"), $i18n->t("Forgot Password"))}</li>" .
         "</ul>"
       ;
     }
@@ -386,7 +384,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
             "<h2 class='visible clicker'>{$i18n->t("Explore")}</h2>" .
             "<div class='concealed r'>" .
               $subNavigations["explore"]["movies"] .
-              $subNavigations["explore"]["series"] .
+              $subNavigations["explore"]["serials"] .
               "<div class='s s3'>{$subNavigations["explore"]["persons"]}{$subNavigations["explore"]["companies"]}</div>" .
               $subNavigations["explore"]["more"] .
             "</div>" .
@@ -412,7 +410,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "</form>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='user-nav' role='navigation' tabindex='0'>" .
             "<h2 class='vh'>{$i18n->t("User Navigation")}</h2>{$userIcon}" .
-            "<div class='concealed s s3'>{$userNavigation}</div>" .
+            "<div class='concealed s sm3'>{$userNavigation}</div>" .
           "</nav>" .
         "</div>" .
       "</div></div></header>"
@@ -524,14 +522,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected function getMainContent() {
     global $kernel;
 
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (!isset($this->breadcrumb) || !($this->breadcrumb instanceof Navigation)) {
-      throw new \LogicException("You have to initialize the breadcrumb!");
-    }
-    // @devEnd
-    // @codeCoverageIgnoreEnd
-
     // Allow the presentation to alter the main content in getContent() method.
     $content = $this->getContent();
 
@@ -539,7 +529,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
     $title = $this->pageTitle ?: $this->title;
 
     // Add the current page to the breadcrumb.
-    $this->breadcrumb->menuitems[] = [ $kernel->requestPath, $this->breadcrumbTitle ?: $this->title ];
+    if ($this->breadcrumb) {
+      $this->breadcrumb->menuitems[] = [ $kernel->requestPath, $this->breadcrumbTitle ?: $this->title ];
+    }
 
     // The schema for the complete page content.
     $schema = null;

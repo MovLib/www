@@ -94,10 +94,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     $this->form  = new Form($this, [ $this->email ]);
 
     // The submit button.
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Request Email Change"), [
-      "class" => "btn btn-large btn-success",
-      "title" => $i18n->t("Click here to request the change of your email address after you filled out all fields."),
-    ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Change"), [ "class" => "btn btn-large btn-success" ]);
   }
 
 

@@ -126,12 +126,12 @@ trait TraitPagination {
       // Generate the previous link if it isn't the first page.
       if ($x >= 1) {
         // Only include the query string if we aren't linking to the very first page.
-        $pages[] = [ ($x > 1 ? "{$route}{$x}" : $kernel->requestPath), $i18n->t("« previous"), [ "rel" => "previous" ] ];
+        $pages[] = [ ($x > 1 ? "{$route}{$x}" : $kernel->requestPath), "<span class='ico ico-chevron-left small'></span> {$i18n->t("previous")}", [ "class" => "pager", "rel" => "previous" ] ];
       }
       // We totally mute this pagination item for screen readers and alike because it has no value anymore for them. But
       // we keep it on normal screens to ensure that the pagination navigation always looks the same on all pages.
       else {
-        $pages[] = "<span class='mute' aria-hidden='true'>{$i18n->t("« previous")}</span>";
+        $pages[] = "<span class='mute pager' aria-hidden='true'><span class='ico ico-chevron-left small'></span> {$i18n->t("previous")}</span>";
       }
 
       // Always add the first page to the pagination for fast jumps to the beginning.
@@ -146,7 +146,7 @@ trait TraitPagination {
         $x = 3;
       }
       else {
-        $pages[] = "<span class='mute'>{$i18n->t("…")}</span>";
+        $pages[] = "<span class='mute pager'>{$i18n->t("…")}</span>";
         $x--;
       }
 
@@ -167,20 +167,20 @@ trait TraitPagination {
           $pages[] = [ "{$route}{$secondLast}", $secondLast ];
         }
         else {
-          $pages[] = "<span class='mute'>{$i18n->t("…")}</span>";
+          $pages[] = "<span class='mute pager'>{$i18n->t("…")}</span>";
         }
 
         // Always add the last page to the pagination for fast traveling.
-        $pages[] = [ "{$route}{$this->pageCount}", $this->pageCount, [ "rel" => "last" ] ];
+        $pages[] = [ "{$route}{$this->pageCount}", $this->pageCount, [ "class" => "pager", "rel" => "last" ] ];
       }
 
       // Check if we have a next page and perform the same logic as we used for the previous link.
       if ($this->page < $this->pageCount) {
         $next    = $this->page + 1;
-        $pages[] = [ "{$route}{$next}", $i18n->t("next »"), [ "rel" => "next" ] ];
+        $pages[] = [ "{$route}{$next}", "{$i18n->t("next")} <span class='ico ico-chevron-right small'></span>", [ "class" => "pager", "rel" => "next" ] ];
       }
       else {
-        $pages[] = "<span class='mute' aria-hidden='true'>{$i18n->t("next »")}</span>";
+        $pages[] = "<span class='mute pager' aria-hidden='true'>{$i18n->t("next")} <span class='ico ico-chevron-right small'></span></span>";
       }
 
       $pagination = new Navigation($i18n->t("Pagination"), $pages, [ "id" => "pagination-nav" ]);

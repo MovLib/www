@@ -98,9 +98,7 @@ class SignIn extends \MovLib\Presentation\Page {
     $this->initPage($i18n->t("Sign In"));
     $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
 
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [
-      "sitename" => $kernel->siteName
-    ])}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join")}</a>";
 
     $this->email                      = new InputEmail();
     $this->email->setHelp("<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
@@ -108,10 +106,7 @@ class SignIn extends \MovLib\Presentation\Page {
     $this->form                       = new Form($this, [ $this->email, $this->password ]);
     $this->form->attributes["class"]  = "s s6 o3";
 
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Sign In"), [
-      "class" => "btn btn-large btn-success",
-      "title" => $i18n->t("Click here to sign in after you filled out all fields"),
-    ]);
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
   }
 
   /**
@@ -141,8 +136,8 @@ class SignIn extends \MovLib\Presentation\Page {
     }
 
     $kernel->alerts .= new Alert(
-      $i18n->t("Successfully Signed In!"),
-      $i18n->t("Welcome back {0}!", [ $this->placeholder($session->userName) ]),
+      $i18n->t("Successfully Signed In"),
+      $i18n->t("Welcome back {username}!", [ "username" => $session->userName ]),
       Alert::SEVERITY_SUCCESS
     );
 

@@ -105,9 +105,32 @@ class I18n {
     // here!
     if (!$locale) {
       // Use language code from subdomain if present.
-      (isset($_SERVER["LANGUAGE_CODE"]) && ($locale = $kernel->systemLanguages[$_SERVER["LANGUAGE_CODE"]]))
+      if (isset($_SERVER["LANGUAGE_CODE"])) {
+        $locale = $kernel->systemLanguages[$_SERVER["LANGUAGE_CODE"]];
+      }
       // Use the best matching value from the user's submitted HTTP accept language header.
-      || (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"]) && (strlen($localeTmp = $_SERVER["HTTP_ACCEPT_LANGUAGE"]) > 1) && isset($kernel->systemLanguages["{$localeTmp[0]}{$localeTmp[1]}"]) && ($locale = $kernel->systemLanguages["{$localeTmp[0]}{$localeTmp[1]}"]));
+      elseif (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"])) {
+        preg_match_all("/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $httpAcceptLanguages);
+        if (count($httpAcceptLanguages[1])) {
+          $languages = array_combine($httpAcceptLanguages[1], $httpAcceptLanguages[4]);
+          foreach ($languages as $language => $value){
+            if (!isset($language[0]) || !isset($language[1])) {
+              unset($languages[$language]);
+            }
+            $language = "{$language[0]}{$language[1]}";
+            if (empty($value)) {
+              $languages[$language] = 1;
+            }
+          }
+          arsort($languages, SORT_NUMERIC);
+        }
+        foreach ($languages as $language => $value){
+          if (isset($kernel->systemLanguages[$language])) {
+            $locale = $kernel->systemLanguages[$language];
+            break;
+          }
+        }
+      }
     }
     // If we still have no locale, use defaults.
     if (!$locale) {
@@ -347,6 +370,9 @@ class I18n {
         else {
           $messages[$this->locale][$message] = $message;
         }
+      }
+      else {
+        $message = $messages[$this->locale][$message];
       }
     }
 

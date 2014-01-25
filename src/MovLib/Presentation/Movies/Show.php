@@ -52,7 +52,7 @@ class Show extends \MovLib\Presentation\Page {
       [ $this->languageLinks[$i18n->languageCode], $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
       [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
       [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
-      [ $i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ] ],
+      [ $i18n->rp("/series"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
       [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
     ]);
     $this->initPagination(Movie::getMoviesCount());
@@ -87,8 +87,8 @@ class Show extends \MovLib\Presentation\Page {
       // We have to use different micro-data if display and original title differ.
       if ($movie->displayTitle != $movie->originalTitle) {
         $displayTitleItemprop = "alternateName";
-        $movie->originalTitle = "<br><span class='small'>{$i18n->t("Original title: “{original_title}”", [
-          "original_title" => "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>"
+        $movie->originalTitle = "<br><span class='small'>{$i18n->t("Original title: “{0}”", [
+          "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>"
         ])}</span>";
       }
       // Simplay clear the original title if it's the same as the display title.
