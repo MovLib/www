@@ -59,10 +59,9 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
    */
   protected function initBreadcrumb(array $breadcrumbs = []) {
     global $i18n;
-    return parent::initBreadcrumb([
-      [ $i18n->rp("/movies"), $i18n->t("Movies") ],
-      [ $this->movie->route, $this->movie->displayTitleWithYear ],
-    ] + $breadcrumbs);
+    array_unshift($breadcrumbs, [ $i18n->rp("/movies"), $i18n->t("Movies") ]);
+    array_unshift($breadcrumbs, [ $this->movie->route, $this->movie->displayTitleWithYear ]);
+    return parent::initBreadcrumb($breadcrumbs);
   }
 
   /**

@@ -17,110 +17,144 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Country;
+use \MovLib\Data\Movie\Movie;
+use \MovLib\Presentation\Partial\Country;
+use \MovLib\Presentation\Partial\Form;
+use \MovLib\Presentation\Partial\FormElement\InputDateSeparate;
+use \MovLib\Presentation\Partial\FormElement\InputHTML;
+use \MovLib\Presentation\Partial\FormElement\InputImage;
+use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\Select;
 use \MovLib\Presentation\Partial\Language;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Presentation\Redirect\SeeOther;
 
 /**
- * Form to upload a new or edit an existing movie image.
+ * Base class for all movie upload (and edit) classes.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageUpload extends \MovLib\Presentation\Movie\Images {
+class ImageUpload extends \MovLib\Presentation\Movie\AbstractBase {
   use \MovLib\Presentation\TraitFormPage;
-  use \MovLib\Presentation\TraitUpload;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The concrete image that is going to be uploaded.
+   * The class name of the image we're going to upload.
    *
-   * @var \MovLib\Data\Image\AbstractImage
+   * @var string
+   */
+  protected $class;
+
+  /**
+   * The image we're going to upload.
+   *
+   * @var \MovLib\Data\Image\AbstractMovieImage
    */
   protected $image;
 
   /**
-   * The select form element for the country.
+   * The input image form element.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\Select
+   * @var \MovLib\Presentation\Partial\FormElement\InputImage
    */
-  protected $selectCountry;
+  protected $inputImage;
 
   /**
-   * The select form element for the language.
+   * The input description form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputHTML
+   */
+  protected $inputDescription;
+
+  /**
+   * The select country from element.
    *
    * @var \MovLib\Presentation\Partial\FormElement\Select
    */
-  protected $selectLanguage;
+  protected $inputCountryCode;
 
+  /**
+   * The select language form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\Select
+   */
+  protected $inputLanguageCode;
+
+  /**
+   * The input date form element.
+   *
+   * @var \MovLib\Presentation\Partial\FormElement\InputDateSeparate
+   */
+  protected $inputPublishedDate;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new movie image upload presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Presentation\Error\NotFound
+   */
+  public function __construct() {
+    global $i18n;
+
+    // Try to load movie and image.
+    $this->movie = new Movie((integer) $_SERVER["MOVIE_ID"]);
+    $this->class = "\\MovLib\\Data\\Image\\Movie{$_SERVER["IMAGE_CLASS"]}";
+    $this->image = new $this->class($this->movie->id, $this->movie->displayTitleWithYear);
+
+    // Translate title once.
+    $title       = $i18n->t("Upload new {image_name} for {title}");
+    $search      = [ "{image_name}", "{title}" ];
+
+    // Initialize the page, no need for micro-data as this page is only accessible for authenticated users and no bots.
+    $this->initPage(str_replace($search, [ $this->image->name, $this->movie->displayTitleWithYear ], $title));
+    $this->pageTitle = str_replace($search, [ $this->image->name, "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>" ], $title);
+
+    // Initialize the rest of the page.
+    $this->initLanguageLinks("/movie/{0}/{$this->image->routeKey}/upload", [ $this->movie->id ]);
+    $this->initBreadcrumb([[ $i18n->rp("/movie/{0}/{$this->image->routeKeyPlural}", [ $this->movie->id ]), $this->image->namePlural ]]);
+    $this->breadcrumbTitle = $i18n->t("Upload");
+    $this->initSidebar();
+
+    // Initialize the upload form.
+    $this->inputImage             = new InputImage("image", $this->image->name, $this->image);
+    $this->inputDescription       = new InputHTML("description", $i18n->t("Description"), $this->image->description, [ "required" ]);
+    $this->inputCountryCode       = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
+    $this->inputLanguageCode      = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode, [ "required" ]);
+    $this->inputPublishedDate     = new InputDateSeparate("date", $i18n->t("Publishing Date"), $this->image->publishingDate, date("Y"), 1800);
+    $this->form                   = new Form($this, [ $this->inputImage, $this->inputDescription, $this->inputCountryCode, $this->inputLanguageCode, $this->inputPublishedDate ]);
+    $this->form->multipart();
+    $this->form->actionElements[] = new InputSubmit($i18n->t("Upload"), [ "class" => "btn btn-large btn-success" ]);
+  }
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * @inheritdoc
-   */
-  protected function getPageContent() {
-    return $this->form;
-  }
-
-  /**
-   * Initialize movie image upload page.
+   * Upload image after form validation.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @return this
-   * @throws \MovLib\Presentation\Error\NotFound
-   */
-  protected function initImagePage() {
-    global $i18n;
-
-    // Try to load the movie with the identifier from the request and set the breadcrumb title.
-    $this->initMoviePage($i18n->t("Upload New {image_type_name}", [ "image_type_name" => $this->imageTypeName]));
-
-    // Create absolute for the image and instantiate an empty one.
-    $class       = "\\MovLib\\Data\\Image\\Movie{$this->imageClassName}";
-    $this->image = new $class($this->movie->id, $this->movie->displayTitleWithYear);
-
-    // Translate the title once, we don't need Intl for replacing. The head title has no anchors and the page title has.
-    $title           = $i18n->t("Upload new {image_type_name} for {title}");
-    $search          = [ "{image_type_name}", "{title}" ];
-    $this->initPage(str_replace($search, [ $this->imageTypeName, $this->movie->displayTitleWithYear ], $title));
-    $this->pageTitle = str_replace($search, [ $this->imageTypeName, "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>" ], $title);
-
-    // Initialize the language links for this page.
-    $this->initLanguageLinks("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id]);
-
-    // Add entry to parent page.
-    $this->breadcrumb->menuitems[] = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id]), $this->imageTypeNamePlural];
-
-    // Instantiate additional input elments and initialize the upload form.
-    $this->selectCountry  = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
-    $this->selectLanguage = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode ?: "xx", [ "required"]);
-    $this->initUpload([ $this->selectCountry, $this->selectLanguage]);
-
-    // Initialize the sidebar.
-    return $this->initSidebar();
-  }
-
-  /**
-   * @inheritdoc
    * @global \MovLib\Data\User\Session $session
+   * @throws \MovLib\Presentation\Redirect\SeeOther
    */
   protected function valid() {
     global $session;
-    $this->image->countryCode  = $this->selectCountry->value;
-    $this->image->description  = $this->inputDescription->value;
-    $this->image->languageCode = $this->selectLanguage->value;
-    $this->image->uploaderId   = $session->userId;
+    $this->image->description    = $this->inputDescription->value;
+    $this->image->countryCode    = $this->inputCountryCode->value;
+    $this->image->languageCode   = $this->inputLanguageCode->value;
+    $this->image->publishingDate = $this->inputPublishedDate->value;
+    $this->image->uploaderId     = $session->userId;
     $this->image->upload($this->inputImage->path, $this->inputImage->extension, $this->inputImage->height, $this->inputImage->width);
-    throw new SeeOtherRedirect($this->image->route);
+    throw new SeeOther($this->image->route);
   }
 
 }
