@@ -94,7 +94,7 @@ class PersonImage extends \MovLib\Data\Image\AbstractImage {
       $this->styles
     );
     if (!$stmt->fetch()) {
-      throw new \OutOfBoundsException("Couldn't find person photo for identifier '{$id}' (person identifier '{$personId}')");
+      throw new \OutOfBoundsException("Couldn't find person photo for person identifier '{$personId}'");
     }
     $stmt->close();
     if ($this->uploaderId) {
@@ -106,7 +106,7 @@ class PersonImage extends \MovLib\Data\Image\AbstractImage {
     $this->filename        = $this->personId;
 
     if ($this->imageExists === true) {
-      $this->route = $i18n->r("/person/{0}/photo/", [ $personId ]);
+      $this->route = $i18n->r("/person/{0}/photo", [ $personId ]);
     }
     else {
       $this->route = $i18n->r("/person/{0}/photo/upload", [ $personId ]);
