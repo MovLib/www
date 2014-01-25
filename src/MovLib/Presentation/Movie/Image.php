@@ -17,83 +17,133 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Image\MovieBackdrop;
-use \MovLib\Data\User\User;
-use \MovLib\Presentation\Partial\Country;
-use \MovLib\Presentation\Partial\Date;
-use \MovLib\Presentation\Partial\DateTime;
-use \MovLib\Presentation\Partial\Form;
-use \MovLib\Presentation\Partial\FormElement\Button;
-use \MovLib\Presentation\Partial\Language;
-use \MovLib\Presentation\Partial\License;
-use \MovLib\Presentation\TraitDeletionRequest;
+use \MovLib\Data\Image\AbstractMovieImage;
 
 /**
- * Present a single movie image.
+ * Abstract base class for all movie image presentations.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2013 MovLib
+ * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Image extends \MovLib\Presentation\Movie\Images {
-  use \MovLib\Presentation\TraitFormPage;
+class Image extends \MovLib\Presentation\Movie\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
   /**
-   * How many images we want within our image stream before and after the showed image.
+   * The amount of images to the left and right of the currently presented image in the image stream.
    *
    * @var integer
    */
-  const STREAM_IMAGE_COUNT = 4;
+  const IMAGE_STREAM_COUNT = 4;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The movie image to present.
+   * The class name of the movie image.
    *
-   * @var \MovLib\Data\Image\MovieBackdrop
+   * @var string
+   */
+  protected $class;
+
+  /**
+   * Total image count.
+   *
+   * @var integer
+   */
+  protected $count = 0;
+
+  /**
+   * Position of the current image within all images.
+   *
+   * @var integer
+   */
+  protected $current;
+
+  /**
+   * The movie image we are currently presenting.
+   *
+   * @var \MovLib\Data\Image\AbstractMovieImage
    */
   protected $image;
 
+  /**
+   * Rendered image stream.
+   *
+   * @var string
+   */
+  protected $streamImages;
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  /**
+   * Rendered previous link.
+   *
+   * @var string
+   */
+  protected $streamPrevious;
+
+  /**
+   * Rendered next link.
+   *
+   * @var string
+   */
+  protected $streamNext;
+
+  /**
+   * All available images as JSON string for our JavaScript.
+   *
+   * @var string
+   */
+  protected $streamJSON;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Get the page's content.
+   * Instantiate new movie image presentation.
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @return string
+   * @throws \MovLib\Exception\DatabaseException
+   * @throws \MovLib\Presentation\Error\NotFound
    */
-  protected function getPageContent() {
+  public function __construct() {
     global $i18n, $kernel;
 
-    // Build the form to like this image.
-    $this->form = new Form($this, [ new Button("like", "<span class='vh'>{$i18n->t("")}</span>", []) ]);
+    // Try to load the movie and export all variables to class scope.
+    $this->movie = new Movie((integer) $_SERVER[ "MOVIE_ID" ]);
+    $this->class = "\\MovLib\\Data\\Image\\Movie{$_SERVER["IMAGE_CLASS"]}";
+    $this->image = new $this->class($this->movie->id, $this->movie->displayTitleWithYear, (integer) $_SERVER["IMAGE_ID"]);
 
-    // Build the image stream.
-    $images      = $this->movie->getImageStreamResult($this->imageTypeId);
-    $streamArray = $streamJSON = $more = null;
+    // We have to build the image stream right away because we need to know how many images we have in total and the
+    // position of our image within all the images.
+    $images = call_user_func("{$this->class}::getImages", $this->movie->id);
+    $more   = $streamArray = null;
 
-    /* @var $image \MovLib\Data\Image\MovieBackdrop */
-    while ($image = $images->fetch_object("\\MovLib\\Data\\Image\\Movie{$this->imageClassName}", [ $this->movie->id, $this->movie->displayTitleWithYear ])) {
+    /* @var $image \MovLib\Data\Image\AbstractMovieImage */
+    while ($image = $images->fetch_object($this->class, [ $this->movie->id, $this->movie->displayTitleWithYear ])) {
+      // We have to go through all images to create the JSON data for our JavaScript, which means we can easily keep
+      // count as well.
+      $this->count++;
+
       // If this is the current image start building the visible image stream.
       if ($image->id === $this->image->id) {
+        // We found the position of our current image.
+        $this->current = $this->count;
+
         // Only go through all of this if the $streamArray isn't still NULL / empty.
         if ($streamArray) {
           // Get the last four images that were added to the stream array.
-          $streamArray = array_slice($streamArray, -self::STREAM_IMAGE_COUNT, self::STREAM_IMAGE_COUNT);
+          $streamArray = array_slice($streamArray, -self::IMAGE_STREAM_COUNT, self::IMAGE_STREAM_COUNT);
 
-          // Count them, we desperately need four images.
-          if (($c = count($streamArray)) < self::STREAM_IMAGE_COUNT) {
+          // Count them, we desperately need the exact amount of images.
+          if (($c = count($streamArray)) < self::IMAGE_STREAM_COUNT) {
             // Create a copy of the images we have.
             $streamCopy  = $streamArray;
 
@@ -102,7 +152,7 @@ class Image extends \MovLib\Presentation\Movie\Images {
 
             // The formula is easy, we take the current index and add the result of the total available places minus the
             // total count of available elements which gives us the new position.
-            $x = self::STREAM_IMAGE_COUNT - $c;
+            $x = self::IMAGE_STREAM_COUNT - $c;
             for ($i = $c - 1; $i >= 0; --$i) {
               $streamArray[$i + $x] = $streamCopy[$i];
             }
@@ -110,8 +160,8 @@ class Image extends \MovLib\Presentation\Movie\Images {
         }
 
         // Finally add the current image to the stream array exactly in the middle of the stream.
-        $streamArray[self::STREAM_IMAGE_COUNT] = $image;
-        $more                                  = self::STREAM_IMAGE_COUNT;
+        $streamArray[self::IMAGE_STREAM_COUNT] = $image;
+        $more                                  = self::IMAGE_STREAM_COUNT;
       }
       // $more has either to be NULL or greater than zero for us to put another image into it.
       elseif (!$more || $more > 0) {
@@ -128,37 +178,81 @@ class Image extends \MovLib\Presentation\Movie\Images {
       // every image to the JSON array because it makes things easy as soon as we stop page loads and directly navigate
       // the image stream with JS as each anchor/image combination within the stream directly corresponds to the offset
       // within this array.
-      $streamJSON[] = [ "id" => $image->id, "src" => $image->getStyle()->src ];
+      $this->streamJSON[] = [ "id" => $image->id, "src" => $image->getStyle()->src ];
     }
 
     $images->free();
-    $streamJSON = json_encode($streamJSON);
+    $this->streamJSON = json_encode($this->streamJSON);
 
     // Format the visible images.
-    $stream = null;
-    $c      = self::STREAM_IMAGE_COUNT * 2 + 1;
+    $c = self::STREAM_IMAGE_COUNT * 2 + 1;
     for ($i = 0; $i < $c; ++$i) {
-      $image   = empty($streamArray[$i]) ? null : $this->getImage($streamArray[$i]->getStyle(MovieBackdrop::STYLE_SPAN_01_SQUARE));
-      $stream .= "<div class='s s1'>{$image}</div>";
+      $image               = empty($streamArray[$i]) ? null : $this->getImage($streamArray[$i]->getStyle(AbstractMovieImage::STYLE_SPAN_01_SQUARE));
+      $this->streamImages .= "<div class='s s1'>{$image}</div>";
     }
 
     // Check if we have a previous image.
-    $previous = self::STREAM_IMAGE_COUNT - 1;
-    if (!empty($streamArray[$previous])) {
-      $previous = [ "class" => "ico ico-chevron-left s s1", "href" => $streamArray[$previous]->route, "rel" => "previous" ];
+    $this->streamPrevious = self::IMAGE_STREAM_COUNT - 1;
+    if (!empty($streamArray[$this->streamPrevious])) {
+      $this->streamPrevious = [ "class" => "ico ico-chevron-left s s1", "href" => $streamArray[$this->streamPrevious]->route, "rel" => "previous" ];
     }
     else {
-      $previous = [ "aria-hidden" => "true", "class" => "ico ico-chevron-left mute s s1" ];
+      $this->streamPrevious = [ "aria-hidden" => "true", "class" => "ico ico-chevron-left mute s s1" ];
     }
 
     // Check if we have a next image.
-    $next = self::STREAM_IMAGE_COUNT + 1;
-    if (!empty($streamArray[$next])) {
-      $next = [ "class" => "ico ico-chevron-right s s1 tar", "href" => $streamArray[$next]->route, "rel" => "next" ];
+    $this->streamNext = self::IMAGE_STREAM_COUNT + 1;
+    if (!empty($streamArray[$this->streamNext])) {
+      $this->streamNext = [ "class" => "ico ico-chevron-right s s1 tar", "href" => $streamArray[$this->streamNext]->route, "rel" => "next" ];
     }
     else {
-      $next = [ "aria-hidden" => "true", "class" => "ico ico-chevron-right mute s s1 tar" ];
+      $this->streamNext = [ "aria-hidden" => "true", "class" => "ico ico-chevron-right mute s s1 tar" ];
     }
+
+    // Initialize the breadcrumb ...
+    $this->initBreadcrumb([[ $i18n->rp("/movie/{0}/{$this->image->routeKeyPlural}", [ $this->movie->id ]), $this->image->namePlural ]]);
+
+    // Translate title once, we don't need Intl formatting for the numbers.
+    $title  = $i18n->t("{image_name} {current} of {total} from {title}");
+    $search = [ "{image_name}", "{current}", "{total}", "{title}" ];
+
+    // ... initialize page and extend the page's visible title with a link and micro-data ...
+    $this->initPage(str_replace($search, [ $this->image->name, $this->current, $this->count, $this->movie->displayTitleWithYear ], $title));
+    $pageTitle = "<span itemprop='name'{$this->lang($this->movie->displayTitleLanguageCode)}>{$this->movie->displayTitle}</span>";
+    if ($this->movie->year) {
+      $pageTitle = $i18n->t("{0} ({1})", [ $pageTitle, "<span itemprop='datePublished'>{$this->movie->year}</span>" ]);
+    }
+    $this->pageTitle = str_replace($search, [
+      $this->image->namePlural,
+      $this->current,
+      $this->count,
+      "<span itemscope itemtype='http://schema.org/Movie'><a href='{$this->movie->route}' itemprop='url'>{$pageTitle}</a>",
+    ], $title);
+
+    // ... initialize small sidebar ...
+    $this->initSidebar();
+    $this->smallSidebar = true;
+
+    // ... and finally the language links, CSS class, schema and stylesheet.
+    $this->initLanguageLinks("/movie/{0}/{$this->image->routeKey}/{1}", [ $this->movie->id, $this->image->id ]);
+    $this->bodyClasses    .= " imagedetails";
+    $this->schemaType      = "ImageObject";
+    $kernel->stylesheets[] = "imagedetails";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Get the page's content.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @return string
+   */
+  protected function getPageContent() {
+    global $i18n, $kernel;
 
     // Format the optional fields.
     $dl = null;
@@ -183,7 +277,6 @@ class Image extends \MovLib\Presentation\Movie\Images {
     $uploader = new User(User::FROM_ID, $this->image->uploaderId);
     $dateTime = new DateTime($this->image->changed, [ "itemprop" => "uploadDate" ]);
 
-    // Include shop links for this particular poser.
     $offers = null;
     // @todo Build shop links
     if (!$offers) {
@@ -198,20 +291,16 @@ class Image extends \MovLib\Presentation\Movie\Images {
     return
       "<meta itemprop='representativeOfPage' content='true'>" .
       "<div class='c' id='imagedetails'>" .
-        "<script>{$streamJSON}</script>" .
+        "<script>{$this->streamJSON}</script>" .
         "<div class='cf stream'>" .
-          "<a{$this->expandTagAttributes($previous)}><span class='vh'>{$i18n->t("Previous {image_type_name}", [
-            "image_type_name" => $this->imageTypeName
-          ])}</span></a>" .
-          $stream .
-          "<a{$this->expandTagAttributes($next)}><span class='vh'>{$i18n->t("Next {image_type_name}", [
-            "image_type_name" => $this->imageTypeName
-          ])}</span></a>" .
+          "<a{$this->expandTagAttributes($this->streamPrevious)}><span class='vh'>{$i18n->t("Previous {image_name}", [ "image_name" => $this->name ])}</span></a>" .
+          $this->streamImages .
+          "<a{$this->expandTagAttributes($this->streamNext)}><span class='vh'>{$i18n->t("Next {image_name}", [ "image_name" => $this->name ])}</span></a>" .
         "</div>" .
         TraitDeletionRequest::getDeletionRequestedAlert($this->image->deletionId) .
         "<div class='r wrapper'>" .
           "<div class='s s8 tac image'>{$this->getImage(
-            $this->image->getStyle(MovieBackdrop::STYLE_SPAN_07),
+            $this->image->getStyle(AbstractMovieImage::STYLE_SPAN_07),
             $this->image->getURL(),
             [ "itemprop" => "thumbnailUrl" ],
             [ "itemprop" => "contentUrl", "target" => "_blank" ]
@@ -233,69 +322,20 @@ class Image extends \MovLib\Presentation\Movie\Images {
   }
 
   /**
-   * Initialize the movie image show page.
+   * Initialize the movie image presentation's sidebar.
    *
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @return this
-   */
-  protected function initImagePage() {
-    global $i18n, $kernel;
-
-    $kernel->stylesheets[]             = "imagedetails";
-    $formattedId                       = $i18n->format("{0,number,integer}", [ $_SERVER["IMAGE_ID"] ]);
-    $this->initMoviePage($i18n->t("{image_type_name} {id}", [ "id" => $formattedId, "image_type_name" => $this->imageTypeName ]));
-    $class                             = "\\MovLib\\Data\\Image\\Movie{$this->imageClassName}";
-    $this->image                       = new $class($this->movie->id, $this->movie->displayTitleWithYear, (integer) $_SERVER["IMAGE_ID"]);
-    $this->initPage($i18n->t("{image_type_name} {id} of {title}", [
-      "image_type_name" => $this->imageTypeName,
-      "id"              => $formattedId,
-      "title"           => $this->movie->displayTitleWithYear,
-    ]));
-    $this->initLanguageLinks("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ]);
-    $this->pageTitle                   = $i18n->t("{image_type_name} {id} of {title}", [
-      "image_type_name" => $this->imageTypeName,
-      "id"              => $formattedId,
-      "title"           => "<a href='{$this->movie->route}'>{$this->movie->displayTitleWithYear}</a>",
-    ]);
-    $this->breadcrumb->menuitems[]     = [ $i18n->rp("/movie/{0}/{$this->routeKeyPlural}", [ $this->movie->id ]), $this->imageTypeNamePlural ];
-    $this->bodyClasses                .= " imagedetails";
-    $this->schemaType                  = "ImageObject";
-    $this->initSidebar()->smallSidebar = true;
-
-    return $this;
-  }
-
-  /**
-   * Initialize the movie image details sidebar.
-   *
    * @return this
    */
   protected function initSidebar() {
     global $i18n;
-    // Combile arguments array once.
     $args = [ $this->movie->id, $this->image->id ];
-
-    $deletionRequest = null;
-    if (isset($_GET["deletion_request"])) {
-      $deletionRequest = "?deletion_request={$_GET["deletion_request"]}";
-    }
-
     return $this->initSidebarTrait([
-      [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}", $args), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
+      [ $this->image->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
       [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}/edit", $args), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}/history", $args), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-      [ "{$i18n->r("/movie/{0}/{$this->routeKey}/{1}/delete", $args)}{$deletionRequest}", $i18n->t("Delete"), [ "class" => "delete ico ico-delete" ] ]
+      [ $i18n->r("/movie/{0}/{$this->routeKey}/{1}/delete", $args), $i18n->t("Delete"), [ "class" => "delete ico ico-delete" ] ]
     ]);
-  }
-
-  /**
-   * Valid form callback.
-   *
-   * @return this
-   */
-  protected function valid() {
-    return $this;
   }
 
 }

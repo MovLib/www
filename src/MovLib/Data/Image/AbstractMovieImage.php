@@ -97,7 +97,7 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
    *
    * @var string
    */
-  public $languageCode;
+  public $languageCode = "xx";
 
   /**
    * The movie's unique identifier this backdrop belongs to.
@@ -498,7 +498,7 @@ abstract class AbstractMovieImage extends \MovLib\Data\Image\AbstractImage {
         `uploader_id`      = ?,
         `changed`          = FROM_UNIXTIME(?),
         `created`          = FROM_UNIXTIME(?),
-        `dyn_descriptions` = COLUMN_CREATE(`dyn_descriptions`, ?, ?),
+        `dyn_descriptions` = COLUMN_CREATE(?, ?),
         `extension`        = ?,
         `filesize`         = ?,
         `height`           = ?,
