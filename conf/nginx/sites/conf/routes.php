@@ -393,13 +393,13 @@ location ^~ <?= $r("/person") ?> {
   }
 
   location ~* "^<?= $r("/person/{0}/photo/edit", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\Photo\\Edit";
+    set $movlib_presenter "Person\\PhotoEdit";
     set $movlib_person_id $1;
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/person/{0}/photo/upload", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\Photo\\Upload";
+    set $movlib_presenter "Person\\PhotoEdit";
     set $movlib_person_id $1;
     try_files $movlib_cache @php;
   }
