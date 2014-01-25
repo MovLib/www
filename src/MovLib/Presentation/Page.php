@@ -323,6 +323,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
         ]],
       ],
       "community" => [
+        "users" => [ $i18n->t("Users"), [
+          [ $i18n->rp("/users"), $i18n->t("Latest Users") ],
+        ]],
         "utilities" => [ $i18n->t("Utilities"), [
           [ $i18n->rp("/deletion-requests"), $i18n->t("Deletion Requests") ],
         ]],
@@ -392,7 +395,10 @@ class Page extends \MovLib\Presentation\AbstractBase {
           "</nav>" .
           "<nav aria-expanded='false' aria-haspopup='true' class='expander' id='community-nav' role='navigation' tabindex='0'>" .
             "<h2 class='visible clicker'>{$i18n->t("Community")}</h2>" .
-            "<div class='concealed r'>{$subNavigations["community"]["utilities"]}</div>" .
+            "<div class='concealed r'>" .
+              $subNavigations["community"]["users"] .
+              $subNavigations["community"]["utilities"] .
+            "</div>" .
           "</nav>" .
           "<form action='{$i18n->t("/search")}' class='s' id='s' method='post' role='search'>" .
             "<input type='hidden' name='form_id' value='header_search'>" .
