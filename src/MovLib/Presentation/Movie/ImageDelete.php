@@ -29,7 +29,7 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageDelete extends \MovLib\Presentation\Movie\Image {
+class ImageDelete extends \MovLib\Presentation\Movie\Backdrop {
   use \MovLib\Presentation\TraitDeletionRequest;
 
   /**

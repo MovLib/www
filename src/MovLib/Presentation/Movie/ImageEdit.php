@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Movie;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageEdit extends \MovLib\Presentation\Movie\Image {
+class ImageEdit extends \MovLib\Presentation\Movie\Backdrop {
   use \MovLib\Presentation\TraitUpload;
 
 
