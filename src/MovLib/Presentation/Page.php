@@ -402,7 +402,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
               $subNavigations["community"]["utilities"] .
             "</div>" .
           "</nav>" .
-          "<form action='{$i18n->t("/search")}' class='s' id='s' method='get' role='search'>" .
+          "<form action='{$i18n->r("/search")}' class='s' id='s' method='get' role='search'>" .
             "<button class='ico ico-search' tabindex='2' type='submit'><span class='vh'>{$i18n->t(
               "Start searching for the entered keyword."
             )}</span></button>" .
