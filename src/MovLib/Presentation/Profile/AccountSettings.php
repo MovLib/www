@@ -172,8 +172,8 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
       0 => $i18n->t("Unknown"),
     ], $this->user->sex, $i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
 
-    $birthdayMax = $_SERVER["REQUEST_TIME"] - 1.893e8;   //   6 years
-    $birthdayMin = $_SERVER["REQUEST_TIME"] - 3.78683e9; // 120 years
+    $birthdayMax = date("Y-m-d", strtotime("-6 years", $_SERVER["REQUEST_TIME"]));
+    $birthdayMin = date("Y-m-d", strtotime("-120 years", $_SERVER["REQUEST_TIME"]));
     $this->birthday = new InputDate("birthday", $i18n->t("Date of Birth"), [
       "max"   => $birthdayMax,
       "min"   => $birthdayMin,
@@ -183,6 +183,7 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
       ]),
       "value" => $this->user->birthday,
     ], $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
+    $this->birthday->setHelp($i18n->t("If your browser does not support the datepicker, please use the format {0}", [ $i18n->t("yyyy-mm-dd") ]));
 
     $this->aboutMe  = new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, [
       "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),

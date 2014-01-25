@@ -45,16 +45,16 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
 
   /**
-   * The maximum date as string in the format <code>"Y-m-d"</code>.
+   * The maximum date.
    *
-   * @var string
+   * @var \DateTime
    */
   protected $max;
 
   /**
-   * The minimum date as string in the format <code>"Y-m-d"</code>
+   * The minimum date.
    *
-   * @var string
+   * @var \DateTime
    */
   protected $min;
 
@@ -64,7 +64,9 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
   /**
    * Instantiate new input form element of type date.
+   * IMPORTANT NOTE: Supply min and max attributes only as valid date strings! Otherwise the validation will crash.
    *
+   * @global \MovLib\Data\User\Session $session
    * @param string $id
    *   The date's global unique identifier.
    * @param string $label
@@ -79,14 +81,20 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
    *   You <b>should not</b> override any of the default attributes.
    */
   public function __construct($id, $label, array $attributes = null) {
+    global $session;
     parent::__construct($id, $label, $attributes);
     $this->attributes["data-format"] = "Y-m-d";
     $this->attributes["type"]        = "date";
+    $timezone = new \DateTimeZone($session->userTimeZoneId);
     if (isset($this->attributes["max"])) {
-      $this->max = $this->attributes["max"];
+      $this->max = new \DateTime($this->attributes["max"], $timezone);
     }
     if (isset($this->attributes["min"])) {
-      $this->min = $this->attributes["min"];
+      $this->min = new \DateTime($this->attributes["min"], $timezone);
+    }
+    // Placeholders are not permitted on date inputs by the HTML standard.
+    if (isset($this->attributes["placeholder"])) {
+      unset($this->attributes["placeholder"]);
     }
   }
 
@@ -141,8 +149,7 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
     // Validate date maximum.
     if ($this->max) {
-      $max = new \DateTime($this->max, $timezone);
-      if ($value > $max) {
+      if ($value > $this->max) {
         throw new ValidationException($i18n->t("The date {0} must not be greater than {1}.", [
           $i18n->formatDate($value, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
           $i18n->formatDate($max, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
@@ -152,8 +159,7 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
     // Validate date minimum.
     if ($this->min) {
-      $min = new \DateTime($this->min, $timezone);
-      if ($value < $min) {
+      if ($value < $this->min) {
         throw new ValidationException($i18n->t("The date {0} must not be less than {1}.", [
           $i18n->formatDate($value, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
           $i18n->formatDate($min, $session->userTimeZoneId, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
