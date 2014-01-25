@@ -278,6 +278,10 @@ location ^~ <?= $r("/movie") ?> {
     try_files $movlib_cache @php;
   }
 
+  location ~ "(.*)/+$" {
+    return 301 $1;
+  }
+
   rewrite .* /error/NotFound last;
 }
 
@@ -328,6 +332,10 @@ location ^~ <?= $r("/company") ?> {
     set $movlib_presenter "Company\\Delete";
     set $movlib_company_id $1;
     try_files $movlib_cache @php;
+  }
+
+  location ~ "(.*)/+$" {
+    return 301 $1;
   }
 
   rewrite .* /error/NotFound last;
@@ -402,6 +410,10 @@ location ^~ <?= $r("/person") ?> {
     set $movlib_presenter "Person\\Photo\\Upload";
     set $movlib_person_id $1;
     try_files $movlib_cache @php;
+  }
+
+  location ~ "(.*)/+$" {
+    return 301 $1;
   }
 
   rewrite .* /error/NotFound last;
@@ -515,6 +527,10 @@ location ^~ <?= $r("/user") ?> {
     set $movlib_presenter "User\\Show";
     set $movlib_user_name $1;
     try_files $movlib_cache @php;
+  }
+
+  location ~ "(.*)/+$" {
+    return 301 $1;
   }
 
   rewrite .* /error/NotFound last;
@@ -633,6 +649,10 @@ location ^~ <?= $r("/country") ?> {
   }
   <?php endforeach ?>
 
+  location ~ "(.*)/+$" {
+    return 301 $1;
+  }
+
   rewrite .* /error/NotFound last;
 }
 
@@ -661,6 +681,10 @@ location ^~ <?= $r("/year") ?> {
     try_files $movlib_cache @php;
   }
   <?php endforeach ?>
+
+  location ~ "(.*)/+$" {
+    return 301 $1;
+  }
 
   rewrite .* /error/NotFound last;
 }
