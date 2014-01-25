@@ -82,6 +82,16 @@ trait TraitFormPage {
   }
 
   /**
+   * Get the page's content, by default we simply render the form.
+   *
+   * @return string
+   *   The page's content.
+   */
+  protected function getPageContent() {
+    return $this->form;
+  }
+
+  /**
    * The page's validation callback, this must be public to enable a form instance to call this method.
    *
    * The {@see valid()} method is automatically called if no errors were encountered.
