@@ -143,12 +143,12 @@ class I18n {
   }
 
   /**
-   * Format the given timestamp for output.
+   * Format the given date or timestamp for output.
    *
    * @link http://www.php.net/manual/en/class.intldateformatter.php#intl.intldateformatter-constants
    * @todo Allow override of used locale to format the date.
-   * @param int $timestamp
-   *   The timestamp to format.
+   * @param string|int $dateOrTimestamp
+   *   The date or timestamp to format.
    * @param null|string $timezone
    *   One of the {@link http://www.php.net/manual/en/timezones.php PHP timezone identifiers}. Defaults to system
    *   default timezone from <code>php.ini</code> configuration file.
@@ -161,11 +161,14 @@ class I18n {
    * @throws \Exception
    *   If the supplied timezone is not recognised as a valid timezone.
    */
-  public function formatDate($timestamp, $timezone = null, $datetype = \IntlDateFormatter::LONG, $timetype = \IntlDateFormatter::LONG) {
+  public function formatDate($dateOrTimestamp, $timezone = null, $datetype = \IntlDateFormatter::LONG, $timetype = \IntlDateFormatter::LONG) {
     if (!$timezone) {
       $timezone = ini_get("date.timezone");
     }
-    return (new \IntlDateFormatter($this->locale, $datetype, $timetype, new \DateTimeZone($timezone)))->format($timestamp);
+    if (is_numeric($dateOrTimestamp)) {
+      return (new \IntlDateFormatter($this->locale, $datetype, $timetype, new \DateTimeZone($timezone)))->format($dateOrTimestamp);
+    }
+    return (new \IntlDateFormatter($this->locale, $datetype, $timetype, new \DateTimeZone($timezone)))->format(new \DateTime($dateOrTimestamp));
   }
 
   /**
