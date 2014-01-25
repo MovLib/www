@@ -107,7 +107,7 @@ class Show extends \MovLib\Presentation\Page {
     // Format the user's birthday if available.
     if ($this->user->birthday) {
       $date = new Date($this->user->birthday);
-      $personalData[] = "<time itemprop='birthDate' datetime='{$date->format()}'>{$date->getAge()}</time>";
+      $personalData[] = "<time itemprop='birthDate' datetime='{$date->dateValue}'>{$date->getAge()}</time>";
     }
     if ($this->user->sex > 0) {
       $gender     = $this->user->sex === 1 ? $i18n->t("Male") : $i18n->t("Female");

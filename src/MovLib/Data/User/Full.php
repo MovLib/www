@@ -336,7 +336,7 @@ class Full extends \MovLib\Data\User\User {
     global $db;
 
     $this->deleteAvatar();
-    
+
     $db->query(
       "UPDATE `users` SET
         `email`                = NULL,
@@ -431,13 +431,17 @@ class Full extends \MovLib\Data\User\User {
     global $db;
     return $db->query(
       "SELECT
-      (SELECT COUNT(*) FROM `movies_images` WHERE `user_id` = ?)
+      (SELECT COUNT(*) FROM `posters` WHERE `uploader_id` = ?)
       +
-      (SELECT COUNT(*) FROM `persons_images` WHERE `user_id` = ?)
+      (SELECT COUNT(*) FROM `lobby_cards` WHERE `uploader_id` = ?)
       +
-      (SELECT COUNT(*) FROM `companies_images` WHERE `user_id` = ?)",
-      "ddd",
-      [ $this->id, $this->id, $this->id ]
+      (SELECT COUNT(*) FROM `backdrops` WHERE `uploader_id` = ?)
+      +
+      (SELECT COUNT(*) FROM `persons` WHERE `image_uploader_id` = ?)
+      +
+      (SELECT COUNT(*) FROM `companies` WHERE `image_uploader_id` = ?)",
+      "ddddd",
+      [ $this->id, $this->id, $this->id, $this->id, $this->id ]
     )->get_result()->fetch_row()[0];
   }
 
