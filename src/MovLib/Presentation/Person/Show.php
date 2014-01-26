@@ -173,7 +173,7 @@ class Show extends \MovLib\Presentation\Page {
     $death = $deathDate = $deathDateFormatted = $deathAge = $deathPlace = null;
     if ($this->person->deathDate) {
       $deathDate          = new Date($this->person->deathDate);
-      $deathDateFormatted = $deathDate->format([ "itemprop" => "birthDate" ]);
+      $deathDateFormatted = $deathDate->format([ "itemprop" => "deathDate" ]);
       if ($this->person->birthDate) {
         $deathAge         = $birthDate->getAge($this->person->deathDate);
       }
@@ -213,7 +213,7 @@ class Show extends \MovLib\Presentation\Page {
       if ($info) {
         $info .= "<br>";
       }
-      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->person->wikipedia}' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
+      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->person->wikipedia}' itemprop='sameAs' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
     }
 
     // Put all header information together after the closing title.
