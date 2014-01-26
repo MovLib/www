@@ -85,7 +85,7 @@ class Place {
    */
   public function __construct($id = null) {
     global $db, $i18n;
-    // Try to load the person for the given identifier.
+    // Try to load the place for the given identifier.
     if ($id) {
       $this->id = $id;
       $stmt = $db->query("
