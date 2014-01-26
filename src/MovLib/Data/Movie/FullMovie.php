@@ -47,6 +47,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   public $synopsis;
   public $taglines;
   public $title;
+  protected $userRating;
   public $votes;
 
 
@@ -242,11 +243,16 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    */
   public function getUserRating() {
     global $db, $session;
-    if ($session->isAuthenticated === true) {
+    if ($session->isAuthenticated === true && $this->userRating !== false) {
+      if ($this->userRating) {
+        return $this->userRating;
+      }
       $result = $db->query("SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1", "dd", [ $session->userId, $this->id ])->get_result()->fetch_row();
       if (isset($result[0])) {
-        return $result[0];
+        $this->userRating = $result[0];
+        return $this->userRating;
       }
+      $this->userRating = false;
     }
   }
 
@@ -265,7 +271,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
     global $db, $session;
 
     // Insert or update the user's rating for this movie.
-    if (!$this->userRating) {
+    if ($this->getUserRating() === null) {
       $db->query("INSERT INTO `movies_ratings` SET `movie_id` = ?, `user_id` = ?, `rating` = ?", "ddi", [ $this->id, $session->userId, $rating ])->close();
       $this->votes++;
     }

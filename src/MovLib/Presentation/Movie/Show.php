@@ -56,13 +56,6 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected $routeEdit;
 
-  /**
-   * The user's movie rating.
-   *
-   * @var integer
-   */
-  protected $userRating;
-
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -97,11 +90,6 @@ class Show extends \MovLib\Presentation\Page {
       [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $i18n->r("/movie/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
     ]);
-
-    // Try to load the authenticated user's rating for this movie.
-    if ($session->isAuthenticated === true) {
-      $this->userRating = $this->movie->getUserRating();
-    }
   }
 
 
@@ -198,9 +186,10 @@ class Show extends \MovLib\Presentation\Page {
     ];
 
     // Build the stars that show the currently signed in user's rating and allow her or him to rate this movie.
-    $stars = null;
+    $userRating = $this->movie->getUserRating();
+    $stars      = null;
     for ($i = 1; $i < 6; ++$i) {
-      $rated  = $i <= $this->userRating ? " class='rated'" : null;
+      $rated  = $i <= $userRating ? " class='rated'" : null;
       $stars .=
         "<button{$rated} name='rating' type='submit' value='{$i}' title='{$ratings[$i]}'>" .
           "<span class='vh'>{$i18n->t("with {0, plural, one {one star} other {# stars}}", [ $i ])} </span>" .
@@ -209,7 +198,7 @@ class Show extends \MovLib\Presentation\Page {
     }
 
     // Build an explanation based on available rating data.
-    if ($this->movie->votes === 1 && $this->userRating) {
+    if ($this->movie->votes === 1 && $userRating) {
       $ratingSummary = $i18n->t("You’re the only one who voted for this movie (yet).");
     }
     else {
