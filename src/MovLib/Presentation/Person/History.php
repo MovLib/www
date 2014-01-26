@@ -1,6 +1,6 @@
 <?php
 
-/*
+/*!
  *  This file is part of {@link https://github.com/MovLib MovLib}.
  *
  *  Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -20,11 +20,11 @@ namespace MovLib\Presentation\Person;
 use \MovLib\Data\Person\Person;
 
 /**
- * Allows editing of a person's information.
+ * A person's history
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  */
-class Edit extends \MovLib\Presentation\Page {
+class History extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
 
   /**
@@ -39,7 +39,7 @@ class Edit extends \MovLib\Presentation\Page {
 
     $this->person = new Person($_SERVER["PERSON_ID"]);
     $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ], [ $this->person->route, $this->person->name ]]);
-    $this->initPage($i18n->t("Edit {0}", [ $this->person->name ]));
+    $this->initPage($i18n->t("History of {0}", [ $this->person->name ]));
     $routeArgs = [ $this->person->id ];
     $this->initLanguageLinks("/person/{0}/discussion", $routeArgs);
     $this->initSidebar([
@@ -52,6 +52,6 @@ class Edit extends \MovLib\Presentation\Page {
 
   protected function getPageContent() {
     global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("edit person") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("person history") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 }

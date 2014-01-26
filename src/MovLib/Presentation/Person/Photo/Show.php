@@ -67,7 +67,6 @@ class Show extends \MovLib\Presentation\Page {
 
     // Initialize sidebar navigation.
     $this->initSidebar([
-        [ $this->person->route, $i18n->t("Back to Person"), [ "class" => "ico ico-person" ] ],
         [ $i18n->r("/person/{0}/photo", [ $this->person->id ]), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
         [ $i18n->r("/person/{0}/photo/edit", [ $this->person->id ]), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
         [ $i18n->r("/person/{0}/photo/history", [ $this->person->id ]), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
@@ -79,6 +78,8 @@ class Show extends \MovLib\Presentation\Page {
    * @inheritdoc
    */
   protected function getPageContent() {
+    global $i18n;
     // @todo: No photo -> display upload link and no sidebar.
+    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("show person photo") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 }
