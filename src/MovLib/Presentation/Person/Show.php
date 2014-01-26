@@ -199,7 +199,7 @@ class Show extends \MovLib\Presentation\Page {
       }
     }
     elseif ($deathPlace) {
-      $death = $i18n->t("Died in {place}", [ "place" => $deathPlace ]);
+      $death = $i18n->t("Died in {place}.", [ "place" => $deathPlace ]);
     }
     if ($death) {
       if ($info) {
