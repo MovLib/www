@@ -94,8 +94,11 @@ class Date extends \MovLib\Presentation\AbstractBase {
     elseif ($date == "now") {
       $date = date("Y-m-d", strtotime("now"));
     }
-    $this->dateInfo  = date_parse($date);
-    $this->dateValue = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-{$this->dateInfo["day"]}";
+    // Make sure date_parse() does not interpret incomplete dates as time strings.
+    $this->dateInfo          = date_parse("{$date} 00:00:00");
+    $this->dateInfo["month"] = $this->dateInfo["month"] === false ? 0 : $this->dateInfo["month"];
+    $this->dateInfo["day"]   = $this->dateInfo["day"] === false ? 0 : $this->dateInfo["day"];
+    $this->dateValue         = "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}-{$this->dateInfo["day"]}";
   }
 
 
@@ -116,23 +119,62 @@ class Date extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Get the age of the date in years.
+   * Get the age of the date in years with approximation if dates are not complete.
    *
-   * @param \DateTime $date [optional]
+   * @param int|string $date [optional]
    *   A date/time string in a valid format as explained in {@link http://www.php.net/manual/en/datetime.formats.php Date
    *   and Time Formats} or an integer, which is treated as UNIX timestamp. Defaults to <code>"now"</code>.
-   * @return integer
-   *   The age of the date in years or <code>NULL</code> if this operation is not permitted (e.g. day is missing).
+   * @return string
+   *   The age of the date in years (with approximation when dates are not complete) or <code>NULL</code> if years are missing.
    */
   public function getAge($date = "now") {
+    $approximate = false;
     if (is_int($date)) {
       $date = "@{$date}";
     }
-    $date   = new \DateTime($date);
-    $errors = \DateTime::getLastErrors();
-    if ($errors["warning_count"] === 0 && $errors["error_count"] === 0 && $this->dateInfo["month"] !== 0 && $this->dateInfo["month"] !== 0) {
-      return (new \DateTime($this->dateValue))->diff($date)->format("%y");
+    // Parse the date and repair the value if month or day are missing.
+    if (is_string($date) && $date != "now") {
+      // Make sure date_parse() does not interpret incomplete dates as time strings.
+      $dateInfo = date_parse("{$date} 00:00:00");
+      if ($dateInfo["year"] === false) {
+        return null;
+      }
+      if ($dateInfo["month"] === false || $dateInfo["month"] === 0) {
+        $dateInfo["month"] = 1;
+        $approximate = true;
+      }
+      if ($dateInfo["day"] === false || $dateInfo["day"] === 0) {
+        $dateInfo["day"] = 1;
+        $approximate = true;
+      }
+      $date = "{$dateInfo["year"]}-{$dateInfo["month"]}-{$dateInfo["day"]}";
     }
+    $date   = new \DateTime($date);
+
+    // Construct a valid representation of the internal date.
+    $thisDate = "{$this->dateInfo["year"]}-";
+    if ($this->dateInfo["month"] === 0) {
+      $thisDate .= "01";
+      $approximate = true;
+    }
+    else {
+      $thisDate .= $this->dateInfo["month"];
+    }
+    if ($this->dateInfo["day"] === 0) {
+      $thisDate .= "-01";
+      $approximate = true;
+    }
+    else {
+      $thisDate .= "-{$this->dateInfo["day"]}";
+    }
+    $thisDate = new \DateTime($thisDate);
+
+    // Finally format the diff.
+    $format = "%Y";
+    if ($approximate === true) {
+      $format = "~{$format}";
+    }
+    return $thisDate->diff($date)->format($format);
   }
 
   /**
