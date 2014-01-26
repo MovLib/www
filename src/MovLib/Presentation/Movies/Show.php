@@ -87,8 +87,9 @@ class Show extends \MovLib\Presentation\Page {
       // We have to use different micro-data if display and original title differ.
       if ($movie->displayTitle != $movie->originalTitle) {
         $displayTitleItemprop = "alternateName";
-        $movie->originalTitle = "<br><span class='small'>{$i18n->t("Original title: “{0}”", [
-          "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>"
+        $movie->originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
+          "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
+          $i18n->t("original title"),
         ])}</span>";
       }
       // Simplay clear the original title if it's the same as the display title.
