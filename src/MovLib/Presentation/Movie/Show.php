@@ -65,11 +65,10 @@ class Show extends \MovLib\Presentation\Page {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
    * @throws \MovLib\Presentation\Error\NotFound
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
+    global $i18n, $kernel;
 
     // Try to load the full movie.
     $this->movie = new FullMovie((integer) $_SERVER["MOVIE_ID"]);
@@ -156,7 +155,13 @@ class Show extends \MovLib\Presentation\Page {
     $this->schemaType = "Movie";
 
     // Enhance the page's title with microdata.
-    $this->pageTitle = "<span itemprop='name'>{$this->movie->displayTitle}</span>";
+    if ($this->movie->displayTitle == $this->movie->originalTitle) {
+      $this->pageTitle            = "<span itemprop='name'{$this->lang($this->movie->displayTitleLanguageCode)}>{$this->movie->displayTitle}</span>";
+      $this->movie->originalTitle = null;
+    }
+    else {
+      $this->pageTitle = "<span itemprop='alternateName'>{$this->movie->displayTitle}</span>";
+    }
     if ($this->movie->year) {
       $this->pageTitle = $i18n->t("{0} ({1})", [
         $this->pageTitle,
@@ -222,8 +227,13 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
     $runtime = new Duration($this->movie->runtime, [ "itemprop" => "duration" ], Duration::MINUTES);
 
     // But it all together after the closing title.
-    $this->headingAfter  =
-        "<p>{$i18n->t("{0} ({1})", [ $this->movie->originalTitle, "<i>{$i18n->t("original title")}</i>" ])}</p>" .
+    if ($this->movie->originalTitle) {
+      $this->headingAfter .= "<p>{$i18n->t("{0} ({1})", [
+        "<span itemprop='name'{$this->lang($this->movie->originalTitleLanguageCode)}>{$this->movie->originalTitle}</span>",
+        "<i>{$i18n->t("original title")}</i>",
+      ])}</p>";
+    }
+    $this->headingAfter .=
         "{$this->form->open()}<fieldset id='movie-rating'>" .
           "<legend class='vh'>{$i18n->t("Rate this movie")}</legend> " .
           "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
