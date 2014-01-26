@@ -52,3 +52,15 @@
   border-top: 1px solid #e5e5e5;
   border-bottom: 1px solid #e5e5e5;
 }
+
+.sex {
+  font-size: 0.8em;
+}
+
+.sex-1 {
+  color: #87cefa;
+}
+
+.sex-2 {
+  color: #f5b4f5;
+}
