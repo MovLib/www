@@ -307,7 +307,7 @@ class Show extends \MovLib\Presentation\Page {
       $links .= "<ul class='grid-list no-list r'>";
       $c = count($this->person->links);
       for ($i = 0; $i < $c; ++$i) {
-        $hostname = parse_url($this->person->links[$i], PHP_URL_HOST);
+        $hostname = str_replace("www.", "", parse_url($this->person->links[$i], PHP_URL_HOST));
         $links .= "<li class='mb10 s s3'><a href='{$this->person->links[$i]}' itemprop='url' rel='nofollow' target='_blank'>{$hostname}</a></li>";
       }
       $links .= "</ul>";
