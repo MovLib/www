@@ -223,7 +223,7 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
 
     // But it all together after the closing title.
     $this->headingAfter  =
-        "<p>{$i18n->t("{0} ({1})", [ $this->movie->originalTitle, $i18n->t("original title") ])}</p>" .
+        "<p>{$i18n->t("{0} ({1})", [ $this->movie->originalTitle, "<i>{$i18n->t("original title")}</i>" ])}</p>" .
         "{$this->form->open()}<fieldset id='movie-rating'>" .
           "<legend class='vh'>{$i18n->t("Rate this movie")}</legend> " .
           "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
