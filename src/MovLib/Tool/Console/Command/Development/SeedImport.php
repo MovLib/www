@@ -17,6 +17,7 @@
  */
 namespace MovLib\Tool\Console\Command\Development;
 
+use \Elasticsearch\Client as ElasticClient;
 use \MovLib\Data\UnixShell as sh;
 use \MovLib\Exception\DatabaseException;
 use \MovLib\Tool\Console\Command\Production\FixPermissions;
@@ -54,6 +55,13 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
    * @var string
    */
   const OPTION_DATABASE = "database";
+
+  /**
+   * Command option to import ElasticSearch index and types.
+   *
+   * @var string
+   */
+  const OPTION_ELASTIC = "elastic";
 
   /**
    * Command option to import Intl ICU data.
@@ -144,6 +152,7 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     // History needs a custom shortcut because '-h' is already defined by Symfony.
     $this->addOption(self::OPTION_HISTORY, "hi", InputOption::VALUE_NONE, "Create all history repositories.");
     $this->addInputOption(self::OPTION_DATABASE, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific database data.");
+    $this->addInputOption(self::OPTION_ELASTIC, InputOption::VALUE_NONE, "Create ElasticSearch index and types.");
     $this->addInputOption(self::OPTION_ICU, InputOption::VALUE_NONE, "Import ICU data.");
     $this->addInputOption(self::OPTION_UPLOAD, InputOption::VALUE_REQUIRED|InputOption::VALUE_IS_ARRAY, "Import specific upload data.");
   }
@@ -217,12 +226,40 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
   }
 
   /**
+   * Create elastic search index and types.
+   *
+   * @return this
+   */
+  public function elasticImport() {
+    $this->write("Deleting old ElasticSearch indices and creating new ...");
+
+    $elasticClient = new ElasticClient();
+
+    // Delete all indices and create movlib index.
+    $elasticClient->indices()->delete();
+    $elasticClient->indices()->create([ "index" => "movlib" ]);
+
+    // Create movie type.
+    $elasticClient->create([ "index" => "movlib", "type" => "movie", "body" => [
+      "titles" => [ "type" => "string", "analyzer" => "simple" ],
+      "year"   => [ "type" => "short", "index" => "not_analyzed" ],
+    ]]);
+
+    // Create person type.
+    $elasticClient->create([ "index" => "movlib", "type" => "person", "body" => [
+      "names" => [ "type" => "string", "analyzer" => "simple" ],
+    ]]);
+
+    return $this->write("Done, ElasticSearch is ready for indexing!", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
    * @inheritdoc
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
     $all     = true;
-    foreach ([ self::OPTION_DATABASE, self::OPTION_HISTORY, self::OPTION_ICU, self::OPTION_UPLOAD ] as $option) {
+    foreach ([ self::OPTION_DATABASE, self::OPTION_ELASTIC, self::OPTION_HISTORY, self::OPTION_ICU, self::OPTION_UPLOAD ] as $option) {
       if ($options[$option]) {
         $this->{"{$option}Import"}($options[$option]);
         $all = false;
@@ -549,9 +586,13 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
     // Array containing the names of all tasks that should be executed.
     $tasks = [
       "databaseImport",
+      "elasticImport",
       "icuImport",
       "uploadImport",
     ];
+
+    $this->write("Not allowed right now!", self::MESSAGE_TYPE_ERROR);
+    return $this;
 
     // The two additional operations are for the schema import itself.
     $this->write("Importing all seed data ...")->progressStart(count($tasks) + 2);
