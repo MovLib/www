@@ -16,7 +16,7 @@
  *  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
 
-namespace MovLib\Presentation\Person;
+namespace MovLib\Presentation\Person\Photo;
 
 use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Form;
@@ -33,7 +33,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class PhotoEdit extends \MovLib\Presentation\Page {
+class Edit extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
   use \MovLib\Presentation\TraitFormPage;
 
@@ -95,7 +95,12 @@ class PhotoEdit extends \MovLib\Presentation\Page {
 
     $this->inputImage = new InputImage("photo", $i18n->t("Photo"), $this->person->displayPhoto);
 
-    $this->inputDescription = new InputHTML("description", $i18n->t("Description"), $this->person->displayPhoto->description, [ "required" => "required" ]);
+    $this->inputDescription = new InputHTML(
+      "description",
+      $i18n->t("Description"),
+      $this->person->displayPhoto->description,
+      [ "placeholder" => $i18n->t("Please enter a detailed description of this photo."), "required" => "required" ]
+    );
 
     $this->form = new Form($this, [
       $this->inputImage,
