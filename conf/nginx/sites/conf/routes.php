@@ -395,25 +395,25 @@ location ^~ <?= $r("/person") ?> {
   #
 
   location ~* "^<?= $r("/person/{0}/photo", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\Photo";
-    set $movlib_id $1;
+    set $movlib_presenter "Person\\Photo\\Show";
+    set $movlib_person_id $1;
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/person/{0}/photo/delete", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\PhotoDelete";
+    set $movlib_presenter "Person\\Photo\\Delete";
     set $movlib_person_id $1;
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/person/{0}/photo/edit", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\PhotoEdit";
+    set $movlib_presenter "Person\\Photo\\Edit";
     set $movlib_person_id $1;
     try_files $movlib_cache @php;
   }
 
   location ~* "^<?= $r("/person/{0}/photo/upload", [ $idRegExp ]) ?>$" {
-    set $movlib_presenter "Person\\PhotoEdit";
+    set $movlib_presenter "Person\\Photo\\Upload";
     set $movlib_person_id $1;
     try_files $movlib_cache @php;
   }
