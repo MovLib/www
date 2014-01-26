@@ -8,10 +8,10 @@ Stay tuned!
 
 - - -
 
-http://movlib.org/
-
-http://richard.fussenegger.info/
-
-http://www.fh-salzburg.ac.at/
-
-http://www.gnu.org/licenses/agpl.html
+* [Official Website](https://movlib.org/)
+* [Ohloh](https://www.ohloh.net/p/movlib)
+* [Facebook](https://www.facebook.com/MovLib.org)
+* [Google+](https://google.com/+MovlibOrg)
+* [Richard Fussenegger](http://richard.fussenegger.info/)
+* [Fachhochschule Salzburg GmbH](http://www.fh-salzburg.ac.at/)
+* [AGPL-v3](http://www.gnu.org/licenses/agpl.html)
