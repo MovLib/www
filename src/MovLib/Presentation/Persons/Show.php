@@ -77,7 +77,10 @@ class Show extends \MovLib\Presentation\Page {
     while ($person = $personsResult->fetch_object("MovLib\\Data\\Person\\Person")) {
       $additionalNames = null;
       if ($person->bornName) {
-        $additionalNames .= $i18n->t("born as “{0}”", [ "<span itemprop='additionalName'>{$person->bornName}</span>" ]);
+        $additionalNames .= $i18n->t("{0} ({1})", [
+          "<span itemprop='additionalName'>{$person->bornName}</span>",
+          "<i>{$i18n->t("born name")}</i>",
+        ]);
       }
       if ($person->nickname) {
         if ($additionalNames) {

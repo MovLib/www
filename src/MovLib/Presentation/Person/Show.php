@@ -21,7 +21,7 @@ use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Person\Full as FullPerson;
 use \MovLib\Presentation\Error\Gone;
-use \MovLib\Presentation\Partial\Country;
+use \MovLib\Presentation\Partial\Place;
 use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Lists\Ordered;
 
@@ -110,86 +110,121 @@ class Show extends \MovLib\Presentation\Page {
     // Enhance the header, insert row and span before the title.
     $this->headingBefore = "<div class='r'><div class='s s10'>";
 
+    // Append sex information to name.
+    if ($this->person->sex === 1 || $this->person->sex === 2) {
+      if ($this->person->sex === 1) {
+        $title = $i18n->t("Male");
+      }
+      elseif ($this->person->sex === 2) {
+        $title = $i18n->t("Female");
+      }
+      $this->pageTitle .= " <sup class='ico ico-sex{$this->person->sex} sex sex-{$this->person->sex}' title='{$title}'></sup>";
+    }
+
     // Put the personal information together.
-    $info = [];
+    $info = null;
     if ($this->person->bornName) {
-      $info[] = "<span itemprop='additionalName'>{$this->person->bornName}</span>";
-    }
-    if (!$this->person->deathDate && $this->person->birthDate) {
-      $date = new Date($this->person->birthDate);
-      $info[] = "<time datetime='{$date->dateValue}'>{$date->getAge()}</time>";
-    }
-    if ($this->person->sex > 0) {
-      $gender     = $this->person->sex === 1 ? $i18n->t("Male") : $i18n->t("Female");
-      $info[] = "<span itemprop='gender'>{$gender}</span>";
+      $info = $i18n->t("{0} ({1})", [
+        "<span itemprop='additionalName'>{$this->person->bornName}</span>",
+        "<i>{$i18n->t("born name")}</i>",
+      ]);
     }
 
     // Construct birth info in a translatable way.
-    $birthInfo = null;
-    if ($this->person->birthDate && $this->person->birthplace) {
-      $date = new Date($this->person->birthDate);
-      $birthCountry = new Country($this->person->birthplace->countryCode);
-      $birthInfo = "<br>{$i18n->t("Born on {0} in {1}, {2}", [ "<a href='{$i18n->rp("/year/{0}/persons", [ $date->dateInfo["year"] ])}'>{$date->format([ "itemprop" => "birthDate" ])}</a>", $this->person->birthplace->name, $this->a($i18n->rp("/country/{0}/persons", [ $this->person->birthplace->countryCode ]), $birthCountry) ])}";
+    $birth = $birthDate = $birthDateFormatted = $birthAge = $birthPlace = null;
+    if ($this->person->birthDate) {
+      $birthDate          = new Date($this->person->birthDate);
+      $birthDateFormatted = "<a href='{$i18n->rp("/year/{0}/persons", [ $birthDate->dateInfo["year"] ])}'>{$birthDate->format([ "itemprop" => "birthDate" ])}</a>";
+      $birthAge           = $birthDate->getAge();
     }
-    elseif ($this->person->birthDate && !$this->person->birthplace) {
-      $date = new Date($this->person->birthDate);
-      $birthInfo = "<br>{$i18n->t("Born on {0}", [ "<a href='{$i18n->rp("/year/{0}/persons", [ $date->dateInfo["year"] ])}'>{$date->format([ "itemprop" => "birthDate" ])}</a>" ])}";
+    if ($this->person->birthplace) {
+      $birthPlace = new Place($this->person->birthplace);
     }
-    elseif ($this->person->birthplace) {
-      $birthInfo = "<br>{$i18n->t("Born in {0}, {1}", [ $this->person->birthplace->name, new Country($this->person->birthplace->countryCode) ])}";
+
+    if ($birthDate && $birthPlace) {
+      if ($this->person->deathDate) {
+        $birth = $i18n->t("Born on {date} in {place} and would be {age} years old.");
+      }
+      else {
+        $birth = $i18n->t("Born on {date} in {place} and is {age} years old.");
+      }
+      $birth = str_replace([ "{date}", "{place}", "{age}" ], [ $birthDateFormatted, $birthPlace, $birthAge ], $birth);
+    }
+    elseif ($birthDate) {
+      if ($this->person->deathDate) {
+        $birth = $i18n->t("Born on {date} and would be {age} years old.");
+      }
+      else {
+        $birth = $i18n->t("Born on {date} and is {age} years old.");
+      }
+      $birth = str_replace([ "{date}", "{age}" ], [ $birthDateFormatted, $birthAge ], $birth);
+    }
+    elseif ($birthPlace) {
+      $birth = $i18n->t("Born in {place}.", [ "place" => $birthPlace ]);
+    }
+    if ($birth) {
+      if ($info) {
+        $info .= "<br>";
+      }
+      $info .= $birth;
     }
 
     // Construct death info in a translatable way.
-    $deathInfo = null;
-    if ($this->person->deathDate && $this->person->deathplace) {
+    $death = $deathDate = $deathDateFormatted = $deathAge = $deathPlace = null;
+    if ($this->person->deathDate) {
+      $deathDate          = new Date($this->person->deathDate);
+      $deathDateFormatted = $deathDate->format([ "itemprop" => "birthDate" ]);
       if ($this->person->birthDate) {
-        $birthDate = new Date($this->person->birthDate);
-        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1} in {2}, {3}", [ $birthDate->getAge($this->person->deathDate), $date->format([ "itemprop" => "deathDate" ]),  $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
-      }
-      else {
-        $deathInfo = "<br>{$i18n->t("Died on {0} in {1}, {2}", [ $date->format("deathDate"), $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
+        $deathAge         = $birthDate->getAge($this->person->deathDate);
       }
     }
-    elseif ($this->person->deathDate && !$this->person->deathplace) {
-      $date = new Date($this->person->deathDate);
+    if ($this->person->deathplace) {
+      $deathPlace = new Place($this->person->deathplace);
+    }
+
+    if ($deathDate && $deathPlace) {
       if ($this->person->birthDate) {
-        $birthDate = new Date($this->person->birthDate);
-        $deathInfo = "<br>{$i18n->t("Died aged {0} on {1}", [ $birthDate->getAge($this->person->deathDate), $date->format([ "itemprop" => "deathDate" ]),  ])}";
+        $death = $i18n->t("Died on {date} in {place} at the age of {age} years.", [ "date" => $deathDateFormatted, "place" => $deathPlace, "age" => $deathAge ]);
       }
       else {
-        $deathInfo = "<br>{$i18n->t("Died on {0}", [ $date->format([ "itemprop" => "deathDate" ]) ])}";
+        $death = $i18n->t("Died on {date} in {place}.", [ "date" => $deathDateFormatted, "place" => $deathPlace ]);
       }
     }
-    elseif ($this->person->deathplace) {
-      $deathInfo = "<br>{$i18n->t("Died in {0}, {1}", [ $this->person->deathplace->name, new Country($this->person->deathplace->countryCode) ])}";
+    elseif ($deathDate) {
+      if ($this->person->birthDate) {
+        $death = $i18n->t("Died on {date} at the age of {age} years.", [ "date" => $deathDateFormatted, "age" => $deathAge ]);
+      }
+      else {
+        $death = $i18n->t("Died on {date}.", [ "date" => $deathDateFormatted ]);
+      }
+    }
+    elseif ($deathPlace) {
+      $death = $i18n->t("Died in {place}", [ "place" => $deathPlace ]);
+    }
+    if ($death) {
+      if ($info) {
+        $info .= "<br>";
+      }
+      $info .= $death;
     }
 
     // Construct the wikipedia link.
-    $wikipedia = null;
     if ($this->person->wikipedia) {
-      $wikipedia = "<br><i class='ico ico-wikipedia'></i><a href='{$this->person->wikipedia}' rel='nofollow' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
-    }
-
-    $info = implode(", ", $info);
-    $info = "<p>{$info}{$birthInfo}{$deathInfo}{$wikipedia}</p>";
-
-    // Check if the display photo is a placeholder. If so, don't mark it up as itemprop.
-    $imageAttributes = null;
-    if ($this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02)->placeholder === false) {
-      $imageAttributes = [ "itemprop" => "image" ];
+      if ($info) {
+        $info .= "<br>";
+      }
+      $info .= "<span class='ico ico-wikipedia'></span><a href='{$this->person->wikipedia}' target='_blank'>{$i18n->t("Wikipedia Article")}</a>";
     }
 
     // Put all header information together after the closing title.
     $this->headingAfter =
-      "{$info}</div>" . // close .s
-      "<div id='person-photo' class='s s2'>{$this->getImage(
-        $this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02),
-        $this->person->displayPhoto->route,
-        $imageAttributes
-      )}</div>" .
-    "</div>"; // close .r
+          "<p>{$info}</p>" .
+        "</div>" . // close .s
+        "<div id='person-photo' class='s s2'>{$this->getImage($this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02), true, [ "itemprop" => "image" ])}</div>" .
+      "</div>" // close .r
+    ;
 
-      return $this;
+    return $this;
   }
 
   /**
