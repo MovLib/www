@@ -64,19 +64,14 @@ class Show extends \MovLib\Presentation\Page {
 
 
   /**
-   * @inheritdoc
+   * Get the page's content.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The page's content.
    */
   protected function getPageContent() {
-    global $kernel, $i18n, $session;
-    $var = [];
-    $delayedMethods = new \ReflectionProperty($kernel, "delayedMethods");
-    $delayedMethods->setAccessible(true);
-    $delayedMethods = $delayedMethods->getValue($kernel);
-    foreach ([ $this->user, $session, $kernel, $delayedMethods ] as $obj) {
-      ob_start();
-      var_dump($obj);
-      $var[] = $kernel->htmlEncode(ob_get_clean());
-    }
+    global $i18n;
     return
       "<h2>{$i18n->t("Your Account Summary")}</h2>" .
       "<div class='r'>" .
