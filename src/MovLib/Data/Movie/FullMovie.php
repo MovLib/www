@@ -133,6 +133,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    *
    * @todo Order cast by weight not by name!
    * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
    * @param integer $limit [optional]
    *   The amount of cast members to fetch.
    * @return \mysqli_result
@@ -140,7 +141,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getCast($limit = 8) {
-    global $db;
+    global $db, $i18n;
     return $db->query(
       "SELECT
         `persons`.`id`,
@@ -148,7 +149,7 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
       FROM `movies_cast`
         INNER JOIN `persons` ON `persons`.`id` = `movies_cast`.`person_id`
       WHERE `movies_cast`.`movie_id` = ?
-      ORDER BY `persons`.`name` ASC
+      ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC
       LIMIT ?",
       "di",
       [ $this->id, $limit ]
@@ -169,16 +170,17 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   }
 
   /**
-   * Get the mysqli result for the movie's directors.
+   * Get the sorted movie's directors.
    *
    * @todo Order directors by weight not by name!
    * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
-   *   The mysqli result for the movie's directors.
+   *   The  sorted movie's directors.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getDirectors() {
-    global $db;
+    global $db, $i18n;
     return $db->query(
       "SELECT
         `persons`.`id`,
@@ -186,19 +188,19 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
       FROM `movies_directors`
         INNER JOIN `persons` ON `persons`.`id` = `movies_directors`.`person_id`
       WHERE `movies_directors`.`movie_id` = ?
-      ORDER BY `persons`.`name` ASC",
+      ORDER BY `persons`.`name`{$db->collations[$i18n->languageCode]} ASC",
       "d",
       [ $this->id ]
     )->get_result();
   }
 
   /**
-   * Get the movie's genres.
+   * Get the translated and sorted movie's genres.
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
    * @return \mysqli_result
-   *   The movie's genres.
+   *   The translated and sorted movie's genres.
    * @throws \MovLib\Exception\DatabaseException
    */
   public function getGenres() {
@@ -209,7 +211,8 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
         IFNULL(COLUMN_GET(`genres`.`dyn_names`, ? AS CHAR), COLUMN_GET(`genres`.`dyn_names`, '{$i18n->defaultLanguageCode}' AS CHAR)) AS `name`
       FROM `movies_genres`
         INNER JOIN `genres` ON `genres`.`id` = `movies_genres`.`genre_id`
-      WHERE `movies_genres`.`movie_id` = ?",
+      WHERE `movies_genres`.`movie_id` = ?
+      ORDER BY `name`{$db->collations[$i18n->languageCode]} ASC",
       "sd",
       [ $i18n->languageCode, $this->id ]
     )->get_result();
