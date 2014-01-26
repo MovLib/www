@@ -31,11 +31,19 @@ return [
 
   // ------------------------------------------------------------------------------------------------------------------- Movies
   "/movies"                => "/filme",
+  "/movies/charts"         => "/filme/charts",
   "/movie/{0}/backdrops"   => "/film/{0}/hintergründe",
   "/movie/{0}/posters"     => "/film/{0}/poster",
   "/movie/{0}/lobby-cards" => "/film/{0}/aushangbilder",
   "/movie/{0}/releases"    => "/film/{0}/veröffentlichungen",
   "/movie/{0}/titles"      => "/film/{0}/titel",
+
+  // ------------------------------------------------------------------------------------------------------------------- Serials
+  "/serials"        => "/serien",
+  "/serials/charts" => "/serien/charts",
+
+  // ------------------------------------------------------------------------------------------------------------------- Releases
+  "/releases" => "/veröffentlichungen",
 
   // ------------------------------------------------------------------------------------------------------------------- Companies
   "/companies"         => "/unternehmen",

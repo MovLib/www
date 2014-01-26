@@ -17,6 +17,7 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 
 /**
@@ -47,9 +48,10 @@ class Create extends \MovLib\Presentation\Movie\AbstractBase {
    */
   public function __construct() {
     global $i18n;
-    $this->initMoviePage();
+    $this->movie = new FullMovie();
     $this->initPage($i18n->t("Create New Movie"));
     $this->initLanguageLinks("/movie/create");
+    $this->initBreadcrumb();
   }
 
 
@@ -59,8 +61,13 @@ class Create extends \MovLib\Presentation\Movie\AbstractBase {
   /**
    * @inheritdoc
    */
-  protected function getPageContent() {
-    return new Alert("Not implemented yet!");
+  protected function getContent() {
+    global $i18n;
+    $this->alerts .= new Alert(
+      $i18n->t("The create movie feature isn’t implemented yet."),
+      $i18n->t("Check back later"),
+      Alert::SEVERITY_INFO
+    );
   }
 
   /**

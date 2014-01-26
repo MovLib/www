@@ -15,36 +15,30 @@
  * You should have received a copy of the GNU Affero General Public License along with MovLib.
  * If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Movie;
+namespace MovLib\Presentation\Serial;
 
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Data\Movie\Movie;
+use \MovLib\Presentation\Redirect\SeeOther;
 
 /**
- * Delete given image.
+ * Random company presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2014 MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageDelete extends \MovLib\Presentation\Movie\AbstractBase {
+class Random {
 
   public function __construct() {
-    global $i18n;
-    $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    $this->initPage("Delete Image");
-    $this->initBreadcrumb();
-    $this->alerts .= new Alert(
-      $i18n->t("The delete image feature isn’t implemented yet."),
+    global $i18n, $kernel;
+    $kernel->alerts .= new Alert(
+      $i18n->t("There is currently no serial in our database"),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );
-  }
-
-  protected function getPageContent() {
-
+    throw new SeeOther("/");
   }
 
 }

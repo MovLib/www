@@ -17,27 +17,29 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Data\Movie\Movie;
+use \MovLib\Presentation\Partial\Alert;
 
 /**
- * Delete given image.
+ * 
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2014 MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageDelete extends \MovLib\Presentation\Movie\AbstractBase {
+class Discussion extends \MovLib\Presentation\Movie\AbstractBase {
 
   public function __construct() {
     global $i18n;
     $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    $this->initPage("Delete Image");
+    $this->initPage($i18n->t("Discuss {title}", [ "title" => $this->movie->displayTitleWithYear ]));
+    $this->initLanguageLinks("/movie/{0}/discussion", [ $this->movie->id ]);
     $this->initBreadcrumb();
+    $this->breadcrumbTitle = $i18n->t("Discuss");
     $this->alerts .= new Alert(
-      $i18n->t("The delete image feature isn’t implemented yet."),
+      $i18n->t("The discuss movie feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );

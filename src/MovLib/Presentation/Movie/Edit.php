@@ -17,34 +17,65 @@
  */
 namespace MovLib\Presentation\Movie;
 
+use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Data\Movie\Movie;
 
 /**
- * Delete given image.
+ * Movie deletion presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
- * @copyright © 2014 MovLib
+ * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ImageDelete extends \MovLib\Presentation\Movie\AbstractBase {
+class Edit extends \MovLib\Presentation\Movie\AbstractBase {
+  use \MovLib\Presentation\TraitFormPage;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new delete movie presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   */
   public function __construct() {
     global $i18n;
-    $this->movie = new Movie($_SERVER["MOVIE_ID"]);
-    $this->initPage("Delete Image");
+    $this->movie = new FullMovie($_SERVER["MOVIE_ID"]);
+    $this->initPage($i18n->t("Edit {title}", [ "title" => $this->movie->displayTitleWithYear ]));
+    $this->initLanguageLinks("/movie/{0}/edit", [ $this->movie->id ]);
     $this->initBreadcrumb();
+    $this->breadcrumbTitle = $i18n->t("Edit");
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   */
+  protected function getContent() {
+    global $i18n;
     $this->alerts .= new Alert(
-      $i18n->t("The delete image feature isn’t implemented yet."),
+      $i18n->t("The edit movie feature isn’t implemented yet."),
       $i18n->t("Check back later"),
       Alert::SEVERITY_INFO
     );
   }
 
-  protected function getPageContent() {
-
+  /**
+   * @inheritdoc
+   */
+  protected function valid() {
+    return $this;
   }
 
 }

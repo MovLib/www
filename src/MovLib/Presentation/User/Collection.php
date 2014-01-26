@@ -49,7 +49,12 @@ class Collection extends \MovLib\Presentation\User\AbstractUserPage {
    * @inheritdoc
    */
   protected function getPageContent(){
-    return new Alert("Not implemented yet!");
+    global $i18n;
+    $this->alerts .= new Alert(
+      $i18n->t("The user collection feature isn’t implemented yet."),
+      $i18n->t("Check back later"),
+      Alert::SEVERITY_INFO
+    );
   }
 
 }

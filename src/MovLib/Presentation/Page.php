@@ -302,8 +302,8 @@ class Page extends \MovLib\Presentation\AbstractBase {
         "serials" => [ $i18n->t("Serials"), [
           [ $i18n->rp("/serials"), $i18n->t("Latest Entries") ],
           [ $i18n->rp("/serials/charts"), $i18n->t("Charts") ],
-          [ $i18n->r("/serials/create"), $i18n->t("Create New") ],
-          [ $i18n->r("/serials/random"), $i18n->t("Random Serial") ],
+          [ $i18n->r("/serial/create"), $i18n->t("Create New") ],
+          [ $i18n->r("/serial/random"), $i18n->t("Random Serial") ],
         ]],
         "persons" => [ $i18n->t("Persons"), [
           [ $i18n->rp("/persons"), $i18n->t("Latest Entries") ],
@@ -317,7 +317,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
         ]],
         "more" => [ $i18n->t("More"), [
           [ $i18n->rp("/genres"), $i18n->t("Explore all genres") ],
-          [ $i18n->rp("/articles"), $i18n->t("Explore all articles") ],
         ]],
       ],
       "community" => [

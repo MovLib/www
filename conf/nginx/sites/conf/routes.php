@@ -36,6 +36,11 @@ location = <?= $rp("/movies") ?> {
   try_files $movlib_cache @php;
 }
 
+location = <?= $rp("/movies/charts") ?> {
+  set $movlib_presenter "Movies\\Charts";
+  try_files $movlib_cache @php;
+}
+
 location = <?= $r("/movie/create") ?> {
   set $movlib_presenter "Movie\\Create";
   try_files $movlib_cache @php;
@@ -54,6 +59,12 @@ location ^~ <?= $r("/movie") ?> {
 
   location ~* "^<?= $r("/movie/{0}", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Movie\\Show";
+    set $movlib_movie_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/movie/{0}/history", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Movie\\History";
     set $movlib_movie_id $1;
     try_files $movlib_cache @php;
   }
@@ -286,6 +297,14 @@ location ^~ <?= $r("/movie") ?> {
 }
 
 
+# ---------------------------------------------------------------------------------------------------------------------- company/companies
+
+
+location = <?= $rp("/releases") ?> {
+  set $movlib_presenter "Releases\\Show";
+  try_files $movlib_cache @php;
+}
+
 
 # ---------------------------------------------------------------------------------------------------------------------- company/companies
 
@@ -339,6 +358,39 @@ location ^~ <?= $r("/company") ?> {
   }
 
   rewrite .* /error/NotFound last;
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------- serials(s)
+
+
+location = <?= $rp("/serials") ?> {
+  set $movlib_presenter "Serials\\Show";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $rp("/serials/charts") ?> {
+  set $movlib_presenter "Serials\\Charts";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/serial/create") ?> {
+  set $movlib_presenter "Serial\\Create";
+  try_files $movlib_cache @php;
+}
+
+location = <?= $r("/serial/random") ?> {
+  set $movlib_presenter "Serial\\Random";
+  try_files $movlib_cache @php;
+}
+
+
+# ---------------------------------------------------------------------------------------------------------------------- genre(s)
+
+
+location = <?= $rp("/genres") ?> {
+  set $movlib_presenter "Genres\\Show";
+  try_files $movlib_cache @php;
 }
 
 

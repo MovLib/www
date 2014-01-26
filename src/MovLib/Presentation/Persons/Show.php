@@ -52,8 +52,8 @@ class Show extends \MovLib\Presentation\Page {
     $this->initSidebar([
       [ $this->languageLinks[$i18n->languageCode], $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
       [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
+      [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
       [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
-      [ $i18n->rp("/series"), $i18n->t("Series"), [ "class" => "ico ico-series" ] ],
       [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
     ]);
     $this->initPagination(Person::getTotalCount());

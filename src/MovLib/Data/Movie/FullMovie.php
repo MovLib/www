@@ -64,66 +64,68 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
    * @throws \MovLib\Exception\DatabaseException
    * @throws \MovLib\Presentation\Error\NotFound
    */
-  public function __construct($id) {
+  public function __construct($id = null) {
     global $db, $i18n;
-    $this->id = $id;
-    $stmt = $db->query(
-      "SELECT
-        `movies`.`created`,
-        `movies`.`deleted`,
-        COLUMN_GET(`movies`.`dyn_synopses`, ? AS CHAR),
-        `movies`.`mean_rating`,
-        `movies`.`rating`,
-        `movies`.`votes`,
-        `movies`.`commit`,
-        `movies`.`rank`,
-        `movies`.`runtime`,
-        `movies`.`year`,
-        IFNULL(`dt`.`title`, `ot`.`title`),
-        IFNULL(`dt`.`language_code`, `ot`.`language_code`),
-        `ot`.`title`,
-        `ot`.`language_code`,
-        `p`.`poster_id`
-      FROM `movies`
-        LEFT JOIN `movies_display_titles` AS `mdt`
-          ON `mdt`.`movie_id` = `movies`.`id`
-          AND `mdt`.`language_code` = ?
-        LEFT JOIN `movies_titles` AS `dt`
-          ON `dt`.`id` = `mdt`.`title_id`
-        LEFT JOIN `movies_original_titles` AS `mot`
-          ON `mot`.`movie_id` = `movies`.`id`
-        LEFT JOIN `movies_titles` AS `ot`
-          ON `ot`.`id` = `mot`.`title_id`
-        LEFT JOIN `display_posters` AS `p`
-          ON `p`.`movie_id` = `movies`.`id`
-          AND `p`.`language_code` = ?
-      WHERE `movies`.`id` = ?
-      LIMIT 1",
-      "sssd",
-      [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
-    );
-    $stmt->bind_result(
-      $this->created,
-      $this->deleted,
-      $this->synopsis,
-      $this->ratingMean,
-      $this->rating,
-      $this->votes,
-      $this->commit,
-      $this->rank,
-      $this->runtime,
-      $this->year,
-      $this->displayTitle,
-      $this->displayTitleLanguageCode,
-      $this->originalTitle,
-      $this->originalTitleLanguageCode,
-      $this->displayPoster
-    );
-    if (!$stmt->fetch()) {
-      throw new NotFound;
+    if ($id) {
+      $this->id = $id;
+      $stmt = $db->query(
+        "SELECT
+          `movies`.`created`,
+          `movies`.`deleted`,
+          COLUMN_GET(`movies`.`dyn_synopses`, ? AS CHAR),
+          `movies`.`mean_rating`,
+          `movies`.`rating`,
+          `movies`.`votes`,
+          `movies`.`commit`,
+          `movies`.`rank`,
+          `movies`.`runtime`,
+          `movies`.`year`,
+          IFNULL(`dt`.`title`, `ot`.`title`),
+          IFNULL(`dt`.`language_code`, `ot`.`language_code`),
+          `ot`.`title`,
+          `ot`.`language_code`,
+          `p`.`poster_id`
+        FROM `movies`
+          LEFT JOIN `movies_display_titles` AS `mdt`
+            ON `mdt`.`movie_id` = `movies`.`id`
+            AND `mdt`.`language_code` = ?
+          LEFT JOIN `movies_titles` AS `dt`
+            ON `dt`.`id` = `mdt`.`title_id`
+          LEFT JOIN `movies_original_titles` AS `mot`
+            ON `mot`.`movie_id` = `movies`.`id`
+          LEFT JOIN `movies_titles` AS `ot`
+            ON `ot`.`id` = `mot`.`title_id`
+          LEFT JOIN `display_posters` AS `p`
+            ON `p`.`movie_id` = `movies`.`id`
+            AND `p`.`language_code` = ?
+        WHERE `movies`.`id` = ?
+        LIMIT 1",
+        "sssd",
+        [ $i18n->languageCode, $i18n->languageCode, $i18n->languageCode, $this->id ]
+      );
+      $stmt->bind_result(
+        $this->created,
+        $this->deleted,
+        $this->synopsis,
+        $this->ratingMean,
+        $this->rating,
+        $this->votes,
+        $this->commit,
+        $this->rank,
+        $this->runtime,
+        $this->year,
+        $this->displayTitle,
+        $this->displayTitleLanguageCode,
+        $this->originalTitle,
+        $this->originalTitleLanguageCode,
+        $this->displayPoster
+      );
+      if (!$stmt->fetch()) {
+        throw new NotFound;
+      }
+      $stmt->close();
+      $this->init();
     }
-    $stmt->close();
-    $this->init();
   }
 
   /**

@@ -35,6 +35,7 @@ return [
   "/movie/create"         => "/film/erstellen",
   "/movie/random"         => "/film/zufällig",
   "/movie/{0}"            => "/film/{0}",
+  "/movie/{0}/history"    => "/film/{0}/geschichte",
   "/movie/{0}/discussion" => "/film/{0}/diskussion",
   "/movie/{0}/edit"       => "/film/{0}/bearbeiten",
   "/movie/{0}/delete"     => "/film/{0}/löschen",
@@ -64,6 +65,10 @@ return [
   "/movie/{0}/release/{1}/edit"       => "/film/{0}/veröffentlichung/{1}/bearbeiten",
   "/movie/{0}/release/{1}/delete"     => "/film/{0}/veröffentlichung/{1}/löschen",
 
+  // ------------------------------------------------------------------------------------------------------------------- Serials
+  "/serial/create" => "/serie/erstellen",
+  "/serial/random" => "/serie/zufällig",
+
   // ------------------------------------------------------------------------------------------------------------------- Company
   "/company"                => "/unternehmen",
   "/company/create"         => "/unternehmen/erstellen",
@@ -78,14 +83,17 @@ return [
   "/person/create"         => "/person/erstellen",
   "/person/random"         => "/person/zufällig",
   "/person/{0}"            => "/person/{0}",
+  "/person/{0}/history"    => "/person/{0}/geschichte",
   "/person/{0}/discussion" => "/person/{0}/diskussion",
   "/person/{0}/edit"       => "/person/{0}/bearbeiten",
   "/person/{0}/delete"     => "/person/{0}/löschen",
 
   // ------------------------------------------------------------------------------------------------------------------- Person Photo
-  "/person/{0}/photo"        => "/person/{0}/photo",
-  "/person/{0}/photo/edit"   => "/person/{0}/photo/bearbeiten",
-  "/person/{0}/photo/upload" => "/person/{0}/photo/hochladen",
+  "/person/{0}/photo"         => "/person/{0}/foto",
+  "/person/{0}/photo/history" => "/person/{0}/foto/geschichte",
+  "/person/{0}/photo/delete"  => "/person/{0}/foto/löschen",
+  "/person/{0}/photo/edit"    => "/person/{0}/foto/bearbeiten",
+  "/person/{0}/photo/upload"  => "/person/{0}/foto/hochladen",
 
   // ------------------------------------------------------------------------------------------------------------------- Profile
   "/profile"                       => "/profil",
