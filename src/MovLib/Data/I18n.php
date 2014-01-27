@@ -195,24 +195,6 @@ class I18n {
   }
 
   /**
-   * Format decimal number.
-   *
-   * @staticvar null $fmt
-   *   Used to cache the {@see \NumberFormatter}.
-   * @param mixed $number
-   *   The number to format.
-   * @return string
-   *   The formatted decimal number.
-   */
-  public function formatDecimal($number) {
-    static $fmt = null;
-    if (!$fmt) {
-      $fmt = new \NumberFormatter($this->locale, \NumberFormatter::DECIMAL);
-    }
-    return $fmt->format($number);
-  }
-
-  /**
    * Get collator for the current locale.
    *
    * @return \MovLib\Data\Collator

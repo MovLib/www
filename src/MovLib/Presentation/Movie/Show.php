@@ -212,7 +212,7 @@ class Show extends \MovLib\Presentation\Page {
       $ratingSummary = $i18n->t("You’re the only one who rated this movie (yet).");
     }
     else {
-      $rating = "<span itemprop='ratingValue'>{$i18n->formatDecimal($this->movie->ratingMean)}</span>";
+      $rating = "<span itemprop='ratingValue'>{$i18n->format("{0,number}", [ $this->movie->ratingMean ])}</span>";
       $votes  = "<span itemprop='ratingCount'>{$this->movie->votes}</span>";
       if ($this->movie->votes === 1) {
         $ratingSummary = $i18n->t("Rated by {votes} user with {rating}.", [ "rating" => $rating, "votes" => $votes ]);
