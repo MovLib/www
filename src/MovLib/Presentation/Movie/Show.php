@@ -165,7 +165,8 @@ class Show extends \MovLib\Presentation\Page {
     if ($this->movie->year) {
       $this->pageTitle = $i18n->t("{0} ({1})", [
         $this->pageTitle,
-        "<a itemprop='datePublished' href='{$i18n->rp("/year/{0}/movies", [ $this->movie->year ])}'>{$this->movie->year}</a>",
+        // @todo Add full publishing date to content attribute.
+        "<a content='{$this->movie->year}-00-00' itemprop='datePublished' href='{$i18n->rp("/year/{0}/movies", [ $this->movie->year ])}'>{$this->movie->year}</a>",
       ]);
     }
 
@@ -202,25 +203,28 @@ class Show extends \MovLib\Presentation\Page {
       ;
     }
 
-    // Build an explanation based on available rating data.
-    if ($this->movie->votes === 1 && $userRating) {
-      $ratingSummary = $i18n->t("You’re the only one who voted for this movie (yet).");
+    // Build an explanation based on available rating data. We can't use Intl plural forms here because we have to
+    // enclose the various integer values in microdata.
+    if ($this->movie->votes === 0) {
+      $ratingSummary = $i18n->t("No one has rated this movie so far, be the first.");
+    }
+    elseif ($this->movie->votes === 1 && $userRating) {
+      $ratingSummary = $i18n->t("You’re the only one who rated this movie (yet).");
     }
     else {
-      $ratingSummary = $i18n->t(
-        "Rated by {votes, plural,
-zero  {nobody}
-one   {one user with {mean_rating, plural, one {1 star} other {# stars}}}
-other {{link_rating_demographics}# users{link_close} with a {link_rating_help}mean rating{link_close} of {mean_rating, number}}
-}.",
-        [
-          "link_rating_demographics" => "<a href='{$i18n->r("/movie/{0}/rating-demographics", [ $this->movie->id ])}' title='{$i18n->t("View the rating demographics.")}'>",
-          "votes"                    => $this->movie->votes,
-          "link_close"               => "</a>",
-          "link_rating_help"         => "<a href='{$i18n->r("/help/movies/ratings")}' title='{$i18n->t("Go to the rating help page to find out more.")}'>",
-          "mean_rating"              => $this->movie->ratingMean,
-        ]
-      );
+      $rating = "<span itemprop='ratingValue'>{$i18n->formatDecimal($this->movie->ratingMean)}</span>";
+      $votes  = "<span itemprop='ratingCount'>{$this->movie->votes}</span>";
+      if ($this->movie->votes === 1) {
+        $ratingSummary = $i18n->t("Rated by {votes} user with {rating}.", [ "rating" => $rating, "votes" => $votes ]);
+      }
+      else {
+        $ratingSummary = $i18n->t("Rated by {votes} users with a {0}mean rating{1} of {rating}.", [
+          "<a href='{$i18n->r("/movie/{0}/rating-demographics", [ $this->movie->id ])}' title='{$i18n->t("View the rating demographics.")}'>",
+          "</a>",
+          "rating" => $rating,
+          "votes"  => $votes,
+        ]);
+      }
     }
 
     // Format the movie's duration and enhance it with microdata.
@@ -239,7 +243,7 @@ other {{link_rating_demographics}# users{link_close} with a {link_rating_help}me
           "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
           "<div class='front'>{$stars}</div>" .
         "</fieldset>{$this->form->close()}" .
-        "<small>{$ratingSummary}</small>" .
+        "<small itemprop='aggregateRating' itemscope itemtype='http://schema.org/AggregateRating'>{$ratingSummary}</small>" .
         "<small><span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Runtime") ])} </span>{$runtime} | <span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Countries") ])} </span>{$this->getCountries()}</small>" .
         "<small><span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Genres") ])} </span>{$this->getGenres()}</small>" .
       "</div>" . // close .span

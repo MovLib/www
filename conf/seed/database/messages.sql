@@ -185,17 +185,11 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('Awesome', COLUMN_CREATE('de', 'Großartig')),
 ('with {0, plural, one {one star} other {# stars}}', COLUMN_CREATE('de', 'mit {0, plural, one {einem Stern} other {# Sternen}}')),
 ('You’re the only one who voted for this movie (yet).', COLUMN_CREATE('de', 'Nur du hast diesen Film (bisher) bewertet.')),
-('Rated by {votes, plural,
-zero  {nobody}
-one   {one user with {mean_rating, plural, one {1 star} other {# stars}}}
-other {{link_rating_demographics}# users{link_close} with a {link_rating_help}mean rating{link_close} of {mean_rating, number}}
-}.', COLUMN_CREATE('de', 'Bewertet von {votes, plural,
-zero  {niemandem}
-one   {einem Benutzer mit {mean_rating, plural, one {einem Stern} other {# Sternen}}}
-other {{link_rating_demographics}# Benutzer{link_close} mit einer {link_rating_help}Durchschnittsbewertung{link_close} von {mean_rating, number}}
-}.')),
+('No one has rated this movie so far, be the first.', COLUMN_CREATE('de', 'Niemand hat diesen Film bisher bewertet, sei der Erste.')),
+('You’re the only one who rated this movie (yet).', COLUMN_CREATE('de', 'Nur du hast diesen Film (bisher) bewertet.')),
+('Rated by {votes} user with {rating}.', COLUMN_CREATE('de', 'Bewertet von {votes} Benutzer mit {rating}.')),
+('Rated by {votes} users with a {0}mean rating{1} of {rating}.', COLUMN_CREATE('de', 'Bewertet von {votes} Benutzern mit einer {0}Durchschnittsbewertung{1} von {rating}.')),
 ('View the rating demographics.', COLUMN_CREATE('de', 'Bewertungsdemographien ansehen.')),
-('Go to the rating help page to find out more.', COLUMN_CREATE('de', 'Bewertungshilfe besuchen um mehr heraus zu finden.')),
 ('Rate this movie', COLUMN_CREATE('de', 'Diesen Film bewerten')),
 ('Please {sign_in} or {join} to rate this movie.', COLUMN_CREATE('de', 'Bitte {sign_in} oder {join} um diesen Film zu bewerten.')),
 ('The submitted rating isn’t valid. Valid ratings range from: {min} to {max}', COLUMN_CREATE('de', 'Die übermittelte Bewertung ist nicht valide. Valide Bewertung sind von {min} bis {max}.')),
