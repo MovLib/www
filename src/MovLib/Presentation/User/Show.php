@@ -65,14 +65,10 @@ class Show extends \MovLib\Presentation\Page {
     $kernel->stylesheets[] = "user";
     $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
     $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
-    $routeArgs  = [ $this->user->filename ];
+    $routeArgs = [ $this->user->filename ];
     $this->initSidebar([
-      [ $i18n->r("/user/{0}/uploads", $routeArgs), "{$i18n->t("Uploads")} <span class='fr'>{$i18n->format(
-        "{0, number}", [ $this->user->getTotalUploadsCount() ]
-      )}</span>" ],
-      [ $i18n->r("/user/{0}/collection", $routeArgs), "{$i18n->t("Collection")} <span class='fr'>{$i18n->format(
-        "{0, number}", [ $this->user->getTotalCollectionCount() ]
-      )}</span>" ],
+      [ $i18n->r("/user/{0}/uploads", $routeArgs), "{$i18n->t("Uploads")} <span class='fr'>{$i18n->format("{0,number}", [ $this->user->getTotalUploadsCount() ])}</span>" ],
+      [ $i18n->r("/user/{0}/collection", $routeArgs), "{$i18n->t("Collection")} <span class='fr'>{$i18n->format("{0,number}", [ $this->user->getTotalCollectionCount() ])}</span>" ],
       [ $i18n->r("/user/{0}/contact", $routeArgs), $i18n->t("Contact") ],
     ]);
     $this->initPage($this->user->name);
@@ -143,9 +139,9 @@ class Show extends \MovLib\Presentation\Page {
     $avatar = $this->getImage($this->user->getStyle(), false, [ "itemprop" => "image" ]);
 
     // Display additional info about this user after the name and the avatar to the right of it.
-    $this->headingAfter = "{$personalData}<small>{$i18n->t("Joined {0} and was last seen {1}.", [
-      (new Date($this->user->created))->intlFormat(),
-      (new Time($this->user->access))->formatRelative(),
+    $this->headingAfter = "{$personalData}<small>{$i18n->t("Joined {date} and was last seen {time}.", [
+      "date" => (new Date($this->user->created))->intlFormat(),
+      "time" => (new Time($this->user->access))->formatRelative(),
     ])}</small></div><div class='s s2'>{$avatar}</div></div>";
 
     $publicProfile = $edit = null;
@@ -193,10 +189,7 @@ class Show extends \MovLib\Presentation\Page {
 
         // Format the display title for the list.
         if ($movie->year) {
-          $title = $i18n->t("{movie_title} ({movie_year})", [
-            "movie_title" => "<span itemprop='name'>{$movie->displayTitle}</span>",
-            "movie_year"  => "<span itemprop='datePublished'>{$movie->year}</span>",
-          ]);
+          $title = $i18n->t("{0} ({1})", [ $movie->displayTitle, $movie->year ]);
         }
         else {
           $title = "<span itemprop='name'>{$movie->displayTitle}</span>";
@@ -205,7 +198,7 @@ class Show extends \MovLib\Presentation\Page {
         // Append the original title to the output if it differs from the localized title.
         if ($movie->displayTitle != $movie->originalTitle) {
           $title .= "<br><span class='small'>{$i18n->t("Original title: “{original_title}”", [
-            "original_title" => "<span itemprop='alternateName'>{$movie->originalTitle}</span>",
+            "original_title" => "<span>{$movie->originalTitle}</span>",
           ])}</span>";
         }
 
