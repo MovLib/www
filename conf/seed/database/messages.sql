@@ -34,6 +34,8 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('the free movie library', COLUMN_CREATE('de', 'die freie Kinemathek')),
 ('{0}, the free movie library.', COLUMN_CREATE('de', '{0}, die freie Kinemathek.')),
 ('{0} {1}the {2}free{3} movie library.{4}', COLUMN_CREATE('de', '{0} {1}die {2}freie{3} Kinemathek.{4}')),
+('Go back to the home page.', COLUMN_CREATE('de', 'Gehe zurück zur Startseite.')),
+('{page_title} — {sitename}', COLUMN_CREATE('de', '{page_title} – {sitename}')),
 ('IP address or user agent string is invalid or empty.', COLUMN_CREATE('de', 'IP-Adresse oder User-Agent-Zeichenkette ist invalide oder leer.')),
 ('Please note that you have to submit your IP address and user agent string to identify yourself as being human; should you have privacy concerns read our {privacy_policy}.', COLUMN_CREATE('de', 'Bitte nimm zur Kenntniss, dass du deine IP-Adresse und User-Agent-Zeichenkette übermitteln musst um dich als Mensch zu identifizieren; sollte du Datenschutzbedenken haben lies unsere {privacy_policy}.')),
 ('You’re currently viewing this page.', COLUMN_CREATE('de', 'Du betrachtest diese Seite momentan.')),
