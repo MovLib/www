@@ -12,6 +12,7 @@ Stay tuned!
 * [Ohloh](https://www.ohloh.net/p/movlib)
 * [Facebook](https://www.facebook.com/MovLib.org)
 * [Google+](https://google.com/+MovlibOrg)
+* [Twitter](https://twitter.com/MovLib)
 * [Richard Fussenegger](http://richard.fussenegger.info/)
 * [Fachhochschule Salzburg GmbH](http://www.fh-salzburg.ac.at/)
 * [AGPL-v3](http://www.gnu.org/licenses/agpl.html)
