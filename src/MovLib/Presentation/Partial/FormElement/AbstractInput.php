@@ -47,10 +47,8 @@ abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\Ab
    */
   public function __construct($id, $label, array $attributes = null) {
     parent::__construct($id, $label, $attributes);
-    if (isset($_POST[$this->id])) {
-      $this->value = $this->attributes["value"] = empty($_POST[$this->id]) ? null : $_POST[$this->id];
-    }
-    elseif (isset($this->attributes["value"])) {
+    $this->value = $this->filterInput($this->id);
+    if (empty($this->value) && isset($this->attributes["value"])) {
       $this->value = $this->attributes["value"];
     }
   }

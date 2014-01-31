@@ -144,10 +144,10 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   The name of the variable to get.
    * @param integer $filter
    *   The identifier of the filter to apply. The {@link http://php.net/manual/filter.filters.php types of filters}
-   *   manual page lists the available filters.
+   *   manual page lists the available filters. Defaults to <var>FILTER_UNSAFE_RAW</var>.
    * @param mixed $options
    *   Associative array of options or bitwise disjunction of flags. If filter accepts options, flags can be provided
-   *   in <code>"flags"</code> field of array.
+   *   in <code>"flags"</code> field of array. Defaults to no options.
    * @param array $type
    *   The input type to filter, defaults to <var>$_POST</var>.
    * @return mixed
@@ -155,7 +155,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   <var>$name</var> variable is not set. If the flag <var>FILTER_NULL_ON_FAILURE</var> is used, it returns
    *   <code>NULL</code> if the fitler fails.
    */
-  protected function filterInput($name, $filter, $options, $type = null) {
+  protected function filterInput($name, $filter = FILTER_UNSAFE_RAW, $options = null, $type = null) {
     if (!$type) {
       $type = $_POST;
     }
