@@ -90,10 +90,7 @@ return [
 
   // ------------------------------------------------------------------------------------------------------------------- Person Photo
   "/person/{0}/photo"         => "/person/{0}/foto",
-  "/person/{0}/photo/history" => "/person/{0}/foto/geschichte",
   "/person/{0}/photo/delete"  => "/person/{0}/foto/löschen",
-  "/person/{0}/photo/edit"    => "/person/{0}/foto/bearbeiten",
-  "/person/{0}/photo/upload"  => "/person/{0}/foto/hochladen",
 
   // ------------------------------------------------------------------------------------------------------------------- Profile
   "/profile"                       => "/profil",
