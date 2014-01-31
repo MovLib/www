@@ -144,21 +144,22 @@ abstract class AbstractBase {
    */
   protected final function expandTagAttributes(array $attributes = null) {
     global $kernel;
-    $expanded = "";
-    if (isset($attributes)) {
+    if ($attributes) {
+      $expanded = null;
       foreach ($attributes as $name => $value) {
-        if (is_numeric($name)) {
-          $expanded .= " {$value}";
-        }
-        else {
-          if (is_bool($value)) {
-            $value = $value ? "true" : "false";
+        // Special handling of boolean attributes, only include them if they are true and do not include the value.
+        if (is_bool($value)) {
+          if ($value === true) {
+            $expanded .= " {$name}";
           }
+        }
+        // All other attribute are treated equally.
+        else {
           $expanded .= " {$name}='{$kernel->htmlEncode($value)}'";
         }
       }
+      return $expanded;
     }
-    return $expanded;
   }
 
   /**
