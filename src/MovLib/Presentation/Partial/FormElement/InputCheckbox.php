@@ -32,32 +32,70 @@ use \MovLib\Exception\ValidationException;
  */
 class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
   /**
-   * The form element's value.
+   * Whether this checkbox is checked or not.
    *
    * @var boolean
    */
-  public $value;
+  public $checked = false;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
 
   /**
-   * @inheritdoc
+   * Instantiate new checkbox input.
+   *
+   * @param string $id
+   *   The checkbox's unique global identifier.
+   * @param string $label
+   *   The checkbox's translated label text.
+   * @param array $attributes [optional]
+   *   The checkbox's additional attributes that should be applied, the following default attributes are always set:
+   *   <ul>
+   *     <li><code>"id"</code> is set to <var>$id</var></li>
+   *     <li><code>"name"</code> is set to <var>$id</var></li>
+   *     <li><code>"type"</code> is set to <code>"checkbox"</code></li>
+   *     <li><code>"value"</code> is set to <var>$id</var> if no value is given</li>
+   *   </ul>
    */
-  public function __construct($id, $label, array $attributes = null, $value = false) {
+  public function __construct($id, $label, array $attributes = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (isset($this->attributes["checked"]) && !is_bool($this->attributes["checked"])) {
+      throw new \InvalidArgumentException("The checkbox' checked attribute must be of type boolean");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     parent::__construct($id, $label, $attributes);
+    $this->attributes["name"] = $this->id;
     $this->attributes["type"] = "checkbox";
-    $this->value              = $value;
-    if (isset($_POST[$this->id])) {
-      $this->value = (boolean) $_POST[$this->id];
+    if (isset($this->attributes["checked"])) {
+      $this->checked = $this->attributes["checked"];
+    }
+    if (($checked = $this->filterInput($this->id))) {
+      $this->checked = (boolean) $checked;
+    }
+    if (!isset($this->attributes["value"])) {
+      $this->attributes["value"] = $this->id;
     }
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * @inheritdoc
+   * Get the rendered checkbox.
+   *
+   * @return string
+   *   The rendered checkbox.
    */
   protected function render() {
-    if ($this->value === true) {
-      $this->attributes[] = "checked";
-    }
     return "{$this->help}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)}>{$this->label}</label></p>";
   }
 
@@ -66,7 +104,7 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
    */
   public function validate() {
     global $i18n;
-    if (in_array("required", $this->attributes) && $this->value === false) {
+    if ($this->required === true && $this->checked === false) {
       throw new ValidationException($i18n->t("The “{0}” checkbox is mandatory.", [ $this->label ]));
     }
     return $this;

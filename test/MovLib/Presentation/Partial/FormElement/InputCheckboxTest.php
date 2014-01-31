@@ -29,58 +29,80 @@ use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
  */
 class InputCheckboxTest extends \MovLib\TestCase {
 
-  
-  // ------------------------------------------------------------------------------------------------------------------- Test Fixtures
+
+  // ------------------------------------------------------------------------------------------------------------------- Data Provider
 
 
-  public function tearDown() {
-    unset($_POST);
+  public function dataProviderDefaultAttributes() {
+    return [
+      [ "id", "phpunit" ],
+      [ "name", "phpunit" ],
+      [ "type", "checkbox" ],
+    ];
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Test Methods
+  // ------------------------------------------------------------------------------------------------------------------- Tests
 
 
   /**
    * @covers ::__construct
+   * @dataProvider dataProviderDefaultAttributes
    */
-  public function testConstruct() {
-    $inputCheckbox = new InputCheckbox("phpunit", "PHPUnit");
-    $this->assertArrayHasKey("type", $inputCheckbox->attributes);
-    $this->assertEquals("checkbox", $inputCheckbox->attributes["type"]);
-    $this->assertFalse($inputCheckbox->value);
+  public function testDefaultAttributes($key, $value) {
+    $checkbox = new InputCheckbox("phpunit", "PHPUnit");
+    $this->assertArrayHasKey($key, $checkbox->attributes);
+    $this->assertEquals($value, $checkbox->attributes[$key]);
   }
 
   /**
    * @covers ::__construct
    */
-  public function testConstructCheckedViaPOST() {
-    $_POST["phpunit"] = "on";
-    $this->assertTrue((new InputCheckbox("phpunit", "PHPUnit"))->value);
+  public function testCheckedAttribute() {
+    $checkbox = new InputCheckbox("phpunit", "PHPUnit", [ "checked" => true ]);
+    $this->assertTrue($checkbox->checked);
   }
 
   /**
-   * @covers ::__toString
+   * @covers ::__construct
    */
-  public function testToString() {
-    $this->assertContains("checked", (string) new InputCheckbox("phpunit", "PHPUnit", null, true));
+  public function testCheckedAttributePostOverride() {
+    $_POST["phpunit"] = "true";
+    $checkbox = new InputCheckbox("phpunit", "PHPUnit", [ "checked" => false ]);
+    $this->assertTrue($checkbox->checked);
+  }
+
+  /**
+   * @covers ::render
+   * @internal PHPUnit doesn't support checking of empty attributes!
+   */
+  public function testRender() {
+    $checkbox = new InputCheckbox("phpunit", "PHPUnit");
+    $this->assertTag([
+      "tag"        => "input",
+      "id"         => "phpunit",
+      "attributes" => [ "name" => "phpunit", "type" => "checkbox", "value" => "phpunit" ],
+      "ancestor"   => [ "tag" => "p" ],
+    ], (string) $checkbox);
   }
 
   /**
    * @covers ::validate
    */
   public function testValidate() {
-    $_POST["phpunit"] = "on";
-    (new InputCheckbox("phpunit", "PHPUnit"))->validate();
+    $_POST["phpunit"] = "true";
+    $checkbox = new InputCheckbox("phpunit", "PHPUnit", [ "required" => true ]);
+    $this->assertChaining($checkbox, $checkbox->validate());
+    $this->assertTrue($checkbox->checked);
   }
 
   /**
    * @covers ::validate
    * @expectedException \MovLib\Exception\ValidationException
-   * @expectedExceptionMessage mandatory
    */
-  public function testValidateRequired() {
-    (new InputCheckbox("phpunit", "PHPUnit", [ "required" ]))->validate();
+  public function testValidateException() {
+    $checkbox = new InputCheckbox("phpunit", "PHPUnit", [ "required" => true ]);
+    $checkbox->validate();
   }
 
 }

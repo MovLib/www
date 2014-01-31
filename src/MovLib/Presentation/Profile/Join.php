@@ -136,7 +136,7 @@ class Join extends \MovLib\Presentation\Page {
     $this->terms = new InputCheckbox("terms", $i18n->t("I accept the {privacy_policy} and {terms_of_use}.", [
       "privacy_policy" => "<a href='{$i18n->t("/privacy-policy")}'>{$i18n->t("Privacy Policy")}</a>",
       "terms_of_use"   => "<a href='{$i18n->r("/terms-of-use")}'>{$i18n->t("Terms of Use")}</a>"
-    ]), [ "required" ]);
+    ]), [ "required" => true ]);
 
     $this->form                             = new Form($this, [ $this->username, $this->email, $this->password, $this->terms ]);
     $this->form->attributes["action"]       = $kernel->requestURI;
