@@ -16,6 +16,7 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
+use \MovLib\Data\UnixShell as sh;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
@@ -31,6 +32,25 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Command option to minify css.
+   *
+   * @var string
+   */
+  const OPTION_CSS = "minifyCss";
+
+  /**
+   * Command option to minify javascript.
+   *
+   * @var string
+   */
+  const OPTION_JS = "minifyJs";
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -40,7 +60,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @see Database::__construct()
    * @var string
    */
-  protected $pathCss = "/public/assetss/css";
+  protected $pathCss = "/public/asset/css";
 
   /**
    * The directory containing Javascript files to minify.
@@ -48,7 +68,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @see Database::__construct()
    * @var string
    */
-  protected $pathJs = "/public/assets/js";
+  protected $pathJs = "/public/asset/js";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -74,9 +94,28 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @inheritdoc
    */
   public function configure() {
-    $this->setDescription("Perform various deployment related tasks.");
-    $this->addInputOption("js_minify", InputOption::VALUE_NONE, "Minifies all Javascript files");
-    $this->addInputOption("css_minify", InputOption::VALUE_NONE, "Minifies all CSS files.");
+    $this->setDescription("Perform all deployment related tasks or only specific tasks via options.");
+    $this->addOption(self::OPTION_JS, "j", InputOption::VALUE_NONE, "Minifies all Javascript files");
+    $this->addOption(self::OPTION_CSS, "c", InputOption::VALUE_NONE, "Minifies all CSS files.");
+  }
+  /**
+   * Run all deployment related tasks.
+   *
+   * @return this
+   */
+  private function deploy() {
+    // Array containing the names of all tasks that should be executed.
+    $tasks = [
+      self::OPTION_CSS,
+      self::OPTION_JS,
+    ];
+
+    $this->write("Start deploying of MovLib", self::MESSAGE_TYPE_INFO)->progressStart(count($tasks));
+
+    foreach ($tasks as $task) {
+      $this->$task()->progressAdvance();
+    }
+    return $this->progressFinish()->write("Successfully deployed MovLib.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
@@ -90,8 +129,70 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
-    throw new \RuntimeException("Not implemented yet!");
+    $all = true;
+    foreach ([ self::OPTION_CSS, self::OPTION_JS ] as $option) {
+      if ($options[$option]) {
+        $this->$option();
+        $all = false;
+      }
+    }
+    if ($all === true) {
+      $this->deploy();
+    }
     return $options;
+  }
+
+  /**
+   * Creates a minified version of all our css.
+   *
+   * @return this
+   * @throws \RuntimeException
+   */
+  private function minifyCss() {
+    $minifiedCss = "";
+
+    if (($movLibCss = file_get_contents("{$this->pathCss}/MovLib.css")) === false) {
+      throw new \RuntimeException("Couldn't read '{$this->pathCss}/MovLib.css'!");
+    }
+
+    $movLibCss = explode("\n", $movLibCss);
+    $c = count($movLibCss);
+    for ($i = 0; $i < $c; ++$i) {
+      if (substr($movLibCss[$i], 0, 7) == "@import") {
+        $file = rtrim(trim($movLibCss[$i], "@import \""), "\";");
+        if (sh::execute("csso {$this->pathCss}/{$file}", $output) === true) {
+          $minifiedCss .= substr(array_pop($output), 3);
+        }
+        else {
+          throw new \RuntimeException("Couldn't minify '{$this->pathCss}/{$file}'!");
+        }
+      }
+    }
+
+    if ((file_put_contents("{$this->pathCss}/MovLib.min.css", $minifiedCss)) === false) {
+      throw new \RuntimeException("Couldn't write '{$this->pathCss}/MovLib.min.css'!");
+    }
+
+    return $this->write("Successfully minified css.", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
+   * Creates a minified version of our javascript.
+   *
+   * @return this
+   * @throws \RuntimeException
+   */
+  private function minifyJs() {
+    foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->pathJs)) as $file) {
+      if (substr($file, -3) == ".js" && substr($file, -7) != ".min.js") {
+        $outputFile = rtrim("$file", ".js") . ".min.js";
+        if (sh::execute("uglifyjs {$file} -o {$outputFile}") === false) {
+          throw new \RuntimeException("Couldn't minify '{$file}'!");
+        }
+      }
+    }
+
+    return $this->write("Successfully minified javascript.", self::MESSAGE_TYPE_INFO);
   }
 
 }
