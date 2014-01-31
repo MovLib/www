@@ -1,6 +1,6 @@
 <?php
 
-/*
+/*!
  *  This file is part of {@link https://github.com/MovLib MovLib}.
  *
  *  Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,39 +15,36 @@
  *  You should have received a copy of the GNU Affero General Public License along with MovLib.
  *  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-namespace MovLib\Presentation\Person;
 
-use \MovLib\Data\Person\Person;
+namespace MovLib\Presentation\Person;
 
 /**
  * Allows editing of a person's information.
  *
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
+ * @copyright © 2013 MovLib
+ * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
+ * @link https://movlib.org/
+ * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
+class Edit extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
-   * The person to discuss.
+   * Instantiate new person edit presentation.
    *
-   * @var \MovLib\Data\Person\Person
+   * @global \MovLib\Data\I18n $i18n
    */
-  protected $person;
-
   public function __construct() {
     global $i18n;
 
-    $this->person = new Person($_SERVER["PERSON_ID"]);
-    $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ], [ $this->person->route, $this->person->name ]]);
-    $this->initPage($i18n->t("Edit {0}", [ $this->person->name ]));
-    $routeArgs = [ $this->person->id ];
-    $this->initLanguageLinks("/person/{0}/discussion", $routeArgs);
-    $this->initSidebar([
-      [ $this->person->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $i18n->r("/person/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-      [ $i18n->r("/person/{0}/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $i18n->r("/person/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
-    ]);
+    parent::__construct();
+
+    $this->breadcrumbTitle = $i18n->t("Edit");
+
+    $title  = $i18n->t("Edit {person_name}");
+    $search = "{person_name}";
+    $this->initPage(str_replace($search, $this->person->name, $title));
+    $this->pageTitle = str_replace($search, "<a href='{$this->person->route}'>{$this->person->name}</a>", $title);
   }
 
   protected function getPageContent() {
