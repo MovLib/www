@@ -15,7 +15,6 @@
  *  You should have received a copy of the GNU Affero General Public License along with MovLib.
  *  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
 namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Exception\ValidationException;
@@ -23,13 +22,18 @@ use \MovLib\Exception\ValidationException;
 /**
  * Date input consisting of three number input elements for day, month and year.
  *
+ * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\InputDate {
+class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
 
   /**
    * The date's day field.
@@ -60,6 +64,24 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\InputDa
   protected $year;
 
   /**
+   * The date's maximum year value.
+   *
+   * @var integer
+   */
+  protected $yearMax;
+
+  /**
+   * The date's minimum year value.
+   *
+   * @var integer
+   */
+  protected $yearMin;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
    * Instantiate new date input with day, month and year fields.
    *
    * @global \MovLib\Data\I18n $i18n
@@ -69,55 +91,105 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\InputDa
    *   The date's translated label text.
    * @param array $attributes [optional]
    *   The date's additional attributes.
+   * @param integer $yearMax [optional]
+   *   The date's maximum year value, defaults to 9999.
+   * @param integer $yearMin [optional]
+   *   The date's minimum year value, defaults to 0.
    */
-  public function __construct($id, $label, array $attributes = null, $max = 9999, $min = 0) {
-    global $i18n;
+  public function __construct($id, $label, array $attributes = null, $yearMax = 9999, $yearMin = 0) {
     parent::__construct($id, $label, $attributes);
+    $this->addClass("date-separate", $this->attributes);
+    $this->yearMax = $yearMax;
+    $this->yearMin = $yearMin;
+
+    // Remove name attribute from fieldset which is automatically set by our parent.
     unset($this->attributes["name"]);
-    unset($this->attributes["type"]);
-    if (isset($this->attributes["required"])) {
+
+    // Remove required attribute from fieldset if present and set class property to true.
+    if (($index = array_search("required", $this->attributes))) {
       $this->required = true;
-      unset($this->attributes["required"]);
+      unset($this->attributes[$index]);
     }
 
-    $this->attributes["class"] = isset($this->attributes["class"]) ? $this->attributes["class"] . " date-separate" : "date-separate";
-    if (isset($_POST["{$this->id}-day"])) {
-      $this->day = (integer) $_POST["{$this->id}-day"];
+    // Check if we have POST data and prepare date parts array for looping.
+    $post      = empty($_POST);
+    $dateParts = [ "year", "month", "day" ];
+
+    // Export possibly submitted POST data to class scope, even if the submitted POST data is invalid, export it!
+    if ($post === true) {
+      foreach ($dateParts as $property) {
+        if (($this->{$property} = filter_input(INPUT_POST, "{$this->id}-{$property}", FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE))) {
+          $post = true;
+        }
+      }
     }
-    if (isset($_POST["{$this->id}-month"])) {
-      $this->month = (integer) $_POST["{$this->id}-month"];
-    }
-    if (isset($_POST["{$this->id}-year"])) {
-      $this->year = (integer) $_POST["{$this->id}-year"];
+
+    // Export possibly set value to class scope if we have no POST data at all.
+    if ($post === false && $this->value) {
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (preg_match("/[0-9]{4}-[0-9]{2}-[0-9]{2}/", $this->value) == false) {
+        throw new \LogicException("The value attribute must be a valid date in W3C format");
+      }
+      // @codeCoverageIgnoreEnd
+      // @devEnd
+      // Date format is always "Y-m-d".
+      $date = explode("-", $this->value);
+      foreach ($dateParts as $delta => $property) {
+        if (isset($date[$delta])) {
+          $date[$delta] = (integer) $date[$delta];
+          // Only export to class scope if the date part is non zero.
+          if ($date[$delta]) {
+            $this->{$property} = $date[$delta];
+          }
+        }
+      }
     }
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * @inheritdoc
+   * Get the rendered date separate input element.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The rendered date separate input element.
    */
   protected function render() {
     global $i18n;
-    // @todo: Continue with form building and date styling.
-    return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend><p>" .
-      "<label class='s s1'><span class='vh'>{$i18n->t("Day")}</span><input id='{$this->id}-day' max='31' min='1' name='{$this->id}-day' placeholder='{$i18n->t("dd")}' type='number' value='{$this->day}'></label>" .
-      "<label class='s s1'><span class='vh'>{$i18n->t("Month")}</span><input id='{$this->id}-month' max='12' min='1' name='{$this->id}-month' placeholder='{$i18n->t("mm")}' type='number' value='{$this->month}'></label>" .
-      "<label class='s s2'><span class='vh'>{$i18n->t("Year")}</span><input id='{$this->id}-year' max='{}' min='{}' name='{$this->id}-year' placeholder='{$i18n->t("yyyy")}' type='number' value='{$this->year}'></label>" .
-    "</p></fieldset>";
+    return
+      "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend><p>" .
+        "<label class='s s1'>" .
+          "<span class='vh'>{$i18n->t("Day")}</span>" .
+          "<input id='{$this->id}-day' max='31' min='1' name='{$this->id}-day' placeholder='{$i18n->t("dd")}' type='number' value='{$this->day}'>" .
+        "</label>" .
+        "<label class='s s1'>" .
+          "<span class='vh'>{$i18n->t("Month")}</span>" .
+          "<input id='{$this->id}-month' max='12' min='1' name='{$this->id}-month' placeholder='{$i18n->t("mm")}' type='number' value='{$this->month}'>" .
+        "</label>" .
+        "<label class='s s2'>" .
+          "<span class='vh'>{$i18n->t("Year")}</span>" .
+          "<input id='{$this->id}-year' max='{$this->yearMax}' min='{$this->yearMin}' name='{$this->id}-year' placeholder='{$i18n->t("yyyy")}' type='number' value='{$this->year}'>" .
+        "</label>" .
+      "</p></fieldset>"
+    ;
   }
 
   /**
-   * @inheritdoc
+   * Validate the user submitted date.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return this
+   * @throws \MovLib\Exception\ValidationException
    */
   public function validate() {
     global $i18n;
 
-    // Evaluate The fields for empty values, 0 is also considered empty.
-    $dayEmpty   = empty($this->day) || $this->day === 0;
-    $monthEmpty = empty($this->month) || $this->month === 0;
-    $yearEmpty  = empty($this->year) || $this->year === 0;
-
     // Validate if the field is mandatory.
-    if ($dayEmpty && $monthEmpty && $yearEmpty) {
+    if (!$this->day && !$this->month && !$this->year) {
       if ($this->required === true) {
         throw new ValidationException($i18n->t("The “{0}” date is mandatory.", [ $this->label ]));
       }
@@ -125,39 +197,44 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\InputDa
     }
 
     // Month and year are mandatory when a day is present.
-    if (!$dayEmpty && ($monthEmpty || $yearEmpty)) {
-      throw new ValidationException($i18n->t("Month and Year are mandatory in “{0}” date", [ $this->label ]));
+    if ($this->day && (!$this->month || !$this->year)) {
+      throw new ValidationException($i18n->t("Month and Year are mandatory in “{0}” date.", [ $this->label ]));
     }
 
     // Year is mandatory when a month is present.
-    if (!$monthEmpty && $yearEmpty) {
-      throw new ValidationException($i18n->t("Year is mandatory in “{0}” date", [ $this->label ]));
+    if ($this->month && !$this->year) {
+      throw new ValidationException($i18n->t("Year is mandatory in “{0}” date.", [ $this->label ]));
     }
 
-    // Construct the date value for validation and store the actual value.
-    // We have all fields.
-    if (!$monthEmpty && !$dayEmpty) {
-      $actualValue = "{$this->year}-{$this->month}-{$this->day}";
-      $this->value = $actualValue;
+    // Always validate the year right away against the request range.
+    if ($this->year > $this->yearMax) {
+      throw new ValidationException("The year {0} must not be greater than {1}.", [ $this->year, $this->yearMax ]);
     }
-    // The day is missing.
-    elseif (!$monthEmpty) {
-      $actualValue = "{$this->year}-{$this->month}";
-      // We need a valid day for the validation, use value 1.
-      $this->value = "{$actualValue}-01";
-      $actualValue .= "-00";
+    if ($this->year < $this->yearMin) {
+      throw new ValidationException("The year {0} must not be less than {1}.", [ $this->year, $this->yearMin ]);
     }
-    // Month and day are missing, the year is always present at this point.
+
+    // Validate the given date depending on submitted parts.
+    if ($this->month && $this->day) {
+      $this->value = "{$this->year}-{$this->month}-{$this->day}";
+      $date        = \DateTime::createFromFormat(DATE_W3C, $this->value);
+      if ($date === false || ($errors = $date->getLastErrors() && ($errors["error_count"] !== 0 || $errors["warning_count"] !== 0))) {
+        throw new ValidationException($i18n->t("The “{0}” date is invalid.", [ $this->label ]));
+      }
+    }
+    elseif ($this->month) {
+      if ($this->month > 12) {
+        throw new ValidationException("The month {0} must not be greater than {1}.", [ $this->month, 12 ]);
+      }
+      if ($this->month < 1) {
+        throw new ValidationException("The month {0} must not be less than {1}.", [ $this->month, 1 ]);
+      }
+      $this->value = "{$this->year}-{$this->month}-00";
+    }
     else {
-      $actualValue    = "{$this->year}";
-      // We need valid month and day for the validation, use value 1 for both.
-      $this->value = "{$actualValue}-01-01";
-      $actualValue .= "-00-00";
+      $this->value = "{$this->year}-00-00";
     }
 
-    // Make use of the full date validation and set the value to the actual one.
-    parent::validate();
-    $this->value = $actualValue;
     return $this;
   }
 
