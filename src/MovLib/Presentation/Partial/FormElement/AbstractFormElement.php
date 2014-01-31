@@ -136,6 +136,35 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
 
 
   /**
+   * Filter input variable.
+   *
+   * @see filter_var()
+   * @see filter_input()
+   * @param string $name
+   *   The name of the variable to get.
+   * @param integer $filter
+   *   The identifier of the filter to apply. The {@link http://php.net/manual/filter.filters.php types of filters}
+   *   manual page lists the available filters.
+   * @param mixed $options
+   *   Associative array of options or bitwise disjunction of flags. If filter accepts options, flags can be provided
+   *   in <code>"flags"</code> field of array.
+   * @param array $type
+   *   The input type to filter, defaults to <var>$_POST</var>.
+   * @return mixed
+   *   Value of the requested variable on success, <code>FALSE</code> if the filter fails, or <code>NULL</code> if the
+   *   <var>$name</var> variable is not set. If the flag <var>FILTER_NULL_ON_FAILURE</var> is used, it returns
+   *   <code>NULL</code> if the fitler fails.
+   */
+  protected function filterInput($name, $filter, $options, $type = null) {
+    if (!$type) {
+      $type = $_POST;
+    }
+    if (isset($type[$name])) {
+      return filter_var($type[$name], $filter, $options);
+    }
+  }
+
+  /**
    * Mark this form element as invalid.
    *
    * There is no attribute <code>invalid</code> in HTML, browsers apply the CSS pseudo-class <code>:invalid</code> on
