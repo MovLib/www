@@ -15,10 +15,11 @@
  *  You should have received a copy of the GNU Affero General Public License along with MovLib.
  *  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
-namespace MovLib\Presentation\Person\Photo;
+namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Image\PersonImage;
+use \MovLib\Data\User\User;
+use \MovLib\Presentation\Partial\DateTime;
 
 /**
  * Image details presentation for a person's photo.
@@ -29,7 +30,7 @@ use \MovLib\Data\Image\PersonImage;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Photo extends \MovLib\Presentation\Person\Photo\AbstractBase {
+class Photo extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
    * Instantiate new Person Photo presentation.
@@ -41,30 +42,21 @@ class Photo extends \MovLib\Presentation\Person\Photo\AbstractBase {
    */
   public function __construct() {
     global $i18n, $kernel;
-
-    // Try to load person data.
-    $this->person = new Person($_SERVER["PERSON_ID"]);
+    parent::__construct();
 
     $routeArgs = [ $this->person->id ];
 
-    // Redirect to upload page, if there is no photo.
+    // Redirect to person edit form, if there is no photo.
     if ($this->person->displayPhoto->imageExists === false) {
-      throw new SeeOther($this->person->displayPhoto->route);
+      throw new SeeOther($this->routeEdit);
     }
 
-    // Initialize breadcrumbs.
-    $this->initBreadcrumb([
-      [ $i18n->rp("/persons"), $i18n->t("Persons") ],
-      [ $this->person->route, $this->person->name ],
-    ]);
+    // Modify sidebar items.
+    $this->sidebarNavigation->menuitems[0] = [ $this->person->route, $i18n->t("Back to Person"), [ "class" => "ico ico-person" ] ];
+    $this->sidebarNavigation->menuitems[count($this->sidebarNavigation->menuitems) - 1] = [ $i18n->r("/person/{0}/photo/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete" ] ];
 
-    // Initialize sidebar navigation.
-    $this->initSidebar([
-        [ $i18n->r("/person/{0}/photo", $routeArgs), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-        [ $i18n->r("/person/{0}/photo/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-        [ $i18n->r("/person/{0}/photo/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
-        [ $i18n->r("/person/{0}/photo/delete", $routeArgs), $i18n->t("Delete"), [ "class" => "ico ico-delete" ] ],
-    ]);
+    // Set correct breadcrumb title.
+    $this->breadcrumbTitle = $i18n->t("Photo");
 
     // Initialize language links.
     $this->initLanguageLinks("/person/{0}/photo", $routeArgs);
@@ -89,29 +81,35 @@ class Photo extends \MovLib\Presentation\Person\Photo\AbstractBase {
    * @inheritdoc
    */
   protected function getPageContent() {
-    global $i18n;
-    // @todo: No photo -> display upload link and no sidebar.
+    global $i18n, $kernel;
+    $uploader    = new User(User::FROM_ID, $this->person->displayPhoto->uploaderId);
+    $dateTime    = new DateTime($this->person->displayPhoto->changed, [ "itemprop" => "uploadDate" ]);
+    $description = "<dt>{$i18n->t("Description")}</dt>";
+    if ($this->person->displayPhoto->description) {
+      $description .= "<dd itemprop='description'>{$kernel->htmlDecode($this->person->displayPhoto->description)}</dd>";
+    }
+    else {
+      $description .= "<dd>{$i18n->t("No description available, {0}add one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])}</dd>";
+    }
     return
     "<meta itemprop='representativeOfPage' content='true'>" .
-        TraitDeletionRequest::getDeletionRequestedAlert($this->image->deletionId) .
+        // TraitDeletionRequest::getDeletionRequestedAlert($this->image->deletionId) .
         "<div class='r wrapper'>" .
-          "<div class='s s8 tac image'>{$this->getImage(
-            $$this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_02),
-            $this->image->getURL(),
-            [ "itemprop" => "thumbnailUrl" ],
-            [ "itemprop" => "contentUrl", "target" => "_blank" ]
-          )}</div>" .
-          "<dl class='s s4 description'>" .
-            $dl .
-            "<dt>{$i18n->t("Provided by")}</dt><dd><a href='{$uploader->route}' itemprop='creator provider'>{$uploader->name}</a></dd>" .
+          "<dl class='s s7 description'>" .
+            $description .
+            "<dt>{$i18n->t("Provided by")}</dt><dd><a href='{$uploader->route}' itemprop='accountablePerson'>{$uploader->name}</a></dd>" .
             "<dt>{$i18n->t("Dimensions")}</dt><dd>{$i18n->t("{width} × {height}", [
-              "width"  => "<span itemprop='width'>{$this->image->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
-              "height" => "<span itemprop='height'>{$this->image->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+              "width"  => "<span itemprop='width'>{$this->person->displayPhoto->width}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
+              "height" => "<span itemprop='height'>{$this->person->displayPhoto->height}&nbsp;<abbr title='{$i18n->t("Pixel")}'>px</abbr></span>",
             ])}</dd>" .
-            "<dt>{$i18n->t("File size")}</dt><dd itemprop='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->image->filesize))}</dd>" .
+            "<dt>{$i18n->t("File size")}</dt><dd itemprop='contentSize'>{$i18n->t("{0,number} {1}", $this->formatBytes($this->person->displayPhoto->filesize))}</dd>" .
             "<dt>{$i18n->t("Upload on")}</dt><dd>{$dateTime}</dd>" .
-            "<dt>{$i18n->t("Buy this {image_name}", [ "image_name" => $this->image->name ])}</dt>{$offers}" .
           "</dl>" .
+          "<div class='s s3 tac image'>{$this->getImage(
+            $this->person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_03),
+            false,
+            [ "itemprop" => "thumbnailUrl" ]
+          )}</div>" .
         "</div>" .
       "</div>"
     ;

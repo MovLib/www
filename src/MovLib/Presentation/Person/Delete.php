@@ -26,7 +26,7 @@ namespace MovLib\Presentation\Person;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Edit extends \MovLib\Presentation\Person\AbstractBase {
+class Delete extends \MovLib\Presentation\Person\AbstractBase {
 
   /**
    * Instantiate new person edit presentation.
@@ -38,9 +38,9 @@ class Edit extends \MovLib\Presentation\Person\AbstractBase {
 
     parent::__construct();
 
-    $this->breadcrumbTitle = $i18n->t("Edit");
+    $this->breadcrumbTitle = $i18n->t("Delete");
 
-    $title  = $i18n->t("Edit {person_name}");
+    $title  = $i18n->t("Delete {person_name}");
     $search = "{person_name}";
     $this->initPage(str_replace($search, $this->person->name, $title));
     $this->pageTitle = str_replace($search, "<a href='{$this->person->route}'>{$this->person->name}</a>", $title);
@@ -48,6 +48,6 @@ class Edit extends \MovLib\Presentation\Person\AbstractBase {
 
   protected function getPageContent() {
     global $i18n;
-    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("edit person") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
+    return new \MovLib\Presentation\Partial\Alert($i18n->t("The {0} feature isn’t implemented yet.", [ $i18n->t("delete person") ]), $i18n->t("Check back later"), \MovLib\Presentation\Partial\Alert::SEVERITY_INFO);
   }
 }

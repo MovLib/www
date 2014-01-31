@@ -1,6 +1,6 @@
 <?php
 
-/*
+/*!
  *  This file is part of {@link https://github.com/MovLib MovLib}.
  *
  *  Copyright © 2013-present {@link http://movlib.org/ MovLib}.
@@ -15,7 +15,6 @@
  *  You should have received a copy of the GNU Affero General Public License along with MovLib.
  *  If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
  */
-
 namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Person\Full;
@@ -178,7 +177,7 @@ class Create extends \MovLib\Presentation\Page {
 
     $this->form->actionElements[] = new InputSubmit($i18n->t("Create Person"), [ "class" => "btn btn-large btn-success", "id" => "submit-create" ]);
     $this->form->actionElements[] = new InputSubmit($i18n->t("Create and Upload Image"), [ "class" => "btn btn-large btn-success", "id" => "submit-upload" ]);
-    
+
     $kernel->stylesheets[] = "person";
   }
 
