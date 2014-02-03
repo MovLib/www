@@ -19,8 +19,6 @@ namespace MovLib\Presentation\Person;
 
 use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\Movie\Movie;
-use \MovLib\Data\Person\Full as FullPerson;
-use \MovLib\Presentation\Error\Gone;
 use \MovLib\Presentation\Partial\Place;
 use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Lists\Ordered;
@@ -35,26 +33,7 @@ use \MovLib\Presentation\Partial\Lists\Ordered;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Show extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The person to present.
-   *
-   * @var \MovLib\Data\Person\Full
-   */
-  protected $person;
-
-  /**
-   * The translated route to the person's edit page.
-   *
-   * @var string
-   */
-  protected $routeEdit;
+class Show extends \MovLib\Presentation\Person\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -70,29 +49,16 @@ class Show extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->person = new FullPerson($_SERVER["PERSON_ID"]);
+    parent::__construct();
     $this->initPage($this->person->name);
-    $this->initBreadcrumb([[ $i18n->rp("/persons"), $i18n->t("Persons") ]]);
     $routeArgs = [$this->person->id ];
     $this->initLanguageLinks("/person/{0}", $routeArgs);
-    $this->routeEdit = $i18n->r("/person/{0}/edit", $routeArgs);
-    $this->initSidebar([
-      [ $this->person->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
-      [ $i18n->r("/person/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
-      [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
-      [ $i18n->r("/person/{0}/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history separator" ] ],
-    ]);
-    $this->schemaType = "Person";
+    array_pop($this->breadcrumb->menuitems);
 
     // Enhance the page title with microdata.
     $this->pageTitle = "<span itemprop='name'>{$this->person->name}</span>";
 
-    // Display Gone page if this person was deleted.
-    if ($this->person->deleted === true) {
-      // @todo Implement Gone presentation for persons instead of this generic one.
-      throw new Gone;
-    }
-    $kernel->stylesheets[] = "person";
+
   }
 
 
