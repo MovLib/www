@@ -44,6 +44,20 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   const OPTION_CSS = "minifyCss";
 
   /**
+   * Command option to remove PHP code only used in development.
+   *
+   * @var string
+   */
+  const OPTION_DEV = "removeDevCode";
+
+  /**
+   * Command option to compress svg image files.
+   *
+   * @var string
+   */
+  const OPTION_IMG = "compressImages";
+
+  /**
    * Command option to minify javascript.
    *
    * @var string
@@ -60,7 +74,15 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @see Database::__construct()
    * @var string
    */
-  protected $pathCss = "/public/asset/css";
+  protected $pathCss = "public/asset/css";
+
+  /**
+   * The directory containing images.
+   *
+   * @see Database::__construct()
+   * @var string
+   */
+  protected $pathImg = "public/asset/img";
 
   /**
    * The directory containing Javascript files to minify.
@@ -68,7 +90,15 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @see Database::__construct()
    * @var string
    */
-  protected $pathJs = "/public/asset/js";
+  protected $pathJs = "public/asset/js";
+
+  /**
+   * The directory containing the source code.
+   *
+   * @see Database::__construct()
+   * @var string
+   */
+  protected $pathSrc = "src/MovLib";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -82,8 +112,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     global $kernel;
     parent::__construct("deploy");
     $this->setAliases([ "dp" ]);
-    $this->pathCss = "{$kernel->documentRoot}{$this->pathCss}";
-    $this->pathJs  = "{$kernel->documentRoot}{$this->pathJs}";
+    $this->pathCss = "{$kernel->documentRoot}/{$this->pathCss}";
   }
 
 
@@ -97,7 +126,29 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     $this->setDescription("Perform all deployment related tasks or only specific tasks via options.");
     $this->addOption(self::OPTION_JS, "j", InputOption::VALUE_NONE, "Minifies all Javascript files");
     $this->addOption(self::OPTION_CSS, "c", InputOption::VALUE_NONE, "Minifies all CSS files.");
+    $this->addOption(self::OPTION_IMG, "i", InputOption::VALUE_NONE, "Compress all SVG images.");
+    $this->addOption(self::OPTION_DEV, "d", InputOption::VALUE_NONE, "Removes PHP code only used in development");
   }
+
+  /**
+   * Compresses all SVG images for NginX.
+   *
+   * @return this
+   * @throws \RuntimeException
+   */
+  private function compressImages() {
+    $this->globRecursive($this->pathImg, function($realpath) {
+      if (substr($realpath, -7) != ".svg.gz") {
+        $outputFile = $realpath . ".gz";
+        if (sh::execute("gzip -c {$realpath} > {$outputFile}") === false) {
+          throw new \RuntimeException("Couldn't compress '{$realpath}'!");
+        }
+      }
+    }, "svg");
+
+    return $this->write("Successfully compressed SVG images.", self::MESSAGE_TYPE_INFO);
+  }
+
   /**
    * Run all deployment related tasks.
    *
@@ -108,6 +159,8 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     $tasks = [
       self::OPTION_CSS,
       self::OPTION_JS,
+      self::OPTION_DEV,
+      self::OPTION_IMG,
     ];
 
     $this->write("Start deploying of MovLib", self::MESSAGE_TYPE_INFO)->progressStart(count($tasks));
@@ -130,7 +183,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
     $all = true;
-    foreach ([ self::OPTION_CSS, self::OPTION_JS ] as $option) {
+    foreach ([ self::OPTION_CSS, self::OPTION_JS, self::OPTION_DEV, self::OPTION_IMG ] as $option) {
       if ($options[$option]) {
         $this->$option();
         $all = false;
@@ -150,16 +203,10 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   private function minifyCss() {
     $minifiedCss = "";
-
-    if (($movLibCss = file_get_contents("{$this->pathCss}/MovLib.css")) === false) {
-      throw new \RuntimeException("Couldn't read '{$this->pathCss}/MovLib.css'!");
-    }
-
-    $movLibCss = explode("\n", $movLibCss);
-    $c = count($movLibCss);
-    for ($i = 0; $i < $c; ++$i) {
-      if (substr($movLibCss[$i], 0, 7) == "@import") {
-        $file = rtrim(trim($movLibCss[$i], "@import \""), "\";");
+    $fhr = fopen("{$this->pathCss}/MovLib.css", "r");
+    while ($line = fgets($fhr)) {
+      if (substr($line, 0, 7) == "@import") {
+        $file = rtrim(trim($line, "@import \""), "\";\n");
         if (sh::execute("csso {$this->pathCss}/{$file}", $output) === true) {
           $minifiedCss .= substr(array_pop($output), 3);
         }
@@ -168,6 +215,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
         }
       }
     }
+    fclose($fhr);
 
     if ((file_put_contents("{$this->pathCss}/MovLib.min.css", $minifiedCss)) === false) {
       throw new \RuntimeException("Couldn't write '{$this->pathCss}/MovLib.min.css'!");
@@ -183,16 +231,57 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @throws \RuntimeException
    */
   private function minifyJs() {
-    foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->pathJs)) as $file) {
-      if (substr($file, -3) == ".js" && substr($file, -7) != ".min.js") {
-        $outputFile = rtrim("$file", ".js") . ".min.js";
-        if (sh::execute("uglifyjs {$file} -o {$outputFile}") === false) {
-          throw new \RuntimeException("Couldn't minify '{$file}'!");
+    $this->globRecursive($this->pathJs, function($realpath) {
+      if (substr($realpath, -7) != ".min.js") {
+        $outputFile = rtrim($realpath, ".js") . ".min.js";
+        if (sh::execute("uglifyjs {$realpath} -o {$outputFile}") === false) {
+          throw new \RuntimeException("Couldn't minify '{$realpath}'!");
         }
       }
-    }
+    }, "js");
 
     return $this->write("Successfully minified javascript.", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
+   * Remove PHP code only used in development.
+   *
+   * @return this
+   * @throws \RuntimeException
+   */
+  private function removeDevCode() {
+    $this->globRecursive($this->pathSrc, function($realpath) {
+      $foundDev   = false;
+      $inDevBlock = false;
+
+      $fho = fopen($realpath, "r");
+      $fhc = fopen("{$realpath}.tmp", "wb");
+      while ($line = fgets($fho)) {
+        if (strpos($line, "// @devStart") !== false) {
+          $foundDev   = true;
+          $inDevBlock = true;
+          continue;
+        }
+        if (strpos($line, "// @devEnd") !== false) {
+          $inDevBlock = false;
+          continue;
+        }
+        if ($inDevBlock === false) {
+          fwrite($fhc, $line);
+        }
+      }
+      fclose($fho);
+      fclose($fhc);
+
+      if ($foundDev === true) {
+        //rename("{$realpath}.tmp", $realpath);
+      }
+      else {
+        unlink("{$realpath}.tmp");
+      }
+    }, "php");
+
+    return $this->write("Successfully removed PHP code only used in development.", self::MESSAGE_TYPE_INFO);
   }
 
 }

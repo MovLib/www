@@ -228,26 +228,6 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
   }
 
   /**
-   * Recursive glob that finds all php files in the given directory.
-   *
-   * @global \MovLib\Tool\Kernel $kernel
-   * @param string $path
-   *   Relative path to glob within the document root without leading slash.
-   * @param callable $callback
-   *   Callable to call on each iteration.
-   */
-  protected function globRecursive($path, $callback) {
-    global $kernel;
-    /* @var $splFileInfo \SplFileInfo */
-    foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator("{$kernel->documentRoot}/{$path}"), \RecursiveIteratorIterator::SELF_FIRST) as $splFileInfo) {
-      $realpath = $splFileInfo->getRealPath();
-      if ($splFileInfo->isFile() && strpos($splFileInfo->getBasename(), ".php") !== false) {
-        call_user_func($callback, $realpath, $splFileInfo);
-      }
-    }
-  }
-
-  /**
    * Whether this method should be ignored or not during skeleton generation.
    *
    * @param \ReflectionMethod $method
