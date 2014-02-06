@@ -47,6 +47,7 @@
  * More interesting links:
  * - http://www.markboulton.co.uk/journal/five-simple-steps-to-better-typography-part-4
  * - http://www.smashingmagazine.com/2013/05/17/typographic-design-patterns-practices-case-study-2013/
+ * - http://blog.typekit.com/2014/02/05/kerning-on-the-web/
  * ------------------------------------------------------------------------------------------------------------------ */
 
 html,
@@ -59,7 +60,17 @@ table {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   color: #656565;
-  text-rendering: geometricPrecision;
+  text-rendering: optimizeLegibility;
+
+  /*
+   * It doesn't seem like any of these have an effect on the actual text rendering. I couldn't find out if Open Sans
+   * Includes any kerning information.
+   */
+  -webkit-font-feature-settings: "kern";
+  -moz-font-features-settings: "kern";
+  -moz-font-features-settings: "kern=1";
+  font-features-settings: "kern";
+  font-kerning: normal;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
@@ -121,7 +132,6 @@ h4,
 h5,
 h6 {
   font-weight: 200;
-  text-rendering: optimizeLegibility;
 }
 
 h2,

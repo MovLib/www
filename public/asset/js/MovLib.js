@@ -135,14 +135,9 @@
      * @return {MovLib}
      */
     init: function () {
-      // Anonymous helper function to load polyfills.
-      var load = function (name) {
-        this.loadModule("//" + this.settings.domainStatic + "/asset/js/polyfill/" + name + ".js");
-      };
-
       // Load cross-browser sham for classList support.
       if (!("classList" in document.documentElement)) {
-        load.call(this, "classList");
+        this.loadModule("//" + this.settings.domainStatis + "/bower/classlist/classList.js");
       }
 
       // Extend our document with the most important sections.
