@@ -364,6 +364,28 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
   }
 
   /**
+   * Recursive glob that finds all php files in the given directory.
+   *
+   * @global \MovLib\Tool\Kernel $kernel
+   * @param string $path
+   *   Relative path to glob within the document root without leading slash.
+   * @param callable $callback
+   *   Callable to call on each iteration.
+   * @param string $extension [optional]
+   *   The extension of files to search, defaults to <code>php</code>.
+   */
+  protected function globRecursive($path, $callback, $extension = "php") {
+    global $kernel;
+    /* @var $splFileInfo \SplFileInfo */
+    foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator("{$kernel->documentRoot}/{$path}"), \RecursiveIteratorIterator::SELF_FIRST) as $splFileInfo) {
+      $realpath = $splFileInfo->getRealPath();
+      if ($splFileInfo->isFile() && strpos($splFileInfo->getBasename(), ".{$extension}") !== false) {
+        call_user_func($callback, $realpath, $splFileInfo);
+      }
+    }
+  }
+
+  /**
    * Helper method for writing and formatting console output.
    *
    * @link http://symfony.com/doc/master/components/console/introduction.html#components-console-coloring

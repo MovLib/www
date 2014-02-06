@@ -71,11 +71,6 @@
   outline-color: rgba(82, 168, 236, 0.8);
 }
 
-#imagedetails .description dd {
-  margin: 0 0 10px 0;
-  padding-right: 20px;
-}
-
 #imagedetails .stream {
   position: relative;
   padding: 20px 40px 20px 20px;

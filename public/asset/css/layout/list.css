@@ -110,3 +110,8 @@ dt {
 dd {
   margin-left: 10px;
 }
+
+.description dd {
+  margin: 0 0 10px 0;
+  padding-right: 20px;
+}

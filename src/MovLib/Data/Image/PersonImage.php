@@ -29,6 +29,18 @@ namespace MovLib\Data\Image;
 class PersonImage extends \MovLib\Data\Image\AbstractImage {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+  /**
+   * 220x220>
+   *
+   * Image style used on the show page to display the person photo.
+   *
+   * @var integer
+   */
+  const STYLE_SPAN_03 = \MovLib\Data\Image\SPAN_03;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
   /**
@@ -104,13 +116,8 @@ class PersonImage extends \MovLib\Data\Image\AbstractImage {
     $this->alternativeText = $i18n->t("Photo of {person_name}.", [ "person_name" => $personName ]);
     $this->personId        = $personId;
     $this->filename        = $this->personId;
-
-    if ($this->imageExists === true) {
-      $this->route = $i18n->r("/person/{0}/photo", [ $personId ]);
-    }
-    else {
-      $this->route = $i18n->r("/person/{0}/photo/upload", [ $personId ]);
-    }
+    $key                   = $this->imageExists === true ? "photo" : "edit";
+    $this->route           = $i18n->r("/person/{0}/{$key}", [ $this->personId ]);
   }
 
 
@@ -141,15 +148,10 @@ class PersonImage extends \MovLib\Data\Image\AbstractImage {
   protected function generateStyles($source, $regenerate = false) {
     global $db, $i18n;
 
-    // If this is a new upload create the directory.
-    if ($this->imageExists === false) {
-      $this->route    = $i18n->r("/person/{0}/photo", [ $this->personId ]);
-      $this->createDirectories();
-    }
-
     // Generate the various image's styles and always go from best quality down to worst quality.
+    $this->convert($source, self::STYLE_SPAN_03, self::STYLE_SPAN_03, self::STYLE_SPAN_03, true);
     $this->convert($source, self::STYLE_SPAN_02, self::STYLE_SPAN_02, self::STYLE_SPAN_02, true);
-    $this->convert($this->getPath(self::STYLE_SPAN_02), self::STYLE_SPAN_01);
+    $this->convert($source, self::STYLE_SPAN_01, self::STYLE_SPAN_01, self::STYLE_SPAN_01, true);
 
     if ($regenerate === true) {
       $query  = "UPDATE `persons` SET `image_styles` = ? WHERE `id` = ?";
@@ -157,8 +159,9 @@ class PersonImage extends \MovLib\Data\Image\AbstractImage {
       $params = [ serialize($this->styles), $this->personId ];
     }
     else {
+      $this->changed = time();
       $query =
-        "UPDATE `persons_images` SET
+        "UPDATE `persons` SET
           `image_changed`          = FROM_UNIXTIME(?),
           `dyn_image_descriptions` = COLUMN_ADD(`dyn_image_descriptions`, ?, ?),
           `image_extension`        = ?,
@@ -169,7 +172,7 @@ class PersonImage extends \MovLib\Data\Image\AbstractImage {
           `image_width`            = ?
         WHERE `id` = ?"
       ;
-      $types  = "ssssiisdid";
+      $types  = "isssiisdid";
       $params = [
         $this->changed,
         $i18n->languageCode,
