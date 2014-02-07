@@ -72,16 +72,8 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
     // @codeCoverageIgnoreEnd
     // @devEnd
     parent::__construct($id, $label, $attributes);
-    $this->attributes["name"] = $this->id;
-    $this->attributes["type"] = "checkbox";
     if (isset($this->attributes["checked"])) {
       $this->checked = $this->attributes["checked"];
-    }
-    if (($checked = $this->filterInput($this->id))) {
-      $this->checked = (boolean) $checked;
-    }
-    if (!isset($this->attributes["value"])) {
-      $this->attributes["value"] = $this->id;
     }
   }
 
@@ -96,7 +88,7 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
    *   The rendered checkbox.
    */
   protected function render() {
-    return "{$this->help}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)}>{$this->label}</label></p>";
+    return "{$this->help}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
   }
 
   /**
@@ -104,9 +96,11 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
    */
   public function validate() {
     global $i18n;
-    if ($this->required === true && $this->checked === false) {
+    $checked = (boolean) $this->filterInput($this->id);
+    if ($this->required === true && $checked === false) {
       throw new ValidationException($i18n->t("The “{0}” checkbox is mandatory.", [ $this->label ]));
     }
+    $this->checked = $checked;
     return $this;
   }
 

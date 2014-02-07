@@ -58,4 +58,16 @@ class InputDateSeparateTest extends \MovLib\TestCase {
     $this->assertEquals(1, $this->getProperty($obj, "day"));
   }
 
+  /**
+   * @covers ::__construct
+   */
+  public function testPostExport() {
+    $_POST["value"] = "1999-01-31";
+    $obj = new InputDateSeparate("phpunit", "PHPUnit", [ "value" => "2000-12-01" ]);
+    $this->assertEquals(1999, $this->getProperty($obj, "year"));
+    $this->assertEquals(1, $this->getProperty($obj, "month"));
+    $this->assertEquals(31, $this->getProperty($obj, "day"));
+    unset($_POST["value"]);
+  }
+
 }

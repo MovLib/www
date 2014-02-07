@@ -110,18 +110,21 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
       $activeSession["authentication"] = $i18n->formatDate($activeSession["authentication"], $this->user->timeZoneIdentifier, \IntlDateFormatter::SHORT, \IntlDateFormatter::SHORT);
       $activeSession["ip_address"]     = inet_ntop($activeSession["ip_address"]);
       $active                          = null;
-      $button                          = new Button("session_id", $buttonText, [
+
+      // Put the submit button for this session entry together.
+      $btnAttributes = [
         "class" => "btn btn-danger",
+        "name"  => "session_id",
         "type"  => "submit",
         "value" => $activeSession["id"],
-        "title" => $buttonTitle,
-      ]);
-      unset($button->attributes["id"]);
-
+      ];
       if ($activeSession["id"] == $session->id) {
-        $active                      = " class='warning'";
-        $button->attributes["title"] = $i18n->t("If you click this button your active session is terminated and you’ll be signed out!");
-        $button->content             = $i18n->t("Sign Out");
+        $btnAttributes["title"] = $i18n->t("If you use this button all your active session will be terminated and you’ll be signe out!");
+        $btnText                = $i18n->t("Sign Out");
+      }
+      else {
+        $btnAttributes["title"] = $buttonTitle;
+        $btnText                = $buttonText;
       }
 
       $this->sessionsTable .=
@@ -129,7 +132,7 @@ class DangerZone extends \MovLib\Presentation\Profile\Show {
         "<td>{$activeSession["authentication"]}</td>" .
         "<td class='small'><code>{$kernel->htmlEncode($activeSession["user_agent"])}</code></td>" .
         "<td><code>{$activeSession["ip_address"]}</code></td>" .
-        "<td class='form-actions'>{$button}</td>" .
+        "<td class='form-actions'><button{$this->expandTagAttributes($btnAttributes)}>{$btnText}</button></td>" .
         "</tr>"
       ;
     }

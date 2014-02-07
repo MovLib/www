@@ -132,7 +132,7 @@ class ImageEdit extends \MovLib\Presentation\Movie\AbstractBase {
     $this->inputDescription       = new InputHTML("description", $i18n->t("Description"), $this->image->description);
     $this->inputCountryCode       = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);
     $this->inputLanguageCode      = new Select("language", $i18n->t("Language"), Language::getLanguages(), $this->image->languageCode, [ "required" ]);
-    $this->inputPublishedDate     = new InputDateSeparate("date", $i18n->t("Publishing Date"), [ "value" => $this->image->publishingDate ], date("Y"), 1800);
+    $this->inputPublishedDate     = new InputDateSeparate("date", $i18n->t("Publishing Date"), $this->image->publishingDate, null, [ "year_max" => date("Y"), "year_min" => 1800 ]);
     $this->form                   = new Form($this, [ $this->inputImage, $this->inputDescription, $this->inputCountryCode, $this->inputLanguageCode, $this->inputPublishedDate ]);
     $this->form->multipart();
     $this->form->actionElements[] = new InputSubmit($i18n->t("Upload"), [ "class" => "btn btn-large btn-success" ]);

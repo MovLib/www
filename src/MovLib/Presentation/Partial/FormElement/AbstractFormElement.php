@@ -73,6 +73,13 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    */
   protected $label;
 
+  /**
+   * Whether this form element is required or not.
+   *
+   * @var boolean
+   */
+  public $required = false;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -88,9 +95,25 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   The form element's attributes array.
    */
   public function __construct($id, $label, array $attributes = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($id)) {
+      throw new \LogicException("A form element's \$id cannot be empty");
+    }
+    if (empty($label)) {
+      throw new \LogicException("A form element's \$label cannot be empty");
+    }
+    if (isset($this->attributes["required"]) && !is_bool($this->attributes["required"])) {
+      throw new \InvalidArgumentException("A form element's required attribute has to be of type boolean");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->attributes = $attributes;
-    $this->id         = $this->attributes["id"] = $this->attributes["name"] = $id;
+    $this->id         = $id;
     $this->label      = $label;
+    if (isset($this->attributes["required"])) {
+      $this->required = $this->attributes["required"];
+    }
   }
 
   /**
@@ -144,7 +167,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   The name of the variable to get.
    * @param integer $filter
    *   The identifier of the filter to apply. The {@link http://php.net/manual/filter.filters.php types of filters}
-   *   manual page lists the available filters. Defaults to <var>FILTER_UNSAFE_RAW</var>.
+   *   manual page lists the available filters. Defaults to <code>NULL</code>.
    * @param mixed $options
    *   Associative array of options or bitwise disjunction of flags. If filter accepts options, flags can be provided
    *   in <code>"flags"</code> field of array. Defaults to no options.
@@ -155,12 +178,25 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   <var>$name</var> variable is not set. If the flag <var>FILTER_NULL_ON_FAILURE</var> is used, it returns
    *   <code>NULL</code> if the fitler fails.
    */
-  protected function filterInput($name, $filter = FILTER_UNSAFE_RAW, $options = null, $type = null) {
+  protected function filterInput($name, $filter = null, $options = null, $type = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($name)) {
+      throw new \InvalidArgumentException("The filter input's variable \$name cannot be empty");
+    }
+    if (isset($type) && !is_array($type)) {
+      throw new \LogicException("The filter input method can only filter arrays and is designed to handle e.g. \$_POST or \$_GET");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     if (!$type) {
       $type = $_POST;
     }
     if (isset($type[$name])) {
-      return filter_var($type[$name], $filter, $options);
+      if ($filter) {
+        return filter_var($type[$name], $filter, $options);
+      }
+      return $type[$name];
     }
   }
 

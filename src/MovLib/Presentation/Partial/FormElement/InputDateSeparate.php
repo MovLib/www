@@ -29,7 +29,7 @@ use \MovLib\Exception\ValidationException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
+class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -50,11 +50,11 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\Abstrac
   protected $month;
 
   /**
-   * The required flag.
+   * Contains the complete date in W3C format ready for use with the data layer.
    *
-   * @var boolean
+   * @var string
    */
-  protected $required = false;
+  protected $value;
 
   /**
    * The date's year field.
@@ -89,43 +89,37 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\Abstrac
    *   The date's global unique identifier.
    * @param string $label
    *   The date's translated label text.
+   * @param null|string $value [optional]
+   *   The date's default value, date in W3C format, defaults to no default value.
    * @param array $attributes [optional]
-   *   The date's additional attributes.
-   * @param integer $yearMax [optional]
-   *   The date's maximum year value, defaults to 9999.
-   * @param integer $yearMin [optional]
-   *   The date's minimum year value, defaults to 0.
+   *   The date's additional attributes, the following attributes are set by default:
+   *   <ul>
+   *     <li><code>"id"</code> is set to <var>$id</var></li>
+   *     <li><code>"class"</code> is set to or extended with <code>"date-separate"</code></li>
+   *   </ul>
+   * @param array $options [optional]
+   *   Associative array containing additional options:
+   *   <ul>
+   *     <li><code>"year_max"</code> set this to the maximum year that can be entered, defaults to <code>9999</code></li>
+   *     <li><code>"year_min</code> set this to the minimum year that can be entered, defaults to <code>0</code></li>
+   *   </ul>
    */
-  public function __construct($id, $label, array $attributes = null, $yearMax = 9999, $yearMin = 0) {
+  public function __construct($id, $label, $value = null, array $attributes = null, array $options = null) {
     parent::__construct($id, $label, $attributes);
-    $this->addClass("date-separate", $this->attributes);
-    $this->yearMax = $yearMax;
-    $this->yearMin = $yearMin;
 
-    // Remove name attribute from fieldset which is automatically set by our parent.
-    unset($this->attributes["name"]);
-
-    // Remove required attribute from fieldset if present and set class property to true.
-    if (($index = array_search("required", $this->attributes))) {
-      $this->required = true;
-      unset($this->attributes[$index]);
+    if (isset($options["year_max"])) {
+      $this->yearMax = $options["year_max"];
+    }
+    if (isset($options["year_min"])) {
+      $this->yearMin = $options["year_min"];
     }
 
     // Check if we have POST data and prepare date parts array for looping.
-    $post      = empty($_POST);
     $dateParts = [ "year", "month", "day" ];
 
-    // Export possibly submitted POST data to class scope, even if the submitted POST data is invalid, export it!
-    if ($post === true) {
-      foreach ($dateParts as $property) {
-        if (($this->{$property} = filter_input(INPUT_POST, "{$this->id}-{$property}", FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE))) {
-          $post = true;
-        }
-      }
-    }
-
-    // Export possibly set value to class scope if we have no POST data at all.
-    if ($post === false && $this->value) {
+    // Export possibly set value to class scope.
+    if ($value) {
+      $this->value = $value;
       // @devStart
       // @codeCoverageIgnoreStart
       if (preg_match("/[0-9]{4}-[0-9]{2}-[0-9]{2}/", $this->value) == false) {
@@ -145,6 +139,11 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\Abstrac
         }
       }
     }
+
+    // Export possibly submitted POST data to class scope and override exported values.
+    foreach ($dateParts as $property) {
+      $this->{$property} = $this->filterInput("{$this->id}-{$property}", FILTER_VALIDATE_INT, [ "options" => [ "default" => $this->{$property} ] ]);
+    }
   }
 
 
@@ -160,6 +159,10 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\Abstrac
    */
   protected function render() {
     global $i18n;
+
+    // Always add CSS class for proper styling.
+    $this->addClass("date-separate", $this->attributes);
+
     return
       "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend><p>" .
         "<label class='s s1'>" .

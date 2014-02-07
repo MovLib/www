@@ -28,59 +28,79 @@ namespace MovLib\Presentation\Partial\FormElement;
 class AbstractFormElementTest extends \MovLib\TestCase {
 
   /**
+   * Get stub for {@see \MovLib\Presentation\Partial\FormElement\AbstractFormElement}.
+   *
+   * @param array $params [optional]
+   *   Parameters that should be passed to the constructor, defaults to empty array. Note that the mandatory parameters
+   *   id and label are automatically added to the params.
+   * @return \PHPUnit_Framework_MockObject_MockObject
+   *   Stub for {@see \MovLib\Presentation\Partial\FormElement\AbstractFormElement}.
+   */
+  protected function getStub(array $params = []) {
+    array_unshift($params, "phpunit", "PHPUnit");
+    return $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement", $params);
+  }
+
+  /**
    * @covers ::__construct
    */
   public function testConstruct() {
-    $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement", [ "phpunit", "PHPUnit", [ "foo" => "bar" ] ]);
-    foreach ([ "foo", "id", "name", "tabindex" ] as $key) {
-      $this->assertArrayHasKey($key, $stub->attributes);
-    }
+    $stub = $this->getStub();
+    $this->assertEquals("phpunit", $this->getProperty($stub, "id"));
     $this->assertEquals("PHPUnit", $this->getProperty($stub, "label"));
-    $this->assertEquals("bar", $stub->attributes["foo"]);
     $this->assertEquals("phpunit", $stub->attributes["id"]);
-    $this->assertEquals("phpunit", $stub->attributes["name"]);
-    $this->assertEquals("phpunit", $stub->id);
-    $this->assertTrue(is_int($stub->attributes["tabindex"]));
-    return $stub;
+  }
+
+  /**
+   * @covers ::__construct
+   */
+  public function testAttributesExport() {
+    $attr = [ "foo" => "bar", "bar" => "foo" ];
+    $stub = $this->getStub([ $attr ]);
+    foreach ($attr as $k => $v) {
+      $this->assertArrayHasKey($k, $stub->attributes);
+      $this->assertEquals($v, $stub->attributes[$k]);
+    }
   }
 
   /**
    * @covers ::invalid
    */
   public function testInvalid() {
-    $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement", [ "phpunit", "PHPUnit" ]);
-    $this->assertEquals($stub, $stub->invalid());
+    $stub = $this->getStub();
+    $this->assertChaining($stub->invalid(), $stub);
     $this->assertArrayHasKey("aria-invalid", $stub->attributes);
+    $this->assertEquals("true", $stub->attributes["aria-invalid"]);
     $this->assertArrayHasKey("class", $stub->attributes);
     $this->assertContains("invalid", $stub->attributes["class"]);
-    $this->assertEquals("true", $stub->attributes["aria-invalid"]);
   }
 
   /**
    * @covers ::setHelp
    */
   public function testSetHelp() {
-    $stub = $this->getMockForAbstractClass("\\MovLib\\Presentation\\Partial\\FormElement\\AbstractFormElement", [ "phpunit", "PHPUnit" ]);
-    $this->assertEquals($stub, $stub->setHelp("help message", false));
+    $stub = $this->getStub();
+    $this->assertChaining($stub->setHelp("help message"), $stub);
     $this->assertArrayHasKey("aria-describedby", $stub->attributes);
     $this->assertEquals("phpunit-help", $stub->attributes["aria-describedby"]);
     $this->assertInstanceOf("\\MovLib\\Presentation\\Partial\\Help", $this->getProperty($stub, "help"));
   }
 
   /**
-   * @covers ::__toString
-   * @todo Implement __toString
+   * @covers ::filterInput
    */
-  public function testToString() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+  public function testFilterInput() {
+    $_POST["foo"] = "bar";
+    $stub = $this->getStub();
+    $this->assertEquals("bar", $this->invoke($stub, "filterInput", [ "foo" ]));
   }
 
   /**
-   * @covers ::validate
-   * @todo Implement validate
+   * @covers ::filterInput
    */
-  public function testValidate() {
-    $this->markTestIncomplete("This test has not been implemented yet.");
+  public function testFilterInputNull() {
+    $stub = $this->getStub();
+    $this->assertNull($this->invoke($stub, "filterInput", [ "foo" ]));
   }
 
 }

@@ -59,7 +59,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    *   The select's global identifier.
    * @param string $label
    *   The select's label text.
-   * @param array|\ArrayAccess $options
+   * @param array $options
    *   The select's available options as associative array where the key is the content of the option's value-attribute
    *   and the array's value the option's display text.
    * @param mixed $value [optional]
@@ -67,10 +67,21 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
    * @param array $attributes [optional]
    *   Additional attributes for the textarea, defaults to <code>NULL</code> (no additional attributes).
    */
-  public function __construct($id, $label, $options, $value = null, array $attributes = null) {
+  public function __construct($id, $label, array $options, $value = null, array $attributes = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($options)) {
+      throw new \LogicException("The options array of a select element cannot be empty.");
+    }
+    if (isset($value) && !isset($options[$value])) {
+      throw new \LogicException("The value passed to a select form element must be present in the available options array.");
+    }
+    // @devEnd
+    // @codeCoverageIgnoreEnd
     parent::__construct($id, $label, $attributes);
     $this->options = $options;
-    $this->value   = isset($_POST[$this->id]) ? $_POST[$this->id] : $value;
+    $selected      = $this->filterInput($this->id);
+    $this->value   = isset($selected) ? $selected : $value;
   }
 
 
@@ -78,20 +89,27 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
 
 
   /**
-   * @inheritdoc
+   * Get the render select form element.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The rendered select form element.
    */
   protected function render() {
     global $i18n;
+
     //  The first child option element of a select element with a required attribute and without a multiple attribute,
     //  and whose size is 1, must have either an empty value attribute, or must have no text content.
     $emptyValue = empty($this->value);
     $selected   = $emptyValue ? " selected" : null;
-    if (in_array("required", $this->attributes)) {
-      $options = "<option disabled{$selected} value=''>{$i18n->t("Please Select …")}</option>";
+    if ($this->required === true) {
+      $selected .= " disabled";
+      $option    = $i18n->t("Please Select …");
     }
     else {
-      $options = "<option{$selected} value=''>{$i18n->t("None")}</option>";
+      $option = $i18n->t("None");
     }
+    $options = "<option{$selected} value=''>{$option}</option>";
 
     foreach ($this->options as $value => $option) {
       $attributes = [];
@@ -106,18 +124,22 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
       $options .= "<option{$this->expandTagAttributes($attributes)}>{$option}</option>";
     }
 
-    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><select{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
+    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><select id='{$this->id}' name='{$this->id}'{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
   }
 
   /**
-   * @inheritdoc
+   * Validate the user submitted value.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return this
+   * @throws \MovLib\Exception\ValidationException
    */
   public function validate() {
     global $i18n;
 
     if (empty($this->value)) {
       $this->value = null;
-      if (in_array("required", $this->attributes)) {
+      if ($this->required === true) {
         throw new ValidationException($i18n->t("The “{0}” select element is mandatory.", [ $this->label ]));
       }
       return $this;
