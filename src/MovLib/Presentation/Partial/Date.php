@@ -30,6 +30,23 @@ namespace MovLib\Presentation\Partial;
 class Date extends \MovLib\Presentation\AbstractBase {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+  /**
+   * Default W3C date format.
+   *
+   * @var string
+   */
+  const FORMAT_W3C = "Y-m-d";
+
+  /**
+   * Default W3C date regular expression that can be used for validation.
+   *
+   * @var string
+   */
+  const REGEXP_W3C = "/[0-9]{4}-[0-9]{2}-[0-9]{2}/";
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -89,10 +106,10 @@ class Date extends \MovLib\Presentation\AbstractBase {
    */
   public function __construct($date = "now") {
     if (is_int($date)) {
-      $date = date("Y-m-d", $date);
+      $date = date(self::FORMAT_W3C, $date);
     }
     elseif ($date == "now") {
-      $date = date("Y-m-d", strtotime("now"));
+      $date = date(self::FORMAT_W3C, strtotime("now"));
     }
     // Make sure date_parse() does not interpret incomplete dates as time strings.
     $this->dateInfo          = date_parse("{$date} 00:00:00");
