@@ -647,7 +647,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     // Add all alerts that are stored in a cookie to the current presentation and remove them afterwards.
     if (isset($_COOKIE["alerts"])) {
       $this->alerts .= $_COOKIE["alerts"];
-      setcookie("alerts", "", 1, "/", $kernel->domainDefault);
+      setcookie("alerts", "", 1, "/", $kernel->domainDefault, $kernel->https, true);
     }
 
     return $this;

@@ -152,6 +152,13 @@ class Kernel {
   public $hostname = "movlib.org";
 
   /**
+   * Whether this request is secure or not.
+   *
+   * @var boolean
+   */
+  public $https = true;
+
+  /**
    * Numeric array containing all JavaScript module names that should be loaded with this presentation.
    *
    * @var array
@@ -339,6 +346,7 @@ class Kernel {
       // Initialize environment properties based on variables passed in by nginx.
       $this->documentRoot     = $_SERVER["DOCUMENT_ROOT"];
       $this->hostname         = $_SERVER["SERVER_NAME"];
+      $this->https            = (boolean) $_SERVER["HTTPS"];
       $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
       $this->protocol         = $_SERVER["SERVER_PROTOCOL"];
       // @todo If we're ever going to use proxy servers this code has to be changed!
@@ -433,12 +441,11 @@ class Kernel {
       }
     }
     finally {
-      // Set alert messages for next page view. No need for secure nor HTTP only, alerts never contain sensitive data.
-      // Instead of storing alert messages on our server we send them to the client, this will only increase network
-      // traffic by a few bytes. Plus the alert message is stored until the user closes the agent, it's very unlikely
-      // that such an alert is still from interest on the next user agent session.
+      // Set alert messages for next page view. Instead of storing alert messages on our server we send them to the
+      // client, this will only increase network traffic by a few bytes. Plus the alert message is stored until the user
+      // closes the agent, it's very unlikely that such an alert is still from interest on the next user agent session.
       if ($this->alerts) {
-        setcookie("alerts", "{$this->alerts}", 0, "/", $this->domainDefault);
+        setcookie("alerts", "{$this->alerts}", 0, "/", $this->domainDefault, $this->https, true);
       }
 
       // This allows us to lazy start anonymous sessions and send cookies right before sending the response.
