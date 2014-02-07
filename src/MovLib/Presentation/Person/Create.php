@@ -125,59 +125,38 @@ class Create extends \MovLib\Presentation\Page {
    * Instantiate new person create presentation.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
    */
   public function __construct() {
     global $i18n, $kernel;
-    $this->initBreadcrumb([ [ $i18n->rp("/persons"), $i18n->t("Persons") ] ]);
+
     $this->initPage($i18n->t("Create Person"));
+    $this->initBreadcrumb([ [ $i18n->rp("/persons"), $i18n->t("Persons") ] ]);
 
-    $this->inputName = new InputText("name", $i18n->t("Name"), [ "placeholder" => $i18n->t("Enter the person's name"), "required" => "required" ]);
-
-    $this->inputBornName = new InputText("born-name", $i18n->t("Born as"), [ "placeholder" => $i18n->t("Enter the person's birth name") ]);
-
-    $now = date("Y-m-d");
-
-    $this->inputBirthDate = new InputDateSeparate("birthdate", $i18n->t("Date of Birth"), [ "class" => "s s6", "min" => "1800-01-01", "max" => $now ]);
-
-    $this->inputDeathDate = new InputDateSeparate("deathdate", $i18n->t("Date of Death"), [ "class" => "s s6", "min" => "1800-01-01", "max" => $now ]);
-
-    $this->inputSex = new RadioGroup("sex", $i18n->t("Sex"), [
-        2 => $i18n->t("Female"),
-        1 => $i18n->t("Male"),
-        0 => $i18n->t("Unknown"),
-      ], 0
-    );
-
+    $this->inputName      = new InputText("name", $i18n->t("Name"), [ "placeholder" => $i18n->t("Enter the person's name"), "required" => "required" ]);
+    $this->inputBornName  = new InputText("born-name", $i18n->t("Born as"), [ "placeholder" => $i18n->t("Enter the person's birth name") ]);
+    $dateOptions          = [ "year_max" => date("Y"), "year_min" => 1800 ];
+    $this->inputBirthDate = new InputDateSeparate("birthdate", $i18n->t("Date of Birth"), null, [ "class" => "s s6" ], $dateOptions);
+    $this->inputDeathDate = new InputDateSeparate("deathdate", $i18n->t("Date of Death"), null, [ "class" => "s s6" ], $dateOptions);
+    $this->inputSex       = new RadioGroup("sex", $i18n->t("Sex"), [ 2 => $i18n->t("Female"), 1 => $i18n->t("Male"), 0 => $i18n->t("Unknown") ], 0);
     $this->inputWikipedia = new InputURL("wikipedia", $i18n->t("Wikipedia URL"), [ "data-allow-external" => true ]);
-
-    $this->inputAliases = new InputLinesText("aliases", $i18n->t("Additional Names"), [ "placeholder" => $i18n->t("Please supply one name per line") ]);
-
-    $this->inputBiography = new InputHTML("biography", $i18n->t("Biography"), null, [
-      "placeholder" => $i18n->t("Enter the person's biography here"),
-    ]);
-    $this->inputBiography
-      ->allowBlockqoutes()
-      ->allowImages()
-      ->allowLists()
-    ;
-
-    $this->inputLinks = new InputLinesURL("links", $i18n->t("External Links"), [ "data-allow-external" => true ,"placeholder" => $i18n->t("Please supply one URL per line") ]);
-
-    $this->form = new Form($this, [
+    $this->inputAliases   = new InputLinesText("aliases", $i18n->t("Additional Names"), [ "placeholder" => $i18n->t("Please supply one name per line") ]);
+    $this->inputBiography = new InputHTML("biography", $i18n->t("Biography"), null, [ "placeholder" => $i18n->t("Enter the person's biography here") ]);
+    $this->inputBiography->allowBlockqoutes()->allowImages()->allowLists();
+    $this->inputLinks     = new InputLinesURL("links", $i18n->t("External Links"), [ "data-allow-external" => true ,"placeholder" => $i18n->t("Please supply one URL per line") ]);
+    $this->form           = new Form($this, [
       $this->inputName,
+      $this->inputBiography,
       $this->inputBornName,
       $this->inputBirthDate,
       $this->inputDeathDate,
       $this->inputSex,
-      $this->inputWikipedia,
       $this->inputAliases,
-      $this->inputBiography,
+      $this->inputWikipedia,
       $this->inputLinks,
     ]);
-
     $this->form->actionElements[] = new InputSubmit($i18n->t("Create Person"), [ "class" => "btn btn-large btn-success", "id" => "submit-create" ]);
     $this->form->actionElements[] = new InputSubmit($i18n->t("Create and Upload Image"), [ "class" => "btn btn-large btn-success", "id" => "submit-upload" ]);
-
     $kernel->stylesheets[] = "person";
   }
 
@@ -193,12 +172,12 @@ class Create extends \MovLib\Presentation\Page {
     return
       "<div class='c'>{$this->form->open()}" .
         $this->inputName .
+        $this->inputBiography .
         $this->inputBornName .
         "<div class='r'>{$this->inputBirthDate}{$this->inputDeathDate}</div>" .
         $this->inputSex .
-        $this->inputWikipedia .
         $this->inputAliases .
-        $this->inputBiography .
+        $this->inputWikipedia .
         $this->inputLinks .
       "{$this->form->close()}</div>"
     ;
