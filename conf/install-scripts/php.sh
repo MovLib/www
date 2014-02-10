@@ -27,8 +27,8 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # Define work directory and include configuration.
-WD=$(dirname $0)
-source "${WD}/inc/conf.sh"
+WD="$(cd `dirname ${0}`; pwd)/"
+source ${WD}/inc/conf.sh
 
 CHECKINSTALL_ARGUMENTS="--provides=php,php-cgi,php-config,php-fpm,phpize"
 NAME="php"
@@ -36,53 +36,13 @@ NAME="php"
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="5.5.8"
+  VERSION="5.5.9"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
 source ${ID}uninstall.sh
 source ${ID}wget.sh "http://us1.php.net/distributions/" "${NAME}-${VERSION}" ".tar.gz"
 
-# ---------------------------------------------------------------------------------------------------------------------- PRODUCTION
-#./configure \
-#  CFLAGS="-O3 -m64" \
-#  CXXFLAGS="-O3 -m64" \
-#  --disable-flatfile \
-#  --disable-inifile \
-#  --disable-pdo \
-#  --disable-short-tags \
-#  --enable-bcmath \
-#  --enable-fpm \
-#  --enable-intl \
-#  --enable-libgcc \
-#  --enable-libxml \
-#  --enable-mbstring \
-#  --enable-mysqlnd \
-#  --enable-opcache \
-#  --enable-pcntl \
-#  --enable-re2c-cgoto \
-#  --enable-xml \
-#  --enable-zend-signals \
-#  --enable-zip \
-#  --sysconfdir="/etc/php-fpm" \
-#  --with-config-file-path="/etc/php-fpm" \
-#  --with-curl \
-#  --with-fpm-group="www-data" \
-#  --with-fpm-user="www-data" \
-#  --with-icu-dir="/usr/local" \
-#  --with-mcrypt="/usr/lib/libmcrypt" \
-#  --with-mysql-sock="/run/mysqld/mysqld.sock" \
-#  --with-mysqli \
-#  --with-openssl \
-#  --with-pcre-regex \
-#  --with-pear \
-#  --with-tidy \
-#  --with-zend-vm="GOTO" \
-#  --with-zlib \
-#  --without-sqlite3
-
-# ---------------------------------------------------------------------------------------------------------------------- DEVELOPMENT
-#
 # We need PDO for PHPUnit in our development system. Otherwise we can't run any database tests.
 CFLAGS="-O3 -m64 -DMYSQLI_NO_CHANGE_USER_ON_PCONNECT" CXXFLAGS="-O3 -m64" ./configure \
   --disable-flatfile \

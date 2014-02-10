@@ -52,8 +52,8 @@ if [ -f ${2}${3} ]; then
   fi
 fi
 
-if [ -d ${1} ]; then
-  if [ -n "${4}" ] || [ ${4} != "false" ]; then
+if [ -d "${2}" ]; then
+  if [ -z "${4}" ] || [ ${4} != "false" ]; then
     msginfo "Changing to directory: ${SD}${2}"
     cd ${SD}${2}
   fi

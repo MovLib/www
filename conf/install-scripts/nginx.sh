@@ -34,7 +34,7 @@ source ${WD}/inc/conf.sh
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="1.5.9"
+  VERSION="1.5.10"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
@@ -50,7 +50,7 @@ msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
 cd ${SD}${NAME}-${VERSION}
 
 # Install OpenSSL
-OPENSSL_VERSION="1.0.1e"
+OPENSSL_VERSION="1.0.1f"
 msginfo "Using OpenSSL version ${OPENSSL_VERSION}!"
 source ${ID}wget.sh "https://www.openssl.org/source/" "openssl-${OPENSSL_VERSION}" ".tar.gz" "false"
 
@@ -62,7 +62,7 @@ source ${ID}wget.sh "https://www.openssl.org/source/" "openssl-${OPENSSL_VERSION
 #./autogen.sh
 #cd ..
 #msginfo "Changing to directory: ${SD}${NAME}"
-PCRE_VERSION="8.33"
+PCRE_VERSION="8.34"
 msginfo "Using PCRE version ${PCRE_VERSION}!"
 source ${ID}wget.sh "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/" "pcre-${PCRE_VERSION}" ".tar.gz" "false"
 
