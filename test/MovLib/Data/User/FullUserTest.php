@@ -18,7 +18,7 @@
 namespace MovLib\Data\User;
 
 use \MovLib\Tool\Console\Command\Development\SeedImport;
-use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Data\User\FullUser;
 
 /**
  * @coversDefaultClass \MovLib\Data\User\Full
@@ -28,7 +28,7 @@ use \MovLib\Data\User\Full as FullUser;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class FullTest extends \MovLib\TestCase {
+class FullUserTest extends \MovLib\TestCase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
