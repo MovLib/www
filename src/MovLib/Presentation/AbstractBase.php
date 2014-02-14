@@ -136,28 +136,53 @@ abstract class AbstractBase {
    * echo "<div{$this->expandAttributes($attributes)}></div>";</pre>
    *
    * @global \MovLib\Kernel $kernel
-   * @param null|array $attributes [optional]
+   * @param array $attributes
    *   Associative array containing the elements attributes. If no attributes are present (e.g. you're handling an
    *   object which sometimes has attributes but not always) an empty string will be returned.
    * @return string
    *   String representation of the attributes array, or empty string if no attributes are present.
    */
-  protected final function expandTagAttributes(array $attributes = null) {
+  protected final function expandTagAttributes($attributes) {
     global $kernel;
+
+    // Only expand if we have something to expand.
     if ($attributes) {
+      // Local variables used to collect the expanded tag attributes.
       $expanded = null;
+
+      // Ensure we start from the beginning of the array.
+      reset($attributes);
+
+      // Go through all attributes and expand them.
       foreach ($attributes as $name => $value) {
         // Special handling of boolean attributes, only include them if they are true and do not include the value.
-        if (is_bool($value)) {
-          if ($value === true) {
-            $expanded .= " {$name}";
-          }
+        if ($value === (boolean) $value) {
+          $value && ($expanded .= " {$name}");
         }
-        // All other attribute are treated equally.
-        else {
+        // Special handling of empty attributes (added to the attributes array without any key).
+        elseif ($name === (integer) $name) {
+          // @devStart
+          // @codeCoverageIgnoreStart
+          if (empty($value)) {
+            throw new \LogicException("The value of an empty attribute (numeric key) cannot be empty");
+          }
+          // @codeCoverageIgnoreEnd
+          // @devEnd
+          $expanded .= " {$value}";
+        }
+        // All other attributes are treated equally, but only if they have a value.
+        elseif (!empty($value)) {
+          // @devStart
+          // @codeCoverageIgnoreStart
+          if (empty($name)) {
+            throw new \LogicException("An attribute's name cannot be empty");
+          }
+          // @codeCoverageIgnoreEnd
+          // @devEnd
           $expanded .= " {$name}='{$kernel->htmlEncode($value)}'";
         }
       }
+
       return $expanded;
     }
   }
