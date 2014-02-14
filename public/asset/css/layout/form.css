@@ -295,7 +295,7 @@ option[value=""] {
 
 .inputimage input,
 .inputimage .btn,
-.form-actions input,
-.form-actions button {
+form .actions input,
+form .actions button {
   margin-right: 10px;
 }

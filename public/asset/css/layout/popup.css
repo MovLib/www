@@ -101,7 +101,7 @@
  * ------------------------------------------------------------------------------------------------------------------ */
 
 form .popup {
-  margin: 0;
+  margin: 0 0 0 5px;
   cursor: help;
 }
 
@@ -127,4 +127,12 @@ form .popup .content {
 
 form .popup .content:after {
   right: 20px;
+}
+
+form .ico-help {
+  color: #3a87ad;
+}
+
+form .ico-alert {
+  color: #b94a48;
 }
