@@ -17,10 +17,9 @@
  */
 namespace MovLib\Presentation\Persons;
 
-use \MovLib\Data\Image\PersonImage;
 use \MovLib\Data\Person\Person;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Date;
+use \MovLib\Presentation\Partial\Lists\Persons as PersonsPartial;
 
 /**
  * The listing for the latest person additions.
@@ -71,67 +70,23 @@ class Show extends \MovLib\Presentation\Page {
   protected function getPageContent() {
     global $i18n;
 
-    $list = null;
-    $personsResult = Person::getPersons($this->resultsOffset, $this->resultsPerPage);
-    /* @var $person \MovLib\Data\Person\Person */
-    while ($person = $personsResult->fetch_object("MovLib\\Data\\Person\\Person")) {
-      $additionalNames = null;
-      if ($person->bornName) {
-        $additionalNames .= $i18n->t("{0} ({1})", [
-          "<span itemprop='additionalName'>{$person->bornName}</span>",
-          "<i>{$i18n->t("born name")}</i>",
-        ]);
-      }
-      if ($person->nickname) {
-        if ($additionalNames) {
-          $additionalNames .= " ";
-        }
-        $additionalNames .= $i18n->t("aka “{0}”", [ "<span itemprop='additionalName'>{$person->nickname}</span>" ]);
-      }
-      if ($additionalNames) {
-        $additionalNames = "<br>{$additionalNames}";
-      }
-
-      $lifeDates = null;
-      if ($person->birthDate || $person->deathDate) {
-        if ($person->birthDate) {
-          $lifeDates .= (new Date($person->birthDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
-        }
-        else {
-          $lifeDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Date of Birth")}'>", "</em>" ]);
-        }
-
-        if ($person->deathDate) {
-          $lifeDates .= " – " . (new Date($person->deathDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Death") ]);
-        }
-
-        $lifeDates = "<br>{$lifeDates}";
-      }
-
-      $list .=
-        "<li itemscope itemtype='http://schema.org/Person'>" .
-          "<a class='img li r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
-            $this->getImage($person->displayPhoto->getStyle(PersonImage::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
-            "<span class='s s9'><span class='link-color' itemprop='name'>{$person->name}</span>" .
-              "<span class='small'>{$additionalNames}{$lifeDates}</span>" .
-            "</span>" .
-          "</a>" .
-        "</li>"
-      ;
-    }
-    if ($list) {
-      return "<div id='filter'>filter filter filter</div><ol class='hover-list no-list'>{$list}</ol>";
-    }
-    return new Alert(
-      $i18n->t(
-        "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available. Would you like to {0}create a new entry{1}?",
-        [
-          "<a href='{$i18n->r("/person/create")}'>",
-          "</a>"
-        ]
+    return new PersonsPartial(
+      Person::getPersons($this->resultsOffset, $this->resultsPerPage),
+      new Alert(
+        $i18n->t(
+          "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available. Would you like to {0}create a new entry{1}?",
+          [
+            "<a href='{$i18n->r("/person/create")}'>",
+            "</a>"
+          ]
+        ),
+        $i18n->t("No persons"),
+        Alert::SEVERITY_INFO
       ),
-      $i18n->t("No persons"),
-      Alert::SEVERITY_INFO
+      null,
+      null,
+      10,
+      true
     );
   }
 
