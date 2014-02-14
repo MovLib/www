@@ -193,35 +193,6 @@ class I18n {
   }
 
   /**
-   * Format the given date or timestamp for output.
-   *
-   * @link http://www.php.net/manual/en/class.intldateformatter.php#intl.intldateformatter-constants
-   * @todo Allow override of used locale to format the date.
-   * @param string|int $dateOrTimestamp
-   *   The date or timestamp to format.
-   * @param null|string $timezone
-   *   One of the {@link http://www.php.net/manual/en/timezones.php PHP timezone identifiers}. Defaults to system
-   *   default timezone from <code>php.ini</code> configuration file.
-   * @param int $datetype
-   *   One of the <code>IntlDateFormatter</code> constants.
-   * @param int $timetype
-   *   One of the <code>IntlDateFormatter</code> constants.
-   * @return string|boolean
-   *   The formatted string or, if an error occurred, <code>FALSE</code>.
-   * @throws \Exception
-   *   If the supplied timezone is not recognised as a valid timezone.
-   */
-  public function formatDate($dateOrTimestamp, $timezone = null, $datetype = \IntlDateFormatter::LONG, $timetype = \IntlDateFormatter::LONG) {
-    if (!$timezone) {
-      $timezone = ini_get("date.timezone");
-    }
-    if (is_numeric($dateOrTimestamp)) {
-      return (new \IntlDateFormatter($this->locale, $datetype, $timetype, new \DateTimeZone($timezone)))->format($dateOrTimestamp);
-    }
-    return (new \IntlDateFormatter($this->locale, $datetype, $timetype, new \DateTimeZone($timezone)))->format(new \DateTime($dateOrTimestamp));
-  }
-
-  /**
    * Get collator for the current locale.
    *
    * @return \MovLib\Data\Collator
