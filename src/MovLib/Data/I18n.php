@@ -156,13 +156,40 @@ class I18n {
    *   The message to format.
    * @param array $args
    *   The message arguments.
-   * @param string $locale [optional]
-   *   Use this locale to translate the route instead of the current display locale.
    * @return string
    *   The formatted message.
    */
-  public function format($message, array $args, $locale = null) {
-    return \MessageFormatter::formatMessage(($locale ?: $this->locale), $message, $args);
+  public function format($message, array $args) {
+    return \MessageFormatter::formatMessage($this->locale, $message, $args);
+  }
+
+  /**
+   * Get number formatted in human readable form.
+   *
+   * @param integer $bytes
+   *   The number to format.
+   * @return string
+   *   Number formatted in human readable form.
+   */
+  public function formatBytes($bytes) {
+    // https://en.wikipedia.org/wiki/Mebibyte
+    if ($bytes >= 1048576) {
+      $bytes = ceil($bytes / 1048576);
+      $title = "Mebibyte";
+      $abbr  = "MiB";
+    }
+    // https://en.wikipedia.org/wiki/Kibibyte
+    elseif ($bytes >= 1024) {
+      $bytes = ceil($bytes / 1024);
+      $title = "Kibibyte";
+      $abbr  = "KiB";
+    }
+    // https://en.wikipedia.org/wiki/Byte
+    else {
+      $title = "Byte";
+      $abbr  = "B";
+    }
+    return \MessageFormatter::formatMessage($this->locale, "{0,number,integer} <abbr title='{$title}'>{$abbr}</abbr>", [ $bytes ]);
   }
 
   /**
