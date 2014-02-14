@@ -38,7 +38,7 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * The user's who requested the email change.
    *
-   * @var \MovLib\Data\User\Full
+   * @var \MovLib\Data\User\FullUser
    */
   private $user;
 
@@ -65,6 +65,16 @@ class EmailChange extends \MovLib\Presentation\Email\AbstractEmail {
    *   for them to update their email address.
    */
   public function __construct($user, $newEmail) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!($user instanceof \MovLib\Data\User\FullUser)) {
+      throw new \InvalidArgumentException("\$user must be instance of \\MovLib\\Data\\User\\FullUser");
+    }
+    if (empty($newEmail)) {
+      throw new \InvalidArgumentException("\$newEmail cannot be empty.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->user      = $user;
     $this->recipient = $newEmail;
   }

@@ -37,7 +37,7 @@ class Deletion extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * The user who requested deletion.
    *
-   * @var \MovLib\Data\User\Full
+   * @var \MovLib\Data\User\FullUser
    */
   protected $user;
 
@@ -59,6 +59,13 @@ class Deletion extends \MovLib\Presentation\Email\AbstractEmail {
    *   The user who requested deletion.
    */
   public function __construct($user) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!($user instanceof \MovLib\Data\User\FullUser)) {
+      throw new \InvalidArgumentException("\$user must be instance of \\MovLib\\Data\\User\\FullUser");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->user = $user;
   }
 

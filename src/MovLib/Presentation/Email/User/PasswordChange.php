@@ -38,7 +38,7 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * The user who requested the password change.
    *
-   * @var \MovLib\Data\User\Full
+   * @var \MovLib\Data\User\FullUser
    */
   protected $user;
 
@@ -70,6 +70,16 @@ class PasswordChange extends \MovLib\Presentation\Email\AbstractEmail {
    *   The new unhashed password.
    */
   public function __construct($user, $rawPassword) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!($user instanceof \MovLib\Data\User\FullUser)) {
+      throw new \InvalidArgumentException("\$user must be instance of \\MovLib\\Data\\User\\FullUser");
+    }
+    if (empty($rawPassword)) {
+      throw new \InvalidArgumentException("\$rawPassword cannot be empty.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->user        = $user;
     $this->rawPassword = $rawPassword;
   }

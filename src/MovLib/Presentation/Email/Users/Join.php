@@ -44,7 +44,7 @@ class Join extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * The user's name.
    *
-   * @var \MovLib\Data\User\Full
+   * @var \MovLib\Data\User\FullUser
    */
   protected $user;
 
@@ -62,10 +62,17 @@ class Join extends \MovLib\Presentation\Email\AbstractEmail {
   /**
    * Create join email for activation of account.
    *
-   * @param \MovLib\Data\User\Full $user
+   * @param \MovLib\Data\User\FullUser $user
    *   The user instance.
    */
   public function __construct($user) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!($user instanceof \MovLib\Data\User\FullUser)) {
+      throw new \InvalidArgumentException("\$user must be instance of \\MovLib\\Data\\User\\FullUser");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $this->user = $user;
   }
 
