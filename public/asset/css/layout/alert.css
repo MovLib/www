@@ -91,10 +91,3 @@
 .alert-error .title {
   color: #b94a48;
 }
-
-.alert .form-help {
-  position: relative;
-  top: -2px;
-  right: -21px;
-  color: #656565;
-}
