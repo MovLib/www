@@ -32,7 +32,7 @@ use \MovLib\Presentation\Error\NotFound;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Full extends \MovLib\Data\User\User {
+class FullUser extends \MovLib\Data\User\User {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

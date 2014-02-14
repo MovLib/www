@@ -17,7 +17,7 @@
  */
 namespace MovLib\Data\User;
 
-use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Data\User\FullUser;
 use \MovLib\Data\User\User;
 use \MovLib\Presentation\Error\Forbidden;
 use \MovLib\Presentation\Error\Unauthorized;
@@ -625,7 +625,7 @@ class Session implements \ArrayAccess {
    */
   public function offsetSet($offset, $value) {
     $_SESSION[$offset] = $value;
-    $this->active = true;
+    $this->active      = true;
   }
 
   /**
