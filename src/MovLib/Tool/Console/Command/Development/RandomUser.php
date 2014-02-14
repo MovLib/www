@@ -18,7 +18,7 @@
 namespace MovLib\Tool\Console\Command\Development;
 
 use \MovLib\Data\UnixShell as sh;
-use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Data\User\FullUser;
 use \Symfony\Component\Console\Input\InputArgument;
 use \Symfony\Component\Console\Input\InputInterface;
 use \Symfony\Component\Console\Output\OutputInterface;
