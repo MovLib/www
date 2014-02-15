@@ -17,94 +17,108 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ValidationException;
-
 /**
- * HTML input type email form element.
+ * Input email form element.
  *
- * @link http://www.rfc-editor.org/errata_search.php?rfc=3696&eid=1690
- * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputEmail extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
+class InputEmail extends \MovLib\Presentation\Partial\FormElement\InputText {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
   /**
-   * Instantiate new input form element of type email.
+   * Maximum email address length.
    *
-   * @param string $id [optional]
-   *   The email's global unique identifier, defaults to <code>"email"</code>.
-   * @param string $label [optional]
-   *   The email's translated label text, defaults to <code>$i18n->t("Email Address")</code>.
-   * @param array $attributes [optional]
-   *   The email's additional attributes, the following attributes are set by default:
-   *   <ul>
-   *     <li><code>"id"</code> is set to <var>$id</var></li>
-   *     <li><code>"name"</code> is set to <var>$id</var></li>
-   *     <li><code>"required"</code> is set</li>
-   *     <li><code>"maxlength"</code> is set to <code>254</code></li>
-   *     <li><code>"pattern"</code> is set to a regular expression that validates common email addresses</li>
-   *     <li><code>"title"</code> explains the requirements for a valid email address</li>
-   *     <li><code>"type"</code> is set to <code>"email"</code></li>
-   *   </ul>
-   *   You <b>should not</b> override any of the default attributes. The <code>"placeholder"</code> attribute is set to
-   *   <code>$i18n->t("Enter your email address")</code> if none is passed along.
+   * @link http://stackoverflow.com/a/574698/1251219
+   * @var integer
    */
-  public function __construct($id = "email", $label = null, array $attributes = null) {
+  const MAX_LENGTH = 254;
+
+  /**
+   * Regular expression pattern for client side email address validation.
+   *
+   * @link http://fightingforalostcause.net/content/misc/2006/compare-email-regex.php
+   * @var string
+   */
+  const PATTERN = "^[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~\.\"(),:;<>@[\]\\\\ ]+@[a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*[a-z0-9_]\.[a-z]{2,6}$";
+
+  /**
+   * The form element's type.
+   *
+   * @var string
+   */
+  const TYPE = "email";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Get the input email form element.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The input text form element.
+   */
+  public function __toString() {
     global $i18n;
-    parent::__construct($id, $label ?: $i18n->t("Email Address"), $attributes);
-    $this->attributes["maxlength"]     = 254;
-    $this->attributes["pattern"]       = "^[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~\.\"(),:;<>@[\]\\\\ ]+@[a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*[a-z0-9_]\.[a-z]{2,6}$";
-    $this->attributes["title"]         = $i18n->t(
-      "An email address in the format [local]@[host].[tld] with a maximum of {0,number,integer} characters",
-      [ $this->attributes["maxlength"] ]
-    );
-    $this->attributes["type"]          = "email";
-    $this->attributes[]                = "required";
-    if (!isset($this->attributes["placeholder"])) {
-      $this->attributes["placeholder"] = $i18n->t("Enter your email address");
-    }
+    $this->attributes["maxlength"] = self::MAX_LENGTH;
+    $this->attributes["pattern"]   = self::PATTERN;
+    $this->attributes["title"]     = $i18n->t("An email address in the format [local]@[host].[tld] with a maximum of {0,number,integer} characters", [ self::MAX_LENGTH ]);
+    return parent::__toString();
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * @inheritdoc
+   * Validate the submitted email address.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $email
+   *   The user submitted email to validate.
+   * @param mixed $errors
+   *   Parameter to collect error messages.
+   * @return string
+   *   The valid email address.
    */
-  public function validate() {
+  protected function validateValue($email, &$errors) {
     global $i18n;
 
-    if (empty($this->value)) {
-      throw new ValidationException($i18n->t("The email address is mandatory."));
-    }
-
     // No need for multi-byte functions, utf-8 is not allowed in emails.
-    if (strlen($this->value) > $this->attributes["maxlength"]) {
-      throw new ValidationException($i18n->t(
-        "The email address is too long: it must be {0,number,integer} or less.", [ $this->attributes["maxlength"] ]
-      ));
+    if (strlen($email) > self::MAX_LENGTH) {
+      $errors[] = $i18n->t("The email address is too long: it must be {0,number,integer} or less.", [ self::MAX_LENGTH ]);
     }
 
     // Use PHP's built-in validation function.
-    if (filter_var($this->value, FILTER_VALIDATE_EMAIL, FILTER_REQUIRE_SCALAR|FILTER_FLAG_HOST_REQUIRED) === false) {
-      throw new ValidationException($i18n->t("The email address is invalid."));
+    if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+      $errors[] = $i18n->t("The email address is invalid.");
     }
 
-    // If the syntax is valid, check if we actually can send emails to the given address. Appending a dot makes sure
-    // that the checkdnsrr() calls are always accurate. Unit tests have shown that the function returns true for an A
-    // check on the domain "foo.bar", which is definitely not correct. No test failed with the dot appended to the
-    // host part.
-    $host = substr($this->value, strrpos($this->value, "@") + 1) . ".";
+    // Only attempt to validate the reachability if the email address is valid.
+    if (!$errors) {
+      // If the syntax is valid, check if we actually can send emails to the given address. Appending a dot makes sure
+      // that the checkdnsrr() calls are always accurate. Unit tests have shown that the function returns true for an A
+      // check on the domain "foo.bar", which is definitely not correct. No test failed with the dot appended to the
+      // host part.
+      $host = substr($email, strrpos($email, "@") + 1) . ".";
 
-    // The host part needs at least a single point in it, otherwise localhost would be valid. We check the DNS entries
-    // in the order of their weight for the current operation. An A record is for IPv4 hosts, an AAAA record is for
-    // IPv6 hosts and the MX record is for mail servers only.
-    if (checkdnsrr($host, "A") === false && checkdnsrr($host, "AAAA") === false && checkdnsrr($host, "MX") === false) {
-      throw new ValidationException($i18n->t("The email address is unreachable."));
+      // The host part needs at least a single point in it, otherwise localhost would be valid. We check the DNS entries
+      // in the order of their weight for the current operation. An A record is for IPv4 hosts, an AAAA record is for
+      // IPv6 hosts and the MX record is for mail servers only.
+      if (checkdnsrr($host, "A") === false && checkdnsrr($host, "AAAA") === false && checkdnsrr($host, "MX") === false) {
+        $errors[] = $i18n->t("The email address is unreachable.");
+      }
     }
 
-    return $this;
+    return $email;
   }
 
 }

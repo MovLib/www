@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Data\Image\AbstractBaseImage as Image;
+use \MovLib\Data\Image\AbstractBaseImage;
 use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Exception\ValidationException;
 
@@ -32,19 +32,11 @@ use \MovLib\Exception\ValidationException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractInputFile {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * We cache the translations of some error messages because we use them within render() to pass them along to our
-   * JavaScript and within our validate() method.
-   *
-   * @var array
-   */
-  protected $errorMessages;
 
   /**
    * The image's extension.
@@ -167,6 +159,14 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   public function __construct($id, $label, $concreteImage, array $attributes = null) {
     global $i18n, $kernel, $session;
 
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!($concreteImage instanceof AbstractBaseImage)) {
+      throw new \LogicException("The instance of image passed to the image input element must be of \\MovLib\\Data\\Image\\AbstractBaseImage.");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
     // Only authenticated users are allowed to upload images.
     if ($session->isAuthenticated === false) {
       throw new Unauthorized($i18n->t(
@@ -183,12 +183,10 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
     $kernel->javascripts[] = "InputImage";
 
     // Initialize attributes and properties.
-    $this->attributes["accept"] = "image/jpeg,image/png";
-    $this->attributes["type"]   = "file";
-    $this->image                = $concreteImage;
-    $this->maxFilesize          = ini_get("upload_max_filesize");
-    $this->minHeight            = $this->image->height ? : Image::IMAGE_MIN_HEIGHT;
-    $this->minWidth             = $this->image->width ? : Image::IMAGE_MIN_WIDTH;
+    $this->image       = $concreteImage;
+    $this->maxFilesize = ini_get("upload_max_filesize");
+    $this->minHeight   = $this->image->height ? : AbstractBaseImage::IMAGE_MIN_HEIGHT;
+    $this->minWidth    = $this->image->width ? : AbstractBaseImage::IMAGE_MIN_WIDTH;
 
     list($this->maxFilesizeFormatted, $this->maxFilesizeUnit) = $this->formatBytes($this->maxFilesize);
 
@@ -226,16 +224,18 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
    */
   protected function render() {
     global $i18n;
-    $JSON = json_encode($this->errorMessages);
-    $height = $this->image->height ? " data-height='{$this->image->height}'" : null;
-    $width  = $this->image->width ? " data-width='{$this->image->width}'" : null;
+
+    $JSON     = json_encode($this->errorMessages);
+    $height   = $this->image->height ? " data-height='{$this->image->height}'" : null;
+    $width    = $this->image->width  ? " data-width='{$this->image->width}'"   : null;
+
     return
       "<div class='inputimage r' data-max-filesize='{$this->maxFilesize}' data-min-height='{$this->minHeight}' data-min-width='{$this->minWidth}'{$height}{$width}>" .
         "<script type='application/json'>{$JSON}</script>" .
-        "<div class='s s2 preview'>{$this->getImage($this->image->getStyle(Image::STYLE_SPAN_02), false)}</div>" .
-        "<div class='s s8'>{$this->help}<label for='{$this->id}'>{$this->label}</label>" .
+        "<div class='s s2 preview'>{$this->getImage($this->image->getStyle(AbstractBaseImage::STYLE_SPAN_02), false)}</div>" .
+        "<div class='s s8'>{$this->required}{$this->help}<label for='{$this->id}'>{$this->label}</label>" .
           "<span class='btn input-file'><span aria-hidden='true'>{$i18n->t("Choose Image …")}</span>" .
-            "<input{$this->expandTagAttributes($this->attributes)}>" .
+            "<input id='{$this->id}' name='{$this->id}' type='file' accept='image/jpeg,image/png'{$this->expandTagAttributes($this->attributes)}>" .
           "</span>{$this->inputFileAfter}" .
         "</div>" .
       "</div>"
@@ -246,43 +246,8 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractFormEl
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Data\User\Session $session
-   */
-  public function validate(){
-    global $i18n, $session;
-
-    // Only authenticated user's are allowed to upload images.
-    if ($session->isAuthenticated === false) {
-      throw new Unauthorized;
-    }
-
-    if (empty($_FILES[$this->id]) || $_FILES[$this->id]["error"] === UPLOAD_ERR_NO_FILE) {
-      if (in_array("required", $this->attributes)) {
-        throw new ValidationException($i18n->t("The “{0}” image field is mandatory.", [ $this->label ]));
-      }
-      return $this;
-    }
-
-    if ($_FILES[$this->id]["error"] !== UPLOAD_ERR_OK) {
-      switch ($_FILES[$this->id]["error"]) {
-        case UPLOAD_ERR_INI_SIZE:
-        case UPLOAD_ERR_FORM_SIZE:
-          throw new ValidationException($this->errorMessages["large"]);
-
-        case UPLOAD_ERR_PARTIAL:
-          throw new ValidationException($i18n->t("The image wasn’t completely uploaded, please try again."));
-
-        case UPLOAD_ERR_NO_TMP_DIR:
-        case UPLOAD_ERR_CANT_WRITE:
-        case UPLOAD_ERR_EXTENSION:
-          $e = new ValidationException($i18n->t("There was an unknown problem while processing your upload, please try again."), $_FILES[$this->id]["error"]);
-          error_log($e);
-          throw $e;
-      }
-    }
+  protected function validateValue($image, &$errors){
+    global $i18n;
 
     // Gather meta information about the uploaded image, getimagesize() will fail if this isn't a valid image.
     try {

@@ -17,9 +17,6 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Help;
-
 /**
  * Base class for any form element.
  *
@@ -39,15 +36,16 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   /**
    * The form element's attributes.
    *
-   * The following attributes are always set:
-   * <ul>
-   *   <li><code>"id"</code> is set to <var>AbstractFormElement::$id</var></li>
-   *   <li><code>"name"</code> is set to <var>AbstractFormElement::$id</var></li>
-   * </ul>
-   *
    * @var array
    */
-  public $attributes;
+  protected $attributes;
+
+  /**
+   * Attribute used to collect error messages during validation.
+   *
+   * @var mixed
+   */
+  protected $errors;
 
   /**
    * The form element's help.
@@ -74,11 +72,18 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   protected $label;
 
   /**
-   * Whether this form element is required or not.
+   * Contains a popup that describes that this form element is required.
    *
-   * @var boolean
+   * @var string
    */
-  public $required = false;
+  protected $required;
+
+  /**
+   * The form element's atomic value.
+   *
+   * @var mixed
+   */
+  public $value;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -91,45 +96,62 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   The form element's unique global identifier.
    * @param string $label
    *   The form element's translated label text.
-   * @param array $attributes [optional]
+   * @param array $attributes
    *   The form element's attributes array.
+   * @param mixed $value
+   *   The form element's atomic value.
+   * @param string $help
+   *   The form element's translated help text.
+   * @param boolean $helpPopup
+   *   Whether the form element's help should be displayed as popup or not.
+   * @global \MovLib\Data\I18n $i18n
    */
-  public function __construct($id, $label, array $attributes = null) {
+  public function __construct($id, $label, $attributes, &$value, $help, $helpPopup) {
+    global $i18n;
+
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($id)) {
-      throw new \LogicException("A form element's \$id cannot be empty");
+      throw new \InvalidArgumentException("A form element's \$id cannot be empty");
     }
     if (empty($label)) {
-      throw new \LogicException("A form element's \$label cannot be empty");
+      throw new \InvalidArgumentException("A form element's \$label cannot be empty");
+    }
+    if (isset($attributes) && !is_array($attributes)) {
+      throw new \InvalidArgumentException("A form element's \$attributes must be of type array");
     }
     if (isset($this->attributes["required"]) && !is_bool($this->attributes["required"])) {
       throw new \InvalidArgumentException("A form element's required attribute has to be of type boolean");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
+
+    // Export parameters to class scope.
     $this->attributes = $attributes;
     $this->id         = $id;
     $this->label      = $label;
-    if (isset($this->attributes["required"])) {
-      $this->required = $this->attributes["required"];
-    }
-  }
+    $this->value      =& $value;
 
-  /**
-   * Get string representation of this form element.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return string
-   *   String representation of this form element.
-   */
-  public function __toString() {
-    global $i18n;
-    try {
-      return $this->render();
+    // Add note to form element if it's required.
+    if (isset($this->attributes["required"])) {
+      $this->attributes["aria-describedby"] = "{$this->id}-required";
+      $this->required = "<div class='fr ico ico-alert popup' id='{$this->id}-required' role='note'><small class='content'>{$i18n->t("This field is required.")}</small></div>";
     }
-    catch (\Exception $e) {
-      return (string) new Alert("<pre>{$e}</pre>", $i18n->t("Error Rendering Element"), Alert::SEVERITY_ERROR);
+
+    // Add help text to form element if one is present.
+    if (isset($help)) {
+      if ($helpPopup === true) {
+        if (isset($this->attributes["aria-describedby"])) {
+          $this->attributes["aria-describedby"] .= " {$this->id}-help";
+        }
+        else {
+          $this->attributes["aria-describedby"] = "{$this->id}-help";
+        }
+        $this->help = "<div class='fr ico ico-help popup' id='{$this->id}-help' role='note'><small class='content'>{$help}</small></div>";
+      }
+      else {
+        $this->help = "<small class='fr' id='{$this->id}-help' role='note'>{$help}</small>";
+      }
     }
   }
 
@@ -138,77 +160,25 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Get the string representation of the form element.
+   * Validate the form element's submitted value.
    *
-   * @return string
-   *   The string representation of the form element.
+   * @param mixed $value
+   *   The user submitted value to validate.
+   * @param mixed $errors
+   *   Parameter to collect error messages.
+   * @return mixed
+   *   The valid atomic value.
    */
-  protected abstract function render();
-
-  /**
-   * Validate the user submitted data.
-   *
-   * @global \MovLib\Data\I18n $i18n
-   * @return this
-   * @throws \MovLib\Exception\ValidationException
-   */
-  public abstract function validate();
+  abstract protected function validateValue($value, &$errors);
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
   /**
-   * Filter input variable.
+   * Mark form element as invalid.
    *
-   * @see filter_var()
-   * @see filter_input()
-   * @param string $name
-   *   The name of the variable to get.
-   * @param integer $filter
-   *   The identifier of the filter to apply. The {@link http://php.net/manual/filter.filters.php types of filters}
-   *   manual page lists the available filters. Defaults to <code>NULL</code>.
-   * @param mixed $options
-   *   Associative array of options or bitwise disjunction of flags. If filter accepts options, flags can be provided
-   *   in <code>"flags"</code> field of array. Defaults to no options.
-   * @param array $type
-   *   The input type to filter, defaults to <var>$_POST</var>.
-   * @return mixed
-   *   Value of the requested variable on success, <code>FALSE</code> if the filter fails, or <code>NULL</code> if the
-   *   <var>$name</var> variable is not set. If the flag <var>FILTER_NULL_ON_FAILURE</var> is used, it returns
-   *   <code>NULL</code> if the fitler fails.
-   */
-  protected function filterInput($name, $filter = null, $options = null, $type = null) {
-    // @devStart
-    // @codeCoverageIgnoreStart
-    if (empty($name)) {
-      throw new \InvalidArgumentException("The filter input's variable \$name cannot be empty");
-    }
-    if (isset($type) && !is_array($type)) {
-      throw new \LogicException("The filter input method can only filter arrays and is designed to handle e.g. \$_POST or \$_GET");
-    }
-    // @codeCoverageIgnoreEnd
-    // @devEnd
-    if (!$type) {
-      $type = $_POST;
-    }
-    if (isset($type[$name])) {
-      if ($filter) {
-        return filter_var($type[$name], $filter, $options);
-      }
-      return $type[$name];
-    }
-  }
-
-  /**
-   * Mark this form element as invalid.
-   *
-   * There is no attribute <code>invalid</code> in HTML, browsers apply the CSS pseudo-class <code>:invalid</code> on
-   * elements that fail their own validations. We use the ARIA attribute <code>aria-invalid</code> and set it to
-   * <code>true</code> to achieve the same goal. For easy CSS selection the class <code>invalid</code> is applied as
-   * well.
-   *
-   * @return this;
+   * @return this
    */
   public function invalid() {
     $this->addClass("invalid", $this->attributes);
@@ -217,17 +187,32 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   }
 
   /**
-   * Set the help for this form element.
+   * Validate the form element's submitted value.
    *
-   * @param string $text
-   *   The form element's translated help text, defaults to no help text.
-   * @param boolean $popup [optional]
-   *   Whether the help should be displayed as popup or not, defaults to display as popup.
+   * @global \MovLib\Data\I18n $i18n
    * @return this
+   * @throws \RuntimeException
    */
-  public function setHelp($text, $popup = true) {
-    $this->attributes["aria-describedby"] = "{$this->id}-help";
-    $this->help                           = new Help($text, $this->id, $popup);
+  public function validate() {
+    global $i18n;
+
+    if (empty($_POST[$this->id])) {
+      $this->value = null;
+      if ($this->required) {
+        throw new \RuntimeException($i18n->t("The “{0}” field is required.", [ $this->label ]));
+      }
+    }
+    else {
+      $errors = null;
+      $this->value = $this->validateValue($_POST[$this->id], $errors);
+      if ($errors) {
+        if ($errors === (array) $errors) {
+          $errors = implode("<br>", $errors);
+        }
+        throw new \RuntimeException($errors);
+      }
+    }
+
     return $this;
   }
 

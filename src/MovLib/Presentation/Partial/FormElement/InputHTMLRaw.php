@@ -84,7 +84,7 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     }
     elseif ($value) {
       $this->value    = $value;
-      $this->valueRaw = $kernel->htmlDecode($this->value);
+      $this->valueRaw = $this->htmlDecode($this->value);
     }
   }
 

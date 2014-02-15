@@ -17,78 +17,127 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ValidationException;
-use \Normalizer;
-
 /**
- * HTML input type text form element.
+ * Input text form element.
  *
- * In contrast to the default input element, this is specialized for plain text input. The user submitted string is
- * sanitized. No validation!
- *
- * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
- * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/association-of-controls-and-forms.html#attr-fe-inputmode
- * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
+class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
 
   /**
-   * @inheritdoc
+   * The form element's type.
+   *
+   * @var string
    */
-  public function __construct($id, $label, array $attributes = null) {
-    parent::__construct($id, $label, $attributes);
-    $this->attributes["type"] = "text";
+  const TYPE = "text";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new input text form element.
+   *
+   * @param string $id
+   *   The input text's unique global identifier.
+   * @param string $label
+   *   The input text's translated label text.
+   * @param array $attributes [optional]
+   *   The input text's attributes array, the following attributes are hardcoded:
+   *   <ul>
+   *     <li><code>"id"</code> is set to <var>$id</var></li>
+   *     <li><code>"name"</code> is set to <var>$id</var></li>
+   *     <li><code>"type"</code> is set to <code>"text"</code></li>
+   *     <li><code>"value"</code> is set to <code>$value</code></li>
+   *   </ul>
+   * @param string $value [optional]
+   *   The input text's value, defaults to <code>NULL</code>.
+   */
+  public function __construct($id, $label, array $attributes = null, &$value = null, $help = null, $helpPopup = true) {
+    parent::__construct($id, $label, $attributes, $value, $help, $helpPopup);
+    $this->attributes["id"]    = $this->attributes["name"] = $this->id;
+    $this->attributes["value"] =& $this->value;
+    $this->attributes["type"]  = static::TYPE;
   }
 
   /**
-   * @inheritdoc
+   * Get the input text form element.
+   *
+   * @return string
+   *   The input text form element.
    */
-  protected function render() {
-    $this->attributes["spellcheck"] = "true";
-    return parent::render();
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function validate() {
-    global $i18n, $kernel;
-
-    if (empty($this->value)) {
-      $this->value = null;
-      if (in_array("required", $this->attributes)) {
-        throw new ValidationException($i18n->t("The “{0}” text field is mandatory.", [ $this->label ]));
-      }
-      return $this;
+  public function __toString() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return "{$this->required}{$this->help}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+    // @devStart
+    // @codeCoverageIgnoreStart
     }
+    catch (\Exception $e) {
+      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * Validate the submitted text.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $text
+   *   The user submitted text to validate.
+   * @param mixed $errors
+   *   Parameter to collect error messages.
+   * @return string
+   *   The valid and sanitized text.
+   */
+  protected function validateValue($text, &$errors) {
+    global $i18n;
 
     // Validate that the input string is valid UTF-8.
-    if (preg_match("//u", $this->value) === false) {
-      throw new ValidationException($i18n->t("The “{0}” text field contains invalid UTF-8 characters.", [ $this->label ]));
+    if (preg_match("//u", $text) === false) {
+      $errors[] = $i18n->t("The “{0}” field contains invalid UTF-8 characters.", [ $this->label ]);
     }
-
-    // Double decode ANY encoded HTML entity.
-    if (preg_match("/&.+;/i", $this->value) != false) {
-      $this->value = html_entity_decode(html_entity_decode($this->value, ENT_QUOTES | ENT_HTML5), ENT_QUOTES | ENT_HTML5);
-    }
-
-    // Only encode characters with a special purpose in HTML.
-    $this->value = $kernel->htmlEncode($this->value);
 
     // Let PHP validate the string again and strip any low special ASCII characters (e.g. NULL byte).
-    if ($this->value != filter_var($this->value, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW | FILTER_REQUIRE_SCALAR)) {
-      throw new ValidationException($i18n->t("The “{0}” text field contains illegal low ASCII characters.", [ $this->label ]));
+    if ($text != filter_var($text, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW)) {
+      $errors[] = $i18n->t("The “{0}” field contains illegal low ASCII characters.", [ $this->label ]);
     }
 
-    // Collapse all whitespace characters to single space and normalize Unicode to NFC form.
-    $this->value = $this->collapseWhitespace(Normalizer::normalize($this->value));
+    // Only attempt to sanitize the string further if we have no errors so far.
+    if (!$errors) {
+      // Double decode ANY encoded HTML entity.
+      if (preg_match("/&.+;/", $text) != false) {
+        $text = $this->htmlDecodeEntities($text);
+        $text = $this->htmlDecodeEntities($text);
+      }
 
-    return $this;
+      // Only encode characters with a special purpose in HTML (secure by default).
+      $text = $this->htmlEncode($text);
+
+      // Normalize the submitted text to Unicode's NFC form (as recommended by W3C).
+      $text = \Normalizer::normalize($text);
+
+      // Collapse all whitespace characters to single space.
+      $text = $this->collapseWhitespace($text);
+    }
+
+    return $text;
   }
 
 }

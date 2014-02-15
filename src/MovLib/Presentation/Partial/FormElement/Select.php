@@ -74,14 +74,13 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
       throw new \LogicException("The options array of a select element cannot be empty.");
     }
     if (isset($value) && !isset($options[$value])) {
-      throw new \LogicException("The value passed to a select form element must be present in the available options array.");
+      throw new \LogicException("The value ({$value}) passed to a select form element must be present in the available options array.");
     }
     // @devEnd
     // @codeCoverageIgnoreEnd
     parent::__construct($id, $label, $attributes);
     $this->options = $options;
-    $selected      = $this->filterInput($this->id);
-    $this->value   = isset($selected) ? $selected : $value;
+    $this->value   = $this->filterInput($this->id, $value);
   }
 
 
@@ -102,7 +101,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
     //  and whose size is 1, must have either an empty value attribute, or must have no text content.
     $emptyValue = empty($this->value);
     $selected   = $emptyValue ? " selected" : null;
-    if ($this->required === true) {
+    if ($this->required) {
       $selected .= " disabled";
       $option    = $i18n->t("Please Select …");
     }
@@ -119,12 +118,12 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
       }
       $attributes["value"] = $value;
       if (!$emptyValue && $this->value == $value) {
-        $attributes[] = "selected";
+        $attributes["selected"] = true;
       }
       $options .= "<option{$this->expandTagAttributes($attributes)}>{$option}</option>";
     }
 
-    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><select id='{$this->id}' name='{$this->id}'{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
+    return "{$this->required}{$this->help}<p><label for='{$this->id}'>{$this->label}</label><select id='{$this->id}' name='{$this->id}'{$this->expandTagAttributes($this->attributes)}>{$options}</select></p>";
   }
 
   /**
@@ -139,7 +138,7 @@ class Select  extends \MovLib\Presentation\Partial\FormElement\AbstractFormEleme
 
     if (empty($this->value)) {
       $this->value = null;
-      if ($this->required === true) {
+      if ($this->required) {
         throw new ValidationException($i18n->t("The “{0}” select element is mandatory.", [ $this->label ]));
       }
       return $this;

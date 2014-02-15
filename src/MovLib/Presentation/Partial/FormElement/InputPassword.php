@@ -17,106 +17,90 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ValidationException;
-
 /**
- * HTML input type password form element.
+ * HTML input password form element.
  *
- * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
- * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
+class InputPassword extends \MovLib\Presentation\Partial\FormElement\InputText {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
+  // ------------------------------------------------------------------------------------------------------------------- Constants
 
 
   /**
-   * Minimum length for a password.
+   * Minimum password length.
    *
    * @var int
    */
-  public $minimumPasswordLength = 8;
+  const MIN_LENGTH = 8;
+
+  /**
+   * Regular expression pattern for password complexity validation (client and server side).
+   *
+   * @todo Replace the length with the class constant (available with PHP 5.6).
+   * @var string
+   */
+  const PATTERN = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{8,}$";
+
+  /**
+   * The form element's type.
+   *
+   * @var string
+   */
+  const TYPE = "password";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new input form element of type password.
+   * Get the input password form element.
    *
-   * @param string $id [optional]
-   *   The password's global unique identifier, defaults to <code>"password"</code>.
-   * @param string $label [optional]
-   *   The password's translated label text, defaults to <code>$i18n->t("Password")</code>.
-   * @param array $attributes [optional]
-   *   The password's additional attributes, the following attributes are set by default:
-   *   <ul>
-   *     <li><code>"id"</code> is set to <var>$id</var></li>
-   *     <li><code>"name"</code> is set to <var>$id</var></li>
-   *     <li><code>"required"</code> is set</li>
-   *     <li><code>"pattern"</code> is set to a regular expression that matches our minimum password requirements</li>
-   *     <li><code>"title"</code> explains the minimum password requirements</li>
-   *     <li><code>"type"</code> is set to <code>"password"</code></li>
-   *   </ul>
-   *   You <b>should not</b> override any of the default attributes. The <code>"placeholder"</code> attribute is set to
-   *   <code>$i18n->t("Enter your password")</code> if none is passed along.
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The input text form element.
    */
-  public function __construct($id = "password", $label = null, array $attributes = null) {
+  public function __toString() {
     global $i18n;
-    parent::__construct($id, $label ?: $i18n->t("Password"), $attributes);
-    $this->attributes["pattern"]       = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{{$this->minimumPasswordLength},}$";
-    $this->attributes["title"]         = $i18n->t(
-      "A password must contain lowercase and uppercase letters, numbers, and must be at least {0,number,integer} characters long.",
-      [ $this->minimumPasswordLength ]
-    );
-    $this->attributes["type"]          = "password";
-    $this->attributes[]                = "required";
-    if (!isset($this->attributes["placeholder"])) {
-      $this->attributes["placeholder"] = $i18n->t("Enter your password");
-    }
-  }
-  /**
-   * @inheritdoc
-   */
-  protected function render() {
-    // Ensure value isn't prefilled in output!
-    unset($this->value);
-    return parent::render();
+    $this->attributes["pattern"] = self::PATTERN;
+    $this->attributes["title"]   = $i18n->t("A password must contain lowercase and uppercase letters, numbers, and must be at least {0,number,integer} characters long.", [ self::MIN_LENGTH ]);
+    return parent::__toString();
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-
   /**
-   * @inheritdoc
+   * Validate the submitted raw password.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $rawPassword
+   *   The user submitted raw password to validate.
+   * @param mixed $errors
+   *   Parameter to collect error messages.
+   * @return string
+   *   The valid raw password.
    */
-  public function validate() {
+  protected function validateValue($rawPassword, &$errors) {
     global $i18n;
 
-    if (empty($this->value)) {
-      throw new ValidationException($i18n->t("The highlighted password field is mandatory."));
+    // Check that the password exceeds the minimum password length.
+    if (mb_strlen($rawPassword) < self::MIN_LENGTH) {
+      $errors[] = $i18n->t("The password is too short: it must be {0,number,integer} characters or more.", [ self::MIN_LENGTH ]);
     }
 
-    $errors = null;
-    if (mb_strlen($this->value) < $this->minimumPasswordLength) {
-      $errors[] = $i18n->t("The password is too short: it must be {0,number,integer} characters or more.", [ $this->minimumPasswordLength ]);
-    }
-    if (preg_match("/{$this->attributes["pattern"]}/", $this->value) == false) {
+    // Check that the password is complex enough.
+    if (preg_match("/" . self::PATTERN . "/", $rawPassword) == false) {
       $errors[] = $i18n->t("The password is not complex enough: it must contain numbers plus lowercase and uppercase letters.");
     }
-    if ($errors) {
-      throw new ValidationException(implode("<br>", $errors));
-    }
 
-    return $this;
+    return $rawPassword;
   }
 
 }

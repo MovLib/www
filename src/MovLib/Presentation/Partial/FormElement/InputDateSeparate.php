@@ -32,52 +32,6 @@ use \MovLib\Exception\ValidationException;
 class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The date's day field.
-   *
-   * @var integer
-   */
-  protected $day;
-
-  /**
-   * The date's month field.
-   *
-   * @var integer
-   */
-  protected $month;
-
-  /**
-   * Contains the complete date in W3C format ready for use with the data layer.
-   *
-   * @var string
-   */
-  protected $value;
-
-  /**
-   * The date's year field.
-   *
-   * @var integer
-   */
-  protected $year;
-
-  /**
-   * The date's maximum year value.
-   *
-   * @var integer
-   */
-  protected $yearMax;
-
-  /**
-   * The date's minimum year value.
-   *
-   * @var integer
-   */
-  protected $yearMin;
-
-
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
@@ -142,8 +96,50 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\Abstrac
 
     // Export possibly submitted POST data to class scope and override exported values.
     foreach ($dateParts as $property) {
-      $this->{$property} = $this->filterInput("{$this->id}-{$property}", FILTER_VALIDATE_INT, [ "options" => [ "default" => $this->{$property} ] ]);
+      $this->{$property} = $this->filterInput("{$this->id}-{$property}", $this->{$property}, FILTER_VALIDATE_INT);
     }
+  }
+
+  /**
+   * Get the input date separate form element.
+   *
+   * @return string
+   *   The input date separate form element.
+   */
+  public function __toString() {
+    global $i18n;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // Always add CSS class for proper styling.
+    $this->addClass("date-separate", $this->attributes);
+
+    $attributes = [
+      "y" => [],
+      "m" => [],
+      "d" => [],
+    ];
+
+    return
+      "{$this->required}{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}>" .
+        "<legend>{$this->label}</legend>" .
+        "<label class='s s2'><span class='vh'>{$i18n->t("Year")}</span><input{$this->expandTagAttributes($attributes["y"])}></label>" .
+        "<label class='s s1'><span class='vh'>{$i18n->t("Month")}</span><input{$this->expandTagAttributes($attributes["m"])}></label>" .
+        "<label class='s s1'><span class='vh'>{$i18n->t("Day")}</span><input{$this->expandTagAttributes($attributes["d"])}></label>" .
+      "</fieldset>"
+    ;
+
+    // @devStart
+    // @codeCoverageIgnoreStart
+    }
+    catch (\Exception $e) {
+      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 
