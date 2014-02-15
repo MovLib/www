@@ -68,8 +68,8 @@ class Show extends \MovLib\Presentation\Page {
     $this->initPage($i18n->t("Users"));
     $this->initBreadcrumb();
     $this->initLanguageLinks("/users");
-    $this->initPagination($this->users->getTotalCount());
-    $this->initSidebar([
+    $this->paginationInit($this->users->getTotalCount());
+    $this->sidebarInit([
       [ $kernel->requestPath, $this->title ],
     ]);
     if ($session->isAuthenticated === false) {
@@ -87,7 +87,7 @@ class Show extends \MovLib\Presentation\Page {
   protected function getPageContent() {
     global $i18n;
     $list  = null;
-    $users = $this->users->getOrderedByCreatedResult($this->resultsOffset, $this->resultsPerPage);
+    $users = $this->users->getOrderedByCreatedResult($this->paginationOffset, $this->paginationLimit);
     /* @var $user \MovLib\Data\User\User */
     while ($user = $users->fetch_object("\\MovLib\\Data\\User\\User")) {
       $list .=
