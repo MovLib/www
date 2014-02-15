@@ -135,7 +135,6 @@ abstract class AbstractBase {
    * <pre>$attributes = [ "class" => "css-class", "id" => "css-id" ];
    * echo "<div{$this->expandAttributes($attributes)}></div>";</pre>
    *
-   * @global \MovLib\Kernel $kernel
    * @param array $attributes
    *   Associative array containing the elements attributes. If no attributes are present (e.g. you're handling an
    *   object which sometimes has attributes but not always) an empty string will be returned.
@@ -143,8 +142,6 @@ abstract class AbstractBase {
    *   String representation of the attributes array, or empty string if no attributes are present.
    */
   protected final function expandTagAttributes($attributes) {
-    global $kernel;
-
     // Only expand if we have something to expand.
     if ($attributes) {
       // Local variables used to collect the expanded tag attributes.
@@ -185,7 +182,7 @@ abstract class AbstractBase {
             $expanded .= $this->lang($value);
           }
           else {
-            $expanded .= " {$name}='{$kernel->htmlEncode($value)}'";
+            $expanded .= " {$name}='{$this->htmlEncode($value)}'";
           }
         }
       }
