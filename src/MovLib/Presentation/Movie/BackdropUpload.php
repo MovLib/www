@@ -32,7 +32,7 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @since 0.0.1-dev
  */
 class BackdropUpload extends \MovLib\Presentation\Movie\Backdrops {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
   use \MovLib\Presentation\TraitUpload;
 
 

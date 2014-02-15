@@ -48,14 +48,14 @@ class Show extends \MovLib\Presentation\Page {
     $this->initPage($i18n->t("Persons"));
     $this->initBreadcrumb();
     $this->initLanguageLinks("/persons", null, true);
-    $this->initSidebar([
+    $this->sidebarInit([
       [ $this->languageLinks[$i18n->languageCode], $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
       [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
       [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
       [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
       [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
     ]);
-    $this->initPagination(Person::getTotalCount());
+    $this->paginationInit(Person::getTotalCount());
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/person/create")}'>{$i18n->t("Create New Person")}</a>";
   }
 
@@ -71,7 +71,7 @@ class Show extends \MovLib\Presentation\Page {
     global $i18n;
 
     return new PersonsPartial(
-      Person::getPersons($this->resultsOffset, $this->resultsPerPage),
+      Person::getPersons($this->paginationOffset, $this->paginationLimit),
       new Alert(
         $i18n->t(
           "We couldn’t find any persons matching your filter criteria, or there simply aren’t any persons available. Would you like to {0}create a new entry{1}?",

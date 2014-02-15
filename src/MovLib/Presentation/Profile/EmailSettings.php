@@ -36,7 +36,7 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @since 0.0.1-dev
  */
 class EmailSettings extends \MovLib\Presentation\Profile\Show {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -82,7 +82,7 @@ class EmailSettings extends \MovLib\Presentation\Profile\Show {
     }
 
     // Field to enter the new email address.
-    $this->email = new InputEmail();
+    $this->email = new InputEmail("email", $i18n->t("Email Address"), [ "required" => true ]);
     $this->email->setHelp($i18n->t(
       "MovLib takes your privacy seriously. That’s why your email address will never show up in public. In fact, it " .
       "stays top secret like your password. If you’d like to manage when to receive messages from MovLib go to your " .

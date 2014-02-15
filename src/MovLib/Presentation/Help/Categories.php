@@ -36,7 +36,7 @@ class Categories extends \MovLib\Presentation\Page {
     $this->initPage($i18n->t("Help"));
     $this->initLanguageLinks("/help", null, true);
     $this->initBreadcrumb();
-    $this->initSidebar([
+    $this->sidebarInit([
       [ $this->languageLinks[$i18n->languageCode], $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
       [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
       [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],

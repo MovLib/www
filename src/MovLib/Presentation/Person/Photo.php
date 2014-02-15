@@ -86,7 +86,7 @@ class Photo extends \MovLib\Presentation\Person\AbstractBase {
     $dateTime    = new DateTime($this->person->displayPhoto->changed, [ "itemprop" => "uploadDate" ]);
     $description = "<dt>{$i18n->t("Description")}</dt>";
     if ($this->person->displayPhoto->description) {
-      $description .= "<dd itemprop='description'>{$kernel->htmlDecode($this->person->displayPhoto->description)}</dd>";
+      $description .= "<dd itemprop='description'>{$this->htmlDecode($this->person->displayPhoto->description)}</dd>";
     }
     else {
       $description .= "<dd>{$i18n->t("No description available, {0}add one{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])}</dd>";

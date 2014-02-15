@@ -41,7 +41,7 @@ use \MovLib\Presentation\Redirect\SeeOther;
  * @since 0.0.1-dev
  */
 class Create extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -133,7 +133,7 @@ class Create extends \MovLib\Presentation\Page {
     $this->initPage($i18n->t("Create Person"));
     $this->initBreadcrumb([ [ $i18n->rp("/persons"), $i18n->t("Persons") ] ]);
 
-    $this->inputName      = new InputText("name", $i18n->t("Name"), [ "placeholder" => $i18n->t("Enter the person's name"), "required" => "required" ]);
+    $this->inputName      = new InputText("name", $i18n->t("Name"), [ "placeholder" => $i18n->t("Enter the person's name"), "required" => true ]);
     $this->inputBornName  = new InputText("born-name", $i18n->t("Born as"), [ "placeholder" => $i18n->t("Enter the person's birth name") ]);
     $dateOptions          = [ "year_max" => date("Y"), "year_min" => 1800 ];
     $this->inputBirthDate = new InputDateSeparate("birthdate", $i18n->t("Date of Birth"), null, [ "class" => "s s6" ], $dateOptions);

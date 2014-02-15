@@ -34,7 +34,7 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  * @since 0.0.1-dev
  */
 class Contact extends \MovLib\Presentation\SystemPage\Show {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -89,12 +89,10 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent(){
-    global $kernel;
     $append = $this->success ?: $this->form;
-    return "<div class='c'><div class='r'><div class='s s10'>{$kernel->htmlDecode($this->systemPage->text)}{$append}</div></div></div>";
+    return "<div class='c'><div class='r'><div class='s s10'>{$this->htmlDecode($this->systemPage->text)}{$append}</div></div></div>";
   }
 
   /**
@@ -106,7 +104,7 @@ class Contact extends \MovLib\Presentation\SystemPage\Show {
     global $i18n, $kernel;
 
     // Send the contact email to the webmaster.
-    $kernel->sendEmail(new Webmaster($this->subject->value, $kernel->htmlDecode($this->message->value)));
+    $kernel->sendEmail(new Webmaster($this->subject->value, $this->htmlDecode($this->message->value)));
 
     // Submission was successful but further action is required, let the client know.
     http_response_code(202);

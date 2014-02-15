@@ -26,7 +26,7 @@ use \MovLib\Presentation\Partial\FormElement\InputURL;
 use \MovLib\Presentation\Partial\FormElement\Select;
 
 /**
- * Implements the form elements that are necessary for any deletion request presentation.
+ * Add deletion request form to presentation.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
@@ -35,6 +35,7 @@ use \MovLib\Presentation\Partial\FormElement\Select;
  * @since 0.0.1-dev
  */
 trait TraitDeletionRequest {
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -161,20 +162,13 @@ trait TraitDeletionRequest {
 
       // Some predefined reasons need additional information.
       if ($extended === true) {
+        $lang = $this->lang($deletionRequest->languageCode);
         switch ($deletionRequest->reasonId) {
           case DeletionRequest::REASON_OTHER:
-            $lang = null;
-            if ($i18n->languageCode != $deletionRequest->languageCode) {
-              $lang = " lang='{$deletionRequest->languageCode}'";
-            }
-            $alert->message .= "<blockquote><div{$lang}>{$kernel->htmlDecode($deletionRequest->info)}</div><cite>{$deletionRequest->user->name}</cite></blockquote>";
+            $alert->message .= "<blockquote><div{$lang}>{$this->htmlDecode($deletionRequest->info)}</div><cite>{$deletionRequest->user->name}</cite></blockquote>";
             break;
 
           case DeletionRequest::REASON_DUPLICATE:
-            $lang = null;
-            if ($i18n->languageCode != $deletionRequest->languageCode) {
-              $lang = " lang='{$deletionRequest->languageCode}'";
-            }
             $alert->message .= "<p>{$i18n->t("The content is a duplicate of {0}this content{1}.", [
               "<a href='{$deletionRequest->info}'{$lang}>", "</a>"
             ])}</p>";

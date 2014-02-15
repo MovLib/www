@@ -59,7 +59,7 @@ class Show extends \MovLib\Presentation\Page {
     global $i18n;
     $this->initPage($i18n->t("Search"));
     $this->initBreadcrumb();
-    $this->initSidebar([]);
+    $this->sidebarInit([]);
     $this->breadcrumb->ignoreQuery = true;
 
     $query       = null;

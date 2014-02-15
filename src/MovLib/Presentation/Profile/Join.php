@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Memcached;
 use \MovLib\Data\Temporary;
-use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Data\User\FullUser;
 use \MovLib\Exception\ValidationException;
 use \MovLib\Presentation\Email\Users\EmailExists;
 use \MovLib\Presentation\Email\Users\Join as JoinEmail;
@@ -43,7 +43,7 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @since 0.0.1-dev
  */
 class Join extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -80,7 +80,7 @@ class Join extends \MovLib\Presentation\Page {
   /**
    * The full user object we create during a valid join attempt.
    *
-   * @var \MovLib\Data\User\Full
+   * @var \MovLib\Data\User\FullUser
    */
   protected $user;
 
@@ -122,7 +122,7 @@ class Join extends \MovLib\Presentation\Page {
       "maxlength"   => FullUser::NAME_MAXIMUM_LENGTH,
       "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(FullUser::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
       "placeholder" => $i18n->t("Enter your desired username"),
-      "required",
+      "required"    => true,
       "title"       => $i18n->t(
         "A username must be valid UTF-8, cannot contain spaces at the beginning and end or more than one space in a row, " .
         "it cannot contain any of the following characters {0} and it cannot be longer than {1,number,integer} characters.",
@@ -130,8 +130,15 @@ class Join extends \MovLib\Presentation\Page {
       ),
     ]);
 
-    $this->email    = new InputEmail();
-    $this->password = new InputPassword();
+    $this->email    = new InputEmail("email", $i18n->t("Email Address"), [
+      "placeholder" => $i18n->t("Enter your email address"),
+      "required"    => true,
+    ]);
+
+    $this->password = new InputPassword("password", $i18n->t("Password"), [
+      "placeholder" => $i18n->t("Enter your desired password"),
+      "required"    => true,
+    ]);
 
     $this->terms = new InputCheckbox("terms", $i18n->t("I accept the {privacy_policy} and {terms_of_use}.", [
       "privacy_policy" => "<a href='{$i18n->t("/privacy-policy")}'>{$i18n->t("Privacy Policy")}</a>",

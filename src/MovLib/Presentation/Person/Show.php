@@ -211,7 +211,7 @@ class Show extends \MovLib\Presentation\Person\AbstractBase {
       $i18n->t("Biography"),
       empty($this->person->biography)
         ? $i18n->t("No biography available, {0}write one{1}?", [ $editLinkOpen, "</a>" ])
-        : $kernel->htmlDecode($this->person->biography)
+        : $this->htmlDecode($this->person->biography)
       ,
     ];
 

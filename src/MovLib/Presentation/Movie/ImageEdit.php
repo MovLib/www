@@ -39,7 +39,7 @@ use \MovLib\Presentation\Redirect\SeeOther;
  * @since 0.0.1-dev
  */
 class ImageEdit extends \MovLib\Presentation\Movie\AbstractBase {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

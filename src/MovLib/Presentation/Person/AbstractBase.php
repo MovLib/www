@@ -75,7 +75,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Page{
     // Initialize edit route, sidebar and schema.
     $routeArgs = [ $this->person->id ];
     $this->routeEdit = $i18n->r("/person/{0}/edit", $routeArgs);
-    $this->initSidebar([
+    $this->sidebarInit([
       [ $this->person->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
       [ $i18n->r("/person/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion" ] ],
       [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],

@@ -19,7 +19,7 @@ namespace MovLib\Presentation\User;
 
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Movie\MovieRatings;
-use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Data\User\FullUser;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Time;
@@ -43,7 +43,7 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * The user we are currently displaying.
    *
-   * @var \MovLib\Data\User\Full
+   * @var \MovLib\Data\User\FullUser
    */
   protected $user;
 
@@ -66,7 +66,7 @@ class Show extends \MovLib\Presentation\Page {
     $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
     $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
     $routeArgs = [ $this->user->filename ];
-    $this->initSidebar([
+    $this->sidebarInit([
       [ $i18n->r("/user/{0}/uploads", $routeArgs), "{$i18n->t("Uploads")} <span class='fr'>{$i18n->format("{0,number}", [ $this->user->getTotalUploadsCount() ])}</span>" ],
       [ $i18n->r("/user/{0}/collection", $routeArgs), "{$i18n->t("Collection")} <span class='fr'>{$i18n->format("{0,number}", [ $this->user->getTotalCollectionCount() ])}</span>" ],
       [ $i18n->r("/user/{0}/contact", $routeArgs), $i18n->t("Contact") ],
@@ -155,7 +155,7 @@ class Show extends \MovLib\Presentation\Page {
       ])}</p>";
     }
     else {
-      $aboutMe = $kernel->htmlDecode($this->user->aboutMe);
+      $aboutMe = $this->htmlDecode($this->user->aboutMe);
       if ($session->userId === $this->user->id) {
         $edit = "<a class='small edit' href='{$i18n->r("/profile/account-settings")}'>{$i18n->t("edit")}</a>";
       }

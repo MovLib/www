@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Profile;
 
-use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Data\User\FullUser;
 
 /**
  * User account summary for logged in user's.
@@ -38,7 +38,7 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * The user we are currently displaying.
    *
-   * @var \MovLib\Data\User\Full
+   * @var \MovLib\Data\User\FullUser
    */
   protected $user;
 
@@ -122,7 +122,7 @@ class Show extends \MovLib\Presentation\Page {
       [ $i18n->r("/profile/password-settings"), $i18n->t("Password"), [ "class" => "ico ico-lock" ] ],
       [ $i18n->r("/profile/danger-zone"), $i18n->t("Danger Zone"), [ "class" => "ico ico-alert" ] ],
     ];
-    $this->initSidebar($sidebar);
+    $this->sidebarInit($sidebar);
 
     $this->user = new FullUser(FullUser::FROM_ID, $session->userId);
 

@@ -35,7 +35,7 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  */
 class Edit extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitSidebar;
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
   /**
    * The image input.
@@ -73,7 +73,7 @@ class Edit extends \MovLib\Presentation\Page {
     if ($this->person->displayPhoto->imageExists) {
       $title     = $i18n->t("Edit photo of {0}", [ $this->person->name ]);
       $pageTitle = $i18n->t("Edit photo of {0}", [ "<a href='{$this->person->route}'>{$this->person->name}</a>" ]);
-      $this->initSidebar([
+      $this->sidebarInit([
         [ $i18n->r("/person/{0}/photo", [ $this->person->id ]), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
         [ $i18n->r("/person/{0}/photo/edit", [ $this->person->id ]), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
         [ $i18n->r("/person/{0}/photo/history", [ $this->person->id ]), $i18n->t("History"), [ "class" => "ico ico-history" ] ],

@@ -34,7 +34,7 @@ use \MovLib\Presentation\Partial\FormElement\InputText;
  * @since 0.0.1-dev
  */
 class Contact extends \MovLib\Presentation\User\AbstractUserPage {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

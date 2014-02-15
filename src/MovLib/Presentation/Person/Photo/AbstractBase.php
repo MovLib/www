@@ -64,7 +64,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
     ]);
 
     // Initialize sidebar navigation.
-    $this->initSidebar([
+    $this->sidebarInit([
         [ $i18n->r("/person/{0}/photo", [ $this->person->id ]), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
         [ $i18n->r("/person/{0}/photo/edit", [ $this->person->id ]), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
         [ $i18n->r("/person/{0}/photo/history", [ $this->person->id ]), $i18n->t("History"), [ "class" => "ico ico-history" ] ],

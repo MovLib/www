@@ -18,7 +18,7 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\Temporary;
-use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Data\User\FullUser;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
 use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;
@@ -38,7 +38,7 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @since 0.0.1-dev
  */
 class ResetPassword extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -68,7 +68,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
   /**
    * The user who's reseting her or his password.
    *
-   * @var \MovLib\Data\User\Full
+   * @var \MovLib\Data\User\FullUser
    */
   protected $user;
 
@@ -93,11 +93,13 @@ class ResetPassword extends \MovLib\Presentation\Page {
       // First field to enter the new password.
       $this->newPassword = new InputPassword("new-password", $i18n->t("New Password"), [
         "placeholder" => $i18n->t("Enter your new password"),
+        "required"    => true,
       ]);
 
       // Second field to enter the new password for confirmation.
       $this->newPasswordConfirm = new InputPassword("new-password-confirm", $i18n->t("Confirm Password"), [
         "placeholder" => $i18n->t("Enter your new password again"),
+        "required"    => true,
       ]);
 
       // Initialize the actual form of this page.
@@ -111,8 +113,10 @@ class ResetPassword extends \MovLib\Presentation\Page {
       ]);
     }
     else {
-      $this->email = new InputEmail();
-      $this->email->attributes["placeholder"] = $i18n->t("Enter your email address");
+      $this->email = new InputEmail("email", $i18n->t("Email Address"), [
+        "placeholder" => $i18n->t("Enter your email address"),
+        "required"    => true,
+      ]);
       $this->email->setHelp($i18n->t("Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email.", [ "sitename" => $kernel->siteName ]));
 
       $this->form = new Form($this, [ $this->email ], "{$this->id}-email");

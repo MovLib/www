@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\User;
 
-use \MovLib\Data\User\Full as FullUser;
+use \MovLib\Data\User\FullUser;
 
 /**
  * @todo Description of AbstractUserPage
@@ -66,7 +66,7 @@ abstract class AbstractUserPage extends \MovLib\Presentation\Page {
   /**
    * The user we are currently displaying.
    *
-   * @var \MovLib\Data\User\Full
+   * @var \MovLib\Data\User\FullUser
    */
   protected $user;
 
@@ -108,7 +108,7 @@ abstract class AbstractUserPage extends \MovLib\Presentation\Page {
     ]);
 
     // Initialize the sidebar with all direct sub pages.
-    $this->initSidebar([
+    $this->sidebarInit([
       [ $this->routeUploads, $i18n->t("Uploads") ],
       [ $this->routeCollection, $i18n->t("Collection") ],
       [ $this->routeContact, $i18n->t("Contact") ],

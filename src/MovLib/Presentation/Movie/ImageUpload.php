@@ -38,7 +38,7 @@ use \MovLib\Presentation\Redirect\SeeOther;
  * @since 0.0.1-dev
  */
 class ImageUpload extends \MovLib\Presentation\Movie\AbstractBase {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -138,7 +138,7 @@ class ImageUpload extends \MovLib\Presentation\Movie\AbstractBase {
     $this->initSidebar();
 
     // Initialize the upload form.
-    $this->inputImage             = new InputImage("image", $this->image->name, $this->image);
+    $this->inputImage             = new InputImage("image", $this->image->name, $this->image, [ "required" => true ]);
     $this->inputDescription       = new InputHTML("description", $i18n->t("Description"), $this->image->description);
     $this->inputDescription->allowExternalLinks()->allowLists();
     $this->inputCountryCode       = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->image->countryCode);

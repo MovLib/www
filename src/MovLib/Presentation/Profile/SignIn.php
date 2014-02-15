@@ -18,11 +18,9 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputPassword;
-use \MovLib\Presentation\Partial\FormElement\InputSubmit;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Presentation\Redirect\SeeOther;
 
 /**
  * User sign in presentation.
@@ -34,7 +32,7 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @since 0.0.1-dev
  */
 class SignIn extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -42,16 +40,16 @@ class SignIn extends \MovLib\Presentation\Page {
 
 
   /**
-   * The input email form element.
+   * The submitted email address.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputEmail
+   * @var string
    */
   public $email;
 
   /**
-   * The input password form element.
+   * The submitted (raw) password.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputPassword
+   * @var string
    */
   public $password;
 
@@ -98,22 +96,29 @@ class SignIn extends \MovLib\Presentation\Page {
     $this->initPage($i18n->t("Sign In"));
     $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
 
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ])}</a>";
 
-    $this->email                      = new InputEmail();
-    $this->email->setHelp("<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false);
-    $this->password                   = new InputPassword();
-    $this->form                       = new Form($this, [ $this->email, $this->password ]);
-    $this->form->attributes["class"]  = "s s6 o3";
+    $this->formAddElement(new InputEmail("email", $i18n->t("Email Address"), [
+      "autofocus"   => true,
+      "placeholder" => $i18n->t("Enter your email address"),
+      "required"    => true,
+    ], $this->email, "<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false));
 
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
+    $this->formAddElement(new InputPassword("password", $i18n->t("Password"), [
+      "placeholder" => $i18n->t("Enter your password"),
+      "required"    => true,
+    ], $this->password));
+
+    $this->formAddAction($i18n->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
+
+    $this->formInit([ "class" => "s s6 o3" ]);
   }
 
   /**
    * @inheritdoc
    */
   protected function getContent() {
-    return "<div class='c'><div class='r'>{$this->form}</div></div>";
+    return "<div class='c'><div class='r'>{$this->formRender()}</div></div>";
   }
 
   /**
@@ -125,23 +130,20 @@ class SignIn extends \MovLib\Presentation\Page {
    * @return this
    * @throws \MovLib\Presentation\Redirect\SeeOther
    */
-  protected function valid() {
+  protected function formValid() {
     global $i18n, $kernel, $session;
-    try {
-      $session->authenticate($this->email->value, $this->password->value);
-    }
-    catch (\Exception $e) {
-      $this->checkErrors($i18n->t("We either don’t know the email address, or the password was wrong."));
-      return $this;
+
+    if ($session->authenticate($this->email, $this->password) === true) {
+      $kernel->alerts .= new Alert(
+        $i18n->t("Successfully Signed In"),
+        $i18n->t("Welcome back {username}!", [ "username" => $session->userName ]),
+        Alert::SEVERITY_SUCCESS
+      );
+      throw new SeeOther(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
     }
 
-    $kernel->alerts .= new Alert(
-      $i18n->t("Successfully Signed In"),
-      $i18n->t("Welcome back {username}!", [ "username" => $session->userName ]),
-      Alert::SEVERITY_SUCCESS
-    );
-
-    throw new SeeOtherRedirect(!empty($_GET["redirect_to"]) ? $_GET["redirect_to"] : $i18n->r("/my"));
+    $this->formInvalid($i18n->t("We either don’t know the email address, or the password was wrong."));
+    return $this;
   }
 
 }

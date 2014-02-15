@@ -36,7 +36,7 @@ class Show extends \MovLib\Presentation\Page {
     $this->initPage($i18n->t("Serials"));
     $this->initLanguageLinks("/serials", null, true);
     $this->initBreadcrumb();
-    $this->initSidebar([
+    $this->sidebarInit([
       [ $this->languageLinks[$i18n->languageCode], $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
       [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
       [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],

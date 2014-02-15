@@ -59,7 +59,7 @@ class Photo extends \MovLib\Presentation\Person\Photo\AbstractBase {
     ]);
 
     // Initialize sidebar navigation.
-    $this->initSidebar([
+    $this->sidebarInit([
         [ $i18n->r("/person/{0}/photo", $routeArgs), $i18n->t("View"), [ "class" => "ico ico-view" ] ],
         [ $i18n->r("/person/{0}/photo/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
         [ $i18n->r("/person/{0}/photo/history", $routeArgs), $i18n->t("History"), [ "class" => "ico ico-history" ] ],

@@ -29,9 +29,7 @@ use \MovLib\Presentation\Partial\Alert;
  * @since 0.0.1-dev
  */
 abstract class AbstractBase extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitSidebar {
-    initSidebar as initSidebarTrait;
-  }
+  use \MovLib\Presentation\TraitSidebar;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -72,7 +70,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Page {
   protected function initSidebar() {
     global $i18n;
     $routeArgs = [ $this->movie->id ];
-    return $this->initSidebarTrait([
+    return $this->sidebarInit([
       [ $this->movie->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
       [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "itemprop" => "discussionUrl" ] ],
       [ $i18n->r("/movie/{0}/edit", $routeArgs), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],

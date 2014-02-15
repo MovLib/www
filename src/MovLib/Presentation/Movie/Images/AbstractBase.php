@@ -126,7 +126,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
 
     // ... initialize the rest of the page.
     $this->initLanguageLinks("/movie/{0}/{$routeKeyPlural}", [ $this->movie->id ], true);
-    $this->initPagination(call_user_func("{$this->class}::getCount", $this->movie->id));
+    $this->paginationInit(call_user_func("{$this->class}::getCount", $this->movie->id));
     $this->initSidebar();
   }
 
@@ -148,7 +148,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/{0}/{$this->routeKey}/upload", [ $this->movie->id ])}'>{$i18n->t("Upload New")}</a>";
 
     // Only build the image listing if there are images to list.
-    if ($this->resultsTotalCount === 0) {
+    if ($this->paginationTotalResults === 0) {
       return new Alert(
         $i18n->t(
           "We couldn’t find any {image_name_plural} matching your filter criteria, or there simply aren’t any {image_name_plural} available. Would you like to {0}upload a new {image_name}{1}?",
@@ -164,7 +164,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
     }
 
     // Get all images of the current movie and go through them to create the image grid list.
-    $images = call_user_func("{$this->class}::getImages", $this->movie->id, $this->resultsOffset, $this->resultsPerPage);
+    $images = call_user_func("{$this->class}::getImages", $this->movie->id, $this->paginationOffset, $this->paginationLimit);
     $list   = null;
 
     /* @var $image \MovLib\Data\Image\AbstractMovieImage */
@@ -191,7 +191,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
     }
 
     // Put it all together and we're done.
-    return "<div id='filter'>LIMIT {$this->resultsPerPage} OFFSET {$this->resultsPerPage}</div><ol class='grid-list no-list r'>{$list}</ol>";
+    return "<div id='filter'>LIMIT {$this->paginationLimit} OFFSET {$this->paginationLimit}</div><ol class='grid-list no-list r'>{$list}</ol>";
   }
 
   /**
@@ -231,7 +231,7 @@ abstract class AbstractBase extends \MovLib\Presentation\Movie\AbstractBase {
     //$this->addClass("separator", $sidebarMenuitems[count($sidebarMenuitems) - 1]);
 
     // Initialize the sidebar with the menuitems.
-    return $this->initSidebarTrait($sidebarMenuitems);
+    return $this->sidebarInit($sidebarMenuitems);
   }
 
 }

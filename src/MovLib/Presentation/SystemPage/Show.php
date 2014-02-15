@@ -67,7 +67,7 @@ class Show extends \MovLib\Presentation\Page {
     while ($systemPage = $systemPages->fetch_object("\\MovLib\\Data\\SystemPage")) {
       $menuitems[] = [ $i18n->r($systemPage->route), $systemPage->title ];
     }
-    $this->initSidebar($menuitems);
+    $this->sidebarInit($menuitems);
   }
 
 
@@ -76,11 +76,9 @@ class Show extends \MovLib\Presentation\Page {
 
   /**
    * @inheritdoc
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $kernel;
-    return "<div class='c'><div class='r'><div class='s s10'>{$kernel->htmlDecode($this->systemPage->text)}</div></div></div>";
+    return "<div class='c'><div class='r'><div class='s s10'>{$this->htmlDecode($this->systemPage->text)}</div></div></div>";
   }
 
 }

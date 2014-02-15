@@ -48,14 +48,14 @@ class Show extends \MovLib\Presentation\Page {
     $this->initPage($i18n->t("Movies"));
     $this->initBreadcrumb();
     $this->initLanguageLinks("/movies", null, true);
-    $this->initSidebar([
+    $this->sidebarInit([
       [ $this->languageLinks[$i18n->languageCode], $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
       [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
       [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
       [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
       [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
     ]);
-    $this->initPagination(Movie::getMoviesCount());
+    $this->paginationInit(Movie::getMoviesCount());
   }
 
 
@@ -75,13 +75,13 @@ class Show extends \MovLib\Presentation\Page {
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
 
     // Nothing to display.
-    if ($this->resultsTotalCount < 1) {
+    if ($this->paginationTotalResults < 1) {
       return new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO);
     }
 
     // Fetch all movies matching the current pagination offset.
     $list   = null;
-    $movies = Movie::getMovies($this->resultsOffset, $this->resultsPerPage);
+    $movies = Movie::getMovies($this->paginationOffset, $this->paginationLimit);
     /* @var $movie \MovLib\Data\Movie\Movie */
     while ($movie = $movies->fetch_object("\\MovLib\\Data\\Movie\\Movie")) {
       // We have to use different micro-data if display and original title differ.

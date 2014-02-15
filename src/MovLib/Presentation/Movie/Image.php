@@ -239,7 +239,7 @@ class Image extends \MovLib\Presentation\Movie\AbstractBase {
 
     // ... initialize small sidebar ...
     $this->initSidebar();
-    $this->smallSidebar = true;
+    $this->sidebarSmall = true;
 
     // ... and finally the language links, CSS class, schema and stylesheet.
     $this->initLanguageLinks("/movie/{0}/{$this->image->routeKey}/{1}", [ $this->movie->id, $this->image->id ]);
@@ -268,14 +268,14 @@ class Image extends \MovLib\Presentation\Movie\AbstractBase {
     // Format the optional fields.
     $dl = null;
     if (!empty($this->image->description)) {
-      $dl .= "<dt>{$i18n->t("Description")}</dt><dd itemprop='description'>{$kernel->htmlDecode($this->image->description)}</dd>";
+      $dl .= "<dt>{$i18n->t("Description")}</dt><dd itemprop='description'>{$this->htmlDecode($this->image->description)}</dd>";
     }
     if (!empty($this->image->publishingDate)) {
       $date = new Date($this->image->publishingDate);
       $dl  .= "<dt>{$i18n->t("Publishing Date")}</dt><dd>{$date->format([ "itemprop" => "datePublished" ])}</dd>";
     }
     if (!empty($this->image->authors)) {
-      $dl .= "<dt>{$i18n->t("Author")}</dt><dd itemprop='copyrightHolder'>{$kernel->htmlDecode($this->image->authors)}</dd>";
+      $dl .= "<dt>{$i18n->t("Author")}</dt><dd itemprop='copyrightHolder'>{$this->htmlDecode($this->image->authors)}</dd>";
     }
     if ($this->image->countryCode) {
       $country = (new Country($this->image->countryCode, [ "itemprop" => "contentLocation" ]))->getFlag(true);
@@ -341,7 +341,7 @@ class Image extends \MovLib\Presentation\Movie\AbstractBase {
   protected function initSidebar() {
     global $i18n;
     $args = [ $this->movie->id, $this->image->id ];
-    return $this->initSidebarTrait([
+    return $this->sidebarInit([
       [ $this->image->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
       [ $i18n->r("/movie/{0}/{$this->image->routeKey}/{1}/edit", $args), $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
       [ $i18n->r("/movie/{0}/{$this->image->routeKey}/{1}/history", $args), $i18n->t("History"), [ "class" => "ico ico-history" ] ],
