@@ -125,6 +125,26 @@ trait TraitPagination {
    */
   final protected function paginationInit($resultsTotalCount) {
     global $i18n, $kernel;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!method_exists($this, "initPage")) {
+      throw new \LogicException("You can only use the pagination trait within a presenting page class");
+    }
+    if (empty($resultsTotalCount) || !is_int($resultsTotalCount) || $resultsTotalCount < 0) {
+      throw new \InvalidArgumentException("\$resultsTotalCount passed to pagination init must be non empty, type integer, and positive");
+    }
+    if (empty($this->title)) {
+      throw new \LogicException("You have to initialize the page before you initialize the pagination trait");
+    }
+    if (empty($this->breadcrumb)) {
+      throw new \LogicException("You have to initialize the breadcrumb before you initialize the pagination trait");
+    }
+    if (!empty($this->contentAfter)) {
+      throw new \LogicException("The \$contentAfter variable will be overwritten by the pagination trait");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
     $this->paginationTotalResults = $resultsTotalCount;
 
     // No need to get started if we only have one (or no) result.
