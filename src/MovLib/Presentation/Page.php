@@ -44,14 +44,14 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *
    * @var string
    */
-  public $alerts = "";
+  public $alerts;
 
   /**
    * Contains the CSS classes of the body element.
    *
    * @var string
    */
-  protected $bodyClasses = "";
+  protected $bodyClasses;
 
   /**
    * The presentation's breadcrumb navigation.
@@ -122,7 +122,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *
    * Associative array where the key is the system language code and the value the translated route.
    *
-   * @var null|array
+   * @var array
    */
   protected $languageLinks;
 
@@ -158,26 +158,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
-
-  /**
-   * Format system language for footer system language links.
-   *
-   * @todo This won't work for all kinds of links we have, how can we solve this?
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @param string $languageCode
-   *   The language code of the system language.
-   * @return array
-   *   Array for navigation.
-   */
-  public function formatFooterSystemLanguage($languageCode) {
-    global $i18n, $kernel;
-    $attributes = null;
-    if ($languageCode != $i18n->languageCode) {
-      $attributes["lang"] = $languageCode;
-    }
-    return [ "//{$languageCode}.{$kernel->domainDefault}{$kernel->requestURI}", \Locale::getDisplayLanguage($languageCode, $i18n->languageCode), $attributes ];
-  }
 
   /**
    * Get the presentation's page content.
@@ -565,7 +545,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *   Numeric array containing additional breadcrumbs to put between home and the current page.
    * @return this
    */
-  protected function initBreadcrumb(array $breadcrumbs = []) {
+  final protected function initBreadcrumb(array $breadcrumbs = []) {
     global $i18n;
 
     // Initialize the breadcrumb navigation and always include the home page's link and the currently displayed page.
@@ -604,7 +584,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *   Append string to each language link.
    * @return this
    */
-  protected function initLanguageLinks($route, array $args = null, $plural = false, $query = null) {
+  final protected function initLanguageLinks($route, array $args = null, $plural = false, $query = null) {
     global $i18n, $kernel;
 
     // Not pretty but efficient, only check once if we have plural form or singular.
@@ -629,7 +609,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *   The already translated title of this page.
    * @return this
    */
-  protected function initPage($title) {
+  final protected function initPage($title) {
     global $i18n, $kernel;
 
     // The substr() removes the \MovLib\Presentation\ part!

@@ -59,7 +59,7 @@ abstract class AbstractBase {
    * @return string
    *   The internal link ready for print.
    */
-  protected final function a($route, $text, array $attributes = null, $ignoreQuery = true) {
+  final protected function a($route, $text, array $attributes = null, $ignoreQuery = true) {
     global $i18n, $kernel;
 
     // We don't want any links to the current page (as per W3C recommendation). We also have to ensure that the anchors
@@ -106,7 +106,7 @@ abstract class AbstractBase {
    *   The attributes array of the element to which the CSS class(es) should be added.
    * @return this
    */
-  protected final function addClass($class, array &$attributes = null) {
+  final protected function addClass($class, array &$attributes = null) {
     $attributes["class"] = empty($attributes["class"]) ? $class : "{$attributes["class"]} {$class}";
     return $this;
   }
@@ -119,7 +119,7 @@ abstract class AbstractBase {
    * @return string
    *   The collapsed string.
    */
-  protected final function collapseWhitespace($string) {
+  final protected function collapseWhitespace($string) {
     return trim(preg_replace("/\s\s+/m", " ", preg_replace("/[\n\r\t\x{00}\x{0B}]+/m", " ", $string)));
   }
 
@@ -141,7 +141,7 @@ abstract class AbstractBase {
    * @return string
    *   String representation of the attributes array, or empty string if no attributes are present.
    */
-  protected final function expandTagAttributes($attributes) {
+  final protected function expandTagAttributes(array $attributes) {
     // Only expand if we have something to expand.
     if ($attributes) {
       // Local variables used to collect the expanded tag attributes.
@@ -197,6 +197,7 @@ abstract class AbstractBase {
    * <b>Example usages with Intl ICU</b>
    * <pre>$i18n->t("{0,number} {1}", $this->formatBytes($bytes));</pre>
    *
+   * @deprecated
    * @internal
    *   A loop is actually slower than the current implementation.
    * @staticvar array $units
@@ -206,7 +207,7 @@ abstract class AbstractBase {
    * @return array
    *   Numeric array containing the truncated number in offset 0 and the unit in offset 1.
    */
-  protected final function formatBytes($bytes) {
+  final protected function formatBytes($bytes) {
     // https://en.wikipedia.org/wiki/Mebibyte
     if ($bytes >= 1048576) {
       return [ ceil($bytes / 1048576), "<abbr title='Mebibyte'>MiB</abbr>" ];
@@ -235,7 +236,7 @@ abstract class AbstractBase {
    * @return string
    *   The image.
    */
-  protected final function getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null) {
+  final protected function getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null) {
     if (!isset($attributes["alt"])) {
       $attributes["alt"] = $style->alt;
     }
@@ -267,7 +268,7 @@ abstract class AbstractBase {
    * @return string
    *   The raw HTML string.
    */
-  protected function htmlDecode($text) {
+  final protected function htmlDecode($text) {
     return htmlspecialchars_decode($text, ENT_QUOTES | ENT_HTML5);
   }
 
@@ -283,7 +284,7 @@ abstract class AbstractBase {
    * @return string
    *   <var>$text</var> with all HTML entities decoded.
    */
-  protected function htmlDecodeEntities($text) {
+  final protected function htmlDecodeEntities($text) {
     return html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
   }
 
@@ -297,7 +298,7 @@ abstract class AbstractBase {
    * @return string
    *   <var>$text</var> with encoded HTML special characters.
    */
-  protected function htmlEncode($text) {
+  final protected function htmlEncode($text) {
     return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
   }
 
@@ -311,7 +312,7 @@ abstract class AbstractBase {
    *   <code>NULL</code> if given <var>$lang</var> matches current display language, otherwise the global <code>lang</code>
    *   attribute ready for print (e.g. <code>" lang='de'"</code>).
    */
-  protected final function lang($lang) {
+  final protected function lang($lang) {
     global $i18n;
     if ($lang != $i18n->languageCode) {
       $lang = $this->htmlEncode($lang);
@@ -328,7 +329,7 @@ abstract class AbstractBase {
    * @return string
    *   The normalized text.
    */
-  protected final function normalizeLineFeeds($text) {
+  final protected function normalizeLineFeeds($text) {
     return preg_replace("/\R/u", "\n", $text);
   }
 
@@ -340,7 +341,7 @@ abstract class AbstractBase {
    * @return string
    *   The formatted text (html).
    */
-  protected final function placeholder($text) {
+  final protected function placeholder($text) {
     return "<em class='placeholder'>{$this->htmlEncode($text)}</em>";
   }
 
