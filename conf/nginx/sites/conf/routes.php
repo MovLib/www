@@ -27,6 +27,27 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
+location @home {
+  set $movlib_presenter "Home";
+  include sites/conf/fastcgi_params.conf;
+}
+
+# The route /my is the same for all languages! "My MovLib"
+location = /my {
+  set $movlib_presenter "Home";
+  include sites/conf/fastcgi_params.conf;
+}
+
+location = / {
+  # If the user is logged in, redirect to the dashboard.
+  if ($http_cookie ~ MOVSID) {
+    return 302 /my;
+  }
+
+  # Otherwise file from cache or ask PHP.
+  try_files $movlib_cache/home @home;
+}
+
 
 # ---------------------------------------------------------------------------------------------------------------------- movie(s)
 
