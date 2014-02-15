@@ -19,9 +19,7 @@ namespace MovLib\Presentation;
 
 use \MovLib\Presentation\Email\Webmaster;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
-use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 
 /**
  * The coming soon page.
@@ -33,18 +31,18 @@ use \MovLib\Presentation\Partial\FormElement\InputSubmit;
  * @since 0.0.1-dev
  */
 class ComingSoon extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
   /**
-   * The input email form element.
-   * 
-   * @var \MovLib\Presentation\Partial\FormElement\InputEmail
+   * The user submitted email address.
+   *
+   * @var string
    */
-  protected $inputEmail;
+  protected $email;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -59,15 +57,17 @@ class ComingSoon extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n, $kernel;
     $this->initPage($kernel->siteName);
-    $kernel->stylesheets[]        = "coming-soon";
-    $this->inputEmail             = new InputEmail("email", $i18n->t("Email"), [
-      "autofocus",
-      "placeholder" => $i18n->t("Sign up for the {sitename} beta!", [ "sitename" => $kernel->siteName]),
-    ]);
-    $this->form                   = new Form($this, [ $this->inputEmail]);
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Sign Up"), [
-      "class" => "btn btn-large btn-success"
-    ]);
+
+    // Configure and initialize the form.
+    $this->formAddElement(new InputEmail("email", $i18n->t("Email Address"), [
+      "autofocus"   => true,
+      "placeholder" => $i18n->t("Sign up for the {sitename} beta!", [ "sitename" => $kernel->siteName ]),
+      "required"    => true,
+    ], $this->email));
+    $this->formAddAction($i18n->t("Sign Up"), [ "class" => "btn btn-large btn-success" ]);
+    $this->formInit();
+
+    $kernel->stylesheets[] = "coming-soon";
   }
 
 
@@ -141,31 +141,38 @@ class ComingSoon extends \MovLib\Presentation\Page {
             "<a href='http://www.themoviedb.org/' target='_blank'>",
           ]
         )}</p>" .
-        "<div class='r'><div class='s s8 o2'>{$this->form}</div></div>" .
+        "<div class='r'><div class='s s8 o2'>{$this->formRender()}</div></div>" .
       "</div></main>"
     ;
   }
 
   /**
-   * @inheritdoc
+   * The submitted form has no auto-validation errors, continue normal program flow.
+   *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
+   * @return this
    */
-  protected function valid() {
+  protected function formValid() {
     global $i18n, $kernel;
+
     // Send an email with the new subscriber to the webmaster.
-    $kernel->sendEmail(new Webmaster("New beta subscription", "{$this->inputEmail->value} would like to be part of the MovLib beta."));
+    $kernel->sendEmail(new Webmaster("New beta subscription", "{$this->email} would like to be part of the MovLib beta."));
+
     // Append new subscriber to subscription list (not save to use database while we're still developing).
-    file_put_contents("{$kernel->documentRoot}/private/subscriptions.txt", "\n{$this->inputEmail->value}", FILE_APPEND);
-    
+    file_put_contents("{$kernel->documentRoot}/private/subscriptions.txt", "\n{$this->email}", FILE_APPEND);
+
+    // Let the user know that the subscription was successful.
     $this->alerts .= new Alert(
       $i18n->t("Thanks for signing up for the {sitename} beta {email}.", [
         "sitename" => $kernel->siteName,
-        "email"    => "<em>{$kernel->htmlEncode($this->inputEmail->value)}</em>",
+        "email"    => $this->placeholder($this->email),
       ]),
       $i18n->t("Successfully Signed Up"),
       Alert::SEVERITY_SUCCESS
     );
+
+    return $this;
   }
 
 }
