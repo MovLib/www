@@ -583,7 +583,7 @@ class Kernel {
    *
    * @link http://ralphschindler.com/2010/09/15/exception-best-practices-in-php-5-3
    *   Ralph Schindler: Exception best practices in PHP 5.3
-   * @param int $type
+   * @param int $severity
    *   The error's type, one of the PHP predefined <var>E_*</var> constants.
    * @param string $message
    *   The error's message.
@@ -637,32 +637,6 @@ class Kernel {
       // Display internal server error page to client.
       exit((new Stacktrace($exception, true))->getPresentation());
     }
-  }
-
-  /**
-   * Get the raw HTML string.
-   *
-   * @param string $encodedHTML
-   *   The encoded HTML string that should be decoded.
-   * @return string
-   *   The raw HTML string.
-   */
-  public function htmlDecode($encodedHTML) {
-    return htmlspecialchars_decode($encodedHTML, ENT_QUOTES | ENT_HTML5);
-  }
-
-  /**
-   * Encode special characters in a plain-text string for display as HTML.
-   *
-   * <b>Always</b> use this method before displaying any plain-text string to the user.
-   *
-   * @param string $text
-   *   The plain-text string to process.
-   * @return string
-   *   The <var>$text</var> with encoded HTML special characters.
-   */
-  public function htmlEncode($text) {
-    return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
   }
 
   /**

@@ -179,7 +179,14 @@ abstract class AbstractBase {
           }
           // @codeCoverageIgnoreEnd
           // @devEnd
-          $expanded .= " {$name}='{$kernel->htmlEncode($value)}'";
+
+          // Only output the language attribute if it differs from the current document language.
+          if ($name == "lang") {
+            $expanded .= $this->lang($value);
+          }
+          else {
+            $expanded .= " {$name}='{$kernel->htmlEncode($value)}'";
+          }
         }
       }
 
@@ -256,6 +263,48 @@ abstract class AbstractBase {
   }
 
   /**
+   * Get the raw HTML string.
+   *
+   * @param string $text
+   *   The encoded HTML string that should be decoded.
+   * @return string
+   *   The raw HTML string.
+   */
+  protected function htmlDecode($text) {
+    return htmlspecialchars_decode($text, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
+   * Decodes all HTML entities including numerical ones to regular UTF-8 bytes.
+   *
+   * Double-escaped entities will only be decoded once (<code>"&amp;lt;"</code> becomes <code>"&lt;"</code>, not
+   * <code>"<"</code>). Be careful when using this function, as it will revert previous sanitization efforts
+   * (<code>"&lt;script&gt;"</code> will become <code>"<script>"</code>).
+   *
+   * @param string $text
+   *   The text to decode entities in.
+   * @return string
+   *   <var>$text</var> with all HTML entities decoded.
+   */
+  protected function htmlDecodeEntities($text) {
+    return html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
+   * Encode special characters in a plain-text string for display as HTML.
+   *
+   * <b>Always</b> use this method before displaying any plain-text string to the user.
+   *
+   * @param string $text
+   *   The plain-text string to process.
+   * @return string
+   *   <var>$text</var> with encoded HTML special characters.
+   */
+  protected function htmlEncode($text) {
+    return htmlspecialchars($text, ENT_QUOTES | ENT_HTML5);
+  }
+
+  /**
    * Get global <code>lang</code> attribute for any HTML tag if language differs from current display language.
    *
    * @global \MovLib\Data\I18n $i18n
@@ -267,7 +316,10 @@ abstract class AbstractBase {
    */
   protected final function lang($lang) {
     global $i18n;
-    return $lang == $i18n->languageCode ? null : " lang='{$lang}'";
+    if ($lang != $i18n->languageCode) {
+      $lang = $this->htmlEncode($lang);
+      return " lang='{$lang}'";
+    }
   }
 
   /**
@@ -286,15 +338,13 @@ abstract class AbstractBase {
   /**
    * Formats text for emphasized display in a placeholder inside a sentence.
    *
-   * @global \MovLib\Kernel $kernel
    * @param string $text
    *   The text to format (plain-text).
    * @return string
    *   The formatted text (html).
    */
   protected final function placeholder($text) {
-    global $kernel;
-    return "<em class='placeholder'>{$kernel->htmlEncode($text)}</em>";
+    return "<em class='placeholder'>{$this->htmlEncode($text)}</em>";
   }
 
 }
