@@ -261,7 +261,7 @@ class DeletionRequest {
    * @global \MovLib\Data\Database $db
    * @param integer $offset
    *   The offset, usually provided by the pagination trait.
-   * @param integer $rowCount
+   * @param integer $limit
    *   The row count, usually provided by the pagination trait.
    * @param integer $reasonId [optional]
    *   The result will be filtered by this reason if passed.
@@ -271,7 +271,7 @@ class DeletionRequest {
    *   The mysqli result of the query.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public static function getResult($offset, $rowCount, $reasonId = null, $languageCode = null) {
+  public static function getResult($offset, $limit, $reasonId = null, $languageCode = null) {
     global $db;
     $query =
       "SELECT
@@ -285,7 +285,7 @@ class DeletionRequest {
       FROM `deletion_requests`"
     ;
     self::checkReasonAndLanguage($reasonId, $languageCode, $query, $types, $params);
-    $params[] = $rowCount;
+    $params[] = $limit;
     $params[] = $offset;
     return $db->query("{$query} ORDER BY `created` DESC LIMIT ? OFFSET ?", "{$types}ii", $params)->get_result();
   }

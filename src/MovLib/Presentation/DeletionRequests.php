@@ -65,17 +65,17 @@ class DeletionRequests extends \MovLib\Presentation\Page {
     ];
 
     // Extract possible filters from the requested URL.
-    $reasonId     = filter_input(INPUT_GET, $i18n->r("reason"), FILTER_VALIDATE_INT);
-    $languageCode = filter_input(INPUT_GET, $i18n->r("language_code"), FILTER_SANITIZE_STRING);
+    $reasonId     = filter_input(INPUT_GET, $i18n->r("reason"), FILTER_VALIDATE_INT, [ "options" => [ "min_range" => 1 ] ]);
+    $languageCode = filter_input(INPUT_GET, $i18n->r("language_code"), FILTER_VALIDATE_REGEXP, [ "options" => [ "default" => null, "regexp" => "/[a-z][a-z]/" ] ]);
 
     // Initialize the sidebar with the sorted menuitems and ignore the query string within
     // the requested URI for determining which tab is active.
-    $this->initSidebar($menuitems);
+    $this->sidebarInit($menuitems);
     $this->sidebarNavigation->ignoreQuery = false;
 
     // Nothing to do if we have no deletion requests at all.
-    $this->initPagination(DeletionRequest::getCount($reasonId, $languageCode));
-    if ($this->resultsTotalCount === 0) {
+    $this->paginationInit(DeletionRequest::getCount($reasonId, $languageCode));
+    if ($this->paginationTotalResults === 0) {
       return new Alert(
         $i18n->t("Great, not a single deletion request is waiting for approval."),
         $i18n->t("No Deletion Requests"),
@@ -84,7 +84,7 @@ class DeletionRequests extends \MovLib\Presentation\Page {
     }
 
     // Build listing of all deletion requests.
-    $requests = DeletionRequest::getResult($this->resultsOffset, $this->resultsPerPage, $reasonId, $languageCode);
+    $requests = DeletionRequest::getResult($this->paginationOffset, $this->paginationLimit, $reasonId, $languageCode);
     $list     = null;
 
     /* @var $deletionRequest \MovLib\Data\DeletionRequest */
