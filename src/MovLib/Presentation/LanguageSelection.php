@@ -17,8 +17,8 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Data\User\Full as FullUser;
-use \MovLib\Presentation\Redirect\Temporary as TemporaryRedirect;
+use \MovLib\Data\User\FullUser;
+use \MovLib\Presentation\Redirect\Temporary;
 use \MovLib\Presentation\Partial\Navigation;
 
 /**
@@ -55,13 +55,17 @@ class LanguageSelection extends \MovLib\Presentation\Page {
     // If a signed in user is requesting this page we know where to send her or him.
     if ($session->isAuthenticated === true) {
       $user = new FullUser(FullUser::FROM_ID, $session->userId);
-      throw new TemporaryRedirect("{$kernel->scheme}://{$user->systemLanguageCode}.{$kernel->domainDefault}/");
+      throw new Temporary("{$kernel->scheme}://{$user->systemLanguageCode}.{$kernel->domainDefault}/");
     }
 
     // If not render the page.
     $this->initPage($i18n->t("Language Selection"));
     $kernel->stylesheets[] = "language-selection";
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * @inheritdoc
