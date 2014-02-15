@@ -131,7 +131,7 @@ class Date extends \MovLib\Presentation\AbstractBase {
    *   Formatted date as <code><time></code> tag with additional attributes.
    */
   public function format(array $attributes = []) {
-    $attributes["datetime"] = $this->dateValue;
+    $attributes["datetime"] = $this->iso8601Format();
     return "<time{$this->expandTagAttributes($attributes)}>{$this->intlFormat()}</time>";
   }
 
@@ -192,6 +192,22 @@ class Date extends \MovLib\Presentation\AbstractBase {
       $format = "~{$format}";
     }
     return $thisDate->diff($date)->format($format);
+  }
+
+  /**
+   * Get the formatted date according to {@link http://www.w3.org/TR/NOTE-datetime ISO 8601} standard.
+   *
+   * @return string
+   *   The ISO 8601 formatted date.
+   */
+  public function iso8601Format() {
+    if ($this->dateInfo["month"] === 0) {
+      return $this->dateInfo["year"];
+    }
+    if ($this->dateInfo["day"] === 0) {
+      return "{$this->dateInfo["year"]}-{$this->dateInfo["month"]}";
+    }
+    return $this->dateValue;
   }
 
   /**
