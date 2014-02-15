@@ -203,11 +203,10 @@ class Session implements \ArrayAccess {
    *   The user submitted email address.
    * @param string $rawPassword
    *   The user submitted raw password.
-   * @return this
+   * @return boolean
+   *   <code>TRUE</code> if the credentials could be verified, otherwise <code>FALSE</code>.
    * @throws \MemcachedException
    * @throws \MovLib\Exception\DatabaseException
-   * @throws \OutOfBoundsException
-   * @throws \UnexpectedValue
    */
   public function authenticate($email, $rawPassword) {
     global $kernel;
@@ -217,7 +216,7 @@ class Session implements \ArrayAccess {
 
     // Validate the submitted password.
     if ($user->verifyPassword($rawPassword) === false) {
-      throw new \UnexpectedValueException("Invalid password for user with email '{$email}'");
+      return false;
     }
 
     $_SESSION["auth"]   = $this->authentication = $_SERVER["REQUEST_TIME"];
@@ -241,7 +240,7 @@ class Session implements \ArrayAccess {
     //       have to worry about. Maybe introduce a configuration option for this?
     $kernel->delayMethodCall([ $this, "passwordNeedsRehash" ], [ $user->password, $rawPassword ]);
 
-    return $this;
+    return true;
   }
 
   /**
