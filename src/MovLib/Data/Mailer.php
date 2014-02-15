@@ -28,7 +28,18 @@ use \MovLib\Presentation\Email\AbstractEmail;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Mailer {
+class Mailer extends \MovLib\Presentation\AbstractBase {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Default width for word wrapping in plain text mails.
+   *
+   * @var integer
+   */
+  const WORDWRAP = 75;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -69,6 +80,18 @@ class Mailer {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Replace non-quotation markers from a given piece of indentation with spaces.
+   *
+   * @param string $indent
+   *   The string to indent.
+   * @return string
+   *   <var>$indent</var> with non-quotation markers replaced by spaces.
+   */
+  protected function cleanIndent($indent) {
+    return preg_replace("/[^>]/", " ", $indent);
+  }
 
   /**
    * Get the base64 encoded HTML message.
@@ -209,6 +232,207 @@ EOT;
   }
 
   /**
+   * Transform HTML string to plain-text string for mail.
+   *
+   * @param string $html
+   *   The HTML string to transform.
+   * @return string
+   *   <var>$html</var> as plain-text string for mail.
+   */
+  protected function htmlToText($html) {
+    // Apply inline styles.
+    $html = preg_replace("#</?(em|i)((?> +)[^>]*)?>#i", "*", $html);
+    $html = preg_replace("#</?(strong|b)((?> +)[^>]*)?>#i", "**", $html);
+
+    // Replace inline <a> tags with the text of the link and a footnote.
+    $footnotes = null;
+    $html = preg_replace_callback("#(<a[^>]+?href=[\"|']([^\"|']*)[\"|'][^>]*?>(.+?)</a>)#i", function ($match) use (&$footnotes) {
+      static $urlCount = 0;
+      // Only return the URL if linked text and URL are identical.
+      if ($match[2] == $match[3]) {
+        return $match[2];
+      }
+      // Return the text with a placeholder token appended otherwise and collect the linked URL for the footnotes.
+      else {
+        if ($urlCount === 0) {
+          $footnotes = "\n";
+        }
+        ++$urlCount;
+        $footnotes .= "[{$urlCount}] {$match[2]}";
+        return "{$match[3]} [{$urlCount}]";
+      }
+    }, $html);
+
+    // Split HTML tags.
+    // NOTE: PHP ensures that the array consists of alternating delimiters and literals and begins and ends with a
+    //       literal (inserting NULL as required).
+    $splitted = preg_split("/<([^>]+?)>/", $html, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+    $tag = false;
+    $caseing = null;
+    $output = null;
+    $indent = [];
+    $lists = [];
+
+    foreach ($splitted as $value) {
+      $chunk = null;
+
+      if ($tag) {
+        list($tagname) = explode(" ", strtolower($value), 2);
+        switch ($tagname) {
+          case "ul":
+            array_unshift($lists, "*");
+            break;
+
+          case "ol":
+            array_unshift($lists, 1);
+            break;
+
+          case "/ul":
+          case "/ol":
+            array_shift($lists);
+            $chunk = "";
+            break;
+
+          case "blockquote":
+            $indent[] = count($lists) ? " \"" : ">";
+            break;
+
+          case "li":
+            $indent[] = isset($lists[0]) && is_numeric($lists[0]) ? " " . $lists[0]++ . ") " : " * ";
+            break;
+
+          case "dd":
+            $indent[] = "    ";
+            break;
+
+          case "/blockquote":
+            if (count($lists)) {
+              $output = rtrim($output, "> \n") . "\"\n";
+              $chunk  = "";
+            }
+            // no break
+
+          case "/li":
+          case "/dd":
+            array_pop($indent);
+            break;
+
+          case "h1":
+          case "h2":
+            $caseing = "mb_strtoupper";
+            // no break
+
+          case "h3":
+          case "h4":
+          case "h5":
+          case "h6":
+            $indent[] = str_repeat("#", (integer) substr($tagname, -1)) . " ";
+            break;
+
+          case "/h1":
+          case "/h2":
+            $caseing = null;
+            // no break
+
+          case "/h3":
+          case "/h4":
+          case "/h5":
+          case "/h6":
+            array_pop($indent);
+            // no break
+
+          case "/p":
+          case "/dl":
+            $chunk = "";
+            break;
+
+          case "hr":
+            $output .= "\n\n" . str_repeat("-", self::WORDWRAP) . "\n\n";
+            break;
+        }
+      }
+      else {
+        $value = trim($this->htmlDecodeEntities($value));
+        if (mb_strlen($value)) {
+          $chunk = $value;
+        }
+      }
+
+      if ($chunk) {
+        if ($caseing) {
+          $chunk = $caseing($chunk);
+        }
+        $output .= "{$this->indentedWordwrap($chunk, implode($indent))}\n";
+        $indent  = array_map([ $this, "cleanIndent" ], $indent);
+      }
+
+      $tag = !$tag;
+    }
+
+    return "{$output}{$footnotes}";
+  }
+
+  /**
+   * Performs <code>format=flowed</code> soft wrapping for mail (RFC 3676).
+   *
+   * We use <code>delsp=yes</code> wrapping, but only break non-spaced languages when absolutely necessary to avoid
+   * compatibility issues.
+   *
+   * @param string $text
+   *   The plain-text to process.
+   * @param string $indent
+   *   A string to indent the text with. Only <code>">"</code> characters are repeated on subsequent wrapped lines.
+   *   Others are replaced by spaces.
+   * @return string
+   *   <var>$text</var> with formatting applied.
+   */
+  protected function indentedWordwrap($text, $indent) {
+    // See if soft-wrapping is allowed.
+    $cleanIndent = $this->cleanIndent($indent);
+    $soft        = strpos($cleanIndent, " ") === false;
+
+    // Check if text contains line feeds.
+    if (strpos($text, "\n") === false) {
+      $this->lineWordwrap($text, 0, [ "soft" => $soft, "length" => strlen($indent) ]);
+    }
+    else {
+      // Remove trailing spaces to make existing breaks hard, but leave signature marker untouched (RFC 3676, Section 4.3).
+      $text = preg_replace("/(?(?<!^--) +\n|  +\n)/m", "\n", $text);
+
+      // Wrap each line at the needed width.
+      $lines = explode("\n", $text);
+      array_walk($lines, [ $this, "lineWordwrap" ], [ "soft" => $soft, "length" => strlen($indent) ]);
+      $text = implode("\n", $lines);
+    }
+
+    // Empty lines with nothing but spaces.
+    $text = preg_replace("/^ +\n/m", "\n", $text);
+
+    // Space-stuff special lines.
+    $text = preg_replace("/^(>| |From)/m", " $1", $text);
+
+    // Apply indentation. We only include non-">" identation on the first line.
+    $text = $indent . substr(preg_replace("/^/m", $cleanIndent, $text), strlen($indent));
+
+    return $text;
+  }
+
+  /**
+   * Wrap words on a single mail line.
+   *
+   * @param string $line
+   *   The plain-text line to process.
+   * @param integer $key
+   *   The array key (unused).
+   * @param array $options
+   *   Associative array containing the wordwrap options.
+   */
+  protected function lineWordwrap(&$line, $key, $options) {
+    $line = $this->wordwrap($line, 77 - $options["length"], $options["soft"] ? " \n" : "\n");
+  }
+
+  /**
    * Send the given email.
    *
    * @param \MovLib\Data\AbstractEmail $email
@@ -241,49 +465,60 @@ EOT;
    *   The string to wrap.
    * @param int $width [optional]
    *   The number of characters at which the string will be wrapped, defaults to <code>75</code>.
+   * @param string $break [optional]
+   *   Character to break the line with.
    * @param boolean $cut [optional]
    *   If set to <code>TRUE</code>, the string is always wrapped at or before the specified width. So if you have a word
    *   that is larger than the given width, it is broken apart. Defaults to <code>FALSE</code>.
    * @return string
    *   The string wrapped at the specified length.
    */
-  protected function wordwrap($string, $width = 75, $cut = false) {
-    // Use native function if we aren't dealing with a multi-byte string.
-    if (strlen($string) === mb_strlen($string)) {
-      return wordwrap($string, $width, "\n", $cut);
-    }
+  protected function wordwrap($string, $width = self::WORDWRAP, $break = "\n", $cut = false) {
     $strlen = mb_strlen($string);
+
+    // Use native function if we aren't dealing with a multi-byte string.
+    if (strlen($string) === $strlen) {
+      return wordwrap($string, $width, $break, $cut);
+    }
+
     $result = "";
     $lastStart = $lastSpace = 0;
+
     for ($i = 0; $i < $strlen; ++$i) {
       $char = mb_substr($string, $i, 1);
+
       if ($char === "\n") {
         $result .= mb_substr($string, $lastStart, $i - $lastStart + 1);
         $lastStart = $lastSpace = $i + 1;
         continue;
       }
+
       if ($char === " ") {
         if ($i - $lastStart >= $width) {
-          $result .= mb_substr($string, $lastStart, $i - $lastStart) . "\n";
+          $result .= mb_substr($string, $lastStart, $i - $lastStart) . $break;
           $lastStart = $i + 1;
         }
         $lastSpace = $i;
         continue;
       }
+
       if ($i - $lastStart >= $width && $cut === true && $lastStart >= $lastSpace) {
-        $result .= mb_substr($string, $lastStart, $i - $lastStart) . "\n";
+        $result .= mb_substr($string, $lastStart, $i - $lastStart) . $break;
         $lastStart = $lastSpace = $i;
         continue;
       }
+
       if ($i - $lastStart >= $width && $lastStart < $lastSpace) {
-        $result .= mb_substr($string, $lastStart, $lastSpace - $lastStart) . "\n";
+        $result .= mb_substr($string, $lastStart, $lastSpace - $lastStart) . $break;
         $lastStart = $lastSpace = $lastSpace + 1;
         continue;
       }
     }
+
     if ($lastStart !== $i) {
       $result .= mb_substr($string, $lastStart, $i - $lastStart);
     }
+
     return $result;
   }
 
