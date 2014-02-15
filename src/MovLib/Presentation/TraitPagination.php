@@ -20,7 +20,46 @@ namespace MovLib\Presentation;
 use \MovLib\Presentation\Partial\Navigation;
 
 /**
- * Pagination trait.
+ * Add pagination support to presentation.
+ *
+ * <h2>Methods inherited from {@see \MovLib\Presentation\AbstractBase}</h2>
+ * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
+ * @method this addClass($class, array &$attributes = null)
+ * @method string collapseWhitespace($string)
+ * @method string expandTagAttributes(array $attributes)
+ * @method string getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null)
+ * @method string htmlDecode($text)
+ * @method string htmlDecodeEntities($text)
+ * @method string htmlEncode($text)
+ * @method string lang($lang)
+ * @method string normalizeLineFeeds($text)
+ * @method string placeholder($text)
+ *
+ * <h2>Methods and properties inherited from {@see \MovLib\Presentation\Page}</h2>
+ * @property string $alerts
+ * @property string $bodyClasses
+ * @property \MovLib\Presentation\Partial\Navigation $breadcrumb
+ * @property string $breadcrumbTitle
+ * @property string $contentAfter
+ * @property string $contentBefore
+ * @property string $headingBefore
+ * @property string $headingAfter
+ * @property string $headingSchemaProperty
+ * @property-read string $id
+ * @property-read array $languageLinks
+ * @property-read array $namespace
+ * @property-read string $pageTitle
+ * @property-read string $schemaType
+ * @property-read string $title
+ * @method string getContent()
+ * @method string getFooter()
+ * @method string getHeader()
+ * @method string getHeadTitle()
+ * @method string getPresentation()
+ * @method string getMainContent()
+ * @method this initBreadcrumb()
+ * @method this initLanguageLinks($route, array $args = null, $plural = false, $query = null)
+ * @method this initPage($title)
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -35,39 +74,43 @@ trait TraitPagination {
 
 
   /**
-   * The current page index.
+   * The pagination's current page.
    *
    * @var integer
    */
-  protected $page = 1;
+  protected $paginationCurrentPage = 1;
 
   /**
-   * The total amount of pages.
+   * The pagination's limit.
+   *
+   * This property determines how many results should be displayed per page.
    *
    * @var integer
    */
-  protected $pageCount = 1;
+  protected $paginationLimit = 25;
 
   /**
-   * The offset from which the results start.
+   * The pagination's offset.
+   *
+   * This property determines from which offset the results that are displayed should start.
    *
    * @var integer
    */
-  protected $resultsOffset = 0;
+  protected $paginationOffset = 0;
 
   /**
-   * How many results to display per page.
+   * The pagination's total page count.
    *
    * @var integer
    */
-  protected $resultsPerPage = 25;
+  protected $paginationTotalPages = 1;
 
   /**
-   * The total result count.
+   * The pagination's total result count.
    *
    * @var integer
    */
-  protected $resultsTotalCount = 0;
+  protected $paginationTotalResults = 0;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -80,9 +123,9 @@ trait TraitPagination {
    *   The total results count.
    * @return this
    */
-  protected function initPagination($resultsTotalCount) {
+  final protected function paginationInit($resultsTotalCount) {
     global $i18n, $kernel;
-    $this->resultsTotalCount = $resultsTotalCount;
+    $this->paginationTotalResults = $resultsTotalCount;
 
     // No need to get started if we only have one (or no) result.
     if ($resultsTotalCount < 2) {
@@ -92,28 +135,35 @@ trait TraitPagination {
     // Include the pagination stylesheet and let the complete design know that a pagination is present.
     $this->bodyClasses .= " pagination";
 
-    // Initial calculations.
-    $this->page = filter_input(INPUT_GET, $i18n->r("page"), FILTER_VALIDATE_INT, [
+    // Validate the user submitted page query string.
+    $this->paginationCurrentPage = filter_input(INPUT_GET, $i18n->r("page"), FILTER_VALIDATE_INT, [
       "options" => [ "default" => 1, "min_range" => 1 ]
     ]);
-    $this->pageCount = (integer) ceil($this->resultsTotalCount / $this->resultsPerPage);
-    if ($this->page > 1) {
-      $this->resultsOffset           = ($this->page - 1) * $this->resultsPerPage;
-      $title                         = $i18n->t("Page {0, number, integer}", [ $this->page ]);
+
+    // Calculate how many pages we have to display.
+    $this->paginationTotalPages = (integer) ceil($this->paginationTotalResults / $this->paginationLimit);
+
+    // Extend the page's breadcrumb and title if this isn't the first page.
+    if ($this->paginationCurrentPage > 1) {
+      // Calculate the pagination offset within the results for this page.
+      $this->paginationOffset = ($this->paginationCurrentPage - 1) * $this->paginationLimit;
+
+      // Extend the page's breadcrumb and title with information about the current pagination page.
+      $title = $i18n->t("Page {0, number, integer}", [ $this->paginationCurrentPage ]);
       $this->breadcrumb->menuitems[] = [ $kernel->requestURI, $title ];
-      $this->title                  .= " {$title}";
+      $this->title .= " {$title}";
     }
 
     // @todo Better documentation of the code below and we should get rid of all the magic numbers in there!
 
     // Only create a pagination navigation if we have at least two pages.
     $pagination = null;
-    $to         = $this->resultsTotalCount;
-    if ($this->resultsTotalCount > $this->resultsPerPage) {
+    $to         = $this->paginationTotalResults;
+    if ($this->paginationTotalResults > $this->paginationLimit) {
       // Calculate the maximum amount of results that we can show on this page.
-      $max = $this->resultsOffset + $this->resultsPerPage;
+      $max = $this->paginationOffset + $this->paginationLimit;
       // If the current total count isn't smaller then the maximum, use the maximum as to (see bottom of method).
-      if ($this->resultsTotalCount > $max) {
+      if ($this->paginationTotalResults > $max) {
         $to = $max;
       }
 
@@ -121,7 +171,7 @@ trait TraitPagination {
       // one from the current page's index.
       $route = "{$kernel->requestPath}?{$i18n->r("page")}=";
       $pages = [];
-      $x     = $this->page - 1;
+      $x     = $this->paginationCurrentPage - 1;
 
       // Generate the previous link if it isn't the first page.
       if ($x >= 1) {
@@ -150,14 +200,14 @@ trait TraitPagination {
         $x--;
       }
 
-      $y = $this->pageCount - 6;
+      $y = $this->paginationTotalPages - 6;
       if ($y > 2) {
         if ($x > $y) {
           $x = $y;
         }
 
         // We can generate the next points in a loop, as they always have the same formatting.
-        $secondLast = $this->pageCount - 1;
+        $secondLast = $this->paginationTotalPages - 1;
         for ($i = 0; $i < 5 && $x < $secondLast; ++$i, ++$x) {
           $pages[] = [ "{$route}{$x}", $x ];
         }
@@ -171,12 +221,12 @@ trait TraitPagination {
         }
 
         // Always add the last page to the pagination for fast traveling.
-        $pages[] = [ "{$route}{$this->pageCount}", $this->pageCount, [ "class" => "pager", "rel" => "last" ] ];
+        $pages[] = [ "{$route}{$this->paginationTotalPages}", $this->paginationTotalPages, [ "class" => "pager", "rel" => "last" ] ];
       }
 
       // Check if we have a next page and perform the same logic as we used for the previous link.
-      if ($this->page < $this->pageCount) {
-        $next    = $this->page + 1;
+      if ($this->paginationCurrentPage < $this->paginationTotalPages) {
+        $next    = $this->paginationCurrentPage + 1;
         $pages[] = [ "{$route}{$next}", "{$i18n->t("next")} <span class='ico ico-chevron-right small'></span>", [ "class" => "pager", "rel" => "next" ] ];
       }
       else {
@@ -190,9 +240,9 @@ trait TraitPagination {
     // string representation to output it in its content area.
     $this->contentAfter = "<div class='c'><div class='r'><div class='s s10 o2'>{$pagination}<small class='tac'>{$i18n->t(
       "Results from {from,number,integer} to {to,number,integer} of {total,number,integer} results.", [
-        "from"  => $this->resultsOffset + 1,
+        "from"  => $this->paginationOffset + 1,
         "to"    => $to,
-        "total" => $this->resultsTotalCount,
+        "total" => $this->paginationTotalResults,
       ]
     )}</small></div></div></div>";
 
