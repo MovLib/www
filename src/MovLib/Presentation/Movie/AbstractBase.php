@@ -17,7 +17,6 @@
  */
 namespace MovLib\Presentation\Movie;
 
-use \MovLib\Data\Movie\FullMovie;
 use \MovLib\Presentation\Partial\Alert;
 
 /**

@@ -545,7 +545,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *   Numeric array containing additional breadcrumbs to put between home and the current page.
    * @return this
    */
-  final protected function initBreadcrumb(array $breadcrumbs = []) {
+  protected function initBreadcrumb(array $breadcrumbs = []) {
     global $i18n;
 
     // Initialize the breadcrumb navigation and always include the home page's link and the currently displayed page.
