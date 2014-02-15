@@ -20,7 +20,46 @@ namespace MovLib\Presentation;
 use \MovLib\Presentation\Partial\Navigation;
 
 /**
- * Sidebar navigation for presentations.
+ * Add sidebar navigation to presentation.
+ *
+ * <h2>Methods inherited from {@see \MovLib\Presentation\AbstractBase}</h2>
+ * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
+ * @method this addClass($class, array &$attributes = null)
+ * @method string collapseWhitespace($string)
+ * @method string expandTagAttributes(array $attributes)
+ * @method string getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null)
+ * @method string htmlDecode($text)
+ * @method string htmlDecodeEntities($text)
+ * @method string htmlEncode($text)
+ * @method string lang($lang)
+ * @method string normalizeLineFeeds($text)
+ * @method string placeholder($text)
+ *
+ * <h2>Methods and properties inherited from {@see \MovLib\Presentation\Page}</h2>
+ * @property string $alerts
+ * @property string $bodyClasses
+ * @property \MovLib\Presentation\Partial\Navigation $breadcrumb
+ * @property string $breadcrumbTitle
+ * @property string $contentAfter
+ * @property string $contentBefore
+ * @property string $headingBefore
+ * @property string $headingAfter
+ * @property string $headingSchemaProperty
+ * @property-read string $id
+ * @property-read array $languageLinks
+ * @property-read array $namespace
+ * @property-read string $pageTitle
+ * @property-read string $schemaType
+ * @property-read string $title
+ * @method string getContent()
+ * @method string getFooter()
+ * @method string getHeader()
+ * @method string getHeadTitle()
+ * @method string getPresentation()
+ * @method string getMainContent()
+ * @method this initBreadcrumb()
+ * @method this initLanguageLinks($route, array $args = null, $plural = false, $query = null)
+ * @method this initPage($title)
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
@@ -46,7 +85,7 @@ trait TraitSidebar {
    *
    * @var boolean
    */
-  public $smallSidebar = false;
+  protected $sidebarSmall = false;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
@@ -77,7 +116,7 @@ trait TraitSidebar {
     $content = $this->getPageContent();
 
     // We have to apply different HTML/CSS depending on the desired size of the sidebar.
-    if ($this->smallSidebar === true) {
+    if ($this->sidebarSmall === true) {
       $containerClass                    = " sidebar-s";
       $sidebarClass                      = null;
       $contentClass                      = "s12";
@@ -113,8 +152,18 @@ trait TraitSidebar {
    *   The sidebar navigation's menuitems.
    * @return this
    */
-  protected function initSidebar($menuitems) {
+  final protected function sidebarInit($menuitems) {
     global $i18n;
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!method_exists($this, "initPage")) {
+      throw new \LogicException("You can only use the sidebar trait within a presenting page class");
+    }
+    if (empty($this->title)) {
+      throw new \LogicException("You have to initialize the page before you initialize the sidebar trait");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
     $this->bodyClasses                     .= " sidebar";
     $this->sidebarNavigation                = new Navigation($i18n->t("Secondary Navigation"), $menuitems, [ "id" => "sidebar-nav" ]);
