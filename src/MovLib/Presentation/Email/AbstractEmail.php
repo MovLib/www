@@ -19,7 +19,7 @@ namespace MovLib\Presentation\Email;
 
 /**
  * Base email implementation.
- * 
+ *
  * All email templates have to extend this class in order to work with the mailer system.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
@@ -40,10 +40,10 @@ abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
    * @var int
    */
   const PRIORITY_HIGH = 1;
-  
+
   /**
    * Email priority normal.
-   * 
+   *
    * @var int
    */
   const PRIORITY_NORMAL = 3;
@@ -58,7 +58,7 @@ abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
    * @var int
    */
   public $priority = self::PRIORITY_NORMAL;
-  
+
   /**
    * The email's recipient.
    *
@@ -91,7 +91,7 @@ abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
   }
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Abstract Methods
 
 
   /**
@@ -100,7 +100,7 @@ abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The email's translated HTML message.
    */
-  public abstract function getHTML();
+  abstract public function getHTML();
 
   /**
    * Get the email's translated plain text message.
@@ -108,6 +108,6 @@ abstract class AbstractEmail extends \MovLib\Presentation\AbstractBase {
    * @return string
    *   The email's translated plain text message.
    */
-  public abstract function getPlainText();
+  abstract public function getPlainText();
 
 }
