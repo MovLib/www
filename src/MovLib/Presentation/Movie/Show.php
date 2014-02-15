@@ -35,7 +35,7 @@ use \MovLib\Presentation\Partial\Lists\Persons;
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\Page {
-  use \MovLib\Presentation\TraitFormPage;
+  use \MovLib\Presentation\TraitForm;
   use \MovLib\Presentation\TraitSidebar;
 
 
@@ -83,7 +83,7 @@ class Show extends \MovLib\Presentation\Page {
     $this->initLanguageLinks("/movie/{0}", [ $this->movie->id ]);
     $routeArgs = [ $this->movie->id ];
     $this->routeEdit = $i18n->r("/movie/{0}/edit", $routeArgs);
-    $this->initSidebar([
+    $this->sidebarInit([
       [ $this->movie->route, $i18n->t("View"), [ "class" => "ico ico-view" ] ],
       [ $i18n->r("/movie/{0}/discussion", $routeArgs), $i18n->t("Discuss"), [ "class" => "ico ico-discussion", "itemprop" => "discussionUrl" ] ],
       [ $this->routeEdit, $i18n->t("Edit"), [ "class" => "ico ico-edit" ] ],
@@ -148,10 +148,9 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    */
   protected function getPageContent() {
-    global $i18n, $kernel;
+    global $i18n;
     $this->schemaType = "Movie";
 
     // Enhance the page's title with microdata.
@@ -180,7 +179,7 @@ class Show extends \MovLib\Presentation\Page {
     $this->headingBefore = "<div class='r'><div class='s s9'>";
 
     // Instantiate the rating form.
-    $this->form = new Form($this);
+    $this->formInit();
 
     // The five available ratings.
     $ratings = [
@@ -238,11 +237,11 @@ class Show extends \MovLib\Presentation\Page {
       ])}</p>";
     }
     $this->headingAfter .=
-        "{$this->form->open()}<fieldset id='movie-rating'>" .
+        "{$this->formOpen()}<fieldset id='movie-rating'>" .
           "<legend class='vh'>{$i18n->t("Rate this movie")}</legend> " .
           "<div aria-hidden='true' class='back'><span></span><span></span><span></span><span></span><span></span></div>" .
           "<div class='front'>{$stars}</div>" .
-        "</fieldset>{$this->form->close()}" .
+        "</fieldset>{$this->formClose()}" .
         "<small itemprop='aggregateRating' itemscope itemtype='http://schema.org/AggregateRating'>{$ratingSummary}</small>" .
         "<small><span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Runtime") ])} </span>{$runtime} | <span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Countries") ])} </span>{$this->getCountries()}</small>" .
         "<small><span class='vh'>{$i18n->t("{0}:", [ $i18n->t("Genres") ])} </span>{$this->getGenres()}</small>" .
@@ -259,7 +258,7 @@ class Show extends \MovLib\Presentation\Page {
       $i18n->t("Synopsis"),
       empty($this->movie->synopsis)
         ? $i18n->t("No synopsis available, {0}write synopsis{1}?", [ "<a href='{$this->routeEdit}'>", "</a>" ])
-        : $kernel->htmlDecode($this->movie->synopsis)
+        : $this->htmlDecode($this->movie->synopsis)
       ,
     ];
 
@@ -312,7 +311,7 @@ class Show extends \MovLib\Presentation\Page {
    * @global \MovLib\Data\User\Session $session
    * @return this
    */
-  protected function valid() {
+  protected function formValid() {
     global $i18n, $kernel, $session;
 
     if ($session->isAuthenticated === false) {
