@@ -38,10 +38,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
   /**
    * Contains all alert messages of the current page.
    *
-   * This property must be public, in order to allow partials to add alert messages to the presentation they are
-   * attached to. An example would be the form partial, which adds alert messages if validation of one of it's input
-   * elements fails.
-   *
    * @var string
    */
   public $alerts;
@@ -66,13 +62,6 @@ class Page extends \MovLib\Presentation\AbstractBase {
    * @var string
    */
   protected $breadcrumbTitle;
-
-  /**
-   * Whether this presentation is cacheable or not.
-   *
-   * @var boolean
-   */
-  public $cacheable = true;
 
   /**
    * HTML that should be included after the page's content.
@@ -617,11 +606,9 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *
    * @param string $title
    *   The already translated title of this page.
-   * @param boolean $cacheable [optional]
-   *   Whether this page is cacheable or not.
    * @return this
    */
-  final protected function initPage($title, $cacheable = true) {
+  final protected function initPage($title) {
     global $kernel;
 
     // The substr() removes the \MovLib\Presentation\ part!
@@ -631,11 +618,13 @@ class Page extends \MovLib\Presentation\AbstractBase {
     $this->bodyClasses = strtr($className, "\\", " ");
     $this->id          = strtr($className, "\\", "-");
     $this->title       = $title;
-    $this->cacheable   = $cacheable;
 
-    // Add all alerts that are stored in a cookie to the current presentation and remove them afterwards.
+    // Add all alerts that are stored in a cookie to the current presentation. The page is automatically not cacheable
+    // anymore because we're displaying alert messages, we also remove the cookie directly after displaying the alerts
+    // to ensure that subsequent requests can be cached.
     if (isset($_COOKIE["alerts"])) {
-      $this->alerts .= $_COOKIE["alerts"];
+      $kernel->cacheable = false;
+      $this->alerts     .= $_COOKIE["alerts"];
       setcookie("alerts", "", 1, "/", $kernel->domainDefault, $kernel->https, true);
     }
 

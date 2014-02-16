@@ -67,9 +67,9 @@ class Unauthorized extends \MovLib\Exception\AbstractClientException {
    */
   public function __construct($message = null, $title = null, $severity = Alert::SEVERITY_ERROR, $destroySession = false) {
     global $i18n, $kernel, $session;
-    parent::__construct("User has to authenticate to view this content.");
 
-    // Ensure that the sign in form won't auto-validate any POST data.
+    // Ensure that the sign in form won't be cached for this location and won't auto-validate any POST data.
+    $kernel->cacheable     = false;
     $kernel->requestMethod = "GET";
 
     // Use translated defaults if nothing else is provided.

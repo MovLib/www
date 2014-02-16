@@ -51,14 +51,23 @@ class Kernel {
   public $alerts;
 
   /**
+   * Indicates whether this request is cacheable or not.
+   *
+   * POST request aren't cacheable by default.
+   *
+   * @var boolean
+   */
+  public $cacheable;
+
+  /**
    * Associative array containing the cache buster strings for the various assets.
    *
    * @var array
    */
   protected $cacheBusters = [
-    "css" => [],
-    "img" => [],
-    "js"  => [],
+    "css" => [ /*####CSS-CACHE-BUSTER####*/ ],
+    "img" => [ /*####IMG-CACHE-BUSTER####*/ ],
+    "js"  => [ /*####JS-CACHE-BUSTER####*/ ],
   ];
 
   /**
@@ -352,6 +361,7 @@ class Kernel {
 
     try {
       // Initialize environment properties based on variables passed in by nginx.
+      $this->cacheable        = $_SERVER["REQUEST_METHOD"] == "GET";
       $this->documentRoot     = $_SERVER["DOCUMENT_ROOT"];
       $this->hostname         = $_SERVER["SERVER_NAME"];
       $this->https            = (boolean) $_SERVER["HTTPS"];
@@ -432,12 +442,9 @@ class Kernel {
         throw new Unauthorized;
       }
 
-      /* @var $presenter \MovLib\Presentation\Page */
-      $presenter    = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-      $presenter    = new $presenter();
-
       // Try to get the presentation.
-      $presentation = $presenter->getPresentation();
+      $presentation = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+      $presentation = (new $presentation())->getPresentation();
     }
     catch (AbstractClientException $clientException) {
       $presentation = $clientException->getPresentation();
@@ -481,7 +488,7 @@ class Kernel {
       }
 
       // Can we cache this presentation?
-      if ($presenter->cacheable === true && empty($presenter->alerts) && empty($_GET) && $_SERVER["REQUEST_METHOD"] == "GET") {
+      if ($this->cacheable === true) {
         $cacheFile = "{$this->documentRoot}/cache/{$this->hostname}{$this->requestPath}";
 
         // Make sure that the file has actually a filename.

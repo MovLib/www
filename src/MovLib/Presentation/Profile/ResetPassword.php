@@ -24,6 +24,7 @@ use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputPassword;
+use \MovLib\Presentation\Redirect\SeeOther;
 
 /**
  * User reset password presentation.
@@ -220,7 +221,7 @@ final class ResetPassword extends \MovLib\Presentation\Page {
         $i18n->t("Token Invalid"),
         Alert::SEVERITY_ERROR
       );
-      throw new SeeOtherRedirect($kernel->requestPath);
+      throw new SeeOther($kernel->requestPath);
     }
 
     if ($session->isAuthenticated === true && $session->userId !== $data["user_id"]) {

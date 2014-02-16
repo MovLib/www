@@ -31,12 +31,15 @@ class ErrorPage extends \MovLib\Presentation\Page {
   /**
    * Instantiate new empty page.
    *
+   * @global \MovLib\Kernel $kernel
    * @param string $title
    *   The translated page's title.
    * @param mixed $content
    *   The translated page's content.
    */
   public function __construct($title, $content) {
+    global $kernel;
+    $kernel->cacheable = false;
     $this->initPage($title);
     $this->initBreadcrumb();
     $this->alerts .= $content;

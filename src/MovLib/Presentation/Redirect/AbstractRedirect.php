@@ -70,6 +70,7 @@ abstract class AbstractRedirect extends \MovLib\Exception\AbstractClientExceptio
    */
   public function __construct($httpResponseCode, $route, $title) {
     global $kernel;
+    $kernel->cacheable = false;
     if (strpos($route, "http") === false) {
       $route = "{$kernel->scheme}://{$kernel->hostname}{$route}";
     }

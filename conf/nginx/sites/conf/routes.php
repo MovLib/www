@@ -40,7 +40,7 @@ location = /my {
 
 location = / {
   # If the user is logged in, redirect to the dashboard.
-  if ($http_cookie ~ MOVSID) {
+  if ($http_cookie ~ "MOVSID") {
     return 302 /my;
   }
 
