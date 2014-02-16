@@ -68,6 +68,13 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected $breadcrumbTitle;
 
   /**
+   * Whether this presentation is cacheable or not.
+   *
+   * @var boolean
+   */
+  public $cacheable = true;
+
+  /**
    * HTML that should be included after the page's content.
    *
    * @var string
@@ -494,12 +501,13 @@ class Page extends \MovLib\Presentation\AbstractBase {
   /**
    * Get the wrapped content, including heading.
    *
+   * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @return string
    *   The wrapped content, including heading.
    */
   protected function getMainContent() {
-    global $kernel;
+    global $i18n, $kernel;
 
     // Allow the presentation to alter the main content in getContent() method.
     $content = $this->getContent();
@@ -524,13 +532,15 @@ class Page extends \MovLib\Presentation\AbstractBase {
       $headingprop = " itemprop='{$this->headingSchemaProperty}'";
     }
 
+    $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."), $i18n->t("JavaScript Disabled"));
+
     // Render the page's main element (note that we still include the ARIA role "main" at this point because not all
     // user agents support the new HTML5 element yet).
     return
       "<main id='m' role='main'{$schema}>" .
         "<header id='header'>" .
           "<div class='c'>{$this->breadcrumb}{$this->headingBefore}<h1{$headingprop}>{$title}</h1>{$this->headingAfter}</div>" .
-          $this->alerts .
+          "<noscript>{$noscript}</noscript>{$this->alerts}" .
         "</header>" .
         "{$this->contentBefore}{$content}{$this->contentAfter}" .
       "</main>"
@@ -607,10 +617,12 @@ class Page extends \MovLib\Presentation\AbstractBase {
    *
    * @param string $title
    *   The already translated title of this page.
+   * @param boolean $cacheable [optional]
+   *   Whether this page is cacheable or not.
    * @return this
    */
-  final protected function initPage($title) {
-    global $i18n, $kernel;
+  final protected function initPage($title, $cacheable = true) {
+    global $kernel;
 
     // The substr() removes the \MovLib\Presentation\ part!
     $className         = strtolower(substr(get_class($this), 20));
@@ -619,10 +631,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     $this->bodyClasses = strtr($className, "\\", " ");
     $this->id          = strtr($className, "\\", "-");
     $this->title       = $title;
-
-    // Warn users that have JavaScript disabled that not all things will be as awesome as they should be.
-    $noscript      = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."), $i18n->t("JavaScript Disabled"));
-    $this->alerts .= "<noscript>{$noscript}</noscript>";
+    $this->cacheable   = $cacheable;
 
     // Add all alerts that are stored in a cookie to the current presentation and remove them afterwards.
     if (isset($_COOKIE["alerts"])) {

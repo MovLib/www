@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation;
 
+use \MovLib\Presentation\Partial\Alert;
+
 /**
  * The global home page for anonymous visitors.
  *
@@ -62,12 +64,13 @@ class Home extends \MovLib\Presentation\Page {
    */
   protected function getMainContent() {
     global $i18n, $kernel, $session;
+    $noscript = new Alert($i18n->t("Please activate JavaScript in your browser to experience our website with all its features."), $i18n->t("JavaScript Disabled"));
     $content =
       "<main id='m' role='main'>" .
         "<div id='banner'>" .
           "<h2 class='c'>{$i18n->t("Do you like movies?{0}Great, so do we!", [ "<br>" ])}</h2>" .
         "</div>" .
-        "<div id='alerts'>{$this->alerts}</div>" .
+        "<noscript>{$noscript}</noscript>{$this->alerts}" .
         "<div class='c'>" .
           "<div class='r'>" .
             "<article class='s s4 taj'>" .

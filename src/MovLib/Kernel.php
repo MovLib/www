@@ -20,6 +20,7 @@ namespace MovLib;
 use \MovLib\Data\Database;
 use \MovLib\Data\I18n;
 use \MovLib\Data\Mailer;
+use \MovLib\Data\UnixShell as sh;
 use \MovLib\Data\User\Session;
 use \MovLib\Exception\AbstractClientException;
 use \MovLib\Presentation\Email\FatalErrorEmail;
@@ -181,6 +182,13 @@ class Kernel {
    * @var array
    */
   public $passwordOptions = [ "cost" => 12 ];
+
+  /**
+   * Absolute path to the persistent disk cache for presentations.
+   *
+   * @var string
+   */
+  public $pathCache = "/cache";
 
   /**
    * Absolute path to the PHP translation files.
@@ -347,6 +355,7 @@ class Kernel {
       $this->documentRoot     = $_SERVER["DOCUMENT_ROOT"];
       $this->hostname         = $_SERVER["SERVER_NAME"];
       $this->https            = (boolean) $_SERVER["HTTPS"];
+      $this->pathCache        = "{$this->documentRoot}{$this->pathCache}/{$this->hostname}";
       $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
       $this->protocol         = $_SERVER["SERVER_PROTOCOL"];
       // @todo If we're ever going to use proxy servers this code has to be changed!
@@ -423,9 +432,12 @@ class Kernel {
         throw new Unauthorized;
       }
 
-      // Try to create presentation based on the presenter set by nginx.
-      $presentationClass = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
-      $presentation      = (new $presentationClass())->getPresentation();
+      /* @var $presenter \MovLib\Presentation\Page */
+      $presenter    = "\\MovLib\\Presentation\\{$_SERVER["PRESENTER"]}";
+      $presenter    = new $presenter();
+
+      // Try to get the presentation.
+      $presentation = $presenter->getPresentation();
     }
     catch (AbstractClientException $clientException) {
       $presentation = $clientException->getPresentation();
@@ -466,6 +478,42 @@ class Kernel {
       $responseEnd = microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"];
       if ($responseEnd > 0.75) {
         error_log("SLOW: Response took too long to generate with {$responseEnd} seconds for URI {$this->scheme}://{$this->hostname}{$this->requestURI}");
+      }
+
+      // Can we cache this presentation?
+      if ($presenter->cacheable === true && empty($presenter->alerts) && empty($_GET) && $_SERVER["REQUEST_METHOD"] == "GET") {
+        $cacheFile = "{$this->documentRoot}/cache/{$this->hostname}{$this->requestPath}";
+
+        // Make sure that the file has actually a filename.
+        if ($this->requestPath == "/") {
+          $cacheFile      = "{$this->pathCache}/{$_SERVER["PRESENTER"]}";
+          $cacheDirectory = $this->pathCache;
+        }
+        else {
+          $cacheFile      = "{$this->pathCache}{$this->requestPath}";
+          $cacheDirectory = dirname($cacheFile);
+        }
+
+        // Try to create the directories if they aren't already present.
+        if (!is_dir($cacheDirectory) && sh::execute("mkdir -p '{$cacheDirectory}'") === false) {
+          error_log("Couldn't create cache directory '{$cacheDirectory}'");
+        }
+
+        // Make sure that we can really write to this location and file (if already present).
+        if (!is_writable($cacheDirectory) || (file_exists($cacheFile) && !is_writable($cacheFile))) {
+          error_log("Couldn't create cache file '{$cacheFile}'");
+        }
+        else {
+          $presentation .= "<!-- diskcache-{$_SERVER["REQUEST_TIME_FLOAT"]} -->";
+
+          // Create persistent cache file.
+          file_put_contents($cacheFile, $presentation);
+
+          // Directly create compressed version as well.
+          $zp = gzopen("{$cacheFile}.gz", "w9");
+          gzwrite($zp, $presentation);
+          gzclose($zp);
+        }
       }
 
       // Execute each delayed method.
@@ -552,6 +600,10 @@ class Kernel {
   public function autoload($class) {
     $class = strtr($class, "\\", "/");
     require "{$this->documentRoot}/src/{$class}.php";
+  }
+
+  public function cacheDelete() {
+
   }
 
   /**
