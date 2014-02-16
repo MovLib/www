@@ -152,6 +152,11 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
    *   The navigation as string.
    */
   public function __toString() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
     $menuitems = null;
     foreach ($this->menuitems as $menuitem) {
       if ($menuitems && $this->unorderedList === false) {
@@ -174,6 +179,14 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
     $this->attributes["role"] = "navigation";
     $hideTitle                = $this->hideTitle ? " class='vh'" : null;
     return "<nav{$this->expandTagAttributes($this->attributes)}><h{$this->headingLevel}{$hideTitle}>{$this->title}</h{$this->headingLevel}><div role='menu'>{$menuitems}</div></nav>";
+    // @devStart
+    // @codeCoverageIgnoreStart
+    }
+    catch (\Exception $e) {
+      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 
@@ -191,7 +204,7 @@ class Navigation extends \MovLib\Presentation\AbstractBase {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!isset($this->menuitems[$index])) {
-      throw new \LogicException("No menuitem with index '{$index}'");
+      throw new \InvalidArgumentException("No menuitem with index '{$index}'");
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
