@@ -22,11 +22,8 @@ use \MovLib\Data\User\FullUser;
 use \MovLib\Presentation\Email\User\ResetPassword as ResetPasswordEmail;
 use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputPassword;
-use \MovLib\Presentation\Partial\FormElement\InputSubmit;
-use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
 /**
  * User reset password presentation.
@@ -37,43 +34,58 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ResetPassword extends \MovLib\Presentation\Page {
+final class ResetPassword extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitForm;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
-  /**
-   * The email input form element.
+  /**#@+
+   * Form element identifiers.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputEmail
+   * @var string
+   */
+  const FORM_EMAIL            = "email";
+  const FORM_PASSWORD_NEW     = "password_new";
+  const FORM_PASSWORD_CONFIRM = "password_confirm";
+  const FORM_PASSWORD_TOKEN   = "password_token";
+  /**#@-*/
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**
+   * The user's email address.
+   *
+   * @var string
    */
   protected $email;
 
   /**
-   * The input password form element for the new password.
+   * The user's new raw password.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputPassword
+   * @var string
    */
-  protected $newPassword;
+  protected $rawPasswordNew;
 
   /**
-   * The input password form element for confirmation of the new password.
+   * The user's new raw confirmation password.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputPassword
+   * @var string
    */
-  protected $newPasswordConfirm;
+  protected $rawPasswordConfirm;
 
   /**
-   * The user who's reseting her or his password.
+   * The user who's reseting the password.
    *
    * @var \MovLib\Data\User\FullUser
    */
   protected $user;
 
 
-  // ------------------------------------------------------------------------------------------------------------------- Methods
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
@@ -87,44 +99,94 @@ class ResetPassword extends \MovLib\Presentation\Page {
 
     $this->initPage($i18n->t("Reset Password"));
     $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
+    $this->breadcrumb->ignoreQuery = true;
     $this->initLanguageLinks("/profile/reset-password");
 
     if (!empty($_GET["token"]) && $this->validateToken() === true) {
       // First field to enter the new password.
-      $this->newPassword = new InputPassword("new-password", $i18n->t("New Password"), [
+      $this->formAddElement(new InputPassword(self::FORM_PASSWORD_NEW, $i18n->t("New Password"), [
+        "autofocus"   => true,
         "placeholder" => $i18n->t("Enter your new password"),
         "required"    => true,
-      ]);
+      ], $this->rawPasswordNew));
 
       // Second field to enter the new password for confirmation.
-      $this->newPasswordConfirm = new InputPassword("new-password-confirm", $i18n->t("Confirm Password"), [
+      $this->formAddElement(new InputPassword(self::FORM_PASSWORD_CONFIRM, $i18n->t("Confirm Password"), [
         "placeholder" => $i18n->t("Enter your new password again"),
         "required"    => true,
-      ]);
+      ], $this->rawPasswordConfirm));
 
-      // Initialize the actual form of this page.
-      $this->form = new Form($this, [ $this->newPassword, $this->newPasswordConfirm ], "{$this->id}-password", "validatePassword");
-      $this->form->attributes["autocomplete"] = "off";
-
-      // The submit button.
-      $this->form->actionElements[] = new InputSubmit($i18n->t("Reset"), [
-        "class" => "btn btn-large btn-success",
-        "title" => $i18n->t("Continue here to reset your password after you filled out all fields."),
-      ]);
+      $this->formAddAction($i18n->r("Reset Password"), [ "class" => "btn btn-large btn-success" ]);
+      $this->formInit([ "autocomplete" => "off", "class" => "s s6 o3" ]);
     }
     else {
-      $this->email = new InputEmail("email", $i18n->t("Email Address"), [
+      $this->formAddElement(new InputEmail(self::FORM_EMAIL, $i18n->t("Email Address"), [
+        "autofocus"   => true,
         "placeholder" => $i18n->t("Enter your email address"),
         "required"    => true,
-      ]);
-      $this->email->setHelp($i18n->t("Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email.", [ "sitename" => $kernel->siteName ]));
-
-      $this->form = new Form($this, [ $this->email ], "{$this->id}-email");
-
-      $this->form->actionElements[] = new InputSubmit($i18n->t("Reset"), [ "class" => "btn btn-large btn-success" ]);
+      ], $this->email, $i18n->t("Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email.", [ "sitename" => $kernel->siteName ])));
+      $this->formAddAction($i18n->t("Request Reset"), [ "class" => "btn btn-large btn-success" ]);
+      $this->formInit([ "class" => "s s6 o3" ]);
     }
+  }
 
-    $this->form->attributes["class"] = "s s6 o3";
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * {@inheritdoc}
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @return this
+   * @throws \MovLib\Presentation\Redirect\SeeOther
+   */
+  protected function formValid() {
+    global $i18n, $kernel;
+    if (!empty($this->email)) {
+      $kernel->sendEmail(new ResetPasswordEmail($this->email));
+      http_response_code(202);
+      $this->alerts .= new Alert(
+        $i18n->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email) ]),
+        $i18n->t("Successfully Requested Password Reset"),
+        Alert::SEVERITY_SUCCESS
+      );
+    }
+    elseif (!empty($this->rawPasswordNew)) {
+      // Update this user's password.
+      $this->user->updatePassword($this->user->hashPassword($this->rawPasswordNew));
+
+      // Delete the token from the temporary database.
+      $kernel->delayMethodCall([ new Temporary(), "delete" ], [ $_GET["token"] ]);
+
+      // Make sure that the user isn't redirected to the password reset page after successful login.
+      $kernel->requestURI = $kernel->requestPath = "/";
+
+      // Display sign in presentation to the user and let the user know that the password was updated.
+      throw new Unauthorized(
+        $i18n->t("Your password was successfully changed. Please use your new password to sign in from now on."),
+        $i18n->t("Password Changed Successfully"),
+        Alert::SEVERITY_SUCCESS,
+        true // This will delete any left over session of this user!
+      );
+    }
+    return $this;
+  }
+
+  /**
+   * Implements form validation hook.
+   * @param type $errors
+   * @return \MovLib\Presentation\Profile\ResetPassword
+   */
+  protected function hookFormValidation(&$errors) {
+    global $i18n;
+    if (isset($_GET["token"]) && !empty($this->rawPasswordNew) && $this->rawPasswordNew != $this->rawPasswordConfirm) {
+      $this->formElements[self::FORM_PASSWORD_NEW]->invalid();
+      $this->formElements[self::FORM_PASSWORD_CONFIRM]->invalid();
+      $errors[self::FORM_PASSWORD_CONFIRM][] = $i18n->t("The confirmation password doesn’t match the new password, please try again.");
+    }
+    return $this;
   }
 
   /**
@@ -134,64 +196,7 @@ class ResetPassword extends \MovLib\Presentation\Page {
    *   The page's content.
    */
   public function getContent() {
-    return "<div class='c'><div class='r'>{$this->form}</div></div>";
-  }
-
-  /**
-   * @inheritdoc
-   * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\I18n $i18n
-   */
-  protected function valid() {
-    global $kernel, $i18n;
-    $kernel->sendEmail(new ResetPasswordEmail($this->email->value));
-
-    http_response_code(202);
-
-    $this->alerts .= new Alert(
-      $i18n->t("An email with further instructions has been sent to {email}.", [ "email" => $this->placeholder($this->email->value) ]),
-      $i18n->t("Successfully Requested Password Reset"),
-      Alert::SEVERITY_SUCCESS
-    );
-
-    return $this;
-  }
-
-  /**
-   * Validation callback after auto-validation of change password form has succeeded.
-   *
-   * @todo OWASP and other sources recommend to store a password history for each user and check that the new password
-   *       isn't one of the old passwords. This would increase the account's security a lot. Anyone willing to implement
-   *       this is very welcome.
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @param array $errors [optional]
-   *   {@inheritdoc}
-   * @return this
-   * @throws \MovLib\Presentation\Redirect\SeeOther
-   */
-  public function validatePassword(array $errors = null) {
-    global $i18n, $kernel;
-
-    if ($this->newPassword->value != $this->newPasswordConfirm->value) {
-      $this->newPassword->invalid();
-      $this->newPasswordConfirm->invalid();
-      $errors[] = $i18n->t("The confirmation password doesn’t match the new password, please try again.");
-    }
-
-    if ($this->checkErrors($errors) === false) {
-      $this->user->updatePassword($this->user->hashPassword($this->newPassword->value));
-      $kernel->delayMethodCall([ new Temporary(), "delete" ], [ $_GET["token"] ]);
-      $kernel->alerts .= new Alert(
-        $i18n->t("Your password was successfully changed. Please use your new password to sign in from now on."),
-        $i18n->t("Password Changed Successfully"),
-        Alert::SEVERITY_SUCCESS
-      );
-
-      throw new SeeOtherRedirect($i18n->r("/profile/sign-in"));
-    }
-
-    return $this;
+    return "<div class='c'><div class='r'>{$this->formRender()}</div></div>";
   }
 
   /**

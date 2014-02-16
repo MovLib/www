@@ -30,6 +30,17 @@ namespace MovLib\Presentation\Partial\FormElement;
 abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
 
 
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Error code for required error messages.
+   *
+   * @var integer
+   */
+  const ERROR_REQUIRED = 0;
+
+
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
@@ -106,7 +117,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   Whether the form element's help should be displayed as popup or not.
    * @global \MovLib\Data\I18n $i18n
    */
-  public function __construct($id, $label, $attributes, &$value, $help, $helpPopup) {
+  public function __construct($id, $label, array $attributes = null, &$value = null, $help = null, $helpPopup = true) {
     global $i18n;
 
     // @devStart
@@ -116,9 +127,6 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
     }
     if (empty($label)) {
       throw new \InvalidArgumentException("A form element's \$label cannot be empty");
-    }
-    if (isset($attributes) && !is_array($attributes)) {
-      throw new \InvalidArgumentException("A form element's \$attributes must be of type array");
     }
     if (isset($this->attributes["required"]) && !is_bool($this->attributes["required"])) {
       throw new \InvalidArgumentException("A form element's required attribute has to be of type boolean");
@@ -190,28 +198,28 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    * Validate the form element's submitted value.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @param array $errors
+   *   Array to collect error messages.
    * @return this
-   * @throws \RuntimeException
    */
-  public function validate() {
+  public function validate(&$errors) {
     global $i18n;
 
+    // Check if a value was submitted for this form element.
     if (empty($_POST[$this->id])) {
+      // Make sure that the value is really NULL and not an empty string or similar (important for storing).
       $this->value = null;
-      if ($this->required) {
-        throw new \RuntimeException($i18n->t("The “{0}” field is required.", [ $this->label ]));
-      }
+
+      // If this is a required field, empty values are not permited.
+      $this->required && ($errors[self::ERROR_REQUIRED] = $i18n->t("The “{0}” field is required.", [ $this->label ]));
     }
+    // Let the concrete class validate the value if we have one.
     else {
-      $errors = null;
       $this->value = $this->validateValue($_POST[$this->id], $errors);
-      if ($errors) {
-        if ($errors === (array) $errors) {
-          $errors = implode("<br>", $errors);
-        }
-        throw new \RuntimeException($errors);
-      }
     }
+
+    // Mark this form element as invalid if we have any error at this point.
+    $errors && $this->invalid();
 
     return $this;
   }

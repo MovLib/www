@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
+use \MovLib\Data\UploadedFile;
+
 /**
  * Overrides the default validate method to validate the <var>$_FILES</var> array instead of the <var>$_POST</var>
  * array and allows other classes to check against this abstract class instead of concrete classes if they want to
@@ -30,56 +32,109 @@ namespace MovLib\Presentation\Partial\FormElement;
  */
 abstract class AbstractInputFile extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Error code for partial upload error message.
+   *
+   * @var integer
+   */
+  const ERROR_PARTIAL = 1;
+
+  /**
+   * Error code for too large file error message.
+   *
+   * @var integer
+   */
+  const ERROR_SIZE = 2;
+
+  /**
+   * Error code for unknown error message.
+   *
+   * @var integer
+   */
+  const ERROR_UNKNOWN = 3;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
    * Validate the form element's submitted file.
    *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
+   * @param array $errors
+   *   Array to collect error messages.
    * @return this
-   * @throws \RuntimeException
+   * @throws \MovLib\Presentation\Error\Unauthorized
    */
-  public function validate() {
+  public function validate(&$errors) {
     global $i18n, $session;
 
-    // Only authenticated user's are allowed to upload files.
+    // Only authenticated user's are allowed to upload files, directly abort if we encounter this error.
     if ($session->isAuthenticated === false) {
       throw new Unauthorized;
     }
 
+    // Instantiate uploaded file object.
+    $uploadedFile = new UploadedFile($this->id);
+
     // Fail if the key is missing within the files array or if no file was uploaded at all.
-    if (empty($_FILES[$this->id]) || $_FILES[$this->id]["error"] === UPLOAD_ERR_NO_FILE) {
+    if ($uploadedFile->error === UPLOAD_ERR_NO_FILE) {
+      // Make sure that the value is really NULL.
       $this->value = null;
-      if ($this->required) {
-        throw new \RuntimeException($i18n->t("The “{0}” file is required.", [ $this->label ]));
-      }
+
+      // The missing file is an error if this field is required.
+      $this->required && ($errors[self::ERROR_REQUIRED] = $i18n->t("The “{0}” file is required.", [ $this->label ]));
     }
     // Continue file upload if PHP reported no error and the file was really uploaded via HTTP POST.
-    elseif ($_FILES[$this->id]["error"] === UPLOAD_ERR_OK && is_uploaded_file($_FILES[$this->id]["tmp_name"]) === true) {
-      $errors = null;
-      $this->value = $this->validateValue($_FILES[$this->id], $errors);
-      if ($errors) {
-        if ($errors === (array) $errors) {
-          $errors = implode("<br>", $errors);
-        }
-        throw new \RuntimeException($errors);
-      }
+    elseif ($uploadedFile->error === UPLOAD_ERR_OK && is_uploaded_file($uploadedFile->path) === true) {
+      $this->value = $this->validateValue($uploadedFile, $errors);
     }
     // Anything else should be treated as error.
     else {
-      switch ($_FILES[$this->id]["error"]) {
+      switch ($uploadedFile->error) {
         case UPLOAD_ERR_INI_SIZE:
         case UPLOAD_ERR_FORM_SIZE:
-          throw new \RuntimeException($i18n->t(
+          $errors[self::ERROR_SIZE] = $i18n->t(
             "The uploaded file is too large, it must be: {maxsize} or less",
             [ "maxsize" => $i18n->formatBytes(ini_get("upload_max_filesize")) ]
-          ));
+          );
+          break;
 
         case UPLOAD_ERR_PARTIAL:
-          throw new \RuntimeException($i18n->t("The upload didn’t complete, please try again."));
+          $errors[self::ERROR_PARTIAL] = $i18n->t("The upload didn’t complete, please try again.");
+          break;
 
+        // Unknown is more than good enough at this point, the user doesn't have to know the specific error!
         default:
-          throw new \RuntimeException($i18n->t("An unknown problem was encountered while processing your upload, please try again."));
+          $errors[self::ERROR_UNKNOWN] = $i18n->t("An unknown problem was encountered while processing your upload, please try again.");
+
+          // Be sure to log this error.
+          $reasons = [
+            UPLOAD_ERR_NO_TMP_DIR => "missing temporary folder",
+            UPLOAD_ERR_CANT_WRITE => "failed to write file to disk",
+            UPLOAD_ERR_EXTENSION  => "file upload stopped by extension",
+          ];
+
+          // I don't know if this situation is even possible (should check the PHP source) but there's nothing wrong
+          // with this code because it might be possible that new error codes are defined in the future.
+          if (isset($reasons[$_FILES[$this->id]["error"]])) {
+            error_log("File upload failed for reason '{$reasons[$_FILES[$this->id]["error"]]}'");
+          }
+          else {
+            error_log("File upload failed for unknown reason, code was: " . $_FILES[$this->id]["error"]);
+          }
+
+          break;
       }
     }
+
+    // Mark this form element as invalid if we have any error at this point.
+    $errors && $this->invalid();
 
     return $this;
   }

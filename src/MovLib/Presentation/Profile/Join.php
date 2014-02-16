@@ -25,11 +25,9 @@ use \MovLib\Presentation\Email\Users\EmailExists;
 use \MovLib\Presentation\Email\Users\Join as JoinEmail;
 use \MovLib\Presentation\Error\Unauthorized;
 use \MovLib\Presentation\Partial\Alert;
-use \MovLib\Presentation\Partial\Form;
 use \MovLib\Presentation\Partial\FormElement\InputCheckbox;
 use \MovLib\Presentation\Partial\FormElement\InputEmail;
 use \MovLib\Presentation\Partial\FormElement\InputPassword;
-use \MovLib\Presentation\Partial\FormElement\InputSubmit;
 use \MovLib\Presentation\Partial\FormElement\InputText;
 use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 
@@ -42,8 +40,23 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Join extends \MovLib\Presentation\Page {
+final class Join extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitForm;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Properties
+
+
+  /**#@+
+   * Form element identifiers.
+   *
+   * @var string
+   */
+  const FORM_USERNAME = "username";
+  const FORM_EMAIL    = "email";
+  const FORM_PASSWORD = "password";
+  const FORM_TERMS    = "terms";
+  /**#@-*/
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -57,25 +70,18 @@ class Join extends \MovLib\Presentation\Page {
   protected $accepted = false;
 
   /**
-   * The input email form element.
+   * The user's email address.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputEmail
+   * @var string
    */
   protected $email;
 
   /**
-   * The input password form element.
+   * The user's raw password.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\InputPassword
+   * @var string
    */
   protected $password;
-
-  /**
-   * The input checkbox for accepting the terms of service and privacy policy.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\InputCheckbox
-   */
-  protected $terms;
 
   /**
    * The full user object we create during a valid join attempt.
@@ -85,9 +91,9 @@ class Join extends \MovLib\Presentation\Page {
   protected $user;
 
   /**
-   * The input text form element for the username.
+   * The user's desired username.
    *
-   * @var \MovLib\Presentation\Partial\FormElement\AbstractInput
+   * @var string
    */
   protected $username;
 
@@ -114,11 +120,13 @@ class Join extends \MovLib\Presentation\Page {
     // Start rendering the page.
     $this->initPage($i18n->t("Join"));
     $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
+    $this->breadcrumb->ignoreQuery = true;
     $this->initLanguageLinks("/profile/join");
 
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>";
 
-    $this->username = new InputText("username", $i18n->t("Username"), [
+    $this->formAddElement(new InputText(self::FORM_USERNAME, $i18n->t("Username"), [
+      "autofocus"   => true,
       "maxlength"   => FullUser::NAME_MAXIMUM_LENGTH,
       "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(FullUser::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
       "placeholder" => $i18n->t("Enter your desired username"),
@@ -128,29 +136,26 @@ class Join extends \MovLib\Presentation\Page {
         "it cannot contain any of the following characters {0} and it cannot be longer than {1,number,integer} characters.",
         [ FullUser::NAME_ILLEGAL_CHARACTERS, FullUser::NAME_MAXIMUM_LENGTH ]
       ),
-    ]);
+    ], $this->username));
 
-    $this->email    = new InputEmail("email", $i18n->t("Email Address"), [
+    $this->formAddElement(new InputEmail(self::FORM_EMAIL, $i18n->t("Email Address"), [
       "placeholder" => $i18n->t("Enter your email address"),
       "required"    => true,
-    ]);
+    ], $this->email));
 
-    $this->password = new InputPassword("password", $i18n->t("Password"), [
+    $this->formAddElement(new InputPassword(self::FORM_PASSWORD, $i18n->t("Password"), [
       "placeholder" => $i18n->t("Enter your desired password"),
       "required"    => true,
-    ]);
+    ], $this->password));
 
-    $this->terms = new InputCheckbox("terms", $i18n->t("I accept the {privacy_policy} and {terms_of_use}.", [
+    $this->formAddElement(new InputCheckbox(self::FORM_TERMS, $i18n->t("I accept the {privacy_policy} and {terms_of_use}.", [
       "privacy_policy" => "<a href='{$i18n->t("/privacy-policy")}'>{$i18n->t("Privacy Policy")}</a>",
       "terms_of_use"   => "<a href='{$i18n->r("/terms-of-use")}'>{$i18n->t("Terms of Use")}</a>"
-    ]), [ "required" => true ]);
+    ]), [ "required" => true ]));
 
-    $this->form                             = new Form($this, [ $this->username, $this->email, $this->password, $this->terms ]);
-    $this->form->attributes["action"]       = $kernel->requestURI;
-    $this->form->attributes["autocomplete"] = "off";
-    $this->form->attributes["class"]        = "s s6 o3";
+    $this->formAddAction($i18n->t("Sign Up"), [ "class" => "btn  btn-large btn-success" ]);
 
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Sign Up"), [ "class" => "btn btn-large btn-success" ]);
+    $this->formInit([ "autocomplete" => "off", "class" => "s s6 o3" ]);
 
     if ($kernel->requestMethod == "GET" && !empty($_GET["token"])) {
       $this->validateToken();
@@ -162,29 +167,13 @@ class Join extends \MovLib\Presentation\Page {
 
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
+   *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
+   * @return this
    */
-  protected function getContent() {
-    global $i18n, $kernel;
-
-    if ($this->accepted === true) {
-      return "<div class='c'><small>{$i18n->t(
-        "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
-        [ "<a href='{$kernel->requestURI}'>", "</a>" ]
-      )}</small></div>";
-    }
-
-    return "<div class='c'><div class='r'>{$this->form}</div></div>";
-  }
-
-  /**
-   * @inheritdoc
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   */
-  protected function valid() {
+  protected function formValid() {
     global $i18n, $kernel;
 
     $this->user->email    = $this->email->value;
@@ -218,74 +207,90 @@ class Join extends \MovLib\Presentation\Page {
   }
 
   /**
-   * {@inheritdoc}
+   * Continue form validation process after auto-validation.
    *
-   * The redirect exception is thrown if the supplied data is valid. The user will be redirected to her or his personal
-   * dashboard.
+   * This hook is called after all form elements have been auto-validated. It allows concrete classes to extend the
+   * validation process or alter error messages of specific form elements.
    *
-   * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
-   * @param array $errors
-   *   {@inheritdoc}
+   * @param null|array $errors
+   *   Associative array containing all error messages, if any.
    * @return this
    */
-  public function validate($errors) {
+  protected function hookFormValidation(array &$errors) {
     global $i18n, $kernel;
 
-    $this->user       = new FullUser();
-    $this->user->name = $_POST[$this->username->id]; // We want to validate the original data again
-    $usernameErrors   = null;
+    // Only continue validation process if we have no errors for the username or if the errors we have are not because
+    // it's a required field.
+    if (!isset($errors["username"]) || !isset($errors["username"][InputText::ERROR_REQUIRED])) {
+      $this->user->name = $_POST["username"]; // We want to validate the original data again
 
-    if ($this->user->name[0] == " ") {
-      $usernameErrors[] = $i18n->t("The username cannot begin with a space.");
+      if ($this->user->name[0] == " ") {
+        $errors["username"][] = $i18n->t("The username cannot begin with a space.");
+      }
+
+      if (substr($this->user->name, -1) == " ") {
+        $errors["username"][] = $i18n->t("The username cannot end with a space.");
+      }
+
+      if (strpos($this->user->name, "  ") !== false) {
+        $errors["username"][] = $i18n->t("The username cannot contain multiple spaces in a row.");
+      }
+
+      // Switch to sanitized data
+      $this->user->name = $this->username;
+
+      if (strpbrk($this->user->name, FullUser::NAME_ILLEGAL_CHARACTERS) !== false) {
+        $errors["username"][] = $i18n->t(
+          "The username cannot contain any of the following characters: {0}",
+          [ "<code>{$kernel->htmlEncode(FullUser::NAME_ILLEGAL_CHARACTERS)}</code>" ]
+        );
+      }
+
+      if (mb_strlen($this->user->name) > FullUser::NAME_MAXIMUM_LENGTH) {
+        $errors["username"][] = $i18n->t(
+          "The username is too long: it must be {0,number,integer} characters or less.",
+          [ FullUser::NAME_MAXIMUM_LENGTH ]
+        );
+      }
+
+      if (empty($errors["username"]) && $this->user->checkName($this->user->name) === true) {
+        $errors["username"][] = $i18n->t("The username is already taken, please choose another one.");
+      }
+
+      if (!empty($errors["username"])) {
+        $this->formElements["username"]->invalid();
+        $errors["username"] = implode("<br>", $errors["username"]);
+      }
     }
 
-    if (substr($this->user->name, -1) == " ") {
-      $usernameErrors[] = $i18n->t("The username cannot end with a space.");
-    }
-
-    if (strpos($this->user->name, "  ") !== false) {
-      $usernameErrors[] = $i18n->t("The username cannot contain multiple spaces in a row.");
-    }
-
-    // Switch to sanitized data
-    $this->user->name = $this->username->value;
-
-    if (strpbrk($this->user->name, FullUser::NAME_ILLEGAL_CHARACTERS) !== false) {
-      $usernameErrors[] = $i18n->t(
-        "The username cannot contain any of the following characters: {0}",
-        [ "<code>{$kernel->htmlEncode(FullUser::NAME_ILLEGAL_CHARACTERS)}</code>" ]
-      );
-    }
-
-    if (mb_strlen($this->user->name) > FullUser::NAME_MAXIMUM_LENGTH) {
-      $usernameErrors[] = $i18n->t(
-        "The username is too long: it must be {0,number,integer} characters or less.",
-        [ FullUser::NAME_MAXIMUM_LENGTH ]
-      );
-    }
-
-    if (!$usernameErrors && $this->user->checkName($this->user->name) === true) {
-      $usernameErrors[] = $i18n->t("The username is already taken, please choose another one.");
-    }
-
-    if ($usernameErrors) {
-      $this->username->invalid();
-      $errors[$this->id] = implode("<br>", $usernameErrors);
-    }
-
-    if (isset($errors[$this->terms->id])) {
-      $errors[$this->terms->id] = $i18n->t(
-        "You have to accept the {0}Privacy Policy{2} and {1}Terms of Use{2} to join {sitename}.",
-        [ "<a href='{$i18n->t("/privacy-policy")}'><a href='{$i18n->r("/terms-of-use")}'></a>", "sitename" => $kernel->siteName ]
-      );
-    }
-
-    if ($this->checkErrors($errors) === false) {
-      $this->valid();
+    // More descriptive error message if the user hasn't accepted the privacy policy and terms of use.
+    if ($this->terms === false) {
+      $errors["terms"] = $i18n->t("You have to accept the {privacy_policy} and {terms_of_use} to join {sitename}.", [
+        "privacy_policy" => "<a href='{$i18n->r("/privacy-policy")}'>{$i18n->t("Privacy Policy")}</a>",
+        "terms_of_use"   => "<a href='{$i18n->r("/terms-of-use")}'>{$i18n->t("Terms of Use")}</a>",
+        "sitename"       => $kernel->siteName,
+      ]);
     }
 
     return $this;
+  }
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   */
+  protected function getContent() {
+    global $i18n, $kernel;
+
+    if ($this->accepted === true) {
+      return "<div class='c'><small>{$i18n->t(
+        "Mistyped something? No problem, simply {0}go back{1} and fill out the form again.",
+        [ "<a href='{$kernel->requestURI}'>", "</a>" ]
+      )}</small></div>";
+    }
+
+    return "<div class='c'><div class='r'>{$this->formRender()}</div></div>";
   }
 
   /**

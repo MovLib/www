@@ -31,7 +31,7 @@ use \MovLib\Presentation\Redirect\SeeOther;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class SignIn extends \MovLib\Presentation\Page {
+final class SignIn extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitForm;
 
 
@@ -51,7 +51,7 @@ class SignIn extends \MovLib\Presentation\Page {
    *
    * @var string
    */
-  public $password;
+  protected $rawPassword;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
@@ -95,6 +95,7 @@ class SignIn extends \MovLib\Presentation\Page {
     // Start rendering the page.
     $this->initPage($i18n->t("Sign In"));
     $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
+    $this->breadcrumb->ignoreQuery = true;
 
     $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ])}</a>";
 
@@ -107,7 +108,7 @@ class SignIn extends \MovLib\Presentation\Page {
     $this->formAddElement(new InputPassword("password", $i18n->t("Password"), [
       "placeholder" => $i18n->t("Enter your password"),
       "required"    => true,
-    ], $this->password));
+    ], $this->rawPassword));
 
     $this->formAddAction($i18n->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
 
@@ -133,7 +134,7 @@ class SignIn extends \MovLib\Presentation\Page {
   protected function formValid() {
     global $i18n, $kernel, $session;
 
-    if ($session->authenticate($this->email, $this->password) === true) {
+    if ($session->authenticate($this->email, $this->rawPassword) === true) {
       $kernel->alerts .= new Alert(
         $i18n->t("Successfully Signed In"),
         $i18n->t("Welcome back {username}!", [ "username" => $session->userName ]),

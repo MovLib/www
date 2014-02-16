@@ -241,22 +241,18 @@ trait TraitForm {
    * @param array $attributes [optional]
    *   The form's additional attributes, the following attributes are always set:
    *   <ul>
-   *     <li><code>"accept-charset"</code> is set to <code>"utf-8"</code></li>
-   *     <li><code>"action"</code> is set to <var>$kernel->requestURI</var></li>
-   *     <li><code>"method"</code> is set to <code>"post"</code></li>
+   *     <li><code>"accept-charset"</code> is always set to <code>"utf-8"</code></li>
+   *     <li><code>"action"</code> is set to <var>$kernel->requestURI</var> if not set</li>
+   *     <li><code>"method"</code> is always set to <code>"post"</code></li>
    *   </ul>
    * @return this
    */
-  final protected function formInit($attributes = []) {
+  final protected function formInit(array $attributes = null) {
     global $i18n, $kernel, $session;
-
     // @devStart
     // @codeCoverageIgnoreStart
     if (!method_exists($this, "initPage")) {
       throw new \LogicException("You can only use the form trait within a presenting page class");
-    }
-    if (!is_array($attributes)) {
-      throw new \InvalidArgumentException("The \$attributes of a form must be of type array");
     }
     foreach ([ "accept-charset", "method" ] as $attribute) {
       if (isset($attributes[$attribute])) {
@@ -300,45 +296,47 @@ trait TraitForm {
         }
       }
 
+      // Used to collect error messages of all form elements.
       $errors = null;
+
+      // Iterate through all form elements and validate them.
       /* @var $formElement \MovLib\Presentation\Partial\FormElement\AbstractFormElement */
       foreach ($this->formElements as $formElement) {
-        try {
-          $formElement->validate();
-        }
-        catch (\RuntimeException $e) {
-          $formElement->invalid();
-          $errors[$formElement->id] = $e->getMessage();
+        // Used to collect the error messages of this specific form element.
+        $error = null;
+
+        // Let the form element validate itself.
+        $formElement->validate($error);
+
+        // If we have one or more errors for this form element collect them under its unique identifier for easy access
+        // later on within the concrete class. This allows a concrete class to alter certain error messages or react
+        // on certain errors.
+        if ($error) {
+          $errors[$formElement->id] = $error;
         }
       }
 
-      // If we found errors call the invalid() hook otherwise call valid() method.
-      $errors ? $this->formInvalid($errors) : $this->formValid();
+      // Allow concrete classes to extend the validation process or alter certain error messages.
+      $this->hookFormValidation($errors);
+
+      // If we have errors at this point export them and abort.
+      if ($errors) {
+        // Join all error messages of a specific form element with a break.
+        foreach ($errors as $id => $error) {
+          $errors[$id] = implode("<br>", $error);
+        }
+
+        // Join all error messages with paragraphs.
+        $errors = implode("</p><p>", $errors);
+
+        // Finally export all error messages combined in a single alert message.
+        $this->alerts .= new Alert("<p>{$errors}</p>", $i18n->t("Validation Error"), Alert::SEVERITY_ERROR);
+      }
+      // If no errors were found continue processing.
+      else {
+        $this->formValid();
+      }
     }
-
-    return $this;
-  }
-
-  /**
-   * One or more form elements are invalid.
-   *
-   * Concrete classes can override this method to intercept error messages and alter them.
-   *
-   * @param string|array $errors
-   *   Either a string containing a single error message or an associative array containing all collected error
-   *   messages.
-   * @return this
-   */
-  protected function formInvalid($errors) {
-    global $i18n;
-
-    // Fast check if the errors are of type array.
-    if ($errors === (array) $errors) {
-      $errors = implode("</p><p>", $errors);
-    }
-
-    // Combine all error messages to a single alert.
-    $this->alerts .= new Alert("<p>{$errors}</p>", $i18n->t("Validation Error"), Alert::SEVERITY_ERROR);
 
     return $this;
   }
@@ -374,6 +372,24 @@ trait TraitForm {
   protected function formRender() {
     $elements = implode($this->formElements);
     return "{$this->formOpen()}{$elements}{$this->formClose()}";
+  }
+
+  /**
+   * Continue form validation process after auto-validation.
+   *
+   * This hook is called after all form elements have been auto-validated. It allows concrete classes to extend the
+   * validation process or alter error messages of specific form elements.
+   *
+   * @param null|array $errors
+   *   <code>NULL</code> if no errors were found so far. Otherwise it is an associative array where each key is they
+   *   unique identifier of the form element that contains errors. Each form elements offset contains a numeric array
+   *   where the key is defined via the classe's <var>ERROR_*</var> constants and the value is the default error
+   *   message as defined in the form element's validation method. Use the <var>ERROR_*</var> to check for certain
+   *   errors.
+   * @return this
+   */
+  protected function hookFormValidation(&$errors) {
+    return $this;
   }
 
 }

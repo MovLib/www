@@ -26,11 +26,25 @@ namespace MovLib\Presentation\Partial\FormElement;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputPassword extends \MovLib\Presentation\Partial\FormElement\InputText {
+final class InputPassword extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
 
+
+  /**
+   * Error code for weak password error message.
+   *
+   * @var integer
+   */
+  const ERROR_COMPLEXITY = 1;
+
+  /**
+   * Error code for too short password error message.
+   *
+   * @var integer
+   */
+  const ERROR_LENGTH = 2;
 
   /**
    * Minimum password length.
@@ -92,12 +106,12 @@ class InputPassword extends \MovLib\Presentation\Partial\FormElement\InputText {
 
     // Check that the password exceeds the minimum password length.
     if (mb_strlen($rawPassword) < self::MIN_LENGTH) {
-      $errors[] = $i18n->t("The password is too short: it must be {0,number,integer} characters or more.", [ self::MIN_LENGTH ]);
+      $errors[self::ERROR_LENGTH] = $i18n->t("The password is too short: it must be {0,number,integer} characters or more.", [ self::MIN_LENGTH ]);
     }
 
     // Check that the password is complex enough.
     if (preg_match("/" . self::PATTERN . "/", $rawPassword) == false) {
-      $errors[] = $i18n->t("The password is not complex enough: it must contain numbers plus lowercase and uppercase letters.");
+      $errors[self::ERROR_COMPLEXITY] = $i18n->t("The password is not complex enough: it must contain numbers plus lowercase and uppercase letters.");
     }
 
     return $rawPassword;

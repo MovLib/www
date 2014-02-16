@@ -19,10 +19,11 @@ namespace MovLib\Presentation\Partial\FormElement;
 
 use \MovLib\Data\Image\AbstractBaseImage;
 use \MovLib\Presentation\Error\Unauthorized;
-use \MovLib\Exception\ValidationException;
 
 /**
  * HTML input type file form element specialized for image uploads.
+ *
+ * @property \MovLib\Data\Image\AbstractImage $value
  *
  * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
  * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
@@ -32,20 +33,11 @@ use \MovLib\Exception\ValidationException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractInputFile {
+final class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractInputFile {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
-
-  /**
-   * The image's extension.
-   *
-   * <b>Note:</b> This value is only available after validation!
-   *
-   * @var string
-   */
-  public $extension;
 
   /**
    * Available image extensions.
@@ -57,22 +49,6 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractInputF
     IMAGETYPE_JPEG => "jpg",
     IMAGETYPE_PNG  => "png",
   ];
-
-  /**
-   * The image's height.
-   *
-   * <b>Note:</b> This value is only available after validation!
-   *
-   * @var integer
-   */
-  public $height;
-
-  /**
-   * The image instance responsible for storing this image.
-   *
-   * @var \MovLib\Data\Image\AbstractBaseImage
-   */
-  protected $image;
 
   /**
    * Insert HTML after input file HTML element.
@@ -117,24 +93,6 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractInputF
    * @var integer
    */
   protected $minWidth;
-
-  /**
-   * The image's absolute path.
-   *
-   * <b>Note:</b> This value is only available after validation!
-   *
-   * @var string
-   */
-  public $path;
-
-  /**
-   * The image's width.
-   *
-   * <b>Note:</b> This value is only available after validation!
-   *
-   * @var integer
-   */
-  public $width;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -246,23 +204,30 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractInputF
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
 
-  protected function validateValue($image, &$errors){
-    global $i18n;
+  /**
+   * Validate the uploaded image.
+   *
+   * @param \MovLib\Data\UploadedFile $uploadedImage
+   *   The uploaded image to validate.
+   * @param null|array $errors
+   *   Array used to collect error messages.
+   * @return this
+   */
+  protected function validateValue($uploadedImage, &$errors){
 
     // Gather meta information about the uploaded image, getimagesize() will fail if this isn't a valid image.
-    try {
-      list($this->width, $this->height, $type) = getimagesize($_FILES[$this->id]["tmp_name"]);
-      assert($this->width > 0);
-      assert($this->height > 0);
-      assert($type === IMAGETYPE_JPEG || $type === IMAGETYPE_PNG);
-    }
-    catch (\ErrorException $e) {
-      throw new ValidationException($this->errorMessages["type"]);
+    list($width, $height, $type) = getimagesize($uploadedImage->path);
+
+    // Check if this is really an image of type JPEG or PNG.
+    if ($width <= 0 || $height <= 0 || ($type !== IMAGETYPE_JPEG && $type !== IMAGETYPE_PNG)) {
+      $errors[self::ERROR_TYPE] = $this->errorMessages[self::ERROR_TYPE];
+      return $this;
     }
 
     // Check dimension constrains.
-    if ($this->height < $this->minHeight || $this->width < $this->minWidth) {
-      throw new ValidationException($this->errorMessages["small"]);
+    if ($height < $this->minHeight || $width < $this->minWidth) {
+      $errors[self::ERROR_SMALL] = $this->errorMessages[self::ERROR_SMALL];
+      return $this;
     }
 
     // An image should only be replaced with another image if the resolution is greater than the previous resolution.
@@ -275,12 +240,10 @@ class InputImage extends \MovLib\Presentation\Partial\FormElement\AbstractInputF
     //   Think about a way to solve this kind of problem once and for all. Maybe with a ConfirmationException which is
     //   catched in main.php?
     if ($this->height < $this->image->height || $this->width < $this->image->width) {
-      throw new ValidationException(str_replace([ "{width_new}", "{height_new}" ], [ $this->width, $this->height ], $this->errorMessages["quality"]));
+      $errors[self::ERROR_QUALITY] = str_replace([ "{width_new}", "{height_new}" ], [ $this->width, $this->height ], $this->errorMessages[self::ERROR_QUALITY]);
+      return $this;
     }
 
-    // Everything seems valid, export all values to class scope.
-    $this->path      = $_FILES[$this->id]["tmp_name"];
-    $this->extension = $this->extensions[$type];
     return $this;
   }
 

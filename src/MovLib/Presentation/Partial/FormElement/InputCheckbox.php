@@ -17,13 +17,9 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ValidationException;
-
 /**
- * HTML input type checkbox form element.
+ * Input checkbox form element.
  *
- * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
- * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -32,76 +28,56 @@ use \MovLib\Exception\ValidationException;
  */
 class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
   /**
-   * Whether this checkbox is checked or not.
+   * Get the input text form element.
    *
-   * @var boolean
+   * @return string
+   *   The input text form element.
    */
-  public $checked = false;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new checkbox input.
-   *
-   * @param string $id
-   *   The checkbox's unique global identifier.
-   * @param string $label
-   *   The checkbox's translated label text.
-   * @param array $attributes [optional]
-   *   The checkbox's additional attributes that should be applied, the following default attributes are always set:
-   *   <ul>
-   *     <li><code>"id"</code> is set to <var>$id</var></li>
-   *     <li><code>"name"</code> is set to <var>$id</var></li>
-   *     <li><code>"type"</code> is set to <code>"checkbox"</code></li>
-   *     <li><code>"value"</code> is set to <var>$id</var> if no value is given</li>
-   *   </ul>
-   */
-  public function __construct($id, $label, array $attributes = null) {
+  public function __toString() {
     // @devStart
     // @codeCoverageIgnoreStart
-    if (isset($this->attributes["checked"]) && !is_bool($this->attributes["checked"])) {
-      throw new \InvalidArgumentException("The checkbox' checked attribute must be of type boolean");
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    return "{$this->required}{$this->help}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
+    // @devStart
+    // @codeCoverageIgnoreStart
+    }
+    catch (\Exception $e) {
+      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
     }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    parent::__construct($id, $label, $attributes);
-    if (isset($this->attributes["checked"])) {
-      $this->checked = $this->attributes["checked"];
-    }
   }
 
-
-  // ------------------------------------------------------------------------------------------------------------------- Methods
-
-
   /**
-   * Get the rendered checkbox.
+   * Validate the form element's submitted value.
    *
-   * @return string
-   *   The rendered checkbox.
+   * @global \MovLib\Data\I18n $i18n
+   * @param array $errors
+   *   Array to collect error messages.
+   * @return this
    */
-  protected function render() {
-    return "{$this->help}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function validate() {
+  public function validate(&$errors) {
     global $i18n;
-    $checked = (boolean) $this->filterInput($this->id);
-    if ($this->required === true && $checked === false) {
-      throw new ValidationException($i18n->t("The “{0}” checkbox is mandatory.", [ $this->label ]));
+
+    // A single checkbox only has two states: checked and not checked
+    $this->value = !empty($_POST[$this->id]);
+
+    // If it's not checked but required log the error. We can't use the label within this error message, because they
+    // are usually much longer than labels of other input elements. Presentations should override this and display a
+    // meaningful error message.
+    if ($this->value === false && $this->required) {
+      $errors[self::ERROR_REQUIRED] = $i18n->t("The checkbox is required.");
     }
-    $this->checked = $checked;
+
     return $this;
   }
+
+  /**
+   * Nothing to validate!
+   */
+  protected function validateValue($value, &$errors) {}
 
 }
