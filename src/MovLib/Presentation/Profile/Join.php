@@ -123,7 +123,7 @@ final class Join extends \MovLib\Presentation\Page {
     $this->breadcrumb->ignoreQuery = true;
     $this->initLanguageLinks("/profile/join");
 
-    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>";
+    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>";
 
     $this->formAddElement(new InputText(self::FORM_USERNAME, $i18n->t("Username"), [
       "autofocus"   => true,
