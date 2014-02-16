@@ -30,7 +30,7 @@ use \MovLib\Presentation\Partial\FormElement\InputEmail;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class ComingSoon extends \MovLib\Presentation\Page {
+final class ComingSoon extends \MovLib\Presentation\Page {
   use \MovLib\Presentation\TraitForm;
 
 

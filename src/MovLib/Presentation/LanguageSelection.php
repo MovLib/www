@@ -35,7 +35,7 @@ use \MovLib\Presentation\Partial\Navigation;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class LanguageSelection extends \MovLib\Presentation\Page {
+final class LanguageSelection extends \MovLib\Presentation\Page {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
