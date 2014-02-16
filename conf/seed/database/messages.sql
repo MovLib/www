@@ -264,7 +264,7 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ---- Coming Soon Page (must be last)
 
 ('Sign up for the {sitename} beta!', COLUMN_CREATE('de', 'Melde dich jetzt für die {sitename} Beta an!')),
-('The open beta is scheduled to start in April 2014.', COLUMN_CREATE('de', 'Die offene Beta ist für den April 2014 geplant.')),
+('The open beta is scheduled to start in June 2014.', COLUMN_CREATE('de', 'Die offene Beta ist für den Juni 2014 geplant.')),
 ('Wanna see the current alpha version of {sitename}? Go to {alpha_url}', COLUMN_CREATE('de', 'Willst du die aktuelle Alpha-Version von {sitename} sehen? Gehe zu {alpha_url}')),
 ('Imagine {1}Wikipedia{0}, {2}Discogs{0}, {3}Last.fm{0}, {4}IMDb{0}, and {5}TheMovieDB{0} combined in a totally free and open project.', COLUMN_CREATE('de', 'Stell dir {1}Wikipedia{0}, {2}Discogs{0}, {3}Last.fm{0}, {4}IMDb{0} und {5}TheMovieDB{0} kombiniert in einem völlig freien und offenen Projekt vor.')),
 ('Thanks for signing up for the {sitename} beta {email}.', COLUMN_CREATE('de', 'Danke für deine Anmeldung zur {sitename} Beta {email}.')),

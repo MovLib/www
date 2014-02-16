@@ -83,7 +83,7 @@ class ComingSoon extends \MovLib\Presentation\Page {
       "<footer id='f' role='contentinfo'>" .
         "<h1 class='vh'>{$i18n->t("Infos all around {sitename}", [ "sitename" => $kernel->siteName ])}</h1>" .
         "<div class='c'><div class='r'>" .
-          "<p class='s s12 tac'>{$i18n->t("The open beta is scheduled to start in April 2014.")}</p>" .
+          "<p class='s s12 tac'>{$i18n->t("The open beta is scheduled to start in June 2014.")}</p>" .
           "<section id='f-logos' class='s s12 tac'>" .
             "<h3 class='vh'>{$i18n->t("Sponsors and external resources")}</h3>" .
             "<a class='img' href='http://www.fh-salzburg.ac.at/' target='_blank'>" .
@@ -157,7 +157,10 @@ class ComingSoon extends \MovLib\Presentation\Page {
     global $i18n, $kernel;
 
     // Send an email with the new subscriber to the webmaster.
-    $kernel->sendEmail(new Webmaster("New beta subscription", "{$this->email} would like to be part of the MovLib beta."));
+    $kernel->sendEmail(new Webmaster(
+      "New beta subscription",
+      "<a href='mailto:{$this->email}'>{$this->email}</a> would like to be part of the MovLib beta."
+    ));
 
     // Append new subscriber to subscription list (not save to use database while we're still developing).
     file_put_contents("{$kernel->documentRoot}/private/subscriptions.txt", "\n{$this->email}", FILE_APPEND);
