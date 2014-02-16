@@ -17,7 +17,10 @@
  */
 namespace MovLib\Tool\Console\Command\Production;
 
+use \MovLib\Tool\Console\Command\Production\FixPermissions;
+use \MovLib\Data\UnixShell as sh;
 use \Symfony\Component\Console\Input\InputInterface;
+use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -44,6 +47,27 @@ class CacheInspector extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function configure() {
     $this->setDescription("Manage various system caches.");
+    $this->addInputOption("presentation", InputOption::VALUE_NONE, "Empty the presentation cache.");
+  }
+
+  /**
+   * Purge the presentation cache.
+   *
+   * @todo Allow to purge specific host caches or certain directories.
+   * @global \MovLib\Tool\Kernel $kernel
+   * @return this
+   */
+  public function purgePresentationCache() {
+    global $kernel;
+    $this->checkPrivileges();
+    $this->write("Purging presentation cache...");
+    (new FixPermissions())->fixPermissions();
+    if (sh::execute("rm -rf {$kernel->documentRoot}/cache/*") === false) {
+      throw new \RuntimeException("Couldn't purge presentation cache");
+    }
+    $this->write("Successfuly purge the presentation cache!", self::MESSAGE_TYPE_INFO);
+
+    return $this;
   }
 
   /**
@@ -53,7 +77,7 @@ class CacheInspector extends \MovLib\Tool\Console\Command\AbstractCommand {
     $options = parent::execute($input, $output);
     $foundOption = false;
     foreach ($options as $option => $value) {
-      $method = "empty" . ucfirst($option) . "Cache";
+      $method = "purge{$option}Cache";
       if ($value === true && method_exists($this, $method)) {
         $this->{$method}();
         $foundOption = true;

@@ -43,11 +43,17 @@ class CacheInspector extends \MovLib\Tool\Console\Command\Production\CacheInspec
     }
   }
 
-  public function emptyDiskCache() {
+  /**
+   * Experimental command to purge the disk cache.
+   *
+   * @return this
+   * @throws \RuntimeException
+   */
+  public function purgeDiskCache() {
     $this->checkPrivileges();
     $file = "/proc/sys/vm/drop_caches";
     if (!is_file($file)) {
-      throw new FileSystemException("Couldn't find '{$file}'!");
+      throw new \RuntimeException("Couldn't find '{$file}'!");
     }
     if (sh::execute("echo 3 | tee /proc/sys/vm/drop_caches") === false) {
       throw new \RuntimeException("Couldn't purge disk cache!");
