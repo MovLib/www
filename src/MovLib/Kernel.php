@@ -511,7 +511,7 @@ class Kernel {
           error_log("Couldn't create cache file '{$cacheFile}'");
         }
         else {
-          $presentation .= "<!-- diskcache-{$_SERVER["REQUEST_TIME_FLOAT"]} -->";
+          $presentation .= "<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->";
 
           // Create persistent cache file.
           file_put_contents($cacheFile, $presentation);
@@ -588,7 +588,7 @@ class Kernel {
       ;
 
       // Add the absolute URL to our URL cache and we're done.
-      $cache[$extension][$name] = "//{$this->domainStatic}/asset/{$dir}/{$name}.{$extension}?c={$cacheBuster}";
+      $cache[$extension][$name] = "//{$this->domainStatic}/asset/{$dir}/{$name}.{$extension}?{$cacheBuster}";
     }
 
     return $cache[$extension][$name];
