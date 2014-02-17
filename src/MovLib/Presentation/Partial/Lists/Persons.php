@@ -24,6 +24,7 @@ use \MovLib\Presentation\Partial\Date;
  * Special images list for person instances.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Markus Deutschl <mdeutschl.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
@@ -77,10 +78,9 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
    *   Show additional information e.g. life dates or not, defaults to <code>FALSE</code>.
    */
   public function __construct($listItems, $noItemsText = "", array $listItemsAttributes = null, array $attributes = null, $spanSize = 5, $showAdditionalInfo = false) {
+    $this->addClass("r", $attributes);
+    $this->addClass("r s s{$spanSize}", $listItemsAttributes);
     parent::__construct($listItems, $noItemsText, $listItemsAttributes, $attributes);
-    $this->addClass("r", $this->attributes);
-    $this->addClass("s r", $this->listItemsAttributes);
-    $this->addClass("s{$spanSize}", $this->listItemsAttributes);
     $this->descriptionSpan                 = --$spanSize;
     $this->listItemsAttributes[]           = "itemscope";
     $this->listItemsAttributes["itemtype"] = "http://schema.org/Person";
@@ -98,61 +98,61 @@ class Persons extends \MovLib\Presentation\Partial\Lists\Images {
     global $i18n;
     $list = null;
     try {
-    /* @var $person \MovLib\Data\Person\Person */
-    while ($person = $this->listItems->fetch_object("\\MovLib\\Data\\Person\\Person")) {
-      $additionalInfo = null;
-      if ($this->showAdditionalInfo === true) {
-        $additionalNames = null;
-        if ($person->bornName) {
-          $additionalNames .= $i18n->t("{0} ({1})", [
-            "<span itemprop='additionalName'>{$person->bornName}</span>",
-            "<i>{$i18n->t("born name")}</i>",
-          ]);
-        }
-        if ($person->nickname) {
+      /* @var $person \MovLib\Data\Person\Person */
+      while ($person = $this->listItems->fetch_object("\\MovLib\\Data\\Person\\Person")) {
+        $additionalInfo = null;
+        if ($this->showAdditionalInfo === true) {
+          $additionalNames = null;
+          if ($person->bornName) {
+            $additionalNames .= $i18n->t("{0} ({1})", [
+              "<span itemprop='additionalName'>{$person->bornName}</span>",
+              "<i>{$i18n->t("born name")}</i>",
+            ]);
+          }
+          if ($person->nickname) {
+            if ($additionalNames) {
+              $additionalNames .= " ";
+            }
+            $additionalNames .= $i18n->t("aka “{0}”", [ "<span itemprop='additionalName'>{$person->nickname}</span>" ]);
+          }
           if ($additionalNames) {
-            $additionalNames .= " ";
-          }
-          $additionalNames .= $i18n->t("aka “{0}”", [ "<span itemprop='additionalName'>{$person->nickname}</span>" ]);
-        }
-        if ($additionalNames) {
-          $additionalNames = "<br>{$additionalNames}";
-        }
-
-        $lifeDates = null;
-        if ($person->birthDate || $person->deathDate) {
-          if ($person->birthDate) {
-            $lifeDates .= (new Date($person->birthDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
-          }
-          else {
-            $lifeDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Date of Birth")}'>", "</em>" ]);
+            $additionalNames = "<br>{$additionalNames}";
           }
 
-          if ($person->deathDate) {
-            $lifeDates .= " – " . (new Date($person->deathDate))->format([ "itemprop" => "deathDate", "title" => $i18n->t("Date of Death") ]);
+          $lifeDates = null;
+          if ($person->birthDate || $person->deathDate) {
+            if ($person->birthDate) {
+              $lifeDates .= (new Date($person->birthDate))->format([ "itemprop" => "birthDate", "title" => $i18n->t("Date of Birth") ]);
+            }
+            else {
+              $lifeDates .= $i18n->t("{0}unknown{1}", [ "<em title='{$i18n->t("Date of Birth")}'>", "</em>" ]);
+            }
+
+            if ($person->deathDate) {
+              $lifeDates .= " – " . (new Date($person->deathDate))->format([ "itemprop" => "deathDate", "title" => $i18n->t("Date of Death") ]);
+            }
+
+            $lifeDates = "<br>{$lifeDates}";
           }
 
-          $lifeDates = "<br>{$lifeDates}";
+          if ($additionalNames || $lifeDates) {
+            $additionalInfo = "<span class='small'>{$additionalNames}{$lifeDates}</span>";
+          }
         }
 
-        if ($additionalNames || $lifeDates) {
-          $additionalInfo = "<span class='small'>{$additionalNames}{$lifeDates}</span>";
-        }
+        $list .=
+          "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
+            "<a class='img li r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
+              $this->getImage($person->displayPhoto->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
+              "<span class='s s{$this->descriptionSpan}'><span class='link-color' itemprop='name'>{$person->name}</span>{$additionalInfo}</span>" .
+            "</a>" .
+          "</li>"
+        ;
       }
-
-      $list .=
-        "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
-          "<a class='img li r' href='{$i18n->r("/person/{0}", [ $person->id ])}' itemprop='url'>" .
-            $this->getImage($person->displayPhoto->getStyle($this->imageStyle), false, [ "class" => "s s1", "itemprop" => "image" ]) .
-            "<span class='s s{$this->descriptionSpan}'><span class='link-color' itemprop='name'>{$person->name}</span>{$additionalInfo}</span>" .
-          "</a>" .
-        "</li>"
-      ;
-    }
-    if (!$list) {
-      return $this->noItemsText;
-    }
-    return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
+      if (!$list) {
+        return $this->noItemsText;
+      }
+      return "<ol{$this->expandTagAttributes($this->attributes)}>{$list}</ol>";
     }
     catch (\Exception $e) {
       return $e->getMessage();

@@ -70,7 +70,7 @@ class Show extends \MovLib\Presentation\Page {
   protected function getPageContent() {
     global $i18n;
 
-    return new PersonsPartial(
+    return "<div id='filter' class='tar'>Filter</div>" . new PersonsPartial(
       Person::getPersons($this->paginationOffset, $this->paginationLimit),
       new Alert(
         $i18n->t(
