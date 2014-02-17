@@ -210,7 +210,10 @@
         var autofocus = document.querySelector("[autofocus]");
         if (autofocus) {
           autofocus.blur();
-          window.onload = autofocus.focus.bind(autofocus);
+          window.onload = function () {
+            this.scroll(0, 0);
+            autofocus.focus();
+          };
         }
       }
 
