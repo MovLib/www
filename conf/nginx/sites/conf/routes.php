@@ -27,11 +27,6 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-location @home {
-  set $movlib_presenter "Home";
-  include sites/conf/fastcgi_params.conf;
-}
-
 # The route /my is the same for all languages! "My MovLib"
 location = /my {
   set $movlib_presenter "Home";
@@ -45,7 +40,8 @@ location = / {
   }
 
   # Otherwise file from cache or ask PHP.
-  try_files $movlib_cache/home @home;
+  set $movlib_presenter "Home";
+  try_files $movlib_cache/$movlib_presenter @php;
 }
 
 
@@ -310,15 +306,11 @@ location ^~ <?= $r("/movie") ?> {
     try_files $movlib_cache @php;
   }
 
-  location ~ "(.*)/+$" {
-    return 301 $1;
-  }
-
   rewrite .* /error/NotFound last;
 }
 
 
-# ---------------------------------------------------------------------------------------------------------------------- company/companies
+# ---------------------------------------------------------------------------------------------------------------------- releases
 
 
 location = <?= $rp("/releases") ?> {
@@ -347,15 +339,12 @@ location = <?= $r("/company/random") ?> {
 
 location ^~ <?= $r("/company") ?> {
 
-  #
-  # ---------------------------------------- Company
-  #
-
   location ~* "^<?= $r("/company/{0}", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Company\\Show";
     set $movlib_company_id $1;
     try_files $movlib_cache @php;
   }
+
   location ~* "^<?= $r("/company/{0}/discussion", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Company\\Discussion";
     set $movlib_company_id $1;
@@ -372,10 +361,6 @@ location ^~ <?= $r("/company") ?> {
     set $movlib_presenter "Company\\Delete";
     set $movlib_company_id $1;
     try_files $movlib_cache @php;
-  }
-
-  location ~ "(.*)/+$" {
-    return 301 $1;
   }
 
   rewrite .* /error/NotFound last;
@@ -485,16 +470,12 @@ location ^~ <?= $r("/person") ?> {
     try_files $movlib_cache @php;
   }
 
-  location ~ "(.*)/+$" {
-    return 301 $1;
-  }
-
   rewrite .* /error/NotFound last;
 }
 
 
 # ---------------------------------------------------------------------------------------------------------------------- profile
-# Most profile locations to not utilize the cache because they are only accessible for authenticated users.
+# Most profile locations do not utilize the cache because they are only accessible for authenticated users.
 
 
 location = <?= $r("/profile") ?> {
@@ -529,7 +510,7 @@ location = <?= $r("/profile/join") ?> {
 
 location = <?= $r("/profile/messages") ?> {
   set $movlib_presenter "Profile\\Messages";
-  try_files $movlib_cache @php;
+  include sites/conf/fastcgi_params.conf;
 }
 
 location = <?= $r("/profile/notification-settings") ?> {
@@ -539,7 +520,7 @@ location = <?= $r("/profile/notification-settings") ?> {
 
 location = <?= $r("/profile/lists") ?> {
   set $movlib_presenter "Profile\\Lists";
-  try_files $movlib_cache @php;
+  include sites/conf/fastcgi_params.conf;
 }
 
 location = <?= $r("/profile/password-settings") ?> {
@@ -564,12 +545,12 @@ location = <?= $r("/profile/sign-out") ?> {
 
 location = <?= $r("/profile/wantlist") ?> {
   set $movlib_presenter "Profile\\Wantlist";
-  try_files $movlib_cache @php;
+  include sites/conf/fastcgi_params.conf;
 }
 
 location = <?= $r("/profile/watchlist") ?> {
   set $movlib_presenter "Profile\\Watchlist";
-  try_files $movlib_cache @php;
+  include sites/conf/fastcgi_params.conf;
 }
 
 
@@ -600,10 +581,6 @@ location ^~ <?= $r("/user") ?> {
     set $movlib_presenter "User\\Show";
     set $movlib_user_name $1;
     try_files $movlib_cache @php;
-  }
-
-  location ~ "(.*)/+$" {
-    return 301 $1;
   }
 
   rewrite .* /error/NotFound last;
@@ -731,10 +708,6 @@ location ^~ <?= $r("/country") ?> {
   }
   <?php endforeach ?>
 
-  location ~ "(.*)/+$" {
-    return 301 $1;
-  }
-
   rewrite .* /error/NotFound last;
 }
 
@@ -763,10 +736,6 @@ location ^~ <?= $r("/year") ?> {
     try_files $movlib_cache @php;
   }
   <?php endforeach ?>
-
-  location ~ "(.*)/+$" {
-    return 301 $1;
-  }
 
   rewrite .* /error/NotFound last;
 }
