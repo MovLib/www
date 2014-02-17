@@ -67,7 +67,10 @@ msginfo "Using PCRE version ${PCRE_VERSION}!"
 source ${ID}wget.sh "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/" "pcre-${PCRE_VERSION}" ".tar.gz" "false"
 
 # Install Zlib
-source ${ID}git.sh madler zlib
+source ${ID}git.sh "madler" "zlib" "false"
+
+# Install nginx_accept_language_module
+source ${ID}git.sh "giom" "nginx_accept_language_module" "false"
 
 msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
 cd ${SD}${NAME}-${VERSION}
@@ -101,6 +104,7 @@ CXXFLAGS="${CFLAGS}" \
   --with-pcre="${SD}${NAME}-${VERSION}/pcre-${PCRE_VERSION}" \
   --with-pcre-jit \
   --with-zlib="${SD}${NAME}-${VERSION}/zlib" \
+  --add-module="${SD}${NAME}-${VERSION}/nginx_accept_language_module" \
   --without-http_access_module \
   --without-http_auth_basic_module \
   --without-http_autoindex_module \
@@ -108,7 +112,7 @@ CXXFLAGS="${CFLAGS}" \
   --without-http_geo_module \
   --without-http_limit_conn_module \
   --without-http_limit_req_module \
-  --without-http_proxy_module \
+  --without-http_memcached_module \
   --without-http_proxy_module \
   --without-http_referer_module \
   --without-http_scgi_module \
