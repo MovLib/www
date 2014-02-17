@@ -64,12 +64,12 @@ class Kernel {
    *
    * @var array
    */
-  protected $cacheBusters = [
-    "css" => [ /*####CSS-CACHE-BUSTER####*/ ],
-    "jpg" => [ /*####JPG-CACHE-BUSTER####*/ ],
-    "js"  => [ /*####JS-CACHE-BUSTER####*/ ],
-    "png" => [ /*####PNG-CACHE-BUSTER####*/ ],
-    "svg" => [ /*####SVG-CACHE-BUSTER####*/ ],
+  public $cacheBusters = [
+    "css" => [ /*####css-cache-buster####*/ ],
+    "jpg" => [ /*####jpg-cache-buster####*/ ],
+    "js"  => [ /*####js-cache-buster####*/ ],
+    "png" => [ /*####png-cache-buster####*/ ],
+    "svg" => [ /*####svg-cache-buster####*/ ],
   ];
 
   /**
