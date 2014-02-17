@@ -48,6 +48,13 @@ class Kernel extends \MovLib\Kernel {
    */
   public $usrBinaryPath = "/usr/local/bin";
 
+  /**
+   * Flag indicating if the website is in production mode or not.
+   *
+   * @var boolean
+   */
+  public $production;
+
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
@@ -73,8 +80,9 @@ class Kernel extends \MovLib\Kernel {
     // tampering with any super global (which might destroy other software).
     $this->documentRoot     = dirname(dirname(dirname(__DIR__)));
     $this->fastCGI          = isset($_SERVER["FCGI_ROLE"]);
-    $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
     $this->isWindows        = defined("PHP_WINDOWS_VERSION_MAJOR");
+    $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
+    $this->production       = is_dir("{$this->documentRoot}/.git");
 
     // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied
     // software is casting various deprecated or strict errors.

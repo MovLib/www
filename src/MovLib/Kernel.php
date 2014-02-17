@@ -230,13 +230,6 @@ class Kernel {
   public $phpGroup = "www-data";
 
   /**
-   * Flag indicating if the website is in production mode or not.
-   *
-   * @var boolean
-   */
-  public $production = false;
-
-  /**
    * The current request's protocol (either <code>"HTTP/1.0"</code> or <code>"HTTP/1.1"</code>).
    *
    * @var string
