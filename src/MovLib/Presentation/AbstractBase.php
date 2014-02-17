@@ -135,13 +135,13 @@ abstract class AbstractBase {
    * <pre>$attributes = [ "class" => "css-class", "id" => "css-id" ];
    * echo "<div{$this->expandAttributes($attributes)}></div>";</pre>
    *
-   * @param array $attributes
+   * @param null|array $attributes
    *   Associative array containing the elements attributes. If no attributes are present (e.g. you're handling an
    *   object which sometimes has attributes but not always) an empty string will be returned.
    * @return string
    *   String representation of the attributes array, or empty string if no attributes are present.
    */
-  final protected function expandTagAttributes(array $attributes) {
+  final protected function expandTagAttributes($attributes) {
     // Only expand if we have something to expand.
     if ($attributes) {
       // Local variables used to collect the expanded tag attributes.
