@@ -66,6 +66,9 @@ class Kernel extends \MovLib\Kernel {
     global $db, $i18n, $kernel, $session;
     ini_set("display_errors", true);
 
+    // Export ourself to global scope and allow any layer to access the kernel's public properties.
+    $kernel = $this;
+
     // The tool kernel has to ensure that the document root is always set to the actual MovLib document root without
     // tampering with any super global (which might destroy other software).
     $this->documentRoot     = dirname(dirname(dirname(__DIR__)));
@@ -81,8 +84,7 @@ class Kernel extends \MovLib\Kernel {
 
     // Create global object instances.
     $db      = new \MovLib\Tool\Database();
-    $i18n    = new \MovLib\Data\I18n();
-    $kernel  = $this;
+    $i18n    = new \MovLib\Data\I18n(\Locale::getDefault());
     $session = new \MovLib\Data\User\Session();
   }
 
