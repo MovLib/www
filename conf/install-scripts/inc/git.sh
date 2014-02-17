@@ -26,7 +26,7 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-if [ ! ${#} == 2 ]; then
+if [ ! ${#} < 2 ]; then
   msgerror "Missing arguments: GitHub user [1] and project [2] name!"
   exit 1
 fi
@@ -35,5 +35,9 @@ if [ ! -d ${2} ]; then
   git clone git://github.com/${1}/${2}.git
 fi
 
-msginfo "Changing to directory: ${SD}${2}"
-cd ${2}
+if [ -d "${2}" ]; then
+  if [ -z "${3}" ] || [ ${3} != "false" ]; then
+    msginfo "Changing to directory: ${SD}${2}"
+    cd ${SD}${2}
+  fi
+fi
