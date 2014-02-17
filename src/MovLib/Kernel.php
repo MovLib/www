@@ -528,6 +528,22 @@ class Kernel {
           gzclose($zp);
         }
       }
+      // @devStart
+      // @codeCoverageIgnoreStart
+      else {
+        $cacheFile = "{$this->pathCache}{$this->requestPath}";
+        if ($this->requestPath == "/") {
+          $cacheFile .= $_SERVER["PRESENTER"];
+        }
+        if (file_exists($cacheFile)) {
+          unlink($cacheFile);
+        }
+        if (file_exists("{$cacheFile}.gz")) {
+          unlink("{$cacheFile}.gz");
+        }
+      }
+      // @codeCoverageIgnoreEnd
+      // @devEnd
 
       // Execute each delayed method.
       if ($this->delayedMethods) {
