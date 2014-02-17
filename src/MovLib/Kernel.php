@@ -379,22 +379,20 @@ class Kernel {
       $this->scheme           = $_SERVER["SCHEME"];
       $this->userAgent        = filter_var($_SERVER["HTTP_USER_AGENT"], FILTER_SANITIZE_STRING, FILTER_REQUIRE_SCALAR | FILTER_FLAG_STRIP_LOW);
 
-      // Configure the autoloader.
-      if ($this->production === true) {
-        spl_autoload_register([ $this, "autoload" ], true);
+      // Configure fast autoloader.
+      //spl_autoload_register([ $this, "autoload" ], true);
+
+      // Configure Composer autoloader.
+      try {
+        require "{$this->documentRoot}/vendor/autoload.php";
       }
-      else {
-        try {
-          require "{$this->documentRoot}/vendor/autoload.php";
-        }
-        catch (\ErrorException $e) {
-          // Only react on real problems, the vendor supplied stuff often raises DEPRECATED or STRICT errors we don't
-          // care about (because we can't fix them).
-          switch ($e->getSeverity()) {
-            case E_ERROR:
-            case E_WARNING:
-              throw $e;
-          }
+      catch (\ErrorException $e) {
+        // Only react on real problems, the vendor supplied stuff often raises DEPRECATED or STRICT errors we don't
+        // care about (because we can't fix them).
+        switch ($e->getSeverity()) {
+          case E_ERROR:
+          case E_WARNING:
+            throw $e;
         }
       }
 
@@ -622,10 +620,10 @@ class Kernel {
    *   Fully qualified class name (automatically passed to this magic method by PHP).
    * @throws \ErrorException
    */
-  public function autoload($class) {
-    $class = strtr($class, "\\", "/");
-    require "{$this->documentRoot}/src/{$class}.php";
-  }
+//  public function autoload($class) {
+//    $class = strtr($class, "\\", "/");
+//    require "{$this->documentRoot}/src/{$class}.php";
+//  }
 
   /**
    * Create cookie.
