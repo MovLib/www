@@ -96,14 +96,21 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
       throw new \InvalidArgumentException("Given directory '{$directory}' doesn't exist!");
     }
 
+    // Create paths to binary execution files.
+    $binPaths = "{$kernel->documentRoot}/bin/movlib.php {$kernel->documentRoot}/bin/*.sh {$kernel->documentRoot}/conf/install-scripts/*.sh";
+
+    // Only attempt to update vendor binaries if there are any.
+    if (is_dir("{$kernel->documentRoot}/vendor/bin")) {
+      $binPaths .= " {$kernel->documentRoot}/vendor/bin/*";
+    }
+
     // Looks good so far, start fixing permissions in this directory.
     $this->write("Fixing permissions on all directories and files in <info>'{$directory}'</info> ...");
     foreach ([
       "chown -R {$kernel->phpUser}:{$kernel->phpGroup} '{$directory}'" => "User and group ownership fixed!",
       "find '{$directory}' -type d -exec chmod 2770 {} \;"             => "Directory permissions fixed!",
       "find '{$directory}' -type f -exec chmod 2660 {} \;"             => "File permissions fixed!",
-      "chmod 2770 -R {$kernel->documentRoot}/bin/movlib.php {$kernel->documentRoot}/bin/*.sh {$kernel->documentRoot}/conf/install-scripts/*.sh {$kernel->documentRoot}/vendor/bin/*"
-        => "Executable permissions fixed!"
+      "chmod 2770 -R {$binPaths}"                                      => "Executable permissions fixed!"
     ] as $cmd => $msg) {
       if (sh::execute($cmd) === false) {
         throw new \RuntimeException("Failed to execute '{$cmd}'!");
