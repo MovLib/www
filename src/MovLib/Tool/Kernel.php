@@ -35,18 +35,18 @@ class Kernel extends \MovLib\Kernel {
 
 
   /**
-   * Absolute path to the directory where user binaries are linked.
-   *
-   * @var string
-   */
-  public $usrBinaryPath = "/usr/local/bin";
-
-  /**
    * Flag indicating if we're running under Windows or not.
    *
    * @var boolean
    */
   public $isWindows = false;
+
+  /**
+   * Absolute path to the directory where user binaries are linked.
+   *
+   * @var string
+   */
+  public $usrBinaryPath = "/usr/local/bin";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -69,6 +69,7 @@ class Kernel extends \MovLib\Kernel {
     // The tool kernel has to ensure that the document root is always set to the actual MovLib document root without
     // tampering with any super global (which might destroy other software).
     $this->documentRoot     = dirname(dirname(dirname(__DIR__)));
+    $this->fastCGI          = isset($_SERVER["FCGI_ROLE"]);
     $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
     $this->isWindows        = defined("PHP_WINDOWS_VERSION_MAJOR");
 

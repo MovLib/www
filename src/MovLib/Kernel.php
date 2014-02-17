@@ -155,6 +155,13 @@ class Kernel {
   public $emailWebmaster = "webmaster@movlib.org";
 
   /**
+   * Whether this request is handled via FastCGI or not.
+   *
+   * @var boolean
+   */
+  public $fastCGI = true;
+
+  /**
    * The host name of the current request.
    *
    * @var string
@@ -365,7 +372,7 @@ class Kernel {
       $this->documentRoot     = $_SERVER["DOCUMENT_ROOT"];
       $this->hostname         = $_SERVER["SERVER_NAME"];
       $this->https            = (boolean) $_SERVER["HTTPS"];
-      $this->pathCache        = "{$this->documentRoot}{$this->pathCache}/{$this->hostname}";
+      $this->pathCache        = "{$this->documentRoot}{$this->pathCache}/{$_SERVER["LANGUAGE_CODE"]}";
       $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
       $this->protocol         = $_SERVER["SERVER_PROTOCOL"];
       // @todo If we're ever going to use proxy servers this code has to be changed!
@@ -464,7 +471,7 @@ class Kernel {
       // client, this will only increase network traffic by a few bytes. Plus the alert message is stored until the user
       // closes the agent, it's very unlikely that such an alert is still from interest on the next user agent session.
       if ($this->alerts) {
-        setcookie("alerts", "{$this->alerts}", 0, "/", $this->domainDefault, $this->https, true);
+        $this->cookieCreate("alerts", "{$this->alerts}");
       }
 
       // This allows us to lazy start anonymous sessions and send cookies right before sending the response.
@@ -489,17 +496,16 @@ class Kernel {
 
       // Can we cache this presentation?
       if ($this->cacheable === true) {
-        $cacheFile = "{$this->documentRoot}/cache/{$this->hostname}{$this->requestPath}";
+        // Build absolute path to cache file.
+        $cacheFile = "{$this->pathCache}{$this->requestPath}";
 
-        // Make sure that the file has actually a filename.
+        // Ensure that we actually have a filename.
         if ($this->requestPath == "/") {
-          $cacheFile      = "{$this->pathCache}/{$_SERVER["PRESENTER"]}";
-          $cacheDirectory = $this->pathCache;
+          $cacheFile .= $_SERVER["PRESENTER"];
         }
-        else {
-          $cacheFile      = "{$this->pathCache}{$this->requestPath}";
-          $cacheDirectory = dirname($cacheFile);
-        }
+
+        // Build absolute path to cache directory.
+        $cacheDirectory = dirname($cacheFile);
 
         // Try to create the directories if they aren't already present.
         if (!is_dir($cacheDirectory) && sh::execute("mkdir -p '{$cacheDirectory}'") === false) {
@@ -609,8 +615,34 @@ class Kernel {
     require "{$this->documentRoot}/src/{$class}.php";
   }
 
-  public function cacheDelete() {
+  /**
+   * Create cookie.
+   *
+   * @param string $id
+   *   The cookie's unique identifier.
+   * @param mixed $value
+   *   The cookie's value.
+   * @param integer $expire [optional]
+   *   The cookie's time to life.
+   * @param boolean $httpOnly [optional]
+   *   Whether this cookie should be http only (not accessible for JavaScript) or not.
+   * @return this
+   */
+  public function cookieCreate($id, $value, $expire = 0, $httpOnly = false) {
+    setcookie($id, $value, $expire, "/", $this->domainDefault, $this->https, $httpOnly);
+    return $this;
+  }
 
+  /**
+   * Delete cookie.
+   *
+   * @param string $id
+   *   The cookie's unique identifier.
+   * @return this
+   */
+  public function cookieDelete($id) {
+    setcookie($id, "", 1, "/", $this->domainDefault, $this->https, false);
+    return $this;
   }
 
   /**

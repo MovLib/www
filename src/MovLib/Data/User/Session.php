@@ -78,7 +78,7 @@ class Session implements \ArrayAccess {
    *
    * @var string
    */
-  protected $name;
+  protected $name = "MOVSID";
 
   /**
    * The user's absolute avatar image URL for the header.
@@ -125,9 +125,6 @@ class Session implements \ArrayAccess {
    */
   public function __construct() {
     global $db, $kernel;
-
-    // Export the session's name to class scope.
-    $this->name = session_name();
 
     // Only attempt to load the session if a non-empty session ID is present. Anonymous user's don't get any session to
     // ensure that HTTP proxies are able to cache anonymous pageviews.
@@ -219,20 +216,27 @@ class Session implements \ArrayAccess {
       return false;
     }
 
-    $_SESSION["auth"]   = $this->authentication = $_SERVER["REQUEST_TIME"];
-    $_SESSION["avatar"] = $this->userAvatar     = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
-    $_SESSION["id"]     = $this->userId         = $user->id;
-    $_SESSION["name"]   = $this->userName       = $user->name;
-    $_SESSION["tz"]     = $this->userTimeZoneId = $user->timeZoneIdentifier;
+    // Only create a session if we're serving this request via nginx.
+    if ($kernel->fastCGI === true) {
+      $_SESSION["auth"]   = $this->authentication = $_SERVER["REQUEST_TIME"];
+      $_SESSION["avatar"] = $this->userAvatar     = $user->getStyle(User::STYLE_HEADER_USER_NAVIGATION);
+      $_SESSION["id"]     = $this->userId         = $user->id;
+      $_SESSION["name"]   = $this->userName       = $user->name;
+      $_SESSION["tz"]     = $this->userTimeZoneId = $user->timeZoneIdentifier;
 
-    // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
-    // ID and if not generate a completely new session.
-    if (session_status() === PHP_SESSION_ACTIVE) {
-      $this->regenerate();
-    }
-    else {
-      $this->start();
-      $kernel->delayMethodCall([ $this, "insert" ]);
+      // Maybe the user was doing some work as anonymous user and already has a session active. If so generate new session
+      // ID and if not generate a completely new session.
+      if (session_status() === PHP_SESSION_ACTIVE) {
+        $this->regenerate();
+      }
+      else {
+        $this->start();
+        $kernel->delayMethodCall([ $this, "insert" ]);
+      }
+
+      // Set cookie for preferred system language for nginx. We set the cookie expire time to January 2038. This is the
+      // maximum value that is possible.
+      $kernel->cookieCreate("lang", $user->systemLanguageCode, 2147483647);
     }
 
     // @todo Is this unnecessary overhead or a good protection? If PHP updates the default password this would be the
@@ -359,7 +363,7 @@ class Session implements \ArrayAccess {
     global $kernel;
 
     // Only execute the following if this request was made through nginx.
-    if (isset($_SERVER["FCGI_ROLE"])) {
+    if ($kernel->fastCGI === true) {
       // Remove all data associated with this session.
       if (session_status() === PHP_SESSION_ACTIVE) {
         session_unset();
@@ -367,9 +371,9 @@ class Session implements \ArrayAccess {
         session_write_close();
       }
 
-      // Remove the cookie.
-      $cookie = session_get_cookie_params();
-      setcookie($this->name, "", 1, $cookie["path"], $cookie["domain"], $cookie["secure"], $cookie["httponly"]);
+      // Remove the session and language cookie.
+      $kernel->cookieDelete($this->name);
+      $kernel->cookieDelete("lang");
 
       // Delete all sessions if the flag is set.
       if ($deleteAllSessions === true) {

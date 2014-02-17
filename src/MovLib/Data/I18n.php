@@ -97,51 +97,45 @@ class I18n {
    */
   public function __construct($locale = null) {
     global $kernel;
-    // Always export defaults first.
+
+    // Export default locale and language code to class scope.
     $this->defaultLocale       = \Locale::getDefault();
     $this->defaultLanguageCode = "{$this->defaultLocale[0]}{$this->defaultLocale[1]}";
-    // To understand the following code it's important to understand comparison operations and assignments. If you don't
-    // understand the following code be sure to read more about both these topics before attempting to change anything
-    // here!
+
+    // Use server determined language code if no locale was passed to the constructor. We can safely assume that this
+    // variable is always set.
     if (!$locale) {
-      // Use language code from subdomain if present.
-      if (isset($_SERVER["LANGUAGE_CODE"])) {
-        $locale = $kernel->systemLanguages[$_SERVER["LANGUAGE_CODE"]];
-      }
-      // Use the best matching value from the user's submitted HTTP accept language header.
-      elseif (isset($_SERVER["HTTP_ACCEPT_LANGUAGE"])) {
-        preg_match_all("/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $httpAcceptLanguages);
-        if (count($httpAcceptLanguages[1])) {
-          $languages = array_combine($httpAcceptLanguages[1], $httpAcceptLanguages[4]);
-          foreach ($languages as $language => $value){
-            if (!isset($language[0]) || !isset($language[1])) {
-              unset($languages[$language]);
-            }
-            $language = "{$language[0]}{$language[1]}";
-            if (empty($value)) {
-              $languages[$language] = 1;
-            }
-          }
-          arsort($languages, SORT_NUMERIC);
-        }
-        foreach ($languages as $language => $value){
-          if (isset($kernel->systemLanguages[$language])) {
-            $locale = $kernel->systemLanguages[$language];
-            break;
-          }
-        }
-      }
+      $this->locale       = $kernel->systemLanguages[$_SERVER["LANGUAGE_CODE"]];
+      $this->languageCode = $_SERVER["LANGUAGE_CODE"];
     }
-    // If we still have no locale, use defaults.
-    if (!$locale) {
-      $this->locale       = $this->defaultLocale;
-      $this->languageCode = $this->defaultLanguageCode;
-    }
-    // The language code can only be a two-letter code in contrast to the locale which can be a two-letter code or a
-    // five-letter code (including separator and country).
+    // If a locale was passed to the constructor, export to class scope.
     else {
-      $this->locale       = $locale;
-      $this->languageCode = "{$locale[0]}{$locale[1]}";
+      $len = strlen($locale);
+      if ($len === 2) {
+        // @devStart
+        // @codeCoverageIgnoreStart
+        if (!isset($kernel->systemLanguages[$locale])) {
+          throw new \InvalidArgumentException("Unsupported language code '{$locale}' passed to i18n constructor");
+        }
+        // @codeCoverageIgnoreEnd
+        // @devEnd
+        $this->locale       = $kernel->systemLanguages[$locale];
+        $this->languageCode = $locale;
+      }
+      else {
+        // @devStart
+        // @codeCoverageIgnoreStart
+        if ($len !== 5) {
+          throw new \LogicException("A locale consists of five characters, the language code followed by the country code, e.g.: 'de_AT'");
+        }
+        if (!isset($kernel->systemLanguages["{$locale[0]}{$locale[1]}"])) {
+          throw new \InvalidArgumentException("Unsupported locale '{$locale}' passed to i18n constructor");
+        }
+        // @codeCoverageIgnoreEnd
+        // @devEnd
+        $this->locale       = $locale;
+        $this->languageCode = "{$locale[0]}{$locale[1]}";
+      }
     }
   }
 
@@ -224,31 +218,6 @@ class I18n {
       }
       $db->query("INSERT INTO `messages` (`message`, `comment`, `dyn_translations`) VALUES (?, ?, '')", "ss", [ $message, $options["comment"] ]);
     }
-    return $this;
-  }
-
-  /**
-   * Insert a translation of pattern into the database table identified by context.
-   *
-   * @global \MovLib\Data\Database $db
-   * @param string $context
-   *   The context of this translation, either <em>message</em> or <em>route</em>.
-   * @param int $id
-   *   The unique ID of the pattern for which we should insert a translation.
-   * @param string $languageCode
-   *   The ISO 639-1 alpha-2 language code that identifies the translation's language.
-   * @param string $translation
-   *   The translated pattern.
-   * @return this
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function insertOrUpdateTranslation($context, $id, $languageCode, $translation) {
-    global $db;
-    $db->query(
-      "UPDATE `{$context}s` SET `dyn_translations` = COLUMN_ADD(`dyn_translations`, ?, ?) WHERE `{$context}_id` = ?",
-      "ssd",
-      [ $languageCode, $translation, $id ]
-    );
     return $this;
   }
 

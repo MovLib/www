@@ -625,7 +625,7 @@ class Page extends \MovLib\Presentation\AbstractBase {
     if (isset($_COOKIE["alerts"])) {
       $kernel->cacheable = false;
       $this->alerts     .= $_COOKIE["alerts"];
-      setcookie("alerts", "", 1, "/", $kernel->domainDefault, $kernel->https, true);
+      $kernel->cookieDelete("alerts");
     }
 
     return $this;

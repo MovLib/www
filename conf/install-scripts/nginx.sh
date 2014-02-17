@@ -70,7 +70,7 @@ source ${ID}wget.sh "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/" "pc
 source ${ID}git.sh "madler" "zlib" "false"
 
 # Install nginx_accept_language_module
-source ${ID}git.sh "giom" "nginx_accept_language_module" "false"
+source ${ID}git.sh "Fleshgrinder" "nginx_accept_language_module" "false"
 
 msginfo "Changing to directory: ${SD}${NAME}-${VERSION}"
 cd ${SD}${NAME}-${VERSION}

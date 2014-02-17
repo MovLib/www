@@ -46,19 +46,9 @@ final class LanguageSelection extends \MovLib\Presentation\Page {
    *
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
-   * @global \MovLib\Data\User\Session $session
-   * @throws \MovLib\Presentation\Redirect\Temporary
    */
   public function __construct() {
-    global $i18n, $kernel, $session;
-
-    // If a signed in user is requesting this page we know where to send her or him.
-    if ($session->isAuthenticated === true) {
-      $user = new FullUser(FullUser::FROM_ID, $session->userId);
-      throw new Temporary("{$kernel->scheme}://{$user->systemLanguageCode}.{$kernel->domainDefault}/");
-    }
-
-    // If not render the page.
+    global $i18n, $kernel;
     $this->initPage($i18n->t("Language Selection"));
     $kernel->stylesheets[] = "language-selection";
   }
