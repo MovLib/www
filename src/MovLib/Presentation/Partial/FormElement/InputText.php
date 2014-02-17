@@ -33,14 +33,14 @@ class InputText extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
 
   /**
-   * Error code for invalid UTF-8.
+   * Error code for invalid UTF-8 error message.
    *
    * @var integer
    */
   const ERROR_UNICODE = 1;
 
   /**
-   * Error code for low ASCII characters.
+   * Error code for low ASCII characters error message.
    *
    * @var integer
    */

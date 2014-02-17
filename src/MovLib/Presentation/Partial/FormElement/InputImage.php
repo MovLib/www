@@ -191,7 +191,7 @@ final class InputImage extends \MovLib\Presentation\Partial\FormElement\Abstract
       "<div class='inputimage r' data-max-filesize='{$this->maxFilesize}' data-min-height='{$this->minHeight}' data-min-width='{$this->minWidth}'{$height}{$width}>" .
         "<script type='application/json'>{$JSON}</script>" .
         "<div class='s s2 preview'>{$this->getImage($this->image->getStyle(AbstractBaseImage::STYLE_SPAN_02), false)}</div>" .
-        "<div class='s s8'>{$this->required}{$this->help}<label for='{$this->id}'>{$this->label}</label>" .
+        "<div class='s s8'>{$this->required}{$this->helpPopup}<label for='{$this->id}'>{$this->label}</label>" .
           "<span class='btn input-file'><span aria-hidden='true'>{$i18n->t("Choose Image …")}</span>" .
             "<input id='{$this->id}' name='{$this->id}' type='file' accept='image/jpeg,image/png'{$this->expandTagAttributes($this->attributes)}>" .
           "</span>{$this->inputFileAfter}" .

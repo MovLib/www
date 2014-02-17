@@ -81,7 +81,7 @@ final class SignIn extends \MovLib\Presentation\Page {
     }
     // If the user is logged in, but didn't request to be signed out, redirect her or him to the personal dashboard.
     elseif ($session->isAuthenticated === true) {
-      throw new SeeOtherRedirect($i18n->r("/my"));
+      throw new SeeOther($i18n->r("/my"));
     }
 
     // Ensure all views are using the correct path info to render themselves.
@@ -99,16 +99,17 @@ final class SignIn extends \MovLib\Presentation\Page {
 
     $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$i18n->r("/profile/join")}'>{$i18n->t("Join {sitename}", [ "sitename" => $kernel->siteName ])}</a>";
 
-    $this->formAddElement(new InputEmail("email", $i18n->t("Email Address"), [
+    $this->formAddElement(new InputEmail("email", $i18n->t("Email Address"), $this->email, [
+      "#help-text"  => "<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>",
       "autofocus"   => true,
       "placeholder" => $i18n->t("Enter your email address"),
       "required"    => true,
-    ], $this->email, "<a href='{$i18n->r("/profile/reset-password")}'>{$i18n->t("Forgot your password?")}</a>", false));
+    ]));
 
-    $this->formAddElement(new InputPassword("password", $i18n->t("Password"), [
+    $this->formAddElement(new InputPassword("password", $i18n->t("Password"), $this->rawPassword, [
       "placeholder" => $i18n->t("Enter your password"),
       "required"    => true,
-    ], $this->rawPassword));
+    ]));
 
     $this->formAddAction($i18n->t("Sign In"), [ "class" => "btn btn-large btn-success" ]);
 

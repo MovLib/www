@@ -17,6 +17,9 @@
  */
 namespace MovLib\Presentation\Partial;
 
+use \MovLib\Presentation\Partial\FormElement\RadioGroup;
+use \MovLib\Presentation\Partial\FormElement\Select;
+
 /**
  * Represents a single language in HTML and provides an interface to all available languages.
  *
@@ -26,7 +29,7 @@ namespace MovLib\Presentation\Partial;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class Language extends \MovLib\Presentation\AbstractBase {
+final class Language extends \MovLib\Presentation\AbstractBase {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -120,6 +123,26 @@ class Language extends \MovLib\Presentation\AbstractBase {
     }
 
     return $languages[$i18n->locale];
+  }
+
+  /**
+   * Get select form element to select a language.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $value
+   *   The form element's value.
+   * @param array $attributes [optional]
+   *   The form element's additional attributes.
+   * @param string $id [optional]
+   *   The form element's unique identifier, defaults to <code>"language"</code>.
+   * @param string $label [optional]
+   *   The form element's translated label, default to <code>$i18n->t("Language")</code>.
+   * @return \MovLib\Presentation\Partial\FormElement\Select
+   *   The select form element to select a language.
+   */
+  public static function getSelectFormElement(&$value, array $attributes = null, $id = "language", $label = null) {
+    global $i18n;
+    return new Select($id, $label ?: $i18n->t("Language"), self::getLanguages(), $value, $attributes);
   }
 
 }

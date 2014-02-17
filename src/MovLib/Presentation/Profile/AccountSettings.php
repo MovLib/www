@@ -32,6 +32,8 @@ use \MovLib\Presentation\Partial\FormElement\InputURL;
 use \MovLib\Presentation\Partial\FormElement\RadioGroup;
 use \MovLib\Presentation\Partial\FormElement\Select;
 use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
+use \MovLib\Presentation\Partial\Language;
+use \MovLib\Presentation\Partial\FormElement\InputSex;
 
 /**
  * Allows the user to manage his personalized settings.
@@ -44,87 +46,6 @@ use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
  */
 class AccountSettings extends \MovLib\Presentation\Profile\Show {
   use \MovLib\Presentation\TraitForm;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The user's avatar input file form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\InputImage
-   */
-  protected $avatar;
-
-  /**
-   * The user's birthday input date form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\InputDate
-   */
-  protected $birthday;
-
-  /**
-   * The user's country select form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\Select
-   */
-  protected $country;
-
-  /**
-   * The user's currency select form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\Select
-   */
-  protected $currency;
-
-  /**
-   * The user's language radio group form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\RadioGroup
-   */
-  protected $language;
-
-  /**
-   * The user's private input checkbox form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\InputCheckbox
-   */
-  protected $private;
-
-  /**
-   * The user's about me input HTML form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\InputHTML
-   */
-  protected $aboutMe;
-
-  /**
-   * The user's real name input text form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\InputText
-   */
-  protected $realName;
-
-  /**
-   * The user's sex input radio form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\RadioGroup
-   */
-  protected $sex;
-
-  /**
-   * The user's timezone select form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\Select
-   */
-  protected $timezone;
-
-  /**
-   * The user's website input url form element.
-   *
-   * @var \MovLib\Presentation\Partial\FormElement\InputURL
-   */
-  protected $website;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -143,8 +64,9 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
 
     // Disallow caching of account settings.
     session_cache_limiter("nocache");
+    $kernel->cacheable = false;
 
-    $session->checkAuthorization($i18n->t("You need to sign in to access the danger zone."));
+    $session->checkAuthorization($i18n->t("You need to sign in to access this page."));
     $session->checkAuthorizationTimestamp($i18n->t("Please sign in again to verify the legitimacy of this request."));
 
     $this->init($i18n->t("Account Settings"), "/profile/account-settings", [[ $i18n->r("/profile"), $i18n->t("Profile") ]]);
@@ -159,82 +81,79 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
       throw new SeeOtherRedirect($kernel->requestPath);
     }
 
-    $this->realName = new InputText("real_name", $i18n->t("Real Name"), [
-      "placeholder" => $i18n->t("Entery our real name"),
-      "value"       => $this->user->realName,
-    ]);
+//    $this->formAddElement(new InputImage(self::FORM_AVATAR, $i18n->t("Avatar")));
 
-    $this->avatar = new InputImage("avatar", $i18n->t("Avatar"), $this->user);
+    $this->formAddElement(new InputText("real_name", $i18n->t("Real Name"), $this->user->realName, [
+      "#help-popup" => $i18n->t("Your real name will be displayed on your profile page."),
+      "placeholder" => $i18n->t("Enter our real name"),
+    ]));
 
-    $this->sex = new RadioGroup("sex", $i18n->t("Sex"), [
-      2 => $i18n->t("Female"),
-      1 => $i18n->t("Male"),
-      0 => $i18n->t("Unknown"),
-    ], $this->user->sex, $i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."));
+    $this->formAddElement(new InputSex("sex", $i18n->t("Sex"), $this->user->sex, [
+      "#help-popup" => $i18n->t("Your sex will be displayed on your profile page and is used to create demographic evaluations."),
+    ]));
 
-    $birthdayMax = date("Y-m-d", strtotime("-6 years", $_SERVER["REQUEST_TIME"]));
-    $birthdayMin = date("Y-m-d", strtotime("-120 years", $_SERVER["REQUEST_TIME"]));
-    $this->birthday = new InputDate("birthday", $i18n->t("Date of Birth"), [
-      "max"   => $birthdayMax,
-      "min"   => $birthdayMin,
-      "title" => $i18n->t("The date must be between {0} (120 years) and {1} (6 years)", [
-        $i18n->formatDate($birthdayMin, $this->user->timeZoneIdentifier, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE),
-        $i18n->formatDate($birthdayMax, $this->user->timeZoneIdentifier, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE)
+    $birthdateMax = (new \DateTime())->sub(new \DateInterval("P6Y"));
+    $birthdateMin = (new \DateTime())->sub(new \DateInterval("P120Y"));
+    $this->formAddElement(new InputDate("birthdate", $i18n->t("Date of Birth"), $this->user->birthday, [
+      "#help-popup" => $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."),
+      "max"         => $birthdateMax,
+      "min"         => $birthdateMin,
+      "title"       => $i18n->t("A birth date must be between {min} (120 years) and {max} (6 years)", [
+        "max" => (new \IntlDateFormatter($i18n->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE))->format($birthdateMax),
+        "min" => (new \IntlDateFormatter($i18n->locale, \IntlDateFormatter::MEDIUM, \IntlDateFormatter::NONE))->format($birthdateMin),
       ]),
-      "value" => $this->user->birthday,
-    ], $i18n->t("Your birthday will be displayed on your profile page and is used to create demographic evaluations."));
-    $this->birthday->setHelp($i18n->t("If your browser does not support the datepicker, please use the format {0}", [ $i18n->t("yyyy-mm-dd") ]));
+    ]));
 
-    $this->aboutMe  = new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, [
+    $this->formAddElement(new InputURL("website", $i18n->t("Website"), $this->user->website, [
+      "#help-popup"         => $i18n->t("Your website will be display on your profile page."),
+      "data-allow-external" => "true",
+    ]));
+
+    $this->formAddElement(new InputHTML("about_me", $i18n->t("About Me"), $this->user->aboutMe, [
       "placeholder" => $i18n->t("Tell others about yourself, what do you do, what do you like, …"),
-    ]);
-    $this->aboutMe
-      ->allowBlockqoutes()
-      ->allowExternalLinks()
-      ->allowHeadings()
-      ->allowImages()
-      ->allowLists()
-    ;
+    ], [ "blockquote", "external", "headings", "lists", ]));
 
-    $systemLanguages = [];
-    foreach ($kernel->systemLanguages as $systemLanguageCode => $systemLanguageLocale) {
-      $systemLanguages[$systemLanguageCode] = \Locale::getDisplayLanguage($systemLanguageCode, $i18n->locale);
+    $this->formAddElement(Country::getSelectFormElement($this->user->countryCode, [
+      "#help-popup" => $i18n->t("Your country will be displayed on your profile page and is used to create demographic evaluations."),
+    ]));
+
+    $this->formAddElement(new Select("tzid", $i18n->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneIdentifier, [
+      "#help-popup" => $i18n->t("Your time zone will be used to display any time related information correctly."),
+    ]));
+
+    $this->formAddElement(Currency::getSelectFormElement($this->user->currencyCode, [
+      "#help-popup" => $i18n->t("Your currency will be used to display any money related information correctly."),
+    ]));
+
+    $langOptions = null;
+    foreach ($kernel->systemLanguages as $code => $locale) {
+      $langOptions[$code] = \Locale::getDisplayLanguage($code, $i18n->locale);
     }
-    $i18n->getCollator()->asort($systemLanguages);
-    $this->language = new RadioGroup("language", $i18n->t("System Language"), $systemLanguages, $this->user->systemLanguageCode);
+    $i18n->getCollator()->asort($langOptions);
+    $this->formAddElement(new RadioGroup("language", $i18n->t("System Language"), $langOptions, $this->user->systemLanguageCode, [
+      "#help-popup" => $i18n->t(
+        "Select your preferred system language, this will be used to redirect you if you visit {sitename} without a " .
+        "subdomain and may be from other use in the future.", [ "sitename" => $kernel->siteName ]
+      ),
+    ]));
 
-    $this->country  = new Select("country", $i18n->t("Country"), Country::getCountries(), $this->user->countryCode);
-    $this->timezone = new Select("time_zone_id", $i18n->t("Time Zone"), DateTimeZone::getTranslatedIdentifiers(), $this->user->timeZoneIdentifier);
-    $this->currency = new Select("currency", $i18n->t("Currency"), Currency::getCurrencies(), $this->user->currencyCode);
-    $this->website  = new InputURL("website", $i18n->t("Website"), [ "data-allow-external" => true, "value" => $this->user->website ]);
-    $this->private  = new InputCheckbox("private", $i18n->t("Keep my data private!"), [ "value" => $this->user->private ], $i18n->t(
-      "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
-      "used by MovLib for anonymous demographical evaluation of usage statistics and ratings. By providing basic data " .
-      "like sex and country, scientists around the world are enabled to research the human interests in movies more " .
-      "closely. Of course your real name won’t be used for anything!"
-    ));
+    $this->formAddElement(new InputCheckbox("private", $i18n->t("Keep my data private!"), $this->user->private, [
+      "#help-popup" => $i18n->t(
+        "Check the following box if you’d like to hide your private data on your profile page. Your data will only be " .
+        "used by {sitename} for anonymous demographical evaluation of usage statistics and ratings. By providing basic " .
+        "data like sex and country, scientists around the world are enabled to research the human interests in movies " .
+        "more closely. Of course your real name won’t be used for anything!",
+        [ $kernel->siteName ]
+      ),
+    ]));
 
-    $this->form = new Form($this, [
-      $this->realName,
-      $this->avatar,
-      $this->sex,
-      $this->birthday,
-      $this->aboutMe,
-      $this->language,
-      $this->country,
-      $this->timezone,
-      $this->currency,
-      $this->website,
-      $this->private,
-    ]);
-    $this->form->multipart();
-
-    $this->form->actionElements[] = new InputSubmit($i18n->t("Save"), [ "class" => "btn btn-large btn-success" ]);
+    $this->formAddAction($i18n->t("Update"), [ "class" => "btn btn-large btn-success" ]);
+    $this->formInit();
 
     // Display delete button if the user just uploaded a new avatar or one is already present.
-    if ($this->user->imageExists === true) {
-      $this->avatar->inputFileAfter = $this->a("?delete_avatar=true", $i18n->t("Delete"), [ "class" => "btn btn-danger"]);
-    }
+//    if ($this->user->imageExists === true) {
+//      $this->avatar->inputFileAfter = $this->a("?delete_avatar=true", $i18n->t("Delete"), [ "class" => "btn btn-danger"]);
+//    }
   }
 
 
@@ -254,34 +173,34 @@ class AccountSettings extends \MovLib\Presentation\Profile\Show {
    * @inheritdoc
    */
   protected function getPageContent() {
-    return $this->form;
+    return $this->formRender();
   }
 
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
    */
-  protected function valid() {
+  protected function formValid() {
     global $i18n;
-    if ($this->avatar->path) {
-      $this->user->upload($this->avatar->path, $this->avatar->extension, $this->avatar->height, $this->avatar->width);
-    }
-    $this->user->birthday           = $this->birthday->value;
-    $this->user->countryCode        = $this->country->value;
-    $this->user->currencyCode       = $this->currency->value;
-    $this->user->private            = $this->private->value;
-    $this->user->aboutMe            = $this->aboutMe->value;
-    $this->user->realName           = $this->realName->value;
-    $this->user->sex                = $this->sex->value;
-    $this->user->systemLanguageCode = $this->language->value;
-    $this->user->timeZoneIdentifier = $this->timezone->value;
-    $this->user->website            = $this->website->value;
-    $this->user->commit();
-    $this->alerts                  .= new Alert(
-      $i18n->t("Your account settings were updated successfully."),
-      $i18n->t("Account Settings Updated Successfully"),
-      Alert::SEVERITY_SUCCESS
-    );
+//    if ($this->avatar->path) {
+//      $this->user->upload($this->avatar->path, $this->avatar->extension, $this->avatar->height, $this->avatar->width);
+//    }
+//    $this->user->birthday           = $this->birthday->value;
+//    $this->user->countryCode        = $this->country->value;
+//    $this->user->currencyCode       = $this->currency->value;
+//    $this->user->private            = $this->private->value;
+//    $this->user->aboutMe            = $this->aboutMe->value;
+//    $this->user->realName           = $this->realName->value;
+//    $this->user->sex                = $this->sex->value;
+//    $this->user->systemLanguageCode = $this->language->value;
+//    $this->user->timeZoneIdentifier = $this->timezone->value;
+//    $this->user->website            = $this->website->value;
+//    $this->user->commit();
+//    $this->alerts                  .= new Alert(
+//      $i18n->t("Your account settings were updated successfully."),
+//      $i18n->t("Account Settings Updated Successfully"),
+//      Alert::SEVERITY_SUCCESS
+//    );
     return $this;
   }
 

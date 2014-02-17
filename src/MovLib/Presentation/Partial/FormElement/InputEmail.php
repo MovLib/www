@@ -85,7 +85,7 @@ final class InputEmail extends \MovLib\Presentation\Partial\FormElement\Abstract
    *
    * @global \MovLib\Data\I18n $i18n
    * @return string
-   *   The input text form element.
+   *   The input email form element.
    */
   public function __toString() {
     global $i18n;

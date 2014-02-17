@@ -26,7 +26,39 @@ namespace MovLib\Presentation\Partial\FormElement;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+final class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new input checkbox form element.
+   *
+   * Please note that a checkbox's value is always <code>TRUE</code> or <code>FALSE</code>. You cannot change this
+   * behavior. A single checkbox is meant for boolean rows in the database or other decisions that are solely based on
+   * a yes or not question.
+   *
+   * @param string $id
+   *   The checkbox's unique global identifier.
+   * @param string $label
+   *   The checkbox's translated label text.
+   * @param boolean $value
+   *   The checkbox's atomic value.
+   * @param array $attributes [optional]
+   *   The checkbox's attributes array, defaults to <code>NULL</code> (no additional attributes).
+   */
+  public function __construct($id, $label, &$value, array $attributes = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (isset($attributes["checked"])) {
+      throw new \LogicException("You must not set the 'checked' attribute on a checkbox");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    parent::__construct($id, $label, $value, $attributes);
+    $this->attributes["checked"] =& $this->value;
+  }
 
   /**
    * Get the input text form element.
@@ -40,7 +72,7 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-    return "{$this->required}{$this->help}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
+    return "{$this->required}{$this->helpPopup}<p><label class='checkbox'><input{$this->expandTagAttributes($this->attributes)} name='{$this->id}' type='checkbox'>{$this->label}</label></p>";
     // @devStart
     // @codeCoverageIgnoreStart
     }
@@ -50,6 +82,10 @@ class InputCheckbox extends \MovLib\Presentation\Partial\FormElement\AbstractFor
     // @codeCoverageIgnoreEnd
     // @devEnd
   }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
 
   /**
    * Validate the form element's submitted value.

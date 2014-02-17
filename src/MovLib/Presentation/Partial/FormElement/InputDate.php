@@ -29,7 +29,7 @@ use \MovLib\Presentation\Partial\Date;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputDate extends \MovLib\Presentation\Partial\FormElement\InputText {
+class InputDate extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants
@@ -48,19 +48,40 @@ class InputDate extends \MovLib\Presentation\Partial\FormElement\InputText {
 
   // @devStart
   // @codeCoverageIgnoreStart
-  public function __construct($id, $label, array $attributes = null, &$value = null, $help = null, $helpPopup = true) {
+  public function __construct($id, $label, &$value, array $attributes = null) {
     if (isset($attributes["placeholder"])) {
       throw new \LogicException("Date input's aren't allowed to have a placeholder attribute");
     }
     foreach ([ "max", "min", "value" ] as $attribute) {
-      if (isset($attributes[$attribute]) && preg_match(Date::REGEXP_W3C, $attributes[$attribute]) == false) {
-        throw new \InvalidArgumentException("Date input attribute '{$attribute}' must be in W3C date format (" . Date::FORMAT_W3C . ")");
+      if (isset($attributes[$attribute])) {
+        if (is_string($attributes[$attribute]) && preg_match(Date::REGEXP_W3C, $attributes[$attribute]) == false) {
+          throw new \InvalidArgumentException("Date {$attribute} must be in W3C format if passed as string");
+        }
+        elseif (!($attributes[$attribute] instanceof \DateTime)) {
+          throw new \InvalidArgumentException("Date {$attribute} must be either a string in W3C format or a \\DateTime instance");
+        }
       }
     }
-    parent::__construct($id, $label, $attributes, $value, $help, $helpPopup);
+    parent::__construct($id, $label, $value, $attributes);
   }
   // @codeCoverageIgnoreEnd
   // @devEnd
+
+  /**
+   * Get the input date form element.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The input date form element.
+   */
+  public function __toString() {
+    foreach ([ "max", "min", "value" ] as $attribute) {
+      if (isset($this->attributes[$attribute]) && $this->attributes[$attribute] instanceof \DateTime) {
+        $this->attributes[$attribute] = $this->attributes[$attribute]->format(Date::FORMAT_W3C);
+      }
+    }
+    return parent::__toString();
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods

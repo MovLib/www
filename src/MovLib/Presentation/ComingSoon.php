@@ -59,11 +59,11 @@ final class ComingSoon extends \MovLib\Presentation\Page {
     $this->initPage($kernel->siteName);
 
     // Configure and initialize the form.
-    $this->formAddElement(new InputEmail("email", $i18n->t("Email Address"), [
+    $this->formAddElement(new InputEmail("email", $i18n->t("Email Address"), $this->email, [
       "autofocus"   => true,
       "placeholder" => $i18n->t("Sign up for the {sitename} beta!", [ "sitename" => $kernel->siteName ]),
       "required"    => true,
-    ], $this->email));
+    ]));
     $this->formAddAction($i18n->t("Sign Up"), [ "class" => "btn btn-large btn-success" ]);
     $this->formInit();
 

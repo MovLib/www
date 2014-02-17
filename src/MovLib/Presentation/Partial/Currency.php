@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial;
 
+use \MovLib\Presentation\Partial\FormElement\Select;
+
 /**
  * Represents a single currency in HTML and provides an interface to all available currencies.
  *
@@ -130,6 +132,26 @@ class Currency extends \MovLib\Presentation\AbstractBase {
     }
 
     return $currencies[$i18n->locale];
+  }
+
+  /**
+   * Get select form element to select a currency.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $value
+   *   The form element's value.
+   * @param array $attributes [optional]
+   *   The form element's additional attributes.
+   * @param string $id [optional]
+   *   The form element's unique identifier, defaults to <code>"currency"</code>.
+   * @param string $label [optional]
+   *   The form element's translated label, default to <code>$i18n->t("Currency")</code>.
+   * @return \MovLib\Presentation\Partial\FormElement\Select
+   *   The select form element to select a currency.
+   */
+  public static function getSelectFormElement(&$value, array $attributes = null, $id = "currency", $label = null) {
+    global $i18n;
+    return new Select($id, $label ?: $i18n->t("Currency"), self::getCurrencies(), $value, $attributes);
   }
 
 }

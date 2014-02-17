@@ -35,6 +35,8 @@ abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\Ab
    *   The input text's unique global identifier.
    * @param string $label
    *   The input text's translated label text.
+   * @param string $value
+   *   The input text's value, defaults to <code>NULL</code>.
    * @param array $attributes [optional]
    *   The input text's attributes array, the following attributes are hardcoded:
    *   <ul>
@@ -43,18 +45,22 @@ abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\Ab
    *     <li><code>"type"</code> is set to <code>"text"</code></li>
    *     <li><code>"value"</code> is set to <code>$value</code></li>
    *   </ul>
-   * @param string $value [optional]
-   *   The input text's value, defaults to <code>NULL</code>.
    */
-  public function __construct($id, $label, array $attributes = null, &$value = null, $help = null, $helpPopup = true) {
+  public function __construct($id, $label, &$value, array $attributes = null) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (!defined("static::TYPE")) {
       throw new \LogicException("You have to define the TYPE class constant for an input element");
     }
+    $disallowedAttributes = [ "id", "name", "value", "type" ];
+    foreach ($disallowedAttributes as $attribute) {
+      if (isset($attribute[$attribute])) {
+        throw new \LogicException("You must not set any of the following attributes: " . implode(", ", $disallowedAttributes));
+      }
+    }
     // @codeCoverageIgnoreEnd
     // @devEnd
-    parent::__construct($id, $label, $attributes, $value, $help, $helpPopup);
+    parent::__construct($id, $label, $value, $attributes);
     $this->attributes["id"]    = $this->attributes["name"] = $this->id;
     $this->attributes["value"] =& $this->value;
     $this->attributes["type"]  = static::TYPE;
@@ -72,7 +78,7 @@ abstract class AbstractInput extends \MovLib\Presentation\Partial\FormElement\Ab
     try {
     // @codeCoverageIgnoreEnd
     // @devEnd
-    return "{$this->required}{$this->help}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
+    return "{$this->required}{$this->helpPopup}{$this->helpText}<p><label for='{$this->id}'>{$this->label}</label><input{$this->expandTagAttributes($this->attributes)}></p>";
     // @devStart
     // @codeCoverageIgnoreStart
     }

@@ -18,6 +18,7 @@
 namespace MovLib\Presentation\Profile;
 
 use \MovLib\Data\User\FullUser;
+use \MovLib\Presentation\Partial\DateTime;
 
 /**
  * User account summary for logged in user's.
@@ -72,6 +73,8 @@ class Show extends \MovLib\Presentation\Page {
    */
   protected function getPageContent() {
     global $i18n;
+    $joined = new DateTime($this->user->created);
+    $visited = new DateTime($this->user->access);
     return
       "<h2>{$i18n->t("Your Account Summary")}</h2>" .
       "<div class='r'>" .
@@ -81,8 +84,8 @@ class Show extends \MovLib\Presentation\Page {
           "<dt>{$i18n->t("Edits")}</dt><dd>{$this->user->edits}</dd>" .
           "<dt>{$i18n->t("Reputation")}</dt><dd>{$this->user->reputation}</dd>" .
           "<dt>{$i18n->t("Email Address")}</dt><dd>{$this->user->email}</dd>" .
-          "<dt>{$i18n->t("Joined")}</dt><dd>{$i18n->formatDate($this->user->created, $this->user->timeZoneIdentifier)}</dd>" .
-          "<dt>{$i18n->t("Last visit")}</dt><dd>{$i18n->formatDate($this->user->access, $this->user->timeZoneIdentifier)}</dd>" .
+          "<dt>{$i18n->t("Joined")}</dt><dd>{$joined}</dd>" .
+          "<dt>{$i18n->t("Last visit")}</dt><dd>{$visited}</dd>" .
         "</dl>" .
         "<div class='s s2'>{$this->getImage($this->user->getStyle(), $i18n->r("/user/{0}", [ $this->user->filename ]))}</div>" .
       "</div>"

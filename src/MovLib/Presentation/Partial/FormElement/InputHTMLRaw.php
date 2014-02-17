@@ -195,7 +195,7 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
       $this->attributes["placeholder"] = $i18n->t("Enter “{0}” text here …", [ $this->label ]);
     }
 
-    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$content}</textarea></p>";
+    return "{$this->helpPopup}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$content}</textarea></p>";
   }
 
   /**

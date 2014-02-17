@@ -62,17 +62,17 @@ class Show extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n, $kernel;
-    $kernel->stylesheets[] = "user";
     $this->user = new FullUser(FullUser::FROM_NAME, $_SERVER["USER_NAME"]);
-    $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
+    $this->initPage($this->user->name);
     $routeArgs = [ $this->user->filename ];
+    $this->initLanguageLinks("/user/{0}", $routeArgs);
+    $this->initBreadcrumb([[ $i18n->rp("/users"), $i18n->t("Users") ]]);
     $this->sidebarInit([
       [ $i18n->r("/user/{0}/uploads", $routeArgs), "{$i18n->t("Uploads")} <span class='fr'>{$i18n->format("{0,number}", [ $this->user->getTotalUploadsCount() ])}</span>" ],
       [ $i18n->r("/user/{0}/collection", $routeArgs), "{$i18n->t("Collection")} <span class='fr'>{$i18n->format("{0,number}", [ $this->user->getTotalCollectionCount() ])}</span>" ],
       [ $i18n->r("/user/{0}/contact", $routeArgs), $i18n->t("Contact") ],
     ]);
-    $this->initPage($this->user->name);
-    $this->initLanguageLinks("/user/{0}", $routeArgs);
+    $kernel->stylesheets[] = "user";
   }
 
 
@@ -82,11 +82,10 @@ class Show extends \MovLib\Presentation\Page {
   /**
    * @inheritdoc
    * @global \MovLib\Data\I18n $i18n
-   * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
    */
   protected function getPageContent(){
-    global $i18n, $kernel, $session;
+    global $i18n, $session;
 
     // http://schema.org/Person
     $this->schemaType = "Person";

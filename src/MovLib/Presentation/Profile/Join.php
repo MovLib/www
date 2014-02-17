@@ -81,7 +81,7 @@ final class Join extends \MovLib\Presentation\Page {
    *
    * @var string
    */
-  protected $password;
+  protected $rawPassword;
 
   /**
    * The full user object we create during a valid join attempt.
@@ -125,7 +125,7 @@ final class Join extends \MovLib\Presentation\Page {
 
     $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>";
 
-    $this->formAddElement(new InputText(self::FORM_USERNAME, $i18n->t("Username"), [
+    $this->formAddElement(new InputText(self::FORM_USERNAME, $i18n->t("Username"), $this->username, [
       "autofocus"   => true,
       "maxlength"   => FullUser::NAME_MAXIMUM_LENGTH,
       "pattern"     => "^(?!^[ ]+)(?![ ]+$)(?!^.*[ ]{2,}.*$)(?!^.*[" . preg_quote(FullUser::NAME_ILLEGAL_CHARACTERS, "/") . "].*$).*$",
@@ -136,22 +136,25 @@ final class Join extends \MovLib\Presentation\Page {
         "it cannot contain any of the following characters {0} and it cannot be longer than {1,number,integer} characters.",
         [ FullUser::NAME_ILLEGAL_CHARACTERS, FullUser::NAME_MAXIMUM_LENGTH ]
       ),
-    ], $this->username));
+    ]));
 
-    $this->formAddElement(new InputEmail(self::FORM_EMAIL, $i18n->t("Email Address"), [
+    $this->formAddElement(new InputEmail(self::FORM_EMAIL, $i18n->t("Email Address"), $this->email, [
       "placeholder" => $i18n->t("Enter your email address"),
       "required"    => true,
-    ], $this->email));
+    ]));
 
-    $this->formAddElement(new InputPassword(self::FORM_PASSWORD, $i18n->t("Password"), [
+    $this->formAddElement(new InputPassword(self::FORM_PASSWORD, $i18n->t("Password"), $this->rawPassword, [
       "placeholder" => $i18n->t("Enter your desired password"),
       "required"    => true,
-    ], $this->password));
+    ]));
 
+    $terms = false; // We don't care about the value, the checkbox is required!
     $this->formAddElement(new InputCheckbox(self::FORM_TERMS, $i18n->t("I accept the {privacy_policy} and {terms_of_use}.", [
       "privacy_policy" => "<a href='{$i18n->t("/privacy-policy")}'>{$i18n->t("Privacy Policy")}</a>",
-      "terms_of_use"   => "<a href='{$i18n->r("/terms-of-use")}'>{$i18n->t("Terms of Use")}</a>"
-    ]), [ "required" => true ]));
+      "terms_of_use"   => "<a href='{$i18n->r("/terms-of-use")}'>{$i18n->t("Terms of Use")}</a>",
+    ]), $terms, [
+      "required" => true,
+    ]));
 
     $this->formAddAction($i18n->t("Sign Up"), [ "class" => "btn  btn-large btn-success" ]);
 
@@ -177,7 +180,7 @@ final class Join extends \MovLib\Presentation\Page {
     global $i18n, $kernel;
 
     $this->user->email    = $this->email->value;
-    $this->user->password = $this->user->hashPassword($this->password->value);
+    $this->user->password = $this->user->hashPassword($this->rawPassword->value);
     if ((new Memcached())->isRemoteAddressFlooding("join") === true) {
       $this->checkErrors($i18n->t("Too many joining attempts from this IP address. Please wait one hour before trying again."));
     }

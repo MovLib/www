@@ -34,7 +34,7 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
 
 
   /**
-   * Error code for required error messages.
+   * Error code for required error message.
    *
    * @var integer
    */
@@ -59,12 +59,18 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
   protected $errors;
 
   /**
-   * The form element's help.
+   * The form element's help popup (if any).
    *
-   * @see AbstractFormElement::setHelp
-   * @var null|\MovLib\Presentation\Partial\Help
+   * @var null|string
    */
-  protected $help;
+  protected $helpPopup;
+
+  /**
+   * The form element's help text (if any).
+   *
+   * @var null|string
+   */
+  protected $helpText;
 
   /**
    * The form element's global identifier.
@@ -107,17 +113,13 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
    *   The form element's unique global identifier.
    * @param string $label
    *   The form element's translated label text.
-   * @param array $attributes
-   *   The form element's attributes array.
    * @param mixed $value
    *   The form element's atomic value.
-   * @param string $help
-   *   The form element's translated help text.
-   * @param boolean $helpPopup
-   *   Whether the form element's help should be displayed as popup or not.
+   * @param array $attributes [optional]
+   *   The form element's attributes array, defaults to <code>NULL</code> (no additional attributes).
    * @global \MovLib\Data\I18n $i18n
    */
-  public function __construct($id, $label, array $attributes = null, &$value = null, $help = null, $helpPopup = true) {
+  public function __construct($id, $label, &$value, array $attributes = null) {
     global $i18n;
 
     // @devStart
@@ -141,25 +143,28 @@ abstract class AbstractFormElement extends \MovLib\Presentation\AbstractBase {
     $this->value      =& $value;
 
     // Add note to form element if it's required.
+    $ariaDescribedby = null;
     if (isset($this->attributes["required"])) {
-      $this->attributes["aria-describedby"] = "{$this->id}-required";
-      $this->required = "<div class='fr ico ico-alert popup' id='{$this->id}-required' role='note'><small class='content'>{$i18n->t("This field is required.")}</small></div>";
+      $ariaDescribedby[] = "required";
+      $this->required    = "<div class='fr ico ico-alert popup' id='{$this->id}-required' role='note'><small class='content'>{$i18n->t("This field is required.")}</small></div>";
     }
 
-    // Add help text to form element if one is present.
-    if (isset($help)) {
-      if ($helpPopup === true) {
-        if (isset($this->attributes["aria-describedby"])) {
-          $this->attributes["aria-describedby"] .= " {$this->id}-help";
-        }
-        else {
-          $this->attributes["aria-describedby"] = "{$this->id}-help";
-        }
-        $this->help = "<div class='fr ico ico-help popup' id='{$this->id}-help' role='note'><small class='content'>{$help}</small></div>";
-      }
-      else {
-        $this->help = "<small class='fr' id='{$this->id}-help' role='note'>{$help}</small>";
-      }
+    // Add help popup to form element.
+    if (isset($this->attributes["#help-popup"])) {
+      $ariaDescribedby[] = "help-popup";
+      $this->helpPopup   = "<div class='fr ico ico-help popup' id='{$this->id}-help-popup' role='note'><small class='content'>{$this->attributes["#help-popup"]}</small></div>";
+      unset($this->attributes["#help-popup"]);
+    }
+
+    // Add help text to form element.
+    if (isset($this->attributes["#help-text"])) {
+      $ariaDescribedby[] = "help-text";
+      $this->helpText    = "<small class='fr' id='{$this->id}-help-text' role='note'>{$this->attributes["#help-text"]}</small>";
+      unset($this->attributes["#help-text"]);
+    }
+
+    if ($ariaDescribedby) {
+      $this->attributes["aria-describedby"] = " {$this->id}-" . implode(" {$this->id}-", $ariaDescribedby);
     }
   }
 

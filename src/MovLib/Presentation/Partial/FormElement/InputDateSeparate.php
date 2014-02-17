@@ -124,7 +124,7 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\Abstrac
     ];
 
     return
-      "{$this->required}{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}>" .
+      "{$this->required}{$this->helpPopup}<fieldset{$this->expandTagAttributes($this->attributes)}>" .
         "<legend>{$this->label}</legend>" .
         "<label class='s s2'><span class='vh'>{$i18n->t("Year")}</span><input{$this->expandTagAttributes($attributes["y"])}></label>" .
         "<label class='s s1'><span class='vh'>{$i18n->t("Month")}</span><input{$this->expandTagAttributes($attributes["m"])}></label>" .
@@ -160,7 +160,7 @@ class InputDateSeparate extends \MovLib\Presentation\Partial\FormElement\Abstrac
     $this->addClass("date-separate", $this->attributes);
 
     return
-      "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend><p>" .
+      "{$this->helpPopup}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend><p>" .
         "<label class='s s1'>" .
           "<span class='vh'>{$i18n->t("Day")}</span>" .
           "<input id='{$this->id}-day' max='31' min='1' name='{$this->id}-day' placeholder='{$i18n->t("dd")}' type='number' value='{$this->day}'>" .

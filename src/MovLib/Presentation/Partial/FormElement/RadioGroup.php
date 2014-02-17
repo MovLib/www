@@ -17,10 +17,10 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ValidationException;
-
 /**
  * Fieldset with multiple input radio form elements.
+ *
+ * Use a radio group if your options will <b>never exceed 9 choices</b> and only a single choice is valid.
  *
  * @link http://www.w3.org/TR/wai-aria/roles#radiogroup
  * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/fieldset
@@ -30,82 +30,45 @@ use \MovLib\Exception\ValidationException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class RadioGroup extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
+class RadioGroup extends \MovLib\Presentation\Partial\FormElement\Select {
 
   /**
-   * The radios in the group.
+   * Get the radio group form element.
    *
-   * @var array
+   * @return string
+   *   The radio group form element.
    */
-  protected $choices;
+  public function __toString() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
-  /**
-   * The value of the checked element.
-   *
-   * @var mixed
-   */
-  public $value;
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
-
-
-  /**
-   * Instantiate new radio group form elements.
-   *
-   * @param string $id
-   *   The radio group's global identifier.
-   * @param string $legend
-   *   The radio group's legend text.
-   * @param array $choices
-   *   The radio group's radio form elements as associative array where the array's key is the content of the radio
-   *   input's value-attribute and the array's value the label text for the radio input.
-   * @param mixed $value [optional]
-   *   The value of the checked radio input in the group, defaults to no selected option.
-   */
-  public function __construct($id, $legend, array $choices, $value = null) {
-    parent::__construct($id, $legend, [
-      "aria-expanded" => "true",
-      "aria-required" => "false", // @todo Do we need support for radio groups without default values?
-      "role"          => "radiogroup",
-    ]);
-    $this->choices = $choices;
-    if (isset($_POST[$this->id]) && isset($this->choices[$_POST[$this->id]])) {
-      $this->value = $_POST[$this->id];
+    $options = null;
+    foreach ($this->options as $value => $option) {
+      $checked  = $this->value == $value ? " checked" : null;
+      $options .=
+        "<label class='radio inline'>" .
+          "<input{$checked} name='{$this->id}' required type='radio' value='{$this->htmlEncode($value)}'>{$option}" .
+        "</label>"
+      ;
     }
-    elseif (isset($value)) {
-      $this->value = $value;
-    }
-  }
+    return
+      "{$this->required}{$this->helpPopup}{$this->helpText}" .
+      "<fieldset aria-expanded='true'{$this->expandTagAttributes($this->attributes)}>" .
+        "<legend>{$this->label}</legend>{$options}" .
+      "</fieldset>"
+    ;
 
-  /**
-   * @inheritdoc
-   */
-  protected function render() {
-    $choices = null;
-    foreach ($this->choices as $value => $choice) {
-      $checked = null;
-      if (isset($this->value) && $this->value == $value) {
-        $checked = " checked";
-      }
-      $choices .= "<label class='radio inline'><input{$checked} id='{$this->id}-{$value}' name='{$this->id}' required type='radio' value='{$value}'>{$choice}</label>";
+    // @devStart
+    // @codeCoverageIgnoreStart
     }
-    return "{$this->help}<fieldset{$this->expandTagAttributes($this->attributes)}><legend>{$this->label}</legend>{$choices}</fieldset>";
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function validate() {
-    global $i18n;
-    if (!isset($this->choices[$this->value])) {
-      throw new ValidationException($i18n->t("The submitted value {0} is not a valid choice.", [ $this->placeholder($this->value) ]));
+    catch (\Exception $e) {
+      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
     }
-    return $this;
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 }

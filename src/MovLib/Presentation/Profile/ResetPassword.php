@@ -103,29 +103,32 @@ final class ResetPassword extends \MovLib\Presentation\Page {
     $this->breadcrumb->ignoreQuery = true;
     $this->initLanguageLinks("/profile/reset-password");
 
+    $this->headingBefore = "<a class='btn btn-large btn-primary fr' href='{$i18n->r("/profile/sign-in")}'>{$i18n->t("Sign In")}</a>";
+
     if (!empty($_GET["token"]) && $this->validateToken() === true) {
       // First field to enter the new password.
-      $this->formAddElement(new InputPassword(self::FORM_PASSWORD_NEW, $i18n->t("New Password"), [
+      $this->formAddElement(new InputPassword(self::FORM_PASSWORD_NEW, $i18n->t("New Password"), $this->rawPasswordNew, [
         "autofocus"   => true,
         "placeholder" => $i18n->t("Enter your new password"),
         "required"    => true,
-      ], $this->rawPasswordNew));
+      ]));
 
       // Second field to enter the new password for confirmation.
-      $this->formAddElement(new InputPassword(self::FORM_PASSWORD_CONFIRM, $i18n->t("Confirm Password"), [
+      $this->formAddElement(new InputPassword(self::FORM_PASSWORD_CONFIRM, $i18n->t("Confirm Password"), $this->rawPasswordConfirm, [
         "placeholder" => $i18n->t("Enter your new password again"),
         "required"    => true,
-      ], $this->rawPasswordConfirm));
+      ]));
 
       $this->formAddAction($i18n->r("Reset Password"), [ "class" => "btn btn-large btn-success" ]);
       $this->formInit([ "autocomplete" => "off", "class" => "s s6 o3" ]);
     }
     else {
-      $this->formAddElement(new InputEmail(self::FORM_EMAIL, $i18n->t("Email Address"), [
+      $this->formAddElement(new InputEmail(self::FORM_EMAIL, $i18n->t("Email Address"), $this->email, [
+        "#help-popup" => $i18n->t("Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email.", [ "sitename" => $kernel->siteName ]),
         "autofocus"   => true,
         "placeholder" => $i18n->t("Enter your email address"),
         "required"    => true,
-      ], $this->email, $i18n->t("Enter the email address associated with your {sitename} account. Password reset instructions will be sent via email.", [ "sitename" => $kernel->siteName ])));
+      ]));
       $this->formAddAction($i18n->t("Request Reset"), [ "class" => "btn btn-large btn-success" ]);
       $this->formInit([ "class" => "s s6 o3" ]);
     }

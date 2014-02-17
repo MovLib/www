@@ -17,6 +17,8 @@
  */
 namespace MovLib\Presentation\Partial;
 
+use \MovLib\Presentation\Partial\FormElement\Select;
+
 /**
  * Represents a single country in HTML and provides an interface to all available countries.
  *
@@ -119,6 +121,26 @@ class Country extends \MovLib\Presentation\AbstractBase {
    */
   public static function getCountries() {
     return \MovLib\Data\Country::getCountries();
+  }
+
+  /**
+   * Get select form element to select a country.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @param string $value
+   *   The form element's value.
+   * @param array $attributes [optional]
+   *   The form element's additional attributes.
+   * @param string $id [optional]
+   *   The form element's unique identifier, defaults to <code>"country"</code>.
+   * @param string $label [optional]
+   *   The form element's translated label, default to <code>$i18n->t("Country")</code>.
+   * @return \MovLib\Presentation\Partial\FormElement\Select
+   *   The select form element to select a country.
+   */
+  public static function getSelectFormElement(&$value, array $attributes = null, $id = "country", $label = null) {
+    global $i18n;
+    return new Select($id, $label ?: $i18n->t("Country"), self::getCountries(), $value, $attributes);
   }
 
 }

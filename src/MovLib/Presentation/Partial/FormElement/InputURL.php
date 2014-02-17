@@ -20,22 +20,17 @@ namespace MovLib\Presentation\Partial\FormElement;
 use \MovLib\Exception\ValidationException;
 
 /**
- * HTML input type URL form element.
+ * Input URL form element.
  *
- * Please note that this class will always validate it's value as URL, you can't override the validator class that it
- * uses. You can control the validation process via two data attributes:
- * <ul>
- *   <li><code>"data-allow-external"</code> takes a boolean value and has the same effect as the <var>$allowExternal</var>
- *   parameter of the URL validation class</li>
- *   <li><code>"data-check-reachability"</code> takes a boolean value and has the same effect as the
- *   <var>$checkReachability</var> parameter of the URL validation class</li>
- * </ul>
- * The printed input element's pattern is set to a regular expression that matches the internal validation process
- * pretty closely. Please see the URL validation class for more info on the regular expression used here.
+ * You can control the validation process via two <code>"data"</code>-attributes:
+ * <table border="1" cellspacing="0">
+ *   <tr><th>Attribute</th><th>Description</th></tr>
+ *   <tr><td><code>"data-allow-external"</code></td><td>Set this to the string <code>"true"</code> to allow external
+ *   URLs to validate.</td></tr>
+ *   <tr><td><code>"data-check-reachability"</code></td>Set this to the string <code>"true"</code> to check if the URL
+ *   is really reachable via the WWW (done with cURL).</td></tr>
+ * </table>
  *
- * @link http://www.whatwg.org/specs/web-apps/current-work/multipage/the-input-element.html#attr-input-type
- * @link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input
- * @see \MovLib\Presentation\Validation\URL
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -44,59 +39,119 @@ use \MovLib\Exception\ValidationException;
  */
 class InputURL extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
   /**
-   * Instantiate new URL input element.
+   * Error code for malformed URL error message.
    *
-   * @param string $id
-   *   The input element's unique global identifier.
-   * @param string $label
-   *   The input element's translated label text.
-   * @param array $attributes [optional]
-   *   The input element's attributes array.
+   * @var integer
    */
-  public function __construct($id, $label, array $attributes = null) {
+  const ERROR_MALFORMED = 1;
+
+  /**
+   * Error code for missing scheme or host error message.
+   *
+   * @var integer
+   */
+  const ERROR_SCHEME_OR_HOST = 2;
+
+  /**
+   * Error code for disallowed scheme error message.
+   *
+   * @var integer
+   */
+  const ERROR_SCHEME = 3;
+
+  /**
+   * Error code for missing TLD error message.
+   *
+   * @var integer
+   */
+  const ERROR_TLD = 4;
+
+  /**
+   * Error code for disallowed external URL error message.
+   *
+   * @var integer
+   */
+  const ERROR_EXTERNAL = 5;
+
+  /**
+   * Error code for disallowed parts error message.
+   *
+   * @var integer
+   */
+  const ERROR_PARTS = 6;
+
+  /**
+   * Error code for unreachable URL error message.
+   *
+   * @var integer
+   */
+  const ERROR_REACHABILITY = 7;
+
+  /**
+   * Regular expression pattern for client side URL validation.
+   *
+   * @var string
+   */
+  const PATTERN = "^https?://[a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*[a-z0-9_]\.[a-z]{2,6}(/.*)*$";
+
+  /**
+   * The form element's type.
+   *
+   * @var string
+   */
+  const TYPE = "url";
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Get the input URL form element.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   * @return string
+   *   The input URL form element.
+   */
+  public function __toString() {
     global $i18n;
-    parent::__construct($id, $label, $attributes);
-    $this->attributes["pattern"]     = "^https?://[a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+)*[a-z0-9_]\.[a-z]{2,6}(/.*)*$";
-    $this->attributes["placeholder"] = isset($attributes["placeholder"]) ? $attributes["placeholder"] :"http(s)://";
-    $this->attributes["title"]       = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
-    $this->attributes["type"]        = "url";
-    if (!isset($this->attributes["data-allow-external"])) {
-      $this->attributes["data-allow-external"] = false;
+    $this->attributes["pattern"] = self::PATTERN;
+    $this->attributes["title"]   = $i18n->t("The URL must start with either http:// or https:// and continue with a valid domain (username, password and port are not allowed)");
+    if (!isset($this->attributes["placeholder"])) {
+      $this->attributes["placeholder"] = "http(s)://";
     }
-    if (!isset($this->attributes["data-check-reachability"])) {
-      $this->attributes["data-check-reachability"] = false;
-    }
+    return parent::__toString();
   }
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
   /**
-   * Validate the user submitted URL.
+   * Validate the submitted URL.
    *
-   * <b>NOTE!</b> The URL input is always validated as URL, you cannot override this behaviour.
-   *
-   * @return this
-   * @throws \MovLib\Exception\ValidationException
+   * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Kernel $kernel
+   * @param string $url
+   *   The user submitted url to validate.
+   * @param null|array $errors
+   *   Parameter to collect error messages.
+   * @return string
+   *   The valid URL.
    */
-  public function validate() {
+  protected function validateValue($url, &$errors) {
     global $i18n, $kernel;
-    if (empty($this->value)) {
-      if (array_key_exists("required", $this->attributes)) {
-        throw new ValidationException($i18n->t("The “{0}” URL field is mandatory.", [ $this->label ]));
-      }
-      return $this;
+
+    // Split the URL into separate parts for easy validation and proper escaping. parse_url() returns FALSE if it fails,
+    // but it's more or less close to impossible to reach that goal. Still, if it happens directly abort.
+    if (($parts = parse_url($url)) === false) {
+      $errors[self::ERROR_MALFORMED] = $i18n->t("The URL is invalid.");
+      return $url;
     }
-
-    // Trim right before validating and not in the constructor, could be the property was set later.
-    $this->value = trim($this->value);
-
-    // Split the URL into separate parts for easy validation and proper escaping.
-    $parts = false;
-    if (empty($this->value) || ($parts = parse_url($this->value)) === false) {
-      throw new ValidationException($i18n->t("The URL doesn’t seem to be valid."));
-    }
-
-    // Collect the following errors and throw a single exception.
-    $errors = null;
 
     // A URL must have a scheme and host, otherwise we consider it to be invalid. No support for protocol relative
     // URLs. They often lead to problems for other applications and we're using SSL everywhere, which most other
@@ -104,40 +159,43 @@ class InputURL extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
     // always pasting absolute URLs (e.g. with the placeholder attribute as you can see above in the getPresentation()
     // method).
     if (empty($parts["scheme"]) || empty($parts["host"])) {
-      $errors[] = $i18n->t("Scheme (protocol) and host are mandatory in a URL.");
+      $errors[self::ERROR_SCHEME_OR_HOST] = $i18n->t("Scheme (protocol) and host are mandatory in a URL.");
     }
     // Only HTTP and HTTPS are considered valid schemes.
     elseif ($parts["scheme"] != "http" && $parts["scheme"] != "https") {
-      $errors[] = $i18n->t("Scheme (protocol) must be of type HTTP or HTTPS.");
+      $errors[self::ERROR_SCHEME] = $i18n->t("Scheme (protocol) must be of type HTTP or HTTPS.");
     }
     // Check for valid TLD.
     elseif (preg_match("/\.[a-z]{2,6}$/", $parts["host"]) == false) {
-      $errors[] = $i18n->t("The URL must have a valid {0}TLD{1}.", [
+      $errors[self::ERROR_TLD] = $i18n->t("The URL must have a valid {0}TLD{1}.", [
         "<abbr title='{$i18n->t("Top-level domain")}'>",
         "</abbr>",
       ]);
     }
 
-    // Stop here if scheme or host are missing or not valid.
+    // Stop here if scheme, host, or TLD are missing or not valid.
     if ($errors) {
-      throw new ValidationException(implode("<br>", $errors));
+      return $url;
     }
 
     // Check if this is an external URL.
-    if (strpos($parts["host"], $kernel->domainDefault) === false) {
-      if ($this->attributes["data-allow-external"] === false) {
-        throw new ValidationException($i18n->t("External URLs are forbidden in this context."));
-      }
+    if (strpos($parts["host"], $kernel->domainDefault) === false && isset($this->attributes["data-allow-external"]) && $this->attributes["data-allow-external"] != true) {
+      $errors[self::ERROR_EXTERNAL] = $i18n->t("External URLs are not allowed.");
     }
 
     // If any of the following parts is present the complete URL is considered invalid. No reputable website is
     // using non-standard ports, they simply wouldn't be accessible for the majority of surfers.
     if (isset($parts["port"]) || isset($parts["user"]) || isset($parts["pass"])) {
-      throw new ValidationException($i18n->t("The URL contains illegal parts. Port, usernames and passwords are not allowed!"));
+      $errors[self::ERROR_PARTS] = $i18n->t("The URL contains illegal parts. Port, usernames and passwords are not allowed!");
+    }
+
+    // Don't bother rebuilding the URL if we the URL isn't valid.
+    if ($errors) {
+      return $url;
     }
 
     // Start rebuilding the URL including all provided and allowed parts.
-    $this->value = "{$parts["scheme"]}://{$parts["host"]}";
+    $url = "{$parts["scheme"]}://{$parts["host"]}";
 
     // We have to encode unicode characters, otherwise not only the filter fails, but we are only interested in perfect
     // valid URLs and we cannot treat an unencoded unicode character in the path as something that is invalid. The
@@ -148,51 +206,51 @@ class InputURL extends \MovLib\Presentation\Partial\FormElement\AbstractInput {
       for ($i = 0; $i < $c; ++$i) {
         $path[$i] = rawurlencode(rawurldecode($path[$i]));
       }
-      $this->value .= implode("/", $path);
+      $url .= implode("/", $path);
 
       // Don't forget the allowed optional parts of the URL including their prefix.
       if (($issetQuery = isset($parts["query"]))) {
-        $this->value .= "?{$parts["query"]}";
+        $url .= "?{$parts["query"]}";
       }
       if (($issetFragment = isset($parts["fragment"]))) {
-        $this->value .= "#{$parts["fragment"]}";
+        $url .= "#{$parts["fragment"]}";
       }
 
       // And last but not least validate it again including all the optional parts.
-      if (($issetQuery === true || $issetFragment === true) && filter_var($this->value, FILTER_VALIDATE_URL) === false) {
-        throw new ValidationException($i18n->t("The URL doesn’t seem to be valid."));
+      if (($issetQuery === true || $issetFragment === true) && filter_var($url, FILTER_VALIDATE_URL) === false) {
+        $errors[self::ERROR_MALFORMED] = $i18n->t("The URL is invalid.");
       }
     }
-    // No path at all, add a slash or replace with slash if link to our home page.
+    // No path at all, add a slash to ensure that the link points to the homepage.
     else {
-      $this->value = "{$this->value}/";
+      $url = "{$url}/";
     }
 
     // Additionally check if the URL exists if the appropriate data attribute is set.
-    if ($this->attributes["data-check-reachability"] === true) {
+    if (isset($this->attributes["data-check-reachability"]) && $this->attributes["data-check-reachability"] == true) {
       $ch = curl_init($this->url);
       curl_setopt_array($ch, [
-        CURLOPT_AUTOREFERER => true,
+        CURLOPT_AUTOREFERER    => true,
         CURLOPT_CONNECTTIMEOUT => 5,
-        CURLOPT_ENCODING => "",
+        CURLOPT_ENCODING       => "",
         CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_MAXREDIRS => 1,
-        CURLOPT_NOBODY => true,
+        CURLOPT_MAXREDIRS      => 1,
+        CURLOPT_NOBODY         => true,
         CURLOPT_SSL_VERIFYHOST => false,
         CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT => 5,
+        CURLOPT_TIMEOUT        => 5,
         // It's very important to let other webmasters know who's probing their servers.
-        CURLOPT_USERAGENT => "Mozilla/5.0 (compatible; MovLib-Validation/{$GLOBALS["movlib"]["version"]}; +https://{$GLOBALS["movlib"]["default_domain"]}/)",
+        CURLOPT_USERAGENT      => "Mozilla/5.0 (compatible; MovLib-Validation/{$kernel->version}; +https://{$kernel->domainDefault}/)",
       ]);
       curl_exec($ch);
       $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
       if ($code !== 200) {
-        throw new ValidationException($i18n->t("The URL doesn’t exists (more specifically isn’t reachable)."));
+        $errors[self::ERROR_REACHABILITY] = $i18n->t("The URL doesn’t exists (more specifically isn’t reachable).");
       }
     }
 
-    return $this;
+    return $url;
   }
 
 }

@@ -56,7 +56,7 @@ class InputLinesURL extends \MovLib\Presentation\Partial\FormElement\InputURL {
    */
   public function render() {
     unset($this->attributes["value"]);
-    return "{$this->help}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->valueRaw}</textarea></p>";
+    return "{$this->helpPopup}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$this->valueRaw}</textarea></p>";
   }
 
   /**
