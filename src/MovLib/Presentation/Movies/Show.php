@@ -20,6 +20,7 @@ namespace MovLib\Presentation\Movies;
 use \MovLib\Data\Image\MoviePoster;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Lists\Movies as MoviesPartial;
 
 /**
  * The listing for the latest movie additions.
@@ -74,46 +75,12 @@ class Show extends \MovLib\Presentation\Page {
     // Ensure it's easy for users to find the page where the can create new movies.
     $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/movie/create")}'>{$i18n->t("Create New Movie")}</a>";
 
-    // Nothing to display.
-    if ($this->paginationTotalResults < 1) {
-      return new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO);
-    }
-
-    // Fetch all movies matching the current pagination offset.
-    $list   = null;
-    $movies = Movie::getMovies($this->paginationOffset, $this->paginationLimit);
-    /* @var $movie \MovLib\Data\Movie\Movie */
-    while ($movie = $movies->fetch_object("\\MovLib\\Data\\Movie\\Movie")) {
-      // We have to use different micro-data if display and original title differ.
-      if ($movie->displayTitle != $movie->originalTitle) {
-        $displayTitleItemprop = "alternateName";
-        $movie->originalTitle = "<br><span class='small'>{$i18n->t("{0} ({1})", [
-          "<span itemprop='name'{$this->lang($movie->originalTitleLanguageCode)}>{$movie->originalTitle}</span>",
-          "<i>{$i18n->t("original title")}</i>",
-        ])}</span>";
-      }
-      // Simplay clear the original title if it's the same as the display title.
-      else {
-        $displayTitleItemprop = "name";
-        $movie->originalTitle = null;
-      }
-      $movie->displayTitle = "<span class='link-color' itemprop='{$displayTitleItemprop}'{$this->lang($movie->displayTitleLanguageCode)}>{$movie->displayTitle}</span>";
-
-      // Append year enclosed in micro-data to display title if available.
-      if (isset($movie->year)) {
-        $movie->displayTitle = $i18n->t("{0} ({1})", [ $movie->displayTitle, "<span itemprop='datePublished'>{$movie->year}</span>" ]);
-      }
-
-      // Put the movie list entry together.
-      $list .= "<li itemscope itemtype='http://schema.org/Movie'><a class='img li r' href='{$movie->route}' itemprop='url'>" .
-        "<span class='s s1'>{$this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ])}</span>" .
-        "<span class='s s9'>{$movie->displayTitle}{$movie->originalTitle}</span>" .
-      "</a></li>";
-    }
-    $movies->free();
-
-    // Put it all together and we're done.
-    return "<div id='filter' class='tar'>Filter</div><ol class='hover-list no-list'>{$list}</ol>";
+    return "<div id='filter' class='tar'>Filter</div>" .
+            new MoviesPartial(
+              Movie::getMovies($this->paginationOffset, $this->paginationLimit),
+              new Alert($i18n->t("No movies match your search criteria."), null, Alert::SEVERITY_INFO)
+            )
+    ;
   }
 
 }
