@@ -44,6 +44,51 @@
   function MovLib() {
 
     /**
+     * `true` if current browser is Mozilla Firefox (any version).
+     *
+     * @link http://stackoverflow.com/a/9851769/1251219
+     * @property browserFirefox
+     * @type Boolean
+     */
+    this.browserFirefox = typeof InstallTrigger !== "undefined";
+
+    /**
+     * `true` if current browser is Opera (8.0 - 15.0).
+     *
+     * @link http://stackoverflow.com/a/9851769/1251219
+     * @property browserOpera
+     * @type Boolean
+     */
+    this.browserOpera = !!window.opera || navigator.userAgent.indexOf(" OPR/") >= 0;
+
+    /**
+     * `true` if current browser is Google Chrome (any version).
+     *
+     * @link http://stackoverflow.com/a/9851769/1251219
+     * @property browserChrome
+     * @type Boolean
+     */
+    this.browserChrome = !!window.chrome && !this.browserOpera;
+
+    /**
+     * `true` if current browser is Apple Safari (any version).
+     *
+     * @link http://stackoverflow.com/a/9851769/1251219
+     * @property browserSafari
+     * @type Boolean
+     */
+    this.browserSafari = Object.prototype.toString.call(window.HTMLElement).indexOf("Constructor") > 0;
+
+    /**
+     * `true` if current browser is Microsoft Internet Explorer (any version).
+     *
+     * @link http://stackoverflow.com/a/9851769/1251219
+     * @property browserIE
+     * @type Boolean
+     */
+    this.browserIE = /*@cc_on!@*/false || !!document.documentMode;
+
+    /**
      * Object to keep reference of already loaded modules.
      *
      * This is kept public because our modules export themselves, unlike you're used to from other systems.
@@ -137,7 +182,7 @@
     init: function () {
       // Load cross-browser sham for classList support.
       if (!("classList" in document.documentElement)) {
-        this.loadModule("//" + this.settings.domainStatis + "/bower/classlist/classList.js");
+        this.loadModule("//" + this.settings.domainStatic + "/bower/classlist/classList.js");
       }
 
       // Extend our document with the most important sections.
@@ -145,8 +190,29 @@
       document.main   = document.getElementById("m");
       document.footer = document.getElementById("f");
 
-      // Ensure focused elements don't hide themselve beneath our fixed header.
-      document.body.addEventListener("focus", this.fixFocusScrollPosition, true);
+      // Fix scroll position on focus.
+      //
+      // Because we have a fixed header input elements might go beneath it if you tab through the page. Unfortunately
+      // there is no way to fix this with a pure CSS solution for input elements. Input elements are empty an can't have
+      // a :before of :after element and focus doesn't bubble in CSS. We fix this issue for all users who have JavaScript
+      // enable and others have to scroll themselves.
+      document.body.addEventListener("focus", function (event) {
+        if (!document.header.contains(event.target)) {
+          var boundingClientRect = event.target.getBoundingClientRect();
+          if (boundingClientRect.bottom < 110) {
+            window.scrollBy(0, -((boundingClientRect.top > 0 ? boundingClientRect.height : (boundingClientRect.top * -1 + boundingClientRect.height)) + 60));
+          }
+        }
+      }, true);
+
+      // Fix Firefox autofocus bug: https://bugzilla.mozilla.org/show_bug.cgi?id=712130
+      if (this.browserFirefox) {
+        var autofocus = document.querySelector("[autofocus]");
+        if (autofocus) {
+          autofocus.blur();
+          window.onload = autofocus.focus.bind(autofocus);
+        }
+      }
 
       // Check if there is any active element and if there is check if it's a child of the currently opened navigation.
       // If none of both is true remove the open class and close the navigation.
@@ -300,28 +366,6 @@
       }
 
       return this;
-    },
-
-    /**
-     * Fix scroll position on focus.
-     *
-     * Because we have a fixed header input elements might go beneath it if you tab through the page. Unfortunately
-     * there is no way to fix this with a pure CSS solution for input elements. Input elements are empty an can't have
-     * a :before of :after element and focus doesn't bubble in CSS. We fix this issue for all users who have JavaScript
-     * enable and others have to scroll themselves.
-     *
-     * @method fixFocusScrollPosition
-     * @param {Event} event
-     *   The focus event.
-     * @returns {undefined}
-     */
-    fixFocusScrollPosition: function (event) {
-      var boundingClientRect = event.target.getBoundingClientRect();
-      if (!document.header.contains(event.target) && (event.target.type === "textarea" && boundingClientRect.top >= 0)) {
-        if (boundingClientRect.top < boundingClientRect.height + 50) {
-          window.scrollBy(0, -((boundingClientRect.top > 0 ? boundingClientRect.height : (boundingClientRect.top * -1 + boundingClientRect.height)) + 60));
-        }
-      }
     },
 
     /**
