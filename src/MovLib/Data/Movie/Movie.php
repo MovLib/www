@@ -249,6 +249,33 @@ class Movie {
   }
 
   /**
+   * Get the rating of a specific user for this movie.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\User\Session $session
+   * @param null|integer $userId [optional]
+   *   The user's ID to get the rating for, defaults to the currently authenticated user's ID.
+   * @return null|integer
+   *   The rating for the user or <code>NULL</code> if the user has not rated this movie yet.
+   * @throws \MovLib\Exception\DatabaseException
+   */
+  public function getUserRating($userId = null) {
+    global $db, $session;
+
+    if ($userId === null) {
+      if ($session->isAuthenticated !== true) {
+        return;
+      }
+      $userId = $session->userId;
+    }
+
+    $result = $db->query("SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1", "dd", [ $userId, $this->id ])->get_result()->fetch_row();
+    if (isset($result[0])) {
+      return $result[0];
+    }
+  }
+
+  /**
    * Initialize the loaded movie.
    *
    * @global \MovLib\Data\Database $db

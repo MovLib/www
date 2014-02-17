@@ -47,7 +47,6 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   public $synopsis;
   public $taglines;
   public $title;
-  protected $userRating;
   public $votes;
 
 
@@ -234,31 +233,6 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
       "ds",
       [ $this->id, $i18n->languageCode ]
     )->get_result();
-  }
-
-  /**
-   * Get the currently authenticated user's rating for this movie.
-   *
-   * @global \MovLib\Data\Database $db
-   * @global \MovLib\Data\User\Session $session
-   * @return null|integer
-   *   The currently authenticated user's rating for this movie or <code>NULL</code> if the the current user isn't
-   *   authenticated or has no rating at all for this movie.
-   * @throws \MovLib\Exception\DatabaseException
-   */
-  public function getUserRating() {
-    global $db, $session;
-    if ($session->isAuthenticated === true && $this->userRating !== false) {
-      if ($this->userRating) {
-        return $this->userRating;
-      }
-      $result = $db->query("SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1", "dd", [ $session->userId, $this->id ])->get_result()->fetch_row();
-      if (isset($result[0])) {
-        $this->userRating = $result[0];
-        return $this->userRating;
-      }
-      $this->userRating = false;
-    }
   }
 
   /**
