@@ -66,8 +66,10 @@ class Kernel {
    */
   protected $cacheBusters = [
     "css" => [ /*####CSS-CACHE-BUSTER####*/ ],
-    "img" => [ /*####IMG-CACHE-BUSTER####*/ ],
+    "jpg" => [ /*####JPG-CACHE-BUSTER####*/ ],
     "js"  => [ /*####JS-CACHE-BUSTER####*/ ],
+    "png" => [ /*####PNG-CACHE-BUSTER####*/ ],
+    "svg" => [ /*####SVG-CACHE-BUSTER####*/ ],
   ];
 
   /**
@@ -602,15 +604,16 @@ class Kernel {
         }
       }
 
-      // Get the cache buster string for this asset, the md5_file() call is only performed during development because
-      // otherwise we should have an entry for it.
-      $cacheBuster = isset($this->cacheBusters[$extension][$name])
-        ? $this->cacheBusters[$extension][$name]
-        : md5_file("{$this->documentRoot}/public/asset/{$dir}/{$name}.{$extension}")
-      ;
+      // @devStart
+      // @codeCoverageIgnoreStart
+      if (!isset($this->cacheBusters[$extension][$name])) {
+        $this->cacheBusters[$extension][$name] = md5_file("{$this->documentRoot}/public/asset/{$dir}/{$name}.{$extension}");
+      }
+      // @codeCoverageIgnoreEnd
+      // @devStart
 
       // Add the absolute URL to our URL cache and we're done.
-      $cache[$extension][$name] = "//{$this->domainStatic}/asset/{$dir}/{$name}.{$extension}?{$cacheBuster}";
+      $cache[$extension][$name] = "//{$this->domainStatic}/asset/{$dir}/{$name}.{$extension}?{$this->cacheBusters[$extension][$name]}";
     }
 
     return $cache[$extension][$name];
