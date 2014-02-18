@@ -56,7 +56,11 @@ final class ComingSoon extends \MovLib\Presentation\Page {
    */
   public function __construct() {
     global $i18n, $kernel;
+
+    // Initialize the page.
     $this->initPage($kernel->siteName);
+    $this->prefetch("//{$kernel->domainDefault}/");
+    $this->next("//{$kernel->domainDefault}/");
 
     // Configure and initialize the form.
     $this->formAddElement(new InputEmail("email", $i18n->t("Email Address"), $this->email, [

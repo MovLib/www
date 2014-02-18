@@ -17,8 +17,6 @@
  */
 namespace MovLib\Presentation;
 
-use \MovLib\Data\User\FullUser;
-use \MovLib\Presentation\Redirect\Temporary;
 use \MovLib\Presentation\Partial\Navigation;
 
 /**
@@ -50,6 +48,7 @@ final class LanguageSelection extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n, $kernel;
     $this->initPage($i18n->t("Language Selection"));
+    $this->next("//{$_SERVER["LANGUAGE_CODE"]}.{$kernel->domainDefault}/");
     $kernel->stylesheets[] = "language-selection";
   }
 

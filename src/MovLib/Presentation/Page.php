@@ -78,6 +78,13 @@ class Page extends \MovLib\Presentation\AbstractBase {
   protected $contentBefore;
 
   /**
+   * Additional elements for the <code><head></code> element.
+   *
+   * @var string
+   */
+  protected $headElements;
+
+  /**
    * HTML that should be included after the page's heading.
    *
    * @var string
@@ -478,7 +485,12 @@ class Page extends \MovLib\Presentation\AbstractBase {
         "<meta property='og:title' content='{$title}'>" .
         "<meta property='og:type' content='website'>" .
         "<meta property='og:url' content='{$kernel->scheme}://{$kernel->hostname}{$kernel->requestURI}'>" .
+        "<meta name='application-name' content='{$kernel->siteName}'>" .
+        "<meta name='msapplication-tooltip' content='{$kernel->siteSlogan}'>" .
+        "<meta name='msapplication-starturl' content='{$kernel->scheme}://{$kernel->hostname}/'>" .
+        "<meta name='msapplication-navbutton-color' content='#ffffff'>" .
         // @todo Add opensearch tag (rel="search").
+        $this->headElements .
       "</head>" .
       "<body id='{$this->id}' class='{$this->bodyClasses}'>" .
         "{$this->getHeader()}{$content}{$this->getFooter()}" .
@@ -628,6 +640,42 @@ class Page extends \MovLib\Presentation\AbstractBase {
       $kernel->cookieDelete("alerts");
     }
 
+    return $this;
+  }
+
+  /**
+   * Add next route to <code><head></code>.
+   *
+   * @param string $route
+   *   The route that's next.
+   * @return this
+   */
+  final protected function next($route) {
+    $this->headElements .= "<link rel='next' href='{$route}'>";
+    return $this;
+  }
+
+  /**
+   * Add prefetch/prerender route to <code><head></code>.
+   *
+   * @param string $route
+   *   The route to prefetch/prerender.
+   * @return this
+   */
+  final protected function prefetch($route) {
+    $this->headElements .= "<link rel='prefetch' href='{$route}'><link rel='prerender' href='{$route}'>";
+    return $this;
+  }
+
+  /**
+   * Add previous route to <code><head></code>.
+   *
+   * @param string $route
+   *   The route that's previous.
+   * @return this
+   */
+  final protected function prev($route) {
+    $this->headElements .= "<link rel='prev' href='{$route}'>";
     return $this;
   }
 
