@@ -261,7 +261,7 @@ INSERT INTO `messages` (`message`, `dyn_translations`) VALUES
 ('Also Known As', COLUMN_CREATE('de', 'Auch Bekannt Als')),
 ('External Links', COLUMN_CREATE('de', 'Externe Links')),
 
----- Coming Soon Page (must be last)
+-- Coming Soon Page (must be last)
 
 ('Sign up for the {sitename} beta!', COLUMN_CREATE('de', 'Melde dich jetzt für die {sitename} Beta an!')),
 ('The open beta is scheduled to start in June 2014.', COLUMN_CREATE('de', 'Die offene Beta ist für den Juni 2014 geplant.')),
