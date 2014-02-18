@@ -148,9 +148,9 @@
      */
     executeModules: function (modules, context) {
       // The callback method if the module isn't loaded yet.
-      this.execute = (this.execute, function (module) {
+      this.execute = this.execute || function (module) {
         this.modules[module](context);
-      });
+      };
 
       for (var module in modules) {
         if (!this.modules[module]) {
@@ -181,7 +181,7 @@
      */
     getAlert: function (message, title, severity, attributes) {
       var alert = document.createElement("div");
-      attributes = (attributes, {});
+      attributes = attributes || {};
       attributes.role = "alert";
       for (var attribute in attributes) {
         alert.setAttribute(attribute, attributes[attribute]);
@@ -190,7 +190,7 @@
         severity = "alert-" + severity;
       }
       alert.classList.add("alert", "hide", severity);
-      alert.innerHTML = "<div class='c'>" + (title, "") + message + "</div>";
+      alert.innerHTML = "<div class='c'>" + (title || "") + message + "</div>";
       return alert;
     },
 
@@ -324,10 +324,10 @@
      */
     invalidate: function (element, message) {
       // Callback for the change event on the element.
-      this.invalidateReset = (this.invalidateReset, function () {
+      this.invalidateReset = this.invalidateReset || function () {
         element.setCustomValidity("");
         element.removeEventListener(this.invalidateReset);
-      }.bind(this));
+      }.bind(this);
 
       // Remove possible HTML from message and set the custom validity error message on the element.
       var stripTags = document.createElement("div");
@@ -374,15 +374,15 @@
      * @returns {MovLib}
      */
     toggleFocusClass: function (element, useCapture) {
-      this.add = (this.add, function () {
+      this.add = this.add || function () {
         this.classList.add("focus");
-      });
-      element.addEventListener("focus", this.add, (useCapture, true));
+      };
+      element.addEventListener("focus", this.add, (useCapture || true));
 
-      this.remove = (this.remove, function () {
+      this.remove = this.remove || function () {
         this.classList.remove("focus");
-      });
-      element.addEventListener("blur", this.remove, (useCapture, true));
+      };
+      element.addEventListener("blur", this.remove, (useCapture || true));
 
       return this;
     }
