@@ -512,7 +512,7 @@ class Kernel {
         else {
           $presentation .= "<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->";
           file_put_contents($cacheFile, $presentation);
-          $this->compress($cacheFile, $presentation);
+          $this->compress($cacheFile);
         }
       }
       // @devStart
@@ -561,12 +561,9 @@ class Kernel {
    *
    * @param string $source
    *   Absolute path to the file that should be compressed.
-   * @param string $fileContent [optional]
-   *   The content of the <var>$source</var> file, defaults to <code>NULL</code> and the content will be read with
-   *   <code>file_get_contents()</code>.
    * @return this
    */
-  public function compress($source, $fileContent = null) {
+  public function compress($source) {
     // @devStart
     // @codeCoverageIgnoreStart
     if (empty($source)) {
@@ -581,21 +578,14 @@ class Kernel {
     // @codeCoverageIgnoreEnd
     // @devEnd
 
-    // Build absolute path to compressed target file.
-    $target = "{$source}.gz";
-
-    // Read file content if it wasn't passed.
-    if (!$fileContent) {
-      $fileContent = file_get_contents($source);
+    // Try to compress the file.
+    if (sh::execute("zopfli --gzip --ext 'gz' {$source}") === false) {
+      error_log("Couldn't compress '{$source}' with zopfli");
+      return $this;
     }
 
-    // Create compressed version.
-    $zp = gzopen($target, "w9");
-    gzwrite($zp, $fileContent);
-    gzclose($zp);
-
     // Make sure that the modification time is exactly the same (as recommended in the nginx docs).
-    touch($target, filemtime($source));
+    touch("{$source}.gz", filemtime($source));
 
     return $this;
   }
