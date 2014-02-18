@@ -36,15 +36,11 @@
   /**
    * Attach Movie to the MovLib modules.
    *
-   * @param {HTMLCollection} context
-   *   The context we are currently working with.
+   * @param {HTMLCollection} context The context we are currently working with.
    * @returns {MovLib}
    */
   MovLib.modules.Movie = function (context) {
-    var movieRating = context.getElementById("movie-rating");
-    movieRating.addEventListener("focus", MovLib.classFocusAdd, true);
-    movieRating.addEventListener("blur", MovLib.classFocusRemove, true);
-
+    MovLib.toggleFocusClass(context.getElementById("movie-rating"));
     return MovLib;
   };
 

@@ -45,29 +45,143 @@
    *
    * @class InputImage
    * @constructor
-   * @param {HTMLElement} element
-   *   The <b>.inputimage</b> element to work with.
+   * @param {HTMLElement} element The `.inputimage`-element to work with.
    * @return {Module}
    */
   function Module(element) {
-    this.element     = element;
+    /**
+     * The `.inputimage`-element to work with.
+     *
+     * @property element
+     * @type HTMLElement
+     */
+    this.element = element;
+
+    /**
+     * The maximum filesize that is allowed.
+     *
+     * @property maxFilesize
+     * @type Number
+     */
     this.maxFilesize = parseInt(element.getAttribute("data-max-filesize"), 10);
-    this.height      = parseInt(element.getAttribute("data-height"), 10);
-    this.width       = parseInt(element.getAttribute("data-width"), 10);
-    this.minHeight   = parseInt(element.getAttribute("data-min-height"), 10);
-    this.minWidth    = parseInt(element.getAttribute("data-min-width"), 10);
-    this.alerts      = JSON.parse(element.children[0].innerHTML);
-    this.fileReader  = (typeof FileReader !== undefined);
-    this.preview     = element.children[1];
-    this.img         = this.preview.children[0];
-    this.newImg      = document.createElement("img");
-    this.button      = element.children[2].getElementsByClassName("input-file")[0];
-    this.input       = this.button.children[1];
-    this.accept      = this.input.getAttribute("accept").split(",");
+
+    /**
+     * Height of the existing image.
+     *
+     * @property height
+     * @type Number
+     */
+    this.height = parseInt(element.getAttribute("data-height"), 10);
+
+    /**
+     * Width of the existing image.
+     *
+     * @property width
+     * @type Number
+     */
+    this.width = parseInt(element.getAttribute("data-width"), 10);
+
+    /**
+     * The minimum height that an image must have to be valid.
+     *
+     * @property minHeight
+     * @type Number
+     */
+    this.minHeight = parseInt(element.getAttribute("data-min-height"), 10);
+
+    /**
+     * The minimum width that an image must have to be valid.
+     *
+     * @property minWidth
+     * @type Number
+     */
+    this.minWidth = parseInt(element.getAttribute("data-min-width"), 10);
+
+    /**
+     * Translated error messages for the various validation errors.
+     *
+     * @property alerts
+     * @type Object
+     */
+    this.alerts = JSON.parse(element.children[0].innerHTML);
+
+    /**
+     * `FileReader` instance or `false` if browser doesn't have support.
+     *
+     * @property fileReader
+     * @type FileReader
+     */
+    this.fileReader = (typeof FileReader !== "undefined");
+
+    /**
+     * The preview area.
+     *
+     * @property preview
+     * @type HTMLElement
+     */
+    this.preview = element.children[1];
+
+    /**
+     * The preview area's `<img>`-element.
+     *
+     * @property img
+     * @type HTMLElement
+     */
+    this.img = this.preview.children[0];
+
+    /**
+     * Empty `<img>`-element.
+     *
+     * @property newImg
+     * @type HTMLElement
+     */
+    this.newImg = document.createElement("img");
+
+    /**
+     * The button surrounding the input file form element.
+     *
+     * @property button
+     * @type HTMLElement
+     */
+    this.button = element.children[2].getElementsByClassName("input-file")[0];
+
+    /**
+     * The input file form element.
+     *
+     * @property input
+     * @type HTMLElement
+     */
+    this.input = this.button.children[1];
+
+    /**
+     * List of allowed MIME types.
+     *
+     * @property accept
+     * @type Array
+     */
+    this.accept = this.input.getAttribute("accept").split(",");
+
+    // Initialize the input image form element.
     this.init();
   }
 
   Module.prototype = {
+
+    /**
+     * {@see FileReader.onload} callback.
+     *
+     * @method fileReaderOnload
+     * @chainable
+     * @param {Event} event The fired event.
+     * @returns {MovLib}
+     */
+    fileReaderOnload: function (event) {
+      this.newImg.src    = event.target.result;
+      this.newImg.setAttribute("width", this.img.width);
+      this.newImg.onload = this.previewImageOnload;
+
+      return this;
+    },
 
     /**
      * Initialize the <b>.inputimage</b> element.
@@ -77,25 +191,33 @@
      * @returns {InputImage}
      */
     init: function () {
-      this.button.addEventListener("focus", MovLib.classFocusAdd, true);
-      this.button.addEventListener("blur", MovLib.classFocusRemove, true);
-      if (this.fileReader === true) {
-        this.fileReader        = new FileReader();
-        this.fileReader.onload = this.fileReaderOnload.bind(this);
-        this.input.addEventListener("change", this.previewImage.bind(this), false);
-      }
-    },
+      MovLib.toggleFocusClass(this.button);
 
-    insertNewImage: function () {
-      this.preview.removeChild(this.img);
-      this.preview.appendChild(this.newImg);
+      if (this.fileReader === true) {
+        // Bind once and keep forever.
+        this.fileReaderOnload  = this.fileReaderOnload.bind(this);
+        this.previewImage      = this.previewImage.bind(this);
+        this.previeImageOnload = this.previewImage.bind(this);
+
+        // Instantiate FileReader and bind onload/event listeners.
+        this.fileReader        = new FileReader();
+        this.fileReader.onload = this.fileReaderOnload;
+        this.input.addEventListener("change", this.previewImage, false);
+      }
+
       return this;
     },
 
-    fileReaderOnload: function (event) {
-      this.newImg.src    = event.target.result;
-      this.newImg.setAttribute("width", this.img.width);
-      this.newImg.onload = this.previewImageOnload.bind(this);
+    /**
+     * Remove existing preview `<img>`-element and insert new preview `<img>`-element.
+     *
+     * @method insertNewImage
+     * @chainable
+     * @returns {InputImage}
+     */
+    insertNewImage: function () {
+      this.preview.removeChild(this.img);
+      this.preview.appendChild(this.newImg);
 
       return this;
     },
@@ -109,7 +231,6 @@
      * @returns {InputImage}
      */
     previewImage: function () {
-
       // Check if the user selected an actual file.
       if (this.input.files && this.input.files[0]) {
         // Validate the file's size.
@@ -129,6 +250,13 @@
       return this;
     },
 
+    /**
+     * Continue image validation after successful load and display preview image if valid.
+     *
+     * @method previewImageOnload
+     * @chainable
+     * @returns {InputImage}
+     */
     previewImageOnload: function () {
       // Validate the image's dimensions.
       if (this.newImg.naturalHeight < this.minHeight || this.newImg.naturalWidth < this.minWidth) {
@@ -162,6 +290,8 @@
      * Reset the input file form element.
      *
      * @link http://stackoverflow.com/a/16222877/1251219
+     * @method reset
+     * @chainable
      * @returns {InputImage}
      */
     reset: function () {
@@ -173,6 +303,7 @@
         }
       }
       catch (e) {}
+
       return this;
     }
 
@@ -181,16 +312,17 @@
   /**
    * Attach InputImage to the MovLib modules.
    *
-   * @param {HTMLCollection} context
-   *   The context we are currently working with.
+   * @param {HTMLCollection} context The context we are currently working with.
    * @returns {MovLib}
    */
   MovLib.modules[moduleName] = function (context) {
     var elements = context.getElementsByClassName(moduleName.toLowerCase());
     var c        = elements.length;
+
     for (var i = 0; i < c; ++i) {
       elements[i][moduleName] = new Module(elements[i]);
     }
+
     return MovLib;
   };
 

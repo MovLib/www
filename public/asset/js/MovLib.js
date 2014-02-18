@@ -95,6 +95,7 @@
      *
      * @property modules
      * @type Object
+     * @default {}
      */
     this.modules = {};
 
@@ -103,6 +104,7 @@
      *
      * @property settings
      * @type Object
+     * @default { domainStatic: "movlib.org" }
      */
     this.settings = JSON.parse(document.getElementById("jss").innerHTML);
 
@@ -118,45 +120,68 @@
   MovLib.prototype = {
 
     /**
-     * Helper method to apply focus class to element.
+     * The MovLib module itself.
      *
-     * @returns {undefined}
+     * The code within this method is executed on every page load, including subsequent AJAX loads.
+     *
+     * @method execute
+     * @chainable
+     * @param {HTMLCollection} context The context we are currently working with.
+     * @returns {MovLib}
      */
-    classFocusAdd: function () {
-      this.classList.add("focus");
+    execute: function (context) {
+
+      return this;
     },
 
     /**
-     * Helper method to remove focus class from element.
+     * Execute all given modules with the given context.
      *
-     * @returns {undefined}
+     * Note that any module that wasn't loaded yet will be automatically loaded and executed.
+     *
+     * @todo We shouldn't call <code>.bind()</code> within a loop!
+     * @method executeModules
+     * @chainable
+     * @param {Object} modules The modules to execute.
+     * @param {HTMLCollection} context The context we are currently working with.
+     * @return {MovLib}
      */
-    classFocusRemove: function () {
-      this.classList.remove("focus");
+    executeModules: function (modules, context) {
+      // The callback method if the module isn't loaded yet.
+      this.execute = (this.execute, function (module) {
+        this.modules[module](context);
+      });
+
+      for (var module in modules) {
+        if (!this.modules[module]) {
+          this.loadModule(modules[module], this.execute.bind(this, module));
+        }
+        else {
+          this.modules[module](context);
+        }
+      }
+
+      return this;
     },
 
     /**
      * Get alert message.
      *
-     * Please note that the alert has the CSS class <code>"hide"</code> and you have to add the class <code>"show"</code>
-     * after you inserted the element into the DOM.
+     * Please note that the alert has the CSS class `"hide"` and you have to add the class `"show"` after you inserted
+     * the element into the DOM.
      *
-     * @param {String} message
-     *   The already translated alert's message.
-     * @param {String} [title]
-     *   The already translated alert's title.
-     * @param {String} [severity]
-     *   The alert's severity level, default is <code>"warning"</code>. Possible values are: <code>"error"</code>,
-     *   <code>"info"</code>, and <code>"success"</code>
-     * @param {Object} [attributes]
-     *   An array containing additional attributes that should be applied to the outermost div element surrounding the
-     *   alert.
-     * @returns {HTMLElement}
-     *   The alert message.
+     * @method getAlert
+     * @param {String} message The already translated alert's message.
+     * @param {String} [title] The already translated alert's title.
+     * @param {String} [severity=""] The alert's severity level, default is empty which conforms to <code>"warning"</code>.
+     * Possible values are: <code>"error"</code>, <code>"info"</code>, and <code>"success"</code>.
+     * @param {Object} [attributes={}] An array containing additional attributes that should be applied to the outermost
+     *   <code><div></code>-element surrounding the alert.
+     * @returns {HTMLElement} The alert message.
      */
     getAlert: function (message, title, severity, attributes) {
       var alert = document.createElement("div");
-      attributes = attributes || {};
+      attributes = (attributes, {});
       attributes.role = "alert";
       for (var attribute in attributes) {
         alert.setAttribute(attribute, attributes[attribute]);
@@ -165,7 +190,7 @@
         severity = "alert-" + severity;
       }
       alert.classList.add("alert", "hide", severity);
-      alert.innerHTML = "<div class='c'>" + (title || "") + message + "</div>";
+      alert.innerHTML = "<div class='c'>" + (title, "") + message + "</div>";
       return alert;
     },
 
@@ -274,8 +299,7 @@
       var expanders = document.header.getElementsByClassName("expander");
       var c         = expanders.length;
       for (var i = 0; i < c; ++i) {
-        expanders[i].addEventListener("focus", this.classFocusAdd, false);
-        expanders[i].addEventListener("blur", this.classFocusRemove, false);
+        this.toggleFocusClass(expanders[i], false);
         expanders[i].addEventListener("blur", expanderCapturingBlur, true);
         expanders[i].addEventListener("keypress", expanderKeypress, false);
         expanders[i].getElementsByClassName("clicker")[0].addEventListener("click", clickerClick, false);
@@ -294,18 +318,16 @@
     /**
      * Invalidate a form element and display the browser generated error message to the user.
      *
-     * @param {HTMLElement} element
-     *   The HTML element to invalidate.
-     * @param {String} message
-     *   The already translated custom error message to display.
+     * @param {HTMLElement} element The HTML element to invalidate.
+     * @param {String} message The translated custom error message to display.
      * @returns {MovLib}
      */
     invalidate: function (element, message) {
       // Callback for the change event on the element.
-      this.invalidateReset = this.invalidateReset || function () {
+      this.invalidateReset = (this.invalidateReset, function () {
         element.setCustomValidity("");
         element.removeEventListener(this.invalidateReset);
-      }.bind(this);
+      }.bind(this));
 
       // Remove possible HTML from message and set the custom validity error message on the element.
       var stripTags = document.createElement("div");
@@ -325,61 +347,12 @@
     },
 
     /**
-     * The MovLib module itself.
-     *
-     * The code within this method is executed on every page load, including subsequent AJAX loads.
-     *
-     * @method execute
-     * @chainable
-     * @param {HTMLCollection} context
-     *   The context we are currently working with.
-     * @returns {MovLib}
-     */
-    execute: function (context) {
-
-      return this;
-    },
-
-    /**
-     * Execute all given modules with the given context.
-     *
-     * Note that any module that wasn't loaded yet will be automatically loaded and executed.
-     *
-     * @method executeModules
-     * @chainable
-     * @param {Object} modules
-     *   The modules to execute.
-     * @param {HTMLCollection} context
-     *   The context we are currently working with.
-     * @return {MovLib}
-     */
-    executeModules: function (modules, context) {
-      // The callback method if the module isn't loaded yet.
-      var execute = function (module) {
-        this.modules[module](context);
-      };
-
-      for (var module in modules) {
-        if (!this.modules[module]) {
-          this.loadModule(modules[module], execute.bind(this, module));
-        }
-        else {
-          this.modules[module](context);
-        }
-      }
-
-      return this;
-    },
-
-    /**
      * Asynchronously load the given module.
      *
      * @method loadModule
      * @chainable
-     * @param {String} url
-     *   The module's absolute URL (including scheme and hostname).
-     * @param {Function} [onloadCallback]
-     *   A function to call on the onload event of the inserted script tag.
+     * @param {String} url The module's absolute URL (including scheme and hostname).
+     * @param {Function} [onloadCallback] A function to call on the onload event of the inserted script tag.
      * @return {MovLib}
      */
     loadModule: function (url, onloadCallback) {
@@ -388,6 +361,29 @@
       script.src    = url;
       script.onload = onloadCallback;
       document.body.appendChild(script);
+      return this;
+    },
+
+    /**
+     * Toggle <code>.focus</code> CSS class on <code>"focus"</code> and <code>"blur"</code> events.
+     *
+     * @method toggleFocusClass
+     * @chainable
+     * @param {HTMLElement} element The HTML element on which the class should be toggled.
+     * @param {Boolean} [useCapture=true] Capturing phase or bubbling phase, default to <code>true</code> (capture).
+     * @returns {MovLib}
+     */
+    toggleFocusClass: function (element, useCapture) {
+      this.add = (this.add, function () {
+        this.classList.add("focus");
+      });
+      element.addEventListener("focus", this.add, (useCapture, true));
+
+      this.remove = (this.remove, function () {
+        this.classList.remove("focus");
+      });
+      element.addEventListener("blur", this.remove, (useCapture, true));
+
       return this;
     }
 
