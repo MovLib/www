@@ -182,8 +182,8 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
 
     // Collect all source files.
     $files = [];
-    $this->globRecursive("{$kernel->documentRoot}/src/MovLib", function ($realpath) use (&$files) {
-      $files[] = $realpath;
+    $this->globRecursive("{$kernel->documentRoot}/src/MovLib", function ($splFileInfo) use (&$files) {
+      $files[] = $splFileInfo->getRealPath();
     });
 
     // Generate skeletons for all files.
@@ -200,7 +200,8 @@ class SkeletonGenerator extends \MovLib\Tool\Console\Command\Development\Abstrac
     }
 
     // Remove all tests that aren't needed anymore.
-    $this->globRecursive("{$kernel->documentRoot}/test/MovLib", function ($realpath) {
+    $this->globRecursive("{$kernel->documentRoot}/test/MovLib", function ($splFileInfo) {
+      $realpath = $splFileInfo->getRealPath();
       if (strpos($realpath, "Test.php") !== false && !is_file(str_replace([ "/test/", "Test.php" ], [ "/src/", ".php" ], $realpath))) {
         unlink($realpath);
         $this->skeletonsDeleted[] = $realpath;

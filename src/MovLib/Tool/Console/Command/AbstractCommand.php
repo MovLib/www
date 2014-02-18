@@ -370,17 +370,24 @@ abstract class AbstractCommand extends \Symfony\Component\Console\Command\Comman
    *   Absolut path to glob.
    * @param callable $callback
    *   Callable to call on each iteration.
-   * @param string $extension [optional]
-   *   The extension of files to search, defaults to <code>php</code>.
+   * @param string|array $extension [optional]
+   *   The extension of files to search for, either as string containing a single extension or a numeric array with
+   *   multiple extensions, defaults to <code>"php"</code>.
+   * @return this
    */
   protected function globRecursive($path, $callback, $extension = "php") {
+    if ($extension !== (array) $extension) {
+      $extension = [ $extension ];
+    }
+
     /* @var $splFileInfo \SplFileInfo */
     foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path), \RecursiveIteratorIterator::SELF_FIRST) as $splFileInfo) {
-      $realpath = $splFileInfo->getRealPath();
-      if ($splFileInfo->isFile() && strpos($splFileInfo->getBasename(), ".{$extension}") !== false) {
-        call_user_func($callback, $realpath, $splFileInfo, $extension);
+      if ($splFileInfo->isFile() && in_array($splFileInfo->getExtension(), $extension)) {
+        call_user_func($callback, $splFileInfo);
       }
     }
+
+    return $this;
   }
 
   /**
