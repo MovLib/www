@@ -511,14 +511,8 @@ class Kernel {
         }
         else {
           $presentation .= "<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->";
-
-          // Create persistent cache file.
           file_put_contents($cacheFile, $presentation);
-
-          // Directly create compressed version as well.
-          $zp = gzopen("{$cacheFile}.gz", "w9");
-          gzwrite($zp, $presentation);
-          gzclose($zp);
+          $this->compress($cacheFile, $presentation);
         }
       }
       // @devStart
@@ -561,6 +555,50 @@ class Kernel {
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
+
+  /**
+   * Compress given file with GZIP for nginx.
+   *
+   * @param string $source
+   *   Absolute path to the file that should be compressed.
+   * @param string $fileContent [optional]
+   *   The content of the <var>$source</var> file, defaults to <code>NULL</code> and the content will be read with
+   *   <code>file_get_contents()</code>.
+   * @return this
+   */
+  public function compress($source, $fileContent = null) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (empty($source)) {
+      throw new \InvalidArgumentException("\$source cannot be empty for compression");
+    }
+    if (!is_file($source) || !is_readable($source)) {
+      throw new \RuntimeException("'{$source}' file is not readable for compression");
+    }
+    if (!is_writable(dirname($source))) {
+      throw new \RuntimeException("Cannot write to '{$source}' directory for compression");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+
+    // Build absolute path to compressed target file.
+    $target = "{$source}.gz";
+
+    // Read file content if it wasn't passed.
+    if (!$fileContent) {
+      $fileContent = file_get_contents($source);
+    }
+
+    // Create compressed version.
+    $zp = gzopen($target, "w9");
+    gzwrite($zp, $fileContent);
+    gzclose($zp);
+
+    // Make sure that the modification time is exactly the same (as recommended in the nginx docs).
+    touch($target, filemtime($source));
+
+    return $this;
+  }
 
   /**
    * Get absolute URL for an asset file.
