@@ -29,6 +29,8 @@ body {
   margin: 0;
   overflow-y: scroll;
   background-color: #252525;
+  -ms-touch-action: auto;
+  touch-action: auto;
 }
 
 code,
