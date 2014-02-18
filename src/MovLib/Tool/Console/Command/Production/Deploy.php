@@ -172,13 +172,13 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     try {
       foreach ([
         "prepareRepository",
-        //"optimizeCSS",
-        //"optimizeJPG",
-        //"optimizeJS",
+        "optimizeCSS",
+        "optimizeJPG",
+        "optimizeJS",
         "optimizePHP",
-        //"optimizePNG",
-        //"optimizeSVG",
-        //"calculateCacheBusters",
+        "optimizePNG",
+        "optimizeSVG",
+        "calculateCacheBusters",
         // @todo maintenance mode start
         // @todo migrations (if any)
         // @todo change symbolic link of /var/www
