@@ -53,12 +53,16 @@
   Doctype: HTML5
   Standards: HTML5, CSS3, SVG
   Components:
-    jQuery,
-    Flatstrap,
-    Bootstrap,
-    normalize.css,
-    Entypo,
-    Font Awesome
+    elasticsearch-php,
+    Symfony2 console,
+    PHPUnit,
+    phpMyAdmin,
+    composer,
+    bower,
+    nodejs,
+    svgo,
+    csso,
+    closure-compiler
   Software:
     PHP,
     nginx,

@@ -26,11 +26,4 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 User-agent: *
-Disallow: /bin/
-Disallow: /cache/
-Disallow: /conf/
-Disallow: /components/
-Disallow: /public/coverage/
-Disallow: /public/doc/
-Disallow: /src/
-Disallow: /test/
+Allow: /
