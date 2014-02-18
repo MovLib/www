@@ -20,9 +20,11 @@ namespace MovLib\Presentation\User;
 use \MovLib\Data\Movie\Movie;
 use \MovLib\Data\Movie\MovieRatings;
 use \MovLib\Data\User\FullUser;
+use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Partial\Country;
 use \MovLib\Presentation\Partial\Date;
 use \MovLib\Presentation\Partial\Time;
+use \MovLib\Presentation\Partial\Lists\Movies as MoviesPartial;
 
 /**
  * Public user profile presentation.
@@ -166,50 +168,63 @@ class Show extends \MovLib\Presentation\Page {
     // ----------------------------------------------------------------------------------------------------------------- Rating Stream
 
     $publicProfile .= "<h2>{$i18n->t("Recently Rated Movies")}</h2>";
-    $ratings        = $this->user->getTotalRatingsCount();
-    if ($ratings === 0) {
-      if ($session->userId === $this->user->id) {
-        $publicProfile .= "<p>{$i18n->t("You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.", [
+    $noItemsText = new Alert("", $i18n->t("No rated Movies"), Alert::SEVERITY_INFO);
+    if ($session->userId === $this->user->id) {
+      $noItemsText->message = $i18n->t("You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.", [
           "<a href='{$i18n->r("/search")}'>", "</a>"
-        ])}</p>";
-      }
-      else {
-        $publicProfile .= "<p>{$i18n->t("{username} hasn’t rated a single movie yet, that makes us a sad panda.", [
-          "username" => $this->user->name
-        ])}</p>";
-      }
+      ]);
     }
     else {
-      $publicProfile .= "<table id='movie-rating'>";
-      $movieRatings   = (new MovieRatings())->getOrderedByCreated(MovieRatings::FROM_USER_ID, $this->user->id);
-      $c = count($movieRatings);
-      for ($i = 0; $i < $c; ++$i) {
-        $movie = new Movie($movieRatings[$i]->movieId);
-
-        // Format the display title for the list.
-        if ($movie->year) {
-          $title = $i18n->t("{0} ({1})", [ $movie->displayTitle, $movie->year ]);
-        }
-        else {
-          $title = "<span itemprop='name'>{$movie->displayTitle}</span>";
-        }
-
-        // Append the original title to the output if it differs from the localized title.
-        if ($movie->displayTitle != $movie->originalTitle) {
-          $title .= "<br><span class='small'>{$i18n->t("Original title: “{original_title}”", [
-            "original_title" => "<span>{$movie->originalTitle}</span>",
-          ])}</span>";
-        }
-
-        $publicProfile .=
-          "<tr class='rating'>" .
-            "<td>{$this->getImage($movie->displayPoster->getStyle(\MovLib\Data\Image\MoviePoster::STYLE_SPAN_01), false)}<td>" .
-            "<td>{$this->a($i18n->r("/movie/{0}", [ $movie->id ]), $title)}<td>" .
-            "<td><span class='star'>{$movieRatings[$i]->rating}</span><td>" .
-          "</tr>";
-      }
-      $publicProfile .= "</table>";
+      $noItemsText->message = $i18n->t("{username} hasn’t rated a single movie yet, that makes us a sad panda.", [
+          "username" => $this->user->name
+      ]);
     }
+
+    $publicProfile .= new MoviesPartial(Movie::getUserRatings($this->user->id), $noItemsText, null, null, 10, $this->user->id);
+//    $ratings        = $this->user->getTotalRatingsCount();
+//    if ($ratings === 0) {
+//      if ($session->userId === $this->user->id) {
+//        $publicProfile .= "<p>{$i18n->t("You haven’t rated a single movie yet, use the {0}search{1} to explore movies you already know.", [
+//          "<a href='{$i18n->r("/search")}'>", "</a>"
+//        ])}</p>";
+//      }
+//      else {
+//        $publicProfile .= "<p>{$i18n->t("{username} hasn’t rated a single movie yet, that makes us a sad panda.", [
+//          "username" => $this->user->name
+//        ])}</p>";
+//      }
+//    }
+//    else {
+//      $publicProfile .= "<table id='movie-rating'>";
+//      $movieRatings   = (new MovieRatings())->getOrderedByCreated(MovieRatings::FROM_USER_ID, $this->user->id);
+//      $c = count($movieRatings);
+//      for ($i = 0; $i < $c; ++$i) {
+//        $movie = new Movie($movieRatings[$i]->movieId);
+//
+//        // Format the display title for the list.
+//        if ($movie->year) {
+//          $title = $i18n->t("{0} ({1})", [ $movie->displayTitle, $movie->year ]);
+//        }
+//        else {
+//          $title = "<span itemprop='name'>{$movie->displayTitle}</span>";
+//        }
+//
+//        // Append the original title to the output if it differs from the localized title.
+//        if ($movie->displayTitle != $movie->originalTitle) {
+//          $title .= "<br><span class='small'>{$i18n->t("Original title: “{original_title}”", [
+//            "original_title" => "<span>{$movie->originalTitle}</span>",
+//          ])}</span>";
+//        }
+//
+//        $publicProfile .=
+//          "<tr class='rating'>" .
+//            "<td>{$this->getImage($movie->displayPoster->getStyle(\MovLib\Data\Image\MoviePoster::STYLE_SPAN_01), false)}<td>" .
+//            "<td>{$this->a($i18n->r("/movie/{0}", [ $movie->id ]), $title)}<td>" .
+//            "<td><span class='star'>{$movieRatings[$i]->rating}</span><td>" .
+//          "</tr>";
+//      }
+//      $publicProfile .= "</table>";
+//    }
 
     return $publicProfile;
   }

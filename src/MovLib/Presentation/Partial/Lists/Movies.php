@@ -19,6 +19,7 @@ namespace MovLib\Presentation\Partial\Lists;
 
 use \MovLib\Data\User\User;
 use \MovLib\Data\Image\MoviePoster;
+use \MovLib\Presentation\Partial\Time;
 
 /**
  * Special images list for movie instances.
@@ -97,14 +98,11 @@ class Movies extends \MovLib\Presentation\Partial\Lists\Images {
   protected function render() {
     global $i18n, $kernel;
 
-    // Cache the user name for the rating.
-    // Also reduce the description span, since the rating takes on a span 2.
-    if ($this->showRating !== false && $this->showRating !== true) {
-      $userName = (new User(User::FROM_ID, $this->showRating))->name;
-      $this->descriptionSpan -= 2;
-    }
-
     try {
+      // Cache the user name for the rating.
+      if ($this->showRating !== false && $this->showRating !== true) {
+        $userName = (new User(User::FROM_ID, $this->showRating))->name;
+      }
       $list   = null;
       /* @var $movie \MovLib\Data\Movie\Movie */
       while ($movie = $this->listItems->fetch_object("\\MovLib\\Data\\Movie\\Movie")) {
@@ -133,14 +131,16 @@ class Movies extends \MovLib\Presentation\Partial\Lists\Images {
         if ($this->showRating !== false) {
           // Global (average) rating.
           if ($this->showRating === true) {
-            // @todo Add average rating star.
+            $rating = \NumberFormatter::create($i18n->locale, \NumberFormatter::DECIMAL)->format($movie->ratingMean);
+            $ratingInfo = "<span class='fr rating-mean tac'>{$rating}</span>";
           }
           // Rating of a specific user.
           else {
-            $rating = $movie->getUserRating($this->showRating);
-            if ($rating !== null) {
-              $rating = str_repeat("<img alt='' height='20' src='{$kernel->getAssetURL("star", "svg")}', width='24'>", $rating);
-              $ratingInfo = "<span class ='fr' title='{$i18n->t("{user}’s rating", [ "user" => $userName])}'>{$rating}</span>";
+            $ratingData = $movie->getUserRating($this->showRating);
+            if ($ratingData !== null) {
+              $rating = str_repeat("<img alt='' height='20' src='{$kernel->getAssetURL("star", "svg")}' width='24'>", $ratingData["rating"]);
+              $ratingTime = (new Time($ratingData["created"]))->formatRelative();
+              $ratingInfo = "<div class ='fr rating-user tar' title='{$i18n->t("{user}’s rating", [ "user" => $userName])}'>{$rating}<br><small>{$ratingTime}</small></div>";
             }
           }
         }
@@ -149,9 +149,10 @@ class Movies extends \MovLib\Presentation\Partial\Lists\Images {
         $list .=
           "<li{$this->expandTagAttributes($this->listItemsAttributes)}>" .
             "<a class='img li r' href='{$movie->route}' itemprop='url'>" .
-              $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "class" => "s s1", "itemprop" => "image" ]) .
-              "<span class='s s{$this->descriptionSpan}'>{$movie->displayTitle}{$movie->originalTitle}</span>" .
-              $ratingInfo .
+              "<div class='s s1 tac'>" .
+                $this->getImage($movie->displayPoster->getStyle(MoviePoster::STYLE_SPAN_01), false, [ "itemprop" => "image" ]) .
+              "</div>" .
+              "<span class='s s{$this->descriptionSpan}'>{$ratingInfo}{$movie->displayTitle}{$movie->originalTitle}</span>" .
             "</a>" .
           "</li>";
       }
