@@ -17,8 +17,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Install all global nodejs packages.
+# "Closure" installation script.
 #
+# LINK:       http://code.google.com/p/closure-compiler/
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT:  © 2013 MovLib
 # LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -26,8 +27,20 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-npm install -g \
-  bower \
-  csso \
-  recess \
-  svgo
+# Set working directory and include configuration script.
+WD="$(cd `dirname ${0}`; pwd)/"
+source ${WD}/inc/conf.sh
+
+SRC="${SD}closure-compiler/"
+
+rm -rf ${SRC}
+mkdir ${SRC}
+cd ${SRC}
+source ${ID}wget.sh "http://dl.google.com/closure-compiler/" "compiler-latest" ".tar.gz"
+mv "${SRC}compiler.jar" "${WD}/../../bin/closure-compiler.jar"
+rm -rf ${SRC}
+movlib fp
+
+LINE=$(msgline)
+msgsuccess "${LINE}\nSuccessfully installed Google closure compiler\n${LINE}"
+exit 0
