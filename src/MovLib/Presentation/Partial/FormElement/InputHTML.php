@@ -30,7 +30,7 @@ use \MovLib\Exception\ValidationException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputHTML extends \MovLib\Presentation\Partial\FormElement\InputHTMLRaw {
+class InputHTML extends \MovLib\Presentation\Partial\FormElement\TextareaHTMLRaw {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties

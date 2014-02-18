@@ -17,12 +17,11 @@
  */
 namespace MovLib\Presentation\Partial\FormElement;
 
-use \MovLib\Exception\ValidationException;
+use \MovLib\Presentation\Error\Unauthorized;
 
 /**
- * Raw HTML contenteditable text form element.
+ * Raw HTML textarea form element.
  *
- * @link https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Content_Editable
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
@@ -30,62 +29,48 @@ use \MovLib\Exception\ValidationException;
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
-class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
-
-
-  // ------------------------------------------------------------------------------------------------------------------- Properties
-
-
-  /**
-   * The text's HTML encoded content.
-   *
-   * @var null|string
-   */
-  public $value;
-
-  /**
-   * The text's HTML decoded content.
-   *
-   * @var null|string
-   */
-  protected $valueRaw;
+class TextareaHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractFormElement {
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
 
 
   /**
-   * Instantiate new HTML form element.
+   * Get the raw HTML textarea form element.
    *
-   * @global \MovLib\Kernel $kernel
-   * @param string $id
-   *   The text's global identifier.
-   * @param string $label
-   *   The text's label text.
-   * @param mixed $value [optional]
-   *   The form element's value, defaults to <code>NULL</code> (no value).
-   * @param array $attributes [optional]
-   *   Additional attributes for the text, defaults to <code>NULL</code> (no additional attributes).
+   * @return string
+   *   The raw HTML textarea form element.
    */
-  public function __construct($id, $label, $value = null, array $attributes = null) {
-    global $kernel;
-    parent::__construct($id, $label, $attributes);
-    $this->attributes["aria-multiline"] = "true";
+  public function __toString() {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    try {
+    // @codeCoverageIgnoreEnd
+    // @devEnd
 
-    if (!empty($_POST[$this->id])) {
-      $normalized = \Normalizer::normalize(trim($_POST[$this->id]));
-      if (!empty($normalized)) {
-        $this->valueRaw = $this->autoParagraph($normalized);
-        $this->value    = $kernel->htmlEncode($this->valueRaw);
-      }
-      else {
-        $this->value = $this->valueRaw = null;
-      }
+    // Remove tags that are inserted by our auto-paragraph method and empty attributes (inserted by Tidy).
+    $content = str_replace(
+      [ "\n\n", "<br>", "<p>", "</p>", "=''", '=""' ],
+      [ "\n", "", "", "\n", "", "" ],
+      tidy_get_output(tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->htmlDecode($this->value)}</body></html>"))
+    );
+
+    $this->attributes["aria-multiline"] = "true";
+    return
+      "{$this->required}{$this->helpPopup}{$this->helpText}<p>" .
+        "<label for='{$this->id}'>{$this->label}</label>" .
+        "<textarea{$this->expandTagAttributes($this->attributes)}>{$content}</textarea>" .
+      "</p>"
+    ;
+
+    // @devStart
+    // @codeCoverageIgnoreStart
     }
-    elseif ($value) {
-      $this->value    = $value;
-      $this->valueRaw = $this->htmlDecode($this->value);
+    catch (\Exception $e) {
+      return (string) new \MovLib\Presentation\Partial\Alert("<pre>{$e}</pre>", "Error Rendering Element", \MovLib\Presentation\Partial\Alert::SEVERITY_ERROR);
     }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
   }
 
 
@@ -112,10 +97,10 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     // Normalize break tags.
     $html = preg_replace("#<br */?>#", "<br>", $html);
 
-    // Replace more than one break in a row with to line feeds.
+    // Replace more than one break in a row with two line feeds.
     $html = preg_replace("#<br>\s*<br>#", "\n\n", $html);
 
-    // Space things out a little
+    // Space things out a little.
     $allblocks = "(?:table|thead|tfoot|caption|col|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|map|area|blockquote|address|math|p|h[1-6]|hr|section|article|aside|hgroup|header|footer|nav|figure|figcaption|details|menu|summary|code)";
 
     // Insert one line feed before each block level tag.
@@ -124,13 +109,13 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     // Insert two line feeds after each block level tag.
     $html = preg_replace("#(</{$allblocks}>)#", "$1\n\n", $html);
 
-    // Take care of duplicates
+    // Take care of duplicates.
     $html = preg_replace("#\n\n+#", "\n\n", $html);
 
     // Ensure no whitespace is present after an image tag and the following caption.
     //$html = preg_replace("#<img(.*)>\s+<#U", "<img$1><", $html);
 
-    // Make paragraphs, including one at the end
+    // Make paragraphs, including one at the end.
     $lines = preg_split("#\n\s*\n#", $html, -1, PREG_SPLIT_NO_EMPTY);
 
     // Enclose all paragraphs.
@@ -157,11 +142,11 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
     $html = preg_replace("#<p><blockquote([^>]*)>#i", "<blockquote$1><p>", $html);
     $html = str_replace("</blockquote></p>", "</p></blockquote>", $html);
 
-    // Don't pee all over a block tag.
+    // Again, don't wrap block tags with paragraphs.
     $html = preg_replace("#<p>\s*(</?{$allblocks}[^>]*>)#", "$1", $html);
     $html = preg_replace("#(</?{$allblocks}[^>]*>)\s*</p>#", "$1", $html);
 
-    // Make line breaks
+    // Make line breaks.
     $html = preg_replace("#(?<!<br>)\s*\n#", "<br>\n", $html);
 
     // No breaks behind block elements.
@@ -178,44 +163,34 @@ class InputHTMLRaw extends \MovLib\Presentation\Partial\FormElement\AbstractForm
   }
 
   /**
-   * @inheritdoc
-   */
-  protected function render() {
-    global $i18n;
-
-    // Remove tags that are inserted by our auto-paragraph method and empty attributes (inserted by Tidy).
-    $content = str_replace(
-      [ "\n\n", "<br>", "<p>", "</p>", "=''", '=""' ],
-      [ "\n", "", "", "\n", "", "" ],
-      tidy_get_output(tidy_parse_string("<!doctype html><html><head><title>MovLib</title></head><body>{$this->valueRaw}</body></html>"))
-    );
-
-    // Use default placeholder text if none was provided.
-    if (!isset($this->attributes["placeholder"])) {
-      $this->attributes["placeholder"] = $i18n->t("Enter “{0}” text here …", [ $this->label ]);
-    }
-
-    return "{$this->helpPopup}<p><label for='{$this->id}'>{$this->label}</label><textarea{$this->expandTagAttributes($this->attributes)}>{$content}</textarea></p>";
-  }
-
-  /**
-   * @inheritdoc
+   * Validate the user submitted HTML.
+   *
    * @global \MovLib\Data\I18n $i18n
+   * @global \MovLib\Data\User\Session $session
+   * @param string $html
+   *   The user submitted HTML to validate.
+   * @param null|array $errors
+   *   Variable used to collect error messages.
+   * @return string
+   *   The valid HTML.
    */
-  public function validate() {
-    global $i18n;
-
-    // Validate if we have input and throw an Exception if the field is required.
-    if (empty($this->valueRaw)) {
-      if (in_array("required", $this->attributes)) {
-        throw new ValidationException($i18n->t("“{label}” is mandatory.", [ "label" => $this->label ]));
-      }
-      $this->value = null;
-      return $this;
+  protected function validateValue($html, &$errors) {
+    global $i18n, $session;
+    if ($session->isAdmin() === false) {
+      throw new Unauthorized($i18n->t("You must be signed in and have administrator privileges to enter raw HTML."));
     }
 
-    // Nothing to do, it's an admin and we hope that our admins know what they do.
-    return $this;
+    // Trim the submitted HTML.
+    $html = trim($html);
+
+    // Normalize to NFC form as recommended by W3C.
+    $html = \Normalizer::normalize($html);
+
+    // Insert breaks and paragraphs.
+    $html = $this->autoParagraph($html);
+
+    // Return encoded version (secure by default).
+    return $this->htmlEncode($html);
   }
 
 }
