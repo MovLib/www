@@ -497,40 +497,27 @@ class Kernel {
           $cacheFile .= $_SERVER["PRESENTER"];
         }
 
-        // Build absolute path to cache directory.
-        $cacheDirectory = dirname($cacheFile);
+        // Only continue if no cache entry is already present.
+        if (!is_file($cacheFile)) {
+          // Build absolute path to cache directory.
+          $cacheDirectory = dirname($cacheFile);
 
-        // Try to create the directories if they aren't already present.
-        if (!is_dir($cacheDirectory) && sh::execute("mkdir -p '{$cacheDirectory}'") === false) {
-          error_log("Couldn't create cache directory '{$cacheDirectory}'");
-        }
+          // Try to create the directories if they aren't already present.
+          if (!is_dir($cacheDirectory) && sh::execute("mkdir -p '{$cacheDirectory}'") === false) {
+            error_log("Couldn't create cache directory '{$cacheDirectory}'");
+          }
 
-        // Make sure that we can really write to this location and file (if already present).
-        if (!is_writable($cacheDirectory) || (file_exists($cacheFile) && !is_writable($cacheFile))) {
-          error_log("Couldn't create cache file '{$cacheFile}'");
-        }
-        else {
-          $presentation .= "<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->";
-          file_put_contents($cacheFile, $presentation);
-          $this->compress($cacheFile);
+          // Make sure that we can really write to this location and file (if already present).
+          if (!is_writable($cacheDirectory) || (file_exists($cacheFile) && !is_writable($cacheFile))) {
+            error_log("Couldn't create cache file '{$cacheFile}'");
+          }
+          else {
+            $presentation .= "<!--{$_SERVER["REQUEST_TIME_FLOAT"]}-->";
+            file_put_contents($cacheFile, $presentation);
+            $this->compress($cacheFile);
+          }
         }
       }
-      // @devStart
-      // @codeCoverageIgnoreStart
-      else {
-        $cacheFile = "{$this->pathCache}{$this->requestPath}";
-        if ($this->requestPath == "/") {
-          $cacheFile .= $_SERVER["PRESENTER"];
-        }
-        if (file_exists($cacheFile)) {
-          unlink($cacheFile);
-        }
-        if (file_exists("{$cacheFile}.gz")) {
-          unlink("{$cacheFile}.gz");
-        }
-      }
-      // @codeCoverageIgnoreEnd
-      // @devEnd
 
       // Execute each delayed method.
       if ($this->delayedMethods) {
@@ -629,7 +616,7 @@ class Kernel {
         $this->cacheBusters[$extension][$name] = md5_file("{$this->documentRoot}/public/asset/{$dir}/{$name}.{$extension}");
       }
       // @codeCoverageIgnoreEnd
-      // @devStart
+      // @devEnd
 
       // Add the absolute URL to our URL cache and we're done.
       $cache[$extension][$name] = "//{$this->domainStatic}/asset/{$dir}/{$name}.{$extension}?{$this->cacheBusters[$extension][$name]}";

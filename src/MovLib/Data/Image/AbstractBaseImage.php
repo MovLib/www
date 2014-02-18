@@ -54,6 +54,7 @@ use \MovLib\Data\UnixShell as sh;
  * @since 0.0.1-dev
  */
 abstract class AbstractBaseImage {
+  use \MovLib\Data\Image\TraitOptimizeImage;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Constants

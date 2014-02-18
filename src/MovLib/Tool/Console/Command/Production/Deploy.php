@@ -19,7 +19,6 @@ namespace MovLib\Tool\Console\Command\Production;
 
 use \MovLib\Data\UnixShell as sh;
 use \Symfony\Component\Console\Input\InputInterface;
-use \Symfony\Component\Console\Input\InputOption;
 use \Symfony\Component\Console\Output\OutputInterface;
 
 /**
@@ -32,6 +31,11 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
+  use \MovLib\Data\Image\TraitOptimizeImage {
+    optimizeJPG as private traitOptimizeJPG;
+    optimizePNG as private traitOptimizePNG;
+    optimizeSVG as private traitOptimizeSVG;
+  }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -90,75 +94,6 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
 
 
   /**
-   * Compress assets for <code>nginx_gzip_static_module</code>.
-   *
-   * @staticvar array $extensions
-   *   Array containing extensions of files to be compressed.
-   * @return this
-   */
-  protected function compress() {
-    $extensions = [ "css", "js", "svg" ];
-
-    $this->globRecursive("{$this->pathRepository}/public/asset", function ($splFileInfo) {
-      global $kernel;
-      $kernel->compress($splFileInfo->getRealPath());
-    }, $extensions);
-
-    return $this->write("Successfully compressed assets.", self::MESSAGE_TYPE_INFO);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  public function configure() {
-    $this->setDescription("Deploy GitHub master branch on production server.");
-  }
-
-  /**
-   * @inheritdoc
-   * @param \Symfony\Component\Console\Input\InputInterface $input
-   *   {@inheritdoc}
-   * @param \Symfony\Component\Console\Output\OutputInterface $output
-   *   {@inheritdoc}
-   * @return array
-   *   The passed options.
-   */
-  protected function execute(InputInterface $input, OutputInterface $output) {
-    $options = parent::execute($input, $output);
-
-    $this->checkPrivileges();
-    $this->write([
-      "",
-      "This will pull the current master branch from GitHub and the site will be put in maintenance mode during the deployment.",
-      "Be sure to run all tests BEFORE deploying!"
-    ], self::MESSAGE_TYPE_QUESTION);
-    $this->askConfirmation("Are you sure you want to continue with deployment?", false);
-
-    $this->write("Starting deploying MovLib", self::MESSAGE_TYPE_INFO);
-    try {
-      foreach ([
-        "prepareRepository",
-        "optimizeCSS",
-        "optimizeCode",
-        "optimizeJS",
-        "optimizeSVG",
-        "generateCacheBusters",
-        "compress",
-      ] as $task) {
-        $this->$task();
-      }
-    }
-    catch (\Exception $e) {
-      $this->write("Attempting to remove cloned repository...", self::MESSAGE_TYPE_ERROR);
-      sh::executeDisplayOutput("rm -rf {$this->pathRepository}");
-      throw $e;
-    }
-    $this->write("Successfully deployed MovLib.", self::MESSAGE_TYPE_INFO);
-
-    return $options;
-  }
-
-  /**
    * Generate cache buster strings for all assets.
    *
    * @global \MovLib\Kernel $kernel
@@ -167,8 +102,9 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @return this
    * @throws \RuntimeException
    */
-  protected function generateCacheBusters() {
+  protected function calculateCacheBusters() {
     global $kernel;
+    $this->write("Calculating cache buster hashes...");
     $extensions = [ "css", "js", "jpg", "png", "svg" ];
 
     // Purge the Kernel's cache buster array.
@@ -198,16 +134,80 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       throw new \RuntimeException("Couldn't write '{$this->pathKernel}'!");
     }
 
-    return $this->write("Successfully initialized cache busters.", self::MESSAGE_TYPE_INFO);
+    return $this->write("Successfully calculated cache buster hashes.", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public function configure() {
+    $this->setDescription("Deploy GitHub master branch on production server.");
+  }
+
+  /**
+   * @inheritdoc
+   * @param \Symfony\Component\Console\Input\InputInterface $input
+   *   {@inheritdoc}
+   * @param \Symfony\Component\Console\Output\OutputInterface $output
+   *   {@inheritdoc}
+   * @return array
+   *   The passed options.
+   */
+  protected function execute(InputInterface $input, OutputInterface $output) {
+    $options = parent::execute($input, $output);
+
+    $this->checkPrivileges();
+    $this->write([
+      "This will pull the current master branch from GitHub and the site will be put in maintenance mode during the deployment.",
+      "",
+      "Be sure to run all tests BEFORE deploying!"
+    ], self::MESSAGE_TYPE_ERROR);
+    $this->write("");
+    if ($this->askConfirmation("Are you sure you want to continue with deployment?", false) === false) {
+      $this->write("Aborting deployment...", self::MESSAGE_TYPE_INFO);
+      return;
+    }
+
+    $this->write("Starting MovLib deployment...");
+    try {
+      foreach ([
+        "prepareRepository",
+        "optimizeCSS",
+        "optimizeJPG",
+        "optimizeJS",
+        "optimizePHP",
+        "optimizePNG",
+        "optimizeSVG",
+        "calculateCacheBusters",
+        // @todo maintenance mode start
+        // @todo migrations (if any)
+        // @todo change symbolic link of /var/www
+        // @todo maintenance mode end
+      ] as $task) {
+        $this->$task();
+      }
+    }
+    catch (\Exception $e) {
+      //$this->write("Attempting to remove cloned repository...", self::MESSAGE_TYPE_ERROR);
+      //sh::executeDisplayOutput("rm -rf {$this->pathRepository}");
+      throw $e;
+    }
+    $this->write("Successfully deployed MovLib.", self::MESSAGE_TYPE_INFO);
+
+    return $options;
   }
 
   /**
    * Optimize CSS files.
    *
+   * @global \MovLib\Tool\Kernel $kernel
    * @return this
    * @throws \RuntimeException
    */
   protected function optimizeCSS() {
+    global $kernel;
+    $this->write("Optimizing CSS...");
+
     // Create absolute path to the main CSS file.
     $movlib = "{$this->pathAssets}/css/MovLib.css";
 
@@ -223,8 +223,9 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     foreach ($matches[1] as $layout) {
       $realPath = "{$this->pathAssets}/css/{$layout}";
       // Optimize the layout CSS file.
-      if (sh::execute("csso --input {$realPath} --output {$realPath}") === false) {
-        throw new \RuntimeException("Couldn't minify '{$realPath}'");
+      if (sh::execute("csso --input {$realPath} --output {$realPath}", $output) === false) {
+        $output = implode("\n", $output);
+        throw new \RuntimeException("Couldn't minify '{$realPath}'\n\n{$output}");
       }
       fwrite($fh, $this->removeComments($realPath));
 
@@ -232,62 +233,55 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       unlink($realPath);
     }
     fclose($fh);
+    $kernel->compress($movlib);
 
     // Optimize all modules.
-    foreach (glob("{$this->pathAssets}/css/module/*.css") as $module) {
-      if (sh::execute("csso --input {$module} --output {$module}") === false) {
-        throw new \RuntimeException("Couldn't minify '{$module}'");
+    $modules = glob("{$this->pathAssets}/css/module/*.css");
+    foreach ($modules as $module) {
+      if (sh::execute("csso --input {$module} --output {$module}", $output) === false) {
+        $output = implode("\n", $output);
+        throw new \RuntimeException("Couldn't minify '{$module}'\n\n{$output}");
       }
       $this->removeComments($module, $module);
+      $kernel->compress($module);
+    }
+
+    // Update the autoprefixer definitions.
+    if (sh::executeDisplayOutput("autoprefixer --update") === false) {
+      throw new \RuntimeException("Couldn't update autoprefixer definitions");
+    }
+
+    // Autoprefix all CSS files.
+    $modules = implode(" ", $modules);
+    if (sh::executeDisplayOutput("autoprefixer --browsers 'last 2 versions','Firefox ESR','Explorer 9','BlackBerry 10','Android 4' {$movlib} {$modules}") === false) {
+      throw new \RuntimeException("Couldn't autoprefix CSS files");
     }
 
     return $this->write("Successfully minified all CSS files.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
-   * Remove PHP code only used in development.
+   * Optimize JPG images.
    *
    * @return this
-   * @throws \RuntimeException
    */
-  protected function optimizeCode() {
-    $this->globRecursive("{$this->pathRepository}/src/MovLib", function ($splFileInfo) {
-      $inDevBlock = false;
-      $realPath   = $splFileInfo->getRealPath();
-      $tmpPath    = "{$realPath}.tmp";
-
-      $fhSource = fopen($realPath, "rb");
-      $fhTarget = fopen($tmpPath, "wb");
-      while ($line = fgets($fhSource)) {
-        if (strpos($line, "// @devStart") !== false) {
-          $inDevBlock = true;
-          continue;
-        }
-        if (strpos($line, "// @devEnd") !== false) {
-          $inDevBlock = false;
-          continue;
-        }
-        if ($inDevBlock === false) {
-          fwrite($fhTarget, $line);
-        }
-      }
-      fclose($fhSource);
-      fclose($fhTarget);
-
-      // Replace existing file with stripped file.
-      rename($tmpPath, $realPath);
-    }, "php");
-
-    return $this->write("Successfully removed PHP code only used in development.", self::MESSAGE_TYPE_INFO);
+  protected function optimizeJPG() {
+    return $this;
   }
 
   /**
    * Optimize JavaScript files.
    *
+   * @global \MovLib\Tool\Kernel $kernel
    * @return this
    * @throws \RuntimeException
    */
   protected function optimizeJS() {
+    global $kernel;
+
+    $this->write("Optimizing JavaScript...");
+    $movlib = "{$this->pathAssets}/js/MovLib.js";
+
     // The Google closure compiler arguments.
     $args = [
       "charset UTF-8",
@@ -295,15 +289,14 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       "language_in ECMASCRIPT5_STRICT",
       "module_output_path_prefix {$this->pathAssets}/js/build/",
       "module MovLib:1:",
-      "js {$this->pathAssets}/js/MovLib.js",
+      "js {$movlib}",
     ];
 
     // Add all modules with a dependency towards our MovLib main file to the arguments.
     $modules = glob("{$this->pathAssets}/js/module/*.js");
-    foreach ($modules as $modulePath) {
-      $module = basename($modulePath, ".js");
-      $args[] = "module {$module}:1:MovLib:";
-      $args[] = "js {$modulePath}";
+    foreach ($modules as $module) {
+      $args[] = "module " . basename($module, ".js") . ":1:MovLib:";
+      $args[] = "js {$module}";
     }
 
     // Put the arguments together and let closure compile them.
@@ -312,15 +305,98 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Move all files from the build folder back to their initial position and remove absolutely all comments.
-    $this->removeComments("{$this->pathAssets}/js/build/MovLib.js", "{$this->pathAssets}/js/MovLib.js");
-    foreach ($modules as $modulePath) {
-      $this->removeComments(str_replace("/module/", "/build/", $modulePath), $modulePath);
+    $this->removeComments($movlib, $movlib);
+    $kernel->compress($movlib);
+    foreach ($modules as $module) {
+      $this->removeComments(str_replace("/module/", "/build/", $module), $module);
+      $kernel->compress($module);
     }
 
     // Remove the build folder, otherwise we'd generate cache busters for these files later on.
     sh::execute("rm -rf {$this->pathAssets}/js/build");
 
-    return $this->write("Successfully minified javascript.", self::MESSAGE_TYPE_INFO);
+    return $this->write("Successfully optimized JavaScript.", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
+   * Remove PHP code only used in development.
+   *
+   * @return this
+   * @throws \LogicException
+   * @throws \RuntimeException
+   */
+  protected function optimizePHP() {
+    $this->write("Optimizing PHP...");
+
+    $this->globRecursive("{$this->pathRepository}/src/MovLib", function ($splFileInfo) {
+      $inDevBlock = false;
+      $realPath   = $splFileInfo->getRealPath();
+      $tmpPath    = "{$realPath}.tmp";
+
+      if (($fhSource = fopen($realPath, "rb")) === false) {
+        throw new \RuntimeException("Couldn't open '{$realPath}' for reading");
+      }
+      if (($fhTarget = fopen($tmpPath, "wb")) === false) {
+        throw new \RuntimeException("Couldn't open '{$tmpPath}' for writing");
+      }
+
+      $lineNumber = 0;
+      while ($line = fgets($fhSource)) {
+        ++$lineNumber;
+
+        if (strpos($line, "// @devStart") !== false) {
+          if ($inDevBlock !== false) {
+            throw new \RuntimeException("Found unclosed @dev block in '{$realPath}'");
+          }
+          $inDevBlock = $lineNumber;
+          continue;
+        }
+        if (strpos($line, "// @devEnd") !== false) {
+          if ($inDevBlock === false) {
+            throw new \RuntimeException("Found unopened @dev block in '{$realPath}'");
+          }
+          $inDevBlock = false;
+          continue;
+        }
+
+        // Only write this file to the target file if we aren't within a @dev block.
+        if ($inDevBlock === false) {
+          // Remove array type checks from method signatures.
+          if (strpos($line, " function ") !== false) {
+            $line = preg_replace("/function.+\((?:.+( array ).+)*\)/", "", $line);
+          }
+          fwrite($fhTarget, $line);
+        }
+      }
+      fclose($fhSource);
+      fclose($fhTarget);
+
+      // Make sure that we don't end with an unclosed @dev block.
+      if ($inDevBlock !== false) {
+        throw new \LogicException("Found unclosed @dev block in '{$realPath}' (@devStart was found at {$inDevBlock})");
+      }
+
+      // Replace existing file with stripped file.
+      rename($tmpPath, $realPath);
+    }, "php");
+
+    return $this->write("Successfully optimized PHP.", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
+   * Optimize PNG images.
+   *
+   * @return this
+   * @throws \RuntimeException
+   */
+  protected function optimizePNG() {
+    $this->write("Optimizing PNG images...");
+
+    $this->globRecursive("{$this->pathAssets}/img", function ($splFileInfo) {
+      $this->traitOptimizePNG($splFileInfo->getRealPath());
+    }, "png");
+
+    return $this->write("Successfully optimized PNG images.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
@@ -330,14 +406,13 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @throws \RuntimeException
    */
   protected function optimizeSVG() {
+    $this->write("Optimizing SVG images...");
+
     $this->globRecursive("{$this->pathAssets}/img", function ($splFileInfo) {
-      $realPath = $splFileInfo->getRealPath();
-      if (sh::execute("svgo --input {$realPath} --output {$realPath}") === false) {
-        throw new \RuntimeException("Couldn't minify '{$realPath}'");
-      }
+      $this->traitOptimizeSVG($splFileInfo->getRealPath());
     }, "svg");
 
-    return $this->write("Successfully minified SVG images.", self::MESSAGE_TYPE_INFO);
+    return $this->write("Successfully optimized SVG images.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
@@ -353,11 +428,12 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     global $kernel;
 
     $commands = [
-      "git clone {$this->origin} {$_SERVER["REQUEST_TIME"]}",
+      "git clone {$this->origin} {$this->pathRepository}",
       "chown {$kernel->phpUser}:{$kernel->phpGroup} {$this->pathRepository}",
       "cd {$this->pathRepository}",
       "rm -rf .git* test",
       "composer update --no-dev",
+      "composer dumpautoload -o",
       "bower update --allow-root",
       "movlib fix-permissions",
     ];
@@ -365,6 +441,9 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     if (sh::executeDisplayOutput(implode(" && ", $commands)) === false) {
       throw new \RuntimeException("Preparation of repository failed");
     }
+
+    // Remove the makefile from the root directory (too dangerous).
+    unlink("{$this->pathRepository}/makefile");
 
     return $this->write("Successfully prepared repository.", self::MESSAGE_TYPE_INFO);
   }
