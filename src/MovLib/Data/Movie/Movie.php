@@ -103,6 +103,7 @@ class Movie {
       `movies`.`id`,
       `movies`.`deleted`,
       `movies`.`year`,
+      `movies`.`mean_rating` AS `ratingMean`,
       IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
       IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
       `ot`.`title` AS `originalTitle`,
@@ -126,11 +127,32 @@ class Movie {
   ;
 
   /**
+   * The movie's average rating.
+   *
+   * @var float
+   */
+  public $ratingMean;
+
+  /**
    * The movie's translated route.
    *
    * @var string
    */
   public $route;
+
+  /**
+   * The movie's rating by a user.
+   *
+   * @var integer
+   */
+  protected $userRating = false;
+
+  /**
+   * The timestamp of the user's rating.
+   *
+   * @var integer
+   */
+  protected $userRatingCreated;
 
   /**
    * The movie's release year.
@@ -164,6 +186,7 @@ class Movie {
         $this->id,
         $this->deleted,
         $this->year,
+        $this->ratingMean,
         $this->displayTitle,
         $this->displayTitleLanguageCode,
         $this->originalTitle,
@@ -253,26 +276,74 @@ class Movie {
    *
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\User\Session $session
-   * @param null|integer $userId [optional]
-   *   The user's ID to get the rating for, defaults to the currently authenticated user's ID.
+   * @param integer $userId
+   *   The user's ID to get the rating for.
    * @return null|integer
    *   The rating for the user or <code>NULL</code> if the user has not rated this movie yet.
    * @throws \MovLib\Exception\DatabaseException
    */
-  public function getUserRating($userId = null) {
-    global $db, $session;
+  public function getUserRating($userId) {
+    global $db;
 
-    if ($userId === null) {
-      if ($session->isAuthenticated !== true) {
-        return;
-      }
-      $userId = $session->userId;
+    // Guardian pattern.
+    if ($this->userRating !== false) {
+      return [ "rating" => $this->userRating, "created" => $this->userRatingCreated ];
     }
 
-    $result = $db->query("SELECT `rating` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1", "dd", [ $userId, $this->id ])->get_result()->fetch_row();
+    $result = $db->query("SELECT `rating`, `created` FROM `movies_ratings` WHERE `user_id` = ? AND `movie_id` = ? LIMIT 1", "dd", [ $userId, $this->id ])->get_result()->fetch_row();
     if (isset($result[0])) {
-      return $result[0];
+      $this->userRating = $result[0];
+      $this->userRatingCreated = $result[1];
+      return [ "rating" => $this->userRating, "created" => $this->userRatingCreated ];
     }
+  }
+
+  /**
+   * Fetch rated movies for a user.
+   *
+   * @global \MovLib\Data\Database $db
+   * @global \MovLib\Data\I18n $i18n
+   * @param integer $userId
+   *   The user's ID to fetch the ratings for.
+   * @return \mysqli_result
+   */
+  public static function getUserRatings($userId) {
+    global $db, $i18n;
+    return $db->query(
+      "SELECT
+        `movies`.`id`,
+        `movies`.`deleted`,
+        `movies`.`year`,
+        `movies`.`mean_rating` AS `ratingMean`,
+        `mr`.`rating` AS `userRating`,
+        `mr`.`created` AS `userRatingCreated`,
+        IFNULL(`dt`.`title`, `ot`.`title`) AS `displayTitle`,
+        IFNULL(`dt`.`language_code`, `ot`.`language_code`) AS `displayTitleLanguageCode`,
+        `ot`.`title` AS `originalTitle`,
+        `ot`.`language_code` AS `originalTitleLanguageCode`,
+        `p`.`poster_id` AS `displayPoster`
+      FROM `movies` FORCE INDEX (movies_deleted)
+        LEFT JOIN `movies_display_titles` AS `mdt`
+          ON `mdt`.`movie_id` = `movies`.`id`
+          AND `mdt`.`language_code` = ?
+        LEFT JOIN `movies_titles` AS `dt`
+          ON `dt`.`movie_id` = `movies`.`id`
+          AND `dt`.`id` = `mdt`.`title_id`
+        LEFT JOIN `movies_original_titles` AS `mot`
+          ON `mot`.`movie_id` = `movies`.`id`
+        LEFT JOIN `movies_titles` AS `ot`
+          ON `ot`.`movie_id` = `movies`.`id`
+          AND `ot`.`id` = `mot`.`title_id`
+        LEFT JOIN `display_posters` AS `p`
+          ON `p`.`movie_id` = `movies`.`id`
+          AND `p`.`language_code` = ?
+        INNER JOIN `movies_ratings` AS `mr`
+          ON `mr`.`movie_id` = `movies`.`id`
+      WHERE `movies`.`deleted` = FALSE AND `mr`.`user_id` = ?
+      ORDER BY `mr`.`created` DESC",
+      "ssd",
+      [ $i18n->languageCode, $i18n->languageCode, $userId ]
+    )->get_result();
   }
 
   /**

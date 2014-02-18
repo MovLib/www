@@ -42,7 +42,6 @@ class FullMovie extends \MovLib\Data\Movie\Movie {
   public $genres;
   public $rank;
   public $rating;
-  public $ratingMean;
   public $runtime;
   public $synopsis;
   public $taglines;
