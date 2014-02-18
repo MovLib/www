@@ -82,7 +82,7 @@ class Kernel extends \MovLib\Kernel {
     $this->fastCGI          = isset($_SERVER["FCGI_ROLE"]);
     $this->isWindows        = defined("PHP_WINDOWS_VERSION_MAJOR");
     $this->pathTranslations = "{$this->documentRoot}{$this->pathTranslations}";
-    $this->production       = is_dir("{$this->documentRoot}/.git");
+    $this->production       = !is_dir("{$this->documentRoot}/.git");
 
     // Transform ALL PHP errors to exceptions unless this is executed in composer context, too many vendor supplied
     // software is casting various deprecated or strict errors.
