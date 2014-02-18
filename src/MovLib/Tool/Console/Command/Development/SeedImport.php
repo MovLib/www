@@ -591,9 +591,6 @@ class SeedImport extends \MovLib\Tool\Console\Command\Development\AbstractDevelo
       "uploadImport",
     ];
 
-    $this->write("Not allowed right now!", self::MESSAGE_TYPE_ERROR);
-    return $this;
-
     // The two additional operations are for the schema import itself.
     $this->write("Importing all seed data ...")->progressStart(count($tasks) + 2);
     if (!file_exists("{$kernel->documentRoot}/conf/mariadb/movlib.sql")) {
