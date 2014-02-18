@@ -1,4 +1,5 @@
 <?php
+
 /*!
  * This file is part of {@link https://github.com/MovLib MovLib}.
  *
@@ -37,35 +38,19 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
 
 
   /**
-   * Uri of the Repository to clone from.
+   * URI of the repository to clone from.
    *
    * @var string
    */
   protected $origin = "https://github.com/MovLib/www.git";
 
   /**
-   * The directory containing CSS files to minify.
+   * Absolute path to the assets.
    *
-   * @see Deploy::__construct()
+   * @see Deploy::__constructor()
    * @var string
    */
-  protected $pathCss = "public/asset/css";
-
-  /**
-   * The directory containing images.
-   *
-   * @see Deploy::__construct()
-   * @var string
-   */
-  protected $pathImg = "public/asset/img";
-
-  /**
-   * The directory containing Javascript files to minify.
-   *
-   * @see Deploy::__construct()
-   * @var string
-   */
-  protected $pathJs = "public/asset/js";
+  protected $pathAssets = "/public/asset";
 
   /**
    * The kernel path.
@@ -73,23 +58,15 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @see Deploy::__construct()
    * @var string
    */
-  protected $pathKernel = "src/MovLib/Kernel.php";
+  protected $pathKernel = "/src/MovLib/Kernel.php";
 
    /**
-   * The directory containing the source code.
+   * The directory containing the repositories with the source code.
    *
    * @see Deploy::__construct()
    * @var string
    */
-  protected $pathClone = "/usr/local/src/movlib";
-
-  /**
-   * The directory containing the source code.
-   *
-   * @see Deploy::__construct()
-   * @var string
-   */
-  protected $pathSrc = "src/MovLib";
+  protected $pathRepository = "/usr/local/src/movlib";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -101,86 +78,40 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   public function __construct() {
     parent::__construct("deploy");
     $this->setAliases([ "dp" ]);
-
-    $this->pathClone  = "{$this->pathClone}/" . time();
-    $this->pathCss    = "{$this->pathClone}/{$this->pathCss}";
-    $this->pathImg    = "{$this->pathClone}/{$this->pathImg}";
-    $this->pathJs     = "{$this->pathClone}/{$this->pathJs}";
-    $this->pathKernel = "{$this->pathClone}/{$this->pathKernel}";
-    $this->pathSrc    = "{$this->pathClone}/{$this->pathSrc}";
+    $this->pathRepository = "{$this->pathRepository}/{$_SERVER["REQUEST_TIME"]}";
+    foreach ([ "Assets", "Kernel" ] as $path) {
+      $path = "path{$path}";
+      $this->$path = "{$this->pathRepository}{$this->$path}";
+    }
   }
 
 
   // ------------------------------------------------------------------------------------------------------------------- Methods
 
- /**
-   * Creates cache buster strings for the various assets.
-   *
-   * @global \MovLib\Kernel $kernel
-   * @return this
-   * @throws \RuntimeException
-   */
-  protected function cacheBuster() {
-    global $kernel;
-    $kernel->cacheBusters = [ "css" => [], "js" => [], "jpg" => [], "png" => [], "svg" => [] ];
-
-    foreach (["css", "js"] as $extension) {
-      $this->globRecursive("{$this->pathClone}/public/asset/{$extension}/module", function($realpath, $splFileInfo, $extension) {
-        global $kernel;
-        $kernel->cacheBusters[$extension][$splFileInfo->getFilename()] = md5_file($realpath);
-      }, $extension);
-    }
-    $kernel->cacheBusters["css"]["MovLib.css"] = md5_file("{$this->pathCss}/MovLib.css");
-    $kernel->cacheBusters["js"]["MovLib.js"] = md5_file("{$this->pathJs}/MovLib.js");
-
-    foreach (["jpg", "png", "svg"] as $extension) {
-      $this->globRecursive("{$this->pathClone}/public/asset/img", function($realpath, $splFileInfo, $extension) {
-        global $kernel;
-        if (substr($realpath, -7) != ".svg.gz") {
-          $kernel->cacheBusters[$extension][$splFileInfo->getFilename()] = md5_file($realpath);
-        }
-      }, $extension);
-    }
-
-    if (($kernelContent = file_get_contents($this->pathKernel)) === false) {
-      throw new \RuntimeException("Couldn't read '{$this->pathKernel}'!");
-    }
-
-    foreach ($kernel->cacheBusters as $extension => $cacheBusters) {
-      $kernelContent = str_replace("[ /*####{$extension}-cache-buster####*/ ]", var_export($cacheBusters, true), $kernelContent);
-    }
-
-    if (file_put_contents($this->pathKernel, $kernelContent) === false) {
-      throw new \RuntimeException("Couldn't write '{$this->pathKernel}'!");
-    }
-
-    return $this->write("Successfully initialized cache busters.", self::MESSAGE_TYPE_INFO);
-  }
 
   /**
-   * Compresses all SVG images for NginX.
+   * Compress assets for <code>nginx_gzip_static_module</code>.
    *
+   * @staticvar array $extensions
+   *   Array containing extensions of files to be compressed.
    * @return this
-   * @throws \RuntimeException
    */
-  private function compressImages() {
-    $this->globRecursive($this->pathImg, function($realpath) {
-      if (substr($realpath, -7) != ".svg.gz") {
-        $outputFile = $realpath . ".gz";
-        if (sh::execute("gzip -9 -c {$realpath} > {$outputFile}") === false) {
-          throw new \RuntimeException("Couldn't compress '{$realpath}'!");
-        }
-      }
-    }, "svg");
+  protected function compress() {
+    $extensions = [ "css", "js", "svg" ];
 
-    return $this->write("Successfully compressed SVG images.", self::MESSAGE_TYPE_INFO);
+    $this->globRecursive("{$this->pathRepository}/public/asset", function ($splFileInfo) {
+      global $kernel;
+      $kernel->compress($splFileInfo->getRealPath());
+    }, $extensions);
+
+    return $this->write("Successfully compressed assets.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
    * @inheritdoc
    */
   public function configure() {
-    $this->setDescription("Perform all deployment related tasks or only specific tasks via options.");
+    $this->setDescription("Deploy GitHub master branch on production server.");
   }
 
   /**
@@ -194,92 +125,141 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
+
     $this->checkPrivileges();
-    // Array containing the names of all tasks in right order that should be executed.
-    $tasks = [
-      "prepareRepository",
-      "optimizeCode",
-      "minifyCss",
-      "minifyJs",
-      "compressImages",
-      "cacheBuster",
-    ];
+    $this->write([
+      "",
+      "This will pull the current master branch from GitHub and the site will be put in maintenance mode during the deployment.",
+      "Be sure to run all tests BEFORE deploying!"
+    ], self::MESSAGE_TYPE_QUESTION);
+    $this->askConfirmation("Are you sure you want to continue with deployment?", false);
 
-    $this->write("\nStart deploying of MovLib\n", self::MESSAGE_TYPE_INFO);
-
-    foreach ($tasks as $task) {
-      $this->$task();
+    $this->write("Starting deploying MovLib", self::MESSAGE_TYPE_INFO);
+    try {
+      foreach ([
+        "prepareRepository",
+        "optimizeCSS",
+        "optimizeCode",
+        "optimizeJS",
+        "optimizeSVG",
+        "generateCacheBusters",
+        "compress",
+      ] as $task) {
+        $this->$task();
+      }
     }
-    return $this->write("\nSuccessfully deployed MovLib.\n", self::MESSAGE_TYPE_INFO);
+    catch (\Exception $e) {
+      $this->write("Attempting to remove cloned repository...", self::MESSAGE_TYPE_ERROR);
+      sh::executeDisplayOutput("rm -rf {$this->pathRepository}");
+      throw $e;
+    }
+    $this->write("Successfully deployed MovLib.", self::MESSAGE_TYPE_INFO);
+
+    return $options;
   }
 
   /**
-   * Creates a minified version of all our css.
+   * Generate cache buster strings for all assets.
+   *
+   * @global \MovLib\Kernel $kernel
+   * @staticvar array $extensions
+   *   Numeric array containing extensions to be hashed.
+   * @return this
+   * @throws \RuntimeException
+   */
+  protected function generateCacheBusters() {
+    global $kernel;
+    $extensions = [ "css", "js", "jpg", "png", "svg" ];
+
+    // Purge the Kernel's cache buster array.
+    $kernel->cacheBusters = [];
+    foreach ($extensions as $ext) {
+      $kernel->cacheBusters[$ext] = [];
+    }
+
+    // Create cache busters for all CSS and JS files.
+    $this->globRecursive($this->pathAssets, function ($splFileInfo) {
+      global $kernel;
+      $kernel->cacheBusters[$splFileInfo->getExtension()][$splFileInfo->getFilename()] = md5_file($splFileInfo->getRealPath());
+    }, $extensions);
+
+    // Get the source code of the new Kernel.
+    if (($kernelContent = file_get_contents($this->pathKernel)) === false) {
+      throw new \RuntimeException("Couldn't read '{$this->pathKernel}'!");
+    }
+
+    // Insert new cache busters into new Kernel file.
+    foreach ($kernel->cacheBusters as $extension => $cacheBusters) {
+      $kernelContent = str_replace("[ /*####{$extension}-cache-buster####*/ ]", var_export($cacheBusters, true), $kernelContent);
+    }
+
+    // Write Kernel with new cache busters to disk.
+    if (file_put_contents($this->pathKernel, $kernelContent) === false) {
+      throw new \RuntimeException("Couldn't write '{$this->pathKernel}'!");
+    }
+
+    return $this->write("Successfully initialized cache busters.", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
+   * Optimize CSS files.
    *
    * @return this
    * @throws \RuntimeException
    */
-  private function minifyCss() {
-    $minifiedCss = "";
-    $fhr = fopen("{$this->pathCss}/MovLib.css", "r");
-    while ($line = fgets($fhr)) {
-      if (substr($line, 0, 7) == "@import") {
-        $file = rtrim(trim($line, "@import \""), "\";\n");
-        if (sh::execute("csso {$this->pathCss}/{$file}", $output) === true) {
-          $minifiedCss .= substr(array_pop($output), 3);
-        }
-        else {
-          throw new \RuntimeException("Couldn't minify '{$this->pathCss}/{$file}'!");
-        }
+  protected function optimizeCSS() {
+    // Create absolute path to the main CSS file.
+    $movlib = "{$this->pathAssets}/css/MovLib.css";
+
+    // Extract which layout files we should include in the final mimized version.
+    preg_match_all('/@import "(.+)";/i', file_get_contents($movlib), $matches);
+
+    // We should have at least one.
+    if (empty($matches) || empty($matches[1])) {
+      throw new \RuntimeException("Couldn't extract CSS file for minification from MovLib.css");
+    }
+
+    $fh = fopen($movlib, "w");
+    foreach ($matches[1] as $layout) {
+      $realPath = "{$this->pathAssets}/css/{$layout}";
+      // Optimize the layout CSS file.
+      if (sh::execute("csso --input {$realPath} --output {$realPath}") === false) {
+        throw new \RuntimeException("Couldn't minify '{$realPath}'");
       }
-    }
-    fclose($fhr);
+      fwrite($fh, $this->removeComments($realPath));
 
-    if ((file_put_contents("{$this->pathCss}/MovLib.css", $minifiedCss)) === false) {
-      throw new \RuntimeException("Couldn't write '{$this->pathCss}/MovLib.css'!");
+      // Delete the original layout CSS file, otherwise we'd generate cache busters for them later on.
+      unlink($realPath);
+    }
+    fclose($fh);
+
+    // Optimize all modules.
+    foreach (glob("{$this->pathAssets}/css/module/*.css") as $module) {
+      if (sh::execute("csso --input {$module} --output {$module}") === false) {
+        throw new \RuntimeException("Couldn't minify '{$module}'");
+      }
+      $this->removeComments($module, $module);
     }
 
-    return $this->write("Successfully minified css.", self::MESSAGE_TYPE_INFO);
+    return $this->write("Successfully minified all CSS files.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
-   * Creates a minified version of our javascript.
-   *
-   * @return this
-   * @throws \RuntimeException
-   */
-  private function minifyJs() {
-    $this->globRecursive($this->pathJs, function($realpath) {
-      if (substr($realpath, -7) != ".min.js") {
-        $outputFile = rtrim($realpath, ".js") . ".min.js";
-        if (sh::execute("uglifyjs {$realpath} -o {$outputFile}") === false) {
-          throw new \RuntimeException("Couldn't minify '{$realpath}'!");
-        }
-        rename($outputFile, $realpath);
-      }
-    }, "js");
-
-    return $this->write("Successfully minified javascript.", self::MESSAGE_TYPE_INFO);
-  }
-
-  /**
-   * Optimize PHP code.
-   *
    * Remove PHP code only used in development.
    *
    * @return this
    * @throws \RuntimeException
    */
-  private function optimizeCode() {
-    $this->globRecursive($this->pathSrc, function($realpath) {
-      $foundDev   = false;
+  protected function optimizeCode() {
+    $this->globRecursive("{$this->pathRepository}/src/MovLib", function ($splFileInfo) {
       $inDevBlock = false;
+      $realPath   = $splFileInfo->getRealPath();
+      $tmpPath    = "{$realPath}.tmp";
 
-      $fho = fopen($realpath, "r");
-      $fhc = fopen("{$realpath}.tmp", "wb");
-      while ($line = fgets($fho)) {
+      $fhSource = fopen($realPath, "rb");
+      $fhTarget = fopen($tmpPath, "wb");
+      while ($line = fgets($fhSource)) {
         if (strpos($line, "// @devStart") !== false) {
-          $foundDev   = true;
           $inDevBlock = true;
           continue;
         }
@@ -288,65 +268,149 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
           continue;
         }
         if ($inDevBlock === false) {
-          fwrite($fhc, $line);
+          fwrite($fhTarget, $line);
         }
       }
-      fclose($fho);
-      fclose($fhc);
+      fclose($fhSource);
+      fclose($fhTarget);
 
-      if ($foundDev === true) {
-        rename("{$realpath}.tmp", $realpath);
-      }
-      else {
-        unlink("{$realpath}.tmp");
-      }
+      // Replace existing file with stripped file.
+      rename($tmpPath, $realPath);
     }, "php");
 
     return $this->write("Successfully removed PHP code only used in development.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
+   * Optimize JavaScript files.
+   *
+   * @return this
+   * @throws \RuntimeException
+   */
+  protected function optimizeJS() {
+    // The Google closure compiler arguments.
+    $args = [
+      "charset UTF-8",
+      "compilation_level ADVANCED_OPTIMIZATIONS",
+      "language_in ECMASCRIPT5_STRICT",
+      "module_output_path_prefix {$this->pathAssets}/js/build/",
+      "module MovLib:1:",
+      "js {$this->pathAssets}/js/MovLib.js",
+    ];
+
+    // Add all modules with a dependency towards our MovLib main file to the arguments.
+    $modules = glob("{$this->pathAssets}/js/module/*.js");
+    foreach ($modules as $modulePath) {
+      $module = basename($modulePath, ".js");
+      $args[] = "module {$module}:1:MovLib:";
+      $args[] = "js {$modulePath}";
+    }
+
+    // Put the arguments together and let closure compile them.
+    if (sh::executeDisplayOutput("java -jar /var/www/bin/closure-compiler.jar --" . implode(" --", $args)) === false) {
+      throw new \RuntimeException("Couldn't minify JavaScript");
+    }
+
+    // Move all files from the build folder back to their initial position and remove absolutely all comments.
+    $this->removeComments("{$this->pathAssets}/js/build/MovLib.js", "{$this->pathAssets}/js/MovLib.js");
+    foreach ($modules as $modulePath) {
+      $this->removeComments(str_replace("/module/", "/build/", $modulePath), $modulePath);
+    }
+
+    // Remove the build folder, otherwise we'd generate cache busters for these files later on.
+    sh::execute("rm -rf {$this->pathAssets}/js/build");
+
+    return $this->write("Successfully minified javascript.", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
+   * Optimize SVG images.
+   *
+   * @return this
+   * @throws \RuntimeException
+   */
+  protected function optimizeSVG() {
+    $this->globRecursive("{$this->pathAssets}/img", function ($splFileInfo) {
+      $realPath = $splFileInfo->getRealPath();
+      if (sh::execute("svgo --input {$realPath} --output {$realPath}") === false) {
+        throw new \RuntimeException("Couldn't minify '{$realPath}'");
+      }
+    }, "svg");
+
+    return $this->write("Successfully minified SVG images.", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
    * Prepare the new Repository.
    *
-   * Clone the repository, delete git and test files, run composer and bower and set right permissions.
+   * Clone the repository, delete git and test files, run composer and bower and fix permissions.
    *
    * @global \MovLib\Kernel $kernel
    * @return this
    * @throws \RuntimeException
    */
-  private function prepareRepository() {
+  protected function prepareRepository() {
     global $kernel;
 
-    if (sh::executeDisplayOutput("git clone {$this->origin} {$this->pathClone}") === false) {
-      throw new \RuntimeException("Couldn't clone into '{$this->pathClone}'!");
-    }
-    else {
-      $this->write("Successfully cloned repository into '{$this->pathClone}'.", self::MESSAGE_TYPE_INFO);
-    }
+    $commands = [
+      "git clone {$this->origin} {$_SERVER["REQUEST_TIME"]}",
+      "chown {$kernel->phpUser}:{$kernel->phpGroup} {$this->pathRepository}",
+      "cd {$this->pathRepository}",
+      "rm -rf .git* test",
+      "composer update --no-dev",
+      "bower update --allow-root",
+      "movlib fix-permissions",
+    ];
 
-    if (sh::executeDisplayOutput("cd {$this->pathClone} && rm -rf .git* test") === false) {
-      throw new \RuntimeException("Couldn't delete git and test files!");
-    }
-
-    if (sh::executeDisplayOutput("cd {$this->pathClone} && composer update --no-dev") === false) {
-      throw new \RuntimeException("Couldn't run composer update!");
-    }
-    else {
-      $this->write("Successfully run composer update.", self::MESSAGE_TYPE_INFO);
-    }
-
-    if (sh::executeDisplayOutput("cd {$this->pathClone} && bower update --allow-root") === false) {
-      throw new \RuntimeException("Couldn't run bower update!");
-    }
-    else {
-      $this->write("Successfully run bower update.", self::MESSAGE_TYPE_INFO);
-    }
-
-    if (sh::executeDisplayOutput("chown -R {$kernel->phpUser}:{$kernel->phpGroup} {$this->pathClone}") === false) {
-      throw new \RuntimeException("Couldn't change permissions of '{$this->pathClone}'!");
+    if (sh::executeDisplayOutput(implode(" && ", $commands)) === false) {
+      throw new \RuntimeException("Preparation of repository failed");
     }
 
     return $this->write("Successfully prepared repository.", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
+   * Remove left over comments from minified file.
+   *
+   * @param string $source
+   *   Absolute path to the minified source file.
+   * @param boolean|string $target
+   *   Either <code>TRUE</code> (default) which will return the <var>$source</var> with stripped comments or a string
+   *   containing the absolute path to the target file with stripped comments.
+   * @return string|this
+   *   Either <var>$source</var> with stripped comments (if <var>$target</var> is set to <code>TRUE</code>, default) or
+   *   <var>$this</var> for chaining.
+   * @throws \InvalidArgumentException
+   * @throws \RuntimeException
+   */
+  protected function removeComments($source, $target = true) {
+    // Remove all left over comments, see http://regex101.com/r/uJ2jF2 for explanation of regular expression.
+    $stripped = preg_replace("/^\s*\/\*[*!]?\s*$.*^\s*\*\/\s*\n?/mis", "", file_get_contents($source));
+
+    // Return the stripped source if requested.
+    if ($target === true) {
+      return $stripped;
+    }
+
+    // Otherwise make sure that the cally really passed a path.
+    if (!is_string($target)) {
+      throw new \InvalidArgumentException("\$target must be of type string and an absolute path to a file");
+    }
+
+    // Make sure that the target is within our current working repository.
+    if (strpos($this->pathRepository, $target) !== false) {
+      throw new \InvalidArgumentException("\$target must be within the current working repository: '{$target}'");
+    }
+
+    // Make sure that the target directory exists.
+    $directory = dirname($target);
+    sh::execute("mkdir -p {$directory}");
+    if (!is_dir($directory)) {
+      throw new \RuntimeException("Couldn't create directory for \$target");
+    }
+
+    file_put_contents($target, $stripped);
+    return $this;
   }
 
 }
