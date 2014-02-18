@@ -31,11 +31,7 @@ use \Symfony\Component\Console\Output\OutputInterface;
  * @since 0.0.1-dev
  */
 class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
-  use \MovLib\Data\Image\TraitOptimizeImage {
-    optimizeJPG as private traitOptimizeJPG;
-    optimizePNG as private traitOptimizePNG;
-    optimizeSVG as private traitOptimizeSVG;
-  }
+  use \MovLib\Data\Image\TraitOptimizeImage;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -54,7 +50,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @see Deploy::__constructor()
    * @var string
    */
-  protected $pathAssets = "/public/asset";
+  protected $pathPublic = "/public";
 
   /**
    * The kernel path.
@@ -83,7 +79,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     parent::__construct("deploy");
     $this->setAliases([ "dp" ]);
     $this->pathRepository = "{$this->pathRepository}/{$_SERVER["REQUEST_TIME"]}";
-    foreach ([ "Assets", "Kernel" ] as $path) {
+    foreach ([ "Public", "Kernel" ] as $path) {
       $path = "path{$path}";
       $this->$path = "{$this->pathRepository}{$this->$path}";
     }
@@ -114,7 +110,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Create cache busters for all CSS and JS files.
-    $this->globRecursive($this->pathAssets, function ($splFileInfo) {
+    $this->globRecursive("{$this->pathPublic}/asset", function ($splFileInfo) {
       global $kernel;
       $kernel->cacheBusters[$splFileInfo->getExtension()][$splFileInfo->getFilename()] = md5_file($splFileInfo->getRealPath());
     }, $extensions);
@@ -135,6 +131,13 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     return $this->write("Successfully calculated cache buster hashes.", self::MESSAGE_TYPE_INFO);
+  }
+
+  public function compressAssets() {
+    $this->globRecursive($this->pathPublic, function ($splFileInfo) {
+      global $kernel;
+      $kernel->compress($splFileInfo->getRealPath());
+    }, [ "css", "eot", "ico", "js", "svg", "ttf" ]);
   }
 
   /**
@@ -173,11 +176,10 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       foreach ([
         "prepareRepository",
         "optimizeCSS",
-        "optimizeJPG",
+        "optimizeImages",
         "optimizeJS",
         "optimizePHP",
-        "optimizePNG",
-        "optimizeSVG",
+        "compressAssets",
         "calculateCacheBusters",
         // @todo maintenance mode start
         // @todo migrations (if any)
@@ -188,8 +190,8 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       }
     }
     catch (\Exception $e) {
-      //$this->write("Attempting to remove cloned repository...", self::MESSAGE_TYPE_ERROR);
-      //sh::executeDisplayOutput("rm -rf {$this->pathRepository}");
+      $this->write("Attempting to remove cloned repository...", self::MESSAGE_TYPE_ERROR);
+      sh::executeDisplayOutput("rm -rf {$this->pathRepository}");
       throw $e;
     }
     $this->write("Successfully deployed MovLib.", self::MESSAGE_TYPE_INFO);
@@ -209,7 +211,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     $this->write("Optimizing CSS...");
 
     // Create absolute path to the main CSS file.
-    $movlib = "{$this->pathAssets}/css/MovLib.css";
+    $movlib = "{$this->pathPublic}/asset/css/MovLib.css";
 
     // Extract which layout files we should include in the final mimized version.
     preg_match_all('/@import "(.+)";/i', file_get_contents($movlib), $matches);
@@ -221,7 +223,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     $fh = fopen($movlib, "w");
     foreach ($matches[1] as $layout) {
-      $realPath = "{$this->pathAssets}/css/{$layout}";
+      $realPath = "{$this->pathPublic}/asset/css/{$layout}";
       // Optimize the layout CSS file.
       if (sh::execute("csso --input {$realPath} --output {$realPath}", $output) === false) {
         $output = implode("\n", $output);
@@ -233,17 +235,15 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       unlink($realPath);
     }
     fclose($fh);
-    $kernel->compress($movlib);
 
     // Optimize all modules.
-    $modules = glob("{$this->pathAssets}/css/module/*.css");
+    $modules = glob("{$this->pathPublic}/asset/css/module/*.css");
     foreach ($modules as $module) {
       if (sh::execute("csso --input {$module} --output {$module}", $output) === false) {
         $output = implode("\n", $output);
         throw new \RuntimeException("Couldn't minify '{$module}'\n\n{$output}");
       }
       $this->removeComments($module, $module);
-      $kernel->compress($module);
     }
 
     // Update the autoprefixer definitions.
@@ -261,59 +261,84 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   }
 
   /**
-   * Optimize JPG images.
+   * Optimize all images.
    *
    * @return this
    */
-  protected function optimizeJPG() {
+  protected function optimizeImages() {
+    // @todo Optimize JPG images
+
+    $this->write("Optimizing PNG images...");
+    $this->globRecursive($this->pathPublic, function ($splFileInfo) {
+      $this->optimizePNG($splFileInfo->getRealPath());
+    }, "png");
+    $this->write("Successfully optimized PNG images...", self::MESSAGE_TYPE_INFO);
+
+    $this->write("Optimizing SVG images...");
+    $this->globRecursive($this->pathPublic, function ($splFileInfo) {
+      $this->optimizeSVG($splFileInfo->getRealPath());
+    }, "svg");
+    $this->write("Successfully optimized SVG images...", self::MESSAGE_TYPE_INFO);
+
     return $this;
   }
 
   /**
    * Optimize JavaScript files.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @return this
    * @throws \RuntimeException
    */
   protected function optimizeJS() {
-    global $kernel;
-
     $this->write("Optimizing JavaScript...");
-    $movlib = "{$this->pathAssets}/js/MovLib.js";
+    $movlib  = "{$this->pathPublic}/asset/js/MovLib.js";
+    $closure = "java -jar /var/www/bin/closure-compiler.jar --";
 
-    // The Google closure compiler arguments.
-    $args = [
-      "charset UTF-8",
-      "compilation_level ADVANCED_OPTIMIZATIONS",
-      "language_in ECMASCRIPT5_STRICT",
-      "module_output_path_prefix {$this->pathAssets}/js/build/",
-      "module MovLib:1:",
-      "js {$movlib}",
-    ];
+    // The Google closure default compiler arguments.
+    $args = [ "charset UTF-8", "compilation_level ADVANCED_OPTIMIZATIONS", "language_in ECMASCRIPT5_STRICT" ];
+
+    // Optimize all vendor supplied JavaScript files.
+    $bowerClosure = $closure . implode(" --", $args);
+    $this->globRecursive("{$this->pathPublic}/bower", function ($splFileInfo) use ($bowerClosure) {
+      $realPath = $splFileInfo->getRealPath();
+
+      // Remove already minified JavaScript files, we have no need for them.
+      if (strpos($realPath, ".min.js") !== false) {
+        unlink($realPath);
+        return;
+      }
+
+      if (sh::executeDisplayOutput("{$bowerClosure} --js {$realPath} --js_output_file {$realPath}") === false) {
+        throw new \RuntimeException("Couldn't minify '{$realPath}'");
+      }
+      $this->removeComments($realPath);
+    }, "js");
+
+    // Now we add the MovLib specific modules together.
+    $args[] = "module_output_path_prefix {$this->pathPublic}/asset/js/build/";
+    $args[] = "module MovLib:1:";
+    $args[] = "js {$movlib}";
 
     // Add all modules with a dependency towards our MovLib main file to the arguments.
-    $modules = glob("{$this->pathAssets}/js/module/*.js");
+    $modules = glob("{$this->pathPublic}/asset/js/module/*.js");
     foreach ($modules as $module) {
       $args[] = "module " . basename($module, ".js") . ":1:MovLib:";
       $args[] = "js {$module}";
     }
 
     // Put the arguments together and let closure compile them.
-    if (sh::executeDisplayOutput("java -jar /var/www/bin/closure-compiler.jar --" . implode(" --", $args)) === false) {
+    if (sh::executeDisplayOutput($closure . implode(" --", $args)) === false) {
       throw new \RuntimeException("Couldn't minify JavaScript");
     }
 
     // Move all files from the build folder back to their initial position and remove absolutely all comments.
     $this->removeComments($movlib, $movlib);
-    $kernel->compress($movlib);
     foreach ($modules as $module) {
       $this->removeComments(str_replace("/module/", "/build/", $module), $module);
-      $kernel->compress($module);
     }
 
     // Remove the build folder, otherwise we'd generate cache busters for these files later on.
-    sh::execute("rm -rf {$this->pathAssets}/js/build");
+    sh::execute("rm -rf {$this->pathPublic}/asset/js/build");
 
     return $this->write("Successfully optimized JavaScript.", self::MESSAGE_TYPE_INFO);
   }
@@ -362,8 +387,8 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
         // Only write this file to the target file if we aren't within a @dev block.
         if ($inDevBlock === false) {
           // Remove array type checks from method signatures.
-          if (strpos($line, " function ") !== false) {
-            $line = preg_replace("/function.+\((?:.+( array ).+)*\)/", "", $line);
+          if (strpos($line, " function ") !== false && strpos($line, " array ") !== false) {
+            $line = preg_replace("/( )?array /", "$1", $line);
           }
           fwrite($fhTarget, $line);
         }
@@ -381,38 +406,6 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }, "php");
 
     return $this->write("Successfully optimized PHP.", self::MESSAGE_TYPE_INFO);
-  }
-
-  /**
-   * Optimize PNG images.
-   *
-   * @return this
-   * @throws \RuntimeException
-   */
-  protected function optimizePNG() {
-    $this->write("Optimizing PNG images...");
-
-    $this->globRecursive("{$this->pathAssets}/img", function ($splFileInfo) {
-      $this->traitOptimizePNG($splFileInfo->getRealPath());
-    }, "png");
-
-    return $this->write("Successfully optimized PNG images.", self::MESSAGE_TYPE_INFO);
-  }
-
-  /**
-   * Optimize SVG images.
-   *
-   * @return this
-   * @throws \RuntimeException
-   */
-  protected function optimizeSVG() {
-    $this->write("Optimizing SVG images...");
-
-    $this->globRecursive("{$this->pathAssets}/img", function ($splFileInfo) {
-      $this->traitOptimizeSVG($splFileInfo->getRealPath());
-    }, "svg");
-
-    return $this->write("Successfully optimized SVG images.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
@@ -435,7 +428,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       "composer update --no-dev",
       "composer dumpautoload -o",
       "bower update --allow-root",
-      "movlib fix-permissions",
+      "php {$this->pathRepository}/bin/movlib.php fix-permissions",
     ];
 
     if (sh::executeDisplayOutput(implode(" && ", $commands)) === false) {
