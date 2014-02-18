@@ -17,8 +17,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
-# "PHP" installation script.
+# "JPEGoptim" installation script.
 #
+# LINK:       https://github.com/tjko/jpegoptim
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT:  © 2013 MovLib
 # LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -26,57 +27,20 @@
 # SINCE:      0.0.1-dev
 # ----------------------------------------------------------------------------------------------------------------------
 
-# Define work directory and include configuration.
+# Set working directory and include configuration script.
 WD="$(cd `dirname ${0}`; pwd)/"
 source ${WD}/inc/conf.sh
 
-CHECKINSTALL_ARGUMENTS="--provides=php,php-cgi,php-config,php-fpm,phpize"
-NAME="php"
+NAME="jpegoptim"
 
 if [ ${#} == 1 ]; then
   VERSION=${1}
 else
-  VERSION="5.5.9"
+  VERSION="1.3.0"
   msginfo "No version string supplied as argument, using default version ${VERSION}!"
 fi
 
 source ${ID}uninstall.sh
-source ${ID}wget.sh "http://us1.php.net/distributions/" "${NAME}-${VERSION}" ".tar.gz"
-
-# We need PDO for PHPUnit in our development system. Otherwise we can't run any database tests.
-CFLAGS="-O3 -m64 -march=native -DMYSQLI_NO_CHANGE_USER_ON_PCONNECT" \
-CXXFLAGS="-O3 -m64 -march=native" \
-./configure \
-  --disable-flatfile \
-  --disable-inifile \
-  --disable-short-tags \
-  --enable-bcmath \
-  --enable-fpm \
-  --enable-intl \
-  --enable-libgcc \
-  --enable-libxml \
-  --enable-mbstring \
-  --enable-mysqlnd \
-  --enable-opcache \
-  --enable-pcntl \
-  --enable-re2c-cgoto \
-  --enable-xml \
-  --enable-zend-signals \
-  --enable-zip \
-  --sysconfdir="/etc/php-fpm" \
-  --with-config-file-path="/etc/php-fpm" \
-  --with-curl \
-  --with-fpm-group="www-data" \
-  --with-fpm-user="www-data" \
-  --with-icu-dir="/usr/local" \
-  --with-mcrypt="/usr/lib/libmcrypt" \
-  --with-mysql-sock="/run/mysqld/mysqld.sock" \
-  --with-mysqli \
-  --with-openssl \
-  --with-pcre-regex \
-  --with-pear \
-  --with-tidy \
-  --with-zend-vm="GOTO" \
-  --with-zlib
-
+source ${ID}git.sh "tjko" "jpegoptim"
+CFLAGS="-O3 -m64 -march=native" CXXFLAGS="${CFLAGS}" ./configure
 source ${ID}install.sh

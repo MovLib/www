@@ -40,9 +40,9 @@ NAME="ImageMagick"
 aptitude install -y libjpeg-dev libpng-dev
 source ${ID}uninstall.sh
 source ${ID}wget.sh "http://www.imagemagick.org/download/" "${NAME}-${VERSION}" ".tar.gz"
+CFLAGS="-O3 -m64 -march=native -pthread" \
+CXXFLAGS="${CFLAGS}" \
 ./configure \
-  CFLAGS="-O3 -m64 -pthread" \
-  CXXFLAGS="-O3 -m64 -pthread" \
   --disable-static \
   --enable-shared \
   --with-jpeg \

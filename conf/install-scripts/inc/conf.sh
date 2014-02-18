@@ -65,6 +65,7 @@ fi
 # Exit on any error!
 set -e
 
+ED="/usr/local/bin/" # Executable directory
 ID="${WD}inc/"       # Include directory
 SD="/usr/local/src/" # Source directory
 

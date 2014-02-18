@@ -27,7 +27,10 @@
 # ----------------------------------------------------------------------------------------------------------------------
 
 npm install -g \
+  autoprefixer \
   bower \
+  coffee-script \
   csso \
+  node-zopfli \
   recess \
   svgo

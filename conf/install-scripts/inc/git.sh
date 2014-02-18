@@ -31,13 +31,16 @@ if [ ! ${#} < 2 ]; then
   exit 1
 fi
 
-if [ ! -d ${2} ]; then
-  git clone git://github.com/${1}/${2}.git
-fi
-
 if [ -d "${2}" ]; then
-  if [ -z "${3}" ] || [ ${3} != "false" ]; then
-    msginfo "Changing to directory: ${SD}${2}"
-    cd ${SD}${2}
+  msginfo "Changing to directory: ${SD}${2}"
+  cd "${SD}${2}"
+  git pull
+else
+  git clone "git://github.com/${1}/${2}.git"
+  if [ -d "${2}" ]; then
+    if [ -z "${3}" ] || [ ${3} != "false" ]; then
+      msginfo "Changing to directory: ${SD}${2}"
+      cd "${SD}${2}"
+    fi
   fi
 fi
