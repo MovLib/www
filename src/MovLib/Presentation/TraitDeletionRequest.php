@@ -28,6 +28,47 @@ use \MovLib\Presentation\Partial\FormElement\Select;
 /**
  * Add deletion request form to presentation.
  *
+ * @see \MovLib\Presentation\AbstractBase
+ *
+ * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
+ * @method this addClass($class, array &$attributes = null)
+ * @method string collapseWhitespace($string)
+ * @method string expandTagAttributes(array $attributes)
+ * @method string getImage($style, $route = true, array $attributes = null, array $anchorAttributes = null)
+ * @method string htmlDecode($text)
+ * @method string htmlDecodeEntities($text)
+ * @method string htmlEncode($text)
+ * @method string lang($lang)
+ * @method string normalizeLineFeeds($text)
+ * @method string placeholder($text)
+ *
+ * @see \MovLib\Presentation\Page
+ *
+ * @property string $alerts
+ * @property string $bodyClasses
+ * @property \MovLib\Presentation\Partial\Navigation $breadcrumb
+ * @property string $breadcrumbTitle
+ * @property string $contentAfter
+ * @property string $contentBefore
+ * @property string $headingBefore
+ * @property string $headingAfter
+ * @property string $headingSchemaProperty
+ * @property-read string $id
+ * @property-read array $languageLinks
+ * @property-read array $namespace
+ * @property-read string $pageTitle
+ * @property-read string $schemaType
+ * @property-read string $title
+ * @method string getContent()
+ * @method string getFooter()
+ * @method string getHeader()
+ * @method string getHeadTitle()
+ * @method string getPresentation()
+ * @method string getMainContent()
+ * @method this initBreadcrumb()
+ * @method this initLanguageLinks($route, array $args = null, $plural = false, $query = null)
+ * @method this initPage($title)
+ *
  * @author Richard Fussenegger <richard@fussenegger.info>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0

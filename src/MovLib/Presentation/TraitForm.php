@@ -23,7 +23,8 @@ use \MovLib\Presentation\Partial\FormElement\AbstractInputFile;
 /**
  * Add form to presentation.
  *
- * <h2>Methods inherited from {@see \MovLib\Presentation\AbstractBase}</h2>
+ * @see \MovLib\Presentation\AbstractBase
+ *
  * @method string a($route, $text, array $attributes = null, $ignoreQuery = true)
  * @method this addClass($class, array &$attributes = null)
  * @method string collapseWhitespace($string)
@@ -36,7 +37,8 @@ use \MovLib\Presentation\Partial\FormElement\AbstractInputFile;
  * @method string normalizeLineFeeds($text)
  * @method string placeholder($text)
  *
- * <h2>Methods and properties inherited from {@see \MovLib\Presentation\Page}</h2>
+ * @see \MovLib\Presentation\Page
+ *
  * @property string $alerts
  * @property string $bodyClasses
  * @property \MovLib\Presentation\Partial\Navigation $breadcrumb
