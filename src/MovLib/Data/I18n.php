@@ -253,12 +253,14 @@ class I18n {
         $routes[$locale] = require "{$kernel->pathTranslations}/routes/{$locale}.php";
       }
 
-      // @devStart
-      // @codeCoverageIgnoreStart
-      if (isset($routes[$locale][$route]))
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      $route = $routes[$locale][$route];
+      // Check if we have a translation for this route and use it if we do.
+      if (isset($routes[$locale][$route])) {
+        $route = $routes[$locale][$route];
+      }
+      // Otherwise assume that there is no translation available.
+      else {
+        $routes[$locale][$route] = $route;
+      }
     }
 
     if ($args) {
@@ -286,6 +288,8 @@ class I18n {
   public function rp($route, array $args = null, $locale = null) {
     global $kernel;
     static $routes = [];
+
+    // Use currently active locale if none was passed.
     if (!$locale) {
       $locale = $this->locale;
     }
@@ -297,12 +301,14 @@ class I18n {
         $routes[$locale] = require "{$kernel->pathTranslations}/routes/{$locale}.plural.php";
       }
 
-      // @devStart
-      // @codeCoverageIgnoreStart
-      if (isset($routes[$locale][$route]))
-      // @codeCoverageIgnoreEnd
-      // @devEnd
-      $route = $routes[$locale][$route];
+      // Check if we have a translation for this route and use it if we do.
+      if (isset($routes[$locale][$route])) {
+        $route = $routes[$locale][$route];
+      }
+      // Otherwise assume that there is no translation available.
+      else {
+        $routes[$locale][$route] = $route;
+      }
     }
 
     if ($args) {
