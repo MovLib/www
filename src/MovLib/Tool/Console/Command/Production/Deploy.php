@@ -145,7 +145,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     $this->globRecursive("{$this->pathPublic}/asset", function ($splFileInfo) {
       global $kernel;
       $extension = $splFileInfo->getExtension();
-      $basename  = $splFileInfo->getBasename($extension);
+      $basename  = substr($splFileInfo->getBasename($extension), 0, -1);
       $kernel->cacheBusters[$extension][$basename] = md5_file($splFileInfo->getRealPath());
     }, $extensions);
 
@@ -199,7 +199,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Just making sure...
-    if (sh::executeDetached("movlib fix-permissions") === false) {
+    if (sh::executeDisplayOutput("movlib fix-permissions") === false) {
       $this->write("Couldn't fix permissions... trying to recover...", self::MESSAGE_TYPE_ERROR);
       if (unlink($sym) === false) {
         throw new \RuntimeException("Couldn't delete just created symbolic link '{$sym}'");
@@ -213,11 +213,9 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     // Looks good :)
     $this->write("Successfully changed the repository.", self::MESSAGE_TYPE_INFO);
     $this->write([
-      "",
       "Please note that the old repository wasn't deleted and won't be deleted, in case you need to switch back very quickly.",
-      "If you have to, use the following command:",
-      "`rm -f {$sym} && ln -s {$kernel->documentRoot} {$sym}`",
       "",
+      "If you have to, use the following command: `rm -f {$sym} && ln -s {$kernel->documentRoot} {$sym}`",
     ], self::MESSAGE_TYPE_QUESTION);
 
     return $this;
@@ -571,7 +569,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       "composer update --no-dev",
       "composer dumpautoload -o",
       "bower update --allow-root",
-      "php {$this->pathRepository}/bin/movlib.php fix-permissions",
+      "php {$this->pathRepository}/bin/movlib.php fix-permissions {$this->pathRepository}",
     ];
 
     if (sh::executeDisplayOutput(implode(" && ", $commands)) === false) {
