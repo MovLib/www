@@ -67,7 +67,7 @@ class Show extends \MovLib\Presentation\Page {
     $this->users = new Users();
     $this->initPage($i18n->t("Users"));
     $this->initBreadcrumb();
-    $this->initLanguageLinks("/users");
+    $this->initLanguageLinks("/users", null, true);
     $this->paginationInit($this->users->getTotalCount());
     $this->sidebarInit([
       [ $kernel->requestPath, $this->title ],
