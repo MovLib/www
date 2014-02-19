@@ -1,0 +1,82 @@
+# ----------------------------------------------------------------------------------------------------------------------
+# This file is part of {@link https://github.com/MovLib MovLib}.
+#
+# Copyright © 2013-present {@link https://movlib.org/ MovLib}.
+#
+# MovLib is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# MovLib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY# without even the implied warranty
+# of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License along with MovLib.
+# If not, see {@link http://www.gnu.org/licenses/ gnu.org/licenses}.
+# ----------------------------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Main Vagrant configuration file.
+#
+# Please note that NetBeans doesn't have syntax highlighting for Ruby anymore.
+#
+# LINK:       http://www.vagrantup.com/
+# AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
+# COPYRIGHT:  © 2013 MovLib
+# LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
+# LINK:       https://movlib.org/
+# SINCE:      0.0.1-dev
+# ----------------------------------------------------------------------------------------------------------------------
+
+Vagrant.configure("2") do |config|
+
+  # The name of the Vagrant box.
+  config.vm.box = "MovLib, the free movie library."
+
+  # The URL from where the 'config.vm.box' box will be downloaded if it doesn't exist on the developer's system.
+  config.vm.box_url = "https://tools.movlib.org/vagrant/MovLib.box"
+
+  # The hostname of the guest system.
+  config.vm.hostname = "movlib.org"
+
+  # Provider-specific configuration.
+  #
+  # LINK: http://docs.vagrantup.com/v2/virtualbox/configuration.html
+  config.vm.provider :virtualbox do |vb|
+    # Don't boot in headless mode.
+    vb.gui = true
+
+    # The name of the virtual machine.
+    vb.name = "MovLib"
+
+    # Control various VM settings.
+    #
+    # LINK: http://www.virtualbox.org/manual/ch08.html
+    #vb.customize [ "modifyvm", :id, "--monitorcount", "2" ]
+    vb.customize [ "modifyvm", :id, "--clipboard", "bidirectional" ]
+  end
+
+  # The provisioner used to automatically install the software we need for development.
+  #
+  # LINK: http://docs.vagrantup.com/v2/provisioning/puppet_apply.html
+  #config.vm.provision "puppet" do |pp|
+  #  pp.hiera_config_path = "conf/puppet/hiera.yml"
+  #  pp.manifests_path    = "conf/puppet"
+  #  pp.manifest_file     = "bootstrap.pp"
+  #  pp.module_path       = "conf/puppet/module"
+  #  pp.working_directory = "/tmp/vagrant-puppet"
+  #end
+
+  # Create a forwarded port mapping from the host to the guest system. This allows developers to access their MovLib
+  # virtual machine via 'localhost:666' (the 666 has nothing to do with Satan, it was the port used for the first ego-
+  # shooter DooM by almighty id software). Developer's are encouraged to set up a custom domain via their hosts file
+  # (e.g. http://richard.movlib.org/ ).
+  #
+  # LINK: http://docs.vagrantup.com/v2/networking/index.html
+  config.vm.network :forwarded_port, host: 666, guest: 80
+
+  # Additional folders to share between the host and guest system.
+  #
+  # LINK: http://docs.vagrantup.com/v2/synced-folders/index.html
+  #config.vm.synced_folder "", ""
+
+end
