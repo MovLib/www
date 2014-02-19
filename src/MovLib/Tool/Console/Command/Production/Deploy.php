@@ -94,11 +94,14 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   protected $pathRepository = "/usr/local/src/movlib";
 
   /**
-   * Absolute path to the currently in use symbolic link.
+   * Absolute path to the persistent uploads directory.
+   *
+   * Please note that this directory must reside outside of the deployed repository. Otherwise all uploaded files would
+   * be deleted on upgrade.
    *
    * @var string
    */
-  protected $pathSymbolic;
+  protected $pathUploads = "/var/lib/uploads";
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -209,6 +212,13 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       throw new \RuntimeException("Couldn't change repository from '{$sym}' to '{$this->pathRepository}'");
     }
 
+    // Create symbolic links to upload folders.
+    foreach ([ "private", "public" ] as $directory) {
+      if (symlink("{$this->pathUploads}/{$directory}", "{$this->pathRepository}/{$directory}/upload") === false) {
+        throw new \RuntimeException("Couldn't create symbolic link for {$directory} upload directory");
+      }
+    }
+
     // Just making sure...
     if (sh::executeDisplayOutput("movlib fix-permissions") === false) {
       $this->write("Couldn't fix permissions... trying to recover...", self::MESSAGE_TYPE_ERROR);
@@ -247,7 +257,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       $realPath = $splFileInfo->getRealPath();
       $this->write("Compressing {$realPath}");
       $kernel->compress($realPath);
-    }, [ "css", "eot", "ico", "js", "svg", "ttf" ]);
+    }, [ "css", "eot", "ico", "js", "ttf" ]);
     return $this->write("Successfully compressed all assets.");
   }
 
@@ -510,7 +520,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     $this->write("Optimizing PHP files...");
 
     $this->globRecursive("{$this->pathRepository}/src/MovLib", function ($splFileInfo) {
-      $realPath   = $splFileInfo->getRealPath();
+      $realPath = $splFileInfo->getRealPath();
 
       // No need to optimize any file within the Tool namespace!
       if (strpos($realPath, "/src/MovLib/Tool") !== false) {
