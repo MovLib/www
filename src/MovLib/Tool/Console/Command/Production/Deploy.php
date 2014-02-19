@@ -24,6 +24,11 @@ use \Symfony\Component\Console\Output\OutputInterface;
 /**
  * Perform various deployment related tasks.
  *
+ * The various commands that are involved during deployment aren't available individually because they highly depend
+ * on each other. For instance, each and every command depends on the initial cloning of the repository at a new and
+ * unique location on the server. Of course it would be possible to work within the current document root, but it simply
+ * doesn't make much sense (at least we had the impression while writing this class).
+ *
  * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2013 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -32,6 +37,26 @@ use \Symfony\Component\Console\Output\OutputInterface;
  */
 class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   use \MovLib\Data\Image\TraitOptimizeImage;
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Constants
+
+
+  /**
+   * Google closure compiler identifier.
+   *
+   * @see Deploy::googleClosureCompiler()
+   * @var integer
+   */
+  const GOOGLE_CLOSURE_COMPILER = 0;
+
+  /**
+   * UglifyJS compiler identifier.
+   *
+   * @see Deploy::uglifyJS()
+   * @var itneger
+   */
+  const UGLIFYJS = 1;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Properties
@@ -67,6 +92,13 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @var string
    */
   protected $pathRepository = "/usr/local/src/movlib";
+
+  /**
+   * Absolute path to the currently in use symbolic link.
+   *
+   * @var string
+   */
+  protected $pathSymbolic;
 
 
   // ------------------------------------------------------------------------------------------------------------------- Magic Methods
@@ -112,7 +144,9 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     // Create cache busters for all CSS and JS files.
     $this->globRecursive("{$this->pathPublic}/asset", function ($splFileInfo) {
       global $kernel;
-      $kernel->cacheBusters[$splFileInfo->getExtension()][$splFileInfo->getFilename()] = md5_file($splFileInfo->getRealPath());
+      $extension = $splFileInfo->getExtension();
+      $basename  = $splFileInfo->getBasename($extension);
+      $kernel->cacheBusters[$extension][$basename] = md5_file($splFileInfo->getRealPath());
     }, $extensions);
 
     // Get the source code of the new Kernel.
@@ -133,8 +167,72 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     return $this->write("Successfully calculated cache buster hashes.", self::MESSAGE_TYPE_INFO);
   }
 
-  public function compressAssets() {
-    $this->globRecursive($this->pathPublic, function ($splFileInfo) {
+  /**
+   * Change repository.
+   *
+   * @global \MovLib\Tool\Kernel $kernel
+   * @return this
+   * @throws \RuntimeException
+   */
+  protected function changeRepository() {
+    global $kernel;
+
+    $this->write("Attempting to find symbolic link...");
+    sh::execute("find / -not -path '/proc*' -type l -xtype d -lname '{$kernel->documentRoot}'", $output);
+    if (empty($output)) {
+      throw new \RuntimeException("Couldn't find any existing symbolic link to the current document root '{$kernel->documentRoot}'");
+      // @todo Might be a new instllation, what should we do?
+    }
+    elseif (count($output) > 1) {
+      throw new \RuntimeException("Multiple symbolic links found\n\n" . implode("\n", $output));
+    }
+    $sym = reset($output);
+
+    // We can't create a new symbolic link as long as the old one exists.
+    if (unlink($sym) === false) {
+      throw new \RuntimeException("Couldn't delete existing symbolic link '{$sym}'");
+    }
+
+    // Try to create the new symbolic link.
+    if (symlink($this->pathRepository, $sym) === false) {
+      throw new \RuntimeException("Couldn't change repository from '{$sym}' to '{$this->pathRepository}'");
+    }
+
+    // Just making sure...
+    if (sh::executeDetached("movlib fix-permissions") === false) {
+      $this->write("Couldn't fix permissions... trying to recover...", self::MESSAGE_TYPE_ERROR);
+      if (unlink($sym) === false) {
+        throw new \RuntimeException("Couldn't delete just created symbolic link '{$sym}'");
+      }
+      if (symlink($kernel->documentRoot, $sym) === false) {
+        throw new \RuntimeException("Couldn't change back to old repository '{$kernel->documentRoot}'");
+      }
+      throw new \RuntimeException("Couldn't fix permissions");
+    }
+
+    // Looks good :)
+    $this->write("Successfully changed the repository.", self::MESSAGE_TYPE_INFO);
+    $this->write([
+      "",
+      "Please note that the old repository wasn't deleted and won't be deleted, in case you need to switch back very quickly.",
+      "If you have to, use the following command:",
+      "`rm -f {$sym} && ln -s {$kernel->documentRoot} {$sym}`",
+      "",
+    ], self::MESSAGE_TYPE_QUESTION);
+
+    return $this;
+  }
+
+  /**
+   * Compress all assets.
+   *
+   * Note that this method is silent because it's also used during production.
+   *
+   * @return this
+   * @throws \RuntimeException
+   */
+  protected function compressAssets() {
+    return $this->globRecursive($this->pathPublic, function ($splFileInfo) {
       global $kernel;
       $kernel->compress($splFileInfo->getRealPath());
     }, [ "css", "eot", "ico", "js", "svg", "ttf" ]);
@@ -159,7 +257,11 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   protected function execute(InputInterface $input, OutputInterface $output) {
     $options = parent::execute($input, $output);
 
+    // Only root (sudo) can deploy!
     $this->checkPrivileges();
+
+    // Just making sure...
+    $this->write(""); // Space things out or it might look off in some edge cases.
     $this->write([
       "This will pull the current master branch from GitHub and the site will be put in maintenance mode during the deployment.",
       "",
@@ -171,6 +273,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       return;
     }
 
+    // Let's start deployment...
     $this->write("Starting MovLib deployment...");
     try {
       foreach ([
@@ -183,14 +286,20 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
         "calculateCacheBusters",
         // @todo maintenance mode start
         // @todo migrations (if any)
-        // @todo change symbolic link of /var/www
+        "changeRepository",
         // @todo maintenance mode end
       ] as $task) {
         $this->$task();
       }
     }
     catch (\Exception $e) {
-      $this->write("Attempting to remove cloned repository...", self::MESSAGE_TYPE_ERROR);
+      $this->write(""); // Space things out or it might look off in some edge cases.
+      $this->write([
+        "Something went terribly wrong, see the exception message that follows.",
+        "Attempting to remove cloned repository...",
+        "",
+        "Run `movlib deploy` again (if you want to give it another shot)!",
+      ], self::MESSAGE_TYPE_ERROR);
       sh::executeDisplayOutput("rm -rf {$this->pathRepository}");
       throw $e;
     }
@@ -200,14 +309,82 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   }
 
   /**
+   * Optimize JavaScript with Google's closure compiler.
+   *
+   * Google's closure compiler has great results with the <code>ADVANCED_OPTIMIZATIONS</code> mode, but it tends to
+   * break a lot of code and ensuring that it doesn't delete almost all methods of a prototype is a pain in the ass.
+   * There are more known issues with it, don't say you haven't been warned.
+   *
+   * PS: This will also take much more time to compile compared to uglifyjs.
+   *
+   * @see Deploy::uglifyJS()
+   * @return this
+   * @throws \RuntimeException
+   */
+  protected function googleClosureCompiler() {
+    $movlib  = "{$this->pathPublic}/asset/js/MovLib.js";
+    $closure = "java -jar /var/www/bin/closure-compiler.jar --";
+
+    // The Google closure default compiler arguments.
+    $args = [
+      "charset UTF-8",
+      "compilation_level ADVANCED_OPTIMIZATIONS",
+      "language_in ECMASCRIPT5_STRICT",
+    ];
+
+    // Optimize all vendor supplied JavaScript files.
+    $bowerClosure = $closure . implode(" --", $args);
+    $this->globRecursive("{$this->pathPublic}/bower", function ($splFileInfo) use ($bowerClosure) {
+      $realPath = $splFileInfo->getRealPath();
+
+      // Remove already minified JavaScript files, we have no need for them.
+      if (strpos($realPath, ".min.js") !== false) {
+        unlink($realPath);
+        return;
+      }
+
+      if (sh::executeDisplayOutput("{$bowerClosure} --js {$realPath} --js_output_file {$realPath}") === false) {
+        throw new \RuntimeException("Couldn't minify '{$realPath}'");
+      }
+      $this->removeComments($realPath);
+    }, "js");
+
+    // Now we add the MovLib specific modules together.
+    $args[] = "module_output_path_prefix {$this->pathPublic}/asset/js/build/";
+    $args[] = "module MovLib:1:";
+    $args[] = "js {$movlib}";
+
+    // Add all modules with a dependency towards our MovLib main file to the arguments.
+    $modules = glob("{$this->pathPublic}/asset/js/module/*.js") + glob("{$this->pathPublic}/asset/js/poly/*.js");
+    foreach ($modules as $module) {
+      $args[] = "module " . basename($module, ".js") . ":1:MovLib:";
+      $args[] = "js {$module}";
+    }
+
+    // Put the arguments together and let closure compile them.
+    if (sh::executeDisplayOutput($closure . implode(" --", $args)) === false) {
+      throw new \RuntimeException("Couldn't minify JavaScript");
+    }
+
+    // Move all files from the build folder back to their initial position and remove absolutely all comments.
+    $this->removeComments($movlib, $movlib);
+    foreach ($modules as $module) {
+      $this->removeComments(str_replace("/module/", "/build/", $module), $module);
+    }
+
+    // Remove the build folder, otherwise we'd generate cache busters for these files later on.
+    sh::execute("rm -rf {$this->pathPublic}/asset/js/build");
+
+    return $this;
+  }
+
+  /**
    * Optimize CSS files.
    *
-   * @global \MovLib\Tool\Kernel $kernel
    * @return this
    * @throws \RuntimeException
    */
   protected function optimizeCSS() {
-    global $kernel;
     $this->write("Optimizing CSS...");
 
     // Create absolute path to the main CSS file.
@@ -289,57 +466,17 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @return this
    * @throws \RuntimeException
    */
-  protected function optimizeJS() {
+  protected function optimizeJS($compiler = self::UGLIFYJS) {
     $this->write("Optimizing JavaScript...");
-    $movlib  = "{$this->pathPublic}/asset/js/MovLib.js";
-    $closure = "java -jar /var/www/bin/closure-compiler.jar --";
-
-    // The Google closure default compiler arguments.
-    $args = [ "charset UTF-8", "compilation_level ADVANCED_OPTIMIZATIONS", "language_in ECMASCRIPT5_STRICT" ];
-
-    // Optimize all vendor supplied JavaScript files.
-    $bowerClosure = $closure . implode(" --", $args);
-    $this->globRecursive("{$this->pathPublic}/bower", function ($splFileInfo) use ($bowerClosure) {
-      $realPath = $splFileInfo->getRealPath();
-
-      // Remove already minified JavaScript files, we have no need for them.
-      if (strpos($realPath, ".min.js") !== false) {
-        unlink($realPath);
-        return;
-      }
-
-      if (sh::executeDisplayOutput("{$bowerClosure} --js {$realPath} --js_output_file {$realPath}") === false) {
-        throw new \RuntimeException("Couldn't minify '{$realPath}'");
-      }
-      $this->removeComments($realPath);
-    }, "js");
-
-    // Now we add the MovLib specific modules together.
-    $args[] = "module_output_path_prefix {$this->pathPublic}/asset/js/build/";
-    $args[] = "module MovLib:1:";
-    $args[] = "js {$movlib}";
-
-    // Add all modules with a dependency towards our MovLib main file to the arguments.
-    $modules = glob("{$this->pathPublic}/asset/js/module/*.js");
-    foreach ($modules as $module) {
-      $args[] = "module " . basename($module, ".js") . ":1:MovLib:";
-      $args[] = "js {$module}";
+    if ($compiler === self::GOOGLE_CLOSURE_COMPILER) {
+      $this->write("Using Google's closure compiler for JavaScript optimization...");
+      $this->write("While generating great results, it has bad performane and tends to break code. You have been warned!");
+      $this->googleClosureCompiler();
     }
-
-    // Put the arguments together and let closure compile them.
-    if (sh::executeDisplayOutput($closure . implode(" --", $args)) === false) {
-      throw new \RuntimeException("Couldn't minify JavaScript");
+    elseif ($compiler === self::UGLIFYJS) {
+      $this->write("Using uglifyjs compiler for JavaScript optimization...");
+      $this->uglifyJS();
     }
-
-    // Move all files from the build folder back to their initial position and remove absolutely all comments.
-    $this->removeComments($movlib, $movlib);
-    foreach ($modules as $module) {
-      $this->removeComments(str_replace("/module/", "/build/", $module), $module);
-    }
-
-    // Remove the build folder, otherwise we'd generate cache busters for these files later on.
-    sh::execute("rm -rf {$this->pathPublic}/asset/js/build");
-
     return $this->write("Successfully optimized JavaScript.", self::MESSAGE_TYPE_INFO);
   }
 
@@ -354,8 +491,14 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     $this->write("Optimizing PHP...");
 
     $this->globRecursive("{$this->pathRepository}/src/MovLib", function ($splFileInfo) {
-      $inDevBlock = false;
       $realPath   = $splFileInfo->getRealPath();
+
+      // No need to optimize any file within the Tool namespace!
+      if (strpos($realPath, "/src/MovLib/Tool") !== false) {
+        return;
+      }
+
+      $inDevBlock = false;
       $tmpPath    = "{$realPath}.tmp";
 
       if (($fhSource = fopen($realPath, "rb")) === false) {
@@ -483,6 +626,29 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     file_put_contents($target, $stripped);
     return $this;
+  }
+
+  /**
+   * Optimize JavaScript with uglifyjs.
+   *
+   * @see Deploy::googleClosureCompiler()
+   * @return this
+   * @throws \RuntimeException
+   */
+  protected function uglifyJS() {
+    return $this->globRecursive($this->pathPublic, function ($splFileInfo) {
+      $realPath = $splFileInfo->getRealPath();
+
+      // Remove already minified JavaScript files, we have no need for them.
+      if (strpos($realPath, ".min.js") !== false) {
+        unlink($realPath);
+        return;
+      }
+
+      if (sh::execute("uglifyjs --compress --mangle --output {$realPath} --screw-ie8 {$realPath}") === false) {
+        throw new \RuntimeException("Couldn't optimize '{$realPath}'");
+      }
+    }, "js");
   }
 
 }
