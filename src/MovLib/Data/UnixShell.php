@@ -94,4 +94,34 @@ class UnixShell {
     return $status === 0;
   }
 
+  /**
+   * Create a symboli link.
+   *
+   * @param string $target
+   *   Absolute path to the target directory or file.
+   * @param string $link
+   *   Absolute path to the symbolic link.
+   * @param boolean $force [optional]
+   *   Whether to override existing destination or not, defaults to <code>TRUE</code> (override).
+   * @return boolean
+   *   <code>TRUE</code> on success, otherwise <code>FALSE</code>.
+   */
+  public static function symlink($target, $link, $force = true) {
+    // @devStart
+    // @codeCoverageIgnoreStart
+    if (!is_string($target) || !is_string($link)) {
+      throw new \InvalidArgumentException("\$target and \$link must be of type string");
+    }
+    if (!is_file($target) && !is_dir($target)) {
+      throw new \InvalidArgumentException("\$target must be a valid path: '{$target}'");
+    }
+    if (realpath($target) != $target) {
+      throw new \InvalidArgumentException("\$target must be absolute: '{$target}'");
+    }
+    // @codeCoverageIgnoreEnd
+    // @devEnd
+    $force = $force === true ? "f" : null;
+    return sh::execute("ln -{$force}s {$target} {$link}");
+  }
+
 }
