@@ -459,12 +459,14 @@ class Page extends \MovLib\Presentation\AbstractBase {
     }
     $jsSettings = json_encode($kernel->javascriptSettings, JSON_UNESCAPED_UNICODE);
 
-    $title   = $this->getHeadTitle();
-    $logo256 = $kernel->getAssetURL("logo/256", "png");
+    $htmlAttr = " dir='{$i18n->direction}' id='nojs' lang='{$i18n->languageCode}' prefix='og: http://ogp.me/ns#'";
+    $logo256  = $kernel->getAssetURL("logo/256", "png");
+    $title    = $this->getHeadTitle();
 
     return
       "<!doctype html>" .
-      "<html dir='{$i18n->direction}' id='nojs' lang='{$i18n->languageCode}' prefix='og: http://ogp.me/ns#'>" .
+      "<!--[if IE 9 ]><html class='ie9'{$htmlAttr}><![endif]-->" .
+      "<!--[if (gt IE 9)|!(IE)]><!--><html{$htmlAttr}><!--<![endif]-->" .
       "<head>" .
         "<title>{$title}</title>" .
         // Include the global styles and any presentation specific ones.
