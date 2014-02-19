@@ -108,9 +108,9 @@ class FixPermissions extends \MovLib\Tool\Console\Command\AbstractCommand {
     $this->write("Fixing permissions on all directories and files in <info>'{$directory}'</info> ...");
     foreach ([
       "chown -R {$kernel->phpUser}:{$kernel->phpGroup} '{$directory}'" => "User and group ownership fixed!",
-      "find '{$directory}' -type d -exec chmod -R 2770 {} \;"          => "Directory permissions fixed!",
-      "find '{$directory}' -type f -exec chmod -R 2660 {} \;"          => "File permissions fixed!",
-      "chmod 2770 -R {$binPaths}"                                      => "Executable permissions fixed!"
+      "find '{$directory}' -follow -type d -exec chmod 2770 {} \;"     => "Directory permissions fixed!",
+      "find '{$directory}' -follow -type f -exec chmod 2660 {} \;"     => "File permissions fixed!",
+      "chmod 2770 -R {$binPaths}"                                      => "Executable permissions fixed!",
     ] as $cmd => $msg) {
       if (sh::execute($cmd) === false) {
         throw new \RuntimeException("Failed to execute '{$cmd}'!");
