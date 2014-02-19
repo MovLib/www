@@ -222,6 +222,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
   `dyn_descriptions` BLOB NOT NULL COMMENT 'The company’s translated descriptions.',
   `dyn_wikipedia` BLOB NOT NULL COMMENT 'The company’s translated Wikipedia links.',
   `dyn_image_descriptions` BLOB NOT NULL COMMENT 'The company’s translated logo description.',
+  `name` VARCHAR(255) NOT NULL COMMENT 'The company’s name.',
   `aliases` BLOB NULL COMMENT 'The company’s aliases.',
   `founding_date` DATE NULL COMMENT 'The company’s founding date.',
   `defunct_date` DATE NULL COMMENT 'The company’s defunct date.',
