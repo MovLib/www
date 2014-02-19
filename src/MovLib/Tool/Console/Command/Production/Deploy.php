@@ -133,21 +133,32 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
   protected function calculateCacheBusters() {
     global $kernel;
     $this->write("Calculating cache buster hashes...");
-    $extensions = [ "css", "js", "jpg", "png", "svg" ];
 
     // Purge the Kernel's cache buster array.
     $kernel->cacheBusters = [];
-    foreach ($extensions as $ext) {
+    foreach ([ "css", "js", "jpg", "png", "svg" ] as $ext) {
       $kernel->cacheBusters[$ext] = [];
     }
 
     // Create cache busters for all CSS and JS files.
     $this->globRecursive("{$this->pathPublic}/asset", function ($splFileInfo) {
       global $kernel;
+      $realPath  = $splFileInfo->getRealPath();
       $extension = $splFileInfo->getExtension();
       $basename  = substr($splFileInfo->getBasename($extension), 0, -1);
-      $kernel->cacheBusters[$extension][$basename] = md5_file($splFileInfo->getRealPath());
-    }, $extensions);
+      $kernel->cacheBusters[$extension][$basename] = md5_file($realPath);
+      $this->write("{$realPath} --> {$kernel->cacheBusters[$extension][$basename]}");
+    }, [ "css", "js" ]);
+
+    // Create cache busters for all images.
+    $this->globRecursive("{$this->pathPublic}/asset/img", function ($splFileInfo) {
+      global $kernel;
+      $realPath  = $splFileInfo->getRealPath();
+      $extension = $splFileInfo->getExtension();
+      $basename  = str_replace("{$this->pathPublic}/asset/img/", "", substr($realPath, 0, -4));
+      $kernel->cacheBusters[$extension][$basename] = md5_file($realPath);
+      $this->write("{$realPath} --> {$kernel->cacheBusters[$extension][$basename]}");
+    }, [ "jpg", "png", "svg" ]);
 
     // Get the source code of the new Kernel.
     if (($kernelContent = file_get_contents($this->pathKernel)) === false) {
@@ -230,10 +241,14 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @throws \RuntimeException
    */
   protected function compressAssets() {
-    return $this->globRecursive($this->pathPublic, function ($splFileInfo) {
+    $this->write("Compressing all assets...");
+    $this->globRecursive($this->pathPublic, function ($splFileInfo) {
       global $kernel;
-      $kernel->compress($splFileInfo->getRealPath());
+      $realPath = $splFileInfo->getRealPath();
+      $kernel->compress($realPath);
+      $this->write("Compressed {$realPath}");
     }, [ "css", "eot", "ico", "js", "svg", "ttf" ]);
+    return $this->write("Successfully compressed all assets.");
   }
 
   /**
@@ -399,7 +414,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     $fh = fopen($movlib, "w");
     foreach ($matches[1] as $layout) {
       $realPath = "{$this->pathPublic}/asset/css/{$layout}";
-      // Optimize the layout CSS file.
+      $this->write("Optimizing {$realPath}");
       if (sh::execute("csso --input {$realPath} --output {$realPath}", $output) === false) {
         $output = implode("\n", $output);
         throw new \RuntimeException("Couldn't minify '{$realPath}'\n\n{$output}");
@@ -414,6 +429,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     // Optimize all modules.
     $modules = glob("{$this->pathPublic}/asset/css/module/*.css");
     foreach ($modules as $module) {
+      $this->write("Optimizing {$module}");
       if (sh::execute("csso --input {$module} --output {$module}", $output) === false) {
         $output = implode("\n", $output);
         throw new \RuntimeException("Couldn't minify '{$module}'\n\n{$output}");
@@ -422,13 +438,16 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Update the autoprefixer definitions.
+    $this->write("Updating autoprefixer definitions...");
     if (sh::executeDisplayOutput("autoprefixer --update") === false) {
       throw new \RuntimeException("Couldn't update autoprefixer definitions");
     }
 
     // Autoprefix all CSS files.
-    $modules = implode(" ", $modules);
-    if (sh::executeDisplayOutput("autoprefixer --browsers 'last 2 versions','Firefox ESR','Explorer 9','BlackBerry 10','Android 4' {$movlib} {$modules}") === false) {
+    $browsers = "'last 2 versions','Firefox ESR','Explorer 9','BlackBerry 10','Android 4'";
+    $this->write("CSS autoprefixing for browser definition {$browsers}");
+    $modules  = implode(" ", $modules);
+    if (sh::executeDisplayOutput("autoprefixer --browsers {$browsers} {$movlib} {$modules}") === false) {
       throw new \RuntimeException("Couldn't autoprefix CSS files");
     }
 
@@ -441,20 +460,20 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @return this
    */
   protected function optimizeImages() {
+    $optimize = function ($extension) {
+      $this->write("Optimizing {$extension} images...");
+      $this->globRecursive($this->pathPublic, function ($splFileInfo) use ($extension) {
+        $realPath = $splFileInfo->getRealPath();
+        $this->write("Optimzing {$realPath}");
+        $this->{"optimize{$extension}"}($realPath);
+      }, $extension);
+      $this->write("Successfully optimized {$extension} images.", self::MESSAGE_TYPE_INFO);
+    };
+
     // @todo Optimize JPG images
-
-    $this->write("Optimizing PNG images...");
-    $this->globRecursive($this->pathPublic, function ($splFileInfo) {
-      $this->optimizePNG($splFileInfo->getRealPath());
-    }, "png");
-    $this->write("Successfully optimized PNG images...", self::MESSAGE_TYPE_INFO);
-
-    $this->write("Optimizing SVG images...");
-    $this->globRecursive($this->pathPublic, function ($splFileInfo) {
-      $this->optimizeSVG($splFileInfo->getRealPath());
-    }, "svg");
-    $this->write("Successfully optimized SVG images...", self::MESSAGE_TYPE_INFO);
-
+    //$optimize("jpg");
+    $optimize("png");
+    $optimize("svg");
     return $this;
   }
 
@@ -486,16 +505,18 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
    * @throws \RuntimeException
    */
   protected function optimizePHP() {
-    $this->write("Optimizing PHP...");
+    $this->write("Optimizing PHP files...");
 
     $this->globRecursive("{$this->pathRepository}/src/MovLib", function ($splFileInfo) {
       $realPath   = $splFileInfo->getRealPath();
 
       // No need to optimize any file within the Tool namespace!
       if (strpos($realPath, "/src/MovLib/Tool") !== false) {
+        $this->write("Skipping {$realPath}", self::MESSAGE_TYPE_COMMENT);
         return;
       }
 
+      $this->write("Optimizing {$realPath}");
       $inDevBlock = false;
       $tmpPath    = "{$realPath}.tmp";
 
@@ -546,7 +567,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       rename($tmpPath, $realPath);
     }, "php");
 
-    return $this->write("Successfully optimized PHP.", self::MESSAGE_TYPE_INFO);
+    return $this->write("Successfully optimized PHP files.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
@@ -576,7 +597,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       throw new \RuntimeException("Preparation of repository failed");
     }
 
-    // Remove the makefile from the root directory (too dangerous).
+    $this->write("Removing makefile from root directory (too dangerous).", self::MESSAGE_TYPE_COMMENT);
     unlink("{$this->pathRepository}/makefile");
 
     return $this->write("Successfully prepared repository.", self::MESSAGE_TYPE_INFO);
@@ -643,6 +664,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
         return;
       }
 
+      $this->write("Optimizing {$realPath}...");
       if (sh::execute("uglifyjs --compress --mangle --output {$realPath} --screw-ie8 {$realPath}") === false) {
         throw new \RuntimeException("Couldn't optimize '{$realPath}'");
       }
