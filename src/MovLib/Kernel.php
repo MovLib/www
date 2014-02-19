@@ -567,7 +567,13 @@ class Kernel {
 
     // Try to compress the file.
     if (sh::execute("zopfli --gzip --ext 'gz' {$source}") === false) {
-      error_log("Couldn't compress '{$source}' with zopfli");
+      $error = "Couldn't compress '{$source}' with zopfli";
+      if ($this->fastCGI === true) {
+        error_log($error);
+      }
+      else {
+        throw new \RuntimeException($error);
+      }
       return $this;
     }
 
@@ -741,10 +747,12 @@ class Kernel {
       // Please note that we HAVE TO use PHP's base exception class at this point, otherwise we can't set our own trace!
       $exception       = new \Exception($error["message"], $error["type"]);
       $reflectionClass = new \ReflectionClass($exception);
-      foreach ([ "file", "line", "trace" ] as $propertyName) {
-        $reflectionProperty = $reflectionClass->getProperty($propertyName);
+      $properties      = [ "file", "line", "trace" ];
+      $i               = 3;
+      while ($i--) {
+        $reflectionProperty = $reflectionClass->getProperty($properties[$i]);
         $reflectionProperty->setAccessible(true);
-        $reflectionProperty->setValue($exception, $error[$propertyName]);
+        $reflectionProperty->setValue($exception, $error[$properties[$i]]);
       }
 
       // Send an email to all developers.
