@@ -234,6 +234,7 @@ CREATE TABLE IF NOT EXISTS `movlib`.`companies` (
   `image_uploader_id` BIGINT UNSIGNED NULL COMMENT 'The company’s logo unique uploader identifier.',
   `image_width` SMALLINT NULL COMMENT 'The company’s logo width.',
   `links` BLOB NULL COMMENT 'The company’s weblinks as serialized PHP array.',
+  `place_id` BIGINT UNSIGNED NULL COMMENT 'The company’s location.',
   PRIMARY KEY (`id`),
   INDEX `fk_companies_users1_idx` (`image_uploader_id` ASC),
   CONSTRAINT `fk_companies_users1`
