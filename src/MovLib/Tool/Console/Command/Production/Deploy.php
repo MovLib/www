@@ -245,8 +245,8 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     $this->globRecursive($this->pathPublic, function ($splFileInfo) {
       global $kernel;
       $realPath = $splFileInfo->getRealPath();
+      $this->write("Compressing {$realPath}");
       $kernel->compress($realPath);
-      $this->write("Compressed {$realPath}");
     }, [ "css", "eot", "ico", "js", "svg", "ttf" ]);
     return $this->write("Successfully compressed all assets.");
   }
@@ -287,7 +287,9 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }
 
     // Let's start deployment...
-    $this->write("Starting MovLib deployment...");
+    $this->write("");
+    $this->write([ "Starting MovLib deployment..." ], self::MESSAGE_TYPE_INFO);
+    $this->write("");
     try {
       foreach ([
         "prepareRepository",
@@ -445,7 +447,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
 
     // Autoprefix all CSS files.
     $browsers = "'last 2 versions','Firefox ESR','Explorer 9','BlackBerry 10','Android 4'";
-    $this->write("CSS autoprefixing for browser definition {$browsers}");
+    $this->write("CSS autoprefixing for browser definition: {$browsers}");
     $modules  = implode(" ", $modules);
     if (sh::executeDisplayOutput("autoprefixer --browsers {$browsers} {$movlib} {$modules}") === false) {
       throw new \RuntimeException("Couldn't autoprefix CSS files");

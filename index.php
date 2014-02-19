@@ -32,4 +32,4 @@
  * @since 0.0.1-dev
  */
 require __DIR__ . "/src/MovLib/Kernel.php";
-new \MovLib\Kernel();
+new \MovLib\Kernel(__DIR__);

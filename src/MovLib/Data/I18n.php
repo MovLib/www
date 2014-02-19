@@ -240,6 +240,8 @@ class I18n {
   public function r($route, array $args = null, $locale = null) {
     global $kernel;
     static $routes = [];
+
+    // Use currently active locale if none was passed.
     if (!$locale) {
       $locale = $this->locale;
     }

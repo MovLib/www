@@ -346,8 +346,10 @@ class Kernel {
    * @global \MovLib\Data\I18n $i18n
    * @global \MovLib\Kernel $kernel
    * @global \MovLib\Data\User\Session $session
+   * @param string $documentRoot
+   *   The absolute path to the current working directory (not the symbolic link).
    */
-  public function __construct() {
+  public function __construct($documentRoot) {
     global $db, $i18n, $kernel, $session;
 
     // Export ourself to global scope and allow any layer to access the kernel's public properties.
@@ -364,7 +366,7 @@ class Kernel {
     try {
       // Initialize environment properties based on variables passed in by nginx.
       $this->cacheable        = $_SERVER["REQUEST_METHOD"] == "GET";
-      $this->documentRoot     = $_SERVER["DOCUMENT_ROOT"];
+      $this->documentRoot     = $documentRoot;
       $this->hostname         = $_SERVER["SERVER_NAME"];
       $this->https            = (boolean) $_SERVER["HTTPS"];
       $this->pathCache        = "{$this->documentRoot}{$this->pathCache}/{$_SERVER["LANGUAGE_CODE"]}";

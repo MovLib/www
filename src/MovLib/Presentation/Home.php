@@ -44,7 +44,10 @@ class Home extends \MovLib\Presentation\Page {
     $this->initBreadcrumb();
     unset($this->breadcrumb->menuitems[1]);
 
-    $this->initLanguageLinks("/");
+    // No need to call i18n for translation, there's nothing to translate.
+    foreach ($kernel->systemLanguages as $code => $locale) {
+      $this->languageLinks[$code] = "/";
+    }
   }
 
   /**
