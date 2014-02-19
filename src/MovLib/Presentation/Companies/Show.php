@@ -33,7 +33,7 @@ class Show extends \MovLib\Presentation\Page {
   public function __construct() {
     global $i18n;
     $this->initPage($i18n->t("Companies"));
-    $this->initLanguageLinks("/companies");
+    $this->initLanguageLinks("/companies", null, true);
     $this->initBreadcrumb();
     $this->alerts .= new Alert(
       $i18n->t("The companies feature isn’t implemented yet."),

@@ -257,7 +257,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
       $realPath = $splFileInfo->getRealPath();
       $this->write("Compressing {$realPath}");
       $kernel->compress($realPath);
-    }, [ "css", "eot", "ico", "js", "ttf" ]);
+    }, [ "css", "eot", "ico", "js", "ttf", "txt", "xml" ]);
     return $this->write("Successfully compressed all assets.");
   }
 
@@ -307,6 +307,7 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
         "optimizeImages",
         "optimizeJS",
         "optimizePHP",
+        "optimizeXML",
         "compressAssets",
         "calculateCacheBusters",
         // @todo maintenance mode start
@@ -580,6 +581,23 @@ class Deploy extends \MovLib\Tool\Console\Command\AbstractCommand {
     }, "php");
 
     return $this->write("Successfully optimized PHP files.", self::MESSAGE_TYPE_INFO);
+  }
+
+  /**
+   * Optimize XML files.
+   *
+   * @return this
+   */
+  protected function optimizeXML() {
+    $this->write("Optimizing XML files...");
+    $this->globRecursive("{$this->pathPublic}", function ($splFileInfo) {
+      $realPath = $splFileInfo->getRealPath();
+      // Remove all left over comments, see http://regex101.com/r/oO9nX3 for explanation of regular expression.
+      $stripped = preg_replace("/\<![ \r\n\t]*(--([^\-]|[\r\n]|-[^\-])*--[ \r\n\t]*)\>/", "", file_get_contents($realPath));
+      file_put_contents($realPath, trim(preg_replace('/>\s{0,}</', '><', $stripped)));
+    }, "xml");
+
+    return $this->write("Successfully optimized XML files.", self::MESSAGE_TYPE_INFO);
   }
 
   /**
