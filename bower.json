@@ -3,8 +3,7 @@
   "version": "0.0.1-dev",
   "main": "main.php",
   "dependencies": {
-    "open-sans-fontface": "*",
-    "classlist": "*"
+    "open-sans-fontface": "*"
   },
   "private": true
 }
