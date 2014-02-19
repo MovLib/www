@@ -70,13 +70,18 @@ return [
   "/serial/random" => "/serie/zufällig",
 
   // ------------------------------------------------------------------------------------------------------------------- Company
-  "/company"                => "/unternehmen",
-  "/company/create"         => "/unternehmen/erstellen",
-  "/company/random"         => "/unternehmen/zufällig",
-  "/company/{0}"            => "/unternehmen/{0}",
-  "/company/{0}/discussion" => "/unternehmen/{0}/diskussion",
-  "/company/{0}/edit"       => "/unternehmen/{0}/bearbeiten",
-  "/company/{0}/delete"     => "/unternehmen/{0}/löschen",
+  "/company"                  => "/unternehmen",
+  "/company/create"           => "/unternehmen/erstellen",
+  "/company/random"           => "/unternehmen/zufällig",
+  "/company/{0}"              => "/unternehmen/{0}",
+  "/company/{0}/edit"         => "/unternehmen/{0}/bearbeiten",
+  "/company/{0}/discussion"   => "/unternehmen/{0}/diskussion",
+  "/company/{0}/history"      => "/unternehmen/{0}/geschichte",
+  "/company/{0}/delete"       => "/unternehmen/{0}/löschen",
+
+  // ------------------------------------------------------------------------------------------------------------------- Company Photo
+  "/company/{0}/photo"        => "/unternehmen/{0}/foto",
+  "/company/{0}/photo/delete" => "/unternehmen/{0}/foto/löschen" ,
 
   // ------------------------------------------------------------------------------------------------------------------- Person
   "/person"                => "/person",

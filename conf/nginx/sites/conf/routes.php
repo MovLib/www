@@ -339,6 +339,10 @@ location = <?= $r("/company/random") ?> {
 
 location ^~ <?= $r("/company") ?> {
 
+  #
+  # ---------------------------------------- Company
+  #
+
   location ~* "^<?= $r("/company/{0}", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Company\\Show";
     set $movlib_company_id $1;
@@ -359,6 +363,28 @@ location ^~ <?= $r("/company") ?> {
 
   location ~* "^<?= $r("/company/{0}/delete", [ $idRegExp ]) ?>$" {
     set $movlib_presenter "Company\\Delete";
+    set $movlib_company_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/company/{0}/history", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\History";
+    set $movlib_company_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  #
+  # ---------------------------------------- Company Photo
+  #
+
+  location ~* "^<?= $r("/company/{0}/photo", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\Photo";
+    set $movlib_company_id $1;
+    try_files $movlib_cache @php;
+  }
+
+  location ~* "^<?= $r("/company/{0}/photo/delete", [ $idRegExp ]) ?>$" {
+    set $movlib_presenter "Company\\PhotoDelete";
     set $movlib_company_id $1;
     try_files $movlib_cache @php;
   }
