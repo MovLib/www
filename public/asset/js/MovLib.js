@@ -29,7 +29,7 @@
  */
 (function (window, document) {
   // The first thing we do is changing the id attribute of the html element, this is necessary for all our CSS styles.
-  document.getElementsByTagName("html")[0].id = "js";
+  document.documentElement.id = "js";
 
   /**
    * The global MovLib object.
@@ -44,7 +44,7 @@
   function MovLib() {
 
     /**
-     * `true` if current browser is Mozilla Firefox (any version).
+     * <code>TRUE</code> if current browser is Mozilla Firefox (any version).
      *
      * @link http://stackoverflow.com/a/9851769/1251219
      * @property browserFirefox
@@ -53,7 +53,7 @@
     this.browserFirefox = typeof InstallTrigger !== "undefined";
 
     /**
-     * `true` if current browser is Opera (8.0 - 15.0).
+     * <code>TRUE</code> if current browser is Opera (8.0 - 15.0).
      *
      * @link http://stackoverflow.com/a/9851769/1251219
      * @property browserOpera
@@ -62,7 +62,7 @@
     this.browserOpera = !!window.opera || navigator.userAgent.indexOf(" OPR/") >= 0;
 
     /**
-     * `true` if current browser is Google Chrome (any version).
+     * <code>TRUE</code> if current browser is Google Chrome (any version).
      *
      * @link http://stackoverflow.com/a/9851769/1251219
      * @property browserChrome
@@ -71,7 +71,7 @@
     this.browserChrome = !!window.chrome && !this.browserOpera;
 
     /**
-     * `true` if current browser is Apple Safari (any version).
+     * <code>TRUE</code> if current browser is Apple Safari (any version).
      *
      * @link http://stackoverflow.com/a/9851769/1251219
      * @property browserSafari
@@ -80,13 +80,21 @@
     this.browserSafari = Object.prototype.toString.call(window.HTMLElement).indexOf("Constructor") > 0;
 
     /**
-     * `true` if current browser is Microsoft Internet Explorer (any version).
+     * <code>TRUE</code> if current browser is Microsoft Internet Explorer (any version).
      *
      * @link http://stackoverflow.com/a/9851769/1251219
      * @property browserIE
      * @type Boolean
      */
     this.browserIE = /*@cc_on!@*/false || !!document.documentMode;
+
+    /**
+     * <code>TRUE</code> if current browser is Microsoft Internet Explorer 9.
+     *
+     * @property browserIE9
+     * @type Boolean
+     */
+    this.browserIE9 = document.documentElement.className === "ie9";
 
     /**
      * Object to keep reference of already loaded modules.
@@ -207,7 +215,7 @@
     init: function () {
       // Load cross-browser sham for classList support.
       if (!("classList" in document.documentElement)) {
-        this.loadModule("//" + this.settings.domainStatic + "/bower/classlist/classList.js");
+        this.loadModule("//" + this.settings.domainStatic + "/asset/js/poly/classList.js");
       }
 
       // Extend our document with the most important sections.
@@ -222,7 +230,7 @@
       // a :before of :after element and focus doesn't bubble in CSS. We fix this issue for all users who have JavaScript
       // enable and others have to scroll themselves.
       document.body.addEventListener("focus", function (event) {
-        if (!document.header.contains(event.target)) {
+        if (document.header && !document.header.contains(event.target)) {
           var boundingClientRect = event.target.getBoundingClientRect();
           if (boundingClientRect.bottom < 110) {
             window.scrollBy(0, -((boundingClientRect.top > 0 ? boundingClientRect.height : (boundingClientRect.top * -1 + boundingClientRect.height)) + 60));
@@ -242,74 +250,80 @@
         }
       }
 
-      // Check if there is any active element and if there is check if it's a child of the currently opened navigation.
-      // If none of both is true remove the open class and close the navigation.
-      var checkFocus = function () {
-        if (!document.activeElement || !this.contains(document.activeElement)) {
-          this.classList.remove("open");
-        }
-      };
+      // Only bind header events if we actually have a header.
+      if (document.header) {
+        // Check if there is any active element and if there is check if it's a child of the currently opened navigation.
+        // If none of both is true remove the open class and close the navigation.
+        var checkFocus = function () {
+          if (!document.activeElement || !this.contains(document.activeElement)) {
+            this.classList.remove("open");
+          }
+        };
 
-      // Wait 100 milliseconds and allow the browser to change the active element, afterwards check focus.
-      var expanderCapturingBlur = function () {
-        window.setTimeout(checkFocus.bind(this), 100);
-      };
+        // Wait 100 milliseconds and allow the browser to change the active element, afterwards check focus.
+        var expanderCapturingBlur = function () {
+          window.setTimeout(checkFocus.bind(this), 100);
+        };
 
-      // Extend our mega menu with the W3C recommended keyboard shortcuts for accessibility.
-      // @see http://www.w3.org/TR/wai-aria-practices/#menu
-      var expanderKeypress = function (event) {
-        switch (event.which || event.keyCode) {
-          case 13: // Return / Enter
-          case 32: // Space
-          case 38: // Up Arrow
-            if (event.target === this) {
+        // Extend our mega menu with the W3C recommended keyboard shortcuts for accessibility.
+        // @see http://www.w3.org/TR/wai-aria-practices/#menu
+        var expanderKeypress = function (event) {
+          switch (event.which || event.keyCode) {
+            case 13: // Return / Enter
+            case 32: // Space
+            case 38: // Up Arrow
+              if (event.target === this) {
+                event.preventDefault();
+                event.returnValue = false;
+                this.classList.add("open");
+
+                // We have to ensure that the first anchor is actually visible before the transition finished in order to
+                // give it focus right away.
+                var a = this.getElementsByTagName("a")[0];
+                if (a) {
+                  a.focus();
+                }
+              }
+              break;
+
+            case 27: // Escape
               event.preventDefault();
               event.returnValue = false;
-              this.classList.add("open");
+              this.classList.remove("open");
+              this.focus();
+              break;
+          }
+        };
 
-              // We have to ensure that the first anchor is actually visible before the transition finished in order to
-              // give it focus right away.
-              this.getElementsByTagName("a")[0].focus();
-            }
-            break;
+        // Enable mobile users to close the menu via click.
+        var expanderClose = function () {
+          this.classList.remove("open");
+        };
 
-          case 27: // Escape
-            event.preventDefault();
-            event.returnValue = false;
-            this.classList.remove("open");
-            this.focus();
-            break;
+        // Enable mobile users to open the menu via click.
+        var clickerClick = function () {
+          this.parentNode.classList.add("open");
+        };
+
+        // Bind all events
+        // @todo Extend mega menu further for best accessibility!
+        //       - http://terrillthompson.com/blog/474
+        //       - http://adobe-accessibility.github.io/Accessible-Mega-Menu/
+        var expanders = document.header.getElementsByClassName("expander");
+        var c         = expanders.length;
+        for (var i = 0; i < c; ++i) {
+          this.toggleFocusClass(expanders[i], false);
+          expanders[i].addEventListener("blur", expanderCapturingBlur, true);
+          expanders[i].addEventListener("keypress", expanderKeypress, false);
+          expanders[i].getElementsByClassName("clicker")[0].addEventListener("click", clickerClick, false);
+          expanders[i].addEventListener("click", expanderClose, true);
+          expanders[i].addEventListener("mouseout", expanderClose, false);
         }
-      };
 
-      // Enable mobile users to close the menu via click.
-      var expanderClose = function () {
-        this.classList.remove("open");
-      };
-
-      // Enable mobile users to open the menu via click.
-      var clickerClick = function () {
-        this.parentNode.classList.add("open");
-      };
-
-      // Bind all events
-      // @todo Extend mega menu further for best accessibility!
-      //       - http://terrillthompson.com/blog/474
-      //       - http://adobe-accessibility.github.io/Accessible-Mega-Menu/
-      var expanders = document.header.getElementsByClassName("expander");
-      var c         = expanders.length;
-      for (var i = 0; i < c; ++i) {
-        this.toggleFocusClass(expanders[i], false);
-        expanders[i].addEventListener("blur", expanderCapturingBlur, true);
-        expanders[i].addEventListener("keypress", expanderKeypress, false);
-        expanders[i].getElementsByClassName("clicker")[0].addEventListener("click", clickerClick, false);
-        expanders[i].addEventListener("click", expanderClose, true);
-        expanders[i].addEventListener("mouseout", expanderClose, false);
-      }
-
-      var languageSelector = document.getElementById("f-language");
-      if (languageSelector) {
-        languageSelector.addEventListener("keypress", expanderKeypress.bind(languageSelector.parentNode.children[0]), false);
+        var languageSelector = document.getElementById("f-language");
+        if (languageSelector) {
+          languageSelector.addEventListener("keypress", expanderKeypress.bind(languageSelector.parentNode.children[0]), false);
+        }
       }
 
       return this.execute(document);
@@ -350,7 +364,6 @@
      * Asynchronously load the given module.
      *
      * @method loadModule
-     * @chainable
      * @param {String} url The module's absolute URL (including scheme and hostname).
      * @param {Function} [onloadCallback] A function to call on the onload event of the inserted script tag.
      * @return {MovLib}
@@ -368,22 +381,22 @@
      * Toggle <code>.focus</code> CSS class on <code>"focus"</code> and <code>"blur"</code> events.
      *
      * @method toggleFocusClass
-     * @chainable
      * @param {HTMLElement} element The HTML element on which the class should be toggled.
      * @param {Boolean} [useCapture=true] Capturing phase or bubbling phase, default to <code>true</code> (capture).
      * @returns {MovLib}
      */
     toggleFocusClass: function (element, useCapture) {
-      this.add = this.add || function () {
-        this.classList.add("focus");
-      };
-      element.addEventListener("focus", this.add, (useCapture || true));
+      if (element) {
+        this.add = this.add || function () {
+          this.classList.add("focus");
+        };
+        element.addEventListener("focus", this.add, (useCapture || true));
 
-      this.remove = this.remove || function () {
-        this.classList.remove("focus");
-      };
-      element.addEventListener("blur", this.remove, (useCapture || true));
-
+        this.remove = this.remove || function () {
+          this.classList.remove("focus");
+        };
+        element.addEventListener("blur", this.remove, (useCapture || true));
+      }
       return this;
     }
 
