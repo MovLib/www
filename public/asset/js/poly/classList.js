@@ -32,13 +32,6 @@
  * @since 0.0.1-dev
  */
 (function () {
-  "use strict";
-
-  // Gurdian Pattern, we need these functions!
-  // @todo Can we remove this?
-  if (!(Array.indexOf && String.trim && Object.defineProperty)) {
-    return;
-  }
 
   /**
    * Used to keep things short and to avoid magic values.
