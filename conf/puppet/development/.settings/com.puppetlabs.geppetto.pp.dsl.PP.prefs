@@ -1,0 +1,3 @@
+com.puppetlabs.geppetto.pp.dsl.PP.environment.useProjectSettings=true
+eclipse.preferences.version=1
+puppetEnvironment=development
