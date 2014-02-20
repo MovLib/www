@@ -71,31 +71,16 @@ simply copy/paste of course.
 
 ```
 $ mkdir -pm 0700 ~/.ssh/authorized_keys
-$ wget -O ~/.ssh/authorized_keys/vagrant.pub https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub
+$ wget -O ~/.ssh/authorized_keys https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub
 $ chmod 0600 ~/.ssh/authorized_keys
 $ su -
-# wget https://raw.github.com/jedi4ever/veewee/master/templates/Debian-7.3.0-amd64-netboot/base.sh
-# sh base.sh
-# date > /etc/vagrant_box_build_time
-# echo 'Welcome to your MovLib development virtual machine.' > /var/run/motd
-# aptitude -y purge virtualbox-ose-*
 ```
 
-Now hit VirtualBox-Host-Key + D (or select *Insert Guest Additions CD image...*`from the *Devices* menu) and go the CD
-ROM drive.
+Now we're root (we've set the password *vagrant*, in case you forgot)…
 
 ```
-# cd /media/cdrom0
-# sh VBoxLinuxAdditions.run uninstall
-yes
-# sh VBoxLinuxAdditions.run
-```
-
-I had to restart the VM at this point.
-
-```
-# /etc/init.d/vboxadd start
-# aptitude -y install ruby ruby-dev libopenssl-ruby1.8 irb ri rdoc
+# aptitude -y update
+# aptitude -y install ruby ruby-dev libopenssl-ruby1.8 irb ri rdoc zlib1g-dev libssl-dev libreadline-gplv2-dev curl unzip
 # wget -O /tmp/rubygems-1.8.22.zip http://production.cf.rubygems.org/rubygems/rubygems-1.8.22.zip
 # cd /tmp
 # unzip rubygems-1.8.22.zip
@@ -106,14 +91,65 @@ I had to restart the VM at this point.
 # wget http://apt.puppetlabs.com/puppetlabs-release-wheezy.deb
 # dpkg -i puppetlabs-release-wheezy.deb
 # rm -f puppetlabs-release-wheezy.deb
-# aptitude update
+# aptitude -y update
 # aptitude -y install puppet facter
-# aptitude -y purge linux-headers-$(uname -r) build-essential
+# echo 'vagrant ALL=NOPASSWD:ALL' > /etc/sudoers.d/vagrant
+# echo 'UseDNS no' >> /etc/ssh/sshd_config
+# echo 'AuthorizedKeysFile %h/.ssh/authorized_keys' >> /etc/ssh/sshd_config
+# service ssh restart
+# cat <<EOF > /etc/default/grub
+# If you change this file, run 'update-grub' afterwards to update
+# /boot/grub/grub.cfg.
+
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=0
+GRUB_DISTRIBUTOR=`lsb_release -i -s 2> /dev/null || echo Debian`
+GRUB_CMDLINE_LINUX_DEFAULT="quiet"
+GRUB_CMDLINE_LINUX="debian-installer=en_US"
+EOF
+# update-grub
+# echo 'Welcome to your MovLib development virtual machine.' > /var/run/motd
+# aptitude search virtualbox
+```
+
+If any `virtualbox` package is installed, purge it.
+
+Note that you may have to replace the `3.2.0-4-all-amd64` string with your kernel version, use `uname -r` to find out
+which version you are using and add the `all` part to it. Insert the VirtualBox guest additions disk in your drive
+(but don't autostart it).
+
+```
+# aptitude -y install linux-headers-3.2.0-4-all-amd64 build-essential module-assistant
+# m-a prepare
+# sh /media/cdrom/autorun.sh
+```
+
+Restart your virtual machine after installing the guest additions. We'll only perform some clean-up now to make sure
+that our base box is as small as possible. Start up a terminal again.
+
+```
+$ su -
+# service vboxadd start
+# aptitude -y purge linux-headers-3.2.0-4-all-amd64 build-essential module-assistant
 # aptitude -y clean
+# aptitude -y autoclean
 # rm /var/lib/dhcp/*
 # echo "pre-up sleep 2" >> /etc/network/interfaces
-# dd if=/dev/zero of=/EMPTY bs=1M
-# rm -f /EMPTY
+# rm -rf /usr/share/doc /usr/src/vboxguest* /usr/src/virtualbox-guest* /usr/src/linux-headers*
+# find /var/cache -type f -exec rm -rf {} \;
+# rm -rf /usr/share/locale/{af,am,ar,as,ast,az,bal,be,bg,bn,bn_IN,br,bs,byn,ca,cr,cs,csb,cy,da,de,de_AT,dz,el,en_AU,en_CA,eo,es,et,et_EE,eu,fa,fi,fo,fr,fur,ga,gez,gl,gu,haw,he,hi,hr,hu,hy,id,is,it,ja,ka,kk,km,kn,ko,kok,ku,ky,lg,lt,lv,mg,mi,mk,ml,mn,mr,ms,mt,nb,ne,nl,nn,no,nso,oc,or,pa,pl,ps,pt,pt_BR,qu,ro,ru,rw,si,sk,sl,so,sq,sr,sr*latin,sv,sw,ta,te,th,ti,tig,tk,tl,tr,tt,ur,urd,ve,vi,wa,wal,wo,xh,zh,zh_HK,zh_CN,zh_TW,zu}
+# aptitude -y install zerofree
+# init 1
+```
+
+Wait for the prompt that asks for your root password and enter it (I set it to *vagrant* if you followed all steps
+your's is too).
+
+```
+# mount -o remount,ro /dev/sda1
+# zerofree /dev/sda1
+# date > /etc/vagrant_box_build_time
+# shutdown -Ph now
 ```
 
 ## Vagrant Base Box
@@ -136,3 +172,4 @@ $ vagrant up
 
 * [Vagrant Documentation](http://docs.vagrantup.com/v2/boxes/base.html)
 * [VeeWee templates](https://github.com/jedi4ever/veewee/tree/master/templates/Debian-7.3.0-amd64-netboot)
+* [Mike Griffin: Creating a Debian Wheezy base box for vagrant](https://mikegriffin.ie/blog/20130418-creating-a-debian-wheezy-base-box-for-vagrant/)
