@@ -1,0 +1,3 @@
+[submodule "public/asset/font/open-sans"]
+	path = public/asset/font/open-sans
+	url = https://github.com/FontFaceKit/open-sans.git
