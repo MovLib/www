@@ -17,28 +17,78 @@
  */
 namespace MovLib\Presentation\Companies;
 
+use \MovLib\Data\Company\Company;
 use \MovLib\Presentation\Partial\Alert;
+use \MovLib\Presentation\Partial\Lists\Companies as CompaniesPartial;
 
 /**
- * @todo Description of Show
+ * The latest companies.
  *
  * @author Richard Fussenegger <richard@fussenegger.info>
+ * @author Franz Torghele <ftorghele.mmt-m2012@fh-salzburg.ac.at>
  * @copyright © 2014 MovLib
  * @license http://www.gnu.org/licenses/agpl.html AGPL-3.0
  * @link https://movlib.org/
  * @since 0.0.1-dev
  */
 class Show extends \MovLib\Presentation\Page {
+  use \MovLib\Presentation\TraitSidebar;
+  use \MovLib\Presentation\TraitPagination;
 
+
+  // ------------------------------------------------------------------------------------------------------------------- Magic Methods
+
+
+  /**
+   * Instantiate new latest companies presentation.
+   *
+   * @global \MovLib\Data\I18n $i18n
+   */
   public function __construct() {
     global $i18n;
     $this->initPage($i18n->t("Companies"));
-    $this->initLanguageLinks("/companies", null, true);
     $this->initBreadcrumb();
-    $this->alerts .= new Alert(
-      $i18n->t("The companies feature isn’t implemented yet."),
-      $i18n->t("Check back later"),
-      Alert::SEVERITY_INFO
+    $this->initLanguageLinks("/companies", null, true);
+    $this->sidebarInit([
+      [ $this->languageLinks[$i18n->languageCode], $i18n->t("Companies"), [ "class" => "ico ico-company" ] ],
+      [ $i18n->rp("/movies"), $i18n->t("Movies"), [ "class" => "ico ico-movie" ] ],
+      [ $i18n->rp("/serials"), $i18n->t("Serials"), [ "class" => "ico ico-series" ] ],
+      [ $i18n->rp("/releases"), $i18n->t("Releases"), [ "class" => "ico ico-release" ] ],
+      [ $i18n->rp("/persons"), $i18n->t("Persons"), [ "class" => "ico ico-person" ] ],
+      [ $i18n->rp("/help"), $i18n->t("Help"), [ "class" => "ico ico-help" ] ],
+    ]);
+    $this->paginationInit(Company::getTotalCount());
+    $this->headingBefore = "<a class='btn btn-large btn-success fr' href='{$i18n->r("/company/create")}'>{$i18n->t("Create New Company")}</a>";
+  }
+
+
+  // ------------------------------------------------------------------------------------------------------------------- Methods
+
+
+  /**
+   * @inheritdoc
+   * @global \MovLib\Data\I18n $i18n
+   */
+  protected function getPageContent() {
+    global $i18n;
+
+    return "<div id='filter' class='tar'>{$i18n->t("Filter")}</div>" . new CompaniesPartial(
+      Company::getCompanies($this->paginationOffset, $this->paginationLimit),
+      new Alert(
+        $i18n->t(
+          "We couldn’t find any company matching your filter criteria, or there simply aren’t any companies available. Would you like to {0}create a new entry{1}?",
+          [
+            "<a href='{$i18n->r("/company/create")}'>",
+            "</a>"
+          ]
+        ),
+        $i18n->t("No companies"),
+        Alert::SEVERITY_INFO
+      ),
+      null,
+      null,
+      10,
+      true
     );
   }
 
