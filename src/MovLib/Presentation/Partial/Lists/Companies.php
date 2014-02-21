@@ -101,16 +101,6 @@ class Companies extends \MovLib\Presentation\Partial\Lists\Images {
       while ($company = $this->listItems->fetch_object("\\MovLib\\Data\\Company\\Company")) {
         $additionalInfo = null;
         if ($this->showAdditionalInfo === true) {
-          $aliases = null;
-          if (!empty($company->aliases)) {
-            foreach ($company->aliases as $alias) {
-              $aliases .= $i18n->t("aka “{0}”", [ "<span itemprop='alternateName'>{$alias}</span>" ]);
-            }
-          }
-          if ($aliases) {
-            $aliases = "<br>{$aliases}";
-          }
-
           $companyDates = null;
           if ($company->foundingDate || $company->defunctDate) {
             if ($company->foundingDate) {
@@ -127,8 +117,8 @@ class Companies extends \MovLib\Presentation\Partial\Lists\Images {
             $companyDates = "<br>{$companyDates}";
           }
 
-          if ($aliases || $companyDates) {
-            $additionalInfo = "<span class='small'>{$aliases}{$companyDates}</span>";
+          if ($companyDates) {
+            $additionalInfo = "<span class='small'>{$companyDates}</span>";
           }
         }
 

@@ -38,7 +38,7 @@ class Place extends \MovLib\Presentation\AbstractBase {
   public function __construct($place, array $attributes = [], $tag = "span") {
     $this->attributes             = $attributes;
     $this->attributes[]           = "itemscope";
-    $this->attributes["itemtype"] = "http://schema.org/City";
+    $this->attributes["itemtype"] = "http://schema.org/Place";
     $this->place                  = $place;
     $this->tag                    = $tag;
   }
