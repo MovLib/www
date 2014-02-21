@@ -35,10 +35,10 @@ Package { ensure => "latest" }
 Service { path   => "/etc/init.d" }
 
 # Make sure that we have the latest package definitions.
-exec { "apt-get -y update": }
+exec { "apt-get update": }
 
 # Ensure default software is installed.
-package { [ "git", "subversion", "wget", "curl", "ntp", "gcc", "g++", "build-essential", "make" ]: }
+package { [ "debconf-utils", "git", "subversion", "wget", "curl", "ntp", "gcc", "g++", "build-essential", "make" ]: }
 
 # TODO: The following packages are for PHP installation, move to class!
 package { [ "libxml2-dev", "libssl-dev", "libcurl4-openssl-dev", "libmcrypt-dev", "libtidy-dev", "autoconf" ]: }
@@ -52,26 +52,39 @@ service { "ntp":
   ensure => "running",
 }
 
-# Make sure machine is using UTC time zone.
-file { "/etc/timezone":
-  ensure  => "present",
-  content => "UTC",
-  replace => true,
+#
+# NOTE: Using an `include` means that the module does nothing by itself and is only used by another module.
+#       Use `class` to include a module that's actually doing something and always specify the important parameters,
+#       even if the are the defaults of the provided module.
+#
+
+# Module includes, dependencies for other later modules.
+include apt
+include wget
+
+# Execute Puppet modules...
+class { "timezone":
+  autoupgrade => true,
+  timezone    => "UTC",
 }
 
-exec { "sudo dpkg-reconfigure -f noninteractive tzdata":
-  subscribe   => File["/etc/timezone"],
-  refreshonly => true,
+class { "locales":
+  autoupgrade    => true,
+  available      => [ "en_US.UTF-8 UTF-8", "de_AT.UTF-8 UTF-8" ],
+  default_locale => "en_US.UTF-8",
 }
 
-# Make sure machine is using correct locales.
-file { "/etc/locale.gen":
-  ensure  => "present",
-  content => "en_US.UTF-8 UTF-8",
-  replace => true,
+class { "mariadb":
+  version => "10.0",
 }
 
-exec { "sudo dpkg-reconfigure -f noninteractive locales":
-  subscribe   => File["/etc/locale.gen"],
-  refreshonly => true,
+class { "oracle_java_jdk":
+  version => 7,
+  release => "trusty",
+}
+
+class { "elasticsearch":
+  autoupgrade  => true,
+  manage_repo  => true,
+  repo_version => "1.0",
 }

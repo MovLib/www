@@ -1,3 +1,27 @@
 [submodule "public/asset/font/open-sans"]
 	path = public/asset/font/open-sans
 	url = https://github.com/FontFaceKit/open-sans.git
+[submodule "conf/puppet/module/stdmod"]
+	path = conf/puppet/module/stdmod
+	url = https://github.com/stdmod/stdmod.git
+[submodule "conf/puppet/module/stdlib"]
+	path = conf/puppet/module/stdlib
+	url = https://github.com/puppetlabs/puppetlabs-stdlib.git
+[submodule "conf/puppet/module/apt"]
+	path = conf/puppet/module/apt
+	url = https://github.com/puppetlabs/puppetlabs-apt.git
+[submodule "conf/puppet/module/wget"]
+	path = conf/puppet/module/wget
+	url = https://github.com/maestrodev/puppet-wget.git
+[submodule "conf/puppet/module/timezone"]
+	path = conf/puppet/module/timezone
+	url = https://github.com/saz/puppet-timezone.git
+[submodule "conf/puppet/module/locales"]
+	path = conf/puppet/module/locales
+	url = https://github.com/saz/puppet-locales.git
+[submodule "conf/puppet/module/mariadb"]
+	path = conf/puppet/module/mariadb
+	url = https://github.com/example42/puppet-mariadb.git
+[submodule "conf/puppet/module/elasticsearch"]
+	path = conf/puppet/module/elasticsearch
+	url = https://github.com/elasticsearch/puppet-elasticsearch.git
