@@ -35,11 +35,46 @@ class Full extends \MovLib\Data\Company\Company {
   // ------------------------------------------------------------------------------------------------------------------- Properties
 
 
+  /**
+   * The company’s creation timestamp.
+   *
+   * @var string
+   */
   public $created;
+
+  /**
+   * The company’s translated descriptions.
+   *
+   * @var string
+   */
   public $description;
+
+  /**
+   * The company’s translated Wikipedia link.
+   *
+   * @var string
+   */
   public $wikipedia;
-  public $aliases;
-  public $links;
+
+  /**
+   * The company’s aliases.
+   *
+   * @var array
+   */
+  public $aliases = [];
+
+  /**
+   * The company’s weblinks.
+   *
+   * @var array
+   */
+  public $links = [];
+
+  /**
+   * The company’s place.
+   *
+   * @var integer|object
+   */
   public $place;
 
 
@@ -108,15 +143,66 @@ class Full extends \MovLib\Data\Company\Company {
 
 
   /**
-   * @inheritdoc
+   * Insert a new company into the database.
+   *
+   * @todo Index data with Elastic.
    * @global \MovLib\Data\Database $db
    * @global \MovLib\Data\I18n $i18n
+   * @return $this
+   */
+  public function create() {
+    global $db, $i18n;
+    $this->id = $db->query(
+      "INSERT INTO `companies` SET
+        `aliases` = ?,
+        `created` = CURRENT_TIMESTAMP,
+        `defunct_date` = ?,
+        `dyn_descriptions` = COLUMN_CREATE('{$i18n->languageCode}', ?),
+        `dyn_wikipedia`= COLUMN_CREATE('{$i18n->languageCode}', ?),
+        `dyn_image_descriptions` = '',
+        `founding_date` = ?,
+        `links` = ?,
+        `name` = ?,
+        `place_id` = ?
+        ",
+      "sssssssi",
+      [
+        serialize($this->aliases),
+        $this->defunctDate,
+        $this->description,
+        $this->wikipedia,
+        $this->foundingDate,
+        serialize($this->links),
+        $this->name,
+        $this->place,
+      ]
+    )->insert_id;
+
+    // Create a display photo.
+    parent::init();
+
+    return $this;
+  }
+
+  /**
+   * @inheritdoc
    */
   protected function init() {
-    global $db, $i18n;
     parent::init();
     if ($this->place) {
       $this->place = new Place($this->place);
+    }
+    if ($this->aliases) {
+      $this->aliases = unserialize($this->aliases);
+    }
+    else {
+      $this->aliases = [];
+    }
+    if ($this->links) {
+      $this->links = unserialize($this->links);
+    }
+    else {
+      $this->links = [];
     }
   }
 }
