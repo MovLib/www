@@ -22,6 +22,10 @@
 #
 # PS: But everything should work just fine if you"re using Ubuntu :)
 #
+# NOTE: Using an `include` means that the module does nothing by itself and is only used by another module.
+#       Use `class` to include a module that's actually doing something and always specify the important parameters,
+#       even if the are the defaults of the provided module.
+#
 # AUTHOR:     Richard Fussenegger <richard@fussenegger.info>
 # COPYRIGHT:  © 2013 MovLib
 # LICENSE:    http://www.gnu.org/licenses/agpl.html AGPL-3.0
@@ -33,6 +37,10 @@
 Exec    { path   => [ "/usr/bin", "/usr/sbin", "/usr/local/bin", "/usr/local/sbin" ] }
 Package { ensure => "latest" }
 Service { path   => "/etc/init.d" }
+
+# Module includes, dependencies for other later modules.
+include apt
+include wget
 
 # Make sure that we have the latest package definitions.
 exec { "apt-get update": }
@@ -51,16 +59,6 @@ service { "ntp":
   enable => true,
   ensure => "running",
 }
-
-#
-# NOTE: Using an `include` means that the module does nothing by itself and is only used by another module.
-#       Use `class` to include a module that's actually doing something and always specify the important parameters,
-#       even if the are the defaults of the provided module.
-#
-
-# Module includes, dependencies for other later modules.
-include apt
-include wget
 
 # Execute Puppet modules...
 class { "timezone":
