@@ -17,7 +17,7 @@
  */
 namespace MovLib\Presentation\Company;
 
-use \MovLib\Data\Company;
+use \MovLib\Data\Company\Company;
 use \MovLib\Presentation\Partial\Alert;
 use \MovLib\Presentation\Redirect\SeeOther as SeeOtherRedirect;
 

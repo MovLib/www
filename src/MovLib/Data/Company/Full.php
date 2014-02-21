@@ -107,7 +107,7 @@ class Full extends \MovLib\Data\Company\Company {
             `founding_date` AS `foundingDate`,
             `links`,
             `name`,
-            `place_id` AS `place`,
+            `place_id` AS `place`
           FROM `companies`
           WHERE
             `id` = ?

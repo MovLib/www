@@ -28,6 +28,17 @@ TRUNCATE TABLE `companies`;
 
 -- START "Synapse films"
 
+INSERT INTO `places` SET
+  `place_id`     = 97981472,
+  `country_code` = 'US',
+  `dyn_names`    = COLUMN_CREATE(
+    'en', 'Novi, Michigan',
+    'de', 'Novi (Michigan)'
+  ),
+  `latitude`     = -83.4754913,
+  `longitude`    = 42.48059
+;
+
 INSERT INTO `companies` SET
   `created`                = CURRENT_TIMESTAMP,
   `dyn_descriptions`       = COLUMN_CREATE(
@@ -39,10 +50,10 @@ INSERT INTO `companies` SET
     'de', 'http://de.wikipedia.org/wiki/Synapse_films'
   ),
   `name`                   = 'Synapse films',
-  `aliases`                = 's:22:"["Synapse Films, Inc"]',
+  `aliases`                = 'a:1:{i:0;s:18:"Synapse Films, Inc";}',
   `founding_date`          = '1997-00-00',
-  `links`                  = 's:28:"["http://synapse-films.com"]"',
-
+  `links`                  = 'a:1:{i:0;s:24:"http://synapse-films.com";}',
+  `place_id`               = 97981472,
   `image_width`            = 401,
   `image_height`           = 151,
   `image_filesize`         = 40416,
@@ -52,7 +63,7 @@ INSERT INTO `companies` SET
     'en', '&lt;p&gt;The Synapse Films logo.&lt;/p&gt;',
     'de', '&lt;p&gt;Das Synapse Films Logo.&lt;/p&gt;'
   ),
-  `image_styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:140;s:5:"width";i:140;s:9:"resizeArg";s:8:"140x140>";}i:60;a:3:{s:6:"height";i:60;s:5:"width";i:60;s:9:"resizeArg";s:4:"60x>";}} ',
+  `image_styles`           = 'a:2:{i:140;a:3:{s:6:"height";i:52;s:5:"width";i:140;s:9:"resizeArg";s:8:"140x140>";}i:60;a:3:{s:6:"height";i:22;s:5:"width";i:60;s:9:"resizeArg";s:4:"60x>";}}',
   `image_uploader_id`      = 1
 ;
 
@@ -71,7 +82,7 @@ INSERT INTO `companies` SET
     'de', 'https://de.wikipedia.org/wiki/Fox_Film_Corporation'
   ),
   `name`                   = 'Fox Film Corporation',
-  `aliases`                = 's:20:"["20th Century Fox"]";',
+  `aliases`                = 'a:1:{i:0;s:16:"20th Century Fox";}',
   `founding_date`          = '1915-00-00',
   `defunct_date`           = '1935-00-00',
   `dyn_image_descriptions` = ''

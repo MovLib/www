@@ -107,7 +107,7 @@ class Company {
             `deleted`,
             `name`,
             `founding_date` AS `foundingDate`,
-            `defunct_date` AS `defunctDate`,
+            `defunct_date` AS `defunctDate`
           FROM `companies`
           WHERE
             `id` = ?
@@ -175,7 +175,7 @@ class Company {
           `deleted`,
           `name`,
           `founding_date` AS `foundingDate`,
-          `defunct_date` AS `defunctDate`,
+          `defunct_date` AS `defunctDate`
         FROM `companies`
         WHERE
           `deleted` = false
