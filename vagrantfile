@@ -62,13 +62,11 @@ Vagrant.configure("2") do |config|
     pp.manifests_path = "conf/puppet/development"
     pp.manifest_file  = "bootstrap.pp"
     pp.module_path    = "conf/puppet/module"
-    #pp.options       = "--verbose"
+    #pp.options        = "--verbose --debug"
   end
 
   # Create a forwarded port mapping from the host to the guest system. This allows developers to access their MovLib
-  # virtual machine via 'localhost:666' (the 666 has nothing to do with Satan, it was the port used for the first ego-
-  # shooter DooM by almighty id software). Developer's are encouraged to set up a custom domain via their hosts file
-  # (e.g. http://richard.movlib.org/ ).
+  # virtual machine via 'localhost:666'.
   #
   # LINK: http://docs.vagrantup.com/v2/networking/index.html
   config.vm.network :forwarded_port, host: 4096, guest: 80

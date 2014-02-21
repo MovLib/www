@@ -69,19 +69,18 @@ class { "timezone":
 }
 
 class { "locales":
-  autoupgrade    => true,
-  available      => [ "en_US.UTF-8 UTF-8", "de_AT.UTF-8 UTF-8" ],
   default_locale => "en_US.UTF-8",
+  autoupgrade    => true,
 }
 
 class { "mariadb":
   version => "10.0",
 }
 
-class { "oracle_java_jdk":
-  version => 7,
-  release => "trusty",
-}
+#class { "oracle_java_jdk":
+#  version => "7",
+#  release => "trusty",
+#}
 
 class { "elasticsearch":
   autoupgrade  => true,

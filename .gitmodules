@@ -25,3 +25,6 @@
 [submodule "conf/puppet/module/elasticsearch"]
 	path = conf/puppet/module/elasticsearch
 	url = https://github.com/elasticsearch/puppet-elasticsearch.git
+[submodule "conf/puppet/module/oracle_java_jdk"]
+	path = conf/puppet/module/oracle_java_jdk
+	url = https://github.com/Fleshgrinder/puppet-oracle-java-jdk.git
