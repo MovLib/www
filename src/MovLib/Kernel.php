@@ -490,7 +490,7 @@ class Kernel {
       }
 
       // Can we cache this presentation?
-      if ($this->cacheable === true) {
+      if ($this->cacheable === true && $session->isAuthenticated === false) {
         // Build absolute path to cache file.
         $cacheFile = "{$this->pathCache}{$this->requestPath}";
 
